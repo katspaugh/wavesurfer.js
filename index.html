@@ -2,14 +2,42 @@
 <html>
     <head>
         <title>Wave Surfer</title>
+
+		<style>
+			#wave-cursor {
+			    position: absolute;
+			    left: 0;
+			    top: 0;
+			    height: 100%;
+			    width: 1px;
+			    background: #000;
+			}
+			#timeline {
+			    overflow: scroll;
+			    width: 1024px;
+			    position: relative;
+			}
+		</style>
     </head>
 
     <body>
         <canvas id="freq" width="1024" height="256"></canvas>
-        <canvas id="wave" width="1024" height="256"></canvas>
 
-        <audio src="var/surfin_safari.mp3"
-               autoplay="true" controls="true"></audio>
+		<div id="timeline">
+			<div id="wave-cursor"></div>
+			<canvas id="wave" width="10240" height="256"></canvas>
+		</div>
+
+        <audio controls="true"
+			   src="http://www.freesound.org/data/previews/12/12691_32572-lq.mp3">
+		</audio>
+
+		<p>
+			Audio sample from
+			<a href="http://www.freesound.org/people/Connum/sounds/12691/">
+				http://www.freesound.org/people/Connum/sounds/12691/
+		    </a>.
+		</p>
 
         <script src="src/wavesurfer.js"></script>
         <script src="main.js"></script>

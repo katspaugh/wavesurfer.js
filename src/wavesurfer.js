@@ -9,12 +9,23 @@
 
 
     WaveSurfer.visualizer = {
+		FRAME_TIME: 1000 / 60,
+
         init: function (canvas, analyzer, params) {
             params = params || {};
 
             this.canvas = canvas;
             this.analyzer = analyzer;
             this.initCanvas(params);
+
+			if (params.continuous) {
+				this.scroller = this.canvas.offsetParent;
+				this.continuousLineWidth = params.continuousLineWidth || 1;
+				this.cursor = params.cursor;
+				this.drawFn = this.drawContinuous;
+			} else {
+				this.drawFn = this.drawCurrent;
+			}
 
             this.pos = 0;
         },
@@ -30,22 +41,42 @@
             }
         },
 
-        loop: function (drawFn, dataFn) {
-            if (!this.analyzer.isPaused()) {
-                var data = dataFn.call(this.analyzer);
-                drawFn.call(this, data);
-            }
-            var self = this;
-            globals.requestAnimationFrame(function () {
-                self.loop(drawFn, dataFn);
-            }, this.canvas);
+		bindClick: function () {
+			var self = this;
+			this.canvas.addEventListener('click', function (e) {
+				var canvasPosition = this.getBoundingClientRect();
+				var relX = e.pageX - canvasPosition.left;
+				var frames = relX / self.continuousLineWidth;
+				var timePlayed = frames * self.FRAME_TIME;
+
+				if (self.cursor) {
+					self.cursor.style.left = relX + 'px';
+				}
+
+				self.analyzer.playRegion(timePlayed / 1000);
+			}, false);
+		},
+
+        loop: function (dataFn) {
+			var self = this;
+
+			function loop() {
+				if (!self.analyzer.isPaused()) {
+					var data = dataFn.call(self.analyzer);
+					self.drawFn(data);
+				}
+				globals.requestAnimationFrame(loop, self.canvas)
+			};
+
+			loop();
         },
 
         drawCurrent: function (data) {
             var w = this.width, h = this.height,
                 len = data.length,
-                lineW = ~~(w / len),
                 i, value;
+
+            this.lineWidth = ~~(w / len);
 
             this.cc.clearRect(0, 0, w, h);
 
@@ -53,28 +84,34 @@
             for (i = 0; i < len; i += 1) {
                 value = ~~(h - (data[i] / 256 * h));
                 this.cc.lineTo(
-                    lineW * i, h - value
+                    this.lineWidth * i, h - value
                 );
             }
             this.cc.stroke();
         },
 
         drawContinuous: function (data) {
-            var w = this.width, h = this.height,
-                x = this.pos % w,
+            var h = this.height,
                 halfH = ~~(h / 2);
+
+			this.lineWidth = this.continuousLineWidth;
 
             var value = ~~((h - (data[0] / 256 * h)) / 2);
             this.cc.fillRect(
-                x, halfH - value,
-                1, value * 2
+                this.pos, halfH - value,
+                this.lineWidth, value * 2
             );
 
-            this.pos += 1;
 
-            if (this.pos > 0 && x === 0) {
-                this.cc.clearRect(0, 0, w, h);
-            }
+			if (this.cursor) {
+				this.cursor.style.left = this.pos + 'px';
+			}
+
+			if (this.offsetParent) {
+				this.offsetParent.scrollLeft = this.pos;
+			}
+
+            this.pos += 1;
         }
     };
 
@@ -92,6 +129,12 @@
         init: function (params) {
             params = params || {};
 
+			this.js = this.ac.createJavaScriptNode(
+				params.bufferSize || 2048,
+				2, /* number of input channels */
+				2 /* number of output channels */
+			);
+
             this.analyser = this.ac.createAnalyser();
             this.analyser.smoothingTimeConstant =
                 params.smoothingTimeConstant || 0.3;
@@ -100,7 +143,11 @@
                 this.analyser.frequencyBinCount
             );
 
-            this.destination = this.ac.destination;
+            this.destination = params.destination || this.ac.destination;
+
+			this.analyser.connect(this.destination);
+			this.js.connect(this.destination);
+
             this.paused = true;
 
             this.defineSource();
@@ -117,11 +164,12 @@
                     return source;
                 },
                 set: function (value) {
-                    source && source.disconnect();
-                    self.analyser.disconnect();
+					if (source) {
+						self.clearPauseTimeout();
+						source.disconnect();
+					}
                     source = value;
                     source.connect(self.analyser);
-                    self.analyser.connect(self.destination);
                 }
             });
         },
@@ -150,6 +198,7 @@
                 function (buffer) {
                     self.type = 'buffer';
                     self.currentBuffer = buffer;
+					self.source = self.ac.createBufferSource();
                 },
                 /* failure */
                 function (e) {
@@ -165,30 +214,80 @@
             return this.paused;
         },
 
+		setPauseTimeout: function (delay) {
+			var endTime = this.ac.currentTime + delay;
+			var timeout = (function () {
+				if (this.ac.currentTime >= endTime) {
+					this.pause();
+					this.js.onaudioprocess = null;
+				}
+			}).bind(this);
+
+			this.js.onaudioprocess = timeout;
+		},
+
+		clearPauseTimeout: function () {
+			this.js.onaudioprocess = null;
+		},
+
         /**
-         * Plays the loaded audio.
+         * Plays the loaded audio region.
+		 * 
+		 * @param {Number} start Start offset in seconds,
+		 * relative to the beginning of the track.
+		 * 
+		 * @param {Number} end End offset in seconds,
+		 * relative to the beginning of the track. 
          */
-        play: function () {
+        playRegion: function (start, end) {
+			this.pause();
+
+			start = start || 0;
+
+            if ('buffer' === this.type) {
+                this.source = this.ac.createBufferSource();
+                this.source.buffer = this.currentBuffer;
+				var duration = end ? end - start : this.source.buffer.duration;
+				this.source.noteGrainOn(0, start, duration);
+            } else if ('element' === this.type) {
+				this.audioEl.currentTime = start;
+                this.audioEl.play();
+            }
+
+            this.paused = false;
+
+			if (end) {
+				this.setPauseTimeout(end - start);
+			}
+        },
+
+		/**
+		 * Unpauses the loaded audio.
+		 */
+		play: function () {
+			this.clearPauseTimeout();
+
             if (!this.isPaused()) {
                 return;
             }
 
             if ('buffer' === this.type) {
                 this.source = this.ac.createBufferSource();
-                this.source.connect(this.destination);
                 this.source.buffer = this.currentBuffer;
-                this.source.noteOn(0);
+				this.source.noteOn(0);
             } else if ('element' === this.type) {
                 this.audioEl.play();
             }
 
             this.paused = false;
-        },
+		},
 
         /**
          * Pauses the loaded audio.
          */
         pause: function () {
+			this.clearPauseTimeout();
+
             if (this.isPaused()) {
                 return;
             }

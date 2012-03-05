@@ -13,12 +13,16 @@
     waveVisualizer.init(
         waveCanvas,
         analyzer,
-        { color: 'rgba(100, 0, 250, 0.5)' }
+        {
+			color: 'rgba(100, 0, 250, 0.5)',
+			cursor: document.querySelector('#wave-cursor'),
+			continuous: true
+		}
     );
-    waveVisualizer.loop(
-        waveVisualizer.drawContinuous,
-        analyzer.waveform
-    );
+
+    waveVisualizer.loop(analyzer.waveform);
+
+	waveVisualizer.bindClick();
 
     var freqVisualizer = Object.create(globals.WaveSurfer.visualizer);
     freqVisualizer.init(
@@ -26,10 +30,7 @@
         analyzer,
         { color: 'rgba(0, 100, 150, 0.7)' }
     );
-    freqVisualizer.loop(
-        freqVisualizer.drawCurrent,
-        analyzer.frequency
-    );
+    freqVisualizer.loop(analyzer.frequency);
 
     /* Play/pause on spacebar. */
     document.addEventListener('keypress', function (e) {
