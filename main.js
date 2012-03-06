@@ -1,55 +1,43 @@
 (function (globals, exports) {
     'use strict';
 
-    var analyzer = Object.create(globals.WaveSurfer.analyzer),
-        waveCanvas = document.querySelector('#wave'),
-        freqCanvas = document.querySelector('#freq'),
-        audio = document.querySelector('audio');
+    var WaveSurfer = globals.WaveSurfer;
 
-    analyzer.init();
-    analyzer.loadElement(audio);
+    var webAudio = Object.create(WaveSurfer.WebAudio);
 
-    var waveVisualizer = Object.create(globals.WaveSurfer.visualizer);
-    waveVisualizer.init(
-        waveCanvas,
-        analyzer,
+    webAudio.init();
+
+    var waveDrawer = Object.create(WaveSurfer.Drawer);
+    waveDrawer.init(
+        document.querySelector('#wave'),
+        webAudio,
         {
-			color: 'rgba(100, 0, 250, 0.5)',
-			cursor: document.querySelector('#wave-cursor'),
-			continuous: true
-		}
+            color: 'rgba(100, 0, 250, 0.5)',
+            cursor: document.querySelector('#wave-cursor'),
+            continuous: true
+        }
     );
+    waveDrawer.loop(webAudio.waveform);
+    waveDrawer.bindClick();
 
-    waveVisualizer.loop(analyzer.waveform);
-
-	waveVisualizer.bindClick();
-
-    var freqVisualizer = Object.create(globals.WaveSurfer.visualizer);
-    freqVisualizer.init(
-        freqCanvas,
-        analyzer,
+    var freqDrawer = Object.create(WaveSurfer.Drawer);
+    freqDrawer.init(
+        document.querySelector('#freq'),
+        webAudio,
         { color: 'rgba(0, 100, 150, 0.7)' }
     );
-    freqVisualizer.loop(analyzer.frequency);
+    freqDrawer.loop(webAudio.frequency);
 
-    /* Play/pause on spacebar. */
-    document.addEventListener('keypress', function (e) {
-        if (32 === e.keyCode) { // spacebar
-            e.preventDefault();
-
-            if (analyzer.isPaused()) {
-                analyzer.play();
-            } else {
-                analyzer.pause();
-            }
-        }
-    }, false);
 
     /* Load file via drag'n'drop. */
     var reader = new globals.FileReader();
     reader.addEventListener('load', function (e) {
-        analyzer.loadData(e.target.result);
+        webAudio.loadData(e.target.result, function () {
+            webAudio.play();
+            waveDrawer.setDuration(webAudio.currentBuffer.duration);
+        });
     }, false);
+
 
     document.addEventListener('drop', function (e) {
         e.preventDefault();
@@ -57,6 +45,15 @@
         file && reader.readAsArrayBuffer(file);
     }, false);
 
+
+    /* Play/pause on spacebar. */
+    document.addEventListener('keypress', function (e) {
+        if (32 === e.keyCode) { // spacebar
+            e.preventDefault();
+            webAudio.paused ? webAudio.play() : webAudio.pause();
+        }
+    }, false);
+
     /* Exports */
-    exports.analyzer = analyzer;
+    exports.webAudio = webAudio;
 }(this, this));
