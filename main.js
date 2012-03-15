@@ -17,24 +17,23 @@
             continuous: true
         }
     );
-    waveDrawer.loop(webAudio.waveform);
+	waveDrawer.loop();
     waveDrawer.bindClick();
 
-    var freqDrawer = Object.create(WaveSurfer.Drawer);
-    freqDrawer.init(
-        document.querySelector('#freq'),
+    var rtaDrawer = Object.create(WaveSurfer.Drawer);
+    rtaDrawer.init(
+        document.querySelector('#rta'),
         webAudio,
         { color: 'rgba(0, 100, 150, 0.7)' }
     );
-    freqDrawer.loop(webAudio.frequency);
+    rtaDrawer.loop(webAudio.waveform);
 
 
     /* Load file via drag'n'drop. */
     var reader = new globals.FileReader();
     reader.addEventListener('load', function (e) {
         webAudio.loadData(e.target.result, function () {
-            webAudio.play();
-            waveDrawer.setDuration(webAudio.currentBuffer.duration);
+            waveDrawer.drawBuffer(webAudio.currentBuffer);
         });
     }, false);
 

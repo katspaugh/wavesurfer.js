@@ -4,15 +4,16 @@
         <title>Wave Surfer</title>
 
         <style>
-            #wave-cursor {
+            .cursor {
                 position: absolute;
                 left: 0;
                 top: 0;
                 height: 100%;
-                width: 1px;
-                background: #000;
+                width: 2px;
+			    margin-left: -1px;
+                background: blue;
             }
-            #timeline {
+            .timeline {
                 overflow: scroll;
                 width: 1024px;
                 position: relative;
@@ -21,11 +22,11 @@
     </head>
 
     <body>
-        <canvas id="freq" width="1024" height="256"></canvas>
+        <canvas id="rta" width="1024" height="256"></canvas>
 
-        <div id="timeline">
-            <div id="wave-cursor"></div>
-            <canvas id="wave" height="256"></canvas>
+        <div class="timeline">
+            <div class="cursor" id="wave-cursor"></div>
+            <canvas id="wave" width="1024" height="256"></canvas>
         </div>
 
         <script src="src/wavesurfer.js"></script>

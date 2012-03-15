@@ -9,14 +9,6 @@ WaveSurfer.Drawer = {
         this.initCanvas(params);
 
         if (params.continuous) {
-            this.scroller = this.canvas.offsetParent;
-            this.scrollerWidth = this.scroller.clientWidth;
-            this.currentScrollLeft = 0;
-
-            this.marginRight = params.marginRight || 100;
-            this.marginLeft = params.marginLeft || 100;
-
-            this.continuousLineWidth = params.continuousLineWidth || 1;
             this.cursor = params.cursor;
             this.drawFn = this.drawContinuous;
         } else {
@@ -37,42 +29,75 @@ WaveSurfer.Drawer = {
         }
     },
 
-    setDuration: function (duration) {
-        var color = this.cc.fillStyle;
-        this.width = ~~(
-            ((duration * 1000) / this.FRAME_TIME) *
-                this.continuousLineWidth
-        );
-        this.canvas.width = this.width;
-        this.cc.fillStyle = color;
-        this.cc.strokeStyle = color;
+    drawBuffer: function (buffer) {
+		this.frames = (buffer.duration * 1000) / this.FRAME_TIME;
+		this.cursorStep = this.width / this.frames;
+
+		this.cc.clearRect(0, 0, this.width, this.height);
+
+		var len = this.width,
+			h = ~~(this.height / 2),
+			k = ~~(buffer.length / this.width),
+			lW = 1,
+			i, value, chan;
+
+		/* Left channel. */
+		chan = buffer.getChannelData(0);
+
+		if (chan) {
+			for (i = 0; i < len; i++) {
+				value = ~~((h / 3) * (
+					Math.abs(chan[i * k]) +
+					Math.abs(chan[i * k + 1]) +
+					Math.abs(chan[i * k + 2])
+				));
+				this.cc.fillRect(
+					i, h - value, lW, value
+				);
+			}
+		}
+
+		/* Right channel. */
+		chan = buffer.getChannelData(1);
+
+		if (chan) {
+			for (i = 0; i < len; i++) {
+				value = ~~((h / 3) * (
+					Math.abs(chan[i * k]) +
+						Math.abs(chan[i * k + 1]) +
+						Math.abs(chan[i * k + 2])
+				));
+				this.cc.fillRect(
+					i, h, lW, value
+				);
+			}
+		}
     },
 
     bindClick: function () {
         var self = this;
         this.canvas.addEventListener('click', function (e) {
-            if (self.webAudio.paused) {
+            if (!self.webAudio.currentBuffer) {
                 return;
             }
             var canvasPosition = this.getBoundingClientRect();
             var relX = e.pageX - canvasPosition.left;
-            var frames = relX / self.continuousLineWidth;
-            var timePlayed = frames * self.FRAME_TIME;
 
-            self.pos = relX;
-            self.setCursor(relX);
+			var secondsPlayed = self.setCursor(relX);
 
-            self.webAudio.play(timePlayed / 1000);
+            self.webAudio.play(secondsPlayed);
         }, false);
     },
 
     loop: function (dataFn) {
         var self = this;
 
-        function loop() {
+        function loop(ts) {
             if (!self.webAudio.paused) {
-                var data = dataFn.call(self.webAudio);
-                self.drawFn(data);
+				if (dataFn) {
+					var data = dataFn.call(self.webAudio);
+				}
+                self.drawFn(data, ts);
             }
             requestAnimationFrame(loop, self.canvas)
         };
@@ -81,7 +106,8 @@ WaveSurfer.Drawer = {
     },
 
     drawCurrent: function (data) {
-        var w = this.width, h = this.height,
+        var w = this.width,
+			h = this.height,
             len = data.length,
             i, value;
 
@@ -100,76 +126,26 @@ WaveSurfer.Drawer = {
     },
 
     setCursor: function (pos) {
+		this.pos = pos;
+
+		var steps = this.pos / this.cursorStep;
+		var msPlayed = steps * this.FRAME_TIME;
+		var d = new Date(msPlayed);
+
+		var minutes = d.getMinutes();
+		var seconds = d.getSeconds();
+
         if (this.cursor) {
             this.cursor.style.left = pos + 'px';
+			this.cursor.title = minutes + ':' + seconds;
         }
+
+		return msPlayed / 1000; // seconds played
     },
 
-    setScroll: function (scrollLeft) {
-        if (scrollLeft < 0) {
-            scrollLeft = 0;
-        }
-
-        if (this.scrolling) {
-            this.currentScrollLeft = scrollLeft;
-        }
-
-        if (scrollLeft === this.currentScrollLeft) {
-            return;
-        }
-
-        var MAX_DIFF = 10;
-
-        var self = this;
-
-        if (Math.abs(scrollLeft - this.currentScrollLeft) > MAX_DIFF) {
-            this.scrolling = true;
-            WaveSurfer.animate(this.scroller, {
-                styles: {
-                    scrollLeft: {
-                        start: this.currentScrollLeft,
-                        end: scrollLeft
-                    }
-                },
-                duration: 600,
-                easing: 'easeInQuad',
-
-                callback: function () {
-                    self.scrolling = false;
-                }
-            });
-         } else {
-             this.scroller.scrollLeft = scrollLeft;
-         }
-
-         this.currentScrollLeft = scrollLeft;
-    },
-
-    drawContinuous: function (data) {
-        this.setCursor(this.pos);
-
-        if (this.pos < this.maxPos) {
-            this.setScroll(this.pos - this.marginLeft);
-            this.pos += 1;
-            return;
-        }
-
-        this.setScroll(
-            this.pos - (this.scrollerWidth - this.marginRight)
-        );
-
-        this.lineWidth = this.continuousLineWidth;
-
-        var h = this.height,
-            halfH = ~~(h / 2);
-
-        var value = ~~((h - (data[0] / 256 * h)) / 2);
-        this.cc.fillRect(
-            this.pos, halfH - value,
-            this.lineWidth, value * 2
-        );
-
-        this.pos += 1;
-        this.maxPos = this.pos;
+    drawContinuous: function (data, ts) {
+		if (this.pos < this.width) {
+			this.setCursor(this.pos + this.cursorStep);
+		}
     }
 };
