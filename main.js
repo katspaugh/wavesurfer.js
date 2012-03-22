@@ -26,15 +26,30 @@
         webAudio,
         { color: 'rgba(0, 100, 150, 0.7)' }
     );
-    rtaDrawer.loop(webAudio.waveform);
+    rtaDrawer.loop(webAudio.frequency);
+
+
+	/* Load handler. */
+	var loadAudio = function (data) {
+        webAudio.loadData(data, function () {
+            waveDrawer.drawBuffer(webAudio.currentBuffer);
+        });
+	};
+
+
+	/* Load file via Ajax. */
+	var audioUrl = 'media/sonnet_23.mp3';
+	var xhr = new XMLHttpRequest();
+	xhr.responseType = 'arraybuffer';
+	xhr.onload = function () { loadAudio(this.response); };
+	xhr.open('GET', audioUrl, true);
+	xhr.send();
 
 
     /* Load file via drag'n'drop. */
     var reader = new globals.FileReader();
     reader.addEventListener('load', function (e) {
-        webAudio.loadData(e.target.result, function () {
-            waveDrawer.drawBuffer(webAudio.currentBuffer);
-        });
+		loadAudio(e.target.result);
     }, false);
 
 

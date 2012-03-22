@@ -41,16 +41,16 @@ WaveSurfer.Drawer = {
 			lW = 1,
 			i, value, chan;
 
+		var slice = Array.prototype.slice;
+
 		/* Left channel. */
 		chan = buffer.getChannelData(0);
 
 		if (chan) {
 			for (i = 0; i < len; i++) {
-				value = ~~((h / 3) * (
-					Math.abs(chan[i * k]) +
-					Math.abs(chan[i * k + 1]) +
-					Math.abs(chan[i * k + 2])
-				));
+				value = h * Math.max.apply(
+					Math, slice.call(chan, i * k, (i + 1) * k)
+				);
 				this.cc.fillRect(
 					i, h - value, lW, value
 				);
@@ -62,11 +62,9 @@ WaveSurfer.Drawer = {
 
 		if (chan) {
 			for (i = 0; i < len; i++) {
-				value = ~~((h / 3) * (
-					Math.abs(chan[i * k]) +
-						Math.abs(chan[i * k + 1]) +
-						Math.abs(chan[i * k + 2])
-				));
+				value = h * Math.max.apply(
+					Math, slice.call(chan, i * k, (i + 1) * k)
+				);
 				this.cc.fillRect(
 					i, h, lW, value
 				);

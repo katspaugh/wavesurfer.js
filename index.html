@@ -22,17 +22,31 @@
     </head>
 
     <body>
-        <canvas id="rta" width="1024" height="256"></canvas>
+		<h1>Wave Surfer demo</h1>
 
         <div class="timeline">
             <div class="cursor" id="wave-cursor"></div>
             <canvas id="wave" width="1024" height="256"></canvas>
         </div>
 
+		<p>
+			The preloaded sound sample from
+			<a href="http://librivox.org/samples/">http://librivox.org/samples/</a>.
+		</p>
+
+		<p>
+			Drag-n-drop your own sound files to surf them.
+		</p>
+
+		<p>
+			Press <kbd>spacebar</kbd> to play/pause.
+		</p>
+
+        <canvas id="rta" width="1024" height="256"></canvas>
+
         <script src="src/wavesurfer.js"></script>
         <script src="src/webaudio.js"></script>
         <script src="src/drawer.js"></script>
-        <script src="src/animate.js"></script>
 
         <script src="main.js"></script>
     </body>
