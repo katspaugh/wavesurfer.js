@@ -1,4 +1,4 @@
-WaveSurfer
+wavesurfer.js
 ==========
 
 Interactive (navigable) audio visualization using WebAudio API and Canvas.
