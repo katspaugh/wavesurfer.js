@@ -17,7 +17,7 @@
             continuous: true
         }
     );
-	waveDrawer.loop();
+    waveDrawer.loop();
     waveDrawer.bindClick();
 
     var rtaDrawer = Object.create(WaveSurfer.Drawer);
@@ -29,27 +29,27 @@
     rtaDrawer.loop(webAudio.frequency);
 
 
-	/* Load handler. */
-	var loadAudio = function (data) {
+    /* Load handler. */
+    var loadAudio = function (data) {
         webAudio.loadData(data, function () {
             waveDrawer.drawBuffer(webAudio.currentBuffer);
         });
-	};
+    };
 
 
-	/* Load file via Ajax. */
-	var audioUrl = 'media/sonnet_23.mp3';
-	var xhr = new XMLHttpRequest();
-	xhr.responseType = 'arraybuffer';
-	xhr.onload = function () { loadAudio(this.response); };
-	xhr.open('GET', audioUrl, true);
-	xhr.send();
+    /* Load file via Ajax. */
+    var audioUrl = 'media/sonnet_23.mp3';
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = 'arraybuffer';
+    xhr.onload = function () { loadAudio(this.response); };
+    xhr.open('GET', audioUrl, true);
+    xhr.send();
 
 
     /* Load file via drag'n'drop. */
     var reader = new globals.FileReader();
     reader.addEventListener('load', function (e) {
-		loadAudio(e.target.result);
+        loadAudio(e.target.result);
     }, false);
 
 

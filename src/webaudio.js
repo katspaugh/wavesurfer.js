@@ -1,4 +1,3 @@
-
 WaveSurfer.WebAudio = {
     ac: new (window.AudioContext || window.webkitAudioContext),
 
@@ -16,7 +15,7 @@ WaveSurfer.WebAudio = {
         this.analyser = this.ac.createAnalyser();
         this.analyser.smoothingTimeConstant =
             params.smoothingTimeConstant || 0.3;
-		this.analyser.fftSize = 1024;
+        this.analyser.fftSize = 1024;
         this.analyser.connect(this.destination);
 
         this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);

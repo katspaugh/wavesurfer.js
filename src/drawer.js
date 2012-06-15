@@ -30,46 +30,46 @@ WaveSurfer.Drawer = {
     },
 
     drawBuffer: function (buffer) {
-		this.frames = (buffer.duration * 1000) / this.FRAME_TIME;
-		this.cursorStep = this.width / this.frames;
+        this.frames = (buffer.duration * 1000) / this.FRAME_TIME;
+        this.cursorStep = this.width / this.frames;
 
-		this.cc.clearRect(0, 0, this.width, this.height);
+        this.cc.clearRect(0, 0, this.width, this.height);
 
-		var len = this.width,
-			h = ~~(this.height / 2),
-			k = ~~(buffer.length / this.width),
-			lW = 1,
-			i, value, chan;
+        var len = this.width,
+            h = ~~(this.height / 2),
+            k = ~~(buffer.length / this.width),
+            lW = 1,
+            i, value, chan;
 
-		var slice = Array.prototype.slice;
+        var slice = Array.prototype.slice;
 
-		/* Left channel. */
-		chan = buffer.getChannelData(0);
+        /* Left channel. */
+        chan = buffer.getChannelData(0);
 
-		if (chan) {
-			for (i = 0; i < len; i++) {
-				value = h * Math.max.apply(
-					Math, slice.call(chan, i * k, (i + 1) * k)
-				);
-				this.cc.fillRect(
-					i, h - value, lW, value
-				);
-			}
-		}
+        if (chan) {
+            for (i = 0; i < len; i++) {
+                value = h * Math.max.apply(
+                    Math, slice.call(chan, i * k, (i + 1) * k)
+                );
+                this.cc.fillRect(
+                    i, h - value, lW, value
+                );
+            }
+        }
 
-		/* Right channel. */
-		chan = buffer.getChannelData(1);
+        /* Right channel. */
+        chan = buffer.getChannelData(1);
 
-		if (chan) {
-			for (i = 0; i < len; i++) {
-				value = h * Math.max.apply(
-					Math, slice.call(chan, i * k, (i + 1) * k)
-				);
-				this.cc.fillRect(
-					i, h, lW, value
-				);
-			}
-		}
+        if (chan) {
+            for (i = 0; i < len; i++) {
+                value = h * Math.max.apply(
+                    Math, slice.call(chan, i * k, (i + 1) * k)
+                );
+                this.cc.fillRect(
+                    i, h, lW, value
+                );
+            }
+        }
     },
 
     bindClick: function () {
@@ -81,7 +81,7 @@ WaveSurfer.Drawer = {
             var canvasPosition = this.getBoundingClientRect();
             var relX = e.pageX - canvasPosition.left;
 
-			var secondsPlayed = self.setCursor(relX);
+            var secondsPlayed = self.setCursor(relX);
 
             self.webAudio.play(secondsPlayed);
         }, false);
@@ -92,9 +92,9 @@ WaveSurfer.Drawer = {
 
         function loop(ts) {
             if (!self.webAudio.paused) {
-				if (dataFn) {
-					var data = dataFn.call(self.webAudio);
-				}
+                if (dataFn) {
+                    var data = dataFn.call(self.webAudio);
+                }
                 self.drawFn(data, ts);
             }
             requestAnimationFrame(loop, self.canvas)
@@ -105,7 +105,7 @@ WaveSurfer.Drawer = {
 
     drawCurrent: function (data) {
         var w = this.width,
-			h = this.height,
+            h = this.height,
             len = data.length,
             i, value;
 
@@ -124,26 +124,26 @@ WaveSurfer.Drawer = {
     },
 
     setCursor: function (pos) {
-		this.pos = pos;
+        this.pos = pos;
 
-		var steps = this.pos / this.cursorStep;
-		var msPlayed = steps * this.FRAME_TIME;
-		var d = new Date(msPlayed);
+        var steps = this.pos / this.cursorStep;
+        var msPlayed = steps * this.FRAME_TIME;
+        var d = new Date(msPlayed);
 
-		var minutes = d.getMinutes();
-		var seconds = d.getSeconds();
+        var minutes = d.getMinutes();
+        var seconds = d.getSeconds();
 
         if (this.cursor) {
             this.cursor.style.left = pos + 'px';
-			this.cursor.title = minutes + ':' + seconds;
+            this.cursor.title = minutes + ':' + seconds;
         }
 
-		return msPlayed / 1000; // seconds played
+        return msPlayed / 1000; // seconds played
     },
 
     drawContinuous: function (data, ts) {
-		if (this.pos < this.width) {
-			this.setCursor(this.pos + this.cursorStep);
-		}
+        if (this.pos < this.width) {
+            this.setCursor(this.pos + this.cursorStep);
+        }
     }
 };
