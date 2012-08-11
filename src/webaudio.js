@@ -1,4 +1,11 @@
+'use strict';
+
 WaveSurfer.WebAudio = {
+    Defaults: {
+        fftSize: 1024,
+        smoothingTimeConstant: 0.3
+    },
+
     ac: new (window.AudioContext || window.webkitAudioContext),
 
     /**
@@ -10,41 +17,32 @@ WaveSurfer.WebAudio = {
     init: function (params) {
         params = params || {};
 
+        this.fftSize = params.fftSize || this.Defaults.fftSize;
         this.destination = params.destination || this.ac.destination;
 
         this.analyser = this.ac.createAnalyser();
-        this.analyser.smoothingTimeConstant =
-            params.smoothingTimeConstant || 0.3;
-        this.analyser.fftSize = 1024;
+        this.analyser.smoothingTimeConstant = params.smoothingTimeConstant ||
+            this.Defaults.smoothingTimeConstant;
+        this.analyser.fftSize = this.fftSize;
         this.analyser.connect(this.destination);
 
-        this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+        this.proc = this.ac.createJavaScriptNode(this.fftSize / 2, 1, 1);
+        this.proc.connect(this.destination);
 
-        this.defineSource();
+        this.dataArray = new Uint8Array(this.analyser.fftSize);
 
         this.paused = true;
     },
 
-    /**
-     * @private
-     */
-    defineSource: function () {
-        var self = this, source;
-
-        Object.defineProperty(this, 'source', {
-            get: function () {
-                return source;
-            },
-            set: function (value) {
-                source && source.disconnect();
-                source = value;
-                source.connect(self.analyser);
-            }
-        });
+    setSource: function (source) {
+        this.source && this.source.disconnect();
+        this.source = source;
+        this.source.connect(this.analyser);
+        this.source.connect(this.proc);
     },
 
     /**
-     * Loads data as an audiobuffer.
+     * Loads audiobuffer.
      *
      * @param {AudioBuffer} audioData Audio data.
      */
@@ -52,19 +50,18 @@ WaveSurfer.WebAudio = {
         var self = this;
         this.ac.decodeAudioData(
             audioData,
-
-            /* success */
             function (buffer) {
                 self.currentBuffer = buffer;
                 self.lastPause = 0;
                 self.lastPlay = 0;
-                cb();
+                cb(buffer);
             },
-            /* failure */
-            function (e) {
-                throw e;
-            }
+            Error
         );
+    },
+
+    getDuration: function () {
+        return this.currentBuffer && this.currentBuffer.duration;
     },
 
     /**
@@ -83,7 +80,7 @@ WaveSurfer.WebAudio = {
 
         this.pause();
 
-        this.source = this.ac.createBufferSource();
+        this.setSource(this.ac.createBufferSource());
         this.source.buffer = this.currentBuffer;
 
         start = start || this.lastPause;

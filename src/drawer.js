@@ -1,149 +1,77 @@
+'use strict';
+
 WaveSurfer.Drawer = {
-    FRAME_TIME: 1000 / 60,
+    init: function (params) {
+        this.canvas = params.canvas;
+        this.cursor = params.cursor;
 
-    init: function (canvas, webAudio, params) {
-        params = params || {};
-
-        this.canvas = canvas;
-        this.webAudio = webAudio;
-        this.initCanvas(params);
-
-        if (params.continuous) {
-            this.cursor = params.cursor;
-            this.drawFn = this.drawContinuous;
-        } else {
-            this.drawFn = this.drawCurrent;
-        }
-
-        this.pos = this.maxPos = 0;
-    },
-
-    initCanvas: function (params) {
         this.cc = this.canvas.getContext('2d');
         this.width = this.canvas.width;
         this.height = this.canvas.height;
 
         if (params.color) {
             this.cc.fillStyle = params.color;
-            this.cc.strokeStyle = params.color;
         }
     },
 
-    drawBuffer: function (buffer) {
-        this.frames = (buffer.duration * 1000) / this.FRAME_TIME;
-        this.cursorStep = this.width / this.frames;
-
-        this.cc.clearRect(0, 0, this.width, this.height);
-
-        var len = this.width,
-            h = ~~(this.height / 2),
-            k = ~~(buffer.length / this.width),
-            lW = 1,
-            i, value, chan;
-
-        var slice = Array.prototype.slice;
-
-        /* Left channel. */
-        chan = buffer.getChannelData(0);
-
-        if (chan) {
-            for (i = 0; i < len; i++) {
-                value = h * Math.max.apply(
-                    Math, slice.call(chan, i * k, (i + 1) * k)
-                );
-                this.cc.fillRect(
-                    i, h - value, lW, value
-                );
-            }
-        }
-
-        /* Right channel. */
-        chan = buffer.getChannelData(1);
-
-        if (chan) {
-            for (i = 0; i < len; i++) {
-                value = h * Math.max.apply(
-                    Math, slice.call(chan, i * k, (i + 1) * k)
-                );
-                this.cc.fillRect(
-                    i, h, lW, value
-                );
-            }
-        }
-    },
-
-    bindClick: function () {
-        var self = this;
+    bindClick: function (callback) {
+        var my = this;
         this.canvas.addEventListener('click', function (e) {
-            if (!self.webAudio.currentBuffer) {
-                return;
-            }
-            var canvasPosition = this.getBoundingClientRect();
+            var canvasPosition = my.canvas.getBoundingClientRect();
             var relX = e.pageX - canvasPosition.left;
+            var percents = relX / my.width;
 
-            var secondsPlayed = self.setCursor(relX);
-
-            self.webAudio.play(secondsPlayed);
+            callback(percents);
         }, false);
     },
 
-    loop: function (dataFn) {
-        var self = this;
+    drawBuffer: function (buffer) {
+        // Frames per pixel
+        var k = buffer.getChannelData(0).length / this.width;
+        var slice = Array.prototype.slice;
 
-        function loop(ts) {
-            if (!self.webAudio.paused) {
-                if (dataFn) {
-                    var data = dataFn.call(self.webAudio);
-                }
-                self.drawFn(data, ts);
+        for (var i = 0; i < this.width; i++) {
+            var sum = 0;
+            for (var c = 0; c < buffer.numberOfChannels; c++) {
+                var chan = buffer.getChannelData(c);
+                var max = Math.max.apply(
+                    Math, slice.call(chan, i * k, (i + 1) * k)
+                );
+                sum += max;
             }
-            requestAnimationFrame(loop, self.canvas)
-        };
-
-        loop();
-    },
-
-    drawCurrent: function (data) {
-        var w = this.width,
-            h = this.height,
-            len = data.length,
-            i, value;
-
-        this.lineWidth = ~~(w / len);
-
-        this.cc.clearRect(0, 0, w, h);
-
-        this.cc.beginPath();
-        for (i = 0; i < len; i += 1) {
-            value = ~~(h - (data[i] / 256 * h));
-            this.cc.lineTo(
-                this.lineWidth * i, h - value
-            );
+            this.drawFrame(sum, i);
         }
-        this.cc.stroke();
+
+        this.framesPerPx = k;
     },
 
-    setCursor: function (pos) {
-        this.pos = pos;
+    drawFrame: function (value, index) {
+        var w = 1;
+        var h = Math.round(value * this.height);
 
-        var steps = this.pos / this.cursorStep;
-        var msPlayed = steps * this.FRAME_TIME;
-        var d = new Date(msPlayed);
+        var x = index;
+        var y = Math.round((this.height - h) / 2);
 
-        var minutes = d.getMinutes();
-        var seconds = d.getSeconds();
+        this.cc.fillRect(x, y, w, h);
+    },
 
+    drawCursor: function () {
         if (this.cursor) {
-            this.cursor.style.left = pos + 'px';
-            this.cursor.title = minutes + ':' + seconds;
+            this.cursor.style.left = this.cursorPos + 'px';
         }
-
-        return msPlayed / 1000; // seconds played
     },
 
-    drawContinuous: function (data, ts) {
-        if (this.pos < this.width) {
-            this.setCursor(this.pos + this.cursorStep);
+    setCursorPercent: function (percents) {
+        var pos = Math.round(this.width * percents);
+        if (this.cursorPos !== pos) {
+            this.updateCursor(pos);
         }
+    },
+
+    updateCursor: function (pos) {
+        this.cursorPos = pos;
+        this.framePos = pos * this.framesPerPx;
+
+        this.drawCursor();
     }
 };
