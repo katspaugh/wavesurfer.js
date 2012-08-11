@@ -18,11 +18,17 @@
                 position: relative;
                 overflow: scroll;
             }
+            #drop {
+                padding: 40px;
+                border: 1px dotted #333;
+                -webkit-user-drop: element;
+                display: inline-block;
+            }
         </style>
     </head>
 
     <body>
-        <h1>wavesurfer.js demo</h1>
+        <h1>wavesurfer.js</h1>
 
         <div class="timeline">
             <div class="cursor" id="wave-cursor"></div>
@@ -32,6 +38,22 @@
         <p>
             The preloaded sound sample is from
             <a href="http://librivox.org/samples/">http://librivox.org/samples/</a>.
+        </p>
+
+        <p>
+            To surf your own audio files, <strong>drag'n'drop</strong>
+            them to the page.
+        </p>
+
+        <p>
+            Press <kbd>Space</kbd> to play/pause the audio.
+        </p>
+
+        <p>
+            <strong>NB:</strong>
+            <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html">WebAudio</a>
+            works only in recent versions of WebKit-based browsers
+            (Chrome and Safari).
         </p>
 
         <script src="src/wavesurfer.js"></script>
