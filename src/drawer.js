@@ -5,13 +5,22 @@ WaveSurfer.Drawer = {
         this.canvas = params.canvas;
         this.cursor = params.cursor;
 
-        this.width = this.canvas.width;
-        this.height = this.canvas.height;
+        if (params.predrawn) {
+            this.width = this.canvas.clientWidth;
+            this.height = this.canvas.clientHeight;
+        } else {
+            this.width = this.canvas.width;
+            this.height = this.canvas.height;
 
-        this.cc = this.canvas.getContext('2d');
+            this.cc = this.canvas.getContext('2d');
 
-        if (params.color) {
-            this.cc.fillStyle = params.color;
+            if (params.color) {
+                this.cc.fillStyle = params.color;
+            }
+        }
+
+        if (!this.width || !this.height) {
+            console.error('Canvas size is zero.');
         }
     },
 
@@ -52,7 +61,8 @@ WaveSurfer.Drawer = {
     },
 
     setCursorPercent: function (percents) {
-        var pos = Math.round(this.width * percents);
+        var pos = ~~(this.width * percents);
+
         if (this.cursorPos !== pos) {
             this.updateCursor(pos);
         }
@@ -60,8 +70,6 @@ WaveSurfer.Drawer = {
 
     updateCursor: function (pos) {
         this.cursorPos = pos;
-        this.framePos = pos * this.framesPerPx;
-
         this.drawCursor();
     }
 };

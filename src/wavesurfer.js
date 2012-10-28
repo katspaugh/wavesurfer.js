@@ -2,72 +2,72 @@
 
 var WaveSurfer = {
     init: function (params) {
-        this.webAudio = Object.create(WaveSurfer.WebAudio);
-        this.webAudio.init(params);
+        var my = this;
+
+        var backend = WaveSurfer.Audio;
 
         if (!params.predrawn) {
-            this.drawer = Object.create(WaveSurfer.Drawer);
-            this.drawer.init(params);
+            backend = WaveSurfer.WebAudio;
         }
 
-        var self = this;
-        this.webAudio.proc.onaudioprocess = function () {
-            self.onAudioProcess();
-        };
+        this.backend = Object.create(backend);
+        this.backend.init(params);
+
+        this.drawer = Object.create(WaveSurfer.Drawer);
+        this.drawer.init(params);
+
+        this.backend.bindUpdate(function () {
+            my.onAudioProcess();
+        });
 
         this.bindClick(params.canvas, function (percents) {
-            self.playAt(percents);
+            my.playAt(percents);
         });
     },
 
     onAudioProcess: function () {
-        if (!this.webAudio.paused) {
-            this.updatePercents();
-            this.drawer.setCursorPercent(this.currentPercents);
+        if (!this.backend.isPaused()) {
+            this.drawer.setCursorPercent(
+                this.backend.getPlayedPercents()
+            );
         }
     },
 
-    updatePercents: function () {
-        var d = this.webAudio.ac.currentTime - this.webAudio.lastPlay;
-        var percents = d / this.webAudio.getDuration();
-        this.currentPercents = this.lastPlayPercents + percents;
-    },
-
     playAt: function (percents) {
-        this.webAudio.play(this.webAudio.getDuration() * percents);
-
-        this.lastPlayPercents = percents;
+        this.backend.play(this.backend.getDuration() * percents);
     },
 
     pause: function () {
-        this.webAudio.pause();
-
-        this.updatePercents();
+        this.backend.pause();
     },
 
     playPause: function () {
-        if (this.webAudio.paused) {
-            this.playAt(this.currentPercents || 0);
+        if (this.backend.paused) {
+            this.playAt(this.backend.getPlayedPercents() || 0);
         } else {
             this.pause();
         }
     },
 
     draw: function () {
-        this.drawer.drawBuffer(this.webAudio.currentBuffer);
+        if (this.backend.currentBuffer) {
+            this.drawer.drawBuffer(this.backend.currentBuffer);
+        } else {
+            console.error('This audio backend is not supporting drawing.');
+        }
     },
 
     /**
      * Loads an audio file via XHR.
      */
     load: function (src) {
-        var self = this;
+        var my = this;
         var xhr = new XMLHttpRequest();
         xhr.responseType = 'arraybuffer';
         xhr.onload = function () {
-            self.webAudio.loadData(
+            my.backend.loadData(
                 xhr.response,
-                self.draw.bind(self)
+                my.draw.bind(my)
             );
         };
         xhr.open('GET', src, true);
@@ -78,12 +78,12 @@ var WaveSurfer = {
      * Loads an audio file via drag'n'drop.
      */
     bindDragNDrop: function (dropTarget) {
-        var self = this;
+        var my = this;
         var reader = new FileReader();
         reader.addEventListener('load', function (e) {
-            self.webAudio.loadData(
+            my.backend.loadData(
                 e.target.result,
-                self.draw.bind(self)
+                my.draw.bind(my)
             );
         }, false);
 
@@ -94,16 +94,15 @@ var WaveSurfer = {
         }, false);
     },
 
-    // click to seek
+    /**
+     * Click to seek.
+     */
     bindClick: function (element, callback) {
         var my = this;
         element.addEventListener('click', function (e) {
             var relX = e.offsetX;
             if (null == relX) { relX = e.layerX; }
-
-            var percents = relX / this.clientWidth;
-
-            callback(percents);
+            callback(relX / this.clientWidth);
         }, false);
     }
 };

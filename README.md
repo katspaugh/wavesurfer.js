@@ -1,7 +1,11 @@
 wavesurfer.js
 =============
 
-Interactive navigable audio visualization using WebAudio API and Canvas.
+Interactive navigable audio visualization using
+[WebAudio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
+(or [`<audio>` element](http://www.w3.org/wiki/HTML/Elements/audio)
+for pre-generated graphics) and
+[Canvas](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html).
 
 Based on [Eiji Kitamura's work](https://github.com/agektmr/AudioStreamer).
 
@@ -41,8 +45,13 @@ There is also a method to visualize drag'n'dropped audio files:
 
     wavesurfer.bindDragNDrop(targetEl);
 
+More examples
+=============
+
+See [examples/ex.fm](http://katspaugh.github.com/wavesurfer.js/examples/ex.fm/).
+
 Todo
 ====
 
  * Add API for events like `onload` and `onaudioprocess`.
- * Visualize streaming audio as it plays and scale the picture constantly.
+ * Understand how @hurliman [does it](https://github.com/jhurliman/node-pcm/blob/master/examples/waveform.js)

@@ -34,6 +34,10 @@ WaveSurfer.WebAudio = {
         this.paused = true;
     },
 
+    bindUpdate: function (callback) {
+        this.proc.onaudioprocess = callback;
+    },
+
     setSource: function (source) {
         this.source && this.source.disconnect();
         this.source = source;
@@ -52,12 +56,15 @@ WaveSurfer.WebAudio = {
             audioData,
             function (buffer) {
                 self.currentBuffer = buffer;
-                self.lastPause = 0;
-                self.lastPlay = 0;
+                self.lastStart = 0;
                 cb(buffer);
             },
             Error
         );
+    },
+
+    isPaused: function () {
+        return this.paused;
     },
 
     getDuration: function () {
@@ -83,11 +90,12 @@ WaveSurfer.WebAudio = {
         this.setSource(this.ac.createBufferSource());
         this.source.buffer = this.currentBuffer;
 
-        start = start || this.lastPause;
-        end = end || this.source.buffer.duration;
-        delay = delay || 0;
+        if (null == start) { start = this.getCurrentMs(); }
+        if (null == end  ) { end = this.source.buffer.duration; }
+        if (null == delay) { delay = 0; }
 
-        this.lastPlay = this.ac.currentTime;
+        this.lastStart = start;
+        this.startTime = this.ac.currentTime;
 
         this.source.noteGrainOn(delay, start, end - start);
 
@@ -102,11 +110,23 @@ WaveSurfer.WebAudio = {
             return;
         }
 
-        this.lastPause += (this.ac.currentTime - this.lastPlay);
+        this.lastPause = this.getCurrentMs();
 
         this.source.noteOff(delay || 0);
 
         this.paused = true;
+    },
+
+    getPlayedPercents: function () {
+        return this.getCurrentMs() / this.getDuration();
+    },
+
+    getCurrentMs: function () {
+        if (this.isPaused()) {
+            return this.lastPause;
+        } else {
+            return this.lastStart + (this.ac.currentTime - this.startTime);
+        }
     },
 
     /**
