@@ -5,15 +5,17 @@ var WaveSurfer = {
         this.webAudio = Object.create(WaveSurfer.WebAudio);
         this.webAudio.init(params);
 
-        this.drawer = Object.create(WaveSurfer.Drawer);
-        this.drawer.init(params);
+        if (!params.predrawn) {
+            this.drawer = Object.create(WaveSurfer.Drawer);
+            this.drawer.init(params);
+        }
 
         var self = this;
         this.webAudio.proc.onaudioprocess = function () {
             self.onAudioProcess();
         };
 
-        this.drawer.bindClick(function (percents) {
+        this.bindClick(params.canvas, function (percents) {
             self.playAt(percents);
         });
     },
@@ -89,6 +91,19 @@ var WaveSurfer = {
             e.preventDefault();
             var file = e.dataTransfer.files[0];
             file && reader.readAsArrayBuffer(file);
+        }, false);
+    },
+
+    // click to seek
+    bindClick: function (element, callback) {
+        var my = this;
+        element.addEventListener('click', function (e) {
+            var relX = e.offsetX;
+            if (null == relX) { relX = e.layerX; }
+
+            var percents = relX / this.clientWidth;
+
+            callback(percents);
         }, false);
     }
 };

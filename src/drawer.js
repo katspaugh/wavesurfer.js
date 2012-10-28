@@ -5,24 +5,14 @@ WaveSurfer.Drawer = {
         this.canvas = params.canvas;
         this.cursor = params.cursor;
 
-        this.cc = this.canvas.getContext('2d');
         this.width = this.canvas.width;
         this.height = this.canvas.height;
+
+        this.cc = this.canvas.getContext('2d');
 
         if (params.color) {
             this.cc.fillStyle = params.color;
         }
-    },
-
-    bindClick: function (callback) {
-        var my = this;
-        this.canvas.addEventListener('click', function (e) {
-            var canvasPosition = my.canvas.getBoundingClientRect();
-            var relX = e.pageX - canvasPosition.left;
-            var percents = relX / my.width;
-
-            callback(percents);
-        }, false);
     },
 
     drawBuffer: function (buffer) {
