@@ -54,4 +54,4 @@ Todo
 ====
 
  * Add API for events like `onload` and `onaudioprocess`.
- * Understand how @hurliman [does it](https://github.com/jhurliman/node-pcm/blob/master/examples/waveform.js)
+ * Understand how @hurliman [does it](https://github.com/jhurliman/node-pcm/blob/master/examples/waveform.js).

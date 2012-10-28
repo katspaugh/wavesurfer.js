@@ -51,12 +51,12 @@ WaveSurfer.WebAudio = {
      * @param {AudioBuffer} audioData Audio data.
      */
     loadData: function (audioData, cb) {
-        var self = this;
+        var my = this;
         this.ac.decodeAudioData(
             audioData,
             function (buffer) {
-                self.currentBuffer = buffer;
-                self.lastStart = 0;
+                my.currentBuffer = buffer;
+                my.lastStart = 0;
                 cb(buffer);
             },
             Error
@@ -90,7 +90,7 @@ WaveSurfer.WebAudio = {
         this.setSource(this.ac.createBufferSource());
         this.source.buffer = this.currentBuffer;
 
-        if (null == start) { start = this.getCurrentMs(); }
+        if (null == start) { start = this.getCurrentTime(); }
         if (null == end  ) { end = this.source.buffer.duration; }
         if (null == delay) { delay = 0; }
 
@@ -110,7 +110,7 @@ WaveSurfer.WebAudio = {
             return;
         }
 
-        this.lastPause = this.getCurrentMs();
+        this.lastPause = this.getCurrentTime();
 
         this.source.noteOff(delay || 0);
 
@@ -118,10 +118,10 @@ WaveSurfer.WebAudio = {
     },
 
     getPlayedPercents: function () {
-        return this.getCurrentMs() / this.getDuration();
+        return this.getCurrentTime() / this.getDuration();
     },
 
-    getCurrentMs: function () {
+    getCurrentTime: function () {
         if (this.isPaused()) {
             return this.lastPause;
         } else {

@@ -4,8 +4,8 @@ WaveSurfer.Audio = {
     /**
      * Initializes the analyser with given params.
      *
-     * @param {Object} params
-     * @param {String} params.smoothingTimeConstant
+     * @param {Object} params (required)
+     * @param {HTMLAudioElement} params.audio (required)
      */
     init: function (params) {
         params = params || {};
@@ -22,12 +22,9 @@ WaveSurfer.Audio = {
     },
 
     /**
-     * Plays the loaded audio region.
+     * Plays the audio from a given position.
      *
      * @param {Number} start Start offset in seconds,
-     * relative to the beginning of the track.
-     *
-     * @param {Number} end End offset in seconds,
      * relative to the beginning of the track.
      */
     play: function (start) {
@@ -39,7 +36,7 @@ WaveSurfer.Audio = {
     },
 
     /**
-     * Pauses the loaded audio.
+     * Pauses playback.
      */
     pause: function () {
         this.audio.pause();
