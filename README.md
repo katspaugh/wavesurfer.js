@@ -53,8 +53,8 @@ See [examples/ex.fm](http://katspaugh.github.com/wavesurfer.js/examples/ex.fm/).
 Todo
 ====
 
+ * Instead of arithmetic mean amplitudes, draw root mean square amplitudes in decibels.
  * Add API for events like `onload` and `onaudioprocess`.
- * Understand how @hurliman [does it](https://github.com/jhurliman/node-pcm/blob/master/examples/waveform.js).
 
 License
 =======
