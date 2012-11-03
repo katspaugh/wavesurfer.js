@@ -52,11 +52,16 @@ WaveSurfer.WebAudio = {
      */
     loadData: function (audioData, cb) {
         var my = this;
+
+        this.pause();
+
         this.ac.decodeAudioData(
             audioData,
             function (buffer) {
                 my.currentBuffer = buffer;
                 my.lastStart = 0;
+                my.lastPause = 0;
+                my.startTime = null;
                 cb(buffer);
             },
             Error

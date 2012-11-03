@@ -24,31 +24,65 @@ WaveSurfer.Drawer = {
         }
     },
 
-    drawBuffer: function (buffer) {
+    getPeaks: function (buffer) {
+        var my = this;
+
         // Frames per pixel
         var k = buffer.getChannelData(0).length / this.width;
         var slice = Array.prototype.slice;
+        var sums = [];
 
         for (var i = 0; i < this.width; i++) {
             var sum = 0;
             for (var c = 0; c < buffer.numberOfChannels; c++) {
                 var chan = buffer.getChannelData(c);
-                var max = Math.max.apply(
-                    Math, slice.call(chan, i * k, (i + 1) * k)
-                );
-                sum += max;
+                var vals = slice.call(chan, i * k, (i + 1) * k);
+                var peak = Math.max.apply(Math, vals);
+
+                sum += peak;
             }
-            this.drawFrame(sum, i);
+            sums[i] = sum;
         }
 
-        this.framesPerPx = k;
+        return sums;
     },
 
-    drawFrame: function (value, index) {
-        var w = 1;
-        var h = Math.round(value * this.height);
+    /*
+    toDb: function (a, a0) {
+        if (0 == a) { return 0; }
+        if (0 == a0) { a0 = 1e-6; }
+        return 20 * (Math.log(a / a0) / Math.LN10);
+    },
+    */
 
-        var x = index;
+    drawBuffer: function (buffer) {
+        var my = this;
+        var peaks = this.getPeaks(buffer);
+        var maxPeak = Math.max.apply(Math, peaks);
+        var minPeak = Math.min.apply(Math, peaks);
+
+        this.clear();
+
+        peaks.forEach(function (peak, index) {
+            my.drawFrame(index, peak, maxPeak);
+        });
+
+        my.cursor.style.display = 'none';
+        setTimeout(function () {
+            my.setCursorPercent(0);
+            my.cursor.style.display = '';
+        }, 30);
+    },
+
+    clear: function () {
+        this.cc.clearRect(0, 0, this.width, this.height);
+    },
+
+    drawFrame: function (index, value, max) {
+        var w = 1;
+        var h = Math.round(value * (this.height / max));
+
+        var x = index * w;
         var y = Math.round((this.height - h) / 2);
 
         this.cc.fillRect(x, y, w, h);

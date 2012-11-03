@@ -53,7 +53,7 @@ See [examples/ex.fm](http://katspaugh.github.com/wavesurfer.js/examples/ex.fm/).
 Todo
 ====
 
- * Instead of arithmetic mean amplitudes, draw root mean square amplitudes in decibels.
+ * Investigate why some graphs are too monotonous.
  * Add API for events like `onload` and `onaudioprocess`.
 
 License

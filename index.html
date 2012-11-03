@@ -15,8 +15,9 @@
             }
             .timeline {
                 width: 1024px;
+                height: 100px;
                 position: relative;
-                overflow: scroll;
+                overflow: hidden;
             }
             #drop {
                 padding: 40px;
@@ -32,7 +33,7 @@
 
         <div class="timeline">
             <div class="cursor" id="wave-cursor"></div>
-            <canvas id="wave" width="1024" height="256"></canvas>
+            <canvas id="wave" width="1024" height="100"></canvas>
         </div>
 
         <p>
