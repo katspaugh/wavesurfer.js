@@ -37,8 +37,7 @@ WaveSurfer.Drawer = {
             for (var c = 0; c < buffer.numberOfChannels; c++) {
                 var chan = buffer.getChannelData(c);
                 var vals = slice.call(chan, i * k, (i + 1) * k);
-                var peak = Math.max.apply(Math, vals);
-
+                var peak = Math.max.apply(Math, vals.map(Math.abs));
                 sum += peak;
             }
             sums[i] = sum;
@@ -47,19 +46,10 @@ WaveSurfer.Drawer = {
         return sums;
     },
 
-    /*
-    toDb: function (a, a0) {
-        if (0 == a) { return 0; }
-        if (0 == a0) { a0 = 1e-6; }
-        return 20 * (Math.log(a / a0) / Math.LN10);
-    },
-    */
-
     drawBuffer: function (buffer) {
         var my = this;
         var peaks = this.getPeaks(buffer);
         var maxPeak = Math.max.apply(Math, peaks);
-        var minPeak = Math.min.apply(Math, peaks);
 
         this.clear();
 
