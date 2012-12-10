@@ -20,12 +20,12 @@ Create an instance:
 
     var wavesurfer = Object.create(WaveSurfer);
 
-Initialize it with canvas and cursor elements (plus some options):
+Initialize it with a canvas element (plus some options):
 
     wavesurfer.init({
         canvas: document.querySelector('#wave'),
-        cursor: document.querySelector('#wave-cursor'),
-        color: 'violet'
+        waveColor: 'violet',
+        progressColor: 'purple'
     });
 
 Load an audio file from a URL (via XHR):
@@ -45,16 +45,13 @@ There is also a method to visualize drag'n'dropped audio files:
 
     wavesurfer.bindDragNDrop(targetEl);
 
-More examples
-=============
+HTML5 Audio backend
+===================
+You can also generate the waveform images on server and use them in combination
+with HTML5 Audio, which enjoys wide browser support (as opposed to WebAudio).
 
-See [examples/ex.fm](http://katspaugh.github.com/wavesurfer.js/examples/ex.fm/).
-
-Todo
-====
-
- * Investigate why some graphs are too monotonous.
- * Add API for events like `onload` and `onaudioprocess`.
+See [examples/ex.fm](http://katspaugh.github.com/wavesurfer.js/examples/ex.fm/)
+for an API usage example.
 
 License
 =======
