@@ -1,6 +1,6 @@
 #!/bin/sh
 
-url="http://ex.fm/api/v3/trending/tag/opera"
+url="http://ex.fm/api/v3/trending/tag/ambient"
 json="data/songs.json"
 images="images/waveforms"
 audio="tmp"

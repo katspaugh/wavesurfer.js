@@ -5,8 +5,9 @@
 
     wavesurfer.init({
         canvas: document.querySelector('#wave'),
-        cursor: document.querySelector('#wave-cursor'),
-        color: 'violet'
+        waveColor: 'violet',
+        progressColor: 'purple',
+        cursorColor: 'navy'
     });
 
     wavesurfer.load('media/sonnet_23.mp3');

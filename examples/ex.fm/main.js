@@ -1,27 +1,31 @@
 (function () {
     'use strict';
 
-    var bindAudio = function (div) {
+    var createWavesurfer = function (song) {
+        var canvas = document.createElement('canvas');
+        document.querySelector('#songs').appendChild(canvas);
+        canvas.width = 1024;
+        canvas.height = 128;
+
+        var audio = document.createElement('audio');
+        audio.src = song.url;
+
         var wavesurfer = Object.create(WaveSurfer);
-
         wavesurfer.init({
-            canvas: div,
-            cursor: div.querySelector('.cursor'),
-            audio: div.querySelector('audio'),
-            predrawn: true
+            canvas: canvas,
+            audio: audio,
+            image: song.waveform,
+            progressColor: 'wheat',
+            cursorColor: 'orange',
+            cursorWidth: 2
         });
 
-        div.querySelector('a').addEventListener('click', function (e) {
-            e.preventDefault();
-        });
+        return wavesurfer;
     };
 
     var processData = function (json) {
-        var results = document.getElementById('songs');
-        results.innerHTML = tmpl('songs_tmpl', { songs: json });
-
-        var timelines = results.querySelectorAll('.timeline');
-        Array.prototype.forEach.call(timelines, bindAudio);
+        var wavesurfers = json.map(createWavesurfer);
+        //wavesurfers[0].playAt(0);
     };
 
     var xhr = new XMLHttpRequest();

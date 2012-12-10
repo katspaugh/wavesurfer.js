@@ -4,9 +4,9 @@ var WaveSurfer = {
     init: function (params) {
         var my = this;
 
-        var backend = WaveSurfer.Audio;
-
-        if (!params.predrawn) {
+        if (params.audio) {
+            var backend = WaveSurfer.Audio;
+        } else {
             backend = WaveSurfer.WebAudio;
         }
 
@@ -27,9 +27,7 @@ var WaveSurfer = {
 
     onAudioProcess: function () {
         if (!this.backend.isPaused()) {
-            this.drawer.setCursorPercent(
-                this.backend.getPlayedPercents()
-            );
+            this.drawer.progress(this.backend.getPlayedPercents());
         }
     },
 
@@ -49,11 +47,9 @@ var WaveSurfer = {
         }
     },
 
-    draw: function () {
+    drawBuffer: function () {
         if (this.backend.currentBuffer) {
             this.drawer.drawBuffer(this.backend.currentBuffer);
-        } else {
-            console.error('This audio backend is not supporting drawing.');
         }
     },
 
@@ -67,7 +63,7 @@ var WaveSurfer = {
         xhr.onload = function () {
             my.backend.loadData(
                 xhr.response,
-                my.draw.bind(my)
+                my.drawBuffer.bind(my)
             );
         };
         xhr.open('GET', src, true);
@@ -83,7 +79,7 @@ var WaveSurfer = {
         reader.addEventListener('load', function (e) {
             my.backend.loadData(
                 e.target.result,
-                my.draw.bind(my)
+                my.drawBuffer.bind(my)
             );
         }, false);
 

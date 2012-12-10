@@ -2,30 +2,6 @@
 <html>
     <head>
         <title>wavesurfer.js</title>
-
-        <style>
-            .cursor {
-                position: absolute;
-                left: 0;
-                top: 0;
-                height: 100%;
-                width: 2px;
-                margin-left: -1px;
-                background: blue;
-            }
-            .timeline {
-                width: 1024px;
-                height: 100px;
-                position: relative;
-                overflow: hidden;
-            }
-            #drop {
-                padding: 40px;
-                border: 1px dotted #333;
-                -webkit-user-drop: element;
-                display: inline-block;
-            }
-        </style>
     </head>
 
     <body>
@@ -33,7 +9,7 @@
 
         <div class="timeline">
             <div class="cursor" id="wave-cursor"></div>
-            <canvas id="wave" width="1024" height="100"></canvas>
+            <canvas id="wave" width="1024" height="128"></canvas>
         </div>
 
         <p>

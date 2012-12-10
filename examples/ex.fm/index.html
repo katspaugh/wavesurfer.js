@@ -2,60 +2,18 @@
 <html>
     <head>
         <title>wavesurfer.js | ex.fm example</title>
-
-        <style>
-            body {
-                background: lightBlue;
-            }
-            .cursor {
-                position: absolute;
-                left: 0;
-                top: 0;
-                height: 100%;
-                width: 4px;
-                margin-left: -1px;
-                background: rgba(255, 0, 150, 0.5);
-            }
-            .timeline {
-                width: 1024px;
-                height: 128px;
-                position: relative;
-                overflow: hidden;
-                margin-bottom: 40px;
-                user-select: none;
-                -webkit-user-select: none;
-            }
-            .timeline a img {
-                border: none;
-                display: block;
-                position: relative;
-                opacity: 0.5;
-            }
-
-            audio {
-                display: none;
-            }
-        </style>
     </head>
 
     <body>
-        <script type="text/html" id="songs_tmpl">
-            <% songs.forEach(function (song) { %>
-            <div class="timeline">
-                <audio src="<%=song.url%>"></audio>
-
-                <a href="<%=song.url%>">
-                    <img src="<%=song.waveform%>" />
-                </a>
-
-                <div class="cursor"></div>
-            </div>
-            <% }); %>
-        </script>
+        <h1>HTML5 Audio example</h1>
 
         <div id="songs"></div>
 
-        <script src="lib/micro-templating.js"></script>
+        <blockquote>
+            Songs via <a href="http://ex.fm">ex.fm</a>.<br />
+            Images are pre-drawn with
+            <a href="http://github.com/jhurliman/node-pcm">node-pcm</a>.
+        </blockquote>
 
         <script src="../../src/wavesurfer.js"></script>
         <script src="../../src/audio.js"></script>

@@ -2,21 +2,15 @@
 
 WaveSurfer.Drawer = {
     init: function (params) {
+        this.params = params;
         this.canvas = params.canvas;
-        this.cursor = params.cursor;
 
-        if (params.predrawn) {
-            this.width = this.canvas.clientWidth;
-            this.height = this.canvas.clientHeight;
-        } else {
-            this.width = this.canvas.width;
-            this.height = this.canvas.height;
+        this.width = this.canvas.clientWidth;
+        this.height = this.canvas.clientHeight;
+        this.cc = this.canvas.getContext('2d');
 
-            this.cc = this.canvas.getContext('2d');
-
-            if (params.color) {
-                this.cc.fillStyle = params.color;
-            }
+        if (params.image) {
+            this.loadImage(params.image, this.drawImage.bind(this));
         }
 
         if (!this.width || !this.height) {
@@ -46,22 +40,36 @@ WaveSurfer.Drawer = {
         return sums;
     },
 
+    progress: function (percents) {
+        this.cursorPos = ~~(this.width * percents);
+        this.redraw();
+    },
+
     drawBuffer: function (buffer) {
+        this.peaks = this.getPeaks(buffer);
+        this.maxPeak = Math.max.apply(Math, this.peaks);
+        this.progress(0);
+    },
+
+    /**
+     * Redraws the entire canvas on each audio frame.
+     */
+    redraw: function () {
         var my = this;
-        var peaks = this.getPeaks(buffer);
-        var maxPeak = Math.max.apply(Math, peaks);
 
         this.clear();
 
-        peaks.forEach(function (peak, index) {
-            my.drawFrame(index, peak, maxPeak);
-        });
+        // Draw WebAudio buffer peaks.
+        if (this.peaks) {
+            this.peaks && this.peaks.forEach(function (peak, index) {
+                my.drawFrame(index, peak, my.maxPeak);
+            });
+        // Or draw an image.
+        } else if (this.image) {
+            this.drawImage();
+        }
 
-        my.cursor.style.display = 'none';
-        setTimeout(function () {
-            my.setCursorPercent(0);
-            my.cursor.style.display = '';
-        }, 30);
+        this.drawCursor();
     },
 
     clear: function () {
@@ -75,25 +83,51 @@ WaveSurfer.Drawer = {
         var x = index * w;
         var y = Math.round((this.height - h) / 2);
 
+        if (this.cursorPos >= x) {
+            this.cc.fillStyle = this.params.progressColor;
+        } else {
+            this.cc.fillStyle = this.params.waveColor;
+        }
+
         this.cc.fillRect(x, y, w, h);
     },
 
     drawCursor: function () {
-        if (this.cursor) {
-            this.cursor.style.left = this.cursorPos + 'px';
-        }
+        var w = this.params.cursorWidth || 1;
+        var h = this.height;
+
+        var x = this.cursorPos;
+        var y = 0;
+
+        this.cc.fillStyle = this.params.cursorColor;
+        this.cc.fillRect(x, y, w, h);
     },
 
-    setCursorPercent: function (percents) {
-        var pos = ~~(this.width * percents);
-
-        if (this.cursorPos !== pos) {
-            this.updateCursor(pos);
-        }
+    /**
+     * Loads and caches an image.
+     */
+    loadImage: function (url, callback) {
+        var my = this;
+        var img = document.createElement('img');
+        var onLoad = function () {
+            img.removeEventListener('load', onLoad);
+            my.image = img;
+            callback(img);
+        };
+        img.addEventListener('load', onLoad, false);
+        img.src = url;
     },
 
-    updateCursor: function (pos) {
-        this.cursorPos = pos;
-        this.drawCursor();
+    /**
+     * Draws a pre-drawn waveform image.
+     */
+    drawImage: function () {
+        var cc = this.cc;
+        cc.drawImage(this.image, 0, 0, this.width, this.height);
+        cc.save();
+        cc.globalCompositeOperation = 'source-atop';
+        cc.fillStyle = this.params.progressColor;
+        cc.fillRect(0, 0, this.cursorPos, this.height);
+        cc.restore();
     }
 };
