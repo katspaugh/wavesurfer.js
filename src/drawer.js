@@ -93,10 +93,10 @@ WaveSurfer.Drawer = {
     },
 
     drawCursor: function () {
-        var w = this.params.cursorWidth || 1;
+		var w = this.params.cursorWidth || 1;
         var h = this.height;
 
-        var x = this.cursorPos;
+        var x = Math.min(this.cursorPos, this.width - w);
         var y = 0;
 
         this.cc.fillStyle = this.params.cursorColor;
