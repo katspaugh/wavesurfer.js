@@ -68,11 +68,10 @@ var WaveSurfer = {
                 // TODO
                 percentComplete = 0;
             }
-            console.log(percentComplete);
             my.drawer.drawLoading(percentComplete);
         }, false);
 
-        xhr.addEventListener('load1', function (e) {
+        xhr.addEventListener('load', function (e) {
             my.backend.loadData(
                 e.target.response,
                 my.drawBuffer.bind(my)
