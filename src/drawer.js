@@ -129,5 +129,20 @@ WaveSurfer.Drawer = {
         cc.fillStyle = this.params.progressColor;
         cc.fillRect(0, 0, this.cursorPos, this.height);
         cc.restore();
+    },
+
+    drawLoading: function (progress) {
+        var color = this.params.loadingColor;
+        var bars = this.params.loadingBars || 20;
+        var margin = ~~(this.height / 10);
+        var barWidth = ~~(this.width / bars) - margin;
+        var barHeight = this.height - margin * 2;
+        var progressBars = ~~(bars * progress);
+
+        this.cc.fillStyle = color;
+        for (var i = 0; i < progressBars; i += 1) {
+            var x = i * barWidth + i * margin;
+            this.cc.fillRect(x, margin, barWidth, barHeight);
+        }
     }
 };
