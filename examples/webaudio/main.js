@@ -7,7 +7,7 @@
         canvas: document.querySelector('#wave'),
         waveColor: 'violet',
         progressColor: 'purple',
-        loadingColor: 'lightBlue',
+        loadingColor: 'purple',
         cursorColor: 'navy'
     });
 

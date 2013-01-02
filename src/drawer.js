@@ -1,8 +1,23 @@
 'use strict';
 
 WaveSurfer.Drawer = {
+    defaultParams: {
+        waveColor: '#333',
+        progressColor: '#999',
+        cursorWidth: 1,
+        loadingColor: '#333',
+        loadingBars: 20,
+        barHeight: 1,
+        barMargin: 10
+    },
+
     init: function (params) {
-        this.params = params;
+        var my = this;
+        this.params = Object.create(params);
+        Object.keys(this.defaultParams).forEach(function (key) {
+            if (!(key in params)) { params[key] = my.defaultParams[key]; }
+        });
+
         this.canvas = params.canvas;
 
         this.width = this.canvas.clientWidth;
@@ -93,7 +108,7 @@ WaveSurfer.Drawer = {
     },
 
     drawCursor: function () {
-		var w = this.params.cursorWidth || 1;
+        var w = this.params.cursorWidth;
         var h = this.height;
 
         var x = Math.min(this.cursorPos, this.width - w);
@@ -133,16 +148,17 @@ WaveSurfer.Drawer = {
 
     drawLoading: function (progress) {
         var color = this.params.loadingColor;
-        var bars = this.params.loadingBars || 20;
-        var margin = ~~(this.height / 10);
+        var bars = this.params.loadingBars;
+        var barHeight = this.params.barHeight;
+        var margin = this.params.barMargin;
         var barWidth = ~~(this.width / bars) - margin;
-        var barHeight = this.height - margin * 2;
         var progressBars = ~~(bars * progress);
+        var y = ~~(this.height - barHeight) / 2;
 
         this.cc.fillStyle = color;
         for (var i = 0; i < progressBars; i += 1) {
             var x = i * barWidth + i * margin;
-            this.cc.fillRect(x, margin, barWidth, barHeight);
+            this.cc.fillRect(x, y, barWidth, barHeight);
         }
     }
 };
