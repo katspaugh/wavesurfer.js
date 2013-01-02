@@ -60,12 +60,24 @@ var WaveSurfer = {
         var my = this;
         var xhr = new XMLHttpRequest();
         xhr.responseType = 'arraybuffer';
-        xhr.onload = function () {
+
+        xhr.addEventListener('progress', function (e) {
+            if (e.lengthComputable) {
+                var percentComplete = e.loaded / e.total;
+            } else {
+                // TODO
+                percentComplete = 0;
+            }
+            my.drawer.drawLoading(percentComplete);
+        }, false);
+
+        xhr.addEventListener('load', function (e) {
             my.backend.loadData(
-                xhr.response,
+                e.target.response,
                 my.drawBuffer.bind(my)
             );
-        };
+        }, false);
+
         xhr.open('GET', src, true);
         xhr.send();
     },
