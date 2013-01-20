@@ -26,7 +26,7 @@ WaveSurfer.WebAudio = {
         this.analyser.fftSize = this.fftSize;
         this.analyser.connect(this.destination);
 
-        this.proc = this.ac.createJavaScriptNode(this.fftSize / 2, 1, 1);
+        this.proc = this.ac.createScriptProcessor(this.fftSize / 2, 1, 1);
         this.proc.connect(this.destination);
 
         this.dataArray = new Uint8Array(this.analyser.fftSize);
@@ -102,7 +102,7 @@ WaveSurfer.WebAudio = {
         this.lastStart = start;
         this.startTime = this.ac.currentTime;
 
-        this.source.noteGrainOn(delay, start, end - start);
+        this.source.start(delay, start, end - start);
 
         this.paused = false;
     },
@@ -117,7 +117,7 @@ WaveSurfer.WebAudio = {
 
         this.lastPause = this.getCurrentTime();
 
-        this.source.noteOff(delay || 0);
+        this.source.stop(delay || 0);
 
         this.paused = true;
     },

@@ -1,10 +1,12 @@
-(function () {
+var wavesurfer = (function () {
     'use strict';
+
+    var canvas = document.querySelector('#wave');
 
     var wavesurfer = Object.create(WaveSurfer);
 
     wavesurfer.init({
-        canvas: document.querySelector('#wave'),
+        canvas: canvas,
         waveColor: 'violet',
         progressColor: 'purple',
         loadingColor: 'purple',
@@ -21,4 +23,6 @@
             wavesurfer.playPause();
         }
     });
+
+    return wavesurfer;
 }());
