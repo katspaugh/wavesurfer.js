@@ -38,15 +38,19 @@ WaveSurfer.Drawer = {
 
         // Frames per pixel
         var k = buffer.getChannelData(0).length / this.width;
-        var slice = Array.prototype.slice;
         var sums = [];
 
         for (var i = 0; i < this.width; i++) {
             var sum = 0;
             for (var c = 0; c < buffer.numberOfChannels; c++) {
                 var chan = buffer.getChannelData(c);
-                var vals = slice.call(chan, i * k, (i + 1) * k);
-                var peak = Math.max.apply(Math, vals.map(Math.abs));
+                var vals = chan.subarray(i * k, (i + 1) * k);
+                var peak = -Infinity;
+                for (var p = 0, l = vals.length; p < l; p++){
+                    if (vals[p] > peak){
+                        peak = vals[p];
+                    }
+                }
                 sum += peak;
             }
             sums[i] = sum;
