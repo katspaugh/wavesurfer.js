@@ -34,11 +34,11 @@ WaveSurfer.Drawer = {
     },
 
     getPeaks: function (buffer) {
-        var my = this;
-
         // Frames per pixel
         var k = buffer.getChannelData(0).length / this.width;
-        var sums = [];
+
+        this.peaks = [];
+        this.maxPeak = -Infinity;
 
         for (var i = 0; i < this.width; i++) {
             var sum = 0;
@@ -53,10 +53,12 @@ WaveSurfer.Drawer = {
                 }
                 sum += peak;
             }
-            sums[i] = sum;
-        }
+            this.peaks[i] = sum;
 
-        return sums;
+            if (sum > this.maxPeak) {
+                this.maxPeak = sum;
+            }
+        }
     },
 
     progress: function (percents) {
@@ -65,8 +67,7 @@ WaveSurfer.Drawer = {
     },
 
     drawBuffer: function (buffer) {
-        this.peaks = this.getPeaks(buffer);
-        this.maxPeak = Math.max.apply(Math, this.peaks);
+        this.getPeaks(buffer);
         this.progress(0);
     },
 
@@ -80,7 +81,7 @@ WaveSurfer.Drawer = {
 
         // Draw WebAudio buffer peaks.
         if (this.peaks) {
-            this.peaks && this.peaks.forEach(function (peak, index) {
+            this.peaks.forEach(function (peak, index) {
                 my.drawFrame(index, peak, my.maxPeak);
             });
         // Or draw an image.

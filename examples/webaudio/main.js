@@ -13,7 +13,7 @@ var wavesurfer = (function () {
         cursorColor: 'navy'
     });
 
-    wavesurfer.load('media/sonnet_23.mp3');
+    wavesurfer.load('examples/webaudio/media/sonnet_23.mp3');
 
     wavesurfer.bindDragNDrop();
 
