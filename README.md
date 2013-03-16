@@ -11,7 +11,7 @@ Based on [Eiji Kitamura's work](https://github.com/agektmr/AudioStreamer).
 
 With help from [Alex Khokhulin](https://github.com/xoxulin). Thanks!
 
-![Imgur](http://i.imgur.com/iBCkQGA.png)
+![Imgur](http://i.imgur.com/dnH8q.png)
 
 API in examples
 ===============
