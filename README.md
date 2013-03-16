@@ -11,7 +11,7 @@ Based on [Eiji Kitamura's work](https://github.com/agektmr/AudioStreamer).
 
 With help from [Alex Khokhulin](https://github.com/xoxulin). Thanks!
 
-![Imgur](http://i.imgur.com/dnH8q.png)
+![Imgur](http://i.imgur.com/iBCkQGA.png)
 
 API in examples
 ===============
@@ -34,15 +34,16 @@ Load an audio file from a URL (via XHR):
 
 There is also a method to visualize drag'n'dropped audio files:
 
-    wavesurfer.bindDragNDrop(targetEl);
+    wavesurfer.bindDragNDrop(document.body);
 
 HTML5 Audio backend
 ===================
-You can also generate the waveform images on server and use them in combination
-with HTML5 Audio, which enjoys wide browser support (as opposed to WebAudio).
 
-See [examples/ex.fm](http://katspaugh.github.com/wavesurfer.js/examples/ex.fm/)
-for an API usage example.
+You can also generate the waveform images on server and use them in combination
+with HTML5 Audio, which enjoys wider browser support.
+
+See
+[examples/ex.fm](http://katspaugh.github.com/wavesurfer.js/examples/ex.fm/).
 
 License
 =======
