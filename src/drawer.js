@@ -2,27 +2,35 @@
 
 WaveSurfer.Drawer = {
     defaultParams: {
-        waveColor: '#333',
-        progressColor: '#999',
-        cursorWidth: 1,
-        loadingColor: '#333',
-        loadingBars: 20,
-        barHeight: 1,
-        barMargin: 10
+        waveColor     : '#999',
+        progressColor : '#333',
+        cursorColor   : '#ddd',
+        loadingColor  : '#999',
+        cursorWidth   : 1,
+        loadingBars   : 20,
+        barHeight     : 1,
+        barMargin     : 10
     },
 
     init: function (params) {
         var my = this;
-        this.params = Object.create(params);
+
+        // extend params with defaults
+        this.params = {};
         Object.keys(this.defaultParams).forEach(function (key) {
-            if (!(key in params)) { params[key] = my.defaultParams[key]; }
+            my.params[key] = key in params ? params[key] :
+                my.defaultParams[key];
         });
 
-        this.canvas = params.canvas;
-
-        this.width = this.canvas.clientWidth;
-        this.height = this.canvas.clientHeight;
-        this.cc = this.canvas.getContext('2d');
+        var canvas = this.canvas = params.canvas;
+        var $ = this.scale = window.devicePixelRatio;
+        var w = canvas.clientWidth;
+        var h = canvas.clientHeight;
+        this.width = canvas.width = w * $;
+        this.height = canvas.height = h * $;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        this.cc = canvas.getContext('2d');
 
         if (params.image) {
             this.loadImage(params.image, this.drawImage.bind(this));
@@ -46,9 +54,10 @@ WaveSurfer.Drawer = {
                 var chan = buffer.getChannelData(c);
                 var vals = chan.subarray(i * k, (i + 1) * k);
                 var peak = -Infinity;
-                for (var p = 0, l = vals.length; p < l; p++){
-                    if (vals[p] > peak){
-                        peak = vals[p];
+                for (var p = 0, l = vals.length; p < l; p++) {
+                    var val = Math.abs(vals[p]);
+                    if (val > peak){
+                        peak = val;
                     }
                 }
                 sum += peak;
@@ -113,7 +122,7 @@ WaveSurfer.Drawer = {
     },
 
     drawCursor: function () {
-        var w = this.params.cursorWidth;
+        var w = this.params.cursorWidth * this.scale;
         var h = this.height;
 
         var x = Math.min(this.cursorPos, this.width - w);
@@ -154,8 +163,8 @@ WaveSurfer.Drawer = {
     drawLoading: function (progress) {
         var color = this.params.loadingColor;
         var bars = this.params.loadingBars;
-        var barHeight = this.params.barHeight;
-        var margin = this.params.barMargin;
+        var barHeight = this.params.barHeight * this.scale;
+        var margin = this.params.barMargin * this.scale;
         var barWidth = ~~(this.width / bars) - margin;
         var progressBars = ~~(bars * progress);
         var y = ~~(this.height - barHeight) / 2;
