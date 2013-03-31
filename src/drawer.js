@@ -9,7 +9,8 @@ WaveSurfer.Drawer = {
         cursorWidth   : 1,
         loadingBars   : 20,
         barHeight     : 1,
-        barMargin     : 10
+        barMargin     : 10,
+        frameMargin   : 0
     },
 
     init: function (params) {
@@ -68,6 +69,8 @@ WaveSurfer.Drawer = {
                 this.maxPeak = sum;
             }
         }
+
+        this.maxPeak *= 1 + this.params.frameMargin;
     },
 
     progress: function (percents) {
