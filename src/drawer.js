@@ -9,8 +9,11 @@ WaveSurfer.Drawer = {
         loadingHeight : 1,
         cursorWidth   : 1,
         frameMargin   : 0,
-        fillParent    : false
+        fillParent    : false,
+        maxSecPerPx   : false
     },
+
+    scale: window.devicePixelRatio,
 
     init: function (params) {
         var my = this;
@@ -22,26 +25,32 @@ WaveSurfer.Drawer = {
                 my.defaultParams[key];
         });
 
-        var canvas = this.canvas = params.canvas;
+        this.canvas = params.canvas;
 
         if (params.fillParent) {
+            var canvas = this.canvas;
             var parent = canvas.parentNode;
-            canvas.setAttribute('width', parent.clientWidth);
-            canvas.setAttribute('height', parent.clientHeight);
+            canvas.style.width = parent.clientWidth + 'px';
+            canvas.style.height = parent.clientHeight + 'px';
         }
 
-        var $ = this.scale = window.devicePixelRatio;
-        var w = canvas.clientWidth;
-        var h = canvas.clientHeight;
-        this.width = canvas.width = w * $;
-        this.height = canvas.height = h * $;
-        canvas.style.width = w + 'px';
-        canvas.style.height = h + 'px';
-        this.cc = canvas.getContext('2d');
+        this.prepareContext();
 
         if (params.image) {
             this.loadImage(params.image, this.drawImage.bind(this));
         }
+    },
+
+    prepareContext: function() {
+        var canvas = this.canvas;
+
+        var w = canvas.clientWidth;
+        var h = canvas.clientHeight;
+        this.width = canvas.width = w * this.scale;
+        this.height = canvas.height = h * this.scale;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        this.cc = canvas.getContext('2d');
 
         if (!this.width || !this.height) {
             console.error('Canvas size is zero.');
@@ -49,8 +58,20 @@ WaveSurfer.Drawer = {
     },
 
     getPeaks: function (buffer) {
+        var frames = buffer.getChannelData(0).length;
         // Frames per pixel
-        var k = buffer.getChannelData(0).length / this.width;
+        var k = frames / this.width;
+
+        var maxSecPerPx = this.params.maxSecPerPx;
+        if (maxSecPerPx) {
+            var secPerPx = k / buffer.sampleRate;
+            if (secPerPx > maxSecPerPx) {
+                var targetWidth = Math.ceil(frames / maxSecPerPx / buffer.sampleRate / this.scale);
+                this.canvas.style.width = targetWidth + 'px';
+                this.prepareContext();
+                var k = frames / this.width;
+            }
+        }
 
         this.peaks = [];
         this.maxPeak = -Infinity;
