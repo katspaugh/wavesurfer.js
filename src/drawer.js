@@ -8,7 +8,8 @@ WaveSurfer.Drawer = {
         loadingColor  : '#999',
         loadingHeight : 1,
         cursorWidth   : 1,
-        frameMargin   : 0
+        frameMargin   : 0,
+        fillParent    : false
     },
 
     init: function (params) {
@@ -22,6 +23,13 @@ WaveSurfer.Drawer = {
         });
 
         var canvas = this.canvas = params.canvas;
+
+        if (params.fillParent) {
+            var parent = canvas.parentNode;
+            canvas.setAttribute('width', parent.clientWidth);
+            canvas.setAttribute('height', parent.clientHeight);
+        }
+
         var $ = this.scale = window.devicePixelRatio;
         var w = canvas.clientWidth;
         var h = canvas.clientHeight;
