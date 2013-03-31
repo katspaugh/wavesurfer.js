@@ -61,12 +61,13 @@ var WaveSurfer = {
         var xhr = new XMLHttpRequest();
         xhr.responseType = 'arraybuffer';
 
+        var totalGuess = 1000000;
         xhr.addEventListener('progress', function (e) {
             if (e.lengthComputable) {
                 var percentComplete = e.loaded / e.total;
             } else {
-                // TODO
-                percentComplete = 0;
+                if (e.loaded > totalGuess) totalGuess += 1000000;
+                percentComplete = e.loaded / totalGuess;
             }
             my.drawer.drawLoading(percentComplete);
         }, false);
