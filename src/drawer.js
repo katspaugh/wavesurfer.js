@@ -6,10 +6,8 @@ WaveSurfer.Drawer = {
         progressColor : '#333',
         cursorColor   : '#ddd',
         loadingColor  : '#999',
+        loadingHeight : 1,
         cursorWidth   : 1,
-        loadingBars   : 20,
-        barHeight     : 1,
-        barMargin     : 10,
         frameMargin   : 0
     },
 
@@ -164,18 +162,12 @@ WaveSurfer.Drawer = {
     },
 
     drawLoading: function (progress) {
-        var color = this.params.loadingColor;
-        var bars = this.params.loadingBars;
-        var barHeight = this.params.barHeight * this.scale;
-        var margin = this.params.barMargin * this.scale;
-        var barWidth = ~~(this.width / bars) - margin;
-        var progressBars = ~~(bars * progress);
+        var width = Math.round(this.width * progress);
+
+        var barHeight = this.params.loadingHeight * this.scale;
         var y = ~~(this.height - barHeight) / 2;
 
-        this.cc.fillStyle = color;
-        for (var i = 0; i < progressBars; i += 1) {
-            var x = i * barWidth + i * margin;
-            this.cc.fillRect(x, y, barWidth, barHeight);
-        }
+        this.cc.fillStyle = this.params.loadingColor;
+        this.cc.fillRect(0, y, width, barHeight);
     }
 };
