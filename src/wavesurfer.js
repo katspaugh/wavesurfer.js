@@ -1,8 +1,17 @@
 'use strict';
 
 var WaveSurfer = {
+    defaultParams: {
+        skipLength: 2
+    },
+
     init: function (params) {
         var my = this;
+
+        // extract relevant parameters (or defaults)
+        Object.keys(this.defaultParams).forEach(function (key) {
+            my[key] = params[key] || my.defaultParams[key];
+        });
 
         if (params.audio) {
             var backend = WaveSurfer.Audio;
@@ -48,11 +57,11 @@ var WaveSurfer = {
     },
 
     skipBackward: function(seconds) {
-        this.skip(seconds || -5);
+        this.skip(seconds || -this.skipLength);
     },
 
     skipForward: function(seconds) {
-        this.skip(seconds || 5);
+        this.skip(seconds || this.skipLength);
     },
 
     skip: function(offset) {
