@@ -154,8 +154,9 @@ WaveSurfer.Drawer = {
 
         // Draw markers.
         Object.keys(this.markers).forEach(function (key) {
-            var position = ~~(my.width * my.markers[key]);
-            my.drawMarker(position);
+            var marker = my.markers[key];
+            var percentage = ~~(my.width * marker.percentage);
+            my.drawMarker(percentage, marker.width, marker.color);
         });
 
         this.drawCursor();

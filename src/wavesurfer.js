@@ -70,12 +70,23 @@ var WaveSurfer = {
     },
 
     marks: 0,
-    mark: function(id) {
-        id = id || 'm' + this.marks++;
+    mark: function(options) {
+        options = options || {}
+
         var timings = this.timings(0);
-        this.drawer.markers[id] = timings[0] / timings[1];
+
+        var marker = {
+            width: options.width,
+            color: options.color,
+            percentage: timings[0] / timings[1],
+            position: timings[0]
+        };
+
+        var id = options.id || '_m' + this.marks++;
+
+        this.drawer.markers[id] = marker;
         if (this.backend.paused) this.drawer.redraw();
-        return timings[0];
+        return marker;
     },
 
     timings: function(offset) {
