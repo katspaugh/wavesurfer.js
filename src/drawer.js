@@ -10,7 +10,8 @@ WaveSurfer.Drawer = {
         cursorWidth   : 1,
         frameMargin   : 0,
         fillParent    : false,
-        maxSecPerPx   : false
+        maxSecPerPx   : false,
+        scrollParent  : false
     },
 
     scale: window.devicePixelRatio,
@@ -103,6 +104,12 @@ WaveSurfer.Drawer = {
     progress: function (percents) {
         this.cursorPos = ~~(this.width * percents);
         this.redraw();
+
+        if (this.params.scrollParent) {
+            var parent = this.canvas.parentNode;
+            var center = ~~(this.cursorPos - parent.clientWidth / 2);
+            this.canvas.parentNode.scrollLeft = center;
+        }
     },
 
     drawBuffer: function (buffer) {
