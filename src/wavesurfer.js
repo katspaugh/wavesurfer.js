@@ -1,8 +1,17 @@
 'use strict';
 
 var WaveSurfer = {
+    defaultParams: {
+        skipLength: 2
+    },
+
     init: function (params) {
         var my = this;
+
+        // extract relevant parameters (or defaults)
+        Object.keys(this.defaultParams).forEach(function (key) {
+            my[key] = params[key] || my.defaultParams[key];
+        });
 
         if (params.audio) {
             var backend = WaveSurfer.Audio;
@@ -47,6 +56,46 @@ var WaveSurfer = {
         }
     },
 
+    skipBackward: function(seconds) {
+        this.skip(seconds || -this.skipLength);
+    },
+
+    skipForward: function(seconds) {
+        this.skip(seconds || this.skipLength);
+    },
+
+    skip: function(offset) {
+        var timings = this.timings(offset);
+        this.playAt(timings[0] / timings[1]);
+    },
+
+    marks: 0,
+    mark: function(options) {
+        options = options || {}
+
+        var timings = this.timings(0);
+
+        var marker = {
+            width: options.width,
+            color: options.color,
+            percentage: timings[0] / timings[1],
+            position: timings[0]
+        };
+
+        var id = options.id || '_m' + this.marks++;
+
+        this.drawer.markers[id] = marker;
+        if (this.backend.paused) this.drawer.redraw();
+        return marker;
+    },
+
+    timings: function(offset) {
+        var position = this.backend.getCurrentTime() || 0;
+        var duration = this.backend.getDuration() || 1;
+        position = Math.max(0, Math.min(duration, position + offset));
+        return [position, duration];
+    },
+
     drawBuffer: function () {
         if (this.backend.currentBuffer) {
             this.drawer.drawBuffer(this.backend.currentBuffer);
@@ -62,16 +111,20 @@ var WaveSurfer = {
         xhr.responseType = 'arraybuffer';
 
         xhr.addEventListener('progress', function (e) {
+            var percentComplete;
             if (e.lengthComputable) {
-                var percentComplete = e.loaded / e.total;
+                percentComplete = e.loaded / e.total;
             } else {
                 // TODO
-                percentComplete = 0;
+                // for now, approximate progress with an asymptotic
+                // function, and assume downloads in the 1-3 MB range.
+                percentComplete = e.loaded / (e.loaded + 1000000);
             }
             my.drawer.drawLoading(percentComplete);
         }, false);
 
         xhr.addEventListener('load', function (e) {
+            my.drawer.drawLoading(1);
             my.backend.loadData(
                 e.target.response,
                 my.drawBuffer.bind(my)
