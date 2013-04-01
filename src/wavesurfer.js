@@ -61,13 +61,15 @@ var WaveSurfer = {
         var xhr = new XMLHttpRequest();
         xhr.responseType = 'arraybuffer';
 
-        var totalGuess = 1000000;
         xhr.addEventListener('progress', function (e) {
+            var percentComplete;
             if (e.lengthComputable) {
-                var percentComplete = e.loaded / e.total;
+                percentComplete = e.loaded / e.total;
             } else {
-                if (e.loaded > totalGuess) totalGuess += 1000000;
-                percentComplete = e.loaded / totalGuess;
+                // TODO
+                // for now, approximate progress with an asymptotic
+                // function, and assume downloads in the 1-3 MB range.
+                percentComplete = e.loaded / (e.loaded + 1000000);
             }
             my.drawer.drawLoading(percentComplete);
         }, false);
