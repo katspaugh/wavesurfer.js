@@ -47,6 +47,35 @@ var WaveSurfer = {
         }
     },
 
+    skipBackward: function(seconds) {
+        this.skip(seconds || -5);
+    },
+
+    skipForward: function(seconds) {
+        this.skip(seconds || 5);
+    },
+
+    skip: function(offset) {
+        var timings = this.timings(offset);
+        this.playAt(timings[0] / timings[1]);
+    },
+
+    marks: 0,
+    mark: function(id) {
+        id = id || 'm' + this.marks++;
+        var timings = this.timings(0);
+        this.drawer.markers[id] = timings[0] / timings[1];
+        if (this.backend.paused) this.drawer.redraw();
+        return timings[0];
+    },
+
+    timings: function(offset) {
+        var position = this.backend.getCurrentTime() || 0;
+        var duration = this.backend.getDuration() || 1;
+        position = Math.max(0, Math.min(duration, position + offset));
+        return [position, duration];
+    },
+
     drawBuffer: function () {
         if (this.backend.currentBuffer) {
             this.drawer.drawBuffer(this.backend.currentBuffer);
