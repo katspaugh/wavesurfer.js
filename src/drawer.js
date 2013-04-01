@@ -5,9 +5,11 @@ WaveSurfer.Drawer = {
         waveColor     : '#999',
         progressColor : '#333',
         cursorColor   : '#ddd',
+        markerColor   : 'rgba(0,0,0,0.5)',
         loadingColor  : '#999',
         loadingHeight : 1,
         cursorWidth   : 1,
+        markerWidth   : 2,
         frameMargin   : 0,
         fillParent    : false,
         maxSecPerPx   : false,
@@ -25,6 +27,8 @@ WaveSurfer.Drawer = {
             my.params[key] = key in params ? params[key] :
                 my.defaultParams[key];
         });
+
+        this.markers = {};
 
         this.canvas = params.canvas;
         this.parent = this.canvas.parentNode;
@@ -145,6 +149,12 @@ WaveSurfer.Drawer = {
             this.drawImage();
         }
 
+        // Draw markers.
+        Object.keys(this.markers).forEach(function (key) {
+            var position = ~~(my.width * my.markers[key]);
+            my.drawMarker(position);
+        });
+
         this.drawCursor();
     },
 
@@ -169,13 +179,24 @@ WaveSurfer.Drawer = {
     },
 
     drawCursor: function () {
-        var w = this.params.cursorWidth * this.scale;
+        this.drawMarker(
+            this.cursorPos,
+            this.params.cursorWidth,
+            this.params.cursorColor
+        );
+    },
+
+    drawMarker: function (position, width, color) {
+        width = width || this.params.markerWidth;
+        color = color || this.params.markerColor;
+
+        var w = width * this.scale;
         var h = this.height;
 
-        var x = Math.min(this.cursorPos, this.width - w);
+        var x = Math.min(position, this.width - w);
         var y = 0;
 
-        this.cc.fillStyle = this.params.cursorColor;
+        this.cc.fillStyle = color;
         this.cc.fillRect(x, y, w, h);
     },
 
