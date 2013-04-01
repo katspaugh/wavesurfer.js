@@ -37,13 +37,13 @@ WaveSurfer.WebAudio = {
     bindUpdate: function (callback) {
         var my = this;
 
-        this.proc.onaudioprocess = function() {
+        this.proc.onaudioprocess = function () {
             callback();
             if (my.getPlayedPercents() > 1.0) {
                 my.pause();
                 my.lastPause = 0;
             }
-        }
+        };
     },
 
     setSource: function (source) {

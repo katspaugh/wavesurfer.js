@@ -2,36 +2,80 @@
 <html>
     <head>
         <title>wavesurfer.js</title>
+
+        <link rel="stylesheet" href="http://fortawesome.github.com/Font-Awesome/assets/css/font-awesome.css" />
+        <link rel="stylesheet" href="http://rc.getbootstrap.com/assets/css/bootstrap.css" />
+        <link rel="stylesheet" href="http://simonwhitaker.github.com/github-fork-ribbon-css/gh-fork-ribbon.css" />
+
+        <link rel="stylesheet" href="examples/webaudio/style.css" />
     </head>
 
     <body>
-        <h1>wavesurfer.js</h1>
+        <div class="container">
+            <h1>wavesurfer.js</h1>
 
-        <div class="timeline">
-            <div class="cursor" id="wave-cursor"></div>
-            <canvas id="wave" width="1024" height="128"></canvas>
+            <hr />
+
+            <div class="waveform">
+                <canvas></canvas>
+            </div>
+
+            <div class="controls">
+                <button class="btn" data-action="back">
+                    <i class="icon icon-step-backward"></i>
+                    Seek Backward
+                </button>
+
+                <button class="btn" data-action="play">
+                    <i class="icon icon-play"></i>
+                    Play
+                    /
+                    <i class="icon icon-pause"></i>
+                    Pause
+                </button>
+
+                <button class="btn" data-action="forth">
+                    <i class="icon icon-step-forward"></i>
+                    Seek Forward
+                </button>
+
+                <button class="btn btn-success" data-action="green-mark">
+                    <i class="icon icon-flag"></i>
+                    Set green mark
+                </button>
+
+                <button class="btn btn-danger" data-action="red-mark">
+                    <i class="icon icon-flag"></i>
+                    Set red mark
+                </button>
+            </div>
+
+            <hr />
+
+            <div>
+                <p>
+                    The preloaded sound sample is from <a href="http://librivox.org/samples/">http://librivox.org/samples/</a>.
+                </p>
+
+                <p>
+                    To surf your own audio files, <strong>drag'n'drop</strong>
+                    them to the page.
+                </p>
+
+                <p>
+                    <span class="label label-info">NB:</span>
+                    <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html">WebAudio</a>
+                    works only in recent versions of WebKit-based browsers
+                    (Chrome and Safari).
+                </p>
+            </div>
         </div>
 
-        <p>
-            The preloaded sound sample is from
-            <a href="http://librivox.org/samples/">http://librivox.org/samples/</a>.
-        </p>
-
-        <p>
-            To surf your own audio files, <strong>drag'n'drop</strong>
-            them to the page.
-        </p>
-
-        <p>
-            Press <kbd>Space</kbd> to play/pause the audio.
-        </p>
-
-        <p>
-            <strong>NB:</strong>
-            <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html">WebAudio</a>
-            works only in recent versions of WebKit-based browsers
-            (Chrome and Safari).
-        </p>
+        <div class="github-fork-ribbon-wrapper right">
+            <div class="github-fork-ribbon">
+                <a href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+            </div>
+        </div>
 
         <script src="src/wavesurfer.js"></script>
         <script src="src/webaudio.js"></script>

@@ -7,10 +7,6 @@ Interactive navigable audio visualization using
 with pre-generated graphics) and
 [Canvas](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html).
 
-Based on [Eiji Kitamura's work](https://github.com/agektmr/AudioStreamer).
-
-With help from [Alex Khokhulin](https://github.com/xoxulin). Thanks!
-
 ![Imgur](http://i.imgur.com/dnH8q.png)
 
 API in examples
@@ -44,6 +40,22 @@ with HTML5 Audio, which enjoys wider browser support.
 
 See
 [examples/ex.fm](http://katspaugh.github.com/wavesurfer.js/examples/ex.fm/).
+
+Credits
+=======
+
+- Based on [Eiji Kitamura's work](https://github.com/agektmr/AudioStreamer).
+
+- Invaluable advice from [Alex Khokhulin](https://github.com/xoxulin).
+
+- Advice from [Max Goodman](https://github.com/chromakode).
+
+- Speed greatly optimised by [Kevin Ennis](https://github.com/kevincennis).
+
+- Many cool features contributed by [Justin Bradford](https://github.com/jabr).
+
+Thanks!
+
 
 License
 =======

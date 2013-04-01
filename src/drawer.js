@@ -74,10 +74,12 @@ WaveSurfer.Drawer = {
         if (maxSecPerPx) {
             var secPerPx = k / buffer.sampleRate;
             if (secPerPx > maxSecPerPx) {
-                var targetWidth = Math.ceil(frames / maxSecPerPx / buffer.sampleRate / this.scale);
+                var targetWidth = Math.ceil(
+                    frames / maxSecPerPx / buffer.sampleRate / this.scale
+                );
                 this.canvas.style.width = targetWidth + 'px';
                 this.prepareContext();
-                var k = frames / this.width;
+                k = frames / this.width;
             }
         }
 

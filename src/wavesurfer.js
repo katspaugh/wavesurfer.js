@@ -71,7 +71,7 @@ var WaveSurfer = {
 
     marks: 0,
     mark: function(options) {
-        options = options || {}
+        options = options || {};
 
         var timings = this.timings(0);
 
