@@ -7,8 +7,11 @@ WaveSurfer.Drawer = {
         cursorColor   : '#ddd',
         markerColor   : 'rgba(0,0,0,0.5)',
         loadingColor  : '#999',
-        loadingHeight : 1,
         cursorWidth   : 1,
+        loadPercent   : false,
+        loadingBars   : 20,
+        barHeight     : 1,
+        barMargin     : 10,
         markerWidth   : 2,
         frameMargin   : 0,
         fillParent    : false,
@@ -229,12 +232,25 @@ WaveSurfer.Drawer = {
     },
 
     drawLoading: function (progress) {
-        var width = Math.round(this.width * progress);
-
-        var barHeight = this.params.loadingHeight * this.scale;
+        var barHeight = this.params.barHeight * this.scale;
         var y = ~~(this.height - barHeight) / 2;
 
         this.cc.fillStyle = this.params.loadingColor;
-        this.cc.fillRect(0, y, width, barHeight);
+
+        if (this.params.loadPercent) {
+            var width = Math.round(this.width * progress);
+            this.cc.fillRect(0, y, width, barHeight);
+            return;
+        }
+
+        var bars = this.params.loadingBars;
+        var margin = this.params.barMargin * this.scale;
+        var barWidth = ~~(this.width / bars) - margin;
+        var progressBars = ~~(bars * progress);
+
+        for (var i = 0; i < progressBars; i += 1) {
+            var x = i * barWidth + i * margin;
+            this.cc.fillRect(x, y, barWidth, barHeight);
+        }
     }
 };
