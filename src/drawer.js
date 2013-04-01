@@ -27,12 +27,12 @@ WaveSurfer.Drawer = {
         });
 
         this.canvas = params.canvas;
+        this.parent = this.canvas.parentNode;
 
         if (params.fillParent) {
-            var canvas = this.canvas;
-            var parent = canvas.parentNode;
-            canvas.style.width = parent.clientWidth + 'px';
-            canvas.style.height = parent.clientHeight + 'px';
+            var style = this.canvas.style;
+            style.width = this.parent.clientWidth + 'px';
+            style.height = this.parent.clientHeight + 'px';
         }
 
         this.prepareContext();
@@ -106,9 +106,19 @@ WaveSurfer.Drawer = {
         this.redraw();
 
         if (this.params.scrollParent) {
-            var parent = this.canvas.parentNode;
-            var center = ~~(this.cursorPos - parent.clientWidth / 2);
-            this.canvas.parentNode.scrollLeft = center;
+            var half = this.parent.clientWidth / 2;
+            var target = this.cursorPos - half;
+            var offset = target - this.parent.scrollLeft;
+
+            // if the cursor is currently visible...
+            if (offset >= -half && offset < half) {
+                // we'll limit the "re-center" rate.
+                var rate = 5;
+                offset = Math.max(-rate, Math.min(rate, offset));
+                target = this.parent.scrollLeft + offset;
+            }
+
+            this.canvas.parentNode.scrollLeft = ~~target;
         }
     },
 
