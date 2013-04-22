@@ -87,20 +87,38 @@ var WaveSurfer = {
     mark: function(options) {
         options = options || {};
 
+        var self = this;
         var timings = this.timings(0);
-
-        var marker = {
-            width: options.width,
-            color: options.color,
-            percentage: timings[0] / timings[1],
-            position: timings[0]
-        };
-
         var id = options.id || '_m' + this.marks++;
 
-        this.drawer.markers[id] = marker;
-        if (this.backend.paused) this.drawer.redraw();
-        return marker;
+        var marker = {
+            id: id,
+            percentage: timings[0] / timings[1],
+            position: timings[0],
+
+            update: function(options) {
+                options = options || {};
+
+                this.color = options.color;
+                this.width = options.width;
+
+                if (self.backend.paused) {
+                    self.drawer.redraw();
+                    if (options.center) {
+                        self.drawer.recenter(this.percentage);
+                    }
+                }
+
+                return this;
+            }
+        };
+
+        return this.drawer.markers[id] = marker.update(options);
+    },
+
+    clearMarks: function() {
+        this.drawer.markers = {};
+        this.marks = 0;
     },
 
     timings: function(offset) {
