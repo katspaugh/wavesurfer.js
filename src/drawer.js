@@ -110,25 +110,34 @@ WaveSurfer.Drawer = {
         this.maxPeak *= 1 + this.params.frameMargin;
     },
 
-    progress: function (percents) {
-        this.cursorPos = ~~(this.width * percents);
+    progress: function (percent) {
+        this.cursorPos = ~~(this.width * percent);
         this.redraw();
 
         if (this.params.scrollParent) {
-            var half = this.parent.clientWidth / 2;
-            var target = this.cursorPos - half;
-            var offset = target - this.parent.scrollLeft;
-
-            // if the cursor is currently visible...
-            if (offset >= -half && offset < half) {
-                // we'll limit the "re-center" rate.
-                var rate = 5;
-                offset = Math.max(-rate, Math.min(rate, offset));
-                target = this.parent.scrollLeft + offset;
-            }
-
-            this.canvas.parentNode.scrollLeft = ~~target;
+            this.recenterOnPosition(this.cursorPos);
         }
+    },
+
+    recenter: function(percent) {
+        var position = ~~(this.width * percent);
+        this.recenterOnPosition(position, true);
+    },
+
+    recenterOnPosition: function(position, immediate) {
+        var half = this.parent.clientWidth / 2;
+        var target = position - half;
+        var offset = target - this.parent.scrollLeft;
+
+        // if the cursor is currently visible...
+        if (!immediate && offset >= -half && offset < half) {
+            // we'll limit the "re-center" rate.
+            var rate = 5;
+            offset = Math.max(-rate, Math.min(rate, offset));
+            target = this.parent.scrollLeft + offset;
+        }
+
+        this.canvas.parentNode.scrollLeft = ~~target;
     },
 
     drawBuffer: function (buffer) {
