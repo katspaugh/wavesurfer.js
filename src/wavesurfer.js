@@ -68,7 +68,13 @@ var WaveSurfer = {
 
     skip: function(offset) {
         var timings = this.timings(offset);
-        this.playAt(timings[0] / timings[1]);
+        var paused = this.backend.paused;
+        var progress = timings[0] / timings[1];
+        this.playAt(progress);
+        if (paused) {
+            this.pause();
+            this.drawer.progress(progress);
+        }
     },
 
     marks: 0,
