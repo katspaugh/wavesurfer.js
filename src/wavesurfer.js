@@ -77,6 +77,12 @@ var WaveSurfer = {
         }
     },
 
+    stop: function() {
+        this.playAt(0);
+        this.pause();
+        this.drawer.progress(0);
+    },
+
     marks: 0,
     mark: function(options) {
         options = options || {};
