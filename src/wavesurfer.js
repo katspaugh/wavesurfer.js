@@ -110,6 +110,10 @@ var WaveSurfer = {
         return [position, duration];
     },
 
+    isReady: function() {
+        return this.backend.currentBuffer;
+    },
+
     drawBuffer: function () {
         if (this.backend.currentBuffer) {
             this.drawer.drawBuffer(this.backend.currentBuffer);
