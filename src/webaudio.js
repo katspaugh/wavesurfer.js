@@ -39,9 +39,9 @@ WaveSurfer.WebAudio = {
 
         this.proc.onaudioprocess = function () {
             callback();
-            if (my.getPlayedPercents() > 1.0) {
+            if (my.getPlayedPercents() >= 1.0) {
                 my.pause();
-                my.lastPause = 0;
+                my.lastPause = my.getDuration();
             }
         };
     },

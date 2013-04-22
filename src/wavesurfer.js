@@ -50,7 +50,9 @@ var WaveSurfer = {
 
     playPause: function () {
         if (this.backend.paused) {
-            this.playAt(this.backend.getPlayedPercents() || 0);
+            var playedPercent = this.backend.getPlayedPercents() || 0;
+            if (playedPercent >= 1.0) playedPercent = 0;
+            this.playAt(playedPercent);
         } else {
             this.pause();
         }
