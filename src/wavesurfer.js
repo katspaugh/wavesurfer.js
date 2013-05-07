@@ -126,7 +126,7 @@ var WaveSurfer = {
         xhr.addEventListener('load', function (e) {
             my.drawer.drawLoading(1);
             my.backend.loadData(
-                e.target.response,
+                { buf: e.target.response },
                 my.drawBuffer.bind(my)
             );
         }, false);

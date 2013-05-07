@@ -19,8 +19,6 @@ var wavesurfer = (function () {
 
     wavesurfer.load('examples/webaudio/media/sonnet_23.mp3');
 
-    wavesurfer.bindDragNDrop();
-
     var eventHandlers = {
         'play': function () {
             wavesurfer.playPause();

@@ -58,22 +58,52 @@ WaveSurfer.WebAudio = {
      *
      * @param {AudioBuffer} audioData Audio data.
      */
-    loadData: function (audioData, cb) {
+    loadData: function (node, cb) {
         var my = this;
 
         this.pause();
 
-        this.ac.decodeAudioData(
-            audioData,
-            function (buffer) {
-                my.currentBuffer = buffer;
-                my.lastStart = 0;
-                my.lastPause = 0;
-                my.startTime = null;
-                cb(buffer);
-            },
-            Error
-        );
+        try {
+            console.info('Trying to decode audio buffer');
+            this.ac.decodeAudioData(
+                node.buf,
+                function (buffer) {
+                    my.currentBuffer = buffer;
+                    my.lastStart = 0;
+                    my.lastPause = 0;
+                    my.startTime = null;
+                    cb(buffer);
+                },
+                function () {
+                    console.error('Error decoding audio buffer');
+                    if (my.syncStream(node)) {
+                        my.loadData(node, cb);
+                    }
+                }
+            );
+        } catch (e) {
+            console.error(e);
+        }
+    },
+
+    // https://bugs.webkit.org/show_bug.cgi?id=106658
+    syncStream: function (node) {
+        var buf8 = new Uint8Array(node.buf);
+        buf8.indexOf = Array.prototype.indexOf;
+        var i = node.sync || 0;
+        while (1) {
+            i = buf8.indexOf(0xFF, i);
+            if (i == -1 || (buf8[i + 1] & 0xE0 == 0xE0)) {
+                break;
+            }
+            i++;
+        }
+        if (i != -1) {
+            node.buf = node.buf.slice(i);
+            node.sync = i;
+            return true;
+        }
+        return false;
     },
 
     isPaused: function () {
