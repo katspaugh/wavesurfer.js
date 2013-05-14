@@ -29,7 +29,8 @@ WaveSurfer.WebAudio = {
         this.proc = this.ac.createJavaScriptNode(this.fftSize / 2, 1, 1);
         this.proc.connect(this.destination);
 
-        this.dataArray = new Uint8Array(this.analyser.fftSize);
+        this.byteTimeDomain = new Uint8Array(this.analyser.fftSize);
+        this.byteFrequency = new Uint8Array(this.analyser.fftSize);
 
         this.paused = true;
     },
@@ -54,56 +55,53 @@ WaveSurfer.WebAudio = {
     },
 
     /**
+     * Create and connect to a media element source.
+     */
+    streamUrl: function (url, onUpdate, onCanPlay) {
+        var my = this;
+        var audio = new Audio();
+
+        audio.addEventListener('canplay', function () {
+            my.setSource(my.ac.createMediaElementSource(audio));
+
+            my.bindUpdate(function () {
+                if (!audio.paused) {
+                    onUpdate && onUpdate(my.waveform(), audio.currentTime);
+                }
+            });
+
+            onCanPlay && onCanPlay();
+        }, false);
+
+        audio.autoplay = false;
+        audio.src = url;
+        return audio;
+    },
+
+    /**
      * Loads audiobuffer.
      *
      * @param {AudioBuffer} audioData Audio data.
      */
-    loadData: function (node, cb) {
+    loadData: function (audiobuffer, cb, errb) {
         var my = this;
 
         this.pause();
 
-        try {
-            console.info('Trying to decode audio buffer');
-            this.ac.decodeAudioData(
-                node.buf,
-                function (buffer) {
-                    my.currentBuffer = buffer;
-                    my.lastStart = 0;
-                    my.lastPause = 0;
-                    my.startTime = null;
-                    cb(buffer);
-                },
-                function () {
-                    console.error('Error decoding audio buffer');
-                    if (my.syncStream(node)) {
-                        my.loadData(node, cb);
-                    }
-                }
-            );
-        } catch (e) {
-            console.error(e);
-        }
-    },
-
-    // https://bugs.webkit.org/show_bug.cgi?id=106658
-    syncStream: function (node) {
-        var buf8 = new Uint8Array(node.buf);
-        buf8.indexOf = Array.prototype.indexOf;
-        var i = node.sync || 0;
-        while (1) {
-            i = buf8.indexOf(0xFF, i);
-            if (i == -1 || (buf8[i + 1] & 0xE0 == 0xE0)) {
-                break;
+        this.ac.decodeAudioData(
+            audiobuffer,
+            function (buffer) {
+                my.currentBuffer = buffer;
+                my.lastStart = 0;
+                my.lastPause = 0;
+                my.startTime = null;
+                cb && cb(buffer);
+            },
+            function () {
+                //console.error('Error decoding audio buffer');
+                errb && errb();
             }
-            i++;
-        }
-        if (i != -1) {
-            node.buf = node.buf.slice(i);
-            node.sync = i;
-            return true;
-        }
-        return false;
+        );
     },
 
     isPaused: function () {
@@ -179,8 +177,8 @@ WaveSurfer.WebAudio = {
      * Values range from 0 to 255.
      */
     waveform: function () {
-        this.analyser.getByteTimeDomainData(this.dataArray);
-        return this.dataArray;
+        this.analyser.getByteTimeDomainData(this.byteTimeDomain);
+        return this.byteTimeDomain;
     },
 
     /**
@@ -190,7 +188,7 @@ WaveSurfer.WebAudio = {
      * Values range from 0 to 255.
      */
     frequency: function () {
-        this.analyser.getByteFrequencyData(this.dataArray);
-        return this.dataArray;
+        this.analyser.getByteFrequencyData(this.byteFrequency);
+        return this.byteFrequency;
     }
 };

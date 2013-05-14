@@ -31,12 +31,14 @@ WaveSurfer.Drawer = {
                 my.defaultParams[key];
         });
 
+        this.peaks = [];
         this.markers = {};
+        this.maxPeak = 128;
 
         this.canvas = params.canvas;
         this.parent = this.canvas.parentNode;
 
-        if (params.fillParent) {
+        if (params.fillParent && !params.scrollParent) {
             var style = this.canvas.style;
             style.width = this.parent.clientWidth + 'px';
             style.height = this.parent.clientHeight + 'px';
@@ -47,6 +49,17 @@ WaveSurfer.Drawer = {
         if (params.image) {
             this.loadImage(params.image, this.drawImage.bind(this));
         }
+    },
+
+    setMinWidth: function (width) {
+        if (width <= this.width) { return; }
+
+        if (width > this.parent.clientWidth) {
+            this.params.scrollParent = true;
+        }
+
+        this.canvas.style.width = width + 'px';
+        this.prepareContext();
     },
 
     prepareContext: function() {
@@ -83,7 +96,6 @@ WaveSurfer.Drawer = {
             }
         }
 
-        this.peaks = [];
         this.maxPeak = -Infinity;
 
         for (var i = 0; i < this.width; i++) {
@@ -110,8 +122,12 @@ WaveSurfer.Drawer = {
         this.maxPeak *= 1 + this.params.frameMargin;
     },
 
-    progress: function (percents) {
+    setCursor: function (percents) {
         this.cursorPos = ~~(this.width * percents);
+    },
+
+    progress: function (percents) {
+        this.setCursor(percents);
         this.redraw();
 
         if (this.params.scrollParent) {
@@ -145,7 +161,7 @@ WaveSurfer.Drawer = {
         this.clear();
 
         // Draw WebAudio buffer peaks.
-        if (this.peaks) {
+        if (this.peaks.length) {
             this.peaks.forEach(function (peak, index) {
                 my.drawFrame(index, peak, my.maxPeak);
             });
@@ -182,6 +198,20 @@ WaveSurfer.Drawer = {
         }
 
         this.cc.fillRect(x, y, w, h);
+    },
+
+    drawStreamFrame: function (data, percentage) {
+        var index = ~~(this.width * percentage);
+
+        if (null == this.peaks[index]) {
+            var max = -Infinity;
+            for (var i = 0, len = data.length; i < len; i++) {
+                var val = data[i];
+                if (val > max) { max = val; }
+            }
+            this.peaks[index] = max - 128 || 1;
+        }
+        this.redraw();
     },
 
     drawCursor: function () {

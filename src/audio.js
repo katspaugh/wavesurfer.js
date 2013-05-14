@@ -42,6 +42,10 @@ WaveSurfer.Audio = {
         this.audio.pause();
     },
 
+    getCurrentTime: function () {
+        return this.audio.currentTime;
+    },
+
     getPlayedPercents: function () {
         var time = Math.min(this.audio.currentTime, this.audio.duration);
         return (time / this.audio.duration);

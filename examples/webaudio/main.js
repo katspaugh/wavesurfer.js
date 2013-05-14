@@ -1,4 +1,4 @@
-var wavesurfer = (function () {
+window.addEventListener('load', function () {
     'use strict';
 
     var wavesurfer = Object.create(WaveSurfer);
@@ -17,7 +17,7 @@ var wavesurfer = (function () {
         cursorColor   : 'navy'
     });
 
-    wavesurfer.load('examples/webaudio/media/sonnet_23.mp3');
+    wavesurfer.streamUrl('examples/webaudio/media/flappersand.mp3');
 
     var eventHandlers = {
         'play': function () {
@@ -68,6 +68,4 @@ var wavesurfer = (function () {
             eventHandlers[action](e);
         }
     });
-
-    return wavesurfer;
-}());
+}, false);
