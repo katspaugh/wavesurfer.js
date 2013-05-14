@@ -9,7 +9,6 @@ window.addEventListener('load', function () {
         markerColor   : 'rgba(0, 0, 0, 0.5)',
         frameMargin   : 0.1,
         maxSecPerPx   : parseFloat(location.hash.substring(1)),
-        scrollParent  : true,
         loadPercent   : true,
         waveColor     : 'violet',
         progressColor : 'purple',
@@ -17,7 +16,7 @@ window.addEventListener('load', function () {
         cursorColor   : 'navy'
     });
 
-    wavesurfer.streamUrl('examples/webaudio/media/flappersand.mp3');
+    wavesurfer.load('examples/webaudio/media/sonnet_23.mp3');
 
     var eventHandlers = {
         'play': function () {
