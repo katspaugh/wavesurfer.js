@@ -64,14 +64,14 @@ WaveSurfer.WebAudio = {
         audio.addEventListener('canplay', function () {
             my.setSource(my.ac.createMediaElementSource(audio));
 
-            my.bindUpdate(function () {
-                if (!audio.paused) {
-                    onUpdate && onUpdate(my.waveform(), audio.currentTime);
-                }
-            });
-
             onCanPlay && onCanPlay();
         }, false);
+
+        audio.addEventListener('timeupdate', function () {
+            if (!audio.paused) {
+                onUpdate && onUpdate(my.waveform(), audio.currentTime);
+            }
+        });
 
         audio.autoplay = false;
         audio.src = url;

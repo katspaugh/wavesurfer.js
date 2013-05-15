@@ -123,7 +123,7 @@ var WaveSurfer = {
             // on canplay
             function () {
                 my.drawer.setMinWidth(~~my.backend.getDuration());
-                my.backend.play();
+                my.backend.play(my.backend.getCurrentTime());
             }
         );
 
