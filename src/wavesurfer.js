@@ -754,6 +754,6 @@
     // AMD
     if (typeof define === 'function ') {
 
-        define('wavesurver', [], function () { return WaveSurfer; });
+        define('wavesurfer', [], function () { return WaveSurfer; });
     }
 })(window);
