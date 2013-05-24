@@ -49,7 +49,9 @@ var WaveSurfer = {
 
     playPause: function () {
         if (this.backend.paused) {
-            this.playAt(this.backend.getPlayedPercents() || 0);
+            var playedPercent = this.backend.getPlayedPercents() || 0;
+            if (playedPercent >= 1.0) playedPercent = 0;
+            this.playAt(playedPercent);
         } else {
             this.pause();
         }
@@ -65,27 +67,57 @@ var WaveSurfer = {
 
     skip: function(offset) {
         var timings = this.timings(offset);
-        this.playAt(timings[0] / timings[1]);
+        var paused = this.backend.paused;
+        var progress = timings[0] / timings[1];
+        this.playAt(progress);
+        if (paused) {
+            this.pause();
+            this.drawer.progress(progress);
+        }
+    },
+
+    stop: function() {
+        this.playAt(0);
+        this.pause();
+        this.drawer.progress(0);
     },
 
     marks: 0,
     mark: function(options) {
         options = options || {};
 
+        var self = this;
         var timings = this.timings(0);
-
-        var marker = {
-            width: options.width,
-            color: options.color,
-            percentage: timings[0] / timings[1],
-            position: timings[0]
-        };
-
         var id = options.id || '_m' + this.marks++;
 
-        this.drawer.markers[id] = marker;
-        if (this.backend.paused) this.drawer.redraw();
-        return marker;
+        var marker = {
+            id: id,
+            percentage: timings[0] / timings[1],
+            position: timings[0],
+
+            update: function(options) {
+                options = options || {};
+
+                this.color = options.color;
+                this.width = options.width;
+
+                if (self.backend.paused) {
+                    self.drawer.redraw();
+                    if (options.center) {
+                        self.drawer.recenter(this.percentage);
+                    }
+                }
+
+                return this;
+            }
+        };
+
+        return this.drawer.markers[id] = marker.update(options);
+    },
+
+    clearMarks: function() {
+        this.drawer.markers = {};
+        this.marks = 0;
     },
 
     timings: function(offset) {
@@ -93,6 +125,10 @@ var WaveSurfer = {
         var duration = this.backend.getDuration() || 1;
         position = Math.max(0, Math.min(duration, position + offset));
         return [position, duration];
+    },
+
+    isReady: function() {
+        return this.backend.currentBuffer;
     },
 
     drawBuffer: function () {

@@ -6,8 +6,6 @@ WaveSurfer.WebAudio = {
         smoothingTimeConstant: 0.3
     },
 
-    ac: new (window.AudioContext || window.webkitAudioContext),
-
     /**
      * Initializes the analyser with given params.
      *
@@ -16,6 +14,8 @@ WaveSurfer.WebAudio = {
      */
     init: function (params) {
         params = params || {};
+
+        this.ac = new (window.AudioContext || window.webkitAudioContext);
 
         this.fftSize = params.fftSize || this.Defaults.fftSize;
         this.destination = params.destination || this.ac.destination;
@@ -40,9 +40,9 @@ WaveSurfer.WebAudio = {
 
         this.proc.onaudioprocess = function () {
             callback();
-            if (my.getPlayedPercents() > 1.0) {
+            if (my.getPlayedPercents() >= 1.0) {
                 my.pause();
-                my.lastPause = 0;
+                my.lastPause = my.getDuration();
             }
         };
     },
