@@ -29,7 +29,8 @@ WaveSurfer.WebAudio = {
         this.proc = this.ac.createJavaScriptNode(this.fftSize / 2, 1, 1);
         this.proc.connect(this.destination);
 
-        this.dataArray = new Uint8Array(this.analyser.fftSize);
+        this.byteTimeDomain = new Uint8Array(this.analyser.fftSize);
+        this.byteFrequency = new Uint8Array(this.analyser.fftSize);
 
         this.paused = true;
     },
@@ -54,25 +55,52 @@ WaveSurfer.WebAudio = {
     },
 
     /**
+     * Create and connect to a media element source.
+     */
+    streamUrl: function (url, onUpdate, onCanPlay) {
+        var my = this;
+        var audio = new Audio();
+
+        audio.addEventListener('canplay', function () {
+            my.setSource(my.ac.createMediaElementSource(audio));
+
+            onCanPlay && onCanPlay();
+        }, false);
+
+        audio.addEventListener('timeupdate', function () {
+            if (!audio.paused) {
+                onUpdate && onUpdate(my.waveform(), audio.currentTime);
+            }
+        });
+
+        audio.autoplay = false;
+        audio.src = url;
+        return audio;
+    },
+
+    /**
      * Loads audiobuffer.
      *
      * @param {AudioBuffer} audioData Audio data.
      */
-    loadData: function (audioData, cb) {
+    loadData: function (audiobuffer, cb, errb) {
         var my = this;
 
         this.pause();
 
         this.ac.decodeAudioData(
-            audioData,
+            audiobuffer,
             function (buffer) {
                 my.currentBuffer = buffer;
                 my.lastStart = 0;
                 my.lastPause = 0;
                 my.startTime = null;
-                cb(buffer);
+                cb && cb(buffer);
             },
-            Error
+            function () {
+                //console.error('Error decoding audio buffer');
+                errb && errb();
+            }
         );
     },
 
@@ -149,8 +177,8 @@ WaveSurfer.WebAudio = {
      * Values range from 0 to 255.
      */
     waveform: function () {
-        this.analyser.getByteTimeDomainData(this.dataArray);
-        return this.dataArray;
+        this.analyser.getByteTimeDomainData(this.byteTimeDomain);
+        return this.byteTimeDomain;
     },
 
     /**
@@ -160,7 +188,7 @@ WaveSurfer.WebAudio = {
      * Values range from 0 to 255.
      */
     frequency: function () {
-        this.analyser.getByteFrequencyData(this.dataArray);
-        return this.dataArray;
+        this.analyser.getByteFrequencyData(this.byteFrequency);
+        return this.byteFrequency;
     }
 };

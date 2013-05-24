@@ -1,4 +1,4 @@
-var wavesurfer = (function () {
+window.addEventListener('load', function () {
     'use strict';
 
     var wavesurfer = Object.create(WaveSurfer);
@@ -9,7 +9,6 @@ var wavesurfer = (function () {
         markerColor   : 'rgba(0, 0, 0, 0.5)',
         frameMargin   : 0.1,
         maxSecPerPx   : parseFloat(location.hash.substring(1)),
-        scrollParent  : true,
         loadPercent   : true,
         waveColor     : 'violet',
         progressColor : 'purple',
@@ -18,8 +17,6 @@ var wavesurfer = (function () {
     });
 
     wavesurfer.load('examples/webaudio/media/sonnet_23.mp3');
-
-    wavesurfer.bindDragNDrop();
 
     var eventHandlers = {
         'play': function () {
@@ -70,6 +67,4 @@ var wavesurfer = (function () {
             eventHandlers[action](e);
         }
     });
-
-    return wavesurfer;
-}());
+}, false);
