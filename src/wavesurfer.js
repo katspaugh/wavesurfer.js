@@ -29,7 +29,7 @@ var WaveSurfer = {
         this.drawer.init(this.params);
 
         this.bindClick(this.params.canvas, function (percents) {
-            my.playAt(percents);
+            my.seekTo(percents);
         });
     },
 
@@ -67,8 +67,13 @@ var WaveSurfer = {
 
     skip: function(offset) {
         var timings = this.timings(offset);
-        var paused = this.backend.paused;
         var progress = timings[0] / timings[1];
+
+        this.seekTo(progress);
+    },
+
+    seekTo: function(progress) {
+        var paused = this.backend.paused;
         this.playAt(progress);
         if (paused) {
             this.pause();
