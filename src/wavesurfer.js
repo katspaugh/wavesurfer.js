@@ -94,11 +94,12 @@ var WaveSurfer = {
         var self = this;
         var timings = this.timings(0);
         var id = options.id || '_m' + this.marks++;
+        var position = typeof options.position === 'undefined' ? timings[0] : options.position;
 
         var marker = {
             id: id,
-            percentage: timings[0] / timings[1],
-            position: timings[0],
+            percentage: position / timings[1],
+            position: position,
 
             update: function(options) {
                 options = options || {};
