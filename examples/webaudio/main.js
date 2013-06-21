@@ -1,8 +1,23 @@
+var wavesurfer = Object.create(WaveSurfer);
+
+wavesurfer.on('ready', function () {
+    wavesurfer.playPause();
+});
+
+wavesurfer.on('mark', function (marker) {
+    var pos = marker.position;
+
+    (function animate (width) {
+        webkitRequestAnimationFrame(function (t) {
+            marker.width = width;
+            marker.position = pos - width / 2 - 1;
+            width > 1 && animate(width - 1);
+        });
+    }(10));
+});
+
+// init & load mp3
 window.addEventListener('load', function () {
-    'use strict';
-
-    var wavesurfer = Object.create(WaveSurfer);
-
     wavesurfer.init({
         canvas        : document.querySelector('.waveform canvas'),
         fillParent    : true,
@@ -17,6 +32,11 @@ window.addEventListener('load', function () {
     });
 
     wavesurfer.load('examples/webaudio/media/sonnet_23.mp3');
+});
+
+// Bind buttons and keypresses
+window.addEventListener('load', function () {
+    'use strict';
 
     var eventHandlers = {
         'play': function () {
@@ -48,11 +68,11 @@ window.addEventListener('load', function () {
 
     document.addEventListener('keyup', function (e) {
         var map = {
-            32: 'play',
-            38: 'green-mark',
-            40: 'red-mark',
-            37: 'back',
-            39: 'forth'
+            32: 'play',       // space
+            38: 'green-mark', // up
+            40: 'red-mark',   // down
+            37: 'back',       // left
+            39: 'forth'       // right
         };
         if (e.keyCode in map) {
             var handler = eventHandlers[map[e.keyCode]];
@@ -67,4 +87,4 @@ window.addEventListener('load', function () {
             eventHandlers[action](e);
         }
     });
-}, false);
+});

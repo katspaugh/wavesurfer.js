@@ -28,14 +28,23 @@ var WaveSurfer = {
         this.drawer = Object.create(WaveSurfer.Drawer);
         this.drawer.init(this.params);
 
-        this.bindClick(this.params.canvas, function (percents) {
-            my.seekTo(percents);
+        this.markers = {};
+
+        this.bindClick();
+
+        this.on('click', function (progress) {
+            my.seekTo(progress);
         });
+
+        this.bindMarks();
     },
 
     onAudioProcess: function () {
         if (!this.backend.isPaused()) {
-            this.drawer.progress(this.backend.getPlayedPercents());
+            var progress = this.backend.getPlayedPercents();
+            this.drawer.progress(progress);
+
+            this.fireEvent('progress', progress);
         }
     },
 
@@ -49,7 +58,7 @@ var WaveSurfer = {
 
     playPause: function () {
         if (this.backend.paused) {
-            var playedPercent = this.backend.getPlayedPercents() || 0;
+            var playedPercent = this.backend.getPlayedPercents();
             if (playedPercent >= 1.0) playedPercent = 0;
             this.playAt(playedPercent);
         } else {
@@ -79,6 +88,7 @@ var WaveSurfer = {
             this.pause();
             this.drawer.progress(progress);
         }
+        this.fireEvent('seek', progress);
     },
 
     stop: function() {
@@ -94,7 +104,8 @@ var WaveSurfer = {
         var self = this;
         var timings = this.timings(0);
         var id = options.id || '_m' + this.marks++;
-        var position = typeof options.position === 'undefined' ? timings[0] : options.position;
+        var position = typeof options.position === 'undefined' ?
+            timings[0] : options.position;
 
         var marker = {
             id: id,
@@ -144,6 +155,8 @@ var WaveSurfer = {
                 my.onAudioProcess();
             });
             this.drawer.drawBuffer(this.backend.currentBuffer);
+
+            this.fireEvent('ready');
         }
     },
 
@@ -231,12 +244,39 @@ var WaveSurfer = {
     /**
      * Click to seek.
      */
-    bindClick: function (element, callback) {
+    bindClick: function () {
         var my = this;
-        element.addEventListener('click', function (e) {
+        this.params.canvas.addEventListener('click', function (e) {
             var relX = e.offsetX;
             if (null == relX) { relX = e.layerX; }
-            callback(relX / this.clientWidth);
+            my.fireEvent('click', (relX / this.clientWidth));
         }, false);
+    },
+
+    normalizeProgress: function (progress, rounding) {
+        rounding = rounding || this.drawer.width;
+        return Math.round(progress * rounding) / rounding;
+    },
+
+    bindMarks: function () {
+        var my = this;
+        var markers = this.drawer.markers;
+
+        this.on('progress', function (progress) {
+            var normProgress = my.normalizeProgress(progress);
+
+            Object.keys(markers).forEach(function (id) {
+                var marker = markers[id];
+                var normMark = my.normalizeProgress(marker.percentage);
+                if (normMark == normProgress) {
+                    my.fireEvent('mark', marker);
+                }
+            });
+        });
     }
 };
+
+// extend
+Object.keys(Observer).forEach(function (key) {
+    WaveSurfer[key] = Observer[key];
+});
