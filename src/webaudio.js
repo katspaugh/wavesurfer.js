@@ -1,4 +1,5 @@
 'use strict';
+var globalAudioContext = new (window.AudioContext || window.webkitAudioContext);
 
 WaveSurfer.WebAudio = {
     Defaults: {
@@ -15,7 +16,7 @@ WaveSurfer.WebAudio = {
     init: function (params) {
         params = params || {};
 
-        this.ac = new (window.AudioContext || window.webkitAudioContext);
+        this.ac = globalAudioContext;
 
         this.fftSize = params.fftSize || this.Defaults.fftSize;
         this.destination = params.destination || this.ac.destination;
@@ -159,8 +160,7 @@ WaveSurfer.WebAudio = {
     },
 
     getPlayedPercents: function () {
-        var duration = this.getDuration();
-        return duration > 0 ? this.getCurrentTime() / duration : 0;
+        return this.getCurrentTime() / this.getDuration();
     },
 
     getCurrentTime: function () {
