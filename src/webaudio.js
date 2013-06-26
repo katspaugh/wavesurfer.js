@@ -160,7 +160,8 @@ WaveSurfer.WebAudio = {
     },
 
     getPlayedPercents: function () {
-        return this.getCurrentTime() / this.getDuration();
+        var duration = this.getDuration();
+        return duration > 0 ? this.getCurrentTime() / duration : 0;
     },
 
     getCurrentTime: function () {
