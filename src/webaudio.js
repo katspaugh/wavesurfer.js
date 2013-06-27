@@ -15,7 +15,7 @@ WaveSurfer.WebAudio = {
     init: function (params) {
         params = params || {};
 
-        this.ac = new (window.AudioContext || window.webkitAudioContext);
+        this.ac = params.ac || new (window.AudioContext || window.webkitAudioContext);
 
         this.fftSize = params.fftSize || this.Defaults.fftSize;
         this.destination = params.destination || this.ac.destination;
