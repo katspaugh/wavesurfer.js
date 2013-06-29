@@ -25,13 +25,53 @@ WaveSurfer.Drawer = {
         this.createSvg();
     },
 
-    createNode: function (name) {
+    node: function (name) {
         return document.createElementNS('http://www.w3.org/2000/svg', name);
     },
 
+    getId: function () {
+        return 'wavesurfer_' + Math.random().toString(32).substring(2);
+    },
+
     createSvg: function () {
-        this.svg = this.createNode('svg');
+        this.svg = this.node('svg');
+
+        var defs = this.node('defs');
+
+        var mask = this.node('mask');
+        var maskId = this.getId();
+        mask.setAttribute('id', maskId);
+        mask.setAttribute('width', this.width);
+        mask.setAttribute('height', this.height);
+
+        var path = this.node('path');
+        path.setAttribute('stroke-width', 1);
+        path.setAttribute('stroke', 'white');
+        mask.appendChild(path);
+        defs.appendChild(mask);
+
+        var waveRect = this.node('rect');
+        waveRect.setAttribute('mask', 'url(#' + maskId + ')');
+        waveRect.setAttribute('width', this.width);
+        waveRect.setAttribute('height', this.height);
+        waveRect.setAttribute('fill', this.params.waveColor);
+        waveRect.setAttribute('class', 'wavesurfer-wave');
+
+        var progressRect = this.node('rect');
+        progressRect.setAttribute('mask', 'url(#' + maskId + ')');
+        progressRect.setAttribute('width', 0);
+        progressRect.setAttribute('height', this.height);
+        progressRect.setAttribute('fill', this.params.progressColor);
+        waveRect.setAttribute('class', 'wavesurfer-progress');
+
+        this.svg.appendChild(defs);
+        this.svg.appendChild(waveRect);
+        this.svg.appendChild(progressRect);
+
         this.container.appendChild(this.svg);
+
+        this.wavePath = path;
+        this.progressRect = progressRect;
     },
 
 
@@ -39,41 +79,25 @@ WaveSurfer.Drawer = {
     drawPeaks: function (peaks, max) {
         var len = peaks.length;
         var height = this.height;
+        var path = [];
 
         for (var i = 0; i < len; i++) {
             var h = Math.round(peaks[i] * (height / max));
+            var x = i;
             var y = Math.round((height - h) / 2);
-
-            var rect = this.createNode('rect');
-            rect.setAttribute('fill', this.params.waveColor);
-            rect.setAttribute('width', 1);
-            rect.setAttribute('height', h);
-            rect.setAttribute('x', i);
-            rect.setAttribute('y', y);
-            this.svg.appendChild(rect);
+            path.push('M ' + x + ' ' + y);
+            path.push('l 0 ' + h);
         }
 
-        this.rects = this.svg.getElementsByTagName('rect');
+        this.wavePath.setAttribute('d', path.join(' '));
     },
 
     progress: function (progress) {
-        var pos = [
-            Math.round(this.width * this.lastProgress || 0),
-            Math.round(this.width * progress)
-        ];
-
-        if (pos[0] > pos[1]) {
-            pos.reverse();
-            var color = this.params.waveColor;
-        } else {
-            color = this.params.progressColor;
+        var pos = Math.round(progress * this.width);
+        if (pos != this.lastPos) {
+            this.progressRect.setAttribute('width', pos);
+            this.lastPos = pos;
         }
-
-        for (var i = pos[0], end = pos[1]; i < end; i++) {
-            this.rects[i].setAttribute('fill', color);
-        }
-
-        this.lastProgress = progress;
     },
 
     loading: function (progress) {
