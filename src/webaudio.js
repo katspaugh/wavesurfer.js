@@ -1,48 +1,42 @@
 'use strict';
 
 WaveSurfer.WebAudio = {
-    Defaults: {
+    defaultParams: {
         fftSize: 1024,
         smoothingTimeConstant: 0.3
     },
 
     /**
      * Initializes the analyser with given params.
-     *
-     * @param {Object} params
-     * @param {String} params.smoothingTimeConstant
      */
     init: function (params) {
-        params = params || {};
+        this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
 
-        this.ac = params.ac || new (window.AudioContext || window.webkitAudioContext);
-
-        this.fftSize = params.fftSize || this.Defaults.fftSize;
-        this.destination = params.destination || this.ac.destination;
-
-        this.analyser = this.ac.createAnalyser();
-        this.analyser.smoothingTimeConstant = params.smoothingTimeConstant ||
-            this.Defaults.smoothingTimeConstant;
-        this.analyser.fftSize = this.fftSize;
-        this.analyser.connect(this.destination);
-
-        this.proc = this.ac.createJavaScriptNode(this.fftSize / 2, 1, 1);
-        this.proc.connect(this.destination);
-
-        this.byteTimeDomain = new Uint8Array(this.analyser.fftSize);
-        this.byteFrequency = new Uint8Array(this.analyser.fftSize);
+        this.ac = this.params.AudioContext ||
+            new (window.AudioContext || window.webkitAudioContext);
+        this.byteTimeDomain = new Uint8Array(this.params.fftSize);
+        this.byteFrequency = new Uint8Array(this.params.fftSize);
 
         this.paused = true;
+
+        this.createAnalyzer();
+        this.createScriptNode();
     },
 
-    bindUpdate: function (callback) {
-        var my = this;
+    createAnalyzer: function () {
+        this.analyser = this.ac.createAnalyser();
+        this.analyser.smoothingTimeConstant = this.params.smoothingTimeConstant;
+        this.analyser.fftSize = this.params.fftSize;
+        this.analyser.connect(this.ac.destination);
+    },
 
-        this.proc.onaudioprocess = function () {
-            callback();
-            if (my.getPlayedPercents() >= 1.0) {
-                my.pause();
-                my.lastPause = my.getDuration();
+    createScriptNode: function () {
+        this.scriptNode = this.ac.createJavaScriptNode(this.params.fftSize / 2, 1, 1);
+        this.scriptNode.connect(this.ac.destination);
+        var my = this;
+        this.scriptNode.onaudioprocess = function () {
+            if (!my.isPaused()) {
+                my.fireEvent('audioprocess', my.getPlayedPercents());
             }
         };
     },
@@ -51,25 +45,24 @@ WaveSurfer.WebAudio = {
         this.source && this.source.disconnect();
         this.source = source;
         this.source.connect(this.analyser);
-        this.source.connect(this.proc);
+        this.source.connect(this.scriptNode);
     },
 
     /**
      * Create and connect to a media element source.
      */
-    streamUrl: function (url, onUpdate, onCanPlay) {
+    streamUrl: function (url) {
         var my = this;
         var audio = new Audio();
 
         audio.addEventListener('canplay', function () {
             my.setSource(my.ac.createMediaElementSource(audio));
-
-            onCanPlay && onCanPlay();
-        }, false);
+            my.fireEvent('canplay');
+        });
 
         audio.addEventListener('timeupdate', function () {
             if (!audio.paused) {
-                onUpdate && onUpdate(my.waveform(), audio.currentTime);
+                my.fireEvent('timeupdate', audio.currentTime);
             }
         });
 
@@ -193,3 +186,5 @@ WaveSurfer.WebAudio = {
         return this.byteFrequency;
     }
 };
+
+WaveSurfer.util.extend(WaveSurfer.WebAudio, Observer);

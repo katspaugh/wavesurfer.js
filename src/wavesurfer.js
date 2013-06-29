@@ -6,46 +6,35 @@ var WaveSurfer = {
     },
 
     init: function (params) {
-        var my = this;
-
         // extract relevant parameters (or defaults)
-        this.params = params;
-        Object.keys(this.defaultParams).forEach(function (key) {
-            if (!(key in my.params)) {
-                my.params[key] = my.defaultParams[key];
-            }
-        });
-
-        if (this.params.audio) {
-            var backend = WaveSurfer.Audio;
-        } else {
-            backend = WaveSurfer.WebAudio;
-        }
-
-        this.backend = Object.create(backend);
-        this.backend.init(this.params);
+        this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
 
         this.drawer = Object.create(WaveSurfer.Drawer);
         this.drawer.init(this.params);
 
         this.markers = {};
 
+        this.createBackend();
         this.bindClick();
-
-        this.on('click', function (progress) {
-            my.seekTo(progress);
-        });
-
         this.bindMarks();
     },
 
-    onAudioProcess: function () {
-        if (!this.backend.isPaused()) {
-            var progress = this.backend.getPlayedPercents();
-            this.drawer.progress(progress);
+    createBackend: function () {
+        this.backend = Object.create(WaveSurfer.WebAudio);
+        this.backend.init(this.params);
+        var my = this;
+        this.backend.on('audioprocess', function (progress) {
+            my.onAudioProcess(progress);
+        });
+    },
 
-            this.fireEvent('progress', progress);
+    onAudioProcess: function (progress) {
+        // pause when finished
+        if (progress >= 1.0) {
+            this.pause();
         }
+        this.drawer.progress(progress);
+        this.fireEvent('progress', progress);
     },
 
     playAt: function (percents) {
@@ -66,22 +55,22 @@ var WaveSurfer = {
         }
     },
 
-    skipBackward: function(seconds) {
+    skipBackward: function (seconds) {
         this.skip(seconds || -this.params.skipLength);
     },
 
-    skipForward: function(seconds) {
+    skipForward: function (seconds) {
         this.skip(seconds || this.params.skipLength);
     },
 
-    skip: function(offset) {
+    skip: function (offset) {
         var timings = this.timings(offset);
         var progress = timings[0] / timings[1];
 
         this.seekTo(progress);
     },
 
-    seekTo: function(progress) {
+    seekTo: function (progress) {
         var paused = this.backend.paused;
         this.playAt(progress);
         if (paused) {
@@ -91,14 +80,14 @@ var WaveSurfer = {
         this.fireEvent('seek', progress);
     },
 
-    stop: function() {
+    stop: function () {
         this.playAt(0);
         this.pause();
         this.drawer.progress(0);
     },
 
     marks: 0,
-    mark: function(options) {
+    mark: function (options) {
         options = options || {};
 
         var self = this;
@@ -112,79 +101,76 @@ var WaveSurfer = {
             percentage: position / timings[1],
             position: position,
 
-            update: function(options) {
+            update: function (options) {
                 options = options || {};
 
                 this.color = options.color;
                 this.width = options.width;
 
-                if (self.backend.paused) {
-                    self.drawer.redraw();
-                    if (options.center) {
-                        self.drawer.recenter(this.percentage);
-                    }
-                }
+                self.drawer.addMark(this);
 
                 return this;
+            },
+
+            remove: function () {
+                self.drawMark.removeMark(this);
             }
         };
 
-        return this.drawer.markers[id] = marker.update(options);
+        this.markers[id] = marker;
+
+        return marker.update(options);
     },
 
-    clearMarks: function() {
+    clearMarks: function () {
         this.drawer.markers = {};
         this.marks = 0;
     },
 
-    timings: function(offset) {
+    timings: function (offset) {
         var position = this.backend.getCurrentTime() || 0;
         var duration = this.backend.getDuration() || 1;
         position = Math.max(0, Math.min(duration, position + offset));
         return [position, duration];
     },
 
-    isReady: function() {
+    isReady: function () {
         return this.backend.currentBuffer;
     },
 
-    drawBuffer: function () {
-        if (this.backend.currentBuffer) {
-            var my = this;
-            this.backend.bindUpdate(function () {
-                my.onAudioProcess();
-            });
-            this.drawer.drawBuffer(this.backend.currentBuffer);
+    getPeaks: function (buffer, n) {
+        var frames = buffer.getChannelData(0).length;
+        // Frames per pixel
+        var k = frames / n;
+        var peaks = [];
 
-            this.fireEvent('ready');
+        for (var i = 0; i < n; i++) {
+            var sum = 0;
+            for (var c = 0; c < buffer.numberOfChannels; c++) {
+                var chan = buffer.getChannelData(c);
+                var vals = chan.subarray(i * k, (i + 1) * k);
+                var peak = -Infinity;
+                for (var p = 0; p < k; p++) {
+                    var val = Math.abs(vals[p]);
+                    if (val > peak){
+                        peak = val;
+                    }
+                }
+                sum += peak;
+            }
+            peaks[i] = sum;
         }
+        return peaks;
     },
 
-    /**
-     * Streams audio through HTML5 Audio.
-     */
-    streamUrl: function (url) {
+    drawBuffer: function () {
         var my = this;
-        var audioApi = Object.create(WaveSurfer.Audio);
+        var peaks = this.getPeaks(this.backend.currentBuffer, this.drawer.width);
+        var maxPeak = Math.max.apply(Math, peaks);
 
-        var audio = this.backend.streamUrl(
-            url,
-            // on timeupdate
-            function (pcm) {
-                var percents = my.backend.getPlayedPercents();
-                my.drawer.setCursor(percents);
-                my.drawer.drawStreamFrame(pcm, percents);
-            },
-            // on canplay
-            function () {
-                my.drawer.setMinWidth(~~my.backend.getDuration());
-                my.backend.play(my.backend.getCurrentTime());
-            }
-        );
+        this.drawer.drawPeaks(peaks, maxPeak);
 
-        this.params.audio = audio;
-        this.backend = audioApi;
-        this.backend.init(this.params);
+        this.fireEvent('ready');
     },
 
     /**
@@ -205,15 +191,14 @@ var WaveSurfer = {
                 // function, and assume downloads in the 1-3 MB range.
                 percentComplete = e.loaded / (e.loaded + 1000000);
             }
-            my.drawer.drawLoading(percentComplete);
+            my.drawer.loading(percentComplete);
         }, false);
 
         xhr.addEventListener('load', function (e) {
-            my.drawer.drawLoading(1);
+            my.drawer.loading(1);
             my.backend.loadData(
                 e.target.response,
-                my.drawBuffer.bind(my),
-                my.streamUrl.bind(my, url)
+                my.drawBuffer.bind(my)
             );
         }, false);
 
@@ -246,10 +231,13 @@ var WaveSurfer = {
      */
     bindClick: function () {
         var my = this;
-        this.params.canvas.addEventListener('click', function (e) {
+        this.drawer.container.addEventListener('click', function (e) {
             var relX = e.offsetX;
             if (null == relX) { relX = e.layerX; }
-            my.fireEvent('click', (relX / this.clientWidth));
+            var progress = relX / my.drawer.width;
+
+            my.seekTo(progress);
+            my.fireEvent('click', progress);
         }, false);
     },
 
@@ -260,7 +248,7 @@ var WaveSurfer = {
 
     bindMarks: function () {
         var my = this;
-        var markers = this.drawer.markers;
+        var markers = this.markers;
 
         this.on('progress', function (progress) {
             var normProgress = my.normalizeProgress(progress);
@@ -276,7 +264,16 @@ var WaveSurfer = {
     }
 };
 
-// extend
-Object.keys(Observer).forEach(function (key) {
-    WaveSurfer[key] = Observer[key];
-});
+WaveSurfer.util = {
+    extend: function (dest) {
+        var sources = Array.prototype.slice.call(arguments, 1);
+        sources.forEach(function (source) {
+            Object.keys(source).forEach(function (key) {
+                dest[key] = source[key];
+            });
+        });
+        return dest;
+    }
+};
+
+WaveSurfer.util.extend(WaveSurfer, Observer);

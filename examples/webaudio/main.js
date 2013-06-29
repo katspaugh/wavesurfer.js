@@ -1,7 +1,7 @@
 var wavesurfer = Object.create(WaveSurfer);
 
 wavesurfer.on('ready', function () {
-    wavesurfer.playPause();
+//    wavesurfer.playPause();
 });
 
 wavesurfer.on('mark', function (marker) {
@@ -19,7 +19,7 @@ wavesurfer.on('mark', function (marker) {
 // init & load mp3
 window.addEventListener('load', function () {
     wavesurfer.init({
-        canvas        : document.querySelector('.waveform canvas'),
+        container     : document.querySelector('.waveform'),
         fillParent    : true,
         markerColor   : 'rgba(0, 0, 0, 0.5)',
         frameMargin   : 0.1,
