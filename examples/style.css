@@ -1,6 +1,4 @@
 .waveform {
-    overflow-x: scroll;
-    overflow-y: hidden;
     height: 128px;
 }
 

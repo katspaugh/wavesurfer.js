@@ -151,6 +151,32 @@ WaveSurfer.WebAudio = {
         this.paused = true;
     },
 
+    getPeaks: function (length, sampleStep) {
+        sampleStep = sampleStep || 100;
+        var buffer = this.currentBuffer;
+        var frames = buffer.getChannelData(0).length;
+        var k = frames / length;
+        var peaks = [];
+
+        for (var i = 0; i < length; i++) {
+            var sum = 0;
+            for (var c = 0; c < buffer.numberOfChannels; c++) {
+                var chan = buffer.getChannelData(c);
+                var vals = chan.subarray(~~(i * k), ~~((i + 1) * k));
+                var peak = -Infinity;
+                for (var p = 0; p < k; p += sampleStep) {
+                    var val = Math.abs(vals[p]);
+                    if (val > peak){
+                        peak = val;
+                    }
+                }
+                sum += peak;
+            }
+            peaks[i] = sum;
+        }
+        return peaks;
+    },
+
     getPlayedPercents: function () {
         var duration = this.getDuration();
         return duration > 0 ? this.getCurrentTime() / duration : 0;

@@ -9,8 +9,7 @@ wavesurfer.on('mark', function (marker) {
 
     (function animate (width) {
         webkitRequestAnimationFrame(function (t) {
-            marker.width = width;
-            marker.position = pos - width / 2 - 1;
+            marker.update({ width: width });
             width > 1 && animate(width - 1);
         });
     }(10));
@@ -27,9 +26,11 @@ window.addEventListener('load', function () {
         loadPercent   : true,
         waveColor     : 'violet',
         progressColor : 'purple',
-        loadingColor  : 'purple',
+        loaderColor   : 'purple',
         cursorColor   : 'navy'
     });
+
+    wavesurfer.bindMarks();
 
     wavesurfer.load('examples/webaudio/media/sonnet_23.mp3');
 });

@@ -16,7 +16,6 @@ var WaveSurfer = {
 
         this.createBackend();
         this.bindClick();
-        this.bindMarks();
     },
 
     createBackend: function () {
@@ -86,86 +85,51 @@ var WaveSurfer = {
         this.drawer.progress(0);
     },
 
-    marks: 0,
     mark: function (options) {
-        options = options || {};
-
-        var self = this;
+        var my = this;
         var timings = this.timings(0);
-        var id = options.id || '_m' + this.marks++;
-        var position = typeof options.position === 'undefined' ?
-            timings[0] : options.position;
+        var opts = WaveSurfer.util.extend({
+            id: WaveSurfer.util.getId(),
+            position: timings[0]
+        }, options);
 
-        var marker = {
-            id: id,
-            percentage: position / timings[1],
-            position: position,
+        opts.percentage = opts.position / timings[1];
 
-            update: function (options) {
-                options = options || {};
+        var marker = Object.create(WaveSurfer.Mark);
 
-                this.color = options.color;
-                this.width = options.width;
+        marker.on('update', function () {
+            my.drawer.addMark(marker);
+            my.markers[marker.id] = marker;
+        });
 
-                self.drawer.addMark(this);
+        marker.on('remove', function () {
+            my.drawer.removeMark(marker);
+            delete my.markers[marker.id];
+        });
 
-                return this;
-            },
-
-            remove: function () {
-                self.drawMark.removeMark(this);
-            }
-        };
-
-        this.markers[id] = marker;
-
-        return marker.update(options);
+        return marker.update(opts);
     },
 
     clearMarks: function () {
-        this.drawer.markers = {};
-        this.marks = 0;
+        Object.keys(this.markers).forEach(function (id) {
+            this.markers[id].remove();
+        }, this);
     },
 
     timings: function (offset) {
         var position = this.backend.getCurrentTime() || 0;
         var duration = this.backend.getDuration() || 1;
         position = Math.max(0, Math.min(duration, position + offset));
-        return [position, duration];
+        return [ position, duration ];
     },
 
     isReady: function () {
         return this.backend.currentBuffer;
     },
 
-    getPeaks: function (buffer, n) {
-        var frames = buffer.getChannelData(0).length;
-        // Frames per pixel
-        var k = frames / n;
-        var peaks = [];
-
-        for (var i = 0; i < n; i++) {
-            var sum = 0;
-            for (var c = 0; c < buffer.numberOfChannels; c++) {
-                var chan = buffer.getChannelData(c);
-                var vals = chan.subarray(i * k, (i + 1) * k);
-                var peak = -Infinity;
-                for (var p = 0; p < k; p++) {
-                    var val = Math.abs(vals[p]);
-                    if (val > peak){
-                        peak = val;
-                    }
-                }
-                sum += peak;
-            }
-            peaks[i] = sum;
-        }
-        return peaks;
-    },
-
     drawBuffer: function () {
         var my = this;
-        var peaks = this.getPeaks(this.backend.currentBuffer, this.drawer.width);
+        var peaks = this.backend.getPeaks(this.drawer.width);
         var maxPeak = Math.max.apply(Math, peaks);
 
         this.drawer.drawPeaks(peaks, maxPeak);
@@ -258,22 +222,50 @@ var WaveSurfer = {
                 var normMark = my.normalizeProgress(marker.percentage);
                 if (normMark == normProgress) {
                     my.fireEvent('mark', marker);
+                    marker.fireEvent('reached');
                 }
             });
         });
-    }
-};
+    },
 
-WaveSurfer.util = {
-    extend: function (dest) {
-        var sources = Array.prototype.slice.call(arguments, 1);
-        sources.forEach(function (source) {
-            Object.keys(source).forEach(function (key) {
-                dest[key] = source[key];
+
+    util: {
+        extend: function (dest) {
+            var sources = Array.prototype.slice.call(arguments, 1);
+            sources.forEach(function (source) {
+                if (source != null) {
+                    Object.keys(source).forEach(function (key) {
+                        dest[key] = source[key];
+                    });
+                }
             });
-        });
-        return dest;
+            return dest;
+        },
+
+        getId: function () {
+            return 'wavesurfer_' + Math.random().toString(32).substring(2);
+        }
     }
 };
 
 WaveSurfer.util.extend(WaveSurfer, Observer);
+
+
+/* Mark */
+WaveSurfer.Mark = {
+    id: null,
+    percentage: 0,
+    position: 0,
+
+    update: function (options) {
+        WaveSurfer.util.extend(this, options);
+        this.fireEvent('update');
+        return this;
+    },
+
+    remove: function () {
+        this.fireEvent('remove');
+    }
+};
+
+WaveSurfer.util.extend(WaveSurfer.Mark, Observer);
