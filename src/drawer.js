@@ -14,8 +14,6 @@ WaveSurfer.Drawer = {
         container     : null
     },
 
-    scale: window.devicePixelRatio,
-
     init: function (params) {
         this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
 

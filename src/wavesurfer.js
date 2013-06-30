@@ -22,8 +22,14 @@ var WaveSurfer = {
         this.backend = Object.create(WaveSurfer.WebAudio);
         this.backend.init(this.params);
         var my = this;
+        var last;
         this.backend.on('audioprocess', function (progress) {
-            my.onAudioProcess(progress);
+            last = Date.now();
+            webkitRequestAnimationFrame(function (t) {
+                if (last < t) {
+                    my.onAudioProcess(progress);
+                }
+            });
         });
     },
 
