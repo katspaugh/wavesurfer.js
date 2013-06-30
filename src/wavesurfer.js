@@ -138,6 +138,13 @@ var WaveSurfer = {
         var peaks = this.backend.getPeaks(this.drawer.width);
         var maxPeak = Math.max.apply(Math, peaks);
 
+        // Update percentage on any markers added before the audio loaded.
+        var duration = this.backend.getDuration() || 1;
+        Object.keys(this.markers).forEach(function (id) {
+            var marker = my.markers[id];
+            marker.update({ percentage: marker.position / duration });
+        });
+
         this.drawer.drawPeaks(peaks, maxPeak);
 
         this.fireEvent('ready');
