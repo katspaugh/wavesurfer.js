@@ -2,9 +2,7 @@ wavesurfer.js
 =============
 
 Interactive navigable audio visualization using
-[WebAudio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
-(or [`<audio>` element](http://www.w3.org/wiki/HTML/Elements/audio)
-with pre-generated graphics) and SVG.
+[WebAudio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) and SVG.
 
 ![Imgur](http://i.imgur.com/dnH8q.png)
 
