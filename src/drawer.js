@@ -24,16 +24,22 @@ WaveSurfer.Drawer = {
         this.createSvg();
     },
 
-    node: function (name, attrs) {
-        var node = document.createElementNS('http://www.w3.org/2000/svg', name);
-        attrs && Object.keys(attrs).forEach(function (key) {
+    attr: function (node, attrs) {
+        Object.keys(attrs).forEach(function (key) {
             node.setAttribute(key, attrs[key]);
         });
+    },
+
+    node: function (name, attrs) {
+        var node = document.createElementNS('http://www.w3.org/2000/svg', name);
+        attrs && this.attr(node, attrs);
         return node;
     },
 
     createSvg: function () {
-        this.svg = this.node('svg');
+        this.svg = this.node('svg', {
+            viewBox: [ 0, 0, this.width, this.height ].join(' ')
+        });
 
         var defs = this.node('defs');
 
@@ -82,7 +88,7 @@ WaveSurfer.Drawer = {
             x2: 0,
             y1: this.height / 2 - this.params.loaderHeight / 2,
             y2: this.height / 2 + this.params.loaderHeight,
-            'stroke-dasharray': this.width / 30,
+            'stroke-dasharray': ~~(this.width / 30),
             'stroke-width': this.params.loaderHeight,
             stroke: this.params.loaderColor
         });
@@ -139,10 +145,12 @@ WaveSurfer.Drawer = {
             markRect.setAttribute('id', mark.id);
             this.svg.appendChild(markRect);
         }
-        markRect.setAttribute('fill', mark.color);
-        markRect.setAttribute('width', mark.width || 1);
-        markRect.setAttribute('height', this.height);
-        markRect.setAttribute('x', Math.round(mark.percentage * this.width));
+        this.attr(markRect, {
+            fill: mark.color,
+            width: mark.width || 1,
+            height: this.height,
+            x: Math.round(mark.percentage * this.width)
+        });
     },
 
     removeMark: function (mark) {

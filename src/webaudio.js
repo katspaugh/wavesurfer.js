@@ -156,7 +156,7 @@ WaveSurfer.WebAudio = {
         var buffer = this.currentBuffer;
         var frames = buffer.getChannelData(0).length;
         var k = frames / length;
-        var peaks = [];
+        var peaks = new Int8Array(length);
 
         for (var i = 0; i < length; i++) {
             var sum = 0;
@@ -172,7 +172,7 @@ WaveSurfer.WebAudio = {
                 }
                 sum += peak;
             }
-            peaks[i] = sum;
+            peaks[i] = sum * 32;
         }
         return peaks;
     },

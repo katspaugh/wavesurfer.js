@@ -136,7 +136,11 @@ var WaveSurfer = {
     drawBuffer: function () {
         var my = this;
         var peaks = this.backend.getPeaks(this.drawer.width);
-        var maxPeak = Math.max.apply(Math, peaks);
+        var maxPeak = -Infinity;
+        for (var i = 0, len = peaks.length; i < len; i++) {
+            var val = peaks[i];
+            if (val > maxPeak) { maxPeak = val; }
+        }
 
         // Update percentage on any markers added before the audio loaded.
         var duration = this.backend.getDuration() || 1;
