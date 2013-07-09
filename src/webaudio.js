@@ -151,16 +151,21 @@ WaveSurfer.WebAudio = {
         this.paused = true;
     },
 
+    /**
+     * @returns {Uint8Array} Array of volume peaks.
+     */
     getPeaks: function (length, sampleStep) {
         sampleStep = sampleStep || 100;
         var buffer = this.currentBuffer;
         var frames = buffer.getChannelData(0).length;
         var k = frames / length;
-        var peaks = new Int8Array(length);
+        var channels = buffer.numberOfChannels;
+        var clamp = ~~(256 / channels) - 1;
+        var peaks = new Uint8ClampedArray(length);
 
         for (var i = 0; i < length; i++) {
             var sum = 0;
-            for (var c = 0; c < buffer.numberOfChannels; c++) {
+            for (var c = 0; c < channels; c++) {
                 var chan = buffer.getChannelData(c);
                 var vals = chan.subarray(~~(i * k), ~~((i + 1) * k));
                 var peak = -Infinity;
@@ -172,8 +177,9 @@ WaveSurfer.WebAudio = {
                 }
                 sum += peak;
             }
-            peaks[i] = sum * 32;
+            peaks[i] = sum * clamp;
         }
+        console.log(clamp);
         return peaks;
     },
 

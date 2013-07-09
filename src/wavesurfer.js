@@ -134,22 +134,15 @@ var WaveSurfer = {
     },
 
     drawBuffer: function () {
-        var my = this;
-        var peaks = this.backend.getPeaks(this.drawer.width);
-        var maxPeak = -Infinity;
-        for (var i = 0, len = peaks.length; i < len; i++) {
-            var val = peaks[i];
-            if (val > maxPeak) { maxPeak = val; }
-        }
-
         // Update percentage on any markers added before the audio loaded.
         var duration = this.backend.getDuration() || 1;
         Object.keys(this.markers).forEach(function (id) {
-            var marker = my.markers[id];
+            var marker = this.markers[id];
             marker.update({ percentage: marker.position / duration });
-        });
+        }, this);
 
-        this.drawer.drawPeaks(peaks, maxPeak);
+        var peaks = this.backend.getPeaks(this.drawer.width);
+        this.drawer.drawPeaks(peaks, 255);
 
         this.fireEvent('ready');
     },

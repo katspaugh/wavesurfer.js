@@ -32,7 +32,9 @@ window.addEventListener('load', function () {
 
     wavesurfer.bindMarks();
 
-    wavesurfer.load('example/media/sonnet_23.mp3');
+    wavesurfer.bindDragNDrop();
+
+    wavesurfer.load('example/media/Uniform_Motion_-_The_Telephone_Box.mp3');
 });
 
 // Bind buttons and keypresses
