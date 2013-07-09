@@ -1,7 +1,7 @@
 var wavesurfer = Object.create(WaveSurfer);
 
 wavesurfer.on('ready', function () {
-//    wavesurfer.playPause();
+    wavesurfer.playAt(0);
 });
 
 wavesurfer.on('mark', function (marker) {
@@ -34,7 +34,7 @@ window.addEventListener('load', function () {
 
     wavesurfer.bindDragNDrop();
 
-    wavesurfer.load('example/media/Uniform_Motion_-_The_Telephone_Box.mp3');
+    wavesurfer.load('example/media/Serphonic_-_Switch_2.mp3');
 });
 
 // Bind buttons and keypresses
