@@ -37,7 +37,7 @@ WaveSurfer.Drawer = {
     },
 
     createSvg: function () {
-        this.svg = this.node('svg', {
+        var svg = this.node('svg', {
             viewBox: [ 0, 0, this.width, this.height ].join(' ')
         });
 
@@ -46,19 +46,18 @@ WaveSurfer.Drawer = {
         // Wave path
         var pathId = WaveSurfer.util.getId();
         var path = this.node('path', {
-            id: pathId,
-            'stroke-linecap': 'round'
+            id: pathId
         });
         defs.appendChild(path);
 
         // Progress clip
-        var clipRect = this.node('rect', {
-            width: 0,
-            height: this.height
-        });
         var clipId = WaveSurfer.util.getId();
         var clip = this.node('clipPath', {
             id: clipId
+        });
+        var clipRect = this.node('rect', {
+            width: 0,
+            height: this.height
         });
         clip.appendChild(clipRect);
         defs.appendChild(clip);
@@ -88,17 +87,17 @@ WaveSurfer.Drawer = {
             x2: 0,
             y1: this.height / 2 - this.params.loaderHeight / 2,
             y2: this.height / 2 + this.params.loaderHeight,
-            'stroke-dasharray': ~~(this.width / 30),
             'stroke-width': this.params.loaderHeight,
             stroke: this.params.loaderColor
         });
 
         [ defs, useWave, useClip, cursor, loader ].forEach(function (node) {
-            this.svg.appendChild(node);
-        }, this);
+            svg.appendChild(node);
+        });
 
-        this.container.appendChild(this.svg);
+        this.container.appendChild(svg);
 
+        this.svg = svg;
         this.wavePath = path;
         this.progressPath = clipRect;
         this.cursor = cursor;
@@ -111,16 +110,15 @@ WaveSurfer.Drawer = {
         var len = peaks.length;
         var height = this.height;
         var data = [];
+        var factor = height / max;
 
         for (var i = 0; i < len; i++) {
-            var h = Math.round(peaks[i] * (height / max));
-            var x = i;
+            var h = Math.round(peaks[i] * factor);
             var y = Math.round((height - h) / 2);
-            data.push('M', x, y, 'l', 0, h);
+            data.push('M', i, y, 'l', 0, h);
         }
 
-        var d = data.join(' ');
-        this.wavePath.setAttribute('d', d);
+        this.wavePath.setAttribute('d', data.join(' '));
         this.loader.style.display = 'none';
     },
 

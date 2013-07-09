@@ -152,34 +152,38 @@ WaveSurfer.WebAudio = {
     },
 
     /**
-     * @returns {Uint8Array} Array of volume peaks.
+     * @returns {Float32Array} Array of peaks.
      */
     getPeaks: function (length, sampleStep) {
         sampleStep = sampleStep || 100;
         var buffer = this.currentBuffer;
-        var frames = buffer.getChannelData(0).length;
-        var k = frames / length;
-        var channels = buffer.numberOfChannels;
-        var clamp = ~~(256 / channels) - 1;
-        var peaks = new Uint8ClampedArray(length);
+        var k = buffer.length / length;
+        var peaks = new Float32Array(length);
 
-        for (var i = 0; i < length; i++) {
-            var sum = 0;
-            for (var c = 0; c < channels; c++) {
-                var chan = buffer.getChannelData(c);
-                var vals = chan.subarray(~~(i * k), ~~((i + 1) * k));
+        for (var c = 0; c < buffer.numberOfChannels; c++) {
+            var chan = buffer.getChannelData(c);
+
+            for (var i = 0; i < length; i++) {
                 var peak = -Infinity;
-                for (var p = 0; p < k; p += sampleStep) {
-                    var val = Math.abs(vals[p]);
-                    if (val > peak){
+                var start = ~~(i * k);
+                var end = (i + 1) * k;
+                for (var j = start; j < end; j += sampleStep) {
+                    var val = chan[j];
+                    if (val > peak) {
                         peak = val;
+                    } else if (-val > peak) {
+                        peak = -val;
                     }
                 }
-                sum += peak;
+
+                if (c > 0) {
+                    peaks[i] += peak;
+                } else {
+                    peaks[i] = peak;
+                }
             }
-            peaks[i] = sum * clamp;
         }
-        console.log(clamp);
+
         return peaks;
     },
 

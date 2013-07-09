@@ -1,14 +1,14 @@
 var wavesurfer = Object.create(WaveSurfer);
 
 wavesurfer.on('ready', function () {
-    wavesurfer.playAt(0);
+//    wavesurfer.playAt(0);
 });
 
 wavesurfer.on('mark', function (marker) {
     var pos = marker.position;
 
     (function animate (width) {
-        webkitRequestAnimationFrame(function (t) {
+        webkitRequestAnimationFrame(function () {
             marker.update({ width: width });
             width > 1 && animate(width - 1);
         });

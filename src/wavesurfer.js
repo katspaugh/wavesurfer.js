@@ -141,8 +141,15 @@ var WaveSurfer = {
             marker.update({ percentage: marker.position / duration });
         }, this);
 
+        console.profile();
         var peaks = this.backend.getPeaks(this.drawer.width);
-        this.drawer.drawPeaks(peaks, 255);
+        console.profileEnd();
+        var max = -Infinity;
+        for (var i = 0; i < this.drawer.width; i++) {
+            var val = peaks[i];
+            if (val > max) { max = val; }
+        }
+        this.drawer.drawPeaks(peaks, max);
 
         this.fireEvent('ready');
     },
