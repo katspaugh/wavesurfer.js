@@ -1,7 +1,7 @@
 var wavesurfer = Object.create(WaveSurfer);
 
 wavesurfer.on('ready', function () {
-//    wavesurfer.playAt(0);
+    wavesurfer.playAt(0);
 });
 
 wavesurfer.on('mark', function (marker) {

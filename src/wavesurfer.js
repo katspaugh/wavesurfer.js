@@ -141,9 +141,7 @@ var WaveSurfer = {
             marker.update({ percentage: marker.position / duration });
         }, this);
 
-        console.profile();
         var peaks = this.backend.getPeaks(this.drawer.width);
-        console.profileEnd();
         var max = -Infinity;
         for (var i = 0; i < this.drawer.width; i++) {
             var val = peaks[i];
