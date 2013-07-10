@@ -1,3 +1,5 @@
+'use strict';
+
 var wavesurfer = Object.create(WaveSurfer);
 
 wavesurfer.on('ready', function () {
@@ -16,7 +18,7 @@ wavesurfer.on('mark', function (marker) {
 });
 
 // init & load mp3
-window.addEventListener('load', function () {
+document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.init({
         container     : document.querySelector('.waveform'),
         fillParent    : true,
@@ -38,9 +40,7 @@ window.addEventListener('load', function () {
 });
 
 // Bind buttons and keypresses
-window.addEventListener('load', function () {
-    'use strict';
-
+document.addEventListener('DOMContentLoaded', function () {
     var eventHandlers = {
         'play': function () {
             wavesurfer.playPause();
