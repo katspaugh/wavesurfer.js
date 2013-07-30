@@ -208,14 +208,10 @@ var WaveSurfer = {
      */
     bindClick: function () {
         var my = this;
-        this.drawer.container.addEventListener('click', function (e) {
-            var relX = e.offsetX;
-            if (null == relX) { relX = e.layerX; }
-            var progress = my.drawer.getProgressAtPoint(relX);
-
+        this.drawer.on('click', function (progress) {
             my.seekTo(progress);
             my.fireEvent('click', progress);
-        }, false);
+        });
     },
 
     normalizeProgress: function (progress) {

@@ -10,6 +10,7 @@ WaveSurfer.Drawer = {
         cursorWidth   : 1,
         markerWidth   : 1,
         minPxPerSec   : 0,
+        scrollParent  : false,
         container     : null
     },
 
@@ -22,6 +23,7 @@ WaveSurfer.Drawer = {
         this.lastPos = 0;
 
         this.createSvg();
+        this.bindClick();
     },
 
     attr: function (node, attrs) {
@@ -105,16 +107,53 @@ WaveSurfer.Drawer = {
         this.loader = loader;
     },
 
+    bindClick: function () {
+        var my = this;
+        this.container.addEventListener('click', function (e) {
+            var relX = e.offsetX;
+            if (null == relX) { relX = e.layerX; }
+            var progress = relX / my.container.scrollWidth;
+
+            my.fireEvent('click', progress);
+        }, false);
+    },
+
+    addScroll: function () {
+        this.container.style.overflowX = 'scroll';
+        this.container.style.overflowY = 'hidden';
+        this.attr(this.svg, {
+            width: this.width,
+            height: this.height
+        });
+    },
+
+    recenter: function (percent) {
+        var position = ~~(this.width * percent);
+        this.recenterOnPosition(position, true);
+    },
+
+    recenterOnPosition: function (position, immediate) {
+        var scrollLeft = this.container.scrollLeft;
+        var half = this.container.clientWidth / 2;
+        var target = position - half;
+        var offset = target - scrollLeft;
+
+        // if the cursor is currently visible...
+        if (!immediate && offset >= -half && offset < half) {
+            // we'll limit the "re-center" rate.
+            var rate = 5;
+            offset = Math.max(-rate, Math.min(rate, offset));
+            target = scrollLeft + offset;
+        }
+
+        this.container.scrollLeft = ~~target;
+    },
+
 
     /* API */
     getPixels: function (duration) {
         var minPx = this.params.minPxPerSec;
         return Math.max(Math.ceil(duration * minPx), this.width);
-    },
-
-    getProgressAtPoint: function (x) {
-        var w = this.container.clientWidth;
-        return x / w;
     },
 
     getWidth: function () {
@@ -126,6 +165,11 @@ WaveSurfer.Drawer = {
         this.attr(this.svg, {
             viewBox: [ 0, 0, this.width, this.height ].join(' ')
         });
+
+        if (this.params.scrollParent) {
+            this.addScroll();
+        }
+
         return this.width;
     },
 
@@ -163,6 +207,10 @@ WaveSurfer.Drawer = {
                 pos - ~~(this.params.cursorWidth / 2),
                 this.width - this.params.cursorWidth
             ));
+
+            if (this.params.scrollParent) {
+                this.recenterOnPosition(pos);
+            }
         }
     },
 
@@ -193,3 +241,5 @@ WaveSurfer.Drawer = {
         }
     }
 };
+
+WaveSurfer.util.extend(WaveSurfer.Drawer, Observer);

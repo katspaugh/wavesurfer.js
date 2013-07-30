@@ -22,14 +22,22 @@ wavesurfer.on('mark', function (marker) {
 
 // init & load mp3
 document.addEventListener('DOMContentLoaded', function () {
-    wavesurfer.init({
+    var options = {
         container     : document.querySelector('#waveform'),
         waveColor     : 'violet',
         progressColor : 'purple',
         loaderColor   : 'purple',
         cursorColor   : 'navy',
-        minPxPerSec   : 1
-    });
+        minPxPerSec   : 1,
+        scrollParent  : false
+    };
+
+    if ('#scroll' == location.hash) {
+        options.minPxPerSec = 20;
+        options.scrollParent = true;
+    }
+
+    wavesurfer.init(options);
 
     wavesurfer.bindMarks();
 
