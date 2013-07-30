@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', function () {
         waveColor     : 'violet',
         progressColor : 'purple',
         loaderColor   : 'purple',
-        cursorColor   : 'navy'
+        cursorColor   : 'navy',
+        minPxPerSec   : 1
     });
 
     wavesurfer.bindMarks();

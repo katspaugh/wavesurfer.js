@@ -138,9 +138,10 @@ var WaveSurfer = {
             marker.update({ percentage: marker.position / duration });
         }, this);
 
-        var peaks = this.backend.getPeaks(this.drawer.width);
+        var pixels = this.drawer.getPixels(duration);
+        var peaks = this.backend.getPeaks(pixels);
         var max = -Infinity;
-        for (var i = 0; i < this.drawer.width; i++) {
+        for (var i = 0; i < pixels; i++) {
             var val = peaks[i];
             if (val > max) { max = val; }
         }
@@ -210,16 +211,16 @@ var WaveSurfer = {
         this.drawer.container.addEventListener('click', function (e) {
             var relX = e.offsetX;
             if (null == relX) { relX = e.layerX; }
-            var progress = relX / my.drawer.width;
+            var progress = my.drawer.getProgressAtPoint(relX);
 
             my.seekTo(progress);
             my.fireEvent('click', progress);
         }, false);
     },
 
-    normalizeProgress: function (progress, rounding) {
-        rounding = rounding || this.drawer.width;
-        return Math.round(progress * rounding) / rounding;
+    normalizeProgress: function (progress) {
+        var pixels = this.drawer.getWidth();
+        return Math.round(progress * pixels) / pixels;
     },
 
     bindMarks: function () {

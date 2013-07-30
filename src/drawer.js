@@ -9,6 +9,7 @@ WaveSurfer.Drawer = {
         loaderHeight  : 2,
         cursorWidth   : 1,
         markerWidth   : 1,
+        minPxPerSec   : 0,
         container     : null
     },
 
@@ -106,7 +107,31 @@ WaveSurfer.Drawer = {
 
 
     /* API */
+    getPixels: function (duration) {
+        var minPx = this.params.minPxPerSec;
+        return Math.max(Math.ceil(duration * minPx), this.width);
+    },
+
+    getProgressAtPoint: function (x) {
+        var w = this.container.clientWidth;
+        return x / w;
+    },
+
+    getWidth: function () {
+        return this.width;
+    },
+
+    setWidth: function (width) {
+        this.width = width;
+        this.attr(this.svg, {
+            viewBox: [ 0, 0, this.width, this.height ].join(' ')
+        });
+        return this.width;
+    },
+
     drawPeaks: function (peaks, max) {
+        this.setWidth(peaks.length);
+
         var height = this.height;
         var pathData = [];
 
@@ -114,7 +139,7 @@ WaveSurfer.Drawer = {
             pathData.push('M', 0, Math.round(height / 2), 'l', this.width, 0);
         } else {
             var factor = height / max;
-            for (var i = 0, len = peaks.length; i < len; i++) {
+            for (var i = 0; i < this.width; i++) {
                 var h = Math.round(peaks[i] * factor);
                 var y = Math.round((height - h) / 2);
                 pathData.push('M', i, y, 'l', 0, h);
