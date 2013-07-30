@@ -4,11 +4,11 @@
         <title>wavesurfer.js</title>
 
         <link href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" rel="icon" type="image/x-icon" />
-        <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.min.css" />
-        <link rel="stylesheet" href="http://rc.getbootstrap.com/assets/css/bootstrap.css" />
+        <link rel="stylesheet" href="example/css/font-awesome.min.css" />
+        <link rel="stylesheet" href="example/css/bootstrap.min.css" />
         <link rel="stylesheet" href="http://simonwhitaker.github.com/github-fork-ribbon-css/gh-fork-ribbon.css" />
 
-        <link rel="stylesheet" href="example/style.css" />
+        <link rel="stylesheet" href="example/css/style.css" />
 
         <script src="lib/observer.js"></script>
 
@@ -25,7 +25,9 @@
 
             <hr />
 
-            <div class="waveform"><!-- Here be waveform --></div>
+            <div id="waveform" style="height: 128px">
+                <!-- Here be the waveform -->
+            </div>
 
             <div class="controls">
                 <button class="btn" data-action="back">

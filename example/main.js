@@ -6,11 +6,14 @@ wavesurfer.on('ready', function () {
     wavesurfer.playAt(0);
 });
 
+var requestFrame = window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame;
+
 wavesurfer.on('mark', function (marker) {
     var pos = marker.position;
 
     (function animate (width) {
-        webkitRequestAnimationFrame(function () {
+        requestFrame(function () {
             marker.update({ width: width });
             width > 1 && animate(width - 1);
         });
@@ -20,12 +23,7 @@ wavesurfer.on('mark', function (marker) {
 // init & load mp3
 document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.init({
-        container     : document.querySelector('.waveform'),
-        fillParent    : true,
-        markerColor   : 'rgba(0, 0, 0, 0.5)',
-        frameMargin   : 0.1,
-        maxSecPerPx   : parseFloat(location.hash.substring(1)),
-        loadPercent   : true,
+        container     : document.querySelector('#waveform'),
         waveColor     : 'violet',
         progressColor : 'purple',
         loaderColor   : 'purple',
