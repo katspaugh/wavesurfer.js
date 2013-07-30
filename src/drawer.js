@@ -5,11 +5,9 @@ WaveSurfer.Drawer = {
         waveColor     : '#999',
         progressColor : '#333',
         cursorColor   : '#ddd',
-        markerColor   : '#eee',
         loaderColor   : '#999',
         loaderHeight  : 2,
         cursorWidth   : 1,
-        loadPercent   : false,
         markerWidth   : 1,
         container     : null
     },
@@ -20,6 +18,7 @@ WaveSurfer.Drawer = {
         this.container = this.params.container;
         this.width = this.container.clientWidth;
         this.height = this.container.clientHeight;
+        this.lastPos = 0;
 
         this.createSvg();
     },
@@ -123,8 +122,9 @@ WaveSurfer.Drawer = {
     },
 
     progress: function (progress) {
-        var pos = Math.round(progress * this.width);
-        if (pos != this.lastPos) {
+        var pos = progress * this.width;
+        var minPxDelta = 0.5;
+        if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {
             this.progressPath.setAttribute('width', pos);
             this.cursor.setAttribute('x', pos);
             this.lastPos = pos;

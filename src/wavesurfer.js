@@ -21,15 +21,12 @@ var WaveSurfer = {
     createBackend: function () {
         this.backend = Object.create(WaveSurfer.WebAudio);
         this.backend.init(this.params);
+
         var my = this;
         var last;
+
         this.backend.on('audioprocess', function (progress) {
-            last = Date.now();
-            webkitRequestAnimationFrame(function (t) {
-                if (last < t) {
-                    my.onAudioProcess(progress);
-                }
-            });
+            my.onAudioProcess(progress);
         });
     },
 
@@ -241,29 +238,8 @@ var WaveSurfer = {
                 }
             });
         });
-    },
-
-
-    util: {
-        extend: function (dest) {
-            var sources = Array.prototype.slice.call(arguments, 1);
-            sources.forEach(function (source) {
-                if (source != null) {
-                    Object.keys(source).forEach(function (key) {
-                        dest[key] = source[key];
-                    });
-                }
-            });
-            return dest;
-        },
-
-        getId: function () {
-            return 'wavesurfer_' + Math.random().toString(32).substring(2);
-        }
     }
 };
-
-WaveSurfer.util.extend(WaveSurfer, Observer);
 
 
 /* Mark */
@@ -283,4 +259,24 @@ WaveSurfer.Mark = {
     }
 };
 
+/* Common utilities */
+WaveSurfer.util = {
+    extend: function (dest) {
+        var sources = Array.prototype.slice.call(arguments, 1);
+        sources.forEach(function (source) {
+            if (source != null) {
+                Object.keys(source).forEach(function (key) {
+                    dest[key] = source[key];
+                });
+            }
+        });
+        return dest;
+    },
+
+    getId: function () {
+        return 'wavesurfer_' + Math.random().toString(32).substring(2);
+    }
+};
+
+WaveSurfer.util.extend(WaveSurfer, Observer);
 WaveSurfer.util.extend(WaveSurfer.Mark, Observer);
