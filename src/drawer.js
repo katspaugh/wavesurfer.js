@@ -124,10 +124,16 @@ WaveSurfer.Drawer = {
     progress: function (progress) {
         var pos = progress * this.width;
         var minPxDelta = 0.5;
+
         if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {
-            this.progressPath.setAttribute('width', pos);
-            this.cursor.setAttribute('x', pos);
             this.lastPos = pos;
+
+            this.progressPath.setAttribute('width', pos);
+
+            this.cursor.setAttribute('x', Math.min(
+                pos - ~~(this.params.cursorWidth / 2),
+                this.width - this.params.cursorWidth
+            ));
         }
     },
 
