@@ -77,7 +77,8 @@ WaveSurfer.Drawer = {
         var cursor = this.node('rect', {
             width: this.params.cursorWidth,
             height: this.height,
-            fill: this.params.cursorColor
+            fill: this.params.cursorColor,
+            'class': 'wavesurfer-cursor'
         });
 
         // Loader
@@ -106,18 +107,21 @@ WaveSurfer.Drawer = {
 
     /* API */
     drawPeaks: function (peaks, max) {
-        var len = peaks.length;
         var height = this.height;
-        var data = [];
-        var factor = height / max;
+        var pathData = [];
 
-        for (var i = 0; i < len; i++) {
-            var h = Math.round(peaks[i] * factor);
-            var y = Math.round((height - h) / 2);
-            data.push('M', i, y, 'l', 0, h);
+        if (0 == max) {
+            pathData.push('M', 0, Math.round(height / 2), 'l', this.width, 0);
+        } else {
+            var factor = height / max;
+            for (var i = 0, len = peaks.length; i < len; i++) {
+                var h = Math.round(peaks[i] * factor);
+                var y = Math.round((height - h) / 2);
+                pathData.push('M', i, y, 'l', 0, h);
+            }
         }
 
-        this.wavePath.setAttribute('d', data.join(' '));
+        this.wavePath.setAttribute('d', pathData.join(' '));
         this.loader.style.display = 'none';
     },
 
