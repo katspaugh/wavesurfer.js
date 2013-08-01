@@ -2,7 +2,6 @@
 
 var WaveSurfer = {
     defaultParams: {
-        stretchHeight: false,
         skipLength: 2
     },
 
