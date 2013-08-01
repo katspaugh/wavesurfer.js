@@ -187,6 +187,10 @@ WaveSurfer.WebAudio = {
         return peaks;
     },
 
+    getMaxPeak: function () {
+        return this.currentBuffer.numberOfChannels;
+    },
+
     getPlayedPercents: function () {
         var duration = this.getDuration();
         return duration > 0 ? this.getCurrentTime() / duration : 0;

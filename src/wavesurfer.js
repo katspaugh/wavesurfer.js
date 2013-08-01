@@ -2,6 +2,7 @@
 
 var WaveSurfer = {
     defaultParams: {
+        stretchHeight: false,
         skipLength: 2
     },
 
@@ -140,11 +141,8 @@ var WaveSurfer = {
 
         var pixels = this.drawer.getPixels(duration);
         var peaks = this.backend.getPeaks(pixels);
-        var max = -Infinity;
-        for (var i = 0; i < pixels; i++) {
-            var val = peaks[i];
-            if (val > max) { max = val; }
-        }
+        var max = this.backend.getMaxPeak();
+
         this.drawer.drawPeaks(peaks, max);
 
         this.fireEvent('ready');
