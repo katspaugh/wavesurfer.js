@@ -238,6 +238,11 @@ WaveSurfer.Mark = {
     percentage: 0,
     position: 0,
 
+    getTitle: function () {
+        var d = new Date(this.position * 1000);
+        return d.getMinutes() + ':' + d.getSeconds();
+    },
+
     update: function (options) {
         WaveSurfer.util.extend(this, options);
         this.fireEvent('update');

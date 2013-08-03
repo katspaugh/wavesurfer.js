@@ -221,17 +221,22 @@ WaveSurfer.Drawer = {
 
     addMark: function (mark) {
         var markRect = document.getElementById(mark.id);
-        if (!markRect) {
+        if (markRect) {
+            var title = markRect.querySelector('text');
+        } else {
             markRect = this.node('rect');
             markRect.setAttribute('id', mark.id);
             this.svg.appendChild(markRect);
+            title = this.node('title');
+            markRect.appendChild(title);
         }
         this.attr(markRect, {
             fill: mark.color,
-            width: mark.width || 1,
+            width: mark.width || this.params.markerWidth,
             height: this.height,
             x: Math.round(mark.percentage * this.width)
         });
+        title.textContent = mark.getTitle();
     },
 
     removeMark: function (mark) {
