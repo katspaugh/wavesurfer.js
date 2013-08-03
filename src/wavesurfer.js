@@ -48,7 +48,7 @@ var WaveSurfer = {
     },
 
     playPause: function () {
-        if (this.backend.paused) {
+        if (this.backend.isPaused()) {
             var playedPercent = this.backend.getPlayedPercents();
             if (playedPercent >= 1.0) playedPercent = 0;
             this.playAt(playedPercent);
@@ -73,7 +73,7 @@ var WaveSurfer = {
     },
 
     seekTo: function (progress) {
-        var paused = this.backend.paused;
+        var paused = this.backend.isPaused();
         this.playAt(progress);
         if (paused) {
             this.pause();
@@ -126,10 +126,6 @@ var WaveSurfer = {
         return [ position, duration ];
     },
 
-    isReady: function () {
-        return this.backend.currentBuffer;
-    },
-
     drawBuffer: function () {
         // Update percentage on any markers added before the audio loaded.
         var duration = this.backend.getDuration() || 1;
@@ -170,7 +166,7 @@ var WaveSurfer = {
 
         xhr.addEventListener('load', function (e) {
             my.drawer.loading(1);
-            my.backend.loadData(
+            my.backend.loadBuffer(
                 e.target.response,
                 my.drawBuffer.bind(my)
             );

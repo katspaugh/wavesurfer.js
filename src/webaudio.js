@@ -17,7 +17,9 @@ WaveSurfer.WebAudio = {
         this.byteTimeDomain = new Uint8Array(this.params.fftSize);
         this.byteFrequency = new Uint8Array(this.params.fftSize);
 
-        this.paused = true;
+        this.lastStart = 0;
+        this.lastPause = 0;
+        this.startTime = 0;
 
         this.createAnalyzer();
         this.createScriptNode();
@@ -31,11 +33,13 @@ WaveSurfer.WebAudio = {
     },
 
     createScriptNode: function () {
-        this.scriptNode = this.ac.createJavaScriptNode(this.params.fftSize / 2, 1, 1);
-        this.scriptNode.connect(this.ac.destination);
         var my = this;
+        this.scriptNode = this.ac.createJavaScriptNode(
+            this.params.fftSize / 2, 1, 1
+        );
+        this.scriptNode.connect(this.ac.destination);
         this.scriptNode.onaudioprocess = function () {
-            if (!my.isPaused()) {
+            if (my.source && !my.isPaused()) {
                 my.fireEvent('audioprocess', my.getPlayedPercents());
             }
         };
@@ -72,22 +76,21 @@ WaveSurfer.WebAudio = {
     },
 
     /**
-     * Loads audiobuffer.
+     * Decodes binary data and creates buffer source.
      *
-     * @param {AudioBuffer} audioData Audio data.
+     * @param {ArrayBuffer} arraybuffer Audio data.
      */
-    loadData: function (audiobuffer, cb, errb) {
+    loadBuffer: function (arraybuffer, cb, errb) {
         var my = this;
 
-        this.pause();
+        if (this.source) {
+            this.pause();
+        }
 
         this.ac.decodeAudioData(
-            audiobuffer,
+            arraybuffer,
             function (buffer) {
                 my.currentBuffer = buffer;
-                my.lastStart = 0;
-                my.lastPause = 0;
-                my.startTime = null;
                 cb && cb(buffer);
             },
             function () {
@@ -98,11 +101,11 @@ WaveSurfer.WebAudio = {
     },
 
     isPaused: function () {
-        return this.paused;
+        return this.source.PLAYING_STATE != this.source.playbackState;
     },
 
     getDuration: function () {
-        return this.currentBuffer && this.currentBuffer.duration;
+        return this.currentBuffer.duration;
     },
 
     /**
@@ -114,48 +117,34 @@ WaveSurfer.WebAudio = {
      * @param {Number} end End offset in seconds,
      * relative to the beginning of the track.
      */
-    play: function (start, end, delay) {
-        if (!this.currentBuffer) {
-            return;
-        }
-
-        this.pause();
-
+    play: function (start, end) {
+        // recreate buffer source
         this.setSource(this.ac.createBufferSource());
         this.source.buffer = this.currentBuffer;
 
         if (null == start) { start = this.getCurrentTime(); }
         if (null == end  ) { end = this.source.buffer.duration; }
-        if (null == delay) { delay = 0; }
 
+        this.pause();
         this.lastStart = start;
+        this.lastPause = end;
         this.startTime = this.ac.currentTime;
-
-        this.source.noteGrainOn(delay, start, end - start);
-
-        this.paused = false;
+        this.source.noteGrainOn(0, start, end - start);
     },
 
     /**
      * Pauses the loaded audio.
      */
-    pause: function (delay) {
-        if (!this.currentBuffer || this.paused) {
-            return;
-        }
-
-        this.lastPause = this.getCurrentTime();
-
-        this.source.noteOff(delay || 0);
-
-        this.paused = true;
+    pause: function () {
+        this.lastPause = this.lastStart + (this.ac.currentTime - this.startTime);
+        this.source.noteOff(0);
     },
 
     /**
      * @returns {Float32Array} Array of peaks.
      */
     getPeaks: function (length, sampleStep) {
-        sampleStep = sampleStep || 100;
+        sampleStep = sampleStep || 128;
         var buffer = this.currentBuffer;
         var k = buffer.length / length;
         var peaks = new Float32Array(length);
@@ -188,7 +177,8 @@ WaveSurfer.WebAudio = {
     },
 
     getMaxPeak: function () {
-        return this.currentBuffer.numberOfChannels;
+        /* Each peak is a sum of absolute values from each channel. */
+        return this.currentBuffer.numberOfChannels * 1.0;
     },
 
     getPlayedPercents: function () {
@@ -199,9 +189,8 @@ WaveSurfer.WebAudio = {
     getCurrentTime: function () {
         if (this.isPaused()) {
             return this.lastPause;
-        } else {
-            return this.lastStart + (this.ac.currentTime - this.startTime);
         }
+        return this.lastStart + (this.ac.currentTime - this.startTime);
     },
 
     /**
