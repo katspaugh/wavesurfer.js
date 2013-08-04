@@ -85,9 +85,7 @@ WaveSurfer.Drawer.SVG = WaveSurfer.util.extend({}, WaveSurfer.Drawer, {
         }
     },
 
-    drawPeaks: function (peaks, max) {
-        this.setWidth(peaks.length);
-
+    drawWave: function (peaks, max) {
         var height = this.height;
         var pathData = [];
 
@@ -105,11 +103,11 @@ WaveSurfer.Drawer.SVG = WaveSurfer.util.extend({}, WaveSurfer.Drawer, {
         this.wavePath.setAttribute('d', pathData.join(' '));
     },
 
-    updateProgress: function (position) {
-        this.progressPath.setAttribute('width', position);
+    updateProgress: function () {
+        this.progressPath.setAttribute('width', this.lastPos);
 
         this.cursor.setAttribute('x', Math.min(
-            position - ~~(this.params.cursorWidth / 2),
+            this.lastPos - ~~(this.params.cursorWidth / 2),
             this.width - this.params.cursorWidth
         ));
     },

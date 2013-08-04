@@ -14,7 +14,7 @@ var WaveSurfer = {
         scrollParent  : false,
         AudioContext  : null,
         container     : null,
-        renderer      : 'SVG'
+        renderer      : 'Canvas'
     },
 
     init: function (params) {
@@ -23,6 +23,7 @@ var WaveSurfer = {
 
         this.drawer = Object.create(WaveSurfer.Drawer[this.params.renderer]);
         this.drawer.init(this.params);
+        this.drawer.on('redraw', this.drawBuffer.bind(this));
 
         this.markers = {};
 
@@ -146,8 +147,6 @@ var WaveSurfer = {
         var max = this.backend.getMaxPeak();
 
         this.drawer.drawPeaks(peaks, max);
-
-        this.fireEvent('ready');
     },
 
     /**
@@ -178,6 +177,7 @@ var WaveSurfer = {
                 function () {
                     my.fireEvent('loading', 100);
                     my.drawBuffer();
+                    my.fireEvent('ready');
                 }
             );
         }, false);
@@ -195,7 +195,10 @@ var WaveSurfer = {
         reader.addEventListener('load', function (e) {
             my.backend.loadBuffer(
                 e.target.result,
-                my.drawBuffer.bind(my)
+                function () {
+                    my.drawBuffer();
+                    my.fireEvent('ready');
+                }
             );
         }, false);
 

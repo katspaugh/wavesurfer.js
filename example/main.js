@@ -30,9 +30,17 @@ document.addEventListener('DOMContentLoaded', function () {
         skipLength    : 5
     };
 
-    if ('#scroll' == location.hash) {
+    if (location.hash.match('scroll')) {
         options.minPxPerSec = 20;
         options.scrollParent = true;
+    }
+
+    if (location.hash.match('canvas')) {
+        options.renderer = 'Canvas';
+    }
+
+    if (location.hash.match('svg')) {
+        options.renderer = 'SVG';
     }
 
     /* Progress bar */

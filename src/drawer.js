@@ -13,6 +13,26 @@ WaveSurfer.Drawer = {
 
         this.createElements();
         this.bindClick();
+
+        if (this.params.fillParent) {
+            var my = this;
+            window.addEventListener('resize', function () {
+                if (my.container.scrollWidth != my.scrollWidth) {
+                    my.fireEvent('redraw');
+                }
+            });
+        }
+    },
+
+    drawPeaks: function (peaks, max) {
+        this.setWidth(peaks.length);
+        this.drawWave(peaks, max);
+    },
+
+    style: function (el, styles) {
+        Object.keys(styles).forEach(function (prop) {
+            el.style[prop] = styles[prop];
+        });
     },
 
     bindClick: function () {
@@ -20,16 +40,17 @@ WaveSurfer.Drawer = {
         this.container.addEventListener('click', function (e) {
             var relX = e.offsetX;
             if (null == relX) { relX = e.layerX; }
-            var progress = relX / my.container.scrollWidth;
+            var progress = relX / my.scrollWidth;
 
             my.fireEvent('click', progress);
         }, false);
     },
 
     addScroll: function () {
-        this.container.style.overflowX = 'scroll';
-        this.container.style.overflowY = 'hidden';
-        this.scrollWidth = Math.round(this.width / this.pixelRatio);
+        this.style(this.container, {
+            overflowX: 'scroll',
+            overflowY: 'hidden'
+        });
     },
 
     recenter: function (percent) {
@@ -70,6 +91,7 @@ WaveSurfer.Drawer = {
 
     setWidth: function (width) {
         this.width = width;
+        this.scrollWidth = Math.round(this.width / this.pixelRatio);
 
         if (this.params.scrollParent) {
             this.addScroll();
@@ -91,7 +113,7 @@ WaveSurfer.Drawer = {
                 this.recenterOnPosition(~~(this.scrollWidth * progress));
             }
 
-            this.updateProgress(pos);
+            this.updateProgress(progress);
         }
     },
 
@@ -100,7 +122,7 @@ WaveSurfer.Drawer = {
 
     updateWidth: function () {},
 
-    drawPeaks: function (peaks, max) {},
+    drawWave: function (peaks, max) {},
 
     updateProgress: function (position) {},
 
