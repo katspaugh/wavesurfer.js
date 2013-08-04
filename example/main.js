@@ -38,6 +38,18 @@ document.addEventListener('DOMContentLoaded', function () {
         options.scrollParent = true;
     }
 
+    /* Progress bar */
+    var progressDiv = document.querySelector('#progress-bar');
+    var progressBar = progressDiv.querySelector('.progress-bar');
+    wavesurfer.on('loading', function (percent) {
+        progressBar.style.width = percent + '%';
+        if (percent >= 100) {
+            setTimeout(function () {
+                progressDiv.style.display = 'none';
+            }, 50);
+        }
+    });
+
     wavesurfer.init(options);
     wavesurfer.bindMarks();
     wavesurfer.bindDragNDrop();

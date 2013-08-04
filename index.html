@@ -26,16 +26,20 @@
             <hr />
 
             <div id="waveform" style="height: 128px">
+                <div class="progress" id="progress-bar">
+                    <div class="progress-bar progress-bar-info"></div>
+                </div>
+
                 <!-- Here be the waveform -->
             </div>
 
             <div class="controls">
-                <button class="btn" data-action="back">
+                <button class="btn btn-primary" data-action="back">
                     <i class="glyphicon glyphicon-step-backward"></i>
                     Seek Backward
                 </button>
 
-                <button class="btn" data-action="play">
+                <button class="btn btn-primary" data-action="play">
                     <i class="glyphicon glyphicon-play"></i>
                     Play
                     /
@@ -43,7 +47,7 @@
                     Pause
                 </button>
 
-                <button class="btn" data-action="forth">
+                <button class="btn btn-primary" data-action="forth">
                     <i class="glyphicon glyphicon-step-forward"></i>
                     Seek Forward
                 </button>

@@ -6,3 +6,15 @@
     text-align: center;
     padding: 20px;
 }
+
+#waveform {
+    position: relative;
+}
+
+#progress-bar {
+    position: absolute;
+    left: 0;
+    top: 54px;
+    left: 5%;
+    width: 90%;
+}

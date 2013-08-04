@@ -170,10 +170,13 @@ var WaveSurfer = {
         }, false);
 
         xhr.addEventListener('load', function (e) {
-            my.fireEvent('loading', 0);
+            my.fireEvent('loading', 1);
             my.backend.loadBuffer(
                 e.target.response,
-                my.drawBuffer.bind(my)
+                function () {
+                    my.fireEvent('loading', 100);
+                    my.drawBuffer();
+                }
             );
         }, false);
 
