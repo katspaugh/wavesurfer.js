@@ -6,19 +6,16 @@ wavesurfer.on('ready', function () {
     wavesurfer.play();
 });
 
-var requestFrame = window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame;
-
 wavesurfer.on('mark', function (marker) {
-    var pos = marker.position;
-    var origWidth = wavesurfer.params.markerWidth;
+    var markerColor = marker.color;
 
-    (function animate (width) {
-        requestFrame(function () {
-            marker.update({ width: width });
-            width > origWidth && animate(width - 1);
-        });
-    }(origWidth + 10));
+    setTimeout(function () {
+        marker.update({ color: 'yellow' });
+    }, 100);
+
+    setTimeout(function () {
+        marker.update({ color: markerColor });
+    }, 300);
 });
 
 // init & load mp3

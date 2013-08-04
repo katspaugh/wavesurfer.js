@@ -13,14 +13,15 @@ var WaveSurfer = {
         fillParent    : true,
         scrollParent  : false,
         AudioContext  : null,
-        container     : null
+        container     : null,
+        renderer      : 'SVG'
     },
 
     init: function (params) {
         // extract relevant parameters (or defaults)
         this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
 
-        this.drawer = Object.create(WaveSurfer.Drawer);
+        this.drawer = Object.create(WaveSurfer.Drawer[this.params.renderer]);
         this.drawer.init(this.params);
 
         this.markers = {};
@@ -98,7 +99,8 @@ var WaveSurfer = {
         var timings = this.timings(0);
         var opts = WaveSurfer.util.extend({
             id: WaveSurfer.util.getId(),
-            position: timings[0]
+            position: timings[0],
+            width: this.params.markerWidth
         }, options);
 
         opts.percentage = opts.position / timings[1];
