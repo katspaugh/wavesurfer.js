@@ -2,7 +2,9 @@ wavesurfer.js
 =============
 
 Interactive navigable audio visualization using
-[WebAudio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) and SVG.
+[WebAudio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) and Canvas/SVG.
+
+[http://katspaugh.github.io/wavesurfer.js/](http://katspaugh.github.io/wavesurfer.js/)
 
 ![Imgur](http://i.imgur.com/dnH8q.png)
 
@@ -28,6 +30,8 @@ Load an audio file from a URL:
 Or visualize your audio files via drag'n'drop:
 
     wavesurfer.bindDragNDrop(document.body);
+
+See the example code [here](https://github.com/katspaugh/wavesurfer.js/blob/master/example/main.js).
 
 Credits
 =======
