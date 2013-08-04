@@ -81,11 +81,15 @@ WaveSurfer.WebAudio = {
         this.refreshBufferSource();
 
         if (null == start) { start = this.getCurrentTime(); }
-        if (null == end  ) { end = this.source.buffer.duration; }
+        if (null == end) {
+            end = this.getDuration();
+        } else {
+            this.lastPause = end;
+        }
 
         this.lastStart = start;
-        this.lastPause = end;
         this.startTime = this.ac.currentTime;
+
         this.source.noteGrainOn(0, start, end - start);
     },
 
