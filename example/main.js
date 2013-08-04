@@ -3,7 +3,7 @@
 var wavesurfer = Object.create(WaveSurfer);
 
 wavesurfer.on('ready', function () {
-    wavesurfer.playAt(0);
+    wavesurfer.play();
 });
 
 var requestFrame = window.requestAnimationFrame ||
@@ -11,13 +11,14 @@ var requestFrame = window.requestAnimationFrame ||
 
 wavesurfer.on('mark', function (marker) {
     var pos = marker.position;
+    var origWidth = wavesurfer.drawer.params.markerWidth;
 
     (function animate (width) {
         requestFrame(function () {
             marker.update({ width: width });
-            width > 1 && animate(width - 1);
+            width > origWidth && animate(width - 1);
         });
-    }(10));
+    }(origWidth + 10));
 });
 
 // init & load mp3
@@ -28,8 +29,8 @@ document.addEventListener('DOMContentLoaded', function () {
         progressColor : 'purple',
         loaderColor   : 'purple',
         cursorColor   : 'navy',
-        minPxPerSec   : 1,
-        scrollParent  : false
+        markerWidth   : 2,
+        skipLength    : 5
     };
 
     if ('#scroll' == location.hash) {
@@ -38,11 +39,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     wavesurfer.init(options);
-
     wavesurfer.bindMarks();
-
     wavesurfer.bindDragNDrop();
-
     wavesurfer.load('example/media/Serphonic_-_Switch_2.mp3');
 });
 

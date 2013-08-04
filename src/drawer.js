@@ -1,25 +1,15 @@
 'use strict';
 
 WaveSurfer.Drawer = {
-    defaultParams: {
-        waveColor     : '#999',
-        progressColor : '#333',
-        cursorColor   : '#ddd',
-        loaderColor   : '#999',
-        loaderHeight  : 2,
-        cursorWidth   : 1,
-        markerWidth   : 1,
-        minPxPerSec   : 0,
-        scrollParent  : false,
-        container     : null
-    },
+    pixelRatio: window.devicePixelRatio,
 
     init: function (params) {
-        this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
+        this.params = params;
 
         this.container = this.params.container;
-        this.width = this.container.clientWidth;
-        this.height = this.container.clientHeight;
+        this.width = this.container.clientWidth * this.pixelRatio;
+        this.height = this.container.clientHeight * this.pixelRatio;
+
         this.lastPos = 0;
 
         this.createSvg();
@@ -77,24 +67,15 @@ WaveSurfer.Drawer = {
         });
         useClip.href.baseVal = '#' + pathId;
 
+        this.cursorWidth = this.params.cursorWidth * this.pixelRatio;
         var cursor = this.node('rect', {
-            width: this.params.cursorWidth,
+            width: this.cursorWidth,
             height: this.height,
             fill: this.params.cursorColor,
             'class': 'wavesurfer-cursor'
         });
 
-        // Loader
-        var loader = this.node('line', {
-            x1: 0,
-            x2: 0,
-            y1: this.height / 2 - this.params.loaderHeight / 2,
-            y2: this.height / 2 + this.params.loaderHeight,
-            'stroke-width': this.params.loaderHeight,
-            stroke: this.params.loaderColor
-        });
-
-        [ defs, useWave, useClip, cursor, loader ].forEach(function (node) {
+        [ defs, useWave, useClip, cursor ].forEach(function (node) {
             svg.appendChild(node);
         });
 
@@ -104,7 +85,6 @@ WaveSurfer.Drawer = {
         this.wavePath = path;
         this.progressPath = clipRect;
         this.cursor = cursor;
-        this.loader = loader;
     },
 
     bindClick: function () {
@@ -121,14 +101,15 @@ WaveSurfer.Drawer = {
     addScroll: function () {
         this.container.style.overflowX = 'scroll';
         this.container.style.overflowY = 'hidden';
+        this.scrollWidth = Math.round(this.width / this.pixelRatio);
         this.attr(this.svg, {
-            width: this.width,
-            height: this.height
+            width: this.scrollWidth,
+            height: '100%'
         });
     },
 
     recenter: function (percent) {
-        var position = ~~(this.width * percent);
+        var position = this.scrollWidth * percent;
         this.recenterOnPosition(position, true);
     },
 
@@ -146,14 +127,19 @@ WaveSurfer.Drawer = {
             target = scrollLeft + offset;
         }
 
-        this.container.scrollLeft = ~~target;
+        if (offset > 0) {
+            this.container.scrollLeft = target;
+        }
     },
 
 
     /* API */
     getPixels: function (duration) {
-        var minPx = this.params.minPxPerSec;
-        return Math.max(Math.ceil(duration * minPx), this.width);
+        var width = Math.ceil(duration * this.params.minPxPerSec);
+        if (this.params.fillParent) {
+            width = Math.max(this.container.clientWidth, width);
+        }
+        return width * this.pixelRatio;
     },
 
     getWidth: function () {
@@ -162,6 +148,7 @@ WaveSurfer.Drawer = {
 
     setWidth: function (width) {
         this.width = width;
+
         this.attr(this.svg, {
             viewBox: [ 0, 0, this.width, this.height ].join(' ')
         });
@@ -169,8 +156,6 @@ WaveSurfer.Drawer = {
         if (this.params.scrollParent) {
             this.addScroll();
         }
-
-        return this.width;
     },
 
     drawPeaks: function (peaks, max) {
@@ -191,12 +176,13 @@ WaveSurfer.Drawer = {
         }
 
         this.wavePath.setAttribute('d', pathData.join(' '));
-        this.loader.style.display = 'none';
     },
 
     progress: function (progress) {
-        var pos = progress * this.width;
-        var minPxDelta = 0.5;
+        var minPxDelta = 1 / this.pixelRatio;
+        var pos = Math.round(
+            progress * this.width * this.pixelRatio
+        ) * minPxDelta;
 
         if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {
             this.lastPos = pos;
@@ -209,20 +195,15 @@ WaveSurfer.Drawer = {
             ));
 
             if (this.params.scrollParent) {
-                this.recenterOnPosition(pos);
+                this.recenterOnPosition(~~(this.scrollWidth * progress));
             }
         }
-    },
-
-    loading: function (progress) {
-        this.loader.setAttribute('x2', Math.round(progress * this.width));
-        this.loader.style.display = 'block';
     },
 
     addMark: function (mark) {
         var markRect = document.getElementById(mark.id);
         if (markRect) {
-            var title = markRect.querySelector('text');
+            var title = markRect.querySelector('title');
         } else {
             markRect = this.node('rect');
             markRect.setAttribute('id', mark.id);

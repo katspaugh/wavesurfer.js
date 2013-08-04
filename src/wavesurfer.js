@@ -2,7 +2,17 @@
 
 var WaveSurfer = {
     defaultParams: {
-        skipLength: 2
+        waveColor     : '#999',
+        progressColor : '#333',
+        cursorColor   : '#ddd',
+        cursorWidth   : 1,
+        markerWidth   : 1,
+        skipLength    : 2,
+        minPxPerSec   : 1,
+        fillParent    : true,
+        scrollParent  : false,
+        AudioContext  : null,
+        container     : null
     },
 
     init: function (params) {
@@ -19,28 +29,28 @@ var WaveSurfer = {
     },
 
     createBackend: function () {
-        this.backend = Object.create(WaveSurfer.WebAudio);
-        this.backend.init(this.params);
-
         var my = this;
-        var last;
+
+        this.backend = Object.create(WaveSurfer.WebAudio);
 
         this.backend.on('audioprocess', function (progress) {
-            my.onAudioProcess(progress);
+            // pause when finished
+            if (progress >= 1.0) {
+                my.pause();
+            }
+            my.drawer.progress(progress);
+            my.fireEvent('progress', progress);
         });
-    },
 
-    onAudioProcess: function (progress) {
-        // pause when finished
-        if (progress >= 1.0) {
-            this.pause();
-        }
-        this.drawer.progress(progress);
-        this.fireEvent('progress', progress);
+        this.backend.init(this.params);
     },
 
     playAt: function (percents) {
         this.backend.play(this.backend.getDuration() * percents);
+    },
+
+    play: function () {
+        this.backend.play();
     },
 
     pause: function () {
@@ -48,13 +58,7 @@ var WaveSurfer = {
     },
 
     playPause: function () {
-        if (this.backend.isPaused()) {
-            var playedPercent = this.backend.getPlayedPercents();
-            if (playedPercent >= 1.0) playedPercent = 0;
-            this.playAt(playedPercent);
-        } else {
-            this.pause();
-        }
+        this.backend.isPaused() ? this.play() : this.pause();
     },
 
     skipBackward: function (seconds) {
@@ -161,11 +165,11 @@ var WaveSurfer = {
                 // function, and assume downloads in the 1-3 MB range.
                 percentComplete = e.loaded / (e.loaded + 1000000);
             }
-            my.drawer.loading(percentComplete);
+            my.fireEvent('loading', percentComplete);
         }, false);
 
         xhr.addEventListener('load', function (e) {
-            my.drawer.loading(1);
+            my.fireEvent('loading', 0);
             my.backend.loadBuffer(
                 e.target.response,
                 my.drawBuffer.bind(my)
@@ -177,13 +181,13 @@ var WaveSurfer = {
     },
 
     /**
-     * Loads an audio file via drag'n'drop.
+     *  Listens to drag'n'drop.
      */
     bindDragNDrop: function (dropTarget) {
         var my = this;
         var reader = new FileReader();
         reader.addEventListener('load', function (e) {
-            my.backend.loadData(
+            my.backend.loadBuffer(
                 e.target.result,
                 my.drawBuffer.bind(my)
             );
@@ -207,22 +211,16 @@ var WaveSurfer = {
         });
     },
 
-    normalizeProgress: function (progress) {
-        var pixels = this.drawer.getWidth();
-        return Math.round(progress * pixels) / pixels;
-    },
-
     bindMarks: function () {
         var my = this;
         var markers = this.markers;
 
-        this.on('progress', function (progress) {
-            var normProgress = my.normalizeProgress(progress);
-
+        this.on('progress', function () {
             Object.keys(markers).forEach(function (id) {
                 var marker = markers[id];
-                var normMark = my.normalizeProgress(marker.percentage);
-                if (normMark == normProgress) {
+                var position = marker.position.toPrecision(3);
+                var time = my.backend.getCurrentTime().toPrecision(3);
+                if (position == time) {
                     my.fireEvent('mark', marker);
                     marker.fireEvent('reached');
                 }
