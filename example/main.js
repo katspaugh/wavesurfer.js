@@ -11,7 +11,7 @@ var requestFrame = window.requestAnimationFrame ||
 
 wavesurfer.on('mark', function (marker) {
     var pos = marker.position;
-    var origWidth = wavesurfer.drawer.params.markerWidth;
+    var origWidth = wavesurfer.params.markerWidth;
 
     (function animate (width) {
         requestFrame(function () {
