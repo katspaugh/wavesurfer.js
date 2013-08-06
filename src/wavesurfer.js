@@ -101,7 +101,7 @@ var WaveSurfer = {
      * newVolume    A value between -1 and 1, -1 being no volume and 1 being full volume.
      */
     setVolume: function(newVolume) {
-
+        this.backend.setVolume(newVolume);
     },
 
     /**
