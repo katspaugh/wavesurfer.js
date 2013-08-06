@@ -29,6 +29,9 @@ var WaveSurfer = {
 
         this.createBackend();
         this.bindClick();
+
+        // Used to save the current volume when muting so we can restore once unmuted
+        this.savedVolume = -1;
     },
 
     createBackend: function () {
@@ -105,10 +108,17 @@ var WaveSurfer = {
     },
 
     /**
-     * Toggle the volume on and off.
+     * Toggle the volume on and off. It not currenly muted it will save the current volume value and turn the volume off.
+     * If currently muted then it will restore the volume to the saved value, and then rest the saved value.
      */
-    mute: function() {
-
+    toggleMute: function() {
+        if (this.savedVolume == -1) {
+            this.savedVolume = this.backend.getVolume();
+            this.backend.setVolume(-1);
+        } else {
+            this.backend.setVolume(this.savedVolume);
+            this.savedVolume = -1;
+        }
     },
 
     mark: function (options) {
