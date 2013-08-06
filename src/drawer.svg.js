@@ -1,6 +1,8 @@
 'use strict';
 
-WaveSurfer.Drawer.SVG = WaveSurfer.util.extend({}, WaveSurfer.Drawer, {
+WaveSurfer.Drawer.SVG = Object.create(WaveSurfer.Drawer);
+
+WaveSurfer.util.extend(WaveSurfer.Drawer.SVG, {
     attr: function (node, attrs) {
         Object.keys(attrs).forEach(function (key) {
             node.setAttribute(key, attrs[key]);

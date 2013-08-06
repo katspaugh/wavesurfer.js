@@ -1,6 +1,8 @@
 'use strict';
 
-WaveSurfer.Drawer.Canvas = WaveSurfer.util.extend({}, WaveSurfer.Drawer, {
+WaveSurfer.Drawer.Canvas = Object.create(WaveSurfer.Drawer);
+
+WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     createElements: function () {
         var waveCanvas = document.createElement('canvas');
         this.style(waveCanvas, {
