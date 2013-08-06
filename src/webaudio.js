@@ -34,10 +34,19 @@ WaveSurfer.WebAudio = {
     /**
      * Set the gain to a new value.
      *
-     * @param  newGain  The new gain, a value between -1 and 1. -1 being no gain and 1 being maxium gain.
+     * @param  newGain  The new gain, a floating point value between -1 and 1. -1 being no gain and 1 being maxium gain.
      */
     setVolume: function(newGain) {
         this.gainNode.gain.value = newGain;
+    },
+
+    /**
+     * Get the current gain
+     *
+     * @returns The current gain, a floating point value between -1 and 1. -1 being no gain and 1 being maxium gain.
+     */
+    getVolume: function() {
+        return this.gainNode.gain.value;
     },
 
     refreshBufferSource: function () {
