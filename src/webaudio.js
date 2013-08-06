@@ -31,6 +31,15 @@ WaveSurfer.WebAudio = {
         this.gainNode.connect(this.ac.destination);
     },
 
+    /**
+     * Set the gain to a new value.
+     *
+     * @param  newGain  The new gain, a value between -1 and 1. -1 being no gain and 1 being maxium gain.
+     */
+    setVolume: function(newGain) {
+        this.gainNode.gain.value = newGain;
+    },
+
     refreshBufferSource: function () {
         this.source && this.source.disconnect();
         this.source = this.ac.createBufferSource();
