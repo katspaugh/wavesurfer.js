@@ -95,6 +95,22 @@ var WaveSurfer = {
         this.drawer.progress(0);
     },
 
+    /**
+     * Set the playback volume.
+     *
+     * newVolume    A value between -1 and 1, -1 being no volume and 1 being full volume.
+     */
+    setVolume: function(newVolume) {
+
+    },
+
+    /**
+     * Toggle the volume on and off.
+     */
+    mute: function() {
+
+    },
+
     mark: function (options) {
         var my = this;
         var timings = this.timings(0);
