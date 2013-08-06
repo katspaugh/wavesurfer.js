@@ -37,6 +37,8 @@ WaveSurfer.WebAudio = {
         this.source.buffer = this.buffer;
         this.source.connect(this.scriptNode);
         this.source.connect(this.ac.destination);
+        // Wiring up the voume node
+        this.source.connect(this.gainNode);
     },
 
     setBuffer: function (buffer) {
