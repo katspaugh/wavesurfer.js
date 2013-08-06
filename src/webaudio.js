@@ -6,6 +6,7 @@ WaveSurfer.WebAudio = {
             new (window.AudioContext || window.webkitAudioContext);
 
         this.createScriptNode();
+        this.createVolumeNode();
     },
 
     createScriptNode: function () {
@@ -17,6 +18,17 @@ WaveSurfer.WebAudio = {
                 my.fireEvent('audioprocess', my.getPlayedPercents());
             }
         };
+    },
+
+    /**
+     * Create the gain node needed to control the playback volume.
+     */
+    createVolumeNode: function () {
+        // Create gain node using the AudioContext
+        this.gainNode = this.ac.createGainNode();
+
+        // Add the gain node to the graph
+        this.gainNode.connect(this.ac.destination);
     },
 
     refreshBufferSource: function () {
