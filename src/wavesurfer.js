@@ -32,6 +32,8 @@ var WaveSurfer = {
 
         // Used to save the current volume when muting so we can restore once unmuted
         this.savedVolume = -1;
+        // The current muted state
+        this.isMuted = false;
     },
 
     createBackend: function () {
@@ -112,12 +114,16 @@ var WaveSurfer = {
      * If currently muted then it will restore the volume to the saved value, and then rest the saved value.
      */
     toggleMute: function() {
-        if (this.savedVolume == -1) {
-            this.savedVolume = this.backend.getVolume();
-            this.backend.setVolume(-1);
-        } else {
+        if (this.isMuted) {
+            // If currently muted then restore to the saved volume and update the mute properties
             this.backend.setVolume(this.savedVolume);
             this.savedVolume = -1;
+            this.isMuted = false;
+        } else {
+            // If currently not muted then save current volume, turn off the volume and update the mute properties
+            this.savedVolume = this.backend.getVolume();
+            this.backend.setVolume(-1);
+            this.isMuted = true;
         }
     },
 
