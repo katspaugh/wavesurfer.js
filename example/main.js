@@ -88,6 +88,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         'forth': function () {
             wavesurfer.skipForward();
+        },
+
+        'toggle-mute': function () {
+            wavesurfer.toggleMute();
         }
     };
 

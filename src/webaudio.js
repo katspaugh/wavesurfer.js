@@ -6,6 +6,7 @@ WaveSurfer.WebAudio = {
             new (window.AudioContext || window.webkitAudioContext);
 
         this.createScriptNode();
+        this.createVolumeNode();
     },
 
     createScriptNode: function () {
@@ -19,12 +20,43 @@ WaveSurfer.WebAudio = {
         };
     },
 
+    /**
+     * Create the gain node needed to control the playback volume.
+     */
+    createVolumeNode: function () {
+        // Create gain node using the AudioContext
+        this.gainNode = this.ac.createGainNode();
+
+        // Add the gain node to the graph
+        this.gainNode.connect(this.ac.destination);
+    },
+
+    /**
+     * Set the gain to a new value.
+     *
+     * @param  newGain  The new gain, a floating point value between -1 and 1. -1 being no gain and 1 being maxium gain.
+     */
+    setVolume: function(newGain) {
+        this.gainNode.gain.value = newGain;
+    },
+
+    /**
+     * Get the current gain
+     *
+     * @returns The current gain, a floating point value between -1 and 1. -1 being no gain and 1 being maxium gain.
+     */
+    getVolume: function() {
+        return this.gainNode.gain.value;
+    },
+
     refreshBufferSource: function () {
         this.source && this.source.disconnect();
         this.source = this.ac.createBufferSource();
         this.source.buffer = this.buffer;
         this.source.connect(this.scriptNode);
         this.source.connect(this.ac.destination);
+        // Wiring up the voume node
+        this.source.connect(this.gainNode);
     },
 
     setBuffer: function (buffer) {
