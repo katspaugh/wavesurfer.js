@@ -61,8 +61,8 @@ Methods
 
 All methods are intentionally public, but the most readily available are the following:
 
- * `init(params)` – see the options above.
- * `on(eventName, callback)` – subscribe to an event.
+ * `init(params)` – initializes with the options listed above.
+ * `on(eventName, callback)` – subscribes to an event.
  * `load(url)` – loads an audio from URL via XHR.
  * `play()` – starts playback from the current position.
  * `pause()` – stops playback.
@@ -71,12 +71,13 @@ All methods are intentionally public, but the most readily available are the fol
  * `skipForward()`
  * `skipBackward()`
  * `skip(offset)` – skips a number of seconds from the current position (use a negative value to go backwards).
- * `setVolume(newVolume)` - sets the playback volume to a new value (use a floating point value between -1 and 1, -1 being no volume and 1 being full volume).
- * `toggleMute` - Toggle the volume on and off.
+ * `setVolume(newVolume)` – sets the playback volume to a new value (use a floating point value between -1 and 1, -1 being no volume and 1 being full volume).
+ * `toggleMute()` – toggles the volume on and off.
  * `mark(options)` – creates a visual marker on the waveform. Options are `id` (random if not set), `position` (in seconds), `color` and `width` (defaults to the global option `markerWidth`). Returns a marker object which you can update later (`marker.update(options)`).
- * `clearMarks()` – remove all markers.
+ * `clearMarks()` – removes all markers.
  * `bindMarks()` – starts listening for markers being reached by cursor on the waveform. Emits `mark` event and `reached` event for each marker object.
  * `bindDragNDrop([dropTarget])` – starts listening to drag'n'drop on an element. The default element is `document`. Loads the dropped audio.
+ * `empty()` – clears the waveform as if a zero-length audio is loaded.
 
 Events
 ======
@@ -85,23 +86,23 @@ You can listen to the following events:
 
  * `ready` – when audio is decoded and waveform drawn.
  * `loading` – fires continuously when loading via XHR. Callback recieves loading progress in percents.
- * `progress` – fires continuously as audio progresses. Passes the fraction of total duration. Passes the playback position as a fraction of total duration.
+ * `progress` – fires continuously as audio progresses.
  * `seek` – when you seek to specified position.
  * `mark` – when a mark is reached (callback receives the marker object).
- * `click` – when you click on the waveform.
 
 Credits
 =======
 
 - Based on [Eiji Kitamura's work](https://github.com/agektmr/AudioStreamer).
 
-- Invaluable advice from [Alex Khokhulin](https://github.com/xoxulin).
+- Initial idea by [Alex Khokhulin](https://github.com/xoxulin).
 
-- Advice from [Max Goodman](https://github.com/chromakode).
-
-- Speed greatly optimised by [Kevin Ennis](https://github.com/kevincennis).
-
-- Many cool features contributed by [Justin Bradford](https://github.com/jabr).
+- Awesome contributions by [Max Goodman](https://github.com/chromakode),
+[Kevin Ennis](https://github.com/kevincennis),
+[Justin Bradford](https://github.com/jabr),
+[Hayden Ball](https://github.com/ball-hayden),
+[@KingdomOfJoy](https://github.com/KingdomOfJoy) and
+[@svoctor](https://github.com/svoctor).
 
 Thanks!
 

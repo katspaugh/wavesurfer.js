@@ -52,7 +52,9 @@ WaveSurfer.WebAudio = {
     refreshBufferSource: function () {
         this.source && this.source.disconnect();
         this.source = this.ac.createBufferSource();
-        this.source.buffer = this.buffer;
+        if (this.buffer) {
+            this.source.buffer = this.buffer;
+        }
         this.source.connect(this.scriptNode);
         this.source.connect(this.ac.destination);
         // Wiring up the voume node
@@ -90,6 +92,11 @@ WaveSurfer.WebAudio = {
                 errb && errb();
             }
         );
+    },
+
+    loadEmpty: function () {
+        this.pause();
+        this.setBuffer(0);
     },
 
     isPaused: function () {

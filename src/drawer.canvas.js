@@ -74,7 +74,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
     drawWave: function (peaks, max) {
         for (var i = 0; i < this.width; i++) {
-            var h = Math.round(peaks[i] * (this.height / max));
+            var h = max > 0 ? Math.round(peaks[i] * (this.height / max)) : 1;
             var y = Math.round((this.height - h) / 2);
             this.waveCc.fillStyle = this.params.waveColor;
             this.waveCc.fillRect(i, y, 1, h);

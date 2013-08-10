@@ -46,8 +46,11 @@ var WaveSurfer = {
             if (progress >= 1.0) {
                 my.pause();
             }
-            my.drawer.progress(progress);
-            my.fireEvent('progress', progress);
+            my.fireEvent('progress');
+        });
+
+        this.on('progress', function () {
+            my.drawer.progress(my.backend.getPlayedPercents());
         });
 
         this.backend.init(this.params);
@@ -89,7 +92,7 @@ var WaveSurfer = {
         this.playAt(progress);
         if (paused) {
             this.pause();
-            this.drawer.progress(progress);
+            this.fireEvent('progress');
         }
         this.fireEvent('seek', progress);
     },
@@ -248,7 +251,6 @@ var WaveSurfer = {
         var my = this;
         this.drawer.on('click', function (progress) {
             my.seekTo(progress);
-            my.fireEvent('click', progress);
         });
     },
 
@@ -267,6 +269,11 @@ var WaveSurfer = {
                 }
             });
         });
+    },
+
+    empty: function () {
+        this.backend.loadEmpty();
+        this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     }
 };
 
