@@ -1,24 +1,9 @@
 'use strict';
 
+// Create an instance
 var wavesurfer = Object.create(WaveSurfer);
 
-wavesurfer.on('ready', function () {
-    wavesurfer.play();
-});
-
-wavesurfer.on('mark', function (marker) {
-    var markerColor = marker.color;
-
-    setTimeout(function () {
-        marker.update({ color: 'yellow' });
-    }, 100);
-
-    setTimeout(function () {
-        marker.update({ color: markerColor });
-    }, 300);
-});
-
-// init & load mp3
+// Init & load mp3
 document.addEventListener('DOMContentLoaded', function () {
     var options = {
         container     : document.querySelector('#waveform'),
@@ -55,14 +40,25 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Init
     wavesurfer.init(options);
-    wavesurfer.bindMarks();
-    wavesurfer.bindDragNDrop();
+    // Load audio from URL
     wavesurfer.load('example/media/Serphonic_-_Switch_2.mp3');
+
+    // Start listening to marks being reached by cursor
+    wavesurfer.bindMarks();
+    // Start listening to drag'n'drop on document
+    wavesurfer.bindDragNDrop();
+});
+
+// Play at once when ready
+// Won't work on iOS until you touch the page
+wavesurfer.on('ready', function () {
+    wavesurfer.play();
 });
 
 // Bind buttons and keypresses
-document.addEventListener('DOMContentLoaded', function () {
+wavesurfer.on('ready', function () {
     var eventHandlers = {
         'play': function () {
             wavesurfer.playPause();
@@ -116,4 +112,17 @@ document.addEventListener('DOMContentLoaded', function () {
             eventHandlers[action](e);
         }
     });
+});
+
+// Flash when reaching a mark
+wavesurfer.on('mark', function (marker) {
+    var markerColor = marker.color;
+
+    setTimeout(function () {
+        marker.update({ color: 'yellow' });
+    }, 100);
+
+    setTimeout(function () {
+        marker.update({ color: markerColor });
+    }, 300);
 });
