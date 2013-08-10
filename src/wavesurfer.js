@@ -272,6 +272,7 @@ var WaveSurfer = {
     },
 
     empty: function () {
+        this.stop();
         this.backend.loadEmpty();
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     }
