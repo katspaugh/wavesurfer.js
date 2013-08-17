@@ -88,7 +88,7 @@ WaveSurfer.WebAudio = {
                 cb && cb(buffer);
             },
             function () {
-                //console.error('Error decoding audio buffer');
+                console.error('Error decoding audio buffer');
                 errb && errb();
             }
         );

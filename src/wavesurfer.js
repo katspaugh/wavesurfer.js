@@ -18,7 +18,7 @@ var WaveSurfer = {
     },
 
     init: function (params) {
-        // extract relevant parameters (or defaults)
+        // Extract relevant parameters (or defaults)
         this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
 
         this.drawer = Object.create(WaveSurfer.Drawer[this.params.renderer]);
@@ -30,7 +30,8 @@ var WaveSurfer = {
         this.createBackend();
         this.bindClick();
 
-        // Used to save the current volume when muting so we can restore once unmuted
+        // Used to save the current volume when muting so we can
+        // restore once unmuted
         this.savedVolume = -1;
         // The current muted state
         this.isMuted = false;
@@ -42,7 +43,7 @@ var WaveSurfer = {
         this.backend = Object.create(WaveSurfer.WebAudio);
 
         this.backend.on('audioprocess', function (progress) {
-            // pause when finished
+            // Pause when finished
             if (progress >= 1.0) {
                 my.pause();
             }
@@ -106,24 +107,29 @@ var WaveSurfer = {
     /**
      * Set the playback volume.
      *
-     * newVolume    A value between -1 and 1, -1 being no volume and 1 being full volume.
+     * @param {Number} newVolume A value between -1 and 1, -1 being no
+     * volume and 1 being full volume.
      */
-    setVolume: function(newVolume) {
+    setVolume: function (newVolume) {
         this.backend.setVolume(newVolume);
     },
 
     /**
-     * Toggle the volume on and off. It not currenly muted it will save the current volume value and turn the volume off.
-     * If currently muted then it will restore the volume to the saved value, and then rest the saved value.
+     * Toggle the volume on and off. It not currenly muted it will
+     * save the current volume value and turn the volume off.
+     * If currently muted then it will restore the volume to the saved
+     * value, and then rest the saved value.
      */
-    toggleMute: function() {
+    toggleMute: function () {
         if (this.isMuted) {
-            // If currently muted then restore to the saved volume and update the mute properties
+            // If currently muted then restore to the saved volume
+            // and update the mute properties
             this.backend.setVolume(this.savedVolume);
             this.savedVolume = -1;
             this.isMuted = false;
         } else {
-            // If currently not muted then save current volume, turn off the volume and update the mute properties
+            // If currently not muted then save current volume,
+            // turn off the volume and update the mute properties
             this.savedVolume = this.backend.getVolume();
             this.backend.setVolume(-1);
             this.isMuted = true;
@@ -222,7 +228,8 @@ var WaveSurfer = {
     },
 
     /**
-     *  Listens to drag'n'drop.
+     * Listens to drag'n'drop.
+     * @param {HTMLElement} dropTarget
      */
     bindDragNDrop: function (dropTarget) {
         var my = this;
