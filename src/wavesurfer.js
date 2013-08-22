@@ -171,7 +171,7 @@ var WaveSurfer = {
     timings: function (offset) {
         var position = this.backend.getCurrentTime() || 0;
         var duration = this.backend.getDuration() || 1;
-        position = Math.max(0, Math.min(duration, position + (isNaN(offset)? 0.0 : offset)));
+        position = Math.max(0, Math.min(duration, position + (offset || 0)));
         return [ position, duration ];
     },
 
