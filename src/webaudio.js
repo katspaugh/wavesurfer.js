@@ -19,11 +19,10 @@ WaveSurfer.WebAudio = {
         this.scriptNode.connect(this.ac.destination);
         this.scriptNode.onaudioprocess = function () {
             if (my.source && !my.isPaused()) {
-                var played = my.getPlayedPercents();
-                if (played > 1) {
+                if (my.getCurrentTime() >= my.scheduledPause) {
                     my.pause();
                 } else {
-                    my.fireEvent('audioprocess', played);
+                    my.fireEvent('audioprocess', my.getPlayedPercents());
                 }
             }
         };
@@ -139,6 +138,7 @@ WaveSurfer.WebAudio = {
         } else {
             this.lastPause = end;
         }
+        this.scheduledPause = end;
         if (start > end) {
             start = 0;
         }
