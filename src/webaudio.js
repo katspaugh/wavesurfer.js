@@ -11,11 +11,20 @@ WaveSurfer.WebAudio = {
 
     createScriptNode: function () {
         var my = this;
-        this.scriptNode = this.ac.createJavaScriptNode(256);
+        if (this.ac.createScriptProcessor) {
+            this.scriptNode = this.ac.createScriptProcessor(256);
+        } else {
+            this.scriptNode = this.ac.createJavaScriptNode(256);
+        }
         this.scriptNode.connect(this.ac.destination);
         this.scriptNode.onaudioprocess = function () {
             if (my.source && !my.isPaused()) {
-                my.fireEvent('audioprocess', my.getPlayedPercents());
+                var played = my.getPlayedPercents();
+                if (played > 1) {
+                    my.pause();
+                } else {
+                    my.fireEvent('audioprocess', played);
+                }
             }
         };
     },
@@ -25,8 +34,11 @@ WaveSurfer.WebAudio = {
      */
     createVolumeNode: function () {
         // Create gain node using the AudioContext
-        this.gainNode = this.ac.createGainNode();
-
+        if (this.ac.createGain) {
+            this.gainNode = this.ac.createGain();
+        } else {
+            this.gainNode = this.ac.createGainNode();
+        }
         // Add the gain node to the graph
         this.gainNode.connect(this.ac.destination);
     },
@@ -34,18 +46,20 @@ WaveSurfer.WebAudio = {
     /**
      * Set the gain to a new value.
      *
-     * @param  newGain  The new gain, a floating point value between -1 and 1. -1 being no gain and 1 being maxium gain.
+     * @param newGain The new gain, a floating point value between -1
+     * and 1. -1 being no gain and 1 being maxium gain.
      */
-    setVolume: function(newGain) {
+    setVolume: function (newGain) {
         this.gainNode.gain.value = newGain;
     },
 
     /**
      * Get the current gain
      *
-     * @returns The current gain, a floating point value between -1 and 1. -1 being no gain and 1 being maxium gain.
+     * @returns The current gain, a floating point value between -1
+     * and 1. -1 being no gain and 1 being maxium gain.
      */
-    getVolume: function() {
+    getVolume: function () {
         return this.gainNode.gain.value;
     },
 
@@ -100,7 +114,7 @@ WaveSurfer.WebAudio = {
     },
 
     isPaused: function () {
-        return this.source.PLAYING_STATE != this.source.playbackState;
+        return this.paused;
     },
 
     getDuration: function () {
@@ -125,11 +139,19 @@ WaveSurfer.WebAudio = {
         } else {
             this.lastPause = end;
         }
+        if (start > end) {
+            start = 0;
+        }
 
         this.lastStart = start;
         this.startTime = this.ac.currentTime;
+        this.paused = false;
 
-        this.source.noteGrainOn(0, start, end - start);
+        if (this.source.start) {
+            this.source.start(0, start, end - start);
+        } else {
+            this.source.noteGrainOn(0, start, end - start);
+        }
     },
 
     /**
@@ -137,7 +159,12 @@ WaveSurfer.WebAudio = {
      */
     pause: function () {
         this.lastPause = this.lastStart + (this.ac.currentTime - this.startTime);
-        this.source.noteOff(0);
+        this.paused = true;
+        if (this.source.stop) {
+            this.source.stop(0);
+        } else {
+            this.source.noteOff(0);
+        }
     },
 
     /**

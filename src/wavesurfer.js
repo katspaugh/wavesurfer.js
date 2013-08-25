@@ -43,13 +43,10 @@ var WaveSurfer = {
         this.backend = Object.create(WaveSurfer.WebAudio);
 
         this.backend.on('audioprocess', function (progress) {
-            // Pause when finished
-            if (progress >= 1.0) {
-                my.pause();
-            }
             my.fireEvent('progress');
         });
 
+        // Called either from `audioprocess' (above) or from `seekTo'
         this.on('progress', function () {
             my.drawer.progress(my.backend.getPlayedPercents());
         });
@@ -196,6 +193,8 @@ var WaveSurfer = {
     load: function (url) {
         var my = this;
         var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.send();
         xhr.responseType = 'arraybuffer';
 
         xhr.addEventListener('progress', function (e) {
@@ -209,7 +208,7 @@ var WaveSurfer = {
                 percentComplete = e.loaded / (e.loaded + 1000000);
             }
             my.fireEvent('loading', percentComplete);
-        }, false);
+        });
 
         xhr.addEventListener('load', function (e) {
             my.fireEvent('loading', 1);
@@ -221,10 +220,7 @@ var WaveSurfer = {
                     my.fireEvent('ready');
                 }
             );
-        }, false);
-
-        xhr.open('GET', url, true);
-        xhr.send();
+        });
     },
 
     /**
