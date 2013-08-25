@@ -42,7 +42,7 @@ var WaveSurfer = {
 
         this.backend = Object.create(WaveSurfer.WebAudio);
 
-        this.backend.on('audioprocess', function (progress) {
+        this.backend.on('audioprocess', function () {
             my.fireEvent('progress');
         });
 

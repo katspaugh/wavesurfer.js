@@ -22,7 +22,7 @@ WaveSurfer.WebAudio = {
                 if (my.getCurrentTime() >= my.scheduledPause) {
                     my.pause();
                 } else {
-                    my.fireEvent('audioprocess', my.getPlayedPercents());
+                    my.fireEvent('audioprocess');
                 }
             }
         };
@@ -133,12 +133,7 @@ WaveSurfer.WebAudio = {
         this.refreshBufferSource();
 
         if (null == start) { start = this.getCurrentTime(); }
-        if (null == end) {
-            end = this.getDuration();
-        } else {
-            this.lastPause = end;
-        }
-        this.scheduledPause = end;
+        if (null == end) { end = this.getDuration(); }
         if (start > end) {
             start = 0;
         }
@@ -146,6 +141,7 @@ WaveSurfer.WebAudio = {
         this.lastStart = start;
         this.startTime = this.ac.currentTime;
         this.paused = false;
+        this.scheduledPause = end;
 
         if (this.source.start) {
             this.source.start(0, start, end - start);
