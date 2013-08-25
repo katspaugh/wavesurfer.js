@@ -51,6 +51,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         this.progressCc = progressCc;
         this.progressWave = progressWave;
         this.marksCc = marksCc;
+        this.marks = {};
     },
 
     updateWidth: function () {
@@ -91,13 +92,26 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     addMark: function (mark) {
+        var redraw = mark.id in this.marks;
+        this.marks[mark.id] = mark;
+        redraw ? this.redrawMarks() : this.drawMark(mark);
+    },
+
+    removeMark: function (mark) {
+        delete this.marks[mark.id];
+        this.redrawMarks();
+    },
+
+    drawMark: function (mark) {
         this.marksCc.fillStyle = mark.color;
         var x = Math.round(mark.percentage * this.width - mark.width / 2);
         this.marksCc.fillRect(x, 0, mark.width, this.height);
     },
 
-    removeMark: function (mark) {
-        var x = Math.round(mark.percentage * this.width - mark.width / 2);
-        this.marksCc.clearRect(x, 0, mark.width, this.height);
+    redrawMarks: function () {
+        this.marksCc.clearRect(0, 0, this.width, this.height);
+        Object.keys(this.marks).forEach(function (id) {
+            this.drawMark(this.marks[id]);
+        }, this);
     }
 });

@@ -138,15 +138,19 @@ var WaveSurfer = {
         var timings = this.timings(0);
         var opts = WaveSurfer.util.extend({
             id: WaveSurfer.util.getId(),
-            position: timings[0],
+            position: this.backend.getCurrentTime(),
             width: this.params.markerWidth
         }, options);
-
-        opts.percentage = opts.position / timings[1];
 
         var marker = Object.create(WaveSurfer.Mark);
 
         marker.on('update', function () {
+            var duration = my.backend.getDuration() || 1;
+            if (null == marker.position) {
+                marker.position = marker.percentage * duration;
+            }
+            // validate percentage
+            marker.percentage = marker.position / duration;
             my.drawer.addMark(marker);
             my.markers[marker.id] = marker;
         });
@@ -285,8 +289,10 @@ var WaveSurfer = {
 /* Mark */
 WaveSurfer.Mark = {
     id: null,
-    percentage: 0,
     position: 0,
+    percentage: 0,
+    width: 1,
+    color: '',
 
     getTitle: function () {
         var d = new Date(this.position * 1000);
@@ -294,7 +300,14 @@ WaveSurfer.Mark = {
     },
 
     update: function (options) {
-        WaveSurfer.util.extend(this, options);
+        Object.keys(options).forEach(function (key) {
+            if (key in this) {
+                this[key] = options[key];
+            }
+        }, this);
+        if (null == options.position && null != options.percentage) {
+            this.position = null;
+        }
         this.fireEvent('update');
         return this;
     },
