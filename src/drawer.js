@@ -131,4 +131,4 @@ WaveSurfer.Drawer = {
     removeMark: function (mark) {}
 };
 
-WaveSurfer.util.extend(WaveSurfer.Drawer, Observer);
+WaveSurfer.util.extend(WaveSurfer.Drawer, WaveSurfer.Observer);

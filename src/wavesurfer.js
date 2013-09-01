@@ -135,7 +135,6 @@ var WaveSurfer = {
 
     mark: function (options) {
         var my = this;
-        var timings = this.timings(0);
         var opts = WaveSurfer.util.extend({
             id: WaveSurfer.util.getId(),
             position: this.backend.getCurrentTime(),
@@ -317,6 +316,47 @@ WaveSurfer.Mark = {
     }
 };
 
+/* Observer */
+WaveSurfer.Observer = {
+    on: function (event, fn) {
+        if (!this.handlers) { this.handlers = {}; }
+
+        var handlers = this.handlers[event];
+        if (!handlers) {
+            handlers = this.handlers[event] = [];
+        }
+        handlers.push(fn);
+    },
+
+    un: function (event, fn) {
+        if (!this.handlers) { return; }
+
+        var handlers = this.handlers[event];
+        if (handlers) {
+            if (fn) {
+                for (var i = handlers.length - 1; i >= 0; i--) {
+                    if (handlers[i] == fn) {
+                        handlers.splice(i, 1);
+                    }
+                }
+            } else {
+                handlers.length = 0;
+            }
+        }
+    },
+
+    fireEvent: function (event, data) {
+        if (!this.handlers) { return; }
+
+        var handlers = this.handlers[event];
+        if (handlers) {
+            for (var i = 0, len = handlers.length; i < len; i += 1) {
+                handlers[i](data);
+            }
+        }
+    }
+};
+
 /* Common utilities */
 WaveSurfer.util = {
     extend: function (dest) {
@@ -336,5 +376,5 @@ WaveSurfer.util = {
     }
 };
 
-WaveSurfer.util.extend(WaveSurfer, Observer);
-WaveSurfer.util.extend(WaveSurfer.Mark, Observer);
+WaveSurfer.util.extend(WaveSurfer, WaveSurfer.Observer);
+WaveSurfer.util.extend(WaveSurfer.Mark, WaveSurfer.Observer);

@@ -1,100 +1,154 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <title>wavesurfer.js</title>
 
-        <link href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" rel="icon" type="image/x-icon" />
-        <link rel="stylesheet" href="http://glyphicons.getbootstrap.com/css/bootstrap-glyphicons.css" />
-        <link rel="stylesheet" href="http://getbootstrap.com/dist/css/bootstrap.css" />
+        <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+
         <link rel="stylesheet" href="http://simonwhitaker.github.com/github-fork-ribbon-css/gh-fork-ribbon.css" />
-
         <link rel="stylesheet" href="example/css/style.css" />
+        <link rel="screenshot" itemprop="screenshot" href="http://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+        <link rel
 
-        <script src="lib/observer.js"></script>
+        <!-- wavesurfer.js -->
+        <script src="example/wavesurfer.min.js"></script>
 
-        <script src="src/wavesurfer.js"></script>
-        <script src="src/webaudio.js"></script>
-        <script src="src/drawer.js"></script>
-        <script src="src/drawer.canvas.js"></script>
-        <script src="src/drawer.svg.js"></script>
-
+        <!-- Demo -->
         <script src="example/main.js"></script>
+        <script src="example/trivia.js"></script>
     </head>
 
-    <body>
+    <body itemscope itemtype="http://schema.org/WebApplication">
         <div class="container">
-            <h1>wavesurfer.js</h1>
+            <div class="header">
+                <noindex>
+                <ul class="nav nav-pills pull-right">
+                    <li class="active"><a href="?canvas">Canvas</a></li>
+                    <li><a href="?svg">SVG</a></li>
+                </ul>
+                </noindex>
 
-            <hr />
+                <h1 itemprop="name">wavesurfer.js</h1>
+            </div>
 
-            <div id="waveform" style="height: 128px">
-                <div class="progress" id="progress-bar">
-                    <div class="progress-bar progress-bar-info"></div>
+            <div id="demo">
+                <div id="waveform" style="height: 128px">
+                    <div class="progress" id="progress-bar">
+                        <div class="progress-bar progress-bar-info"></div>
+                    </div>
+
+                    <!-- Here be the waveform -->
                 </div>
 
-                <!-- Here be the waveform -->
+                <div class="controls">
+                    <button class="btn btn-primary" data-action="back">
+                        <i class="glyphicon glyphicon-step-backward"></i>
+                        Backward
+                    </button>
+
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+
+                    <button class="btn btn-primary" data-action="forth">
+                        <i class="glyphicon glyphicon-step-forward"></i>
+                        Forward
+                    </button>
+
+                    <button class="btn btn-primary" data-action="toggle-mute">
+                        <i class="glyphicon glyphicon-volume-off"></i>
+                        Toggle Mute
+                    </button>
+
+                    <button class="btn btn-success" data-action="green-mark">
+                        <i class="glyphicon glyphicon-flag"></i>
+                        Set green mark
+                    </button>
+
+                    <button class="btn btn-danger" data-action="red-mark">
+                        <i class="glyphicon glyphicon-flag"></i>
+                        Set red mark
+                    </button>
+                </div>
+
+                <p class="lead pull-center">
+                    Drag'n'drop your favourite
+                    <i class="glyphicon glyphicon-music"></i>
+                    anywhere on the page!
+                </p>
             </div>
 
-            <div class="controls">
-                <button class="btn btn-primary" data-action="back">
-                    <i class="glyphicon glyphicon-step-backward"></i>
-                    Backward
-                </button>
+            <div class="row marketing">
+                <div class="col-lg-6">
+                    <h4>WebAudio Waveform Visualizer</h4>
 
-                <button class="btn btn-primary" data-action="play">
-                    <i class="glyphicon glyphicon-play"></i>
-                    Play
-                    /
-                    <i class="glyphicon glyphicon-pause"></i>
-                    Pause
-                </button>
+                    <p itemprop="about">Customizable waveform audio visualzation built on top of WebAdio and HTML5 Canvas (plus, optional SVG renderer). With <strong>wavesurfer.js</strong> you can assemble a full-featured <strong>HTML5 audio player</strong> or create <a rel="nofollow" href="http://moduscreate.com/touch-dj-a-sencha-touch-dj-app/">a sophisticated DJ application</a>.</p>
 
-                <button class="btn btn-primary" data-action="forth">
-                    <i class="glyphicon glyphicon-step-forward"></i>
-                    Forward
-                </button>
+                    <h4>Compatibility</h4>
 
-                <button class="btn btn-primary" data-action="toggle-mute">
-                    <i class="glyphicon glyphicon-volume-off"></i>
-                    Toggle Mute
-                </button>
+                    <p itemprop="browserRequirements"><strong>wavesurfer.js</strong> runs on modern browsers <a href="http://caniuse.com/audio-api">supporting WebAudio</a>. Including Firefox, Chrome, Chrome&nbsp;for&nbsp;Android, Safari, Mobile&nbsp;Safari, Opera and&nbsp;Yandex.Browser.</p>
 
-                <button class="btn btn-success" data-action="green-mark">
-                    <i class="glyphicon glyphicon-flag"></i>
-                    Set green mark
-                </button>
+                    <h4>Download</h4>
 
-                <button class="btn btn-danger" data-action="red-mark">
-                    <i class="glyphicon glyphicon-flag"></i>
-                    Set red mark
-                </button>
+                    <p>
+                        <a class="btn btn-large btn-success" href="/example/wavesurfer.min.js" itemprop="downloadUrl">Download <strong>wavesurfer.min.js</strong> (16K)</a>
+                    </p>
+                </div>
+
+                <div class="col-lg-6">
+                    <h4>Quick Start</h4>
+
+                    <noindex><p>
+<pre><code>var wavesurfer = Object.create(WaveSurfer);
+
+wavesurfer.init({
+    container: document.querySelector('#wave'),
+    waveColor: 'violet',
+    progressColor: 'purple'
+});
+
+wavesurfer.on('ready', function () {
+    wavesurfer.play();
+});</code></pre>
+                    </p></noindex>
+
+                    <h4>Documentation</h4>
+
+                    <p>The full list of options and methods can be found in <a href="https://github.com/katspaugh/wavesurfer.js/blob/master/README.md">README</a>.</p>
+                </div>
             </div>
 
-            <hr />
+            <div class="footer row">
+                <div class="col-lg-12">
+                    <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+                </div>
 
-            <p class="lead pull-center">
-                You can drag'n'drop your
-                <i class="glyphicon glyphicon-music"></i> files
-                anywhere on the page!
-            </p>
+                <div class="col-lg-8">
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="http://katspaugh.github.io/wavesurfer.js/" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
+                </div>
 
-            <div>
-                <p>
-                    <span class="label label-info">NB:</span>
-                    <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html">WebAudio</a>
-                    works only in recent versions of WebKit-based browsers
-                    (Chrome and Safari).
-                </p>
-
-                <p>
-                    Demo music track is <a href="http://www.jamendo.com/en/track/168311/switch-2"><b>Switch 2</b> <span class="muted">by</span> <b>Serphonic</b></a> (CC BY-SA). Thanks!
-                </p>
+                <noindex>
+                <div class="col-lg-4">
+                    <div class="pull-right">
+                        Demo music track is <a href="http://www.jamendo.com/en/track/168311/switch-2" rel="nofollow"><b>Switch 2</b> <span class="muted">by</span> <b>Serphonic</b></a>. Thanks!
+                    </div>
+                </div>
+                </noindex>
             </div>
         </div>
 
         <div class="github-fork-ribbon-wrapper right">
             <div class="github-fork-ribbon">
-                <a href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+                <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
             </div>
         </div>
     </body>

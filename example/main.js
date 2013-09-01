@@ -15,16 +15,16 @@ document.addEventListener('DOMContentLoaded', function () {
         skipLength    : 5
     };
 
-    if (location.hash.match('scroll')) {
+    if (location.search.match('scroll')) {
         options.minPxPerSec = 20;
         options.scrollParent = true;
     }
 
-    if (location.hash.match('canvas')) {
+    if (location.search.match('canvas')) {
         options.renderer = 'Canvas';
     }
 
-    if (location.hash.match('svg')) {
+    if (location.search.match('svg')) {
         options.renderer = 'SVG';
     }
 

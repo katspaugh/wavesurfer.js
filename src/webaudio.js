@@ -217,4 +217,4 @@ WaveSurfer.WebAudio = {
     }
 };
 
-WaveSurfer.util.extend(WaveSurfer.WebAudio, Observer);
+WaveSurfer.util.extend(WaveSurfer.WebAudio, WaveSurfer.Observer);
