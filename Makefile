@@ -5,4 +5,4 @@ SOURCES=src/wavesurfer.js\
         src/drawer.*.js
 
 $(MIN): $(SOURCES)
-	uglifyjs2 -c -o $@ $^
+	uglifyjs2 -cm -o $@ $^
