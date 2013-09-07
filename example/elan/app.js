@@ -96,6 +96,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 prevRow = row;
             }
         });
+
+        wavesurfer.play();
     });
 });
 
