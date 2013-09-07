@@ -78,8 +78,8 @@ WaveSurfer.WebAudio = {
         this.lastPause = 0;
         this.lastStart = 0;
         this.startTime = 0;
+        this.paused = true;
         this.buffer = buffer;
-        this.refreshBufferSource();
     },
 
     /**
@@ -161,6 +161,8 @@ WaveSurfer.WebAudio = {
         } else {
             this.source.noteOff(0);
         }
+        this.source.disconnect();
+        this.source = null;
     },
 
     /**

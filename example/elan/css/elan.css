@@ -1,0 +1,23 @@
+#annotations {
+    max-height: 500px;
+    overflow: auto;
+}
+
+.wavesurfer-annotations tr.wavesurfer-active td {
+    background-color: yellow;
+}
+
+.wavesurfer-number {
+    width: 30px;
+}
+
+.wavesurfer-tier-Text {
+    width: 500px;
+}
+
+.wavesurfer-tier-Comments {
+}
+
+td.wavesurfer-tier-Comments {
+    color: #999;
+}

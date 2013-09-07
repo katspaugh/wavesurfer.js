@@ -5,7 +5,8 @@ WaveSurfer.Drawer = {
         this.params = params;
 
         this.pixelRatio = this.params.pixelRatio;
-        this.container = this.params.container;
+        this.container = 'string' == typeof this.params.container ?
+            document.querySelector(this.params.container) : this.params.container;
         this.width = this.container.clientWidth * this.pixelRatio;
         this.height = this.container.clientHeight * this.pixelRatio;
 

@@ -91,7 +91,7 @@ wavesurfer.on('ready', function () {
         }
     };
 
-    document.addEventListener('keyup', function (e) {
+    document.addEventListener('keydown', function (e) {
         var map = {
             32: 'play',       // space
             38: 'green-mark', // up

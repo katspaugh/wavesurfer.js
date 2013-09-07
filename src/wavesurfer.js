@@ -345,13 +345,14 @@ WaveSurfer.Observer = {
         }
     },
 
-    fireEvent: function (event, data) {
+    fireEvent: function (event) {
         if (!this.handlers) { return; }
 
         var handlers = this.handlers[event];
+        var args = Array.prototype.slice.call(arguments, 1);
         if (handlers) {
             for (var i = 0, len = handlers.length; i < len; i += 1) {
-                handlers[i](data);
+                handlers[i].apply(null, args);
             }
         }
     }
