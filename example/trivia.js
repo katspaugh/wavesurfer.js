@@ -4,10 +4,10 @@ window.addEventListener('load', function () {
             '<img src="/example/screenshot.png" />';
     }
 
-    if (location.search) {
-        var ul = document.querySelector('.nav-pills');
-        var pills = ul.querySelectorAll('li');
+    var ul = document.querySelector('.nav-pills');
+    var pills = ul.querySelectorAll('li');
 
+    if (location.search) {
         Array.prototype.forEach.call(pills, function (link) {
             link.className = '';
         });
@@ -19,5 +19,7 @@ window.addEventListener('load', function () {
                     .parentNode.className = 'active';
             }
         });
+    } else {
+        pills[0].className = 'active';
     }
 });
