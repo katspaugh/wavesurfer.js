@@ -37,21 +37,41 @@
                 </ul>
                 </noindex>
 
-                <h1 itemprop="name">wavesurfer.js + <a href="http://spokencorpora.ru/">ELAN</a></h1>
+                <h1 itemprop="name"><a href="http://wavesurfer.fm">wavesurfer.js</a><noindex> + <a rel="nofollow" href="http://spokencorpora.ru/showelan.py">ELAN</a></noindex></h1>
             </div>
 
             <div id="demo">
                 <div id="waveform" style="height: 128px">
-                    <div class="progress" id="progress-bar">
+                    <div class="progress progress-striped" id="progress-bar">
                         <div class="progress-bar progress-bar-info"></div>
                     </div>
 
                     <!-- Here be waveform -->
                 </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" data-action="back">
+                        <i class="glyphicon glyphicon-step-backward"></i>
+                        Backward
+                    </button>
+
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+
+                    <button class="btn btn-primary" data-action="forth">
+                        <i class="glyphicon glyphicon-step-forward"></i>
+                        Forward
+                    </button>
+                </div>
             </div>
 
-            <div class="marketing">
-                <div id="annotations" class="table-responsive"><!-- Here be transcript --></div>
+            <div id="annotations" class="table-responsive">
+                <!-- Here be transcript -->
             </div>
 
             <div class="footer row">
@@ -64,7 +84,7 @@
                 </div>
 
                 <div class="col-sm-4">
-                    The sample ELAN file and audio are from <a href="http://spokencorpora.ru/">spokencorpora.ru</a>.
+                    The sample ELAN file and audio are from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru, used with permission</a>.
                     </div>
                 </div>
             </div>

@@ -29,13 +29,9 @@ document.addEventListener('DOMContentLoaded', function () {
     /* Progress bar */
     var progressDiv = document.querySelector('#progress-bar');
     var progressBar = progressDiv.querySelector('.progress-bar');
-    wavesurfer.on('loading', function (percent) {
-        progressBar.style.width = percent + '%';
-        if (percent >= 100) {
-            setTimeout(function () {
-                progressDiv.style.display = 'none';
-            }, 50);
-        }
+    progressBar.style.width = '100%';
+    wavesurfer.on('ready', function () {
+        progressDiv.style.display = 'none';
     });
 
     // Init wavesurfer
@@ -58,7 +54,9 @@ document.addEventListener('DOMContentLoaded', function () {
     elan.on('ready', function (data, container) {
         var url = data.media.url.replace(/file:\/+/, 'transcripts/');
         wavesurfer.load(url);
-        container.querySelector('table').classList.add('table', 'table-striped', 'table-hover');
+        container.querySelector('table').classList.add(
+            'table', 'table-striped', 'table-hover'
+        );
     });
 
     wavesurfer.on('ready', function () {
@@ -129,6 +127,13 @@ wavesurfer.on('ready', function () {
             e.preventDefault();
             var handler = handlers[map[e.keyCode]];
             handler && handler(e);
+        }
+    });
+
+    document.addEventListener('click', function (e) {
+        var action = e.target.dataset && e.target.dataset.action;
+        if (action && action in handlers) {
+            handlers[action](e);
         }
     });
 });
