@@ -31,13 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
     /* Progress bar */
     var progressDiv = document.querySelector('#progress-bar');
     var progressBar = progressDiv.querySelector('.progress-bar');
-    wavesurfer.on('loading', function (percent) {
-        progressBar.style.width = percent + '%';
-        if (percent >= 100) {
-            setTimeout(function () {
-                progressDiv.style.display = 'none';
-            }, 50);
-        }
+    progressBar.style.width = '100%';
+    wavesurfer.on('ready', function () {
+        progressDiv.style.display = 'none';
     });
 
     // Init
