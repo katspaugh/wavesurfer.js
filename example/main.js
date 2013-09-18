@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Init
     wavesurfer.init(options);
     // Load audio from URL
-    wavesurfer.load('example/media/Serphonic_-_Switch_2.mp3');
+    wavesurfer.load('example/media/demo.wav');
 
     // Start listening to marks being reached by cursor
     wavesurfer.bindMarks();
