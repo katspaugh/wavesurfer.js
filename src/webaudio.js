@@ -9,19 +9,16 @@ WaveSurfer.WebAudio = {
         this.createVolumeNode();
     },
 
-    getFilter: function () {
-        return this.filterNode || this.gainNode;
-    },
-
     setFilter: function (filterNode) {
-        this.filterNode = filterNode;
-        this.filterNode.connect(this.gainNode);
-
-        // Trigger source refresh
-        if (this.source && !this.isPaused()) {
-            this.pause();
-            this.play();
+        this.filterNode && this.filterNode.disconnect();
+        this.gainNode.disconnect();
+        if (filterNode) {
+            filterNode.connect(this.ac.destination);
+            this.gainNode.connect(filterNode);
+        } else {
+            this.gainNode.connect(this.ac.destination);
         }
+        this.filterNode = filterNode;
     },
 
     createScriptNode: function () {
@@ -83,7 +80,7 @@ WaveSurfer.WebAudio = {
         if (this.buffer) {
             this.source.buffer = this.buffer;
         }
-        this.source.connect(this.getFilter());
+        this.source.connect(this.gainNode);
     },
 
     setBuffer: function (buffer) {
