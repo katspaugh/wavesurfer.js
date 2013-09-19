@@ -128,7 +128,7 @@ var WaveSurfer = {
             // If currently not muted then save current volume,
             // turn off the volume and update the mute properties
             this.savedVolume = this.backend.getVolume();
-            this.backend.setVolume(-1);
+            this.backend.setVolume(0);
             this.isMuted = true;
         }
     },

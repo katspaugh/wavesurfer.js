@@ -9,6 +9,21 @@ WaveSurfer.WebAudio = {
         this.createVolumeNode();
     },
 
+    getFilter: function () {
+        return this.filterNode || this.gainNode;
+    },
+
+    setFilter: function (filterNode) {
+        this.filterNode = filterNode;
+        this.filterNode.connect(this.gainNode);
+
+        // Trigger source refresh
+        if (this.source && !this.isPaused()) {
+            this.pause();
+            this.play();
+        }
+    },
+
     createScriptNode: function () {
         var my = this;
         if (this.ac.createScriptProcessor) {
@@ -68,10 +83,7 @@ WaveSurfer.WebAudio = {
         if (this.buffer) {
             this.source.buffer = this.buffer;
         }
-        this.source.connect(this.scriptNode);
-        this.source.connect(this.ac.destination);
-        // Wiring up the voume node
-        this.source.connect(this.gainNode);
+        this.source.connect(this.getFilter());
     },
 
     setBuffer: function (buffer) {
