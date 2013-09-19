@@ -78,7 +78,6 @@ All methods are intentionally public, but the most readily available are the fol
  * `bindMarks()` – starts listening for markers being reached by cursor on the waveform. Emits `mark` event and `reached` event for each marker object.
  * `bindDragNDrop([dropTarget])` – starts listening to drag'n'drop on an element. The default element is `document`. Loads the dropped audio.
  * `empty()` – clears the waveform as if a zero-length audio is loaded.
- * `getFilter()`, `setFilter(node)` – see below.
 
 Connecting filters
 ==================
