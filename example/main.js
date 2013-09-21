@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     if (location.search.match('scroll')) {
-        options.minPxPerSec = 20;
+        options.minPxPerSec = 100;
         options.scrollParent = true;
     }
 
