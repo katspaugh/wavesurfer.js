@@ -16,10 +16,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.SVG, {
     },
 
     createElements: function () {
-        var svg = this.node('svg', {
-            viewBox: [ 0, 0, this.width, this.height ].join(' ')
-        });
-
+        var svg = this.node('svg');
         var defs = this.node('defs');
 
         // Wave path
@@ -75,11 +72,13 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.SVG, {
     },
 
     updateWidth: function () {
-        this.attr(this.svg, {
-            viewBox: [ 0, 0, this.width, this.height ].join(' ')
-        });
+        if (this.params.fillParent) {
+            this.attr(this.svg, {
+                viewBox: [ 0, 0, this.width, this.height ].join(' ')
+            });
+        }
 
-        if (this.params.scrollParent) {
+        if (this.params.scrollParent || !this.params.fillParent) {
             this.attr(this.svg, {
                 width: this.scrollWidth,
                 height: '100%'

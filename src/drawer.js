@@ -27,6 +27,7 @@ WaveSurfer.Drawer = {
 
     drawPeaks: function (peaks, max) {
         this.setWidth(peaks.length);
+        this.resetScroll();
         this.drawWave(peaks, max);
     },
 
@@ -52,6 +53,10 @@ WaveSurfer.Drawer = {
             overflowX: 'scroll',
             overflowY: 'hidden'
         });
+    },
+
+    resetScroll: function () {
+        this.container.scrollLeft = 0;
     },
 
     recenter: function (percent) {
