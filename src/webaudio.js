@@ -227,14 +227,16 @@ WaveSurfer.WebAudio = {
 };
 
 // audioContext should be a singletone
-WaveSurfer.WebAudio.getAudioContext = function () {
-    if (!WaveSurfer.WebAudio.audioContext) {
-        WaveSurfer.WebAudio.audioContext = new (
-            window.AudioContext ||
-                window.webkitAudioContext
-        );
-    }
-    return WaveSurfer.WebAudio.audioContext;
-};
+WaveSurfer.WebAudio.getAudioContext = (function () {
+    var audioContext;
+    return function () {
+        if (!audioContext) {
+            audioContext = new (
+                window.AudioContext || window.webkitAudioContext
+            );
+        }
+        return audioContext;
+    };
+}());
 
 WaveSurfer.util.extend(WaveSurfer.WebAudio, WaveSurfer.Observer);
