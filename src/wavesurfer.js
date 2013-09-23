@@ -9,10 +9,10 @@ var WaveSurfer = {
         markerWidth   : 1,
         skipLength    : 2,
         minPxPerSec   : 1,
-        pixelRatio    : 1, // devicePixelRatio is slower
+        pixelRatio    : 1,
         fillParent    : true,
         scrollParent  : false,
-        AudioContext  : null,
+        audioContext  : null,
         container     : null,
         renderer      : 'Canvas'
     },

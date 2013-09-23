@@ -2,9 +2,7 @@
 
 WaveSurfer.WebAudio = {
     init: function (params) {
-        this.ac = params.AudioContext ||
-            new (window.AudioContext || window.webkitAudioContext);
-
+        this.ac = params.audioContext || WaveSurfer.WebAudio.getAudioContext();
         this.createScriptNode();
         this.createVolumeNode();
     },
@@ -226,6 +224,17 @@ WaveSurfer.WebAudio = {
         }
         return this.lastStart + (this.ac.currentTime - this.startTime);
     }
+};
+
+// audioContext should be a singletone
+WaveSurfer.WebAudio.getAudioContext = function () {
+    if (!WaveSurfer.WebAudio.audioContext) {
+        WaveSurfer.WebAudio.audioContext = new (
+            window.AudioContext ||
+                window.webkitAudioContext
+        );
+    }
+    return WaveSurfer.WebAudio.audioContext;
 };
 
 WaveSurfer.util.extend(WaveSurfer.WebAudio, WaveSurfer.Observer);
