@@ -2,14 +2,11 @@
 
 WaveSurfer.ELAN = {
     Types: {
-        ALIGNABLE: 'alignable',
-        REFERENCE: 'reference'
+        ALIGNABLE_ANNOTATION: 'ALIGNABLE_ANNOTATION',
+        REF_ANNOTATION: 'REF_ANNOTATION'
     },
 
-    TimeUnits: {
-        MILLISECONDS: 'milliseconds',
-        SECONDS: 'seconds'
-    },
+    DOMParser: new DOMParser(),
 
     init: function (params) {
         this.data = null;
@@ -30,7 +27,7 @@ WaveSurfer.ELAN = {
 
     getAnnotation: function (time) {
         for (var i = 0; i < this.data.length; i++) {
-            var annotation = this.data.alignedAnnotations[i];
+            var annotation = this.data.alignableAnnotations[i];
             if (annotation.start <= time && annotation.end >= time) {
                 return annotation;
             }
@@ -39,14 +36,14 @@ WaveSurfer.ELAN = {
 
     getAnnotationRow: function (annotation) {
         return document.getElementById(
-            'wavesurfer-aligned-' + annotation.id
+            'wavesurfer-alignable-' + annotation.id
         );
     },
 
     load: function (url) {
         var my = this;
         this.loadXML(url, function (xml) {
-            my.data = my.parseXML(xml);
+            my.data = my.parseElan(xml);
             my.render();
             my.fireEvent('ready', my.data, my.container);
         });
@@ -57,84 +54,98 @@ WaveSurfer.ELAN = {
         xhr.open('GET', url, true);
         xhr.send();
         xhr.addEventListener('load', function (e) {
-            var xml = e.target.responseXML;
-            if (!xml) {
-                var parser = new DOMParser();
-                xml = parser.parseFromString(e.target.responseText, 'text/xml');
-            }
+            var xml = e.target.responseXML ||
+                WaveSurfer.ELAN.DOMParser.parseFromString(
+                    e.target.responseText, 'text/xml'
+                );
             callback && callback(xml);
         });
     },
 
-    parseXML: function (xml) {
+    parseElan: function (xml) {
         var _forEach = Array.prototype.forEach;
         var _map = Array.prototype.map;
 
-        var transcript = {
+        var data = {
             media: {},
             timeOrder: {},
+            tiers: [],
             annotations: {},
-            alignedAnnotations: null, // Array
-            tiers: null // Array
+            alignableAnnotations: []
         };
 
         var header = xml.querySelector('HEADER');
-        transcript.media.timeUnits = header.getAttribute('TIME_UNITS');
-        transcript.media.url = header.querySelector('MEDIA_DESCRIPTOR')
-            .getAttribute('MEDIA_URL');
+        var inMilliseconds = header.getAttribute('TIME_UNITS') == 'milliseconds';
+        var media = header.querySelector('MEDIA_DESCRIPTOR');
+        data.media.url = media.getAttribute('MEDIA_URL');
+        data.media.type = media.getAttribute('MIME_TYPE');
 
         var timeSlots = xml.querySelectorAll('TIME_ORDER TIME_SLOT');
+        var timeOrder = {};
         _forEach.call(timeSlots, function (slot) {
-            transcript.timeOrder[
-                slot.getAttribute('TIME_SLOT_ID')
-            ] = slot.getAttribute('TIME_VALUE');
+            var value = parseFloat(slot.getAttribute('TIME_VALUE'));
+            // If in milliseconds, convert to seconds with rounding
+            if (inMilliseconds) {
+                value = Math.round(value * 1e2) / 1e5;
+            }
+            timeOrder[slot.getAttribute('TIME_SLOT_ID')] = value;
         });
 
-        transcript.tiers = _map.call(xml.querySelectorAll('TIER'), function (tier) {
+        data.tiers = _map.call(xml.querySelectorAll('TIER'), function (tier) {
             return {
                 id: tier.getAttribute('TIER_ID'),
-                linguisticType: tier.getAttribute('LINGUISTIC_TYPE_REF'),
+                linguisticTypeRef: tier.getAttribute('LINGUISTIC_TYPE_REF'),
                 defaultLocale: tier.getAttribute('DEFAULT_LOCALE'),
                 annotations: _map.call(
                     tier.querySelectorAll('REF_ANNOTATION, ALIGNABLE_ANNOTATION'),
-                    function (annot) {
-                        var annotation = {
-                            type: this.Types.REFERENCE,
-                            id: annot.getAttribute('ANNOTATION_ID'),
-                            ref: annot.getAttribute('ANNOTATION_REF'),
-                            value: annot.querySelector('ANNOTATION_VALUE')
+                    function (node) {
+                        var annot = {
+                            type: node.nodeName,
+                            id: node.getAttribute('ANNOTATION_ID'),
+                            ref: node.getAttribute('ANNOTATION_REF'),
+                            value: node.querySelector('ANNOTATION_VALUE')
                                 .textContent.trim()
                         };
-                        return transcript.annotations[annotation.id] = annotation;
+
+                        if (this.Types.ALIGNABLE_ANNOTATION == annot.type) {
+                            // Add start & end to alignable annotation
+                            annot.start = timeOrder[node.getAttribute('TIME_SLOT_REF1')];
+                            annot.end = timeOrder[node.getAttribute('TIME_SLOT_REF2')];
+
+                            // Add to the list of alignable annotations
+                            data.alignableAnnotations.push(annot);
+                        }
+
+                        // Additionally, put into the flat map of all annotations
+                        data.annotations[annot.id] = annot;
+
+                        return annot;
                     }, this
                 )
             };
         }, this);
 
-
-        var factor = transcript.media.timeUnits == this.TimeUnits.MILLISECONDS ?
-            0.001 : 1;
-        var alignable = xml.querySelectorAll('ALIGNABLE_ANNOTATION');
-        transcript.alignedAnnotations = _map.call(alignable, function (annot) {
-            var annotation = {
-                type: this.Types.ALIGNABLE,
-                id: annot.getAttribute('ANNOTATION_ID'),
-                start: transcript.timeOrder[annot.getAttribute('TIME_SLOT_REF1')] * factor,
-                end: transcript.timeOrder[annot.getAttribute('TIME_SLOT_REF2')] * factor
-            };
-            return transcript.annotations[annotation.id] = annotation;
+        // Create JavaScript references between annotations
+        data.tiers.forEach(function (tier) {
+            tier.annotations.forEach(function (annot) {
+                if (null != annot.ref) {
+                    annot.reference = data.annotations[annot.ref];
+                }
+            }, this);
         }, this);
-        transcript.alignedAnnotations.sort(function (a, b) {
+
+        // Sort alignable annotations by start & end
+        data.alignableAnnotations.sort(function (a, b) {
             var d = a.start - b.start;
             if (d == 0) {
-                d = a.end - b.end;
+                d = b.end - a.end;
             }
             return d;
         });
 
-        transcript.length = transcript.alignedAnnotations.length;
+        data.length = data.alignableAnnotations.length;
 
-        return transcript;
+        return data;
     },
 
     render: function () {
@@ -146,20 +157,18 @@ WaveSurfer.ELAN = {
             }, this);
         }
 
-        // denormalize references to aligned annotations
+        // denormalize references to alignable annotations
         var backRefs = {};
         var indeces = {};
         tiers.forEach(function (tier, index) {
             tier.annotations.forEach(function (annot) {
-                if (annot.type == this.Types.REFERENCE) {
-                    var reference = this.data.annotations[annot.ref];
-                    if (reference && reference.type == this.Types.ALIGNABLE) {
-                        if (!(reference.id in backRefs)) {
-                            backRefs[reference.id] = {};
-                        }
-                        backRefs[reference.id][index] = annot;
-                        indeces[index] = true;
+                if (annot.reference &&
+                    annot.reference.type == this.Types.ALIGNABLE_ANNOTATION) {
+                    if (!(annot.reference.id in backRefs)) {
+                        backRefs[annot.ref] = {};
                     }
+                    backRefs[annot.ref][index] = annot;
+                    indeces[index] = true;
                 }
             }, this);
         }, this);
@@ -175,8 +184,8 @@ WaveSurfer.ELAN = {
         thead.appendChild(headRow);
         table.appendChild(thead);
         var th = document.createElement('th');
-        th.textContent = '#';
-        th.className = 'wavesurfer-number';
+        th.textContent = 'Time';
+        th.className = 'wavesurfer-time';
         headRow.appendChild(th);
         indeces.forEach(function (index) {
             var tier = tiers[index];
@@ -190,18 +199,17 @@ WaveSurfer.ELAN = {
         // body
         var tbody = document.createElement('tbody');
         table.appendChild(tbody);
-        var count = 1;
-        this.data.alignedAnnotations.forEach(function (aligned) {
-            var backRef = backRefs[aligned.id];
+        this.data.alignableAnnotations.forEach(function (alignable) {
+            var backRef = backRefs[alignable.id];
             if (!backRef) { return; }
 
             var row = document.createElement('tr');
-            row.id = 'wavesurfer-aligned-' + aligned.id;
+            row.id = 'wavesurfer-alignable-' + alignable.id;
             tbody.appendChild(row);
 
             var td = document.createElement('td');
-            td.className = 'wavesurfer-number';
-            td.textContent = count++ + '. ';
+            td.className = 'wavesurfer-time';
+            td.textContent = alignable.start.toFixed(1) + '–' + alignable.end.toFixed(1);
             row.appendChild(td);
 
             indeces.forEach(function (index) {
@@ -210,7 +218,9 @@ WaveSurfer.ELAN = {
                 var annotation = backRef[index];
                 if (annotation) {
                     td.id = 'wavesurfer-annotation-' + annotation.id;
-                    td.dataset.ref = annotation.ref;
+                    td.dataset.ref = alignable.id;
+                    td.dataset.start = alignable.start;
+                    td.dataset.end = alignable.end;
                     td.textContent = annotation.value;
                 }
                 td.className = 'wavesurfer-tier-' + tier.id;
@@ -226,14 +236,10 @@ WaveSurfer.ELAN = {
         var my = this;
         this.container.addEventListener('click', function (e) {
             var ref = e.target.dataset.ref;
-            if (ref) {
-                var annotation = my.data.annotations[ref];
-                if (annotation) {
-                    my.fireEvent('reference', annotation, my.data);
-
-                    if (annotation.type == my.Types.ALIGNABLE) {
-                        my.fireEvent('select', annotation);
-                    }
+            if (null != ref) {
+                var annot = my.data.annotations[ref];
+                if (annot) {
+                    my.fireEvent('select', annot.start, annot.end);
                 }
             }
         });

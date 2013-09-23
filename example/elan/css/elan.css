@@ -1,5 +1,5 @@
 #annotations {
-    max-height: 500px;
+    max-height: 300px;
     overflow: auto;
 }
 
@@ -7,15 +7,13 @@
     background-color: yellow;
 }
 
-.wavesurfer-number {
-    width: 30px;
+.wavesurfer-time {
+    width: 100px;
+    color: #555;
 }
 
 .wavesurfer-tier-Text {
     width: 500px;
-}
-
-.wavesurfer-tier-Comments {
 }
 
 td.wavesurfer-tier-Comments {

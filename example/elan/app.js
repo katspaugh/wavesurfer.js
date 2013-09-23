@@ -54,14 +54,15 @@ document.addEventListener('DOMContentLoaded', function () {
     elan.on('ready', function (data, container) {
         var url = data.media.url.replace(/file:\/+/, 'transcripts/');
         wavesurfer.load(url);
-        container.querySelector('table').classList.add(
-            'table', 'table-striped', 'table-hover'
-        );
+        var classList = container.querySelector('table').classList;
+        [ 'table', 'table-striped', 'table-hover' ].forEach(function (cl) {
+            classList.add(cl);
+        });
     });
 
     wavesurfer.on('ready', function () {
-        elan.on('select', function (annotation) {
-            wavesurfer.backend.play(annotation.start, annotation.end);
+        elan.on('select', function (start, end) {
+            wavesurfer.backend.play(start, end);
         });
     });
 
