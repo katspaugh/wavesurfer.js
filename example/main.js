@@ -11,8 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
         progressColor : 'purple',
         loaderColor   : 'purple',
         cursorColor   : 'navy',
-        markerWidth   : 2,
-        skipLength    : 5
+        markerWidth   : 2
     };
 
     if (location.search.match('scroll')) {
@@ -42,7 +41,8 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.load('example/media/demo.wav');
 
     // Start listening to marks being reached by cursor
-    wavesurfer.bindMarks();
+    //wavesurfer.bindMarks();
+
     // Start listening to drag'n'drop on document
     wavesurfer.bindDragNDrop();
 });
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // Play at once when ready
 // Won't work on iOS until you touch the page
 wavesurfer.on('ready', function () {
-    wavesurfer.play();
+    //wavesurfer.play();
 });
 
 // Bind buttons and keypresses

@@ -21,20 +21,36 @@ var WaveSurfer = {
         // Extract relevant parameters (or defaults)
         this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
 
-        this.drawer = Object.create(WaveSurfer.Drawer[this.params.renderer]);
-        this.drawer.init(this.params);
-        this.drawer.on('redraw', this.drawBuffer.bind(this));
-
+        // Marker objects
         this.markers = {};
-
-        this.createBackend();
-        this.bindClick();
 
         // Used to save the current volume when muting so we can
         // restore once unmuted
         this.savedVolume = -1;
         // The current muted state
         this.isMuted = false;
+
+        this.createBackend();
+        this.createDrawer();
+    },
+
+    createDrawer: function () {
+        var my = this;
+
+        this.drawer = Object.create(WaveSurfer.Drawer[this.params.renderer]);
+        this.drawer.init(this.params);
+
+        this.drawer.on('redraw', function () {
+            my.drawBuffer();
+        });
+
+        this.drawer.on('click', function (progress) {
+            my.seekTo(progress);
+        });
+
+        this.on('progress', function (progress) {
+            my.drawer.progress(progress);
+        });
     },
 
     createBackend: function () {
@@ -42,16 +58,28 @@ var WaveSurfer = {
 
         this.backend = Object.create(WaveSurfer.WebAudio);
 
-        this.backend.on('audioprocess', function () {
-            my.fireEvent('progress');
+        this.backend.on('play', function () {
+            my.fireEvent('play');
         });
 
-        // Called either from `audioprocess' (above) or from `seekTo'
-        this.on('progress', function () {
-            my.drawer.progress(my.backend.getPlayedPercents());
+        this.on('play', function () {
+            my.restartAnimationLoop();
         });
 
         this.backend.init(this.params);
+    },
+
+    restartAnimationLoop: function () {
+        var my = this;
+        var requestFrame = 'requestAnimationFrame' in window ?
+            'requestAnimationFrame' : 'webkitRequestAnimationFrame';
+        var frame = function () {
+            my.fireEvent('progress', my.backend.getPlayedPercents());
+            if (!my.backend.isPaused()) {
+                window[requestFrame](frame);
+            }
+        };
+        frame();
     },
 
     playAt: function (percents) {
@@ -90,7 +118,7 @@ var WaveSurfer = {
         this.playAt(progress);
         if (paused) {
             this.pause();
-            this.fireEvent('progress');
+            this.fireEvent('progress', progress);
         }
         this.fireEvent('seek', progress);
     },
@@ -250,21 +278,12 @@ var WaveSurfer = {
         }, false);
     },
 
-    /**
-     * Click to seek.
-     */
-    bindClick: function () {
-        var my = this;
-        this.drawer.on('click', function (progress) {
-            my.seekTo(progress);
-        });
-    },
-
+    // TODO: use scheduling instead of `onaudioprocess'
     bindMarks: function () {
         var my = this;
         var markers = this.markers;
 
-        this.on('progress', function () {
+        this.backend.on('audioprocess', function () {
             Object.keys(markers).forEach(function (id) {
                 var marker = markers[id];
                 var position = marker.position.toPrecision(3);

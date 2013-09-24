@@ -155,6 +155,8 @@ WaveSurfer.WebAudio = {
         } else {
             this.source.noteGrainOn(0, start, end - start);
         }
+
+        this.fireEvent('play');
     },
 
     /**
@@ -170,6 +172,8 @@ WaveSurfer.WebAudio = {
         }
         this.source.disconnect();
         this.source = null;
+
+        this.fireEvent('pause');
     },
 
     /**
