@@ -12,6 +12,7 @@ var WaveSurfer = {
         pixelRatio    : 1,
         fillParent    : true,
         scrollParent  : false,
+        normalize     : false,
         audioContext  : null,
         container     : null,
         renderer      : 'Canvas'
@@ -213,7 +214,7 @@ var WaveSurfer = {
 
         var pixels = this.drawer.getPixels(duration);
         var peaks = this.backend.getPeaks(pixels);
-        var max = this.backend.getMaxPeak();
+        var max = this.backend.getMaxPeak(peaks);
 
         this.drawer.drawPeaks(peaks, max);
     },
@@ -393,6 +394,15 @@ WaveSurfer.util = {
 
     getId: function () {
         return 'wavesurfer_' + Math.random().toString(32).substring(2);
+    },
+
+    max: function (values) {
+        var max = -Infinity;
+        for (var i = 0, len = values.length; i < len; i++) {
+            var val = values[i];
+            if (val > max) { max = val; }
+        }
+        return max;
     }
 };
 

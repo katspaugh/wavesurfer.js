@@ -19,6 +19,10 @@ document.addEventListener('DOMContentLoaded', function () {
         options.scrollParent = true;
     }
 
+    if (location.search.match('normalize')) {
+        options.normalize = true;
+    }
+
     if (location.search.match('canvas')) {
         options.renderer = 'Canvas';
     }

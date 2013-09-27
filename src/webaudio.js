@@ -2,6 +2,7 @@
 
 WaveSurfer.WebAudio = {
     init: function (params) {
+        this.params = params;
         this.ac = params.audioContext || WaveSurfer.WebAudio.getAudioContext();
         this.createScriptNode();
         this.createVolumeNode();
@@ -212,9 +213,10 @@ WaveSurfer.WebAudio = {
         return peaks;
     },
 
-    getMaxPeak: function () {
-        /* Peaks are sums of absolute peak values from each channel. */
-        return this.buffer.numberOfChannels * 1.0;
+    getMaxPeak: function (peaks) {
+        return this.params.normalize ?
+            WaveSurfer.util.max(peaks) :
+            this.buffer.numberOfChannels * 1.0;
     },
 
     getPlayedPercents: function () {

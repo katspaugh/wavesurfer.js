@@ -8,18 +8,12 @@ window.addEventListener('load', function () {
     var pills = ul.querySelectorAll('li');
 
     if (location.search) {
-        Array.prototype.forEach.call(pills, function (link) {
-            link.className = '';
-        });
-
-        var links = [ 'canvas', 'svg', 'scroll' ];
-        links.forEach(function (link) {
-            if (location.search.match(link)) {
-                ul.querySelector('a[href="?' + link + '"]')
-                    .parentNode.className = 'active';
-            }
-        });
+        var active = ul.querySelector(
+            'a[href="' + location.search + '"]'
+        ).parentNode;
     } else {
-        pills[0].className = 'active';
+        active = pills[0];
     }
+    active.classList.add('active');
+    active.querySelector('a').removeAttribute('href');
 });
