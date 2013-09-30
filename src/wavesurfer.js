@@ -229,6 +229,8 @@ var WaveSurfer = {
         xhr.send();
         xhr.responseType = 'arraybuffer';
 
+        my.fireEvent('loading', 0, xhr);
+
         xhr.addEventListener('progress', function (e) {
             var percentComplete;
             if (e.lengthComputable) {
@@ -239,15 +241,13 @@ var WaveSurfer = {
                 // function, and assume downloads in the 1-3 MB range.
                 percentComplete = e.loaded / (e.loaded + 1000000);
             }
-            my.fireEvent('loading', percentComplete);
+            my.fireEvent('loading', Math.round(percentComplete * 100), xhr);
         });
 
         xhr.addEventListener('load', function (e) {
-            my.fireEvent('loading', 1);
             my.backend.loadBuffer(
                 e.target.response,
                 function () {
-                    my.fireEvent('loading', 100);
                     my.drawBuffer();
                     my.fireEvent('ready');
                 }

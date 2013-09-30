@@ -93,7 +93,7 @@ Events
 You can listen to the following events:
 
  * `ready` – when audio is decoded and waveform drawn.
- * `loading` – fires continuously when loading via XHR. Callback recieves loading progress in percents.
+ * `loading` – fires continuously when loading via XHR. Callback recieves loading progress in percents (from 0 to 100) and the XHR object.
  * `progress` – fires continuously as audio progresses.
  * `seek` – when you seek to specified position.
  * `mark` – when a mark is reached (callback receives the marker object).

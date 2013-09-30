@@ -93,6 +93,7 @@ body {
 
 #progress-bar {
     position: absolute;
+    z-index: 10;
     left: 0;
     top: 54px;
     left: 5%;

@@ -166,13 +166,15 @@ WaveSurfer.WebAudio = {
     pause: function () {
         this.lastPause = this.lastStart + (this.ac.currentTime - this.startTime);
         this.paused = true;
-        if (this.source.stop) {
-            this.source.stop(0);
-        } else {
-            this.source.noteOff(0);
+        if (this.source) {
+            if (this.source.stop) {
+                this.source.stop(0);
+            } else {
+                this.source.noteOff(0);
+            }
+            this.source.disconnect();
+            this.source = null;
         }
-        this.source.disconnect();
-        this.source = null;
 
         this.fireEvent('pause');
     },
