@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
     //wavesurfer.bindMarks();
 
     // Start listening to drag'n'drop on document
-    wavesurfer.bindDragNDrop();
+    wavesurfer.bindDragNDrop('#drop');
 });
 
 // Play at once when ready
@@ -61,7 +61,7 @@ wavesurfer.on('ready', function () {
 });
 
 // Bind buttons and keypresses
-wavesurfer.on('ready', function () {
+(function () {
     var eventHandlers = {
         'play': function () {
             wavesurfer.playPause();
@@ -115,7 +115,7 @@ wavesurfer.on('ready', function () {
             eventHandlers[action](e);
         }
     });
-});
+}());
 
 // Flash when reaching a mark
 wavesurfer.on('mark', function (marker) {

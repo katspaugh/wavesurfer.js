@@ -29,6 +29,7 @@ WaveSurfer.Drawer = {
         this.setWidth(peaks.length);
         this.resetScroll();
         this.drawWave(peaks, max);
+        this.updateProgress(0);
     },
 
     style: function (el, styles) {

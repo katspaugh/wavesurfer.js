@@ -219,6 +219,15 @@ var WaveSurfer = {
         this.drawer.drawPeaks(peaks, max);
     },
 
+    loadBuffer: function (data) {
+        var my = this;
+        this.pause();
+        this.backend.loadBuffer(data, function () {
+            my.drawBuffer();
+            my.fireEvent('ready');
+        });
+    },
+
     /**
      * Loads an audio file via XHR.
      */
@@ -245,13 +254,7 @@ var WaveSurfer = {
         });
 
         xhr.addEventListener('load', function (e) {
-            my.backend.loadBuffer(
-                e.target.response,
-                function () {
-                    my.drawBuffer();
-                    my.fireEvent('ready');
-                }
-            );
+            my.loadBuffer(e.target.response);
         });
     },
 
@@ -261,21 +264,38 @@ var WaveSurfer = {
      */
     bindDragNDrop: function (dropTarget) {
         var my = this;
+        var cl = 'wavesurfer-dragover';
+
+        // Create file reader
         var reader = new FileReader();
+        // Draw waveform when file is read
         reader.addEventListener('load', function (e) {
-            my.backend.loadBuffer(
-                e.target.result,
-                function () {
-                    my.drawBuffer();
-                    my.fireEvent('ready');
-                }
-            );
+            my.loadBuffer(e.target.result);
         }, false);
 
-        (dropTarget || document).addEventListener('drop', function (e) {
+        if (typeof dropTarget == 'string') {
+            dropTarget = document.querySelector(dropTarget);
+        }
+
+        // Bind drop event
+        dropTarget.addEventListener('drop', function (e) {
+            e.stopPropagation();
             e.preventDefault();
+            dropTarget.classList.remove(cl);
             var file = e.dataTransfer.files[0];
             file && reader.readAsArrayBuffer(file);
+        }, false);
+
+        // Bind dragover & dragleave
+        dropTarget.addEventListener('dragover', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            dropTarget.classList.add(cl);
+        }, false);
+        dropTarget.addEventListener('dragleave', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            dropTarget.classList.remove(cl);
         }, false);
     },
 
@@ -298,7 +318,7 @@ var WaveSurfer = {
     },
 
     empty: function () {
-        this.stop();
+        this.pause();
         this.backend.loadEmpty();
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     }

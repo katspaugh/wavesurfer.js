@@ -99,3 +99,12 @@ body {
     left: 5%;
     width: 90%;
 }
+
+#drop {
+    border: 3px dashed #ddd;
+    padding: 30px;
+}
+
+#drop.wavesurfer-dragover {
+    border-color: #333;
+}

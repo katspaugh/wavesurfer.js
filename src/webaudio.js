@@ -97,11 +97,6 @@ WaveSurfer.WebAudio = {
      */
     loadBuffer: function (arraybuffer, cb, errb) {
         var my = this;
-
-        if (this.source) {
-            this.pause();
-        }
-
         this.ac.decodeAudioData(
             arraybuffer,
             function (buffer) {
@@ -116,7 +111,6 @@ WaveSurfer.WebAudio = {
     },
 
     loadEmpty: function () {
-        this.pause();
         this.setBuffer(0);
     },
 
