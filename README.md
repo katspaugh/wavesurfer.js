@@ -4,8 +4,6 @@ wavesurfer.js
 Interactive navigable audio visualization using
 [WebAudio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) and Canvas/SVG.
 
-[http://katspaugh.github.io/wavesurfer.js/](http://katspaugh.github.io/wavesurfer.js/)
-
 ![Imgur](http://i.imgur.com/dnH8q.png)
 
 API in examples
@@ -18,7 +16,7 @@ Create an instance:
 Initialize it with a container element (plus some options):
 
     wavesurfer.init({
-        container: document.querySelector('#wave'),
+        container: '#wave',
         waveColor: 'violet',
         progressColor: 'purple'
     });
@@ -31,7 +29,7 @@ Subscribe to some events:
 
 Load an audio file from a URL:
 
-    wavesurfer.load('media/sonnet_23.mp3');
+    wavesurfer.load('example/media/demo.wav');
 
 Or visualize your audio files via drag'n'drop:
 
@@ -50,7 +48,7 @@ Options
   * `normalize` – if `true`, normalize by the maximum peak instead of 1.0 (`false` by default).
   * `pixelRatio` – `1` by default for performance considerations (see #22), but you can set it to `window.devicePixelRatio`.
   * `renderer` – SVG or Canvas. `'Canvas'` by default.
-  * `AudioContext` – use your own previously initialized `AudioContext` or leave blank.
+  * `audioContext` – use your own previously initialized `AudioContext` or leave blank.
   * `cursorWidth` – 1 px by default.
   * `markerWidth` – 1 px by default.
   * `waveColor` – the fill color of the waveform. You can also customize all colors via CSS when using the SVG renderer.
@@ -76,7 +74,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `toggleMute()` – toggles the volume on and off.
  * `mark(options)` – creates a visual marker on the waveform. Options are `id` (random if not set), `position` (in seconds), `color` and `width` (defaults to the global option `markerWidth`). Returns a marker object which you can update later (`marker.update(options)`).
  * `clearMarks()` – removes all markers.
- * `bindMarks()` – starts listening for markers being reached by cursor on the waveform. Emits `mark` event and `reached` event for each marker object.
+ * `bindMarks()` – starts listening for markers being reached by cursor on the waveform. Emits global `mark` event and `reached` event for each marker object.
  * `bindDragNDrop([dropTarget])` – starts listening to drag'n'drop on an element. The default element is `document`. Loads the dropped audio.
  * `empty()` – clears the waveform as if a zero-length audio is loaded.
 
@@ -94,25 +92,13 @@ You can listen to the following events:
 
  * `ready` – when audio is decoded and waveform drawn.
  * `loading` – fires continuously when loading via XHR. Callback recieves loading progress in percents (from 0 to 100) and the XHR object.
- * `progress` – fires continuously as audio progresses.
  * `seek` – when you seek to specified position.
- * `mark` – when a mark is reached (callback receives the marker object).
+ * `play` – when starts playing.
 
 Credits
 =======
 
-- Based on [Eiji Kitamura's work](https://github.com/agektmr/AudioStreamer).
-
-- Initial idea by [Alex Khokhulin](https://github.com/xoxulin).
-
-- Awesome contributions by [Max Goodman](https://github.com/chromakode),
-[Kevin Ennis](https://github.com/kevincennis),
-[Justin Bradford](https://github.com/jabr),
-[Hayden Ball](https://github.com/ball-hayden),
-[@KingdomOfJoy](https://github.com/KingdomOfJoy) and
-[@svoctor](https://github.com/svoctor).
-
-Thanks!
+Initial idea by [Alex Khokhulin](https://github.com/xoxulin). Many thanks to [the awesome contributors](https://github.com/katspaugh/wavesurfer.js/contributors)!
 
 
 License
