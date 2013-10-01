@@ -27,7 +27,7 @@ var WaveSurfer = {
 
         // Used to save the current volume when muting so we can
         // restore once unmuted
-        this.savedVolume = -1;
+        this.savedVolume = 0;
         // The current muted state
         this.isMuted = false;
 
@@ -72,12 +72,12 @@ var WaveSurfer = {
 
     restartAnimationLoop: function () {
         var my = this;
-        var requestFrame = 'requestAnimationFrame' in window ?
-            'requestAnimationFrame' : 'webkitRequestAnimationFrame';
+        var requestFrame = window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame;
         var frame = function () {
             my.fireEvent('progress', my.backend.getPlayedPercents());
             if (!my.backend.isPaused()) {
-                window[requestFrame](frame);
+                requestFrame(frame);
             }
         };
         frame();
@@ -151,7 +151,6 @@ var WaveSurfer = {
             // If currently muted then restore to the saved volume
             // and update the mute properties
             this.backend.setVolume(this.savedVolume);
-            this.savedVolume = -1;
             this.isMuted = false;
         } else {
             // If currently not muted then save current volume,

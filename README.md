@@ -70,7 +70,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `skipForward()`
  * `skipBackward()`
  * `skip(offset)` – skips a number of seconds from the current position (use a negative value to go backwards).
- * `setVolume(newVolume)` – sets the playback volume to a new value (use a floating point value between -1 and 1, -1 being no volume and 1 being full volume).
+ * `setVolume(newVolume)` – sets the playback volume to a new value (use a floating point value between 0 and 1, 0 being no volume and 1 being full volume).
  * `toggleMute()` – toggles the volume on and off.
  * `mark(options)` – creates a visual marker on the waveform. Options are `id` (random if not set), `position` (in seconds), `color` and `width` (defaults to the global option `markerWidth`). Returns a marker object which you can update later (`marker.update(options)`).
  * `clearMarks()` – removes all markers.

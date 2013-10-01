@@ -3,7 +3,7 @@
 WaveSurfer.WebAudio = {
     init: function (params) {
         this.params = params;
-        this.ac = params.audioContext || WaveSurfer.WebAudio.getAudioContext();
+        this.ac = params.audioContext || this.getAudioContext();
         this.createScriptNode();
         this.createVolumeNode();
     },
@@ -56,18 +56,18 @@ WaveSurfer.WebAudio = {
     /**
      * Set the gain to a new value.
      *
-     * @param newGain The new gain, a floating point value between -1
-     * and 1. -1 being no gain and 1 being maxium gain.
+     * @param {Number} newGain The new gain, a floating point value
+     * between 0 and 1. 0 being no gain and 1 being maximum gain.
      */
     setVolume: function (newGain) {
         this.gainNode.gain.value = newGain;
     },
 
     /**
-     * Get the current gain
+     * Get the current gain.
      *
-     * @returns The current gain, a floating point value between -1
-     * and 1. -1 being no gain and 1 being maxium gain.
+     * @returns {Number} The current gain, a floating point value
+     * between 0 and 1. 0 being no gain and 1 being maximum gain.
      */
     getVolume: function () {
         return this.gainNode.gain.value;
@@ -225,20 +225,20 @@ WaveSurfer.WebAudio = {
             return this.lastPause;
         }
         return this.lastStart + (this.ac.currentTime - this.startTime);
-    }
-};
+    },
 
-// audioContext should be a singletone
-WaveSurfer.WebAudio.getAudioContext = (function () {
-    var audioContext;
-    return function () {
-        if (!audioContext) {
-            audioContext = new (
-                window.AudioContext || window.webkitAudioContext
-            );
-        }
-        return audioContext;
-    };
-}());
+    getAudioContext: (function () {
+        // audioContext should be a singleton
+        var audioContext;
+        return function () {
+            if (!audioContext) {
+                audioContext = new (
+                    window.AudioContext || window.webkitAudioContext
+                );
+            }
+            return audioContext;
+        };
+    }())
+};
 
 WaveSurfer.util.extend(WaveSurfer.WebAudio, WaveSurfer.Observer);
