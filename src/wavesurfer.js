@@ -224,7 +224,20 @@ var WaveSurfer = {
         this.backend.loadBuffer(data, function () {
             my.drawBuffer();
             my.fireEvent('ready');
+        }, function () {
+            my.fireEvent('decode-error');
         });
+    },
+
+    onProgress: function (e) {
+        if (e.lengthComputable) {
+            var percentComplete = e.loaded / e.total;
+        } else {
+            // Approximate progress with an asymptotic
+            // function, and assume downloads in the 1-3 MB range.
+            percentComplete = e.loaded / (e.loaded + 1000000);
+        }
+        this.fireEvent('loading', Math.round(percentComplete * 100), e.target);
     },
 
     /**
@@ -236,66 +249,69 @@ var WaveSurfer = {
         xhr.open('GET', url, true);
         xhr.send();
         xhr.responseType = 'arraybuffer';
-
-        my.fireEvent('loading', 0, xhr);
-
         xhr.addEventListener('progress', function (e) {
-            var percentComplete;
-            if (e.lengthComputable) {
-                percentComplete = e.loaded / e.total;
-            } else {
-                // TODO
-                // for now, approximate progress with an asymptotic
-                // function, and assume downloads in the 1-3 MB range.
-                percentComplete = e.loaded / (e.loaded + 1000000);
-            }
-            my.fireEvent('loading', Math.round(percentComplete * 100), xhr);
+            my.onProgress(e);
         });
-
         xhr.addEventListener('load', function (e) {
-            my.loadBuffer(e.target.response);
+            if (e.target.response) {
+                my.loadBuffer(e.target.response);
+            } else {
+                my.fireEvent('load-error');
+            }
         });
+        xhr.addEventListener('error', function () {
+            my.fireEvent('load-error');
+        });
+        this.empty();
     },
 
     /**
      * Listens to drag'n'drop.
-     * @param {HTMLElement} dropTarget
+     * @param {HTMLElement|String} dropTarget Element or selector.
      */
     bindDragNDrop: function (dropTarget) {
         var my = this;
-        var cl = 'wavesurfer-dragover';
 
         // Create file reader
         var reader = new FileReader();
-        // Draw waveform when file is read
+        reader.addEventListener('progress', function (e) {
+            my.onProgress(e);
+        });
         reader.addEventListener('load', function (e) {
             my.loadBuffer(e.target.result);
-        }, false);
+        });
+        reader.addEventListener('error', function () {
+            my.fireEvent('load-error');
+        });
 
+        // Bind drop event
         if (typeof dropTarget == 'string') {
             dropTarget = document.querySelector(dropTarget);
         }
-
-        // Bind drop event
+        var dropActiveCl = 'wavesurfer-dragover';
         dropTarget.addEventListener('drop', function (e) {
             e.stopPropagation();
             e.preventDefault();
-            dropTarget.classList.remove(cl);
+            dropTarget.classList.remove(dropActiveCl);
             var file = e.dataTransfer.files[0];
-            file && reader.readAsArrayBuffer(file);
-        }, false);
-
+            if (file) {
+                reader.readAsArrayBuffer(file);
+                my.empty();
+            } else {
+                my.fireEvent('load-error');
+            }
+        });
         // Bind dragover & dragleave
         dropTarget.addEventListener('dragover', function (e) {
             e.stopPropagation();
             e.preventDefault();
-            dropTarget.classList.add(cl);
-        }, false);
+            dropTarget.classList.add(dropActiveCl);
+        });
         dropTarget.addEventListener('dragleave', function (e) {
             e.stopPropagation();
             e.preventDefault();
-            dropTarget.classList.remove(cl);
-        }, false);
+            dropTarget.classList.remove(dropActiveCl);
+        });
     },
 
     // TODO: use scheduling instead of `onaudioprocess'

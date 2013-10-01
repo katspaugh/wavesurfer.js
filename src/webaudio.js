@@ -92,6 +92,8 @@ WaveSurfer.WebAudio = {
      * Decodes binary data and creates buffer source.
      *
      * @param {ArrayBuffer} arraybuffer Audio data.
+     * @param {Function} cb Callback on success.
+     * @param {Function} errb Callback on error.
      */
     loadBuffer: function (arraybuffer, cb, errb) {
         var my = this;
@@ -101,10 +103,7 @@ WaveSurfer.WebAudio = {
                 my.setBuffer(buffer);
                 cb && cb(buffer);
             },
-            function () {
-                console.error('Error decoding audio buffer');
-                errb && errb();
-            }
+            errb
         );
     },
 
