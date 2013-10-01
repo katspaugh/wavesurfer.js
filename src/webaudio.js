@@ -4,7 +4,6 @@ WaveSurfer.WebAudio = {
     init: function (params) {
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
-        this.createScriptNode();
         this.createVolumeNode();
     },
 
@@ -20,6 +19,9 @@ WaveSurfer.WebAudio = {
         this.filterNode = filterNode;
     },
 
+    /**
+     * This is called externally when high resolution timer is needed.
+     */
     createScriptNode: function () {
         var my = this;
         if (this.ac.createScriptProcessor) {
@@ -30,11 +32,7 @@ WaveSurfer.WebAudio = {
         this.scriptNode.connect(this.ac.destination);
         this.scriptNode.onaudioprocess = function () {
             if (my.source && !my.isPaused()) {
-                if (my.getCurrentTime() >= my.scheduledPause) {
-                    my.pause();
-                } else {
-                    my.fireEvent('audioprocess');
-                }
+                my.fireEvent('audioprocess');
             }
         };
     },

@@ -6,7 +6,8 @@ WaveSurfer.Drawer = {
 
         this.pixelRatio = this.params.pixelRatio;
         this.container = 'string' == typeof this.params.container ?
-            document.querySelector(this.params.container) : this.params.container;
+            document.querySelector(this.params.container) :
+            this.params.container;
         this.width = this.container.clientWidth * this.pixelRatio;
         this.height = this.container.clientHeight * this.pixelRatio;
 
@@ -41,6 +42,8 @@ WaveSurfer.Drawer = {
     bindClick: function () {
         var my = this;
         this.container.addEventListener('click', function (e) {
+            e.preventDefault();
+
             var relX = e.offsetX;
             if (null == relX) { relX = e.layerX; }
             var progress = relX / my.scrollWidth;

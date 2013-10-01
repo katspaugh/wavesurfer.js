@@ -37,7 +37,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         var wrapper = document.createElement('wave');
         this.style(wrapper, {
-            position: 'relative'
+            position: 'relative',
+            userSelect: 'none',
+            webkitUserSelect: 'none'
         });
         wrapper.appendChild(waveCanvas);
         wrapper.appendChild(progressWave);

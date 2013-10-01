@@ -5,7 +5,8 @@ WaveSurfer.Drawer.SVG = Object.create(WaveSurfer.Drawer);
 WaveSurfer.util.extend(WaveSurfer.Drawer.SVG, {
     attr: function (node, attrs) {
         Object.keys(attrs).forEach(function (key) {
-            node.setAttribute(key, attrs[key]);
+            var ns = key == 'href' ? 'http://www.w3.org/1999/xlink' : null;
+            node.setAttributeNS(ns, key, attrs[key]);
         });
     },
 
@@ -17,64 +18,61 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.SVG, {
 
     createElements: function () {
         var svg = this.node('svg');
-        var defs = this.node('defs');
+        var defs = svg.appendChild(this.node('defs'));
 
-        // Wave path
+        // Wave path definition
         var pathId = WaveSurfer.util.getId();
-        var path = this.node('path', {
+        var wavePath = defs.appendChild(this.node('path', {
             id: pathId
-        });
-        defs.appendChild(path);
+        }));
 
-        // Progress clip
+        // Progress clip definition
         var clipId = WaveSurfer.util.getId();
-        var clip = this.node('clipPath', {
+        var clipRect = defs.appendChild(this.node('clipPath', {
             id: clipId
-        });
-        var clipRect = this.node('rect', {
+        })).appendChild(this.node('rect', {
             width: 0,
             height: this.height
-        });
-        clip.appendChild(clipRect);
-        defs.appendChild(clip);
+        }));
 
-        var useWave = this.node('use', {
+        svg.appendChild(this.node('use', {
             stroke: this.params.waveColor,
-            'class': 'wavesurfer-wave'
-        });
-        useWave.href.baseVal = '#' + pathId;
+            'class': 'wavesurfer-wave',
+            'href': '#' + pathId
+        }));
 
-        var useClip = this.node('use', {
+        svg.appendChild(this.node('use', {
             stroke: this.params.progressColor,
             'clip-path': 'url(#' + clipId + ')',
-            'class': 'wavesurfer-progress'
-        });
-        useClip.href.baseVal = '#' + pathId;
+            'class': 'wavesurfer-progress',
+            'href': '#' + pathId
+        }));
 
         this.cursorWidth = this.params.cursorWidth * this.pixelRatio;
-        var cursor = this.node('rect', {
+        var cursor = svg.appendChild(this.node('rect', {
             width: this.cursorWidth,
             height: this.height,
             fill: this.params.cursorColor,
             'class': 'wavesurfer-cursor'
-        });
+        }));
 
-        [ defs, useWave, useClip, cursor ].forEach(function (node) {
-            svg.appendChild(node);
+        this.style(svg, {
+            userSelect: 'none',
+            webkitUserSelect: 'none'
         });
-
         this.container.appendChild(svg);
 
         this.svg = svg;
-        this.wavePath = path;
-        this.progressPath = clipRect;
+        this.wavePath = wavePath;
+        this.progressNode = clipRect;
         this.cursor = cursor;
     },
 
     updateWidth: function () {
         if (this.params.fillParent) {
+            // 0.5 px offset makes the path stroke look sharp
             this.attr(this.svg, {
-                viewBox: [ 0, 0, this.width, this.height ].join(' ')
+                viewBox: [ 0.5, 0.5, this.width, this.height ].join(' ')
             });
         }
 
@@ -105,7 +103,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.SVG, {
     },
 
     updateProgress: function () {
-        this.progressPath.setAttribute('width', this.lastPos);
+        this.progressNode.setAttribute('width', this.lastPos);
 
         this.cursor.setAttribute('x', Math.min(
             this.lastPos - ~~(this.params.cursorWidth / 2),

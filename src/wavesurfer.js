@@ -301,11 +301,10 @@ var WaveSurfer = {
     // TODO: use scheduling instead of `onaudioprocess'
     bindMarks: function () {
         var my = this;
-        var markers = this.markers;
-
+        this.backend.createScriptNode();
         this.backend.on('audioprocess', function () {
-            Object.keys(markers).forEach(function (id) {
-                var marker = markers[id];
+            Object.keys(my.markers).forEach(function (id) {
+                var marker = my.markers[id];
                 var position = marker.position.toPrecision(3);
                 var time = my.backend.getCurrentTime().toPrecision(3);
                 if (position == time) {
