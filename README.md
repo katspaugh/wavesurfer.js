@@ -40,7 +40,8 @@ See the example code [here](https://github.com/katspaugh/wavesurfer.js/blob/mast
 Options
 =======
 
-  * `container` – CSS-selector or HTML-element where the waveform to be drawn.
+  * `container` – CSS-selector or HTML-element where the waveform to be drawn. This is the only required parameter.
+  * `height` – the height of the waveform. `128` by default.
   * `skipLength` – number of seconds to skip with the `skipForward()` and `skipBackward()` methods (`2` by default).
   * `minPxPerSec` – minimum number of pixels per second of audio (`1` by default).
   * `fillParent` – whether to fill the entire container or draw only according to `minPxPerSec` (`true` by default).
