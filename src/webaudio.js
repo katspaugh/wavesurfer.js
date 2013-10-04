@@ -5,6 +5,7 @@ WaveSurfer.WebAudio = {
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
         this.createVolumeNode();
+        this.createScriptNode();
     },
 
     setFilter: function (filterNode) {
@@ -24,14 +25,15 @@ WaveSurfer.WebAudio = {
      */
     createScriptNode: function () {
         var my = this;
+        var bufferSize = 256;
         if (this.ac.createScriptProcessor) {
-            this.scriptNode = this.ac.createScriptProcessor(256);
+            this.scriptNode = this.ac.createScriptProcessor(bufferSize);
         } else {
-            this.scriptNode = this.ac.createJavaScriptNode(256);
+            this.scriptNode = this.ac.createJavaScriptNode(bufferSize);
         }
         this.scriptNode.connect(this.ac.destination);
         this.scriptNode.onaudioprocess = function () {
-            if (my.source && !my.isPaused()) {
+            if (!my.isPaused()) {
                 my.fireEvent('audioprocess');
             }
         };

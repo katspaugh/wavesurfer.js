@@ -3,8 +3,8 @@
 var WaveSurfer = {
     defaultParams: {
         waveColor     : '#999',
-        progressColor : '#333',
-        cursorColor   : '#ddd',
+        progressColor : '#555',
+        cursorColor   : '#333',
         cursorWidth   : 1,
         markerWidth   : 1,
         skipLength    : 2,
@@ -24,6 +24,7 @@ var WaveSurfer = {
 
         // Marker objects
         this.markers = {};
+        this.once('marked', this.bindMarks.bind(this));
 
         // Used to save the current volume when muting so we can
         // restore once unmuted
@@ -77,10 +78,13 @@ var WaveSurfer = {
         var frame = function () {
             my.fireEvent('progress', my.backend.getPlayedPercents());
             if (!my.backend.isPaused()) {
-                requestFrame(frame);
+                loop();
             }
         };
-        frame();
+        var loop = function () {
+            requestFrame(frame);
+        };
+        loop();
     },
 
     playAt: function (percents) {
@@ -119,7 +123,6 @@ var WaveSurfer = {
         this.playAt(progress);
         if (paused) {
             this.pause();
-            this.fireEvent('progress', progress);
         }
         this.fireEvent('seek', progress);
     },
@@ -163,6 +166,7 @@ var WaveSurfer = {
 
     mark: function (options) {
         var my = this;
+
         var opts = WaveSurfer.util.extend({
             id: WaveSurfer.util.getId(),
             position: this.backend.getCurrentTime(),
@@ -186,6 +190,8 @@ var WaveSurfer = {
             my.drawer.removeMark(marker);
             delete my.markers[marker.id];
         });
+
+        this.fireEvent('marked', marker);
 
         return marker.update(opts);
     },
@@ -225,7 +231,7 @@ var WaveSurfer = {
             my.drawBuffer();
             my.fireEvent('ready');
         }, function () {
-            my.fireEvent('decode-error');
+            my.fireEvent('error', 'Error decoding audio');
         });
     },
 
@@ -253,14 +259,14 @@ var WaveSurfer = {
             my.onProgress(e);
         });
         xhr.addEventListener('load', function (e) {
-            if (e.target.response) {
-                my.loadBuffer(e.target.response);
+            if (200 == xhr.status) {
+                my.loadBuffer(xhr.response);
             } else {
-                my.fireEvent('load-error');
+                my.fireEvent('error', 'Server response: ' + xhr.statusText);
             }
         });
-        xhr.addEventListener('error', function () {
-            my.fireEvent('load-error');
+        xhr.addEventListener('error', function (e) {
+            my.fireEvent('error', 'Error loading audio');
         });
         this.empty();
     },
@@ -281,7 +287,7 @@ var WaveSurfer = {
             my.loadBuffer(e.target.result);
         });
         reader.addEventListener('error', function () {
-            my.fireEvent('load-error');
+            my.fireEvent('error', 'Error reading file');
         });
 
         // Bind drop event
@@ -298,7 +304,7 @@ var WaveSurfer = {
                 reader.readAsArrayBuffer(file);
                 my.empty();
             } else {
-                my.fireEvent('load-error');
+                my.fireEvent('error', 'Not a file');
             }
         });
         // Bind dragover & dragleave
@@ -314,20 +320,32 @@ var WaveSurfer = {
         });
     },
 
-    // TODO: use scheduling instead of `onaudioprocess'
     bindMarks: function () {
         var my = this;
-        this.backend.createScriptNode();
+        var prec = 3;
+        var lastPos;
+
+        this.backend.on('play', function () {
+            // Reset saved timing
+            lastPos = null;
+        });
+
         this.backend.on('audioprocess', function () {
-            Object.keys(my.markers).forEach(function (id) {
-                var marker = my.markers[id];
-                var position = marker.position.toPrecision(3);
-                var time = my.backend.getCurrentTime().toPrecision(3);
-                if (position == time) {
-                    my.fireEvent('mark', marker);
-                    marker.fireEvent('reached');
+            var position = my.backend.getCurrentTime().toPrecision(prec);
+            if (lastPos != position) {
+                // Remember the rounded timing we checked
+                lastPos = position;
+                for (var id in my.markers) {
+                    if (my.markers.hasOwnProperty(id)) {
+                        var marker = my.markers[id];
+                        if (position == marker.position.toPrecision(prec)) {
+                            my.fireEvent('mark', marker);
+                            marker.fireEvent('reached');
+                            break;
+                        }
+                    }
                 }
-            });
+            }
         });
     },
 
@@ -341,11 +359,13 @@ var WaveSurfer = {
 
 /* Mark */
 WaveSurfer.Mark = {
-    id: null,
-    position: 0,
-    percentage: 0,
-    width: 1,
-    color: '',
+    defaultParams: {
+        id: null,
+        position: 0,
+        percentage: 0,
+        width: 1,
+        color: '#333'
+    },
 
     getTitle: function () {
         var d = new Date(this.position * 1000);
@@ -354,7 +374,7 @@ WaveSurfer.Mark = {
 
     update: function (options) {
         Object.keys(options).forEach(function (key) {
-            if (key in this) {
+            if (key in this.defaultParams) {
                 this[key] = options[key];
             }
         }, this);
@@ -397,6 +417,14 @@ WaveSurfer.Observer = {
                 handlers.length = 0;
             }
         }
+    },
+
+    once: function (event, handler) {
+        var fn = (function () {
+            handler();
+            this.un(event, fn);
+        }).bind(this);
+        this.on(event, fn);
     },
 
     fireEvent: function (event) {

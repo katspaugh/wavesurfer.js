@@ -23,10 +23,6 @@ document.addEventListener('DOMContentLoaded', function () {
         options.normalize = true;
     }
 
-    if (location.search.match('canvas')) {
-        options.renderer = 'Canvas';
-    }
-
     if (location.search.match('svg')) {
         options.renderer = 'SVG';
     }
@@ -48,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.load('example/media/demo.wav');
 
     // Start listening to marks being reached by cursor
-    //wavesurfer.bindMarks();
+    wavesurfer.bindMarks();
 
     // Start listening to drag'n'drop on document
     wavesurfer.bindDragNDrop('#drop');
@@ -117,15 +113,21 @@ wavesurfer.on('ready', function () {
     });
 }());
 
-// Flash when reaching a mark
+// Flash mark when it's played over
 wavesurfer.on('mark', function (marker) {
-    var markerColor = marker.color;
+    if (marker.timer) { return; }
 
-    setTimeout(function () {
+    marker.timer = setTimeout(function () {
+        var origColor = marker.color;
         marker.update({ color: 'yellow' });
-    }, 100);
 
-    setTimeout(function () {
-        marker.update({ color: markerColor });
-    }, 300);
+        setTimeout(function () {
+            marker.update({ color: origColor });
+            delete marker.timer;
+        }, 100);
+    }, 100);
+});
+
+wavesurfer.on('error', function (err) {
+    console.error(err);
 });

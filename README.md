@@ -74,7 +74,6 @@ All methods are intentionally public, but the most readily available are the fol
  * `toggleMute()` – toggles the volume on and off.
  * `mark(options)` – creates a visual marker on the waveform. Options are `id` (random if not set), `position` (in seconds), `color` and `width` (defaults to the global option `markerWidth`). Returns a marker object which you can update later (`marker.update(options)`).
  * `clearMarks()` – removes all markers.
- * `bindMarks()` – starts listening for markers being reached by cursor on the waveform. Emits global `mark` event and `reached` event for each marker object.
  * `bindDragNDrop([dropTarget])` – starts listening to drag'n'drop on an element. The default element is `document`. Loads the dropped audio.
  * `empty()` – clears the waveform as if a zero-length audio is loaded.
 
@@ -90,10 +89,14 @@ Events
 
 You can listen to the following events:
 
- * `ready` – when audio is decoded and waveform drawn.
- * `loading` – fires continuously when loading via XHR. Callback recieves loading progress in percents (from 0 to 100) and the XHR object.
- * `seek` – when you seek to specified position.
- * `play` – when starts playing.
+ * `ready` – when audio is loaded, decoded and the waveform drawn.
+ * `loading` – fires continuously when loading via XHR or drag'n'drop. Callback recieves loading progress in percents (from 0 to 100) and the event target.
+ * `seek` – on seeking.
+ * `play` – when it starts playing.
+ * `mark` – when a mark is reached. Passes the mark object.
+ * `error` – on error, passes an error message.
+
+Each of mark objects also fire the event `reached` when played over.
 
 Credits
 =======

@@ -6,14 +6,13 @@ window.addEventListener('load', function () {
 
     var ul = document.querySelector('.nav-pills');
     var pills = ul.querySelectorAll('li');
-
+    var active = pills[0];
     if (location.search) {
-        var active = ul.querySelector(
-            'a[href="' + location.search + '"]'
-        ).parentNode;
-    } else {
-        active = pills[0];
+        var first = location.search.split('&')[0];
+        var link = ul.querySelector('a[href="' + first + '"]');
+        if (link) {
+            active =  link.parentNode;
+        }
     }
-    active.classList.add('active');
-    active.querySelector('a').removeAttribute('href');
+    active && active.classList.add('active');
 });
