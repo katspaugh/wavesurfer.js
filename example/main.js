@@ -43,9 +43,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Load audio from URL
     wavesurfer.load('example/media/demo.wav');
 
-    // Start listening to marks being reached by cursor
-    wavesurfer.bindMarks();
-
     // Start listening to drag'n'drop on document
     wavesurfer.bindDragNDrop('#drop');
 });
