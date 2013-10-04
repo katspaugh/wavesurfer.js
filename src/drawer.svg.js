@@ -60,7 +60,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.SVG, {
             userSelect: 'none',
             webkitUserSelect: 'none'
         });
-        this.container.appendChild(svg);
+        this.wrapper.appendChild(svg);
 
         this.svg = svg;
         this.wavePath = wavePath;

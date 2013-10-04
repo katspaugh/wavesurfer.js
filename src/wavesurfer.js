@@ -2,6 +2,7 @@
 
 var WaveSurfer = {
     defaultParams: {
+        height        : 128,
         waveColor     : '#999',
         progressColor : '#555',
         cursorColor   : '#333',
@@ -78,13 +79,10 @@ var WaveSurfer = {
         var frame = function () {
             my.fireEvent('progress', my.backend.getPlayedPercents());
             if (!my.backend.isPaused()) {
-                loop();
+                requestFrame(frame);
             }
         };
-        var loop = function () {
-            requestFrame(frame);
-        };
-        loop();
+        frame();
     },
 
     playAt: function (percents) {

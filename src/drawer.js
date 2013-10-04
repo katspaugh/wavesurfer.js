@@ -2,28 +2,61 @@
 
 WaveSurfer.Drawer = {
     init: function (params) {
-        this.params = params;
+        this.container = 'string' == typeof params.container ?
+            document.querySelector(params.container) :
+            params.container;
 
+        if (!this.container) {
+            throw new Error('wavesurfer.js: container element not found');
+        }
+
+        this.params = params;
         this.pixelRatio = this.params.pixelRatio;
-        this.container = 'string' == typeof this.params.container ?
-            document.querySelector(this.params.container) :
-            this.params.container;
-        this.width = this.container.clientWidth * this.pixelRatio;
-        this.height = this.container.clientHeight * this.pixelRatio;
+
+        this.width = 0;
+        this.height = params.height * this.pixelRatio;
+        this.containerWidth = this.container.clientWidth;
 
         this.lastPos = 0;
 
+        this.createWrapper();
         this.createElements();
-        this.bindClick();
 
         if (this.params.fillParent) {
             var my = this;
             window.addEventListener('resize', function () {
-                if (my.container.scrollWidth != my.scrollWidth) {
+                if (my.container.clientWidth != my.wrapperWidth) {
                     my.fireEvent('redraw');
                 }
             });
         }
+    },
+
+    createWrapper: function () {
+        this.wrapper = this.container.appendChild(
+            document.createElement('wave')
+        );
+        this.style(this.wrapper, {
+            display: 'block',
+            position: 'relative',
+            userSelect: 'none',
+            webkitUserSelect: 'none',
+            height: this.params.height + 'px'
+        });
+
+        if (this.params.fillParent || this.params.scrollParent) {
+            this.style(this.wrapper, {
+                width: '100%',
+                overflowX: this.params.scrollParent ? 'scroll' : 'hidden',
+                overflowY: 'hidden'
+            });
+        }
+
+        var my = this;
+        this.wrapper.addEventListener('click', function (e) {
+            e.preventDefault();
+            my.fireEvent('click', (e.layerX / my.scrollWidth) || 0);
+        });
     },
 
     drawPeaks: function (peaks, max) {
@@ -39,38 +72,18 @@ WaveSurfer.Drawer = {
         });
     },
 
-    bindClick: function () {
-        var my = this;
-        this.container.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            var relX = e.offsetX;
-            if (null == relX) { relX = e.layerX; }
-            var progress = relX / my.scrollWidth;
-
-            my.fireEvent('click', progress);
-        }, false);
-    },
-
-    addScroll: function () {
-        this.style(this.container, {
-            overflowX: 'scroll',
-            overflowY: 'hidden'
-        });
-    },
-
     resetScroll: function () {
-        this.container.scrollLeft = 0;
+        this.wrapper.scrollLeft = 0;
     },
 
     recenter: function (percent) {
-        var position = this.scrollWidth * percent;
+        var position = this.containerWidth * percent;
         this.recenterOnPosition(position, true);
     },
 
     recenterOnPosition: function (position, immediate) {
-        var scrollLeft = this.container.scrollLeft;
-        var half = this.container.clientWidth / 2;
+        var scrollLeft = this.wrapper.scrollLeft;
+        var half = ~~(this.containerWidth / 2);
         var target = position - half;
         var offset = target - scrollLeft;
 
@@ -82,15 +95,15 @@ WaveSurfer.Drawer = {
             target = scrollLeft + offset;
         }
 
-        if (offset > 0) {
-            this.container.scrollLeft = target;
+        if (offset != 0) {
+            this.wrapper.scrollLeft = target;
         }
     },
 
     getPixels: function (duration) {
         var width = Math.ceil(duration * this.params.minPxPerSec);
         if (this.params.fillParent) {
-            width = Math.max(this.container.clientWidth, width);
+            width = Math.max(this.containerWidth, width);
         }
         return width * this.pixelRatio;
     },
@@ -101,10 +114,13 @@ WaveSurfer.Drawer = {
 
     setWidth: function (width) {
         this.width = width;
-        this.scrollWidth = Math.round(this.width / this.pixelRatio);
+        this.scrollWidth = ~~(this.width / this.pixelRatio);
+        this.containerWidth = this.container.clientWidth;
 
-        if (this.params.scrollParent) {
-            this.addScroll();
+        if (!this.params.fillParent && !this.params.scrollParent) {
+            this.style(this.wrapper, {
+                width: this.scrollWidth + 'px'
+            });
         }
 
         this.updateWidth();
@@ -112,9 +128,7 @@ WaveSurfer.Drawer = {
 
     progress: function (progress) {
         var minPxDelta = 1 / this.pixelRatio;
-        var pos = Math.round(
-            progress * this.width * this.pixelRatio
-        ) * minPxDelta;
+        var pos = Math.round(progress * this.width) * minPxDelta;
 
         if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {
             this.lastPos = pos;
