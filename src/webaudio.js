@@ -1,6 +1,8 @@
 'use strict';
 
 WaveSurfer.WebAudio = {
+    scriptBufferSize: 256,
+
     init: function (params) {
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
@@ -25,7 +27,7 @@ WaveSurfer.WebAudio = {
      */
     createScriptNode: function () {
         var my = this;
-        var bufferSize = 256;
+        var bufferSize = this.scriptBufferSize;
         if (this.ac.createScriptProcessor) {
             this.scriptNode = this.ac.createScriptProcessor(bufferSize);
         } else {
@@ -33,10 +35,11 @@ WaveSurfer.WebAudio = {
         }
         this.scriptNode.connect(this.ac.destination);
         this.scriptNode.onaudioprocess = function () {
-            if (!my.isPaused() && my.getCurrentTime() > my.scheduledPause) {
+            var time = my.getCurrentTime();
+            if (!my.isPaused() && time > my.scheduledPause) {
                 my.pause();
             } else {
-                my.fireEvent('audioprocess');
+                my.fireEvent('audioprocess', time);
             }
         };
     },

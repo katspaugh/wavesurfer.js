@@ -320,30 +320,29 @@ var WaveSurfer = {
 
     bindMarks: function () {
         var my = this;
-        var prec = 3;
-        var lastPos;
+        var prevTime = 0;
 
         this.backend.on('play', function () {
-            // Reset saved timing
-            lastPos = null;
+            // Reset marker events
+            Object.keys(my.markers).forEach(function (id) {
+                my.markers[id].played = false;
+            });
         });
 
-        this.backend.on('audioprocess', function () {
-            var position = my.backend.getCurrentTime().toPrecision(prec);
-            if (lastPos != position) {
-                // Remember the rounded timing we checked
-                lastPos = position;
-                for (var id in my.markers) {
-                    if (my.markers.hasOwnProperty(id)) {
-                        var marker = my.markers[id];
-                        if (position == marker.position.toPrecision(prec)) {
-                            my.fireEvent('mark', marker);
-                            marker.fireEvent('reached');
-                            break;
-                        }
+        this.backend.on('audioprocess', function (time) {
+            Object.keys(my.markers).forEach(function (id) {
+                var marker = my.markers[id];
+                if (!marker.played) {
+                    if (marker.position <= time && marker.position > prevTime) {
+                        // Prevent firing the event more than once per playback
+                        marker.played = true;
+
+                        my.fireEvent('mark', marker);
+                        marker.fireEvent('reached');
                     }
                 }
-            }
+            });
+            prevTime = time;
         });
     },
 
