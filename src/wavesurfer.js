@@ -134,7 +134,7 @@ var WaveSurfer = {
     /**
      * Set the playback volume.
      *
-     * @param {Number} newVolume A value between -1 and 1, -1 being no
+     * @param {Number} newVolume A value between 0 and 1, 0 being no
      * volume and 1 being full volume.
      */
     setVolume: function (newVolume) {
@@ -180,8 +180,10 @@ var WaveSurfer = {
             }
             // validate percentage
             marker.percentage = marker.position / duration;
-            my.drawer.addMark(marker);
             my.markers[marker.id] = marker;
+
+            // redraw marker
+            my.drawer.addMark(marker);
         });
 
         marker.on('remove', function () {
@@ -192,6 +194,13 @@ var WaveSurfer = {
         this.fireEvent('marked', marker);
 
         return marker.update(opts);
+    },
+
+    redrawMarks: function () {
+        Object.keys(this.markers).forEach(function (id) {
+            var marker = this.markers[id];
+            this.drawer.addMark(marker);
+        }, this);
     },
 
     clearMarks: function () {
@@ -208,24 +217,20 @@ var WaveSurfer = {
     },
 
     drawBuffer: function () {
-        // Update percentage on any markers added before the audio loaded.
-        var duration = this.backend.getDuration() || 1;
-        Object.keys(this.markers).forEach(function (id) {
-            var marker = this.markers[id];
-            marker.update({ percentage: marker.position / duration });
-        }, this);
-
-        var pixels = this.drawer.getPixels(duration);
+        var pixels = this.drawer.getPixels(this.backend.getDuration());
         var peaks = this.backend.getPeaks(pixels);
         var max = this.backend.getMaxPeak(peaks);
 
         this.drawer.drawPeaks(peaks, max);
+        this.drawer.progress(this.backend.getPlayedPercents());
+        this.redrawMarks();
     },
 
     loadBuffer: function (data) {
         var my = this;
         this.pause();
         this.backend.loadBuffer(data, function () {
+            my.clearMarks();
             my.drawBuffer();
             my.fireEvent('ready');
         }, function () {

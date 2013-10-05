@@ -25,7 +25,7 @@ WaveSurfer.Drawer = {
         if (this.params.fillParent) {
             var my = this;
             window.addEventListener('resize', function () {
-                if (my.container.clientWidth != my.wrapperWidth) {
+                if (my.container.clientWidth != my.containerWidth) {
                     my.fireEvent('redraw');
                 }
             });
@@ -63,7 +63,6 @@ WaveSurfer.Drawer = {
         this.setWidth(peaks.length);
         this.resetScroll();
         this.drawWave(peaks, max);
-        this.updateProgress(0);
     },
 
     style: function (el, styles) {
