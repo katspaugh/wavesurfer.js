@@ -4,6 +4,12 @@ WaveSurfer.WebAudio = {
     scriptBufferSize: 256,
 
     init: function (params) {
+        if (!(window.AudioContext || window.webkitAudioContext)) {
+            throw new Error(
+                'wavesurfer.js: your browser doesn\'t support WebAudio'
+            );
+        }
+
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
         this.createVolumeNode();
@@ -22,9 +28,6 @@ WaveSurfer.WebAudio = {
         this.filterNode = filterNode;
     },
 
-    /**
-     * This is called externally when high resolution timer is needed.
-     */
     createScriptNode: function () {
         var my = this;
         var bufferSize = this.scriptBufferSize;
@@ -231,18 +234,15 @@ WaveSurfer.WebAudio = {
         return this.lastStart + (this.ac.currentTime - this.startTime);
     },
 
-    getAudioContext: (function () {
+    getAudioContext: function () {
         // audioContext should be a singleton
-        var audioContext;
-        return function () {
-            if (!audioContext) {
-                audioContext = new (
-                    window.AudioContext || window.webkitAudioContext
-                );
-            }
-            return audioContext;
-        };
-    }())
+        if (!WaveSurfer.WebAudio.audioContext) {
+            WaveSurfer.WebAudio.audioContext = new (
+                window.AudioContext || window.webkitAudioContext
+            );
+        }
+        return WaveSurfer.WebAudio.audioContext;
+    }
 };
 
 WaveSurfer.util.extend(WaveSurfer.WebAudio, WaveSurfer.Observer);
