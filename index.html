@@ -38,7 +38,7 @@
             </div>
 
             <div id="demo">
-                <div id="waveform" style="height: 128px">
+                <div id="waveform">
                     <div class="progress progress-striped active" id="progress-bar">
                         <div class="progress-bar progress-bar-info"></div>
                     </div>
@@ -98,12 +98,12 @@
 
                     <h4>Compatibility</h4>
 
-                    <p itemprop="browserRequirements"><strong>wavesurfer.js</strong> runs on modern browsers <a href="http://caniuse.com/audio-api" rel="nofollow">supporting WebAudio</a>. Including Firefox, Chrome, Chrome&nbsp;for&nbsp;Android, Safari, Mobile&nbsp;Safari, Opera and&nbsp;Yandex.Browser.</p>
+                    <p itemprop="browserRequirements"><strong>wavesurfer.js</strong> runs on modern browsers <a href="http://caniuse.com/audio-api" rel="nofollow">supporting WebAudio</a>. Including Firefox, Chrome, Safari, Mobile&nbsp;Safari and Opera.</p>
 
                     <h4>Download</h4>
 
                     <p>
-                        <a class="btn btn-large btn-success" href="http://wavesurfer.fm/example/wavesurfer.min.js" itemprop="downloadUrl">Download <strong>wavesurfer.min.js</strong> (15K)</a>
+                        <a class="btn btn-large btn-success" href="http://wavesurfer.fm/example/wavesurfer.min.js" itemprop="downloadUrl">Download <strong>wavesurfer.min.js</strong> (16K)</a>
                     </p>
                 </div>
 
@@ -121,7 +121,9 @@ wavesurfer.init({
 
 wavesurfer.on('ready', function () {
     wavesurfer.play();
-});</code></pre>
+});
+
+wavesurfer.load('example/media/demo.mp3');</code></pre>
                     </p></noindex>
 
                     <h4>Documentation</h4>
@@ -136,13 +138,13 @@ wavesurfer.on('ready', function () {
                 <div class="col-lg-12">
                     <h3>Plugins</h3>
 
-                    <p>Thanks to very open API (everything is public) it's easy to write <strong>wavesurfer.js</strong> plugins.</p>
+                    <p>Thanks to open API (everything is public) it's easy to write <strong>wavesurfer.js</strong> plugins.</p>
 
                     <ul>
                         <li>
-                            <h4>ELAN format reader</h4>
+                            <h4><a href="/example/elan">ELAN plugin</a></h4>
                             <p>
-                                Reads ELAN format and displays audio annotations as an interactive table. ELAN is parsed into a JavaScript object plus adds some denormalization for aligned annotations list. See example here: <a href="/example/elan">http://wavesurfer.fm/example/elan</a>.
+                                Reads ELAN files and displays audio annotations as an interactive widget. ELAN is parsed into a JavaScript object (quite literally) plus some denormalization. See an example here: <a href="/example/elan">http://wavesurfer.fm/example/elan</a>.
                             </p>
                         </li>
                     </ul>
@@ -161,7 +163,7 @@ wavesurfer.on('ready', function () {
                 <noindex>
                 <div class="col-sm-4">
                     <div class="pull-right">
-                        Demo music track is <a href="http://www.jamendo.com/en/track/661578/trou" rel="nofollow"><b>Trou</b> <span class="muted">by</span> <b>czskamaarù</b></a>. Thanks!
+                        Demo music track is <a href="http://www.jamendo.com/en/track/661578/trou" rel="nofollow"><b>Trou</b> <span class="muted">by</span>&nbsp;<b>czskamaarù</b></a>. Thanks!
                     </div>
                 </div>
                 </noindex>

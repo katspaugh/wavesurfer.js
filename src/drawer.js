@@ -55,7 +55,8 @@ WaveSurfer.Drawer = {
         var my = this;
         this.wrapper.addEventListener('click', function (e) {
             e.preventDefault();
-            my.fireEvent('click', (e.layerX / my.scrollWidth) || 0);
+            var relX = 'offsetX' in e ? e.offsetX : e.layerX;
+            my.fireEvent('click', (relX / my.scrollWidth) || 0);
         });
     },
 

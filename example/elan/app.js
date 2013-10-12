@@ -14,12 +14,12 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     if (location.search.match('scroll')) {
-        options.minPxPerSec = 20;
+        options.minPxPerSec = 100;
         options.scrollParent = true;
     }
 
-    if (location.search.match('canvas')) {
-        options.renderer = 'Canvas';
+    if (location.search.match('normalize')) {
+        options.normalize = true;
     }
 
     if (location.search.match('svg')) {
@@ -29,7 +29,10 @@ document.addEventListener('DOMContentLoaded', function () {
     /* Progress bar */
     var progressDiv = document.querySelector('#progress-bar');
     var progressBar = progressDiv.querySelector('.progress-bar');
-    progressBar.style.width = '100%';
+    wavesurfer.on('loading', function (percent) {
+        progressDiv.style.display = 'block';
+        progressBar.style.width = percent + '%';
+    });
     wavesurfer.on('ready', function () {
         progressDiv.style.display = 'none';
     });
@@ -41,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var elan = Object.create(WaveSurfer.ELAN);
 
     elan.init({
-        url: 'transcripts/001z.eaf',
+        url: 'transcripts/001z.xml',
         container: '#annotations',
         tiers: {
             Text: true,
@@ -49,55 +52,63 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    var unitFactor;
+    elan.on('ready', function (data) {
+        wavesurfer.load('transcripts/' + data.media.url);
+    });
 
-    elan.on('ready', function (data, container) {
-        var url = data.media.url.replace(/file:\/+/, 'transcripts/');
-        wavesurfer.load(url);
-        var classList = container.querySelector('table').classList;
+    elan.on('select', function (start, end) {
+        wavesurfer.backend.play(start, end);
+    });
+
+    elan.on('ready', function () {
+        var classList = elan.container.querySelector('table').classList;
         [ 'table', 'table-striped', 'table-hover' ].forEach(function (cl) {
             classList.add(cl);
         });
     });
 
-    wavesurfer.on('ready', function () {
-        elan.on('select', function (start, end) {
-            wavesurfer.backend.play(start, end);
-        });
-    });
+    var prevAnnotation, prevRow;
+    var onProgress = function () {
+        var time = wavesurfer.backend.getCurrentTime();
+        var annotation = elan.getRenderedAnnotation(time);
 
-    wavesurfer.on('ready', function () {
-        var sectionStart = wavesurfer.mark({
-            position: -1, color: 'green'
-        });
-        var sectionEnd = wavesurfer.mark({
-            position: -1, color: 'green'
-        });
+        if (prevAnnotation != annotation) {
+            prevAnnotation = annotation;
 
-        var prevRow;
-        wavesurfer.on('progress', function () {
-            var annotation = elan.getAnnotation(
-                wavesurfer.backend.getCurrentTime()
-            );
-            var row = elan.getAnnotationRow(annotation);
-            if (row && prevRow != row) {
-                sectionStart.update({ position: annotation.start });
-                sectionEnd.update({ position: annotation.end });
-
+            if (annotation) {
+                // Highlight annotation table row
+                var row = elan.getAnnotationNode(annotation);
                 prevRow && prevRow.classList.remove('success');
+                prevRow = row;
                 row.classList.add('success');
-
                 var before = row.previousSibling;
                 if (before) {
                     elan.container.scrollTop = before.offsetTop;
                 }
 
-                prevRow = row;
+                var start = annotation.start;
+                var end = annotation.end;
+            } else {
+                start = -100;
+                end = -100;
             }
-        });
 
-        wavesurfer.play();
-    });
+            // Markers
+            wavesurfer.mark({
+                id: 'start',
+                position: start,
+                color: 'green'
+            });
+            wavesurfer.mark({
+                id: 'end',
+                position: end,
+                color: 'red'
+            });
+
+        }
+    };
+
+    wavesurfer.on('progress', onProgress);
 });
 
 
@@ -106,21 +117,11 @@ wavesurfer.on('ready', function () {
     var handlers = {
         'play': function () {
             wavesurfer.playPause();
-        },
-
-        'back': function () {
-            wavesurfer.skipBackward();
-        },
-
-        'forth': function () {
-            wavesurfer.skipForward();
         }
     };
 
     var map = {
-        32: 'play',       // space
-        37: 'back',       // left
-        39: 'forth'       // right
+        32: 'play'       // spacebar
     };
 
     document.addEventListener('keydown', function (e) {

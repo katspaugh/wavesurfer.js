@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ANNOTATION_DOCUMENT AUTHOR="Mikhail Buryakov" DATE="2012-11-20T07:49:32+04:00" FORMAT="2.6" VERSION="2.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.mpi.nl/tools/elan/EAFv2.6.xsd">
   <HEADER MEDIA_FILE="" TIME_UNITS="milliseconds">
-    <MEDIA_DESCRIPTOR MEDIA_URL="file:/001z.mp3" MIME_TYPE="audio/mpeg"/>
+    <MEDIA_DESCRIPTOR MEDIA_URL="001z.mp3" MIME_TYPE="audio/mpeg"/>
   </HEADER>
 
   <TIME_ORDER>

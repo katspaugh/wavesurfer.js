@@ -163,6 +163,10 @@ var WaveSurfer = {
     },
 
     mark: function (options) {
+        if (options.id && options.id in this.markers) {
+            return this.markers[options.id].update(options);
+        }
+
         var my = this;
 
         var opts = WaveSurfer.util.extend({

@@ -38,11 +38,13 @@ WaveSurfer.WebAudio = {
         }
         this.scriptNode.connect(this.ac.destination);
         this.scriptNode.onaudioprocess = function () {
-            var time = my.getCurrentTime();
-            if (!my.isPaused() && time > my.scheduledPause) {
-                my.pause();
-            } else {
-                my.fireEvent('audioprocess', time);
+            if (!my.isPaused()) {
+                var time = my.getCurrentTime();
+                if (time > my.scheduledPause) {
+                    my.pause();
+                } else {
+                    my.fireEvent('audioprocess', time);
+                }
             }
         };
     },

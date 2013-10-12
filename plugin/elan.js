@@ -6,8 +6,6 @@ WaveSurfer.ELAN = {
         REF_ANNOTATION: 'REF_ANNOTATION'
     },
 
-    DOMParser: new DOMParser(),
-
     init: function (params) {
         this.data = null;
         this.params = params;
@@ -25,40 +23,22 @@ WaveSurfer.ELAN = {
         }
     },
 
-    getAnnotation: function (time) {
-        for (var i = 0; i < this.data.length; i++) {
-            var annotation = this.data.alignableAnnotations[i];
-            if (annotation.start <= time && annotation.end >= time) {
-                return annotation;
-            }
-        }
-    },
-
-    getAnnotationRow: function (annotation) {
-        return document.getElementById(
-            'wavesurfer-alignable-' + annotation.id
-        );
-    },
-
     load: function (url) {
         var my = this;
         this.loadXML(url, function (xml) {
             my.data = my.parseElan(xml);
             my.render();
-            my.fireEvent('ready', my.data, my.container);
+            my.fireEvent('ready', my.data);
         });
     },
 
     loadXML: function (url, callback) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
+        xhr.responseType = 'document';
         xhr.send();
         xhr.addEventListener('load', function (e) {
-            var xml = e.target.responseXML ||
-                WaveSurfer.ELAN.DOMParser.parseFromString(
-                    e.target.responseText, 'text/xml'
-                );
-            callback && callback(xml);
+            callback && callback(e.target.responseXML);
         });
     },
 
@@ -174,6 +154,12 @@ WaveSurfer.ELAN = {
         }, this);
         indeces = Object.keys(indeces).sort();
 
+        this.renderedAlignable = this.data.alignableAnnotations.filter(
+            function (alignable) {
+                return backRefs[alignable.id];
+            }
+        );
+
         // table
         var table = document.createElement('table');
         table.className = 'wavesurfer-annotations';
@@ -199,19 +185,18 @@ WaveSurfer.ELAN = {
         // body
         var tbody = document.createElement('tbody');
         table.appendChild(tbody);
-        this.data.alignableAnnotations.forEach(function (alignable) {
-            var backRef = backRefs[alignable.id];
-            if (!backRef) { return; }
-
+        this.renderedAlignable.forEach(function (alignable) {
             var row = document.createElement('tr');
             row.id = 'wavesurfer-alignable-' + alignable.id;
             tbody.appendChild(row);
 
             var td = document.createElement('td');
             td.className = 'wavesurfer-time';
-            td.textContent = alignable.start.toFixed(1) + '–' + alignable.end.toFixed(1);
+            td.textContent = alignable.start.toFixed(1) + '–' +
+                alignable.end.toFixed(1);
             row.appendChild(td);
 
+            var backRef = backRefs[alignable.id];
             indeces.forEach(function (index) {
                 var tier = tiers[index];
                 var td = document.createElement('td');
@@ -243,6 +228,24 @@ WaveSurfer.ELAN = {
                 }
             }
         });
+    },
+
+    getRenderedAnnotation: function (time) {
+        var result;
+        this.renderedAlignable.some(function (annotation) {
+            if (annotation.start <= time && annotation.end >= time) {
+                result = annotation;
+                return true;
+            }
+            return false;
+        });
+        return result;
+    },
+
+    getAnnotationNode: function (annotation) {
+        return document.getElementById(
+            'wavesurfer-alignable-' + annotation.id
+        );
     }
 };
 
