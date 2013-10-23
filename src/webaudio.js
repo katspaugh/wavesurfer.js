@@ -83,8 +83,14 @@ WaveSurfer.WebAudio = {
         return this.gainNode.gain.value;
     },
 
+    clearSource: function () {
+        this.source.disconnect();
+        this.source.buffer = null;
+        this.source = null;
+    },
+
     refreshBufferSource: function () {
-        this.source && this.source.disconnect();
+        this.source && this.clearSource();
         this.source = this.ac.createBufferSource();
         if (this.buffer) {
             this.source.buffer = this.buffer;
@@ -175,8 +181,7 @@ WaveSurfer.WebAudio = {
             } else {
                 this.source.noteOff(0);
             }
-            this.source.disconnect();
-            this.source = null;
+            this.clearSource();
         }
 
         this.fireEvent('pause');
