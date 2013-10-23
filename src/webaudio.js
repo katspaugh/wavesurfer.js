@@ -85,7 +85,6 @@ WaveSurfer.WebAudio = {
 
     clearSource: function () {
         this.source.disconnect();
-        this.source.buffer = null;
         this.source = null;
     },
 
@@ -126,7 +125,7 @@ WaveSurfer.WebAudio = {
     },
 
     loadEmpty: function () {
-        this.setBuffer(0);
+        this.setBuffer(null);
     },
 
     isPaused: function () {
@@ -134,7 +133,7 @@ WaveSurfer.WebAudio = {
     },
 
     getDuration: function () {
-        return this.buffer.duration;
+        return this.buffer ? this.buffer.duration : 0;
     },
 
     /**
