@@ -4,7 +4,7 @@ WaveSurfer.WebAudio = {
     scriptBufferSize: 256,
 
     offlineAudioContext: new (
-        window.offlineAudioContext || window.webkitOfflineAudioContext
+        window.OfflineAudioContext || window.webkitOfflineAudioContext
     )(2, 1024, 44100),
 
     init: function (params) {
