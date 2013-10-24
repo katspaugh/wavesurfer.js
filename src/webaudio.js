@@ -3,6 +3,10 @@
 WaveSurfer.WebAudio = {
     scriptBufferSize: 256,
 
+    offlineAudioContext: new (
+        window.offlineAudioContext || window.webkitOfflineAudioContext
+    )(2, 1024, 44100),
+
     init: function (params) {
         if (!(window.AudioContext || window.webkitAudioContext)) {
             throw new Error(
@@ -114,7 +118,7 @@ WaveSurfer.WebAudio = {
      */
     loadBuffer: function (arraybuffer, cb, errb) {
         var my = this;
-        this.ac.decodeAudioData(
+        this.offlineAudioContext.decodeAudioData(
             arraybuffer,
             function (buffer) {
                 my.setBuffer(buffer);
