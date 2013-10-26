@@ -13,7 +13,6 @@ WaveSurfer.WebAudio = {
                 'wavesurfer.js: your browser doesn\'t support WebAudio'
             );
         }
-
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
         this.createVolumeNode();
@@ -46,9 +45,8 @@ WaveSurfer.WebAudio = {
                 var time = my.getCurrentTime();
                 if (time > my.scheduledPause) {
                     my.pause();
-                } else {
-                    my.fireEvent('audioprocess', time);
                 }
+                my.fireEvent('audioprocess', time);
             }
         };
     },

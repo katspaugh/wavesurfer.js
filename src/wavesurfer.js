@@ -172,7 +172,7 @@ var WaveSurfer = {
         var opts = WaveSurfer.util.extend({
             id: WaveSurfer.util.getId(),
             position: this.backend.getCurrentTime(),
-            width: this.params.markerWidth
+            width: this.defaultParams.markerWidth
         }, options);
 
         var marker = Object.create(WaveSurfer.Mark);
@@ -197,7 +197,7 @@ var WaveSurfer = {
 
         this.fireEvent('marked', marker);
 
-        return marker.update(opts);
+        return marker.init(opts);
     },
 
     redrawMarks: function () {
@@ -342,7 +342,7 @@ var WaveSurfer = {
             Object.keys(my.markers).forEach(function (id) {
                 var marker = my.markers[id];
                 if (!marker.played) {
-                    if (marker.position <= time && marker.position > prevTime) {
+                    if (marker.position <= time && marker.position >= prevTime) {
                         // Prevent firing the event more than once per playback
                         marker.played = true;
 
@@ -373,6 +373,12 @@ WaveSurfer.Mark = {
         color: '#333'
     },
 
+    init: function (options) {
+        return this.update(
+            WaveSurfer.util.extend({}, this.defaultParams, options)
+        );
+    },
+
     getTitle: function () {
         var d = new Date(this.position * 1000);
         return d.getMinutes() + ':' + d.getSeconds();
@@ -384,9 +390,13 @@ WaveSurfer.Mark = {
                 this[key] = options[key];
             }
         }, this);
+
+        // If percentage is specified, but position is undefined,
+        // let the subscribers to recalculate the position
         if (null == options.position && null != options.percentage) {
             this.position = null;
         }
+
         this.fireEvent('update');
         return this;
     },

@@ -89,7 +89,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
     drawMark: function (mark) {
         this.marksCc.fillStyle = mark.color;
-        var x = Math.round(mark.percentage * this.width - mark.width / 2);
+        var x = Math.min(
+            this.width - mark.width,
+            Math.max(0, Math.round(
+                mark.percentage * this.width - mark.width / 2
+            ))
+        );
         this.marksCc.fillRect(x, 0, mark.width, this.height);
     },
 
