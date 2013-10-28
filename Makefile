@@ -1,3 +1,5 @@
+# npm install -g uglify-js
+
 MIN=build/wavesurfer.min.js
 SOURCE_MAP=build/wavesurfer-js-map.json
 SOURCE_MAP_ROOT=/

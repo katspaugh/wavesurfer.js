@@ -172,7 +172,7 @@ var WaveSurfer = {
         var opts = WaveSurfer.util.extend({
             id: WaveSurfer.util.getId(),
             position: this.backend.getCurrentTime(),
-            width: this.defaultParams.markerWidth
+            width: this.params.markerWidth
         }, options);
 
         var marker = Object.create(WaveSurfer.Mark);
