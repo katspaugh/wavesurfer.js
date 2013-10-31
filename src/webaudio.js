@@ -3,10 +3,6 @@
 WaveSurfer.WebAudio = {
     scriptBufferSize: 256,
 
-    offlineAudioContext: new (
-        window.OfflineAudioContext || window.webkitOfflineAudioContext
-    )(2, 1024, 44100),
-
     init: function (params) {
         if (!(window.AudioContext || window.webkitAudioContext)) {
             throw new Error(
@@ -15,6 +11,8 @@ WaveSurfer.WebAudio = {
         }
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
+        this.offlineAc = this.getOfflineAudioContext(this.ac.sampleRate);
+
         this.createVolumeNode();
         this.createScriptNode();
     },
@@ -116,7 +114,7 @@ WaveSurfer.WebAudio = {
      */
     loadBuffer: function (arraybuffer, cb, errb) {
         var my = this;
-        this.offlineAudioContext.decodeAudioData(
+        this.offlineAc.decodeAudioData(
             arraybuffer,
             function (buffer) {
                 my.setBuffer(buffer);
@@ -242,14 +240,24 @@ WaveSurfer.WebAudio = {
         return this.lastStart + (this.ac.currentTime - this.startTime);
     },
 
+    audioContext: null,
     getAudioContext: function () {
-        // audioContext should be a singleton
         if (!WaveSurfer.WebAudio.audioContext) {
             WaveSurfer.WebAudio.audioContext = new (
                 window.AudioContext || window.webkitAudioContext
             );
         }
         return WaveSurfer.WebAudio.audioContext;
+    },
+
+    offlineAudioContext: null,
+    getOfflineAudioContext: function (sampleRate) {
+        if (!WaveSurfer.WebAudio.offlineAudioContext) {
+            WaveSurfer.WebAudio.offlineAudioContext = new (
+                window.OfflineAudioContext || window.webkitOfflineAudioContext
+            )(1, 2, sampleRate);
+        }
+        return WaveSurfer.WebAudio.offlineAudioContext;
     }
 };
 
