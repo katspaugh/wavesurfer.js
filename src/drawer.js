@@ -1,7 +1,7 @@
 'use strict';
 
 WaveSurfer.Drawer = {
-    init: function (params) {
+    init: function (params, backend) {
         this.container = 'string' == typeof params.container ?
             document.querySelector(params.container) :
             params.container;
@@ -12,6 +12,7 @@ WaveSurfer.Drawer = {
 
         this.params = params;
         this.pixelRatio = this.params.pixelRatio;
+        this.backend = backend;
 
         this.width = 0;
         this.height = params.height * this.pixelRatio;

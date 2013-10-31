@@ -16,7 +16,8 @@ var WaveSurfer = {
         normalize     : false,
         audioContext  : null,
         container     : null,
-        renderer      : 'Canvas'
+        renderer      : 'Canvas',
+        showTime      : false
     },
 
     init: function (params) {
@@ -41,7 +42,7 @@ var WaveSurfer = {
         var my = this;
 
         this.drawer = Object.create(WaveSurfer.Drawer[this.params.renderer]);
-        this.drawer.init(this.params);
+        this.drawer.init(this.params, this.backend);
 
         this.drawer.on('redraw', function () {
             my.drawBuffer();
