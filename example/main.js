@@ -3,7 +3,7 @@
 // Create an instance
 var wavesurfer = Object.create(WaveSurfer);
 
-// Init & load mp3
+// Init & load audio file
 document.addEventListener('DOMContentLoaded', function () {
     var options = {
         container     : document.querySelector('#waveform'),
@@ -21,10 +21,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (location.search.match('normalize')) {
         options.normalize = true;
-    }
-
-    if (location.search.match('svg')) {
-        options.renderer = 'SVG';
     }
 
     /* Progress bar */

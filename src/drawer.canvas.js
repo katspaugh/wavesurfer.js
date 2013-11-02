@@ -56,15 +56,34 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             canvas.height = this.height;
             canvas.style.width = width;
         }, this);
+
+        this.waveCc.clearRect(0, 0, this.width, this.height);
+        this.progressCc.clearRect(0, 0, this.width, this.height);
     },
 
-    drawWave: function (peaks, max) {
+    clearWave: function () {
+        this.waveCc.clearRect(0, 0, this.width, this.height);
+        this.progressCc.clearRect(0, 0, this.width, this.height);
+    },
+
+    drawWave: function (peaks, max, smoothing) {
+        this.waveCc.fillStyle = this.params.waveColor;
+        this.progressCc.fillStyle = this.params.progressColor;
+        if (smoothing) {
+            this.waveCc.globalCompositeOperation = 'lighter';
+            this.progressCc.globalCompositeOperation = 'lighter';
+            this.waveCc.globalAlpha = 0.15;
+            this.progressCc.globalAlpha = 0.15;
+        } else {
+            this.waveCc.globalAlpha = 1;
+            this.progressCc.globalAlpha = 1;
+        }
+
+        var coef = this.height / max;
         for (var i = 0; i < this.width; i++) {
-            var h = max > 0 ? Math.round(peaks[i] * (this.height / max)) : 1;
+            var h = max > 0 ? Math.round(peaks[i] * coef) : 1;
             var y = Math.round((this.height - h) / 2);
-            this.waveCc.fillStyle = this.params.waveColor;
             this.waveCc.fillRect(i, y, 1, h);
-            this.progressCc.fillStyle = this.params.progressColor;
             this.progressCc.fillRect(i, y, 1, h);
         }
     },

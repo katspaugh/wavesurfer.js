@@ -95,7 +95,8 @@ body {
     position: absolute;
     z-index: 10;
     left: 0;
-    top: 54px;
+    top: 50%;
+    margin-top: -10px;
     left: 5%;
     width: 90%;
 }

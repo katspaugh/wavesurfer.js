@@ -60,10 +60,14 @@ WaveSurfer.Drawer = {
         });
     },
 
-    drawPeaks: function (peaks, max) {
-        this.setWidth(peaks.length);
+    clear: function () {
         this.resetScroll();
-        this.drawWave(peaks, max);
+        this.clearWave();
+    },
+
+    drawPeaks: function (peaks, max, smoothing) {
+        this.setWidth(peaks.length);
+        this.drawWave(peaks, max, smoothing);
     },
 
     style: function (el, styles) {
@@ -113,6 +117,8 @@ WaveSurfer.Drawer = {
     },
 
     setWidth: function (width) {
+        if (width == this.width) { return; }
+
         this.width = width;
         this.scrollWidth = ~~(this.width / this.pixelRatio);
         this.containerWidth = this.container.clientWidth;
@@ -147,6 +153,8 @@ WaveSurfer.Drawer = {
     updateWidth: function () {},
 
     drawWave: function (peaks, max) {},
+
+    clearWave: function () {},
 
     updateProgress: function (position) {},
 

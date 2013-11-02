@@ -22,10 +22,6 @@ document.addEventListener('DOMContentLoaded', function () {
         options.normalize = true;
     }
 
-    if (location.search.match('svg')) {
-        options.renderer = 'SVG';
-    }
-
     /* Progress bar */
     var progressDiv = document.querySelector('#progress-bar');
     var progressBar = progressDiv.querySelector('.progress-bar');

@@ -2,7 +2,7 @@ wavesurfer.js
 =============
 
 Interactive navigable audio visualization using
-[WebAudio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) and Canvas/SVG.
+[WebAudio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) and Canvas.
 
 ![Imgur](http://i.imgur.com/dnH8q.png)
 
@@ -48,11 +48,10 @@ Options
   * `scrollParent` – whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrinked to container width (see `fillParent`).
   * `normalize` – if `true`, normalize by the maximum peak instead of 1.0 (`false` by default).
   * `pixelRatio` – `1` by default for performance considerations (see #22), but you can set it to `window.devicePixelRatio`.
-  * `renderer` – SVG or Canvas. `'Canvas'` by default.
   * `audioContext` – use your own previously initialized `AudioContext` or leave blank.
   * `cursorWidth` – 1 px by default.
   * `markerWidth` – 1 px by default.
-  * `waveColor` – the fill color of the waveform. You can also customize all colors via CSS when using the SVG renderer.
+  * `waveColor` – the fill color of the waveform.
   * `progressColor`
   * `cursorColor`
 
@@ -103,7 +102,6 @@ Credits
 =======
 
 Initial idea by [Alex Khokhulin](https://github.com/xoxulin). Many thanks to [the awesome contributors](https://github.com/katspaugh/wavesurfer.js/contributors)!
-
 
 License
 =======

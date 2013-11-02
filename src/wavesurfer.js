@@ -221,13 +221,16 @@ var WaveSurfer = {
     },
 
     drawBuffer: function () {
-        var pixels = this.drawer.getPixels(this.backend.getDuration());
-        var peaks = this.backend.getPeaks(pixels);
-        var max = this.backend.getMaxPeak(peaks);
-
-        this.drawer.drawPeaks(peaks, max);
+        this.drawer.clear();
         this.drawer.progress(this.backend.getPlayedPercents());
         this.redrawMarks();
+
+        var pixels = this.drawer.getPixels(this.backend.getDuration());
+        [ 0, 0.5, 0.1 ].forEach(function (smoothing) {
+            var peaks = this.backend.getPeaks(pixels, smoothing);
+            var max = this.backend.getMaxPeak(peaks);
+            this.drawer.drawPeaks(peaks, max, smoothing);
+        }, this);
     },
 
     loadBuffer: function (data) {
@@ -308,8 +311,8 @@ var WaveSurfer = {
             dropTarget.classList.remove(dropActiveCl);
             var file = e.dataTransfer.files[0];
             if (file) {
-                reader.readAsArrayBuffer(file);
                 my.empty();
+                reader.readAsArrayBuffer(file);
             } else {
                 my.fireEvent('error', 'Not a file');
             }
@@ -358,6 +361,7 @@ var WaveSurfer = {
     empty: function () {
         this.pause();
         this.backend.loadEmpty();
+        this.drawer.clear();
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     }
 };
@@ -481,6 +485,15 @@ WaveSurfer.util = {
             if (val > max) { max = val; }
         }
         return max;
+    },
+
+    lightenDarkenColor: function (col, amt) {
+        var num = parseInt(col.substring(1), 16);
+        var r = (num >> 16) + amt;
+        var b = ((num >> 8) & 0x00FF) + amt;
+        var g = (num & 0x0000FF) + amt;
+        var newColor = g | (b << 8) | (r << 16);
+        return '#' + newColor.toString(16);
     }
 };
 

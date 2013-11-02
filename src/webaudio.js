@@ -189,8 +189,8 @@ WaveSurfer.WebAudio = {
     /**
      * @returns {Float32Array} Array of peaks.
      */
-    getPeaks: function (length, sampleStep) {
-        sampleStep = sampleStep || 128;
+    getPeaks: function (length, smoothing, sampleStep) {
+        sampleStep = sampleStep || 256;
         var buffer = this.buffer;
         var k = buffer.length / length;
         var peaks = new Float32Array(length);
@@ -202,12 +202,19 @@ WaveSurfer.WebAudio = {
                 var peak = -Infinity;
                 var start = ~~(i * k);
                 var end = (i + 1) * k;
+                var value = chan[start];
                 for (var j = start; j < end; j += sampleStep) {
-                    var val = chan[j];
-                    if (val > peak) {
-                        peak = val;
-                    } else if (-val > peak) {
-                        peak = -val;
+                    var curVal = chan[j];
+                    if (smoothing) {
+                        value += (curVal - value) * smoothing;
+                    } else {
+                        value = curVal;
+                    }
+
+                    if (value > peak) {
+                        peak = value;
+                    } else if (-value > peak) {
+                        peak = -value;
                     }
                 }
 
