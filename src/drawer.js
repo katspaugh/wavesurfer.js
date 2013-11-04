@@ -65,8 +65,13 @@ WaveSurfer.Drawer = {
         this.clearWave();
     },
 
-    drawPeaks: function (peaks, max, smoothing) {
-        this.setWidth(peaks.length);
+    drawPeaks: function (peaks, length, smoothing) {
+        this.setWidth(length);
+        if (this.params.normalize) {
+            var max = WaveSurfer.util.max(peaks);
+        } else {
+            max = 1;
+        }
         this.drawWave(peaks, max, smoothing);
     },
 
@@ -104,16 +109,8 @@ WaveSurfer.Drawer = {
         }
     },
 
-    getPixels: function (duration) {
-        var width = Math.ceil(duration * this.params.minPxPerSec);
-        if (this.params.fillParent) {
-            width = Math.max(this.containerWidth, width);
-        }
-        return width * this.pixelRatio;
-    },
-
     getWidth: function () {
-        return this.width;
+        return this.containerWidth * this.pixelRatio;
     },
 
     setWidth: function (width) {

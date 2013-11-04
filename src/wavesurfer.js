@@ -10,6 +10,7 @@ var WaveSurfer = {
         markerWidth   : 1,
         skipLength    : 2,
         minPxPerSec   : 1,
+        samples       : 3,
         pixelRatio    : 1,
         fillParent    : true,
         scrollParent  : false,
@@ -225,11 +226,15 @@ var WaveSurfer = {
         this.drawer.progress(this.backend.getPlayedPercents());
         this.redrawMarks();
 
-        var pixels = this.drawer.getPixels(this.backend.getDuration());
-        [ 0, 0.5, 0.1 ].forEach(function (smoothing) {
-            var peaks = this.backend.getPeaks(pixels, smoothing);
-            var max = this.backend.getMaxPeak(peaks);
-            this.drawer.drawPeaks(peaks, max, smoothing);
+        if (this.params.fillParent) {
+            var length = this.drawer.getWidth();
+        } else {
+            length = this.backend.getDuration() * this.params.minPxPerSec;
+        }
+
+        [ 0, 0.01 ].forEach(function (smoothing) {
+            var peaks = this.backend.getPeaks(length, smoothing);
+            this.drawer.drawPeaks(peaks, length, smoothing);
         }, this);
     },
 
@@ -360,8 +365,8 @@ var WaveSurfer = {
 
     empty: function () {
         this.pause();
+        this.clearMarks();
         this.backend.loadEmpty();
-        this.drawer.clear();
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     }
 };

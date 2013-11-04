@@ -189,50 +189,39 @@ WaveSurfer.WebAudio = {
     /**
      * @returns {Float32Array} Array of peaks.
      */
-    getPeaks: function (length, smoothing, sampleStep) {
-        sampleStep = sampleStep || 256;
+    getPeaks: function (length, smoothing) {
         var buffer = this.buffer;
-        var k = buffer.length / length;
+        var sampleSize = Math.ceil(buffer.length / length);
+        var channels = buffer.numberOfChannels;
         var peaks = new Float32Array(length);
 
-        for (var c = 0; c < buffer.numberOfChannels; c++) {
+        for (var c = 0; c < channels; c++) {
             var chan = buffer.getChannelData(c);
 
+            var value = chan[0];
             for (var i = 0; i < length; i++) {
-                var peak = -Infinity;
-                var start = ~~(i * k);
-                var end = (i + 1) * k;
-                var value = chan[start];
-                for (var j = start; j < end; j += sampleStep) {
-                    var curVal = chan[j];
+                var start = ~~(i * sampleSize);
+                var end = start + sampleSize;
+                var peak = 0;
+                for (var j = start; j < end; j++) {
+                    var curVal = Math.abs(chan[j]);
                     if (smoothing) {
                         value += (curVal - value) * smoothing;
                     } else {
                         value = curVal;
                     }
-
                     if (value > peak) {
                         peak = value;
-                    } else if (-value > peak) {
-                        peak = -value;
                     }
                 }
-
-                if (c > 0) {
-                    peaks[i] += peak;
-                } else {
-                    peaks[i] = peak;
+                if (c == 0) {
+                    peaks[i] = 0;
                 }
+                peaks[i] += peak / channels;
             }
         }
 
         return peaks;
-    },
-
-    getMaxPeak: function (peaks) {
-        return this.params.normalize ?
-            WaveSurfer.util.max(peaks) :
-            this.buffer.numberOfChannels * 1.0;
     },
 
     getPlayedPercents: function () {
