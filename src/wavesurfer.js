@@ -226,7 +226,7 @@ var WaveSurfer = {
         this.drawer.progress(this.backend.getPlayedPercents());
         this.redrawMarks();
 
-        if (this.params.fillParent) {
+        if (this.params.fillParent && !this.params.scrollParent) {
             var length = this.drawer.getWidth();
         } else {
             length = this.backend.getDuration() * this.params.minPxPerSec;
