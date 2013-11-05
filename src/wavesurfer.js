@@ -11,7 +11,7 @@ var WaveSurfer = {
         skipLength    : 2,
         minPxPerSec   : 1,
         samples       : 3,
-        pixelRatio    : 1,
+        pixelRatio    : window.devicePixelRatio,
         fillParent    : true,
         scrollParent  : false,
         normalize     : false,
@@ -232,10 +232,8 @@ var WaveSurfer = {
             length = this.backend.getDuration() * this.params.minPxPerSec;
         }
 
-        [ 0, 0.01 ].forEach(function (smoothing) {
-            var peaks = this.backend.getPeaks(length, smoothing);
-            this.drawer.drawPeaks(peaks, length, smoothing);
-        }, this);
+        var peaks = this.backend.getPeaks(length);
+        this.drawer.drawPeaks(peaks, length);
     },
 
     loadBuffer: function (data) {

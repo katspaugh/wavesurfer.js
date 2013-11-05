@@ -65,14 +65,14 @@ WaveSurfer.Drawer = {
         this.clearWave();
     },
 
-    drawPeaks: function (peaks, length, smoothing) {
+    drawPeaks: function (peaks, length) {
         this.setWidth(length);
         if (this.params.normalize) {
             var max = WaveSurfer.util.max(peaks);
         } else {
             max = 1;
         }
-        this.drawWave(peaks, max, smoothing);
+        this.drawWave(peaks, max);
     },
 
     style: function (el, styles) {
