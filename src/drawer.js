@@ -141,7 +141,6 @@ WaveSurfer.Drawer = {
     },
 
     resize: function () {
-        console.log('resize', this.container.clientWidth, this.containerWidth)
         if (this.container.clientWidth !== this.containerWidth) {
             this.fireEvent('redraw');
         }
