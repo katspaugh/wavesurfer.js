@@ -366,6 +366,19 @@ var WaveSurfer = {
         this.clearMarks();
         this.backend.loadEmpty();
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
+    },
+
+    unregisterEvents: function(){
+        var events = ['ready', 'loading', 'seek', 'play', 'mark', 'error' ];
+        var wavesurfer = this;
+        // wavesurfer event
+        events.forEach( function(type){
+            wavesurfer.un(type);
+        });
+        // drawer event
+        if (wavesurfer.drawer) {
+            window.removeEventListener('resize', wavesurfer.drawer.resize);
+        }
     }
 };
 

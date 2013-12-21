@@ -23,12 +23,8 @@ WaveSurfer.Drawer = {
         this.createElements();
 
         if (this.params.fillParent) {
-            var my = this;
-            window.addEventListener('resize', function () {
-                if (my.container.clientWidth != my.containerWidth) {
-                    my.fireEvent('redraw');
-                }
-            });
+            this.resize = this.resize.bind(this);
+            window.addEventListener('resize', this.resize);
         }
     },
 
@@ -141,6 +137,12 @@ WaveSurfer.Drawer = {
             }
 
             this.updateProgress(progress);
+        }
+    },
+
+    resize: function () {
+        if (this.container.clientWidth !== this.containerWidth) {
+            this.fireEvent('redraw');
         }
     },
 
