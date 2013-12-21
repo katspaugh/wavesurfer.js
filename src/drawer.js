@@ -21,11 +21,6 @@ WaveSurfer.Drawer = {
 
         this.createWrapper();
         this.createElements();
-
-        if (this.params.fillParent) {
-            this.resize = this.resize.bind(this);
-            window.addEventListener('resize', this.resize);
-        }
     },
 
     createWrapper: function () {
@@ -56,12 +51,8 @@ WaveSurfer.Drawer = {
         });
     },
 
-    clear: function () {
-        this.resetScroll();
-        this.clearWave();
-    },
-
     drawPeaks: function (peaks, length) {
+        this.resetScroll();
         this.setWidth(length);
         if (this.params.normalize) {
             var max = WaveSurfer.util.max(peaks);
@@ -140,10 +131,10 @@ WaveSurfer.Drawer = {
         }
     },
 
-    resize: function () {
-        if (this.container.clientWidth !== this.containerWidth) {
-            this.fireEvent('redraw');
-        }
+    destroy: function () {
+        this.unAll();
+        this.container.removeChild(this.wrapper);
+        this.wrapper = null;
     },
 
     /* Renderer-specific methods */

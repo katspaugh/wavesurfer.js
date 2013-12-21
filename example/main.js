@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.on('ready', function () {
         progressDiv.style.display = 'none';
     });
+    wavesurfer.on('destroy', function () {
+        progressDiv.style.display = 'none';
+    });
 
     // Init
     wavesurfer.init(options);
