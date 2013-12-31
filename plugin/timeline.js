@@ -1,13 +1,14 @@
 'use strict';
 
 WaveSurfer.Timeline = {
-
     init: function (params) {
         this.params = params;
         var wavesurfer = this.wavesurfer = params.wavesurfer;
+
         if (!this.wavesurfer) {
             throw Error('No WaveSurfer intance provided');
         }
+
         var drawer = this.drawer = this.wavesurfer.drawer;
         this.width = drawer.width;
         this.height = 20;
@@ -43,7 +44,7 @@ WaveSurfer.Timeline = {
         if (wsParams.fillParent || wsParams.scrollParent) {
             this.drawer.style(this.wrapper, {
                 width: '100%',
-                height: "20px",
+                height: '20px',
                 overflowX: 'hidden',
                 overflowY: 'hidden'
             });
@@ -93,37 +94,37 @@ WaveSurfer.Timeline = {
         if (duration > 0) {
             var curPixel = 0,
                 curSeconds = 0,
-                totalSeconds = parseInt(duration)+1,
+                totalSeconds = parseInt(duration, 10) + 1,
                 timeInterval = (pixelsPerSecond < 10) ? 10 : 1,
                 formatTime = function(seconds) {
                     if (seconds/60 > 1) {
-                        var minutes = parseInt(seconds/60),
-                            seconds = parseInt(seconds%60),
-                            seconds = (seconds<10) ? '0' + seconds : seconds;
+                        var minutes = parseInt(seconds / 60),
+                            seconds = parseInt(seconds % 60),
+                            seconds = (seconds < 10) ? '0' + seconds : seconds;
                         return '' + minutes + ':' + seconds;
                     } else {
                         return seconds;
                     }
                 };
 
-            for (var i=0; i < totalSeconds/timeInterval; i++) {
-                if (i%10 == 0) {
+            for (var i = 0; i < totalSeconds/timeInterval; i++) {
+                if (i % 10 == 0) {
                     this.timeCc.fillStyle = '#000000';
-                    this.timeCc.fillRect(curPixel,0,1,16);
-                    this.timeCc.font="10px Arial";
-                    this.timeCc.fillText(formatTime(curSeconds),curPixel+5,16);
-                } else if (i%10 == 5) {
+                    this.timeCc.fillRect(curPixel, 0, 1, 16);
+                    this.timeCc.font = '10px Arial';
+                    this.timeCc.fillText(formatTime(curSeconds), curPixel + 5, 16);
+                } else if (i % 10 == 5) {
                     this.timeCc.fillStyle = '#c0c0c0';
                     this.timeCc.fillRect(curPixel,0,1,16);
-                    this.timeCc.font="10px Arial";
-                    this.timeCc.fillText(formatTime(curSeconds),curPixel+5,16);
-                } else  {
+                    this.timeCc.font = '10px Arial';
+                    this.timeCc.fillText(formatTime(curSeconds), curPixel + 5, 16);
+                } else {
                     this.timeCc.fillStyle = '#c0c0c0';
-                    this.timeCc.fillRect(curPixel,0,1,6);
+                    this.timeCc.fillRect(curPixel, 0, 1, 6);
                 }
 
                 curSeconds += timeInterval;
-                curPixel += pixelsPerSecond*timeInterval;
+                curPixel += pixelsPerSecond * timeInterval;
             }
         }
     },
@@ -131,7 +132,6 @@ WaveSurfer.Timeline = {
     updateScroll: function(e){
       this.wrapper.scrollLeft = e.target.scrollLeft
     }
-
 };
 
 WaveSurfer.util.extend(WaveSurfer.Timeline, WaveSurfer.Observer);
