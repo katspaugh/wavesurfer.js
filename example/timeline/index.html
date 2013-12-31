@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>wavesurfer.js | Timeline plugin</title>
+
+        <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="http://simonwhitaker.github.com/github-fork-ribbon-css/gh-fork-ribbon.css" />
+        <link rel="stylesheet" href="../css/style.css" />
+        <link rel="screenshot" itemprop="screenshot" href="http://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+
+        <!-- wavesurfer.js -->
+        <script src="../../build/wavesurfer.min.js"></script>
+
+        <!-- timeline format renderer -->
+        <script src="../../plugin/timeline.js"></script>
+
+        <!-- App -->
+        <script src="app.js"></script>
+        <script src="../trivia.js"></script>
+    </head>
+
+    <body itemscope itemtype="http://schema.org/WebApplication">
+        <div class="container">
+            <div class="header">
+                <noindex>
+                <ul class="nav nav-pills pull-right">
+                    <li><a href="?fill">Fill</a></li>
+                    <li><a href="?scroll">Scroll</a></li>
+                    <li><a href="?normalize">Normalize</a></li>
+                </ul>
+                </noindex>
+
+                <h1 itemprop="name"><a href="http://wavesurfer.fm">wavesurfer.js</a><noindex> + Timeline</noindex></h1>
+            </div>
+
+            <div id="demo">
+                <div id="waveform">
+                    <div class="progress progress-striped active" id="progress-bar">
+                        <div class="progress-bar progress-bar-info"></div>
+                    </div>
+
+                    <!-- Here be waveform -->
+                </div>
+                <div id="wave-timeline"></div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+                </div>
+            </div>
+
+            <div class="row marketing">
+                <div class="col-lg-4">
+                    <h4>WaveSurfer Timeline Plugin</h4>
+
+                    <p itemprop="about">Adds a simple timeline to your WaveSurfer instances.</p>
+
+                    <h4>Installation</h4>
+
+                    <p>
+                      <ol>
+                        <li>add the Timeline plugin script tag</li>
+                        <li>create a WaveSurfer instance</li>
+                        <li>add a container HTML element for the timeline</li>
+                        <li>create a Timeline instance in the WaveSurfer's ready() callback</li>
+                      </ol>
+                    </p>
+                    <p>
+                        <a class="btn btn-large btn-success" href="/plugin/timeline.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (15 KB)</a>
+                    </p>
+                </div>
+
+                <div class="col-lg-8">
+                    <h4>Quick Start</h4>
+
+                    <noindex><p>
+<pre><code>var wavesurfer = Object.create(WaveSurfer);
+
+wavesurfer.init({
+  // your options here
+});
+
+wavesurfer.on('ready', function () {
+    var timeline = Object.create(WaveSurfer.Timeline);
+
+    timeline.init({
+        wavesurfer: wavesurfer,
+        container: "#wave-timeline"
+    });
+});
+
+wavesurfer.load('example/media/demo.mp3');</code></pre>
+                    </p></noindex>
+
+                    <br />
+
+                    <h4>Options</h4>
+
+                    <ul class="markdown-body">
+                      <li><code>wavesurfer</code> - <em>required</em> - a WaveSurfer instance</li>
+                      <li><code>container</code> - <em>required</em> - the element in which to place the timeline, or a CSS selector to find it</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer row">
+                <div class="col-sm-12">
+                    <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+                </div>
+
+                <div class="col-sm-12">
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/katspaugh/wavesurfer.js" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
+                </div>
+            </div>
+        </div>
+
+        <div class="github-fork-ribbon-wrapper right">
+            <div class="github-fork-ribbon">
+                <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+            </div>
+        </div>
+    </body>
+</html>
