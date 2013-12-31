@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         timeline.init({
             wavesurfer: wavesurfer,
-            container: "#wave-timeline"
+            container: '#wave-timeline'
         });
 
     });
