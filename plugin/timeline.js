@@ -10,8 +10,6 @@ WaveSurfer.Timeline = {
         }
 
         var drawer = this.drawer = this.wavesurfer.drawer;
-        this.width = drawer.width;
-        this.height = 20;
 
         this.container = 'string' == typeof params.container ?
             document.querySelector(params.container) : params.container;
@@ -19,6 +17,16 @@ WaveSurfer.Timeline = {
         if (!this.container) {
             throw Error('No container for WaveSurfer timeline');
         }
+
+        this.width = drawer.width;
+        this.height = this.params.height || 20;
+        this.notchPercentHeight = this.params.notchPercentHeight || 90;
+        this.primaryColor = this.params.primaryColor || '#000';
+        this.secondaryColor = this.params.secondaryColor || '#c0c0c0';
+        this.primaryFontColor = this.params.primaryFontColor || '#000';
+        this.secondaryFontColor = this.params.secondaryFontColor || '#000';
+        this.fontFamily = this.params.fontFamily || 'Arial';
+        this.fontSize = this.params.fontSize || 10;
 
         this.createWrapper();
         this.createCanvas();
@@ -38,13 +46,12 @@ WaveSurfer.Timeline = {
             position: 'relative',
             userSelect: 'none',
             webkitUserSelect: 'none',
-            height: this.params.height + 'px'
+            height: this.height + 'px'
         });
 
         if (wsParams.fillParent || wsParams.scrollParent) {
             this.drawer.style(this.wrapper, {
                 width: '100%',
-                height: '20px',
                 overflowX: 'hidden',
                 overflowY: 'hidden'
             });
@@ -107,20 +114,25 @@ WaveSurfer.Timeline = {
                     }
                 };
 
+            var height1 = this.height - 4
+              , height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4
+
             for (var i = 0; i < totalSeconds/timeInterval; i++) {
                 if (i % 10 == 0) {
-                    this.timeCc.fillStyle = '#000000';
-                    this.timeCc.fillRect(curPixel, 0, 1, 16);
-                    this.timeCc.font = '10px Arial';
-                    this.timeCc.fillText(formatTime(curSeconds), curPixel + 5, 16);
+                    this.timeCc.fillStyle = this.primaryColor;
+                    this.timeCc.fillRect(curPixel, 0, 1, height1);
+                    this.timeCc.font = this.fontSize + 'px ' + this.fontFamily;
+                    this.timeCc.fillStyle = this.primaryFontColor;
+                    this.timeCc.fillText(formatTime(curSeconds), curPixel + 5, height1);
                 } else if (i % 10 == 5) {
-                    this.timeCc.fillStyle = '#c0c0c0';
-                    this.timeCc.fillRect(curPixel,0,1,16);
-                    this.timeCc.font = '10px Arial';
-                    this.timeCc.fillText(formatTime(curSeconds), curPixel + 5, 16);
+                    this.timeCc.fillStyle = this.secondaryColor;
+                    this.timeCc.fillRect(curPixel, 0, 1, height1);
+                    this.timeCc.font = this.fontSize + 'px ' + this.fontFamily;
+                    this.timeCc.fillStyle = this.secondaryFontColor;
+                    this.timeCc.fillText(formatTime(curSeconds), curPixel + 5, height1);
                 } else {
-                    this.timeCc.fillStyle = '#c0c0c0';
-                    this.timeCc.fillRect(curPixel, 0, 1, 6);
+                    this.timeCc.fillStyle = this.secondaryColor;
+                    this.timeCc.fillRect(curPixel, 0, 1, height2);
                 }
 
                 curSeconds += timeInterval;
