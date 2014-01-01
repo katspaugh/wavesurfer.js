@@ -251,6 +251,15 @@ WaveSurfer.WebAudio = {
             )(1, 2, sampleRate);
         }
         return WaveSurfer.WebAudio.offlineAudioContext;
+    },
+
+    destroy: function () {
+        this.pause();
+        this.unAll();
+        this.buffer = null;
+        this.filterNode && this.filterNode.disconnect();
+        this.gainNode.disconnect();
+        this.scriptNode.disconnect();
     }
 };
 

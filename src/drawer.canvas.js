@@ -57,8 +57,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             canvas.style.width = width;
         }, this);
 
-        this.waveCc.clearRect(0, 0, this.width, this.height);
-        this.progressCc.clearRect(0, 0, this.width, this.height);
+        this.clearWave();
     },
 
     clearWave: function () {

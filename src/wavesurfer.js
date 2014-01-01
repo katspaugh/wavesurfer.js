@@ -36,6 +36,8 @@ var WaveSurfer = {
 
         this.createBackend();
         this.createDrawer();
+
+        this.on('loaded', this.loadBuffer.bind(this));
     },
 
     createDrawer: function () {
@@ -222,10 +224,6 @@ var WaveSurfer = {
     },
 
     drawBuffer: function () {
-        this.drawer.clear();
-        this.drawer.progress(this.backend.getPlayedPercents());
-        this.redrawMarks();
-
         if (this.params.fillParent && !this.params.scrollParent) {
             var length = this.drawer.getWidth();
         } else {
@@ -233,7 +231,10 @@ var WaveSurfer = {
         }
 
         var peaks = this.backend.getPeaks(length);
+
         this.drawer.drawPeaks(peaks, length);
+        this.drawer.progress(this.backend.getPlayedPercents());
+        this.redrawMarks();
     },
 
     loadBuffer: function (data) {
@@ -281,7 +282,7 @@ var WaveSurfer = {
         });
         xhr.addEventListener('load', function (e) {
             if (200 == xhr.status) {
-                my.loadBuffer(xhr.response);
+                my.fireEvent('loaded', xhr.response);
             } else {
                 my.fireEvent('error', 'Server response: ' + xhr.statusText);
             }
@@ -305,7 +306,7 @@ var WaveSurfer = {
             my.onProgress(e);
         });
         reader.addEventListener('load', function (e) {
-            my.loadBuffer(e.target.result);
+            my.fireEvent('loaded', e.target.result);
         });
         reader.addEventListener('error', function () {
             my.fireEvent('error', 'Error reading file');
@@ -315,8 +316,12 @@ var WaveSurfer = {
         if (typeof dropTarget == 'string') {
             dropTarget = document.querySelector(dropTarget);
         }
+
         var dropActiveCl = 'wavesurfer-dragover';
-        dropTarget.addEventListener('drop', function (e) {
+        var handlers = {};
+
+        // Drop event
+        handlers.drop = function (e) {
             e.stopPropagation();
             e.preventDefault();
             dropTarget.classList.remove(dropActiveCl);
@@ -327,17 +332,27 @@ var WaveSurfer = {
             } else {
                 my.fireEvent('error', 'Not a file');
             }
-        });
-        // Bind dragover & dragleave
-        dropTarget.addEventListener('dragover', function (e) {
+        };
+        // Dragover & dragleave events
+        handlers.dragover = function (e) {
             e.stopPropagation();
             e.preventDefault();
             dropTarget.classList.add(dropActiveCl);
-        });
-        dropTarget.addEventListener('dragleave', function (e) {
+        };
+        handlers.dragleave = function (e) {
             e.stopPropagation();
             e.preventDefault();
             dropTarget.classList.remove(dropActiveCl);
+        };
+
+        Object.keys(handlers).forEach(function (event) {
+            dropTarget.addEventListener(event, handlers[event]);
+        });
+
+        this.on('destroy', function () {
+            Object.keys(handlers).forEach(function (event) {
+                dropTarget.removeEventListener(event, handlers[event]);
+            });
         });
     },
 
@@ -369,11 +384,25 @@ var WaveSurfer = {
         });
     },
 
+    /**
+     * Display empty waveform.
+     */
     empty: function () {
         this.pause();
         this.clearMarks();
         this.backend.loadEmpty();
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
+    },
+
+    /**
+     * Remove events, elements and disconnect WebAudio nodes.
+     */
+    destroy: function () {
+        this.fireEvent('destroy');
+        this.clearMarks();
+        this.unAll();
+        this.backend.destroy();
+        this.drawer.destroy();
     }
 };
 
@@ -448,6 +477,10 @@ WaveSurfer.Observer = {
                 handlers.length = 0;
             }
         }
+    },
+
+    unAll: function () {
+        this.handlers = null;
     },
 
     once: function (event, handler) {

@@ -21,15 +21,6 @@ WaveSurfer.Drawer = {
 
         this.createWrapper();
         this.createElements();
-
-        if (this.params.fillParent) {
-            var my = this;
-            window.addEventListener('resize', function () {
-                if (my.container.clientWidth != my.containerWidth) {
-                    my.fireEvent('redraw');
-                }
-            });
-        }
     },
 
     createWrapper: function () {
@@ -60,12 +51,8 @@ WaveSurfer.Drawer = {
         });
     },
 
-    clear: function () {
-        this.resetScroll();
-        this.clearWave();
-    },
-
     drawPeaks: function (peaks, length) {
+        this.resetScroll();
         this.setWidth(length);
         if (this.params.normalize) {
             var max = WaveSurfer.util.max(peaks);
@@ -142,6 +129,12 @@ WaveSurfer.Drawer = {
 
             this.updateProgress(progress);
         }
+    },
+
+    destroy: function () {
+        this.unAll();
+        this.container.removeChild(this.wrapper);
+        this.wrapper = null;
     },
 
     /* Renderer-specific methods */
