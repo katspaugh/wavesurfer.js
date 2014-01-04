@@ -1,10 +1,10 @@
 (function (root, factory) {
-    if (typeof define === "function" && define.amd) {
-        define(["wavesurfer"], factory)
+    if (typeof define === 'function' && define.amd) {
+        define(['wavesurfer'], factory);
     } else {
-        root.WaveSurfer.Timeline = factory(root.WaveSurfer)
+        root.WaveSurfer.Timeline = factory(root.WaveSurfer);
     }
-}(this, function (WaveSurfer){
+}(this, function (WaveSurfer) {
     'use strict';
 
     WaveSurfer.Timeline = {
@@ -40,11 +40,11 @@
             this.updateCanvasStyle();
             this.drawTimeCanvas();
 
-            wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this)
+            wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this);
         },
 
         createWrapper: function () {
-            var wsParams = this.wavesurfer.params
+            var wsParams = this.wavesurfer.params;
             this.wrapper = this.container.appendChild(
                 document.createElement('wave')
             );
@@ -74,7 +74,7 @@
 
         createCanvas: function () {
             var canvas = this.canvas = this.wrapper.appendChild(
-              document.createElement('canvas')
+                document.createElement('canvas')
             );
 
             this.timeCc = canvas.getContext('2d');
@@ -93,9 +93,9 @@
         },
 
         drawTimeCanvas: function() {
-            var backend = this.wavesurfer.backend
-                , wsParams = this.wavesurfer.params
-                , duration = backend.getDuration();
+            var backend = this.wavesurfer.backend,
+                wsParams = this.wavesurfer.params,
+                duration = backend.getDuration();
 
             if (wsParams.fillParent && !wsParams.scrollParent) {
                 var width = this.drawer.getWidth();
@@ -113,16 +113,16 @@
                     formatTime = function(seconds) {
                         if (seconds/60 > 1) {
                             var minutes = parseInt(seconds / 60),
-                                seconds = parseInt(seconds % 60),
-                                seconds = (seconds < 10) ? '0' + seconds : seconds;
+                                seconds = parseInt(seconds % 60);
+                            seconds = (seconds < 10) ? '0' + seconds : seconds;
                             return '' + minutes + ':' + seconds;
                         } else {
                             return seconds;
                         }
                     };
 
-                var height1 = this.height - 4
-                  , height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4
+                var height1 = this.height - 4,
+                    height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4;
 
                 for (var i = 0; i < totalSeconds/timeInterval; i++) {
                     if (i % 10 == 0) {
@@ -149,11 +149,11 @@
         },
 
         updateScroll: function(e){
-          this.wrapper.scrollLeft = e.target.scrollLeft
+            this.wrapper.scrollLeft = e.target.scrollLeft;
         }
     };
 
     WaveSurfer.util.extend(WaveSurfer.Timeline, WaveSurfer.Observer);
 
-  return WaveSurfer.Timeline
-}))
+    return WaveSurfer.Timeline;
+}));
