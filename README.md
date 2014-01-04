@@ -76,6 +76,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `clearMarks()` – removes all markers.
  * `bindDragNDrop([dropTarget])` – starts listening to drag'n'drop on an element. The default element is `document`. Loads the dropped audio.
  * `empty()` – clears the waveform as if a zero-length audio is loaded.
+ * `loadDecodedBuffer(buffer)` – loads a decoded audio buffer (a typed array, basically).
 
 Connecting filters
 ==================

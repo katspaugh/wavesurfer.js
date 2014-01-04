@@ -253,11 +253,11 @@ var WaveSurfer = {
      * Loads an AudioBuffer.
      */
     loadDecodedBuffer: function (buffer) {
-      this.pause()
-      this.backend.setBuffer(buffer)
-      this.clearMarks()
-      this.drawBuffer()
-      this.fireEvent("ready")
+      this.pause();
+      this.backend.setBuffer(buffer);
+      this.clearMarks();
+      this.drawBuffer();
+      this.fireEvent('ready');
     },
 
     onProgress: function (e) {
