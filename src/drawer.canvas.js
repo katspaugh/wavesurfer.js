@@ -66,6 +66,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     drawWave: function (peaks, max) {
+        var $ = 0.5 / this.params.pixelRatio;
         this.waveCc.fillStyle = this.params.waveColor;
         this.progressCc.fillStyle = this.params.progressColor;
 
@@ -73,28 +74,28 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var halfH = this.height / 2;
 
         this.waveCc.beginPath();
-        this.waveCc.moveTo(0, halfH);
+        this.waveCc.moveTo($, halfH);
         this.progressCc.beginPath();
-        this.progressCc.moveTo(0, halfH);
+        this.progressCc.moveTo($, halfH);
         for (var i = 0; i < this.width; i++) {
             var h = Math.round(peaks[i] * coef);
-            this.waveCc.lineTo(i, halfH + h);
-            this.progressCc.lineTo(i, halfH + h);
+            this.waveCc.lineTo(i + $, halfH + h);
+            this.progressCc.lineTo(i + $, halfH + h);
         }
-        this.waveCc.lineTo(this.width, halfH);
-        this.progressCc.lineTo(this.width, halfH);
+        this.waveCc.lineTo(this.width + $, halfH);
+        this.progressCc.lineTo(this.width + $, halfH);
 
-        this.waveCc.moveTo(0, halfH);
-        this.progressCc.moveTo(0, halfH);
+        this.waveCc.moveTo($, halfH);
+        this.progressCc.moveTo($, halfH);
         for (var i = 0; i < this.width; i++) {
             var h = Math.round(peaks[i] * coef);
-            this.waveCc.lineTo(i, halfH - h);
-            this.progressCc.lineTo(i, halfH - h);
+            this.waveCc.lineTo(i + $, halfH - h);
+            this.progressCc.lineTo(i + $, halfH - h);
         }
 
-        this.waveCc.lineTo(this.width, halfH);
+        this.waveCc.lineTo(this.width + $, halfH);
         this.waveCc.fill();
-        this.progressCc.lineTo(this.width, halfH);
+        this.progressCc.lineTo(this.width + $, halfH);
         this.progressCc.fill();
     },
 
