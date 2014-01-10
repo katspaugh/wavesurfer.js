@@ -210,7 +210,7 @@ WaveSurfer.WebAudio = {
                         peak = -value;
                     }
                 }
-                if (c > 1) {
+                if (c > 0) {
                     peaks[i] += peak / channels;
                 } else {
                     peaks[i] = peak / channels;
