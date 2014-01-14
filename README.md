@@ -47,7 +47,7 @@ Options
   * `fillParent` – whether to fill the entire container or draw only according to `minPxPerSec` (`true` by default).
   * `scrollParent` – whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrinked to container width (see `fillParent`).
   * `normalize` – if `true`, normalize by the maximum peak instead of 1.0 (`false` by default).
-  * `pixelRatio` – `1` by default for performance considerations (see #22), but you can set it to `window.devicePixelRatio`.
+  * `pixelRatio` – equals `window.devicePixelRatio` by default, but you can set it to `1` for faster rendering.
   * `audioContext` – use your own previously initialized `AudioContext` or leave blank.
   * `cursorWidth` – 1 px by default.
   * `markerWidth` – 1 px by default.
