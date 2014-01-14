@@ -43,6 +43,9 @@ WaveSurfer.WebAudio = {
                 var time = my.getCurrentTime();
                 if (time > my.scheduledPause) {
                     my.pause();
+                    if (time > my.getDuration()) {
+                        my.fireEvent('finish', time);
+                    }
                 }
                 my.fireEvent('audioprocess', time);
             }

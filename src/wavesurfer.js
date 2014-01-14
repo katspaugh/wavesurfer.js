@@ -72,6 +72,10 @@ var WaveSurfer = {
             my.restartAnimationLoop();
         });
 
+        this.backend.on('finish', function () {
+            my.fireEvent('finish');
+        });
+
         this.backend.init(this.params);
     },
 

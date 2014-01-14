@@ -95,6 +95,7 @@ You can listen to the following events:
  * `loading` – fires continuously when loading via XHR or drag'n'drop. Callback recieves loading progress in percents (from 0 to 100) and the event target.
  * `seek` – on seeking.
  * `play` – when it starts playing.
+ * `finish` – when it finishes playing.
  * `progress` – fires continuously during playback.
  * `mark` – when a mark is reached. Passes the mark object.
  * `error` – on error, passes an error message.

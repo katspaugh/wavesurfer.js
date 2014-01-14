@@ -52,6 +52,11 @@ wavesurfer.on('ready', function () {
     //wavesurfer.play();
 });
 
+// Do something when the clip is over
+wavesurfer.on('finish', function () {
+    console.log('Finished playing');
+});
+
 // Bind buttons and keypresses
 (function () {
     var eventHandlers = {
