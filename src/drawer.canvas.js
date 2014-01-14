@@ -22,6 +22,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             zIndex: 2,
             overflow: 'hidden',
             width: '0',
+            height: this.params.height + 'px',
             borderRight: [
                 this.params.cursorWidth + 'px',
                 'solid',
@@ -66,7 +67,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     drawWave: function (peaks, max) {
-        var $ = 0.5 / this.params.pixelRatio;
+        var $ = 0.5 / this.pixelRatio;
         this.waveCc.fillStyle = this.params.waveColor;
         this.progressCc.fillStyle = this.params.progressColor;
 
