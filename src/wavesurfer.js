@@ -227,7 +227,7 @@ var WaveSurfer = {
         if (this.params.fillParent && !this.params.scrollParent) {
             var length = this.drawer.getWidth();
         } else {
-            length = this.backend.getDuration() * this.params.minPxPerSec;
+            length = Math.round(this.backend.getDuration() * this.params.minPxPerSec);
         }
 
         var peaks = this.backend.getPeaks(length);

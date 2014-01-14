@@ -97,7 +97,7 @@ WaveSurfer.Drawer = {
     },
 
     getWidth: function () {
-        return this.containerWidth * this.pixelRatio;
+        return Math.round(this.containerWidth * this.pixelRatio);
     },
 
     setWidth: function (width) {
