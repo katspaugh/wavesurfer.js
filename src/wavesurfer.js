@@ -239,7 +239,6 @@ var WaveSurfer = {
 
     loadBuffer: function (data) {
         var my = this;
-        this.pause();
         this.backend.loadBuffer(data, function () {
             my.clearMarks();
             my.drawBuffer();
@@ -253,7 +252,6 @@ var WaveSurfer = {
      * Loads an AudioBuffer.
      */
     loadDecodedBuffer: function (buffer) {
-      this.pause();
       this.backend.setBuffer(buffer);
       this.clearMarks();
       this.drawBuffer();
@@ -391,7 +389,6 @@ var WaveSurfer = {
      * Display empty waveform.
      */
     empty: function () {
-        this.pause();
         this.clearMarks();
         this.backend.loadEmpty();
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);

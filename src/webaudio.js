@@ -84,12 +84,14 @@ WaveSurfer.WebAudio = {
     },
 
     clearSource: function () {
-        this.source.disconnect();
-        this.source = null;
+        if (this.source) {
+            this.source.disconnect();
+            this.source = null;
+        }
     },
 
     refreshBufferSource: function () {
-        this.source && this.clearSource();
+        this.clearSource();
         this.source = this.ac.createBufferSource();
         if (this.buffer) {
             this.source.buffer = this.buffer;
@@ -98,6 +100,7 @@ WaveSurfer.WebAudio = {
     },
 
     setBuffer: function (buffer) {
+        this.clearSource();
         this.lastPause = 0;
         this.lastStart = 0;
         this.startTime = 0;
