@@ -274,6 +274,20 @@ var WaveSurfer = {
     },
 
     /**
+     * Loads audio data from a Blob or File object.
+     *
+     * @param {Blob|File} blob Audio data.
+     */
+    loadArrayBuffer: function(blob) {
+        var my = this;
+        var reader = new FileReader();
+        reader.addEventListener('loadend', function() {
+            my.fireEvent('loaded', reader.result);
+        });
+        reader.readAsArrayBuffer(blob);
+    },
+
+    /**
      * Loads an audio file via XHR.
      */
     load: function (url) {
