@@ -274,6 +274,27 @@ var WaveSurfer = {
     },
 
     /**
+     * Loads audio data from a Blob or File object.
+     *
+     * @param {Blob|File} blob Audio data.
+     */
+    loadArrayBuffer: function(blob) {
+        var my = this;
+        // Create file reader
+        var reader = new FileReader();
+        reader.addEventListener('progress', function (e) {
+            my.onProgress(e);
+        });
+        reader.addEventListener('load', function (e) {
+            my.fireEvent('loaded', e.target.result);
+        });
+        reader.addEventListener('error', function () {
+            my.fireEvent('error', 'Error reading file');
+        });
+        reader.readAsArrayBuffer(blob);
+    },
+
+    /**
      * Loads an audio file via XHR.
      */
     load: function (url) {
@@ -305,18 +326,6 @@ var WaveSurfer = {
     bindDragNDrop: function (dropTarget) {
         var my = this;
 
-        // Create file reader
-        var reader = new FileReader();
-        reader.addEventListener('progress', function (e) {
-            my.onProgress(e);
-        });
-        reader.addEventListener('load', function (e) {
-            my.fireEvent('loaded', e.target.result);
-        });
-        reader.addEventListener('error', function () {
-            my.fireEvent('error', 'Error reading file');
-        });
-
         // Bind drop event
         if (typeof dropTarget == 'string') {
             dropTarget = document.querySelector(dropTarget);
@@ -333,7 +342,7 @@ var WaveSurfer = {
             var file = e.dataTransfer.files[0];
             if (file) {
                 my.empty();
-                reader.readAsArrayBuffer(file);
+                my.loadArrayBuffer(file);
             } else {
                 my.fireEvent('error', 'Not a file');
             }

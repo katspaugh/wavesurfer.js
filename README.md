@@ -78,6 +78,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `empty()` – clears the waveform as if a zero-length audio is loaded.
  * `destroy()` – removes events, elements and disconnects WebAudio nodes.
  * `loadDecodedBuffer(buffer)` – loads a decoded audio buffer (a typed array, basically).
+ * `loadArrayBuffer(blob)` – loads audio data from a Blob or File object.
 
 Connecting filters
 ==================
