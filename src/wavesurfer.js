@@ -66,13 +66,9 @@ var WaveSurfer = {
         this.drawer.on('mousemove', function (progress) {
             my.handleMouseMove(progress);
         });
-        J
+
         this.drawer.on('dblclick', function (progress) {
             my.clearSelection();
-        });
-
-        this.drawer.on('click', function (progress) {
-            my.seekTo(progress);
         });
 
         this.on('progress', function (progress) {
@@ -444,6 +440,10 @@ var WaveSurfer = {
     },
 
     handleMouseUp: function (progress) {
+        if (this.selectionPercent0 && this.selectionPercent1) {
+          progress = Math.min(this.selectionPercent0, this.selectionPercent1);
+        }
+        this.seekTo(progress);
         if (this.selectionPercent0) this.selectionPercent0 = null;
         if (this.selectionPercent1) this.selectionPercent1 = null;
     },

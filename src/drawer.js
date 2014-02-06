@@ -44,11 +44,6 @@ WaveSurfer.Drawer = {
         }
 
         var my = this;
-        this.wrapper.addEventListener('click', function (e) {
-            e.preventDefault();
-            var relX = 'offsetX' in e ? e.offsetX : e.layerX;
-            my.fireEvent('click', (relX / my.scrollWidth) || 0);
-        });
 
         this.wrapper.addEventListener('mousedown', function (e) {
             e.preventDefault();
