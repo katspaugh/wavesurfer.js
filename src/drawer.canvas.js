@@ -148,8 +148,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     updateSelection: function (startPercent, endPercent) {
+        this.startPercent = startPercent;
+        this.endPercent = endPercent;
         this.clearSelection();
-        this.selectionCc.fillStyle = "#0FC";
+        this.selectionCc.fillStyle = this.params.selectionColor;
         var x = startPercent * this.width;
         var width = endPercent * this.width - x;
 
@@ -158,5 +160,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
     clearSelection: function () {
         this.selectionCc.clearRect(0, 0, this.width, this.height);
+    },
+
+    clearSelectionPercents: function () {
+        this.startPercent = null;
+        this.endPercent = null;
     }
 });

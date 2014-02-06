@@ -153,8 +153,16 @@ WaveSurfer.Drawer = {
         if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {
             this.lastPos = pos;
 
+
             if (this.params.scrollParent) {
-                this.recenterOnPosition(~~(this.scrollWidth * progress));
+                var newPos = ~~(this.scrollWidth * progress);
+                if (this.startPercent) {
+                    if (this.startPercent <= progress && progress <= this.endPercent) {
+                        var median = this.startPercent + (this.endPercent - this.startPercent) / 2;
+                        newPos = ~~(this.scrollWidth * median);
+                    }
+                }
+                this.recenterOnPosition(newPos);
             }
 
             this.updateProgress(progress);

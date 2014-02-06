@@ -6,6 +6,7 @@ var WaveSurfer = {
         waveColor     : '#999',
         progressColor : '#555',
         cursorColor   : '#333',
+        selectionColor: '#0fc',
         cursorWidth   : 1,
         markerWidth   : 1,
         skipLength    : 2,
@@ -464,7 +465,7 @@ var WaveSurfer = {
 
         var percent0 = this.selectionPercent0;
         var percent1 = this.selectionPercent1;
-        var color = "#f0f";
+        var color = this.params.selectionColor;
 
         if (percent0 > percent1) {
             var tmpPercent = percent0;
@@ -512,6 +513,7 @@ var WaveSurfer = {
             this.selMark1 = null;
         }
         this.drawer.clearSelection();
+        this.drawer.clearSelectionPercents();
         this.backend.clearSelection();
     }
 
