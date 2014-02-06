@@ -49,6 +49,36 @@ WaveSurfer.Drawer = {
             var relX = 'offsetX' in e ? e.offsetX : e.layerX;
             my.fireEvent('click', (relX / my.scrollWidth) || 0);
         });
+
+        this.wrapper.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            var relX = 'offsetX' in e ? e.offsetX : e.layerX;
+            my.fireEvent('mousedown', (relX / my.scrollWidth) || 0);
+        });
+
+        this.wrapper.addEventListener('mouseup', function (e) {
+            e.preventDefault();
+            var relX = 'offsetX' in e ? e.offsetX : e.layerX;
+            my.fireEvent('mouseup', (relX / my.scrollWidth) || 0);
+        });
+
+        this.wrapper.addEventListener('mouseout', function (e) {
+            e.preventDefault();
+            var relX = 'offsetX' in e ? e.offsetX : e.layerX;
+            my.fireEvent('mouseout', (relX / my.scrollWidth) || 0);
+        });
+
+        this.wrapper.addEventListener('mousemove', function (e) {
+            e.preventDefault();
+            var relX = 'offsetX' in e ? e.offsetX : e.layerX;
+            my.fireEvent('mousemove', (relX / my.scrollWidth) || 0);
+        });
+
+        this.wrapper.addEventListener('dblclick', function (e) {
+            e.preventDefault();
+            var relX = 'offsetX' in e ? e.offsetX : e.layerX;
+            my.fireEvent('dblclick', (relX / my.scrollWidth) || 0);
+        });
     },
 
     drawPeaks: function (peaks, length) {
@@ -150,7 +180,11 @@ WaveSurfer.Drawer = {
 
     addMark: function (mark) {},
 
-    removeMark: function (mark) {}
+    removeMark: function (mark) {},
+
+    updateSelection: function (startPos, endPos) {},
+
+    clearSelection: function () {}
 };
 
 WaveSurfer.util.extend(WaveSurfer.Drawer, WaveSurfer.Observer);

@@ -50,6 +50,26 @@ var WaveSurfer = {
             my.drawBuffer();
         });
 
+        this.drawer.on('mousedown', function (progress) {
+            my.handleMouseDown(progress);
+        });
+
+        this.drawer.on('mouseup', function (progress) {
+            my.handleMouseUp(progress);
+        });
+
+        this.drawer.on('mouseout', function (progress) {
+            my.handleMouseOut(progress);
+        });
+
+        this.drawer.on('mousemove', function (progress) {
+            my.handleMouseMove(progress);
+        });
+        J
+        this.drawer.on('dblclick', function (progress) {
+            my.clearSelection();
+        });
+
         this.drawer.on('click', function (progress) {
             my.seekTo(progress);
         });
@@ -384,7 +404,7 @@ var WaveSurfer = {
         this.backend.on('audioprocess', function (time) {
             Object.keys(my.markers).forEach(function (id) {
                 var marker = my.markers[id];
-                if (!marker.played) {
+                if (!marker.played || marker.loopEnd) {
                     if (marker.position <= time && marker.position >= prevTime) {
                         // Prevent firing the event more than once per playback
                         marker.played = true;
@@ -416,7 +436,85 @@ var WaveSurfer = {
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();
+    },
+
+    handleMouseDown: function (progress) {
+        this.selectionPercent0 = progress;
+    },
+
+    handleMouseUp: function (progress) {
+        if (this.selectionPercent0) this.selectionPercent0 = null;
+        if (this.selectionPercent1) this.selectionPercent1 = null;
+    },
+
+    handleMouseMove: function (progress) {
+        if (!this.selectionPercent0) return;
+
+        this.selectionPercent1 = progress;
+        this.updateSelection()
+    },
+
+    handleMouseOut: function (progress) {
+        if (this.selectionPercent0) this.selectionPercent0 = null;
+        if (this.selectionPercent1) this.selectionPercent1 = null;
+    },
+
+    updateSelection: function () {
+        var my = this;
+
+        var percent0 = this.selectionPercent0;
+        var percent1 = this.selectionPercent1;
+        var color = "#f0f";
+
+        if (percent0 > percent1) {
+            var tmpPercent = percent0;
+            percent0 = percent1;
+            percent1 = tmpPercent;
+        }
+
+        if (this.selMark0) {
+            this.selMark0.update({ percentage: percent0 });
+        } else {
+            this.selMark0 = this.mark({
+                id: "selMark0",
+                percentage: percent0,
+                color: color
+            })
+        }
+        this.drawer.addMark(this.selMark0);
+
+        if (this.selMark1) {
+            this.selMark1.update({ percentage: percent1 });
+        } else {
+            this.selMark1 = this.mark({
+                id: "selMark1",
+                percentage: percent1,
+                color: color
+            })
+            this.selMark1.loopEnd = true;
+            this.selMark1.on("reached", function(){
+                my.backend.logLoop(my.selMark0.position, my.selMark1.position);
+            })
+        }
+        this.drawer.addMark(this.selMark1);
+
+        this.drawer.updateSelection(percent0, percent1);
+        this.backend.updateSelection(percent0, percent1);
+    },
+
+    clearSelection: function () {
+        if (this.selMark0) {
+            this.selMark0.remove();
+            this.selMark0 = null;
+        }
+        if (this.selMark1) {
+            this.selMark1.remove();
+            this.selMark1 = null;
+        }
+        this.drawer.clearSelection();
+        this.backend.clearSelection();
     }
+
 };
 
 
