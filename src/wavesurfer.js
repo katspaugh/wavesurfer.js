@@ -530,6 +530,21 @@ var WaveSurfer = {
         this.updateSelection();
         this.selectionPercent0 = null;
         this.selectionPercent1 = null;
+    },
+
+    getSelection: function () {
+      if (!this.selMark0 || !this.selMark1) return null;
+
+      var duration = this.backend.getDuration()
+      var startPercentage = this.selMark0.percentage
+      var endPercentage = this.selMark1.percentage
+
+      return {
+        startPercentage: startPercentage,
+        startPosition: startPercentage * duration,
+        endPercentage: endPercentage,
+        endPosition: endPercentage * duration
+      }
     }
 
 };
