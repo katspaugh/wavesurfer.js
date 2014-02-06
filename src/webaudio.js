@@ -326,7 +326,7 @@ WaveSurfer.WebAudio = {
         }
     },
 
-    logLoop: function(pos0, pos1){
+    logLoop: function(){
         if (this.loopedAtStart) this.lastLoop = this.ac.currentTime;
     },
 

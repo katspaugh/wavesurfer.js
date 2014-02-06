@@ -70,7 +70,7 @@ var WaveSurfer = {
             my.handleMouseMove(progress);
         });
 
-        this.drawer.on('dblclick', function (progress) {
+        this.drawer.on('dblclick', function () {
             my.clearSelection();
         });
 
@@ -326,14 +326,14 @@ var WaveSurfer = {
         xhr.addEventListener('progress', function (e) {
             my.onProgress(e);
         });
-        xhr.addEventListener('load', function (e) {
+        xhr.addEventListener('load', function () {
             if (200 == xhr.status) {
                 my.fireEvent('loaded', xhr.response);
             } else {
                 my.fireEvent('error', 'Server response: ' + xhr.statusText);
             }
         });
-        xhr.addEventListener('error', function (e) {
+        xhr.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading audio');
         });
         this.empty();
@@ -458,7 +458,7 @@ var WaveSurfer = {
         this.updateSelection()
     },
 
-    handleMouseOut: function (progress) {
+    handleMouseOut: function () {
         if (this.selectionPercent0) this.selectionPercent0 = null;
         if (this.selectionPercent1) this.selectionPercent1 = null;
     },
