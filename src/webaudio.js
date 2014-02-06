@@ -10,6 +10,7 @@ WaveSurfer.WebAudio = {
             );
         }
         this.params = params;
+        this.loopSelection = this.params.loopSelection;
         this.ac = params.audioContext || this.getAudioContext();
         this.offlineAc = this.getOfflineAudioContext(this.ac.sampleRate);
 
@@ -178,7 +179,8 @@ WaveSurfer.WebAudio = {
         this.startTime = this.ac.currentTime;
         this.paused = false;
         this.scheduledPause = end;
-        this.setupLoop()
+
+        if (this.loopSelection) this.setupLoop();
 
         if (this.source.start) {
             this.source.start(0, start, end - start);
@@ -193,7 +195,7 @@ WaveSurfer.WebAudio = {
      * Pauses the loaded audio.
      */
     pause: function () {
-        if (this.loop && this.lastLoop && this.loopedAtStart) {
+        if (this.loopIsActive()) {
             this.lastPause = this.loopStart + this.ac.currentTime - this.lastLoop
         } else {
             this.lastPause = this.lastStart + (this.ac.currentTime - this.startTime);
@@ -257,7 +259,7 @@ WaveSurfer.WebAudio = {
             return this.lastPause;
         }
 
-        if (this.loop && this.lastLoop && this.loopedAtStart) {
+        if (this.loopIsActive()) {
             return this.loopStart + this.ac.currentTime - this.lastLoop;
         }
 
@@ -294,6 +296,8 @@ WaveSurfer.WebAudio = {
     },
 
     updateSelection: function(startPercent, endPercent) {
+        if (!this.loopSelection) return false;
+
         var duration = this.getDuration();
         if (!duration) return;
 
@@ -309,6 +313,8 @@ WaveSurfer.WebAudio = {
     },
 
     clearSelection: function() {
+        if (!this.loopSelection) return false;
+
         this.loop = false;
         this.loopStart = 0;
         this.loopEnd = 0;
@@ -322,6 +328,13 @@ WaveSurfer.WebAudio = {
 
     logLoop: function(pos0, pos1){
         if (this.loopedAtStart) this.lastLoop = this.ac.currentTime;
+    },
+
+    loopIsActive: function () {
+        return this.loopSelection &&
+            this.loop &&
+            this.lastLoop &&
+            this.loopedAtStart
     }
 };
 

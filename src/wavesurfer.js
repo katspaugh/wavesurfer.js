@@ -18,7 +18,8 @@ var WaveSurfer = {
         normalize     : false,
         audioContext  : null,
         container     : null,
-        renderer      : 'Canvas'
+        renderer      : 'Canvas',
+        loopSelection : true
     },
 
     init: function (params) {
@@ -34,6 +35,8 @@ var WaveSurfer = {
         this.savedVolume = 0;
         // The current muted state
         this.isMuted = false;
+
+        this.loopSelection = this.params.loopSelection
 
         this.createBackend();
         this.createDrawer();
@@ -401,7 +404,7 @@ var WaveSurfer = {
         this.backend.on('audioprocess', function (time) {
             Object.keys(my.markers).forEach(function (id) {
                 var marker = my.markers[id];
-                if (!marker.played || marker.loopEnd) {
+                if (!marker.played || (my.loopSelection && marker.loopEnd)) {
                     if (marker.position <= time && marker.position >= prevTime) {
                         // Prevent firing the event more than once per playback
                         marker.played = true;
@@ -515,6 +518,18 @@ var WaveSurfer = {
         this.drawer.clearSelection();
         this.drawer.clearSelectionPercents();
         this.backend.clearSelection();
+    },
+
+    toggleLoopSelection: function () {
+        this.loopSelection = !this.loopSelection;
+        this.drawer.loopSelection = this.loopSelection;
+        this.backend.loopSelection = this.loopSelection;
+
+        if (this.selMark0) this.selectionPercent0 = this.selMark0.percentage;
+        if (this.selMark1) this.selectionPercent1 = this.selMark1.percentage;
+        this.updateSelection();
+        this.selectionPercent0 = null;
+        this.selectionPercent1 = null;
     }
 
 };

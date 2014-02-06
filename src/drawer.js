@@ -12,6 +12,7 @@ WaveSurfer.Drawer = {
 
         this.params = params;
         this.pixelRatio = this.params.pixelRatio;
+        this.loopSelection = this.params.loopSelection;
 
         this.width = 0;
         this.height = params.height * this.pixelRatio;
@@ -148,10 +149,9 @@ WaveSurfer.Drawer = {
         if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {
             this.lastPos = pos;
 
-
             if (this.params.scrollParent) {
                 var newPos = ~~(this.scrollWidth * progress);
-                if (this.startPercent) {
+                if (this.loopSelection && this.startPercent) {
                     if (this.startPercent <= progress && progress <= this.endPercent) {
                         var median = this.startPercent + (this.endPercent - this.startPercent) / 2;
                         newPos = ~~(this.scrollWidth * median);
