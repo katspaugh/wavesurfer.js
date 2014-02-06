@@ -72,6 +72,10 @@ var WaveSurfer = {
             my.restartAnimationLoop();
         });
 
+        this.backend.on('finish', function () {
+            my.fireEvent('finish');
+        });
+
         this.backend.init(this.params);
     },
 
@@ -227,7 +231,7 @@ var WaveSurfer = {
         if (this.params.fillParent && !this.params.scrollParent) {
             var length = this.drawer.getWidth();
         } else {
-            length = this.backend.getDuration() * this.params.minPxPerSec;
+            length = Math.round(this.backend.getDuration() * this.params.minPxPerSec);
         }
 
         var peaks = this.backend.getPeaks(length);
@@ -239,7 +243,6 @@ var WaveSurfer = {
 
     loadBuffer: function (data) {
         var my = this;
-        this.pause();
         this.backend.loadBuffer(data, function () {
             my.clearMarks();
             my.drawBuffer();
@@ -249,12 +252,14 @@ var WaveSurfer = {
         });
     },
 
-    loadDecodedBuffer: function(buffer){
-      this.pause();
+    /**
+     * Loads an AudioBuffer.
+     */
+    loadDecodedBuffer: function (buffer) {
       this.backend.setBuffer(buffer);
       this.clearMarks();
       this.drawBuffer();
-      this.fireEvent("ready");
+      this.fireEvent('ready');
     },
 
     onProgress: function (e) {
@@ -266,6 +271,27 @@ var WaveSurfer = {
             percentComplete = e.loaded / (e.loaded + 1000000);
         }
         this.fireEvent('loading', Math.round(percentComplete * 100), e.target);
+    },
+
+    /**
+     * Loads audio data from a Blob or File object.
+     *
+     * @param {Blob|File} blob Audio data.
+     */
+    loadArrayBuffer: function(blob) {
+        var my = this;
+        // Create file reader
+        var reader = new FileReader();
+        reader.addEventListener('progress', function (e) {
+            my.onProgress(e);
+        });
+        reader.addEventListener('load', function (e) {
+            my.fireEvent('loaded', e.target.result);
+        });
+        reader.addEventListener('error', function () {
+            my.fireEvent('error', 'Error reading file');
+        });
+        reader.readAsArrayBuffer(blob);
     },
 
     /**
@@ -300,18 +326,6 @@ var WaveSurfer = {
     bindDragNDrop: function (dropTarget) {
         var my = this;
 
-        // Create file reader
-        var reader = new FileReader();
-        reader.addEventListener('progress', function (e) {
-            my.onProgress(e);
-        });
-        reader.addEventListener('load', function (e) {
-            my.fireEvent('loaded', e.target.result);
-        });
-        reader.addEventListener('error', function () {
-            my.fireEvent('error', 'Error reading file');
-        });
-
         // Bind drop event
         if (typeof dropTarget == 'string') {
             dropTarget = document.querySelector(dropTarget);
@@ -328,7 +342,7 @@ var WaveSurfer = {
             var file = e.dataTransfer.files[0];
             if (file) {
                 my.empty();
-                reader.readAsArrayBuffer(file);
+                my.loadArrayBuffer(file);
             } else {
                 my.fireEvent('error', 'Not a file');
             }
@@ -388,7 +402,6 @@ var WaveSurfer = {
      * Display empty waveform.
      */
     empty: function () {
-        this.pause();
         this.clearMarks();
         this.backend.loadEmpty();
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);

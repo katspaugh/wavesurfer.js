@@ -43,6 +43,9 @@ WaveSurfer.WebAudio = {
                 var time = my.getCurrentTime();
                 if (time > my.scheduledPause) {
                     my.pause();
+                    if (time > my.getDuration()) {
+                        my.fireEvent('finish', time);
+                    }
                 }
                 my.fireEvent('audioprocess', time);
             }
@@ -84,12 +87,14 @@ WaveSurfer.WebAudio = {
     },
 
     clearSource: function () {
-        this.source.disconnect();
-        this.source = null;
+        if (this.source) {
+            this.source.disconnect();
+            this.source = null;
+        }
     },
 
     refreshBufferSource: function () {
-        this.source && this.clearSource();
+        this.clearSource();
         this.source = this.ac.createBufferSource();
         if (this.buffer) {
             this.source.buffer = this.buffer;
@@ -98,6 +103,7 @@ WaveSurfer.WebAudio = {
     },
 
     setBuffer: function (buffer) {
+        this.clearSource();
         this.lastPause = 0;
         this.lastStart = 0;
         this.startTime = 0;
@@ -210,7 +216,7 @@ WaveSurfer.WebAudio = {
                         peak = -value;
                     }
                 }
-                if (c > 1) {
+                if (c > 0) {
                     peaks[i] += peak / channels;
                 } else {
                     peaks[i] = peak / channels;

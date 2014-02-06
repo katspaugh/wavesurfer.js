@@ -40,20 +40,20 @@ See the example code [here](https://github.com/katspaugh/wavesurfer.js/blob/mast
 Options
 =======
 
-  * `container` – CSS-selector or HTML-element where the waveform to be drawn. This is the only required parameter.
+  * `container` – CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter.
   * `height` – the height of the waveform. `128` by default.
   * `skipLength` – number of seconds to skip with the `skipForward()` and `skipBackward()` methods (`2` by default).
   * `minPxPerSec` – minimum number of pixels per second of audio (`1` by default).
   * `fillParent` – whether to fill the entire container or draw only according to `minPxPerSec` (`true` by default).
   * `scrollParent` – whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrinked to container width (see `fillParent`).
   * `normalize` – if `true`, normalize by the maximum peak instead of 1.0 (`false` by default).
-  * `pixelRatio` – `1` by default for performance considerations (see #22), but you can set it to `window.devicePixelRatio`.
+  * `pixelRatio` – equals `window.devicePixelRatio` by default, but you can set it to `1` for faster rendering.
   * `audioContext` – use your own previously initialized `AudioContext` or leave blank.
   * `cursorWidth` – 1 px by default.
   * `markerWidth` – 1 px by default.
-  * `waveColor` – the fill color of the waveform.
-  * `progressColor`
-  * `cursorColor`
+  * `waveColor` – the fill color of the waveform after the cursor.
+  * `progressColor` – the fill color of the part of the waveform behind the cursor.
+  * `cursorColor` – the fill color of the cursor indicating the playhead position.
 
 Methods
 =======
@@ -76,6 +76,9 @@ All methods are intentionally public, but the most readily available are the fol
  * `clearMarks()` – removes all markers.
  * `bindDragNDrop([dropTarget])` – starts listening to drag'n'drop on an element. The default element is `document`. Loads the dropped audio.
  * `empty()` – clears the waveform as if a zero-length audio is loaded.
+ * `destroy()` – removes events, elements and disconnects WebAudio nodes.
+ * `loadDecodedBuffer(buffer)` – loads a decoded audio buffer (a typed array, basically).
+ * `loadArrayBuffer(blob)` – loads audio data from a Blob or File object.
 
 Connecting filters
 ==================
@@ -93,6 +96,8 @@ You can listen to the following events:
  * `loading` – fires continuously when loading via XHR or drag'n'drop. Callback recieves loading progress in percents (from 0 to 100) and the event target.
  * `seek` – on seeking.
  * `play` – when it starts playing.
+ * `finish` – when it finishes playing.
+ * `progress` – fires continuously during playback.
  * `mark` – when a mark is reached. Passes the mark object.
  * `error` – on error, passes an error message.
 
