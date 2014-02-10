@@ -51,7 +51,7 @@ WaveSurfer.Drawer = {
         var my = this;
 
         var eventNames = [
-          'mousedown', 'mouseup', 'mouseout', 'mousemove', 'dbclick'
+          'mousedown', 'mouseup', 'mouseout', 'mousemove', 'dblclick'
         ]
 
         eventNames.forEach(function (eventName) {
