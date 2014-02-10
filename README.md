@@ -55,7 +55,7 @@ Options
   * `progressColor` – the fill color of the part of the waveform behind the cursor.
   * `cursorColor` – the fill color of the cursor indicating the playhead position.
   * `loopSelection` – if `true`, playback will loop inside the selected region
-  (`true` by default).
+  (`false` by default).
 
 Methods
 =======
