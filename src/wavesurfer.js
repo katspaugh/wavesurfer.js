@@ -444,7 +444,7 @@ var WaveSurfer = {
 
     handleMouseUp: function (progress) {
         if (this.selectionPercent0 && this.selectionPercent1) {
-          progress = Math.min(this.selectionPercent0, this.selectionPercent1);
+            progress = Math.min(this.selectionPercent0, this.selectionPercent1);
         }
         this.seekTo(progress);
         if (this.selectionPercent0) this.selectionPercent0 = null;
