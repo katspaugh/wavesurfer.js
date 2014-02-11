@@ -105,6 +105,8 @@
                 var pixelsPerSecond = wsParams.minPxPerSec;
             }
 
+            pixelsPerSecond = pixelsPerSecond / this.wavesurfer.drawer.pixelRatio;
+
             if (duration > 0) {
                 var curPixel = 0,
                     curSeconds = 0,
