@@ -156,6 +156,20 @@ WaveSurfer.Drawer = {
         this.wrapper = null;
     },
 
+    updateSelection: function (startPercent, endPercent) {
+        this.startPercent = startPercent;
+        this.endPercent = endPercent;
+
+        this.drawSelection();
+    },
+
+    clearSelection: function () {
+        this.startPercent = null;
+        this.endPercent = null;
+
+        this.eraseSelection();
+    },
+
     /* Renderer-specific methods */
     createElements: function () {},
 
@@ -171,9 +185,10 @@ WaveSurfer.Drawer = {
 
     removeMark: function (mark) {},
 
-    updateSelection: function (startPos, endPos) {},
+    redrawSelection: function () {},
 
-    clearSelection: function () {}
+    eraseSelection: function () {}
+
 };
 
 WaveSurfer.util.extend(WaveSurfer.Drawer, WaveSurfer.Observer);

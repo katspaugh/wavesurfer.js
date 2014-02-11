@@ -516,7 +516,6 @@ var WaveSurfer = {
             this.selMark1 = null;
         }
         this.drawer.clearSelection();
-        this.drawer.clearSelectionPercents();
         this.backend.clearSelection();
     },
 

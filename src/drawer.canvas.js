@@ -147,23 +147,18 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         }, this);
     },
 
-    updateSelection: function (startPercent, endPercent) {
-        this.startPercent = startPercent;
-        this.endPercent = endPercent;
-        this.clearSelection();
+    drawSelection: function () {
+        this.eraseSelection();
+
         this.selectionCc.fillStyle = this.params.selectionColor;
-        var x = startPercent * this.width;
-        var width = endPercent * this.width - x;
+        var x = this.startPercent * this.width;
+        var width = this.endPercent * this.width - x;
 
         this.selectionCc.fillRect(x, 0, width, this.height);
     },
 
-    clearSelection: function () {
+    eraseSelection: function () {
         this.selectionCc.clearRect(0, 0, this.width, this.height);
-    },
-
-    clearSelectionPercents: function () {
-        this.startPercent = null;
-        this.endPercent = null;
     }
+
 });
