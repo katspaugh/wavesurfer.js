@@ -122,3 +122,7 @@ License
 ![cc-by](http://i.creativecommons.org/l/by/3.0/88x31.png)
 
 This work is licensed under a [Creative Commons Attribution 3.0 Unported License](http://creativecommons.org/licenses/by/3.0/deed.en_US).
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/katspaugh/wavesurfer.js/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
