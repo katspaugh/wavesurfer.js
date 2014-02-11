@@ -105,8 +105,8 @@ WaveSurfer.WebAudio = {
     },
 
     setupLoop: function () {
-        this.lastLoop = 0
-        this.loopedAtStart = false
+        this.lastLoop = 0;
+        this.loopedAtStart = false;
 
         if (this.loop && this.lastStart <= this.loopEnd) {
             this.loopedAtStart = true;
@@ -196,9 +196,11 @@ WaveSurfer.WebAudio = {
      */
     pause: function () {
         if (this.loopIsActive()) {
-            this.lastPause = this.loopStart + this.ac.currentTime - this.lastLoop
+            this.lastPause = this.loopStart +
+                this.ac.currentTime - this.lastLoop;
         } else {
-            this.lastPause = this.lastStart + (this.ac.currentTime - this.startTime);
+            this.lastPause = this.lastStart +
+                (this.ac.currentTime - this.startTime);
         }
 
         this.paused = true;
@@ -321,8 +323,8 @@ WaveSurfer.WebAudio = {
 
         if (this.source) {
             this.source.loop = false;
-            this.source.loopStart = this.loopStart
-            this.source.loopEnd = this.loopEnd
+            this.source.loopStart = this.loopStart;
+            this.source.loopEnd = this.loopEnd;
         }
     },
 
@@ -334,7 +336,7 @@ WaveSurfer.WebAudio = {
         return this.loopSelection &&
             this.loop &&
             this.lastLoop &&
-            this.loopedAtStart
+            this.loopedAtStart;
     }
 };
 

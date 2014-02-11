@@ -51,7 +51,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         });
 
         this.canvases = [
-          waveCanvas, progressCanvas, marksCanvas, selectionCanvas
+            waveCanvas, progressCanvas, marksCanvas, selectionCanvas
         ];
 
         this.waveCc = waveCanvas.getContext('2d');

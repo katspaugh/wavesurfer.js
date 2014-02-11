@@ -44,15 +44,15 @@ WaveSurfer.Drawer = {
             });
         }
 
-        this.setupWrapperEvents()
+        this.setupWrapperEvents();
     },
 
     setupWrapperEvents: function () {
         var my = this;
 
         var eventNames = [
-          'mousedown', 'mouseup', 'mouseout', 'mousemove', 'dblclick'
-        ]
+            'mousedown', 'mouseup', 'mouseout', 'mousemove', 'dblclick'
+        ];
 
         eventNames.forEach(function (eventName) {
             my.wrapper.addEventListener(eventName, function (e) {

@@ -36,7 +36,7 @@ var WaveSurfer = {
         // The current muted state
         this.isMuted = false;
 
-        this.loopSelection = this.params.loopSelection
+        this.loopSelection = this.params.loopSelection;
 
         this.createBackend();
         this.createDrawer();
@@ -251,7 +251,9 @@ var WaveSurfer = {
         if (this.params.fillParent && !this.params.scrollParent) {
             var length = this.drawer.getWidth();
         } else {
-            length = Math.round(this.backend.getDuration() * this.params.minPxPerSec);
+            length = Math.round(
+                this.backend.getDuration() * this.params.minPxPerSec
+            );
         }
 
         var peaks = this.backend.getPeaks(length);
@@ -455,7 +457,7 @@ var WaveSurfer = {
         if (!this.selectionPercent0) return;
 
         this.selectionPercent1 = progress;
-        this.updateSelection()
+        this.updateSelection();
     },
 
     handleMouseOut: function () {
@@ -480,10 +482,10 @@ var WaveSurfer = {
             this.selMark0.update({ percentage: percent0 });
         } else {
             this.selMark0 = this.mark({
-                id: "selMark0",
+                id: 'selMark0',
                 percentage: percent0,
                 color: color
-            })
+            });
         }
         this.drawer.addMark(this.selMark0);
 
@@ -491,14 +493,14 @@ var WaveSurfer = {
             this.selMark1.update({ percentage: percent1 });
         } else {
             this.selMark1 = this.mark({
-                id: "selMark1",
+                id: 'selMark1',
                 percentage: percent1,
                 color: color
-            })
+            });
             this.selMark1.loopEnd = true;
-            this.selMark1.on("reached", function(){
+            this.selMark1.on('reached', function(){
                 my.backend.logLoop(my.selMark0.position, my.selMark1.position);
-            })
+            });
         }
         this.drawer.addMark(this.selMark1);
 
@@ -534,16 +536,16 @@ var WaveSurfer = {
     getSelection: function () {
       if (!this.selMark0 || !this.selMark1) return null;
 
-      var duration = this.backend.getDuration()
-      var startPercentage = this.selMark0.percentage
-      var endPercentage = this.selMark1.percentage
+      var duration = this.backend.getDuration();
+      var startPercentage = this.selMark0.percentage;
+      var endPercentage = this.selMark1.percentage;
 
       return {
-        startPercentage: startPercentage,
-        startPosition: startPercentage * duration,
-        endPercentage: endPercentage,
-        endPosition: endPercentage * duration
-      }
+          startPercentage: startPercentage,
+          startPosition: startPercentage * duration,
+          endPercentage: endPercentage,
+          endPosition: endPercentage * duration
+      };
     }
 
 };
