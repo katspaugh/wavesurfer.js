@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
         waveColor     : 'violet',
         progressColor : 'purple',
         loaderColor   : 'purple',
-        cursorColor   : 'navy'
+        cursorColor   : 'navy',
+        selectionColor: '#d0e9c6'
     };
 
     if (location.search.match('scroll')) {
@@ -65,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var prevAnnotation, prevRow;
     var onProgress = function () {
+        var duration = wavesurfer.backend.getDuration();
         var time = wavesurfer.backend.getCurrentTime();
         var annotation = elan.getRenderedAnnotation(time);
 
@@ -82,25 +84,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     elan.container.scrollTop = before.offsetTop;
                 }
 
-                var start = annotation.start;
-                var end = annotation.end;
+                // Selection
+                wavesurfer.selectionPercent0 = annotation.start / duration;
+                wavesurfer.selectionPercent1 = annotation.end / duration;
+                wavesurfer.updateSelection();
             } else {
-                start = -100;
-                end = -100;
+                wavesurfer.clearSelection();
             }
-
-            // Markers
-            wavesurfer.mark({
-                id: 'start',
-                position: start,
-                color: 'green'
-            });
-            wavesurfer.mark({
-                id: 'end',
-                position: end,
-                color: 'red'
-            });
-
         }
     };
 
