@@ -42,12 +42,23 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             zIndex: 3
         });
 
-        this.canvases = [ waveCanvas, progressCanvas, marksCanvas ];
+        var selectionCanvas = this.wrapper.appendChild(
+            document.createElement('canvas')
+        );
+        this.style(selectionCanvas, {
+            position: 'absolute',
+            zIndex: 0
+        });
+
+        this.canvases = [
+          waveCanvas, progressCanvas, marksCanvas, selectionCanvas
+        ];
 
         this.waveCc = waveCanvas.getContext('2d');
         this.progressCc = progressCanvas.getContext('2d');
         this.progressWave = progressWave;
         this.marksCc = marksCanvas.getContext('2d');
+        this.selectionCc= selectionCanvas.getContext('2d');
     },
 
     updateWidth: function () {
@@ -134,5 +145,20 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         Object.keys(this.marks).forEach(function (id) {
             this.drawMark(this.marks[id]);
         }, this);
+    },
+
+    drawSelection: function () {
+        this.eraseSelection();
+
+        this.selectionCc.fillStyle = this.params.selectionColor;
+        var x = this.startPercent * this.width;
+        var width = this.endPercent * this.width - x;
+
+        this.selectionCc.fillRect(x, 0, width, this.height);
+    },
+
+    eraseSelection: function () {
+        this.selectionCc.clearRect(0, 0, this.width, this.height);
     }
+
 });

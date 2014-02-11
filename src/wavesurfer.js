@@ -6,6 +6,7 @@ var WaveSurfer = {
         waveColor     : '#999',
         progressColor : '#555',
         cursorColor   : '#333',
+        selectionColor: '#0fc',
         cursorWidth   : 1,
         markerWidth   : 1,
         skipLength    : 2,
@@ -17,7 +18,8 @@ var WaveSurfer = {
         normalize     : false,
         audioContext  : null,
         container     : null,
-        renderer      : 'Canvas'
+        renderer      : 'Canvas',
+        loopSelection : false
     },
 
     init: function (params) {
@@ -33,6 +35,8 @@ var WaveSurfer = {
         this.savedVolume = 0;
         // The current muted state
         this.isMuted = false;
+
+        this.loopSelection = this.params.loopSelection
 
         this.createBackend();
         this.createDrawer();
@@ -50,8 +54,24 @@ var WaveSurfer = {
             my.drawBuffer();
         });
 
-        this.drawer.on('click', function (progress) {
-            my.seekTo(progress);
+        this.drawer.on('mousedown', function (progress) {
+            my.handleMouseDown(progress);
+        });
+
+        this.drawer.on('mouseup', function (progress) {
+            my.handleMouseUp(progress);
+        });
+
+        this.drawer.on('mouseout', function (progress) {
+            my.handleMouseOut(progress);
+        });
+
+        this.drawer.on('mousemove', function (progress) {
+            my.handleMouseMove(progress);
+        });
+
+        this.drawer.on('dblclick', function () {
+            my.clearSelection();
         });
 
         this.on('progress', function (progress) {
@@ -306,14 +326,14 @@ var WaveSurfer = {
         xhr.addEventListener('progress', function (e) {
             my.onProgress(e);
         });
-        xhr.addEventListener('load', function (e) {
+        xhr.addEventListener('load', function () {
             if (200 == xhr.status) {
                 my.fireEvent('loaded', xhr.response);
             } else {
                 my.fireEvent('error', 'Server response: ' + xhr.statusText);
             }
         });
-        xhr.addEventListener('error', function (e) {
+        xhr.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading audio');
         });
         this.empty();
@@ -384,7 +404,7 @@ var WaveSurfer = {
         this.backend.on('audioprocess', function (time) {
             Object.keys(my.markers).forEach(function (id) {
                 var marker = my.markers[id];
-                if (!marker.played) {
+                if (!marker.played || (my.loopSelection && marker.loopEnd)) {
                     if (marker.position <= time && marker.position >= prevTime) {
                         // Prevent firing the event more than once per playback
                         marker.played = true;
@@ -416,7 +436,116 @@ var WaveSurfer = {
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();
+    },
+
+    handleMouseDown: function (progress) {
+        this.selectionPercent0 = progress;
+    },
+
+    handleMouseUp: function (progress) {
+        if (this.selectionPercent0 && this.selectionPercent1) {
+            progress = Math.min(this.selectionPercent0, this.selectionPercent1);
+        }
+        this.seekTo(progress);
+        if (this.selectionPercent0) this.selectionPercent0 = null;
+        if (this.selectionPercent1) this.selectionPercent1 = null;
+    },
+
+    handleMouseMove: function (progress) {
+        if (!this.selectionPercent0) return;
+
+        this.selectionPercent1 = progress;
+        this.updateSelection()
+    },
+
+    handleMouseOut: function () {
+        if (this.selectionPercent0) this.selectionPercent0 = null;
+        if (this.selectionPercent1) this.selectionPercent1 = null;
+    },
+
+    updateSelection: function () {
+        var my = this;
+
+        var percent0 = this.selectionPercent0;
+        var percent1 = this.selectionPercent1;
+        var color = this.params.selectionColor;
+
+        if (percent0 > percent1) {
+            var tmpPercent = percent0;
+            percent0 = percent1;
+            percent1 = tmpPercent;
+        }
+
+        if (this.selMark0) {
+            this.selMark0.update({ percentage: percent0 });
+        } else {
+            this.selMark0 = this.mark({
+                id: "selMark0",
+                percentage: percent0,
+                color: color
+            })
+        }
+        this.drawer.addMark(this.selMark0);
+
+        if (this.selMark1) {
+            this.selMark1.update({ percentage: percent1 });
+        } else {
+            this.selMark1 = this.mark({
+                id: "selMark1",
+                percentage: percent1,
+                color: color
+            })
+            this.selMark1.loopEnd = true;
+            this.selMark1.on("reached", function(){
+                my.backend.logLoop(my.selMark0.position, my.selMark1.position);
+            })
+        }
+        this.drawer.addMark(this.selMark1);
+
+        this.drawer.updateSelection(percent0, percent1);
+        this.backend.updateSelection(percent0, percent1);
+    },
+
+    clearSelection: function () {
+        if (this.selMark0) {
+            this.selMark0.remove();
+            this.selMark0 = null;
+        }
+        if (this.selMark1) {
+            this.selMark1.remove();
+            this.selMark1 = null;
+        }
+        this.drawer.clearSelection();
+        this.backend.clearSelection();
+    },
+
+    toggleLoopSelection: function () {
+        this.loopSelection = !this.loopSelection;
+        this.drawer.loopSelection = this.loopSelection;
+        this.backend.loopSelection = this.loopSelection;
+
+        if (this.selMark0) this.selectionPercent0 = this.selMark0.percentage;
+        if (this.selMark1) this.selectionPercent1 = this.selMark1.percentage;
+        this.updateSelection();
+        this.selectionPercent0 = null;
+        this.selectionPercent1 = null;
+    },
+
+    getSelection: function () {
+      if (!this.selMark0 || !this.selMark1) return null;
+
+      var duration = this.backend.getDuration()
+      var startPercentage = this.selMark0.percentage
+      var endPercentage = this.selMark1.percentage
+
+      return {
+        startPercentage: startPercentage,
+        startPosition: startPercentage * duration,
+        endPercentage: endPercentage,
+        endPosition: endPercentage * duration
+      }
     }
+
 };
 
 

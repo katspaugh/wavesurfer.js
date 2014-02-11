@@ -54,6 +54,8 @@ Options
   * `waveColor` – the fill color of the waveform after the cursor.
   * `progressColor` – the fill color of the part of the waveform behind the cursor.
   * `cursorColor` – the fill color of the cursor indicating the playhead position.
+  * `loopSelection` – if `true`, playback will loop inside the selected region
+  (`false` by default).
 
 Methods
 =======
@@ -79,6 +81,12 @@ All methods are intentionally public, but the most readily available are the fol
  * `destroy()` – removes events, elements and disconnects WebAudio nodes.
  * `loadDecodedBuffer(buffer)` – loads a decoded audio buffer (a typed array, basically).
  * `loadArrayBuffer(blob)` – loads audio data from a Blob or File object.
+ * `toggleLoopSelection()` – toggles whether playback should loop inside the
+ selection.
+ * `getSelection()` – returns an object representing the current selection. This
+ object will have the following keys: `startPercentage` (float between 0 and 1),
+ `startPosition` (in seconds), `endPercentage` (float between 0 and 1) and
+ `endPosition` (in seconds). Returns `null` if no selection is present.
 
 Connecting filters
 ==================

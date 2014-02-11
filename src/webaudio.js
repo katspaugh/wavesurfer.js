@@ -10,6 +10,7 @@ WaveSurfer.WebAudio = {
             );
         }
         this.params = params;
+        this.loopSelection = this.params.loopSelection;
         this.ac = params.audioContext || this.getAudioContext();
         this.offlineAc = this.getOfflineAudioContext(this.ac.sampleRate);
 
@@ -96,14 +97,28 @@ WaveSurfer.WebAudio = {
     refreshBufferSource: function () {
         this.clearSource();
         this.source = this.ac.createBufferSource();
+
         if (this.buffer) {
             this.source.buffer = this.buffer;
         }
         this.source.connect(this.gainNode);
     },
 
+    setupLoop: function () {
+        this.lastLoop = 0
+        this.loopedAtStart = false
+
+        if (this.loop && this.lastStart <= this.loopEnd) {
+            this.loopedAtStart = true;
+            this.source.loop = true;
+            this.source.loopStart = this.loopStart;
+            this.source.loopEnd = this.loopEnd;
+        }
+    },
+
     setBuffer: function (buffer) {
         this.clearSource();
+        this.lastLoop = 0;
         this.lastPause = 0;
         this.lastStart = 0;
         this.startTime = 0;
@@ -165,6 +180,8 @@ WaveSurfer.WebAudio = {
         this.paused = false;
         this.scheduledPause = end;
 
+        if (this.loopSelection) this.setupLoop();
+
         if (this.source.start) {
             this.source.start(0, start, end - start);
         } else {
@@ -178,7 +195,12 @@ WaveSurfer.WebAudio = {
      * Pauses the loaded audio.
      */
     pause: function () {
-        this.lastPause = this.lastStart + (this.ac.currentTime - this.startTime);
+        if (this.loopIsActive()) {
+            this.lastPause = this.loopStart + this.ac.currentTime - this.lastLoop
+        } else {
+            this.lastPause = this.lastStart + (this.ac.currentTime - this.startTime);
+        }
+
         this.paused = true;
         if (this.source) {
             if (this.source.stop) {
@@ -236,7 +258,12 @@ WaveSurfer.WebAudio = {
         if (this.isPaused()) {
             return this.lastPause;
         }
-        return this.lastStart + (this.ac.currentTime - this.startTime);
+
+        if (this.loopIsActive()) {
+            return this.loopStart + this.ac.currentTime - this.lastLoop;
+        }
+
+        return  this.lastStart + this.ac.currentTime - this.startTime;
     },
 
     audioContext: null,
@@ -266,6 +293,48 @@ WaveSurfer.WebAudio = {
         this.filterNode && this.filterNode.disconnect();
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
+    },
+
+    updateSelection: function(startPercent, endPercent) {
+        if (!this.loopSelection) return false;
+
+        var duration = this.getDuration();
+        if (!duration) return;
+
+        this.loop = true;
+        this.loopStart = duration * startPercent;
+        this.loopEnd = duration * endPercent;
+
+        if (this.source) {
+            this.source.loop = this.loop;
+            this.source.loopStart = this.loopStart;
+            this.source.loopEnd = this.loopEnd;
+        }
+    },
+
+    clearSelection: function() {
+        if (!this.loopSelection) return false;
+
+        this.loop = false;
+        this.loopStart = 0;
+        this.loopEnd = 0;
+
+        if (this.source) {
+            this.source.loop = false;
+            this.source.loopStart = this.loopStart
+            this.source.loopEnd = this.loopEnd
+        }
+    },
+
+    logLoop: function(){
+        if (this.loopedAtStart) this.lastLoop = this.ac.currentTime;
+    },
+
+    loopIsActive: function () {
+        return this.loopSelection &&
+            this.loop &&
+            this.lastLoop &&
+            this.loopedAtStart
     }
 };
 

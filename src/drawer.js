@@ -12,6 +12,7 @@ WaveSurfer.Drawer = {
 
         this.params = params;
         this.pixelRatio = this.params.pixelRatio;
+        this.loopSelection = this.params.loopSelection;
 
         this.width = 0;
         this.height = params.height * this.pixelRatio;
@@ -43,11 +44,22 @@ WaveSurfer.Drawer = {
             });
         }
 
+        this.setupWrapperEvents()
+    },
+
+    setupWrapperEvents: function () {
         var my = this;
-        this.wrapper.addEventListener('click', function (e) {
-            e.preventDefault();
-            var relX = 'offsetX' in e ? e.offsetX : e.layerX;
-            my.fireEvent('click', (relX / my.scrollWidth) || 0);
+
+        var eventNames = [
+          'mousedown', 'mouseup', 'mouseout', 'mousemove', 'dblclick'
+        ]
+
+        eventNames.forEach(function (eventName) {
+            my.wrapper.addEventListener(eventName, function (e) {
+                e.preventDefault();
+                var relX = 'offsetX' in e ? e.offsetX : e.layerX;
+                my.fireEvent(eventName, (relX / my.scrollWidth) || 0);
+            });
         });
     },
 
@@ -124,7 +136,14 @@ WaveSurfer.Drawer = {
             this.lastPos = pos;
 
             if (this.params.scrollParent) {
-                this.recenterOnPosition(~~(this.scrollWidth * progress));
+                var newPos = ~~(this.scrollWidth * progress);
+                if (this.loopSelection && this.startPercent) {
+                    if (this.startPercent <= progress && progress <= this.endPercent) {
+                        var median = this.startPercent + (this.endPercent - this.startPercent) / 2;
+                        newPos = ~~(this.scrollWidth * median);
+                    }
+                }
+                this.recenterOnPosition(newPos);
             }
 
             this.updateProgress(progress);
@@ -135,6 +154,20 @@ WaveSurfer.Drawer = {
         this.unAll();
         this.container.removeChild(this.wrapper);
         this.wrapper = null;
+    },
+
+    updateSelection: function (startPercent, endPercent) {
+        this.startPercent = startPercent;
+        this.endPercent = endPercent;
+
+        this.drawSelection();
+    },
+
+    clearSelection: function () {
+        this.startPercent = null;
+        this.endPercent = null;
+
+        this.eraseSelection();
     },
 
     /* Renderer-specific methods */
@@ -150,7 +183,12 @@ WaveSurfer.Drawer = {
 
     addMark: function (mark) {},
 
-    removeMark: function (mark) {}
+    removeMark: function (mark) {},
+
+    redrawSelection: function () {},
+
+    eraseSelection: function () {}
+
 };
 
 WaveSurfer.util.extend(WaveSurfer.Drawer, WaveSurfer.Observer);
