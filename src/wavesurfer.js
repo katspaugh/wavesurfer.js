@@ -19,7 +19,8 @@ var WaveSurfer = {
         audioContext  : null,
         container     : null,
         renderer      : 'Canvas',
-        loopSelection : false
+        enableDragSelect: true,
+        loopSelection : true
     },
 
     init: function (params) {
@@ -36,6 +37,7 @@ var WaveSurfer = {
         // The current muted state
         this.isMuted = false;
 
+        this.enableDragSelect = this.params.enableDragSelect
         this.loopSelection = this.params.loopSelection;
 
         this.createBackend();
@@ -406,7 +408,7 @@ var WaveSurfer = {
         this.backend.on('audioprocess', function (time) {
             Object.keys(my.markers).forEach(function (id) {
                 var marker = my.markers[id];
-                if (!marker.played || (my.loopSelection && marker.loopEnd)) {
+                if (!marker.played || (my.enableDragSelect && my.loopSelection && marker.loopEnd)) {
                     if (marker.position <= time && marker.position >= prevTime) {
                         // Prevent firing the event more than once per playback
                         marker.played = true;
@@ -441,31 +443,36 @@ var WaveSurfer = {
     },
 
     handleMouseDown: function (progress) {
+        if (!this.enableDragSelect) return;
         this.selectionPercent0 = progress;
     },
 
     handleMouseUp: function (progress) {
-        if (this.selectionPercent0 && this.selectionPercent1) {
-            progress = Math.min(this.selectionPercent0, this.selectionPercent1);
+        if (this.enableDragSelect) {
+          if (this.selectionPercent0 && this.selectionPercent1) {
+              progress = Math.min(this.selectionPercent0, this.selectionPercent1);
+          }
+          this.selectionPercent0 = null;
+          this.selectionPercent1 = null;
         }
         this.seekTo(progress);
-        if (this.selectionPercent0) this.selectionPercent0 = null;
-        if (this.selectionPercent1) this.selectionPercent1 = null;
     },
 
     handleMouseMove: function (progress) {
-        if (!this.selectionPercent0) return;
+        if (!this.enableDragSelect || !this.selectionPercent0) return;
 
         this.selectionPercent1 = progress;
         this.updateSelection();
     },
 
     handleMouseOut: function () {
-        if (this.selectionPercent0) this.selectionPercent0 = null;
-        if (this.selectionPercent1) this.selectionPercent1 = null;
+        if (!this.enableDragSelect) return;
+        this.selectionPercent0 = null;
+        this.selectionPercent1 = null;
     },
 
     updateSelection: function () {
+        if (!this.enableDragSelect) return;
         var my = this;
 
         var percent0 = this.selectionPercent0;
@@ -509,6 +516,8 @@ var WaveSurfer = {
     },
 
     clearSelection: function () {
+        if (!this.enableDragSelect) return;
+
         if (this.selMark0) {
             this.selMark0.remove();
             this.selMark0 = null;
@@ -522,6 +531,8 @@ var WaveSurfer = {
     },
 
     toggleLoopSelection: function () {
+        if (!this.enableDragSelect) return;
+
         this.loopSelection = !this.loopSelection;
         this.drawer.loopSelection = this.loopSelection;
         this.backend.loopSelection = this.loopSelection;
@@ -534,18 +545,20 @@ var WaveSurfer = {
     },
 
     getSelection: function () {
-      if (!this.selMark0 || !this.selMark1) return null;
+        if (!this.enableDragSelect) return;
 
-      var duration = this.backend.getDuration();
-      var startPercentage = this.selMark0.percentage;
-      var endPercentage = this.selMark1.percentage;
+        if (!this.selMark0 || !this.selMark1) return null;
 
-      return {
-          startPercentage: startPercentage,
-          startPosition: startPercentage * duration,
-          endPercentage: endPercentage,
-          endPosition: endPercentage * duration
-      };
+        var duration = this.backend.getDuration();
+        var startPercentage = this.selMark0.percentage;
+        var endPercentage = this.selMark1.percentage;
+
+        return {
+            startPercentage: startPercentage,
+            startPosition: startPercentage * duration,
+            endPercentage: endPercentage,
+            endPosition: endPercentage * duration
+        };
     }
 
 };
