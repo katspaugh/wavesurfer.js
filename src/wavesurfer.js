@@ -68,7 +68,7 @@ var WaveSurfer = {
         if (this.params.dragSelection) {
             this.drawer.on('drag', function (drag) {
                 my.updateSelection(drag);
-                my.seekTo(drag.start);
+                my.seekTo(drag.startPercentage);
             });
             this.drawer.on('drag-clear', function () {
                 my.clearSelection();
@@ -107,6 +107,10 @@ var WaveSurfer = {
             }
         };
         frame();
+    },
+
+    getDuration: function () {
+        return this.backend.getDuration();
     },
 
     playAt: function (percents) {
@@ -437,11 +441,11 @@ var WaveSurfer = {
         this.drawer.destroy();
     },
 
-    updateSelection: function (drag) {
+    updateSelection: function (selection) {
         var my = this;
 
-        var percent0 = drag.start;
-        var percent1 = drag.end;
+        var percent0 = selection.startPercentage;
+        var percent1 = selection.endPercentage;
         var color = this.params.selectionColor;
 
         if (percent0 > percent1) {

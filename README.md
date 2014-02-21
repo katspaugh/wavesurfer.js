@@ -88,6 +88,7 @@ All methods are intentionally public, but the most readily available are the fol
  object will have the following keys: `startPercentage` (float between 0 and 1),
  `startPosition` (in seconds), `endPercentage` (float between 0 and 1) and
  `endPosition` (in seconds). Returns `null` if no selection is present.
+  * `updateSelection({ startPercentage, endPercentage })` – create or update a visual selection.
 
 Connecting filters
 ==================

@@ -64,7 +64,7 @@ WaveSurfer.Drawer = {
             var drag = {};
 
             var onMouseUp = function () {
-                drag.start = drag.end = null;
+                drag.startPercentage = drag.endPercentage = null;
             };
             document.addEventListener('mouseup', onMouseUp);
             my.on('destroy', function () {
@@ -73,18 +73,18 @@ WaveSurfer.Drawer = {
 
             my.wrapper.addEventListener('mousedown', function (e) {
                 e.stopPropagation();
-                drag.start = handleEvent(e);
+                drag.startPercentage = handleEvent(e);
             });
 
             my.wrapper.addEventListener('mousemove', function (e) {
-                if (drag.start != null) {
-                    drag.end = handleEvent(e);
+                if (drag.startPercentage != null) {
+                    drag.endPercentage = handleEvent(e);
                     my.fireEvent('drag', drag);
                 }
             });
 
             my.wrapper.addEventListener('dblclick', function (e) {
-                if (drag.start != null && drag.end != null) {
+                if (drag.startPercentage != null && drag.endPercentage != null) {
                     my.fireEvent('drag-clear', drag);
                 }
             });
