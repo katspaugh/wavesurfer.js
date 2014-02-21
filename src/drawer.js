@@ -12,6 +12,7 @@ WaveSurfer.Drawer = {
 
         this.params = params;
         this.pixelRatio = this.params.pixelRatio;
+        this.enableDragSelect = this.params.enableDragSelect
         this.loopSelection = this.params.loopSelection;
 
         this.width = 0;
@@ -137,7 +138,7 @@ WaveSurfer.Drawer = {
 
             if (this.params.scrollParent) {
                 var newPos = ~~(this.scrollWidth * progress);
-                if (this.loopSelection && this.startPercent) {
+                if (this.enableDragSelect && this.loopSelection && this.startPercent) {
                     if (this.startPercent <= progress && progress <= this.endPercent) {
                         var median = this.startPercent + (this.endPercent - this.startPercent) / 2;
                         newPos = ~~(this.scrollWidth * median);
@@ -157,6 +158,7 @@ WaveSurfer.Drawer = {
     },
 
     updateSelection: function (startPercent, endPercent) {
+        if (!this.enableDragSelect) return;
         this.startPercent = startPercent;
         this.endPercent = endPercent;
 
@@ -164,6 +166,7 @@ WaveSurfer.Drawer = {
     },
 
     clearSelection: function () {
+        if (!this.enableDragSelect) return;
         this.startPercent = null;
         this.endPercent = null;
 

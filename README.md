@@ -54,8 +54,11 @@ Options
   * `waveColor` – the fill color of the waveform after the cursor.
   * `progressColor` – the fill color of the part of the waveform behind the cursor.
   * `cursorColor` – the fill color of the cursor indicating the playhead position.
-  * `loopSelection` – if `true`, playback will loop inside the selected region
-  (`false` by default).
+  * `enableDragSelect` – if `true`, click-dragging will select a region of the
+  waveform (`true` by default)
+  * `loopSelection` – if `true`, playback will loop inside the selected region.
+  Has no effect unless `enableDragSelect` is true.
+  (`true` by default).
 
 Methods
 =======
