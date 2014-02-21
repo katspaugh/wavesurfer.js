@@ -113,8 +113,12 @@ var WaveSurfer = {
         return this.backend.getDuration();
     },
 
+    getCurrentTime: function () {
+        return this.backend.getCurrentTime();
+    },
+
     playAt: function (percents) {
-        this.backend.play(this.backend.getDuration() * percents);
+        this.backend.play(this.getDuration() * percents);
     },
 
     play: function () {
@@ -199,14 +203,14 @@ var WaveSurfer = {
 
         var opts = WaveSurfer.util.extend({
             id: WaveSurfer.util.getId(),
-            position: this.backend.getCurrentTime(),
+            position: this.getCurrentTime(),
             width: this.params.markerWidth
         }, options);
 
         var marker = Object.create(WaveSurfer.Mark);
 
         marker.on('update', function () {
-            var duration = my.backend.getDuration() || 1;
+            var duration = my.getDuration() || 1;
             if (null == marker.position) {
                 marker.position = marker.percentage * duration;
             }
@@ -242,8 +246,8 @@ var WaveSurfer = {
     },
 
     timings: function (offset) {
-        var position = this.backend.getCurrentTime() || 0;
-        var duration = this.backend.getDuration() || 1;
+        var position = this.getCurrentTime() || 0;
+        var duration = this.getDuration() || 1;
         position = Math.max(0, Math.min(duration, position + (offset || 0)));
         return [ position, duration ];
     },
@@ -253,7 +257,7 @@ var WaveSurfer = {
             var length = this.drawer.getWidth();
         } else {
             length = Math.round(
-                this.backend.getDuration() * this.params.minPxPerSec
+                this.getDuration() * this.params.minPxPerSec
             );
         }
 
@@ -512,7 +516,7 @@ var WaveSurfer = {
     getSelection: function () {
       if (!this.selMark0 || !this.selMark1) return null;
 
-      var duration = this.backend.getDuration();
+      var duration = this.getDuration();
       var startPercentage = this.selMark0.percentage;
       var endPercentage = this.selMark1.percentage;
 
