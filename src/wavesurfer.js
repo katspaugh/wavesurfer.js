@@ -261,9 +261,7 @@ var WaveSurfer = {
             );
         }
 
-        var peaks = this.backend.getPeaks(length);
-
-        this.drawer.drawPeaks(peaks, length);
+        this.drawer.drawPeaks(this.backend.getPeaks(length), length);
         this.drawer.progress(this.backend.getPlayedPercents());
         this.redrawMarks();
     },

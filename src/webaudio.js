@@ -219,10 +219,10 @@ WaveSurfer.WebAudio = {
     /**
      * @returns {Float32Array} Array of peaks.
      */
-    getPeaks: function (length, sampleStep) {
+    getPeaks: function (length) {
         var buffer = this.buffer;
         var sampleSize = Math.ceil(buffer.length / length);
-        sampleStep = sampleStep || ~~(sampleSize / 10);
+        var sampleStep = ~~(sampleSize / 10);
         var channels = buffer.numberOfChannels;
         var peaks = new Float32Array(length);
 
@@ -241,9 +241,14 @@ WaveSurfer.WebAudio = {
                     }
                 }
                 if (c > 0) {
-                    peaks[i] += peak / channels;
+                    peaks[i] += peak;
                 } else {
-                    peaks[i] = peak / channels;
+                    peaks[i] = peak;
+                }
+
+                // Average peak between channels
+                if (c == channels - 1) {
+                    peaks[i] = peaks[i] / channels;
                 }
             }
         }
@@ -252,8 +257,7 @@ WaveSurfer.WebAudio = {
     },
 
     getPlayedPercents: function () {
-        var duration = this.getDuration();
-        return duration > 0 ? this.getCurrentTime() / duration : 0;
+        return (this.getCurrentTime() / this.getDuration()) || 0;
     },
 
     getCurrentTime: function () {
