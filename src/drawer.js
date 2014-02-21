@@ -50,17 +50,45 @@ WaveSurfer.Drawer = {
     setupWrapperEvents: function () {
         var my = this;
 
-        var eventNames = [
-            'mousedown', 'mouseup', 'mouseout', 'mousemove', 'dblclick'
-        ];
+        var handleEvent = function (e) {
+            e.preventDefault();
+            var relX = 'offsetX' in e ? e.offsetX : e.layerX;
+            return (relX / my.scrollWidth) || 0;
+        };
 
-        eventNames.forEach(function (eventName) {
-            my.wrapper.addEventListener(eventName, function (e) {
-                e.preventDefault();
-                var relX = 'offsetX' in e ? e.offsetX : e.layerX;
-                my.fireEvent(eventName, (relX / my.scrollWidth) || 0);
-            });
+        this.wrapper.addEventListener('click', function (e) {
+            my.fireEvent('click', handleEvent(e));
         });
+
+        this.params.dragSelection && (function () {
+            var drag = {};
+
+            var onMouseUp = function () {
+                drag.start = drag.end = null;
+            };
+            document.addEventListener('mouseup', onMouseUp);
+            my.on('destroy', function () {
+                document.removeEventListener('mouseup', onMouseUp);
+            });
+
+            my.wrapper.addEventListener('mousedown', function (e) {
+                e.stopPropagation();
+                drag.start = handleEvent(e);
+            });
+
+            my.wrapper.addEventListener('mousemove', function (e) {
+                if (drag.start != null) {
+                    drag.end = handleEvent(e);
+                    my.fireEvent('drag', drag);
+                }
+            });
+
+            my.wrapper.addEventListener('dblclick', function (e) {
+                if (drag.start != null && drag.end != null) {
+                    my.fireEvent('drag-clear', drag);
+                }
+            });
+        }());
     },
 
     drawPeaks: function (peaks, length) {

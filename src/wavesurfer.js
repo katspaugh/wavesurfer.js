@@ -19,7 +19,8 @@ var WaveSurfer = {
         audioContext  : null,
         container     : null,
         renderer      : 'Canvas',
-        loopSelection : false
+        dragSelection : true,
+        loopSelection : true
     },
 
     init: function (params) {
@@ -54,29 +55,25 @@ var WaveSurfer = {
             my.drawBuffer();
         });
 
-        this.drawer.on('mousedown', function (progress) {
-            my.handleMouseDown(progress);
-        });
-
-        this.drawer.on('mouseup', function (progress) {
-            my.handleMouseUp(progress);
-        });
-
-        this.drawer.on('mouseout', function (progress) {
-            my.handleMouseOut(progress);
-        });
-
-        this.drawer.on('mousemove', function (progress) {
-            my.handleMouseMove(progress);
-        });
-
-        this.drawer.on('dblclick', function () {
-            my.clearSelection();
-        });
-
         this.on('progress', function (progress) {
             my.drawer.progress(progress);
         });
+
+        // Click-to-seek
+        this.drawer.on('click', function (progress) {
+            my.seekTo(progress);
+        });
+
+        // Drag selection events
+        if (this.params.dragSelection) {
+            this.drawer.on('drag', function (drag) {
+                my.updateSelection(drag);
+                my.seekTo(drag.start);
+            });
+            this.drawer.on('drag-clear', function () {
+                my.clearSelection();
+            });
+        }
     },
 
     createBackend: function () {
@@ -440,36 +437,11 @@ var WaveSurfer = {
         this.drawer.destroy();
     },
 
-    handleMouseDown: function (progress) {
-        this.selectionPercent0 = progress;
-    },
-
-    handleMouseUp: function (progress) {
-        if (this.selectionPercent0 && this.selectionPercent1) {
-            progress = Math.min(this.selectionPercent0, this.selectionPercent1);
-        }
-        this.seekTo(progress);
-        if (this.selectionPercent0) this.selectionPercent0 = null;
-        if (this.selectionPercent1) this.selectionPercent1 = null;
-    },
-
-    handleMouseMove: function (progress) {
-        if (!this.selectionPercent0) return;
-
-        this.selectionPercent1 = progress;
-        this.updateSelection();
-    },
-
-    handleMouseOut: function () {
-        if (this.selectionPercent0) this.selectionPercent0 = null;
-        if (this.selectionPercent1) this.selectionPercent1 = null;
-    },
-
-    updateSelection: function () {
+    updateSelection: function (drag) {
         var my = this;
 
-        var percent0 = this.selectionPercent0;
-        var percent1 = this.selectionPercent1;
+        var percent0 = drag.start;
+        var percent1 = drag.end;
         var color = this.params.selectionColor;
 
         if (percent0 > percent1) {

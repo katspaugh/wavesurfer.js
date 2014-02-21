@@ -85,9 +85,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 // Selection
-                wavesurfer.selectionPercent0 = annotation.start / duration;
-                wavesurfer.selectionPercent1 = annotation.end / duration;
-                wavesurfer.updateSelection();
+                wavesurfer.updateSelection({
+                    start: annotation.start / duration,
+                    end: annotation.end / duration
+                });
             } else {
                 wavesurfer.clearSelection();
             }
