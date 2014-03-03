@@ -84,9 +84,7 @@ WaveSurfer.Drawer = {
             });
 
             my.wrapper.addEventListener('dblclick', function (e) {
-                if (drag.startPercentage != null && drag.endPercentage != null) {
-                    my.fireEvent('drag-clear', drag);
-                }
+                my.fireEvent('drag-clear', drag);
             });
         }());
     },
