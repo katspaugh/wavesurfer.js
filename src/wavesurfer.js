@@ -38,6 +38,7 @@ var WaveSurfer = {
         this.isMuted = false;
 
         this.loopSelection = this.params.loopSelection;
+        this.minPxPerSec = this.params.minPxPerSec;
 
         this.createBackend();
         this.createDrawer();
@@ -257,7 +258,7 @@ var WaveSurfer = {
             var length = this.drawer.getWidth();
         } else {
             length = Math.round(
-                this.getDuration() * this.params.minPxPerSec
+                this.getDuration() * this.minPxPerSec
             );
         }
 
