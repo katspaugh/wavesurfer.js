@@ -70,6 +70,9 @@ WaveSurfer.Drawer = {
             my.on('destroy', function () {
                 document.removeEventListener('mouseup', onMouseUp);
             });
+            my.wrapper.addEventListener('mouseup', function () {
+                my.fireEvent('mouseup');
+            });
 
             my.wrapper.addEventListener('mousedown', function (e) {
                 e.stopPropagation();
