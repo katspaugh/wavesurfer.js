@@ -94,7 +94,7 @@
             var width = Math.round(this.drawer.scrollWidth / this.drawer.pixelRatio);
             this.canvas.width = width;
             this.canvas.height = this.height;
-            this.canvas.style.width = width + "px";
+            this.canvas.style.width = width + 'px';
         },
 
         drawTimeCanvas: function() {
