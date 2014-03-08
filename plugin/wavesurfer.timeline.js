@@ -37,10 +37,10 @@
 
             this.createWrapper();
             this.createCanvas();
-            this.updateCanvasStyle();
-            this.drawTimeCanvas();
+            this.render();
 
             wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this);
+            wavesurfer.on('redraw', this.render.bind(this));
         },
 
         createWrapper: function () {
@@ -85,11 +85,16 @@
             });
         },
 
+        render: function () {
+            this.updateCanvasStyle();
+            this.drawTimeCanvas();
+        },
+
         updateCanvasStyle: function () {
-            var width = Math.round(this.width / this.pixelRatio) + 'px';
-            this.canvas.width = this.width;
+            var width = Math.round(this.drawer.scrollWidth / this.drawer.pixelRatio);
+            this.canvas.width = width;
             this.canvas.height = this.height;
-            this.canvas.style.width = width;
+            this.canvas.style.width = width + 'px';
         },
 
         drawTimeCanvas: function() {
