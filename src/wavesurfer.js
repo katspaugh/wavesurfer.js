@@ -265,6 +265,7 @@ var WaveSurfer = {
         this.drawer.drawPeaks(this.backend.getPeaks(length), length);
         this.drawer.progress(this.backend.getPlayedPercents());
         this.redrawMarks();
+        this.fireEvent('redraw');
     },
 
     loadBuffer: function (data) {
