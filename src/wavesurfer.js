@@ -77,6 +77,10 @@ var WaveSurfer = {
             this.drawer.on('drag-clear', function () {
                 my.clearSelection();
             });
+
+            this.drawer.on('mouseup', function () {
+                my.fireEvent('mouseup');
+            });
         }
     },
 
