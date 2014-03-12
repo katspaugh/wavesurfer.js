@@ -61,15 +61,18 @@ var WaveSurfer = {
         });
 
         // Click-to-seek
-        this.drawer.on('click', function (progress) {
+        this.drawer.on('mousedown', function (progress) {
             my.seekTo(progress);
         });
 
         // Drag selection events
         if (this.params.dragSelection) {
             this.drawer.on('drag', function (drag) {
+                if (my.selMark0 && my.selMark0.percentage != drag.startPercentage) {
+                    my.seekTo(drag.startPercentage);
+                }
+
                 my.updateSelection(drag);
-                my.seekTo(drag.startPercentage);
             });
             this.drawer.on('drag-clear', function () {
                 my.clearSelection();
