@@ -61,7 +61,7 @@ var WaveSurfer = {
         });
 
         // Click-to-seek
-        this.drawer.on('click', function (progress) {
+        this.drawer.on('mousedown', function (progress) {
             my.seekTo(progress);
         });
 

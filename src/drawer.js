@@ -56,8 +56,8 @@ WaveSurfer.Drawer = {
             return (relX / my.scrollWidth) || 0;
         };
 
-        this.wrapper.addEventListener('click', function (e) {
-            my.fireEvent('click', handleEvent(e));
+        this.wrapper.addEventListener('mousedown', function (e) {
+            my.fireEvent('mousedown', handleEvent(e));
         });
 
         this.params.dragSelection && (function () {
