@@ -68,8 +68,19 @@ var WaveSurfer = {
         // Drag selection events
         if (this.params.dragSelection) {
             this.drawer.on('drag', function (drag) {
+                if (my.selMark0) {
+                    var oldStartPercentage = my.selMark0.percentage;
+                } else {
+                    var oldStartPercentage = 0;
+                }
+
                 my.updateSelection(drag);
-                my.seekTo(drag.startPercentage);
+
+                var newStartPercentage = my.selMark0.percentage;
+
+                if (newStartPercentage != oldStartPercentage) {
+                    my.seekTo(newStartPercentage);
+                }
             });
             this.drawer.on('drag-clear', function () {
                 my.clearSelection();
