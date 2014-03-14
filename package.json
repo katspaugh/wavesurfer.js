@@ -1,13 +1,15 @@
 {
-  "name": "wavesurfer",
-  "version": "0.0.5-pre",
-  "description": "interactive navigable audio visualization using WebAudio and Canvas",
+  "name": "wavesurfer.js",
+  "version": "0.0.6",
+  "description": "Interactive navigable audio visualization using WebAudio and Canvas",
   "main": "build/wavesurfer.cjs.js",
   "directories": {
     "example": "example"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "make cjs",
+    "update": "make cjs"
   },
   "repository": {
     "type": "git",
