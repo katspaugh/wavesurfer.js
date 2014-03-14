@@ -2,6 +2,7 @@
 
 MIN=build/wavesurfer.min.js
 AMD=build/wavesurfer.amd.js
+CJS=build/wavesurfer.cjs.js
 SOURCE_MAP=build/wavesurfer-js-map.json
 SOURCE_MAP_ROOT=/
 SOURCES=src/wavesurfer.js\
@@ -19,4 +20,8 @@ amd: $(SOURCES)
 	uglifyjs $^ -cm >> $(AMD)
 	echo "\n;return WaveSurfer; });" >> $(AMD)
 
-.PHONY: amd
+cjs: $(SOURCES)
+	cat $^ >> $(CJS)
+	echo "\nmodule.exports = WaveSurfer;" >> $(CJS)
+
+.PHONY: amd cjs
