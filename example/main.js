@@ -24,18 +24,24 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* Progress bar */
-    var progressDiv = document.querySelector('#progress-bar');
-    var progressBar = progressDiv.querySelector('.progress-bar');
-    wavesurfer.on('loading', function (percent, xhr) {
-        progressDiv.style.display = 'block';
-        progressBar.style.width = percent + '%';
-    });
-    wavesurfer.on('ready', function () {
-        progressDiv.style.display = 'none';
-    });
-    wavesurfer.on('destroy', function () {
-        progressDiv.style.display = 'none';
-    });
+    (function () {
+        var progressDiv = document.querySelector('#progress-bar');
+        var progressBar = progressDiv.querySelector('.progress-bar');
+
+        var showProgress = function (percent) {
+            progressDiv.style.display = 'block';
+            progressBar.style.width = percent + '%';
+        };
+
+        var hideProgress = function () {
+            progressDiv.style.display = 'none';
+        };
+
+        wavesurfer.on('loading', showProgress);
+        wavesurfer.on('ready', hideProgress);
+        wavesurfer.on('destroy', hideProgress);
+        wavesurfer.on('error', hideProgress);
+    }());
 
     // Init
     wavesurfer.init(options);
