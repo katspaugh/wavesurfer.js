@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Interactive navigable audio visualization using WebAudio and Canvas",
   "main": "build/wavesurfer.cjs.js",
   "directories": {
