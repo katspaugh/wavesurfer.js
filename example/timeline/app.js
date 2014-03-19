@@ -43,8 +43,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }());
 
     wavesurfer.on('ready', function () {
-        progressDiv.style.display = 'none';
-
         // Init Timeline plugin
         var timeline = Object.create(WaveSurfer.Timeline);
 
