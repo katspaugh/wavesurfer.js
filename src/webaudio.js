@@ -105,6 +105,10 @@ WaveSurfer.WebAudio = {
         this.clearSource();
         this.source = this.ac.createBufferSource();
 
+        if (this.playBackrate) {
+            this.source.playbackRate.value = this.playBackrate;
+        }
+
         if (this.buffer) {
             this.source.buffer = this.buffer;
         }
