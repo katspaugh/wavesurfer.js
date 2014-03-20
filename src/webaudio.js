@@ -55,9 +55,9 @@ WaveSurfer.WebAudio = {
     },
 
     /**
-    * Set the audio source playback rate
-    */
-    setPlaybackRate: function(value) {
+     * Set the audio source playback rate.
+     */
+    setPlaybackRate: function (value) {
         this.playBackrate = value;
     },
 

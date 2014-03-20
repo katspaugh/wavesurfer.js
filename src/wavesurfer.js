@@ -21,7 +21,7 @@ var WaveSurfer = {
         renderer      : 'Canvas',
         dragSelection : true,
         loopSelection : true,
-        audioRate: 1
+        audioRate     : 1
     },
 
     init: function (params) {
