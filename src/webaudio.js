@@ -15,7 +15,8 @@ WaveSurfer.WebAudio = {
         this.offlineAc = this.getOfflineAudioContext(this.ac.sampleRate);
 
         this.createVolumeNode();
-        this.createScriptNode();
+        this.createScriptNode();        
+        this.setPlaybackRate(this.params.audioRate);
     },
 
     setFilter: function (filterNode) {
