@@ -15,7 +15,8 @@ WaveSurfer.WebAudio = {
         this.offlineAc = this.getOfflineAudioContext(this.ac.sampleRate);
 
         this.createVolumeNode();
-        this.createScriptNode();
+        this.createScriptNode();        
+        this.setPlaybackRate(this.params.audioRate);
     },
 
     setFilter: function (filterNode) {
@@ -51,6 +52,13 @@ WaveSurfer.WebAudio = {
                 my.fireEvent('audioprocess', time);
             }
         };
+    },
+
+    /**
+    * Set the audio source playback rate
+    */
+    setPlaybackRate: function(value) {
+        this.playBackrate = value;
     },
 
     /**
@@ -97,6 +105,10 @@ WaveSurfer.WebAudio = {
     refreshBufferSource: function () {
         this.clearSource();
         this.source = this.ac.createBufferSource();
+
+        if (this.playBackrate) {
+            this.source.playbackRate.value = this.playBackrate;
+        }
 
         if (this.buffer) {
             this.source.buffer = this.buffer;

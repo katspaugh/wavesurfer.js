@@ -20,7 +20,8 @@ var WaveSurfer = {
         container     : null,
         renderer      : 'Canvas',
         dragSelection : true,
-        loopSelection : true
+        loopSelection : true,
+        audioRate: 1
     },
 
     init: function (params) {
