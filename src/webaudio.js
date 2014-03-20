@@ -54,6 +54,13 @@ WaveSurfer.WebAudio = {
     },
 
     /**
+    * Set the audio source playback rate
+    */
+    setPlaybackRate: function(value) {
+        this.playBackrate = value;
+    },
+
+    /**
      * Create the gain node needed to control the playback volume.
      */
     createVolumeNode: function () {
