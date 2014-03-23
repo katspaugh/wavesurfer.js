@@ -17,6 +17,7 @@ WaveSurfer.Drawer = {
         this.width = 0;
         this.height = params.height * this.pixelRatio;
         this.containerWidth = this.container.clientWidth;
+        this.interact = this.params.interact;
 
         this.lastPos = 0;
 
@@ -57,7 +58,9 @@ WaveSurfer.Drawer = {
         };
 
         this.wrapper.addEventListener('mousedown', function (e) {
-            my.fireEvent('mousedown', handleEvent(e));
+            if (my.interact) {
+                my.fireEvent('mousedown', handleEvent(e));
+            }
         });
 
         this.params.dragSelection && (function () {

@@ -21,7 +21,8 @@ var WaveSurfer = {
         renderer      : 'Canvas',
         dragSelection : true,
         loopSelection : true,
-        audioRate     : 1
+        audioRate     : 1,
+        interact      : true
     },
 
     init: function (params) {
@@ -530,7 +531,19 @@ var WaveSurfer = {
           endPercentage: endPercentage,
           endPosition: endPercentage * duration
       };
-    }
+    },
+
+    enableInteraction: function () {
+        this.drawer.interact = true;
+    },
+
+    disableInteraction: function () {
+        this.drawer.interact = false;
+    },
+
+    toggleInteraction: function () {
+        this.drawer.interact = !this.drawer.interact;
+    },
 
 };
 
