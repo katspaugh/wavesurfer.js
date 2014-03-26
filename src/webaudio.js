@@ -58,7 +58,7 @@ WaveSurfer.WebAudio = {
      * Set the audio source playback rate.
      */
     setPlaybackRate: function (value) {
-        this.playBackrate = value;
+        this.playBackrate = value || 1;
     },
 
     /**
@@ -209,10 +209,10 @@ WaveSurfer.WebAudio = {
     pause: function () {
         if (this.loopIsActive()) {
             this.lastPause = this.loopStart +
-                this.ac.currentTime - this.lastLoop;
+                (this.ac.currentTime - this.lastLoop) * this.playBackrate;
         } else {
             this.lastPause = this.lastStart +
-                (this.ac.currentTime - this.startTime);
+                (this.ac.currentTime - this.startTime) * this.playBackrate;
         }
 
         this.paused = true;
@@ -278,10 +278,10 @@ WaveSurfer.WebAudio = {
         }
 
         if (this.loopIsActive()) {
-            return this.loopStart + this.ac.currentTime - this.lastLoop;
+            return this.loopStart + (this.ac.currentTime - this.lastLoop) * this.playBackrate;
         }
 
-        return  this.lastStart + this.ac.currentTime - this.startTime;
+        return  this.lastStart + (this.ac.currentTime - this.startTime) * this.playBackrate;
     },
 
     audioContext: null,
