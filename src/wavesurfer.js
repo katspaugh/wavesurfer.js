@@ -543,8 +543,7 @@ var WaveSurfer = {
 
     toggleInteraction: function () {
         this.drawer.interact = !this.drawer.interact;
-    },
-
+    }
 };
 
 
