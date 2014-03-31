@@ -66,7 +66,7 @@ All methods are intentionally public, but the most readily available are the fol
 
  * `init(params)` – initializes with the options listed above.
  * `on(eventName, callback)` – subscribes to an event.
- * `load(url)` – loads an audio from URL via XHR.
+ * `load(url)` – loads an audio from URL via XHR. Returns XHR object.
  * `getDuration()` – returns the duration of an audio clip in seconds.
  * `getCurrentTime()` – returns current progress in seconds.
  * `play()` – starts playback from the current position.
