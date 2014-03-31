@@ -349,6 +349,7 @@ var WaveSurfer = {
             my.fireEvent('error', 'Error loading audio');
         });
         this.empty();
+        return xhr;
     },
 
     /**
