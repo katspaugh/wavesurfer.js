@@ -91,6 +91,11 @@ var WaveSurfer = {
                 my.clearSelection();
             });
         }
+
+        // Mouseup for plugins
+        this.drawer.on('mouseup', function (e) {
+            my.fireEvent('mouseup', e);
+        });
     },
 
     createBackend: function () {
