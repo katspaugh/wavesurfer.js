@@ -70,7 +70,7 @@ WaveSurfer.WebAudio = {
         this.analyser = this.ac.createAnalyser();
         this.analyser.fftSize = this.fftSize;
         this.analyserData = new Uint8Array(this.analyser.frequencyBinCount);
-        this.analyser.connect(this.ac.destination);
+        this.analyser.connect(this.gainNode);
     },
 
     /**
