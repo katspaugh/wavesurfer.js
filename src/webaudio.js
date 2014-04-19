@@ -24,16 +24,25 @@ WaveSurfer.WebAudio = {
         this.setPlaybackRate(this.params.audioRate);
     },
 
-    setFilter: function (filterNode) {
-        this.filterNode && this.filterNode.disconnect();
-        this.gainNode.disconnect();
-        if (filterNode) {
-            filterNode.connect(this.ac.destination);
-            this.gainNode.connect(filterNode);
-        } else {
-            this.gainNode.connect(this.ac.destination);
+    disconnectFilters: function () {
+        if (this.inputFilter) {
+            this.inputFilter.disconnect();
         }
-        this.filterNode = filterNode;
+        if (this.outputFilter) {
+            this.outputFilter.disconnect();
+        }
+    },
+
+    setFilter: function (inputFilter, outputFilter) {
+        this.disconnectFilters();
+
+        this.inputFilter = inputFilter;
+        this.outputFilter = outputFilter || inputFilter;
+
+        if (this.inputFilter && this.outputFilter) {
+            this.analyser.connect(this.inputFilter);
+            this.outputFilter.connect(this.gainNode);
+        }
     },
 
     createScriptNode: function () {
@@ -261,7 +270,7 @@ WaveSurfer.WebAudio = {
         this.pause();
         this.unAll();
         this.buffer = null;
-        this.filterNode && this.filterNode.disconnect();
+        this.disconnectFilters();
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
         this.analyser.disconnect();
