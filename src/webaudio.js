@@ -231,6 +231,12 @@ WaveSurfer.WebAudio = {
         return WaveSurfer.WebAudio.offlineAudioContext;
     },
 
+    disconnectSource: function () {
+        if (this.source) {
+            this.source.disconnect();
+        }
+    },
+
     destroy: function () {
         this.pause();
         this.unAll();

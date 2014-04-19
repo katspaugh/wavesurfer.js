@@ -31,10 +31,6 @@ Load an audio file from a URL:
 
     wavesurfer.load('example/media/demo.wav');
 
-Or visualize your audio files via drag'n'drop:
-
-    wavesurfer.bindDragNDrop(document.body);
-
 See the example code [here](https://github.com/katspaugh/wavesurfer.js/blob/master/example/main.js).
 
 Options
@@ -80,11 +76,8 @@ All methods are intentionally public, but the most readily available are the fol
  * `toggleMute()` – toggles the volume on and off.
  * `mark(options)` – creates a visual marker on the waveform. Options are `id` (random if not set), `position` (in seconds), `color` and `width` (defaults to the global option `markerWidth`). Returns a marker object which you can update later (`marker.update(options)`).
  * `clearMarks()` – removes all markers.
- * `bindDragNDrop([dropTarget])` – starts listening to drag'n'drop on an element. The default element is `document`. Loads the dropped audio.
  * `empty()` – clears the waveform as if a zero-length audio is loaded.
  * `destroy()` – removes events, elements and disconnects Web Audio nodes.
- * `loadDecodedBuffer(buffer)` – loads a decoded audio buffer (a typed array, basically).
- * `loadArrayBuffer(blob)` – loads audio data from a Blob or File object.
  * `toggleLoopSelection()` – toggles whether playback should loop inside the
  selection.
  * `getSelection()` – returns an object representing the current selection. This

@@ -118,8 +118,8 @@ var WaveSurfer = {
         var requestFrame = window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame;
         var frame = function () {
-            my.fireEvent('progress', my.backend.getPlayedPercents());
             if (!my.backend.isPaused()) {
+                my.fireEvent('progress', my.backend.getPlayedPercents());
                 requestFrame(frame);
             }
         };
@@ -415,8 +415,13 @@ var WaveSurfer = {
      * Display empty waveform.
      */
     empty: function () {
+        if (!this.backend.isPaused()) {
+            this.stop();
+        }
         this.clearMarks();
+        this.drawer.setWidth(0);
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
+        this.backend.disconnectSource();
     },
 
     /**
