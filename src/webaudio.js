@@ -16,6 +16,7 @@ WaveSurfer.WebAudio = {
 
         this.loop = false;
         this.prevFrameTime = 0;
+        this.scheduledPause = null;
 
         this.createVolumeNode();
         this.createScriptNode();
@@ -54,6 +55,12 @@ WaveSurfer.WebAudio = {
     },
 
     onPlayFrame: function (time) {
+        if (this.scheduledPause != null) {
+            if (this.prevFrameTime >= this.scheduledPause) {
+                this.pause();
+            }
+        }
+
         if (this.loop) {
             if (
                 this.prevFrameTime > this.loopStart &&
@@ -62,8 +69,9 @@ WaveSurfer.WebAudio = {
             ) {
                 this.play(this.loopStart);
             }
-            this.prevFrameTime = time;
         }
+
+        this.prevFrameTime = time;
     },
 
     createAnalyserNode: function () {
@@ -146,11 +154,18 @@ WaveSurfer.WebAudio = {
      * Plays the loaded audio region.
      *
      * @param {Number} start Start offset in seconds,
-     * relative to the beginning of the track.
+     * relative to the beginning of a clip.
+     * @param {Number} end When to stop
+     * relative to the beginning of a clip.
      */
-    play: function (start) {
+    play: function (start, end) {
         if (start != null) {
             this.source.mediaElement.currentTime = start;
+        }
+        if (end == null) {
+            this.scheduledPause = null;
+        } else {
+            this.scheduledPause = end;
         }
         this.prevFrameTime = this.getCurrentTime();
         this.source.mediaElement.play();
@@ -161,6 +176,7 @@ WaveSurfer.WebAudio = {
      * Pauses the loaded audio.
      */
     pause: function () {
+        this.scheduledPause = null;
         this.source.mediaElement.pause();
         this.fireEvent('pause');
     },
