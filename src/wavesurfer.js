@@ -70,7 +70,7 @@ var WaveSurfer = {
         });
 
         this.media.addEventListener('error', function () {
-            my.fireEvent('error', 'Error loading audio');
+            my.fireEvent('error', 'Error loading media element');
         });
 
         this.container.appendChild(this.media);
@@ -385,7 +385,7 @@ var WaveSurfer = {
             }
         });
         xhr.addEventListener('error', function () {
-            my.fireEvent('error', 'Error loading audio');
+            my.fireEvent('error', 'Error loading audio via XHR');
         });
         xhr.send();
         my.fireEvent('xhr-start', xhr);
@@ -472,6 +472,7 @@ var WaveSurfer = {
             this.selMark0.update({ percentage: percent0 });
         } else {
             this.selMark0 = this.mark({
+                width: 0,
                 percentage: percent0,
                 color: color
             });
@@ -481,6 +482,7 @@ var WaveSurfer = {
             this.selMark1.update({ percentage: percent1 });
         } else {
             this.selMark1 = this.mark({
+                width: 0,
                 percentage: percent1,
                 color: color
             });

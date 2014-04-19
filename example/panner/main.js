@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Load audio from URL
-    wavesurfer.load('media.mp3');
+    wavesurfer.load('media.wav');
 
     // Panner
     (function () {
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Bind panner slider
         // @see http://stackoverflow.com/a/14412601/352796
-        document.querySelector('[data-action="pan"]').addEventListener('input', function (e) {
+        var onChange = function (e) {
             var xDeg = parseInt(e.target.value);
             var zDeg = xDeg + 90;
             if (zDeg > 90) {
@@ -34,14 +34,21 @@ document.addEventListener('DOMContentLoaded', function () {
             var x = Math.sin(xDeg * (Math.PI / 180));
             var z = Math.sin(zDeg * (Math.PI / 180));
             wavesurfer.panner.setPosition(x, 0, z);
-            wavesurfer.panner.setPosition(x, 0, 0);
-        });
+        };
+        var slider = document.querySelector('[data-action="pan"]');
+        slider.addEventListener('input', onChange);
+        slider.addEventListener('change', onChange);
     }());
 
     // Play at once when ready
     // Won't work on iOS until you touch the page
     wavesurfer.on('ready', function () {
         wavesurfer.play();
+    });
+
+    // Log errors
+    wavesurfer.on('error', function (msg) {
+        console.log(msg);
     });
 
     // Progress bar
