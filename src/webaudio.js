@@ -2,6 +2,7 @@
 
 WaveSurfer.WebAudio = {
     scriptBufferSize: 256,
+    fftSize: 256,
 
     init: function (params) {
         if (!(window.AudioContext || window.webkitAudioContext)) {
@@ -18,6 +19,7 @@ WaveSurfer.WebAudio = {
 
         this.createVolumeNode();
         this.createScriptNode();
+        this.createAnalyserNode();
         this.setPlaybackRate(this.params.audioRate);
     },
 
@@ -64,6 +66,13 @@ WaveSurfer.WebAudio = {
         }
     },
 
+    createAnalyserNode: function () {
+        this.analyser = this.ac.createAnalyser();
+        this.analyser.fftSize = this.fftSize;
+        this.analyserData = new Uint8Array(this.analyser.frequencyBinCount);
+        this.analyser.connect(this.ac.destination);
+    },
+
     /**
      * Set the audio source playback rate.
      */
@@ -106,9 +115,12 @@ WaveSurfer.WebAudio = {
     },
 
     loadMedia: function (media) {
+        if (this.source) {
+            this.source.disconnect();
+        }
         this.source = this.ac.createMediaElementSource(media);
         this.source.playbackRate = this.playbackRate;
-        this.source.connect(this.ac.destination);
+        this.source.connect(this.analyser);
     },
 
     decodeArrayBuffer: function (arraybuffer, callback, errback) {
@@ -226,6 +238,7 @@ WaveSurfer.WebAudio = {
         this.filterNode && this.filterNode.disconnect();
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
+        this.analyser.disconnect();
     },
 
     updateSelection: function (startPercent, endPercent) {
@@ -239,6 +252,17 @@ WaveSurfer.WebAudio = {
         this.loop = false;
         this.loopStart = 0;
         this.loopEnd = 0;
+    },
+
+    /**
+     * Returns the real-time waveform data.
+     *
+     * @return {Uint8Array} The frequency data.
+     * Values range from 0 to 255.
+     */
+    waveform: function () {
+        this.analyser.getByteTimeDomainData(this.analyserData);
+        return this.analyserData;
     }
 };
 

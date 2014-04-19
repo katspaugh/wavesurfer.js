@@ -286,7 +286,7 @@ var WaveSurfer = {
             var length = this.drawer.getWidth();
         } else {
             length = Math.round(
-                this.getDuration() * this.minPxPerSec
+                this.getDuration() * this.minPxPerSec * this.params.pixelRatio
             );
         }
 
@@ -294,6 +294,26 @@ var WaveSurfer = {
         this.drawer.progress(this.backend.getPlayedPercents());
         this.redrawMarks();
         this.fireEvent('redraw');
+    },
+
+    drawAsItPlays: function () {
+        var my = this;
+        var length = Math.round(
+            this.getDuration() * this.minPxPerSec * this.params.pixelRatio
+        );
+        var peaks = new Uint8Array(length);
+        var prevX = -1;
+        this.params.scrollParent = true;
+        this.drawer.setWidth(length);
+        this.on('progress', function () {
+            var x = ~~(my.backend.getPlayedPercents() * length);
+            if (x != prevX) {
+                prevX = x;
+                peaks[x] = WaveSurfer.util.max(my.backend.waveform(), 128);
+            }
+            my.drawer.clearWave();
+            my.drawer.drawWave(peaks, 128);
+        });
     },
 
     /**
@@ -304,12 +324,15 @@ var WaveSurfer = {
         this.empty();
         this.media.src = url;
         this.media.oncanplay = function () {
+            // Otherwise will fire on each currentTime change
             my.media.oncanplay = null;
 
             my.backend.loadMedia(my.media);
 
             if (my.media.duration > my.params.maxDuration) {
                 // render as it plays
+                my.drawAsItPlays();
+                my.fireEvent('ready');
             } else {
                 // load via XHR and render all at once
                 my.loadArrayBuffer(url, function (arraybuffer) {
@@ -610,10 +633,13 @@ WaveSurfer.util = {
         return 'wavesurfer_' + Math.random().toString(32).substring(2);
     },
 
-    max: function (values) {
+    max: function (values, median) {
         var max = -Infinity;
         for (var i = 0, len = values.length; i < len; i++) {
             var val = values[i];
+            if (median != null) {
+                val = Math.abs(val - median);
+            }
             if (val > max) { max = val; }
         }
         return max;
