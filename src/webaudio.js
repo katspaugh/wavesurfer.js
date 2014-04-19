@@ -87,7 +87,7 @@ WaveSurfer.WebAudio = {
     setPlaybackRate: function (value) {
         this.playbackRate = value || 1;
         if (this.source) {
-            this.source.mediaElement.playbackRate = this.playbackRate;
+            this.media.playbackRate = this.playbackRate;
         }
     },
 
@@ -129,8 +129,9 @@ WaveSurfer.WebAudio = {
         if (this.source) {
             this.source.disconnect();
         }
-        this.source = this.ac.createMediaElementSource(media);
-        this.source.mediaElement.playbackRate = this.playbackRate;
+        this.media = media;
+        this.source = this.ac.createMediaElementSource(this.media);
+        this.media.playbackRate = this.playbackRate;
         this.source.connect(this.analyser);
     },
 
@@ -143,11 +144,11 @@ WaveSurfer.WebAudio = {
     },
 
     isPaused: function () {
-        return !this.source || this.source.mediaElement.paused;
+        return !this.source || this.media.paused;
     },
 
     getDuration: function () {
-        return this.source.mediaElement.duration;
+        return this.media.duration;
     },
 
     /**
@@ -160,7 +161,7 @@ WaveSurfer.WebAudio = {
      */
     play: function (start, end) {
         if (start != null) {
-            this.source.mediaElement.currentTime = start;
+            this.media.currentTime = start;
         }
         if (end == null) {
             this.scheduledPause = null;
@@ -168,7 +169,7 @@ WaveSurfer.WebAudio = {
             this.scheduledPause = end;
         }
         this.prevFrameTime = this.getCurrentTime();
-        this.source.mediaElement.play();
+        this.media.play();
         this.fireEvent('play');
     },
 
@@ -177,7 +178,7 @@ WaveSurfer.WebAudio = {
      */
     pause: function () {
         this.scheduledPause = null;
-        this.source.mediaElement.pause();
+        this.media.pause();
         this.fireEvent('pause');
     },
 
@@ -227,7 +228,7 @@ WaveSurfer.WebAudio = {
     },
 
     getCurrentTime: function () {
-        return this.source.mediaElement.currentTime;
+        return this.media.currentTime;
     },
 
     audioContext: null,

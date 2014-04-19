@@ -378,7 +378,7 @@ var WaveSurfer = {
             my.onProgress(e);
         });
         xhr.addEventListener('load', function () {
-            if (200 == xhr.status) {
+            if (200 == xhr.status || 206 == xhr.status) {
                 callback(xhr.response);
             } else {
                 my.fireEvent('error', 'Server response: ' + xhr.statusText);
