@@ -57,9 +57,22 @@ var WaveSurfer = {
     },
 
     createMedia: function () {
+        var my = this;
+
         this.media = document.createElement('audio');
         this.media.controls = false;
         this.media.autoplay = false;
+
+        this.media.addEventListener('canplay', function () {
+            if (my.onCanPlay) {
+                my.onCanPlay();
+            }
+        });
+
+        this.media.addEventListener('error', function () {
+            my.fireEvent('error', 'Error loading audio');
+        });
+
         this.container.appendChild(this.media);
     },
 
@@ -326,9 +339,13 @@ var WaveSurfer = {
      */
     load: function (url) {
         var my = this;
+
         this.empty();
         this.media.src = url;
-        this.media.oncanplay = function () {
+
+        this.onCanPlay = function () {
+            my.onCanPlay = null;
+
             // Otherwise will fire on each currentTime change
             my.media.oncanplay = null;
 
@@ -349,9 +366,6 @@ var WaveSurfer = {
                     });
                 });
             }
-        };
-        this.media.onerror = function () {
-            my.fireEvent('error', 'Error loading audio');
         };
     },
 
