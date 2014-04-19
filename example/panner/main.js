@@ -25,8 +25,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Bind panner slider
         // @see http://stackoverflow.com/a/14412601/352796
-        var onChange = function (e) {
-            var xDeg = parseInt(e.target.value);
+        var onChange = function () {
+            var xDeg = parseInt(slider.value);
             var zDeg = xDeg + 90;
             if (zDeg > 90) {
                 zDeg = 180 - zDeg;
@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var slider = document.querySelector('[data-action="pan"]');
         slider.addEventListener('input', onChange);
         slider.addEventListener('change', onChange);
+        onChange();
     }());
 
     // Play at once when ready

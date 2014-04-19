@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Panner Example</title>
+        <title>wavesurfer.js | Equalizer Example</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -27,7 +27,7 @@
     <body itemscope itemtype="http://schema.org/WebApplication">
         <div class="container">
             <div class="header">
-                <h1 itemprop="name">Panner Filter Example</h1>
+                <h1 itemprop="name">Equalizer Example</h1>
             </div>
 
             <div id="demo">
@@ -40,17 +40,16 @@
                 </div>
 
                 <div class="controls">
-                    <div class="row">
-                        <div class="col-sm-4">
-                            &larr; left
-                        </div>
-                        <div class="col-sm-4">
-                            <!-- Panner -->
-                            <input data-action="pan" type="range" min="-45" max="45" value="0" style="width: 100%" />
-                        </div>
-                        <div class="col-sm-4">
-                            right &rarr;
-                        </div>
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+
+                    <div id="equalizer">
+                        <!-- Here be equalizer sliders -->
                     </div>
                 </div>
             </div>
@@ -136,7 +135,7 @@ slider.addEventListener('input', function (e) {
                 <div class="col-sm-5">
                     <div class="pull-right">
                         <noindex>
-                            The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.
+                        Demo music track is <a href="http://www.jamendo.com/en/track/661578/trou" rel="nofollow"><b>Trou</b> <span class="muted">by</span>&nbsp;<b>czskamaarù</b></a>. Thanks!
                         </noindex>
                     </div>
                 </div>
