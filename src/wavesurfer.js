@@ -30,6 +30,14 @@ var WaveSurfer = {
         // Extract relevant parameters (or defaults)
         this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
 
+        this.container = 'string' == typeof params.container ?
+            document.querySelector(this.params.container) :
+            this.params.container;
+
+        if (!this.container) {
+            throw new Error('wavesurfer.js: container element not found');
+        }
+
         // Marker objects
         this.markers = {};
         this.once('marked', this.bindMarks.bind(this));
@@ -52,14 +60,14 @@ var WaveSurfer = {
         this.media = document.createElement('audio');
         this.media.controls = false;
         this.media.autoplay = false;
-        this.params.container.appendChild(this.media);
+        this.container.appendChild(this.media);
     },
 
     createDrawer: function () {
         var my = this;
 
         this.drawer = Object.create(WaveSurfer.Drawer[this.params.renderer]);
-        this.drawer.init(this.params);
+        this.drawer.init(this.container, this.params);
 
         this.drawer.on('redraw', function () {
             my.drawBuffer();
@@ -432,7 +440,10 @@ var WaveSurfer = {
         }
 
         this.drawer.updateSelection(percent0, percent1);
-        this.backend.updateSelection(percent0, percent1);
+
+        if (this.loopSelection) {
+            this.backend.updateSelection(percent0, percent1);
+        }
     },
 
     clearSelection: function () {
@@ -445,13 +456,14 @@ var WaveSurfer = {
             this.selMark1 = null;
         }
         this.drawer.clearSelection();
-        this.backend.clearSelection();
+
+        if (this.loopSelection) {
+            this.backend.clearSelection();
+        }
     },
 
     toggleLoopSelection: function () {
         this.loopSelection = !this.loopSelection;
-        this.drawer.loopSelection = this.loopSelection;
-        this.backend.loopSelection = this.loopSelection;
 
         if (this.selMark0) this.selectionPercent0 = this.selMark0.percentage;
         if (this.selMark1) this.selectionPercent1 = this.selMark1.percentage;

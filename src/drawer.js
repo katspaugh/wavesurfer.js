@@ -1,15 +1,8 @@
 'use strict';
 
 WaveSurfer.Drawer = {
-    init: function (params) {
-        this.container = 'string' == typeof params.container ?
-            document.querySelector(params.container) :
-            params.container;
-
-        if (!this.container) {
-            throw new Error('wavesurfer.js: container element not found');
-        }
-
+    init: function (container, params) {
+        this.container = container;
         this.params = params;
         this.pixelRatio = this.params.pixelRatio;
 

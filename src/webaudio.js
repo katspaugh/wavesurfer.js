@@ -13,6 +13,7 @@ WaveSurfer.WebAudio = {
         this.ac = params.audioContext || this.getAudioContext();
         this.offlineAc = this.getOfflineAudioContext(this.ac.sampleRate);
 
+        this.loop = false;
         this.prevFrameTime = 0;
 
         this.createVolumeNode();

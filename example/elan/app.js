@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', function () {
         progressColor : 'purple',
         loaderColor   : 'purple',
         cursorColor   : 'navy',
-        selectionColor: '#d0e9c6'
+        selectionColor: '#d0e9c6',
+        loopSelection : false
     };
 
     if (location.search.match('scroll')) {
