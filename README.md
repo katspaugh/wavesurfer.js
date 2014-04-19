@@ -2,7 +2,7 @@ wavesurfer.js
 =============
 
 Interactive navigable audio visualization using
-[WebAudio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) and Canvas.
+[Web Audio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) and Canvas.
 
 ![Imgur](http://i.imgur.com/dnH8q.png)
 
@@ -82,7 +82,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `clearMarks()` – removes all markers.
  * `bindDragNDrop([dropTarget])` – starts listening to drag'n'drop on an element. The default element is `document`. Loads the dropped audio.
  * `empty()` – clears the waveform as if a zero-length audio is loaded.
- * `destroy()` – removes events, elements and disconnects WebAudio nodes.
+ * `destroy()` – removes events, elements and disconnects Web Audio nodes.
  * `loadDecodedBuffer(buffer)` – loads a decoded audio buffer (a typed array, basically).
  * `loadArrayBuffer(blob)` – loads audio data from a Blob or File object.
  * `toggleLoopSelection()` – toggles whether playback should loop inside the
@@ -98,7 +98,7 @@ All methods are intentionally public, but the most readily available are the fol
 
 Connecting filters
 ==================
-You can insert your own WebAudio nodes into the graph using the method `setFilter`. Example:
+You can insert your own Web Audio nodes into the graph using the method `setFilter`. Example:
 
     var lowpass = wavesurfer.backend.ac.createBiquadFilter();
     wavesurfer.backend.setFilter(lowpass);

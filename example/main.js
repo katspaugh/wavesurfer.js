@@ -47,9 +47,6 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.init(options);
     // Load audio from URL
     wavesurfer.load('example/media/demo.wav');
-
-    // Start listening to drag'n'drop on document
-    wavesurfer.bindDragNDrop('#drop');
 });
 
 // Play at once when ready
@@ -73,14 +70,16 @@ wavesurfer.on('finish', function () {
         'green-mark': function () {
             wavesurfer.mark({
                 id: 'up',
-                color: 'rgba(0, 255, 0, 0.5)'
+                color: 'rgba(0, 255, 0, 0.5)',
+                position: wavesurfer.getCurrentTime()
             });
         },
 
         'red-mark': function () {
             wavesurfer.mark({
                 id: 'down',
-                color: 'rgba(255, 0, 0, 0.5)'
+                color: 'rgba(255, 0, 0, 0.5)',
+                position: wavesurfer.getCurrentTime()
             });
         },
 

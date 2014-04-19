@@ -8,7 +8,7 @@ var WaveSurfer = {
         cursorColor   : '#333',
         selectionColor: '#0fc',
         cursorWidth   : 1,
-        markerWidth   : 1,
+        markerWidth   : 2,
         skipLength    : 2,
         minPxPerSec   : 1,
         samples       : 3,
@@ -22,7 +22,8 @@ var WaveSurfer = {
         dragSelection : true,
         loopSelection : true,
         audioRate     : 1,
-        interact      : true
+        interact      : true,
+        maxDuration   : 10 * 60 // 10 minutes
     },
 
     init: function (params) {
@@ -42,10 +43,16 @@ var WaveSurfer = {
         this.loopSelection = this.params.loopSelection;
         this.minPxPerSec = this.params.minPxPerSec;
 
+        this.createMedia();
         this.createBackend();
         this.createDrawer();
+    },
 
-        this.on('loaded', this.loadBuffer.bind(this));
+    createMedia: function () {
+        this.media = document.createElement('audio');
+        this.media.controls = false;
+        this.media.autoplay = false;
+        this.params.container.appendChild(this.media);
     },
 
     createDrawer: function () {
@@ -70,10 +77,6 @@ var WaveSurfer = {
         // Drag selection events
         if (this.params.dragSelection) {
             this.drawer.on('drag', function (drag) {
-                if (my.selMark0 && my.selMark0.percentage != drag.startPercentage) {
-                    my.seekTo(drag.startPercentage);
-                }
-
                 my.updateSelection(drag);
             });
             this.drawer.on('drag-clear', function () {
@@ -201,47 +204,58 @@ var WaveSurfer = {
     },
 
     mark: function (options) {
-        if (options.id && options.id in this.markers) {
-            return this.markers[options.id].update(options);
-        }
-
         var my = this;
 
         var opts = WaveSurfer.util.extend({
             id: WaveSurfer.util.getId(),
-            position: this.getCurrentTime(),
             width: this.params.markerWidth
         }, options);
 
-        var marker = Object.create(WaveSurfer.Mark);
+        if (opts.percentage && !opts.position) {
+            opts.position = opts.percentage * this.getDuration();
+        }
+        opts.percentage = opts.position / this.getDuration();
 
-        marker.on('update', function () {
-            var duration = my.getDuration() || 1;
-            if (null == marker.position) {
-                marker.position = marker.percentage * duration;
-            }
-            // validate percentage
-            marker.percentage = marker.position / duration;
-            my.markers[marker.id] = marker;
+        // If exists, just update and exit early
+        if (opts.id in this.markers) {
+            return this.markers[opts.id].update(opts);
+        }
 
-            // redraw marker
-            my.drawer.addMark(marker);
+        // Ensure position for a new marker
+        if (!opts.position) {
+            opts.position = this.getCurrentTime();
+            opts.percentage = opts.position / this.getDuration();
+        }
+
+        var mark = Object.create(WaveSurfer.Mark);
+        mark.init(opts);
+        mark.on('update', function () {
+            my.drawer.updateMark(mark);
+        });
+        mark.on('remove', function () {
+            my.drawer.removeMark(mark);
+            delete my.markers[mark.id];
         });
 
-        marker.on('remove', function () {
-            my.drawer.removeMark(marker);
-            delete my.markers[marker.id];
+        this.drawer.addMark(mark);
+        this.drawer.on('mark-over', function (mark, e) {
+            mark.fireEvent('over', e);
+            my.fireEvent('mark-over', mark, e);
+        });
+        this.drawer.on('mark-leave', function (mark, e) {
+            mark.fireEvent('leave', e);
+            my.fireEvent('mark-leave', mark, e);
         });
 
-        this.fireEvent('marked', marker);
+        this.markers[mark.id] = mark;
+        this.fireEvent('marked', mark);
 
-        return marker.init(opts);
+        return mark;
     },
 
     redrawMarks: function () {
         Object.keys(this.markers).forEach(function (id) {
-            var marker = this.markers[id];
-            this.drawer.addMark(marker);
+            this.mark(this.markers[id]);
         }, this);
     },
 
@@ -249,6 +263,7 @@ var WaveSurfer = {
         Object.keys(this.markers).forEach(function (id) {
             this.markers[id].remove();
         }, this);
+        this.markers = {};
     },
 
     timings: function (offset) {
@@ -273,25 +288,57 @@ var WaveSurfer = {
         this.fireEvent('redraw');
     },
 
-    loadBuffer: function (data) {
+    /**
+     * Loads audio from URL.
+     */
+    load: function (url) {
         var my = this;
-        this.backend.loadBuffer(data, function () {
-            my.clearMarks();
-            my.drawBuffer();
-            my.fireEvent('ready');
-        }, function () {
-            my.fireEvent('error', 'Error decoding audio');
-        });
+        this.empty();
+        this.media.src = url;
+        this.media.oncanplay = function () {
+            my.media.oncanplay = null;
+
+            my.backend.loadMedia(my.media);
+
+            if (my.media.duration > my.params.maxDuration) {
+                // render as it plays
+            } else {
+                // load via XHR and render all at once
+                my.loadArrayBuffer(url, function (arraybuffer) {
+                    my.backend.decodeArrayBuffer(arraybuffer, function () {
+                        my.drawBuffer();
+                        my.fireEvent('ready');
+                    }, function () {
+                        my.fireEvent('error', 'Error decoding audiobuffer');
+                    });
+                });
+            }
+        };
+        this.media.onerror = function () {
+            my.fireEvent('error', 'Error loading audio');
+        };
     },
 
-    /**
-     * Loads an AudioBuffer.
-     */
-    loadDecodedBuffer: function (buffer) {
-      this.backend.setBuffer(buffer);
-      this.clearMarks();
-      this.drawBuffer();
-      this.fireEvent('ready');
+    loadArrayBuffer: function (url, callback) {
+        var my = this;
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'arraybuffer';
+        xhr.addEventListener('progress', function (e) {
+            my.onProgress(e);
+        });
+        xhr.addEventListener('load', function () {
+            if (200 == xhr.status) {
+                callback(xhr.response);
+            } else {
+                my.fireEvent('error', 'Server response: ' + xhr.statusText);
+            }
+        });
+        xhr.addEventListener('error', function () {
+            my.fireEvent('error', 'Error loading audio');
+        });
+        xhr.send();
+        my.fireEvent('xhr-start', xhr);
     },
 
     onProgress: function (e) {
@@ -303,104 +350,6 @@ var WaveSurfer = {
             percentComplete = e.loaded / (e.loaded + 1000000);
         }
         this.fireEvent('loading', Math.round(percentComplete * 100), e.target);
-    },
-
-    /**
-     * Loads audio data from a Blob or File object.
-     *
-     * @param {Blob|File} blob Audio data.
-     */
-    loadArrayBuffer: function(blob) {
-        var my = this;
-        // Create file reader
-        var reader = new FileReader();
-        reader.addEventListener('progress', function (e) {
-            my.onProgress(e);
-        });
-        reader.addEventListener('load', function (e) {
-            my.fireEvent('loaded', e.target.result);
-        });
-        reader.addEventListener('error', function () {
-            my.fireEvent('error', 'Error reading file');
-        });
-        reader.readAsArrayBuffer(blob);
-    },
-
-    /**
-     * Loads an audio file via XHR.
-     */
-    load: function (url) {
-        var my = this;
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.send();
-        xhr.responseType = 'arraybuffer';
-        xhr.addEventListener('progress', function (e) {
-            my.onProgress(e);
-        });
-        xhr.addEventListener('load', function () {
-            if (200 == xhr.status) {
-                my.fireEvent('loaded', xhr.response);
-            } else {
-                my.fireEvent('error', 'Server response: ' + xhr.statusText);
-            }
-        });
-        xhr.addEventListener('error', function () {
-            my.fireEvent('error', 'Error loading audio');
-        });
-        this.empty();
-        return xhr;
-    },
-
-    /**
-     * Listens to drag'n'drop.
-     * @param {HTMLElement|String} dropTarget Element or selector.
-     */
-    bindDragNDrop: function (dropTarget) {
-        var my = this;
-
-        // Bind drop event
-        if (typeof dropTarget == 'string') {
-            dropTarget = document.querySelector(dropTarget);
-        }
-
-        var dropActiveCl = 'wavesurfer-dragover';
-        var handlers = {};
-
-        // Drop event
-        handlers.drop = function (e) {
-            e.stopPropagation();
-            e.preventDefault();
-            dropTarget.classList.remove(dropActiveCl);
-            var file = e.dataTransfer.files[0];
-            if (file) {
-                my.empty();
-                my.loadArrayBuffer(file);
-            } else {
-                my.fireEvent('error', 'Not a file');
-            }
-        };
-        // Dragover & dragleave events
-        handlers.dragover = function (e) {
-            e.stopPropagation();
-            e.preventDefault();
-            dropTarget.classList.add(dropActiveCl);
-        };
-        handlers.dragleave = function (e) {
-            e.stopPropagation();
-            e.preventDefault();
-            dropTarget.classList.remove(dropActiveCl);
-        };
-
-        Object.keys(handlers).forEach(function (event) {
-            dropTarget.addEventListener(event, handlers[event]);
-        });
-
-        this.on('destroy', function () {
-            Object.keys(handlers).forEach(function (event) {
-                dropTarget.removeEventListener(event, handlers[event]);
-            });
-        });
     },
 
     bindMarks: function () {
@@ -417,7 +366,7 @@ var WaveSurfer = {
         this.backend.on('audioprocess', function (time) {
             Object.keys(my.markers).forEach(function (id) {
                 var marker = my.markers[id];
-                if (!marker.played || (my.loopSelection && marker.loopEnd)) {
+                if (!marker.played) {
                     if (marker.position <= time && marker.position >= prevTime) {
                         // Prevent firing the event more than once per playback
                         marker.played = true;
@@ -436,7 +385,6 @@ var WaveSurfer = {
      */
     empty: function () {
         this.clearMarks();
-        this.backend.loadEmpty();
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     },
 
@@ -447,6 +395,7 @@ var WaveSurfer = {
         this.fireEvent('destroy');
         this.clearMarks();
         this.unAll();
+        this.container.removeChild(this.media);
         this.backend.destroy();
         this.drawer.destroy();
     },
@@ -468,27 +417,19 @@ var WaveSurfer = {
             this.selMark0.update({ percentage: percent0 });
         } else {
             this.selMark0 = this.mark({
-                id: 'selMark0',
                 percentage: percent0,
                 color: color
             });
         }
-        this.drawer.addMark(this.selMark0);
 
         if (this.selMark1) {
             this.selMark1.update({ percentage: percent1 });
         } else {
             this.selMark1 = this.mark({
-                id: 'selMark1',
                 percentage: percent1,
                 color: color
             });
-            this.selMark1.loopEnd = true;
-            this.selMark1.on('reached', function(){
-                my.backend.logLoop(my.selMark0.position, my.selMark1.position);
-            });
         }
-        this.drawer.addMark(this.selMark1);
 
         this.drawer.updateSelection(percent0, percent1);
         this.backend.updateSelection(percent0, percent1);
@@ -520,18 +461,13 @@ var WaveSurfer = {
     },
 
     getSelection: function () {
-      if (!this.selMark0 || !this.selMark1) return null;
-
-      var duration = this.getDuration();
-      var startPercentage = this.selMark0.percentage;
-      var endPercentage = this.selMark1.percentage;
-
-      return {
-          startPercentage: startPercentage,
-          startPosition: startPercentage * duration,
-          endPercentage: endPercentage,
-          endPosition: endPercentage * duration
-      };
+        if (!this.selMark0 || !this.selMark1) return null;
+        return {
+            startPercentage: this.selMark0.percentage,
+            startPosition: this.selMark0.position,
+            endPercentage: this.selMark1.percentage,
+            endPosition: this.selMark1.position
+        };
     },
 
     enableInteraction: function () {
@@ -559,31 +495,30 @@ WaveSurfer.Mark = {
     },
 
     init: function (options) {
-        return this.update(
+        this.apply(
             WaveSurfer.util.extend({}, this.defaultParams, options)
         );
+        return this;
     },
 
     getTitle: function () {
-        var d = new Date(this.position * 1000);
-        return d.getMinutes() + ':' + d.getSeconds();
+        return [
+            ~~(this.position / 60),                   // minutes
+            ('00' + ~~(this.position % 60)).slice(-2) // seconds
+        ].join(':');
     },
 
-    update: function (options) {
+    apply: function (options) {
         Object.keys(options).forEach(function (key) {
             if (key in this.defaultParams) {
                 this[key] = options[key];
             }
         }, this);
+    },
 
-        // If percentage is specified, but position is undefined,
-        // let the subscribers to recalculate the position
-        if (null == options.position && null != options.percentage) {
-            this.position = null;
-        }
-
+    update: function (options) {
+        this.apply(options);
         this.fireEvent('update');
-        return this;
     },
 
     remove: function () {

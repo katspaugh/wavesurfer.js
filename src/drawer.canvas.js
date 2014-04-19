@@ -4,69 +4,54 @@ WaveSurfer.Drawer.Canvas = Object.create(WaveSurfer.Drawer);
 
 WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     createElements: function () {
-        this.marks = {};
-
         var waveCanvas = this.wrapper.appendChild(
-            document.createElement('canvas')
-        );
-        this.style(waveCanvas, {
-            position: 'absolute',
-            zIndex: 1
-        });
-
-        var progressWave = this.wrapper.appendChild(
-            document.createElement('wave')
-        );
-        this.style(progressWave, {
-            position: 'absolute',
-            zIndex: 2,
-            overflow: 'hidden',
-            width: '0',
-            height: this.params.height + 'px',
-            borderRight: [
-                this.params.cursorWidth + 'px',
-                'solid',
-                this.params.cursorColor
-            ].join(' ')
-        });
-
-        var progressCanvas = progressWave.appendChild(
-            document.createElement('canvas')
+            this.style(document.createElement('canvas'), {
+                position: 'absolute',
+                zIndex: 1
+            })
         );
 
-        var marksCanvas = this.wrapper.appendChild(
+        this.progressWave = this.wrapper.appendChild(
+            this.style(document.createElement('wave'), {
+                position: 'absolute',
+                zIndex: 2,
+                overflow: 'hidden',
+                width: '0',
+                height: this.params.height + 'px',
+                borderRight: [
+                    this.params.cursorWidth + 'px',
+                    'solid',
+                    this.params.cursorColor
+                ].join(' ')
+            })
+        );
+
+        var progressCanvas = this.progressWave.appendChild(
             document.createElement('canvas')
         );
-        this.style(marksCanvas, {
-            position: 'absolute',
-            zIndex: 3
-        });
 
         var selectionCanvas = this.wrapper.appendChild(
-            document.createElement('canvas')
+            this.style(document.createElement('canvas'), {
+                position: 'absolute',
+                zIndex: 0
+            })
         );
-        this.style(selectionCanvas, {
-            position: 'absolute',
-            zIndex: 0
-        });
-
-        this.canvases = [
-            waveCanvas, progressCanvas, marksCanvas, selectionCanvas
-        ];
 
         this.waveCc = waveCanvas.getContext('2d');
         this.progressCc = progressCanvas.getContext('2d');
-        this.progressWave = progressWave;
-        this.marksCc = marksCanvas.getContext('2d');
-        this.selectionCc= selectionCanvas.getContext('2d');
+        this.selectionCc = selectionCanvas.getContext('2d');
     },
 
     updateWidth: function () {
         var width = Math.round(this.width / this.pixelRatio) + 'px';
-        this.canvases.forEach(function (canvas) {
-            canvas.width = this.width;
-            canvas.height = this.height;
-            canvas.style.width = width;
+        [
+            this.waveCc,
+            this.progressCc,
+            this.selectionCc
+        ].forEach(function (cc) {
+            cc.canvas.width = this.width;
+            cc.canvas.height = this.height;
+            this.style(cc.canvas, { width: width + 'px' });
         }, this);
 
         this.clearWave();
@@ -115,36 +100,45 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var pos = Math.round(
             this.width * progress
         ) / this.pixelRatio;
-        this.progressWave.style.width = pos + 'px';
+        this.style(this.progressWave, { width: pos + 'px' });
     },
 
     addMark: function (mark) {
-        var redraw = mark.id in this.marks;
-        this.marks[mark.id] = mark;
-        redraw ? this.redrawMarks() : this.drawMark(mark);
+        var markEl = document.createElement('mark');
+        markEl.id = mark.id;
+        this.wrapper.appendChild(markEl);
+
+        var my = this;
+        markEl.addEventListener('mouseover', function (e) {
+            my.fireEvent('mark-over', mark, e);
+        });
+        markEl.addEventListener('mouseleave', function (e) {
+            my.fireEvent('mark-leave', mark, e);
+        });
+
+        this.updateMark(mark);
+    },
+
+    updateMark: function (mark) {
+        var markEl = document.getElementById(mark.id);
+        markEl.title = mark.getTitle();
+        this.style(markEl, {
+            height: '100%',
+            position: 'absolute',
+            zIndex: 3,
+            width: mark.width + 'px',
+            left: Math.max(0, Math.round(
+                mark.percentage * this.width - mark.width / 2
+            )) + 'px',
+            backgroundColor: mark.color
+        });
     },
 
     removeMark: function (mark) {
-        delete this.marks[mark.id];
-        this.redrawMarks();
-    },
-
-    drawMark: function (mark) {
-        this.marksCc.fillStyle = mark.color;
-        var x = Math.min(
-            this.width - mark.width,
-            Math.max(0, Math.round(
-                mark.percentage * this.width - mark.width / 2
-            ))
-        );
-        this.marksCc.fillRect(x, 0, mark.width, this.height);
-    },
-
-    redrawMarks: function () {
-        this.marksCc.clearRect(0, 0, this.width, this.height);
-        Object.keys(this.marks).forEach(function (id) {
-            this.drawMark(this.marks[id]);
-        }, this);
+        var markEl = document.getElementById(mark.id);
+        if (markEl) {
+            this.wrapper.removeChild(markEl);
+        }
     },
 
     drawSelection: function () {
@@ -160,5 +154,4 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     eraseSelection: function () {
         this.selectionCc.clearRect(0, 0, this.width, this.height);
     }
-
 });
