@@ -2,7 +2,7 @@
 
 WaveSurfer.WebAudio = {
     scriptBufferSize: 256,
-    fftSize: 256,
+    fftSize: 128,
 
     init: function (params) {
         if (!(window.AudioContext || window.webkitAudioContext)) {
@@ -78,6 +78,9 @@ WaveSurfer.WebAudio = {
      */
     setPlaybackRate: function (value) {
         this.playbackRate = value || 1;
+        if (this.source) {
+            this.source.mediaElement.playbackRate = this.playbackRate;
+        }
     },
 
     /**
@@ -119,7 +122,7 @@ WaveSurfer.WebAudio = {
             this.source.disconnect();
         }
         this.source = this.ac.createMediaElementSource(media);
-        this.source.playbackRate = this.playbackRate;
+        this.source.mediaElement.playbackRate = this.playbackRate;
         this.source.connect(this.analyser);
     },
 

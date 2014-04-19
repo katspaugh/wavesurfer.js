@@ -10,7 +10,7 @@ var WaveSurfer = {
         cursorWidth   : 1,
         markerWidth   : 2,
         skipLength    : 2,
-        minPxPerSec   : 1,
+        minPxPerSec   : 10,
         samples       : 3,
         pixelRatio    : window.devicePixelRatio,
         fillParent    : true,
