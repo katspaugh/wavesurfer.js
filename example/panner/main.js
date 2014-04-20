@@ -36,16 +36,15 @@ document.addEventListener('DOMContentLoaded', function () {
         onChange();
     }());
 
-    // Play at once when ready
-    // Won't work on iOS until you touch the page
-    wavesurfer.on('ready', function () {
-        wavesurfer.play();
-    });
-
     // Log errors
     wavesurfer.on('error', function (msg) {
         console.log(msg);
     });
+
+    // Bind play/pause button
+    document.querySelector(
+        '[data-action="play"]'
+    ).addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
 
     // Progress bar
     (function () {
