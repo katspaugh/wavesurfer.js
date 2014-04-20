@@ -1,6 +1,6 @@
 {
   "name"          : "wavesurfer.js",
-  "version"       : "0.1.1",
+  "version"       : "0.1.2",
   "homepage"      : "https://github.com/katspaugh/wavesurfer.js",
   "main"          : "build/wavesurfer.min.js",
   "license"       : "CC BY 3.0"
