@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.load('../media/demo.wav');
 
     // Equalizer
-    (function () {
+    wavesurfer.on('ready', function () {
         var EQ = [
             {
                 f: 32,
@@ -55,8 +55,9 @@ document.addEventListener('DOMContentLoaded', function () {
         var filters = EQ.map(function (band) {
             var filter = wavesurfer.backend.ac.createBiquadFilter();
             filter.type = filter[band.type];
+            filter.gain.value = 0;
+            filter.Q.value = 1;
             filter.frequency.value = band.f;
-            filter.gain.value = band.gain;
             return filter;
         });
 
@@ -99,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // For debugging
         wavesurfer.filters = filters;
-    }());
+    });
 
     // Log errors
     wavesurfer.on('error', function (msg) {
