@@ -27,13 +27,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // @see http://stackoverflow.com/a/14412601/352796
         var onChange = function () {
             var xDeg = parseInt(slider.value);
-            var zDeg = xDeg + 90;
-            if (zDeg > 90) {
-                zDeg = 180 - zDeg;
-            }
             var x = Math.sin(xDeg * (Math.PI / 180));
-            var z = Math.sin(zDeg * (Math.PI / 180));
-            wavesurfer.panner.setPosition(x, 0, z);
+            wavesurfer.panner.setPosition(x, 0, 0);
         };
         var slider = document.querySelector('[data-action="pan"]');
         slider.addEventListener('input', onChange);
