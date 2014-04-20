@@ -22,8 +22,7 @@ var WaveSurfer = {
         dragSelection : true,
         loopSelection : true,
         audioRate     : 1,
-        interact      : true,
-        maxDuration   : 10 * 60 // 10 minutes
+        interact      : true
     },
 
     init: function (params) {
@@ -62,6 +61,16 @@ var WaveSurfer = {
         this.media = document.createElement('audio');
         this.media.controls = false;
         this.media.autoplay = false;
+
+        this.media.addEventListener('canplay', function () {
+            my.fireEvent('canplay');
+        });
+
+        // iOS
+        this.on('user-action', function () {
+            // we assume the audio can be played at once
+            my.fireEvent('canplay');
+        });
 
         this.media.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading media element');
@@ -152,16 +161,12 @@ var WaveSurfer = {
     },
 
     play: function (start, end) {
-        // for iOS
         this.fireEvent('user-action');
-
         this.backend.play(start, end);
     },
 
     pause: function () {
-        // for iOS
         this.fireEvent('user-action');
-
         this.backend.pause();
     },
 
@@ -335,7 +340,7 @@ var WaveSurfer = {
     },
 
     /**
-     * Loads audio from URL.
+     * Loads audio and prerenders its waveform.
      */
     load: function (url) {
         var my = this;
@@ -343,28 +348,40 @@ var WaveSurfer = {
         this.empty();
         this.media.src = url;
 
-        if (my.media.duration > my.params.maxDuration) {
-            // render as it plays
-            my.drawAsItPlays();
-            my.fireEvent('ready');
-        } else {
-            // load via XHR and render all at once
-            my.loadArrayBuffer(url, function (arraybuffer) {
-                my.backend.decodeArrayBuffer(arraybuffer, function () {
-                    my.drawBuffer();
-                    my.fireEvent('ready');
-                }, function () {
-                    my.fireEvent('error', 'Error decoding audiobuffer');
-                });
+        // load via XHR and render all at once
+        this.downloadArrayBuffer(url, function (arraybuffer) {
+            my.backend.decodeArrayBuffer(arraybuffer, function () {
+                my.drawBuffer();
+                my.fireEvent('ready');
+            }, function () {
+                my.fireEvent('error', 'Error decoding audiobuffer');
             });
-        }
-
-        this.once('user-action', function () {
+        });
+        this.once('canplay', function () {
             my.backend.loadMedia(my.media);
         });
     },
 
-    loadArrayBuffer: function (url, callback) {
+    /**
+     * Load audio stream and render its waveform as it plays.
+     */
+    loadStream: function (url) {
+        var my = this;
+
+        this.empty();
+        this.media.src = url;
+
+        this.once('canplay', function () {
+            my.backend.loadMedia(my.media);
+            my.drawAsItPlays();
+        });
+
+        setTimeout(function () {
+            my.fireEvent('ready');
+        }, 0);
+    },
+
+    downloadArrayBuffer: function (url, callback) {
         var my = this;
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);

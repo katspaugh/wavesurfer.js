@@ -10,12 +10,11 @@ document.addEventListener('DOMContentLoaded', function () {
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
-        minPxPerSec: 50,
-        maxDuration: 60
+        minPxPerSec: 50
     });
 
     // Load audio from URL
-    wavesurfer.load('../panner/media.wav');
+    wavesurfer.loadStream('../panner/media.wav');
 
     // Log errors
     wavesurfer.on('error', function (msg) {
