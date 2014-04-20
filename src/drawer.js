@@ -77,13 +77,13 @@ WaveSurfer.Drawer = {
                 drag.startPercentage = handleEvent(e);
             });
 
-            my.wrapper.addEventListener('mousemove', function (e) {
+            my.wrapper.addEventListener('mousemove', WaveSurfer.util.throttle(function (e) {
                 e.stopPropagation();
                 if (drag.startPercentage != null) {
                     drag.endPercentage = handleEvent(e);
                     my.fireEvent('drag', drag);
                 }
-            });
+            }, 30));
 
             my.wrapper.addEventListener('dblclick', function () {
                 my.fireEvent('drag-clear', drag);
