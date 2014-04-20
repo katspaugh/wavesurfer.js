@@ -160,7 +160,7 @@ WaveSurfer.WebAudio = {
     },
 
     getDuration: function () {
-        return this.buffer.duration || this.media.duration;
+        return this.buffer ? this.buffer.duration : this.media.duration;
     },
 
     /**
