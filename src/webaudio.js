@@ -12,7 +12,6 @@ WaveSurfer.WebAudio = {
         }
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
-        this.offlineAc = this.getOfflineAudioContext(this.ac.sampleRate);
 
         this.loop = false;
         this.prevFrameTime = 0;
@@ -150,7 +149,7 @@ WaveSurfer.WebAudio = {
 
     decodeArrayBuffer: function (arraybuffer, callback, errback) {
         var my = this;
-        this.offlineAc.decodeAudioData(arraybuffer, function (data) {
+        this.ac.decodeAudioData(arraybuffer, function (data) {
             my.buffer = data;
             callback();
         }, errback);
@@ -161,7 +160,7 @@ WaveSurfer.WebAudio = {
     },
 
     getDuration: function () {
-        return this.media.duration;
+        return this.buffer.duration || this.media.duration;
     },
 
     /**
@@ -254,16 +253,6 @@ WaveSurfer.WebAudio = {
         return WaveSurfer.WebAudio.audioContext;
     },
 
-    offlineAudioContext: null,
-    getOfflineAudioContext: function (sampleRate) {
-        if (!WaveSurfer.WebAudio.offlineAudioContext) {
-            WaveSurfer.WebAudio.offlineAudioContext = new (
-                window.OfflineAudioContext || window.webkitOfflineAudioContext
-            )(1, 2, sampleRate);
-        }
-        return WaveSurfer.WebAudio.offlineAudioContext;
-    },
-
     disconnectSource: function () {
         if (this.source) {
             this.source.disconnect();
@@ -275,6 +264,7 @@ WaveSurfer.WebAudio = {
         this.unAll();
         this.buffer = null;
         this.disconnectFilters();
+        this.disconnectSource();
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
         this.analyser.disconnect();

@@ -63,12 +63,6 @@ var WaveSurfer = {
         this.media.controls = false;
         this.media.autoplay = false;
 
-        this.media.addEventListener('canplay', function () {
-            if (my.onCanPlay) {
-                my.onCanPlay();
-            }
-        });
-
         this.media.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading media element');
         });
@@ -84,6 +78,7 @@ var WaveSurfer = {
 
         this.drawer.on('redraw', function () {
             my.drawBuffer();
+            my.drawer.progress(my.backend.getPlayedPercents());
         });
 
         this.on('progress', function (progress) {
@@ -152,15 +147,21 @@ var WaveSurfer = {
         return this.backend.getCurrentTime();
     },
 
-    playAt: function (percents) {
-        this.backend.play(this.getDuration() * percents);
+    playAtPercent: function (startPercentage) {
+        this.play(startPercentage * this.getDuration());
     },
 
-    play: function () {
-        this.backend.play();
+    play: function (start, end) {
+        // for iOS
+        this.fireEvent('user-action');
+
+        this.backend.play(start, end);
     },
 
     pause: function () {
+        // for iOS
+        this.fireEvent('user-action');
+
         this.backend.pause();
     },
 
@@ -185,7 +186,7 @@ var WaveSurfer = {
 
     seekTo: function (progress) {
         var paused = this.backend.isPaused();
-        this.playAt(progress);
+        this.playAtPercent(progress);
         if (paused) {
             this.pause();
         }
@@ -193,7 +194,7 @@ var WaveSurfer = {
     },
 
     stop: function () {
-        this.playAt(0);
+        this.play(0);
         this.pause();
         this.drawer.progress(0);
     },
@@ -309,7 +310,6 @@ var WaveSurfer = {
         }
 
         this.drawer.drawPeaks(this.backend.getPeaks(length), length);
-        this.drawer.progress(this.backend.getPlayedPercents());
         this.redrawMarks();
         this.fireEvent('redraw');
     },
@@ -343,30 +343,25 @@ var WaveSurfer = {
         this.empty();
         this.media.src = url;
 
-        this.onCanPlay = function () {
-            my.onCanPlay = null;
-
-            // Otherwise will fire on each currentTime change
-            my.media.oncanplay = null;
-
-            my.backend.loadMedia(my.media);
-
-            if (my.media.duration > my.params.maxDuration) {
-                // render as it plays
-                my.drawAsItPlays();
-                my.fireEvent('ready');
-            } else {
-                // load via XHR and render all at once
-                my.loadArrayBuffer(url, function (arraybuffer) {
-                    my.backend.decodeArrayBuffer(arraybuffer, function () {
-                        my.drawBuffer();
-                        my.fireEvent('ready');
-                    }, function () {
-                        my.fireEvent('error', 'Error decoding audiobuffer');
-                    });
+        if (my.media.duration > my.params.maxDuration) {
+            // render as it plays
+            my.drawAsItPlays();
+            my.fireEvent('ready');
+        } else {
+            // load via XHR and render all at once
+            my.loadArrayBuffer(url, function (arraybuffer) {
+                my.backend.decodeArrayBuffer(arraybuffer, function () {
+                    my.drawBuffer();
+                    my.fireEvent('ready');
+                }, function () {
+                    my.fireEvent('error', 'Error decoding audiobuffer');
                 });
-            }
-        };
+            });
+        }
+
+        this.once('user-action', function () {
+            my.backend.loadMedia(my.media);
+        });
     },
 
     loadArrayBuffer: function (url, callback) {

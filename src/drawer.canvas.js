@@ -43,7 +43,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     updateWidth: function () {
-        var width = Math.round(this.width / this.pixelRatio) + 'px';
+        var width = Math.round(this.width / this.pixelRatio);
         [
             this.waveCc,
             this.progressCc,
@@ -51,7 +51,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         ].forEach(function (cc) {
             cc.canvas.width = this.width;
             cc.canvas.height = this.height;
-            this.style(cc.canvas, { width: width + 'px' });
+            this.style(cc.canvas, { width: width + 'px'});
         }, this);
 
         this.clearWave();
@@ -114,6 +114,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         });
         markEl.addEventListener('mouseleave', function (e) {
             my.fireEvent('mark-leave', mark, e);
+        });
+        markEl.addEventListener('click', function (e) {
+            my.fireEvent('mark-click', mark, e);
         });
 
         this.updateMark(mark);
