@@ -40,11 +40,9 @@ WaveSurfer.WebAudio = {
 
         if (this.inputFilter && this.outputFilter) {
             this.analyser.connect(this.inputFilter);
-            this.outputFilter.connect(this.ac.destination);
-            this.gainNode.connect(this.outputFilter);
+            this.outputFilter.connect(this.gainNode);
         } else {
             this.analyser.connect(this.gainNode);
-            this.gainNode.connect(this.ac.destination);
         }
     },
 
