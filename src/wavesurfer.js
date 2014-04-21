@@ -278,6 +278,10 @@ var WaveSurfer = {
             mark.fireEvent('leave', e);
             my.fireEvent('mark-leave', mark, e);
         });
+        this.drawer.on('mark-click', function (mark, e) {
+            mark.fireEvent('click', e);
+            my.fireEvent('mark-click', mark, e);
+        });
 
         this.markers[mark.id] = mark;
         this.fireEvent('marked', mark);
