@@ -334,19 +334,25 @@ var WaveSurfer = {
 
     drawAsItPlays: function () {
         var my = this;
-        var length = Math.round(
-            this.getDuration() * this.minPxPerSec * this.params.pixelRatio
-        );
-        var peaks = new Uint8Array(length);
+        var peaks;
         var prevX = -1;
         this.params.scrollParent = true;
-        this.drawer.setWidth(length);
         this.on('progress', function () {
+            var length = Math.round(
+                my.getDuration() * my.minPxPerSec * my.params.pixelRatio
+            );
+
+            if (!peaks) {
+                peaks = new Uint8Array(length);
+            }
+
             var x = ~~(my.backend.getPlayedPercents() * length);
             if (x != prevX) {
                 prevX = x;
                 peaks[x] = WaveSurfer.util.max(my.backend.waveform(), 128);
             }
+
+            my.drawer.setWidth(length);
             my.drawer.clearWave();
             my.drawer.drawWave(peaks, 128);
         });
