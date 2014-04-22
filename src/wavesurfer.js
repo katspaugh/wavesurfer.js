@@ -336,7 +336,6 @@ var WaveSurfer = {
         var my = this;
         var peaks;
         var prevX = -1;
-        this.params.scrollParent = true;
         this.on('progress', function () {
             var length = Math.round(
                 my.getDuration() * my.minPxPerSec * my.params.pixelRatio
