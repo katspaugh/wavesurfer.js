@@ -11,13 +11,13 @@ SOURCES=src/wavesurfer.js\
         src/drawer.*.js
 
 $(MIN): $(SOURCES)
-	uglifyjs --lint -cm -o $@ $^ \
+	node_modules/uglify-js/bin/uglifyjs --lint -cm -o $@ $^ \
 --source-map=$(SOURCE_MAP) --source-map-root=$(SOURCE_MAP_ROOT) \
 --source-map-url=$(SOURCE_MAP_ROOT)$(SOURCE_MAP)
 
 amd: $(SOURCES)
 	echo "define(function () {" > $(AMD)
-	uglifyjs $^ -cm >> $(AMD)
+	node_modules/uglify-js/bin/uglifyjs $^ -cm >> $(AMD)
 	echo "\n;return WaveSurfer; });" >> $(AMD)
 
 cjs: $(SOURCES)
