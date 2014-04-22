@@ -76,6 +76,10 @@ var WaveSurfer = {
             my.fireEvent('error', 'Error loading media element');
         });
 
+        this.media.addEventListener('ended', function () {
+            my.fireEvent('finish');
+        });
+
         this.container.appendChild(this.media);
     },
 
@@ -122,6 +126,10 @@ var WaveSurfer = {
 
         this.backend.on('play', function () {
             my.fireEvent('play');
+        });
+
+        this.backend.on('pause', function () {
+            my.fireEvent('pause');
         });
 
         this.on('play', function () {
@@ -358,9 +366,40 @@ var WaveSurfer = {
                 my.drawBuffer();
                 my.fireEvent('ready');
             }, function () {
-                my.fireEvent('error', 'Error decoding audiobuffer');
+                my.fireEvent('error', 'Error decoding audio buffer');
             });
         });
+        this.once('canplay', function () {
+            my.backend.loadMedia(my.media);
+        });
+    },
+
+    /**
+     * Loads audio blob and render its waveform.
+     */
+    loadBlob: function (blob) {
+        var my = this;
+
+        // Converts blob into base64 and put into src
+        var blobToString = new FileReader();
+        blobToString.onload = function(event){
+            my.empty();
+            my.media.src = event.target.result;
+        };
+        blobToString.readAsDataURL(blob);
+
+        // Converts blob into array buffer and render waveform
+        var blobToArrayBuffer = new FileReader();
+        blobToArrayBuffer.onload = function(event){
+            my.backend.decodeArrayBuffer(event.target.result, function () {
+                my.drawBuffer();
+                my.fireEvent('ready');
+            }, function () {
+                my.fireEvent('error', 'Error decoding audio buffer');
+            });
+        };
+        blobToArrayBuffer.readAsArrayBuffer(blob);
+
         this.once('canplay', function () {
             my.backend.loadMedia(my.media);
         });
