@@ -50,32 +50,41 @@ var WaveSurfer = {
         this.loopSelection = this.params.loopSelection;
         this.minPxPerSec = this.params.minPxPerSec;
 
-        this.createMedia();
+        this.bindUserAction();
         this.createBackend();
         this.createDrawer();
     },
 
-    createMedia: function () {
+    bindUserAction: function () {
+        // iOS requires user input to start loading audio
+        var my = this;
+        var onUserAction = function () {
+            my.fireEvent('user-action');
+        };
+        document.addEventListener('mousedown', onUserAction);
+        document.addEventListener('keydown', onUserAction);
+        this.on('destroy', function () {
+            document.removeEventListener('mousedown', onUserAction);
+            document.removeEventListener('keydown', onUserAction);
+        });
+    },
+
+    createMedia: function (url) {
         var my = this;
 
         this.media = document.createElement('audio');
         this.media.controls = false;
         this.media.autoplay = false;
-
-        this.media.addEventListener('canplay', function () {
-            my.fireEvent('canplay');
-        });
-
-        // iOS
-        this.on('user-action', function () {
-            // we assume the audio can be played at once
-            my.fireEvent('canplay');
-        });
+        this.media.src = url;
 
         this.media.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading media element');
         });
 
+        var prevMedia = this.container.querySelector('audio');
+        if (prevMedia) {
+            this.container.removeChild(prevMedia);
+        }
         this.container.appendChild(this.media);
     },
 
@@ -96,7 +105,9 @@ var WaveSurfer = {
 
         // Click-to-seek
         this.drawer.on('mousedown', function (progress) {
-            my.seekTo(progress);
+            setTimeout(function () {
+                my.seekTo(progress);
+            }, 0);
         });
 
         // Drag selection events
@@ -161,12 +172,10 @@ var WaveSurfer = {
     },
 
     play: function (start, end) {
-        this.fireEvent('user-action');
         this.backend.play(start, end);
     },
 
     pause: function () {
-        this.fireEvent('user-action');
         this.backend.pause();
     },
 
@@ -199,8 +208,8 @@ var WaveSurfer = {
     },
 
     stop: function () {
-        this.play(0);
         this.pause();
+        this.seekTo(0);
         this.drawer.progress(0);
     },
 
@@ -344,13 +353,24 @@ var WaveSurfer = {
     },
 
     /**
+     * iOS requires a touch to start loading audio
+     */
+    startOnAction: function (url) {
+        var my = this;
+        this.createMedia(url);
+        this.once('user-action', function () {
+            my.backend.loadMedia(my.media);
+        });
+    },
+
+    /**
      * Loads audio and prerenders its waveform.
      */
     load: function (url) {
         var my = this;
 
         this.empty();
-        this.media.src = url;
+        this.startOnAction(url);
 
         // load via XHR and render all at once
         this.downloadArrayBuffer(url, function (arraybuffer) {
@@ -361,28 +381,16 @@ var WaveSurfer = {
                 my.fireEvent('error', 'Error decoding audiobuffer');
             });
         });
-        this.once('canplay', function () {
-            my.backend.loadMedia(my.media);
-        });
     },
 
     /**
      * Load audio stream and render its waveform as it plays.
      */
     loadStream: function (url) {
-        var my = this;
-
         this.empty();
-        this.media.src = url;
-
-        this.once('canplay', function () {
-            my.backend.loadMedia(my.media);
-            my.drawAsItPlays();
-        });
-
-        setTimeout(function () {
-            my.fireEvent('ready');
-        }, 0);
+        this.startOnAction(url);
+        this.drawAsItPlays();
+        setTimeout(this.fireEvent.bind(this, 'ready'), 0);
     },
 
     downloadArrayBuffer: function (url, callback) {
@@ -599,6 +607,7 @@ WaveSurfer.Mark = {
     },
 
     remove: function () {
+        this.unAll();
         this.fireEvent('remove');
     }
 };
@@ -637,23 +646,23 @@ WaveSurfer.Observer = {
     },
 
     once: function (event, handler) {
-        var fn = (function () {
+        var my = this;
+        var fn = function () {
             handler();
-            this.un(event, fn);
-        }).bind(this);
+            setTimeout(function () {
+                my.un(event, fn);
+            }, 0);
+        };
         this.on(event, fn);
     },
 
     fireEvent: function (event) {
         if (!this.handlers) { return; }
-
         var handlers = this.handlers[event];
         var args = Array.prototype.slice.call(arguments, 1);
-        if (handlers) {
-            for (var i = 0, len = handlers.length; i < len; i += 1) {
-                handlers[i].apply(null, args);
-            }
-        }
+        handlers && handlers.forEach(function (fn) {
+            fn.apply(null, args);
+        });
     }
 };
 

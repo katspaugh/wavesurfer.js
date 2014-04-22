@@ -17,6 +17,16 @@ WaveSurfer.WebAudio = {
         this.prevFrameTime = 0;
         this.scheduledPause = null;
 
+        // Dummy media to catch errors
+        this.media = {
+            currentTime: 0,
+            duration: 0,
+            paused: true,
+            playbackRate: 1,
+            play: function () {},
+            pause: function () {}
+        };
+
         this.createVolumeNode();
         this.createScriptNode();
         this.createAnalyserNode();
@@ -96,7 +106,7 @@ WaveSurfer.WebAudio = {
      */
     setPlaybackRate: function (value) {
         this.playbackRate = value || 1;
-        if (this.source) {
+        if (this.media) {
             this.media.playbackRate = this.playbackRate;
         }
     },
@@ -154,7 +164,7 @@ WaveSurfer.WebAudio = {
     },
 
     isPaused: function () {
-        return !this.source || this.media.paused;
+        return this.media.paused;
     },
 
     getDuration: function () {
@@ -190,6 +200,10 @@ WaveSurfer.WebAudio = {
         this.scheduledPause = null;
         this.media.pause();
         this.fireEvent('pause');
+    },
+
+    seekTo: function (time) {
+        this.media.currentTime = time;
     },
 
     /**

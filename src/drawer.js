@@ -73,7 +73,6 @@ WaveSurfer.Drawer = {
             });
 
             my.wrapper.addEventListener('mousedown', function (e) {
-                e.stopPropagation();
                 drag.startPercentage = handleEvent(e);
             });
 
