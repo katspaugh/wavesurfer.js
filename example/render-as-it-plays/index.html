@@ -43,14 +43,20 @@
                     <!-- Here be the waveform -->
                 </div>
 
+                <div id="song-info" style="display: none">
+                    <h2>
+                        <img alt="cover" src="{{image.small}}" width="100" />
+                        {{title}}
+                        <small>by {{artist}}</small>
+
+                        <button class="btn btn-primary" data-action="play">
+                            <i class="glyphicon glyphicon-play"></i>
+                            Play
+                        </button>
+                    </h2>
+                </div>
+
                 <div class="controls">
-                    <button class="btn btn-primary" data-action="play">
-                        <i class="glyphicon glyphicon-play"></i>
-                        Play
-                        /
-                        <i class="glyphicon glyphicon-pause"></i>
-                        Pause
-                    </button>
                 </div>
             </div>
 
@@ -58,7 +64,7 @@
                 <h3>How to Enable</h3>
 
                 <p>
-                    To enable the render-as-it-play feauture,
+                    To enable the render-as-it-play feature,
                     call <code>wavesurfer.loadStream(url)</code>
                     instead of <code>wavesurfer.load(url)</code>.
                 </p>
@@ -76,7 +82,7 @@
                 <div class="col-sm-5">
                     <div class="pull-right">
                         <noindex>
-                            The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.
+                            Audio provided by wonderful <a href="http://ex.fm/api#trending">ex.fm</a>.
                         </noindex>
                     </div>
                 </div>

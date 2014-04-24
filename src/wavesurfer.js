@@ -378,7 +378,7 @@ var WaveSurfer = {
         this.startOnAction(url);
 
         // load via XHR and render all at once
-        this.downloadArrayBuffer(url, function (arraybuffer) {
+        return this.downloadArrayBuffer(url, function (arraybuffer) {
             my.backend.decodeArrayBuffer(arraybuffer, function () {
                 my.drawBuffer();
                 my.fireEvent('ready');
@@ -400,24 +400,18 @@ var WaveSurfer = {
 
     downloadArrayBuffer: function (url, callback) {
         var my = this;
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.responseType = 'arraybuffer';
-        xhr.addEventListener('progress', function (e) {
+        var ajax = WaveSurfer.util.ajax({
+            url: url,
+            responseType: 'arraybuffer'
+        });
+        ajax.on('progress', function (e) {
             my.onProgress(e);
         });
-        xhr.addEventListener('load', function () {
-            if (200 == xhr.status || 206 == xhr.status) {
-                callback(xhr.response);
-            } else {
-                my.fireEvent('error', 'Server response: ' + xhr.statusText);
-            }
+        ajax.on('success', callback);
+        ajax.on('error', function (e) {
+            my.fireEvent('error', 'XHR error: ' + e.target.statusText);
         });
-        xhr.addEventListener('error', function () {
-            my.fireEvent('error', 'Error loading audio via XHR');
-        });
-        xhr.send();
-        my.fireEvent('xhr-start', xhr);
+        return ajax;
     },
 
     onProgress: function (e) {
@@ -699,6 +693,31 @@ WaveSurfer.util = {
             if (val > max) { max = val; }
         }
         return max;
+    },
+
+    ajax: function (options) {
+        var ajax = Object.create(WaveSurfer.Observer);
+        var xhr = new XMLHttpRequest();
+        xhr.open(options.method || 'GET', options.url, true);
+        xhr.responseType = options.responseType;
+        xhr.addEventListener('progress', function (e) {
+            ajax.fireEvent('progress', e);
+        });
+        xhr.addEventListener('load', function (e) {
+            ajax.fireEvent('load', e);
+
+            if (200 == xhr.status || 206 == xhr.status) {
+                ajax.fireEvent('success', xhr.response, e);
+            } else {
+                ajax.fireEvent('error', e);
+            }
+        });
+        xhr.addEventListener('error', function (e) {
+            ajax.fireEvent('error', e);
+        });
+        xhr.send();
+        ajax.xhr = xhr;
+        return ajax;
     },
 
     /**

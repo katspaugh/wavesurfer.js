@@ -10,11 +10,29 @@ document.addEventListener('DOMContentLoaded', function () {
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
-        minPxPerSec: 50
+        minPxPerSec: 50,
+        scrollParent: true
     });
 
     // Load audio from URL
-    wavesurfer.loadStream('../panner/media.wav');
+    var ajax = wavesurfer.util.ajax({
+        url: 'http://ex.fm/api/v3/trending',
+        responseType: 'json'
+    });
+    ajax.on('success', function (data) {
+        if (data.status_text != 'OK' || !data.total) {
+            ajax.fireEvent('error');
+        } else {
+            var song = data.songs[0];
+            var container = document.querySelector('#song-info');
+            container.innerHTML = template(container.innerHTML, song);
+            container.style.display = '';
+            wavesurfer.loadStream(song.url);
+        }
+    });
+    ajax.on('error', function () {
+        wavesurfer.loadStream('../panner/media.wav');
+    });
 
     // Log errors
     wavesurfer.on('error', function (msg) {
@@ -45,4 +63,12 @@ document.addEventListener('DOMContentLoaded', function () {
         wavesurfer.on('destroy', hideProgress);
         wavesurfer.on('error', hideProgress);
     }());
+
+    function template(str, data) {
+        return str.replace(/{{(.+?)}}/g, function (s, s1) {
+            return s1.split('.').reduce(function (a, b) {
+                return a[b];
+            }, data);
+        });
+    }
 });
