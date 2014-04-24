@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (data.status_text != 'OK' || !data.total) {
             ajax.fireEvent('error');
         } else {
-            var song = data.songs[0];
+            var song = data.songs[~~(Math.random() * data.total)];
             var container = document.querySelector('#song-info');
             container.innerHTML = template(container.innerHTML, song);
             container.style.display = '';
@@ -40,9 +40,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Bind play/pause button
-    document.querySelector(
-        '[data-action="play"]'
-    ).addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
+    document.querySelector('#play').addEventListener('click', function () {
+        wavesurfer.playPause();
+    });
 
     // Progress bar
     (function () {

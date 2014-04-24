@@ -43,20 +43,23 @@
                     <!-- Here be the waveform -->
                 </div>
 
-                <div id="song-info" style="display: none">
-                    <h2>
-                        <img alt="cover" src="{{image.small}}" width="100" />
-                        {{title}}
-                        <small>by {{artist}}</small>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h2 id="song-info" style="display: none">
+                            <img class="thumbnail img-thumbnail pull-left" alt="cover" src="{{image.small}}" width="100" style="margin-right: 10px" />
+                            {{title}}<br />
+                            <small>by {{artist}}</small>
+                        </h2>
+                    </div>
 
-                        <button class="btn btn-primary" data-action="play">
-                            <i class="glyphicon glyphicon-play"></i>
-                            Play
-                        </button>
-                    </h2>
-                </div>
-
-                <div class="controls">
+                    <div class="col-sml-6">
+                        <h2>
+                            <button class="btn btn-primary" id="play">
+                                <i class="glyphicon glyphicon-play"></i>
+                                Play
+                            </button>
+                        </h2>
+                    </div>
                 </div>
             </div>
 
