@@ -125,14 +125,14 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     updateMark: function (mark) {
         var markEl = document.getElementById(mark.id);
         markEl.title = mark.getTitle();
+        var width = this.width / this.params.pixelRatio;
+        var pos = mark.percentage * width - mark.width / 2;
         this.style(markEl, {
             height: '100%',
             position: 'absolute',
             zIndex: 3,
             width: mark.width + 'px',
-            left: Math.max(0, Math.round(
-                mark.percentage * this.width - mark.width / 2
-            )) + 'px',
+            left: Math.min(width - mark.width, Math.max(0, pos)) + 'px',
             backgroundColor: mark.color
         });
     },
