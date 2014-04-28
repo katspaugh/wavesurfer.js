@@ -55,7 +55,7 @@ WaveSurfer.Drawer = {
             }
         });
 
-        this.wrapper.addEventListener('mousedown', function (e) {
+        this.wrapper.addEventListener('mouseup', function (e) {
             if (my.interact) {
                 my.fireEvent('mouseup', e);
             }
