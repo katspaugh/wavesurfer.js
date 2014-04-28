@@ -7,6 +7,9 @@ var WaveSurfer = {
         progressColor : '#555',
         cursorColor   : '#333',
         selectionColor: '#0fc',
+        selectionForeground: false,
+        selectionBorder: false,
+        selectionBorderColor: '#000',
         cursorWidth   : 1,
         markerWidth   : 2,
         skipLength    : 2,
@@ -118,6 +121,9 @@ var WaveSurfer = {
             this.drawer.on('drag-clear', function () {
                 my.clearSelection();
             });
+            this.drawer.on('drag-mark', function (drag, mark) {
+                my.updateSelectionByMark(drag, mark)
+            });           
         }
 
         // Mouseup for plugins
@@ -183,6 +189,13 @@ var WaveSurfer = {
         this.backend.isPaused() ? this.play() : this.pause();
     },
 
+    playPauseSelection: function(){
+        var sel = this.getSelection();
+        if (sel !== null){
+            this.seekTo(sel.startPercentage);
+            this.playPause();
+        }
+    },
     skipBackward: function (seconds) {
         this.skip(seconds || -this.params.skipLength);
     },
@@ -477,36 +490,63 @@ var WaveSurfer = {
         this.backend.destroy();
         this.drawer.destroy();
     },
-
+    updateSelectionByMark: function(markDrag, mark){  
+        var selection;
+        if (mark.id == this.selMark0.id){
+            selection = {
+                'startPercentage': markDrag.endPercentage,
+                'endPercentage': this.selMark1.percentage,                
+            };
+        } else {
+            selection = {
+                'startPercentage': this.selMark0.percentage,
+                'endPercentage': markDrag.endPercentage,
+            };        
+        }
+        this.updateSelection(selection);
+    },
     updateSelection: function (selection) {
         var my = this;
-
         var percent0 = selection.startPercentage;
         var percent1 = selection.endPercentage;
         var color = this.params.selectionColor;
-
+        var width = 0
+        if (this.params.selectionBorder) {
+            color = this.params.selectionBorderColor;
+            width = 2; // parametrize?
+        }
+        
         if (percent0 > percent1) {
             var tmpPercent = percent0;
             percent0 = percent1;
             percent1 = tmpPercent;
+            
         }
 
         if (this.selMark0) {
-            this.selMark0.update({ percentage: percent0 });
+            this.selMark0.update({
+                percentage: percent0,
+                position: percent0 * this.getDuration()
+            });
         } else {
             this.selMark0 = this.mark({
-                width: 0,
+                width: width,
                 percentage: percent0,
+                position: percent0 * this.getDuration(),                
                 color: color
             });
         }
 
         if (this.selMark1) {
-            this.selMark1.update({ percentage: percent1 });
+            this.selMark1.update({
+                percentage: percent1,
+                position: percent1 * this.getDuration()
+            });
         } else {
             this.selMark1 = this.mark({
-                width: 0,
+                width: width,
                 percentage: percent1,
+                position: percent1 * this.getDuration(),
                 color: color
             });
         }
@@ -516,9 +556,11 @@ var WaveSurfer = {
         if (this.loopSelection) {
             this.backend.updateSelection(percent0, percent1);
         }
+        my.fireEvent('selection-update', this.getSelection());
     },
 
     clearSelection: function () {
+        this.drawer.clearSelection(this.selMark0, this.selMark1);
         if (this.selMark0) {
             this.selMark0.remove();
             this.selMark0 = null;
@@ -527,7 +569,6 @@ var WaveSurfer = {
             this.selMark1.remove();
             this.selMark1 = null;
         }
-        this.drawer.clearSelection();
 
         if (this.loopSelection) {
             this.backend.clearSelection();
@@ -550,7 +591,9 @@ var WaveSurfer = {
             startPercentage: this.selMark0.percentage,
             startPosition: this.selMark0.position,
             endPercentage: this.selMark1.percentage,
-            endPosition: this.selMark1.position
+            endPosition: this.selMark1.position,
+            startTime: this.selMark0.getTitle(),
+            endTime: this.selMark1.getTitle()
         };
     },
 
