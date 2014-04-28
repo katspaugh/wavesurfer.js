@@ -39,19 +39,19 @@ WaveSurfer.Drawer = {
 
         this.setupWrapperEvents();
     },
-
+    
+    handleEvent: function (e) {
+            e.preventDefault();
+            var bbox = this.wrapper.getBoundingClientRect();
+            return ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.scrollWidth) || 0;
+    },
+    
     setupWrapperEvents: function () {
         var my = this;
 
-        var handleEvent = function (e) {
-            e.preventDefault();
-            var bbox = my.wrapper.getBoundingClientRect();
-            return ((e.clientX - bbox.left + my.wrapper.scrollLeft) / my.scrollWidth) || 0;
-        };
-
         this.wrapper.addEventListener('mousedown', function (e) {
             if (my.interact) {
-                my.fireEvent('mousedown', handleEvent(e), e);
+                my.fireEvent('mousedown', my.handleEvent(e), e);
             }
         });
 
@@ -73,13 +73,13 @@ WaveSurfer.Drawer = {
             });
 
             my.wrapper.addEventListener('mousedown', function (e) {
-                drag.startPercentage = handleEvent(e);
+                drag.startPercentage = my.handleEvent(e);
             });
 
             my.wrapper.addEventListener('mousemove', WaveSurfer.util.throttle(function (e) {
                 e.stopPropagation();
                 if (drag.startPercentage != null) {
-                    drag.endPercentage = handleEvent(e);
+                    drag.endPercentage = my.handleEvent(e);
                     my.fireEvent('drag', drag);
                 }
             }, 30));
@@ -187,11 +187,11 @@ WaveSurfer.Drawer = {
         this.drawSelection();
     },
 
-    clearSelection: function () {
+    clearSelection: function (mark0, mark1) {
         this.startPercent = null;
         this.endPercent = null;
-
         this.eraseSelection();
+        this.eraseSelectionMarks(mark0, mark1);
     },
 
 
@@ -214,7 +214,9 @@ WaveSurfer.Drawer = {
 
     drawSelection: function () {},
 
-    eraseSelection: function () {}
+    eraseSelection: function () {},
+    
+    eraseSelectionMarks: function (mark0, mark1) {}    
 };
 
 WaveSurfer.util.extend(WaveSurfer.Drawer, WaveSurfer.Observer);

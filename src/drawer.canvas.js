@@ -30,10 +30,16 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             document.createElement('canvas')
         );
 
+        var selectionZIndex = 0;
+        
+        if (this.params.selectionForeground) {
+            selectionZIndex = 3;
+        }
+
         var selectionCanvas = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
-                zIndex: 0
+                zIndex: selectionZIndex
             })
         );
 
@@ -104,11 +110,19 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     addMark: function (mark) {
+        var my = this;
         var markEl = document.createElement('mark');
         markEl.id = mark.id;
         this.wrapper.appendChild(markEl);
-
-        var my = this;
+        var handler;
+        
+        if (this.params.selectionBorder) {
+            handler = document.createElement('div');
+            handler.id = mark.id + "_handler";
+            handler.innerHTML = "●";
+            markEl.appendChild(handler);
+        }
+              
         markEl.addEventListener('mouseover', function (e) {
             my.fireEvent('mark-over', mark, e);
         });
@@ -119,20 +133,59 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             my.fireEvent('mark-click', mark, e);
         });
 
-        this.updateMark(mark);
+        this.params.selectionBorder && (function () {
+            var drag = {};
+
+            var onMouseUp = function (e) {
+                e.stopPropagation();
+                drag.startPercentage = drag.endPercentage = null;
+            };
+            document.addEventListener('mouseup', onMouseUp);
+            my.on('destroy', function () {
+                document.removeEventListener('mouseup', onMouseUp);
+            });
+
+            handler.addEventListener('mousedown', function (e) {
+                e.stopPropagation();
+                drag.startPercentage = my.handleEvent(e);               
+            });
+
+            my.wrapper.addEventListener('mousemove', WaveSurfer.util.throttle(function (e) {
+                e.stopPropagation();
+                if (drag.startPercentage != null) {
+                    drag.endPercentage = my.handleEvent(e);
+                    my.fireEvent('drag-mark', drag, mark);
+                }
+            }, 30));            
+        }());
+        
+        this.updateMark(mark);  
+
+        if (this.params.selectionBorder) {
+            this.style(handler, {
+                position: 'absolute',
+                fontSize: '15px', //parametrize?
+                cursor: 'col-resize',
+            });
+            this.style(handler, {
+                left: handler.offsetWidth/2 * -1 + "px",
+                top: markEl.offsetHeight/2 - handler.offsetHeight/2 + "px",
+                color: mark.color
+            });
+        }
     },
 
     updateMark: function (mark) {
         var markEl = document.getElementById(mark.id);
         markEl.title = mark.getTitle();
-        var width = this.width / this.params.pixelRatio;
-        var pos = mark.percentage * width - mark.width / 2;
         this.style(markEl, {
             height: '100%',
             position: 'absolute',
-            zIndex: 3,
+            zIndex: 4,
             width: mark.width + 'px',
-            left: Math.min(width - mark.width, Math.max(0, pos)) + 'px',
+            left: Math.max(0, Math.round(
+                mark.percentage * this.scrollWidth  - mark.width / 2
+            )) + 'px',
             backgroundColor: mark.color
         });
     },
@@ -156,5 +209,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
     eraseSelection: function () {
         this.selectionCc.clearRect(0, 0, this.width, this.height);
-    }
+    },
+    
+    eraseSelectionMarks: function (mark0, mark1) {
+        this.removeMark(mark0);
+        this.removeMark(mark1);        
+    },
 });
