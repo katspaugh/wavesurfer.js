@@ -164,8 +164,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         if (this.params.selectionBorder) {
             this.style(handler, {
                 position: 'absolute',
-                fontSize: '15px', // parametrize?
-                cursor: 'col-resize'
+                fontSize: this.params.handlerSize + "px",
+                fontFamily: 'monospace',
+                cursor: 'col-resize',
             });
             this.style(handler, {
                 left: handler.offsetWidth / 2 * -1 + 'px',
