@@ -401,15 +401,15 @@ var WaveSurfer = {
      */
     loadStream: function (url) {
         var my = this;
-        var media = this.createMedia(url);
 
         this.empty();
         this.drawAsItPlays();
+        this.media = this.createMedia(url);
 
         // iOS requires a touch to start loading audio
         this.once('user-action', function () {
             // Assume media.readyState >= media.HAVE_ENOUGH_DATA
-            my.backend.loadMedia(media);
+            my.backend.loadMedia(my.media);
         });
 
         setTimeout(this.fireEvent.bind(this, 'ready'), 0);
@@ -492,7 +492,9 @@ var WaveSurfer = {
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();
-        this.container.innerHTML = '';
+        if (this.media) {
+            this.container.removeChild(this.media);
+        }
     },
 
     updateSelectionByMark: function (markDrag, mark) {
