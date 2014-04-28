@@ -39,13 +39,13 @@ WaveSurfer.Drawer = {
 
         this.setupWrapperEvents();
     },
-    
+
     handleEvent: function (e) {
             e.preventDefault();
             var bbox = this.wrapper.getBoundingClientRect();
             return ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.scrollWidth) || 0;
     },
-    
+
     setupWrapperEvents: function () {
         var my = this;
 
@@ -215,8 +215,8 @@ WaveSurfer.Drawer = {
     drawSelection: function () {},
 
     eraseSelection: function () {},
-    
-    eraseSelectionMarks: function (mark0, mark1) {}    
+
+    eraseSelectionMarks: function (mark0, mark1) {}
 };
 
 WaveSurfer.util.extend(WaveSurfer.Drawer, WaveSurfer.Observer);

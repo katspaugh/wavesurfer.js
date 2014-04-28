@@ -31,7 +31,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         );
 
         var selectionZIndex = 0;
-        
+
         if (this.params.selectionForeground) {
             selectionZIndex = 3;
         }
@@ -115,14 +115,14 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         markEl.id = mark.id;
         this.wrapper.appendChild(markEl);
         var handler;
-        
+
         if (this.params.selectionBorder) {
             handler = document.createElement('div');
-            handler.id = mark.id + "_handler";
-            handler.innerHTML = "●";
+            handler.id = mark.id + '_handler';
+            handler.innerHTML = '●';
             markEl.appendChild(handler);
         }
-              
+
         markEl.addEventListener('mouseover', function (e) {
             my.fireEvent('mark-over', mark, e);
         });
@@ -147,7 +147,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
             handler.addEventListener('mousedown', function (e) {
                 e.stopPropagation();
-                drag.startPercentage = my.handleEvent(e);               
+                drag.startPercentage = my.handleEvent(e);
             });
 
             my.wrapper.addEventListener('mousemove', WaveSurfer.util.throttle(function (e) {
@@ -156,20 +156,20 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                     drag.endPercentage = my.handleEvent(e);
                     my.fireEvent('drag-mark', drag, mark);
                 }
-            }, 30));            
+            }, 30));
         }());
-        
-        this.updateMark(mark);  
+
+        this.updateMark(mark);
 
         if (this.params.selectionBorder) {
             this.style(handler, {
                 position: 'absolute',
-                fontSize: '15px', //parametrize?
-                cursor: 'col-resize',
+                fontSize: '15px', // parametrize?
+                cursor: 'col-resize'
             });
             this.style(handler, {
-                left: handler.offsetWidth/2 * -1 + "px",
-                top: markEl.offsetHeight/2 - handler.offsetHeight/2 + "px",
+                left: handler.offsetWidth / 2 * -1 + 'px',
+                top: markEl.offsetHeight / 2 - handler.offsetHeight / 2 + 'px',
                 color: mark.color
             });
         }
@@ -210,9 +210,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     eraseSelection: function () {
         this.selectionCc.clearRect(0, 0, this.width, this.height);
     },
-    
+
     eraseSelectionMarks: function (mark0, mark1) {
         this.removeMark(mark0);
-        this.removeMark(mark1);        
-    },
+        this.removeMark(mark1);
+    }
 });

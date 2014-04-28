@@ -122,8 +122,8 @@ var WaveSurfer = {
                 my.clearSelection();
             });
             this.drawer.on('drag-mark', function (drag, mark) {
-                my.updateSelectionByMark(drag, mark)
-            });           
+                my.updateSelectionByMark(drag, mark);
+            });
         }
 
         // Mouseup for plugins
@@ -490,37 +490,38 @@ var WaveSurfer = {
         this.backend.destroy();
         this.drawer.destroy();
     },
-    updateSelectionByMark: function(markDrag, mark){  
+
+    updateSelectionByMark: function (markDrag, mark) {
         var selection;
         if (mark.id == this.selMark0.id){
             selection = {
                 'startPercentage': markDrag.endPercentage,
-                'endPercentage': this.selMark1.percentage,                
+                'endPercentage': this.selMark1.percentage
             };
         } else {
             selection = {
                 'startPercentage': this.selMark0.percentage,
-                'endPercentage': markDrag.endPercentage,
-            };        
+                'endPercentage': markDrag.endPercentage
+            };
         }
         this.updateSelection(selection);
     },
+
     updateSelection: function (selection) {
         var my = this;
         var percent0 = selection.startPercentage;
         var percent1 = selection.endPercentage;
         var color = this.params.selectionColor;
-        var width = 0
+        var width = 0;
         if (this.params.selectionBorder) {
             color = this.params.selectionBorderColor;
             width = 2; // parametrize?
         }
-        
+
         if (percent0 > percent1) {
             var tmpPercent = percent0;
             percent0 = percent1;
             percent1 = tmpPercent;
-            
         }
 
         if (this.selMark0) {
@@ -532,7 +533,7 @@ var WaveSurfer = {
             this.selMark0 = this.mark({
                 width: width,
                 percentage: percent0,
-                position: percent0 * this.getDuration(),                
+                position: percent0 * this.getDuration(),
                 color: color
             });
         }
