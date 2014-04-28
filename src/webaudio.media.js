@@ -34,6 +34,14 @@ WaveSurfer.WebAudio.Media = {
     },
 
     /**
+     * Set the audio source playback rate.
+     */
+    setPlaybackRate: function (value) {
+        this.playbackRate = value || 1;
+        this.media.playbackRate = this.playbackRate;
+    },
+
+    /**
      * Plays the loaded audio region.
      *
      * @param {Number} start Start offset in seconds,
@@ -50,7 +58,6 @@ WaveSurfer.WebAudio.Media = {
         } else {
             this.scheduledPause = end;
         }
-        this.media.playbackRate = this.playbackRate;
         this.media.play();
         this.fireEvent('play');
     },

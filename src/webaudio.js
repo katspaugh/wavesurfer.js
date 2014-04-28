@@ -241,13 +241,6 @@ WaveSurfer.WebAudio = {
         return this.analyserData;
     },
 
-    /**
-     * Set the audio source playback rate.
-     */
-    setPlaybackRate: function (value) {
-        this.playbackRate = value || 1;
-    },
-
 
     /* Dummy methods */
 
@@ -273,6 +266,13 @@ WaveSurfer.WebAudio = {
      */
     getDuration: function () {
         return 0;
+    },
+
+    /**
+     * Set the audio source playback rate.
+     */
+    setPlaybackRate: function (value) {
+        this.playbackRate = value || 1;
     },
 
     /**

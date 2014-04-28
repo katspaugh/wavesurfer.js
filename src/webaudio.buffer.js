@@ -88,5 +88,13 @@ WaveSurfer.WebAudio.Buffer = {
         } else {
             return this.lastStartPosition + (this.ac.currentTime - this.lastPlay) * this.playbackRate;
         }
+    },
+
+    /**
+     * Set the audio source playback rate.
+     */
+    setPlaybackRate: function (value) {
+        this.playbackRate = value || 1;
+        this.source.playbackRate.value = this.playBackrate;
     }
 };
