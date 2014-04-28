@@ -7,6 +7,7 @@ SOURCE_MAP=build/wavesurfer-js-map.json
 SOURCE_MAP_ROOT=/
 SOURCES=src/wavesurfer.js\
         src/webaudio.js\
+        src/webaudio.*.js\
         src/drawer.js\
         src/drawer.*.js
 

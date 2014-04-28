@@ -55,8 +55,8 @@ var WaveSurfer = {
         this.minPxPerSec = this.params.minPxPerSec;
 
         this.bindUserAction();
-        this.createBackend();
         this.createDrawer();
+        this.createBackend();
     },
 
     bindUserAction: function () {
@@ -73,15 +73,18 @@ var WaveSurfer = {
         });
     },
 
+    /**
+     * Used with loadStream.
+     */
     createMedia: function (url) {
         var my = this;
 
-        this.media = document.createElement('audio');
-        this.media.controls = false;
-        this.media.autoplay = false;
-        this.media.src = url;
+        var media = document.createElement('audio');
+        media.controls = false;
+        media.autoplay = false;
+        media.src = url;
 
-        this.media.addEventListener('error', function () {
+        media.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading media element');
         });
 
@@ -89,7 +92,9 @@ var WaveSurfer = {
         if (prevMedia) {
             this.container.removeChild(prevMedia);
         }
-        this.container.appendChild(this.media);
+        this.container.appendChild(media);
+
+        return media;
     },
 
     createDrawer: function () {
@@ -174,10 +179,6 @@ var WaveSurfer = {
         return this.backend.getCurrentTime();
     },
 
-    playAtPercent: function (startPercentage) {
-        this.play(startPercentage * this.getDuration());
-    },
-
     play: function (start, end) {
         this.backend.play(start, end);
     },
@@ -219,7 +220,7 @@ var WaveSurfer = {
         if (paused) {
             this.params.scrollParent = false;
         }
-        this.playAtPercent(progress);
+        this.play(progress * this.getDuration());
         if (paused) {
             this.pause();
         }
@@ -378,28 +379,15 @@ var WaveSurfer = {
     },
 
     /**
-     * iOS requires a touch to start loading audio
-     */
-    startOnAction: function (url) {
-        var my = this;
-        this.createMedia(url);
-        this.once('user-action', function () {
-            my.backend.loadMedia(my.media);
-        });
-    },
-
-    /**
      * Loads audio and prerenders its waveform.
      */
     load: function (url) {
         var my = this;
-
         this.empty();
-        this.startOnAction(url);
-
         // load via XHR and render all at once
         return this.downloadArrayBuffer(url, function (arraybuffer) {
-            my.backend.decodeArrayBuffer(arraybuffer, function () {
+            my.backend.decodeArrayBuffer(arraybuffer, function (buffer) {
+                my.backend.loadBuffer(buffer);
                 my.drawBuffer();
                 my.fireEvent('ready');
             }, function () {
@@ -412,9 +400,18 @@ var WaveSurfer = {
      * Load audio stream and render its waveform as it plays.
      */
     loadStream: function (url) {
+        var my = this;
+        var media = this.createMedia(url);
+
         this.empty();
-        this.startOnAction(url);
         this.drawAsItPlays();
+
+        // iOS requires a touch to start loading audio
+        this.once('user-action', function () {
+            // Assume media.readyState >= media.HAVE_ENOUGH_DATA
+            my.backend.loadMedia(media);
+        });
+
         setTimeout(this.fireEvent.bind(this, 'ready'), 0);
     },
 
@@ -477,13 +474,13 @@ var WaveSurfer = {
      * Display empty waveform.
      */
     empty: function () {
-        if (!this.backend.isPaused()) {
+        if (this.backend && !this.backend.isPaused()) {
             this.stop();
+            this.backend.disconnectSource();
         }
         this.clearMarks();
         this.drawer.setWidth(0);
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
-        this.backend.disconnectSource();
     },
 
     /**
@@ -493,9 +490,9 @@ var WaveSurfer = {
         this.fireEvent('destroy');
         this.clearMarks();
         this.unAll();
-        this.container.removeChild(this.media);
         this.backend.destroy();
         this.drawer.destroy();
+        this.container.innerHTML = '';
     },
 
     updateSelectionByMark: function (markDrag, mark) {
@@ -721,11 +718,9 @@ WaveSurfer.util = {
     extend: function (dest) {
         var sources = Array.prototype.slice.call(arguments, 1);
         sources.forEach(function (source) {
-            if (source != null) {
-                Object.keys(source).forEach(function (key) {
-                    dest[key] = source[key];
-                });
-            }
+            Object.keys(source).forEach(function (key) {
+                dest[key] = source[key];
+            });
         });
         return dest;
     },

@@ -4,12 +4,22 @@ WaveSurfer.WebAudio = {
     scriptBufferSize: 256,
     fftSize: 128,
 
-    init: function (params) {
+    getAudioContext: function () {
         if (!(window.AudioContext || window.webkitAudioContext)) {
             throw new Error(
                 'wavesurfer.js: your browser doesn\'t support WebAudio'
             );
         }
+
+        if (!WaveSurfer.WebAudio.audioContext) {
+            WaveSurfer.WebAudio.audioContext = new (
+                window.AudioContext || window.webkitAudioContext
+            );
+        }
+        return WaveSurfer.WebAudio.audioContext;
+    },
+
+    init: function (params) {
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
 
@@ -17,20 +27,22 @@ WaveSurfer.WebAudio = {
         this.prevFrameTime = 0;
         this.scheduledPause = null;
 
-        // Dummy media to catch errors
-        this.media = {
-            currentTime: 0,
-            duration: 0,
-            paused: true,
-            playbackRate: 1,
-            play: function () {},
-            pause: function () {}
-        };
-
         this.createVolumeNode();
         this.createScriptNode();
         this.createAnalyserNode();
         this.setPlaybackRate(this.params.audioRate);
+    },
+
+    loadBuffer: function (buffer) {
+        WaveSurfer.util.extend(this, WaveSurfer.WebAudio.Buffer);
+        this.postInit();
+        this.load(buffer);
+    },
+
+    loadMedia: function (media) {
+        WaveSurfer.util.extend(this, WaveSurfer.WebAudio.Media);
+        this.postInit();
+        this.load(media);
     },
 
     disconnectFilters: function () {
@@ -102,16 +114,6 @@ WaveSurfer.WebAudio = {
     },
 
     /**
-     * Set the audio source playback rate.
-     */
-    setPlaybackRate: function (value) {
-        this.playbackRate = value || 1;
-        if (this.media) {
-            this.media.playbackRate = this.playbackRate;
-        }
-    },
-
-    /**
      * Create the gain node needed to control the playback volume.
      */
     createVolumeNode: function () {
@@ -145,65 +147,12 @@ WaveSurfer.WebAudio = {
         return this.gainNode.gain.value;
     },
 
-    loadMedia: function (media) {
-        if (this.source) {
-            this.source.disconnect();
-        }
-        this.media = media;
-        this.source = this.ac.createMediaElementSource(this.media);
-        this.media.playbackRate = this.playbackRate;
-        this.source.connect(this.analyser);
-    },
-
     decodeArrayBuffer: function (arraybuffer, callback, errback) {
         var my = this;
         this.ac.decodeAudioData(arraybuffer, function (data) {
             my.buffer = data;
-            callback();
+            callback(data);
         }, errback);
-    },
-
-    isPaused: function () {
-        return this.media.paused;
-    },
-
-    getDuration: function () {
-        return this.buffer ? this.buffer.duration : this.media.duration;
-    },
-
-    /**
-     * Plays the loaded audio region.
-     *
-     * @param {Number} start Start offset in seconds,
-     * relative to the beginning of a clip.
-     * @param {Number} end When to stop
-     * relative to the beginning of a clip.
-     */
-    play: function (start, end) {
-        if (start != null) {
-            this.media.currentTime = start;
-        }
-        if (end == null) {
-            this.scheduledPause = null;
-        } else {
-            this.scheduledPause = end;
-        }
-        this.prevFrameTime = this.getCurrentTime();
-        this.media.play();
-        this.fireEvent('play');
-    },
-
-    /**
-     * Pauses the loaded audio.
-     */
-    pause: function () {
-        this.scheduledPause = null;
-        this.media.pause();
-        this.fireEvent('pause');
-    },
-
-    seekTo: function (time) {
-        this.media.currentTime = time;
     },
 
     /**
@@ -251,20 +200,6 @@ WaveSurfer.WebAudio = {
         return (this.getCurrentTime() / duration) || 0;
     },
 
-    getCurrentTime: function () {
-        return this.media.currentTime;
-    },
-
-    audioContext: null,
-    getAudioContext: function () {
-        if (!WaveSurfer.WebAudio.audioContext) {
-            WaveSurfer.WebAudio.audioContext = new (
-                window.AudioContext || window.webkitAudioContext
-            );
-        }
-        return WaveSurfer.WebAudio.audioContext;
-    },
-
     disconnectSource: function () {
         if (this.source) {
             this.source.disconnect();
@@ -304,7 +239,56 @@ WaveSurfer.WebAudio = {
     waveform: function () {
         this.analyser.getByteTimeDomainData(this.analyserData);
         return this.analyserData;
-    }
+    },
+
+    /**
+     * Set the audio source playback rate.
+     */
+    setPlaybackRate: function (value) {
+        this.playbackRate = value || 1;
+    },
+
+
+    /* Dummy methods */
+
+    postInit: function () {},
+    load: function () {},
+
+    /**
+     * Get current position in seconds.
+     */
+    getCurrentTime: function () {
+        return 0;
+    },
+
+    /**
+     * @returns {Boolean}
+     */
+    isPaused: function () {
+        return true;
+    },
+
+    /**
+     * Get duration in seconds.
+     */
+    getDuration: function () {
+        return 0;
+    },
+
+    /**
+     * Plays the loaded audio region.
+     *
+     * @param {Number} start Start offset in seconds,
+     * relative to the beginning of a clip.
+     * @param {Number} end When to stop
+     * relative to the beginning of a clip.
+     */
+    play: function (start, end) {},
+
+    /**
+     * Pauses the loaded audio.
+     */
+    pause: function () {}
 };
 
 WaveSurfer.util.extend(WaveSurfer.WebAudio, WaveSurfer.Observer);
