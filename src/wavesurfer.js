@@ -10,6 +10,7 @@ var WaveSurfer = {
         selectionForeground: false,
         selectionBorder: false,
         selectionBorderColor: '#000',
+        handlerSize   : 15,
         cursorWidth   : 1,
         markerWidth   : 2,
         skipLength    : 2,
@@ -213,10 +214,16 @@ var WaveSurfer = {
 
     seekTo: function (progress) {
         var paused = this.backend.isPaused();
+        // avoid small scrolls while paused seeking
+        var oldScrollParent = this.params.scrollParent;
+        if (paused) {
+            this.params.scrollParent = false;
+        }
         this.playAtPercent(progress);
         if (paused) {
             this.pause();
         }
+        this.params.scrollParent = oldScrollParent;
         this.fireEvent('seek', progress);
     },
 

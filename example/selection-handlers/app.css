@@ -1,0 +1,10 @@
+*{
+	margin: 0;
+}
+body{
+	padding: 100px;
+	background-color: #f0f0f0;
+}
+#wave{
+    background-color: #666666;
+}
