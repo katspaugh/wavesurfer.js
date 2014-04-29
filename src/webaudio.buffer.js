@@ -16,7 +16,7 @@ WaveSurfer.WebAudio.Buffer = {
     createSource: function () {
         this.disconnectSource();
         this.source = this.ac.createBufferSource();
-        this.source.playbackRate.value = this.playBackrate;
+        this.source.playbackRate.value = this.playbackRate;
         this.source.buffer = this.buffer;
         this.source.connect(this.analyser);
     },
@@ -95,6 +95,6 @@ WaveSurfer.WebAudio.Buffer = {
      */
     setPlaybackRate: function (value) {
         this.playbackRate = value || 1;
-        this.source.playbackRate.value = this.playBackrate;
+        this.source.playbackRate.value = this.playbackRate;
     }
 };
