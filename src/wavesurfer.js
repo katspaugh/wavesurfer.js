@@ -379,21 +379,58 @@ var WaveSurfer = {
     },
 
     /**
+     * Internal method.
+     */
+    loadArrayBuffer: function (arraybuffer) {
+        var my = this;
+        this.backend.decodeArrayBuffer(arraybuffer, function (data) {
+            my.backend.loadBuffer(data);
+            my.drawBuffer();
+            my.fireEvent('ready');
+        }, function () {
+            my.fireEvent('error', 'Error decoding audiobuffer');
+        });
+    },
+
+    /**
+     * Directly load an externally decoded AudioBuffer.
+     */
+    loadDecodedBuffer: function (buffer) {
+        this.empty();
+        this.backend.loadBuffer(buffer);
+        this.drawBuffer();
+        this.fireEvent('ready');
+    },
+
+    /**
+     * Loads audio data from a Blob or File object.
+     *
+     * @param {Blob|File} blob Audio data.
+     */
+    loadBlob: function (blob) {
+        var my = this;
+        // Create file reader
+        var reader = new FileReader();
+        reader.addEventListener('progress', function (e) {
+            my.onProgress(e);
+        });
+        reader.addEventListener('load', function (e) {
+            my.empty();
+            my.loadArrayBuffer(e.target.result);
+        });
+        reader.addEventListener('error', function () {
+            my.fireEvent('error', 'Error reading file');
+        });
+        reader.readAsArrayBuffer(blob);
+    },
+
+    /**
      * Loads audio and prerenders its waveform.
      */
     load: function (url) {
-        var my = this;
         this.empty();
         // load via XHR and render all at once
-        return this.downloadArrayBuffer(url, function (arraybuffer) {
-            my.backend.decodeArrayBuffer(arraybuffer, function (buffer) {
-                my.backend.loadBuffer(buffer);
-                my.drawBuffer();
-                my.fireEvent('ready');
-            }, function () {
-                my.fireEvent('error', 'Error decoding audiobuffer');
-            });
-        });
+        return this.downloadArrayBuffer(url, this.loadArrayBuffer.bind(this));
     },
 
     /**
