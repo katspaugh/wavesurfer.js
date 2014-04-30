@@ -106,8 +106,8 @@
                 var width = this.drawer.getWidth();
                 var pixelsPerSecond = width/duration;
             } else {
-                var width = backend.getDuration() * this.wavesurfer.minPxPerSec;
-                var pixelsPerSecond = this.wavesurfer.minPxPerSec;
+                var width = backend.getDuration() * wsParams.minPxPerSec;
+                var pixelsPerSecond = wsParams.minPxPerSec;
             }
 
             pixelsPerSecond = pixelsPerSecond / this.wavesurfer.drawer.pixelRatio;
