@@ -118,10 +118,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         this.wrapper.appendChild(markEl);
         var handler;
 
-        if (this.params.draggableMarkers) {
-            handler = document.createElement('div');
-            handler.id = mark.id + '_handler';
-            handler.innerHTML = '●';
+        if (mark.draggable) {
+            handler = document.createElement('handler');
+            handler.id = mark.id + '-handler';
+            handler.className = 'wavesurfer-handler'
             markEl.appendChild(handler);
         }
 
@@ -135,7 +135,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             my.fireEvent('mark-click', mark, e);
         });
 
-        this.params.draggableMarkers && (function () {
+        mark.draggable && (function () {
             var drag = {};
 
             var onMouseUp = function (e) {
@@ -163,17 +163,17 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         this.updateMark(mark);
 
-        if (this.params.draggableMarkers) {
+        if (mark.draggable) {
             this.style(handler, {
                 position: 'absolute',
-                fontSize: this.params.handlerSize + "px",
-                fontFamily: 'monospace',
                 cursor: 'col-resize',
+                width: '12px',
+                height: '15px',                                
             });
             this.style(handler, {
                 left: handler.offsetWidth / 2 * -1 + 'px',
                 top: markEl.offsetHeight / 2 - handler.offsetHeight / 2 + 'px',
-                color: mark.color
+                backgroundColor: mark.color
             });
         }
     },
@@ -200,6 +200,50 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         }
     },
 
+    addRegion: function (region) {
+        var my = this;
+        var regionEl = document.createElement('region');
+        regionEl.id = region.id;
+        this.wrapper.appendChild(regionEl);
+        
+        regionEl.addEventListener('mouseover', function (e) {
+            my.fireEvent('region-over', region, e);
+        });
+        regionEl.addEventListener('mouseleave', function (e) {
+            my.fireEvent('region-leave', region, e);
+        });
+        regionEl.addEventListener('click', function (e) {
+            my.fireEvent('region-click', region, e);
+        });
+        
+        this.updateRegion(region);
+    },
+    
+    updateRegion: function (region) {
+        var regionEl = document.getElementById(region.id);
+        var left = Math.max(0, Math.round(
+                region.startPercentage * this.scrollWidth));
+        var width = Math.max(0, Math.round(
+                region.endPercentage * this.scrollWidth)) - left;
+                
+        this.style(regionEl, {
+            height: '100%',
+            position: 'absolute',
+            zIndex: 4,
+            left: left + 'px',
+            top: '0px',
+            width: width + 'px',
+            backgroundColor: region.color
+        });                
+    },
+    
+    removeRegion: function (region) {
+        var regionEl = document.getElementById(region.id);
+        if (regionEl) {
+            this.wrapper.removeChild(regionEl);
+        }
+    },
+    
     drawSelection: function () {
         this.eraseSelection();
 

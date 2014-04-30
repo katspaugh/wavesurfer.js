@@ -1,5 +1,6 @@
+var wavesurfer;
 document.addEventListener('DOMContentLoaded', function () {
-    var wavesurfer = Object.create(WaveSurfer);
+    wavesurfer = Object.create(WaveSurfer);
     wavesurfer.init({
         container: '#wave',
         waveColor: '#e3e4e6',
@@ -14,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function () {
         height: 250,
         pixelRatio: 2,
         cursorWidth: 2,
-        handlerSize: 25,
     });
 
     wavesurfer.load('../../example/media/demo.wav');

@@ -82,6 +82,8 @@ are the following:
  * `stop()` – stops and goes to the beginning.
  * `skipForward()`
  * `skipBackward()`
+ * `seekTo(progress)` – seeks to a progress [0..1].
+ * `seekAndCenter(progress)` – seeks to a progress and centers view [0..1].
  * `skip(offset)` – skips a number of seconds from the current
    position (use a negative value to go backwards).
  * `setVolume(newVolume)` – sets the playback volume to a new value
@@ -91,15 +93,21 @@ are the following:
  * `mark(options)` – creates a visual marker on the waveform. Options
    are `id` (random if not set), `position` (in seconds), `color` and
    `width` (defaults to the global option `markerWidth`). Returns a
-   marker object which you can update later
+   marker object which you can update later.
    (`marker.update(options)`).
  * `clearMarks()` – removes all markers.
+ * `clearRegions()` – removes all regions. 
  * `empty()` – clears the waveform as if a zero-length audio is
    loaded.
  * `destroy()` – removes events, elements and disconnects Web Audio
    nodes.
+ * `region(options)` – creates a region on the waveform. Options are `id`
+   (random if not set), `startPosition` (in seconds), `endPosition`
+   (in seconds) and  `color`. Returns a region object which you can
+   update later.
  * `toggleLoopSelection()` – toggles whether playback should loop
  inside the selection.
+ * `toggleScroll()` – toggles scroll on parent
  * `getSelection()` – returns an object representing the current
  selection. This object will have the following keys:
  `startPercentage` (float between 0 and 1), `startPosition` (in
@@ -112,6 +120,7 @@ are the following:
  * `toggleInteraction()` – Toggle mouse interaction
  * `setPlaybackRate(rate)` – sets the speed of playback (`0.5` is half
    normal speed, `2` is double speed and so on).
+ * `playPauseSelection()` – plays selection if paused, pauses if playing.   
 
 Connecting filters
 ==================
@@ -136,6 +145,16 @@ You can listen to the following events:
  * `finish` – when it finishes playing.
  * `progress` – fires continuously during playback.
  * `mark` – when a mark is reached. Passes the mark object.
+ * `marked` – when a mark is created.
+ * `mark-update` – when a mark is updated.
+ * `mark-removed` – when a mark is removed.
+ * `region-in` – when entering a region.
+ * `region-out`– when leaving a region.
+ * `region-created` – when a region is created.
+ * `region-updated` – when a region is updated.
+ * `region-removed` – when a region is removed.
+ * `selection-update` – when a selection is updated. Has an object parameter
+   containig selection information or null if the selection is cleared.
  * `error` – on error, passes an error message.
 
 Each of mark objects also fire the event `reached` when played over.
