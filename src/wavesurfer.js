@@ -693,8 +693,8 @@ WaveSurfer.Mark = {
     },
 
     remove: function () {
-        this.unAll();
         this.fireEvent('remove');
+        this.unAll();
     }
 };
 
