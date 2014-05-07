@@ -26,7 +26,8 @@ var WaveSurfer = {
         dragSelection : true,
         loopSelection : true,
         audioRate     : 1,
-        interact      : true
+        interact      : true,
+        dragMarkers   : true,
     },
 
     init: function (params) {
@@ -128,7 +129,18 @@ var WaveSurfer = {
                 my.clearSelection();
             });
             this.drawer.on('drag-mark', function (drag, mark) {
-                my.updateSelectionByMark(drag, mark);
+                if (mark.type === 'selMark') {
+                    my.updateSelectionByMark(drag, mark);
+                }
+            });
+        }
+
+        // Drag Marker event
+        if (this.params.dragMarkers) {
+            this.drawer.on('drag-mark', function(drag, mark) {
+                if (mark.type !== 'selMark') {
+                    my.moveMarker(drag, mark);
+                }
             });
         }
 
@@ -577,7 +589,8 @@ var WaveSurfer = {
                 width: width,
                 percentage: percent0,
                 position: percent0 * this.getDuration(),
-                color: color
+                color: color,
+                type: 'selMark'
             });
         }
 
@@ -591,7 +604,8 @@ var WaveSurfer = {
                 width: width,
                 percentage: percent1,
                 position: percent1 * this.getDuration(),
-                color: color
+                color: color,
+                type: 'selMark'
             });
         }
 
@@ -601,6 +615,14 @@ var WaveSurfer = {
             this.backend.updateSelection(percent0, percent1);
         }
         my.fireEvent('selection-update', this.getSelection());
+    },
+    
+    moveMarker: function(drag, mark) {
+        mark.update({
+            percentage: drag.endPercentage,
+            position: drag.endPercentage * this.getDuration()
+        });
+        this.markers[mark.id] = mark;
     },
 
     clearSelection: function () {
