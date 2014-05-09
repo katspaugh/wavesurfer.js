@@ -178,9 +178,9 @@ var WaveSurfer = {
         var my = this;
         var requestFrame = window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame;
-        var frame = function () {
+        var frame = function (time) {
             if (!my.backend.isPaused()) {
-                my.fireEvent('progress', my.backend.getPlayedPercents());
+                my.fireEvent('progress', my.backend.getPlayedPercents(), time);
                 requestFrame(frame);
             }
         };
@@ -342,12 +342,6 @@ var WaveSurfer = {
         return mark;
     },
 
-    redrawMarks: function () {
-        Object.keys(this.markers).forEach(function (id) {
-            this.mark(this.markers[id]);
-        }, this);
-    },
-
     clearMarks: function () {
         Object.keys(this.markers).forEach(function (id) {
             this.markers[id].remove();
@@ -372,28 +366,33 @@ var WaveSurfer = {
         }
 
         this.drawer.drawPeaks(this.backend.getPeaks(length), length);
-        this.redrawMarks();
         this.fireEvent('redraw');
     },
 
     drawAsItPlays: function () {
         var my = this;
         var peaks;
-        this.drawFrame = function () {
+
+        this.drawFrame = function (timestamp) {
+            var value = WaveSurfer.util.max(my.backend.waveform(), 128);
             var duration = my.getDuration();
-            var time = my.getCurrentTime();
-            var length = Math.round(duration * my.minPxPerSec * my.params.pixelRatio);
-            var x = ~~((time / duration) * length);
-            if (!peaks) {
-                peaks = new Uint8Array(length);
+            if (duration < Infinity) {
+                var length = Math.round(duration * my.minPxPerSec * my.params.pixelRatio);
+                if (!peaks) {
+                    peaks = new Uint8Array(length);
+                }
+                peaks[~~(my.backend.getPlayedPercents() * length)] = value;
+            } else {
+                if (!peaks) {
+                    peaks = [];
+                }
+                peaks.push(value);
+                length = peaks.length;
             }
-            // 0 is the default value in Uint8Array
-            if (0 == peaks[x]) {
-                peaks[x] = WaveSurfer.util.max(my.backend.waveform(), 128);
-                my.drawer.setWidth(length);
-                my.drawer.clearWave();
-                my.drawer.drawWave(peaks, 128);
-            }
+
+            my.drawer.setWidth(length);
+            my.drawer.clearWave();
+            my.drawer.drawWave(peaks, 128);
         };
         this.on('progress', this.drawFrame);
     },
