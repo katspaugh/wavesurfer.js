@@ -26,7 +26,7 @@ var WaveSurfer = {
         loopSelection : true,
         audioRate     : 1,
         interact      : true,
-        draggableMarkers: false,
+        draggableMarkers: false
     },
 
     init: function (params) {
@@ -140,7 +140,7 @@ var WaveSurfer = {
 
         // Drag Marker event
         if (this.params.dragMarkers) {
-            this.drawer.on('drag-mark', function(drag, mark) {
+            this.drawer.on('drag-mark', function (drag, mark) {
                 if (mark.type !== 'selMark') {
                     my.moveMarker(drag, mark);
                 }
@@ -149,7 +149,7 @@ var WaveSurfer = {
 
         // Mouseup for plugins
         this.drawer.on('mouseup', function (e) {
-            my.fireEvent('mouseup', e);            
+            my.fireEvent('mouseup', e);
             my.dragging = false;
         });
     },
@@ -207,13 +207,14 @@ var WaveSurfer = {
         this.backend.isPaused() ? this.play() : this.pause();
     },
 
-    playPauseSelection: function(){
+    playPauseSelection: function () {
         var sel = this.getSelection();
-        if (sel !== null){
+        if (sel !== null) {
             this.seekTo(sel.startPercentage);
             this.playPause();
         }
     },
+
     skipBackward: function (seconds) {
         this.skip(seconds || -this.params.skipLength);
     },
@@ -560,7 +561,7 @@ var WaveSurfer = {
 
     updateSelectionByMark: function (markDrag, mark) {
         var selection;
-        if (mark.id == this.selMark0.id){
+        if (mark.id == this.selMark0.id) {
             selection = {
                 'startPercentage': markDrag.endPercentage,
                 'endPercentage': this.selMark1.percentage
@@ -626,8 +627,8 @@ var WaveSurfer = {
         }
         my.fireEvent('selection-update', this.getSelection());
     },
-    
-    moveMarker: function(drag, mark) {
+
+    moveMarker: function (drag, mark) {
         mark.update({
             percentage: drag.endPercentage,
             position: drag.endPercentage * this.getDuration()
@@ -840,18 +841,18 @@ WaveSurfer.util = {
     /**
      * @see http://underscorejs.org/#throttle
      */
-    throttle: function(func, wait, options) {
+    throttle: function (func, wait, options) {
         var context, args, result;
         var timeout = null;
         var previous = 0;
         options || (options = {});
-        var later = function() {
+        var later = function () {
             previous = options.leading === false ? 0 : Date.now();
             timeout = null;
             result = func.apply(context, args);
             context = args = null;
         };
-        return function() {
+        return function () {
             var now = Date.now();
             if (!previous && options.leading === false) previous = now;
             var remaining = wait - (now - previous);
