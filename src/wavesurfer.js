@@ -120,7 +120,7 @@ var WaveSurfer = {
         });
 
         // Drag selection or marker events
-        if (this.params.draggableMarkers) {
+        if (this.params.dragSelection) {
             this.drawer.on('drag', function (drag) {
                 my.dragging = true;
                 my.updateSelection(drag);
