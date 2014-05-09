@@ -69,19 +69,21 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     drawWave: function (peaks, max) {
+        // A half-pixel offset makes lines crisp
         var $ = 0.5 / this.pixelRatio;
         this.waveCc.fillStyle = this.params.waveColor;
         this.progressCc.fillStyle = this.params.progressColor;
 
         var coef = this.height / max;
         var halfH = this.height / 2;
+        var scale = this.width / peaks.length;
 
         this.waveCc.beginPath();
         this.waveCc.moveTo($, halfH);
         this.progressCc.beginPath();
         this.progressCc.moveTo($, halfH);
         for (var i = 0; i < this.width; i++) {
-            var h = Math.round(peaks[i] * coef);
+            var h = Math.round(peaks[~~(i * scale)] * coef);
             this.waveCc.lineTo(i + $, halfH + h);
             this.progressCc.lineTo(i + $, halfH + h);
         }
@@ -91,7 +93,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         this.waveCc.moveTo($, halfH);
         this.progressCc.moveTo($, halfH);
         for (var i = 0; i < this.width; i++) {
-            var h = Math.round(peaks[i] * coef);
+            var h = Math.round(peaks[~~(i * scale)] * coef);
             this.waveCc.lineTo(i + $, halfH - h);
             this.progressCc.lineTo(i + $, halfH - h);
         }

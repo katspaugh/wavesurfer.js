@@ -356,26 +356,23 @@ var WaveSurfer = {
     drawAsItPlays: function () {
         var my = this;
         var peaks;
-        var prevX = -1;
-        this.on('progress', function () {
-            var length = Math.round(
-                my.getDuration() * my.minPxPerSec * my.params.pixelRatio
-            );
-
+        this.drawFrame = function () {
+            var duration = my.getDuration();
+            var time = my.getCurrentTime();
+            var length = Math.round(duration * my.minPxPerSec * my.params.pixelRatio);
+            var x = ~~((time / duration) * length);
             if (!peaks) {
                 peaks = new Uint8Array(length);
             }
-
-            var x = ~~(my.backend.getPlayedPercents() * length);
-            if (x != prevX) {
-                prevX = x;
+            // 0 is the default value in Uint8Array
+            if (0 == peaks[x]) {
                 peaks[x] = WaveSurfer.util.max(my.backend.waveform(), 128);
+                my.drawer.setWidth(length);
+                my.drawer.clearWave();
+                my.drawer.drawWave(peaks, 128);
             }
-
-            my.drawer.setWidth(length);
-            my.drawer.clearWave();
-            my.drawer.drawWave(peaks, 128);
-        });
+        };
+        this.on('progress', this.drawFrame);
     },
 
     /**
@@ -511,6 +508,11 @@ var WaveSurfer = {
      * Display empty waveform.
      */
     empty: function () {
+        if (this.drawFrame) {
+            this.un('progress', this.drawFrame);
+            this.drawFrame = null;
+        }
+
         if (this.backend && !this.backend.isPaused()) {
             this.stop();
             this.backend.disconnectSource();
@@ -768,12 +770,12 @@ WaveSurfer.util = {
         return 'wavesurfer_' + Math.random().toString(32).substring(2);
     },
 
-    max: function (values, median) {
+    max: function (values, min) {
         var max = -Infinity;
         for (var i = 0, len = values.length; i < len; i++) {
             var val = values[i];
-            if (median != null) {
-                val = Math.abs(val - median);
+            if (min != null) {
+                val = Math.abs(val - min);
             }
             if (val > max) { max = val; }
         }
