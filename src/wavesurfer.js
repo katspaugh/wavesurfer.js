@@ -8,7 +8,6 @@ var WaveSurfer = {
         cursorColor   : '#333',
         selectionColor: '#0fc',
         selectionForeground: false,
-        selectionBorder: false,
         selectionBorderColor: '#000',
         handlerSize   : 15,
         cursorWidth   : 1,
@@ -27,7 +26,7 @@ var WaveSurfer = {
         loopSelection : true,
         audioRate     : 1,
         interact      : true,
-        dragMarkers   : true,
+        draggableMarkers: false,
     },
 
     init: function (params) {
@@ -120,9 +119,10 @@ var WaveSurfer = {
             }, 0);
         });
 
-        // Drag selection events
-        if (this.params.dragSelection) {
+        // Drag selection or marker events
+        if (this.params.draggableMarkers) {
             this.drawer.on('drag', function (drag) {
+                my.dragging = true;
                 my.updateSelection(drag);
             });
             this.drawer.on('drag-clear', function () {
@@ -131,6 +131,9 @@ var WaveSurfer = {
             this.drawer.on('drag-mark', function (drag, mark) {
                 if (mark.type === 'selMark') {
                     my.updateSelectionByMark(drag, mark);
+                }
+                else if (mark.type !== 'selMark') {
+                    my.moveMarker(drag, mark);
                 }
             });
         }
@@ -146,7 +149,8 @@ var WaveSurfer = {
 
         // Mouseup for plugins
         this.drawer.on('mouseup', function (e) {
-            my.fireEvent('mouseup', e);
+            my.fireEvent('mouseup', e);            
+            my.dragging = false;
         });
     },
 
@@ -303,6 +307,12 @@ var WaveSurfer = {
 
         var mark = Object.create(WaveSurfer.Mark);
         mark.init(opts);
+
+        // If we create marker while dragging we are creating selMarks
+        if (this.dragging) {
+            mark.type = 'selMark';
+        }
+
         mark.on('update', function () {
             my.drawer.updateMark(mark);
         });
@@ -589,8 +599,7 @@ var WaveSurfer = {
                 width: width,
                 percentage: percent0,
                 position: percent0 * this.getDuration(),
-                color: color,
-                type: 'selMark'
+                color: color
             });
         }
 
@@ -604,8 +613,7 @@ var WaveSurfer = {
                 width: width,
                 percentage: percent1,
                 position: percent1 * this.getDuration(),
-                color: color,
-                type: 'selMark'
+                color: color
             });
         }
 

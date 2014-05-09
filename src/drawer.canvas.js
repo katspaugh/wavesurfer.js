@@ -116,7 +116,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         this.wrapper.appendChild(markEl);
         var handler;
 
-        if (this.params.selectionBorder) {
+        if (this.params.draggableMarkers) {
             handler = document.createElement('div');
             handler.id = mark.id + '_handler';
             handler.innerHTML = '●';
@@ -133,7 +133,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             my.fireEvent('mark-click', mark, e);
         });
 
-        this.params.selectionBorder && (function () {
+        this.params.draggableMarkers && (function () {
             var drag = {};
 
             var onMouseUp = function (e) {
@@ -161,7 +161,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         this.updateMark(mark);
 
-        if (this.params.selectionBorder) {
+        if (this.params.draggableMarkers) {
             this.style(handler, {
                 position: 'absolute',
                 fontSize: this.params.handlerSize + "px",
