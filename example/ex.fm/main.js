@@ -15,13 +15,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Load audio from URL
-    var ajax = wavesurfer.util.ajax({
-        url: 'http://ex.fm/api/v3/trending',
-        responseType: 'json'
-    });
-    ajax.on('success', function (data) {
+    var script = document.createElement('script');
+    script.src = 'http://ex.fm/api/v3/trending?callback=exfmCallback';
+    document.body.appendChild(script);
+    window.exfmCallback = function (data) {
         if (data.status_text != 'OK' || !data.total) {
-            ajax.fireEvent('error');
+            wavesurfer.fireEvent('error', 'ex.fm error');
         } else {
             var song = data.songs[~~(Math.random() * data.total)];
             var container = document.querySelector('#song-info');
@@ -29,10 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
             container.style.display = '';
             wavesurfer.loadStream(song.url);
         }
-    });
-    ajax.on('error', function () {
-        wavesurfer.loadStream('../panner/media.wav');
-    });
+    };
 
     // Log errors
     wavesurfer.on('error', function (msg) {
