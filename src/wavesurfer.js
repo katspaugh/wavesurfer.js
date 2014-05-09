@@ -8,7 +8,6 @@ var WaveSurfer = {
         cursorColor   : '#333',
         selectionColor: '#0fc',
         selectionForeground: false,
-        selectionBorder: false,
         selectionBorderColor: '#000',
         handlerSize   : 15,
         cursorWidth   : 1,
@@ -26,7 +25,8 @@ var WaveSurfer = {
         dragSelection : true,
         loopSelection : true,
         audioRate     : 1,
-        interact      : true
+        interact      : true,
+        draggableMarkers: false,
     },
 
     init: function (params) {
@@ -119,22 +119,38 @@ var WaveSurfer = {
             }, 0);
         });
 
-        // Drag selection events
+        // Drag selection or marker events
         if (this.params.dragSelection) {
             this.drawer.on('drag', function (drag) {
+                my.dragging = true;
                 my.updateSelection(drag);
             });
             this.drawer.on('drag-clear', function () {
                 my.clearSelection();
             });
             this.drawer.on('drag-mark', function (drag, mark) {
-                my.updateSelectionByMark(drag, mark);
+                if (mark.type === 'selMark') {
+                    my.updateSelectionByMark(drag, mark);
+                }
+                else if (mark.type !== 'selMark') {
+                    my.moveMarker(drag, mark);
+                }
+            });
+        }
+
+        // Drag Marker event
+        if (this.params.dragMarkers) {
+            this.drawer.on('drag-mark', function(drag, mark) {
+                if (mark.type !== 'selMark') {
+                    my.moveMarker(drag, mark);
+                }
             });
         }
 
         // Mouseup for plugins
         this.drawer.on('mouseup', function (e) {
-            my.fireEvent('mouseup', e);
+            my.fireEvent('mouseup', e);            
+            my.dragging = false;
         });
     },
 
@@ -291,6 +307,12 @@ var WaveSurfer = {
 
         var mark = Object.create(WaveSurfer.Mark);
         mark.init(opts);
+
+        // If we create marker while dragging we are creating selMarks
+        if (this.dragging) {
+            mark.type = 'selMark';
+        }
+
         mark.on('update', function () {
             my.drawer.updateMark(mark);
         });
@@ -603,6 +625,14 @@ var WaveSurfer = {
             this.backend.updateSelection(percent0, percent1);
         }
         my.fireEvent('selection-update', this.getSelection());
+    },
+    
+    moveMarker: function(drag, mark) {
+        mark.update({
+            percentage: drag.endPercentage,
+            position: drag.endPercentage * this.getDuration()
+        });
+        this.markers[mark.id] = mark;
     },
 
     clearSelection: function () {
