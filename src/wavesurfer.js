@@ -7,6 +7,7 @@ var WaveSurfer = {
         progressColor : '#555',
         cursorColor   : '#333',
         selectionColor: '#0fc',
+        selectionBorder: false,
         selectionForeground: false,
         selectionBorderColor: '#000',
         cursorWidth   : 1,
@@ -131,25 +132,12 @@ var WaveSurfer = {
             this.drawer.on('drag-clear', function () {
                 my.clearSelection();
             });
-            this.drawer.on('drag-mark', function (drag, mark) {
-                if (mark.type === 'selMark') {
-                    my.updateSelectionByMark(drag, mark);
-                }
-                else if (mark.type !== 'selMark') {
-                    my.moveMarker(drag, mark);
-                }
-            });
         }
 
-        // Drag Marker event
-        if (this.params.dragMarkers) {
-            this.drawer.on('drag-mark', function (drag, mark) {
-                if (mark.type !== 'selMark') {
-                    my.moveMarker(drag, mark);
-                }
-            });
-        }
-
+        this.drawer.on('drag-mark', function (drag, mark) {
+            mark.fireEvent('drag', drag);
+        });
+        
         // Mouseup for plugins
         this.drawer.on('mouseup', function (e) {
             my.fireEvent('mouseup', e);
@@ -327,7 +315,13 @@ var WaveSurfer = {
 
         // If we create marker while dragging we are creating selMarks
         if (this.dragging) {
-            mark.type = 'selMark';
+            mark.on('drag', function(drag){
+                my.updateSelectionByMark(drag, mark);
+            });
+        } else {
+            mark.on('drag', function(drag){
+                my.moveMark(drag, mark);
+            });
         }
 
         mark.on('update', function () {
@@ -711,7 +705,7 @@ var WaveSurfer = {
                 percentage: percent0,
                 position: percent0 * this.getDuration(),
                 color: color,
-                draggable: my.params.dragSelection
+                draggable: my.params.selectionBorder
             });
         }
 
@@ -726,7 +720,7 @@ var WaveSurfer = {
                 percentage: percent1,
                 position: percent1 * this.getDuration(),
                 color: color,
-                draggable: my.params.dragSelection                
+                draggable: my.params.selectionBorder                
             });
         }
 
@@ -738,7 +732,7 @@ var WaveSurfer = {
         my.fireEvent('selection-update', this.getSelection());
     },
 
-    moveMarker: function (drag, mark) {
+    moveMark: function (drag, mark) {
         mark.update({
             percentage: drag.endPercentage,
             position: drag.endPercentage * this.getDuration()
