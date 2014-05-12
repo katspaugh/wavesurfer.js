@@ -7,9 +7,9 @@ var WaveSurfer = {
         progressColor : '#555',
         cursorColor   : '#333',
         selectionColor: '#0fc',
+        selectionBorder: false,
         selectionForeground: false,
         selectionBorderColor: '#000',
-        handlerSize   : 15,
         cursorWidth   : 1,
         markerWidth   : 2,
         skipLength    : 2,
@@ -44,6 +44,10 @@ var WaveSurfer = {
         // Marker objects
         this.markers = {};
         this.once('marked', this.bindMarks.bind(this));
+        this.once('region-created', this.bindRegions.bind(this));        
+        
+        // Region objects
+        this.regions = {};        
 
         // Used to save the current volume when muting so we can
         // restore once unmuted
@@ -128,25 +132,12 @@ var WaveSurfer = {
             this.drawer.on('drag-clear', function () {
                 my.clearSelection();
             });
-            this.drawer.on('drag-mark', function (drag, mark) {
-                if (mark.type === 'selMark') {
-                    my.updateSelectionByMark(drag, mark);
-                }
-                else if (mark.type !== 'selMark') {
-                    my.moveMarker(drag, mark);
-                }
-            });
         }
 
-        // Drag Marker event
-        if (this.params.dragMarkers) {
-            this.drawer.on('drag-mark', function (drag, mark) {
-                if (mark.type !== 'selMark') {
-                    my.moveMarker(drag, mark);
-                }
-            });
-        }
-
+        this.drawer.on('drag-mark', function (drag, mark) {
+            mark.fireEvent('drag', drag);
+        });
+        
         // Mouseup for plugins
         this.drawer.on('mouseup', function (e) {
             my.fireEvent('mouseup', e);
@@ -229,17 +220,26 @@ var WaveSurfer = {
 
         this.seekTo(progress);
     },
-
+    
+    seekAndCenter: function (progress) {
+        this.seekTo(progress);
+        this.drawer.recenter(progress);
+    },
+    
     seekTo: function (progress) {
         var paused = this.backend.isPaused();
         // avoid small scrolls while paused seeking
         var oldScrollParent = this.params.scrollParent;
         if (paused) {
             this.params.scrollParent = false;
+            // avoid noise while seeking
+            this.savedVolume = this.backend.getVolume();
+            this.backend.setVolume(0);
         }
         this.play(progress * this.getDuration());
         if (paused) {
             this.pause();
+            this.backend.setVolume(this.savedVolume);            
         }
         this.params.scrollParent = oldScrollParent;
         this.fireEvent('seek', progress);
@@ -281,7 +281,11 @@ var WaveSurfer = {
             this.isMuted = true;
         }
     },
-
+    
+    toggleScroll: function () {
+        this.params.scrollParent = !this.params.scrollParent;
+    },
+    
     mark: function (options) {
         var my = this;
 
@@ -311,15 +315,23 @@ var WaveSurfer = {
 
         // If we create marker while dragging we are creating selMarks
         if (this.dragging) {
-            mark.type = 'selMark';
+            mark.on('drag', function(drag){
+                my.updateSelectionByMark(drag, mark);
+            });
+        } else {
+            mark.on('drag', function(drag){
+                my.moveMark(drag, mark);
+            });
         }
 
         mark.on('update', function () {
             my.drawer.updateMark(mark);
+            my.fireEvent('mark-updated', mark);
         });
         mark.on('remove', function () {
             my.drawer.removeMark(mark);
             delete my.markers[mark.id];
+            my.fireEvent('mark-removed', mark);            
         });
 
         this.drawer.addMark(mark);
@@ -353,6 +365,69 @@ var WaveSurfer = {
             this.markers[id].remove();
         }, this);
         this.markers = {};
+    },
+    
+    redrawRegions: function () {
+        Object.keys(this.regions).forEach(function (id) {
+            this.region(this.regions[id]);
+        }, this);
+    },    
+    
+    clearRegions: function() {
+        Object.keys(this.regions).forEach(function (id) {
+            this.regions[id].remove();
+        }, this);
+        this.regions = {};
+    },
+    
+    region: function(options) {
+        var my = this;
+
+        var opts = WaveSurfer.util.extend({
+            id: WaveSurfer.util.getId(),
+        }, options);
+
+        opts.startPercentage = opts.startPosition / this.getDuration();
+        opts.endPercentage = opts.endPosition / this.getDuration();        
+
+        // If exists, just update and exit early
+        if (opts.id in this.regions) {
+            return this.regions[opts.id].update(opts);
+        }
+        
+        var region = Object.create(WaveSurfer.Region);
+        region.init(opts);
+        
+        region.on('update', function () {
+            my.drawer.updateRegion(region);
+            my.fireEvent('region-updated', region);
+        });
+        region.on('remove', function () {
+            my.drawer.removeRegion(region);
+            my.fireEvent('region-removed', region);            
+            delete my.regions[region.id];
+        }); 
+
+        this.drawer.addRegion(region);
+        
+        this.drawer.on('region-over', function (region, e) {
+            region.fireEvent('over', e);
+            my.fireEvent('region-over', region, e);
+        });
+        this.drawer.on('region-leave', function (region, e) {
+            region.fireEvent('leave', e);
+            my.fireEvent('region-leave', region, e);
+        });
+        this.drawer.on('region-click', function (region, e) {
+            region.fireEvent('click', e);
+            my.fireEvent('region-click', region, e);
+        });
+
+        this.regions[region.id] = region;
+        this.fireEvent('region-created', region);
+
+        return region;
+        
     },
 
     timings: function (offset) {
@@ -526,6 +601,31 @@ var WaveSurfer = {
             prevTime = time;
         });
     },
+    
+    bindRegions: function() {
+        var my = this;
+        this.backend.on('play', function () {
+            Object.keys(my.regions).forEach(function (id) {
+                my.regions[id].fired_in = false;
+                my.regions[id].fired_out = false;                
+            });
+        });           
+        this.backend.on('audioprocess', function (time) {
+            Object.keys(my.regions).forEach(function (id) {
+                var region = my.regions[id];
+                if (!region.fired_in && region.startPosition <= time && region.endPosition >= time) {
+                    my.fireEvent('region-in', region);
+                    region.fireEvent('in');
+                    region.fired_in = true;      
+                }
+                if (!region.fired_out && region.endPosition < time) {
+                    my.fireEvent('region-out', region);
+                    region.fireEvent('out');
+                    region.fired_out = true;
+                }
+            });
+        });  
+    },
 
     /**
      * Display empty waveform.
@@ -541,6 +641,7 @@ var WaveSurfer = {
             this.backend.disconnectSource();
         }
         this.clearMarks();
+        this.clearRegions();
         this.drawer.setWidth(0);
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     },
@@ -551,6 +652,7 @@ var WaveSurfer = {
     destroy: function () {
         this.fireEvent('destroy');
         this.clearMarks();
+        this.clearRegions();
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();
@@ -602,7 +704,8 @@ var WaveSurfer = {
                 width: width,
                 percentage: percent0,
                 position: percent0 * this.getDuration(),
-                color: color
+                color: color,
+                draggable: my.params.selectionBorder
             });
         }
 
@@ -616,7 +719,8 @@ var WaveSurfer = {
                 width: width,
                 percentage: percent1,
                 position: percent1 * this.getDuration(),
-                color: color
+                color: color,
+                draggable: my.params.selectionBorder                
             });
         }
 
@@ -628,7 +732,7 @@ var WaveSurfer = {
         my.fireEvent('selection-update', this.getSelection());
     },
 
-    moveMarker: function (drag, mark) {
+    moveMark: function (drag, mark) {
         mark.update({
             percentage: drag.endPercentage,
             position: drag.endPercentage * this.getDuration()
@@ -650,6 +754,7 @@ var WaveSurfer = {
         if (this.loopSelection) {
             this.backend.clearSelection();
         }
+        this.fireEvent('selection-update', this.getSelection());
     },
 
     toggleLoopSelection: function () {
@@ -695,7 +800,8 @@ WaveSurfer.Mark = {
         position: 0,
         percentage: 0,
         width: 1,
-        color: '#333'
+        color: '#333',
+        draggable: false
     },
 
     init: function (options) {
@@ -729,6 +835,44 @@ WaveSurfer.Mark = {
         this.fireEvent('remove');
         this.unAll();
     }
+};
+
+/* Region */
+
+WaveSurfer.Region = {
+    defaultParams: {
+        id: null,
+        startPosition: 0,
+        endPosition: 0,
+        startPercentage: 0,
+        endPercentage: 0,
+        color: 'rgba(0, 0, 255, 0.2)'
+    },
+    
+    init: function (options) {
+        this.apply(
+            WaveSurfer.util.extend({}, this.defaultParams, options)
+        );
+        return this;
+    },
+
+    apply: function (options) {
+        Object.keys(options).forEach(function (key) {
+            if (key in this.defaultParams) {
+                this[key] = options[key];
+            }
+        }, this);
+    },    
+    
+    update: function (options) {
+        this.apply(options);
+        this.fireEvent('update');
+    },
+
+    remove: function () {
+        this.fireEvent('remove');
+        this.unAll();        
+    }    
 };
 
 /* Observer */
@@ -874,3 +1018,4 @@ WaveSurfer.util = {
 
 WaveSurfer.util.extend(WaveSurfer, WaveSurfer.Observer);
 WaveSurfer.util.extend(WaveSurfer.Mark, WaveSurfer.Observer);
+WaveSurfer.util.extend(WaveSurfer.Region, WaveSurfer.Observer);
