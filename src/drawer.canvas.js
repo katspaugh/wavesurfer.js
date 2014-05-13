@@ -73,9 +73,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var $ = 0.5 / this.pixelRatio;
         this.waveCc.fillStyle = this.params.waveColor;
         this.progressCc.fillStyle = this.params.progressColor;
-
-        var coef = this.height / max;
+        
         var halfH = this.height / 2;
+        var coef = halfH / max;
         var scale = this.width / peaks.length;
 
         this.waveCc.beginPath();
