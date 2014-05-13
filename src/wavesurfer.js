@@ -26,7 +26,9 @@ var WaveSurfer = {
         loopSelection : true,
         audioRate     : 1,
         interact      : true,
-        draggableMarkers: false
+        draggableMarkers: false,
+        backend: "WebAudio",
+        getPeaks: null
     },
 
     init: function (params) {
@@ -148,7 +150,7 @@ var WaveSurfer = {
     createBackend: function () {
         var my = this;
 
-        this.backend = Object.create(WaveSurfer.WebAudio);
+        this.backend = Object.create(WaveSurfer[this.params.backend]);
 
         this.backend.on('play', function () {
             my.fireEvent('play');
@@ -446,7 +448,8 @@ var WaveSurfer = {
             );
         }
 
-        this.drawer.drawPeaks(this.backend.getPeaks(length), length);
+        var getPeaks = this.params.getPeaks || this.backend.getPeaks.bind(this.backend);
+        this.drawer.drawPeaks(getPeaks(length), length);
         this.redrawMarks();
         this.fireEvent('redraw');
     },
@@ -572,6 +575,16 @@ var WaveSurfer = {
             percentComplete = e.loaded / (e.loaded + 1000000);
         }
         this.fireEvent('loading', Math.round(percentComplete * 100), e.target);
+    },
+
+    loadAudioTag: function (url) {
+        var my = this;
+        this.empty();
+        this.backend.loadMedia(url);
+        this.backend.on("ready", function () {
+            my.drawBuffer();
+            my.fireEvent('ready');
+        });
     },
 
     bindMarks: function () {

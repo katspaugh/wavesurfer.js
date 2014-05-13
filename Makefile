@@ -8,6 +8,7 @@ SOURCE_MAP_ROOT=/
 SOURCES=src/wavesurfer.js\
         src/webaudio.js\
         src/webaudio.*.js\
+        src/audiotag.js\
         src/drawer.js\
         src/drawer.*.js
 
