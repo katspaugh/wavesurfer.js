@@ -6,6 +6,8 @@ CJS=build/wavesurfer.cjs.js
 SOURCE_MAP=build/wavesurfer-js-map.json
 SOURCE_MAP_ROOT=/
 SOURCES=src/wavesurfer.js\
+	src/audiotag.js\
+	src/audiotag.media.js\
         src/webaudio.js\
         src/webaudio.*.js\
         src/drawer.js\
