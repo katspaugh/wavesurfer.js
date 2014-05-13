@@ -121,7 +121,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         if (mark.draggable) {
             handler = document.createElement('handler');
             handler.id = mark.id + '-handler';
-            handler.className = 'wavesurfer-handler'
+            handler.className = 'wavesurfer-handler';
             markEl.appendChild(handler);
         }
 
@@ -168,7 +168,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 position: 'absolute',
                 cursor: 'col-resize',
                 width: '12px',
-                height: '15px',                                
+                height: '15px'
             });
             this.style(handler, {
                 left: handler.offsetWidth / 2 * -1 + 'px',
@@ -205,7 +205,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var regionEl = document.createElement('region');
         regionEl.id = region.id;
         this.wrapper.appendChild(regionEl);
-        
+
         regionEl.addEventListener('mouseover', function (e) {
             my.fireEvent('region-over', region, e);
         });
@@ -215,17 +215,17 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         regionEl.addEventListener('click', function (e) {
             my.fireEvent('region-click', region, e);
         });
-        
+
         this.updateRegion(region);
     },
-    
+
     updateRegion: function (region) {
         var regionEl = document.getElementById(region.id);
         var left = Math.max(0, Math.round(
                 region.startPercentage * this.scrollWidth));
         var width = Math.max(0, Math.round(
                 region.endPercentage * this.scrollWidth)) - left;
-                
+
         this.style(regionEl, {
             height: '100%',
             position: 'absolute',
@@ -234,16 +234,16 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             top: '0px',
             width: width + 'px',
             backgroundColor: region.color
-        });                
+        });
     },
-    
+
     removeRegion: function (region) {
         var regionEl = document.getElementById(region.id);
         if (regionEl) {
             this.wrapper.removeChild(regionEl);
         }
     },
-    
+
     drawSelection: function () {
         this.eraseSelection();
 

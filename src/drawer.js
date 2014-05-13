@@ -211,12 +211,12 @@ WaveSurfer.Drawer = {
     removeMark: function (mark) {},
 
     updateMark: function (mark) {},
-    
-    addRegion: function (region) {}, 
+
+    addRegion: function (region) {},
 
     removeRegion: function (region) {},
 
-    updateRegion: function (region) {},    
+    updateRegion: function (region) {},
 
     drawSelection: function () {},
 

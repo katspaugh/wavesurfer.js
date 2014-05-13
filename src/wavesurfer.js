@@ -44,10 +44,10 @@ var WaveSurfer = {
         // Marker objects
         this.markers = {};
         this.once('marked', this.bindMarks.bind(this));
-        this.once('region-created', this.bindRegions.bind(this));        
-        
+        this.once('region-created', this.bindRegions.bind(this));
+
         // Region objects
-        this.regions = {};        
+        this.regions = {};
 
         // Used to save the current volume when muting so we can
         // restore once unmuted
@@ -137,7 +137,7 @@ var WaveSurfer = {
         this.drawer.on('drag-mark', function (drag, mark) {
             mark.fireEvent('drag', drag);
         });
-        
+
         // Mouseup for plugins
         this.drawer.on('mouseup', function (e) {
             my.fireEvent('mouseup', e);
@@ -220,12 +220,12 @@ var WaveSurfer = {
 
         this.seekTo(progress);
     },
-    
+
     seekAndCenter: function (progress) {
         this.seekTo(progress);
         this.drawer.recenter(progress);
     },
-    
+
     seekTo: function (progress) {
         var paused = this.backend.isPaused();
         // avoid small scrolls while paused seeking
@@ -239,7 +239,7 @@ var WaveSurfer = {
         this.play(progress * this.getDuration());
         if (paused) {
             this.pause();
-            this.backend.setVolume(this.savedVolume);            
+            this.backend.setVolume(this.savedVolume);
         }
         this.params.scrollParent = oldScrollParent;
         this.fireEvent('seek', progress);
@@ -281,11 +281,11 @@ var WaveSurfer = {
             this.isMuted = true;
         }
     },
-    
+
     toggleScroll: function () {
         this.params.scrollParent = !this.params.scrollParent;
     },
-    
+
     mark: function (options) {
         var my = this;
 
@@ -331,7 +331,7 @@ var WaveSurfer = {
         mark.on('remove', function () {
             my.drawer.removeMark(mark);
             delete my.markers[mark.id];
-            my.fireEvent('mark-removed', mark);            
+            my.fireEvent('mark-removed', mark);
         });
 
         this.drawer.addMark(mark);
@@ -366,50 +366,50 @@ var WaveSurfer = {
         }, this);
         this.markers = {};
     },
-    
+
     redrawRegions: function () {
         Object.keys(this.regions).forEach(function (id) {
             this.region(this.regions[id]);
         }, this);
-    },    
-    
+    },
+
     clearRegions: function() {
         Object.keys(this.regions).forEach(function (id) {
             this.regions[id].remove();
         }, this);
         this.regions = {};
     },
-    
+
     region: function(options) {
         var my = this;
 
         var opts = WaveSurfer.util.extend({
-            id: WaveSurfer.util.getId(),
+            id: WaveSurfer.util.getId()
         }, options);
 
         opts.startPercentage = opts.startPosition / this.getDuration();
-        opts.endPercentage = opts.endPosition / this.getDuration();        
+        opts.endPercentage = opts.endPosition / this.getDuration();
 
         // If exists, just update and exit early
         if (opts.id in this.regions) {
             return this.regions[opts.id].update(opts);
         }
-        
+
         var region = Object.create(WaveSurfer.Region);
         region.init(opts);
-        
+
         region.on('update', function () {
             my.drawer.updateRegion(region);
             my.fireEvent('region-updated', region);
         });
         region.on('remove', function () {
             my.drawer.removeRegion(region);
-            my.fireEvent('region-removed', region);            
+            my.fireEvent('region-removed', region);
             delete my.regions[region.id];
-        }); 
+        });
 
         this.drawer.addRegion(region);
-        
+
         this.drawer.on('region-over', function (region, e) {
             region.fireEvent('over', e);
             my.fireEvent('region-over', region, e);
@@ -427,7 +427,7 @@ var WaveSurfer = {
         this.fireEvent('region-created', region);
 
         return region;
-        
+
     },
 
     timings: function (offset) {
@@ -601,22 +601,22 @@ var WaveSurfer = {
             prevTime = time;
         });
     },
-    
+
     bindRegions: function() {
         var my = this;
         this.backend.on('play', function () {
             Object.keys(my.regions).forEach(function (id) {
                 my.regions[id].fired_in = false;
-                my.regions[id].fired_out = false;                
+                my.regions[id].fired_out = false;
             });
-        });           
+        });
         this.backend.on('audioprocess', function (time) {
             Object.keys(my.regions).forEach(function (id) {
                 var region = my.regions[id];
                 if (!region.fired_in && region.startPosition <= time && region.endPosition >= time) {
                     my.fireEvent('region-in', region);
                     region.fireEvent('in');
-                    region.fired_in = true;      
+                    region.fired_in = true;
                 }
                 if (!region.fired_out && region.endPosition < time) {
                     my.fireEvent('region-out', region);
@@ -624,7 +624,7 @@ var WaveSurfer = {
                     region.fired_out = true;
                 }
             });
-        });  
+        });
     },
 
     /**
@@ -720,7 +720,7 @@ var WaveSurfer = {
                 percentage: percent1,
                 position: percent1 * this.getDuration(),
                 color: color,
-                draggable: my.params.selectionBorder                
+                draggable: my.params.selectionBorder
             });
         }
 
@@ -848,7 +848,7 @@ WaveSurfer.Region = {
         endPercentage: 0,
         color: 'rgba(0, 0, 255, 0.2)'
     },
-    
+
     init: function (options) {
         this.apply(
             WaveSurfer.util.extend({}, this.defaultParams, options)
@@ -862,8 +862,8 @@ WaveSurfer.Region = {
                 this[key] = options[key];
             }
         }, this);
-    },    
-    
+    },
+
     update: function (options) {
         this.apply(options);
         this.fireEvent('update');
@@ -871,8 +871,8 @@ WaveSurfer.Region = {
 
     remove: function () {
         this.fireEvent('remove');
-        this.unAll();        
-    }    
+        this.unAll();
+    }
 };
 
 /* Observer */
