@@ -1,7 +1,7 @@
 'use strict';
 
 WaveSurfer.Drawer = {
-    init: function (container, params) {
+    init: function(container, params) {
         this.container = container;
         this.params = params;
         this.pixelRatio = this.params.pixelRatio;
@@ -16,11 +16,10 @@ WaveSurfer.Drawer = {
         this.createWrapper();
         this.createElements();
     },
-
-    createWrapper: function () {
+    createWrapper: function() {
         this.wrapper = this.container.appendChild(
-            document.createElement('wave')
-        );
+                document.createElement('wave')
+                );
         this.style(this.wrapper, {
             display: 'block',
             position: 'relative',
@@ -39,44 +38,48 @@ WaveSurfer.Drawer = {
 
         this.setupWrapperEvents();
     },
-
-    handleEvent: function (e) {
-            e.preventDefault();
-            var bbox = this.wrapper.getBoundingClientRect();
-            return ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.scrollWidth) || 0;
+    handleEvent: function(e) {
+        e.preventDefault();
+        var bbox = this.wrapper.getBoundingClientRect();
+        return ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.scrollWidth) || 0;
     },
-
-    setupWrapperEvents: function () {
+    setupWrapperEvents: function() {
         var my = this;
 
-        this.wrapper.addEventListener('mousedown', function (e) {
+        this.wrapper.addEventListener('mousedown', function(e) {
             if (my.interact) {
                 my.fireEvent('mousedown', my.handleEvent(e), e);
             }
         });
 
-        this.wrapper.addEventListener('mouseup', function (e) {
+        this.wrapper.addEventListener('mouseup', function(e) {
             if (my.interact) {
                 my.fireEvent('mouseup', e);
             }
         });
 
-        this.params.dragSelection && (function () {
+        this.wrapper.addEventListener('dblclick', function(e) {
+            if (my.interact || my.params.dragSelection) {
+                my.fireEvent('dblclick', e);
+            }
+        });
+
+        this.params.dragSelection && (function() {
             var drag = {};
 
-            var onMouseUp = function () {
+            var onMouseUp = function() {
                 drag.startPercentage = drag.endPercentage = null;
             };
             document.addEventListener('mouseup', onMouseUp);
-            my.on('destroy', function () {
+            my.on('destroy', function() {
                 document.removeEventListener('mouseup', onMouseUp);
             });
 
-            my.wrapper.addEventListener('mousedown', function (e) {
+            my.wrapper.addEventListener('mousedown', function(e) {
                 drag.startPercentage = my.handleEvent(e);
             });
 
-            my.wrapper.addEventListener('mousemove', WaveSurfer.util.throttle(function (e) {
+            my.wrapper.addEventListener('mousemove', WaveSurfer.util.throttle(function(e) {
                 e.stopPropagation();
                 if (drag.startPercentage != null) {
                     drag.endPercentage = my.handleEvent(e);
@@ -84,13 +87,9 @@ WaveSurfer.Drawer = {
                 }
             }, 30));
 
-            my.wrapper.addEventListener('dblclick', function () {
-                my.fireEvent('drag-clear', drag);
-            });
         }());
     },
-
-    drawPeaks: function (peaks, length) {
+    drawPeaks: function(peaks, length) {
         this.resetScroll();
         this.setWidth(length);
         if (this.params.normalize) {
@@ -100,26 +99,22 @@ WaveSurfer.Drawer = {
         }
         this.drawWave(peaks, max);
     },
-
-    style: function (el, styles) {
-        Object.keys(styles).forEach(function (prop) {
+    style: function(el, styles) {
+        Object.keys(styles).forEach(function(prop) {
             if (el.style[prop] != styles[prop]) {
                 el.style[prop] = styles[prop];
             }
         });
         return el;
     },
-
-    resetScroll: function () {
+    resetScroll: function() {
         this.wrapper.scrollLeft = 0;
     },
-
-    recenter: function (percent) {
+    recenter: function(percent) {
         var position = this.scrollWidth * percent;
         this.recenterOnPosition(position, true);
     },
-
-    recenterOnPosition: function (position, immediate) {
+    recenterOnPosition: function(position, immediate) {
         var scrollLeft = this.wrapper.scrollLeft;
         var half = ~~(this.containerWidth / 2);
         var target = position - half;
@@ -137,13 +132,13 @@ WaveSurfer.Drawer = {
             this.wrapper.scrollLeft = target;
         }
     },
-
-    getWidth: function () {
+    getWidth: function() {
         return Math.round(this.containerWidth * this.pixelRatio);
     },
-
-    setWidth: function (width) {
-        if (width == this.width) { return; }
+    setWidth: function(width) {
+        if (width == this.width) {
+            return;
+        }
 
         this.width = width;
         this.scrollWidth = ~~(this.width / this.pixelRatio);
@@ -157,8 +152,7 @@ WaveSurfer.Drawer = {
 
         this.updateWidth();
     },
-
-    progress: function (progress) {
+    progress: function(progress) {
         var minPxDelta = 1 / this.pixelRatio;
         var pos = Math.round(progress * this.width) * minPxDelta;
 
@@ -173,56 +167,52 @@ WaveSurfer.Drawer = {
             this.updateProgress(progress);
         }
     },
-
-    destroy: function () {
+    destroy: function() {
         this.unAll();
         this.container.removeChild(this.wrapper);
         this.wrapper = null;
     },
-
-    updateSelection: function (startPercent, endPercent) {
+    updateSelection: function(startPercent, endPercent) {
         this.startPercent = startPercent;
         this.endPercent = endPercent;
 
         this.drawSelection();
     },
-
-    clearSelection: function (mark0, mark1) {
+    clearSelection: function(mark0, mark1) {
         this.startPercent = null;
         this.endPercent = null;
         this.eraseSelection();
         this.eraseSelectionMarks(mark0, mark1);
     },
-
-
     /* Renderer-specific methods */
-    createElements: function () {},
-
-    updateWidth: function () {},
-
-    drawWave: function (peaks, max) {},
-
-    clearWave: function () {},
-
-    updateProgress: function (position) {},
-
-    addMark: function (mark) {},
-
-    removeMark: function (mark) {},
-
-    updateMark: function (mark) {},
-
-    addRegion: function (region) {},
-
-    removeRegion: function (region) {},
-
-    updateRegion: function (region) {},
-
-    drawSelection: function () {},
-
-    eraseSelection: function () {},
-
-    eraseSelectionMarks: function (mark0, mark1) {}
+    createElements: function() {
+    },
+    updateWidth: function() {
+    },
+    drawWave: function(peaks, max) {
+    },
+    clearWave: function() {
+    },
+    updateProgress: function(position) {
+    },
+    addMark: function(mark) {
+    },
+    removeMark: function(mark) {
+    },
+    updateMark: function(mark) {
+    },
+    addRegion: function(region) {
+    },
+    removeRegion: function(region) {
+    },
+    updateRegion: function(region) {
+    },
+    drawSelection: function() {
+    },
+    eraseSelection: function() {
+    },
+    eraseSelectionMarks: function(mark0, mark1) {
+    }
 };
 
 WaveSurfer.util.extend(WaveSurfer.Drawer, WaveSurfer.Observer);
