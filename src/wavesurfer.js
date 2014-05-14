@@ -26,7 +26,8 @@ var WaveSurfer = {
         loopSelection : true,
         audioRate     : 1,
         interact      : true,
-        draggableMarkers: false
+        draggableMarkers: false,
+        backend: "WebAudio",
     },
 
     init: function (params) {
@@ -148,7 +149,7 @@ var WaveSurfer = {
     createBackend: function () {
         var my = this;
 
-        this.backend = Object.create(WaveSurfer.WebAudio);
+        this.backend = Object.create(WaveSurfer[this.params.backend]);
 
         this.backend.on('play', function () {
             my.fireEvent('play');
@@ -437,7 +438,7 @@ var WaveSurfer = {
         return [ position, duration ];
     },
 
-    drawBuffer: function () {
+    drawBuffer: function (peaks) {
         if (this.params.fillParent && !this.params.scrollParent) {
             var length = this.drawer.getWidth();
         } else {
@@ -446,7 +447,8 @@ var WaveSurfer = {
             );
         }
 
-        this.drawer.drawPeaks(this.backend.getPeaks(length), length);
+        var peaks = peaks || this.backend.getPeaks(length);
+        this.drawer.drawPeaks(peaks, length);
         this.redrawMarks();
         this.fireEvent('redraw');
     },
@@ -529,13 +531,19 @@ var WaveSurfer = {
     },
 
     /**
-     * Load audio stream and render its waveform as it plays.
+     * Load audio stream. If peaks is provided, draw the buffer from it, else
+     * render the waveform as the stream plays.
      */
-    loadStream: function (url) {
+    loadStream: function (url, peaks) {
         var my = this;
 
         this.empty();
-        this.drawAsItPlays();
+        if (peaks != null) {
+            this.drawBuffer(peaks);
+        }
+        else {
+            this.drawAsItPlays();
+        }
         this.media = this.createMedia(url);
 
         // iOS requires a touch to start loading audio
@@ -544,6 +552,7 @@ var WaveSurfer = {
             my.backend.loadMedia(my.media);
         });
 
+        // TODO capture ready event from the backend
         setTimeout(this.fireEvent.bind(this, 'ready'), 0);
     },
 

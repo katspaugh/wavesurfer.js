@@ -194,11 +194,6 @@ WaveSurfer.WebAudio = {
         return peaks;
     },
 
-    getPlayedPercents: function () {
-        var duration = this.getDuration();
-        return (this.getCurrentTime() / duration) || 0;
-    },
-
     disconnectSource: function () {
         if (this.source) {
             this.source.disconnect();
@@ -216,19 +211,6 @@ WaveSurfer.WebAudio = {
         this.analyser.disconnect();
     },
 
-    updateSelection: function (startPercent, endPercent) {
-        var duration = this.getDuration();
-        this.loop = true;
-        this.loopStart = duration * startPercent;
-        this.loopEnd = duration * endPercent;
-    },
-
-    clearSelection: function () {
-        this.loop = false;
-        this.loopStart = 0;
-        this.loopEnd = 0;
-    },
-
     /**
      * Returns the real-time waveform data.
      *
@@ -238,56 +220,8 @@ WaveSurfer.WebAudio = {
     waveform: function () {
         this.analyser.getByteTimeDomainData(this.analyserData);
         return this.analyserData;
-    },
-
-
-    /* Dummy methods */
-
-    postInit: function () {},
-    load: function () {},
-
-    /**
-     * Get current position in seconds.
-     */
-    getCurrentTime: function () {
-        return 0;
-    },
-
-    /**
-     * @returns {Boolean}
-     */
-    isPaused: function () {
-        return true;
-    },
-
-    /**
-     * Get duration in seconds.
-     */
-    getDuration: function () {
-        return 0;
-    },
-
-    /**
-     * Set the audio source playback rate.
-     */
-    setPlaybackRate: function (value) {
-        this.playbackRate = value || 1;
-    },
-
-    /**
-     * Plays the loaded audio region.
-     *
-     * @param {Number} start Start offset in seconds,
-     * relative to the beginning of a clip.
-     * @param {Number} end When to stop
-     * relative to the beginning of a clip.
-     */
-    play: function (start, end) {},
-
-    /**
-     * Pauses the loaded audio.
-     */
-    pause: function () {}
+    }
 };
 
+WaveSurfer.util.extend(WaveSurfer.Backend, WaveSurfer.Observer);
 WaveSurfer.util.extend(WaveSurfer.WebAudio, WaveSurfer.Observer);
