@@ -28,7 +28,6 @@ var WaveSurfer = {
         interact      : true,
         draggableMarkers: false,
         backend: "WebAudio",
-        getPeaks: null
     },
 
     init: function (params) {
@@ -439,7 +438,7 @@ var WaveSurfer = {
         return [ position, duration ];
     },
 
-    drawBuffer: function () {
+    drawBuffer: function (peaks) {
         if (this.params.fillParent && !this.params.scrollParent) {
             var length = this.drawer.getWidth();
         } else {
@@ -448,8 +447,8 @@ var WaveSurfer = {
             );
         }
 
-        var getPeaks = this.params.getPeaks || this.backend.getPeaks.bind(this.backend);
-        this.drawer.drawPeaks(getPeaks(length), length);
+        var peaks = peaks || this.backend.getPeaks(length);
+        this.drawer.drawPeaks(peaks, length);
         this.redrawMarks();
         this.fireEvent('redraw');
     },
@@ -532,13 +531,19 @@ var WaveSurfer = {
     },
 
     /**
-     * Load audio stream and render its waveform as it plays.
+     * Load audio stream. If peaks is provided, draw the buffer from it, else
+     * render the waveform as the stream plays.
      */
-    loadStream: function (url) {
+    loadStream: function (url, peaks) {
         var my = this;
 
         this.empty();
-        this.drawAsItPlays();
+        if (peaks != null) {
+            this.drawBuffer(peaks);
+        }
+        else {
+            this.drawAsItPlays();
+        }
         this.media = this.createMedia(url);
 
         // iOS requires a touch to start loading audio
@@ -547,6 +552,7 @@ var WaveSurfer = {
             my.backend.loadMedia(my.media);
         });
 
+        // TODO capture ready event from the backend
         setTimeout(this.fireEvent.bind(this, 'ready'), 0);
     },
 
@@ -575,16 +581,6 @@ var WaveSurfer = {
             percentComplete = e.loaded / (e.loaded + 1000000);
         }
         this.fireEvent('loading', Math.round(percentComplete * 100), e.target);
-    },
-
-    loadAudioTag: function (url) {
-        var my = this;
-        this.empty();
-        this.backend.loadMedia(url);
-        this.backend.on("ready", function () {
-            my.drawBuffer();
-            my.fireEvent('ready');
-        });
     },
 
     bindMarks: function () {
