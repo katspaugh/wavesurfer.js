@@ -77,9 +77,12 @@ WaveSurfer.WebAudio = {
             this.scriptNode = this.ac.createJavaScriptNode(bufferSize);
         }
         this.scriptNode.connect(this.ac.destination);
-        this.scriptNode.onaudioprocess = function () {
-            if (!my.isPaused()) {
-                var time = my.getCurrentTime();
+        this.scriptNode.onaudioprocess = function () {	
+            var time = my.getCurrentTime();		
+            if (time > my.getDuration()) {
+                my.fireEvent('finish', time);
+            }
+            if (!my.isPaused()) {                
                 my.onPlayFrame(time);
                 my.fireEvent('audioprocess', time);
             }
@@ -91,10 +94,6 @@ WaveSurfer.WebAudio = {
             if (this.prevFrameTime >= this.scheduledPause) {
                 this.pause();
             }
-        }
-
-        if (time > this.getDuration()) {
-            this.fireEvent('finish', time);
         }
 
         if (this.loop) {

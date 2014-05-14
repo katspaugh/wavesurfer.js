@@ -122,6 +122,17 @@ var WaveSurfer = {
                 my.seekTo(progress);
             }, 0);
         });
+        
+        // handle double click event to clear selection or remove marker
+        this.drawer.on('dblclick', function(e) {      
+            if (e.target.tagName.toLowerCase() === 'handler' && e.target.id.indexOf('wavesurfer') === -1) {
+                var mark = my.markers[e.target.parentNode.id];
+                mark.remove();
+            }
+            else if (my.params.dragSelection) {
+                my.clearSelection();
+            }
+        });
 
         // Drag selection or marker events
         if (this.params.dragSelection) {
