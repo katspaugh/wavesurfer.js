@@ -25,8 +25,7 @@ var WaveSurfer = {
         dragSelection : true,
         loopSelection : true,
         audioRate     : 1,
-        interact      : true,
-        draggableMarkers: false
+        interact      : true
     },
 
     init: function (params) {
