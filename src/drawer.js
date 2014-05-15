@@ -61,6 +61,12 @@ WaveSurfer.Drawer = {
             }
         });
 
+        my.wrapper.addEventListener('dblclick', function (e) {
+            if (my.interact || my.params.dragSelection) {
+                my.fireEvent('dblclick', e);
+            }
+        });
+
         this.params.dragSelection && (function () {
             var drag = {};
 
@@ -83,10 +89,7 @@ WaveSurfer.Drawer = {
                     my.fireEvent('drag', drag);
                 }
             }, 30));
-
-            my.wrapper.addEventListener('dblclick', function () {
-                my.fireEvent('drag-clear', drag);
-            });
+            
         }());
     },
 

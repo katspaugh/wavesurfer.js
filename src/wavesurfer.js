@@ -121,15 +121,23 @@ var WaveSurfer = {
                 my.seekTo(progress);
             }, 0);
         });
+        
+        // handle dbl click envent to clear selection or delete marker
+        this.drawer.on('dblclick', function(e) {      
+            if (e.target.tagName.toLowerCase() === 'handler' && e.target.id.indexOf('wavesurfer') === -1) {
+                var mark = my.markers[e.target.parentNode.id];
+                mark.remove();
+            }
+            else if (my.params.dragSelection) {
+                my.clearSelection();
+            }
+        });
 
         // Drag selection or marker events
         if (this.params.dragSelection) {
             this.drawer.on('drag', function (drag) {
                 my.dragging = true;
                 my.updateSelection(drag);
-            });
-            this.drawer.on('drag-clear', function () {
-                my.clearSelection();
             });
         }
 
@@ -740,20 +748,22 @@ var WaveSurfer = {
     },
 
     clearSelection: function () {
-        this.drawer.clearSelection(this.selMark0, this.selMark1);
-        if (this.selMark0) {
-            this.selMark0.remove();
-            this.selMark0 = null;
-        }
-        if (this.selMark1) {
-            this.selMark1.remove();
-            this.selMark1 = null;
-        }
+        if (this.selMark0 && this.selMark1) {
+            this.drawer.clearSelection(this.selMark0, this.selMark1);
+            if (this.selMark0) {
+                this.selMark0.remove();
+                this.selMark0 = null;
+            }
+            if (this.selMark1) {
+                this.selMark1.remove();
+                this.selMark1 = null;
+            }
 
-        if (this.loopSelection) {
-            this.backend.clearSelection();
+            if (this.loopSelection) {
+                this.backend.clearSelection();
+            }
+            this.fireEvent('selection-update', this.getSelection());
         }
-        this.fireEvent('selection-update', this.getSelection());
     },
 
     toggleLoopSelection: function () {
