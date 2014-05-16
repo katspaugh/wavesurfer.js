@@ -324,6 +324,7 @@ var WaveSurfer = {
 
         // If we create marker while dragging we are creating selMarks
         if (this.dragging) {
+            mark.type = 'selMark';
             mark.on('drag', function(drag){
                 my.updateSelectionByMark(drag, mark);
             });
