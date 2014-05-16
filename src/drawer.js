@@ -60,6 +60,17 @@ WaveSurfer.Drawer = {
                 my.fireEvent('mouseup', e);
             }
         });
+        
+        this.wrapper.addEventListener('dblclick', function(e) {
+            if (my.interact || my.params.dragSelection) {
+                if (e.target.tagName.toLowerCase() === 'handler' && !e.target.classList.contains('selection-wavesurfer-handler')) {
+                    my.fireEvent('mark-dblclick', e);
+                }
+                else{
+                    my.fireEvent('drag-clear', e);
+                }
+            }
+        });
 
         this.params.dragSelection && (function () {
             var drag = {};
@@ -83,10 +94,7 @@ WaveSurfer.Drawer = {
                     my.fireEvent('drag', drag);
                 }
             }, 30));
-
-            my.wrapper.addEventListener('dblclick', function () {
-                my.fireEvent('drag-clear', drag);
-            });
+            
         }());
     },
 
