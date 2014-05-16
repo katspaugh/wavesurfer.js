@@ -129,17 +129,16 @@ var WaveSurfer = {
                 mark.remove();
             }
         });
-        
-        // Clear selection on canvas dble click
-        this.drawer.on('drag-clear', function(e) {
-            my.clearSelection();
-        });
 
         // Drag selection or marker events
         if (this.params.dragSelection) {
             this.drawer.on('drag', function (drag) {
                 my.dragging = true;
                 my.updateSelection(drag);
+            });        
+            // Clear selection on canvas dble click
+            this.drawer.on('drag-clear', function() {
+                my.clearSelection();
             });
         }
 
