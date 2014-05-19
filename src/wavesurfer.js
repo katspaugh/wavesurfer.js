@@ -123,8 +123,8 @@ var WaveSurfer = {
         });
         
         // Delete Mark on handler dble click
-        this.drawer.on('mark-dblclick', function(e) {
-            var mark = my.markers[e.target.parentNode.id];
+        this.drawer.on('mark-dblclick', function(id) {
+            var mark = my.markers[id];
             if (mark) {
                 mark.remove();
             }
