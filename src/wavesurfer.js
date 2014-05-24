@@ -168,9 +168,9 @@ var WaveSurfer = {
         var my = this;
         var requestFrame = window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame;
-        var frame = function (time) {
+        var frame = function () {
             if (!my.backend.isPaused()) {
-                my.fireEvent('progress', my.backend.getPlayedPercents(), time);
+                my.fireEvent('progress', my.backend.getPlayedPercents());
                 requestFrame(frame);
             }
         };
@@ -235,7 +235,7 @@ var WaveSurfer = {
             this.savedVolume = this.backend.getVolume();
             this.backend.setVolume(0);
         }
-        this.play(progress * this.getDuration());
+        this.play((progress * this.drawer.width) / this.realPxPerSec);
         if (paused) {
             this.pause();
             this.backend.setVolume(this.savedVolume);
@@ -434,10 +434,9 @@ var WaveSurfer = {
         if (this.params.fillParent && !this.params.scrollParent) {
             var length = this.drawer.getWidth();
         } else {
-            length = Math.round(
-                this.getDuration() * this.minPxPerSec * this.params.pixelRatio
-            );
+            length = Math.round(this.getDuration() * this.minPxPerSec * this.params.pixelRatio);
         }
+        this.realPxPerSec = length / this.getDuration();
 
         this.drawer.drawPeaks(this.backend.getPeaks(length), length);
         this.fireEvent('redraw');
@@ -445,30 +444,34 @@ var WaveSurfer = {
 
     drawAsItPlays: function () {
         var my = this;
+        this.realPxPerSec = this.minPxPerSec * this.params.pixelRatio;
+        var frameTime = 1 / this.realPxPerSec;
+        var prevTime = 0;
         var peaks;
 
-        this.drawFrame = function (timestamp) {
-            var value = WaveSurfer.util.max(my.backend.waveform(), 128);
+        this.drawFrame = function (time) {
+            if (time - prevTime < frameTime) {
+                return;
+            }
+            prevTime = time;
             var duration = my.getDuration();
             if (duration < Infinity) {
-                var length = Math.round(duration * my.minPxPerSec * my.params.pixelRatio);
-                if (!peaks) {
-                    peaks = new Uint8Array(length);
-                }
-                peaks[~~(my.backend.getPlayedPercents() * length)] = value;
+                var length = Math.round(duration * my.realPxPerSec);
+                peaks = peaks || new Uint8Array(length);
             } else {
-                if (!peaks) {
-                    peaks = [];
-                }
-                peaks.push(value);
+                peaks = peaks || [];
                 length = peaks.length;
             }
-
-            my.drawer.setWidth(length);
-            my.drawer.clearWave();
-            my.drawer.drawWave(peaks, 128);
+            var index = ~~(my.backend.getPlayedPercents() * length);
+            if (!peaks[index]) {
+                peaks[index] = WaveSurfer.util.max(my.backend.waveform(), 128);
+                my.drawer.setWidth(length);
+                my.drawer.clearWave();
+                my.drawer.drawWave(peaks, 128);
+            }
         };
-        this.on('progress', this.drawFrame);
+
+        this.backend.on('audioprocess', this.drawFrame);
     },
 
     /**

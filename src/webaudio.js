@@ -78,13 +78,8 @@ WaveSurfer.WebAudio = {
         }
         this.scriptNode.connect(this.ac.destination);
         this.scriptNode.onaudioprocess = function () {
-            var time = my.getCurrentTime();
-
-            if (time >= my.getDuration()) {
-                my.fireEvent('finish', time);
-            }
-
             if (!my.isPaused()) {
+                var time = my.getCurrentTime();
                 my.onPlayFrame(time);
                 my.fireEvent('audioprocess', time);
             }
