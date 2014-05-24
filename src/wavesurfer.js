@@ -450,7 +450,7 @@ var WaveSurfer = {
         var peaks;
 
         this.drawFrame = function (time) {
-            if (time - prevTime < frameTime) {
+            if (time > prevTime && time - prevTime < frameTime) {
                 return;
             }
             prevTime = time;
