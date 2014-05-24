@@ -2,6 +2,8 @@
 
 WaveSurfer.WebAudio.Media = {
     postInit: function () {
+        var my = this;
+
         // Dummy media to catch errors
         this.media = {
             currentTime: 0,
@@ -11,11 +13,19 @@ WaveSurfer.WebAudio.Media = {
             play: function () {},
             pause: function () {}
         };
+
+        this.maxCurrentTime = 0;
+        this.on('audioprocess', function (time) {
+            if (time > my.maxCurrentTime) {
+                my.maxCurrentTime = time;
+            }
+        });
     },
 
     load: function (media) {
         this.disconnectSource();
         this.media = media;
+        this.maxCurrentTime = 0;
         this.source = this.ac.createMediaElementSource(this.media);
         this.media.playbackRate = this.playbackRate;
         this.source.connect(this.analyser);
@@ -31,6 +41,15 @@ WaveSurfer.WebAudio.Media = {
 
     getCurrentTime: function () {
         return this.media.currentTime;
+    },
+
+    getPlayedPercents: function () {
+        var duration = this.getDuration();
+        var time = this.getCurrentTime();
+        if (duration >= Infinity) { // streaming audio
+            duration = this.maxCurrentTime;
+        }
+        return (time / duration) || 0;
     },
 
     /**
