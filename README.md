@@ -12,20 +12,28 @@ API in examples
 
 Create an instance:
 
-    var wavesurfer = Object.create(WaveSurfer);
+```javascript
+var wavesurfer = Object.create(WaveSurfer);
+```
 
 Initialize it with a container element (plus some options):
 
-    wavesurfer.init({ container: '#wave', waveColor: 'violet',
-        progressColor: 'purple' });
+```javascript
+wavesurfer.init({ container: '#wave', waveColor: 'violet',
+    progressColor: 'purple' });
+```
 
 Subscribe to some events:
 
-    wavesurfer.on('ready', function () { wavesurfer.play(); });
+```javascript
+wavesurfer.on('ready', function () { wavesurfer.play(); });
+```
 
 Load an audio file from a URL:
 
-    wavesurfer.load('example/media/demo.wav');
+```javascript
+wavesurfer.load('example/media/demo.wav');
+```
 
 See the example code
 [here](https://github.com/katspaugh/wavesurfer.js/blob/master/example/main.js).
@@ -128,8 +136,10 @@ Connecting filters
 You can insert your own Web Audio nodes into the graph using the
 method `setFilter`. Example:
 
-    var lowpass = wavesurfer.backend.ac.createBiquadFilter();
-    wavesurfer.backend.setFilter(lowpass);
+```javascript
+var lowpass = wavesurfer.backend.ac.createBiquadFilter();
+wavesurfer.backend.setFilter(lowpass);
+```
 
 Events
 ======
