@@ -46,25 +46,46 @@ WaveSurfer.WebAudio = {
     },
 
     disconnectFilters: function () {
-        if (this.inputFilter) {
-            this.inputFilter.disconnect();
-        }
-        if (this.outputFilter) {
-            this.outputFilter.disconnect();
+        if (this.filters) {
+            this.filters.forEach(function (filter) {
+                filter && filter.disconnect();
+            });
         }
     },
 
     setFilter: function (inputFilter, outputFilter) {
         this.disconnectFilters();
 
-        this.inputFilter = inputFilter;
-        this.outputFilter = outputFilter || inputFilter;
+        outputFilter = outputFilter || inputFilter;
 
-        if (this.inputFilter && this.outputFilter) {
-            this.analyser.connect(this.inputFilter);
-            this.outputFilter.connect(this.gainNode);
+        if (inputFilter && outputFilter) {
+            this.analyser.connect(inputFilter);
+            outputFilter.connect(this.gainNode);
+            this.filters = [inputFilter, outputFilter];
         } else {
             this.analyser.connect(this.gainNode);
+        }
+    },
+
+    setFilters: function (filters) {
+        this.disconnectFilters();
+
+        // defer to setFilter if doing 2 or fewer filters
+        if (filters.length <= 2) {
+            this.setFilter.apply(this, filters);
+        }
+        // otherwise connect each filter in turn
+        else {
+            this.analyser.connect(filters[0]);
+            for (var i = 1; i < filters.length - 1; i++) {
+                var prev = filters[i-1];
+                var curr = filters[i];
+                var next = filters[i+1];
+                prev.connect(curr);
+                curr.connect(next);
+            }
+            filters[filters.length].connect(this.gainNode);
+            this.filters = filters;
         }
     },
 
