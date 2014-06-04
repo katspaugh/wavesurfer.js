@@ -121,9 +121,9 @@ var WaveSurfer = {
                 my.seekTo(progress);
             }, 0);
         });
-        
+
         // Delete Mark on handler dble click
-        this.drawer.on('mark-dblclick', function(id) {
+        this.drawer.on('mark-dblclick', function (id) {
             var mark = my.markers[id];
             if (mark) {
                 mark.remove();
@@ -135,9 +135,9 @@ var WaveSurfer = {
             this.drawer.on('drag', function (drag) {
                 my.dragging = true;
                 my.updateSelection(drag);
-            });        
+            });
             // Clear selection on canvas dble click
-            this.drawer.on('drag-clear', function() {
+            this.drawer.on('drag-clear', function () {
                 my.clearSelection();
             });
         }
@@ -176,7 +176,7 @@ var WaveSurfer = {
     restartAnimationLoop: function () {
         var my = this;
         var requestFrame = window.requestAnimationFrame ||
-            window.webkitRequestAnimationFrame;
+                window.webkitRequestAnimationFrame;
         var frame = function () {
             if (!my.backend.isPaused()) {
                 my.fireEvent('progress', my.backend.getPlayedPercents());
@@ -324,11 +324,11 @@ var WaveSurfer = {
         // If we create marker while dragging we are creating selMarks
         if (this.dragging) {
             mark.type = 'selMark';
-            mark.on('drag', function(drag){
+            mark.on('drag', function (drag){
                 my.updateSelectionByMark(drag, mark);
             });
         } else {
-            mark.on('drag', function(drag){
+            mark.on('drag', function (drag){
                 my.moveMark(drag, mark);
             });
         }
@@ -376,14 +376,14 @@ var WaveSurfer = {
         }, this);
     },
 
-    clearRegions: function() {
+    clearRegions: function () {
         Object.keys(this.regions).forEach(function (id) {
             this.regions[id].remove();
         }, this);
         this.regions = {};
     },
 
-    region: function(options) {
+    region: function (options) {
         var my = this;
 
         var opts = WaveSurfer.util.extend({
@@ -613,7 +613,7 @@ var WaveSurfer = {
         });
     },
 
-    bindRegions: function() {
+    bindRegions: function () {
         var my = this;
         this.backend.on('play', function () {
             Object.keys(my.regions).forEach(function (id) {
@@ -757,10 +757,10 @@ var WaveSurfer = {
 
             this.selMark0.remove();
             this.selMark0 = null;
-            
+
             this.selMark1.remove();
             this.selMark1 = null;
-            
+
             if (this.loopSelection) {
                 this.backend.clearSelection();
             }

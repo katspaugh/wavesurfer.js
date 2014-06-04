@@ -41,9 +41,9 @@ WaveSurfer.Drawer = {
     },
 
     handleEvent: function (e) {
-            e.preventDefault();
-            var bbox = this.wrapper.getBoundingClientRect();
-            return ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.scrollWidth) || 0;
+        e.preventDefault();
+        var bbox = this.wrapper.getBoundingClientRect();
+        return ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.scrollWidth) || 0;
     },
 
     setupWrapperEvents: function () {
@@ -60,7 +60,7 @@ WaveSurfer.Drawer = {
                 my.fireEvent('mouseup', e);
             }
         });
-        
+
         this.wrapper.addEventListener('dblclick', function(e) {
             if (my.interact || my.params.dragSelection) {
                 if (e.target.tagName.toLowerCase() === 'handler' && !e.target.classList.contains('selection-wavesurfer-handler')) {
@@ -94,7 +94,7 @@ WaveSurfer.Drawer = {
                     my.fireEvent('drag', drag);
                 }
             }, 30));
-            
+
         }());
     },
 

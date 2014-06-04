@@ -73,7 +73,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var $ = 0.5 / this.pixelRatio;
         this.waveCc.fillStyle = this.params.waveColor;
         this.progressCc.fillStyle = this.params.progressColor;
-        
+
         var halfH = this.height / 2;
         var coef = halfH / max;
         var scale = this.width / peaks.length;
@@ -115,7 +115,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var my = this;
         var markEl = document.createElement('mark');
         markEl.id = mark.id;
-        if(mark.type && mark.type === 'selMark'){
+        if (mark.type && mark.type === 'selMark') {
             markEl.className = 'selection-mark';
         }
         this.wrapper.appendChild(markEl);
@@ -124,7 +124,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         if (mark.draggable) {
             handler = document.createElement('handler');
             handler.id = mark.id + '-handler';
-            handler.className = mark.type && mark.type === 'selMark' ? 'selection-wavesurfer-handler':'wavesurfer-handler';
+            handler.className = mark.type === 'selMark' ?
+                'selection-wavesurfer-handler' : 'wavesurfer-handler';
             markEl.appendChild(handler);
         }
 
@@ -225,9 +226,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     updateRegion: function (region) {
         var regionEl = document.getElementById(region.id);
         var left = Math.max(0, Math.round(
-                region.startPercentage * this.scrollWidth));
+            region.startPercentage * this.scrollWidth));
         var width = Math.max(0, Math.round(
-                region.endPercentage * this.scrollWidth)) - left;
+            region.endPercentage * this.scrollWidth)) - left;
 
         this.style(regionEl, {
             height: '100%',
