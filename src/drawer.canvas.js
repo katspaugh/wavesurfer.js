@@ -115,13 +115,16 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var my = this;
         var markEl = document.createElement('mark');
         markEl.id = mark.id;
+        if(mark.type && mark.type === 'selMark'){
+            markEl.className = 'selection-mark';
+        }
         this.wrapper.appendChild(markEl);
         var handler;
 
         if (mark.draggable) {
             handler = document.createElement('handler');
             handler.id = mark.id + '-handler';
-            handler.className = 'wavesurfer-handler';
+            handler.className = mark.type && mark.type === 'selMark' ? 'selection-wavesurfer-handler':'wavesurfer-handler';
             markEl.appendChild(handler);
         }
 
