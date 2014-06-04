@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 type: 'LOWSHELF'
             }, {
                 f: 64,
-                type: 'LOWSHELF'
+                type: 'PEAKING'
             }, {
                 f: 125,
                 type: 'PEAKING'
