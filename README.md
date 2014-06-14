@@ -72,6 +72,8 @@ Options
   `false`.
   * `interact` – whether the mouse interaction will enabled at
     initialisation (`true` by default).
+  * `backend` – one of `WebAudioBuffer` (the default), `WebAudioMedia`
+    and `AudioElement`. In most cases you needn't set this manually.
 
 Methods
 =======
