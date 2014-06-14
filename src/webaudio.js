@@ -27,22 +27,12 @@ WaveSurfer.WebAudio = {
         this.prevFrameTime = 0;
         this.scheduledPause = null;
 
+        this.postInit();
+
         this.createVolumeNode();
         this.createScriptNode();
         this.createAnalyserNode();
         this.setPlaybackRate(this.params.audioRate);
-    },
-
-    loadBuffer: function (buffer) {
-        WaveSurfer.util.extend(this, WaveSurfer.WebAudio.Buffer);
-        this.postInit();
-        this.load(buffer);
-    },
-
-    loadMedia: function (media) {
-        WaveSurfer.util.extend(this, WaveSurfer.WebAudio.Media);
-        this.postInit();
-        this.load(media);
     },
 
     disconnectFilters: function () {

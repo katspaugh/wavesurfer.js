@@ -14,18 +14,18 @@ var WaveSurfer = {
         markerWidth   : 2,
         skipLength    : 2,
         minPxPerSec   : 10,
-        samples       : 3,
         pixelRatio    : window.devicePixelRatio,
         fillParent    : true,
         scrollParent  : false,
         normalize     : false,
         audioContext  : null,
         container     : null,
-        renderer      : 'Canvas',
         dragSelection : true,
         loopSelection : true,
         audioRate     : 1,
-        interact      : true
+        interact      : true,
+        renderer      : 'Canvas',
+        backend       : 'WebAudioBuffer'
     },
 
     init: function (params) {
@@ -156,13 +156,14 @@ var WaveSurfer = {
     createBackend: function () {
         var my = this;
 
-        this.backend = Object.create(WaveSurfer.WebAudio);
+        if (this.backend) {
+            this.backend.destroy();
+        }
+
+        this.backend = Object.create(WaveSurfer[this.params.backend]);
 
         this.backend.on('play', function () {
             my.fireEvent('play');
-        });
-
-        this.on('play', function () {
             my.restartAnimationLoop();
         });
 
@@ -490,9 +491,7 @@ var WaveSurfer = {
     loadArrayBuffer: function (arraybuffer) {
         var my = this;
         this.backend.decodeArrayBuffer(arraybuffer, function (data) {
-            my.backend.loadBuffer(data);
-            my.drawBuffer();
-            my.fireEvent('ready');
+            my.loadDecodedBuffer(data);
         }, function () {
             my.fireEvent('error', 'Error decoding audiobuffer');
         });
@@ -503,7 +502,13 @@ var WaveSurfer = {
      */
     loadDecodedBuffer: function (buffer) {
         this.empty();
-        this.backend.loadBuffer(buffer);
+
+        if (this.params.backend != 'WebAudioBuffer') {
+            this.params.backend = 'WebAudioBuffer';
+            this.createBackend();
+        }
+        this.backend.load(buffer);
+
         this.drawBuffer();
         this.fireEvent('ready');
     },
@@ -545,6 +550,11 @@ var WaveSurfer = {
     loadStream: function (url) {
         var my = this;
 
+        if (this.params.backend == 'WebAudioBuffer') {
+            this.params.backend = 'WebAudioMedia';
+            this.createBackend();
+        }
+
         this.empty();
         this.drawAsItPlays();
         this.media = this.createMedia(url);
@@ -552,7 +562,7 @@ var WaveSurfer = {
         // iOS requires a touch to start loading audio
         this.once('user-action', function () {
             // Assume media.readyState >= media.HAVE_ENOUGH_DATA
-            my.backend.loadMedia(my.media);
+            my.backend.load(my.media);
         });
 
         setTimeout(this.fireEvent.bind(this, 'ready'), 0);

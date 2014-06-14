@@ -1,6 +1,8 @@
 'use strict';
 
-WaveSurfer.WebAudio.Buffer = {
+WaveSurfer.WebAudioBuffer = Object.create(WaveSurfer.WebAudio);
+
+WaveSurfer.util.extend(WaveSurfer.WebAudioBuffer, {
     postInit: function () {
         this.lastStartPosition = 0;
         this.lastPlay = this.lastPause = this.nextPause = this.ac.currentTime;
@@ -73,10 +75,12 @@ WaveSurfer.WebAudio.Buffer = {
         this.scheduledPause = null;
         this.lastPause = this.nextPause = this.ac.currentTime;
 
-        if (this.source.stop) {
-            this.source.stop(0);
-        } else {
-            this.source.noteOff(0);
+        if (this.source) {
+            if (this.source.stop) {
+                this.source.stop(0);
+            } else {
+                this.source.noteOff(0);
+            }
         }
 
         this.fireEvent('pause');
@@ -95,6 +99,8 @@ WaveSurfer.WebAudio.Buffer = {
      */
     setPlaybackRate: function (value) {
         this.playbackRate = value || 1;
-        this.source.playbackRate.value = this.playbackRate;
+        if (this.source) {
+            this.source.playbackRate.value = this.playbackRate;
+        }
     }
-};
+});

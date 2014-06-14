@@ -1,6 +1,8 @@
 'use strict';
 
-WaveSurfer.WebAudio.Media = {
+WaveSurfer.WebAudioMedia = Object.create(WaveSurfer.WebAudio);
+
+WaveSurfer.util.extend(WaveSurfer.WebAudioMedia, {
     postInit: function () {
         var my = this;
 
@@ -89,4 +91,4 @@ WaveSurfer.WebAudio.Media = {
         this.media.pause();
         this.fireEvent('pause');
     }
-};
+});
