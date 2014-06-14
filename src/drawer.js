@@ -63,7 +63,10 @@ WaveSurfer.Drawer = {
 
         this.wrapper.addEventListener('dblclick', function(e) {
             if (my.interact || my.params.dragSelection) {
-                if (e.target.tagName.toLowerCase() === 'handler' && !e.target.classList.contains('selection-wavesurfer-handler')) {
+                if (
+                    e.target.tagName.toLowerCase() === 'handler' &&
+                        !e.target.classList.contains('selection-wavesurfer-handler')
+                ) {
                     my.fireEvent('mark-dblclick', e.target.parentNode.id);
                 }
                 else{
@@ -94,7 +97,6 @@ WaveSurfer.Drawer = {
                     my.fireEvent('drag', drag);
                 }
             }, 30));
-
         }());
     },
 

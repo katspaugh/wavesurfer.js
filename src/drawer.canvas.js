@@ -76,32 +76,39 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         var halfH = this.height / 2;
         var coef = halfH / max;
-        var scale = this.width / peaks.length;
+        var scale = 1;
+        if (this.params.fillParent && this.width > peaks.length) {
+            scale = this.width / peaks.length;
+        }
+        var length = peaks.length;
 
         this.waveCc.beginPath();
         this.waveCc.moveTo($, halfH);
         this.progressCc.beginPath();
         this.progressCc.moveTo($, halfH);
-        for (var i = 0; i < this.width; i++) {
-            var h = Math.round(peaks[~~(i * scale)] * coef);
-            this.waveCc.lineTo(i + $, halfH + h);
-            this.progressCc.lineTo(i + $, halfH + h);
+        for (var i = 0; i < length; i++) {
+            var h = Math.round(peaks[i] * coef);
+            this.waveCc.lineTo(i * scale + $, halfH + h);
+            this.progressCc.lineTo(i * scale + $, halfH + h);
         }
         this.waveCc.lineTo(this.width + $, halfH);
         this.progressCc.lineTo(this.width + $, halfH);
 
         this.waveCc.moveTo($, halfH);
         this.progressCc.moveTo($, halfH);
-        for (var i = 0; i < this.width; i++) {
-            var h = Math.round(peaks[~~(i * scale)] * coef);
-            this.waveCc.lineTo(i + $, halfH - h);
-            this.progressCc.lineTo(i + $, halfH - h);
+        for (var i = 0; i < length; i++) {
+            var h = Math.round(peaks[i] * coef);
+            this.waveCc.lineTo(i * scale + $, halfH - h);
+            this.progressCc.lineTo(i * scale + $, halfH - h);
         }
 
         this.waveCc.lineTo(this.width + $, halfH);
         this.waveCc.fill();
         this.progressCc.lineTo(this.width + $, halfH);
         this.progressCc.fill();
+
+        // Always draw a median line
+        this.waveCc.fillRect(0, halfH - $, this.width, $);
     },
 
     updateProgress: function (progress) {

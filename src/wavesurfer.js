@@ -78,6 +78,7 @@ var WaveSurfer = {
 
     /**
      * Used with loadStream.
+     * TODO: move to WebAudioMedia
      */
     createMedia: function (url) {
         var my = this;
@@ -89,6 +90,10 @@ var WaveSurfer = {
 
         media.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading media element');
+        });
+
+        media.addEventListener('canplay', function () {
+            my.fireEvent('media-canplay');
         });
 
         var prevMedia = this.container.querySelector('audio');
@@ -171,7 +176,15 @@ var WaveSurfer = {
             my.fireEvent('finish');
         });
 
-        this.backend.init(this.params);
+        try {
+            this.backend.init(this.params);
+        } catch (e) {
+            if (e.message == 'wavesurfer.js: your browser doesn\'t support WebAudio') {
+                this.params.backend = 'AudioElement';
+                this.backend = null;
+                this.createBackend();
+            }
+        }
     },
 
     restartAnimationLoop: function () {
@@ -503,6 +516,7 @@ var WaveSurfer = {
     loadDecodedBuffer: function (buffer) {
         this.empty();
 
+        /* In case it's called externally */
         if (this.params.backend != 'WebAudioBuffer') {
             this.params.backend = 'WebAudioBuffer';
             this.createBackend();
@@ -536,9 +550,20 @@ var WaveSurfer = {
     },
 
     /**
-     * Loads audio and prerenders its waveform.
+     * Loads audio and rerenders the waveform.
      */
-    load: function (url) {
+    load: function (url, peaks) {
+        switch (this.params.backend) {
+            case 'WebAudioBuffer': return this.loadBuffer(url);
+            case 'WebAudioMedia': return this.loadStream(url);
+            case 'AudioElement': return this.loadAudioElement(url, peaks);
+        }
+    },
+
+    /**
+     * Loads audio using Web Audio buffer backend.
+     */
+    loadBuffer: function (url) {
         this.empty();
         // load via XHR and render all at once
         return this.downloadArrayBuffer(url, this.loadArrayBuffer.bind(this));
@@ -550,7 +575,8 @@ var WaveSurfer = {
     loadStream: function (url) {
         var my = this;
 
-        if (this.params.backend == 'WebAudioBuffer') {
+        /* In case it's called externally */
+        if (this.params.backend != 'WebAudioMedia') {
             this.params.backend = 'WebAudioMedia';
             this.createBackend();
         }
@@ -566,6 +592,25 @@ var WaveSurfer = {
         });
 
         setTimeout(this.fireEvent.bind(this, 'ready'), 0);
+    },
+
+    loadAudioElement: function (url, peaks) {
+        var my = this;
+
+        /* In case it's called externally */
+        if (this.params.backend != 'AudioElement') {
+            this.params.backend = 'AudioElement';
+            this.createBackend();
+        }
+
+        this.empty();
+        this.media = this.createMedia(url);
+
+        this.once('media-canplay', function () {
+            my.backend.load(my.media, peaks);
+            my.drawBuffer();
+            my.fireEvent('ready');
+        });
     },
 
     downloadArrayBuffer: function (url, callback) {
