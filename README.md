@@ -19,14 +19,19 @@ var wavesurfer = Object.create(WaveSurfer);
 Initialize it with a container element (plus some options):
 
 ```javascript
-wavesurfer.init({ container: '#wave', waveColor: 'violet',
-    progressColor: 'purple' });
+wavesurfer.init({
+    container: '#wave',
+    waveColor: 'violet',
+    progressColor: 'purple'
+});
 ```
 
 Subscribe to some events:
 
 ```javascript
-wavesurfer.on('ready', function () { wavesurfer.play(); });
+wavesurfer.on('ready', function () {
+    wavesurfer.play();
+});
 ```
 
 Load an audio file from a URL:
