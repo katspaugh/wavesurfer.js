@@ -684,7 +684,7 @@ var WaveSurfer = {
                     region.fireEvent('in');
                     region.fired_in = true;
                 }
-                if (!region.fired_out && region.endPosition < time) {
+                if (!region.fired_out && region.fired_in && region.endPosition < time) {
                     my.fireEvent('region-out', region);
                     region.fireEvent('out');
                     region.fired_out = true;
