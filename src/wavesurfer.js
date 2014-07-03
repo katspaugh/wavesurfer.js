@@ -635,7 +635,7 @@ var WaveSurfer = {
         } else {
             // Approximate progress with an asymptotic
             // function, and assume downloads in the 1-3 MB range.
-            percentComplete = e.loaded / (e.loaded + 1000000);
+            var percentComplete = e.loaded / (e.loaded + 1000000);
         }
         this.fireEvent('loading', Math.round(percentComplete * 100), e.target);
     },
@@ -698,7 +698,7 @@ var WaveSurfer = {
      */
     empty: function () {
         if (this.drawFrame) {
-            this.un('progress', this.drawFrame);
+            this.on('progress', this.drawFrame);
             this.drawFrame = null;
         }
 
@@ -1026,12 +1026,19 @@ WaveSurfer.util = {
     ajax: function (options) {
         var ajax = Object.create(WaveSurfer.Observer);
         var xhr = new XMLHttpRequest();
+        var fired_100 = false;
         xhr.open(options.method || 'GET', options.url, true);
         xhr.responseType = options.responseType;
         xhr.addEventListener('progress', function (e) {
             ajax.fireEvent('progress', e);
+            if (e.lengthComputable && e.loaded == e.total) {
+                fired_100 = true;
+            }
         });
         xhr.addEventListener('load', function (e) {
+            if (!fired_100) {
+                ajax.fireEvent('progress', e);
+            }
             ajax.fireEvent('load', e);
 
             if (200 == xhr.status || 206 == xhr.status) {
