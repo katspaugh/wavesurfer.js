@@ -1024,17 +1024,17 @@ WaveSurfer.util = {
     ajax: function (options) {
         var ajax = Object.create(WaveSurfer.Observer);
         var xhr = new XMLHttpRequest();
-        var fired_100 = false;
+        var fired100 = false;
         xhr.open(options.method || 'GET', options.url, true);
         xhr.responseType = options.responseType;
         xhr.addEventListener('progress', function (e) {
             ajax.fireEvent('progress', e);
             if (e.lengthComputable && e.loaded == e.total) {
-                fired_100 = true;
+                fired100 = true;
             }
         });
         xhr.addEventListener('load', function (e) {
-            if (!fired_100) {
+            if (!fired100) {
                 ajax.fireEvent('progress', e);
             }
             ajax.fireEvent('load', e);
