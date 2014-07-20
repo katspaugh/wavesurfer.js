@@ -49,7 +49,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     updateWidth: function () {
-        var width = Math.round(this.width / this.pixelRatio);
+        var width = Math.round(this.width / this.params.pixelRatio);
         [
             this.waveCc,
             this.progressCc,
@@ -70,7 +70,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
     drawWave: function (peaks, max) {
         // A half-pixel offset makes lines crisp
-        var $ = 0.5 / this.pixelRatio;
+        var $ = 0.5 / this.params.pixelRatio;
         this.waveCc.fillStyle = this.params.waveColor;
         this.progressCc.fillStyle = this.params.progressColor;
 
@@ -114,7 +114,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     updateProgress: function (progress) {
         var pos = Math.round(
             this.width * progress
-        ) / this.pixelRatio;
+        ) / this.params.pixelRatio;
         this.style(this.progressWave, { width: pos + 'px' });
     },
 

@@ -4,12 +4,10 @@ WaveSurfer.Drawer = {
     init: function (container, params) {
         this.container = container;
         this.params = params;
-        this.pixelRatio = this.params.pixelRatio;
 
         this.width = 0;
-        this.height = params.height * this.pixelRatio;
+        this.height = params.height * this.params.pixelRatio;
         this.containerWidth = this.container.clientWidth;
-        this.interact = this.params.interact;
 
         this.lastPos = 0;
 
@@ -50,19 +48,19 @@ WaveSurfer.Drawer = {
         var my = this;
 
         this.wrapper.addEventListener('mousedown', function (e) {
-            if (my.interact) {
+            if (my.params.interact) {
                 my.fireEvent('mousedown', my.handleEvent(e), e);
             }
         });
 
         this.wrapper.addEventListener('mouseup', function (e) {
-            if (my.interact) {
+            if (my.params.interact) {
                 my.fireEvent('mouseup', e);
             }
         });
 
         this.wrapper.addEventListener('dblclick', function(e) {
-            if (my.interact || my.params.dragSelection) {
+            if (my.params.interact || my.params.dragSelection) {
                 if (
                     e.target.tagName.toLowerCase() === 'handler' &&
                         !e.target.classList.contains('selection-wavesurfer-handler')
@@ -149,17 +147,21 @@ WaveSurfer.Drawer = {
     },
 
     getWidth: function () {
-        return Math.round(this.containerWidth * this.pixelRatio);
+        return Math.round(this.containerWidth * this.params.pixelRatio);
     },
 
     setWidth: function (width) {
         if (width == this.width) { return; }
 
         this.width = width;
-        this.scrollWidth = ~~(this.width / this.pixelRatio);
+        this.scrollWidth = ~~(this.width / this.params.pixelRatio);
         this.containerWidth = this.container.clientWidth;
 
-        if (!this.params.fillParent && !this.params.scrollParent) {
+        if (this.params.fillParent || this.params.scrollParent) {
+            this.style(this.wrapper, {
+                width: ''
+            });
+        } else {
             this.style(this.wrapper, {
                 width: this.scrollWidth + 'px'
             });
@@ -169,7 +171,7 @@ WaveSurfer.Drawer = {
     },
 
     progress: function (progress) {
-        var minPxDelta = 1 / this.pixelRatio;
+        var minPxDelta = 1 / this.params.pixelRatio;
         var pos = Math.round(progress * this.width) * minPxDelta;
 
         if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {

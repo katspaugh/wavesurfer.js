@@ -13,7 +13,7 @@ var WaveSurfer = {
         cursorWidth   : 1,
         markerWidth   : 2,
         skipLength    : 2,
-        minPxPerSec   : 10,
+        minPxPerSec   : 50,
         pixelRatio    : window.devicePixelRatio,
         fillParent    : true,
         scrollParent  : false,
@@ -53,9 +53,6 @@ var WaveSurfer = {
         this.savedVolume = 0;
         // The current muted state
         this.isMuted = false;
-
-        this.loopSelection = this.params.loopSelection;
-        this.minPxPerSec = this.params.minPxPerSec;
 
         this.bindUserAction();
         this.createDrawer();
@@ -306,6 +303,7 @@ var WaveSurfer = {
 
     toggleScroll: function () {
         this.params.scrollParent = !this.params.scrollParent;
+        this.drawBuffer();
     },
 
     mark: function (options) {
@@ -458,7 +456,7 @@ var WaveSurfer = {
         if (this.params.fillParent && !this.params.scrollParent) {
             var length = this.drawer.getWidth();
         } else {
-            length = Math.round(this.getDuration() * this.minPxPerSec * this.params.pixelRatio);
+            length = Math.round(this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio);
         }
         this.realPxPerSec = length / this.getDuration();
 
@@ -468,7 +466,7 @@ var WaveSurfer = {
 
     drawAsItPlays: function () {
         var my = this;
-        this.realPxPerSec = this.minPxPerSec * this.params.pixelRatio;
+        this.realPxPerSec = this.params.minPxPerSec * this.params.pixelRatio;
         var frameTime = 1 / this.realPxPerSec;
         var prevTime = 0;
         var peaks;
@@ -792,7 +790,7 @@ var WaveSurfer = {
 
         this.drawer.updateSelection(percent0, percent1);
 
-        if (this.loopSelection) {
+        if (this.params.loopSelection) {
             this.backend.updateSelection(percent0, percent1);
         }
         my.fireEvent('selection-update', this.getSelection());
@@ -816,7 +814,7 @@ var WaveSurfer = {
             this.selMark1.remove();
             this.selMark1 = null;
 
-            if (this.loopSelection) {
+            if (this.params.loopSelection) {
                 this.backend.clearSelection();
             }
             this.fireEvent('selection-update', this.getSelection());
@@ -824,13 +822,17 @@ var WaveSurfer = {
     },
 
     toggleLoopSelection: function () {
-        this.loopSelection = !this.loopSelection;
-
-        if (this.selMark0) this.selectionPercent0 = this.selMark0.percentage;
-        if (this.selMark1) this.selectionPercent1 = this.selMark1.percentage;
-        this.updateSelection();
-        this.selectionPercent0 = null;
-        this.selectionPercent1 = null;
+        this.params.loopSelection = !this.params.loopSelection;
+        if (this.params.loopSelection) {
+            if (this.selMark0 && this.selMark1) {
+                this.updateSelection({
+                    startPercentage: this.selMark0.percentage,
+                    endPercentage: this.selMark1.percentage
+                });
+            }
+        } else {
+            this.backend.clearSelection();
+        }
     },
 
     getSelection: function () {
