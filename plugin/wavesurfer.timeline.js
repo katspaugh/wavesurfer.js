@@ -91,7 +91,7 @@
         },
 
         updateCanvasStyle: function () {
-            var width = Math.round(this.drawer.scrollWidth / this.drawer.pixelRatio);
+            var width = Math.round(this.drawer.scrollWidth / this.wavesurfer.params.pixelRatio);
             this.canvas.width = width;
             this.canvas.height = this.height;
             this.canvas.style.width = width + 'px';
@@ -110,7 +110,7 @@
                 var pixelsPerSecond = wsParams.minPxPerSec;
             }
 
-            pixelsPerSecond = pixelsPerSecond / this.wavesurfer.drawer.pixelRatio;
+            pixelsPerSecond = pixelsPerSecond / wsParams.pixelRatio;
 
             if (duration > 0) {
                 var curPixel = 0,
