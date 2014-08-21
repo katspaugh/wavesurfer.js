@@ -1028,12 +1028,19 @@ WaveSurfer.util = {
     ajax: function (options) {
         var ajax = Object.create(WaveSurfer.Observer);
         var xhr = new XMLHttpRequest();
+        var fired100 = false;
         xhr.open(options.method || 'GET', options.url, true);
         xhr.responseType = options.responseType;
         xhr.addEventListener('progress', function (e) {
             ajax.fireEvent('progress', e);
+            if (e.lengthComputable && e.loaded == e.total) {
+                fired100 = true;
+            }
         });
         xhr.addEventListener('load', function (e) {
+            if (!fired100) {
+                ajax.fireEvent('progress', e);
+            }
             ajax.fireEvent('load', e);
 
             if (200 == xhr.status || 206 == xhr.status) {
