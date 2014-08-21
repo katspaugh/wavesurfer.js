@@ -10,7 +10,7 @@ WaveSurfer.util.extend(WaveSurfer.WebAudioBuffer, {
 
     load: function (buffer) {
         this.lastStartPosition = 0;
-        this.lastPlay = this.lastPlay = this.nextPause = this.ac.currentTime;
+        this.lastPlay = this.lastPause = this.nextPause = this.ac.currentTime;
         this.buffer = buffer;
         this.createSource();
     },
