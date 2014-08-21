@@ -670,22 +670,22 @@ var WaveSurfer = {
         var my = this;
         this.backend.on('play', function () {
             Object.keys(my.regions).forEach(function (id) {
-                my.regions[id].fired_in = false;
-                my.regions[id].fired_out = false;
+                my.regions[id].firedIn = false;
+                my.regions[id].firedOut = false;
             });
         });
         this.backend.on('audioprocess', function (time) {
             Object.keys(my.regions).forEach(function (id) {
                 var region = my.regions[id];
-                if (!region.fired_in && region.startPosition <= time && region.endPosition >= time) {
+                if (!region.firedIn && region.startPosition <= time && region.endPosition >= time) {
                     my.fireEvent('region-in', region);
                     region.fireEvent('in');
-                    region.fired_in = true;
+                    region.firedIn = true;
                 }
-                if (!region.fired_out && region.fired_in && region.endPosition < time) {
+                if (!region.firedOut && region.firedIn && region.endPosition < time) {
                     my.fireEvent('region-out', region);
                     region.fireEvent('out');
-                    region.fired_out = true;
+                    region.firedOut = true;
                 }
             });
         });
