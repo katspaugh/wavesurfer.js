@@ -630,11 +630,13 @@ var WaveSurfer = {
     },
 
     onProgress: function (e) {
-        var percentComplete = e.lengthComputable
-            ? e.loaded / e.total
-            // Approximate progress with an asymptotic
-            // function, and assume downloads in the 1-3 MB range.
-            : e.loaded / (e.loaded + 1000000);
+		if (e.lengthComputable) {
+			var percentComplete = e.loaded / e.total;
+		} else {
+			// Approximate progress with an asymptotic
+			// function, and assume downloads in the 1-3 MB range.
+			percentComplete =  e.loaded / (e.loaded + 1000000);
+		}
         this.fireEvent('loading', Math.round(percentComplete * 100), e.target);
     },
 
