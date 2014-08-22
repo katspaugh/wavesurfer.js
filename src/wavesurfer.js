@@ -17,6 +17,7 @@ var WaveSurfer = {
         pixelRatio    : window.devicePixelRatio,
         fillParent    : true,
         scrollParent  : false,
+        hideScrollbar : false,
         normalize     : false,
         audioContext  : null,
         container     : null,
@@ -848,15 +849,15 @@ var WaveSurfer = {
     },
 
     enableInteraction: function () {
-        this.drawer.interact = true;
+        this.params.interact = true;
     },
 
     disableInteraction: function () {
-        this.drawer.interact = false;
+        this.params.interact = false;
     },
 
     toggleInteraction: function () {
-        this.drawer.interact = !this.drawer.interact;
+        this.params.interact = !this.params.interact;
     }
 };
 
