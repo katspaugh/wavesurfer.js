@@ -30,7 +30,7 @@ WaveSurfer.Drawer = {
         if (this.params.fillParent || this.params.scrollParent) {
             this.style(this.wrapper, {
                 width: '100%',
-                overflowX: 'auto',
+                overflowX: this.params.hideScrollbar ? 'hidden' : 'auto',
                 overflowY: 'hidden'
             });
         }
