@@ -46,102 +46,88 @@ See the example code
 Options
 =======
 
-  * `container` – CSS-selector or HTML-element where the waveform
-    should be drawn. This is the only required parameter.
-  * `height` – the height of the waveform. `128` by default.
-  * `skipLength` – number of seconds to skip with the `skipForward()`
-    and `skipBackward()` methods (`2` by default).
-  * `minPxPerSec` – minimum number of pixels per second of audio (`1`
-    by default).
-  * `fillParent` – whether to fill the entire container or draw only
-    according to `minPxPerSec` (`true` by default).
-  * `scrollParent` – whether to scroll the container with a lengthy
-    waveform. Otherwise the waveform is shrinked to container width
-    (see `fillParent`).
-  * `normalize` – if `true`, normalize by the maximum peak instead of
-    1.0 (`false` by default).
-  * `pixelRatio` – equals `window.devicePixelRatio` by default, but
-    you can set it to `1` for faster rendering.
-  * `audioContext` – use your own previously initialized
-    `AudioContext` or leave blank.
-  * `cursorWidth` – 1 px by default.
-  * `markerWidth` – 1 px by default.
-  * `waveColor` – the fill color of the waveform after the cursor.
-  * `progressColor` – the fill color of the part of the waveform
-    behind the cursor.
-  * `cursorColor` – the fill color of the cursor indicating the
-    playhead position.
-  * `dragSelection` – enable drag selection (`true` by default).
-  * `loopSelection` – whether playback should loop inside the selected
-  region (`true` by default). Has no effect if `dragSelection` is
-  `false`.
-  * `interact` – whether the mouse interaction will enabled at
-    initialisation (`true` by default).
-  * `backend` – one of `WebAudioBuffer` (the default), `WebAudioMedia`
-    and `AudioElement`. In most cases you needn't set this manually.
+  * `audioContext` – Use your own previously initialized `AudioContext` or leave blank (default = `null`).
+  * `audioRate` - Speed at which to play audio.  Lower number is slower (default = `1`).
+  * `backend` – One of `WebAudioBuffer`, `WebAudioMedia` or `AudioElement`. In most cases you needn't set this manually (default = `WebAudioBuffer`).
+  * `container` – CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter.
+  * `cursorColor` – The fill color of the cursor indicating the playhead position (default = `#333`).
+  * `cursorWidth` – Measured in pixels (default = `1`).
+  * `dragSelection` – Enable drag selection (default = `true`).
+  * `fillParent` – Whether to fill the entire container or draw only according to `minPxPerSec` (default = `true`).
+  * `height` – The height of the waveform.  Measured in pixels (default = `128`).
+  * `hideScrollbar` - Whether to hide the horizontal scrollbar when one would normally be shown (default = `false`).
+  * `interact` – Whether the mouse interaction will enabled at initialization (default = `true`).
+  * `loopSelection` – Whether playback should loop inside the selected region. Has no effect if `dragSelection` is `false` (default = `true`).
+  * `markerWidth` – Measured in pixels (default = `1`).
+  * `minPxPerSec` – Minimum number of pixels per second of audio (default = `50`).
+  * `normalize` – If `true`, normalize by the maximum peak instead of 1.0 (default = `false`).
+  * `pixelRatio` – Can set to `1` for faster rendering (default = `window.devicePixelRatio`).
+  * `progressColor` – The fill color of the part of the waveform behind the cursor (default = `#555`).
+  * `scrollParent` – Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrinked to container width (see `fillParent`) (default = `false`).
+  * `selectionBorder` - Whether to display a border when `dragSelection` is `true` (default = `false`).
+  * `selectionBorderColor` - Used when `selectionBorder` is `true` (default = `#000`).
+  * `selectionColor` - The fill color for a selected area when `dragSelection` is `true` (default = `#0fc`).
+  * `selectionForeground` - Whether the selection is displayed in the foreground (default = `false`).
+  * `skipLength` – Number of seconds to skip with the `skipForward()` and `skipBackward()` methods (default = `2`).
+  * `waveColor` – The fill color of the waveform after the cursor (default = `#999`).
 
 Methods
 =======
 
-All methods are intentionally public, but the most readily available
-are the following:
+All methods are intentionally public, but the most readily available are the following:
 
- * `init(params)` – initializes with the options listed above.
- * `on(eventName, callback)` – subscribes to an event.
- * `load(url)` – loads an audio from URL via XHR. Returns XHR object.
- * `getDuration()` – returns the duration of an audio clip in seconds.
- * `getCurrentTime()` – returns current progress in seconds.
- * `play()` – starts playback from the current position.
- * `pause()` – stops playback.
- * `playPause()` – plays if paused, pauses if playing.
- * `stop()` – stops and goes to the beginning.
- * `skipForward()`
- * `skipBackward()`
- * `seekTo(progress)` – seeks to a progress [0..1].
- * `seekAndCenter(progress)` – seeks to a progress and centers view [0..1].
- * `skip(offset)` – skips a number of seconds from the current
-   position (use a negative value to go backwards).
- * `setVolume(newVolume)` – sets the playback volume to a new value
-   (use a floating point value between 0 and 1, 0 being no volume and
-   1 being full volume).
- * `toggleMute()` – toggles the volume on and off.
- * `mark(options)` – creates a visual marker on the waveform. Options
-   are `id` (random if not set), `position` (in seconds), `color` and
-   `width` (defaults to the global option `markerWidth`). Returns a
-   marker object which you can update later.
-   (`marker.update(options)`).
- * `clearMarks()` – removes all markers.
- * `clearRegions()` – removes all regions. 
- * `empty()` – clears the waveform as if a zero-length audio is
-   loaded.
- * `destroy()` – removes events, elements and disconnects Web Audio
-   nodes.
- * `region(options)` – creates a region on the waveform. Options are `id`
-   (random if not set), `startPosition` (in seconds), `endPosition`
-   (in seconds) and  `color`. Returns a region object which you can
-   update later.
- * `toggleLoopSelection()` – toggles whether playback should loop
- inside the selection.
- * `toggleScroll()` – toggles scroll on parent
- * `getSelection()` – returns an object representing the current
- selection. This object will have the following keys:
- `startPercentage` (float between 0 and 1), `startPosition` (in
- seconds), `endPercentage` (float between 0 and 1) and `endPosition`
- (in seconds). Returns `null` if no selection is present.
- * `updateSelection({ startPercentage, endPercentage })` – create or
-   update a visual selection.
- * `enableInteraction()` – Enable mouse interaction
- * `disableInteraction()` – Disable mouse interaction
- * `toggleInteraction()` – Toggle mouse interaction
- * `setPlaybackRate(rate)` – sets the speed of playback (`0.5` is half
-   normal speed, `2` is double speed and so on).
- * `playPauseSelection()` – plays selection if paused, pauses if playing.   
+ * `init(params)` – Initializes with the options listed above.
 
-Connecting filters
+ * `clearMarks()` – Removes all markers.
+ * `clearRegions()` – Removes all regions. 
+ * `destroy()` – Removes events, elements and disconnects Web Audio nodes.
+ * `disableInteraction()` – Disable mouse interaction.
+ * `empty()` – Clears the waveform as if a zero-length audio is loaded.
+ * `enableInteraction()` – Enable mouse interaction.
+ * `getCurrentTime()` – Returns current progress in seconds.
+ * `getDuration()` – Returns the duration of an audio clip in seconds.
+ * `getSelection()` – Returns an object representing the current selection. Returns `null` if no selection is present.  This object will have the following keys:
+  * `startPercentage` (float) [0..1]
+  * `endPercentage` (float) [0..1]
+  * `startPosition` (float) seconds
+  * `endPosition` (float) seconds
+  * `startTime` (string) Time display (IE: `1:32`)
+  * `endTime` (string) Time display
+ * `load(url)` – Loads an audio from URL via XHR. Returns XHR object.
+ * `mark(options)` – Creates a visual marker on the waveform. Returns a marker object which you can update later. (IE; `marker.update(options)`).  Options are:
+  * `id` (string) Random if not set
+  * `position` (float) Seconds
+  * `color` (string) HTML color code
+  * `width` (integer) Number of pixels, defaults to global option `markerWidth`
+ * `on(eventName, callback)` – Subscribes to an event.  See `Events` section below for a list.
+ * `pause()` – Stops playback.
+ * `play([start[, end]])` – Starts playback from the current position.  Optional `start` and `end` measured in seconds can be used to set the range of audio to play.
+ * `playPause()` – Plays if paused, pauses if playing.
+ * `playPauseSelection()` – Plays selection if paused, pauses if playing.   
+ * `region(options)` – Creates a region on the waveform. Returns a region object which you can update later (IE: `region.update(options)`). Options are:
+  * `id` (string) Random if not set
+  * `startPosition` (float) Seconds
+  * `endPosition` (float) Seconds
+  * `color` (string) HTML color code
+ * `seekAndCenter(progress)` – Seeks to a progress and centers view [0..1] (0 = beginning, 1 = end).
+ * `seekTo(progress)` – Seeks to a progress [0..1] (0=beginning, 1=end).
+ * `setFilter(filters)` - For inserting your own WebAudio nodes into the graph.  See `Connecting Filters` below.
+ * `setPlaybackRate(rate)` – Sets the speed of playback (`0.5` is half speed, `1` is normal speed, `2` is double speed and so on).
+ * `setVolume(newVolume)` – Sets the playback volume to a new value [0..1] (0 = silent, 1 = maximum).
+ * `skip(offset)` – Skip a number of seconds from the current position (use a negative value to go backwards).
+ * `skipBackward()` - Rewind `skipLength` seconds.
+ * `skipForward()` - Skip ahead `skipLength` seconds.
+ * `stop()` – Stops and goes to the beginning.
+ * `toggleMute()` – Toggles the volume on and off.
+ * `toggleInteraction()` – Toggle mouse interaction.
+ * `toggleLoopSelection()` – Toggles whether playback should loop inside the selection.
+ * `toggleScroll()` – Toggles `scrollParent`.
+ * `updateSelection({ startPercentage, endPercentage })` – Create or update a visual selection.
+
+Connecting Filters
 ==================
 
-You can insert your own Web Audio nodes into the graph using the
-method `setFilter`. Example:
+You can insert your own Web Audio nodes into the graph using the method `setFilter()`. Example:
 
 ```javascript
 var lowpass = wavesurfer.backend.ac.createBiquadFilter();
@@ -153,26 +139,23 @@ Events
 
 You can listen to the following events:
 
- * `ready` – when audio is loaded, decoded and the waveform drawn.
- * `loading` – fires continuously when loading via XHR or
-   drag'n'drop. Callback recieves loading progress in percents (from 0
-   to 100) and the event target.
- * `seek` – on seeking.
- * `play` – when it starts playing.
- * `finish` – when it finishes playing.
- * `progress` – fires continuously during playback.
- * `mark` – when a mark is reached. Passes the mark object.
- * `marked` – when a mark is created.
- * `mark-update` – when a mark is updated.
- * `mark-removed` – when a mark is removed.
- * `region-in` – when entering a region.
- * `region-out`– when leaving a region.
- * `region-created` – when a region is created.
- * `region-updated` – when a region is updated.
- * `region-removed` – when a region is removed.
- * `selection-update` – when a selection is updated. Has an object parameter
-   containig selection information or null if the selection is cleared.
- * `error` – on error, passes an error message.
+ * `error` – Occurs on error.  Callback will receive (string) error message.
+ * `finish` – When it finishes playing.
+ * `loading` – Fires continuously when loading via XHR or drag'n'drop. Callback will recieve (integer) loading progress in percents [0..100] and (object) event target.
+ * `mark` – When a mark is reached. Callback will receive (object) the mark object.
+ * `marked` – When a mark is created.
+ * `mark-update` – When a mark is updated.
+ * `mark-removed` – When a mark is removed.
+ * `play` – When play starts.
+ * `progress` – Fires continuously during playback.  Callback will receive (float) percentage played [0..1].
+ * `ready` – When audio is loaded, decoded and the waveform drawn.
+ * `region-in` – When entering a region.
+ * `region-out`– When leaving a region.
+ * `region-created` – When a region is created.
+ * `region-updated` – When a region is updated.
+ * `region-removed` – When a region is removed.
+ * `seek` – On seeking.
+ * `selection-update` – When a selection is updated. Has an object parameter containig selection information or null if the selection is cleared.
 
 Each of mark objects also fire the event `reached` when played over.
 
