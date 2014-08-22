@@ -17,6 +17,7 @@ var WaveSurfer = {
         pixelRatio    : window.devicePixelRatio,
         fillParent    : true,
         scrollParent  : false,
+        hideScrollbar : false,
         normalize     : false,
         audioContext  : null,
         container     : null,
