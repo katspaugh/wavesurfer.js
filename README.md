@@ -1,5 +1,4 @@
-wavesurfer.js
-=============
+# wavesurfer.js
 
 Interactive navigable audio visualization using
 [Web Audio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
@@ -7,8 +6,7 @@ and Canvas.
 
 ![Imgur](http://i.imgur.com/dnH8q.png)
 
-API in examples
-===============
+### API in examples
 
 Create an instance:
 
@@ -43,40 +41,40 @@ wavesurfer.load('example/media/demo.wav');
 See the example code
 [here](https://github.com/katspaugh/wavesurfer.js/blob/master/example/main.js).
 
-Options
-=======
+### WaveSurfer Options
 
-  * `audioContext` – Use your own previously initialized `AudioContext` or leave blank (default = `null`).
-  * `audioRate` - Speed at which to play audio.  Lower number is slower (default = `1`).
-  * `backend` – One of `WebAudioBuffer`, `WebAudioMedia` or `AudioElement`. In most cases you needn't set this manually (default = `WebAudioBuffer`).
-  * `container` – CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter.
-  * `cursorColor` – The fill color of the cursor indicating the playhead position (default = `#333`).
-  * `cursorWidth` – Measured in pixels (default = `1`).
-  * `dragSelection` – Enable drag selection (default = `true`).
-  * `fillParent` – Whether to fill the entire container or draw only according to `minPxPerSec` (default = `true`).
-  * `height` – The height of the waveform.  Measured in pixels (default = `128`).
-  * `hideScrollbar` - Whether to hide the horizontal scrollbar when one would normally be shown (default = `false`).
-  * `interact` – Whether the mouse interaction will enabled at initialization (default = `true`).
-  * `loopSelection` – Whether playback should loop inside the selected region. Has no effect if `dragSelection` is `false` (default = `true`).
-  * `markerWidth` – Measured in pixels (default = `1`).
-  * `minPxPerSec` – Minimum number of pixels per second of audio (default = `50`).
-  * `normalize` – If `true`, normalize by the maximum peak instead of 1.0 (default = `false`).
-  * `pixelRatio` – Can set to `1` for faster rendering (default = `window.devicePixelRatio`).
-  * `progressColor` – The fill color of the part of the waveform behind the cursor (default = `#555`).
-  * `scrollParent` – Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrinked to container width (see `fillParent`) (default = `false`).
-  * `selectionBorder` - Whether to display a border when `dragSelection` is `true` (default = `false`).
-  * `selectionBorderColor` - Used when `selectionBorder` is `true` (default = `#000`).
-  * `selectionColor` - The fill color for a selected area when `dragSelection` is `true` (default = `#0fc`).
-  * `selectionForeground` - Whether the selection is displayed in the foreground (default = `false`).
-  * `skipLength` – Number of seconds to skip with the `skipForward()` and `skipBackward()` methods (default = `2`).
-  * `waveColor` – The fill color of the waveform after the cursor (default = `#999`).
+| option | type | default | description |
+| --- | --- | --- | --- |
+| `audioContext` | string | `null` | Use your own previously initialized `AudioContext` or leave blank. |
+| `audioRate` | float | `1` | Speed at which to play audio.  Lower number is slower. |
+| `backend` | string | `WebAudioBuffer` | One of `WebAudioBuffer`, `WebAudioMedia` or `AudioElement`. In most cases you needn't set this manually. |
+| `container` | mixed | _none_ | CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter |
+| `cursorColor` | string | `#333` | The fill color of the cursor indicating the playhead position. |
+| `cursorWidth` | integer | `1` | Measured in pixels. |
+| `dragSelection` | boolean | `true` | Enable/disable drag selection. |
+| `fillParent` | boolean | `true` | Whether to fill the entire container or draw only according to `minPxPerSec`. |
+| `height` | integer | `128` | The height of the waveform.  Measured in pixels. |
+| `hideScrollbar` | boolean | `false` | Whether to hide the horizontal scrollbar when one would normally be shown. |
+| `interact` | boolean | `true` | Whether the mouse interaction will enabled at initialization. |
+| `loopSelection` | boolean | `true` | Whether playback should loop inside the selected region. Has no effect if `dragSelection` is `false`. |
+| `markerWidth` | integer | `1` | Measured in pixels. |
+| `minPxPerSec` | integer | `50` | Minimum number of pixels per second of audio. |
+| `normalize` | boolean | `false` | If `true`, normalize by the maximum peak instead of 1.0. |
+| `pixelRatio` | integer | `window.devicePixelRatio` | Can set to `1` for faster rendering. |
+| `progressColor` | string | `#555` | The fill color of the part of the waveform behind the cursor. |
+| `scrollParent` | boolean | `false` | Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrinked to container width (see `fillParent`). |
+| `selectionBorder` | boolean | `false` | Whether to display a border when `dragSelection` is `true`. |
+| `selectionBorderColor` | string | `#000` | Used when `selectionBorder` is `true`. |
+| `selectionColor` | string | `#0fc` | The fill color for a selected area when `dragSelection` is `true`. |
+| `selectionForeground` | boolean | `false` | Whether the selection is displayed in the foreground. |
+| `skipLength` | float | `2` | Number of seconds to skip with the `skipForward()` and `skipBackward()` methods |
+| `waveColor` | string | `#999` | The fill color of the waveform after the cursor. |
 
-Methods
-=======
+### WaveSurfer Methods
 
 All methods are intentionally public, but the most readily available are the following:
 
- * `init(params)` – Initializes with the options listed above.
+ * `init(options)` – Initializes with the options listed above.
 
  * `clearMarks()` – Removes all markers.
  * `clearRegions()` – Removes all regions. 
@@ -94,21 +92,13 @@ All methods are intentionally public, but the most readily available are the fol
   * `startTime` (string) Time display (IE: `1:32`)
   * `endTime` (string) Time display
  * `load(url)` – Loads an audio from URL via XHR. Returns XHR object.
- * `mark(options)` – Creates a visual marker on the waveform. Returns a marker object which you can update later. (IE; `marker.update(options)`).  Options are:
-  * `id` (string) Random if not set
-  * `position` (float) Seconds
-  * `color` (string) HTML color code
-  * `width` (integer) Number of pixels, defaults to global option `markerWidth`
- * `on(eventName, callback)` – Subscribes to an event.  See `Events` section below for a list.
+ * `mark(options)` – Creates a visual marker on the waveform. Returns a `Marker` object.  See `Marker Options`, `Marker Methods` and `Marker Events` below.
+ * `on(eventName, callback)` – Subscribes to an event.  See `WaveSurfer Events` section below for a list.
  * `pause()` – Stops playback.
  * `play([start[, end]])` – Starts playback from the current position.  Optional `start` and `end` measured in seconds can be used to set the range of audio to play.
  * `playPause()` – Plays if paused, pauses if playing.
  * `playPauseSelection()` – Plays selection if paused, pauses if playing.   
- * `region(options)` – Creates a region on the waveform. Returns a region object which you can update later (IE: `region.update(options)`). Options are:
-  * `id` (string) Random if not set
-  * `startPosition` (float) Seconds
-  * `endPosition` (float) Seconds
-  * `color` (string) HTML color code
+ * `region(options)` – Creates a region on the waveform. Returns a `Region` object.  See `Region Options`, `Region Methods` and `Region Events` below.
  * `seekAndCenter(progress)` – Seeks to a progress and centers view [0..1] (0 = beginning, 1 = end).
  * `seekTo(progress)` – Seeks to a progress [0..1] (0=beginning, 1=end).
  * `setFilter(filters)` - For inserting your own WebAudio nodes into the graph.  See `Connecting Filters` below.
@@ -124,8 +114,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `toggleScroll()` – Toggles `scrollParent`.
  * `updateSelection({ startPercentage, endPercentage })` – Create or update a visual selection.
 
-Connecting Filters
-==================
+##### Connecting Filters
 
 You can insert your own Web Audio nodes into the graph using the method `setFilter()`. Example:
 
@@ -134,40 +123,93 @@ var lowpass = wavesurfer.backend.ac.createBiquadFilter();
 wavesurfer.backend.setFilter(lowpass);
 ```
 
-Events
-======
+### WaveSurfer Events
 
-You can listen to the following events:
-
+ * `drag-mark` - When a mark is dragged.  Callback will receive the drag object, and a `Marker` object.  See the `drag` event under `Marker Events` below for information contained in the drag object.
  * `error` – Occurs on error.  Callback will receive (string) error message.
  * `finish` – When it finishes playing.
  * `loading` – Fires continuously when loading via XHR or drag'n'drop. Callback will recieve (integer) loading progress in percents [0..100] and (object) event target.
- * `mark` – When a mark is reached. Callback will receive (object) the mark object.
- * `marked` – When a mark is created.
- * `mark-update` – When a mark is updated.
- * `mark-removed` – When a mark is removed.
+ * `mark` – When a mark is reached during playback. Callback will receive the `Marker` object.
+ * `mark-click` - When the mouse clicks on a mark.  Callback will receive the `Marker` object, and a `MouseEvent` object.
+ * `mark-leave` - When the mouse leaves a mark.  Callback will receive the `Marker` object, and a `MouseEvent` object.
+ * `mark-over` - When the mouse moves over a mark.  Callback will receive the `Marker` object, and a `MouseEvent` object.
+ * `mark-updated` – When a mark is updated. Callback will receive the `Marker` object.
+ * `mark-removed` – When a mark is removed. Callback will receive the `Marker` object.
+ * `marked` – When a mark is created. Callback will receive the `Marker` object.
+ * `mouseup` - When a mouse button goes up.  Callback will receive `MouseEvent` object.
  * `play` – When play starts.
  * `progress` – Fires continuously during playback.  Callback will receive (float) percentage played [0..1].
  * `ready` – When audio is loaded, decoded and the waveform drawn.
- * `region-in` – When entering a region.
- * `region-out`– When leaving a region.
- * `region-created` – When a region is created.
- * `region-updated` – When a region is updated.
- * `region-removed` – When a region is removed.
- * `seek` – On seeking.
- * `selection-update` – When a selection is updated. Has an object parameter containig selection information or null if the selection is cleared.
+ * `region-in` – When playback enters a region. Callback will receive the `Region` object.
+ * `region-leave` - When the mouse leaves a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
+ * `region-out`– When playback leaves a region. Callback will receive the `Region` object.
+ * `region-over` - When the mouse moves over a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
+ * `region-click` - When the mouse clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
+ * `region-created` – When a region is created. Callback will receive the `Region` object.
+ * `region-updated` – When a region is updated. Callback will receive the `Region` object.
+ * `region-removed` – When a region is removed. Callback will receive the `Region` object.
+ * `seek` – On seeking.  Callback will receive (float) progress [0..1].
+ * `selection-update` – When a selection is updated. Callback will receive (object) describing the selection, or null if the selection is cleared.  See `getSelection()` method for a description of keys that describe the selection.
+ * `user-action` - For iOS, fires once when the user clicks with the mouse or touches the keyboard to get things started.
 
-Each of mark objects also fire the event `reached` when played over.
+### Marker Options
 
-Credits
-=======
+| option | type | default | description |
+| --- | --- | --- | --- |
+| `id` | string | _random_ | An id you may assign to the marker |
+| `position` | float | `0` | Seconds |
+| `color` | string | `#333` | HTML color code |
+| `width` | integer | `WaveSurfer.markerWidth` | Number of pixels |
+
+### Marker Methods
+
+ * `getTitle()` - Returns a time display string representing the position of the mark (IE: `1:34`).
+ * `remove()` - Remove the mark object.
+ * `update(options)` - Modify the settings of the mark.
+
+### Marker Events
+
+ * `click` - When the mouse clicks on the mark.  Callback will receive a `MouseEvent`.
+ * `drag` - When the mark is dragged. Callback will receive a drag object.  The drag object contains the following keys:
+  * `startPercentage` (float) [0..1]
+  * `endPercentage` (float) [0..1]
+ * `leave` - When mouse leaves the mark.  Callback will receive a `MouseEvent`.
+ * `over` - When mouse moves over the mark.  Callback will receive a `MouseEvent`.
+ * `reached` - When the marker is reached during playback.
+ * `remove` - Happens just before the marker is removed.
+ * `update` - When the marker's options are updated.
+
+### Region Options
+
+| option | type | default | description |
+| --- | --- | --- | --- |
+| `id` | string | _random_ | An id you may assign to the region |
+| `startPosition` | float | `0` | The start position of the region (in seconds) |
+| `endPosition` | float | `0` | The end position of the region (in seconds) |
+| `color` | string | `rgba(0, 0, 255, 0.2)` | HTML color code |
+
+### Region Methods
+
+ * `remove()` - Remove the region object.
+ * `update(options)` - Modify the settings of the region.
+
+### Region Events
+
+ * `click` - When the mouse clicks on the region.  Callback will receive a `MouseEvent`.
+ * `in` - When playback enters the region.
+ * `leave` - When mouse leaves the region.  Callback will receive a `MouseEvent`.
+ * `out` - When playback leaves the region.
+ * `over` - When mouse moves over the region.  Callback will receive a `MouseEvent`.
+ * `remove` - Happens just before the region is removed.
+ * `update` - When the region's options are updated.
+
+# Credits
 
 Initial idea by [Alex Khokhulin](https://github.com/xoxulin). Many
 thanks to
 [the awesome contributors](https://github.com/katspaugh/wavesurfer.js/contributors)!
 
-License
-=======
+# License
 
 ![cc-by](http://i.creativecommons.org/l/by/3.0/88x31.png)
 
