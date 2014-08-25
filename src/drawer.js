@@ -45,12 +45,24 @@ WaveSurfer.Drawer = {
     },
 
     setupWrapperEvents: function () {
-        var my = this;
+        var my = this,
+            drag = {};
 
         this.wrapper.addEventListener('mousedown', function (e) {
+			var scrollbarHeight = my.wrapper.offsetHeight - my.wrapper.clientHeight;
+			if (scrollbarHeight != 0) {
+				// scrollbar is visible.  Check if click was on it
+				var bbox = my.wrapper.getBoundingClientRect();
+				if (e.clientY >= bbox.bottom - scrollbarHeight) {
+					// ignore mousedown as it was on the scrollbar
+					return;
+				}
+			}
+			
             if (my.params.interact) {
                 my.fireEvent('mousedown', my.handleEvent(e), e);
             }
+            drag.startPercentage = my.handleEvent(e);
         });
 
         this.wrapper.addEventListener('mouseup', function (e) {
@@ -73,30 +85,24 @@ WaveSurfer.Drawer = {
             }
         });
 
-        this.params.dragSelection && (function () {
-            var drag = {};
+		var onMouseUp = function (e) {
+			drag.startPercentage = drag.endPercentage = null;
+		};
+		document.addEventListener('mouseup', onMouseUp);
+		this.on('destroy', function () {
+			document.removeEventListener('mouseup', onMouseUp);
+		});
 
-            var onMouseUp = function () {
-                drag.startPercentage = drag.endPercentage = null;
-            };
-            document.addEventListener('mouseup', onMouseUp);
-            my.on('destroy', function () {
-                document.removeEventListener('mouseup', onMouseUp);
-            });
-
-            my.wrapper.addEventListener('mousedown', function (e) {
-                drag.startPercentage = my.handleEvent(e);
-            });
-
-            my.wrapper.addEventListener('mousemove', WaveSurfer.util.throttle(function (e) {
-                e.stopPropagation();
-                if (drag.startPercentage != null) {
-                    drag.endPercentage = my.handleEvent(e);
-                    my.fireEvent('drag', drag);
-                }
-            }, 30));
-        }());
-    },
+		this.wrapper.addEventListener('mousemove', WaveSurfer.util.throttle(function (e) {
+			e.stopPropagation();
+			if (drag.startPercentage != null) {
+				drag.endPercentage = my.handleEvent(e);
+				if (my.params.interact && my.params.dragSelection) {
+					my.fireEvent('drag', drag);
+				}
+			}
+		}, 30));
+	},
 
     drawPeaks: function (peaks, length) {
         this.resetScroll();
