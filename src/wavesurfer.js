@@ -385,18 +385,6 @@ var WaveSurfer = {
         });
 
         this.drawer.addMark(mark);
-        this.drawer.on('mark-over', function (mark, e) {
-            mark.fireEvent('over', e);
-            my.fireEvent('mark-over', mark, e);
-        });
-        this.drawer.on('mark-leave', function (mark, e) {
-            mark.fireEvent('leave', e);
-            my.fireEvent('mark-leave', mark, e);
-        });
-        this.drawer.on('mark-click', function (mark, e) {
-            mark.fireEvent('click', e);
-            my.fireEvent('mark-click', mark, e);
-        });
 
         this.markers[mark.id] = mark;
         this.fireEvent('marked', mark);
@@ -453,19 +441,6 @@ var WaveSurfer = {
         });
 
         this.drawer.addRegion(region);
-
-        this.drawer.on('region-over', function (region, e) {
-            region.fireEvent('over', e);
-            my.fireEvent('region-over', region, e);
-        });
-        this.drawer.on('region-leave', function (region, e) {
-            region.fireEvent('leave', e);
-            my.fireEvent('region-leave', region, e);
-        });
-        this.drawer.on('region-click', function (region, e) {
-            region.fireEvent('click', e);
-            my.fireEvent('region-click', region, e);
-        });
 
         this.regions[region.id] = region;
         this.fireEvent('region-created', region);
