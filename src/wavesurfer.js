@@ -155,33 +155,33 @@ var WaveSurfer = {
             my.dragging = false;
         });
 
-	// Mouse events for Regions
-	this.drawer.on('region-over', function (region, e) {
-		region.fireEvent('over', e);
-		my.fireEvent('region-over', region, e);
-	});
-	this.drawer.on('region-leave', function (region, e) {
-		region.fireEvent('leave', e);
-		my.fireEvent('region-leave', region, e);
-	});
-	this.drawer.on('region-click', function (region, e) {
-		region.fireEvent('click', e);
-		my.fireEvent('region-click', region, e);
-	});
+        // Mouse events for Regions
+        this.drawer.on('region-over', function (region, e) {
+            region.fireEvent('over', e);
+            my.fireEvent('region-over', region, e);
+        });
+        this.drawer.on('region-leave', function (region, e) {
+            region.fireEvent('leave', e);
+            my.fireEvent('region-leave', region, e);
+        });
+        this.drawer.on('region-click', function (region, e) {
+            region.fireEvent('click', e);
+            my.fireEvent('region-click', region, e);
+        });
 
-	// Mouse events for Marks
-	this.drawer.on('mark-over', function (mark, e) {
-		mark.fireEvent('over', e);
-		my.fireEvent('mark-over', mark, e);
-	});
-	this.drawer.on('mark-leave', function (mark, e) {
-		mark.fireEvent('leave', e);
-		my.fireEvent('mark-leave', mark, e);
-	});
-	this.drawer.on('mark-click', function (mark, e) {
-		mark.fireEvent('click', e);
-		my.fireEvent('mark-click', mark, e);
-	});
+        // Mouse events for Marks
+        this.drawer.on('mark-over', function (mark, e) {
+            mark.fireEvent('over', e);
+            my.fireEvent('mark-over', mark, e);
+        });
+        this.drawer.on('mark-leave', function (mark, e) {
+            mark.fireEvent('leave', e);
+            my.fireEvent('mark-leave', mark, e);
+        });
+        this.drawer.on('mark-click', function (mark, e) {
+            mark.fireEvent('click', e);
+            my.fireEvent('mark-click', mark, e);
+        });
     },
 
     createBackend: function () {
