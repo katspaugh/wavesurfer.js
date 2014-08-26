@@ -77,7 +77,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `init(options)` – Initializes with the options listed above.
 
  * `clearMarks()` – Removes all markers.
- * `clearRegions()` – Removes all regions. 
+ * `clearRegions()` – Removes all regions.
  * `destroy()` – Removes events, elements and disconnects Web Audio nodes.
  * `disableDragSelection()` - Disable drag selection capability.
  * `disableInteraction()` – Disable mouse interaction.
@@ -99,7 +99,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `pause()` – Stops playback.
  * `play([start[, end]])` – Starts playback from the current position.  Optional `start` and `end` measured in seconds can be used to set the range of audio to play.
  * `playPause()` – Plays if paused, pauses if playing.
- * `playPauseSelection()` – Plays selection if paused, pauses if playing.   
+ * `playPauseSelection()` – Plays selection if paused, pauses if playing.
  * `region(options)` – Creates a region on the waveform. Returns a `Region` object.  See `Region Options`, `Region Methods` and `Region Events` below.
  * `seekAndCenter(progress)` – Seeks to a progress and centers view [0..1] (0 = beginning, 1 = end).
  * `seekTo(progress)` – Seeks to a progress [0..1] (0=beginning, 1=end).
@@ -153,7 +153,6 @@ wavesurfer.backend.setFilter(lowpass);
  * `region-removed` – When a region is removed. Callback will receive the `Region` object.
  * `seek` – On seeking.  Callback will receive (float) progress [0..1].
  * `selection-update` – When a selection is updated. Callback will receive (object) describing the selection, or null if the selection is cleared.  See `getSelection()` method for a description of keys that describe the selection.
- * `user-action` - For iOS, fires once when the user clicks with the mouse or touches the keyboard to get things started.
 
 ### Marker Options
 
