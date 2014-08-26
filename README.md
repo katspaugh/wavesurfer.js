@@ -151,6 +151,7 @@ wavesurfer.backend.setFilter(lowpass);
  * `region-created` – When a region is created. Callback will receive the `Region` object.
  * `region-updated` – When a region is updated. Callback will receive the `Region` object.
  * `region-removed` – When a region is removed. Callback will receive the `Region` object.
+ * `scroll` - When the scrollbar is moved.  Callback will receive a `ScrollEvent` object.
  * `seek` – On seeking.  Callback will receive (float) progress [0..1].
  * `selection-update` – When a selection is updated. Callback will receive (object) describing the selection, or null if the selection is cleared.  See `getSelection()` method for a description of keys that describe the selection.
  * `user-action` - For iOS, fires once when the user clicks with the mouse or touches the keyboard to get things started.
