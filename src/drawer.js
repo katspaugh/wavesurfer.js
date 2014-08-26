@@ -45,20 +45,20 @@ WaveSurfer.Drawer = {
     },
 
     setupWrapperEvents: function () {
-        var my = this,
-            drag = {};
+        var my = this;
+        var drag = {};
 
         this.wrapper.addEventListener('mousedown', function (e) {
-			var scrollbarHeight = my.wrapper.offsetHeight - my.wrapper.clientHeight;
-			if (scrollbarHeight != 0) {
-				// scrollbar is visible.  Check if click was on it
-				var bbox = my.wrapper.getBoundingClientRect();
-				if (e.clientY >= bbox.bottom - scrollbarHeight) {
-					// ignore mousedown as it was on the scrollbar
-					return;
-				}
-			}
-			
+            var scrollbarHeight = my.wrapper.offsetHeight - my.wrapper.clientHeight;
+            if (scrollbarHeight != 0) {
+                // scrollbar is visible.  Check if click was on it
+                var bbox = my.wrapper.getBoundingClientRect();
+                if (e.clientY >= bbox.bottom - scrollbarHeight) {
+                    // ignore mousedown as it was on the scrollbar
+                    return;
+                }
+            }
+
             if (my.params.interact) {
                 my.fireEvent('mousedown', my.handleEvent(e), e);
             }
@@ -74,7 +74,7 @@ WaveSurfer.Drawer = {
         this.wrapper.addEventListener('dblclick', function(e) {
             if (my.params.interact || my.params.dragSelection) {
                 if (
-                    e.target.tagName.toLowerCase() === 'handler' &&
+                    e.target.tagName.toLowerCase() == 'handler' &&
                         !e.target.classList.contains('selection-wavesurfer-handler')
                 ) {
                     my.fireEvent('mark-dblclick', e.target.parentNode.id);
@@ -85,24 +85,24 @@ WaveSurfer.Drawer = {
             }
         });
 
-		var onMouseUp = function (e) {
-			drag.startPercentage = drag.endPercentage = null;
-		};
-		document.addEventListener('mouseup', onMouseUp);
-		this.on('destroy', function () {
-			document.removeEventListener('mouseup', onMouseUp);
-		});
+        var onMouseUp = function (e) {
+            drag.startPercentage = drag.endPercentage = null;
+        };
+        document.addEventListener('mouseup', onMouseUp);
+        this.on('destroy', function () {
+            document.removeEventListener('mouseup', onMouseUp);
+        });
 
-		this.wrapper.addEventListener('mousemove', WaveSurfer.util.throttle(function (e) {
-			e.stopPropagation();
-			if (drag.startPercentage != null) {
-				drag.endPercentage = my.handleEvent(e);
-				if (my.params.interact && my.params.dragSelection) {
-					my.fireEvent('drag', drag);
-				}
-			}
-		}, 30));
-	},
+        this.wrapper.addEventListener('mousemove', WaveSurfer.util.throttle(function (e) {
+            e.stopPropagation();
+            if (drag.startPercentage != null) {
+                drag.endPercentage = my.handleEvent(e);
+                if (my.params.interact && my.params.dragSelection) {
+                    my.fireEvent('drag', drag);
+                }
+            }
+        }, 30));
+    },
 
     drawPeaks: function (peaks, length) {
         this.resetScroll();
