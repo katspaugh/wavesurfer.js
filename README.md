@@ -79,8 +79,10 @@ All methods are intentionally public, but the most readily available are the fol
  * `clearMarks()` – Removes all markers.
  * `clearRegions()` – Removes all regions. 
  * `destroy()` – Removes events, elements and disconnects Web Audio nodes.
+ * `disableDragSelection()` - Disable drag selection capability.
  * `disableInteraction()` – Disable mouse interaction.
  * `empty()` – Clears the waveform as if a zero-length audio is loaded.
+ * `enableDragSelection()` - Enable drag selection capability.
  * `enableInteraction()` – Enable mouse interaction.
  * `getCurrentTime()` – Returns current progress in seconds.
  * `getDuration()` – Returns the duration of an audio clip in seconds.
@@ -108,6 +110,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `skipBackward()` - Rewind `skipLength` seconds.
  * `skipForward()` - Skip ahead `skipLength` seconds.
  * `stop()` – Stops and goes to the beginning.
+ * `toggleDragSelection()` - Toggles the ability to drag a selection.
  * `toggleMute()` – Toggles the volume on and off.
  * `toggleInteraction()` – Toggle mouse interaction.
  * `toggleLoopSelection()` – Toggles whether playback should loop inside the selection.
