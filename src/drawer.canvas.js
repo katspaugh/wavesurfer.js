@@ -198,7 +198,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             zIndex: 4,
             width: mark.width + 'px',
             left: Math.max(0, Math.round(
-                mark.percentage * this.scrollWidth  - mark.width / 2
+                mark.percentage * this.wrapper.scrollWidth  - mark.width / 2
             )) + 'px',
             backgroundColor: mark.color
         });
@@ -233,9 +233,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     updateRegion: function (region) {
         var regionEl = document.getElementById(region.id);
         var left = Math.max(0, Math.round(
-            region.startPercentage * this.scrollWidth));
+            region.startPercentage * this.wrapper.scrollWidth));
         var width = Math.max(0, Math.round(
-            region.endPercentage * this.scrollWidth)) - left;
+            region.endPercentage * this.wrapper.scrollWidth)) - left;
 
         this.style(regionEl, {
             height: '100%',

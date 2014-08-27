@@ -68,7 +68,7 @@
             this.wrapper.addEventListener('click', function (e) {
                 e.preventDefault();
                 var relX = 'offsetX' in e ? e.offsetX : e.layerX;
-                my.fireEvent('click', (relX / my.scrollWidth) || 0);
+                my.fireEvent('click', (relX / my.wrapper.scrollWidth) || 0);
             });
         },
 
@@ -91,7 +91,7 @@
         },
 
         updateCanvasStyle: function () {
-            var width = Math.round(this.drawer.scrollWidth / this.wavesurfer.params.pixelRatio);
+            var width = Math.round(this.drawer.wrapper.scrollWidth / this.wavesurfer.params.pixelRatio);
             this.canvas.width = width;
             this.canvas.height = this.height;
             this.canvas.style.width = width + 'px';

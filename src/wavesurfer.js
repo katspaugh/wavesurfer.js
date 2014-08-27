@@ -182,6 +182,11 @@ var WaveSurfer = {
             mark.fireEvent('click', e);
             my.fireEvent('mark-click', mark, e);
         });
+
+        // Relay the scroll event from the drawer
+        this.drawer.on('scroll', function(e) {
+            my.fireEvent('scroll', e);
+        });
     },
 
     createBackend: function () {

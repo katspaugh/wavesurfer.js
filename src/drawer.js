@@ -7,7 +7,6 @@ WaveSurfer.Drawer = {
 
         this.width = 0;
         this.height = params.height * this.params.pixelRatio;
-        this.containerWidth = this.container.clientWidth;
 
         this.lastPos = 0;
 
@@ -41,7 +40,7 @@ WaveSurfer.Drawer = {
     handleEvent: function (e) {
         e.preventDefault();
         var bbox = this.wrapper.getBoundingClientRect();
-        return ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.scrollWidth) || 0;
+        return ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.wrapper.scrollWidth) || 0;
     },
 
     setupWrapperEvents: function () {
@@ -129,39 +128,48 @@ WaveSurfer.Drawer = {
     },
 
     recenter: function (percent) {
-        var position = this.scrollWidth * percent;
+        var position = this.wrapper.scrollWidth * percent;
         this.recenterOnPosition(position, true);
     },
 
     recenterOnPosition: function (position, immediate) {
-        var scrollLeft = this.wrapper.scrollLeft;
-        var half = ~~(this.containerWidth / 2);
-        var target = position - half;
-        var offset = target - scrollLeft;
+        var scrollLeft = this.wrapper.scrollLeft,
+        	half = ~~(this.containerWidth / 2),
+        	target = position - half,
+        	offset = target - scrollLeft,
+        	maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
+        
+        if (maxScroll == 0) {
+        	// no need to continue if scrollbar is not there
+        	return;
+        }
 
         // if the cursor is currently visible...
-        if (!immediate && offset >= -half && offset < half) {
+        if (!immediate && -half <= offset && offset < half) {
             // we'll limit the "re-center" rate.
             var rate = 5;
             offset = Math.max(-rate, Math.min(rate, offset));
             target = scrollLeft + offset;
         }
-
-        if (offset != 0) {
-            this.wrapper.scrollLeft = target;
+        
+        // limit target to valid range (0 to maxScroll)
+        target = Math.max(0, Math.min(maxScroll, target));
+        if (target == scrollLeft) {
+        	// no use attempting to scroll if we're not moving
+        	return;
         }
+
+	this.wrapper.scrollLeft = target;
     },
 
     getWidth: function () {
-        return Math.round(this.containerWidth * this.params.pixelRatio);
+        return Math.round(this.container.clientWidth * this.params.pixelRatio);
     },
 
     setWidth: function (width) {
         if (width == this.width) { return; }
 
         this.width = width;
-        this.scrollWidth = ~~(this.width / this.params.pixelRatio);
-        this.containerWidth = this.container.clientWidth;
 
         if (this.params.fillParent || this.params.scrollParent) {
             this.style(this.wrapper, {
@@ -169,7 +177,7 @@ WaveSurfer.Drawer = {
             });
         } else {
             this.style(this.wrapper, {
-                width: this.scrollWidth + 'px'
+                width: ~~(this.width / this.params.pixelRatio) + 'px'
             });
         }
 
@@ -184,7 +192,7 @@ WaveSurfer.Drawer = {
             this.lastPos = pos;
 
             if (this.params.scrollParent) {
-                var newPos = ~~(this.scrollWidth * progress);
+                var newPos = ~~(this.wrapper.scrollWidth * progress);
                 this.recenterOnPosition(newPos);
             }
 
