@@ -155,38 +155,38 @@ var WaveSurfer = {
             my.dragging = false;
         });
 
-	// Mouse events for Regions
-	this.drawer.on('region-over', function (region, e) {
-		region.fireEvent('over', e);
-		my.fireEvent('region-over', region, e);
-	});
-	this.drawer.on('region-leave', function (region, e) {
-		region.fireEvent('leave', e);
-		my.fireEvent('region-leave', region, e);
-	});
-	this.drawer.on('region-click', function (region, e) {
-		region.fireEvent('click', e);
-		my.fireEvent('region-click', region, e);
-	});
+        // Mouse events for Regions
+        this.drawer.on('region-over', function (region, e) {
+            region.fireEvent('over', e);
+            my.fireEvent('region-over', region, e);
+        });
+        this.drawer.on('region-leave', function (region, e) {
+            region.fireEvent('leave', e);
+            my.fireEvent('region-leave', region, e);
+        });
+        this.drawer.on('region-click', function (region, e) {
+            region.fireEvent('click', e);
+            my.fireEvent('region-click', region, e);
+        });
 
-	// Mouse events for Marks
-	this.drawer.on('mark-over', function (mark, e) {
-		mark.fireEvent('over', e);
-		my.fireEvent('mark-over', mark, e);
-	});
-	this.drawer.on('mark-leave', function (mark, e) {
-		mark.fireEvent('leave', e);
-		my.fireEvent('mark-leave', mark, e);
-	});
-	this.drawer.on('mark-click', function (mark, e) {
-		mark.fireEvent('click', e);
-		my.fireEvent('mark-click', mark, e);
-	});
-	
-	// Relay the scroll event from the drawer
-	this.drawer.on('scroll', function(e) {
-		my.fireEvent('scroll', e);
-	});
+        // Mouse events for Marks
+        this.drawer.on('mark-over', function (mark, e) {
+            mark.fireEvent('over', e);
+            my.fireEvent('mark-over', mark, e);
+        });
+        this.drawer.on('mark-leave', function (mark, e) {
+            mark.fireEvent('leave', e);
+            my.fireEvent('mark-leave', mark, e);
+        });
+        this.drawer.on('mark-click', function (mark, e) {
+            mark.fireEvent('click', e);
+            my.fireEvent('mark-click', mark, e);
+        });
+
+        // Relay the scroll event from the drawer
+        this.drawer.on('scroll', function(e) {
+            my.fireEvent('scroll', e);
+        });
     },
 
     createBackend: function () {
@@ -867,17 +867,17 @@ var WaveSurfer = {
     toggleInteraction: function () {
         this.params.interact = !this.params.interact;
     },
-    
+
     enableDragSelection: function () {
-    	this.params.dragSelection = true;
+        this.params.dragSelection = true;
     },
-    
+
     disableDragSelection: function () {
-    	this.params.dragSelection = false;
+        this.params.dragSelection = false;
     },
-    
+
     toggleDragSelection: function () {
-    	this.params.dragSelection = !this.params.dragSelection;
+        this.params.dragSelection = !this.params.dragSelection;
     }
 };
 
