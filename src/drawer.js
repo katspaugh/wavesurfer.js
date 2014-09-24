@@ -134,7 +134,7 @@ WaveSurfer.Drawer = {
 
     recenterOnPosition: function (position, immediate) {
         var scrollLeft = this.wrapper.scrollLeft;
-        var half = ~~(this.containerWidth / 2);
+        var half = ~~(this.wrapper.clientWidth / 2);
         var target = position - half;
         var offset = target - scrollLeft;
         var maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
@@ -154,12 +154,11 @@ WaveSurfer.Drawer = {
 
         // limit target to valid range (0 to maxScroll)
         target = Math.max(0, Math.min(maxScroll, target));
-        if (target == scrollLeft) {
-            // no use attempting to scroll if we're not moving
-            return;
+        // no use attempting to scroll if we're not moving
+        if (target != scrollLeft) {
+            this.wrapper.scrollLeft = target;
         }
 
-        this.wrapper.scrollLeft = target;
     },
 
     getWidth: function () {
