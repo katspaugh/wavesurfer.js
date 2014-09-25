@@ -57,7 +57,6 @@ See the example code
 | `hideScrollbar` | boolean | `false` | Whether to hide the horizontal scrollbar when one would normally be shown. |
 | `interact` | boolean | `true` | Whether the mouse interaction will enabled at initialization. |
 | `loopSelection` | boolean | `true` | Whether playback should loop inside the selected region. Has no effect if `dragSelection` is `false`. |
-| `markerWidth` | integer | `1` | Measured in pixels. |
 | `minPxPerSec` | integer | `50` | Minimum number of pixels per second of audio. |
 | `normalize` | boolean | `false` | If `true`, normalize by the maximum peak instead of 1.0. |
 | `pixelRatio` | integer | `window.devicePixelRatio` | Can set to `1` for faster rendering. |
@@ -76,8 +75,6 @@ All methods are intentionally public, but the most readily available are the fol
 
  * `init(options)` – Initializes with the options listed above.
 
- * `clearMarks()` – Removes all markers.
- * `clearRegions()` – Removes all regions.
  * `destroy()` – Removes events, elements and disconnects Web Audio nodes.
  * `disableDragSelection()` - Disable drag selection capability.
  * `disableInteraction()` – Disable mouse interaction.
@@ -94,7 +91,6 @@ All methods are intentionally public, but the most readily available are the fol
   * `startTime` (string) Time display (IE: `1:32`)
   * `endTime` (string) Time display
  * `load(url)` – Loads an audio from URL via XHR. Returns XHR object.
- * `mark(options)` – Creates a visual marker on the waveform. Returns a `Marker` object.  See `Marker Options`, `Marker Methods` and `Marker Events` below.
  * `on(eventName, callback)` – Subscribes to an event.  See `WaveSurfer Events` section below for a list.
  * `pause()` – Stops playback.
  * `play([start[, end]])` – Starts playback from the current position.  Optional `start` and `end` measured in seconds can be used to set the range of audio to play.
@@ -128,17 +124,9 @@ wavesurfer.backend.setFilter(lowpass);
 
 ### WaveSurfer Events
 
- * `drag-mark` - When a mark is dragged.  Callback will receive the drag object, and a `Marker` object.  See the `drag` event under `Marker Events` below for information contained in the drag object.
  * `error` – Occurs on error.  Callback will receive (string) error message.
  * `finish` – When it finishes playing.
  * `loading` – Fires continuously when loading via XHR or drag'n'drop. Callback will recieve (integer) loading progress in percents [0..100] and (object) event target.
- * `mark` – When a mark is reached during playback. Callback will receive the `Marker` object.
- * `mark-click` - When the mouse clicks on a mark.  Callback will receive the `Marker` object, and a `MouseEvent` object.
- * `mark-leave` - When the mouse leaves a mark.  Callback will receive the `Marker` object, and a `MouseEvent` object.
- * `mark-over` - When the mouse moves over a mark.  Callback will receive the `Marker` object, and a `MouseEvent` object.
- * `mark-updated` – When a mark is updated. Callback will receive the `Marker` object.
- * `mark-removed` – When a mark is removed. Callback will receive the `Marker` object.
- * `marked` – When a mark is created. Callback will receive the `Marker` object.
  * `mouseup` - When a mouse button goes up.  Callback will receive `MouseEvent` object.
  * `play` – When play starts.
  * `progress` – Fires continuously during playback.  Callback will receive (float) percentage played [0..1].
@@ -148,6 +136,7 @@ wavesurfer.backend.setFilter(lowpass);
  * `region-out`– When playback leaves a region. Callback will receive the `Region` object.
  * `region-over` - When the mouse moves over a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
  * `region-click` - When the mouse clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
+  * `region-dblclick` - When the mouse double-clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
  * `region-created` – When a region is created. Callback will receive the `Region` object.
  * `region-updated` – When a region is updated. Callback will receive the `Region` object.
  * `region-removed` – When a region is removed. Callback will receive the `Region` object.
@@ -155,41 +144,14 @@ wavesurfer.backend.setFilter(lowpass);
  * `seek` – On seeking.  Callback will receive (float) progress [0..1].
  * `selection-update` – When a selection is updated. Callback will receive (object) describing the selection, or null if the selection is cleared.  See `getSelection()` method for a description of keys that describe the selection.
 
-### Marker Options
-
-| option | type | default | description |
-| --- | --- | --- | --- |
-| `id` | string | _random_ | An id you may assign to the marker |
-| `position` | float | `0` | Seconds |
-| `color` | string | `#333` | HTML color code |
-| `width` | integer | `WaveSurfer.markerWidth` | Number of pixels |
-
-### Marker Methods
-
- * `getTitle()` - Returns a time display string representing the position of the mark (IE: `1:34`).
- * `remove()` - Remove the mark object.
- * `update(options)` - Modify the settings of the mark.
-
-### Marker Events
-
- * `click` - When the mouse clicks on the mark.  Callback will receive a `MouseEvent`.
- * `drag` - When the mark is dragged. Callback will receive a drag object.  The drag object contains the following keys:
-  * `startPercentage` (float) [0..1]
-  * `endPercentage` (float) [0..1]
- * `leave` - When mouse leaves the mark.  Callback will receive a `MouseEvent`.
- * `over` - When mouse moves over the mark.  Callback will receive a `MouseEvent`.
- * `reached` - When the marker is reached during playback.
- * `remove` - Happens just before the marker is removed.
- * `update` - When the marker's options are updated.
-
 ### Region Options
 
 | option | type | default | description |
 | --- | --- | --- | --- |
 | `id` | string | _random_ | An id you may assign to the region |
-| `startPosition` | float | `0` | The start position of the region (in seconds) |
-| `endPosition` | float | `0` | The end position of the region (in seconds) |
-| `color` | string | `rgba(0, 0, 255, 0.2)` | HTML color code |
+| `start` | float | `0` | The start position of the region (in seconds) |
+| `end` | float | `0` | The end position of the region (in seconds) |
+| `color` | string | `rgba(0, 0, 0, 0.1)` | HTML color code |
 
 ### Region Methods
 
@@ -198,13 +160,16 @@ wavesurfer.backend.setFilter(lowpass);
 
 ### Region Events
 
- * `click` - When the mouse clicks on the region.  Callback will receive a `MouseEvent`.
  * `in` - When playback enters the region.
- * `leave` - When mouse leaves the region.  Callback will receive a `MouseEvent`.
  * `out` - When playback leaves the region.
- * `over` - When mouse moves over the region.  Callback will receive a `MouseEvent`.
  * `remove` - Happens just before the region is removed.
  * `update` - When the region's options are updated.
+
+ Mouse events:
+ 
+ * `click` - When the mouse clicks on the region.  Callback will receive a `MouseEvent`.
+ * `over` - When mouse moves over the region.  Callback will receive a `MouseEvent`.
+ * `leave` - When mouse leaves the region.  Callback will receive a `MouseEvent`.
 
 # Credits
 

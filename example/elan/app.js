@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (prevAnnotation != annotation) {
             prevAnnotation = annotation;
 
-            region && wavesurfer.regions.remove(region);
+            region && region.remove();
             region = null;
 
             if (annotation) {

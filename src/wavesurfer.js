@@ -7,6 +7,7 @@ var WaveSurfer = {
         progressColor : '#555',
         cursorColor   : '#333',
         cursorWidth   : 1,
+        markerWidth   : 4,
         skipLength    : 2,
         minPxPerSec   : 50,
         pixelRatio    : window.devicePixelRatio,
