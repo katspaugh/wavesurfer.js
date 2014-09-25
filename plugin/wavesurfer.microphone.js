@@ -14,14 +14,14 @@
             var wavesurfer = this.wavesurfer = params.wavesurfer;
 
             if (!this.wavesurfer) {
-                throw Error('No WaveSurfer instance provided');
+                throw new Error('No WaveSurfer instance provided');
             }
 
             this.active = false;
             this.getUserMedia = (navigator.getUserMedia ||
-                navigator.webkitGetUserMedia ||
-                navigator.mozGetUserMedia ||
-                navigator.msGetUserMedia).bind(navigator);
+                              navigator.webkitGetUserMedia ||
+                              navigator.mozGetUserMedia ||
+                              navigator.msGetUserMedia).bind(navigator);
 
             this.micContext = this.wavesurfer.backend.getAudioContext();
         },
@@ -34,24 +34,24 @@
                 video: false,
                 audio: true
             },
-            this.gotStream.bind(this),
-            this.streamError.bind(this));
+                           this.gotStream.bind(this),
+                           this.streamError.bind(this));
         },
 
         /**
          * Stop the microphone.
          */
         stop: function() {
-        	if (this.active) {
-        		this.active = false;
+            if (this.active) {
+                this.active = false;
 
-        		if (this.stream) {
-        			this.stream.stop();
-        		}
-        		this.mediaStreamSource.disconnect();
-        		this.levelChecker.disconnect();
-        		this.wavesurfer.empty();
-        	}
+                if (this.stream) {
+                    this.stream.stop();
+                }
+                this.mediaStreamSource.disconnect();
+                this.levelChecker.disconnect();
+                this.wavesurfer.empty();
+            }
         },
 
         /**
@@ -66,8 +66,8 @@
          * Audio input device is ready.
          */
         gotStream: function(stream) {
-        	this.stream = stream;
-        	this.active = true;
+            this.stream = stream;
+            this.active = true;
 
             // Create an AudioNode from the stream.
             this.mediaStreamSource = this.micContext.createMediaStreamSource(stream);
@@ -81,7 +81,7 @@
             this.levelChecker.connect(this.micContext.destination);
             this.levelChecker.onaudioprocess = this.reloadBuffer.bind(this);
         },
- 
+
         streamError: function(error)
         {
             console.warn('error', error);

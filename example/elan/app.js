@@ -47,6 +47,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Init wavesurfer
     wavesurfer.init(options);
 
+    // Init regions
+    wavesurfer.createRegions();
+
     // Init ELAN plugin
     var elan = Object.create(WaveSurfer.ELAN);
 
@@ -74,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    var prevAnnotation, prevRow;
+    var prevAnnotation, prevRow, region;
     var onProgress = function () {
         var duration = wavesurfer.backend.getDuration();
         var time = wavesurfer.backend.getCurrentTime();
@@ -82,6 +85,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (prevAnnotation != annotation) {
             prevAnnotation = annotation;
+
+            region && wavesurfer.regions.remove(region);
+            region = null;
 
             if (annotation) {
                 // Highlight annotation table row
@@ -94,13 +100,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     elan.container.scrollTop = before.offsetTop;
                 }
 
-                // Selection
-                wavesurfer.updateSelection({
-                    startPercentage: annotation.start / duration,
-                    endPercentage: annotation.end / duration
+                // Region
+                region = wavesurfer.regions.add({
+                    start: annotation.start / duration,
+                    end: annotation.end / duration,
+                    resize: false,
+                    color: 'rgba(223, 240, 216, 0.7)'
                 });
-            } else {
-                wavesurfer.clearSelection();
             }
         }
     };

@@ -6,12 +6,7 @@ var WaveSurfer = {
         waveColor     : '#999',
         progressColor : '#555',
         cursorColor   : '#333',
-        selectionColor: '#0fc',
-        selectionBorder: false,
-        selectionForeground: false,
-        selectionBorderColor: '#000',
         cursorWidth   : 1,
-        markerWidth   : 2,
         skipLength    : 2,
         minPxPerSec   : 50,
         pixelRatio    : window.devicePixelRatio,
@@ -40,14 +35,6 @@ var WaveSurfer = {
         if (!this.container) {
             throw new Error('wavesurfer.js: container element not found');
         }
-
-        // Marker objects
-        this.markers = {};
-        this.once('marked', this.bindMarks.bind(this));
-        this.once('region-created', this.bindRegions.bind(this));
-
-        // Region objects
-        this.regions = {};
 
         // Used to save the current volume when muting so we can
         // restore once unmuted
@@ -119,68 +106,10 @@ var WaveSurfer = {
         });
 
         // Click-to-seek
-        this.drawer.on('mousedown', function (progress) {
+        this.drawer.on('click', function (e, progress) {
             setTimeout(function () {
                 my.seekTo(progress);
             }, 0);
-        });
-
-        // Delete Mark on handler dble click
-        this.drawer.on('mark-dblclick', function (id) {
-            var mark = my.markers[id];
-            if (mark) {
-                mark.remove();
-            }
-        });
-
-        // Drag selection or marker events
-        if (this.params.dragSelection) {
-            this.drawer.on('drag', function (drag) {
-                my.dragging = true;
-                my.updateSelection(drag);
-            });
-            // Clear selection on canvas dble click
-            this.drawer.on('drag-clear', function () {
-                my.clearSelection();
-            });
-        }
-
-        this.drawer.on('drag-mark', function (drag, mark) {
-            mark.fireEvent('drag', drag);
-        });
-
-        // Mouseup for plugins
-        this.drawer.on('mouseup', function (e) {
-            my.fireEvent('mouseup', e);
-            my.dragging = false;
-        });
-
-        // Mouse events for Regions
-        this.drawer.on('region-over', function (region, e) {
-            region.fireEvent('over', e);
-            my.fireEvent('region-over', region, e);
-        });
-        this.drawer.on('region-leave', function (region, e) {
-            region.fireEvent('leave', e);
-            my.fireEvent('region-leave', region, e);
-        });
-        this.drawer.on('region-click', function (region, e) {
-            region.fireEvent('click', e);
-            my.fireEvent('region-click', region, e);
-        });
-
-        // Mouse events for Marks
-        this.drawer.on('mark-over', function (mark, e) {
-            mark.fireEvent('over', e);
-            my.fireEvent('mark-over', mark, e);
-        });
-        this.drawer.on('mark-leave', function (mark, e) {
-            mark.fireEvent('leave', e);
-            my.fireEvent('mark-leave', mark, e);
-        });
-        this.drawer.on('mark-click', function (mark, e) {
-            mark.fireEvent('click', e);
-            my.fireEvent('mark-click', mark, e);
         });
 
         // Relay the scroll event from the drawer
@@ -268,10 +197,10 @@ var WaveSurfer = {
     },
 
     skip: function (offset) {
-        var timings = this.timings(offset);
-        var progress = timings[0] / timings[1];
-
-        this.seekTo(progress);
+        var position = this.getCurrentTime() || 0;
+        var duration = this.getDuration() || 1;
+        position = Math.max(0, Math.min(duration, position + (offset || 0)));
+        this.seekTo(position / duration);
     },
 
     seekAndCenter: function (progress) {
@@ -338,127 +267,6 @@ var WaveSurfer = {
     toggleScroll: function () {
         this.params.scrollParent = !this.params.scrollParent;
         this.drawBuffer();
-    },
-
-    mark: function (options) {
-        var my = this;
-
-        var opts = WaveSurfer.util.extend({
-            id: WaveSurfer.util.getId(),
-            width: this.params.markerWidth
-        }, options);
-
-        if (opts.percentage && !opts.position) {
-            opts.position = opts.percentage * this.getDuration();
-        }
-        opts.percentage = opts.position / this.getDuration();
-
-        // If exists, just update and exit early
-        if (opts.id in this.markers) {
-            return this.markers[opts.id].update(opts);
-        }
-
-        // Ensure position for a new marker
-        if (!opts.position) {
-            opts.position = this.getCurrentTime();
-            opts.percentage = opts.position / this.getDuration();
-        }
-
-        var mark = Object.create(WaveSurfer.Mark);
-        mark.init(opts);
-
-        // If we create marker while dragging we are creating selMarks
-        if (this.dragging) {
-            mark.type = 'selMark';
-            mark.on('drag', function (drag){
-                my.updateSelectionByMark(drag, mark);
-            });
-        } else {
-            mark.on('drag', function (drag){
-                my.moveMark(drag, mark);
-            });
-        }
-
-        mark.on('update', function () {
-            my.drawer.updateMark(mark);
-            my.fireEvent('mark-updated', mark);
-        });
-        mark.on('remove', function () {
-            my.drawer.removeMark(mark);
-            delete my.markers[mark.id];
-            my.fireEvent('mark-removed', mark);
-        });
-
-        this.drawer.addMark(mark);
-
-        this.markers[mark.id] = mark;
-        this.fireEvent('marked', mark);
-
-        return mark;
-    },
-
-    clearMarks: function () {
-        Object.keys(this.markers).forEach(function (id) {
-            this.markers[id].remove();
-        }, this);
-        this.markers = {};
-    },
-
-    redrawRegions: function () {
-        Object.keys(this.regions).forEach(function (id) {
-            this.region(this.regions[id]);
-        }, this);
-    },
-
-    clearRegions: function () {
-        Object.keys(this.regions).forEach(function (id) {
-            this.regions[id].remove();
-        }, this);
-        this.regions = {};
-    },
-
-    region: function (options) {
-        var my = this;
-
-        var opts = WaveSurfer.util.extend({
-            id: WaveSurfer.util.getId()
-        }, options);
-
-        opts.startPercentage = opts.startPosition / this.getDuration();
-        opts.endPercentage = opts.endPosition / this.getDuration();
-
-        // If exists, just update and exit early
-        if (opts.id in this.regions) {
-            return this.regions[opts.id].update(opts);
-        }
-
-        var region = Object.create(WaveSurfer.Region);
-        region.init(opts);
-
-        region.on('update', function () {
-            my.drawer.updateRegion(region);
-            my.fireEvent('region-updated', region);
-        });
-        region.on('remove', function () {
-            my.drawer.removeRegion(region);
-            my.fireEvent('region-removed', region);
-            delete my.regions[region.id];
-        });
-
-        this.drawer.addRegion(region);
-
-        this.regions[region.id] = region;
-        this.fireEvent('region-created', region);
-
-        return region;
-
-    },
-
-    timings: function (offset) {
-        var position = this.getCurrentTime() || 0;
-        var duration = this.getDuration() || 1;
-        position = Math.max(0, Math.min(duration, position + (offset || 0)));
-        return [ position, duration ];
     },
 
     drawBuffer: function () {
@@ -647,59 +455,6 @@ var WaveSurfer = {
         this.fireEvent('loading', Math.round(percentComplete * 100), e.target);
     },
 
-    bindMarks: function () {
-        var my = this;
-        var prevTime = 0;
-
-        this.backend.on('play', function () {
-            // Reset marker events
-            Object.keys(my.markers).forEach(function (id) {
-                my.markers[id].played = false;
-            });
-        });
-
-        this.backend.on('audioprocess', function (time) {
-            Object.keys(my.markers).forEach(function (id) {
-                var marker = my.markers[id];
-                if (!marker.played) {
-                    if (marker.position <= time && marker.position >= prevTime) {
-                        // Prevent firing the event more than once per playback
-                        marker.played = true;
-
-                        my.fireEvent('mark', marker);
-                        marker.fireEvent('reached');
-                    }
-                }
-            });
-            prevTime = time;
-        });
-    },
-
-    bindRegions: function () {
-        var my = this;
-        this.backend.on('play', function () {
-            Object.keys(my.regions).forEach(function (id) {
-                my.regions[id].firedIn = false;
-                my.regions[id].firedOut = false;
-            });
-        });
-        this.backend.on('audioprocess', function (time) {
-            Object.keys(my.regions).forEach(function (id) {
-                var region = my.regions[id];
-                if (!region.firedIn && region.startPosition <= time && region.endPosition >= time) {
-                    my.fireEvent('region-in', region);
-                    region.fireEvent('in');
-                    region.firedIn = true;
-                }
-                if (!region.firedOut && region.firedIn && region.endPosition < time) {
-                    my.fireEvent('region-out', region);
-                    region.fireEvent('out');
-                    region.firedOut = true;
-                }
-            });
-        });
-    },
-
     /**
      * Display empty waveform.
      */
@@ -713,8 +468,6 @@ var WaveSurfer = {
             this.stop();
             this.backend.disconnectSource();
         }
-        this.clearMarks();
-        this.clearRegions();
         this.drawer.setWidth(0);
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     },
@@ -724,136 +477,12 @@ var WaveSurfer = {
      */
     destroy: function () {
         this.fireEvent('destroy');
-        this.clearMarks();
-        this.clearRegions();
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();
         if (this.media) {
             this.container.removeChild(this.media);
         }
-    },
-
-    updateSelectionByMark: function (markDrag, mark) {
-        var selection;
-        if (mark.id == this.selMark0.id) {
-            selection = {
-                'startPercentage': markDrag.endPercentage,
-                'endPercentage': this.selMark1.percentage
-            };
-        } else {
-            selection = {
-                'startPercentage': this.selMark0.percentage,
-                'endPercentage': markDrag.endPercentage
-            };
-        }
-        this.updateSelection(selection);
-    },
-
-    updateSelection: function (selection) {
-        var my = this;
-        var percent0 = selection.startPercentage;
-        var percent1 = selection.endPercentage;
-        var color = this.params.selectionColor;
-        var width = 0;
-        if (this.params.selectionBorder) {
-            color = this.params.selectionBorderColor;
-            width = 2; // parametrize?
-        }
-
-        if (percent0 > percent1) {
-            var tmpPercent = percent0;
-            percent0 = percent1;
-            percent1 = tmpPercent;
-        }
-
-        if (this.selMark0) {
-            this.selMark0.update({
-                percentage: percent0,
-                position: percent0 * this.getDuration()
-            });
-        } else {
-            this.selMark0 = this.mark({
-                width: width,
-                percentage: percent0,
-                position: percent0 * this.getDuration(),
-                color: color,
-                draggable: my.params.selectionBorder
-            });
-        }
-
-        if (this.selMark1) {
-            this.selMark1.update({
-                percentage: percent1,
-                position: percent1 * this.getDuration()
-            });
-        } else {
-            this.selMark1 = this.mark({
-                width: width,
-                percentage: percent1,
-                position: percent1 * this.getDuration(),
-                color: color,
-                draggable: my.params.selectionBorder
-            });
-        }
-
-        this.drawer.updateSelection(percent0, percent1);
-
-        if (this.params.loopSelection) {
-            this.backend.updateSelection(percent0, percent1);
-        }
-        my.fireEvent('selection-update', this.getSelection());
-    },
-
-    moveMark: function (drag, mark) {
-        mark.update({
-            percentage: drag.endPercentage,
-            position: drag.endPercentage * this.getDuration()
-        });
-        this.markers[mark.id] = mark;
-    },
-
-    clearSelection: function () {
-        if (this.selMark0 && this.selMark1) {
-            this.drawer.clearSelection(this.selMark0, this.selMark1);
-
-            this.selMark0.remove();
-            this.selMark0 = null;
-
-            this.selMark1.remove();
-            this.selMark1 = null;
-
-            if (this.params.loopSelection) {
-                this.backend.clearSelection();
-            }
-            this.fireEvent('selection-update', this.getSelection());
-        }
-    },
-
-    toggleLoopSelection: function () {
-        this.params.loopSelection = !this.params.loopSelection;
-        if (this.params.loopSelection) {
-            if (this.selMark0 && this.selMark1) {
-                this.updateSelection({
-                    startPercentage: this.selMark0.percentage,
-                    endPercentage: this.selMark1.percentage
-                });
-            }
-        } else {
-            this.backend.clearSelection();
-        }
-    },
-
-    getSelection: function () {
-        if (!this.selMark0 || !this.selMark1) return null;
-        return {
-            startPercentage: this.selMark0.percentage,
-            startPosition: this.selMark0.position,
-            endPercentage: this.selMark1.percentage,
-            endPosition: this.selMark1.position,
-            startTime: this.selMark0.getTitle(),
-            endTime: this.selMark1.getTitle()
-        };
     },
 
     enableInteraction: function () {
@@ -881,88 +510,6 @@ var WaveSurfer = {
     }
 };
 
-
-/* Mark */
-WaveSurfer.Mark = {
-    defaultParams: {
-        id: null,
-        position: 0,
-        percentage: 0,
-        width: 1,
-        color: '#333',
-        draggable: false
-    },
-
-    init: function (options) {
-        this.apply(
-            WaveSurfer.util.extend({}, this.defaultParams, options)
-        );
-        return this;
-    },
-
-    getTitle: function () {
-        return [
-            ~~(this.position / 60),                   // minutes
-            ('00' + ~~(this.position % 60)).slice(-2) // seconds
-        ].join(':');
-    },
-
-    apply: function (options) {
-        Object.keys(options).forEach(function (key) {
-            if (key in this.defaultParams) {
-                this[key] = options[key];
-            }
-        }, this);
-    },
-
-    update: function (options) {
-        this.apply(options);
-        this.fireEvent('update');
-    },
-
-    remove: function () {
-        this.fireEvent('remove');
-        this.unAll();
-    }
-};
-
-/* Region */
-
-WaveSurfer.Region = {
-    defaultParams: {
-        id: null,
-        startPosition: 0,
-        endPosition: 0,
-        startPercentage: 0,
-        endPercentage: 0,
-        color: 'rgba(0, 0, 255, 0.2)'
-    },
-
-    init: function (options) {
-        this.apply(
-            WaveSurfer.util.extend({}, this.defaultParams, options)
-        );
-        return this;
-    },
-
-    apply: function (options) {
-        Object.keys(options).forEach(function (key) {
-            if (key in this.defaultParams) {
-                this[key] = options[key];
-            }
-        }, this);
-    },
-
-    update: function (options) {
-        this.apply(options);
-        this.fireEvent('update');
-    },
-
-    remove: function () {
-        this.fireEvent('remove');
-        this.unAll();
-    }
-};
 
 /* Observer */
 WaveSurfer.Observer = {
@@ -1113,5 +660,3 @@ WaveSurfer.util = {
 };
 
 WaveSurfer.util.extend(WaveSurfer, WaveSurfer.Observer);
-WaveSurfer.util.extend(WaveSurfer.Mark, WaveSurfer.Observer);
-WaveSurfer.util.extend(WaveSurfer.Region, WaveSurfer.Observer);
