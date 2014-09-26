@@ -44,7 +44,7 @@ WaveSurfer.Region = {
         this.start = params.start || 0;
         this.end = params.end == null ?
             // small marker-like region
-            params.start + this.wavesurfer.params.markerWidth :
+            params.start + (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration() :
             params.end;
         this.resize = params.resize === undefined ? true : !!params.resize;
         this.drag = params.drag === undefined ? true : !!params.drag;

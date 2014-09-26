@@ -10,8 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
         waveColor     : 'violet',
         progressColor : 'purple',
         loaderColor   : 'purple',
-        cursorColor   : 'navy',
-        markerWidth   : 2
+        cursorColor   : 'navy'
     };
 
     if (location.search.match('scroll')) {
@@ -67,20 +66,32 @@ wavesurfer.on('finish', function () {
             wavesurfer.playPause();
         },
 
-        'green-mark': function () {
-            wavesurfer.mark({
-                id: 'up',
-                color: 'rgba(0, 255, 0, 0.5)',
-                position: wavesurfer.getCurrentTime()
-            });
+        'green-region': function () {
+            if (wavesurfer.greenRegion) {
+                wavesurfer.greenRegion.update({
+                    start: wavesurfer.getCurrentTime(),
+                    end: wavesurfer.getCurrentTime() + 2
+                });
+            } else {
+                wavesurfer.greenRegion = wavesurfer.addRegion({
+                    color: 'rgba(0, 255, 0, 0.5)',
+                    start: wavesurfer.getCurrentTime(),
+                    end: wavesurfer.getCurrentTime() + 2
+                });
+            }
         },
 
         'red-mark': function () {
-            wavesurfer.mark({
-                id: 'down',
-                color: 'rgba(255, 0, 0, 0.5)',
-                position: wavesurfer.getCurrentTime()
-            });
+            if (wavesurfer.redMark) {
+                wavesurfer.redMark.update({
+                    start: wavesurfer.getCurrentTime()
+                });
+            } else {
+                wavesurfer.redMark = wavesurfer.addRegion({
+                    color: 'rgba(255, 0, 0, 0.5)',
+                    start: wavesurfer.getCurrentTime()
+                });
+            }
         },
 
         'back': function () {
@@ -99,7 +110,7 @@ wavesurfer.on('finish', function () {
     document.addEventListener('keydown', function (e) {
         var map = {
             32: 'play',       // space
-            38: 'green-mark', // up
+            38: 'green-region', // up
             40: 'red-mark',   // down
             37: 'back',       // left
             39: 'forth'       // right
@@ -118,21 +129,6 @@ wavesurfer.on('finish', function () {
         }
     });
 }());
-
-// Flash mark when it's played over
-wavesurfer.on('mark', function (marker) {
-    if (marker.timer) { return; }
-
-    marker.timer = setTimeout(function () {
-        var origColor = marker.color;
-        marker.update({ color: 'yellow' });
-
-        setTimeout(function () {
-            marker.update({ color: origColor });
-            delete marker.timer;
-        }, 100);
-    }, 100);
-});
 
 wavesurfer.on('error', function (err) {
     console.error(err);
