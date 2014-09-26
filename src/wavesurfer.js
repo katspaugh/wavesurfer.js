@@ -496,18 +496,6 @@ var WaveSurfer = {
 
     toggleInteraction: function () {
         this.params.interact = !this.params.interact;
-    },
-
-    enableDragSelection: function () {
-        this.params.dragSelection = true;
-    },
-
-    disableDragSelection: function () {
-        this.params.dragSelection = false;
-    },
-
-    toggleDragSelection: function () {
-        this.params.dragSelection = !this.params.dragSelection;
     }
 };
 

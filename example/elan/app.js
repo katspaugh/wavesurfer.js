@@ -79,7 +79,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var prevAnnotation, prevRow, region;
     var onProgress = function () {
-        var duration = wavesurfer.backend.getDuration();
         var time = wavesurfer.backend.getCurrentTime();
         var annotation = elan.getRenderedAnnotation(time);
 
@@ -102,8 +101,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Region
                 region = wavesurfer.regions.add({
-                    start: annotation.start / duration,
-                    end: annotation.end / duration,
+                    start: annotation.start,
+                    end: annotation.end,
                     resize: false,
                     color: 'rgba(223, 240, 216, 0.7)'
                 });

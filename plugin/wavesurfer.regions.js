@@ -8,35 +8,6 @@ WaveSurfer.Regions = {
 
         /* Id-based hash of regions. */
         this.list = {};
-
-        this.bindInOut();
-    },
-
-    /* Bind playback to region events. */
-    bindInOut: function () {
-        var my = this;
-        this.wavesurfer.backend.on('play', function () {
-            Object.keys(my.list).forEach(function (id) {
-                var region = my.list[id];
-                region.firedIn = false;
-                region.firedOut = false;
-            });
-        });
-        this.wavesurfer.backend.on('audioprocess', function (time) {
-            Object.keys(my.list).forEach(function (id) {
-                var region = my.list[id];
-                if (!region.firedIn && region.start <= time && region.end >= time) {
-                    my.wavesurfer.fireEvent('region-in', region);
-                    region.fireEvent('in');
-                    region.firedIn = true;
-                }
-                if (!region.firedOut && region.firedIn && region.endPosition < time) {
-                    my.wavesurfer.fireEvent('region-out', region);
-                    region.fireEvent('out');
-                    region.firedOut = true;
-                }
-            });
-        });
     },
 
     /* Remove a region. */
@@ -77,17 +48,13 @@ WaveSurfer.Region = {
             params.end;
         this.resize = params.resize === undefined ? true : !!params.resize;
         this.drag = params.drag === undefined ? true : !!params.drag;
+        this.loop = !!params.loop;
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
 
+        this.bindInOut();
         this.render();
 
         this.wavesurfer.fireEvent('region-created', this);
-    },
-
-    /* Play back the region. */
-    play: function () {
-        var dur = this.wavesurfer.getDuration();
-        this.wavesurfer.play(this.start * dur, this.end * dur);
     },
 
     /* Update region params. */
@@ -98,10 +65,12 @@ WaveSurfer.Region = {
         if (null != params.end) {
             this.end = params.end;
         }
+        if (null != params.loop) {
+            this.color = params.loop;
+        }
         if (null != params.color) {
             this.color = params.color;
         }
-
         this.updateRender();
         this.fireEvent('update');
         this.wavesurfer.fireEvent('region-updated', this);
@@ -159,11 +128,50 @@ WaveSurfer.Region = {
 
     /* Update element's position, width, color. */
     updateRender: function () {
+        var dur = this.wavesurfer.getDuration();
         var width = this.wrapper.scrollWidth;
         this.style(this.element, {
-            left: ~~(this.start * width) + 'px',
-            width: ~~((this.end - this.start) * width) + 'px',
+            left: ~~(this.start / dur * width) + 'px',
+            width: ~~((this.end / dur - this.start / dur) * width) + 'px',
             backgroundColor: this.color
+        });
+    },
+
+    /* Bind audio events. */
+    bindInOut: function () {
+        var my = this;
+
+        var onPlay = function () {
+            my.firedIn = false;
+            my.firedOut = false;
+        };
+
+        var onProcess = function (time) {
+            if (!my.firedIn && my.start <= time && my.end >= time) {
+                my.firedIn = true;
+                my.fireEvent('in');
+                my.wavesurfer.fireEvent('region-in', my);
+            }
+            if (!my.firedOut && my.firedIn && my.end < time) {
+                my.firedOut = true;
+                my.fireEvent('out');
+                my.wavesurfer.fireEvent('region-out', my);
+            }
+        };
+
+        this.wavesurfer.backend.on('play', onPlay);
+        this.wavesurfer.backend.on('audioprocess', onProcess);
+
+        this.on('remove', function () {
+            my.wavesurfer.backend.un('play', onPlay);
+            my.wavesurfer.backend.un('audioprocess', onProcess);
+        });
+
+        /* Loop playback. */
+        this.on('out', function () {
+            if (my.loop) {
+                my.wavesurfer.play(my.start);
+            }
         });
     },
 
@@ -182,7 +190,6 @@ WaveSurfer.Region = {
         });
 
         this.element.addEventListener('click', function (e) {
-            e.stopPropagation();
             e.preventDefault();
             my.fireEvent('click', e);
             my.wavesurfer.fireEvent('region-click', my, e);
@@ -197,16 +204,17 @@ WaveSurfer.Region = {
 
         /* Drag or resize on mousemove. */
         (this.drag || this.resize) && (function () {
+            var duration = my.wavesurfer.getDuration();
             var drag;
             var resize;
-            var startPos;
+            var startTime;
 
             var onDown = function (e) {
                 e.stopPropagation();
-                startPos = my.wavesurfer.drawer.handleEvent(e);
+                startTime = my.wavesurfer.drawer.handleEvent(e) * duration;
 
                 if (e.target.tagName.toLowerCase() == 'handle') {
-                    if (startPos <= my.end) {
+                    if (startTime <= my.end) {
                         resize = 'start';
                     } else {
                         resize = 'end';
@@ -225,9 +233,9 @@ WaveSurfer.Region = {
             };
             var onMove = function (e) {
                 if (drag || resize) {
-                    var pos = my.wavesurfer.drawer.handleEvent(e);
-                    var delta = pos - startPos;
-                    startPos = pos;
+                    var time = my.wavesurfer.drawer.handleEvent(e) * duration;
+                    var delta = time - startTime;
+                    startTime = time;
 
                     // Drag
                     if (my.drag && drag) {
