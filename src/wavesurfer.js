@@ -21,7 +21,7 @@ var WaveSurfer = {
         audioRate     : 1,
         interact      : true,
         renderer      : 'Canvas',
-        backend       : 'WebAudioBuffer'
+        backend       : 'WebAudio'
     },
 
     init: function (params) {
@@ -33,7 +33,7 @@ var WaveSurfer = {
             this.params.container;
 
         if (!this.container) {
-            throw new Error('wavesurfer.js: container element not found');
+            throw new Error('Container element not found');
         }
 
         // Used to save the current volume when muting so we can
@@ -42,52 +42,8 @@ var WaveSurfer = {
         // The current muted state
         this.isMuted = false;
 
-        this.bindUserAction();
         this.createDrawer();
         this.createBackend();
-    },
-
-    bindUserAction: function () {
-        // iOS requires user input to start loading audio
-        var my = this;
-        var onUserAction = function () {
-            my.fireEvent('user-action');
-        };
-        document.addEventListener('mousedown', onUserAction);
-        document.addEventListener('keydown', onUserAction);
-        this.on('destroy', function () {
-            document.removeEventListener('mousedown', onUserAction);
-            document.removeEventListener('keydown', onUserAction);
-        });
-    },
-
-    /**
-     * Used with loadStream.
-     * TODO: move to WebAudioMedia
-     */
-    createMedia: function (url) {
-        var my = this;
-
-        var media = document.createElement('audio');
-        media.controls = false;
-        media.autoplay = false;
-        media.src = url;
-
-        media.addEventListener('error', function () {
-            my.fireEvent('error', 'Error loading media element');
-        });
-
-        media.addEventListener('canplay', function () {
-            my.fireEvent('media-canplay');
-        });
-
-        var prevMedia = this.container.querySelector('audio');
-        if (prevMedia) {
-            this.container.removeChild(prevMedia);
-        }
-        this.container.appendChild(media);
-
-        return media;
     },
 
     createDrawer: function () {
@@ -113,7 +69,7 @@ var WaveSurfer = {
         });
 
         // Relay the scroll event from the drawer
-        this.drawer.on('scroll', function(e) {
+        this.drawer.on('scroll', function (e) {
             my.fireEvent('scroll', e);
         });
     },
@@ -139,7 +95,7 @@ var WaveSurfer = {
         try {
             this.backend.init(this.params);
         } catch (e) {
-            if (e.message == 'wavesurfer.js: your browser doesn\'t support WebAudio') {
+            if (e.message == "Your browser doesn't support Web Audio") {
                 this.params.backend = 'AudioElement';
                 this.backend = null;
                 this.createBackend();
@@ -150,7 +106,7 @@ var WaveSurfer = {
     restartAnimationLoop: function () {
         var my = this;
         var requestFrame = window.requestAnimationFrame ||
-                window.webkitRequestAnimationFrame;
+            window.webkitRequestAnimationFrame;
         var frame = function () {
             if (!my.backend.isPaused()) {
                 my.fireEvent('progress', my.backend.getPlayedPercents());
@@ -178,14 +134,6 @@ var WaveSurfer = {
 
     playPause: function () {
         this.backend.isPaused() ? this.play() : this.pause();
-    },
-
-    playPauseSelection: function () {
-        var sel = this.getSelection();
-        if (sel !== null) {
-            this.seekTo(sel.startPercentage);
-            this.playPause();
-        }
     },
 
     skipBackward: function (seconds) {
@@ -281,38 +229,6 @@ var WaveSurfer = {
         this.fireEvent('redraw');
     },
 
-    drawAsItPlays: function () {
-        var my = this;
-        this.realPxPerSec = this.params.minPxPerSec * this.params.pixelRatio;
-        var frameTime = 1 / this.realPxPerSec;
-        var prevTime = 0;
-        var peaks;
-
-        this.drawFrame = function (time) {
-            if (time > prevTime && time - prevTime < frameTime) {
-                return;
-            }
-            prevTime = time;
-            var duration = my.getDuration();
-            if (duration < Infinity) {
-                var length = Math.round(duration * my.realPxPerSec);
-                peaks = peaks || new Uint8Array(length);
-            } else {
-                peaks = peaks || [];
-                length = peaks.length;
-            }
-            var index = ~~(my.backend.getPlayedPercents() * length);
-            if (!peaks[index]) {
-                peaks[index] = WaveSurfer.util.max(my.backend.waveform(), 128);
-                my.drawer.setWidth(length);
-                my.drawer.clearWave();
-                my.drawer.drawWave(peaks, 128);
-            }
-        };
-
-        this.backend.on('audioprocess', this.drawFrame);
-    },
-
     /**
      * Internal method.
      */
@@ -330,14 +246,7 @@ var WaveSurfer = {
      */
     loadDecodedBuffer: function (buffer) {
         this.empty();
-
-        /* In case it's called externally */
-        if (this.params.backend != 'WebAudioBuffer') {
-            this.params.backend = 'WebAudioBuffer';
-            this.createBackend();
-        }
         this.backend.load(buffer);
-
         this.drawBuffer();
         this.fireEvent('ready');
     },
@@ -369,8 +278,7 @@ var WaveSurfer = {
      */
     load: function (url, peaks) {
         switch (this.params.backend) {
-            case 'WebAudioBuffer': return this.loadBuffer(url);
-            case 'WebAudioMedia': return this.loadStream(url);
+            case 'WebAudio': return this.loadBuffer(url);
             case 'AudioElement': return this.loadAudioElement(url, peaks);
         }
     },
@@ -384,48 +292,16 @@ var WaveSurfer = {
         return this.downloadArrayBuffer(url, this.loadArrayBuffer.bind(this));
     },
 
-    /**
-     * Load audio stream and render its waveform as it plays.
-     */
-    loadStream: function (url) {
-        var my = this;
-
-        /* In case it's called externally */
-        if (this.params.backend != 'WebAudioMedia') {
-            this.params.backend = 'WebAudioMedia';
-            this.createBackend();
-        }
-
-        this.empty();
-        this.drawAsItPlays();
-        this.media = this.createMedia(url);
-
-        // iOS requires a touch to start loading audio
-        this.once('user-action', function () {
-            // Assume media.readyState >= media.HAVE_ENOUGH_DATA
-            my.backend.load(my.media);
-        });
-
-        setTimeout(this.fireEvent.bind(this, 'ready'), 0);
-    },
-
     loadAudioElement: function (url, peaks) {
-        var my = this;
-
-        /* In case it's called externally */
-        if (this.params.backend != 'AudioElement') {
-            this.params.backend = 'AudioElement';
-            this.createBackend();
-        }
-
         this.empty();
-        this.media = this.createMedia(url);
-
-        this.once('media-canplay', function () {
-            my.backend.load(my.media, peaks);
-            my.drawBuffer();
-            my.fireEvent('ready');
-        });
+        this.backend.load(url, peaks, this.container);
+        this.backend.once('canplay', (function () {
+            this.drawBuffer();
+            this.fireEvent('ready');
+        }).bind(this));
+        this.backend.once('error', (function (err) {
+            this.fireEvent('error', err);
+        }).bind(this));
     },
 
     downloadArrayBuffer: function (url, callback) {
@@ -480,9 +356,6 @@ var WaveSurfer = {
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();
-        if (this.media) {
-            this.container.removeChild(this.media);
-        }
     },
 
     enableInteraction: function () {
@@ -611,39 +484,6 @@ WaveSurfer.util = {
         xhr.send();
         ajax.xhr = xhr;
         return ajax;
-    },
-
-    /**
-     * @see http://underscorejs.org/#throttle
-     */
-    throttle: function (func, wait, options) {
-        var context, args, result;
-        var timeout = null;
-        var previous = 0;
-        options || (options = {});
-        var later = function () {
-            previous = options.leading === false ? 0 : Date.now();
-            timeout = null;
-            result = func.apply(context, args);
-            context = args = null;
-        };
-        return function () {
-            var now = Date.now();
-            if (!previous && options.leading === false) previous = now;
-            var remaining = wait - (now - previous);
-            context = this;
-            args = arguments;
-            if (remaining <= 0) {
-                clearTimeout(timeout);
-                timeout = null;
-                previous = now;
-                result = func.apply(context, args);
-                context = args = null;
-            } else if (!timeout && options.trailing !== false) {
-                timeout = setTimeout(later, remaining);
-            }
-            return result;
-        };
     }
 };
 

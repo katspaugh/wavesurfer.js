@@ -47,7 +47,7 @@ See the example code
 | --- | --- | --- | --- |
 | `audioContext` | string | `null` | Use your own previously initialized `AudioContext` or leave blank. |
 | `audioRate` | float | `1` | Speed at which to play audio.  Lower number is slower. |
-| `backend` | string | `WebAudioBuffer` | One of `WebAudioBuffer`, `WebAudioMedia` or `AudioElement`. In most cases you needn't set this manually. |
+| `backend` | string | `WebAudio` | `WebAudio` or `AudioElement`. In most cases you needn't set this manually. `AudioElement` is a fallback for unsupported browsers. |
 | `container` | mixed | _none_ | CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter |
 | `cursorColor` | string | `#333` | The fill color of the cursor indicating the playhead position. |
 | `cursorWidth` | integer | `1` | Measured in pixels. |
@@ -161,6 +161,7 @@ After doing that, use `wavesurfer.addRegion()` to create Region objects.
 
  * `remove()` - Remove the region object.
  * `update(options)` - Modify the settings of the region.
+ * `play()` - Play the audio region from the start to end position.
 
 ### Region Events
 

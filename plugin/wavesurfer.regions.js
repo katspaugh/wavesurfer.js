@@ -86,6 +86,11 @@ WaveSurfer.Region = {
         }
     },
 
+    /* Play the audio region. */
+    play: function () {
+        this.wavesurfer.play(this.start, this.end);
+    },
+
     /* Render a region as a DOM element. */
     render: function () {
         var regionEl = document.createElement('region');

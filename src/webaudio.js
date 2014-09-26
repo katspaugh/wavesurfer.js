@@ -6,9 +6,7 @@ WaveSurfer.WebAudio = {
 
     getAudioContext: function () {
         if (!(window.AudioContext || window.webkitAudioContext)) {
-            throw new Error(
-                'wavesurfer.js: your browser doesn\'t support WebAudio'
-            );
+            throw new Error("Your browser doesn't support Web Audio");
         }
 
         if (!WaveSurfer.WebAudio.audioContext) {
@@ -26,8 +24,8 @@ WaveSurfer.WebAudio = {
         this.prevFrameTime = 0;
         this.scheduledPause = null;
         this.firedFinish = false;
-
-        this.postInit();
+        this.lastStartPosition = 0;
+        this.lastPlay = this.lastPause = this.nextPause = this.ac.currentTime;
 
         this.createVolumeNode();
         this.createScriptNode();
@@ -207,49 +205,27 @@ WaveSurfer.WebAudio = {
         this.analyser.disconnect();
     },
 
-    /**
-     * Returns the real-time waveform data.
-     *
-     * @return {Uint8Array} The frequency data.
-     * Values range from 0 to 255.
-     */
-    waveform: function () {
-        this.analyser.getByteTimeDomainData(this.analyserData);
-        return this.analyserData;
+    load: function (buffer) {
+        this.lastStartPosition = 0;
+        this.lastPlay = this.lastPause = this.nextPause = this.ac.currentTime;
+        this.buffer = buffer;
+        this.createSource();
     },
 
-
-    /* Dummy methods */
-
-    postInit: function () {},
-    load: function () {},
-
-    /**
-     * Get current position in seconds.
-     */
-    getCurrentTime: function () {
-        return 0;
+    createSource: function () {
+        this.disconnectSource();
+        this.source = this.ac.createBufferSource();
+        this.source.playbackRate.value = this.playbackRate;
+        this.source.buffer = this.buffer;
+        this.source.connect(this.analyser);
     },
 
-    /**
-     * @returns {Boolean}
-     */
     isPaused: function () {
-        return true;
+        return this.nextPause <= this.ac.currentTime;
     },
 
-    /**
-     * Get duration in seconds.
-     */
     getDuration: function () {
-        return 0;
-    },
-
-    /**
-     * Set the audio source playback rate.
-     */
-    setPlaybackRate: function (value) {
-        this.playbackRate = value || 1;
+        return this.buffer.duration;
     },
 
     /**
@@ -260,12 +236,70 @@ WaveSurfer.WebAudio = {
      * @param {Number} end When to stop
      * relative to the beginning of a clip.
      */
-    play: function (start, end) {},
+    play: function (start, end) {
+        // need to re-create source on each playback
+        this.createSource();
+
+        if (start == null) {
+            start = this.getCurrentTime();
+        }
+        if (end == null) {
+            if (this.scheduledPause != null) {
+                end = this.scheduledPause;
+            } else {
+                end = this.getDuration();
+            }
+        }
+
+        this.lastPlay = this.ac.currentTime;
+        this.lastStartPosition = start;
+        this.lastPause = this.nextPause = this.ac.currentTime + (end - start);
+        this.prevFrameTime = -1; // break free from a loop
+
+        if (this.source.start) {
+            this.source.start(0, start, end - start);
+        } else {
+            this.source.noteGrainOn(0, start, end - start);
+        }
+
+        this.fireEvent('play');
+    },
 
     /**
      * Pauses the loaded audio.
      */
-    pause: function () {}
+    pause: function () {
+        this.scheduledPause = null;
+        this.lastPause = this.nextPause = this.ac.currentTime;
+
+        if (this.source) {
+            if (this.source.stop) {
+                this.source.stop(0);
+            } else {
+                this.source.noteOff(0);
+            }
+        }
+
+        this.fireEvent('pause');
+    },
+
+    getCurrentTime: function () {
+        if (this.isPaused()) {
+            return this.lastStartPosition + (this.lastPause - this.lastPlay) * this.playbackRate;
+        } else {
+            return this.lastStartPosition + (this.ac.currentTime - this.lastPlay) * this.playbackRate;
+        }
+    },
+
+    /**
+     * Set the audio source playback rate.
+     */
+    setPlaybackRate: function (value) {
+        this.playbackRate = value || 1;
+        if (this.source) {
+            this.source.playbackRate.value = this.playbackRate;
+        }
+    }
 };
 
 WaveSurfer.util.extend(WaveSurfer.WebAudio, WaveSurfer.Observer);
