@@ -21,8 +21,6 @@ WaveSurfer.WebAudio = {
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
 
-        this.prevFrameTime = 0;
-        this.scheduledPause = null;
         this.firedFinish = false;
         this.lastStartPosition = 0;
         this.lastPlay = this.lastPause = this.nextPause = this.ac.currentTime;
@@ -83,20 +81,9 @@ WaveSurfer.WebAudio = {
             }
 
             if (!my.isPaused()) {
-                my.onPlayFrame(time);
                 my.fireEvent('audioprocess', time);
             }
         };
-    },
-
-    onPlayFrame: function (time) {
-        if (this.scheduledPause != null) {
-            if (this.prevFrameTime >= this.scheduledPause) {
-                this.pause();
-            }
-        }
-
-        this.prevFrameTime = time;
     },
 
     createAnalyserNode: function () {
@@ -194,6 +181,17 @@ WaveSurfer.WebAudio = {
         }
     },
 
+    /**
+     * Returns the real-time waveform data.
+     *
+     * @return {Uint8Array} The frequency data.
+     * Values range from 0 to 255.
+     */
+    waveform: function () {
+        this.analyser.getByteTimeDomainData(this.analyserData);
+        return this.analyserData;
+    },
+
     destroy: function () {
         this.pause();
         this.unAll();
@@ -242,19 +240,17 @@ WaveSurfer.WebAudio = {
 
         if (start == null) {
             start = this.getCurrentTime();
+            if (start >= this.getDuration()) {
+                start = 0;
+            }
         }
         if (end == null) {
-            if (this.scheduledPause != null) {
-                end = this.scheduledPause;
-            } else {
-                end = this.getDuration();
-            }
+            end = this.getDuration();
         }
 
         this.lastPlay = this.ac.currentTime;
         this.lastStartPosition = start;
         this.lastPause = this.nextPause = this.ac.currentTime + (end - start);
-        this.prevFrameTime = -1; // break free from a loop
 
         if (this.source.start) {
             this.source.start(0, start, end - start);

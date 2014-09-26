@@ -6,9 +6,6 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
     init: function (params) {
         this.params = params;
 
-        this.prevFrameTime = 0;
-        this.scheduledPause = null;
-
         // Dummy media to catch errors
         this.media = {
             currentTime: 0,
@@ -18,13 +15,6 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
             play: function () {},
             pause: function () {}
         };
-
-        var my = this;
-        this.on('audioprocess', function (time) {
-            if (time > my.maxCurrentTime) {
-                my.maxCurrentTime = time;
-            }
-        });
     },
 
     load: function (url, peaks, container) {
@@ -51,7 +41,6 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
 
         this.media = media;
         this.peaks = peaks;
-        this.maxCurrentTime = 0;
         this.setPlaybackRate(this.playbackRate);
     },
 
@@ -71,7 +60,7 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
         var duration = this.getDuration();
         var time = this.getCurrentTime();
         if (duration >= Infinity) { // streaming audio
-            duration = this.maxCurrentTime;
+            duration = this.media.seekable.end();
         }
         return (time / duration) || 0;
     },
@@ -89,17 +78,10 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
      *
      * @param {Number} start Start offset in seconds,
      * relative to the beginning of a clip.
-     * @param {Number} end When to stop
-     * relative to the beginning of a clip.
      */
-    play: function (start, end) {
+    play: function (start) {
         if (start != null) {
             this.media.currentTime = start;
-        }
-        if (end == null) {
-            this.scheduledPause = null;
-        } else {
-            this.scheduledPause = end;
         }
         this.media.play();
         this.fireEvent('play');
@@ -109,7 +91,6 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
      * Pauses the loaded audio.
      */
     pause: function () {
-        this.scheduledPause = null;
         this.media.pause();
         this.fireEvent('pause');
     },
@@ -129,7 +110,7 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
     destroy: function () {
         this.pause();
         this.unAll();
-        this.media.parentNode.removeChild(this.media);
+        this.media.parentNode && this.media.removeChild(this.media);
         this.media = null;
     }
 });
