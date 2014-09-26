@@ -68,19 +68,12 @@ See the example code
 All methods are intentionally public, but the most readily available are the following:
 
  * `init(options)` – Initializes with the options listed above.
-
  * `destroy()` – Removes events, elements and disconnects Web Audio nodes.
  * `disableInteraction()` – Disable mouse interaction.
  * `empty()` – Clears the waveform as if a zero-length audio is loaded.
  * `enableInteraction()` – Enable mouse interaction.
  * `getCurrentTime()` – Returns current progress in seconds.
  * `getDuration()` – Returns the duration of an audio clip in seconds.
-  * `startPercentage` (float) [0..1]
-  * `endPercentage` (float) [0..1]
-  * `startPosition` (float) seconds
-  * `endPosition` (float) seconds
-  * `startTime` (string) Time display (IE: `1:32`)
-  * `endTime` (string) Time display
  * `load(url)` – Loads an audio from URL via XHR. Returns XHR object.
  * `on(eventName, callback)` – Subscribes to an event.  See `WaveSurfer Events` section below for a list.
  * `pause()` – Stops playback.
@@ -137,7 +130,21 @@ Region events (exposed by the Regions plugin):
 
 ## Regions Plugin
 
- * `regions.add(options)` – Creates a region on the waveform. Returns a `Region` object.  See `Region Options`, `Region Methods` and `Region Events` below.
+Regions are visual overlays on waveform that can be used to play and
+loop portions of audio. Regions can be dragged and resized.
+
+Visual customization is possible via CSS (using the selectors
+`.wavesurfer-region` and `.wavesurfer-handle`).
+
+To enable the plugin, add the script `plugin/wavesurfer.regions.js` to
+your page.
+
+After doing that, use `wavesurfer.addRegion()` to create Region objects.
+
+#### Exposed Methods
+
+ * `addRegion(options)` – Creates a region on the waveform. Returns a `Region` object.  See `Region Options`, `Region Methods` and `Region Events` below.
+ * `clearRegions()` – Removes all regions.
 
 ### Region Options
 
@@ -148,7 +155,7 @@ Region events (exposed by the Regions plugin):
 | `loop` | boolean | `false` | Whether to loop the region when played back. |
 | `drag` | boolean | `true` | Allow/dissallow resizing the region. |
 | `resize` | boolean | `true` | Allow/dissallow dragging the region. |
-| `color` | string | `"rgba(0, 0, 0, 0.1)"` | HTML color code |
+| `color` | string | `"rgba(0, 0, 0, 0.1)"` | HTML color code. |
 
 ### Region Methods
 
@@ -156,6 +163,8 @@ Region events (exposed by the Regions plugin):
  * `update(options)` - Modify the settings of the region.
 
 ### Region Events
+
+General events:
 
  * `in` - When playback enters the region.
  * `out` - When playback leaves the region.

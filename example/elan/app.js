@@ -47,9 +47,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Init wavesurfer
     wavesurfer.init(options);
 
-    // Init regions
-    wavesurfer.createRegions();
-
     // Init ELAN plugin
     var elan = Object.create(WaveSurfer.ELAN);
 
@@ -100,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 // Region
-                region = wavesurfer.regions.add({
+                region = wavesurfer.addRegion({
                     start: annotation.start,
                     end: annotation.end,
                     resize: false,

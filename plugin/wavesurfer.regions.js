@@ -275,9 +275,15 @@ WaveSurfer.Region = {
 WaveSurfer.util.extend(WaveSurfer.Region, WaveSurfer.Observer);
 
 
-/* Augment WaveSurfer with the createRegions method. */
-WaveSurfer.createRegions = function () {
-    this.regions = Object.create(WaveSurfer.Regions);
-    this.regions.init(this);
-    return this.regions;
+/* Augment WaveSurfer with region methods. */
+WaveSurfer.addRegion = function (options) {
+    if (!this.regions) {
+        this.regions = Object.create(WaveSurfer.Regions);
+        this.regions.init(this);
+    }
+    return this.regions.add(options);
+};
+
+WaveSurfer.clearRegions = function () {
+    this.regions && this.regions.clear();
 };
