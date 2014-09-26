@@ -140,8 +140,8 @@ WaveSurfer.Region = {
         if (this.resize) {
             var handleLeft = regionEl.appendChild(document.createElement('handle'));
             var handleRight = regionEl.appendChild(document.createElement('handle'));
-            handleLeft.className = 'wavesurfer-handle';
-            handleRight.className = 'wavesurfer-handle';
+            handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
+            handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
             var css = {
                 cursor: 'col-resize',
                 position: 'absolute',
@@ -250,7 +250,7 @@ WaveSurfer.Region = {
                 startTime = my.wavesurfer.drawer.handleEvent(e) * duration;
 
                 if (e.target.tagName.toLowerCase() == 'handle') {
-                    if (startTime < my.end) {
+                    if (e.target.classList.contains('wavesurfer-handle-start')) {
                         resize = 'start';
                     } else {
                         resize = 'end';
@@ -285,11 +285,13 @@ WaveSurfer.Region = {
                     if (my.resize && resize) {
                         if (resize == 'start') {
                             my.update({
-                                start: my.start + delta
+                                start: Math.min(my.start + delta, my.end),
+                                end: Math.max(my.start + delta, my.end)
                             });
                         } else {
                             my.update({
-                                end: my.end + delta
+                                start: Math.min(my.end + delta, my.start),
+                                end: Math.max(my.end + delta, my.start)
                             });
                         }
                     }
