@@ -50,7 +50,7 @@ WaveSurfer.Regions = {
             if (!drag) { return; }
 
             if (!region) {
-                region = my.add(params);
+                region = my.add(params || {});
             }
 
             var duration = my.wavesurfer.getDuration();
@@ -119,7 +119,7 @@ WaveSurfer.Region = {
 
     /* Play the audio region. */
     play: function () {
-        this.wavesurfer.play(this.start, this.end);
+        this.wavesurfer.play(this.start, this.end + 0.01);
     },
 
     /* Render a region as a DOM element. */
@@ -330,7 +330,7 @@ WaveSurfer.clearRegions = function () {
     this.regions && this.regions.clear();
 };
 
-WaveSurfer.enableDragSelection = function () {
+WaveSurfer.enableDragSelection = function (options) {
     this.initRegions();
-    this.regions.enableDragSelection();
+    this.regions.enableDragSelection(options);
 };
