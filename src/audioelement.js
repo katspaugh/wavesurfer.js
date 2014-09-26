@@ -6,7 +6,6 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
     init: function (params) {
         this.params = params;
 
-        this.loop = false;
         this.prevFrameTime = 0;
         this.scheduledPause = null;
 

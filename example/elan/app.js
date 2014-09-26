@@ -74,14 +74,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    var prevAnnotation, prevRow;
+    var prevAnnotation, prevRow, region;
     var onProgress = function () {
-        var duration = wavesurfer.backend.getDuration();
         var time = wavesurfer.backend.getCurrentTime();
         var annotation = elan.getRenderedAnnotation(time);
 
         if (prevAnnotation != annotation) {
             prevAnnotation = annotation;
+
+            region && region.remove();
+            region = null;
 
             if (annotation) {
                 // Highlight annotation table row
@@ -94,13 +96,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     elan.container.scrollTop = before.offsetTop;
                 }
 
-                // Selection
-                wavesurfer.updateSelection({
-                    startPercentage: annotation.start / duration,
-                    endPercentage: annotation.end / duration
+                // Region
+                region = wavesurfer.addRegion({
+                    start: annotation.start,
+                    end: annotation.end,
+                    resize: false,
+                    color: 'rgba(223, 240, 216, 0.7)'
                 });
-            } else {
-                wavesurfer.clearSelection();
             }
         }
     };

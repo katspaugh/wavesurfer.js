@@ -23,7 +23,6 @@ WaveSurfer.WebAudio = {
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
 
-        this.loop = false;
         this.prevFrameTime = 0;
         this.scheduledPause = null;
         this.firedFinish = false;
@@ -96,16 +95,6 @@ WaveSurfer.WebAudio = {
         if (this.scheduledPause != null) {
             if (this.prevFrameTime >= this.scheduledPause) {
                 this.pause();
-            }
-        }
-
-        if (this.loop) {
-            if (
-                this.prevFrameTime > this.loopStart &&
-                this.prevFrameTime <= this.loopEnd &&
-                time > this.loopEnd
-            ) {
-                this.play(this.loopStart);
             }
         }
 
@@ -216,19 +205,6 @@ WaveSurfer.WebAudio = {
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
         this.analyser.disconnect();
-    },
-
-    updateSelection: function (startPercent, endPercent) {
-        var duration = this.getDuration();
-        this.loop = true;
-        this.loopStart = duration * startPercent;
-        this.loopEnd = duration * endPercent;
-    },
-
-    clearSelection: function () {
-        this.loop = false;
-        this.loopStart = 0;
-        this.loopEnd = 0;
     },
 
     /**

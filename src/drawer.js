@@ -45,9 +45,8 @@ WaveSurfer.Drawer = {
 
     setupWrapperEvents: function () {
         var my = this;
-        var drag = {};
 
-        this.wrapper.addEventListener('mousedown', function (e) {
+        this.wrapper.addEventListener('click', function (e) {
             var scrollbarHeight = my.wrapper.offsetHeight - my.wrapper.clientHeight;
             if (scrollbarHeight != 0) {
                 // scrollbar is visible.  Check if click was on it
@@ -59,48 +58,9 @@ WaveSurfer.Drawer = {
             }
 
             if (my.params.interact) {
-                my.fireEvent('mousedown', my.handleEvent(e), e);
-            }
-            drag.startPercentage = my.handleEvent(e);
-        });
-
-        this.wrapper.addEventListener('mouseup', function (e) {
-            if (my.params.interact) {
-                my.fireEvent('mouseup', e);
+                my.fireEvent('click', e, my.handleEvent(e));
             }
         });
-
-        this.wrapper.addEventListener('dblclick', function(e) {
-            if (my.params.interact || my.params.dragSelection) {
-                if (
-                    e.target.tagName.toLowerCase() == 'handler' &&
-                        !e.target.classList.contains('selection-wavesurfer-handler')
-                ) {
-                    my.fireEvent('mark-dblclick', e.target.parentNode.id);
-                }
-                else{
-                    my.fireEvent('drag-clear');
-                }
-            }
-        });
-
-        var onMouseUp = function (e) {
-            drag.startPercentage = drag.endPercentage = null;
-        };
-        document.addEventListener('mouseup', onMouseUp);
-        this.on('destroy', function () {
-            document.removeEventListener('mouseup', onMouseUp);
-        });
-
-        this.wrapper.addEventListener('mousemove', WaveSurfer.util.throttle(function (e) {
-            e.stopPropagation();
-            if (drag.startPercentage != null) {
-                drag.endPercentage = my.handleEvent(e);
-                if (my.params.interact && my.params.dragSelection) {
-                    my.fireEvent('drag', drag);
-                }
-            }
-        }, 30));
     },
 
     drawPeaks: function (peaks, length) {
@@ -205,21 +165,6 @@ WaveSurfer.Drawer = {
         this.wrapper = null;
     },
 
-    updateSelection: function (startPercent, endPercent) {
-        this.startPercent = startPercent;
-        this.endPercent = endPercent;
-
-        this.drawSelection();
-    },
-
-    clearSelection: function (mark0, mark1) {
-        this.startPercent = null;
-        this.endPercent = null;
-        this.eraseSelection();
-        this.eraseSelectionMarks(mark0, mark1);
-    },
-
-
     /* Renderer-specific methods */
     createElements: function () {},
 
@@ -229,25 +174,7 @@ WaveSurfer.Drawer = {
 
     clearWave: function () {},
 
-    updateProgress: function (position) {},
-
-    addMark: function (mark) {},
-
-    removeMark: function (mark) {},
-
-    updateMark: function (mark) {},
-
-    addRegion: function (region) {},
-
-    removeRegion: function (region) {},
-
-    updateRegion: function (region) {},
-
-    drawSelection: function () {},
-
-    eraseSelection: function () {},
-
-    eraseSelectionMarks: function (mark0, mark1) {}
+    updateProgress: function (position) {}
 };
 
 WaveSurfer.util.extend(WaveSurfer.Drawer, WaveSurfer.Observer);
