@@ -145,6 +145,8 @@ After doing that, use `wavesurfer.addRegion()` to create Region objects.
 
  * `addRegion(options)` – Creates a region on the waveform. Returns a `Region` object.  See `Region Options`, `Region Methods` and `Region Events` below.
  * `clearRegions()` – Removes all regions.
+ * `enableDragSelection()` – Lets you create regions by selecting
+   areas of the waveform with mouse.
 
 ### Region Options
 

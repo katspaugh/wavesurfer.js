@@ -29,6 +29,37 @@ WaveSurfer.Regions = {
         Object.keys(this.list).forEach(function (id) {
             this.list[id].remove();
         }, this);
+    },
+
+    enableDragSelection: function (params) {
+        var my = this;
+        var drag;
+        var start;
+        var region;
+
+        this.wrapper.addEventListener('mousedown', function (e) {
+            drag = true;
+            start = my.wavesurfer.drawer.handleEvent(e);
+            region = null;
+        });
+        this.wrapper.addEventListener('mouseup', function () {
+            drag = false;
+            region = null;
+        });
+        this.wrapper.addEventListener('mousemove', function (e) {
+            if (!drag) { return; }
+
+            if (!region) {
+                region = my.add(params);
+            }
+
+            var duration = my.wavesurfer.getDuration();
+            var end = my.wavesurfer.drawer.handleEvent(e);
+            region.update({
+                start: Math.min(end * duration, start * duration),
+                end: Math.max(end * duration, start * duration)
+            });
+        });
     }
 };
 
@@ -219,7 +250,7 @@ WaveSurfer.Region = {
                 startTime = my.wavesurfer.drawer.handleEvent(e) * duration;
 
                 if (e.target.tagName.toLowerCase() == 'handle') {
-                    if (startTime <= my.end) {
+                    if (startTime < my.end) {
                         resize = 'start';
                     } else {
                         resize = 'end';
@@ -281,14 +312,23 @@ WaveSurfer.util.extend(WaveSurfer.Region, WaveSurfer.Observer);
 
 
 /* Augment WaveSurfer with region methods. */
-WaveSurfer.addRegion = function (options) {
+WaveSurfer.initRegions = function () {
     if (!this.regions) {
         this.regions = Object.create(WaveSurfer.Regions);
         this.regions.init(this);
     }
+};
+
+WaveSurfer.addRegion = function (options) {
+    this.initRegions();
     return this.regions.add(options);
 };
 
 WaveSurfer.clearRegions = function () {
     this.regions && this.regions.clear();
+};
+
+WaveSurfer.enableDragSelection = function () {
+    this.initRegions();
+    this.regions.enableDragSelection();
 };
