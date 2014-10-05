@@ -43,7 +43,7 @@ See the example code
 
 ### WaveSurfer Options
 
-| option | type | default | description |
+| Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `audioContext` | string | `null` | Use your own previously initialized `AudioContext` or leave blank. |
 | `audioRate` | float | `1` | Speed at which to play audio.  Lower number is slower. |
@@ -105,27 +105,31 @@ wavesurfer.backend.setFilter(lowpass);
 
 General events:
 
- * `error` – Occurs on error.  Callback will receive (string) error message.
- * `finish` – When it finishes playing.
- * `loading` – Fires continuously when loading via XHR or drag'n'drop. Callback will receive (integer) loading progress in percents [0..100] and (object) event target.
- * `mouseup` - When a mouse button goes up.  Callback will receive `MouseEvent` object.
- * `play` – When play starts.
- * `progress` – Fires continuously during playback.  Callback will receive (float) percentage played [0..1].
- * `ready` – When audio is loaded, decoded and the waveform drawn.
- * `scroll` - When the scrollbar is moved.  Callback will receive a `ScrollEvent` object.
- * `seek` – On seeking.  Callback will receive (float) progress [0..1].
+| Event | Description |
+| --- | --- |
+| `error` | Occurs on error.  Callback will receive (string) error message. |
+| `finish` | When it finishes playing. |
+| `loading` | Fires continuously when loading via XHR or drag'n'drop. Callback will receive (integer) loading progress in percents [0..100] and (object) event target. |
+| `mouseup` | When a mouse button goes up.  Callback will receive `MouseEvent` object. |
+| `play` | Fires when playback starts. |
+| `progress` | Fires continuously during playback.  Callback will receive (float) percentage played [0..1]. |
+| `ready` | When audio is loaded, decoded and the waveform drawn. |
+| `scroll` | When the scrollbar is moved.  Callback will receive a `ScrollEvent` object. |
+| `seek` | On seeking.  Callback will receive (float) progress [0..1]. |
 
 Region events (exposed by the Regions plugin):
 
- * `region-in` – When playback enters a region. Callback will receive the `Region` object.
- * `region-leave` - When the mouse leaves a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
- * `region-out`– When playback leaves a region. Callback will receive the `Region` object.
- * `region-over` - When the mouse moves over a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
- * `region-click` - When the mouse clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
-  * `region-dblclick` - When the mouse double-clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
- * `region-created` – When a region is created. Callback will receive the `Region` object.
- * `region-updated` – When a region is updated. Callback will receive the `Region` object.
- * `region-removed` – When a region is removed. Callback will receive the `Region` object.
+| Event | Description |
+| --- | --- |
+| `region-in` | When playback enters a region. Callback will receive the `Region` object. |
+| `region-leave` | When the mouse leaves a region.  Callback will receive the `Region` object, and a `MouseEvent` object. |
+| `region-out` | When playback leaves a region. Callback will receive the `Region` object. |
+| `region-over` | When the mouse moves over a region.  Callback will receive the `Region` object, and a `MouseEvent` object. |
+| `region-click` | When the mouse clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object. |
+| `region-dblclick` | When the mouse double-clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object. |
+| `region-created` | When a region is created. Callback will receive the `Region` object. |
+| `region-updated` | When a region is updated. Callback will receive the `Region` object. |
+| `region-removed` | When a region is removed. Callback will receive the `Region` object. |
 
 
 ## Regions Plugin
@@ -150,7 +154,7 @@ After doing that, use `wavesurfer.addRegion()` to create Region objects.
 
 ### Region Options
 
-| option | type | default | description |
+| Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `start` | float | `0` | The start position of the region (in seconds). |
 | `end` | float | `0` | The end position of the region (in seconds). |
@@ -169,17 +173,21 @@ After doing that, use `wavesurfer.addRegion()` to create Region objects.
 
 General events:
 
- * `in` - When playback enters the region.
- * `out` - When playback leaves the region.
- * `remove` - Happens just before the region is removed.
- * `update` - When the region's options are updated.
+| Event | Description |
+| --- | --- |
+| `in` | When playback enters the region. |
+| `out` | When playback leaves the region. |
+| `remove` | Happens just before the region is removed. |
+| `update` | When the region's options are updated. |
 
  Mouse events:
 
- * `click` - When the mouse clicks on the region.  Callback will receive a `MouseEvent`.
- * `dblclick` - When the mouse double-clicks on the region.  Callback will receive a `MouseEvent`.
- * `over` - When mouse moves over the region.  Callback will receive a `MouseEvent`.
- * `leave` - When mouse leaves the region.  Callback will receive a `MouseEvent`.
+| Event | Description |
+| --- | --- |
+| `click` | When the mouse clicks on the region.  Callback will receive a `MouseEvent`. |
+| `dblclick` | When the mouse double-clicks on the region.  Callback will receive a `MouseEvent`. |
+| `over` | When mouse moves over the region.  Callback will receive a `MouseEvent`. |
+| `leave` | When mouse leaves the region.  Callback will receive a `MouseEvent`. |
 
 # Credits
 
