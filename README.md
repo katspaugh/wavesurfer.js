@@ -4,7 +4,7 @@ Interactive navigable audio visualization using
 [Web Audio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
 and Canvas.
 
-![Imgur](http://i.imgur.com/dnH8q.png)
+![Alt text](/example/screenshot.png?raw=true "Screenshot")
 
 ### API in examples
 
