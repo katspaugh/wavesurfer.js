@@ -4,7 +4,7 @@ Interactive navigable audio visualization using
 [Web Audio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
 and Canvas.
 
-![Imgur](http://i.imgur.com/dnH8q.png)
+![Alt text](/example/screenshot.png?raw=true "Screenshot")
 
 ### API in examples
 
@@ -47,8 +47,8 @@ See the example code
 | --- | --- | --- | --- |
 | `audioContext` | string | `null` | Use your own previously initialized `AudioContext` or leave blank. |
 | `audioRate` | float | `1` | Speed at which to play audio.  Lower number is slower. |
-| `backend` | string | `WebAudio` | `WebAudio` or `AudioElement`. In most cases you needn't set this manually. `AudioElement` is a fallback for unsupported browsers. |
-| `container` | mixed | _none_ | CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter |
+| `backend` | string | `WebAudio` | `WebAudio` or `AudioElement`. In most cases you don't have to set this manually. `AudioElement` is a fallback for unsupported browsers. |
+| `container` | mixed | _none_ | CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter. |
 | `cursorColor` | string | `#333` | The fill color of the cursor indicating the playhead position. |
 | `cursorWidth` | integer | `1` | Measured in pixels. |
 | `fillParent` | boolean | `true` | Whether to fill the entire container or draw only according to `minPxPerSec`. |
@@ -57,10 +57,10 @@ See the example code
 | `interact` | boolean | `true` | Whether the mouse interaction will enabled at initialization. |
 | `minPxPerSec` | integer | `50` | Minimum number of pixels per second of audio. |
 | `normalize` | boolean | `false` | If `true`, normalize by the maximum peak instead of 1.0. |
-| `pixelRatio` | integer | `window.devicePixelRatio` | Can set to `1` for faster rendering. |
+| `pixelRatio` | integer | `window.devicePixelRatio` | Can be set to `1` for faster rendering. |
 | `progressColor` | string | `#555` | The fill color of the part of the waveform behind the cursor. |
 | `scrollParent` | boolean | `false` | Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrinked to container width (see `fillParent`). |
-| `skipLength` | float | `2` | Number of seconds to skip with the `skipForward()` and `skipBackward()` methods |
+| `skipLength` | float | `2` | Number of seconds to skip with the `skipForward()` and `skipBackward()` methods. |
 | `waveColor` | string | `#999` | The fill color of the waveform after the cursor. |
 
 ### WaveSurfer Methods
@@ -107,7 +107,7 @@ General events:
 
  * `error` – Occurs on error.  Callback will receive (string) error message.
  * `finish` – When it finishes playing.
- * `loading` – Fires continuously when loading via XHR or drag'n'drop. Callback will recieve (integer) loading progress in percents [0..100] and (object) event target.
+ * `loading` – Fires continuously when loading via XHR or drag'n'drop. Callback will receive (integer) loading progress in percents [0..100] and (object) event target.
  * `mouseup` - When a mouse button goes up.  Callback will receive `MouseEvent` object.
  * `play` – When play starts.
  * `progress` – Fires continuously during playback.  Callback will receive (float) percentage played [0..1].
@@ -145,15 +145,15 @@ After doing that, use `wavesurfer.addRegion()` to create Region objects.
 
  * `addRegion(options)` – Creates a region on the waveform. Returns a `Region` object.  See `Region Options`, `Region Methods` and `Region Events` below.
  * `clearRegions()` – Removes all regions.
- * `enableDragSelection(options)` – Lets you create regions by selecting
+ * `enableDragSelection(options)` – Lets you create regions by selecting.
    areas of the waveform with mouse. `options` are Region objects' params (see below).
 
 ### Region Options
 
 | option | type | default | description |
 | --- | --- | --- | --- |
-| `start` | float | `0` | The start position of the region (in seconds) |
-| `end` | float | `0` | The end position of the region (in seconds) |
+| `start` | float | `0` | The start position of the region (in seconds). |
+| `end` | float | `0` | The end position of the region (in seconds). |
 | `loop` | boolean | `false` | Whether to loop the region when played back. |
 | `drag` | boolean | `true` | Allow/dissallow resizing the region. |
 | `resize` | boolean | `true` | Allow/dissallow dragging the region. |

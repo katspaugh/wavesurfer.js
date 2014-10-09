@@ -137,7 +137,7 @@ var WaveSurfer = {
     },
 
     skipBackward: function (seconds) {
-        this.skip(seconds || -this.params.skipLength);
+        this.skip(-seconds || -this.params.skipLength);
     },
 
     skipForward: function (seconds) {
