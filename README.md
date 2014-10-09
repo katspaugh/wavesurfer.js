@@ -155,8 +155,8 @@ After doing that, use `wavesurfer.addRegion()` to create Region objects.
 | `start` | float | `0` | The start position of the region (in seconds). |
 | `end` | float | `0` | The end position of the region (in seconds). |
 | `loop` | boolean | `false` | Whether to loop the region when played back. |
-| `drag` | boolean | `true` | Allow/dissallow resizing the region. |
-| `resize` | boolean | `true` | Allow/dissallow dragging the region. |
+| `drag` | boolean | `true` | Allow/dissallow dragging the region. |
+| `resize` | boolean | `true` | Allow/dissallow resizing the region. |
 | `color` | string | `"rgba(0, 0, 0, 0.1)"` | HTML color code. |
 
 ### Region Methods
