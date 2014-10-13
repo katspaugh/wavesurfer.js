@@ -126,6 +126,7 @@ WaveSurfer.Region = {
     render: function () {
         var regionEl = document.createElement('region');
         regionEl.className = 'wavesurfer-region';
+        regionEl.title = this.formatTime(this.start, this.end);
 
         var width = this.wrapper.scrollWidth;
         this.style(regionEl, {
@@ -141,7 +142,9 @@ WaveSurfer.Region = {
             var handleLeft = regionEl.appendChild(document.createElement('handle'));
             var handleRight = regionEl.appendChild(document.createElement('handle'));
             handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
+            handleLeft.title = this.formatTime(this.start);
             handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
+            handleRight.title = this.formatTime(this.end);
             var css = {
                 cursor: 'col-resize',
                 position: 'absolute',
@@ -160,6 +163,15 @@ WaveSurfer.Region = {
         this.element = this.wrapper.appendChild(regionEl);
         this.updateRender();
         this.bindEvents(regionEl);
+    },
+
+    formatTime: function (start, end) {
+        return (end ? [ start, end ] : [ start ]).map(function (time) {
+            return [
+                ~~(start / 60),                   // minutes
+                ('00' + ~~(time % 60)).slice(-2)  // seconds
+            ].join(':');
+        }).join('–');
     },
 
     /* Update element's position, width, color. */
