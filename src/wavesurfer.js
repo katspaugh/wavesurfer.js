@@ -8,7 +8,7 @@ var WaveSurfer = {
         cursorColor   : '#333',
         cursorWidth   : 1,
         skipLength    : 2,
-        minPxPerSec   : 50,
+        minPxPerSec   : 20,
         pixelRatio    : window.devicePixelRatio,
         fillParent    : true,
         scrollParent  : false,
@@ -224,9 +224,9 @@ var WaveSurfer = {
             length = Math.round(this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio);
         }
         this.realPxPerSec = length / this.getDuration();
-
-        this.drawer.drawPeaks(this.backend.getPeaks(length), length);
-        this.fireEvent('redraw');
+        var peaks = this.backend.getPeaks(length);
+        this.drawer.drawPeaks(peaks, length);
+        this.fireEvent('redraw', peaks, length);
     },
 
     /**

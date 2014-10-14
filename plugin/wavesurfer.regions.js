@@ -81,6 +81,7 @@ WaveSurfer.Region = {
         this.drag = params.drag === undefined ? true : !!params.drag;
         this.loop = !!params.loop;
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
+        this.data = params.data || {};
 
         this.bindInOut();
         this.render();
@@ -102,6 +103,9 @@ WaveSurfer.Region = {
         if (null != params.color) {
             this.color = params.color;
         }
+        if (null != params.data) {
+            this.data = params.data;
+        }
         this.updateRender();
         this.fireEvent('update');
         this.wavesurfer.fireEvent('region-updated', this);
@@ -119,7 +123,7 @@ WaveSurfer.Region = {
 
     /* Play the audio region. */
     play: function () {
-        this.wavesurfer.play(this.start, this.end + 0.01);
+        this.wavesurfer.play(this.start, this.end);
     },
 
     /* Render a region as a DOM element. */
@@ -142,15 +146,14 @@ WaveSurfer.Region = {
             var handleLeft = regionEl.appendChild(document.createElement('handle'));
             var handleRight = regionEl.appendChild(document.createElement('handle'));
             handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
-            handleLeft.title = this.formatTime(this.start);
             handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
-            handleRight.title = this.formatTime(this.end);
             var css = {
                 cursor: 'col-resize',
                 position: 'absolute',
                 left: '0px',
                 top: '0px',
-                width: '4px',
+                width: '1%',
+                maxWidth: '4px',
                 height: '100%'
             };
             this.style(handleLeft, css);
@@ -183,6 +186,7 @@ WaveSurfer.Region = {
             width: ~~((this.end / dur - this.start / dur) * width) + 'px',
             backgroundColor: this.color
         });
+        this.element.title = this.formatTime(this.start, this.end);
     },
 
     /* Bind audio events. */
