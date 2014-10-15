@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         url: 'rashomon.json'
     }).on('success', function (data) {
         wavesurfer.load(
-            'http://www.archive.org/download/mshortworks_001_1202_librivox/msw001_03_rashomon_akutagawa_mt_64kb.mp3',
+            'http://www.archive.org/download/mshortworks_001_1202_librivox/msw001_03_rashomon_akutagawa_mt_64kb.mp3#t=17',
             data
         );
     });
@@ -37,8 +37,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (localStorage.regions) {
             loadRegions(JSON.parse(localStorage.regions));
         } else {
-            loadRegions(detectRegions());
-            saveRegions();
+            wavesurfer.util.ajax({
+                responseType: 'json',
+                url: 'annotations.json'
+            }).on('success', function (data) {
+                loadRegions(data);
+                saveRegions();
+            });
         }
     });
     wavesurfer.on('region-click', function (region, e) {
@@ -46,9 +51,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // Play on click, loop on shift click
         e.shiftKey ? region.playLoop() : region.play();
     });
-    wavesurfer.on('region-dblclick', editAnnotation);
+    wavesurfer.on('region-click', editAnnotation);
     wavesurfer.on('region-updated', saveRegions);
     wavesurfer.on('region-removed', saveRegions);
+    wavesurfer.on('region-in', showNote);
 
     wavesurfer.on('region-play', function (region) {
         region.once('out', function () {
@@ -182,8 +188,8 @@ function randomColor(alpha) {
 function editAnnotation (region) {
     var form = document.forms.edit;
     form.style.opacity = 1;
-    form.elements.start.value = Math.floor(region.start);
-    form.elements.end.value = Math.ceil(region.end);
+    form.elements.start.value = region.start;
+    form.elements.end.value = region.end;
     form.elements.note.value = region.data.note || '';
     form.onsubmit = function (e) {
         e.preventDefault();
@@ -203,6 +209,16 @@ function editAnnotation (region) {
     form.dataset.region = region.id;
 }
 
+
+/**
+ * Display annotation.
+ */
+function showNote (region) {
+    if (!showNote.el) {
+        showNote.el = document.querySelector('#subtitle');
+    }
+    showNote.el.textContent = region.data.note || '–';
+}
 
 /**
  * Bind controls.

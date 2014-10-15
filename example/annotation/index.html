@@ -40,13 +40,18 @@
             </div>
 
             <div id="demo">
+                <p id="subtitle" class="text-center text-info">&nbsp;</p>
+
                 <div id="waveform">
                     <!-- Here be waveform -->
                 </div>
 
                 <div class="row" style="margin: 30px 0">
                     <div class="col-sm-8">
-                        <p>Double-click on a region to enter an annotation.</p>
+                        <p>
+                            Click on a region to enter an annotation.<br />
+                            Shift-click plays a region in a loop.
+                        </p>
                     </div>
 
                     <div class="col-sm-2">
@@ -72,15 +77,15 @@
                 </div>
             </div>
 
-            <form role="form" name="edit" style="opacity: 0; transition: opacity 300ms linear">
+            <form role="form" name="edit" style="opacity: 0; transition: opacity 300ms linear; margin: 30px 0;">
                 <div class="form-group">
                     <label for="start">Start</label>
-                    <input type="number" class="form-control" id="start" name="start" />
+                    <input class="form-control" id="start" name="start" />
                 </div>
 
                 <div class="form-group">
                     <label for="end">End</label>
-                    <input type="number" class="form-control" id="end" name="end" />
+                    <input class="form-control" id="end" name="end" />
                 </div>
 
                 <div class="form-group">
@@ -92,10 +97,6 @@
                 <center><i>or</i></center>
                 <button type="button" class="btn btn-danger btn-block" data-action="delete-region">Delete</button>
             </form>
-
-            <div id="annotations" class="table-responsive">
-                <!-- Here be transcript -->
-            </div>
 
             <div class="footer row">
                 <div class="col-sm-12">
