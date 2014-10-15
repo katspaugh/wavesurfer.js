@@ -33,15 +33,22 @@ document.addEventListener('DOMContentLoaded', function () {
         color: randomColor(0.1)
     });
 
-    wavesurfer.on('ready', localStorage.regions ? loadSegments : selectSegments);
+    wavesurfer.on('ready', function () {
+        if (localStorage.regions) {
+            loadRegions(JSON.parse(localStorage.regions));
+        } else {
+            loadRegions(detectRegions());
+            saveRegions();
+        }
+    });
     wavesurfer.on('region-click', function (region, e) {
         e.stopPropagation();
         // Play on click, loop on shift click
         e.shiftKey ? region.playLoop() : region.play();
     });
     wavesurfer.on('region-dblclick', editAnnotation);
-    wavesurfer.on('region-updated', saveSegments);
-    wavesurfer.on('region-removed', saveSegments);
+    wavesurfer.on('region-updated', saveRegions);
+    wavesurfer.on('region-removed', saveRegions);
 
     wavesurfer.on('region-play', function (region) {
         region.once('out', function () {
@@ -77,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
 /**
  * Save annotations to localStorage.
  */
-function saveSegments() {
+function saveRegions() {
     localStorage.regions = JSON.stringify(
         Object.keys(wavesurfer.regions.list).map(function (id) {
             var region = wavesurfer.regions.list[id];
@@ -92,10 +99,9 @@ function saveSegments() {
 
 
 /**
- * Load segments from localStorage.
+ * Load regions from localStorage.
  */
-function loadSegments() {
-    var regions = JSON.parse(localStorage.regions);
+function loadRegions(regions) {
     regions.forEach(function (region) {
         region.color = randomColor(0.1);
         wavesurfer.addRegion(region);
@@ -104,11 +110,11 @@ function loadSegments() {
 
 
 /**
- * Create segments separated by silence.
+ * Detect regions separated by silence.
  */
-function selectSegments() {
+function detectRegions() {
     // Silence params
-    var minValue = 0.0025;
+    var minValue = 0.0015;
     var minSeconds = 0.25;
 
     var peaks = wavesurfer.backend.peaks;
@@ -117,6 +123,7 @@ function selectSegments() {
     var coef = duration / length;
     var minLen = (minSeconds / duration) * length;
 
+    var regions = [];
     var i = 0;
     var start;
     var extend;
@@ -140,10 +147,9 @@ function selectSegments() {
                         i = j;
                         extend = true;
                     } else {
-                        wavesurfer.addRegion({
+                        regions.push({
                             start: Math.round(start * coef * 10) / 10,
-                            end: Math.round(i * coef * 10) / 10,
-                            color: randomColor(0.1)
+                            end: Math.round(i * coef * 10) / 10
                         });
                         i += 1;
                         extend = false;
@@ -152,8 +158,7 @@ function selectSegments() {
             } while (extend)
         }
     }
-
-    wavesurfer.regions && saveSegments();
+    return regions;
 }
 
 
@@ -172,7 +177,7 @@ function randomColor(alpha) {
 
 
 /**
- * Edit annotation for a segment.
+ * Edit annotation for a region.
  */
 function editAnnotation (region) {
     var form = document.forms.edit;
