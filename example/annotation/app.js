@@ -10,8 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Init wavesurfer
     wavesurfer.init({
         container: '#waveform',
-        waveColor: 'lightgreen',
-        progressColor: 'darkgreen',
         height: 100,
         scrollParent: true,
         normalize: true,
