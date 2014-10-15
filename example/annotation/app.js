@@ -10,10 +10,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // Init wavesurfer
     wavesurfer.init({
         container: '#waveform',
-        waveColor: 'green',
+        waveColor: 'lightgreen',
+        progressColor: 'darkgreen',
         height: 100,
         scrollParent: true,
         normalize: true,
+        minimap: true,
         backend: 'AudioElement'
     });
 
@@ -31,6 +33,8 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     });
 
+
+    /* Regions */
     wavesurfer.on('ready', localStorage.regions ? loadSegments : selectSegments);
     wavesurfer.on('region-click', function (region, e) {
         e.stopPropagation();
@@ -45,6 +49,15 @@ document.addEventListener('DOMContentLoaded', function () {
             wavesurfer.play(region.start);
             wavesurfer.pause();
         });
+    });
+
+
+    /* Minimap plugin */
+    wavesurfer.initMinimap({
+        height: 30,
+        waveColor: '#ddd',
+        progressColor: '#999',
+        cursorColor: '#999'
     });
 
 

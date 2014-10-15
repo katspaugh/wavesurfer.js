@@ -99,7 +99,7 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
         this.fireEvent('pause');
     },
 
-    getPeaks: function () {
+    getPeaks: function (length) {
         return this.peaks || [];
     },
 
