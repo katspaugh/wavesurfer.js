@@ -17,10 +17,6 @@ document.addEventListener('DOMContentLoaded', function () {
         backend: 'AudioElement'
     });
 
-    wavesurfer.enableDragSelection({
-        color: 'rgba(0, 0, 200, 0.1)'
-    });
-
     wavesurfer.util.ajax({
         responseType: 'json',
         url: 'rashomon.json'
@@ -84,7 +80,6 @@ function saveSegments() {
             return {
                 start: region.start,
                 end: region.end,
-                color: region.color,
                 data: region.data
             };
         })
@@ -98,6 +93,7 @@ function saveSegments() {
 function loadSegments() {
     var regions = JSON.parse(localStorage.regions);
     regions.forEach(function (region) {
+        region.color = randomColor();
         wavesurfer.addRegion(region);
     });
 }
@@ -115,14 +111,8 @@ function selectSegments() {
     var min = 0.001;
     for (var i = start; i < length; i += 1) {
         if (peaks[i] <= min && i > start + (1 / duration) * length) {
-            var color = [
-                ~~(Math.random() * 255),
-                ~~(Math.random() * 255),
-                ~~(Math.random() * 255),
-                0.1
-            ];
             wavesurfer.addRegion({
-                color: 'rgba(' + color + ')',
+                color: 'rgba(' + randomColor() + ')',
                 start: (start / length) * duration,
                 end: (i / length) * duration
             });
@@ -132,6 +122,21 @@ function selectSegments() {
             start = i;
         }
     }
+    saveSegments();
+}
+
+
+/**
+ * Random RGBA color.
+ */
+function randomColor() {
+    return [
+        ~~(Math.random() * 255),
+        ~~(Math.random() * 255),
+        ~~(Math.random() * 255),
+        0.1
+    ].join();
+
 }
 
 
@@ -181,6 +186,10 @@ wavesurfer.once('ready', function () {
                 wavesurfer.regions.list[regionId].remove();
                 form.reset();
             }
+        },
+        'export': function () {
+            window.open('data:application/json;charset=utf-8,' +
+                encodeURIComponent(localStorage.regions));
         }
     };
 

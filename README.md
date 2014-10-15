@@ -118,11 +118,11 @@ General events:
 Region events (exposed by the Regions plugin):
 
  * `region-in` – When playback enters a region. Callback will receive the `Region` object.
- * `region-leave` - When the mouse leaves a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
  * `region-out`– When playback leaves a region. Callback will receive the `Region` object.
- * `region-over` - When the mouse moves over a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
+ * `region-mouseenter` - When the mouse moves over a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
+ * `region-mouseleave` - When the mouse leaves a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
  * `region-click` - When the mouse clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
-  * `region-dblclick` - When the mouse double-clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
+ * `region-dblclick` - When the mouse double-clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
  * `region-created` – When a region is created. Callback will receive the `Region` object.
  * `region-updated` – When a region is updated. Callback will receive the `Region` object.
  * `region-removed` – When a region is removed. Callback will receive the `Region` object.

@@ -239,9 +239,9 @@ WaveSurfer.Region = {
     bindEvents: function () {
         var my = this;
 
-        this.element.addEventListener('mouseover', function (e) {
-            my.fireEvent('mouseover', e);
-            my.wavesurfer.fireEvent('region-mouseover', my, e);
+        this.element.addEventListener('mouseenter', function (e) {
+            my.fireEvent('mouseenter', e);
+            my.wavesurfer.fireEvent('region-mouseenter', my, e);
         });
 
         this.element.addEventListener('mouseleave', function (e) {
