@@ -29,6 +29,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* Regions */
+    wavesurfer.enableDragSelection({
+        color: randomColor(0.1)
+    });
+
     wavesurfer.on('ready', localStorage.regions ? loadSegments : selectSegments);
     wavesurfer.on('region-click', function (region, e) {
         e.stopPropagation();
@@ -93,7 +97,7 @@ function saveSegments() {
 function loadSegments() {
     var regions = JSON.parse(localStorage.regions);
     regions.forEach(function (region) {
-        region.color = randomColor();
+        region.color = randomColor(0.1);
         wavesurfer.addRegion(region);
     });
 }
@@ -103,39 +107,66 @@ function loadSegments() {
  * Create segments separated by silence.
  */
 function selectSegments() {
+    // Silence params
+    var minValue = 0.0025;
+    var minSeconds = 0.25;
+
     var peaks = wavesurfer.backend.peaks;
     var length = peaks.length;
     var duration = wavesurfer.getDuration();
+    var coef = duration / length;
+    var minLen = (minSeconds / duration) * length;
 
-    var start = 0;
-    var min = 0.001;
-    for (var i = start; i < length; i += 1) {
-        if (peaks[i] <= min && i > start + (1 / duration) * length) {
-            wavesurfer.addRegion({
-                color: 'rgba(' + randomColor() + ')',
-                start: (start / length) * duration,
-                end: (i / length) * duration
-            });
-            while (peaks[i] <= min) {
-                i += 1;
-            }
+    var i = 0;
+    var start;
+    var extend;
+    while (i < length) {
+        if (peaks[i] < minValue) {
+            i += 1;
+        } else {
             start = i;
+            do {
+                while (peaks[i] >= minValue) {
+                    i += 1;
+                }
+                if (i - start < minLen) {
+                    i += 1;
+                } else {
+                    var j = i;
+                    while (peaks[j] < minValue) {
+                        j += 1;
+                    }
+                    if (j - i < minLen) {
+                        i = j;
+                        extend = true;
+                    } else {
+                        wavesurfer.addRegion({
+                            start: Math.round(start * coef * 10) / 10,
+                            end: Math.round(i * coef * 10) / 10,
+                            color: randomColor(0.1)
+                        });
+                        i += 1;
+                        extend = false;
+                    }
+                }
+            } while (extend)
         }
     }
-    saveSegments();
+
+    wavesurfer.regions && saveSegments();
 }
 
 
 /**
  * Random RGBA color.
  */
-function randomColor() {
-    return [
+function randomColor(alpha) {
+    return 'rgba(' + [
         ~~(Math.random() * 255),
         ~~(Math.random() * 255),
         ~~(Math.random() * 255),
-        0.1
-    ].join();
+        alpha || 1
+    ] + ')';
 
 }
 
