@@ -36,7 +36,8 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.on('ready', localStorage.regions ? loadSegments : selectSegments);
     wavesurfer.on('region-click', function (region, e) {
         e.stopPropagation();
-        region.play();
+        // Play on click, loop on shift click
+        e.shiftKey ? region.playLoop() : region.play();
     });
     wavesurfer.on('region-dblclick', editAnnotation);
     wavesurfer.on('region-updated', saveSegments);

@@ -128,6 +128,12 @@ WaveSurfer.Region = {
         this.wavesurfer.fireEvent('region-play', this);
     },
 
+    /* Play the region in loop. */
+    playLoop: function () {
+        this.play();
+        this.once('out', this.playLoop.bind(this));
+    },
+
     /* Render a region as a DOM element. */
     render: function () {
         var regionEl = document.createElement('region');
