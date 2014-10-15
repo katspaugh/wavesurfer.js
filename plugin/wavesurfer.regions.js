@@ -124,6 +124,8 @@ WaveSurfer.Region = {
     /* Play the audio region. */
     play: function () {
         this.wavesurfer.play(this.start, this.end);
+        this.fireEvent('play');
+        this.wavesurfer.fireEvent('region-play', this);
     },
 
     /* Render a region as a DOM element. */
@@ -199,12 +201,12 @@ WaveSurfer.Region = {
         };
 
         var onProcess = function (time) {
-            if (!my.firedIn && my.start <= time && my.end >= time) {
+            if (!my.firedIn && my.start <= time && my.end > time) {
                 my.firedIn = true;
                 my.fireEvent('in');
                 my.wavesurfer.fireEvent('region-in', my);
             }
-            if (!my.firedOut && my.firedIn && my.end < time) {
+            if (!my.firedOut && my.firedIn && my.end <= time) {
                 my.firedOut = true;
                 my.fireEvent('out');
                 my.wavesurfer.fireEvent('region-out', my);

@@ -43,14 +43,24 @@
                     <!-- Here be waveform -->
                 </div>
 
-                <div class="controls">
-                    <button class="btn btn-primary" data-action="play">
-                        <i class="glyphicon glyphicon-play"></i>
-                        Play
-                        /
-                        <i class="glyphicon glyphicon-pause"></i>
-                        Pause
-                    </button>
+                <div class="row" style="margin: 30px 0">
+                    <div class="col-sm-10">
+                        <p>Double-click on a region to enter an annotation.</p>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <button class="btn btn-primary btn-block">
+                            <span id="play" data-action="play">
+                                <i class="glyphicon glyphicon-play"></i>
+                                Play
+                            </span>
+
+                            <span id="pause" data-action="pause" style="display: none">
+                                <i class="glyphicon glyphicon-pause"></i>
+                                Pause
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
 

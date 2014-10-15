@@ -25,7 +25,10 @@ document.addEventListener('DOMContentLoaded', function () {
         responseType: 'json',
         url: 'rashomon.json'
     }).on('success', function (data) {
-        wavesurfer.load('http://www.archive.org/download/mshortworks_001_1202_librivox/msw001_03_rashomon_akutagawa_mt_64kb.mp3', data);
+        wavesurfer.load(
+            'http://www.archive.org/download/mshortworks_001_1202_librivox/msw001_03_rashomon_akutagawa_mt_64kb.mp3',
+            data
+        );
     });
 
     wavesurfer.on('ready', localStorage.regions ? loadSegments : selectSegments);
@@ -34,9 +37,28 @@ document.addEventListener('DOMContentLoaded', function () {
         region.play();
     });
     wavesurfer.on('region-dblclick', editAnnotation);
-
     wavesurfer.on('region-updated', saveSegments);
     wavesurfer.on('region-removed', saveSegments);
+
+    wavesurfer.on('region-play', function (region) {
+        region.once('out', function () {
+            wavesurfer.play(region.start);
+            wavesurfer.pause();
+        });
+    });
+
+
+    /* Toggle play/pause buttons. */
+    var playButton = document.querySelector('#play');
+    var pauseButton = document.querySelector('#pause');
+    wavesurfer.on('play', function () {
+        playButton.style.display = 'none';
+        pauseButton.style.display = '';
+    });
+    wavesurfer.on('pause', function () {
+        playButton.style.display = '';
+        pauseButton.style.display = 'none';
+    });
 });
 
 
@@ -135,7 +157,10 @@ function editAnnotation (region) {
 wavesurfer.once('ready', function () {
     var handlers = {
         'play': function () {
-            wavesurfer.playPause();
+            wavesurfer.play();
+        },
+        'pause': function () {
+            wavesurfer.pause();
         },
         'delete-region': function () {
             var form = document.forms.edit;

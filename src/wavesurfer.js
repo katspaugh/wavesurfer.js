@@ -88,6 +88,10 @@ var WaveSurfer = {
             my.restartAnimationLoop();
         });
 
+        this.backend.on('pause', function () {
+            my.fireEvent('pause');
+        });
+
         this.backend.on('finish', function () {
             my.fireEvent('finish');
         });
