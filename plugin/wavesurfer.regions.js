@@ -72,14 +72,14 @@ WaveSurfer.Region = {
         this.wrapper = wavesurfer.drawer.wrapper;
 
         this.id = WaveSurfer.util.getId();
-        this.start = params.start || 0;
+        this.start = Number(params.start) || 0;
         this.end = params.end == null ?
             // small marker-like region
-            params.start + (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration() :
-            params.end;
-        this.resize = params.resize === undefined ? true : !!params.resize;
-        this.drag = params.drag === undefined ? true : !!params.drag;
-        this.loop = !!params.loop;
+            this.start + (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration() :
+            Number(params.end);
+        this.resize = params.resize === undefined ? true : Boolean(params.resize);
+        this.drag = params.drag === undefined ? true : Boolean(params.drag);
+        this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
         this.data = params.data || {};
 
@@ -92,13 +92,13 @@ WaveSurfer.Region = {
     /* Update region params. */
     update: function (params) {
         if (null != params.start) {
-            this.start = params.start;
+            this.start = Number(params.start);
         }
         if (null != params.end) {
-            this.end = params.end;
+            this.end = Number(params.end);
         }
         if (null != params.loop) {
-            this.color = params.loop;
+            this.color = Boolean(params.loop);
         }
         if (null != params.color) {
             this.color = params.color;
@@ -299,25 +299,12 @@ WaveSurfer.Region = {
 
                     // Drag
                     if (my.drag && drag) {
-                        my.update({
-                            start: my.start + delta,
-                            end: my.end + delta
-                        });
+                        my.onDrag(delta);
                     }
 
                     // Resize
                     if (my.resize && resize) {
-                        if (resize == 'start') {
-                            my.update({
-                                start: Math.min(my.start + delta, my.end),
-                                end: Math.max(my.start + delta, my.end)
-                            });
-                        } else {
-                            my.update({
-                                start: Math.min(my.end + delta, my.start),
-                                end: Math.max(my.end + delta, my.start)
-                            });
-                        }
+                        my.onResize(delta, resize);
                     }
                 }
             };
@@ -331,6 +318,27 @@ WaveSurfer.Region = {
                 my.wrapper.removeEventListener('mousemove', onMove);
             });
         }());
+    },
+
+    onDrag: function (delta) {
+        this.update({
+            start: this.start + delta,
+            end: this.end + delta
+        });
+    },
+
+    onResize: function (delta, direction) {
+        if (direction == 'start') {
+            this.update({
+                start: Math.min(this.start + delta, this.end),
+                end: Math.max(this.start + delta, this.end)
+            });
+        } else {
+            this.update({
+                start: Math.min(this.end + delta, this.start),
+                end: Math.max(this.end + delta, this.start)
+            });
+        }
     }
 };
 
