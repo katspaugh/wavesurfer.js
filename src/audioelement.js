@@ -77,6 +77,12 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
         this.media.playbackRate = this.playbackRate;
     },
 
+    seekTo: function (start) {
+        if (start != null) {
+            this.media.currentTime = start;
+        }
+    }
+
     /**
      * Plays the loaded audio region.
      *
@@ -84,11 +90,9 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
      * relative to the beginning of a clip.
      */
     play: function (start) {
-        if (start != null) {
-            this.media.currentTime = start;
-        }
+        
+        this.seekTo(start);
         this.media.play();
-        this.fireEvent('play');
     },
 
     /**
@@ -96,7 +100,6 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
      */
     pause: function () {
         this.media.pause();
-        this.fireEvent('pause');
     },
 
     getPeaks: function (length) {

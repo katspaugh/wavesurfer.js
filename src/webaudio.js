@@ -23,7 +23,7 @@ WaveSurfer.WebAudio = {
 
         this.firedFinish = false;
         this.lastStartPosition = 0;
-        this.lastPlay = this.lastPause = this.nextPause = this.ac.currentTime;
+        this.lastPlay = this.pauseTime = this.ac.currentTime;
 
         this.createVolumeNode();
         this.createScriptNode();
@@ -75,6 +75,7 @@ WaveSurfer.WebAudio = {
         this.scriptNode.connect(this.ac.destination);
         this.scriptNode.onaudioprocess = function () {
             var time = my.getCurrentTime();
+
             if (!my.firedFinish && my.buffer && time >= my.getDuration()) {
                 my.firedFinish = true;
                 my.fireEvent('finish');
@@ -205,7 +206,7 @@ WaveSurfer.WebAudio = {
 
     load: function (buffer) {
         this.lastStartPosition = 0;
-        this.lastPlay = this.lastPause = this.nextPause = this.ac.currentTime;
+        this.lastPlay = this.ac.currentTime;
         this.buffer = buffer;
         this.createSource();
     },
@@ -213,31 +214,26 @@ WaveSurfer.WebAudio = {
     createSource: function () {
         this.disconnectSource();
         this.source = this.ac.createBufferSource();
+
+        //adjust for old browsers.
+        this.source.start = this.source.start || this.source.noteGrainOn
+        this.source.stop = this.source.stop || this.source.noteOff
+
         this.source.playbackRate.value = this.playbackRate;
         this.source.buffer = this.buffer;
         this.source.connect(this.analyser);
     },
 
     isPaused: function () {
-        return this.nextPause <= this.ac.currentTime;
+        return this.pauseTime <= this.ac.currentTime;
     },
 
     getDuration: function () {
         return this.buffer.duration;
     },
 
-    /**
-     * Plays the loaded audio region.
-     *
-     * @param {Number} start Start offset in seconds,
-     * relative to the beginning of a clip.
-     * @param {Number} end When to stop
-     * relative to the beginning of a clip.
-     */
-    play: function (start, end) {
-        // need to re-create source on each playback
-        this.createSource();
 
+    seekTo: function (start, end) {
         if (start == null) {
             start = this.getCurrentTime();
             if (start >= this.getDuration()) {
@@ -250,41 +246,59 @@ WaveSurfer.WebAudio = {
 
         this.lastPlay = this.ac.currentTime;
         this.lastStartPosition = start;
-        this.lastPause = this.nextPause = this.ac.currentTime + (end - start);
 
-        if (this.source.start) {
-            this.source.start(0, start, end - start);
-        } else {
-            this.source.noteGrainOn(0, start, end - start);
-        }
+        return {start: start, end: end};
+    },
 
-        this.fireEvent('play');
+    /**
+     * Plays the loaded audio region.
+     *
+     * @param {Number} start Start offset in seconds,
+     * relative to the beginning of a clip.
+     * @param {Number} end When to stop
+     * relative to the beginning of a clip.
+     */
+    play: function (start, end) {
+        var adjustedTime;
+        // need to re-create source on each playback
+        this.createSource();
+
+        adjustedTime = this.seekTo(start, end);
+
+        start = adjustedTime.start;
+        end = adjustedTime.end;
+
+        this.source.start(0, start, end - start);
+        this.pauseTime = this.ac.currentTime + (end - start) + 0.1;
     },
 
     /**
      * Pauses the loaded audio.
      */
     pause: function () {
-        this.scheduledPause = null;
-        this.lastPause = this.nextPause = this.ac.currentTime;
-
-        if (this.source) {
-            if (this.source.stop) {
-                this.source.stop(0);
-            } else {
-                this.source.noteOff(0);
-            }
-        }
-
-        this.fireEvent('pause');
+        this.pauseTime = this.ac.currentTime;
+        //start where we left off.
+        this.lastStartPosition += this.getPlayedTime();
+        this.source && this.source.stop(0);
     },
 
+    getPlayedTime: function () {
+        return (this.ac.currentTime - this.lastPlay) * this.playbackRate;
+    },
+
+    /**
+    *   Returns the current time in seconds relative to the audioclip's duration.
+    */
     getCurrentTime: function () {
+        var time;
+
         if (this.isPaused()) {
-            return this.lastStartPosition + (this.lastPause - this.lastPlay) * this.playbackRate;
+            time = this.lastStartPosition;
         } else {
-            return this.lastStartPosition + (this.ac.currentTime - this.lastPlay) * this.playbackRate;
+            time = this.lastStartPosition + this.getPlayedTime();
         }
+
+        return time;
     },
 
     /**
