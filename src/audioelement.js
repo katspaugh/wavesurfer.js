@@ -81,7 +81,7 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
         if (start != null) {
             this.media.currentTime = start;
         }
-    }
+    },
 
     /**
      * Plays the loaded audio region.
