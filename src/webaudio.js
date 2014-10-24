@@ -3,6 +3,9 @@
 WaveSurfer.WebAudio = {
     scriptBufferSize: 256,
     fftSize: 128,
+    PLAYING_STATE: 0,
+    PAUSED_STATE: 1,
+    FINISHED_STATE: 2,
 
     getAudioContext: function () {
         if (!(window.AudioContext || window.webkitAudioContext)) {
@@ -21,9 +24,17 @@ WaveSurfer.WebAudio = {
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
 
-        this.firedFinish = false;
-        this.lastStartPosition = 0;
-        this.lastPlay = this.pauseTime = this.ac.currentTime;
+        this.lastPlay = this.ac.currentTime;
+        this.startPosition = 0;
+
+        this.states = [
+            Object.create(WaveSurfer.WebAudio.state.playing),
+            Object.create(WaveSurfer.WebAudio.state.paused),
+            Object.create(WaveSurfer.WebAudio.state.finished)
+        ];
+
+        this.state = this.states[this.PAUSED_STATE];
+        this.state.init.call(this);
 
         this.createVolumeNode();
         this.createScriptNode();
@@ -73,16 +84,17 @@ WaveSurfer.WebAudio = {
             this.scriptNode = this.ac.createJavaScriptNode(bufferSize);
         }
         this.scriptNode.connect(this.ac.destination);
+
         this.scriptNode.onaudioprocess = function () {
             var time = my.getCurrentTime();
 
-            if (!my.firedFinish && my.buffer && time >= my.getDuration()) {
-                my.firedFinish = true;
-                my.fireEvent('finish');
+            if (my.state === my.states[this.PLAYING_STATE]) {
+                my.fireEvent('audioprocess', time);
             }
 
-            if (!my.isPaused()) {
-                my.fireEvent('audioprocess', time);
+            if (my.buffer && time > my.getDuration()) {
+                my.state = my.states[my.FINISHED_STATE];
+                my.state.init.call(my);
             }
         };
     },
@@ -171,8 +183,7 @@ WaveSurfer.WebAudio = {
     },
 
     getPlayedPercents: function () {
-        var duration = this.getDuration();
-        return (this.getCurrentTime() / duration) || 0;
+        return this.state.getPlayedPercents.call(this);
     },
 
     disconnectSource: function () {
@@ -225,11 +236,11 @@ WaveSurfer.WebAudio = {
     },
 
     isPaused: function () {
-        return this.pauseTime <= this.ac.currentTime;
+        return this.state !== this.states[this.PLAYING_STATE];
     },
 
     getDuration: function () {
-        return this.buffer.duration;
+        return this.buffer.duration || 0;
     },
 
 
@@ -244,10 +255,14 @@ WaveSurfer.WebAudio = {
             end = this.getDuration();
         }
 
+        this.startPosition = start;
         this.lastPlay = this.ac.currentTime;
-        this.lastStartPosition = start;
 
         return {start: start, end: end};
+    },
+
+    getPlayedTime: function () {
+        return (this.ac.currentTime - this.lastPlay) * this.playbackRate;
     },
 
     /**
@@ -269,36 +284,28 @@ WaveSurfer.WebAudio = {
         end = adjustedTime.end;
 
         this.source.start(0, start, end - start);
-        this.pauseTime = this.ac.currentTime + (end - start) + 0.1;
+
+        this.state = this.states[this.PLAYING_STATE];
+        this.state.init.call(this);
     },
 
     /**
      * Pauses the loaded audio.
      */
     pause: function () {
-        this.pauseTime = this.ac.currentTime;
-        //start where we left off.
-        this.lastStartPosition += this.getPlayedTime();
-        this.source && this.source.stop(0);
-    },
 
-    getPlayedTime: function () {
-        return (this.ac.currentTime - this.lastPlay) * this.playbackRate;
+        this.startPosition += this.getPlayedTime();
+        this.source && this.source.stop(0);
+
+        this.state = this.states[this.PAUSED_STATE];
+        this.state.init.call(this);
     },
 
     /**
     *   Returns the current time in seconds relative to the audioclip's duration.
     */
     getCurrentTime: function () {
-        var time;
-
-        if (this.isPaused()) {
-            time = this.lastStartPosition;
-        } else {
-            time = this.lastStartPosition + this.getPlayedTime();
-        }
-
-        return time;
+        return this.state.getCurrentTime.call(this);
     },
 
     /**
@@ -309,6 +316,44 @@ WaveSurfer.WebAudio = {
         if (this.source) {
             this.source.playbackRate.value = this.playbackRate;
         }
+    }
+};
+
+WaveSurfer.WebAudio.state = {};
+
+WaveSurfer.WebAudio.state.playing = {
+    init: function () {
+    },
+    getPlayedPercents: function () {
+        var duration = this.getDuration();
+        return (this.getCurrentTime() / duration) || 0;
+    },
+    getCurrentTime: function () {
+        return this.startPosition + this.getPlayedTime();
+    }
+};
+
+WaveSurfer.WebAudio.state.paused = {
+    init: function () {
+    },
+    getPlayedPercents: function () {
+        var duration = this.getDuration();
+        return (this.getCurrentTime() / duration) || 0;
+    },
+    getCurrentTime: function () {
+        return this.startPosition
+    }
+};
+
+WaveSurfer.WebAudio.state.finished = {
+    init: function () {
+        this.fireEvent('finish');
+    },
+    getPlayedPercents: function () {
+        return 100;
+    },
+    getCurrentTime: function () {
+        return this.getDuration();
     }
 };
 
