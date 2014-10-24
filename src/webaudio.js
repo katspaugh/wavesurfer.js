@@ -258,6 +258,11 @@ WaveSurfer.WebAudio = {
         this.startPosition = start;
         this.lastPlay = this.ac.currentTime;
 
+        if (this.state === this.states[this.FINISHED_STATE]) {
+            this.state = this.states[this.PAUSED_STATE];
+            this.state.init.call(this);
+        }
+
         return {start: start, end: end};
     },
 
