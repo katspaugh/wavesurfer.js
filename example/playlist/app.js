@@ -14,36 +14,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 // Play on audio load
-wavesurfer.on('ready', wavesurfer.play.bind(wavesurfer));
+wavesurfer.on('ready', function () {
+    wavesurfer.play();
+});
 
 
 // Bind controls
 document.addEventListener('DOMContentLoaded', function () {
-    // Action handlers in HTML
-    // E.g.: <button data-action="play">
-    var handlers = {
-        'play': function () {
-            wavesurfer.play();
-        },
-        'pause': function () {
-            wavesurfer.pause();
-        },
-        'load': function (e) {
-            e.preventDefault();
-            wavesurfer.load(e.target.href);
-        }
-    };
-    document.addEventListener('click', function (e) {
-        var action = e.target.dataset.action;
-        if (action && action in handlers) {
-            handlers[action](e);
-        }
+    // Play button
+    var playButton = document.querySelector('#play');
+    playButton.addEventListener('click', function () {
+        wavesurfer.play();
     });
 
-
-    // Toggle play/pause buttons
-    var playButton = document.querySelector('#play');
+    // Pause button
     var pauseButton = document.querySelector('#pause');
+    pauseButton.addEventListener('click', function () {
+        wavesurfer.pause();
+    });
+
+    // Toggle play/pause text
     wavesurfer.on('play', function () {
         playButton.style.display = 'none';
         pauseButton.style.display = '';
@@ -54,19 +44,34 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-    // Toggle active class in playlist
-    var onClick = function () {
-        if (onClick.active) {
-            onClick.active.classList.remove('active');
+    // Play song from playlist
+    var playlistSwitch = function (link) {
+        // Toggle the active class
+        if (playlistSwitch.active) {
+            playlistSwitch.active.classList.remove('active');
         }
-        onClick.active = this;
-        this.classList.add('active');
+        playlistSwitch.active = link;
+        link.classList.add('active');
+
+        // Load the song
+        wavesurfer.load(link.href);
+
+        // Switch to the next song when finished
+        var next = link.nextElementSibling;
+        if (next) {
+            wavesurfer.once('finish', function () {
+                playlistSwitch(next);
+                wavesurfer.load(next.href);
+            });
+        }
     };
-    var links = document.querySelectorAll('a[data-action="load"]');
+
+    var links = document.querySelectorAll('#playlist a');
     [].forEach.call(links, function (el) {
-        el.addEventListener('click', onClick);
+        el.addEventListener('click', function (e) {
+            e.preventDefault();
+            playlistSwitch(this);
+        });
     });
-    onClick.call(links[0]);
-    // Load initial song
-    wavesurfer.load(links[0].href);
+    playlistSwitch(links[0]);
 });
