@@ -54,7 +54,7 @@ See the example code
 | `fillParent` | boolean | `true` | Whether to fill the entire container or draw only according to `minPxPerSec`. |
 | `height` | integer | `128` | The height of the waveform.  Measured in pixels. |
 | `hideScrollbar` | boolean | `false` | Whether to hide the horizontal scrollbar when one would normally be shown. |
-| `interact` | boolean | `true` | Whether the mouse interaction will enabled at initialization. |
+| `interact` | boolean | `true` | Whether the mouse interaction will be enabled at initialization.  You can switch this parameter at any time later on. |
 | `minPxPerSec` | integer | `50` | Minimum number of pixels per second of audio. |
 | `normalize` | boolean | `false` | If `true`, normalize by the maximum peak instead of 1.0. |
 | `pixelRatio` | integer | `window.devicePixelRatio` | Can be set to `1` for faster rendering. |
@@ -69,9 +69,7 @@ All methods are intentionally public, but the most readily available are the fol
 
  * `init(options)` – Initializes with the options listed above.
  * `destroy()` – Removes events, elements and disconnects Web Audio nodes.
- * `disableInteraction()` – Disable mouse interaction.
  * `empty()` – Clears the waveform as if a zero-length audio is loaded.
- * `enableInteraction()` – Enable mouse interaction.
  * `getCurrentTime()` – Returns current progress in seconds.
  * `getDuration()` – Returns the duration of an audio clip in seconds.
  * `load(url)` – Loads an audio from URL via XHR. Returns XHR object.
@@ -110,7 +108,6 @@ General events:
  * `loading` – Fires continuously when loading via XHR or drag'n'drop. Callback will receive (integer) loading progress in percents [0..100] and (object) event target.
  * `mouseup` - When a mouse button goes up.  Callback will receive `MouseEvent` object.
  * `play` – When play starts.
- * `progress` – Fires continuously during playback.  Callback will receive (float) percentage played [0..1].
  * `ready` – When audio is loaded, decoded and the waveform drawn.
  * `scroll` - When the scrollbar is moved.  Callback will receive a `ScrollEvent` object.
  * `seek` – On seeking.  Callback will receive (float) progress [0..1].

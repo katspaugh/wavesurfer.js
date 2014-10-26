@@ -65,10 +65,6 @@ var WaveSurfer = {
             my.drawer.progress(my.backend.getPlayedPercents());
         });
 
-        this.on('progress', function (progress) {
-            my.drawer.progress(progress);
-        });
-
         // Click-to-seek
         this.drawer.on('click', function (e, progress) {
             setTimeout(function () {
@@ -113,7 +109,7 @@ var WaveSurfer = {
             window.webkitRequestAnimationFrame;
         var frame = function () {
             if (!my.backend.isPaused()) {
-                my.fireEvent('progress', my.backend.getPlayedPercents());
+                my.drawer.progress(my.backend.getPlayedPercents());
                 requestFrame(frame);
             }
         };
@@ -222,6 +218,10 @@ var WaveSurfer = {
     toggleScroll: function () {
         this.params.scrollParent = !this.params.scrollParent;
         this.drawBuffer();
+    },
+
+    toggleInteraction: function () {
+        this.params.interact = !this.params.interact;
     },
 
     drawBuffer: function () {
@@ -359,18 +359,6 @@ var WaveSurfer = {
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();
-    },
-
-    enableInteraction: function () {
-        this.params.interact = true;
-    },
-
-    disableInteraction: function () {
-        this.params.interact = false;
-    },
-
-    toggleInteraction: function () {
-        this.params.interact = !this.params.interact;
     }
 };
 

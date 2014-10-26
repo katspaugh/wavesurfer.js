@@ -95,7 +95,7 @@ WaveSurfer.WebAudio = {
         this.scriptNode.onaudioprocess = function () {
             var time = my.getCurrentTime();
 
-            if (my.state === my.states[this.PLAYING_STATE]) {
+            if (my.state === my.states[my.PLAYING_STATE]) {
                 my.fireEvent('audioprocess', time);
             }
 
