@@ -195,6 +195,16 @@ var WaveSurfer = {
     },
 
     /**
+     * Set the playback volume.
+     *
+     * @param {Number} rate A positive number. E.g. 0.5 means half the
+     * normal speed, 2 means double speed and so on.
+     */
+    setPlaybackRate: function (rate) {
+        this.backend.setPlaybackRate(rate);
+    },
+
+    /**
      * Toggle the volume on and off. It not currenly muted it will
      * save the current volume value and turn the volume off.
      * If currently muted then it will restore the volume to the saved

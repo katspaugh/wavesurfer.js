@@ -220,7 +220,7 @@ WaveSurfer.WebAudio = {
     },
 
     load: function (buffer) {
-        this.lastStartPosition = 0;
+        this.startPosition = 0;
         this.lastPlay = this.ac.currentTime;
         this.buffer = buffer;
         this.createSource();
@@ -315,9 +315,13 @@ WaveSurfer.WebAudio = {
      * Set the audio source playback rate.
      */
     setPlaybackRate: function (value) {
-        this.playbackRate = value || 1;
-        if (this.source) {
-            this.source.playbackRate.value = this.playbackRate;
+        value = value || 1;
+        if (this.isPaused()) {
+            this.playbackRate = value;
+        } else {
+            this.pause();
+            this.playbackRate = value;
+            this.play();
         }
     }
 };
