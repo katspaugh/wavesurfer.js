@@ -233,8 +233,8 @@ WaveSurfer.WebAudio = {
         this.source = this.ac.createBufferSource();
 
         //adjust for old browsers.
-        this.source.start = this.source.start || this.source.noteGrainOn
-        this.source.stop = this.source.stop || this.source.noteOff
+        this.source.start = this.source.start || this.source.noteGrainOn;
+        this.source.stop = this.source.stop || this.source.noteOff;
 
         this.source.playbackRate.value = this.playbackRate;
         this.source.buffer = this.buffer;
@@ -349,7 +349,7 @@ WaveSurfer.WebAudio.state.paused = {
         return (this.getCurrentTime() / duration) || 0;
     },
     getCurrentTime: function () {
-        return this.startPosition
+        return this.startPosition;
     }
 };
 
