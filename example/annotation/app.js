@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         url: 'rashomon.json'
     }).on('success', function (data) {
         wavesurfer.load(
-            'http://www.archive.org/download/mshortworks_001_1202_librivox/msw001_03_rashomon_akutagawa_mt_64kb.mp3#t=17',
+            'http://www.archive.org/download/mshortworks_001_1202_librivox/msw001_03_rashomon_akutagawa_mt_64kb.mp3',
             data
         );
     });
@@ -246,7 +246,7 @@ wavesurfer.once('ready', function () {
     };
 
     document.addEventListener('click', function (e) {
-        var action = e.target.dataset && e.target.dataset.action;
+        var action = e.target.getAttribute('data-action');
         if (action && action in handlers) {
             handlers[action](e);
         }
