@@ -51,8 +51,11 @@ WaveSurfer.WebAudio = {
     },
 
     setState: function (state) {
-        this.state = this.states[state];
-        this.state.init.call(this);
+
+        if (this.state !== this.states[state]) {
+            this.state = this.states[state];
+            this.state.init.call(this);
+        } 
     },
 
     // Unpacked filters
