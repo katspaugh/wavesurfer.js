@@ -53,7 +53,11 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
     },
 
     getDuration: function () {
-        return this.media.duration;
+        var duration = this.media.duration;
+        if (duration >= Infinity) { // streaming audio
+            duration = this.media.seekable.end();
+        }
+        return duration;
     },
 
     getCurrentTime: function () {
@@ -61,12 +65,7 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
     },
 
     getPlayedPercents: function () {
-        var duration = this.getDuration();
-        var time = this.getCurrentTime();
-        if (duration >= Infinity) { // streaming audio
-            duration = this.media.seekable.end();
-        }
-        return (time / duration) || 0;
+        return (this.getCurrentTime() / this.getDuration()) || 0;
     },
 
     /**
@@ -90,7 +89,6 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
      * relative to the beginning of a clip.
      */
     play: function (start) {
-        
         this.seekTo(start);
         this.media.play();
     },

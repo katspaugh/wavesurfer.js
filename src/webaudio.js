@@ -51,11 +51,10 @@ WaveSurfer.WebAudio = {
     },
 
     setState: function (state) {
-
         if (this.state !== this.states[state]) {
             this.state = this.states[state];
             this.state.init.call(this);
-        } 
+        }
     },
 
     // Unpacked filters
@@ -193,7 +192,6 @@ WaveSurfer.WebAudio = {
     },
 
     disconnectSource: function () {
-        this.firedFinish = false;
         if (this.source) {
             this.source.disconnect();
         }
@@ -249,7 +247,6 @@ WaveSurfer.WebAudio = {
         return this.buffer.duration || 0;
     },
 
-
     seekTo: function (start, end) {
         if (start == null) {
             start = this.getCurrentTime();
@@ -268,7 +265,7 @@ WaveSurfer.WebAudio = {
             this.setState(this.PAUSED_STATE);
         }
 
-        return {start: start, end: end};
+        return { start: start, end: end };
     },
 
     getPlayedTime: function () {
@@ -284,11 +281,10 @@ WaveSurfer.WebAudio = {
      * relative to the beginning of a clip.
      */
     play: function (start, end) {
-        var adjustedTime;
         // need to re-create source on each playback
         this.createSource();
 
-        adjustedTime = this.seekTo(start, end);
+        var adjustedTime = this.seekTo(start, end);
 
         start = adjustedTime.start;
         end = adjustedTime.end;
@@ -302,7 +298,6 @@ WaveSurfer.WebAudio = {
      * Pauses the loaded audio.
      */
     pause: function () {
-
         this.startPosition += this.getPlayedTime();
         this.source && this.source.stop(0);
 
