@@ -33,8 +33,7 @@ WaveSurfer.WebAudio = {
             Object.create(WaveSurfer.WebAudio.state.finished)
         ];
 
-        this.state = this.states[this.PAUSED_STATE];
-        this.state.init.call(this);
+        this.setState(this.PAUSED_STATE);
 
         this.createVolumeNode();
         this.createScriptNode();
@@ -49,6 +48,11 @@ WaveSurfer.WebAudio = {
             });
             this.filters = null;
         }
+    },
+
+    setState: function (state) {
+        this.state = this.states[state];
+        this.state.init.call(this);
     },
 
     // Unpacked filters
@@ -93,8 +97,7 @@ WaveSurfer.WebAudio = {
             }
 
             if (my.buffer && time > my.getDuration()) {
-                my.state = my.states[my.FINISHED_STATE];
-                my.state.init.call(my);
+                my.setState(my.FINISHED_STATE);
             }
         };
     },
@@ -259,8 +262,7 @@ WaveSurfer.WebAudio = {
         this.lastPlay = this.ac.currentTime;
 
         if (this.state === this.states[this.FINISHED_STATE]) {
-            this.state = this.states[this.PAUSED_STATE];
-            this.state.init.call(this);
+            this.setState(this.PAUSED_STATE);
         }
 
         return {start: start, end: end};
@@ -290,8 +292,7 @@ WaveSurfer.WebAudio = {
 
         this.source.start(0, start, end - start);
 
-        this.state = this.states[this.PLAYING_STATE];
-        this.state.init.call(this);
+        this.setState(this.PLAYING_STATE);
     },
 
     /**
@@ -302,8 +303,7 @@ WaveSurfer.WebAudio = {
         this.startPosition += this.getPlayedTime();
         this.source && this.source.stop(0);
 
-        this.state = this.states[this.PAUSED_STATE];
-        this.state.init.call(this);
+        this.setState(this.PAUSED_STATE);
     },
 
     /**
@@ -355,7 +355,7 @@ WaveSurfer.WebAudio.state.finished = {
         this.fireEvent('finish');
     },
     getPlayedPercents: function () {
-        return 100;
+        return 1;
     },
     getCurrentTime: function () {
         return this.getDuration();
