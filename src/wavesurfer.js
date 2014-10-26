@@ -349,6 +349,25 @@ var WaveSurfer = {
     },
 
     /**
+     * Exports PCM data into a JSON array and opens in a new window.
+     */
+    exportPCM: function (length, accuracy, noWindow) {
+        length = length || 1024;
+        accuracy = accuracy || 10000;
+        noWindow = noWindow || false;
+        var peaks = this.backend.getPeaks(length, accuracy);
+        var arr = [].map.call(peaks, function (val) {
+            return Math.round(val * accuracy) / accuracy;
+        });
+        var json = JSON.stringify(arr);
+        if (!noWindow) {
+            window.open('data:application/json;charset=utf-8,' +
+                encodeURIComponent(json));
+        }
+        return json;
+    },
+
+    /**
      * Display empty waveform.
      */
     empty: function () {
