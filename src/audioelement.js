@@ -33,6 +33,10 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
             my.fireEvent('canplay');
         });
 
+        media.addEventListener('ended', function () {
+            my.fireEvent('finish');
+        });
+
         media.addEventListener('timeupdate', function () {
             my.fireEvent('audioprocess', my.getCurrentTime());
         });
