@@ -3,6 +3,9 @@
 WaveSurfer.WebAudio = {
     scriptBufferSize: 256,
     fftSize: 128,
+    PLAYING_STATE: 0,
+    PAUSED_STATE: 1,
+    FINISHED_STATE: 2,
 
     getAudioContext: function () {
         if (!(window.AudioContext || window.webkitAudioContext)) {
@@ -21,9 +24,16 @@ WaveSurfer.WebAudio = {
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
 
-        this.firedFinish = false;
-        this.lastStartPosition = 0;
-        this.lastPlay = this.lastPause = this.nextPause = this.ac.currentTime;
+        this.lastPlay = this.ac.currentTime;
+        this.startPosition = 0;
+
+        this.states = [
+            Object.create(WaveSurfer.WebAudio.state.playing),
+            Object.create(WaveSurfer.WebAudio.state.paused),
+            Object.create(WaveSurfer.WebAudio.state.finished)
+        ];
+
+        this.setState(this.PAUSED_STATE);
 
         this.createVolumeNode();
         this.createScriptNode();
@@ -38,6 +48,14 @@ WaveSurfer.WebAudio = {
             });
             this.filters = null;
         }
+    },
+
+    setState: function (state) {
+
+        if (this.state !== this.states[state]) {
+            this.state = this.states[state];
+            this.state.init.call(this);
+        } 
     },
 
     // Unpacked filters
@@ -73,15 +91,16 @@ WaveSurfer.WebAudio = {
             this.scriptNode = this.ac.createJavaScriptNode(bufferSize);
         }
         this.scriptNode.connect(this.ac.destination);
+
         this.scriptNode.onaudioprocess = function () {
             var time = my.getCurrentTime();
-            if (!my.firedFinish && my.buffer && time >= my.getDuration()) {
-                my.firedFinish = true;
-                my.fireEvent('finish');
+
+            if (my.state === my.states[this.PLAYING_STATE]) {
+                my.fireEvent('audioprocess', time);
             }
 
-            if (!my.isPaused()) {
-                my.fireEvent('audioprocess', time);
+            if (my.buffer && time > my.getDuration()) {
+                my.setState(my.FINISHED_STATE);
             }
         };
     },
@@ -170,8 +189,7 @@ WaveSurfer.WebAudio = {
     },
 
     getPlayedPercents: function () {
-        var duration = this.getDuration();
-        return (this.getCurrentTime() / duration) || 0;
+        return this.state.getPlayedPercents.call(this);
     },
 
     disconnectSource: function () {
@@ -205,7 +223,7 @@ WaveSurfer.WebAudio = {
 
     load: function (buffer) {
         this.lastStartPosition = 0;
-        this.lastPlay = this.lastPause = this.nextPause = this.ac.currentTime;
+        this.lastPlay = this.ac.currentTime;
         this.buffer = buffer;
         this.createSource();
     },
@@ -213,17 +231,48 @@ WaveSurfer.WebAudio = {
     createSource: function () {
         this.disconnectSource();
         this.source = this.ac.createBufferSource();
+
+        //adjust for old browsers.
+        this.source.start = this.source.start || this.source.noteGrainOn
+        this.source.stop = this.source.stop || this.source.noteOff
+
         this.source.playbackRate.value = this.playbackRate;
         this.source.buffer = this.buffer;
         this.source.connect(this.analyser);
     },
 
     isPaused: function () {
-        return this.nextPause <= this.ac.currentTime;
+        return this.state !== this.states[this.PLAYING_STATE];
     },
 
     getDuration: function () {
-        return this.buffer.duration;
+        return this.buffer.duration || 0;
+    },
+
+
+    seekTo: function (start, end) {
+        if (start == null) {
+            start = this.getCurrentTime();
+            if (start >= this.getDuration()) {
+                start = 0;
+            }
+        }
+        if (end == null) {
+            end = this.getDuration();
+        }
+
+        this.startPosition = start;
+        this.lastPlay = this.ac.currentTime;
+
+        if (this.state === this.states[this.FINISHED_STATE]) {
+            this.setState(this.PAUSED_STATE);
+        }
+
+        return {start: start, end: end};
+    },
+
+    getPlayedTime: function () {
+        return (this.ac.currentTime - this.lastPlay) * this.playbackRate;
     },
 
     /**
@@ -235,56 +284,36 @@ WaveSurfer.WebAudio = {
      * relative to the beginning of a clip.
      */
     play: function (start, end) {
+        var adjustedTime;
         // need to re-create source on each playback
         this.createSource();
 
-        if (start == null) {
-            start = this.getCurrentTime();
-            if (start >= this.getDuration()) {
-                start = 0;
-            }
-        }
-        if (end == null) {
-            end = this.getDuration();
-        }
+        adjustedTime = this.seekTo(start, end);
 
-        this.lastPlay = this.ac.currentTime;
-        this.lastStartPosition = start;
-        this.lastPause = this.nextPause = this.ac.currentTime + (end - start);
+        start = adjustedTime.start;
+        end = adjustedTime.end;
 
-        if (this.source.start) {
-            this.source.start(0, start, end - start);
-        } else {
-            this.source.noteGrainOn(0, start, end - start);
-        }
+        this.source.start(0, start, end - start);
 
-        this.fireEvent('play');
+        this.setState(this.PLAYING_STATE);
     },
 
     /**
      * Pauses the loaded audio.
      */
     pause: function () {
-        this.scheduledPause = null;
-        this.lastPause = this.nextPause = this.ac.currentTime;
 
-        if (this.source) {
-            if (this.source.stop) {
-                this.source.stop(0);
-            } else {
-                this.source.noteOff(0);
-            }
-        }
+        this.startPosition += this.getPlayedTime();
+        this.source && this.source.stop(0);
 
-        this.fireEvent('pause');
+        this.setState(this.PAUSED_STATE);
     },
 
+    /**
+    *   Returns the current time in seconds relative to the audioclip's duration.
+    */
     getCurrentTime: function () {
-        if (this.isPaused()) {
-            return this.lastStartPosition + (this.lastPause - this.lastPlay) * this.playbackRate;
-        } else {
-            return this.lastStartPosition + (this.ac.currentTime - this.lastPlay) * this.playbackRate;
-        }
+        return this.state.getCurrentTime.call(this);
     },
 
     /**
@@ -295,6 +324,44 @@ WaveSurfer.WebAudio = {
         if (this.source) {
             this.source.playbackRate.value = this.playbackRate;
         }
+    }
+};
+
+WaveSurfer.WebAudio.state = {};
+
+WaveSurfer.WebAudio.state.playing = {
+    init: function () {
+    },
+    getPlayedPercents: function () {
+        var duration = this.getDuration();
+        return (this.getCurrentTime() / duration) || 0;
+    },
+    getCurrentTime: function () {
+        return this.startPosition + this.getPlayedTime();
+    }
+};
+
+WaveSurfer.WebAudio.state.paused = {
+    init: function () {
+    },
+    getPlayedPercents: function () {
+        var duration = this.getDuration();
+        return (this.getCurrentTime() / duration) || 0;
+    },
+    getCurrentTime: function () {
+        return this.startPosition
+    }
+};
+
+WaveSurfer.WebAudio.state.finished = {
+    init: function () {
+        this.fireEvent('finish');
+    },
+    getPlayedPercents: function () {
+        return 1;
+    },
+    getCurrentTime: function () {
+        return this.getDuration();
     }
 };
 

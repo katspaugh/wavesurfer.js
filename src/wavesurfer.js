@@ -91,16 +91,8 @@ var WaveSurfer = {
 
         this.backend = Object.create(WaveSurfer[this.params.backend]);
 
-        this.backend.on('play', function () {
-            my.fireEvent('play');
-            my.restartAnimationLoop();
-        });
-
-        this.backend.on('pause', function () {
-            my.fireEvent('pause');
-        });
-
         this.backend.on('finish', function () {
+            my.fireEvent('progress', 1);
             my.fireEvent('finish');
         });
 
@@ -138,10 +130,13 @@ var WaveSurfer = {
 
     play: function (start, end) {
         this.backend.play(start, end);
+        this.restartAnimationLoop();
+        this.fireEvent('play');
     },
 
     pause: function () {
         this.backend.pause();
+        this.fireEvent('pause');
     },
 
     playPause: function () {
@@ -170,18 +165,18 @@ var WaveSurfer = {
 
     seekTo: function (progress) {
         var paused = this.backend.isPaused();
+        var seekStart = (progress * this.drawer.width) / this.realPxPerSec;
         // avoid small scrolls while paused seeking
         var oldScrollParent = this.params.scrollParent;
         if (paused) {
             this.params.scrollParent = false;
-            // avoid noise while seeking
-            this.savedVolume = this.backend.getVolume();
-            this.backend.setVolume(0);
         }
-        this.play((progress * this.drawer.width) / this.realPxPerSec);
-        if (paused) {
-            this.pause();
-            this.backend.setVolume(this.savedVolume);
+        this.backend.seekTo(seekStart);
+        this.drawer.progress(this.backend.getPlayedPercents());
+
+        if (!paused) {
+            this.backend.pause();
+            this.backend.play();
         }
         this.params.scrollParent = oldScrollParent;
         this.fireEvent('seek', progress);
