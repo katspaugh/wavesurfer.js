@@ -219,11 +219,11 @@ WaveSurfer.Region = {
             }
         };
 
-        this.wavesurfer.backend.on('play', onPlay);
+        this.wavesurfer.on('play', onPlay);
         this.wavesurfer.backend.on('audioprocess', onProcess);
 
         this.on('remove', function () {
-            my.wavesurfer.backend.un('play', onPlay);
+            my.wavesurfer.un('play', onPlay);
             my.wavesurfer.backend.un('audioprocess', onProcess);
         });
 
