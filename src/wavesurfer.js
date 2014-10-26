@@ -1,3 +1,11 @@
+/**
+ * wavesurfer.js
+ *
+ * https://github.com/katspaugh/wavesurfer.js
+ *
+ * This work is licensed under a Creative Commons Attribution 3.0 Unported License.
+ */
+
 'use strict';
 
 var WaveSurfer = {
@@ -334,15 +342,11 @@ var WaveSurfer = {
      * Display empty waveform.
      */
     empty: function () {
-        if (this.drawFrame) {
-            this.un('progress', this.drawFrame);
-            this.drawFrame = null;
-        }
-
-        if (this.backend && !this.backend.isPaused()) {
+        if (!this.backend.isPaused()) {
             this.stop();
             this.backend.disconnectSource();
         }
+        this.drawer.progress(0);
         this.drawer.setWidth(0);
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     },
