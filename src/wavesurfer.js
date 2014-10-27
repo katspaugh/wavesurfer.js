@@ -151,7 +151,7 @@ var WaveSurfer = {
         var position = this.getCurrentTime() || 0;
         var duration = this.getDuration() || 1;
         position = Math.max(0, Math.min(duration, position + (offset || 0)));
-        this.seekTo(position / duration);
+        this.seekAndCenter(position / duration);
     },
 
     seekAndCenter: function (progress) {
@@ -161,13 +161,12 @@ var WaveSurfer = {
 
     seekTo: function (progress) {
         var paused = this.backend.isPaused();
-        var seekStart = (progress * this.drawer.width) / this.realPxPerSec;
         // avoid small scrolls while paused seeking
         var oldScrollParent = this.params.scrollParent;
         if (paused) {
             this.params.scrollParent = false;
         }
-        this.backend.seekTo(seekStart);
+        this.backend.seekTo(progress * this.getDuration());
         this.drawer.progress(this.backend.getPlayedPercents());
 
         if (!paused) {
@@ -240,7 +239,6 @@ var WaveSurfer = {
         } else {
             length = Math.round(this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio);
         }
-        this.realPxPerSec = length / this.getDuration();
         var peaks = this.backend.getPeaks(length);
         this.drawer.drawPeaks(peaks, length);
         this.fireEvent('redraw', peaks, length);
