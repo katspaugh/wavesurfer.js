@@ -88,8 +88,11 @@ var WaveSurfer = {
         this.backend = Object.create(WaveSurfer[this.params.backend]);
 
         this.backend.on('finish', function () {
-            my.fireEvent('progress', 1);
             my.fireEvent('finish');
+        });
+
+        this.backend.on('audioprocess', function (time) {
+            my.fireEvent('audioprocess', time);
         });
 
         try {

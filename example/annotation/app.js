@@ -73,6 +73,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
+    /* Timeline plugin */
+    wavesurfer.on('ready', function () {
+        var timeline = Object.create(WaveSurfer.Timeline);
+        timeline.init({
+            wavesurfer: wavesurfer,
+            container: "#wave-timeline"
+        });
+    });
+
+
     /* Toggle play/pause buttons. */
     var playButton = document.querySelector('#play');
     var pauseButton = document.querySelector('#pause');

@@ -75,8 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     var prevAnnotation, prevRow, region;
-    var onProgress = function () {
-        var time = wavesurfer.backend.getCurrentTime();
+    var onProgress = function (time) {
         var annotation = elan.getRenderedAnnotation(time);
 
         if (prevAnnotation != annotation) {
@@ -107,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    wavesurfer.on('progress', onProgress);
+    wavesurfer.on('audioprocess', onProgress);
 });
 
 

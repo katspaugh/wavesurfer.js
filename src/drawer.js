@@ -18,6 +18,7 @@ WaveSurfer.Drawer = {
         this.wrapper = this.container.appendChild(
             document.createElement('wave')
         );
+
         this.style(this.wrapper, {
             display: 'block',
             position: 'relative',

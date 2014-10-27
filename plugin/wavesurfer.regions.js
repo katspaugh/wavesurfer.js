@@ -12,14 +12,14 @@ WaveSurfer.Regions = {
 
     /* Remove a region. */
     add: function (params) {
-        var my = this;
         var region = Object.create(WaveSurfer.Region);
         region.init(params, this.wavesurfer);
+
         this.list[region.id] = region;
 
-        region.on('remove', function () {
-            delete my.list[region.id];
-        });
+        region.on('remove', (function () {
+            delete this.list[region.id];
+        }).bind(this));
 
         return region;
     },
