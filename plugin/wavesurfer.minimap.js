@@ -27,14 +27,14 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         var my = this;
         this.wavesurfer.on('ready', this.render.bind(this));
         this.wavesurfer.on('audioprocess', function () {
-            my.progress(my.wavesurfer.getPlayedPercents());
+            my.progress(my.wavesurfer.backend.getPlayedPercents());
         });
     },
 
     bindMinimapEvents: function () {
         this.on('click', (function (e, position) {
             this.progress(position);
-            this.wavesurfer.seekTo(position);
+            this.wavesurfer.seekAndCenter(position);
         }).bind(this));
     },
 
