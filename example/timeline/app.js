@@ -57,32 +57,3 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.init(options);
     wavesurfer.load('../../example/media/demo.wav');
 });
-
-
-// Bind buttons and keypresses
-wavesurfer.on('ready', function () {
-    var handlers = {
-        'play': function () {
-            wavesurfer.playPause();
-        }
-    };
-
-    var map = {
-        32: 'play'       // spacebar
-    };
-
-    document.addEventListener('keydown', function (e) {
-        if (e.keyCode in map) {
-            e.preventDefault();
-            var handler = handlers[map[e.keyCode]];
-            handler && handler(e);
-        }
-    });
-
-    document.addEventListener('click', function (e) {
-        var action = e.target.dataset && e.target.dataset.action;
-        if (action && action in handlers) {
-            handlers[action](e);
-        }
-    });
-});

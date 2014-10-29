@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         url: 'rashomon.json'
     }).on('success', function (data) {
         wavesurfer.load(
-            'http://www.archive.org/download/mshortworks_001_1202_librivox/msw001_03_rashomon_akutagawa_mt_64kb.mp3',
+            '../media/demo.wav',
             data
         );
     });
@@ -233,32 +233,16 @@ function showNote (region) {
 /**
  * Bind controls.
  */
-wavesurfer.once('ready', function () {
-    var handlers = {
-        'play': function () {
-            wavesurfer.play();
-        },
-        'pause': function () {
-            wavesurfer.pause();
-        },
-        'delete-region': function () {
-            var form = document.forms.edit;
-            var regionId = form.dataset.region;
-            if (regionId) {
-                wavesurfer.regions.list[regionId].remove();
-                form.reset();
-            }
-        },
-        'export': function () {
-            window.open('data:application/json;charset=utf-8,' +
-                encodeURIComponent(localStorage.regions));
-        }
-    };
+GLOBAL_ACTIONS['delete-region'] = function () {
+    var form = document.forms.edit;
+    var regionId = form.dataset.region;
+    if (regionId) {
+        wavesurfer.regions.list[regionId].remove();
+        form.reset();
+    }
+};
 
-    document.addEventListener('click', function (e) {
-        var action = e.target.getAttribute('data-action');
-        if (action && action in handlers) {
-            handlers[action](e);
-        }
-    });
-});
+GLOBAL_ACTIONS['export'] = function () {
+    window.open('data:application/json;charset=utf-8,' +
+        encodeURIComponent(localStorage.regions));
+};
