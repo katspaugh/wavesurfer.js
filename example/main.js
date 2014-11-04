@@ -10,8 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
         waveColor     : 'violet',
         progressColor : 'purple',
         loaderColor   : 'purple',
-        cursorColor   : 'navy',
-        markerWidth   : 2
+        cursorColor   : 'navy'
     };
 
     if (location.search.match('scroll')) {
@@ -23,30 +22,17 @@ document.addEventListener('DOMContentLoaded', function () {
         options.normalize = true;
     }
 
-    /* Progress bar */
-    (function () {
-        var progressDiv = document.querySelector('#progress-bar');
-        var progressBar = progressDiv.querySelector('.progress-bar');
-
-        var showProgress = function (percent) {
-            progressDiv.style.display = 'block';
-            progressBar.style.width = percent + '%';
-        };
-
-        var hideProgress = function () {
-            progressDiv.style.display = 'none';
-        };
-
-        wavesurfer.on('loading', showProgress);
-        wavesurfer.on('ready', hideProgress);
-        wavesurfer.on('destroy', hideProgress);
-        wavesurfer.on('error', hideProgress);
-    }());
-
     // Init
     wavesurfer.init(options);
     // Load audio from URL
     wavesurfer.load('example/media/demo.wav');
+
+    // Regions
+    if (wavesurfer.enableDragSelection) {
+        wavesurfer.enableDragSelection({
+            color: 'rgba(0, 255, 0, 0.1)'
+        });
+    }
 });
 
 // Play at once when ready
@@ -55,88 +41,37 @@ wavesurfer.on('ready', function () {
     //wavesurfer.play();
 });
 
+// Report errors
+wavesurfer.on('error', function (err) {
+    console.error(err);
+});
+
 // Do something when the clip is over
 wavesurfer.on('finish', function () {
     console.log('Finished playing');
 });
 
-// Bind buttons and keypresses
-(function () {
-    var eventHandlers = {
-        'play': function () {
-            wavesurfer.playPause();
-        },
 
-        'green-mark': function () {
-            wavesurfer.mark({
-                id: 'up',
-                color: 'rgba(0, 255, 0, 0.5)',
-                position: wavesurfer.getCurrentTime()
-            });
-        },
+/* Progress bar */
+document.addEventListener('DOMContentLoaded', function () {
+    var progressDiv = document.querySelector('#progress-bar');
+    var progressBar = progressDiv.querySelector('.progress-bar');
 
-        'red-mark': function () {
-            wavesurfer.mark({
-                id: 'down',
-                color: 'rgba(255, 0, 0, 0.5)',
-                position: wavesurfer.getCurrentTime()
-            });
-        },
-
-        'back': function () {
-            wavesurfer.skipBackward();
-        },
-
-        'forth': function () {
-            wavesurfer.skipForward();
-        },
-
-        'toggle-mute': function () {
-            wavesurfer.toggleMute();
-        }
+    var showProgress = function (percent) {
+        progressDiv.style.display = 'block';
+        progressBar.style.width = percent + '%';
     };
 
-    document.addEventListener('keydown', function (e) {
-        var map = {
-            32: 'play',       // space
-            38: 'green-mark', // up
-            40: 'red-mark',   // down
-            37: 'back',       // left
-            39: 'forth'       // right
-        };
-        if (e.keyCode in map) {
-            var handler = eventHandlers[map[e.keyCode]];
-            e.preventDefault();
-            handler && handler(e);
-        }
-    });
+    var hideProgress = function () {
+        progressDiv.style.display = 'none';
+    };
 
-    document.addEventListener('click', function (e) {
-        var action = e.target.dataset && e.target.dataset.action;
-        if (action && action in eventHandlers) {
-            eventHandlers[action](e);
-        }
-    });
-}());
-
-// Flash mark when it's played over
-wavesurfer.on('mark', function (marker) {
-    if (marker.timer) { return; }
-
-    marker.timer = setTimeout(function () {
-        var origColor = marker.color;
-        marker.update({ color: 'yellow' });
-
-        setTimeout(function () {
-            marker.update({ color: origColor });
-            delete marker.timer;
-        }, 100);
-    }, 100);
+    wavesurfer.on('loading', showProgress);
+    wavesurfer.on('ready', hideProgress);
+    wavesurfer.on('destroy', hideProgress);
+    wavesurfer.on('error', hideProgress);
 });
 
-wavesurfer.on('error', function (err) {
-    console.error(err);
-});
 
 // Drag'n'drop
 document.addEventListener('DOMContentLoaded', function () {

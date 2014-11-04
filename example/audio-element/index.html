@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Render As It Plays</title>
+        <title>wavesurfer.js | Audio Element Example</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -10,17 +10,18 @@
         <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
         <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
 
-        <link rel="stylesheet" href="http://simonwhitaker.github.com/github-fork-ribbon-css/gh-fork-ribbon.css" />
         <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="../css/ribbon.css" />
         <link rel="screenshot" itemprop="screenshot" href="http://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
         <script src="../../src/wavesurfer.js"></script>
         <script src="../../src/webaudio.js"></script>
-        <script src="../../src/webaudio.buffer.js"></script>
-        <script src="../../src/webaudio.media.js"></script>
+        <script src="../../src/audioelement.js"></script>
         <script src="../../src/drawer.js"></script>
         <script src="../../src/drawer.canvas.js"></script>
+
+        <script src="../../plugin/wavesurfer.regions.js"></script>
 
         <!-- Demo -->
         <script src="main.js"></script>
@@ -33,7 +34,7 @@
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">Render As It Plays</h1>
+                <h1 itemprop="name">Audio Element Fallback Example</h1>
             </div>
 
             <div id="demo">
@@ -44,26 +45,62 @@
 
                     <!-- Here be the waveform -->
                 </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+                </div>
             </div>
 
-            <h2>
-                <button class="btn btn-primary" id="play">
-                    <i class="glyphicon glyphicon-play"></i>
-                    Play
-                </button>
-            </h2>
-
             <div class="row marketing">
-                <h3>How to Enable</h3>
+                <h3>How to Enable the Fallback</h3>
+
+                <hr />
 
                 <p>
-                    To enable the render-as-it-play feature,
-                    call <code>wavesurfer.loadStream(url)</code>
-                    instead of <code>wavesurfer.load(url)</code>.
+                    <strong>wavesurfer.js</strong> will automatically
+                    fallback to HTML5 Audio if Web Audio is not
+                    supported. However, you can choose to use audio
+                    element manually. Simply set the <code>backend</code>
+                    option to <code>"AudioElement"</code>.
                 </p>
 
                 <p>
-                    Use a larger setting for <code>minPxPerSec</code> and <code>scrollParent: true</code>.
+<pre><code>var wavesurfer = Object.create(WaveSurfer);
+
+wavesurfer.init({
+    container: document.querySelector('#wave'),
+    backend: 'AudioElement'
+});
+</code></pre>
+                </p>
+
+                <h3>Pre-rendered Peaks</h3>
+
+                <p>
+                    If you have pre-rendered peaks (e.g. on server),
+                    you can pass them into the <code>load</code>
+                    function. This is optional – if you don't provide
+                    any peaks,
+                    <strong>waserver.js</strong> will just draw a thin
+                    line instead of a waveform.
+                </p>
+
+                <p>
+<pre><code>wavesurfer.load('example/media/demo.mp3', arrayOfPeaks);</code></pre>
+                </p>
+
+
+                <p>
+                    Press this button to see the same demo without peaks:
+                    <button class="btn btn-warning" data-action="no-peaks">
+                        Load without pre-rendered peaks
+                    </button>
                 </p>
             </div>
 
@@ -79,7 +116,7 @@
                 <div class="col-sm-5">
                     <div class="pull-right">
                         <noindex>
-                        Demo music track is <a href="http://www.jamendo.com/en/track/661578/trou" rel="nofollow"><b>Trou</b> <span class="muted">by</span>&nbsp;<b>czskamaarù</b></a>. Thanks!
+                            The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.
                         </noindex>
                     </div>
                 </div>

@@ -10,15 +10,14 @@
         <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
         <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
 
-        <link rel="stylesheet" href="http://simonwhitaker.github.com/github-fork-ribbon-css/gh-fork-ribbon.css" />
         <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="../css/ribbon.css" />
+
         <link rel="screenshot" itemprop="screenshot" href="http://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
         <script src="../../src/wavesurfer.js"></script>
         <script src="../../src/webaudio.js"></script>
-        <script src="../../src/webaudio.buffer.js"></script>
-        <script src="../../src/webaudio.media.js"></script>
         <script src="../../src/drawer.js"></script>
         <script src="../../src/drawer.canvas.js"></script>
 
@@ -83,9 +82,9 @@
                 <hr />
 
                 <div class="col-lg-6">
-                    <h4>1. Initialize waveserfer.js</h4>
+                    <h4>1. Initialize wavesurfer.js</h4>
 
-                    <p>Create a <code>WaveSurfer</code> instace and load an audio clip.</p>
+                    <p>Create a <code>WaveSurfer</code> instance and load an audio clip.</p>
                     <noindex><p>
 <pre><code>var wavesurfer = Object.create(WaveSurfer);
 
@@ -100,7 +99,7 @@ wavesurfer.load('media.wav');</code></pre>
 
                     <p>
                         Create a panner node and add it to the Web
-                        Audio graph using the `setFilter` method.
+                        Audio graph using the <code>setFilter</code> method.
                     </p>
                     <noindex><p>
 <pre><code>var panner = wavesurfer.backend.ac.createPanner();

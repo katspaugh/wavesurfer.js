@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | ELAN player</title>
+        <title>wavesurfer.js | Annotation tool</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -12,77 +12,83 @@
 
         <link rel="stylesheet" href="../css/style.css" />
         <link rel="stylesheet" href="../css/ribbon.css" />
-        <link rel="stylesheet" href="css/elan.css" />
         <link rel="screenshot" itemprop="screenshot" href="http://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
         <script src="../../build/wavesurfer.min.js"></script>
 
-        <!-- regions plugin -->
-        <script src="../../plugin/wavesurfer.regions.js"></script>
-
-        <!-- ELAN format renderer -->
-        <script src="../../plugin/wavesurfer.elan.js"></script>
-
         <!-- App -->
         <script src="app.js"></script>
-        <script src="../trivia.js"></script>
     </head>
 
-    <body itemscope itemtype="http://schema.org/WebApplication">
+    <body>
         <div class="container">
             <div class="header">
-                <noindex>
                 <ul class="nav nav-pills pull-right">
-                    <li><a href="?fill">Fill</a></li>
-                    <li><a href="?scroll">Scroll</a></li>
-                    <li><a href="?normalize">Normalize</a></li>
+                    <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
-                </noindex>
 
-                <h1 itemprop="name"><a href="http://wavesurfer.fm">wavesurfer.js</a><noindex> + <a rel="nofollow" href="http://spokencorpora.ru/showelan.py">ELAN</a></noindex></h1>
+                <h1 itemprop="name">wavesurfer.js Playlist Demo</h1>
             </div>
 
             <div id="demo">
-                <div id="waveform">
-                    <div class="progress progress-striped active" id="progress-bar">
-                        <div class="progress-bar progress-bar-info"></div>
+                <div class="row" style="margin: 30px 0">
+                    <div class="col-sm-10">
+                        <div id="waveform">
+                            <!-- Here be waveform -->
+                        </div>
                     </div>
 
-                    <!-- Here be waveform -->
+                    <div class="col-sm-2">
+                        <button class="btn btn-success btn-block">
+                            <span id="play">
+                                <i class="glyphicon glyphicon-play"></i>
+                                Play
+                            </span>
+
+                            <span id="pause" style="display: none">
+                                <i class="glyphicon glyphicon-pause"></i>
+                                Pause
+                            </span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="controls">
-                    <button class="btn btn-primary" data-action="play">
+                <div class="list-group" id="playlist">
+                    <a href="../media/demo.wav" class="list-group-item">
                         <i class="glyphicon glyphicon-play"></i>
-                        Play
-                        /
-                        <i class="glyphicon glyphicon-pause"></i>
-                        Pause
-                    </button>
-                </div>
-            </div>
+                        czskamaarù – Trou
+                        <span class="badge">0:21</span>
+                    </a>
 
-            <div id="annotations" class="table-responsive">
-                <!-- Here be transcript -->
+                    <a href="../panner/media.wav" class="list-group-item">
+                        <i class="glyphicon glyphicon-play"></i>
+                        日本人の話し
+                        <span class="badge">1:04</span>
+                    </a>
+
+                    <a href="../elan/transcripts/001z.mp3" class="list-group-item">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Рассказы о сновидениях
+                        <span class="badge badge-info">1:26</span>
+                    </a>
+
+                </div>
             </div>
 
             <div class="footer row">
                 <div class="col-sm-12">
-                    <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
                 </div>
 
-                <div class="col-sm-8">
+                <div class="col-sm-7">
                     <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/katspaugh/wavesurfer.js" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
                 </div>
 
-                <div class="col-sm-4">
+                <div class="col-sm-5">
                     <p>
-                        The ELAN program and format were developed by <a href="http://tla.mpi.nl/tools/tla-tools/elan/">Max Planck Institute</a>.
-                    </p>
-
-                    <p>
-                        The sample ELAN file and audio are from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.
+                        Audio sources:<br />
+                        <a rel="nofollow" href="http://www.jamendo.com/en/track/661578/trou"><b>Trou</b> <span class="muted">by</span>&nbsp;<b>czskamaarù</b></a>,
+                        <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>
                     </p>
                 </div>
             </div>

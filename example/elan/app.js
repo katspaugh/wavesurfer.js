@@ -74,14 +74,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    var prevAnnotation, prevRow;
-    var onProgress = function () {
-        var duration = wavesurfer.backend.getDuration();
-        var time = wavesurfer.backend.getCurrentTime();
+    var prevAnnotation, prevRow, region;
+    var onProgress = function (time) {
         var annotation = elan.getRenderedAnnotation(time);
 
         if (prevAnnotation != annotation) {
             prevAnnotation = annotation;
+
+            region && region.remove();
+            region = null;
 
             if (annotation) {
                 // Highlight annotation table row
@@ -94,45 +95,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     elan.container.scrollTop = before.offsetTop;
                 }
 
-                // Selection
-                wavesurfer.updateSelection({
-                    startPercentage: annotation.start / duration,
-                    endPercentage: annotation.end / duration
+                // Region
+                region = wavesurfer.addRegion({
+                    start: annotation.start,
+                    end: annotation.end,
+                    resize: false,
+                    color: 'rgba(223, 240, 216, 0.7)'
                 });
-            } else {
-                wavesurfer.clearSelection();
             }
         }
     };
 
-    wavesurfer.on('progress', onProgress);
-});
-
-
-// Bind buttons and keypresses
-wavesurfer.on('ready', function () {
-    var handlers = {
-        'play': function () {
-            wavesurfer.playPause();
-        }
-    };
-
-    var map = {
-        32: 'play'       // spacebar
-    };
-
-    document.addEventListener('keydown', function (e) {
-        if (e.keyCode in map) {
-            e.preventDefault();
-            var handler = handlers[map[e.keyCode]];
-            handler && handler(e);
-        }
-    });
-
-    document.addEventListener('click', function (e) {
-        var action = e.target.dataset && e.target.dataset.action;
-        if (action && action in handlers) {
-            handlers[action](e);
-        }
-    });
+    wavesurfer.on('audioprocess', onProgress);
 });

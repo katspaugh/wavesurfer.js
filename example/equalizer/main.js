@@ -61,15 +61,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return filter;
         });
 
-        // Connect filters in a series
-        filters.forEach(function (filter, index) {
-            if (index < filters.length - 1) {
-                filter.connect(filters[index + 1]);
-            }
-        });
-
-        // Connect the last filter to wavesurfer
-        wavesurfer.backend.setFilter(filters[0], filters[filters.length - 1]);
+        // Connect filters to wavesurfer
+        wavesurfer.backend.setFilters(filters);
 
         // Bind filters to vertical range sliders
         var container = document.querySelector('#equalizer');
