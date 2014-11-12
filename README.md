@@ -149,6 +149,7 @@ After doing that, use `wavesurfer.addRegion()` to create Region objects.
 
 | option | type | default | description |
 | --- | --- | --- | --- |
+| `id` | string | random | The id of the region. |
 | `start` | float | `0` | The start position of the region (in seconds). |
 | `end` | float | `0` | The end position of the region (in seconds). |
 | `loop` | boolean | `false` | Whether to loop the region when played back. |
