@@ -71,7 +71,7 @@ WaveSurfer.Region = {
         this.wavesurfer = wavesurfer;
         this.wrapper = wavesurfer.drawer.wrapper;
 
-        this.id = WaveSurfer.util.getId();
+        this.id = params.id == null ? WaveSurfer.util.getId() : params.id;
         this.start = Number(params.start) || 0;
         this.end = params.end == null ?
             // small marker-like region
