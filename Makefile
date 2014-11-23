@@ -1,5 +1,6 @@
 # npm install -g uglify-js
 
+PREAMBLE='/* wavesurfer.js v'`node -e 'console.log(require("./package.json").version)'`' */'
 MIN=build/wavesurfer.min.js
 AMD=build/wavesurfer.amd.js
 CJS=build/wavesurfer.cjs.js
@@ -15,10 +16,10 @@ $(MIN): $(SOURCES)
 	uglifyjs --lint -cm -o $@ $^ \
 --source-map=$(SOURCE_MAP) --source-map-root=$(SOURCE_MAP_ROOT) \
 --source-map-url=$(SOURCE_MAP_ROOT)$(SOURCE_MAP) \
---preamble '/* v'`node -e 'console.log(require("./package.json").version)'`' */'
+--preamble=$(PREAMBLE)
 
 amd: $(SOURCES)
-	echo "define(function () {" > $(AMD)
+	echo $(PREAMBLE)" define(function () {" > $(AMD)
 	uglifyjs $^ -cm >> $(AMD)
 	echo "\n;return WaveSurfer; });" >> $(AMD)
 
