@@ -1,10 +1,11 @@
 # npm install -g uglify-js
 
 PREAMBLE='/* wavesurfer.js v'`node -e 'console.log(require("./package.json").version)'`' */'
-MIN=build/wavesurfer.min.js
-AMD=build/wavesurfer.amd.js
-CJS=build/wavesurfer.cjs.js
-SOURCE_MAP=build/wavesurfer-js-map.json
+BUILD_DIR=build
+MIN=$(BUILD_DIR)/wavesurfer.min.js
+AMD=$(BUILD_DIR)/wavesurfer.amd.js
+CJS=$(BUILD_DIR)/wavesurfer.cjs.js
+SOURCE_MAP=wavesurfer-js-map.json
 SOURCE_MAP_ROOT=/
 SOURCES=src/wavesurfer.js\
         src/webaudio.js\
@@ -14,8 +15,8 @@ SOURCES=src/wavesurfer.js\
 
 $(MIN): $(SOURCES)
 	uglifyjs --lint -cm -o $@ $^ \
---source-map=$(SOURCE_MAP) --source-map-root=$(SOURCE_MAP_ROOT) \
---source-map-url=$(SOURCE_MAP_ROOT)$(SOURCE_MAP) \
+--source-map=$(BUILD_DIR)/$(SOURCE_MAP) --source-map-root=$(SOURCE_MAP_ROOT) \
+--source-map-url=$(SOURCE_MAP) \
 --preamble=$(PREAMBLE)
 
 amd: $(SOURCES)
