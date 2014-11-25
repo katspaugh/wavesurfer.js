@@ -209,7 +209,9 @@ WaveSurfer.WebAudio = {
     },
 
     destroy: function () {
-        this.pause();
+	if (!this.isPaused()) {
+            this.pause();
+        }
         this.unAll();
         this.buffer = null;
         this.disconnectFilters();
