@@ -123,6 +123,7 @@ Region events (exposed by the Regions plugin):
  * `region-dblclick` - When the mouse double-clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
  * `region-created` – When a region is created. Callback will receive the `Region` object.
  * `region-updated` – When a region is updated. Callback will receive the `Region` object.
+ * `region-update-end` – When dragging or resizing is finished.
  * `region-removed` – When a region is removed. Callback will receive the `Region` object.
 
 
