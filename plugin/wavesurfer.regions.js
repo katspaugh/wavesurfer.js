@@ -290,7 +290,7 @@ WaveSurfer.Region = {
                     e.stopPropagation();
                     e.preventDefault();
 
-                    my.fireEvent('region-update-end');
+                    my.fireEvent('update-end');
                     my.wavesurfer.fireEvent('region-update-end');
                 }
             };
