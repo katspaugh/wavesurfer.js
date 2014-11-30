@@ -116,7 +116,6 @@
                 var curPixel = 0,
                     curSeconds = 0,
                     totalSeconds = parseInt(duration, 10) + 1,
-                    timeInterval = (pixelsPerSecond < 10) ? 10 : 1,
                     formatTime = function(seconds) {
                         if (seconds/60 > 1) {
                             var minutes = parseInt(seconds / 60),
@@ -128,17 +127,35 @@
                         }
                     };
 
+                if (pixelsPerSecond * 1 >= 25) {
+                    var timeInterval = 1;
+                    var primaryLabelInterval = 10;
+                    var secondaryLabelInterval = 5;
+                } else if (pixelsPerSecond * 5 >= 25) {
+                    var timeInterval = 5;
+                    var primaryLabelInterval = 6;
+                    var secondaryLabelInterval = 2;
+                } else if (pixelsPerSecond * 15 >= 25) {
+                    var timeInterval = 15;
+                    var primaryLabelInterval = 4;
+                    var secondaryLabelInterval = 2;
+                } else {
+                    var timeInterval = 60;
+                    var primaryLabelInterval = 4;
+                    var secondaryLabelInterval = 2;
+                }
+
                 var height1 = this.height - 4,
                     height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4;
 
                 for (var i = 0; i < totalSeconds/timeInterval; i++) {
-                    if (i % 10 == 0) {
+                    if (i % primaryLabelInterval == 0) {
                         this.timeCc.fillStyle = this.primaryColor;
                         this.timeCc.fillRect(curPixel, 0, 1, height1);
                         this.timeCc.font = this.fontSize + 'px ' + this.fontFamily;
                         this.timeCc.fillStyle = this.primaryFontColor;
                         this.timeCc.fillText(formatTime(curSeconds), curPixel + 5, height1);
-                    } else if (i % 10 == 5) {
+                    } else if (i % secondaryLabelInterval == 0) {
                         this.timeCc.fillStyle = this.secondaryColor;
                         this.timeCc.fillRect(curPixel, 0, 1, height1);
                         this.timeCc.font = this.fontSize + 'px ' + this.fontFamily;
