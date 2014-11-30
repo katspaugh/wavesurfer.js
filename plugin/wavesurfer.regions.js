@@ -289,6 +289,9 @@ WaveSurfer.Region = {
                     resize = false;
                     e.stopPropagation();
                     e.preventDefault();
+
+                    my.fireEvent('update-end');
+                    my.wavesurfer.fireEvent('region-update-end');
                 }
             };
             var onMove = function (e) {
