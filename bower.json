@@ -3,5 +3,8 @@
   "version"       : "1.0.7",
   "homepage"      : "https://github.com/katspaugh/wavesurfer.js",
   "main"          : "build/wavesurfer.min.js",
-  "license"       : "CC BY 3.0"
+  "license"       : "CC BY 3.0",
+  "devDependencies": {
+    "uglify-js": "^2.4.0"
+  }
 }

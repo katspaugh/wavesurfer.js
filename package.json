@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/katspaugh/wavesurfer.js/issues"
   },
+  "devDependencies": {
+    "uglify-js": "^2.4.0"
+  },
   "homepage": "https://github.com/katspaugh/wavesurfer.js"
 }
