@@ -39,7 +39,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         this.waveCc.canvas.width = this.width;
         this.waveCc.canvas.height = this.height;
         this.style(this.waveCc.canvas, { width: width + 'px'});
-        
+
         if (this.progressCc) {
             this.progressCc.canvas.width = this.width;
             this.progressCc.canvas.height = this.height;
@@ -51,8 +51,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
     clearWave: function () {
         this.waveCc.clearRect(0, 0, this.width, this.height);
-        if (this.progressCc)
-        this.progressCc.clearRect(0, 0, this.width, this.height);
+        if (this.progressCc) {
+            this.progressCc.clearRect(0, 0, this.width, this.height);
+        }
     },
 
     drawWave: function (peaks, max) {
@@ -60,8 +61,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var $ = 0.5 / this.params.pixelRatio;
 
         this.waveCc.fillStyle = this.params.waveColor;
-        if (this.progressCc)
-        this.progressCc.fillStyle = this.params.progressColor;
+        if (this.progressCc) {
+            this.progressCc.fillStyle = this.params.progressColor;
+        }
 
         var halfH = this.height / 2;
         var coef = halfH / max;
@@ -82,23 +84,27 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         for (var i = 0; i < length; i++) {
             var h = Math.round(peaks[i] * coef);
             this.waveCc.lineTo(i * scale + $, halfH + h);
-            if (this.progressCc)
-            this.progressCc.lineTo(i * scale + $, halfH + h);
+            if (this.progressCc) {
+                this.progressCc.lineTo(i * scale + $, halfH + h);
+            }
         }
 
         this.waveCc.lineTo(this.width + $, halfH);
-        if (this.progressCc)
-        this.progressCc.lineTo(this.width + $, halfH);
+        if (this.progressCc) {
+            this.progressCc.lineTo(this.width + $, halfH);
+        }
 
         this.waveCc.moveTo($, halfH);
-        if (this.progressCc)
-        this.progressCc.moveTo($, halfH);
+        if (this.progressCc) {
+            this.progressCc.moveTo($, halfH);
+        }
 
         for (var i = 0; i < length; i++) {
             var h = Math.round(peaks[i] * coef);
             this.waveCc.lineTo(i * scale + $, halfH - h);
-            if (this.progressCc)
-            this.progressCc.lineTo(i * scale + $, halfH - h);
+            if (this.progressCc) {
+                this.progressCc.lineTo(i * scale + $, halfH - h);
+            }
         }
 
         this.waveCc.lineTo(this.width + $, halfH);
