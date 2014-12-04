@@ -18,10 +18,12 @@
             }
 
             this.active = false;
-            this.getUserMedia = (navigator.getUserMedia ||
-                              navigator.webkitGetUserMedia ||
-                              navigator.mozGetUserMedia ||
-                              navigator.msGetUserMedia).bind(navigator);
+            this.getUserMedia = (
+                navigator.getUserMedia ||
+                navigator.webkitGetUserMedia ||
+                navigator.mozGetUserMedia ||
+                navigator.msGetUserMedia
+            ).bind(navigator);
 
             this.micContext = this.wavesurfer.backend.getAudioContext();
         },
@@ -34,8 +36,8 @@
                 video: false,
                 audio: true
             },
-                           this.gotStream.bind(this),
-                           this.streamError.bind(this));
+            this.gotStream.bind(this),
+            this.streamError.bind(this));
         },
 
         /**
