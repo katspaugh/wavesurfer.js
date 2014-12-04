@@ -237,11 +237,16 @@ var WaveSurfer = {
     },
 
     drawBuffer: function () {
+        var width = this.draw,
+            length;
+
         if (this.params.fillParent && !this.params.scrollParent) {
-            var length = this.drawer.getWidth();
+            length = width;
         } else {
-            length = Math.round(this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio);
+            var newLength = Math.round(this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio);
+            length = (this.params.fillParent && newLength < width) ? width : newLength;
         }
+
         var peaks = this.backend.getPeaks(length);
         this.drawer.drawPeaks(peaks, length);
         this.fireEvent('redraw', peaks, length);
