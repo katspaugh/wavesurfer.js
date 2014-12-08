@@ -38,8 +38,7 @@ Load an audio file from a URL:
 wavesurfer.load('example/media/demo.wav');
 ```
 
-See the example code
-[here](https://github.com/katspaugh/wavesurfer.js/blob/master/example/main.js).
+See the example code [here](/example/main.js).
 
 ### WaveSurfer Options
 
