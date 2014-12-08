@@ -18,6 +18,7 @@
             }
 
             this.active = false;
+            this.paused = false;
             this.getUserMedia = (
                 navigator.getUserMedia ||
                 navigator.webkitGetUserMedia ||
@@ -29,7 +30,8 @@
         },
 
         /**
-         * Allow user to select audio input device, eg. microphone.
+         * Allow user to select audio input device, eg. microphone, and
+         * start the visualization.
          */
         start: function() {
             this.getUserMedia({
@@ -41,7 +43,20 @@
         },
 
         /**
-         * Stop the microphone.
+         * Pause/resume visualization.
+         */
+        togglePlay: function() {
+            if (!this.active) {
+                // start it first
+                this.start();
+            } else {
+                // toggle paused
+                this.paused = !this.paused;
+            }
+        },
+
+        /**
+         * Stop the microphone and visualization.
          */
         stop: function() {
             if (this.active) {
@@ -60,8 +75,10 @@
          * Redraw the waveform.
          */
         reloadBuffer: function(event) {
-            this.wavesurfer.empty();
-            this.wavesurfer.loadDecodedBuffer(event.inputBuffer);
+            if (!this.paused) {
+                this.wavesurfer.empty();
+                this.wavesurfer.loadDecodedBuffer(event.inputBuffer);
+            }
         },
 
         /**
