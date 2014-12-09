@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var options = {
         container     : '#waveform',
         waveColor     : 'black',
-        loopSelection : false,
+        interact      : false,
         cursorWidth   : 0
     };
 
