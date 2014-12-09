@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     });
 
-
     /* Regions */
     wavesurfer.enableDragSelection({
         color: randomColor(0.1)
@@ -37,6 +36,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (localStorage.regions) {
             loadRegions(JSON.parse(localStorage.regions));
         } else {
+            // loadRegions(
+            //     extractRegions(
+            //         wavesurfer.backend.getPeaks(512),
+            //         wavesurfer.getDuration()
+            //     )
+            // );
             wavesurfer.util.ajax({
                 responseType: 'json',
                 url: 'annotations.json'
@@ -126,55 +131,70 @@ function loadRegions(regions) {
 
 
 /**
- * Detect regions separated by silence.
+ * Extract regions separated by silence.
  */
-function detectRegions() {
+function extractRegions(peaks, duration) {
     // Silence params
     var minValue = 0.0015;
     var minSeconds = 0.25;
 
-    var peaks = wavesurfer.backend.peaks;
     var length = peaks.length;
-    var duration = wavesurfer.getDuration();
     var coef = duration / length;
-    var minLen = (minSeconds / duration) * length;
+    var minLen = minSeconds / coef;
 
-    var regions = [];
-    var i = 0;
-    var start;
-    var extend;
-    while (i < length) {
-        if (peaks[i] < minValue) {
-            i += 1;
-        } else {
-            start = i;
-            do {
-                while (peaks[i] >= minValue) {
-                    i += 1;
-                }
-                if (i - start < minLen) {
-                    i += 1;
-                } else {
-                    var j = i;
-                    while (peaks[j] < minValue) {
-                        j += 1;
-                    }
-                    if (j - i < minLen) {
-                        i = j;
-                        extend = true;
-                    } else {
-                        regions.push({
-                            start: Math.round(start * coef * 10) / 10,
-                            end: Math.round(i * coef * 10) / 10
-                        });
-                        i += 1;
-                        extend = false;
-                    }
-                }
-            } while (extend)
+    // Gather silence indeces
+    var silences = [];
+    Array.prototype.forEach.call(peaks, function (val, index) {
+        if (val < minValue) {
+            silences.push(index);
         }
+    });
+
+    // Cluster silence values
+    var clusters = [];
+    silences.forEach(function (val, index) {
+        if (clusters.length && val == silences[index - 1] + 1) {
+            clusters[clusters.length - 1].push(val);
+        } else {
+            clusters.push([ val ]);
+        }
+    });
+
+    // Filter silence clusters by minimum length
+    var fClusters = clusters.filter(function (cluster) {
+        return cluster.length >= minLen;
+    });
+
+    // Create regions on the edges of silences
+    var regions = fClusters.map(function (cluster, index) {
+        var next = fClusters[index + 1];
+        return {
+            start: cluster[cluster.length - 1],
+            end: (next ? next[0] : length - 1)
+        };
+    });
+
+    // Add an initial region if the audio doesn't start with silence
+    var firstCluster = fClusters[0];
+    if (firstCluster && firstCluster[0] != 0) {
+        regions.unshift({
+            start: 0,
+            end: firstCluster[firstCluster.length - 1]
+        });
     }
-    return regions;
+
+    // Filter regions by minimum length
+    var fRegions = regions.filter(function (reg) {
+        return reg.end - reg.start >= minLen;
+    });
+
+    // Return time-based regions
+    return fRegions.map(function (reg) {
+        return {
+            start: Math.round(reg.start * coef * 10) / 10,
+            end: Math.round(reg.end * coef * 10) / 10
+        };
+    });
 }
 
 
