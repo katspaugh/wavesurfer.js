@@ -108,7 +108,7 @@ WaveSurfer.ELAN = {
         // Create JavaScript references between annotations
         data.tiers.forEach(function (tier) {
             tier.annotations.forEach(function (annot) {
-                if (null != annot.ref) {
+                if (null !== annot.ref) {
                     annot.reference = data.annotations[annot.ref];
                 }
             }, this);
@@ -117,7 +117,7 @@ WaveSurfer.ELAN = {
         // Sort alignable annotations by start & end
         data.alignableAnnotations.sort(function (a, b) {
             var d = a.start - b.start;
-            if (d == 0) {
+            if (d === 0) {
                 d = b.end - a.end;
             }
             return d;
@@ -221,7 +221,7 @@ WaveSurfer.ELAN = {
         var my = this;
         this.container.addEventListener('click', function (e) {
             var ref = e.target.dataset.ref;
-            if (null != ref) {
+            if (null !== ref) {
                 var annot = my.data.annotations[ref];
                 if (annot) {
                     my.fireEvent('select', annot.start, annot.end);

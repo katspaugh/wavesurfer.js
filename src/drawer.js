@@ -49,7 +49,7 @@ WaveSurfer.Drawer = {
 
         this.wrapper.addEventListener('click', function (e) {
             var scrollbarHeight = my.wrapper.offsetHeight - my.wrapper.clientHeight;
-            if (scrollbarHeight != 0) {
+            if (scrollbarHeight !== 0) {
                 // scrollbar is visible.  Check if click was on it
                 var bbox = my.wrapper.getBoundingClientRect();
                 if (e.clientY >= bbox.bottom - scrollbarHeight) {
@@ -104,7 +104,7 @@ WaveSurfer.Drawer = {
         var offset = target - scrollLeft;
         var maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
 
-        if (maxScroll == 0) {
+        if (maxScroll === 0) {
             // no need to continue if scrollbar is not there
             return;
         }

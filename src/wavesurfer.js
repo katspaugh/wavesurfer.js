@@ -473,7 +473,7 @@ WaveSurfer.util = {
         var max = -Infinity;
         for (var i = 0, len = values.length; i < len; i++) {
             var val = values[i];
-            if (min != null) {
+            if (min !== null) {
                 val = Math.abs(val - min);
             }
             if (val > max) { max = val; }
