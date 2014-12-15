@@ -106,6 +106,12 @@ WaveSurfer.Region = {
         if (null != params.data) {
             this.data = params.data;
         }
+        if (null != params.resize) {
+            this.data = Boolean(params.resize);
+        }
+        if (null != params.drag) {
+            this.data = Boolean(params.drag);
+        }
         this.updateRender();
         this.fireEvent('update');
         this.wavesurfer.fireEvent('region-updated', this);
@@ -179,8 +185,8 @@ WaveSurfer.Region = {
     formatTime: function (start, end) {
         return (end ? [ start, end ] : [ start ]).map(function (time) {
             return [
-                ~~(start / 60),                   // minutes
-                ('00' + ~~(time % 60)).slice(-2)  // seconds
+                Math.floor((time % 3600) / 60), // minutes
+                ('00' + Math.floor(time % 60)).slice(-2) // seconds
             ].join(':');
         }).join('–');
     },
