@@ -237,14 +237,20 @@ var WaveSurfer = {
     },
 
     drawBuffer: function () {
-        if (this.params.fillParent && !this.params.scrollParent) {
-            var length = this.drawer.getWidth();
-        } else {
-            length = Math.round(this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio);
+        var nominalWidth = Math.round(
+            this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio
+        );
+        var parentWidth = this.drawer.getWidth();
+        var width = nominalWidth;
+
+        // Fill container
+        if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
+            width = parentWidth;
         }
-        var peaks = this.backend.getPeaks(length);
-        this.drawer.drawPeaks(peaks, length);
-        this.fireEvent('redraw', peaks, length);
+
+        var peaks = this.backend.getPeaks(width);
+        this.drawer.drawPeaks(peaks, width);
+        this.fireEvent('redraw', peaks, width);
     },
 
     /**
