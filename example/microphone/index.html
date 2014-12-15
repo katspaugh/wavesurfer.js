@@ -7,8 +7,7 @@
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
         <!-- Bootstrap -->
-        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
-        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
 
         <link rel="stylesheet" href="../css/style.css" />
         <link rel="stylesheet" href="../css/ribbon.css" />
@@ -59,12 +58,12 @@
                       <ol>
                         <li>add the Microphone plugin script tag</li>
                         <li>create a <code>WaveSurfer</code> instance</li>
-                        <li>add a container HTML element for the timeline</li>
-                        <li>create a Microphone instance</li>
+                        <li>create a <code>Microphone</code> instance</li>
+                        <li>control the Microphone using the <code>start</code>, <code>stop</code> and <code>togglePlay</code> methods</li>
                       </ol>
                     </p>
                     <p>
-                        <a class="btn btn-large btn-success" href="/plugin/wavesurfer.microphone.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (2.4 KB)</a>
+                        <a class="btn btn-large btn-success" href="/plugin/wavesurfer.microphone.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (3.2 KB)</a>
                     </p>
                 </div>
 
@@ -77,7 +76,7 @@
 wavesurfer.init({
   container     : '#waveform',
   waveColor     : 'black',
-  loopSelection : false,
+  interact      : false,
   cursorWidth   : 0
 });
 
@@ -86,6 +85,15 @@ var microphone = Object.create(WaveSurfer.Microphone);
 microphone.init({
     wavesurfer: wavesurfer
 });
+
+// start the microphone
+microphone.start();
+
+// pause rendering
+microphone.togglePlay();
+
+// stop and disconnect microphone
+microphone.stop();
 </code></pre>
                     </p></noindex>
 

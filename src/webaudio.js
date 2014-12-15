@@ -246,7 +246,10 @@ WaveSurfer.WebAudio = {
     },
 
     getDuration: function () {
-        return this.buffer.duration || 0;
+        if (this.buffer === undefined) {
+            return 0;
+        }
+        return this.buffer.duration;
     },
 
     seekTo: function (start, end) {
