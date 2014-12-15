@@ -71,9 +71,9 @@ WaveSurfer.Region = {
         this.wavesurfer = wavesurfer;
         this.wrapper = wavesurfer.drawer.wrapper;
 
-        this.id = params.id == null ? WaveSurfer.util.getId() : params.id;
+        this.id = params.id === null ? WaveSurfer.util.getId() : params.id;
         this.start = Number(params.start) || 0;
-        this.end = params.end == null ?
+        this.end = params.end === null ?
             // small marker-like region
             this.start + (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration() :
             Number(params.end);
@@ -91,25 +91,25 @@ WaveSurfer.Region = {
 
     /* Update region params. */
     update: function (params) {
-        if (null != params.start) {
+        if (null !== params.start) {
             this.start = Number(params.start);
         }
-        if (null != params.end) {
+        if (null !== params.end) {
             this.end = Number(params.end);
         }
-        if (null != params.loop) {
+        if (null !== params.loop) {
             this.color = Boolean(params.loop);
         }
-        if (null != params.color) {
+        if (null !== params.color) {
             this.color = params.color;
         }
-        if (null != params.data) {
+        if (null !== params.data) {
             this.data = params.data;
         }
-        if (null != params.resize) {
+        if (null !== params.resize) {
             this.data = Boolean(params.resize);
         }
-        if (null != params.drag) {
+        if (null !== params.drag) {
             this.data = Boolean(params.drag);
         }
         this.updateRender();

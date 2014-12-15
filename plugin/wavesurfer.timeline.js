@@ -149,13 +149,13 @@
                     height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4;
 
                 for (var i = 0; i < totalSeconds/timeInterval; i++) {
-                    if (i % primaryLabelInterval == 0) {
+                    if (i % primaryLabelInterval === 0) {
                         this.timeCc.fillStyle = this.primaryColor;
                         this.timeCc.fillRect(curPixel, 0, 1, height1);
                         this.timeCc.font = this.fontSize + 'px ' + this.fontFamily;
                         this.timeCc.fillStyle = this.primaryFontColor;
                         this.timeCc.fillText(formatTime(curSeconds), curPixel + 5, height1);
-                    } else if (i % secondaryLabelInterval == 0) {
+                    } else if (i % secondaryLabelInterval === 0) {
                         this.timeCc.fillStyle = this.secondaryColor;
                         this.timeCc.fillRect(curPixel, 0, 1, height1);
                         this.timeCc.font = this.fontSize + 'px ' + this.fontFamily;
