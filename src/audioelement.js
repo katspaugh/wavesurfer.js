@@ -81,7 +81,7 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
     },
 
     seekTo: function (start) {
-        if (start != null) {
+        if (start !== null) {
             this.media.currentTime = start;
         }
     },

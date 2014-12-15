@@ -176,7 +176,7 @@ function extractRegions(peaks, duration) {
 
     // Add an initial region if the audio doesn't start with silence
     var firstCluster = fClusters[0];
-    if (firstCluster && firstCluster[0] != 0) {
+    if (firstCluster && firstCluster[0] !== 0) {
         regions.unshift({
             start: 0,
             end: firstCluster[firstCluster.length - 1]

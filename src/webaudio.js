@@ -178,7 +178,7 @@ WaveSurfer.WebAudio = {
                         max = -value;
                     }
                 }
-                if (c == 0 || max > peaks[i]) {
+                if (c === 0 || max > peaks[i]) {
                     peaks[i] = max;
                 }
             }
@@ -253,13 +253,13 @@ WaveSurfer.WebAudio = {
     },
 
     seekTo: function (start, end) {
-        if (start == null) {
+        if (start === null) {
             start = this.getCurrentTime();
             if (start >= this.getDuration()) {
                 start = 0;
             }
         }
-        if (end == null) {
+        if (end === null) {
             end = this.getDuration();
         }
 
