@@ -435,7 +435,7 @@ WaveSurfer.Observer = {
     once: function (event, handler) {
         var my = this;
         var fn = function () {
-            handler();
+            handler.apply(this, arguments);
             setTimeout(function () {
                 my.un(event, fn);
             }, 0);
