@@ -86,14 +86,22 @@ microphone.init({
     wavesurfer: wavesurfer
 });
 
+microphone.on('deviceReady', function() {
+    console.info('Device ready!');
+});
+microphone.on('deviceError', function(code) {
+    // 
+    console.warn('Device error: ' + code);
+});
+
 // start the microphone
 microphone.start();
 
 // pause rendering
-microphone.togglePlay();
+//microphone.togglePlay();
 
 // stop and disconnect microphone
-microphone.stop();
+//microphone.stop();
 </code></pre>
                     </p></noindex>
 
@@ -103,6 +111,13 @@ microphone.stop();
 
                     <ul class="markdown-body">
                       <li><code>wavesurfer</code> - <em>required</em> - a WaveSurfer instance</li>
+                    </ul>
+
+                    <h4>Events</h4>
+
+                    <ul class="markdown-body">
+                      <li><code>deviceReady</code> - Invoked when the device is ready to use.</li>
+                      <li><code>deviceError</code> - Invoked when the user doesn't allow the browser to access the microphone. Callback will receive a (string) <a href='https://developer.mozilla.org/en-US/docs/NavigatorUserMedia.getUserMedia#errorCallback'>error code</a>.</li>
                     </ul>
                 </div>
             </div>
