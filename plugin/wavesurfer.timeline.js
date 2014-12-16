@@ -44,9 +44,14 @@
         },
 
         createWrapper: function () {
+            var prevTimeline = this.container.querySelector('timeline');
+            if (prevTimeline) {
+                this.container.removeChild(prevTimeline);
+            }
+
             var wsParams = this.wavesurfer.params;
             this.wrapper = this.container.appendChild(
-                document.createElement('wave')
+                document.createElement('timeline')
             );
             this.drawer.style(this.wrapper, {
                 display: 'block',
