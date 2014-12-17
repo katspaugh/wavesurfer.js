@@ -106,8 +106,7 @@
         /**
          * Device error callback.
          */
-        deviceError: function(code)
-        {
+        deviceError: function(code) {
             this.fireEvent('deviceError', code);
         }
 
