@@ -71,7 +71,8 @@ All methods are intentionally public, but the most readily available are the fol
  * `empty()` – Clears the waveform as if a zero-length audio is loaded.
  * `getCurrentTime()` – Returns current progress in seconds.
  * `getDuration()` – Returns the duration of an audio clip in seconds.
- * `load(url)` – Loads an audio from URL via XHR. Returns XHR object.
+ * `load(url)` – Loads audio from URL via XHR. Returns XHR object.
+ * `loadBlob(url)` – Loads audio from a `Blob` or `File` object.
  * `on(eventName, callback)` – Subscribes to an event.  See `WaveSurfer Events` section below for a list.
  * `pause()` – Stops playback.
  * `play([start[, end]])` – Starts playback from the current position.  Optional `start` and `end` measured in seconds can be used to set the range of audio to play.
