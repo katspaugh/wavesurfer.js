@@ -86,14 +86,21 @@ microphone.init({
     wavesurfer: wavesurfer
 });
 
+microphone.on('deviceReady', function() {
+    console.info('Device ready!');
+});
+microphone.on('deviceError', function(code) {
+    console.warn('Device error: ' + code);
+});
+
 // start the microphone
 microphone.start();
 
 // pause rendering
-microphone.togglePlay();
+//microphone.togglePlay();
 
 // stop and disconnect microphone
-microphone.stop();
+//microphone.stop();
 </code></pre>
                     </p></noindex>
 
@@ -101,9 +108,43 @@ microphone.stop();
 
                     <h4>Options</h4>
 
-                    <ul class="markdown-body">
-                      <li><code>wavesurfer</code> - <em>required</em> - a WaveSurfer instance</li>
-                    </ul>
+                    <table class="table table-striped table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Required</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><code>wavesurfer</code></td>
+                          <td>yes</td>
+                          <td>A WaveSurfer instance.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    <h4>Events</h4>
+
+                    <table class="table table-striped table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><code>deviceReady</code></td>
+                          <td>Invoked when the device is ready to use.</td>
+                        </tr>
+                        <tr>
+                          <td><code>deviceError</code></td>
+                          <td>Invoked when the user doesn't allow the browser to access the microphone. Callback will receive a (string) <a href='https://developer.mozilla.org/en-US/docs/NavigatorUserMedia.getUserMedia#errorCallback'>error code</a>.</td>
+                        </tr>
+                      </tbody>
+                    </table>
                 </div>
             </div>
 

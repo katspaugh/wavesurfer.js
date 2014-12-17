@@ -39,7 +39,7 @@
                 audio: true
             },
             this.gotStream.bind(this),
-            this.streamError.bind(this));
+            this.deviceError.bind(this));
         },
 
         /**
@@ -99,11 +99,15 @@
 
             this.levelChecker.connect(this.micContext.destination);
             this.levelChecker.onaudioprocess = this.reloadBuffer.bind(this);
+
+            this.fireEvent('deviceReady');
         },
 
-        streamError: function(error)
-        {
-            console.warn('error', error);
+        /**
+         * Device error callback.
+         */
+        deviceError: function(code) {
+            this.fireEvent('deviceError', code);
         }
 
     };
