@@ -76,7 +76,6 @@
          */
         reloadBuffer: function(event) {
             if (!this.paused) {
-                this.wavesurfer.empty();
                 this.wavesurfer.loadDecodedBuffer(event.inputBuffer);
             }
         },
