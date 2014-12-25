@@ -71,7 +71,7 @@ WaveSurfer.Region = {
         this.wavesurfer = wavesurfer;
         this.wrapper = wavesurfer.drawer.wrapper;
 
-        this.id = WaveSurfer.util.getId();
+        this.id = params.id == null ? WaveSurfer.util.getId() : params.id;
         this.start = Number(params.start) || 0;
         this.end = params.end == null ?
             // small marker-like region
@@ -105,6 +105,12 @@ WaveSurfer.Region = {
         }
         if (null != params.data) {
             this.data = params.data;
+        }
+        if (null != params.resize) {
+            this.data = Boolean(params.resize);
+        }
+        if (null != params.drag) {
+            this.data = Boolean(params.drag);
         }
         this.updateRender();
         this.fireEvent('update');
@@ -179,8 +185,8 @@ WaveSurfer.Region = {
     formatTime: function (start, end) {
         return (end ? [ start, end ] : [ start ]).map(function (time) {
             return [
-                ~~(start / 60),                   // minutes
-                ('00' + ~~(time % 60)).slice(-2)  // seconds
+                Math.floor((time % 3600) / 60), // minutes
+                ('00' + Math.floor(time % 60)).slice(-2) // seconds
             ].join(':');
         }).join('–');
     },
@@ -289,6 +295,9 @@ WaveSurfer.Region = {
                     resize = false;
                     e.stopPropagation();
                     e.preventDefault();
+
+                    my.fireEvent('update-end');
+                    my.wavesurfer.fireEvent('region-update-end');
                 }
             };
             var onMove = function (e) {

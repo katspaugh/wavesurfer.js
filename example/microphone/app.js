@@ -8,9 +8,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var options = {
         container     : '#waveform',
         waveColor     : 'black',
-        loopSelection : false,
+        interact      : false,
         cursorWidth   : 0
     };
+    var micBtn = document.querySelector('#micBtn');
 
     // Init wavesurfer
     wavesurfer.init(options);
@@ -20,9 +21,15 @@ document.addEventListener('DOMContentLoaded', function () {
     microphone.init({
         wavesurfer: wavesurfer
     });
+    microphone.on('deviceReady', function() {
+        console.info('Device ready!');
+    });
+    microphone.on('deviceError', function(code) {
+        console.warn('Device error: ' + code);
+    });
 
-    // start/stop mic on click
-    document.querySelector('#micBtn').onclick = function() {
+    // start/stop mic on button click
+    micBtn.onclick = function() {
         if (microphone.active) {
             microphone.stop();
         } else {

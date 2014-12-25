@@ -62,6 +62,10 @@ WaveSurfer.Drawer = {
                 my.fireEvent('click', e, my.handleEvent(e));
             }
         });
+
+        this.wrapper.addEventListener('scroll', function (e) {
+            my.fireEvent('scroll', e);
+        });
     },
 
     drawPeaks: function (peaks, length) {

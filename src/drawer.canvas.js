@@ -10,6 +10,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 zIndex: 1
             })
         );
+        this.waveCc = waveCanvas.getContext('2d');
 
         this.progressWave = this.wrapper.appendChild(
             this.style(document.createElement('wave'), {
@@ -24,38 +25,45 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             })
         );
 
-        var progressCanvas = this.progressWave.appendChild(
-            document.createElement('canvas')
-        );
-
-        this.waveCc = waveCanvas.getContext('2d');
-        this.progressCc = progressCanvas.getContext('2d');
+        if (this.params.waveColor != this.params.progressColor) {
+            var progressCanvas = this.progressWave.appendChild(
+                document.createElement('canvas')
+            );
+            this.progressCc = progressCanvas.getContext('2d');
+        }
     },
 
     updateWidth: function () {
         var width = Math.round(this.width / this.params.pixelRatio);
-        [
-            this.waveCc,
-            this.progressCc
-        ].forEach(function (cc) {
-            cc.canvas.width = this.width;
-            cc.canvas.height = this.height;
-            this.style(cc.canvas, { width: width + 'px'});
-        }, this);
+
+        this.waveCc.canvas.width = this.width;
+        this.waveCc.canvas.height = this.height;
+        this.style(this.waveCc.canvas, { width: width + 'px'});
+
+        if (this.progressCc) {
+            this.progressCc.canvas.width = this.width;
+            this.progressCc.canvas.height = this.height;
+            this.style(this.progressCc.canvas, { width: width + 'px'});
+        }
 
         this.clearWave();
     },
 
     clearWave: function () {
         this.waveCc.clearRect(0, 0, this.width, this.height);
-        this.progressCc.clearRect(0, 0, this.width, this.height);
+        if (this.progressCc) {
+            this.progressCc.clearRect(0, 0, this.width, this.height);
+        }
     },
 
     drawWave: function (peaks, max) {
         // A half-pixel offset makes lines crisp
         var $ = 0.5 / this.params.pixelRatio;
+
         this.waveCc.fillStyle = this.params.waveColor;
-        this.progressCc.fillStyle = this.params.progressColor;
+        if (this.progressCc) {
+            this.progressCc.fillStyle = this.params.progressColor;
+        }
 
         var halfH = this.height / 2;
         var coef = halfH / max;
@@ -67,28 +75,45 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         this.waveCc.beginPath();
         this.waveCc.moveTo($, halfH);
-        this.progressCc.beginPath();
-        this.progressCc.moveTo($, halfH);
+
+        if (this.progressCc) {
+            this.progressCc.beginPath();
+            this.progressCc.moveTo($, halfH);
+        }
+
         for (var i = 0; i < length; i++) {
             var h = Math.round(peaks[i] * coef);
             this.waveCc.lineTo(i * scale + $, halfH + h);
-            this.progressCc.lineTo(i * scale + $, halfH + h);
+            if (this.progressCc) {
+                this.progressCc.lineTo(i * scale + $, halfH + h);
+            }
         }
+
         this.waveCc.lineTo(this.width + $, halfH);
-        this.progressCc.lineTo(this.width + $, halfH);
+        if (this.progressCc) {
+            this.progressCc.lineTo(this.width + $, halfH);
+        }
 
         this.waveCc.moveTo($, halfH);
-        this.progressCc.moveTo($, halfH);
+        if (this.progressCc) {
+            this.progressCc.moveTo($, halfH);
+        }
+
         for (var i = 0; i < length; i++) {
             var h = Math.round(peaks[i] * coef);
             this.waveCc.lineTo(i * scale + $, halfH - h);
-            this.progressCc.lineTo(i * scale + $, halfH - h);
+            if (this.progressCc) {
+                this.progressCc.lineTo(i * scale + $, halfH - h);
+            }
         }
 
         this.waveCc.lineTo(this.width + $, halfH);
         this.waveCc.fill();
-        this.progressCc.lineTo(this.width + $, halfH);
-        this.progressCc.fill();
+
+        if (this.progressCc) {
+            this.progressCc.lineTo(this.width + $, halfH);
+            this.progressCc.fill();
+        }
 
         // Always draw a median line
         this.waveCc.fillRect(0, halfH - $, this.width, $);

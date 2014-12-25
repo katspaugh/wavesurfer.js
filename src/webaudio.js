@@ -209,7 +209,9 @@ WaveSurfer.WebAudio = {
     },
 
     destroy: function () {
-        this.pause();
+	if (!this.isPaused()) {
+            this.pause();
+        }
         this.unAll();
         this.buffer = null;
         this.disconnectFilters();
@@ -244,7 +246,10 @@ WaveSurfer.WebAudio = {
     },
 
     getDuration: function () {
-        return this.buffer.duration || 0;
+        if (this.buffer === undefined) {
+            return 0;
+        }
+        return this.buffer.duration;
     },
 
     seekTo: function (start, end) {

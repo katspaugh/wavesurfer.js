@@ -1,2 +1,4 @@
 /build/wavesurfer.cjs.js
 /build/wavesurfer.amd.js
+/node_modules
+/bower_components

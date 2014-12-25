@@ -23,6 +23,7 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
         var media = document.createElement('audio');
         media.controls = false;
         media.autoplay = false;
+        media.preload = 'auto';
         media.src = url;
 
         media.addEventListener('error', function () {

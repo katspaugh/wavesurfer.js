@@ -4,7 +4,7 @@ Interactive navigable audio visualization using
 [Web Audio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
 and Canvas.
 
-![Alt text](/example/screenshot.png?raw=true "Screenshot")
+![Screenshot](/example/screenshot.png?raw=true "Screenshot")
 
 ### API in examples
 
@@ -38,8 +38,7 @@ Load an audio file from a URL:
 wavesurfer.load('example/media/demo.wav');
 ```
 
-See the example code
-[here](https://github.com/katspaugh/wavesurfer.js/blob/master/example/main.js).
+See the example code [here](/example/main.js).
 
 ### WaveSurfer Options
 
@@ -59,7 +58,7 @@ See the example code
 | `normalize` | boolean | `false` | If `true`, normalize by the maximum peak instead of 1.0. |
 | `pixelRatio` | integer | `window.devicePixelRatio` | Can be set to `1` for faster rendering. |
 | `progressColor` | string | `#555` | The fill color of the part of the waveform behind the cursor. |
-| `scrollParent` | boolean | `false` | Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrinked to container width (see `fillParent`). |
+| `scrollParent` | boolean | `false` | Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrunk to the container width (see `fillParent`). |
 | `skipLength` | float | `2` | Number of seconds to skip with the `skipForward()` and `skipBackward()` methods. |
 | `waveColor` | string | `#999` | The fill color of the waveform after the cursor. |
 
@@ -77,11 +76,11 @@ All methods are intentionally public, but the most readily available are the fol
  * `pause()` – Stops playback.
  * `play([start[, end]])` – Starts playback from the current position.  Optional `start` and `end` measured in seconds can be used to set the range of audio to play.
  * `playPause()` – Plays if paused, pauses if playing.
- * `seekAndCenter(progress)` – Seeks to a progress and centers view [0..1] (0 = beginning, 1 = end).
- * `seekTo(progress)` – Seeks to a progress [0..1] (0=beginning, 1=end).
+ * `seekAndCenter(progress)` – Seeks to a progress and centers view `[0..1]` (0 = beginning, 1 = end).
+ * `seekTo(progress)` – Seeks to a progress `[0..1]` (0=beginning, 1=end).
  * `setFilter(filters)` - For inserting your own WebAudio nodes into the graph.  See `Connecting Filters` below.
  * `setPlaybackRate(rate)` – Sets the speed of playback (`0.5` is half speed, `1` is normal speed, `2` is double speed and so on).
- * `setVolume(newVolume)` – Sets the playback volume to a new value [0..1] (0 = silent, 1 = maximum).
+ * `setVolume(newVolume)` – Sets the playback volume to a new value `[0..1]` (0 = silent, 1 = maximum).
  * `skip(offset)` – Skip a number of seconds from the current position (use a negative value to go backwards).
  * `skipBackward()` - Rewind `skipLength` seconds.
  * `skipForward()` - Skip ahead `skipLength` seconds.
@@ -107,6 +106,7 @@ General events:
  * `finish` – When it finishes playing.
  * `loading` – Fires continuously when loading via XHR or drag'n'drop. Callback will receive (integer) loading progress in percents [0..100] and (object) event target.
  * `mouseup` - When a mouse button goes up.  Callback will receive `MouseEvent` object.
+ * `pause` – When audio is paused.
  * `play` – When play starts.
  * `ready` – When audio is loaded, decoded and the waveform drawn.
  * `scroll` - When the scrollbar is moved.  Callback will receive a `ScrollEvent` object.
@@ -122,6 +122,7 @@ Region events (exposed by the Regions plugin):
  * `region-dblclick` - When the mouse double-clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
  * `region-created` – When a region is created. Callback will receive the `Region` object.
  * `region-updated` – When a region is updated. Callback will receive the `Region` object.
+ * `region-update-end` – When dragging or resizing is finished.
  * `region-removed` – When a region is removed. Callback will receive the `Region` object.
 
 
@@ -149,6 +150,7 @@ After doing that, use `wavesurfer.addRegion()` to create Region objects.
 
 | option | type | default | description |
 | --- | --- | --- | --- |
+| `id` | string | random | The id of the region. |
 | `start` | float | `0` | The start position of the region (in seconds). |
 | `end` | float | `0` | The end position of the region (in seconds). |
 | `loop` | boolean | `false` | Whether to loop the region when played back. |
