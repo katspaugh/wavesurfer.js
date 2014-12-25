@@ -9,6 +9,8 @@ WaveSurfer.Spectrogram = {
             throw Error('No WaveSurfer intance provided');
         }
 
+		this.frequenciesDataUrl = params.frequenciesDataUrl;
+
         var drawer = this.drawer = this.wavesurfer.drawer;
         this.buffer = this.wavesurfer.backend.buffer;
 
@@ -21,15 +23,15 @@ WaveSurfer.Spectrogram = {
 
         this.width = drawer.width;
 		this.pixelRatio = this.params.pixelRatio || wavesurfer.params.pixelRatio;
-		this.fftSamples = this.params.fftSamples || wavesurfer.params.fftSamples || 1024;
-        this.height = this.fftSamples / 4;
+        this.fftSamples = this.params.fftSamples || wavesurfer.params.fftSamples || 512;
+        this.height = this.fftSamples / 2;
 
         this.createWrapper();
         this.createCanvas();
-        this.updateCanvasStyle();
-        this.drawSpectrogram();
+		this.render();
 
         wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this)
+		wavesurfer.on('redraw', this.render.bind(this));
     },
 
     createWrapper: function () {
@@ -74,6 +76,17 @@ WaveSurfer.Spectrogram = {
         });
     },
 
+  	render: function () {
+		this.updateCanvasStyle();
+
+		if (this.frequenciesDataUrl) {
+			this.loadFrequenciesData(this.frequenciesDataUrl);
+		}
+		else {
+			this.getFrequencies(this.drawSpectrogram);
+		}
+	},
+
     updateCanvasStyle: function () {
         var width = Math.round(this.width / this.pixelRatio) + 'px';
         this.canvas.width = this.width;
@@ -81,110 +94,116 @@ WaveSurfer.Spectrogram = {
         this.canvas.style.width = width;
     },
 
-    drawSpectrogram: function() {
-		var buffer = this.buffer;
-		var fftSamples = this.fftSamples;
-		var spectrCc = this.spectrCc;
+    drawSpectrogram: function(frequenciesData, my) {
+		var spectrCc = my.spectrCc;
 
-		var length = this.wavesurfer.backend.getDuration();
-		var columnWidth = 0.1 * this.width / length;
-		var height = this.height;
+		var length = my.wavesurfer.backend.getDuration();
+		var height = my.height;
 
-		var chrome = navigator.userAgent.indexOf('Chrom') > -1 ? true : false;
-		var channel, sampleSize;
+		var pixels = my.resample(frequenciesData);
 
-		if (chrome) {
-			channel = buffer.getChannelData(0);
-			sampleSize = Math.ceil(buffer.length / length * 0.1);
+		var heightFactor = 2 / my.buffer.numberOfChannels;
+
+		for (var i = 0; i < pixels.length; i++) {
+			for (var j = 0; j < pixels[i].length; j++) {
+				var colorValue = 255 - pixels[i][j];
+				my.spectrCc.fillStyle = 'rgb(' + colorValue + ', '  + colorValue + ', ' + colorValue + ')';
+				my.spectrCc.fillRect(i, height - j * heightFactor, 1, 1 * heightFactor);
+			}
 		}
-		else {
-			sampleSize = buffer.length;
-		}
-
-		var samplesCount = Math.ceil(buffer.length / sampleSize);
-
-		var i = 0;
-        var my = this;
-
-		function processSample() {
-			var frequencyData = new Array();
-			var context = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, sampleSize, buffer.sampleRate);
-			var source = context.createBufferSource();
-			var processor = context.createScriptProcessor(0, 1, 1);
-
-			var analyser = context.createAnalyser();
-			analyser.fftSize = fftSamples;
-			analyser.smoothingTimeConstant = 0.0;
-
-			if (chrome) {
-				source.buffer = context.createBuffer(1, sampleSize, buffer.sampleRate);
-			}
-			else {
-				source.buffer = buffer;
-			}
-
-			source.connect(analyser);
-			analyser.connect(processor);
-			processor.connect(context.destination);
-
-			processor.onaudioprocess = function (e) {
-				var array = new Uint8Array(analyser.frequencyBinCount);
-				analyser.getByteFrequencyData(array);
-
-				if (chrome && frequencyData.length == 0) {
-					frequencyData.push(array);
-				}
-				else {
-					my.drawColumn(array, height, columnWidth, i);
-					i++;
-				}
-			};
-
-			if (chrome) {
-				context.oncomplete = function (e) {
-					if (frequencyData.length > 0) {
-						my.drawColumn(frequencyData[0], height, columnWidth, i);
-						i++;
-					}
-					else {
-						console.log('Got 0 frequencies frames for sample ' + i + ', repeating');
-					}
-
-					if (i <= samplesCount) {
-						processSample();
-					}
-				};
-			}
-
-			if (chrome) {
-				var sample = new Float32Array(sampleSize);
-
-				for (var j = 0; j < sampleSize; j++) {
-					sample[j] = channel[i * sampleSize + j]
-				}
-
-				source.buffer.getChannelData(0).set(sample);
-			}
-
-			source.start(0);
-			context.startRendering();
-		}
-
-		processSample();
     },
 
-    drawColumn: function(column, height, width, start) {
-		start = start || 0;
-		for (var r = 0; r < column.length; r++) {
-			var colorValue = 255 - column[r];
-			this.spectrCc.fillStyle = 'rgb(' + colorValue + ', '  + colorValue + ', ' + colorValue + ')';
-			this.spectrCc.fillRect(start * width, height - r, width, 1);
-		}
+   	getFrequencies: function(callback) {
+		var fftSamples = this.fftSamples;
+		var buffer = this.buffer;
+		
+		var frequencies = new Array();
+		var context = new window.OfflineAudioContext(1, buffer.length, buffer.sampleRate);
+		var source = context.createBufferSource();
+		var processor = context.createScriptProcessor(0, 1, 1);
+
+		var analyser = context.createAnalyser();
+		analyser.fftSize = fftSamples;
+		analyser.smoothingTimeConstant = (this.width / buffer.duration < 10) ? 0.75 : 0.25;
+	
+		source.buffer = buffer;
+
+		source.connect(analyser);
+		analyser.connect(processor);
+		processor.connect(context.destination);
+
+		processor.onaudioprocess = function () {
+			var array = new Uint8Array(analyser.frequencyBinCount);
+			analyser.getByteFrequencyData(array);
+			frequencies.push(array);
+		};
+
+		source.start(0);
+		context.startRendering();
+
+		var my = this;
+		context.oncomplete = function() { callback(frequencies, my) };
 	},
 
-    updateScroll: function(e) {
+    loadFrequenciesData: function (url) {
+        var my = this;
+
+        var ajax = WaveSurfer.util.ajax({ url: url });
+
+        ajax.on('success', function(data) { my.drawSpectrogram(JSON.parse(data), my); });
+        ajax.on('error', function (e) {
+            my.fireEvent('error', 'XHR error: ' + e.target.statusText);
+        });
+
+        return ajax;
+    },
+
+	updateScroll: function(e) {
       this.wrapper.scrollLeft = e.target.scrollLeft
-    }
+    },
+
+	resample: function(oldMatrix, columnsNumber) {
+		var columnsNumber = this.width;
+		var newMatrix = new Array();
+
+		var oldPiece = 1 / oldMatrix.length;
+		var newPiece = 1 / columnsNumber;
+
+		for (var i = 0; i < columnsNumber; i++) {
+			var column = new Array(oldMatrix[0].length);
+
+			for (var j = 0; j < oldMatrix.length; j++) {
+				var oldStart = j * oldPiece;
+				var oldEnd = oldStart + oldPiece;
+				var newStart = i * newPiece;
+				var newEnd = newStart + newPiece;
+
+				var overlap = (oldEnd <= newStart || newEnd <= oldStart) ? 
+								0 :
+								Math.min(Math.max(oldEnd, newStart), Math.max(newEnd, oldStart)) -
+								Math.max(Math.min(oldEnd, newStart), Math.min(newEnd, oldStart));
+
+				if (overlap > 0) {
+					for (var k = 0; k < oldMatrix[0].length; k++) {
+						if (column[k] == null) {
+							column[k] = 0;
+						}
+						column[k] += (overlap / newPiece) * oldMatrix[j][k];
+					}
+				}
+			}
+
+			var intColumn = new Uint8Array(oldMatrix[0].length);
+
+			for (var k = 0; k < oldMatrix[0].length; k++) {
+				intColumn[k] = column[k];
+			}
+
+			newMatrix.push(intColumn);
+		}
+
+		return newMatrix;
+	}
 };
 
 WaveSurfer.util.extend(WaveSurfer.Spectrogram, WaveSurfer.Observer);
