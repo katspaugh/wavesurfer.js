@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 value: 0,
                 title: filter.frequency.value
             });
+            input.style.display = 'inline-block';
             input.setAttribute('orient', 'vertical');
             wavesurfer.drawer.style(input, {
                 'webkitAppearance': 'slider-vertical',
