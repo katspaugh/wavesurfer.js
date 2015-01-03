@@ -74,6 +74,8 @@ All methods are intentionally public, but the most readily available are the fol
  * `load(url)` – Loads audio from URL via XHR. Returns XHR object.
  * `loadBlob(url)` – Loads audio from a `Blob` or `File` object.
  * `on(eventName, callback)` – Subscribes to an event.  See [WaveSurfer Events](#wavesurfer-events) section below for a list.
+ * `un(eventName, callback)` – Unsubscribes from an event.
+ * `unAll()` – Unsubscribes from all events.
  * `pause()` – Stops playback.
  * `play([start[, end]])` – Starts playback from the current position.  Optional `start` and `end` measured in seconds can be used to set the range of audio to play.
  * `playPause()` – Plays if paused, pauses if playing.
