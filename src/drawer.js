@@ -89,7 +89,9 @@ WaveSurfer.Drawer = {
     },
 
     resetScroll: function () {
-        this.wrapper.scrollLeft = 0;
+        if (this.wrapper !== null) {
+            this.wrapper.scrollLeft = 0;
+        }
     },
 
     recenter: function (percent) {
