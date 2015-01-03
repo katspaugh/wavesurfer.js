@@ -401,6 +401,9 @@ var WaveSurfer = {
 
 /* Observer */
 WaveSurfer.Observer = {
+    /**
+     * Attach a handler function for an event.
+     */
     on: function (event, fn) {
         if (!this.handlers) { this.handlers = {}; }
 
@@ -411,6 +414,9 @@ WaveSurfer.Observer = {
         handlers.push(fn);
     },
 
+    /**
+     * Remove an event handler.
+     */
     un: function (event, fn) {
         if (!this.handlers) { return; }
 
@@ -428,10 +434,17 @@ WaveSurfer.Observer = {
         }
     },
 
+    /**
+     * Remove all event handlers.
+     */
     unAll: function () {
         this.handlers = null;
     },
 
+    /**
+     * Attach a handler to an event. The handler is executed at most once per
+     * event type.
+     */
     once: function (event, handler) {
         var my = this;
         var fn = function () {
