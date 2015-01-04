@@ -122,6 +122,8 @@
 
         /**
          * Audio input device is ready.
+         *
+         * @param {LocalMediaStream} stream: the microphone's media stream.
          */
         gotStream: function(stream) {
             this.stream = stream;
@@ -130,7 +132,7 @@
             this.connect();
 
             // notify listeners
-            this.fireEvent('deviceReady');
+            this.fireEvent('deviceReady', stream);
         },
 
         /**
