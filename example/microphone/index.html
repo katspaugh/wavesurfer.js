@@ -86,8 +86,8 @@ microphone.init({
     wavesurfer: wavesurfer
 });
 
-microphone.on('deviceReady', function() {
-    console.info('Device ready!');
+microphone.on('deviceReady', function(stream) {
+    console.log('Device ready!', stream);
 });
 microphone.on('deviceError', function(code) {
     console.warn('Device error: ' + code);
@@ -137,7 +137,7 @@ microphone.start();
                       <tbody>
                         <tr>
                           <td><code>deviceReady</code></td>
-                          <td>Invoked when the device is ready to use.</td>
+                          <td>Invoked when the device is ready to use. Callback will receive a <code>LocalMediaStream</code> object that contains the microphone stream.</td>
                         </tr>
                         <tr>
                           <td><code>deviceError</code></td>

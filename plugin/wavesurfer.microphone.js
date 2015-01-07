@@ -52,6 +52,15 @@
             } else {
                 // toggle paused
                 this.paused = !this.paused;
+
+                if (this.paused) {
+                    // disconnect sources so they can be used elsewhere
+                    // (eg. during audio playback)
+                    this.disconnect();
+                } else {
+                    // resume visualization
+                    this.connect();
+                }
             }
         },
 
@@ -65,9 +74,40 @@
                 if (this.stream) {
                     this.stream.stop();
                 }
-                this.mediaStreamSource.disconnect();
-                this.levelChecker.disconnect();
+                this.disconnect();
                 this.wavesurfer.empty();
+            }
+        },
+
+        /**
+         * Connect the media sources that feed the visualization.
+         */
+        connect: function() {
+            if (this.stream !== undefined) {
+                // Create an AudioNode from the stream.
+                this.mediaStreamSource = this.micContext.createMediaStreamSource(this.stream);
+
+                // Connect it to the destination to hear yourself (or any other node for processing!)
+                //this.mediaStreamSource.connect(this.micContext.destination);
+
+                this.levelChecker = this.micContext.createScriptProcessor(4096, 1 ,1);
+                this.mediaStreamSource.connect(this.levelChecker);
+
+                this.levelChecker.connect(this.micContext.destination);
+                this.levelChecker.onaudioprocess = this.reloadBuffer.bind(this);
+            }
+        },
+
+        /**
+         * Disconnect the media sources that feed the visualization.
+         */
+        disconnect: function() {
+            if (this.mediaStreamSource !== undefined) {
+                this.mediaStreamSource.disconnect();
+            }
+
+            if (this.levelChecker !== undefined) {
+                this.levelChecker.disconnect();
             }
         },
 
@@ -76,37 +116,30 @@
          */
         reloadBuffer: function(event) {
             if (!this.paused) {
-                this.wavesurfer.empty();
                 this.wavesurfer.loadDecodedBuffer(event.inputBuffer);
             }
         },
 
         /**
          * Audio input device is ready.
+         *
+         * @param {LocalMediaStream} stream: the microphone's media stream.
          */
         gotStream: function(stream) {
             this.stream = stream;
             this.active = true;
 
-            // Create an AudioNode from the stream.
-            this.mediaStreamSource = this.micContext.createMediaStreamSource(stream);
+            this.connect();
 
-            // Connect it to the destination to hear yourself (or any other node for processing!)
-            //this.mediaStreamSource.connect(this.audioContext.destination);
-
-            this.levelChecker = this.micContext.createScriptProcessor(4096, 1 ,1);
-            this.mediaStreamSource.connect(this.levelChecker);
-
-            this.levelChecker.connect(this.micContext.destination);
-            this.levelChecker.onaudioprocess = this.reloadBuffer.bind(this);
-
-            this.fireEvent('deviceReady');
+            // notify listeners
+            this.fireEvent('deviceReady', stream);
         },
 
         /**
          * Device error callback.
          */
         deviceError: function(code) {
+            // notify listeners
             this.fireEvent('deviceError', code);
         }
 

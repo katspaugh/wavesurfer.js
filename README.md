@@ -71,14 +71,17 @@ All methods are intentionally public, but the most readily available are the fol
  * `empty()` – Clears the waveform as if a zero-length audio is loaded.
  * `getCurrentTime()` – Returns current progress in seconds.
  * `getDuration()` – Returns the duration of an audio clip in seconds.
- * `load(url)` – Loads an audio from URL via XHR. Returns XHR object.
- * `on(eventName, callback)` – Subscribes to an event.  See `WaveSurfer Events` section below for a list.
+ * `load(url)` – Loads audio from URL via XHR. Returns XHR object.
+ * `loadBlob(url)` – Loads audio from a `Blob` or `File` object.
+ * `on(eventName, callback)` – Subscribes to an event.  See [WaveSurfer Events](#wavesurfer-events) section below for a list.
+ * `un(eventName, callback)` – Unsubscribes from an event.
+ * `unAll()` – Unsubscribes from all events.
  * `pause()` – Stops playback.
  * `play([start[, end]])` – Starts playback from the current position.  Optional `start` and `end` measured in seconds can be used to set the range of audio to play.
  * `playPause()` – Plays if paused, pauses if playing.
  * `seekAndCenter(progress)` – Seeks to a progress and centers view `[0..1]` (0 = beginning, 1 = end).
  * `seekTo(progress)` – Seeks to a progress `[0..1]` (0=beginning, 1=end).
- * `setFilter(filters)` - For inserting your own WebAudio nodes into the graph.  See `Connecting Filters` below.
+ * `setFilter(filters)` - For inserting your own WebAudio nodes into the graph.  See [Connecting Filters](#connecting-filters) below.
  * `setPlaybackRate(rate)` – Sets the speed of playback (`0.5` is half speed, `1` is normal speed, `2` is double speed and so on).
  * `setVolume(newVolume)` – Sets the playback volume to a new value `[0..1]` (0 = silent, 1 = maximum).
  * `skip(offset)` – Skip a number of seconds from the current position (use a negative value to go backwards).
@@ -141,10 +144,10 @@ After doing that, use `wavesurfer.addRegion()` to create Region objects.
 
 #### Exposed Methods
 
- * `addRegion(options)` – Creates a region on the waveform. Returns a `Region` object.  See `Region Options`, `Region Methods` and `Region Events` below.
+ * `addRegion(options)` – Creates a region on the waveform. Returns a `Region` object.  See [Region Options](#region-options), [Region Methods](#region-methods) and [Region Events](#region-events) below.
  * `clearRegions()` – Removes all regions.
  * `enableDragSelection(options)` – Lets you create regions by selecting.
-   areas of the waveform with mouse. `options` are Region objects' params (see below).
+   areas of the waveform with mouse. `options` are Region objects' params (see [below](#region-options)).
 
 ### Region Options
 
