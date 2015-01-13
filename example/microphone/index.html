@@ -113,6 +113,7 @@ microphone.start();
                         <tr>
                           <th>Name</th>
                           <th>Required</th>
+                          <th>Default</th>
                           <th>Description</th>
                         </tr>
                       </thead>
@@ -120,7 +121,26 @@ microphone.start();
                         <tr>
                           <td><code>wavesurfer</code></td>
                           <td>yes</td>
+                          <td></td>
                           <td>A WaveSurfer instance.</td>
+                        </tr>
+                        <tr>
+                          <td><code>bufferSize</code></td>
+                          <td>no</td>
+                          <td>4096</td>
+                          <td>The buffer size in units of sample-frames. If specified, the <code>bufferSize</code> must be one of the following values: 256, 512, 1024, 2048, 4096, 8192, 16384.</td>
+                        </tr>
+                        <tr>
+                          <td><code>numberOfInputChannels</code></td>
+                          <td>no</td>
+                          <td>1</td>
+                          <td>Integer specifying the number of channels for this node's input. Values of up to 32 are supported.</td>
+                        </tr>
+                        <tr>
+                          <td><code>numberOfOutputChannels</code></td>
+                          <td>no</td>
+                          <td>1</td>
+                          <td>Integer specifying the number of channels for this node's output. Values of up to 32 are supported.</td>
                         </tr>
                       </tbody>
                     </table>
