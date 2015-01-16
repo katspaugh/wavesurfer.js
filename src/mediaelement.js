@@ -1,8 +1,8 @@
 'use strict';
 
-WaveSurfer.AudioElement = Object.create(WaveSurfer.WebAudio);
+WaveSurfer.MediaElement = Object.create(WaveSurfer.WebAudio);
 
-WaveSurfer.util.extend(WaveSurfer.AudioElement, {
+WaveSurfer.util.extend(WaveSurfer.MediaElement, {
     init: function (params) {
         this.params = params;
 
@@ -15,12 +15,18 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
             play: function () {},
             pause: function () {}
         };
+
+        this.mediaType = params.mediaType.toLowerCase();
+
+
+        this.ac = params.audioContext || this.getAudioContext();
+        this.elementPosition = params.elementPosition;
     },
 
-    load: function (url, peaks, container) {
+    load: function (url, container, peaks) {
         var my = this;
 
-        var media = document.createElement('audio');
+        var media = document.createElement(this.mediaType);
         media.controls = false;
         media.autoplay = false;
         media.preload = 'auto';
@@ -42,7 +48,7 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
             my.fireEvent('audioprocess', my.getCurrentTime());
         });
 
-        var prevMedia = container.querySelector('audio');
+        var prevMedia = container.querySelector(this.mediaType);
         if (prevMedia) {
             container.removeChild(prevMedia);
         }
@@ -106,7 +112,11 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
     },
 
     getPeaks: function (length) {
-        return this.peaks || [];
+        if (this.peaks instanceof Array) {
+            return this.peaks || [];
+        }
+        var args = Array.prototype.slice.call(arguments);
+        return WaveSurfer.WebAudio.getPeaks.apply(this, args);
     },
 
     getVolume: function () {
@@ -124,3 +134,6 @@ WaveSurfer.util.extend(WaveSurfer.AudioElement, {
         this.media = null;
     }
 });
+
+//For backwards compatibility
+WaveSurfer.AudioElement = WaveSurfer.MediaElement;

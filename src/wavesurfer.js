@@ -29,7 +29,8 @@ var WaveSurfer = {
         audioRate     : 1,
         interact      : true,
         renderer      : 'Canvas',
-        backend       : 'WebAudio'
+        backend       : 'WebAudio',
+        mediaType     : 'audio'
     },
 
     init: function (params) {
@@ -42,6 +43,18 @@ var WaveSurfer = {
 
         if (!this.container) {
             throw new Error('Container element not found');
+        }
+
+        if (typeof this.params.mediaContainer == 'undefined') {
+            this.mediaContainer = this.container;
+        } else if (typeof this.params.mediaContainer == 'string') {
+            this.mediaContainer = document.querySelector(this.params.mediaContainer);
+        } else {
+            this.mediaContainer = this.params.mediaContainer;
+        }
+
+        if (!this.mediaContainer) {
+            throw new Error('Media Container element not found');
         }
 
         // Used to save the current volume when muting so we can
@@ -303,7 +316,8 @@ var WaveSurfer = {
     load: function (url, peaks) {
         switch (this.params.backend) {
             case 'WebAudio': return this.loadBuffer(url);
-            case 'AudioElement': return this.loadAudioElement(url, peaks);
+            case 'AudioElement': // for backwards compatibility
+            case 'MediaElement': return this.loadMediaElement(url, peaks);
         }
     },
 
@@ -316,9 +330,17 @@ var WaveSurfer = {
         return this.downloadArrayBuffer(url, this.loadArrayBuffer.bind(this));
     },
 
-    loadAudioElement: function (url, peaks) {
+    loadMediaElement: function (url, peaks) {
         this.empty();
-        this.backend.load(url, peaks, this.container);
+        if (peaks instanceof Array) {
+            this.backend.load(url, this.mediaContainer, peaks);
+        } else {
+            this.downloadArrayBuffer(url, (function(arraybuffer) {
+                this.backend.decodeArrayBuffer(arraybuffer, (function(buffer) {
+                    this.backend.load(url, this.mediaContainer);
+                }).bind(this));
+            }).bind(this));
+        }
         this.backend.once('canplay', (function () {
             this.drawBuffer();
             this.fireEvent('ready');
