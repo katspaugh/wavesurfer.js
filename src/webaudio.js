@@ -209,7 +209,7 @@ WaveSurfer.WebAudio = {
     },
 
     destroy: function () {
-	if (!this.isPaused()) {
+        if (!this.isPaused()) {
             this.pause();
         }
         this.unAll();
