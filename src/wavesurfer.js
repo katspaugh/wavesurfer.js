@@ -210,7 +210,7 @@ var WaveSurfer = {
     },
 
     /**
-     * Set the playback volume.
+     * Set the playback rate.
      *
      * @param {Number} rate A positive number. E.g. 0.5 means half the
      * normal speed, 2 means double speed and so on.
