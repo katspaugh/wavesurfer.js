@@ -195,6 +195,15 @@ WaveSurfer.Region = {
     updateRender: function () {
         var dur = this.wavesurfer.getDuration();
         var width = this.wrapper.scrollWidth;
+        var seconds = this.end - this.start;
+        if (this.start < 0) {
+          this.start = 0;
+          this.end = seconds;
+        }
+        if (this.end > dur) {
+          this.end = dur;
+          this.start = dur - seconds;
+        }
         this.style(this.element, {
             left: ~~(this.start / dur * width) + 'px',
             width: ~~((this.end / dur - this.start / dur) * width) + 'px',
