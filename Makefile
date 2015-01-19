@@ -1,6 +1,6 @@
 # npm install -g uglify-js
 
-PREAMBLE='/* wavesurfer.js v'`node -e 'console.log(require("./package.json").version)'`' @license `node -e 'console.log(require("./package.json").license)'` */'
+PREAMBLE='/* wavesurfer.js v'`node -e 'console.log(require("./package.json").version)`' @license CC-BY 3.0 */'
 BUILD_DIR=build
 MIN=$(BUILD_DIR)/wavesurfer.min.js
 AMD=$(BUILD_DIR)/wavesurfer.amd.js
@@ -9,7 +9,7 @@ SOURCE_MAP=wavesurfer-js-map.json
 SOURCE_MAP_ROOT=/
 SOURCES=src/wavesurfer.js\
         src/webaudio.js\
-        src/audioelement.js\
+        src/mediaelement.js\
         src/drawer.js\
         src/drawer.*.js
 
