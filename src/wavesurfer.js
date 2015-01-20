@@ -328,7 +328,6 @@ var WaveSurfer = {
 
     loadMediaElement: function (url, peaks) {
         this.empty();
-
         this.backend.load(url, this.mediaContainer, peaks);
 
         this.backend.once('canplay', (function () {
@@ -343,9 +342,10 @@ var WaveSurfer = {
         // If no pre-decoded peaks provided, attempt to download the
         // audio file and decode it with Web Audio.
         if (!peaks && this.backend.supportsWebAudio()) {
-            this.downloadArrayBuffer(url, (function (arraybuffer) {
-                this.backend.decodeArrayBuffer(arraybuffer, (function () {
-                    this.drawBuffer.bind(this);
+            this.downloadArrayBuffer(url, (function (data) {
+                this.backend.decodeArrayBuffer(data, (function (buffer) {
+                    this.backend.buffer = buffer;
+                    this.drawBuffer();
                 }).bind(this));
             }).bind(this));
         }
