@@ -8,6 +8,7 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         this.lastPos = this.wavesurfer.drawer.lastPos;
         this.params = wavesurfer.util.extend(
             {}, this.wavesurfer.drawer.params, {
+                showRegions: false,
                 showOverview: false,
                 overviewBorderColor: "green",
                 overviewBorderSize: 2
@@ -23,8 +24,54 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         this.createWrapper();
         this.createElements();
 
+        if (WaveSurfer.Regions && this.params.showRegions) {
+            this.regions();
+        }
+
         this.bindWaveSurferEvents();
         this.bindMinimapEvents();
+    },
+    regions: function() {
+        var my = this;
+        this.regions = {};
+
+        this.wavesurfer.on("region-created", function(region) {
+            my.regions[region.id] = region;
+            my.renderRegions();
+        });
+
+        this.wavesurfer.on("region-updated", function(region) {
+            my.regions[region.id] = region;
+            my.renderRegions();
+        });
+
+        this.wavesurfer.on("region-removed", function(region) {
+            delete my.regions[region.id];
+            my.renderRegions();
+        });
+    },
+    renderRegions: function() {
+        var my = this;
+        var regionElements = this.wrapper.querySelectorAll("region");
+        for (var i = 0; i < regionElements.length; ++i) {
+          this.wrapper.removeChild(regionElements[i]);
+        }
+
+        Object.keys(this.regions).forEach(function(id){
+            var region = my.regions[id];
+            var width = (my.width * ((region.end - region.start) / my.wavesurfer.getDuration()));
+            var left = (my.width * (region.start / my.wavesurfer.getDuration()));
+            var regionElement = my.style(document.createElement("region"), {
+                height: "inherit",
+                backgroundColor: region.color,
+                width: width + "px",
+                left: left + "px",
+                display: "block",
+                position: "absolute"
+            });
+            regionElement.classList.add(id);
+            my.wrapper.appendChild(regionElement);
+        });
     },
     createElements: function() {
         WaveSurfer.Drawer.Canvas.createElements.call(this);
