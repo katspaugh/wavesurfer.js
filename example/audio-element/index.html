@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Audio Element Example</title>
+        <title>wavesurfer.js | Media Element Example</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -29,7 +29,7 @@
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">Audio Element Fallback Example</h1>
+                <h1 itemprop="name">Media Element Fallback Example</h1>
             </div>
 
             <div id="demo">
@@ -59,10 +59,10 @@
 
                 <p>
                     <strong>wavesurfer.js</strong> will automatically
-                    fallback to HTML5 Audio if Web Audio is not
+                    fallback to HTML5 Media if Web Audio is not
                     supported. However, you can choose to use audio
                     element manually. Simply set the <code>backend</code>
-                    option to <code>"AudioElement"</code>.
+                    option to <code>"MediaElement"</code>.
                 </p>
 
                 <p>
@@ -70,7 +70,7 @@
 
 wavesurfer.init({
     container: document.querySelector('#wave'),
-    backend: 'AudioElement'
+    backend: 'MediaElement'
 });
 </code></pre>
                 </p>
