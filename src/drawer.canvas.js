@@ -65,7 +65,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var length = peaks.length;
         var scale = 1;
         if (this.params.fillParent && this.width != length) {
-            scale = this.width / peaks.length;
+            scale = this.width / length;
         }
 
         this.waveCc.fillStyle = this.params.waveColor;

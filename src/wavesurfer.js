@@ -14,7 +14,6 @@ var WaveSurfer = {
         waveColor     : '#999',
         progressColor : '#555',
         cursorColor   : '#333',
-        waveType      : 'solid',
         cursorWidth   : 1,
         skipLength    : 2,
         minPxPerSec   : 20,
