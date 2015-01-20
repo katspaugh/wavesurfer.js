@@ -7,8 +7,12 @@ WaveSurfer.WebAudio = {
     PAUSED_STATE: 1,
     FINISHED_STATE: 2,
 
+    supportsWebAudio: function () {
+        return !!(window.AudioContext || window.webkitAudioContext);
+    },
+
     getAudioContext: function () {
-        if (!(window.AudioContext || window.webkitAudioContext)) {
+        if (!this.supportsWebAudio()) {
             throw new Error("Your browser doesn't support Web Audio");
         }
 

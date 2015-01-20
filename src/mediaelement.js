@@ -112,11 +112,10 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
     },
 
     getPeaks: function (length) {
-        if (this.peaks instanceof Array) {
-            return this.peaks || [];
+        if (this.buffer) {
+            return WaveSurfer.WebAudio.getPeaks.call(this, length);
         }
-        var args = Array.prototype.slice.call(arguments);
-        return WaveSurfer.WebAudio.getPeaks.apply(this, args);
+        return this.peaks || [];
     },
 
     getVolume: function () {
