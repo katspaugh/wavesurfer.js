@@ -19,6 +19,8 @@
 
             this.active = false;
             this.paused = false;
+
+            // cross-browser getUserMedia
             this.getUserMedia = (
                 navigator.getUserMedia ||
                 navigator.webkitGetUserMedia ||
@@ -26,6 +28,20 @@
                 navigator.msGetUserMedia
             ).bind(navigator);
 
+            // The buffer size in units of sample-frames.
+            // If specified, the bufferSize must be one of the following values:
+            // 256, 512, 1024, 2048, 4096, 8192, 16384. Defaults to 4096.
+            this.bufferSize = this.params.bufferSize || 4096;
+
+            // Integer specifying the number of channels for this node's input,
+            // defaults to 1. Values of up to 32 are supported.
+            this.numberOfInputChannels = this.params.numberOfInputChannels || 1;
+
+            // Integer specifying the number of channels for this node's output,
+            // defaults to 1. Values of up to 32 are supported.
+            this.numberOfOutputChannels = this.params.numberOfOutputChannels || 1;
+
+            // wavesurfer's AudioContext where we'll route the mic signal to
             this.micContext = this.wavesurfer.backend.getAudioContext();
         },
 
@@ -87,10 +103,8 @@
                 // Create an AudioNode from the stream.
                 this.mediaStreamSource = this.micContext.createMediaStreamSource(this.stream);
 
-                // Connect it to the destination to hear yourself (or any other node for processing!)
-                //this.mediaStreamSource.connect(this.micContext.destination);
-
-                this.levelChecker = this.micContext.createScriptProcessor(4096, 1 ,1);
+                this.levelChecker = this.micContext.createScriptProcessor(
+                    this.bufferSize, this.numberOfInputChannels, this.numberOfOutputChannels);
                 this.mediaStreamSource.connect(this.levelChecker);
 
                 this.levelChecker.connect(this.micContext.destination);
