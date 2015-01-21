@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Audio Element Example</title>
+        <title>wavesurfer.js | Media Element Example</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -29,15 +29,11 @@
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">Audio Element Fallback Example</h1>
+                <h1 itemprop="name">Media Element Fallback Example</h1>
             </div>
 
             <div id="demo">
                 <div id="waveform">
-                    <div class="progress progress-striped active" id="progress-bar">
-                        <div class="progress-bar progress-bar-info"></div>
-                    </div>
-
                     <!-- Here be the waveform -->
                 </div>
 
@@ -59,10 +55,10 @@
 
                 <p>
                     <strong>wavesurfer.js</strong> will automatically
-                    fallback to HTML5 Audio if Web Audio is not
+                    fallback to HTML5 Media if Web Audio is not
                     supported. However, you can choose to use audio
                     element manually. Simply set the <code>backend</code>
-                    option to <code>"AudioElement"</code>.
+                    option to <code>"MediaElement"</code>.
                 </p>
 
                 <p>
@@ -70,7 +66,7 @@
 
 wavesurfer.init({
     container: document.querySelector('#wave'),
-    backend: 'AudioElement'
+    backend: 'MediaElement'
 });
 </code></pre>
                 </p>
@@ -78,23 +74,25 @@ wavesurfer.init({
                 <h3>Pre-rendered Peaks</h3>
 
                 <p>
-                    If you have pre-rendered peaks (e.g. on server),
+                    If you have pre-rendered peaks (on your server),
                     you can pass them into the <code>load</code>
-                    function. This is optional – if you don't provide
+                    function. This is optional–if you don't provide
                     any peaks,
-                    <strong>waserver.js</strong> will just draw a thin
-                    line instead of a waveform.
+                    <strong>waserver.js</strong> will first draw a
+                    thin line instead of a waveform, then attempt to
+                    download the audio file via Ajax and decode it
+                    with Web Audio if available.
                 </p>
 
                 <p>
-<pre><code>wavesurfer.load('example/media/demo.mp3', arrayOfPeaks);</code></pre>
+<pre><code>wavesurfer.load('example/media/demo.mp3');</code></pre>
                 </p>
 
 
                 <p>
-                    Press this button to see the same demo without peaks:
-                    <button class="btn btn-warning" data-action="no-peaks">
-                        Load without pre-rendered peaks
+                    Press this button to see the same demo with pre-decoded peaks:
+                    <button class="btn btn-warning" data-action="peaks">
+                        Load with pre-rendered peaks
                     </button>
                 </p>
             </div>

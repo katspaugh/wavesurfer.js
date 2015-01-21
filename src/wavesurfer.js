@@ -98,7 +98,12 @@ var WaveSurfer = {
             this.backend.destroy();
         }
 
+        if (this.params.backend == 'WebAudio' && !WaveSurfer.WebAudio.supportsWebAudio()) {
+            this.params.backend = 'AudioElement';
+        }
+
         this.backend = Object.create(WaveSurfer[this.params.backend]);
+        this.backend.init(this.params);
 
         this.backend.on('finish', function () {
             my.fireEvent('finish');
@@ -107,16 +112,6 @@ var WaveSurfer = {
         this.backend.on('audioprocess', function (time) {
             my.fireEvent('audioprocess', time);
         });
-
-        try {
-            this.backend.init(this.params);
-        } catch (e) {
-            if (e.message == "Your browser doesn't support Web Audio") {
-                this.params.backend = 'AudioElement';
-                this.backend = null;
-                this.createBackend();
-            }
-        }
     },
 
     restartAnimationLoop: function () {
@@ -332,22 +327,27 @@ var WaveSurfer = {
 
     loadMediaElement: function (url, peaks) {
         this.empty();
-        if (peaks instanceof Array) {
-            this.backend.load(url, this.mediaContainer, peaks);
-        } else {
-            this.downloadArrayBuffer(url, (function(arraybuffer) {
-                this.backend.decodeArrayBuffer(arraybuffer, (function(buffer) {
-                    this.backend.load(url, this.mediaContainer);
-                }).bind(this));
-            }).bind(this));
-        }
+        this.backend.load(url, this.mediaContainer, peaks);
+
         this.backend.once('canplay', (function () {
             this.drawBuffer();
             this.fireEvent('ready');
         }).bind(this));
+
         this.backend.once('error', (function (err) {
             this.fireEvent('error', err);
         }).bind(this));
+
+        // If no pre-decoded peaks provided, attempt to download the
+        // audio file and decode it with Web Audio.
+        if (!peaks && this.backend.supportsWebAudio()) {
+            this.downloadArrayBuffer(url, (function (data) {
+                this.backend.decodeArrayBuffer(data, (function (buffer) {
+                    this.backend.buffer = buffer;
+                    this.drawBuffer();
+                }).bind(this));
+            }).bind(this));
+        }
     },
 
     downloadArrayBuffer: function (url, callback) {
