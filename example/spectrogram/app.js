@@ -55,5 +55,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Init wavesurfer
     wavesurfer.init(options);
-    wavesurfer.load('../../example/media/demo.wav');
+    wavesurfer.load('../media/demo.wav');
 });
