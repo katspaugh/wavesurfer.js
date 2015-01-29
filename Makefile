@@ -1,6 +1,7 @@
 # npm install -g uglify-js
 
-PREAMBLE='/* wavesurfer.js v'`node -e 'console.log(require("./package.json").version)`' @license CC-BY 3.0 */'
+VERSION=`node -pe 'require("./package.json").version'`
+PREAMBLE="/* wavesurfer.js v $(VERSION) @license CC-BY 3.0 */"
 BUILD_DIR=build
 MIN=$(BUILD_DIR)/wavesurfer.min.js
 AMD=$(BUILD_DIR)/wavesurfer.amd.js
