@@ -85,6 +85,13 @@ var WaveSurfer = {
             }, 0);
         });
 
+        // Drag-to-seek
+        this.drawer.on('mousemove', function (e, progress) {
+            setTimeout(function () {
+                my.seekTo(progress);
+            }, 0);
+        });
+
         // Relay the scroll event from the drawer
         this.drawer.on('scroll', function (e) {
             my.fireEvent('scroll', e);

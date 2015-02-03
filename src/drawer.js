@@ -12,6 +12,8 @@ WaveSurfer.Drawer = {
 
         this.createWrapper();
         this.createElements();
+
+        this.mouseIsDown = false;
     },
 
     createWrapper: function () {
@@ -46,21 +48,39 @@ WaveSurfer.Drawer = {
 
     setupWrapperEvents: function () {
         var my = this;
-
-        this.wrapper.addEventListener('click', function (e) {
+        var mouseOverScrollbar = function (e) {
             var scrollbarHeight = my.wrapper.offsetHeight - my.wrapper.clientHeight;
             if (scrollbarHeight != 0) {
                 // scrollbar is visible.  Check if click was on it
                 var bbox = my.wrapper.getBoundingClientRect();
-                if (e.clientY >= bbox.bottom - scrollbarHeight) {
-                    // ignore mousedown as it was on the scrollbar
-                    return;
-                }
+                return (e.clientY >= bbox.bottom - scrollbarHeight);
             }
 
-            if (my.params.interact) {
+            return false;
+        };
+
+
+        this.wrapper.addEventListener('click', function (e) {
+            if (!mouseOverScrollbar(e) && my.params.interact) {
                 my.fireEvent('click', e, my.handleEvent(e));
             }
+        });
+
+        this.wrapper.addEventListener('mousedown', function (e) {
+            if (!mouseOverScrollbar(e) && my.params.interact) {
+                my.mouseIsDown = true;
+                my.fireEvent('mousedown', e, my.handleEvent(e));
+            }
+        });
+
+        this.wrapper.addEventListener('mousemove', function (e) {
+            if (my.mouseIsDown && my.params.interact) {
+                my.fireEvent('mousemove', e, my.handleEvent(e));
+            }
+        });
+
+        document.addEventListener('mouseup', function () {
+            my.mouseIsDown = false;
         });
 
         this.wrapper.addEventListener('scroll', function (e) {
