@@ -6,6 +6,17 @@ and Canvas.
 
 ![Screenshot](/example/screenshot.png?raw=true "Screenshot")
 
+### Browser support
+wavesurfer.js works only in modern browsers supporting Web Audio
+(Chrome, Firefox, Safari, Opera etc).
+
+It will fallback to Audio Element in other browsers (without
+graphics).  You can also try
+[wavesurfer.swf](https://github.com/laurentvd/wavesurfer.swf) which is
+a Flash-based fallback with graphics.
+
+
+
 ### API in examples
 
 Create an instance:
