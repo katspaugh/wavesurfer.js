@@ -344,10 +344,7 @@ WaveSurfer.WebAudio = {
      * Get the audio source playback rate.
      */
     getPlaybackRate: function () {
-    	if (this.playbackRate == null) {
-    		this.setPlaybackRate(1);
-    	}
-        return this.playbackRate;
+        return this.playbackRate || 1;
     }
 };
 
