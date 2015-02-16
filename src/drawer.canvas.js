@@ -60,7 +60,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         if (this.progressCc) {
             this.progressCc.canvas.width = this.width;
-			this.progressCc.canvas.height = this.height;
+	    this.progressCc.canvas.height = this.height;
             this.style(this.progressCc.canvas, { width: width + 'px'});
             this.style(this.progressCc.canvas.parentElement, { height: height + 'px'});
         }
@@ -119,59 +119,59 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         }, this);
     },
 
-	drawWaveMainWaveform: function (peaks, length, max) {
-        // A half-pixel offset makes lines crisp
-        var $ = 0.5 / this.params.pixelRatio;
+    drawWaveMainWaveform: function (peaks, length, max) {
+    // A half-pixel offset makes lines crisp
+    var $ = 0.5 / this.params.pixelRatio;
 
-		var vscale = 0.95; // scaled values of height of waveform
-		var totalChannels = Math.round(peaks.length/length);
+    var vscale = 0.95; // scaled values of height of waveform
+    var totalChannels = Math.round(peaks.length/length);
 
-		var heightChannel = this.height / totalChannels;
-		var midLength = heightChannel / 2;
-		for (var n = 0; n < totalChannels; n++)
-		{
-			var midpoint = n*heightChannel + midLength;
-			var coef = midLength / max;
+    var heightChannel = this.height / totalChannels;
+    var midLength = heightChannel / 2;
+    for (var n = 0; n < totalChannels; n++)
+	{
+	    var midpoint = n*heightChannel + midLength;
+	    var coef = midLength / max;
 			
-			var scale = 1;
-        	if (this.params.fillParent && this.width != length) {
+	    var scale = 1;
+            if (this.params.fillParent && this.width != length) {
             	scale = this.width / length;
-        	}
+            }
         	
-        	this.waveCc.fillStyle = this.params.waveColor;
-        	if (this.progressCc) {
+            this.waveCc.fillStyle = this.params.waveColor;
+            if (this.progressCc) {
             	this.progressCc.fillStyle = this.params.progressColor;
-        	}
+            }
         	
-        	[ this.waveCc, this.progressCc ].forEach(function (cc) {
-				if (!cc) { return; }
+            [ this.waveCc, this.progressCc ].forEach(function (cc) {
+		if (!cc) { return; }
 
-				// Draw the channel separator line
-				cc.fillRect(0, (n*heightChannel) - $, this.width, $);
+		// Draw the channel separator line
+		cc.fillRect(0, (n*heightChannel) - $, this.width, $);
 				
-				// Always draw a median line
-				cc.fillRect(0, midpoint - $, this.width, $);
+		// Always draw a median line
+		cc.fillRect(0, midpoint - $, this.width, $);
 
-				cc.beginPath();
-				cc.moveTo($, midpoint);
+		cc.beginPath();
+		cc.moveTo($, midpoint);
 
-				for (var i = n*length; i < (n+1)*length; i++) {
-					var h = Math.round(peaks[i] * coef);
-					cc.lineTo((i-(n*length)) * scale + $, midpoint + (vscale * h));
-				}
-
-				cc.lineTo(this.width + $, midpoint);
-				cc.moveTo($, midpoint);
-
-				for (var i = n*length; i < (n+1)*length; i++) {
-					var h = Math.round(peaks[i] * coef);
-					cc.lineTo((i-(n*length)) * scale + $, midpoint - (vscale * h));
-				}
-
-				cc.lineTo(this.width + $, midpoint);
-				cc.fill();
-        	}, this);	
+		for (var i = n*length; i < (n+1)*length; i++) {
+		    var h = Math.round(peaks[i] * coef);
+		    cc.lineTo((i-(n*length)) * scale + $, midpoint + (vscale * h));
 		}
+
+		cc.lineTo(this.width + $, midpoint);
+		cc.moveTo($, midpoint);
+
+		for (var i = n*length; i < (n+1)*length; i++) {
+		    var h = Math.round(peaks[i] * coef);
+		    cc.lineTo((i-(n*length)) * scale + $, midpoint - (vscale * h));
+		}
+
+		cc.lineTo(this.width + $, midpoint);
+		cc.fill();
+            }, this);	
+	}
     },
 
     updateProgress: function (progress) {
