@@ -256,8 +256,10 @@ var WaveSurfer = {
             width = parentWidth;
         }
 
-        var peaks = this.backend.getPeaks(width);
-        this.drawer.drawPeaks(peaks, width);
+//        var peaks = this.backend.getPeaks(width);
+//        this.drawer.drawPeaks(peaks, width);
+        var peaks = this.backend.getPeaksMainWaveform(width);
+        this.drawer.drawPeaksMainWaveform(peaks, width, height);
         this.fireEvent('redraw', peaks, width);
     },
 
