@@ -78,7 +78,18 @@ WaveSurfer.Drawer = {
         }
         this.drawWave(peaks, max);
     },
-
+    
+    drawPeaksMainWaveform: function (peaks, length, height) {
+        this.resetScroll();
+        this.setWidthnHeight(length, height);
+        if (this.params.normalize) {
+            var max = WaveSurfer.util.max(peaks);
+        } else {
+            max = 1;
+        }
+        this.drawWaveMainWaveform(peaks, length, max);
+    },
+    
     style: function (el, styles) {
         Object.keys(styles).forEach(function (prop) {
             if (el.style[prop] != styles[prop]) {
@@ -131,6 +142,10 @@ WaveSurfer.Drawer = {
     getWidth: function () {
         return Math.round(this.container.clientWidth * this.params.pixelRatio);
     },
+    
+    getHeight: function () {
+        return Math.round(this.wrapper.clientHeight);
+    },    
 
     setWidth: function (width) {
         if (width == this.width) { return; }
@@ -148,6 +163,27 @@ WaveSurfer.Drawer = {
         }
 
         this.updateWidth();
+    },
+    
+    setWidthnHeight: function (width, height) {
+        if (width == this.width && height == this.height) { return; }
+
+        this.width = width;
+        this.height = height;
+
+        if (this.params.fillParent || this.params.scrollParent) {
+            this.style(this.wrapper, {
+                width: '',
+                height: height + 'px'
+            });
+        } else {
+            this.style(this.wrapper, {
+                width: ~~(this.width / this.params.pixelRatio) + 'px',
+                height: height + 'px'
+            });
+        }
+
+        this.updateWidthnHeight();
     },
 
     progress: function (progress) {
