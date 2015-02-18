@@ -196,8 +196,6 @@ WaveSurfer.Region = {
         var dur = this.wavesurfer.getDuration();
         var fillParentNoScroll = (!this.wavesurfer.params.scrollParent && this.wavesurfer.params.fillParent);
         var width = fillParentNoScroll ? this.wavesurfer.drawer.getWidth() : this.wrapper.scrollWidth;
-
-        var width = this.wrapper.scrollWidth;
         var seconds = this.end - this.start;
         if (this.start < 0) {
           this.start = 0;

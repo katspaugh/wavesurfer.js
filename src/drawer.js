@@ -114,8 +114,6 @@ WaveSurfer.Drawer = {
         // if the cursor is currently visible...
         if (!immediate && -half <= offset && offset < half) {
             // we'll limit the "re-center" rate.
-            var rate = 5;
-            offset = Math.max(-rate, Math.min(rate, offset));
             target = scrollLeft + offset;
         }
 
