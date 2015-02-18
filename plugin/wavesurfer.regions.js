@@ -148,7 +148,6 @@ WaveSurfer.Region = {
 
         var width = this.wrapper.scrollWidth;
         this.style(regionEl, {
-            cursor: 'move',
             position: 'absolute',
             zIndex: 2,
             height: '100%',
@@ -183,7 +182,7 @@ WaveSurfer.Region = {
     },
 
     formatTime: function (start, end) {
-        return (end ? [ start, end ] : [ start ]).map(function (time) {
+        return (start == end ? [ start ] : [ start, end ]).map(function (time) {
             return [
                 Math.floor((time % 3600) / 60), // minutes
                 ('00' + Math.floor(time % 60)).slice(-2) // seconds
@@ -208,7 +207,8 @@ WaveSurfer.Region = {
         this.style(this.element, {
             left: ~~(this.start / dur * width) + 'px',
             width: ~~((this.end / dur - this.start / dur) * width) + 'px',
-            backgroundColor: this.color
+            backgroundColor: this.color,
+            cursor: this.drag ? 'move' : 'default'
         });
         this.element.title = this.formatTime(this.start, this.end);
     },
