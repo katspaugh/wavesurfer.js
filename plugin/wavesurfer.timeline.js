@@ -41,6 +41,15 @@
 
             wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this);
             wavesurfer.on('redraw', this.render.bind(this));
+            wavesurfer.on('destroy', this.destroy.bind(this));
+        },
+
+        destroy: function () {
+            this.unAll();
+            if (this.wrapper) {
+                this.wrapper.parentNode.removeChild(this.wrapper);
+                this.wrapper = null;
+            }
         },
 
         createWrapper: function () {
