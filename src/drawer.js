@@ -169,8 +169,10 @@ WaveSurfer.Drawer = {
 
     destroy: function () {
         this.unAll();
-        this.container.removeChild(this.wrapper);
-        this.wrapper = null;
+        if (this.wrapper) {
+            this.container.removeChild(this.wrapper);
+            this.wrapper = null;
+        }
     },
 
     /* Renderer-specific methods */
