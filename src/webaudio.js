@@ -35,6 +35,7 @@ WaveSurfer.WebAudio = {
 
         this.lastPlay = this.ac.currentTime;
         this.startPosition = 0;
+        this.scheduledPause = null;
 
         this.states = [
             Object.create(WaveSurfer.WebAudio.state.playing),
@@ -103,12 +104,12 @@ WaveSurfer.WebAudio = {
         this.scriptNode.onaudioprocess = function () {
             var time = my.getCurrentTime();
 
-            if (my.state === my.states[my.PLAYING_STATE]) {
-                my.fireEvent('audioprocess', time);
-            }
-
             if (my.buffer && time > my.getDuration()) {
                 my.setState(my.FINISHED_STATE);
+            } else if (my.buffer && time >= my.scheduledPause) {
+                my.setState(my.PAUSED_STATE);
+            } else if (my.state === my.states[my.PLAYING_STATE]) {
+                my.fireEvent('audioprocess', time);
             }
         };
     },
@@ -263,6 +264,8 @@ WaveSurfer.WebAudio = {
     },
 
     seekTo: function (start, end) {
+        this.scheduledPause = null;
+
         if (start == null) {
             start = this.getCurrentTime();
             if (start >= this.getDuration()) {
@@ -304,6 +307,8 @@ WaveSurfer.WebAudio = {
         start = adjustedTime.start;
         end = adjustedTime.end;
 
+        this.scheduledPause = end;
+
         this.source.start(0, start, end - start);
 
         this.setState(this.PLAYING_STATE);
@@ -313,6 +318,8 @@ WaveSurfer.WebAudio = {
      * Pauses the loaded audio.
      */
     pause: function () {
+        this.scheduledPause = null;
+
         this.startPosition += this.getPlayedTime();
         this.source && this.source.stop(0);
 
