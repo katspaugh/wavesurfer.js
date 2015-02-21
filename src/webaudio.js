@@ -257,7 +257,7 @@ WaveSurfer.WebAudio = {
     },
 
     getDuration: function () {
-        if (this.buffer === undefined) {
+        if (!this.buffer) {
             return 0;
         }
         return this.buffer.duration;
