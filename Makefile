@@ -9,6 +9,7 @@ CJS=$(BUILD_DIR)/wavesurfer.cjs.js
 SOURCE_MAP=wavesurfer-js-map.json
 SOURCE_MAP_ROOT=/
 SOURCES=src/wavesurfer.js\
+	src/util.js\
         src/webaudio.js\
         src/mediaelement.js\
         src/drawer.js\
