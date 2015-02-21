@@ -19,6 +19,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 overflow: 'hidden',
                 width: '0',
                 height: this.params.height + 'px',
+                boxSizing: 'border-box',
                 borderRightStyle: 'solid',
                 borderRightWidth: this.params.cursorWidth + 'px',
                 borderRightColor: this.params.cursorColor
