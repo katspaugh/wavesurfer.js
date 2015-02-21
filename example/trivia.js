@@ -27,7 +27,9 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         var action = map[e.keyCode];
         if (action in GLOBAL_ACTIONS) {
-            e.preventDefault();
+            if (document == e.target || document.body == e.target) {
+                e.preventDefault();
+            }
             GLOBAL_ACTIONS[action](e);
         }
     });
