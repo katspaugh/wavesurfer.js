@@ -115,6 +115,8 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
                 }
             });
         }
+
+        this.wavesurfer.on('destroy', this.destroy.bind(this));
     },
 
     bindMinimapEvents: function () {
