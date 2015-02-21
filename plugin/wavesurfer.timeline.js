@@ -105,10 +105,11 @@
         },
 
         updateCanvasStyle: function () {
-            var width = Math.round(this.drawer.wrapper.scrollWidth / this.wavesurfer.params.pixelRatio);
-            this.canvas.width = width;
-            this.canvas.height = this.height;
+            var width = this.drawer.wrapper.scrollWidth;
+            this.canvas.width = width * this.wavesurfer.params.pixelRatio;
+            this.canvas.height = this.height * this.wavesurfer.params.pixelRatio;;
             this.canvas.style.width = width + 'px';
+            this.canvas.style.height = this.height + 'px';
         },
 
         drawTimeCanvas: function() {
@@ -118,13 +119,10 @@
 
             if (wsParams.fillParent && !wsParams.scrollParent) {
                 var width = this.drawer.getWidth();
-                var pixelsPerSecond = width/duration;
             } else {
-                var width = backend.getDuration() * wsParams.minPxPerSec;
-                var pixelsPerSecond = wsParams.minPxPerSec;
+                width = this.drawer.wrapper.scrollWidth * wsParams.pixelRatio;
             }
-
-            pixelsPerSecond = pixelsPerSecond / wsParams.pixelRatio;
+            var pixelsPerSecond = width/duration;
 
             if (duration > 0) {
                 var curPixel = 0,
@@ -160,19 +158,20 @@
                 }
 
                 var height1 = this.height - 4,
-                    height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4;
+                    height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4,
+                    fontSize = this.fontSize * wsParams.pixelRatio;
 
                 for (var i = 0; i < totalSeconds/timeInterval; i++) {
                     if (i % primaryLabelInterval == 0) {
                         this.timeCc.fillStyle = this.primaryColor;
                         this.timeCc.fillRect(curPixel, 0, 1, height1);
-                        this.timeCc.font = this.fontSize + 'px ' + this.fontFamily;
+                        this.timeCc.font = fontSize + 'px ' + this.fontFamily;
                         this.timeCc.fillStyle = this.primaryFontColor;
                         this.timeCc.fillText(formatTime(curSeconds), curPixel + 5, height1);
                     } else if (i % secondaryLabelInterval == 0) {
                         this.timeCc.fillStyle = this.secondaryColor;
                         this.timeCc.fillRect(curPixel, 0, 1, height1);
-                        this.timeCc.font = this.fontSize + 'px ' + this.fontFamily;
+                        this.timeCc.font = fontSize + 'px ' + this.fontFamily;
                         this.timeCc.fillStyle = this.secondaryFontColor;
                         this.timeCc.fillText(formatTime(curSeconds), curPixel + 5, height1);
                     } else {
