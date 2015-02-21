@@ -185,8 +185,8 @@
             }
         },
 
-        updateScroll: function(e){
-            this.wrapper.scrollLeft = e.target.scrollLeft;
+        updateScroll: function () {
+            this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
         }
     };
 
