@@ -98,8 +98,13 @@ var WaveSurfer = {
             this.backend.destroy();
         }
 
+        // Back compat
+        if (this.params.backend == 'AudioElement') {
+            this.params.backend = 'MediaElement';
+        }
+
         if (this.params.backend == 'WebAudio' && !WaveSurfer.WebAudio.supportsWebAudio()) {
-            this.params.backend = 'AudioElement';
+            this.params.backend = 'MediaElement';
         }
 
         this.backend = Object.create(WaveSurfer[this.params.backend]);
@@ -311,7 +316,6 @@ var WaveSurfer = {
     load: function (url, peaks) {
         switch (this.params.backend) {
             case 'WebAudio': return this.loadBuffer(url);
-            case 'AudioElement': // for backwards compatibility
             case 'MediaElement': return this.loadMediaElement(url, peaks);
         }
     },

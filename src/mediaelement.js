@@ -17,8 +17,6 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         };
 
         this.mediaType = params.mediaType.toLowerCase();
-
-        this.ac = params.audioContext || this.getAudioContext();
         this.elementPosition = params.elementPosition;
     },
 
