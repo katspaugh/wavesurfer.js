@@ -66,7 +66,6 @@ See the example code [here](/example/main.js).
 | `hideScrollbar` | boolean | `false` | Whether to hide the horizontal scrollbar when one would normally be shown. |
 | `interact` | boolean | `true` | Whether the mouse interaction will be enabled at initialization.  You can switch this parameter at any time later on. |
 | `minPxPerSec` | integer | `50` | Minimum number of pixels per second of audio. |
-| `normalize` | boolean | `false` | If `true`, normalize by the maximum peak instead of 1.0. |
 | `pixelRatio` | integer | `window.devicePixelRatio` | Can be set to `1` for faster rendering. |
 | `progressColor` | string | `#555` | The fill color of the part of the waveform behind the cursor. |
 | `scrollParent` | boolean | `false` | Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrunk to the container width (see `fillParent`). |

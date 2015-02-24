@@ -18,10 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
         options.scrollParent = true;
     }
 
-    if (location.search.match('normalize')) {
-        options.normalize = true;
-    }
-
     // Init
     wavesurfer.init(options);
     // Load audio from URL

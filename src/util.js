@@ -14,18 +14,6 @@ WaveSurfer.util = {
         return 'wavesurfer_' + Math.random().toString(32).substring(2);
     },
 
-    max: function (values, min) {
-        var max = -Infinity;
-        for (var i = 0, len = values.length; i < len; i++) {
-            var val = values[i];
-            if (min != null) {
-                val = Math.abs(val - min);
-            }
-            if (val > max) { max = val; }
-        }
-        return max;
-    },
-
     ajax: function (options) {
         var ajax = Object.create(WaveSurfer.Observer);
         var xhr = new XMLHttpRequest();

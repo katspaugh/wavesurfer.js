@@ -165,17 +165,19 @@ WaveSurfer.WebAudio = {
     },
 
     /**
-     * @returns {Float32Array} Array of peaks.
+     * @returns {Array} Array of peaks or array of arrays of peaks.
      */
     getPeaks: function (length) {
-        var buffer = this.buffer;
-        var sampleSize = buffer.length / length;
+        var sampleSize = this.buffer.length / length;
         var sampleStep = ~~(sampleSize / 10) || 1;
-        var channels = buffer.numberOfChannels;
-        var peaks = new Float32Array(length);
+        var channels = this.buffer.numberOfChannels;
+        var splitPeaks = [];
+        var mergedPeaks = [];
 
         for (var c = 0; c < channels; c++) {
-            var chan = buffer.getChannelData(c);
+            var peaks = splitPeaks[c] = [];
+            var chan = this.buffer.getChannelData(c);
+
             for (var i = 0; i < length; i++) {
                 var start = ~~(i * sampleSize);
                 var end = ~~(start + sampleSize);
@@ -189,13 +191,15 @@ WaveSurfer.WebAudio = {
                         max = -value;
                     }
                 }
-                if (c == 0 || max > peaks[i]) {
-                    peaks[i] = max;
+                peaks[i] = max;
+
+                if (c == 0 || max > mergedPeaks[i]) {
+                    mergedPeaks[i] = max;
                 }
             }
         }
 
-        return peaks;
+        return this.params.splitChannels ? splitPeaks : mergedPeaks;
     },
 
     getPlayedPercents: function () {

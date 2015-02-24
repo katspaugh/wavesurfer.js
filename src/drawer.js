@@ -71,12 +71,7 @@ WaveSurfer.Drawer = {
     drawPeaks: function (peaks, length) {
         this.resetScroll();
         this.setWidth(length);
-        if (this.params.normalize) {
-            var max = WaveSurfer.util.max(peaks);
-        } else {
-            max = 1;
-        }
-        this.drawWave(peaks, max);
+        this.drawWave(peaks);
     },
 
     style: function (el, styles) {
@@ -148,7 +143,16 @@ WaveSurfer.Drawer = {
             });
         }
 
-        this.updateWidth();
+        this.updateSize();
+    },
+
+    setHeight: function (height) {
+        if (height == this.height) { return; }
+        this.height = height;
+        this.style(this.wrapper, {
+            height: ~~(this.height / this.params.pixelRatio) + 'px'
+        });
+        this.updateSize();
     },
 
     progress: function (progress) {
@@ -178,7 +182,7 @@ WaveSurfer.Drawer = {
     /* Renderer-specific methods */
     createElements: function () {},
 
-    updateWidth: function () {},
+    updateSize: function () {},
 
     drawWave: function (peaks, max) {},
 
