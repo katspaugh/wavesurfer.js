@@ -7,6 +7,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var waveCanvas = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
+                height: '100%',
                 zIndex: 1
             })
         );
@@ -18,6 +19,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 zIndex: 2,
                 overflow: 'hidden',
                 width: '0',
+                height: '100%',
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
                 borderRightWidth: this.params.cursorWidth + 'px',
