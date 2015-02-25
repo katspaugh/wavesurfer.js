@@ -13,12 +13,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-// Play on audio load
-wavesurfer.on('ready', function () {
-    wavesurfer.play();
-});
-
-
 // Bind controls
 document.addEventListener('DOMContentLoaded', function () {
     // Play button
@@ -44,34 +38,36 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-    // Play song from playlist
-    var playlistSwitch = function (link) {
-        // Toggle the active class
-        if (playlistSwitch.active) {
-            playlistSwitch.active.classList.remove('active');
-        }
-        playlistSwitch.active = link;
-        link.classList.add('active');
+    // The playlist links
+    var links = document.querySelectorAll('#playlist a');
+    var currentTrack = 0;
 
-        // Load the song
-        wavesurfer.load(link.href);
-
-        // Switch to the next song when finished
-        var next = link.nextElementSibling;
-        if (next) {
-            wavesurfer.once('finish', function () {
-                playlistSwitch(next);
-                wavesurfer.load(next.href);
-            });
-        }
+    // Load a track by index and highlight the corresponding link
+    var setCurrentSong = function (index) {
+        links[currentTrack].classList.remove('active');
+        currentTrack = index;
+        links[currentTrack].classList.add('active');
+        wavesurfer.load(links[currentTrack].href);
     };
 
-    var links = document.querySelectorAll('#playlist a');
-    [].forEach.call(links, function (el) {
-        el.addEventListener('click', function (e) {
+    // Load the track on click
+    Array.prototype.forEach.call(links, function (link, index) {
+        link.addEventListener('click', function (e) {
             e.preventDefault();
-            playlistSwitch(this);
+            setCurrentSong(index);
         });
     });
-    playlistSwitch(links[0]);
+
+    // Play on audio load
+    wavesurfer.on('ready', function () {
+        wavesurfer.play();
+    });
+
+    // Go to the next track on finish
+    wavesurfer.on('finish', function () {
+        setCurrentSong((currentTrack + 1) % links.length);
+    });
+
+    // Load the first track
+    setCurrentSong(currentTrack);
 });
