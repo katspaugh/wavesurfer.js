@@ -62,6 +62,9 @@ var WaveSurfer = {
         this.savedVolume = 0;
         // The current muted state
         this.isMuted = false;
+        // Will hold a list of event descriptors that need to be
+        // cancelled on subsequent loads of audio
+        this.tmpEvents = [];
 
         this.createDrawer();
         this.createBackend();
@@ -270,19 +273,15 @@ var WaveSurfer = {
      * Internal method.
      */
     loadArrayBuffer: function (arraybuffer) {
-        var my = this;
-        this.backend.decodeArrayBuffer(arraybuffer, function (data) {
-            my.loadDecodedBuffer(data);
-        }, function () {
-            my.fireEvent('error', 'Error decoding audiobuffer');
-        });
+        this.decodeArrayBuffer(arraybuffer, function (data) {
+            this.loadDecodedBuffer(data);
+        }.bind(this));
     },
 
     /**
      * Directly load an externally decoded AudioBuffer.
      */
     loadDecodedBuffer: function (buffer) {
-        this.empty();
         this.backend.load(buffer);
         this.drawBuffer();
         this.fireEvent('ready');
@@ -297,17 +296,19 @@ var WaveSurfer = {
         var my = this;
         // Create file reader
         var reader = new FileReader();
-        reader.addEventListener('progress', function (e) {
-            my.onProgress(e);
-        });
-        reader.addEventListener('load', function (e) {
-            my.empty();
-            my.loadArrayBuffer(e.target.result);
-        });
-        reader.addEventListener('error', function () {
-            my.fireEvent('error', 'Error reading file');
-        });
+        this.tmpEvents.push(
+            reader.addEventListener('progress', function (e) {
+                my.onProgress(e);
+            }),
+            reader.addEventListener('load', function (e) {
+                my.loadArrayBuffer(e.target.result);
+            }),
+            reader.addEventListener('error', function () {
+                my.fireEvent('error', 'Error reading file');
+            })
+        );
         reader.readAsArrayBuffer(blob);
+        this.empty();
     },
 
     /**
@@ -326,47 +327,63 @@ var WaveSurfer = {
     loadBuffer: function (url) {
         this.empty();
         // load via XHR and render all at once
-        return this.downloadArrayBuffer(url, this.loadArrayBuffer.bind(this));
+        return this.getArrayBuffer(url, this.loadArrayBuffer.bind(this));
     },
 
     loadMediaElement: function (url, peaks) {
         this.empty();
         this.backend.load(url, this.mediaContainer, peaks);
 
-        this.backend.once('canplay', (function () {
-            this.drawBuffer();
-            this.fireEvent('ready');
-        }).bind(this));
+        this.tmpEvents.push(
+            this.backend.once('canplay', (function () {
+                this.drawBuffer();
+                this.fireEvent('ready');
+            }).bind(this)),
 
-        this.backend.once('error', (function (err) {
-            this.fireEvent('error', err);
-        }).bind(this));
+            this.backend.once('error', (function (err) {
+                this.fireEvent('error', err);
+            }).bind(this))
+        );
+
 
         // If no pre-decoded peaks provided, attempt to download the
         // audio file and decode it with Web Audio.
         if (!peaks && this.backend.supportsWebAudio()) {
-            this.downloadArrayBuffer(url, (function (data) {
-                this.backend.decodeArrayBuffer(data, (function (buffer) {
+            this.getArrayBuffer(url, (function (arraybuffer) {
+                this.decodeArrayBuffer(arraybuffer, function (buffer) {
                     this.backend.buffer = buffer;
                     this.drawBuffer();
-                }).bind(this));
+                }).bind(this);
             }).bind(this));
         }
     },
 
-    downloadArrayBuffer: function (url, callback) {
+    decodeArrayBuffer: function (arraybuffer, callback) {
+        this.backend.decodeArrayBuffer(
+            arraybuffer,
+            this.fireEvent.bind(this, 'decoded'),
+            this.fireEvent.bind(this, 'error', 'Error decoding audiobuffer')
+        );
+        this.tmpEvents.push(
+            this.once('decoded', callback)
+        );
+    },
+
+    getArrayBuffer: function (url, callback) {
         var my = this;
         var ajax = WaveSurfer.util.ajax({
             url: url,
             responseType: 'arraybuffer'
         });
-        ajax.on('progress', function (e) {
-            my.onProgress(e);
-        });
-        ajax.on('success', callback);
-        ajax.on('error', function (e) {
-            my.fireEvent('error', 'XHR error: ' + e.target.statusText);
-        });
+        this.tmpEvents.push(
+            ajax.on('progress', function (e) {
+                my.onProgress(e);
+            }),
+            ajax.on('success', callback),
+            ajax.on('error', function (e) {
+                my.fireEvent('error', 'XHR error: ' + e.target.statusText);
+            })
+        );
         return ajax;
     },
 
@@ -400,6 +417,10 @@ var WaveSurfer = {
         return json;
     },
 
+    clearTmpEvents: function () {
+        this.tmpEvents.forEach(function (e) { e.un(); });
+    },
+
     /**
      * Display empty waveform.
      */
@@ -408,6 +429,7 @@ var WaveSurfer = {
             this.stop();
             this.backend.disconnectSource();
         }
+        this.clearTmpEvents();
         this.drawer.progress(0);
         this.drawer.setWidth(0);
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
@@ -418,6 +440,7 @@ var WaveSurfer = {
      */
     destroy: function () {
         this.fireEvent('destroy');
+        this.clearTmpEvents();
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();

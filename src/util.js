@@ -66,6 +66,13 @@ WaveSurfer.Observer = {
             handlers = this.handlers[event] = [];
         }
         handlers.push(fn);
+
+        // Return an event descriptor
+        return {
+            name: event,
+            callback: fn,
+            un: this.un.bind(this, event, fn)
+        };
     },
 
     /**
@@ -107,7 +114,7 @@ WaveSurfer.Observer = {
                 my.un(event, fn);
             }, 0);
         };
-        this.on(event, fn);
+        return this.on(event, fn);
     },
 
     fireEvent: function (event) {
