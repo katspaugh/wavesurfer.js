@@ -2,7 +2,7 @@
   "name"          : "wavesurfer.js",
   "version"       : "1.0.22",
   "homepage"      : "https://github.com/katspaugh/wavesurfer.js",
-  "main"          : "build/wavesurfer.min.js",
+  "main"          : "dist/wavesurfer.min.js",
   "license"       : "CC BY 3.0",
   "devDependencies": {
     "grunt": ">=0.4.5",
