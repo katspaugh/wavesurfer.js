@@ -98,7 +98,7 @@ WaveSurfer.Region = {
             this.end = Number(params.end);
         }
         if (null != params.loop) {
-            this.color = Boolean(params.loop);
+            this.loop = Boolean(params.loop);
         }
         if (null != params.color) {
             this.color = params.color;
@@ -107,10 +107,10 @@ WaveSurfer.Region = {
             this.data = params.data;
         }
         if (null != params.resize) {
-            this.data = Boolean(params.resize);
+            this.resize = Boolean(params.resize);
         }
         if (null != params.drag) {
-            this.data = Boolean(params.drag);
+            this.drag = Boolean(params.drag);
         }
         this.updateRender();
         this.fireEvent('update');
