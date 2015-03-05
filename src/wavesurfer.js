@@ -348,10 +348,10 @@ var WaveSurfer = {
         // audio file and decode it with Web Audio.
         if (!peaks && this.backend.supportsWebAudio()) {
             this.getArrayBuffer(url, (function (arraybuffer) {
-                this.decodeArrayBuffer(arraybuffer, function (buffer) {
+                this.decodeArrayBuffer(arraybuffer, (function (buffer) {
                     this.backend.buffer = buffer;
                     this.drawBuffer();
-                }).bind(this);
+                }).bind(this));
             }).bind(this));
         }
     },
