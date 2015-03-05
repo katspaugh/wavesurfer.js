@@ -195,14 +195,14 @@ WaveSurfer.Region = {
         var dur = this.wavesurfer.getDuration();
         var fillParentNoScroll = (!this.wavesurfer.params.scrollParent && this.wavesurfer.params.fillParent);
         var width = fillParentNoScroll ? this.wavesurfer.drawer.getWidth() : this.wrapper.scrollWidth;
-        var seconds = this.end - this.start;
+
         if (this.start < 0) {
           this.start = 0;
-          this.end = seconds;
+          this.end = this.end - this.start;
         }
         if (this.end > dur) {
           this.end = dur;
-          this.start = dur - seconds;
+          this.start = dur - (this.end - this.start);
         }
         this.style(this.element, {
             left: ~~(this.start / dur * width) + 'px',
