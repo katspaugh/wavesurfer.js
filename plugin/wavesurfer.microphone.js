@@ -151,6 +151,13 @@
         },
 
         /**
+         * Destroy the microphone plugin.
+         */
+        destroy: function(event) {
+            this.stop();
+        },
+
+        /**
          * Device error callback.
          */
         deviceError: function(code) {
