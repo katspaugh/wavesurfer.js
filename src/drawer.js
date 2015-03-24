@@ -75,13 +75,11 @@ WaveSurfer.Drawer = {
     },
 
     style: function (el, styles) {
-        if (el) {
-            Object.keys(styles).forEach(function (prop) {
-                if (el.style[prop] != styles[prop]) {
-                    el.style[prop] = styles[prop];
-                }
-            });
-        }
+        Object.keys(styles).forEach(function (prop) {
+            if (el.style[prop] != styles[prop]) {
+                el.style[prop] = styles[prop];
+            }
+        });
         return el;
     },
 
