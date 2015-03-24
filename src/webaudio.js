@@ -210,7 +210,6 @@ WaveSurfer.WebAudio = {
         if (this.source) {
             this.source.disconnect();
         }
-        this.buffer = null;
     },
 
     /**
