@@ -2,7 +2,6 @@
 
 WaveSurfer.WebAudio = {
     scriptBufferSize: 256,
-    fftSize: 128,
     PLAYING_STATE: 0,
     PAUSED_STATE: 1,
     FINISHED_STATE: 2,
@@ -116,8 +115,6 @@ WaveSurfer.WebAudio = {
 
     createAnalyserNode: function () {
         this.analyser = this.ac.createAnalyser();
-        this.analyser.fftSize = this.fftSize;
-        this.analyserData = new Uint8Array(this.analyser.frequencyBinCount);
         this.analyser.connect(this.gainNode);
     },
 
@@ -210,17 +207,6 @@ WaveSurfer.WebAudio = {
         if (this.source) {
             this.source.disconnect();
         }
-    },
-
-    /**
-     * Returns the real-time waveform data.
-     *
-     * @return {Uint8Array} The frequency data.
-     * Values range from 0 to 255.
-     */
-    waveform: function () {
-        this.analyser.getByteTimeDomainData(this.analyserData);
-        return this.analyserData;
     },
 
     destroy: function () {
