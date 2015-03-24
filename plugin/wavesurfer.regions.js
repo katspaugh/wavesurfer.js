@@ -193,8 +193,7 @@ WaveSurfer.Region = {
     /* Update element's position, width, color. */
     updateRender: function () {
         var dur = this.wavesurfer.getDuration();
-        var fillParentNoScroll = (!this.wavesurfer.params.scrollParent && this.wavesurfer.params.fillParent);
-        var width = fillParentNoScroll ? this.wavesurfer.drawer.getWidth() : this.wrapper.scrollWidth;
+        var width = this.wrapper.scrollWidth;
 
         if (this.start < 0) {
           this.start = 0;
@@ -206,7 +205,7 @@ WaveSurfer.Region = {
         }
         this.style(this.element, {
             left: ~~(this.start / dur * width) + 'px',
-            width: ~~((this.end / dur - this.start / dur) * width) + 'px',
+            width: ~~((this.end - this.start) / dur * width) + 'px',
             backgroundColor: this.color,
             cursor: this.drag ? 'move' : 'default'
         });
