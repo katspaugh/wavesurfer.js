@@ -82,6 +82,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         if (this.params.fillParent && this.width != length) {
             scale = this.width / length;
         }
+        var max = 1;
+        if (this.params.normalize) {
+            max = Math.max.apply(Math, peaks);
+        }
 
         this.waveCc.fillStyle = this.params.waveColor;
         if (this.progressCc) {
@@ -95,7 +99,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             cc.moveTo($, halfH + offsetY);
 
             for (var i = 0; i < length; i++) {
-                var h = Math.round(peaks[i] * halfH);
+                var h = Math.round(peaks[i] / max * halfH);
                 cc.lineTo(i * scale + $, halfH + h + offsetY);
             }
 
@@ -103,7 +107,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             cc.moveTo($, halfH + offsetY);
 
             for (var i = 0; i < length; i++) {
-                var h = Math.round(peaks[i] * halfH);
+                var h = Math.round(peaks[i] / max * halfH);
                 cc.lineTo(i * scale + $, halfH - h + offsetY);
             }
 

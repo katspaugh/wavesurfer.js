@@ -21,6 +21,7 @@ var WaveSurfer = {
         fillParent    : true,
         scrollParent  : false,
         hideScrollbar : false,
+        normalize     : false,
         audioContext  : null,
         container     : null,
         dragSelection : true,
