@@ -329,12 +329,16 @@ WaveSurfer.Region = {
             };
 
             my.element.addEventListener('mousedown', onDown);
-            my.wrapper.addEventListener('mouseup', onUp);
             my.wrapper.addEventListener('mousemove', onMove);
+            document.body.addEventListener('mouseup', onUp);
 
             my.on('remove', function () {
-                my.wrapper.removeEventListener('mouseup', onUp);
+                document.body.removeEventListener('mouseup', onUp);
                 my.wrapper.removeEventListener('mousemove', onMove);
+            });
+
+            my.wavesurfer.on('destroy', function () {
+                document.body.removeEventListener('mouseup', onUp);
             });
         }());
     },
