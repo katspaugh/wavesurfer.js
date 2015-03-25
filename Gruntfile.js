@@ -63,7 +63,39 @@ module.exports = function(grunt) {
           },
         })
       }
-    }
+    },
+    jshint: {
+      options: {
+        curly: true,
+        eqeqeq: false,
+        eqnull: true,
+        quotmark: "single",
+        browser: true,
+        // Missing "use strict" statement.
+        strict: false,
+        globals: {
+          WaveSurfer: true
+        },
+      },
+      ignore_warning: {
+        options: {
+          '-W004': true,
+          // Expected an assignment or function call and instead saw an expression
+          '-W030': true,
+          // {a} used out of scope
+          '-W038': true,
+          // Use '!==' to compare with ''
+          '-W041': true,
+          '-W056': true,
+          // Missing '()' invoking a constructor.
+          '-W058': true,
+          '-W079': true,
+          // Use the function form of 'use strict'
+          '-W097': true,
+        },
+        src: '<%= concat.dist.src %>'
+      },
+    },
   });
 
   // ==========================================================================
@@ -94,8 +126,9 @@ module.exports = function(grunt) {
   // These plugins provide necessary tasks.
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
   // Default task.
-  grunt.registerTask('default', ['concat', 'commonjs', 'amd', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'concat', 'commonjs', 'amd', 'uglify']);
 
 };
