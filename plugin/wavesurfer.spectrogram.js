@@ -30,7 +30,7 @@ WaveSurfer.Spectrogram = {
         this.createCanvas();
         this.render();
 
-        wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this)
+        wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this);
         wavesurfer.on('redraw', this.render.bind(this));
     },
 
@@ -118,7 +118,7 @@ WaveSurfer.Spectrogram = {
         var fftSamples = this.fftSamples;
         var buffer = this.buffer;
         
-        var frequencies = new Array();
+        var frequencies = [];
         var context = new window.OfflineAudioContext(1, buffer.length, buffer.sampleRate);
         var source = context.createBufferSource();
         var processor = context.createScriptProcessor(0, 1, 1);
@@ -143,7 +143,7 @@ WaveSurfer.Spectrogram = {
         context.startRendering();
 
         var my = this;
-        context.oncomplete = function() { callback(frequencies, my) };
+        context.oncomplete = function() { callback(frequencies, my); };
     },
 
     loadFrequenciesData: function (url) {
@@ -165,7 +165,7 @@ WaveSurfer.Spectrogram = {
 
     resample: function(oldMatrix, columnsNumber) {
         var columnsNumber = this.width;
-        var newMatrix = new Array();
+        var newMatrix = [];
 
         var oldPiece = 1 / oldMatrix.length;
         var newPiece = 1 / columnsNumber;
