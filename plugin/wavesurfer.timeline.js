@@ -107,7 +107,7 @@
         updateCanvasStyle: function () {
             var width = this.drawer.wrapper.scrollWidth;
             this.canvas.width = width * this.wavesurfer.params.pixelRatio;
-            this.canvas.height = this.height * this.wavesurfer.params.pixelRatio;;
+            this.canvas.height = this.height * this.wavesurfer.params.pixelRatio;
             this.canvas.style.width = width + 'px';
             this.canvas.style.height = this.height + 'px';
         },
