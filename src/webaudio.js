@@ -75,7 +75,10 @@ WaveSurfer.WebAudio = {
      * @param {Array} filters Packed ilters array
      */
     setFilters: function (filters) {
+        // Remove existing filters
         this.disconnectFilters();
+        // Disconnect direct path before inserting filters
+        this.analyser.disconnect();
 
         if (filters && filters.length) {
             this.filters = filters;
