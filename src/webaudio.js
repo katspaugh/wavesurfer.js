@@ -79,20 +79,21 @@ WaveSurfer.WebAudio = {
     setFilters: function (filters) {
         // Remove existing filters
         this.disconnectFilters();
-        // Disconnect direct path before inserting filters
-        this.analyser.disconnect();
 
+        // Insert filters if filter array not empty
         if (filters && filters.length) {
             this.filters = filters;
+
+            // Disconnect direct path before inserting filters
+            this.analyser.disconnect();
 
             // Connect each filter in turn
             filters.reduce(function (prev, curr) {
                 prev.connect(curr);
                 return curr;
             }, this.analyser).connect(this.gainNode);
-        } else {
-            this.analyser.connect(this.gainNode);
         }
+
     },
 
     createScriptNode: function () {
