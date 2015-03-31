@@ -49,6 +49,10 @@ wavesurfer.load('example/media/demo.wav');
 
 See the example code [here](/example/main.js).
 
+For a list of other projects using wavesurfer.js, check out
+[the wiki](https://github.com/katspaugh/wavesurfer.js/wiki/Projects)
+where you can also add your own project.
+
 ### WaveSurfer Options
 
 | option | type | default | description |
