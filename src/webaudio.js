@@ -56,6 +56,8 @@ WaveSurfer.WebAudio = {
                 filter && filter.disconnect();
             });
             this.filters = null;
+            // Reconnect direct path
+            this.analyser.connect(this.gainNode);
         }
     },
 
