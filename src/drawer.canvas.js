@@ -22,6 +22,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 bottom: 0,
                 overflow: 'hidden',
                 width: '0',
+                display: 'none',
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
                 borderRightWidth: this.params.cursorWidth + 'px',
@@ -43,6 +44,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         this.waveCc.canvas.width = this.width;
         this.waveCc.canvas.height = this.height;
         this.style(this.waveCc.canvas, { width: width + 'px'});
+
+        this.style(this.progressWave, { display: 'block'});
 
         if (this.progressCc) {
             this.progressCc.canvas.width = this.width;

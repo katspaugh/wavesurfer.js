@@ -4,7 +4,7 @@ Interactive navigable audio visualization using
 [Web Audio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
 and Canvas.
 
-![Screenshot](/example/screenshot.png?raw=true "Screenshot")
+![Screenshot](example/screenshot.png?raw=true "Screenshot")
 
 ### Browser support
 wavesurfer.js works only in modern browsers supporting Web Audio
@@ -14,8 +14,6 @@ It will fallback to Audio Element in other browsers (without
 graphics).  You can also try
 [wavesurfer.swf](https://github.com/laurentvd/wavesurfer.swf) which is
 a Flash-based fallback with graphics.
-
-
 
 ### API in examples
 
@@ -50,6 +48,10 @@ wavesurfer.load('example/media/demo.wav');
 ```
 
 See the example code [here](/example/main.js).
+
+For a list of other projects using wavesurfer.js, check out
+[the wiki](https://github.com/katspaugh/wavesurfer.js/wiki/Projects)
+where you can also add your own project.
 
 ### WaveSurfer Options
 
@@ -193,6 +195,33 @@ General events:
  * `dblclick` - When the mouse double-clicks on the region.  Callback will receive a `MouseEvent`.
  * `over` - When mouse moves over the region.  Callback will receive a `MouseEvent`.
  * `leave` - When mouse leaves the region.  Callback will receive a `MouseEvent`.
+
+# Development
+
+[![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
+[![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg)]()
+[![Build Status](https://travis-ci.org/katspaugh/wavesurfer.js.svg?branch=master)](https://travis-ci.org/katspaugh/wavesurfer.js)
+
+Install `grunt-cli` using npm:
+
+```
+npm install -g grunt-cli
+```
+
+Install development dependencies:
+
+```
+npm install
+```
+
+Build a minified version of the library and plugins. This command also checks
+for code-style mistakes:
+
+```
+grunt
+```
+
+Generated files are placed in the `dist` directory.
 
 # Credits
 
