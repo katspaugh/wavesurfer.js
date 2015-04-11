@@ -26,7 +26,8 @@
     "grunt-contrib-jshint": ">=0.10.0",
     "grunt-contrib-jasmine": ">=0.8.2",
     "grunt-template-jasmine-istanbul": ">=0.3.3",
-    "jasmine-expect": ">=1.22.3"
+    "jasmine-expect": ">=1.22.3",
+    "grunt-coveralls": ">=1.0.0"
   },
   "homepage": "https://github.com/katspaugh/wavesurfer.js"
 }

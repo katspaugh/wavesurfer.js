@@ -100,8 +100,7 @@ module.exports = function(grunt) {
       core: {
         src: '<%= concat.dist.src %>',
         options: {
-          specs: 'spec/*Spec.js',
-          helpers: 'spec/helpers/*Helper.js',
+          specs: ['spec/*.spec.js'],
           vendor: [
             'node_modules/jasmine-expect/dist/jasmine-matchers.js'
           ]
@@ -110,17 +109,34 @@ module.exports = function(grunt) {
       coverage: {
         src: '<%= concat.dist.src %>',
         options: {
-          specs: ['spec/*Spec.js'],
-          helpers: 'spec/helpers/*Helper.js',
-          vendor: [
-            'node_modules/jasmine-expect/dist/jasmine-matchers.js'
-          ],
+          specs: '<%= jasmine.core.options.specs %>',
+          vendor: '<%= jasmine.core.options.vendor %>',
           template: require('grunt-template-jasmine-istanbul'),
           templateOptions: {
-            coverage: 'bin/coverage/coverage.json',
-            report: 'bin/coverage'
+            coverage: 'coverage/coverage.json',
+            report: [
+            {
+              type: 'lcov',
+              options: {
+                dir: 'coverage/lcov'
+              }
+            },
+            {
+              type: 'html',
+              options: {
+                dir: 'coverage/html'
+              }
+            }]
           }
         }
+      }
+    },
+    coveralls: {
+      options: {
+        force: true
+      },
+      main_target: {
+        src: 'coverage/lcov/lcov.info'
       }
     }
   });
@@ -155,6 +171,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
+  grunt.loadNpmTasks('grunt-coveralls');
 
   // Default task.
   grunt.registerTask('default', ['jshint', 'test', 'coverage', 'concat', 'commonjs',

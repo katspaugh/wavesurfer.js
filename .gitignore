@@ -4,6 +4,6 @@
 /bower_components
 /npm-debug.log
 /.grunt
-/bin
+/coverage
 /_SpecRunner.html
 .DS_Store
