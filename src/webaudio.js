@@ -109,7 +109,7 @@ WaveSurfer.WebAudio = {
         this.scriptNode.onaudioprocess = function () {
             var time = my.getCurrentTime();
 
-            if (my.buffer && time > my.getDuration()) {
+            if (my.buffer && time >= my.getDuration()) {
                 my.setState(my.FINISHED_STATE);
             } else if (my.buffer && time >= my.scheduledPause) {
                 my.setState(my.PAUSED_STATE);
