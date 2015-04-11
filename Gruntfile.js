@@ -157,8 +157,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jasmine');
 
   // Default task.
-  grunt.registerTask('test', ['jasmine:core']);
-  grunt.registerTask('coverage', ['jasmine:coverage']);
   grunt.registerTask('default', ['jshint', 'test', 'coverage', 'concat', 'commonjs',
                                  'amd', 'uglify']);
+
+  // Dev
+  grunt.registerTask('dev', ['concat', 'uglify']);
+  grunt.registerTask('test', ['jasmine:core']);
+  grunt.registerTask('coverage', ['jasmine:coverage']);
 };

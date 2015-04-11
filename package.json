@@ -1,12 +1,13 @@
 {
   "name": "wavesurfer.js",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.cjs.js",
   "directories": {
     "example": "example"
   },
   "scripts": {
+    "start": "grunt; ruby -run -e httpd . -p 8080",
     "test": "grunt test"
   },
   "repository": {
