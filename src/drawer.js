@@ -76,7 +76,7 @@ WaveSurfer.Drawer = {
 
     style: function (el, styles) {
         Object.keys(styles).forEach(function (prop) {
-            if (el.style[prop] != styles[prop]) {
+            if (el.style[prop] !== styles[prop]) {
                 el.style[prop] = styles[prop];
             }
         });
