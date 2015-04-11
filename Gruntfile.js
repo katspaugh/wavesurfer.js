@@ -93,7 +93,7 @@ module.exports = function(grunt) {
           // Use the function form of 'use strict'
           '-W097': true,
         },
-        src: ['<%= concat.dist.src %>', 'plugin/*.js']
+        src: ['<%= concat.dist.src %>', 'plugin/*.js', 'spec/*.spec.js']
       },
     },
     jasmine: {
