@@ -205,7 +205,7 @@ General events:
 Install `grunt-cli` using npm:
 
 ```
-npm install -g grunt-cli
+npm install -g grunt-cli jasmine istanbul
 ```
 
 Install development dependencies:
@@ -215,13 +215,27 @@ npm install
 ```
 
 Build a minified version of the library and plugins. This command also checks
-for code-style mistakes:
+for code-style mistakes and runs the tests:
 
 ```
 grunt
 ```
 
 Generated files are placed in the `dist` directory.
+
+Running tests only:
+
+```
+grunt test
+```
+
+Creating a coverage report:
+
+```
+grunt coverage
+```
+
+The HTML report can be found in `bin/coverage/index.html`.
 
 # Credits
 

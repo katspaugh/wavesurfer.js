@@ -96,6 +96,33 @@ module.exports = function(grunt) {
         src: ['<%= concat.dist.src %>', 'plugin/*.js']
       },
     },
+    jasmine: {
+      core: {
+        src: '<%= concat.dist.src %>',
+        options: {
+          specs: 'spec/*Spec.js',
+          helpers: 'spec/helpers/*Helper.js',
+          vendor: [
+            'node_modules/jasmine-expect/dist/jasmine-matchers.js'
+          ]
+        }
+      },
+      coverage: {
+        src: '<%= concat.dist.src %>',
+        options: {
+          specs: ['spec/*Spec.js'],
+          helpers: 'spec/helpers/*Helper.js',
+          vendor: [
+            'node_modules/jasmine-expect/dist/jasmine-matchers.js'
+          ],
+          template: require('grunt-template-jasmine-istanbul'),
+          templateOptions: {
+            coverage: 'bin/coverage/coverage.json',
+            report: 'bin/coverage'
+          }
+        }
+      }
+    }
   });
 
   // ==========================================================================
@@ -127,8 +154,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-jasmine');
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'concat', 'commonjs', 'amd', 'uglify']);
-
+  grunt.registerTask('test', ['jasmine:core']);
+  grunt.registerTask('coverage', ['jasmine:coverage']);
+  grunt.registerTask('default', ['jshint', 'test', 'coverage', 'concat', 'commonjs',
+                                 'amd', 'uglify']);
 };
