@@ -201,6 +201,7 @@ General events:
 [![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
 [![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg)]()
 [![Build Status](https://travis-ci.org/katspaugh/wavesurfer.js.svg?branch=master)](https://travis-ci.org/katspaugh/wavesurfer.js)
+[![Coverage Status](https://coveralls.io/repos/katspaugh/wavesurfer.js/badge.svg)](https://coveralls.io/r/katspaugh/wavesurfer.js)
 
 Install `grunt-cli` using npm:
 
@@ -215,13 +216,27 @@ npm install
 ```
 
 Build a minified version of the library and plugins. This command also checks
-for code-style mistakes:
+for code-style mistakes and runs the tests:
 
 ```
 grunt
 ```
 
 Generated files are placed in the `dist` directory.
+
+Running tests only:
+
+```
+grunt test
+```
+
+Creating a coverage report:
+
+```
+grunt coverage
+```
+
+The HTML report can be found in `coverage/html/index.html`.
 
 # Credits
 

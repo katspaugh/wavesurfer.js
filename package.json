@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "grunt; ruby -run -e httpd . -p 8080",
-    "test": "echo No tests yet!"
+    "test": "grunt test"
   },
   "repository": {
     "type": "git",
@@ -23,7 +23,11 @@
     "grunt": ">=0.4.5",
     "grunt-contrib-concat": ">=0.4.0",
     "grunt-contrib-uglify": ">=0.5.0",
-    "grunt-contrib-jshint": ">=0.10.0"
+    "grunt-contrib-jshint": ">=0.10.0",
+    "grunt-contrib-jasmine": ">=0.8.2",
+    "grunt-template-jasmine-istanbul": ">=0.3.3",
+    "jasmine-expect": ">=1.22.3",
+    "grunt-coveralls": ">=1.0.0"
   },
   "homepage": "https://github.com/katspaugh/wavesurfer.js"
 }
