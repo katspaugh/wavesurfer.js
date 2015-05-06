@@ -12,16 +12,29 @@ WaveSurfer.Regions = {
 
     /* Remove a region. */
     add: function (params) {
+        //Limit ranges count
         var region = Object.create(WaveSurfer.Region);
-        region.init(params, this.wavesurfer);
 
-        this.list[region.id] = region;
-
-        region.on('remove', (function () {
-            delete this.list[region.id];
-        }).bind(this));
-
-        return region;
+        if(Object(params).hasOwnProperty('count')) {
+            if( Object.keys(this.list).length < params.count){
+                region.init(params, this.wavesurfer);
+                this.list[region.id] = region;
+                region.on('remove', (function () {
+                    delete this.list[region.id];
+                }).bind(this));
+                return region;
+            } else {
+                return null;
+            }    
+        } else {
+            region.init(params, this.wavesurfer);
+            this.list[region.id] = region;
+            region.on('remove', (function () {
+                delete this.list[region.id];
+            }).bind(this));
+            return region;
+        }
+        
     },
 
     /* Remove all regions. */
@@ -55,11 +68,18 @@ WaveSurfer.Regions = {
 
             var duration = my.wavesurfer.getDuration();
             var end = my.wavesurfer.drawer.handleEvent(e);
-            region.update({
-                start: Math.min(end * duration, start * duration),
-                end: Math.max(end * duration, start * duration)
-            });
+            //Watch if returned region object exists
+            if (region !== null){
+                region.update({
+                    start: Math.min(end * duration, start * duration),
+                    end: Math.max(end * duration, start * duration)
+                });
+            }
+            if(Object(wavesurfer).hasOwnProperty('regionsCallback')){
+                wavesurfer.regionsCallback();
+            }
         });
+
     }
 };
 
@@ -347,6 +367,9 @@ WaveSurfer.Region = {
             start: this.start + delta,
             end: this.end + delta
         });
+        if(Object(wavesurfer).hasOwnProperty('regionsCallback')){
+            wavesurfer.regionsCallback();
+        }
     },
 
     onResize: function (delta, direction) {
@@ -360,6 +383,9 @@ WaveSurfer.Region = {
                 start: Math.min(this.end + delta, this.start),
                 end: Math.max(this.end + delta, this.start)
             });
+        }
+        if(Object(wavesurfer).hasOwnProperty('regionsCallback')){
+            wavesurfer.regionsCallback();
         }
     }
 };
