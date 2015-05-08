@@ -146,6 +146,10 @@ var WaveSurfer = {
         this.backend.isPaused() ? this.play() : this.pause();
     },
 
+    isPlaying: function () {
+        return !this.backend.isPaused();
+    },
+
     skipBackward: function (seconds) {
         this.skip(-seconds || -this.params.skipLength);
     },
