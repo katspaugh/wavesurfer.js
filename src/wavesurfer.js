@@ -147,7 +147,7 @@ var WaveSurfer = {
     },
 
     isPlaying: function () {
-        return this.backend.isPaused() ? false : true;
+        return !this.backend.isPaused();
     },
 
     skipBackward: function (seconds) {

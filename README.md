@@ -84,6 +84,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `empty()` – Clears the waveform as if a zero-length audio is loaded.
  * `getCurrentTime()` – Returns current progress in seconds.
  * `getDuration()` – Returns the duration of an audio clip in seconds.
+ * `isPlaying()` – Returns true if currently playing, false otherwise.
  * `load(url)` – Loads audio from URL via XHR. Returns XHR object.
  * `loadBlob(url)` – Loads audio from a `Blob` or `File` object.
  * `on(eventName, callback)` – Subscribes to an event.  See [WaveSurfer Events](#wavesurfer-events) section below for a list.
@@ -92,7 +93,6 @@ All methods are intentionally public, but the most readily available are the fol
  * `pause()` – Stops playback.
  * `play([start[, end]])` – Starts playback from the current position.  Optional `start` and `end` measured in seconds can be used to set the range of audio to play.
  * `playPause()` – Plays if paused, pauses if playing.
- * `isPlaying()` – Returns true if currently playing, false otherwise.
  * `seekAndCenter(progress)` – Seeks to a progress and centers view `[0..1]` (0 = beginning, 1 = end).
  * `seekTo(progress)` – Seeks to a progress `[0..1]` (0=beginning, 1=end).
  * `setFilter(filters)` - For inserting your own WebAudio nodes into the graph.  See [Connecting Filters](#connecting-filters) below.
