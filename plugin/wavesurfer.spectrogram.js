@@ -6,7 +6,7 @@ WaveSurfer.Spectrogram = {
         var wavesurfer = this.wavesurfer = params.wavesurfer;
 
         if (!this.wavesurfer) {
-            throw Error('No WaveSurfer intance provided');
+            throw Error('No WaveSurfer instance provided');
         }
 
         this.frequenciesDataUrl = params.frequenciesDataUrl;
