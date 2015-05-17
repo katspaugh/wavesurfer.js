@@ -46,7 +46,7 @@
 
         destroy: function () {
             this.unAll();
-            if (this.wrapper) {
+            if (this.wrapper && this.wrapper.parentNode) {
                 this.wrapper.parentNode.removeChild(this.wrapper);
                 this.wrapper = null;
             }
