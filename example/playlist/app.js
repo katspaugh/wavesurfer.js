@@ -15,26 +15,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Bind controls
 document.addEventListener('DOMContentLoaded', function () {
-    // Play button
-    var playButton = document.querySelector('#play');
-    playButton.addEventListener('click', function () {
-        wavesurfer.play();
-    });
-
-    // Pause button
-    var pauseButton = document.querySelector('#pause');
-    pauseButton.addEventListener('click', function () {
-        wavesurfer.pause();
+    var playPause = document.querySelector('#playPause');
+    playPause.addEventListener('click', function () {
+        wavesurfer.playPause();
     });
 
     // Toggle play/pause text
     wavesurfer.on('play', function () {
-        playButton.style.display = 'none';
-        pauseButton.style.display = '';
+        document.querySelector('#play').style.display = 'none';
+        document.querySelector('#pause').style.display = '';
     });
     wavesurfer.on('pause', function () {
-        playButton.style.display = '';
-        pauseButton.style.display = 'none';
+        document.querySelector('#play').style.display = '';
+        document.querySelector('#pause').style.display = 'none';
     });
 
 

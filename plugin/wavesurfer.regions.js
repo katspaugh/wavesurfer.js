@@ -193,20 +193,19 @@ WaveSurfer.Region = {
     /* Update element's position, width, color. */
     updateRender: function () {
         var dur = this.wavesurfer.getDuration();
-        var fillParentNoScroll = (!this.wavesurfer.params.scrollParent && this.wavesurfer.params.fillParent);
-        var width = fillParentNoScroll ? this.wavesurfer.drawer.getWidth() : this.wrapper.scrollWidth;
-        var seconds = this.end - this.start;
+        var width = this.wrapper.scrollWidth;
+
         if (this.start < 0) {
           this.start = 0;
-          this.end = seconds;
+          this.end = this.end - this.start;
         }
         if (this.end > dur) {
           this.end = dur;
-          this.start = dur - seconds;
+          this.start = dur - (this.end - this.start);
         }
         this.style(this.element, {
             left: ~~(this.start / dur * width) + 'px',
-            width: ~~((this.end / dur - this.start / dur) * width) + 'px',
+            width: ~~((this.end - this.start) / dur * width) + 'px',
             backgroundColor: this.color,
             cursor: this.drag ? 'move' : 'default'
         });
@@ -329,12 +328,16 @@ WaveSurfer.Region = {
             };
 
             my.element.addEventListener('mousedown', onDown);
-            my.wrapper.addEventListener('mouseup', onUp);
             my.wrapper.addEventListener('mousemove', onMove);
+            document.body.addEventListener('mouseup', onUp);
 
             my.on('remove', function () {
-                my.wrapper.removeEventListener('mouseup', onUp);
+                document.body.removeEventListener('mouseup', onUp);
                 my.wrapper.removeEventListener('mousemove', onMove);
+            });
+
+            my.wavesurfer.on('destroy', function () {
+                document.body.removeEventListener('mouseup', onUp);
             });
         }());
     },

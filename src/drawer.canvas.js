@@ -7,8 +7,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var waveCanvas = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
-                height: '100%',
-                zIndex: 1
+                zIndex: 1,
+                left: 0,
+                top: 0,
+                bottom: 0
             })
         );
         this.waveCc = waveCanvas.getContext('2d');
@@ -17,9 +19,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             this.style(document.createElement('wave'), {
                 position: 'absolute',
                 zIndex: 2,
+                left: 0,
+                top: 0,
+                bottom: 0,
                 overflow: 'hidden',
                 width: '0',
-                height: '100%',
+                display: 'none',
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
                 borderRightWidth: this.params.cursorWidth + 'px',
@@ -41,6 +46,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         this.waveCc.canvas.width = this.width;
         this.waveCc.canvas.height = this.height;
         this.style(this.waveCc.canvas, { width: width + 'px'});
+
+        this.style(this.progressWave, { display: 'block'});
 
         if (this.progressCc) {
             this.progressCc.canvas.width = this.width;
@@ -82,6 +89,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         if (this.params.fillParent && this.width != length) {
             scale = this.width / length;
         }
+        var max = 1;
+        if (this.params.normalize) {
+            max = Math.max.apply(Math, peaks);
+        }
 
         this.waveCc.fillStyle = this.params.waveColor;
         if (this.progressCc) {
@@ -95,7 +106,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             cc.moveTo($, halfH + offsetY);
 
             for (var i = 0; i < length; i++) {
-                var h = Math.round(peaks[i] * halfH);
+                var h = Math.round(peaks[i] / max * halfH);
                 cc.lineTo(i * scale + $, halfH + h + offsetY);
             }
 
@@ -103,7 +114,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             cc.moveTo($, halfH + offsetY);
 
             for (var i = 0; i < length; i++) {
-                var h = Math.round(peaks[i] * halfH);
+                var h = Math.round(peaks[i] / max * halfH);
                 cc.lineTo(i * scale + $, halfH - h + offsetY);
             }
 

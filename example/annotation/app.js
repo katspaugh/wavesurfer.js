@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.init({
         container: '#waveform',
         height: 100,
+        pixelRatio: 1,
         scrollParent: true,
         normalize: true,
         minimap: true,

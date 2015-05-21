@@ -54,6 +54,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         this.media = media;
         this.peaks = peaks;
         this.onPlayEnd = null;
+        this.buffer = null;
         this.setPlaybackRate(this.playbackRate);
     },
 

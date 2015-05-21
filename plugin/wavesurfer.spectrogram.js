@@ -6,7 +6,7 @@ WaveSurfer.Spectrogram = {
         var wavesurfer = this.wavesurfer = params.wavesurfer;
 
         if (!this.wavesurfer) {
-            throw Error('No WaveSurfer intance provided');
+            throw Error('No WaveSurfer instance provided');
         }
 
         this.frequenciesDataUrl = params.frequenciesDataUrl;
@@ -30,11 +30,24 @@ WaveSurfer.Spectrogram = {
         this.createCanvas();
         this.render();
 
-        wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this)
-        wavesurfer.on('redraw', this.render.bind(this));
+        wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this);
+        wavesurfer.on('destroy', this.destroy.bind(this));
+    },
+
+    destroy: function () {
+        this.unAll();
+        if (this.wrapper) {
+            this.wrapper.parentNode.removeChild(this.wrapper);
+            this.wrapper = null;
+        }
     },
 
     createWrapper: function () {
+        var prevSpectrogram = this.container.querySelector('spectrogram');
+        if (prevSpectrogram) {
+            this.container.removeChild(prevSpectrogram);
+        }
+
         var wsParams = this.wavesurfer.params;
 
         this.wrapper = this.container.appendChild(
@@ -118,7 +131,7 @@ WaveSurfer.Spectrogram = {
         var fftSamples = this.fftSamples;
         var buffer = this.buffer;
         
-        var frequencies = new Array();
+        var frequencies = [];
         var context = new window.OfflineAudioContext(1, buffer.length, buffer.sampleRate);
         var source = context.createBufferSource();
         var processor = context.createScriptProcessor(0, 1, 1);
@@ -143,7 +156,7 @@ WaveSurfer.Spectrogram = {
         context.startRendering();
 
         var my = this;
-        context.oncomplete = function() { callback(frequencies, my) };
+        context.oncomplete = function() { callback(frequencies, my); };
     },
 
     loadFrequenciesData: function (url) {
@@ -165,7 +178,7 @@ WaveSurfer.Spectrogram = {
 
     resample: function(oldMatrix, columnsNumber) {
         var columnsNumber = this.width;
-        var newMatrix = new Array();
+        var newMatrix = [];
 
         var oldPiece = 1 / oldMatrix.length;
         var newPiece = 1 / columnsNumber;

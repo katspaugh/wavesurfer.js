@@ -21,6 +21,7 @@ var WaveSurfer = {
         fillParent    : true,
         scrollParent  : false,
         hideScrollbar : false,
+        normalize     : false,
         audioContext  : null,
         container     : null,
         dragSelection : true,
@@ -118,21 +119,9 @@ var WaveSurfer = {
         });
 
         this.backend.on('audioprocess', function (time) {
+            my.drawer.progress(my.backend.getPlayedPercents());
             my.fireEvent('audioprocess', time);
         });
-    },
-
-    restartAnimationLoop: function () {
-        var my = this;
-        var requestFrame = window.requestAnimationFrame ||
-            window.webkitRequestAnimationFrame;
-        var frame = function () {
-            if (!my.backend.isPaused()) {
-                my.drawer.progress(my.backend.getPlayedPercents());
-                requestFrame(frame);
-            }
-        };
-        frame();
     },
 
     getDuration: function () {
@@ -145,7 +134,6 @@ var WaveSurfer = {
 
     play: function (start, end) {
         this.backend.play(start, end);
-        this.restartAnimationLoop();
         this.fireEvent('play');
     },
 
@@ -156,6 +144,10 @@ var WaveSurfer = {
 
     playPause: function () {
         this.backend.isPaused() ? this.play() : this.pause();
+    },
+
+    isPlaying: function () {
+        return !this.backend.isPaused();
     },
 
     skipBackward: function (seconds) {
@@ -348,10 +340,10 @@ var WaveSurfer = {
         // audio file and decode it with Web Audio.
         if (!peaks && this.backend.supportsWebAudio()) {
             this.getArrayBuffer(url, (function (arraybuffer) {
-                this.decodeArrayBuffer(arraybuffer, function (buffer) {
+                this.decodeArrayBuffer(arraybuffer, (function (buffer) {
                     this.backend.buffer = buffer;
                     this.drawBuffer();
-                }).bind(this);
+                }).bind(this));
             }).bind(this));
         }
     },

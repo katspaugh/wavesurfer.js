@@ -46,7 +46,7 @@
 
         destroy: function () {
             this.unAll();
-            if (this.wrapper) {
+            if (this.wrapper && this.wrapper.parentNode) {
                 this.wrapper.parentNode.removeChild(this.wrapper);
                 this.wrapper = null;
             }
@@ -107,7 +107,7 @@
         updateCanvasStyle: function () {
             var width = this.drawer.wrapper.scrollWidth;
             this.canvas.width = width * this.wavesurfer.params.pixelRatio;
-            this.canvas.height = this.height * this.wavesurfer.params.pixelRatio;;
+            this.canvas.height = this.height * this.wavesurfer.params.pixelRatio;
             this.canvas.style.width = width + 'px';
             this.canvas.style.height = this.height + 'px';
         },

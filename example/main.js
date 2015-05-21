@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function () {
         container     : document.querySelector('#waveform'),
         waveColor     : 'violet',
         progressColor : 'purple',
-        loaderColor   : 'purple',
         cursorColor   : 'navy'
     };
 

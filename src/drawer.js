@@ -76,7 +76,7 @@ WaveSurfer.Drawer = {
 
     style: function (el, styles) {
         Object.keys(styles).forEach(function (prop) {
-            if (el.style[prop] != styles[prop]) {
+            if (el.style[prop] !== styles[prop]) {
                 el.style[prop] = styles[prop];
             }
         });
@@ -108,7 +108,6 @@ WaveSurfer.Drawer = {
 
         // if the cursor is currently visible...
         if (!immediate && -half <= offset && offset < half) {
-            // we'll limit the "re-center" rate.
             // we'll limit the "re-center" rate.
             var rate = 5;
             offset = Math.max(-rate, Math.min(rate, offset));
