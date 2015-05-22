@@ -261,6 +261,18 @@ var WaveSurfer = {
         this.fireEvent('redraw', peaks, width);
     },
 
+    zoom: function (pxPerSec) {
+        this.params.minPxPerSec = pxPerSec;
+
+        this.params.scrollParent = true;
+
+        this.drawBuffer();
+
+        this.seekAndCenter(
+            this.getCurrentTime() / this.getDuration()
+        );
+    },
+
     /**
      * Internal method.
      */
