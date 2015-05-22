@@ -105,6 +105,10 @@ All methods are intentionally public, but the most readily available are the fol
  * `toggleMute()` – Toggles the volume on and off.
  * `toggleInteraction()` – Toggle mouse interaction.
  * `toggleScroll()` – Toggles `scrollParent`.
+ * `zoom(pxPerSec)` – Horiontally zooms the waveform in and out. The
+   parameter is a number of horizontal pixels per second of audio. It
+   also changes the parameter `minPxPerSec` and enables the
+   `scrollParent` option.
 
 ##### Connecting Filters
 
