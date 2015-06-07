@@ -10,7 +10,7 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
             {}, this.wavesurfer.drawer.params, {
                 showRegions: false,
                 showOverview: false,
-                overviewBorderColor: "green",
+                overviewBorderColor: 'green',
                 overviewBorderSize: 2
             }, params, {
                 scrollParent: false,
@@ -35,24 +35,24 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         var my = this;
         this.regions = {};
 
-        this.wavesurfer.on("region-created", function(region) {
+        this.wavesurfer.on('region-created', function(region) {
             my.regions[region.id] = region;
             my.renderRegions();
         });
 
-        this.wavesurfer.on("region-updated", function(region) {
+        this.wavesurfer.on('region-updated', function(region) {
             my.regions[region.id] = region;
             my.renderRegions();
         });
 
-        this.wavesurfer.on("region-removed", function(region) {
+        this.wavesurfer.on('region-removed', function(region) {
             delete my.regions[region.id];
             my.renderRegions();
         });
     },
     renderRegions: function() {
         var my = this;
-        var regionElements = this.wrapper.querySelectorAll("region");
+        var regionElements = this.wrapper.querySelectorAll('region');
         for (var i = 0; i < regionElements.length; ++i) {
           this.wrapper.removeChild(regionElements[i]);
         }
@@ -61,13 +61,13 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
             var region = my.regions[id];
             var width = (my.width * ((region.end - region.start) / my.wavesurfer.getDuration()));
             var left = (my.width * (region.start / my.wavesurfer.getDuration()));
-            var regionElement = my.style(document.createElement("region"), {
-                height: "inherit",
+            var regionElement = my.style(document.createElement('region'), {
+                height: 'inherit',
                 backgroundColor: region.color,
-                width: width + "px",
-                left: left + "px",
-                display: "block",
-                position: "absolute"
+                width: width + 'px',
+                left: left + 'px',
+                display: 'block',
+                position: 'absolute'
             });
             regionElement.classList.add(id);
             my.wrapper.appendChild(regionElement);
@@ -77,13 +77,13 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         WaveSurfer.Drawer.Canvas.createElements.call(this);
 
         if (this.params.showOverview) {
-            this.overviewRegion =  this.style(document.createElement("overview"), {
-                height: (this.wrapper.offsetHeight - (this.params.overviewBorderSize * 2)) + "px",
+            this.overviewRegion =  this.style(document.createElement('overview'), {
+                height: (this.wrapper.offsetHeight - (this.params.overviewBorderSize * 2)) + 'px',
                 width: '0px',
-                display: "block",
-                position: "absolute",
-                cursor: "move",
-                border: this.params.overviewBorderSize + "px solid " + this.params.overviewBorderColor,
+                display: 'block',
+                position: 'absolute',
+                cursor: 'move',
+                border: this.params.overviewBorderSize + 'px solid ' + this.params.overviewBorderColor,
                 zIndex: 2,
                 opacity: this.params.overviewOpacity
             });
@@ -103,18 +103,20 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         });
 
         if (this.params.showOverview) {
-            this.wavesurfer.on("scroll", function(event) {
+            this.wavesurfer.on('scroll', function(event) {
                 if (!my.draggingOverview) {
                     my.moveOverviewRegion(event.target.scrollLeft / my.ratio);
                 }
             });
 
-            this.wavesurfer.drawer.wrapper.addEventListener("mouseover", function(event) {
+            this.wavesurfer.drawer.wrapper.addEventListener('mouseover', function(event) {
                 if (my.draggingOverview)  {
                     my.draggingOverview = false;
                 }
             });
         }
+
+        this.wavesurfer.on('destroy', this.destroy.bind(this));
     },
 
     bindMinimapEvents: function () {
@@ -136,20 +138,20 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         }).bind(this));
 
         if (this.params.showOverview) {
-            this.overviewRegion.addEventListener("mousedown", function(event) {
+            this.overviewRegion.addEventListener('mousedown', function(event) {
                 my.draggingOverview = true;
                 relativePositionX = event.layerX;
                 positionMouseDown.clientX = event.clientX;
                 positionMouseDown.clientY = event.clientY;
             });
 
-            this.wrapper.addEventListener("mousemove", function(event) {
+            this.wrapper.addEventListener('mousemove', function(event) {
                 if(my.draggingOverview) {
                     my.moveOverviewRegion(event.clientX - my.container.getBoundingClientRect().left - relativePositionX);
                 }
             });
 
-            this.wrapper.addEventListener("mouseup", function(event) {
+            this.wrapper.addEventListener('mouseup', function(event) {
                 if (positionMouseDown.clientX - event.clientX === 0 && positionMouseDown.clientX - event.clientX === 0) {
                     seek = true;
                     my.draggingOverview = false;
@@ -174,7 +176,7 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
             this.waveWidth = this.wavesurfer.drawer.width;
             this.overviewWidth = (this.width / this.ratio);
             this.overviewPosition = 0;
-            this.overviewRegion.style.width = (this.overviewWidth - (this.params.overviewBorderSize * 2)) + "px";
+            this.overviewRegion.style.width = (this.overviewWidth - (this.params.overviewBorderSize * 2)) + 'px';
         }
     },
     moveOverviewRegion: function(pixels) {
@@ -185,7 +187,7 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         } else {
             this.overviewPosition = (this.width - this.overviewWidth);
         }
-        this.overviewRegion.style.left = this.overviewPosition + "px";
+        this.overviewRegion.style.left = this.overviewPosition + 'px';
         this.wavesurfer.drawer.wrapper.scrollLeft = this.overviewPosition * this.ratio;
     }
 });

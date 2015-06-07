@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }());
 
     wavesurfer.on('ready', function () {
-        // Init Timeline plugin
+        // Init spectrogram plugin
         var spectrogram = Object.create(WaveSurfer.Spectrogram);
 
         spectrogram.init({

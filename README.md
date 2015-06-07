@@ -4,7 +4,7 @@ Interactive navigable audio visualization using
 [Web Audio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
 and Canvas.
 
-![Screenshot](/example/screenshot.png?raw=true "Screenshot")
+![Screenshot](example/screenshot.png?raw=true "Screenshot")
 
 ### Browser support
 wavesurfer.js works only in modern browsers supporting Web Audio
@@ -14,8 +14,6 @@ It will fallback to Audio Element in other browsers (without
 graphics).  You can also try
 [wavesurfer.swf](https://github.com/laurentvd/wavesurfer.swf) which is
 a Flash-based fallback with graphics.
-
-
 
 ### API in examples
 
@@ -51,13 +49,17 @@ wavesurfer.load('example/media/demo.wav');
 
 See the example code [here](/example/main.js).
 
+For a list of other projects using wavesurfer.js, check out
+[the wiki](https://github.com/katspaugh/wavesurfer.js/wiki/Projects)
+where you can also add your own project.
+
 ### WaveSurfer Options
 
 | option | type | default | description |
 | --- | --- | --- | --- |
 | `audioContext` | string | `null` | Use your own previously initialized `AudioContext` or leave blank. |
 | `audioRate` | float | `1` | Speed at which to play audio.  Lower number is slower. |
-| `backend` | string | `WebAudio` | `WebAudio` or `AudioElement`. In most cases you don't have to set this manually. `AudioElement` is a fallback for unsupported browsers. |
+| `backend` | string | `WebAudio` | `WebAudio` or `MediaElement`. In most cases you don't have to set this manually. `MediaElement` is a fallback for unsupported browsers. |
 | `container` | mixed | _none_ | CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter. |
 | `cursorColor` | string | `#333` | The fill color of the cursor indicating the playhead position. |
 | `cursorWidth` | integer | `1` | Measured in pixels. |
@@ -82,6 +84,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `empty()` – Clears the waveform as if a zero-length audio is loaded.
  * `getCurrentTime()` – Returns current progress in seconds.
  * `getDuration()` – Returns the duration of an audio clip in seconds.
+ * `isPlaying()` – Returns true if currently playing, false otherwise.
  * `load(url)` – Loads audio from URL via XHR. Returns XHR object.
  * `loadBlob(url)` – Loads audio from a `Blob` or `File` object.
  * `on(eventName, callback)` – Subscribes to an event.  See [WaveSurfer Events](#wavesurfer-events) section below for a list.
@@ -102,6 +105,10 @@ All methods are intentionally public, but the most readily available are the fol
  * `toggleMute()` – Toggles the volume on and off.
  * `toggleInteraction()` – Toggle mouse interaction.
  * `toggleScroll()` – Toggles `scrollParent`.
+ * `zoom(pxPerSec)` – Horiontally zooms the waveform in and out. The
+   parameter is a number of horizontal pixels per second of audio. It
+   also changes the parameter `minPxPerSec` and enables the
+   `scrollParent` option.
 
 ##### Connecting Filters
 
@@ -136,7 +143,7 @@ Region events (exposed by the Regions plugin):
  * `region-dblclick` - When the mouse double-clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
  * `region-created` – When a region is created. Callback will receive the `Region` object.
  * `region-updated` – When a region is updated. Callback will receive the `Region` object.
- * `region-update-end` – When dragging or resizing is finished.
+ * `region-update-end` – When dragging or resizing is finished. Callback will receive the `Region` object.
  * `region-removed` – When a region is removed. Callback will receive the `Region` object.
 
 
@@ -193,6 +200,48 @@ General events:
  * `dblclick` - When the mouse double-clicks on the region.  Callback will receive a `MouseEvent`.
  * `over` - When mouse moves over the region.  Callback will receive a `MouseEvent`.
  * `leave` - When mouse leaves the region.  Callback will receive a `MouseEvent`.
+
+# Development
+
+[![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
+[![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg)]()
+[![Build Status](https://travis-ci.org/katspaugh/wavesurfer.js.svg?branch=master)](https://travis-ci.org/katspaugh/wavesurfer.js)
+[![Coverage Status](https://coveralls.io/repos/katspaugh/wavesurfer.js/badge.svg)](https://coveralls.io/r/katspaugh/wavesurfer.js)
+
+Install `grunt-cli` using npm:
+
+```
+npm install -g grunt-cli
+```
+
+Install development dependencies:
+
+```
+npm install
+```
+
+Build a minified version of the library and plugins. This command also checks
+for code-style mistakes and runs the tests:
+
+```
+grunt
+```
+
+Generated files are placed in the `dist` directory.
+
+Running tests only:
+
+```
+grunt test
+```
+
+Creating a coverage report:
+
+```
+grunt coverage
+```
+
+The HTML report can be found in `coverage/html/index.html`.
 
 # Credits
 

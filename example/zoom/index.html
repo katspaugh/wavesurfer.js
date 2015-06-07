@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Media Element Example</title>
+        <title>wavesurfer.js | Zoom Example</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -29,7 +29,7 @@
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">Media Element Fallback Example</h1>
+                <h1 itemprop="name">Zooming Feature Example</h1>
             </div>
 
             <div id="demo">
@@ -38,28 +38,36 @@
                 </div>
 
                 <div class="controls">
-                    <button class="btn btn-primary" data-action="play">
-                        <i class="glyphicon glyphicon-play"></i>
-                        Play
-                        /
-                        <i class="glyphicon glyphicon-pause"></i>
-                        Pause
-                    </button>
+                    <div class="row">
+                        <div class="col-sm-7">
+                            <button class="btn btn-primary" data-action="play">
+                                <i class="glyphicon glyphicon-play"></i>
+                                Play
+                                /
+                                <i class="glyphicon glyphicon-pause"></i>
+                                Pause
+                            </button>
+                        </div>
+
+                        <div class="col-sm-1">
+                            <i class="glyphicon glyphicon-zoom-in"></i>
+                        </div>
+
+                        <div class="col-sm-3">
+                          <input data-action="zoom" type="range" min="1" max="200" value="0" style="width: 100%" />
+                        </div>
+
+                        <div class="col-sm-1">
+                            <i class="glyphicon glyphicon-zoom-out"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="row marketing">
-                <h3>How to Enable the Fallback</h3>
+                <h3>How to Zoom</h3>
 
                 <hr />
-
-                <p>
-                    <strong>wavesurfer.js</strong> will automatically
-                    fallback to HTML5 Media if Web Audio is not
-                    supported. However, you can choose to use audio
-                    element manually. Simply set the <code>backend</code>
-                    option to <code>"MediaElement"</code>.
-                </p>
 
                 <p>
 <pre><code>var wavesurfer = Object.create(WaveSurfer);
@@ -68,32 +76,11 @@ wavesurfer.init({
     container: document.querySelector('#wave'),
     backend: 'MediaElement'
 });
+
+document.querySelector('#slider').oninput = function () {
+    wavesurfer.zoom(Number(this.value));
+};
 </code></pre>
-                </p>
-
-                <h3>Pre-rendered Peaks</h3>
-
-                <p>
-                    If you have pre-rendered peaks (on your server),
-                    you can pass them into the <code>load</code>
-                    function. This is optional–if you don't provide
-                    any peaks,
-                    <strong>waserver.js</strong> will first draw a
-                    thin line instead of a waveform, then attempt to
-                    download the audio file via Ajax and decode it
-                    with Web Audio if available.
-                </p>
-
-                <p>
-<pre><code>wavesurfer.load('example/media/demo.mp3');</code></pre>
-                </p>
-
-
-                <p>
-                    Press this button to see the same demo with pre-decoded peaks:
-                    <button class="btn btn-warning" data-action="peaks">
-                        Load with pre-rendered peaks
-                    </button>
                 </p>
             </div>
 

@@ -20,41 +20,41 @@ document.addEventListener('DOMContentLoaded', function () {
         var EQ = [
             {
                 f: 32,
-                type: 'LOWSHELF'
+                type: 'lowshelf'
             }, {
                 f: 64,
-                type: 'PEAKING'
+                type: 'peaking'
             }, {
                 f: 125,
-                type: 'PEAKING'
+                type: 'peaking'
             }, {
                 f: 250,
-                type: 'PEAKING'
+                type: 'peaking'
             }, {
                 f: 500,
-                type: 'PEAKING'
+                type: 'peaking'
             }, {
                 f: 1000,
-                type: 'PEAKING'
+                type: 'peaking'
             }, {
                 f: 2000,
-                type: 'PEAKING'
+                type: 'peaking'
             }, {
                 f: 4000,
-                type: 'PEAKING'
+                type: 'peaking'
             }, {
                 f: 8000,
-                type: 'PEAKING'
+                type: 'peaking'
             }, {
                 f: 16000,
-                type: 'HIGHSHELF'
+                type: 'highshelf'
             }
         ];
 
         // Create filters
         var filters = EQ.map(function (band) {
             var filter = wavesurfer.backend.ac.createBiquadFilter();
-            filter.type = filter[band.type];
+            filter.type = band.type;
             filter.gain.value = 0;
             filter.Q.value = 1;
             filter.frequency.value = band.f;

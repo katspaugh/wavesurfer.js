@@ -9,17 +9,12 @@ document.addEventListener('DOMContentLoaded', function () {
         container     : document.querySelector('#waveform'),
         waveColor     : 'violet',
         progressColor : 'purple',
-        loaderColor   : 'purple',
         cursorColor   : 'navy'
     };
 
     if (location.search.match('scroll')) {
         options.minPxPerSec = 100;
         options.scrollParent = true;
-    }
-
-    if (location.search.match('normalize')) {
-        options.normalize = true;
     }
 
     // Init

@@ -130,6 +130,7 @@
          */
         reloadBuffer: function(event) {
             if (!this.paused) {
+                this.wavesurfer.empty();
                 this.wavesurfer.loadDecodedBuffer(event.inputBuffer);
             }
         },
@@ -147,6 +148,13 @@
 
             // notify listeners
             this.fireEvent('deviceReady', stream);
+        },
+
+        /**
+         * Destroy the microphone plugin.
+         */
+        destroy: function(event) {
+            this.stop();
         },
 
         /**

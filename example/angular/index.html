@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Annotation tool</title>
+        <title>wavesurfer.js | Angular</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -13,102 +13,89 @@
         <link rel="stylesheet" href="../css/ribbon.css" />
         <link rel="screenshot" itemprop="screenshot" href="http://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
+        <!-- AngularJS -->
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+
         <!-- wavesurfer.js -->
         <script src="../../dist/wavesurfer.min.js"></script>
 
-        <!-- plugins -->
-        <script src="../../plugin/wavesurfer.timeline.js"></script>
-        <script src="../../plugin/wavesurfer.regions.js"></script>
-        <script src="../../plugin/wavesurfer.minimap.js"></script>
-
         <!-- App -->
-        <script src="../trivia.js"></script>
         <script src="app.js"></script>
     </head>
 
-    <body itemscope itemtype="http://schema.org/WebApplication">
+    <body ng-app="wavesurfer" ng-controller="PlaylistController">
         <div class="container">
             <div class="header">
                 <ul class="nav nav-pills pull-right">
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">wavesurfer.js Annotations Tool</h1>
+                <h1 itemprop="name">wavesurfer.js Angular Demo</h1>
             </div>
 
             <div id="demo">
-                <p id="subtitle" class="text-center text-info">&nbsp;</p>
-
-                <div id="wave-timeline"></div>
-
-                <div id="waveform">
-                    <!-- Here be waveform -->
-                </div>
-
                 <div class="row" style="margin: 30px 0">
-                    <div class="col-sm-8">
-                        <p>
-                            Click on a region to enter an annotation.<br />
-                            Shift-click plays a region in a loop.
-                        </p>
+                    <div class="col-sm-10">
+                        <wavesurfer url="../media/demo.wav" wave-color="#337ab7" progress-color="#23527c" height="64">
+                        </wavesurfer>
                     </div>
 
                     <div class="col-sm-2">
-                        <button class="btn btn-primary btn-block" data-action="play">
-                            <span id="play">
+                        <button class="btn btn-success btn-block" ng-click="wavesurfer.playPause()">
+                            <span id="play" ng-show="paused">
                                 <i class="glyphicon glyphicon-play"></i>
                                 Play
                             </span>
 
-                            <span id="pause" style="display: none">
+                            <span id="pause" ng-show="!paused">
                                 <i class="glyphicon glyphicon-pause"></i>
                                 Pause
                             </span>
                         </button>
                     </div>
+                </div>
 
-                    <div class="col-sm-2">
-                        <button class="btn btn-info btn-block" data-action="export" title="Export annotations to JSON">
-                            <i class="glyphicon glyphicon-file"></i>
-                            Export
-                        </button>
-                    </div>
+                <div class="list-group" id="playlist">
+                    <a href=""
+                       ng-class="{ 'list-group-item': true, active: isPlaying('../media/demo.wav') }"
+                       ng-click="play('../media/demo.wav')">
+                        <i class="glyphicon glyphicon-play"></i>
+                        czskamaarù – Trou
+                        <span class="badge">0:21</span>
+                    </a>
+
+                    <a href=""
+                       ng-class="{ 'list-group-item': true, active: isPlaying('../panner/media.wav') }"
+                       ng-click="play('../panner/media.wav')">
+                        <i class="glyphicon glyphicon-play"></i>
+                        日本人の話し
+                        <span class="badge">1:04</span>
+                    </a>
+
+                    <a href=""
+                       ng-class="{ 'list-group-item': true, active: isPlaying('../elan/transcripts/001z.mp3') }"
+                       ng-click="play('../elan/transcripts/001z.mp3')">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Рассказы о сновидениях
+                        <span class="badge badge-info">1:26</span>
+                    </a>
+
                 </div>
             </div>
 
-            <form role="form" name="edit" style="opacity: 0; transition: opacity 300ms linear; margin: 30px 0;">
-                <div class="form-group">
-                    <label for="start">Start</label>
-                    <input class="form-control" id="start" name="start" />
-                </div>
-
-                <div class="form-group">
-                    <label for="end">End</label>
-                    <input class="form-control" id="end" name="end" />
-                </div>
-
-                <div class="form-group">
-                    <label for="note">Note</label>
-                    <textarea id="note" class="form-control" rows="3" name="note"></textarea>
-                </div>
-
-                <button type="submit" class="btn btn-success btn-block">Save</button>
-                <center><i>or</i></center>
-                <button type="button" class="btn btn-danger btn-block" data-action="delete-region">Delete</button>
-            </form>
-
             <div class="footer row">
                 <div class="col-sm-12">
-                    <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
                 </div>
 
-                <div class="col-sm-8">
+                <div class="col-sm-7">
                     <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/katspaugh/wavesurfer.js" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
                 </div>
 
-                <div class="col-sm-4">
+                <div class="col-sm-5">
                     <p>
-                        The sound file is from <a href="https://librivox.org/librivox-multilingual-short-works-collection-001-by-various/">librivox.org</a>.
+                        Audio sources:<br />
+                        <a rel="nofollow" href="http://www.jamendo.com/en/track/661578/trou"><b>Trou</b> <span class="muted">by</span>&nbsp;<b>czskamaarù</b></a>,
+                        <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>
                     </p>
                 </div>
             </div>

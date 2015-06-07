@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Media Element Example</title>
+        <title>wavesurfer.js | Split Channel Example</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -19,7 +19,7 @@
         <script src="../../plugin/wavesurfer.regions.js"></script>
 
         <!-- Demo -->
-        <script src="main.js"></script>
+        <script src="app.js"></script>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
@@ -29,7 +29,7 @@
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">Media Element Fallback Example</h1>
+                <h1 itemprop="name">Split Channel Waveforms</h1>
             </div>
 
             <div id="demo">
@@ -48,53 +48,27 @@
                 </div>
             </div>
 
-            <div class="row marketing">
-                <h3>How to Enable the Fallback</h3>
+            <p class="lead pull-center" id="drop">
+                Drag'n'drop your
+                <i class="glyphicon glyphicon-music"></i>-file
+                here!
+            </p>
 
-                <hr />
+            <div class="row marketing">
+                <h3>How to Enable Split Channels</h3>
 
                 <p>
-                    <strong>wavesurfer.js</strong> will automatically
-                    fallback to HTML5 Media if Web Audio is not
-                    supported. However, you can choose to use audio
-                    element manually. Simply set the <code>backend</code>
-                    option to <code>"MediaElement"</code>.
+                    Set the <code>splitChannels</code> option to <code>true</code>.
                 </p>
 
                 <p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
+<pre><code>var wavesurfer = WaveSurfer.create({
     container: document.querySelector('#wave'),
-    backend: 'MediaElement'
+    splitChannels: true
 });
 </code></pre>
                 </p>
 
-                <h3>Pre-rendered Peaks</h3>
-
-                <p>
-                    If you have pre-rendered peaks (on your server),
-                    you can pass them into the <code>load</code>
-                    function. This is optional–if you don't provide
-                    any peaks,
-                    <strong>waserver.js</strong> will first draw a
-                    thin line instead of a waveform, then attempt to
-                    download the audio file via Ajax and decode it
-                    with Web Audio if available.
-                </p>
-
-                <p>
-<pre><code>wavesurfer.load('example/media/demo.mp3');</code></pre>
-                </p>
-
-
-                <p>
-                    Press this button to see the same demo with pre-decoded peaks:
-                    <button class="btn btn-warning" data-action="peaks">
-                        Load with pre-rendered peaks
-                    </button>
-                </p>
             </div>
 
             <div class="footer row">
@@ -107,11 +81,10 @@ wavesurfer.init({
                 </div>
 
                 <div class="col-sm-5">
-                    <div class="pull-right">
-                        <noindex>
-                            The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.
-                        </noindex>
-                    </div>
+                    <noindex>
+                        Demo music track is <a href="https://www.jamendo.com/en/track/205154/transistor" rel="nofollow"><b>Transistor</b> <span class="muted">by</span>&nbsp;<b>Transistor</b></a> (CC BY-NC-ND 3.0). Thanks!
+                    </noindex>
+
                 </div>
             </div>
         </div>
