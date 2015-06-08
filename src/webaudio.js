@@ -271,7 +271,7 @@ WaveSurfer.WebAudio = {
     	if (args.length > 2) {
 			var mode = args.pop();
 			this.connectionWrapper(args,mode);
-    	};
+    	}
     },
 
 	/**
@@ -319,7 +319,7 @@ WaveSurfer.WebAudio = {
 				var dest = args.pop();
 				this.connectionCore(source,args,dest,mode);
 				break;
-		};
+		}
     },
 
 	/**
@@ -339,7 +339,7 @@ WaveSurfer.WebAudio = {
 					}, source).connect(dest);
 				} else {
 					source.connect(dest);
-				};
+				}
 				break;
 			case 'parallel':
 				if (args.length > 0) {
@@ -349,7 +349,7 @@ WaveSurfer.WebAudio = {
 					});
 				} else {
 					source.connect(dest);
-				};
+				}
 				break;
 			case 'simo':
 				args.forEach(function (element) {
@@ -361,7 +361,7 @@ WaveSurfer.WebAudio = {
 					element.connect(dest);
 				});
 				break;
-		};
+		}
     },
     
     createSource: function () {
