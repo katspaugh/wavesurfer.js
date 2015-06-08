@@ -248,7 +248,7 @@ WaveSurfer.WebAudio = {
      */
     disconnect: function() {
     	var args = [].slice.call(arguments);
-        disconnectNodes(args);
+        this.disconnectNodes(args);
     },
     
     /**
