@@ -241,6 +241,15 @@ WaveSurfer.WebAudio = {
         this.buffer = buffer;
         this.createSource();
     },
+
+    /**
+     * Disconnects the AudioNodes in the argument
+     * 	@param arguments[0,...,N-1]: AudioNodes involved in the disconnection
+     */
+    disconnect: function() {
+    	var args = [].slice.call(arguments);
+        disconnectNodes(args);
+    },
     
     /**
      * @param {Array} Array of AudioNodes to be set for disconnection
@@ -261,7 +270,6 @@ WaveSurfer.WebAudio = {
         // at least two AudioNodes and the mode of connection must be defined
     	if (args.length > 2) {
 			var mode = args.pop();
-			this.disconnectNodes(args);
 			this.connectionWrapper(args,mode);
     	};
     },
