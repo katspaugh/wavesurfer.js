@@ -242,6 +242,11 @@ WaveSurfer.WebAudio = {
         this.createSource();
     },
 
+    setGraph: function (source, destination) {
+    	this.analyser.connect(source);
+    	destination.connect(this.gainNode);
+    },
+
     /**
      * Disconnects the AudioNodes in the argument
      * 	@param arguments[0,...,N-1]: AudioNodes involved in the disconnection
