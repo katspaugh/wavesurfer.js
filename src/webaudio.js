@@ -243,6 +243,7 @@ WaveSurfer.WebAudio = {
     },
 
     setGraph: function (source, destination) {
+    	this.analyser.disconnect();
     	this.analyser.connect(source);
     	destination.connect(this.gainNode);
     },

@@ -24,15 +24,12 @@ document.addEventListener('DOMContentLoaded', function () {
         wavesurfer.merger = wavesurfer.backend.ac.createChannelMerger();
         wavesurfer.channelVolumeNode = [];
 
-        wavesurfer.backend.analyser.disconnect();
-
-        wavesurfer.backend.analyser.connect(wavesurfer.splitter);
         for (var channel = 0; channel < wavesurfer.backend.ac.destination.channelCount; channel++) {
 			wavesurfer.channelVolumeNode.push(wavesurfer.backend.ac.createGain());
 			wavesurfer.splitter.connect(wavesurfer.channelVolumeNode[channel],channel);
 			wavesurfer.channelVolumeNode[channel].connect(wavesurfer.merger,0,channel);
 		};
-        wavesurfer.backend.connect(wavesurfer.merger,wavesurfer.backend.gainNode,wavesurfer.backend.ac.destination,'series');
+        wavesurfer.backend.setGraph(wavesurfer.splitter,wavesurfer.merger);
 
         // Bind panner slider
         var onStereoPan = function () {
