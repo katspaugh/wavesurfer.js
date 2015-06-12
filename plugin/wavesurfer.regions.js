@@ -151,6 +151,7 @@ WaveSurfer.Region = {
         var regionEl = document.createElement('region');
         regionEl.className = 'wavesurfer-region';
         regionEl.title = this.formatTime(this.start, this.end);
+        regionEl.setAttribute("data-id", this.id);
 
         var width = this.wrapper.scrollWidth;
         this.style(regionEl, {
