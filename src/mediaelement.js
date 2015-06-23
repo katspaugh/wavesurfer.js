@@ -71,7 +71,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
     },
 
     getCurrentTime: function () {
-        return this.media.currentTime;
+        return this.media && this.media.currentTime;
     },
 
     getPlayedPercents: function () {
@@ -111,7 +111,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
      * Pauses the loaded audio.
      */
     pause: function () {
-        this.media.pause();
+        this.media && this.media.pause();
         this.clearPlayEnd();
     },
 
@@ -151,7 +151,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
     destroy: function () {
         this.pause();
         this.unAll();
-        this.media.parentNode && this.media.parentNode.removeChild(this.media);
+        this.media && this.media.parentNode && this.media.parentNode.removeChild(this.media);
         this.media = null;
     }
 });
