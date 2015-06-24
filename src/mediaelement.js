@@ -59,7 +59,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
     },
 
     isPaused: function () {
-        return this.media.paused;
+        return this.media && this.media.paused;
     },
 
     getDuration: function () {
