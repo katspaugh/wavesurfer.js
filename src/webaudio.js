@@ -114,8 +114,10 @@ WaveSurfer.WebAudio = {
 
             if (time >= my.getDuration()) {
                 my.setState(my.FINISHED_STATE);
+                my.fireEvent('pause');
             } else if (time >= my.scheduledPause) {
                 my.setState(my.PAUSED_STATE);
+                my.fireEvent('pause');
             } else if (my.state === my.states[my.PLAYING_STATE]) {
                 my.fireEvent('audioprocess', time);
             }
@@ -315,6 +317,8 @@ WaveSurfer.WebAudio = {
         this.source.start(0, start, end - start);
 
         this.setState(this.PLAYING_STATE);
+        
+        this.fireEvent('play');
     },
 
     /**
@@ -327,6 +331,8 @@ WaveSurfer.WebAudio = {
         this.source && this.source.stop(0);
 
         this.setState(this.PAUSED_STATE);
+        
+        this.fireEvent('pause');
     },
 
     /**
