@@ -114,9 +114,9 @@ var WaveSurfer = {
         this.backend = Object.create(WaveSurfer[this.params.backend]);
         this.backend.init(this.params);
 
-        this.backend.on('finish', function () {
-            my.fireEvent('finish');
-        });
+        this.backend.on('finish', function () { my.fireEvent('finish'); });
+        this.backend.on('play', function () { my.fireEvent('play'); });
+        this.backend.on('pause', function () { my.fireEvent('pause'); });
 
         this.backend.on('audioprocess', function (time) {
             my.drawer.progress(my.backend.getPlayedPercents());
@@ -134,12 +134,10 @@ var WaveSurfer = {
 
     play: function (start, end) {
         this.backend.play(start, end);
-        this.fireEvent('play');
     },
 
     pause: function () {
         this.backend.pause();
-        this.fireEvent('pause');
     },
 
     playPause: function () {

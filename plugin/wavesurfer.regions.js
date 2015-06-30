@@ -234,7 +234,7 @@ WaveSurfer.Region = {
                 my.fireEvent('in');
                 my.wavesurfer.fireEvent('region-in', my);
             }
-            if (!my.firedOut && my.firedIn && my.end <= time) {
+            if (!my.firedOut && my.firedIn && my.end <= Math.round(time*100)/100 ) {
                 my.firedOut = true;
                 my.fireEvent('out');
                 my.wavesurfer.fireEvent('region-out', my);
