@@ -84,14 +84,20 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var height = this.params.height * this.params.pixelRatio;
         var offsetY = height * channelIndex || 0;
         var halfH = height / 2;
-        var length = peaks.length;
+        var length = ~~(peaks.length / 2);
         var scale = 1;
         if (this.params.fillParent && this.width != length) {
             scale = this.width / length;
         }
-        var max = 1;
+        var absmax = 1;
         if (this.params.normalize) {
+            var min, max;
             max = Math.max.apply(Math, peaks);
+            min = Math.min.apply(Math, peaks);
+            absmax = max;
+            if (-min > absmax) {
+                absmax = -min;
+            }
         }
 
         this.waveCc.fillStyle = this.params.waveColor;
@@ -106,19 +112,17 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             cc.moveTo($, halfH + offsetY);
 
             for (var i = 0; i < length; i++) {
-                var h = Math.round(peaks[i] / max * halfH);
-                cc.lineTo(i * scale + $, halfH + h + offsetY);
-            }
-
-            cc.lineTo(this.width + $, halfH + offsetY);
-            cc.moveTo($, halfH + offsetY);
-
-            for (var i = 0; i < length; i++) {
-                var h = Math.round(peaks[i] / max * halfH);
+                var h = Math.round(peaks[2*i] / absmax * halfH);
                 cc.lineTo(i * scale + $, halfH - h + offsetY);
             }
 
-            cc.lineTo(this.width + $, halfH + offsetY);
+            // Draw the bottom edge going backwards, to make a single
+            // closed hull to fill.
+            for (var i = length - 1; i >= 0; i--) {
+                var h = Math.round(peaks[2*i + 1] / absmax * halfH);
+                cc.lineTo(i * scale + $, halfH - h + offsetY);
+            }
+
             cc.closePath();
             cc.fill();
 
