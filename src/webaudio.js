@@ -195,24 +195,30 @@ WaveSurfer.WebAudio = {
             for (var i = 0; i < length; i++) {
                 var start = ~~(i * sampleSize);
                 var end = ~~(start + sampleSize);
-                var min = 0, max = 0;
+                var min = chan[0];
+                var max = chan[0];
+
                 for (var j = start; j < end; j += sampleStep) {
                     var value = chan[j];
-                    if (j == start || value > max) {
+
+                    if (value > max) {
                         max = value;
                     }
-                    if (j == start || value < min) {
+
+                    if (value < min) {
                         min = value;
                     }
                 }
-                peaks[2*i] = max;
-                peaks[2*i + 1] = min;
 
-                if (c == 0 || max > mergedPeaks[2*i]) {
-                    mergedPeaks[2*i] = max;
+                peaks[2 * i] = max;
+                peaks[2 * i + 1] = min;
+
+                if (c == 0 || max > mergedPeaks[2 * i]) {
+                    mergedPeaks[2 * i] = max;
                 }
-                if (c == 0 || min < mergedPeaks[2*i + 1]) {
-                    mergedPeaks[2*i + 1] = min;
+
+                if (c == 0 || min < mergedPeaks[2 * i + 1]) {
+                    mergedPeaks[2 * i + 1] = min;
                 }
             }
         }

@@ -112,14 +112,14 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             cc.moveTo($, halfH + offsetY);
 
             for (var i = 0; i < length; i++) {
-                var h = Math.round(peaks[2*i] / absmax * halfH);
+                var h = Math.round(peaks[2 * i] / absmax * halfH);
                 cc.lineTo(i * scale + $, halfH - h + offsetY);
             }
 
             // Draw the bottom edge going backwards, to make a single
             // closed hull to fill.
             for (var i = length - 1; i >= 0; i--) {
-                var h = Math.round(peaks[2*i + 1] / absmax * halfH);
+                var h = Math.round(peaks[2 * i + 1] / absmax * halfH);
                 cc.lineTo(i * scale + $, halfH - h + offsetY);
             }
 
