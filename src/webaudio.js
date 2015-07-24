@@ -175,7 +175,11 @@ WaveSurfer.WebAudio = {
     },
 
     /**
-     * @returns {Array} Array of peaks or array of arrays of peaks.
+     * Compute the max and min value of the waveform when broken into
+     * <length> subranges.
+     * @param {Number} How many subranges to break the waveform into.
+     * @returns {Array} Array of 2*<length> peaks or array of arrays
+     * of peaks consisting of (max, min) values for each subrange.
      */
     getPeaks: function (length) {
         var sampleSize = this.buffer.length / length;
@@ -191,20 +195,24 @@ WaveSurfer.WebAudio = {
             for (var i = 0; i < length; i++) {
                 var start = ~~(i * sampleSize);
                 var end = ~~(start + sampleSize);
-                var max = 0;
+                var min = 0, max = 0;
                 for (var j = start; j < end; j += sampleStep) {
                     var value = chan[j];
-                    if (value > max) {
+                    if (j == start || value > max) {
                         max = value;
-                    // faster than Math.abs
-                    } else if (-value > max) {
-                        max = -value;
+                    }
+                    if (j == start || value < min) {
+                        min = value;
                     }
                 }
-                peaks[i] = max;
+                peaks[2*i] = max;
+                peaks[2*i + 1] = min;
 
-                if (c == 0 || max > mergedPeaks[i]) {
-                    mergedPeaks[i] = max;
+                if (c == 0 || max > mergedPeaks[2*i]) {
+                    mergedPeaks[2*i] = max;
+                }
+                if (c == 0 || min < mergedPeaks[2*i + 1]) {
+                    mergedPeaks[2*i + 1] = min;
                 }
             }
         }
