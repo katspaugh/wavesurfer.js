@@ -116,7 +116,20 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
             });
         }
 
-        this.wavesurfer.on('destroy', this.destroy.bind(this));
+        var prevWidth = 0;
+        var onResize = function () {
+            if (prevWidth != my.wrapper.clientWidth) {
+                prevWidth = my.wrapper.clientWidth;
+                my.render();
+                my.progress(my.wavesurfer.backend.getPlayedPercents());
+            }
+        };
+        window.addEventListener('resize', onResize, true);
+
+        this.wavesurfer.on('destroy', function () {
+            my.destroy.bind(this);
+            window.removeEventListener('resize', onResize, true);
+        });
     },
 
     bindMinimapEvents: function () {
