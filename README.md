@@ -6,7 +6,7 @@ and Canvas.
 
 ![Screenshot](example/screenshot.png?raw=true "Screenshot")
 
-### Browser support
+## Browser support
 wavesurfer.js works only in modern browsers supporting Web Audio
 (Chrome, Firefox, Safari, Opera etc).
 
@@ -15,7 +15,14 @@ graphics).  You can also try
 [wavesurfer.swf](https://github.com/laurentvd/wavesurfer.swf) which is
 a Flash-based fallback with graphics.
 
-### API in examples
+## FAQ
+### Can the audio start playing before the waveform is drawn?
+Yes, if you use the `backend: 'MediaElement'` option. See here: http://www.wavesurfer.fm/example/audio-element/. The audio will start playing as you press play. A thin line will be displayed until the whole audio file is downloaded and decoded to draw the waveform.
+
+### Can drawing be done as file loads?
+No. Web Audio needs the whole file to decode it in the browser. You can however load pre-decoded waveform data to draw the waveform immediately. See here: http://www.wavesurfer.fm/example/audio-element/ (the "Pre-recoded Peaks" section).
+
+## API in examples
 
 Create an instance:
 
@@ -53,7 +60,7 @@ For a list of other projects using wavesurfer.js, check out
 [the wiki](https://github.com/katspaugh/wavesurfer.js/wiki/Projects)
 where you can also add your own project.
 
-### WaveSurfer Options
+## WaveSurfer Options
 
 | option | type | default | description |
 | --- | --- | --- | --- |
@@ -75,7 +82,7 @@ where you can also add your own project.
 | `skipLength` | float | `2` | Number of seconds to skip with the `skipForward()` and `skipBackward()` methods. |
 | `waveColor` | string | `#999` | The fill color of the waveform after the cursor. |
 
-### WaveSurfer Methods
+## WaveSurfer Methods
 
 All methods are intentionally public, but the most readily available are the following:
 
@@ -119,7 +126,7 @@ var lowpass = wavesurfer.backend.ac.createBiquadFilter();
 wavesurfer.backend.setFilter(lowpass);
 ```
 
-### WaveSurfer Events
+## WaveSurfer Events
 
 General events:
 
@@ -160,7 +167,7 @@ your page.
 
 After doing that, use `wavesurfer.addRegion()` to create Region objects.
 
-#### Exposed Methods
+### Exposed Methods
 
  * `addRegion(options)` – Creates a region on the waveform. Returns a `Region` object.  See [Region Options](#region-options), [Region Methods](#region-methods) and [Region Events](#region-events) below.
  * `clearRegions()` – Removes all regions.
@@ -201,7 +208,7 @@ General events:
  * `over` - When mouse moves over the region.  Callback will receive a `MouseEvent`.
  * `leave` - When mouse leaves the region.  Callback will receive a `MouseEvent`.
 
-# Development
+## Development
 
 [![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
 [![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg)]()
@@ -243,13 +250,13 @@ grunt coverage
 
 The HTML report can be found in `coverage/html/index.html`.
 
-# Credits
+## Credits
 
 Initial idea by [Alex Khokhulin](https://github.com/xoxulin). Many
 thanks to
 [the awesome contributors](https://github.com/katspaugh/wavesurfer.js/contributors)!
 
-# License
+## License
 
 ![cc-by](http://i.creativecommons.org/l/by/3.0/88x31.png)
 
