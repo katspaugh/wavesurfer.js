@@ -221,12 +221,12 @@ WaveSurfer.Region = {
           this.start = dur - (this.end - this.start);
         }
 
-        if (this.maxLength && this.end - this.start > this.maxLength){
-            this.end = this.start+this.maxLength;
+        if (this.minLength != null) {
+            this.end = Math.max(this.start + this.minLength, this.end);
         }
 
-        if(this.minLength && this.end - this.start < this.minLength){
-            this.end = this.start+this.minLength;
+        if (this.maxLength != null) {
+            this.end = Math.min(this.start + this.maxLength, this.end);
         }
 
         this.style(this.element, {
