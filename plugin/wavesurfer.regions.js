@@ -89,8 +89,8 @@ WaveSurfer.Region = {
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
         this.data = params.data || {};
 
-        this.maxWidth = params.maxWidth === undefined ? null : Number(params.maxWidth);
-        this.minWidth = params.minWidth === undefined ? null : Number(params.minWidth);
+        this.maxLength = params.maxLength;
+        this.minLength = params.minLength;
 
         this.bindInOut();
         this.render();
@@ -121,11 +121,11 @@ WaveSurfer.Region = {
         if (null != params.drag) {
             this.drag = Boolean(params.drag);
         }
-        if (null != params.maxWidth) {
-            this.maxWidth = Number(params.maxWidth);
+        if (null != params.maxLength) {
+            this.maxLength = Number(params.maxLength);
         }
-        if (null != params.minWidth) {
-            this.minWidth = Number(params.minWidth);
+        if (null != params.minLength) {
+            this.minLength = Number(params.minLength);
         }
 
         this.updateRender();
@@ -221,12 +221,12 @@ WaveSurfer.Region = {
           this.start = dur - (this.end - this.start);
         }
 
-        if (this.maxWidth && this.end - this.start > this.maxWidth){
-            this.end = this.start+this.maxWidth;
+        if (this.maxLength && this.end - this.start > this.maxLength){
+            this.end = this.start+this.maxLength;
         }
 
-        if(this.minWidth && this.end - this.start < this.minWidth){
-            this.end = this.start+this.minWidth;
+        if(this.minLength && this.end - this.start < this.minLength){
+            this.end = this.start+this.minLength;
         }
 
         this.style(this.element, {
