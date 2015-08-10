@@ -214,8 +214,7 @@ WaveSurfer.Region = {
             highlightCanvas.globalCompositeOperation = 'source-in';
             highlightCanvas.fillRect(0, 0, wave.width, wave.height);
 
-
-            this.style(this.wrapper.querySelector('wave'),{display:'none'});
+            this.style(this.wrapper.querySelector('wave wave canvas'),{display:'none'});
 
             var highlightEl = document.createElement('highlight');
             highlightEl.setAttribute('data-id', this.id);
