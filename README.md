@@ -64,10 +64,10 @@ where you can also add your own project.
 
 | option | type | default | description |
 | --- | --- | --- | --- |
-| `audioContext` | string | `null` | Use your own previously initialized `AudioContext` or leave blank. |
+| `audioContext` | object | _none_ | Use your own previously initialized `AudioContext` or leave blank. |
 | `audioRate` | float | `1` | Speed at which to play audio.  Lower number is slower. |
 | `backend` | string | `WebAudio` | `WebAudio` or `MediaElement`. In most cases you don't have to set this manually. `MediaElement` is a fallback for unsupported browsers. |
-| `barWidth` | number | If specified, the waveform will be drawn in bars like this: ▁ ▂ ▇ ▃ ▅ ▂
+| `barWidth` | number | _none_ | If specified, the waveform will be drawn like this: ▁ ▂ ▇ ▃ ▅ ▂ |
 | `container` | mixed | _none_ | CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter. |
 | `cursorColor` | string | `#333` | The fill color of the cursor indicating the playhead position. |
 | `cursorWidth` | integer | `1` | Measured in pixels. |
@@ -131,6 +131,7 @@ wavesurfer.backend.setFilter(lowpass);
 
 General events:
 
+ * `audioprocess` – Fires continuously as the audio plays. Also fires on seeking.
  * `error` – Occurs on error.  Callback will receive (string) error message.
  * `finish` – When it finishes playing.
  * `loading` – Fires continuously when loading via XHR or drag'n'drop. Callback will receive (integer) loading progress in percents [0..100] and (object) event target.
