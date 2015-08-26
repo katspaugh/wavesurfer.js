@@ -71,7 +71,10 @@ WaveSurfer.Drawer = {
     drawPeaks: function (peaks, length) {
         this.resetScroll();
         this.setWidth(length);
-        this.drawWave(peaks);
+
+        this.params.barWidth ?
+            this.drawBars(peaks) :
+            this.drawWave(peaks);
     },
 
     style: function (el, styles) {

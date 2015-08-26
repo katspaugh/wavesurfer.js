@@ -67,6 +67,7 @@ where you can also add your own project.
 | `audioContext` | string | `null` | Use your own previously initialized `AudioContext` or leave blank. |
 | `audioRate` | float | `1` | Speed at which to play audio.  Lower number is slower. |
 | `backend` | string | `WebAudio` | `WebAudio` or `MediaElement`. In most cases you don't have to set this manually. `MediaElement` is a fallback for unsupported browsers. |
+| `barWidth` | number | If specified, the waveform will be drawn in bars like this: ▁ ▂ ▇ ▃ ▅ ▂
 | `container` | mixed | _none_ | CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter. |
 | `cursorColor` | string | `#333` | The fill color of the cursor indicating the playhead position. |
 | `cursorWidth` | integer | `1` | Measured in pixels. |

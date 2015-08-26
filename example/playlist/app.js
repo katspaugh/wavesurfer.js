@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', function () {
         container: '#waveform',
         waveColor: '#428bca',
         progressColor: '#31708f',
-        height: 35
+        height: 120,
+        barWidth: 3
     });
 });
 
