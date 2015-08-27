@@ -27,6 +27,15 @@ module.exports = function(grunt) {
         dest: 'dist/wavesurfer.min.js'
       }
     },
+    connect: {
+        options: {
+	        base: '.',
+	        port: 9000,
+	        // Change this to '0.0.0.0' to access the server from outside.
+	        hostname: 'localhost',
+	        keepalive: true
+	    },
+    },
     commonjs: {
       modules: {
         banner: '<%= banner %>',
@@ -172,13 +181,14 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-coveralls');
+  grunt.loadNpmTasks('grunt-contrib-connect');
 
   // Default task.
   grunt.registerTask('default', ['jshint', 'test', 'coverage', 'concat', 'commonjs',
                                  'amd', 'uglify']);
 
   // Dev
-  grunt.registerTask('dev', ['concat', 'uglify']);
+  grunt.registerTask('dev', ['concat', 'uglify', 'connect']);
   grunt.registerTask('test', ['jasmine:core']);
   grunt.registerTask('coverage', ['jasmine:coverage']);
 };
