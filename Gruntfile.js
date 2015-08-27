@@ -27,16 +27,15 @@ module.exports = function(grunt) {
         dest: 'dist/wavesurfer.min.js'
       }
     },
-	connect: {
-		options: {
-			base: '.',
-			port: 9000,
-			// Change this to '0.0.0.0' to access the server from outside.
-			hostname: 'localhost',
-			keepalive: true
-		},
-		abc: {}
-	},
+    connect: {
+        options: {
+	    base: '.',
+	    port: 9000,
+	    // Change this to '0.0.0.0' to access the server from outside.
+	    hostname: 'localhost',
+	    keepalive: true
+	    },
+    },
     commonjs: {
       modules: {
         banner: '<%= banner %>',
