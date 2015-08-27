@@ -186,10 +186,10 @@ module.exports = function(grunt) {
 
   // Default task.
   grunt.registerTask('default', ['jshint', 'test', 'coverage', 'concat', 'commonjs',
-                                 'amd', 'uglify', 'connect']);
+                                 'amd', 'uglify']);
 
   // Dev
-  grunt.registerTask('dev', ['concat', 'uglify']);
+  grunt.registerTask('dev', ['concat', 'uglify', 'connect']);
   grunt.registerTask('test', ['jasmine:core']);
   grunt.registerTask('coverage', ['jasmine:coverage']);
 };
