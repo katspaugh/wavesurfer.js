@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="./app.css" />
+
+        <script src="../../dist/wavesurfer.min.js"></script>
+    </head>
+
+    <body style="width: 1290px; margin: 0 auto">
+        <img src="./header.png" style="width: 100%" />
+
+        <div id="waveform" style="width: 390px; margin: -70px 0 0 250px;"></div>
+
+        <pre><code>
+var wavesurfer = Object.create(WaveSurfer);
+
+wavesurfer.init({
+    container: '#waveform',
+    height: 60,
+    waveColor: '#ADADAD',
+    progressColor: '#29FE31',
+    cursorColor: '#FFFFFF',
+    normalize: true,
+    reflection: true,
+    barWidth: 3
+});
+
+wavesurfer.load('../media/demo.wav');
+
+wavesurfer.on('ready', function () { wavesurfer.play(); });
+        </code></pre>
+
+        <script>
+            eval(document.querySelector('code').textContent);
+        </script>
+    </body>
+</html>

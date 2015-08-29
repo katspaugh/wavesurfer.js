@@ -86,7 +86,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var halfH = height / 2;
         var length = ~~(peaks.length / 2);
         var bar = this.params.barWidth * this.params.pixelRatio;
-        var gap = Math.max(this.params.pixelRatio, ~~(bar / 4));
+        var gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
         var step = bar + gap;
 
         var absmax = 1;
@@ -110,14 +110,21 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         [ this.waveCc, this.progressCc ].forEach(function (cc) {
             if (!cc) { return; }
 
-            for (var i = 0; i < width; i += step) {
-                var h = Math.round(peaks[2 * i * scale] / absmax * halfH);
-                cc.fillRect(i + $, halfH - h + offsetY, bar + $, h);
-            }
+            if (this.params.reflection) {
+                for (var i = 0; i < width; i += step) {
+                    var h = Math.round(peaks[2 * i * scale] / absmax * halfH);
+                    cc.fillRect(i + $, halfH - h + offsetY, bar + $, h * 2);
+                }
+            } else {
+                for (var i = 0; i < width; i += step) {
+                    var h = Math.round(peaks[2 * i * scale] / absmax * halfH);
+                    cc.fillRect(i + $, halfH - h + offsetY, bar + $, h);
+                }
 
-            for (var i = 0; i < width; i += step) {
-                var h = Math.round(peaks[2 * i * scale + 1] / absmax * halfH);
-                cc.fillRect(i + $, halfH - h + offsetY, bar + $, h);
+                for (var i = 0; i < width; i += step) {
+                    var h = Math.round(peaks[2 * i * scale + 1] / absmax * halfH);
+                    cc.fillRect(i + $, halfH - h + offsetY, bar + $, h);
+                }
             }
         }, this);
     },
