@@ -92,6 +92,8 @@ WaveSurfer.Region = {
         this.maxLength = params.maxLength;
         this.minLength = params.minLength;
 
+        this.regionHighlight = params.regionHighlight === undefined ? false : Boolean(params.regionHighlight);
+
         this.bindInOut();
         this.render();
 
@@ -127,6 +129,9 @@ WaveSurfer.Region = {
         if (null != params.minLength) {
             this.minLength = Number(params.minLength);
         }
+        if (null != params.regionHighlight) {
+            this.regionHighlight = Boolean(params.regionHighlight);
+        }
 
         this.updateRender();
         this.fireEvent('update');
@@ -140,6 +145,11 @@ WaveSurfer.Region = {
             this.element = null;
             this.fireEvent('remove');
             this.wavesurfer.fireEvent('region-removed', this);
+        }
+        if(this.highlight){
+            this.wrapper.removeChild(this.highlight);
+            this.highlightCanvas = null;
+            this.highlight = null;
         }
     },
 
@@ -193,6 +203,41 @@ WaveSurfer.Region = {
             });
         }
 
+        if(this.regionHighlight){
+            var origWave = this.wrapper.querySelector('wave canvas');
+
+            var wave = origWave.cloneNode();
+
+            var highlightCanvas = wave.getContext('2d');
+            highlightCanvas.drawImage(origWave,0,0);
+            highlightCanvas.fillStyle = this.wavesurfer.params.progressColor;
+            highlightCanvas.globalCompositeOperation = 'source-in';
+            highlightCanvas.fillRect(0, 0, wave.width, wave.height);
+
+            this.style(this.wrapper.querySelector('wave wave canvas'),{display:'none'});
+
+            var highlightEl = document.createElement('highlight');
+            highlightEl.setAttribute('data-id', this.id);
+            highlightEl.className = 'wavesurfer-region-highlight';
+            highlightEl.appendChild(wave);
+
+            this.style(highlightEl,{
+                position: 'absolute',
+                zIndex: 2,
+                left: '0px',
+                top: '0px',
+                bottom: '0px',
+                overflow: 'hidden',
+                width: '0',
+                display: 'block',
+                boxSizing: 'border-box'
+            });
+
+
+            this.highlight = this.wrapper.appendChild(highlightEl);
+            this.highlightCanvas = wave;
+        }
+
         this.element = this.wrapper.appendChild(regionEl);
         this.updateRender();
         this.bindEvents(regionEl);
@@ -235,6 +280,20 @@ WaveSurfer.Region = {
             backgroundColor: this.color,
             cursor: this.drag ? 'move' : 'default'
         });
+
+
+        if(this.regionHighlight){
+            var left = ~~(this.start / dur * width);
+            this.style(this.highlight, {
+                left: left+'px',
+                width: ~~((this.end - this.start) / dur * width) + 'px'
+            });
+
+            this.style(this.highlightCanvas,{
+                left: -left+'px'
+            });
+        }
+
         this.element.title = this.formatTime(this.start, this.end);
     },
 
