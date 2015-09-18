@@ -112,12 +112,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
             if (this.params.reflection) {
                 for (var i = 0; i < width; i += step) {
-                    var h = Math.round(peaks[2 * i * scale] / absmax * halfH);
+                    var h = Math.round(peaks[Math.floor(2 * i * scale)] / absmax * halfH);
                     cc.fillRect(i + $, halfH - h + offsetY, bar + $, h * 2);
                 }
             } else {
                 for (var i = 0; i < width; i += step) {
-                    var h = Math.round(peaks[2 * i * scale] / absmax * halfH);
+                    var h = Math.round(peaks[Math.floor(2 * i * scale)] / absmax * halfH);
                     cc.fillRect(i + $, halfH - h + offsetY, bar + $, h);
                 }
 
