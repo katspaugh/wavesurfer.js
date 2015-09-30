@@ -16,16 +16,6 @@ graphics).  You can also try
 a Flash-based fallback with graphics.
 
 ## FAQ
-### How can I report a bug?
-To report a bug, please create a failing test case and submit a pull
-request. The test case can be either a Jasmine spec, or a simple HTML
-page demonstrating the problem.
-
-### Can I pay you for a wavesurfer.js job?
-For *payed* consultancy, feel free to email me at
-katspaugh@gmail.com. For trivial questions about programming, please
-refer to StackOverflow.
-
 ### Can the audio start playing before the waveform is drawn?
 Yes, if you use the `backend: 'MediaElement'` option. See here: http://wavesurfer-js.org/example/audio-element/. The audio will start playing as you press play. A thin line will be displayed until the whole audio file is downloaded and decoded to draw the waveform.
 
