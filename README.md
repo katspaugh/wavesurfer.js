@@ -1,18 +1,13 @@
 # wavesurfer.js
 
-Interactive navigable audio visualization using
-[Web Audio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
-and Canvas.
+Interactive navigable audio visualization using [Web Audio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) and Canvas.
 
 ![Screenshot](example/screenshot.png?raw=true "Screenshot")
 
 ## Browser support
-wavesurfer.js works only in [modern browsers supporting Web Audio](http://caniuse.com/#search=web%20audio).
+wavesurfer.js works only in [modern browsers supporting Web Audio](http://caniuse.com/audio-api).
 
-It will fallback to Audio Element in other browsers (without
-graphics).  You can also try
-[wavesurfer.swf](https://github.com/laurentvd/wavesurfer.swf) which is
-a Flash-based fallback with graphics.
+It will fallback to Audio Element in other browsers (without graphics). You can also try [wavesurfer.swf](https://github.com/laurentvd/wavesurfer.swf) which is a Flash-based fallback with graphics.
 
 ## FAQ
 ### Can the audio start playing before the waveform is drawn?
