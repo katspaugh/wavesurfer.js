@@ -7,8 +7,7 @@ and Canvas.
 ![Screenshot](example/screenshot.png?raw=true "Screenshot")
 
 ## Browser support
-wavesurfer.js works only in modern browsers supporting Web Audio
-(Chrome, Firefox, Safari, Opera etc).
+wavesurfer.js works only in [modern browsers supporting Web Audio](http://caniuse.com/#search=web%20audio).
 
 It will fallback to Audio Element in other browsers (without
 graphics).  You can also try
@@ -203,7 +202,7 @@ General events:
  * `remove` - Happens just before the region is removed.
  * `update` - When the region's options are updated.
 
- Mouse events:
+Mouse events:
 
  * `click` - When the mouse clicks on the region.  Callback will receive a `MouseEvent`.
  * `dblclick` - When the mouse double-clicks on the region.  Callback will receive a `MouseEvent`.
