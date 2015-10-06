@@ -19,6 +19,7 @@
 
             this.active = false;
             this.paused = false;
+            this.reloadBufferFunction = this.reloadBuffer.bind(this);
 
             // cross-browser getUserMedia
             this.getUserMedia = (
@@ -70,28 +71,59 @@
                 this.paused = !this.paused;
 
                 if (this.paused) {
-                    // disconnect sources so they can be used elsewhere
-                    // (eg. during audio playback)
-                    this.disconnect();
+                    this.pause();
                 } else {
-                    // resume visualization
-                    this.connect();
+                    this.play();
                 }
             }
         },
 
         /**
-         * Stop the microphone and visualization.
+         * Play visualization.
+         */
+        play: function() {
+            this.paused = false;
+
+            this.connect();
+        },
+
+        /**
+         * Pause visualization.
+         */
+        pause: function() {
+            this.paused = true;
+
+            // disconnect sources so they can be used elsewhere
+            // (eg. during audio playback)
+            this.disconnect();
+        },
+
+        /**
+         * Stop the device stream and remove any remaining waveform drawing from
+         * the wavesurfer canvas.
          */
         stop: function() {
             if (this.active) {
-                this.active = false;
+                // stop visualization and device
+                this.stopDevice();
 
-                if (this.stream) {
-                    this.stream.stop();
-                }
-                this.disconnect();
+                // empty last frame
                 this.wavesurfer.empty();
+            }
+        },
+
+        /**
+         * Stop the device and the visualization.
+         */
+        stopDevice: function() {
+            this.active = false;
+
+            // stop visualization
+            this.disconnect();
+
+            // stop stream from device
+            if (this.stream) {
+                this.stream.stop();
             }
         },
 
@@ -108,7 +140,7 @@
                 this.mediaStreamSource.connect(this.levelChecker);
 
                 this.levelChecker.connect(this.micContext.destination);
-                this.levelChecker.onaudioprocess = this.reloadBuffer.bind(this);
+                this.levelChecker.onaudioprocess = this.reloadBufferFunction;
             }
         },
 
@@ -122,6 +154,7 @@
 
             if (this.levelChecker !== undefined) {
                 this.levelChecker.disconnect();
+                this.levelChecker.onaudioprocess = undefined;
             }
         },
 
@@ -144,7 +177,8 @@
             this.stream = stream;
             this.active = true;
 
-            this.connect();
+            // start visualization
+            this.play();
 
             // notify listeners
             this.fireEvent('deviceReady', stream);
