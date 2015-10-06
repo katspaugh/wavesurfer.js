@@ -56,7 +56,7 @@
                         <li>add the Microphone plugin script tag</li>
                         <li>create a <code>WaveSurfer</code> instance</li>
                         <li>create a <code>Microphone</code> instance</li>
-                        <li>control the Microphone using the <code>start</code>, <code>stop</code> and <code>togglePlay</code> methods</li>
+                        <li>control the Microphone using the <code>start</code>, <code>stopDevice</code>, <code>play</code>, <code>pause</code>, <code>stop</code> and <code>togglePlay</code> methods</li>
                       </ol>
                     </p>
                     <p>
@@ -94,10 +94,19 @@ microphone.on('deviceError', function(code) {
 microphone.start();
 
 // pause rendering
-//microphone.togglePlay();
+//microphone.pause();
 
-// stop and disconnect microphone
+// resume rendering
+//microphone.play();
+
+// stop visualization and disconnect microphone
+//microphone.stopDevice();
+
+// same as stopDevice() but also clears the wavesurfer canvas
 //microphone.stop();
+
+// destroy the plugin
+//microphone.destroy();
 </code></pre>
                     </p></noindex>
 
