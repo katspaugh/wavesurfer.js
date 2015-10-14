@@ -56,12 +56,10 @@ WaveSurfer.Regions = {
             }
 
             region = null;
-            $log.log('region end');
         }
         this.wrapper.addEventListener('mouseup', eventUp);
         this.wrapper.addEventListener('touchend', eventUp);
         function eventMove(e) {
-            //$log.log('region move', e);
             if (!drag) { return; }
 
             if (!region) {
