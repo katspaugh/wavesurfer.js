@@ -188,6 +188,10 @@
          * Destroy the microphone plugin.
          */
         destroy: function(event) {
+            // make sure the buffer is not redrawn during
+            // cleanup and demolition of this plugin.
+            this.paused = true;
+
             this.stop();
         },
 
