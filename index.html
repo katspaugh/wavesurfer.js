@@ -15,12 +15,7 @@
         <link rel="screenshot" itemprop="screenshot" href="http://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
-        <script src="src/wavesurfer.js"></script>
-        <script src="src/util.js"></script>
-        <script src="src/webaudio.js"></script>
-        <script src="src/mediaelement.js"></script>
-        <script src="src/drawer.js"></script>
-        <script src="src/drawer.canvas.js"></script>
+        <script src="dist/wavesurfer.min.js"></script>
 
         <!-- regions plugin -->
         <script src="plugin/wavesurfer.regions.js"></script>
@@ -105,10 +100,8 @@
                     <h4>Quick Start</h4>
 
                     <noindex><p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
-    container: document.querySelector('#wave'),
+<pre><code>var wavesurfer = WaveSurfer.create(
+    container: '#wave',
     waveColor: 'violet',
     progressColor: 'purple'
 });
@@ -117,7 +110,7 @@ wavesurfer.on('ready', function () {
     wavesurfer.play();
 });
 
-wavesurfer.load('example/media/demo.mp3');</code></pre>
+wavesurfer.load('audio.wav');</code></pre>
                     </p></noindex>
 
                     <h4>Documentation</h4>
@@ -221,7 +214,7 @@ wavesurfer.load('example/media/demo.mp3');</code></pre>
 
                 <div class="col-sm-5">
                     <noindex>
-                        Demo music track is <a href="http://www.jamendo.com/en/track/661578/trou" rel="nofollow"><b>Trou</b> <span class="muted">by</span>&nbsp;<b>czskamaarù</b></a>. Thanks!
+                        Audio track: <a href="https://librivox.org/short-poetry-collection-146-by-various/">LibriVox</a>
                     </noindex>
                 </div>
             </div>
@@ -239,7 +232,7 @@ wavesurfer.load('example/media/demo.mp3');</code></pre>
             m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
             })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-            ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+            ga('create', 'UA-50026819-1', 'auto');
             ga('send', 'pageview');
         </script>
     </body>

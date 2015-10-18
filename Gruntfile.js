@@ -22,7 +22,8 @@ module.exports = function(grunt) {
           'src/webaudio.js',
           'src/mediaelement.js',
           'src/drawer.js',
-          'src/drawer.*.js'
+          'src/drawer.*.js',
+          'src/html-init.js'
         ],
         dest: 'dist/wavesurfer.min.js'
       }

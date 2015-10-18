@@ -24,10 +24,11 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         var my = this;
 
         var media = document.createElement(this.mediaType);
-        media.controls = false;
+        media.controls = this.params.mediaControls;
         media.autoplay = false;
         media.preload = 'auto';
         media.src = url;
+        media.style.width = '100%';
 
         media.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading media element');
