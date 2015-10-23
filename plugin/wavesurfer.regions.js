@@ -39,7 +39,7 @@ WaveSurfer.Regions = {
 
         function eventDown(e) {
             drag = true;
-            if(typeof e.targetTouches != 'undefined'){
+            if (typeof e.targetTouches !== 'undefined' && e.targetTouches.length === 1) {
                 e.clientX = e.targetTouches[0].clientX;
             }
             start = my.wavesurfer.drawer.handleEvent(e);
@@ -67,7 +67,7 @@ WaveSurfer.Regions = {
             }
 
             var duration = my.wavesurfer.getDuration();
-            if(typeof e.targetTouches != 'undefined'){
+            if (typeof e.targetTouches !== 'undefined' && e.targetTouches.length === 1) {
                 e.clientX = e.targetTouches[0].clientX;
             }
             var end = my.wavesurfer.drawer.handleEvent(e);
