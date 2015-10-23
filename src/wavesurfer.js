@@ -29,6 +29,8 @@ var WaveSurfer = {
         audioRate     : 1,
         interact      : true,
         splitChannels : false,
+        mediaContainer: null,
+        mediaControls : false,
         renderer      : 'Canvas',
         backend       : 'WebAudio',
         mediaType     : 'audio'
@@ -46,7 +48,7 @@ var WaveSurfer = {
             throw new Error('Container element not found');
         }
 
-        if (typeof this.params.mediaContainer == 'undefined') {
+        if (this.params.mediaContainer == null) {
             this.mediaContainer = this.container;
         } else if (typeof this.params.mediaContainer == 'string') {
             this.mediaContainer = document.querySelector(this.params.mediaContainer);

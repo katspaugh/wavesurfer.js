@@ -100,6 +100,7 @@ WaveSurfer.Region = {
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
         this.data = params.data || {};
+        this.attributes = params.attributes || {};
 
         this.maxLength = params.maxLength;
         this.minLength = params.minLength;
@@ -139,6 +140,9 @@ WaveSurfer.Region = {
         if (null != params.minLength) {
             this.minLength = Number(params.minLength);
         }
+        if (null != params.attributes) {
+            this.attributes = params.attributes;
+        }
 
         this.updateRender();
         this.fireEvent('update');
@@ -174,6 +178,10 @@ WaveSurfer.Region = {
         regionEl.className = 'wavesurfer-region';
         regionEl.title = this.formatTime(this.start, this.end);
         regionEl.setAttribute('data-id', this.id);
+
+        for (var attrname in this.attributes) {
+            regionEl.setAttribute('data-region-' + attrname, this.attributes[attrname]);
+        }
 
         var width = this.wrapper.scrollWidth;
         this.style(regionEl, {
@@ -247,6 +255,11 @@ WaveSurfer.Region = {
             backgroundColor: this.color,
             cursor: this.drag ? 'move' : 'default'
         });
+
+        for (var attrname in this.attributes) {
+            this.element.setAttribute('data-region-' + attrname, this.attributes[attrname]);
+        }
+
         this.element.title = this.formatTime(this.start, this.end);
     },
 

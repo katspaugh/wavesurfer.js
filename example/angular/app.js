@@ -1,6 +1,6 @@
-var app = angular.module('wavesurfer', []);
+var app = angular.module('ngWavesurfer', []);
 
-app.directive('wavesurfer', function () {
+app.directive('ngWavesurfer', function () {
     return {
         restrict: 'E',
 
