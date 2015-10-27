@@ -28,6 +28,11 @@ module.exports = function(grunt) {
         dest: 'dist/wavesurfer.min.js'
       }
     },
+    serve: {
+      options: {
+        port: 9000
+      }
+    },
     connect: {
         options: {
 	        base: '.',
@@ -183,6 +188,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-coveralls');
   grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-serve');
 
   // Default task.
   grunt.registerTask('default', ['jshint', 'test', 'coverage', 'concat', 'commonjs',
