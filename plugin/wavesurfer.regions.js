@@ -95,8 +95,9 @@ WaveSurfer.Region = {
 
         this.bindInOut();
         this.render();
-
+        this.wavesurfer.on('zoom', this.updateRender.bind(this));
         this.wavesurfer.fireEvent('region-created', this);
+
     },
 
     /* Update region params. */
@@ -143,6 +144,7 @@ WaveSurfer.Region = {
             this.wrapper.removeChild(this.element);
             this.element = null;
             this.fireEvent('remove');
+            this.wavesurfer.un('zoom', this.updateRender.bind(this));
             this.wavesurfer.fireEvent('region-removed', this);
         }
     },

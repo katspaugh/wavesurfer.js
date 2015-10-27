@@ -135,6 +135,7 @@ General events:
  * `ready` – When audio is loaded, decoded and the waveform drawn.
  * `scroll` - When the scrollbar is moved.  Callback will receive a `ScrollEvent` object.
  * `seek` – On seeking.  Callback will receive (float) progress [0..1].
+ * `zoom` – On zooming. Callback will receive (integer) minPxPerSec.
 
 Region events (exposed by the Regions plugin):
 
@@ -165,7 +166,7 @@ After doing that, use `wavesurfer.addRegion()` to create Region objects.
 
 ### Exposed Methods
 
- * `addRegion(options)` – Creates a region on the waveform. Returns a `Region` object.  See [Region Options](#region-options), [Region Methods](#region-methods) and [Region Events](#region-events) below. 
+ * `addRegion(options)` – Creates a region on the waveform. Returns a `Region` object.  See [Region Options](#region-options), [Region Methods](#region-methods) and [Region Events](#region-events) below.
     * **Note:** You cannot add regions until the audio has finished loading, otherwise the `start:` and `end:` properties of the new region will be set to `0`, or an unexpected value.
  * `clearRegions()` – Removes all regions.
  * `enableDragSelection(options)` – Lets you create regions by selecting.
