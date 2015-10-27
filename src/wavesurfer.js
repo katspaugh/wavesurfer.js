@@ -271,6 +271,7 @@ var WaveSurfer = {
         this.seekAndCenter(
             this.getCurrentTime() / this.getDuration()
         );
+        this.fireEvent('zoom', pxPerSec);
     },
 
     /**
