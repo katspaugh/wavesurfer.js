@@ -248,6 +248,14 @@ grunt coverage
 
 The HTML report can be found in `coverage/html/index.html`.
 
+Start local Web server with:
+
+```
+grunt serve
+```
+
+Navigate to `http://localhost:9000/index.html` to access examples locally.
+
 ## Credits
 
 Initial idea by [Alex Khokhulin](https://github.com/xoxulin). Many

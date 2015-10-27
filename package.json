@@ -27,6 +27,7 @@
     "grunt-contrib-jshint": ">=0.10.0",
     "grunt-contrib-uglify": ">=0.5.0",
     "grunt-coveralls": ">=1.0.0",
+    "grunt-serve": "^0.1.6",
     "grunt-template-jasmine-istanbul": ">=0.3.3",
     "jasmine-expect": ">=1.22.3"
   },
