@@ -76,7 +76,7 @@ where you can also add your own project.
 | `scrollParent` | boolean | `false` | Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrunk to the container width (see `fillParent`). |
 | `skipLength` | float | `2` | Number of seconds to skip with the `skipForward()` and `skipBackward()` methods. |
 | `waveColor` | string | `#999` | The fill color of the waveform after the cursor. |
-
+| `autoCenter` | boolean | true | If a scrollbar is present, center the waveform around the progress |
 ## WaveSurfer Methods
 
 All methods are intentionally public, but the most readily available are the following:
