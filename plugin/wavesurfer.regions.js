@@ -272,9 +272,6 @@ WaveSurfer.Region = {
         my.firedIn = false;
         my.firedOut = false;
 
-        var onPlay = function () {
-        };
-
         var onProcess = function (time) {
             if (!my.firedIn && my.start <= time && my.end > time) {
                 my.firedIn = true;
@@ -290,11 +287,9 @@ WaveSurfer.Region = {
             }
         };
 
-        this.wavesurfer.on('play', onPlay);
         this.wavesurfer.backend.on('audioprocess', onProcess);
 
         this.on('remove', function () {
-            my.wavesurfer.un('play', onPlay);
             my.wavesurfer.backend.un('audioprocess', onProcess);
         });
 
