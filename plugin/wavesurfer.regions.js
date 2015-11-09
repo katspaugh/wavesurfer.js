@@ -269,29 +269,27 @@ WaveSurfer.Region = {
     bindInOut: function () {
         var my = this;
 
-        var onPlay = function () {
-            my.firedIn = false;
-            my.firedOut = false;
-        };
+        my.firedIn = false;
+        my.firedOut = false;
 
         var onProcess = function (time) {
             if (!my.firedIn && my.start <= time && my.end > time) {
                 my.firedIn = true;
+                my.firedOut = false;
                 my.fireEvent('in');
                 my.wavesurfer.fireEvent('region-in', my);
             }
-            if (!my.firedOut && my.firedIn && my.end <= Math.round(time * 100) / 100) {
+            if (!my.firedOut && my.firedIn && (my.start >= Math.round(time * 100) / 100 || my.end <= Math.round(time * 100) / 100)) {
                 my.firedOut = true;
+                my.firedIn = false;
                 my.fireEvent('out');
                 my.wavesurfer.fireEvent('region-out', my);
             }
         };
 
-        this.wavesurfer.on('play', onPlay);
         this.wavesurfer.backend.on('audioprocess', onProcess);
 
         this.on('remove', function () {
-            my.wavesurfer.un('play', onPlay);
             my.wavesurfer.backend.un('audioprocess', onProcess);
         });
 
