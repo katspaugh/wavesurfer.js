@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
         scrollParent: true,
         normalize: true,
         minimap: true,
-        backend: 'AudioElement'
+        backend: 'MediaElement'
     });
 
     wavesurfer.util.ajax({
