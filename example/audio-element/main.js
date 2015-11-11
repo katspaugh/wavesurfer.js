@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
-        backend: 'AudioElement'
+        backend: 'MediaElement'
     });
 
     // Load audio from URL
