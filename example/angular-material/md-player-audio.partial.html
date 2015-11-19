@@ -21,8 +21,8 @@
         </md-virtual-repeat-container>
     </md-list>
     <md-wavesurfer-player
-            url="{{audio.currentTrack.src}}"
-            title="{{audio.currentTrack.title}}"
+            url="{{audio.currentTrack.src}}#{{audio.selectedIndex}}"
+            title="{{audio.selectedIndex+1}}. {{audio.currentTrack.title}}"
             extra-buttons="audio.extraButtons"
             properties="audio.playerProperties"
     >

@@ -133,17 +133,25 @@
         }
       }
 
+      var getPlayer = function(){
+        return $element.find('md-wavesurfer-player').controller('mdWavesurferPlayer');
+      };
       var setAutoPlay = function (forcePlay) {
-        var controller = $element.find('md-wavesurfer-player').controller('mdWavesurferPlayer');
+        var controller = getPlayer();
         if (controller && (forcePlay || controller.surfer.isPlaying())) {
           controller.autoPlay = true;
         }
       };
       audio.setTrack = function (idx, forcePlay) {
         if (audio.tracks.length > idx) {
-          setAutoPlay(forcePlay);
-          audio.currentTrack = audio.tracks[idx];
-          audio.selectedIndex = idx;
+          if (audio.selectedIndex === idx) {
+            var ctrl = getPlayer();
+            ctrl.surfer.playPause();
+          } else {
+            setAutoPlay(forcePlay);
+            audio.currentTrack = audio.tracks[idx];
+            audio.selectedIndex = idx;
+          }
         }
       };
 
@@ -317,8 +325,6 @@
 
         control.title = control.title || control.src.split('/').pop();
         control.surfer.load(control.src);
-        console.trace('Loading wave: ', control.src);
-
       };
 
       var startInterval = function () {
@@ -376,6 +382,7 @@
    * @param {string} url the URL of the audio file
    * @param {string} title title of the audio track
    * @param {object} properties an object specifying init options for WaveSurfer
+   * @param {boolean} auto-play specifies if the player should start as soon as it's loaded.
    * @param {object[]} extra-buttons a list of extra buttons to add to the control panel
    *    each button should be an object with the following properties:
    *    {
@@ -384,7 +391,7 @@
    *      icon: "md-font-icon parameter for the button"
    *      class: "extra classes to add to the button."
    *    }
-   *    
+   *
    * Every other attribute passed to this directive is assumed to a WaveSurver init parameter.
    */
   app.directive('mdWavesurferPlayer', function () {
