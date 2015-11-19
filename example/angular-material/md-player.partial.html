@@ -1,22 +1,24 @@
 <div layout="column" class="audioPlayerWrapper">
-    <md-toolbar class="md-toolbar-sm {{control.themeClass}} {{control.toolbarClass}} ">
-        <div class="md-toolbar-tools" layout="row" layout-fill>
-            <div flex="20" layout-align="center start">
+    <md-toolbar class="md-toolbar-sm {{control.themeClass}} {{control.toolbarClass}} " style="color: #333333; background:
+    none;">
+        <div class="md-toolbar-tools" layout="row">
+            <div flex="initial" layout-align="center start">
                 {{control.currentTime | mdWavesurferTimeFormat}}
             </div>
-            <div flex class="text-center">
+            <div flex="grow" class="text-center">
                 {{control.title}}
             </div>
-            <div flex="20" layout-align="center end" class="text-right">
+            <div flex="initial" layout-align="center end" class="text-right">
                 {{control.surfer.getDuration() | mdWavesurferTimeFormat}}
             </div>
         </div>
     </md-toolbar>
+    <md-divider></md-divider>
     <md-content>
-        <div class="waveSurferWave" layout-fill></div>
+        <div class="waveSurferWave"></div>
     </md-content>
     <md-divider md-inset></md-divider>
-    <md-toolbar class="controls {{control.themeClass}} {{control.toolbarClass}} ">
+    <md-toolbar class="{{control.themeClass}} {{control.toolbarClass}} md-player-controls">
         <div layout="row" class="md-toolbar-tools">
             <div flex="initial" layout-align="center start" ng-show="control.extraButtons.length">
                 <md-button ng-click="btn.action()"
@@ -27,6 +29,7 @@
                     <md-icon md-font-icon="{{btn.icon}}"></md-icon>
                 </md-button>
             </div>
+
             <div flex layout="row" layout-align="center center">
                 <md-button ng-click="control.surfer.skipBackward()" type="button"
                            ng-disabled="!control.surfer.isPlaying()">
@@ -53,7 +56,7 @@
                     <md-icon md-font-icon="zmdi zmdi-fast-forward"></md-icon>
                 </md-button>
             </div>
-            <div flex="initial" layout-align="center end">
+            <div flex="initial" layout-align="center end" >
                 <md-button type="button" ng-click="control.toggleMute()" ng-disabled="!control.surfer.isPlaying()">
                     <md-tooltip>
                         Toggle mute

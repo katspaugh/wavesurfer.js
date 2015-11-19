@@ -12,6 +12,7 @@
 
     <link rel="stylesheet" href="../css/style.css"/>
     <link rel="stylesheet" href="../css/ribbon.css"/>
+    <link rel="stylesheet" href="main.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular-animate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular-aria.min.js"></script>
@@ -25,36 +26,55 @@
 
 
 <div class="md-padding" flex="80">
-    <md-toolbar class="md-primary">
-        <div class="md-toolbar-tools">
-            <h2 flex>
-                wavesurfer.js with Angular Material
-            </h2>
+    <div layout="row">
+        <h2 flex>
+            wavesurfer.js with Angular Material
+        </h2>
 
-            <div flex="initial" layout-align="center end" style="text-align: right;">
-                <md-button class="md-raised md-fab md-warning" href="/">
-                    <md-icon md-font-icon="zmdi zmdi-home" style="font-size: 48px; color: #000;"></md-icon>
-                </md-button>
-            </div>
+        <div flex="initial" layout-align="center end" style="text-align: right;">
+            <md-button class="md-raised md-fab md-primary" href="/">
+                <md-icon md-font-icon="zmdi zmdi-home" style="font-size: 48px;"></md-icon>
+            </md-button>
         </div>
-
-    </md-toolbar>
-
+    </div>
+    <md-divider></md-divider>
     <div id="demo">
-        <div layout="column">
-            <md-wavesurfer-audio>
-                <md-wavesurfer-source src="../media/demo.wav" title="czskamaarù – Trou"></md-wavesurfer-source>
-                <md-wavesurfer-source src="../panner/media.wav" title="日本人の話し"></md-wavesurfer-source>
-                <md-wavesurfer-source src="../elan/transcripts/001z.mp3"
-                                      title="Рассказы о сновидениях"></md-wavesurfer-source>
-            </md-wavesurfer-audio>
+        <div layout="row" layout-align="center center" layout-fill>
+            <!--
+                This is analogous to HTML <audio> element
+                Wave surfer properties should be passed in as player-* property names
+                See example below
+                The backend should be specified when remote audio files are needed.
+            -->
+            <div flex="50" flex-md="70" flex-sm="100">
+                <md-wavesurfer-audio player-wave-color="gray" player-progress-color="black"
+                                     player-backend="MediaElement">
+                    <!-- This is analogous to HTML <source> element -->
+                    <md-wavesurfer-source src="../media/demo.wav" title="czskamaarù – Trou"></md-wavesurfer-source>
+                    <md-wavesurfer-source src="../panner/media.wav" title="日本人の話し"></md-wavesurfer-source>
+                    <md-wavesurfer-source src="../elan/transcripts/001z.mp3"
+                                          title="Рассказы о сновидениях"></md-wavesurfer-source>
+                    <md-wavesurfer-source
+                            src="http://download.wavetlan.com/SVV/Media/HTTP/MP3/Nero_SmartTrax/NeroSmartTrax_test1_MPEG2_Stereo_CBR_48kbps_22050Hz.mp3"
+                            title="Remote: Nero SmartTrax- Test 1"></md-wavesurfer-source>
+                    <md-wavesurfer-source
+                            src="http://download.wavetlan.com/SVV/Media/HTTP/MP3/Nero_SmartTrax/NeroSmartTrax_test2_MPEG1_Mono_CBR_64kbps_44100Hz.mp3"
+                            title="Remote: Nero SmartTrax- Test 2"></md-wavesurfer-source>
+
+                    <!-- Long list, using previously loaded files, need to test container.-->
+                    <md-wavesurfer-source ng-repeat="item in longList" src="{{item.url}}"
+                                          title="{{item.title}}"></md-wavesurfer-source>
+
+
+                </md-wavesurfer-audio>
+            </div>
 
         </div>
 
     </div>
 
     <div class="footer" layout="row">
-        <div flex="60">
+        <div flex="55">
             <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title"
                   rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#"
                                                             href="https://github.com/katspaugh/wavesurfer.js"
@@ -63,13 +83,11 @@
             Commons Attribution 3.0 Unported License</a>.
         </div>
 
-        <div flex="40">
-            <p>
-                Audio sources:<br/>
-                <a rel="nofollow" href="http://www.jamendo.com/en/track/661578/trou"><b>Trou</b> <span
-                        class="muted">by</span>&nbsp;<b>czskamaarù</b></a>,
-                <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>
-            </p>
+        <div flex="40" flex-offset="5" class="text-right">
+            Audio sources:<br/>
+            <a rel="nofollow" href="http://www.jamendo.com/en/track/661578/trou"><b>Trou</b> <span
+                    class="muted">by</span>&nbsp;<b>czskamaarù</b></a>,
+            <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>
         </div>
     </div>
 </div>
