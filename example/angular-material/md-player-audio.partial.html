@@ -1,0 +1,24 @@
+<div layout="column">
+    <div ng-transclude=""></div>
+    <md-list layout="column">
+        <md-card ng-repeat="track in audio.tracks">
+            <md-list-item ng-click="audio.setTrack($index)">
+                <!--<img alt="{{ person.name }}" ng-src="{{ person.img }}" class="md-avatar"/>-->
+
+                <p>
+                    {{$index+1}}. {{track.title}}
+                </p>
+
+                <div class="text-right md-secondary">
+                    {{track.duration | mdWavesurferTimeFormat}}
+                </div>
+            </md-list-item>
+        </md-card>
+    </md-list>
+    <md-wavesurfer-player
+            src="{{audio.currentTrack.src}}"
+            title="{{audio.currentTrack.title}}"
+            extra-buttons="audio.extraButtons"
+    >
+    </md-wavesurfer-player>
+</div>
