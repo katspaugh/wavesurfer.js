@@ -1,0 +1,117 @@
+<html ng-app="mdWavesurferApp">
+<head>
+    <title>wavesurfer.js | Angular Material</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,500' rel='stylesheet' type='text/css'>
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css'
+          rel='stylesheet' type='text/css'>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/github.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.0-rc3/angular-material.min.css"
+          rel="stylesheet" type="text/css"/>
+
+    <link rel="stylesheet" href="../css/style.css"/>
+    <link rel="stylesheet" href="../css/ribbon.css"/>
+    <link rel="stylesheet" href="main.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular-animate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular-aria.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.0-rc3/angular-material.min.js"></script>
+    <script type="text/javascript" src="../../dist/wavesurfer.min.js"></script>
+    <script type="text/javascript" src="wavesurfer.directive.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+
+</head>
+<body ng-controller="MainController" layout="column" layout-align="center center">
+
+
+<div class="md-padding" flex="80">
+    <div layout="row">
+        <h2 flex>
+            wavesurfer.js with Angular Material
+        </h2>
+
+        <div flex="initial" layout-align="center end" style="text-align: right;">
+            <md-button class="md-raised md-fab md-primary" href="/">
+                <md-icon md-font-icon="zmdi zmdi-home" style="font-size: 48px;"></md-icon>
+            </md-button>
+        </div>
+    </div>
+    <md-divider></md-divider>
+    <div id="demo">
+        <div layout="row" layout-align="center center" layout-fill>
+            <!--
+                This is analogous to HTML <audio> element
+                Wave surfer properties should be passed in as player-* property names
+                See example below
+                The backend should be specified when remote audio files are needed.
+            -->
+            <div flex="50" flex-md="70" flex-sm="100">
+                <md-wavesurfer-audio player-wave-color="gray" player-progress-color="black"
+                                     player-backend="MediaElement">
+                    <!-- This is analogous to HTML <source> element -->
+                    <md-wavesurfer-source src="../media/demo.wav" title="czskamaarù – Trou"></md-wavesurfer-source>
+                    <md-wavesurfer-source src="../panner/media.wav" title="日本人の話し"></md-wavesurfer-source>
+                    <md-wavesurfer-source src="../elan/transcripts/001z.mp3"
+                                          title="Рассказы о сновидениях"></md-wavesurfer-source>
+                    <md-wavesurfer-source
+                            src="http://download.wavetlan.com/SVV/Media/HTTP/MP3/Nero_SmartTrax/NeroSmartTrax_test1_MPEG2_Stereo_CBR_48kbps_22050Hz.mp3"
+                            title="Remote: Nero SmartTrax- Test 1"></md-wavesurfer-source>
+                    <md-wavesurfer-source
+                            src="http://download.wavetlan.com/SVV/Media/HTTP/MP3/Nero_SmartTrax/NeroSmartTrax_test2_MPEG1_Mono_CBR_64kbps_44100Hz.mp3"
+                            title="Remote: Nero SmartTrax- Test 2"></md-wavesurfer-source>
+
+                    <!-- Long list, using previously loaded files, need to test container.-->
+                    <md-wavesurfer-source ng-repeat="item in longList" src="{{item.url}}"
+                                          title="{{item.title}}"></md-wavesurfer-source>
+
+
+                </md-wavesurfer-audio>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer" layout="row">
+        <div flex="55">
+            <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title"
+                  rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#"
+                                                            href="https://github.com/katspaugh/wavesurfer.js"
+                                                            property="cc:attributionName" rel="cc:attributionURL">katspaugh</a>
+            is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/3.0/deed.en_US">Creative
+            Commons Attribution 3.0 Unported License</a>.
+        </div>
+
+        <div flex="40" flex-offset="5" class="text-right">
+            Audio sources:<br/>
+            <a rel="nofollow" href="http://www.jamendo.com/en/track/661578/trou"><b>Trou</b> <span
+                    class="muted">by</span>&nbsp;<b>czskamaarù</b></a>,
+            <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>
+        </div>
+    </div>
+</div>
+<div class="github-fork-ribbon-wrapper right">
+    <div class="github-fork-ribbon">
+        <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+    </div>
+</div>
+
+<script>
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function () {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+    ga('send', 'pageview');
+</script>
+</body>
+</html>
