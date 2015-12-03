@@ -122,8 +122,14 @@
             this.disconnect();
 
             // stop stream from device
-            if (this.stream) {
-                this.stream.stop();
+            if (this.stream && this.stream.getTracks()) {
+                
+                this.stream.getTracks().forEach(function( stream ) {
+                    stream.stop();
+                });
+                
+            } else {
+                this.stream.stop(); //For firefox and Opera
             }
         },
 
