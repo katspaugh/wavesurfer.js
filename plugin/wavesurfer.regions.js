@@ -251,18 +251,20 @@ WaveSurfer.Region = {
             this.end = Math.min(this.start + this.maxLength, this.end);
         }
 
-        this.style(this.element, {
-            left: ~~(this.start / dur * width) + 'px',
-            width: ~~((this.end - this.start) / dur * width) + 'px',
-            backgroundColor: this.color,
-            cursor: this.drag ? 'move' : 'default'
-        });
+        if (this.element != null) {
+            this.style(this.element, {
+                left: ~~(this.start / dur * width) + 'px',
+                width: ~~((this.end - this.start) / dur * width) + 'px',
+                backgroundColor: this.color,
+                cursor: this.drag ? 'move' : 'default'
+            });
 
-        for (var attrname in this.attributes) {
-            this.element.setAttribute('data-region-' + attrname, this.attributes[attrname]);
+            for (var attrname in this.attributes) {
+                this.element.setAttribute('data-region-' + attrname, this.attributes[attrname]);
+            }
+
+            this.element.title = this.formatTime(this.start, this.end);
         }
-
-        this.element.title = this.formatTime(this.start, this.end);
     },
 
     /* Bind audio events. */
