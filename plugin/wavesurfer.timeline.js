@@ -34,6 +34,9 @@
             this.secondaryFontColor = this.params.secondaryFontColor || '#000';
             this.fontFamily = this.params.fontFamily || 'Arial';
             this.fontSize = this.params.fontSize || 10;
+            this.timeInterval = this.params.timeInterval;
+            this.primaryLabelInterval = this.params.primaryLabelInterval;
+            this.secondaryLabelInterval = this.params.secondaryLabelInterval;
 
             this.createWrapper();
             this.createCanvas();
@@ -156,6 +159,10 @@
                     var primaryLabelInterval = 4;
                     var secondaryLabelInterval = 2;
                 }
+
+                timeInterval = this.timeInterval || timeInterval;
+                primaryLabelInterval = this.primaryLabelInterval || primaryLabelInterval;
+                secondaryLabelInterval = this.secondaryLabelInterval || secondaryLabelInterval;
 
                 var height1 = this.height - 4,
                     height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4,
