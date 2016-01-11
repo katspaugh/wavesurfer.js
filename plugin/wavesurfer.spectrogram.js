@@ -12,7 +12,6 @@ WaveSurfer.Spectrogram = {
         this.frequenciesDataUrl = params.frequenciesDataUrl;
 
         var drawer = this.drawer = this.wavesurfer.drawer;
-        this.buffer = this.wavesurfer.backend.buffer;
 
         this.container = 'string' == typeof params.container ?
             document.querySelector(params.container) : params.container;
@@ -31,6 +30,7 @@ WaveSurfer.Spectrogram = {
         this.render();
 
         wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this);
+        wavesurfer.on('redraw', this.render.bind(this));
         wavesurfer.on('destroy', this.destroy.bind(this));
     },
 
@@ -116,20 +116,25 @@ WaveSurfer.Spectrogram = {
 
         var pixels = my.resample(frequenciesData);
 
-        var heightFactor = 2 / my.buffer.numberOfChannels;
+        var heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
 
         for (var i = 0; i < pixels.length; i++) {
             for (var j = 0; j < pixels[i].length; j++) {
                 var colorValue = 255 - pixels[i][j];
                 my.spectrCc.fillStyle = 'rgb(' + colorValue + ', '  + colorValue + ', ' + colorValue + ')';
-                my.spectrCc.fillRect(i, height - j * heightFactor, 1, 1 * heightFactor);
+                my.spectrCc.fillRect(i, height - j * heightFactor, 1, heightFactor);
             }
         }
     },
 
     getFrequencies: function(callback) {
         var fftSamples = this.fftSamples;
-        var buffer = this.buffer;
+        var buffer = this.buffer = this.wavesurfer.backend.buffer;
+
+        if (! buffer) {
+            this.fireEvent('error', 'Web Audio buffer is not available');
+            return;
+        }
         
         var frequencies = [];
         var context = new window.OfflineAudioContext(1, buffer.length, buffer.sampleRate);
