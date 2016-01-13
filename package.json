@@ -2,7 +2,7 @@
   "name": "wavesurfer.js",
   "version": "1.0.49",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
-  "main": "dist/wavesurfer.min.js",
+  "main": "dist/wavesurfer.umd.js",
   "directories": {
     "example": "example"
   },
@@ -28,6 +28,7 @@
     "grunt-contrib-uglify": ">=0.5.0",
     "grunt-coveralls": ">=1.0.0",
     "grunt-template-jasmine-istanbul": ">=0.3.3",
+    "grunt-umd": "^2.3.5",
     "jasmine-expect": ">=1.22.3"
   },
   "homepage": "https://github.com/katspaugh/wavesurfer.js"

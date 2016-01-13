@@ -37,6 +37,17 @@ module.exports = function(grunt) {
 	        keepalive: true
 	    },
     },
+    umd: {
+      main: {
+        options: {
+          src: 'dist/*.min.js',
+          dest: 'dist/wavesurfer.umd.js',
+          amdModuleId: 'wavesurfer',
+          objectToExport: 'WaveSurfer',
+          globalAlias: 'WaveSurfer'
+        }
+      }
+    },
     commonjs: {
       modules: {
         banner: '<%= banner %>',
@@ -170,7 +181,7 @@ module.exports = function(grunt) {
       return file.src.map(function(filepath) {
         var definePath = (filepath.replace(/\.\w+$/, '')),
         original = grunt.file.read(path.join(file.cwd, filepath));
-        return grunt.file.write(file.dest, file.banner + 
+        return grunt.file.write(file.dest, file.banner +
           '\ndefine(function () {\n' + original + '\nreturn WaveSurfer;\n});');
       });
     });
@@ -183,6 +194,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-coveralls');
   grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-umd');
 
   // Default task.
   grunt.registerTask('default', ['jshint', 'test', 'coverage', 'concat', 'commonjs',
