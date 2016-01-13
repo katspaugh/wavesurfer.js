@@ -22,12 +22,19 @@
             this.reloadBufferFunction = this.reloadBuffer.bind(this);
 
             // cross-browser getUserMedia
-            this.getUserMedia = (
+            var getUserMediaFn =
                 navigator.getUserMedia ||
                 navigator.webkitGetUserMedia ||
                 navigator.mozGetUserMedia ||
-                navigator.msGetUserMedia
-            ).bind(navigator);
+                navigator.msGetUserMedia;
+
+            if (getUserMediaFn) {
+                this.getUserMedia = getUserMediaFn.bind(navigator);
+            } else {
+                this.getUserMedia = function (constraints, successCallback, errorCallback) {
+                    errorCallback(new Error('getUserMedia is not supported'));
+                };
+            }
 
             // The buffer size in units of sample-frames.
             // If specified, the bufferSize must be one of the following values:
