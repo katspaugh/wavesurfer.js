@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "1.0.49",
+  "version": "1.0.50",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.umd.js",
   "directories": {
