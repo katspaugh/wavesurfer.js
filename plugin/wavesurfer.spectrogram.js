@@ -137,7 +137,7 @@ WaveSurfer.Spectrogram = {
         }
         
         var frequencies = [];
-        var context = new window.OfflineAudioContext(1, buffer.length, buffer.sampleRate);
+        var context = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, buffer.length, buffer.sampleRate);
         var source = context.createBufferSource();
         var processor = context.createScriptProcessor(0, 1, 1);
 
