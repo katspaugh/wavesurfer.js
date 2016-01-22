@@ -137,9 +137,10 @@ WaveSurfer.Spectrogram = {
         }
         
         var frequencies = [];
-        var context = new window.OfflineAudioContext(1, buffer.length, buffer.sampleRate);
+        var context = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, buffer.length, buffer.sampleRate);
         var source = context.createBufferSource();
-        var processor = context.createScriptProcessor(0, 1, 1);
+        var processor = context.createScriptProcessor ?
+            context.createScriptProcessor(0, 1, 1) : context.createJavaScriptNode(0, 1, 1);
 
         var analyser = context.createAnalyser();
         analyser.fftSize = fftSamples;
