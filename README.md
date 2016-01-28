@@ -129,7 +129,6 @@ General events:
  * `error` – Occurs on error.  Callback will receive (string) error message.
  * `finish` – When it finishes playing.
  * `loading` – Fires continuously when loading via XHR or drag'n'drop. Callback will receive (integer) loading progress in percents [0..100] and (object) event target.
- * `mouseup` - When a mouse button goes up.  Callback will receive `MouseEvent` object.
  * `pause` – When audio is paused.
  * `play` – When play starts.
  * `ready` – When audio is loaded, decoded and the waveform drawn.
