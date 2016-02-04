@@ -147,7 +147,7 @@ function extractRegions(peaks, duration) {
     // Gather silence indeces
     var silences = [];
     Array.prototype.forEach.call(peaks, function (val, index) {
-        if (val < minValue) {
+        if (Math.abs(val) <= minValue) {
             silences.push(index);
         }
     });
