@@ -122,10 +122,25 @@ var WaveSurfer = {
         this.backend.on('pause', function () { my.fireEvent('pause'); });
 
         this.backend.on('audioprocess', function (time) {
-            my.drawer.progress(my.backend.getPlayedPercents());
             my.fireEvent('audioprocess', time);
         });
     },
+
+    startAnimationLoop: function () {        
+        var my = this;        
+        var requestFrame = window.requestAnimationFrame ||
+                           window.webkitRequestAnimationFrame ||
+                           window.mozRequestAnimationFrame;
+        var frame = function () {
+            if (!my.backend.isPaused()) {
+                var percent = my.backend.getPlayedPercents();
+                my.drawer.progress(percent);
+                my.fireEvent('audioprocess', percent);
+                requestFrame(frame);
+            }
+        };
+        frame();
+     },
 
     getDuration: function () {
         return this.backend.getDuration();
@@ -137,6 +152,7 @@ var WaveSurfer = {
 
     play: function (start, end) {
         this.backend.play(start, end);
+        this.startAnimationLoop();
     },
 
     pause: function () {
