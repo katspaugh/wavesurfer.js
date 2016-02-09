@@ -32,6 +32,8 @@
                 <ul class="nav nav-pills pull-right">
                     <li><a href="?fill">Fill</a></li>
                     <li><a href="?scroll">Scroll</a></li>
+                    <li><a href="/#faq">FAQ</a></li>
+                    <li><a href="/#docs">API docs</a></li>
                 </ul>
                 </noindex>
 
@@ -112,15 +114,11 @@ wavesurfer.on('ready', function () {
 
 wavesurfer.load('audio.wav');</code></pre>
                     </p></noindex>
-
-                    <h4>Documentation</h4>
-
-                    <p>The full list of options and methods can be found in the <a href="https://github.com/katspaugh/wavesurfer.js/blob/master/README.md">README</a> file.</p>
                 </div>
             </div>
 
             <div class="row marketing">
-                <div class="col-lg-8">
+                <div class="col-md-8">
                     <h4>Plugins & Examples</h4>
 
                     <p>Thanks to the everyting-is-public API, it's easy to write <strong>wavesurfer.js</strong> plugins.</p>
@@ -140,7 +138,7 @@ wavesurfer.load('audio.wav');</code></pre>
                         <li>
                             <h4><a href="example/elan/?scroll">ELAN plugin</a></h4>
                             <p>
-                                Reads ELAN files and displays audio annotations as an interactive widget. ELAN is parsed into a JavaScript object with some denormalization.
+                                Reads ELAN files and displays audio annotations as an interactive widget. ELAN is parsed into a JavaScript object with some de-normalization.
                             </p>
                         </li>
 
@@ -211,6 +209,217 @@ wavesurfer.load('audio.wav');</code></pre>
                         </li>
                     </ul>
                 </div>
+
+                <div class="col-md-4">
+                    <h4>Recommended books:</h4>
+                    <iframe style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//ws-na.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=US&source=ac&ref=qf_sp_asin_til&ad_type=product_link&tracking_id=wavesurferjs-20&marketplace=amazon&region=US&placement=B0171UHKYA&asins=B0171UHKYA&linkId=PN4KVLR72OHNAEZD&show_border=true&link_opens_in_new_window=true">
+                    </iframe>
+
+                    <p>
+                        Angular 2 is a huge step forward from our beloved work horse AngularJS. It's more logical and fast. Minko Gechev is a well-known member of the Angular community who has a deep understanding of Angular internals and best practices. With this book you'll be up to speed with the new version of Angular within a week.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row marketing" id="faq">
+                <h4>FAQ</h4>
+
+                <h5>Can the audio start playing before the waveform is drawn?</h5>
+
+                <p>Yes, if you use the <code>backend: 'MediaElement'</code> option. See here: <a href="http://wavesurfer-js.org/example/audio-element/">http://wavesurfer-js.org/example/audio-element/</a>. The audio will start playing as you press play. A thin line will be displayed until the whole audio file is downloaded and decoded to draw the waveform.</p>
+
+                <h5>Can drawing be done as file loads?</h5>
+
+                No. Web Audio needs the whole file to decode it in the browser. You can however load pre-decoded waveform data to draw the waveform immediately. <a href="/example/audio-element/">See here</a> (the "Pre-recoded Peaks" section).
+            </div>
+
+            <div class="row marketing" id="docs">
+                <h4>WaveSurfer Options</h4>
+
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>option</th>
+                            <th>type</th>
+                            <th>default</th>
+                            <th>description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>audioContext</code></td>
+                            <td>object</td>
+                            <td><em>none</em></td>
+                            <td>Use your own previously initialized <code>AudioContext</code> or leave blank.</td>
+                        </tr>
+                        <tr>
+                            <td><code>audioRate</code></td>
+                            <td>float</td>
+                            <td><code>1</code></td>
+                            <td>Speed at which to play audio.  Lower number is slower.</td>
+                        </tr>
+                        <tr>
+                            <td><code>backend</code></td>
+                            <td>string</td>
+                            <td><code>WebAudio</code></td>
+                            <td><code>WebAudio</code> or <code>MediaElement</code>. In most cases you don't have to set this manually. <code>MediaElement</code> is a fallback for unsupported browsers.</td>
+                        </tr>
+                        <tr>
+                            <td><code>barWidth</code></td>
+                            <td>number</td>
+                            <td><em>none</em></td>
+                            <td>If specified, the waveform will be drawn like this: ▁ ▂ ▇ ▃ ▅ ▂</td>
+                        </tr>
+                        <tr>
+                            <td><code>container</code></td>
+                            <td>mixed</td>
+                            <td><em>none</em></td>
+                            <td>CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter.</td>
+                        </tr>
+                        <tr>
+                            <td><code>cursorColor</code></td>
+                            <td>string</td>
+                            <td><code>#333</code></td>
+                            <td>The fill color of the cursor indicating the playhead position.</td>
+                        </tr>
+                        <tr>
+                            <td><code>cursorWidth</code></td>
+                            <td>integer</td>
+                            <td><code>1</code></td>
+                            <td>Measured in pixels.</td>
+                        </tr>
+                        <tr>
+                            <td><code>fillParent</code></td>
+                            <td>boolean</td>
+                            <td><code>true</code></td>
+                            <td>Whether to fill the entire container or draw only according to <code>minPxPerSec</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>height</code></td>
+                            <td>integer</td>
+                            <td><code>128</code></td>
+                            <td>The height of the waveform.  Measured in pixels.</td>
+                        </tr>
+                        <tr>
+                            <td><code>hideScrollbar</code></td>
+                            <td>boolean</td>
+                            <td><code>false</code></td>
+                            <td>Whether to hide the horizontal scrollbar when one would normally be shown.</td>
+                        </tr>
+                        <tr>
+                            <td><code>interact</code></td>
+                            <td>boolean</td>
+                            <td><code>true</code></td>
+                            <td>Whether the mouse interaction will be enabled at initialization.  You can switch this parameter at any time later on.</td>
+                        </tr>
+                        <tr>
+                            <td><code>minPxPerSec</code></td>
+                            <td>integer</td>
+                            <td><code>50</code></td>
+                            <td>Minimum number of pixels per second of audio.</td>
+                        </tr>
+                        <tr>
+                            <td><code>normalize</code></td>
+                            <td>boolean</td>
+                            <td><code>false</code></td>
+                            <td>If <code>true</code>, normalize by the maximum peak instead of 1.0.</td>
+                        </tr>
+                        <tr>
+                            <td><code>pixelRatio</code></td>
+                            <td>integer</td>
+                            <td><code>window.devicePixelRatio</code></td>
+                            <td>Can be set to <code>1</code> for faster rendering.</td>
+                        </tr>
+                        <tr>
+                            <td><code>progressColor</code></td>
+                            <td>string</td>
+                            <td><code>#555</code></td>
+                            <td>The fill color of the part of the waveform behind the cursor.</td>
+                        </tr>
+                        <tr>
+                            <td><code>scrollParent</code></td>
+                            <td>boolean</td>
+                            <td><code>false</code></td>
+                            <td>Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrunk to the container width (see <code>fillParent</code>).</td>
+                        </tr>
+                        <tr>
+                            <td><code>skipLength</code></td>
+                            <td>float</td>
+                            <td><code>2</code></td>
+                            <td>Number of seconds to skip with the <code>skipForward()</code> and <code>skipBackward()</code> methods.</td>
+                        </tr>
+                        <tr>
+                            <td><code>waveColor</code></td>
+                            <td>string</td>
+                            <td><code>#999</code></td>
+                            <td>The fill color of the waveform after the cursor.</td>
+                        </tr>
+                        <tr>
+                            <td><code>autoCenter</code></td>
+                            <td>boolean</td>
+                            <td>true</td>
+                            <td>If a scrollbar is present, center the waveform around the progress</td>
+                        </tr>
+                </tbody></table>
+
+                <h4>WaveSurfer Methods</h4>
+
+                <p>All methods are intentionally public, but the most readily available are the following:</p>
+
+                <ul>
+                    <li><code>init(options)</code> – Initializes with the options listed above.</li>
+                    <li><code>destroy()</code> – Removes events, elements and disconnects Web Audio nodes.</li>
+                    <li><code>empty()</code> – Clears the waveform as if a zero-length audio is loaded.</li>
+                    <li><code>getCurrentTime()</code> – Returns current progress in seconds.</li>
+                    <li><code>getDuration()</code> – Returns the duration of an audio clip in seconds.</li>
+                    <li><code>isPlaying()</code> – Returns true if currently playing, false otherwise.</li>
+                    <li><code>load(url)</code> – Loads audio from URL via XHR. Returns XHR object.</li>
+                    <li><code>loadBlob(url)</code> – Loads audio from a <code>Blob</code> or <code>File</code> object.</li>
+                    <li><code>on(eventName, callback)</code> – Subscribes to an event.  See <a href="#wavesurfer-events">WaveSurfer Events</a> section below for a list.</li>
+                    <li><code>un(eventName, callback)</code> – Unsubscribes from an event.</li>
+                    <li><code>unAll()</code> – Unsubscribes from all events.</li>
+                    <li><code>pause()</code> – Stops playback.</li>
+                    <li><code>play([start[, end]])</code> – Starts playback from the current position.  Optional <code>start</code> and <code>end</code> measured in seconds can be used to set the range of audio to play.</li>
+                    <li><code>playPause()</code> – Plays if paused, pauses if playing.</li>
+                    <li><code>seekAndCenter(progress)</code> – Seeks to a progress and centers view <code>[0..1]</code> (0 = beginning, 1 = end).</li>
+                    <li><code>seekTo(progress)</code> – Seeks to a progress <code>[0..1]</code> (0=beginning, 1=end).</li>
+                    <li><code>setFilter(filters)</code> - For inserting your own WebAudio nodes into the graph.  See <a href="#connecting-filters">Connecting Filters</a> below.</li>
+                    <li><code>setPlaybackRate(rate)</code> – Sets the speed of playback (<code>0.5</code> is half speed, <code>1</code> is normal speed, <code>2</code> is double speed and so on).</li>
+                    <li><code>setVolume(newVolume)</code> – Sets the playback volume to a new value <code>[0..1]</code> (0 = silent, 1 = maximum).</li>
+                    <li><code>skip(offset)</code> – Skip a number of seconds from the current position (use a negative value to go backwards).</li>
+                    <li><code>skipBackward()</code> - Rewind <code>skipLength</code> seconds.</li>
+                    <li><code>skipForward()</code> - Skip ahead <code>skipLength</code> seconds.</li>
+                    <li><code>stop()</code> – Stops and goes to the beginning.</li>
+                    <li><code>toggleMute()</code> – Toggles the volume on and off.</li>
+                    <li><code>toggleInteraction()</code> – Toggle mouse interaction.</li>
+                    <li><code>toggleScroll()</code> – Toggles <code>scrollParent</code>.</li>
+                    <li><code>zoom(pxPerSec)</code> – Horiontally zooms the waveform in and out. The
+                        parameter is a number of horizontal pixels per second of audio. It
+                        also changes the parameter <code>minPxPerSec</code> and enables the
+                        <code>scrollParent</code> option.</li>
+                </ul>
+
+                <h5>Connecting Filters</h5>
+
+                <p>You can insert your own Web Audio nodes into the graph using the method <code>setFilter()</code>. Example:</p>
+
+                <div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> lowpass <span class="pl-k">=</span> <span class="pl-smi">wavesurfer</span>.<span class="pl-smi">backend</span>.<span class="pl-smi">ac</span>.<span class="pl-en">createBiquadFilter</span>();
+<span class="pl-smi">wavesurfer</span>.<span class="pl-smi">backend</span>.<span class="pl-en">setFilter</span>(lowpass);</pre></div>
+
+                <h4>WaveSurfer Events</h4>
+
+                <ul>
+                    <li><code>audioprocess</code> – Fires continuously as the audio plays. Also fires on seeking.</li>
+                    <li><code>error</code> – Occurs on error.  Callback will receive (string) error message.</li>
+                    <li><code>finish</code> – When it finishes playing.</li>
+                    <li><code>loading</code> – Fires continuously when loading via XHR or drag'n'drop. Callback will receive (integer) loading progress in percents [0..100] and (object) event target.</li>
+                    <li><code>pause</code> – When audio is paused.</li>
+                    <li><code>play</code> – When play starts.</li>
+                    <li><code>ready</code> – When audio is loaded, decoded and the waveform drawn.</li>
+                    <li><code>scroll</code> - When the scrollbar is moved.  Callback will receive a <code>ScrollEvent</code> object.</li>
+                    <li><code>seek</code> – On seeking.  Callback will receive (float) progress [0..1].</li>
+                    <li><code>zoom</code> – On zooming. Callback will receive (integer) minPxPerSec.</li>
+                </ul>
             </div>
 
             <div class="footer row">
@@ -224,8 +433,14 @@ wavesurfer.load('audio.wav');</code></pre>
 
                 <div class="col-sm-5">
                     <noindex>
-                        Audio track: <a href="https://librivox.org/short-poetry-collection-146-by-various/">LibriVox</a>
+                        Demo music track is <a href="http://www.jamendo.com/en/track/661578/trou" rel="nofollow"><b>Trou</b> <span class="muted">by</span>&nbsp;<b>czskamaarù</b></a>. Thanks!
                     </noindex>
+                </div>
+
+                <div class="col-sm-12">
+                    <small>
+                        <a href="mailto:katspaugh@gmail.com">katspaugh</a> is a participant in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to amazon.com.
+                    </small>
                 </div>
             </div>
         </div>
