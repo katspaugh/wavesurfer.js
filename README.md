@@ -2,7 +2,7 @@
 
 Interactive navigable audio visualization using [Web Audio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) and Canvas.
 
-![Screenshot](example/screenshot.png?raw=true "Screenshot")
+![Screenshot](https://raw.githubusercontent.com/katspaugh/wavesurfer.js/gh-pages/example/screenshot.png "Screenshot")
 
 ## Browser support
 wavesurfer.js works only in [modern browsers supporting Web Audio](http://caniuse.com/audio-api).
