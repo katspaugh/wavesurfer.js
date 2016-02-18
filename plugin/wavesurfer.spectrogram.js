@@ -268,50 +268,60 @@ function FFT(bufferSize, sampleRate, windowFunc, alpha) {
 
     switch (windowFunc) {
         case 'bartlett' :
-            for (var i = 0; i<bufferSize; i++) 
+            for (var i = 0; i<bufferSize; i++) {
                 this.windowValues[i] = 2 / (bufferSize - 1) * ((bufferSize - 1) / 2 - Math.abs(i - (bufferSize - 1) / 2));
+            }
             break;
         case 'bartlettHann' :
-            for (var i = 0; i<bufferSize; i++) 
+            for (var i = 0; i<bufferSize; i++) {
                 this.windowValues[i] = 0.62 - 0.48 * Math.abs(i / (bufferSize - 1) - 0.5) - 0.38 * Math.cos(Math.PI * 2 * i / (bufferSize - 1));
+            }
             break;
         case 'blackman' :
             alpha = alpha || 0.16;
-            for (var i = 0; i<bufferSize; i++) 
+            for (var i = 0; i<bufferSize; i++) {
                 this.windowValues[i] = (1 - alpha)/2 - 0.5 * Math.cos(Math.PI * 2 * i / (bufferSize - 1)) + alpha/2 * Math.cos(4 * Math.PI * i / (bufferSize - 1));
+            }
             break;
         case 'cosine' :
-            for (var i = 0; i<bufferSize; i++) 
+            for (var i = 0; i<bufferSize; i++) {
                 this.windowValues[i] = Math.cos(Math.PI * i / (bufferSize - 1) - Math.PI / 2);
+            }
             break;
         case 'gauss' : 
             alpha = alpha || 0.25;
-            for (var i = 0; i<bufferSize; i++) 
+            for (var i = 0; i<bufferSize; i++) {
                 this.windowValues[i] = Math.pow(Math.E, -0.5 * Math.pow((i - (bufferSize - 1) / 2) / (alpha * (bufferSize - 1) / 2), 2));
+            }
             break;
         case 'hamming' :
-            for (var i = 0; i<bufferSize; i++) 
+            for (var i = 0; i<bufferSize; i++) {
                 this.windowValues[i] = 0.54 - 0.46 * Math.cos(Math.PI * 2 * i / (bufferSize - 1));
+            }
             break;
         case 'hann' :
         case undefined :
-            for (var i = 0; i<bufferSize; i++) 
+            for (var i = 0; i<bufferSize; i++) {
                 this.windowValues[i] = 0.5 * (1 - Math.cos(Math.PI * 2 * i / (bufferSize - 1)));
+            }
             break;
         case 'lanczoz' :
-            for (var i = 0; i<bufferSize; i++) 
+            for (var i = 0; i<bufferSize; i++) {
                 this.windowValues[i] = Math.sin(Math.PI * (2 * i / (bufferSize - 1) - 1)) / (Math.PI * (2 * i / (bufferSize - 1) - 1));
+            }
             break;
         case 'rectangular' :
-            for (var i = 0; i<bufferSize; i++) 
+            for (var i = 0; i<bufferSize; i++) {
                 this.windowValues[i] = 1;
+            }
             break;
         case 'triangular' :
-            for (var i = 0; i<bufferSize; i++) 
+            for (var i = 0; i<bufferSize; i++) {
                 this.windowValues[i] = 2 / bufferSize * (bufferSize / 2 - Math.abs(i - (bufferSize - 1) / 2));
+            }
             break;
         default:
-            throw Error('No such window function \'' + params.windowFunc + '\'');
+            throw Error('No such window function \'' + windowFunc + '\'');
     }
 
     var limit = 1;
@@ -331,7 +341,7 @@ function FFT(bufferSize, sampleRate, windowFunc, alpha) {
     for (i = 0; i < bufferSize; i++) {
         this.sinTable[i] = Math.sin(-Math.PI/i);
         this.cosTable[i] = Math.cos(-Math.PI/i);
-    };
+    }
 
 
     this.calculateSpectrum = function(buffer) {
@@ -352,10 +362,10 @@ function FFT(bufferSize, sampleRate, windowFunc, alpha) {
         var k = Math.floor(Math.log(bufferSize) / Math.LN2);
 
         if (Math.pow(2, k) !== bufferSize) {
-            throw "Invalid buffer size, must be a power of 2.";
+            throw 'Invalid buffer size, must be a power of 2.';
         }
         if (bufferSize !== buffer.length) {
-            throw "Supplied buffer is not the same size as defined FFT. FFT Size: " + bufferSize + " Buffer Size: " + buffer.length;
+            throw 'Supplied buffer is not the same size as defined FFT. FFT Size: ' + bufferSize + ' Buffer Size: ' + buffer.length;
         }
 
         var halfSize = 1,
