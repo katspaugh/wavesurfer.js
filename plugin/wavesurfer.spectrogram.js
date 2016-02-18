@@ -135,12 +135,19 @@ WaveSurfer.Spectrogram = {
             this.fireEvent('error', 'Web Audio buffer is not available');
             return;
         }
+
+        var samplesPerPx = buffer.length / this.canvas.width;
+        
+        //Find the nearest power of two:
+        var idealBufferSize = Math.pow(2, Math.round( Math.log(samplesPerPx) / Math.log(2)));
+        //Buffer size must be within [256, 16834]
+        var bufferSize = Math.min(16384, Math.max(256,idealBufferSize));
         
         var frequencies = [];
         var context = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, buffer.length, buffer.sampleRate);
         var source = context.createBufferSource();
         var processor = context.createScriptProcessor ?
-            context.createScriptProcessor(0, 1, 1) : context.createJavaScriptNode(0, 1, 1);
+            context.createScriptProcessor(bufferSize, 1, 1) : context.createJavaScriptNode(bufferSize, 1, 1);
 
         var analyser = context.createAnalyser();
         analyser.fftSize = fftSamples;
