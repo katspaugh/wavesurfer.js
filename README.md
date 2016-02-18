@@ -61,6 +61,7 @@ where you can also add your own project.
 | `audioContext` | object | _none_ | Use your own previously initialized `AudioContext` or leave blank. |
 | `audioRate` | float | `1` | Speed at which to play audio.  Lower number is slower. |
 | `backend` | string | `WebAudio` | `WebAudio` or `MediaElement`. In most cases you don't have to set this manually. `MediaElement` is a fallback for unsupported browsers. |
+| `backgroundImage` | string | `null` | Assign a back-ground Image to Wave container ex: url(images/image.gif) |
 | `barWidth` | number | _none_ | If specified, the waveform will be drawn like this: ▁ ▂ ▇ ▃ ▅ ▂ |
 | `container` | mixed | _none_ | CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter. |
 | `cursorColor` | string | `#333` | The fill color of the cursor indicating the playhead position. |
@@ -71,6 +72,7 @@ where you can also add your own project.
 | `interact` | boolean | `true` | Whether the mouse interaction will be enabled at initialization.  You can switch this parameter at any time later on. |
 | `minPxPerSec` | integer | `50` | Minimum number of pixels per second of audio. |
 | `normalize` | boolean | `false` | If `true`, normalize by the maximum peak instead of 1.0. |
+| `overFlow` | string | `hidden` | Allows setting overFlow manually to Wave container |
 | `pixelRatio` | integer | `window.devicePixelRatio` | Can be set to `1` for faster rendering. |
 | `progressColor` | string | `#555` | The fill color of the part of the waveform behind the cursor. |
 | `scrollParent` | boolean | `false` | Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrunk to the container width (see `fillParent`). |
@@ -182,6 +184,7 @@ After doing that, use `wavesurfer.addRegion()` to create Region objects.
 | `drag` | boolean | `true` | Allow/dissallow dragging the region. |
 | `resize` | boolean | `true` | Allow/dissallow resizing the region. |
 | `color` | string | `"rgba(0, 0, 0, 0.1)"` | HTML color code. |
+| `overrideStyle` | string | `object` | Assign object of styles to override default style ex:  {'border-color': 'white','border-style': 'solid','border-width': '0 6px'} |
 
 ### Region Methods
 

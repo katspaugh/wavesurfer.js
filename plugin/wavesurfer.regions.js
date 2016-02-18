@@ -101,7 +101,7 @@ WaveSurfer.Region = {
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
         this.data = params.data || {};
         this.attributes = params.attributes || {};
-
+        this.overrideStyle = params.overrideStyle !== undefined ? params.overrideStyle : {};
         this.maxLength = params.maxLength;
         this.minLength = params.minLength;
 
@@ -217,6 +217,7 @@ WaveSurfer.Region = {
 
         this.element = this.wrapper.appendChild(regionEl);
         this.updateRender();
+        this.style(regionEl, this.overrideStyle);
         this.bindEvents(regionEl);
     },
 

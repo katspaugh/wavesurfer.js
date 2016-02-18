@@ -24,10 +24,11 @@ WaveSurfer.Drawer = {
             position: 'relative',
             userSelect: 'none',
             webkitUserSelect: 'none',
+            overflow: this.params.overFlow,
             height: this.params.height + 'px'
         });
 
-        if (this.params.fillParent || this.params.scrollParent) {
+        if ((this.params.fillParent || this.params.scrollParent) && this.params.overFlow == 'hidden') {
             this.style(this.wrapper, {
                 width: '100%',
                 overflowX: this.params.hideScrollbar ? 'hidden' : 'auto',
