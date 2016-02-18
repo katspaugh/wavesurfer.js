@@ -46,6 +46,16 @@ module.exports = function(grunt) {
           objectToExport: 'WaveSurfer',
           globalAlias: 'WaveSurfer'
         }
+      },
+      plugins: {
+        src: 'plugin/*.js',
+        dest: 'dist',
+        deps: {
+          'default': [ 'WaveSurfer' ],
+          amd: [ 'wavesurfer' ],
+	  cjs: [ 'wavesurfer.js' ],
+          global: [ 'WaveSurfer' ]
+        }
       }
     },
     commonjs: {
