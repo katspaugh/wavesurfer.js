@@ -169,7 +169,7 @@ WaveSurfer.Spectrogram = {
             noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
         }
         
-        var fft = new FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
+        var fft = new WaveSurfer.FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
 
         var maxSlicesCount = Math.floor(bufferLength/ (fftSamples - noverlap));
 
@@ -247,13 +247,14 @@ WaveSurfer.Spectrogram = {
         }
 
         return newMatrix;
-    },
+    }
 
 };
 
-WaveSurfer.util.extend(WaveSurfer.Spectrogram, WaveSurfer.Observer);
-
-function FFT(bufferSize, sampleRate, windowFunc, alpha) {
+/**
+ * Calculate FFT - Based on https://github.com/corbanbrook/dsp.js
+ */
+WaveSurfer.FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
     this.bufferSize = bufferSize;
     this.sampleRate = sampleRate;
     this.bandwidth  = 2 / bufferSize * sampleRate / 2;
@@ -427,4 +428,6 @@ function FFT(bufferSize, sampleRate, windowFunc, alpha) {
         }
         return spectrum;
     };
-}
+};
+
+WaveSurfer.util.extend(WaveSurfer.Spectrogram, WaveSurfer.Observer, WaveSurfer.FFT);
