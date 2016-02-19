@@ -1,6 +1,26 @@
 'use strict';
 
 WaveSurfer.Spectrogram = {
+
+    /**
+     * List of params:
+     *   wavesurfer: wavesurfer object
+     *   pixelRatio: to control the size of the spectrogram in relation with its canvas. 1=Draw on the whole canvas. 2 = draw on a quarter (1/2 the lenght and 1/2 the width)
+     *   fftSamples: number of samples to fetch to FFT. Must be a pwer of 2. Default = 512
+     *   windowFunc: the window function to be used. Default is 'hann'. Choose from the following:
+     *               + 'bartlett'
+     *               + 'bartlettHann'
+     *               + 'blackman'
+     *               + 'cosine'
+     *               + 'gauss'
+     *               + 'hamming'
+     *               + 'hann'
+     *               + 'lanczoz'
+     *               + 'rectangular'
+     *               + 'triangular'
+     *   alpha: some window functions have this extra value (0<alpha<1);
+     *   noverlap: size of the overlapping window. Must be < fftSamples. Auto deduced from canvas size by default.
+     */
     init: function (params) {
         this.params = params;
         var wavesurfer = this.wavesurfer = params.wavesurfer;
@@ -24,6 +44,9 @@ WaveSurfer.Spectrogram = {
         this.pixelRatio = this.params.pixelRatio || wavesurfer.params.pixelRatio;
         this.fftSamples = this.params.fftSamples || wavesurfer.params.fftSamples || 512;
         this.height = this.fftSamples / 2;
+        this.noverlap = params.noverlap;
+        this.windowFunc = params.windowFunc;
+        this.alpha = params.alpha;
 
         this.createWrapper();
         this.createCanvas();
@@ -130,47 +153,41 @@ WaveSurfer.Spectrogram = {
     getFrequencies: function(callback) {
         var fftSamples = this.fftSamples;
         var buffer = this.buffer = this.wavesurfer.backend.buffer;
+        var channelOne = buffer.getChannelData(0);
+        var bufferLength = buffer.length;
+        var sampleRate = buffer.sampleRate;
+        var frequencies = [];
 
         if (! buffer) {
             this.fireEvent('error', 'Web Audio buffer is not available');
             return;
         }
 
-        var samplesPerPx = buffer.length / this.canvas.width;
+        var noverlap = this.noverlap;
+        if (! noverlap) {
+            var uniqueSamplesPerPx = buffer.length / this.canvas.width;
+            noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
+        }
         
-        //Find the nearest power of two:
-        var idealBufferSize = Math.pow(2, Math.round( Math.log(samplesPerPx) / Math.log(2)));
-        //Buffer size must be within [256, 16834]
-        var bufferSize = Math.min(16384, Math.max(256,idealBufferSize));
-        
-        var frequencies = [];
-        var context = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, buffer.length, buffer.sampleRate);
-        var source = context.createBufferSource();
-        var processor = context.createScriptProcessor ?
-            context.createScriptProcessor(bufferSize, 1, 1) : context.createJavaScriptNode(bufferSize, 1, 1);
+        var fft = new WaveSurfer.FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
 
-        var analyser = context.createAnalyser();
-        analyser.fftSize = fftSamples;
-        analyser.smoothingTimeConstant = (this.width / buffer.duration < 10) ? 0.75 : 0.25;
-    
-        source.buffer = buffer;
+        var maxSlicesCount = Math.floor(bufferLength/ (fftSamples - noverlap));
 
-        source.connect(analyser);
-        analyser.connect(processor);
-        processor.connect(context.destination);
+        var currentOffset = 0;
 
-        processor.onaudioprocess = function () {
-            var array = new Uint8Array(analyser.frequencyBinCount);
-            analyser.getByteFrequencyData(array);
+        while (currentOffset + fftSamples < channelOne.length) {
+            var segment = channelOne.slice(currentOffset, currentOffset + fftSamples);
+            var spectrum = fft.calculateSpectrum(segment);
+            var array = new Uint8Array(fftSamples/2);
+            for (var j = 0; j<fftSamples/2; j++) {
+                array[j] = Math.max(-255, Math.log10(spectrum[j])*45);
+            }
             frequencies.push(array);
-        };
-
-        source.start(0);
-        context.startRendering();
-
-        var my = this;
-        context.oncomplete = function() { callback(frequencies, my); };
+            currentOffset += (fftSamples - noverlap);
+        }
+        callback(frequencies, this);
     },
+
 
     loadFrequenciesData: function (url) {
         var my = this;
@@ -231,6 +248,186 @@ WaveSurfer.Spectrogram = {
 
         return newMatrix;
     }
+
 };
 
-WaveSurfer.util.extend(WaveSurfer.Spectrogram, WaveSurfer.Observer);
+/**
+ * Calculate FFT - Based on https://github.com/corbanbrook/dsp.js
+ */
+WaveSurfer.FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
+    this.bufferSize = bufferSize;
+    this.sampleRate = sampleRate;
+    this.bandwidth  = 2 / bufferSize * sampleRate / 2;
+
+    this.sinTable = new Float32Array(bufferSize);
+    this.cosTable = new Float32Array(bufferSize);
+    this.windowValues = new Float32Array(bufferSize);
+    this.reverseTable = new Uint32Array(bufferSize);
+
+    this.peakBand   = 0;
+    this.peak       = 0;
+
+    switch (windowFunc) {
+        case 'bartlett' :
+            for (var i = 0; i<bufferSize; i++) {
+                this.windowValues[i] = 2 / (bufferSize - 1) * ((bufferSize - 1) / 2 - Math.abs(i - (bufferSize - 1) / 2));
+            }
+            break;
+        case 'bartlettHann' :
+            for (var i = 0; i<bufferSize; i++) {
+                this.windowValues[i] = 0.62 - 0.48 * Math.abs(i / (bufferSize - 1) - 0.5) - 0.38 * Math.cos(Math.PI * 2 * i / (bufferSize - 1));
+            }
+            break;
+        case 'blackman' :
+            alpha = alpha || 0.16;
+            for (var i = 0; i<bufferSize; i++) {
+                this.windowValues[i] = (1 - alpha)/2 - 0.5 * Math.cos(Math.PI * 2 * i / (bufferSize - 1)) + alpha/2 * Math.cos(4 * Math.PI * i / (bufferSize - 1));
+            }
+            break;
+        case 'cosine' :
+            for (var i = 0; i<bufferSize; i++) {
+                this.windowValues[i] = Math.cos(Math.PI * i / (bufferSize - 1) - Math.PI / 2);
+            }
+            break;
+        case 'gauss' : 
+            alpha = alpha || 0.25;
+            for (var i = 0; i<bufferSize; i++) {
+                this.windowValues[i] = Math.pow(Math.E, -0.5 * Math.pow((i - (bufferSize - 1) / 2) / (alpha * (bufferSize - 1) / 2), 2));
+            }
+            break;
+        case 'hamming' :
+            for (var i = 0; i<bufferSize; i++) {
+                this.windowValues[i] = 0.54 - 0.46 * Math.cos(Math.PI * 2 * i / (bufferSize - 1));
+            }
+            break;
+        case 'hann' :
+        case undefined :
+            for (var i = 0; i<bufferSize; i++) {
+                this.windowValues[i] = 0.5 * (1 - Math.cos(Math.PI * 2 * i / (bufferSize - 1)));
+            }
+            break;
+        case 'lanczoz' :
+            for (var i = 0; i<bufferSize; i++) {
+                this.windowValues[i] = Math.sin(Math.PI * (2 * i / (bufferSize - 1) - 1)) / (Math.PI * (2 * i / (bufferSize - 1) - 1));
+            }
+            break;
+        case 'rectangular' :
+            for (var i = 0; i<bufferSize; i++) {
+                this.windowValues[i] = 1;
+            }
+            break;
+        case 'triangular' :
+            for (var i = 0; i<bufferSize; i++) {
+                this.windowValues[i] = 2 / bufferSize * (bufferSize / 2 - Math.abs(i - (bufferSize - 1) / 2));
+            }
+            break;
+        default:
+            throw Error('No such window function \'' + windowFunc + '\'');
+    }
+
+    var limit = 1;
+    var bit = bufferSize >> 1;
+
+    var i;
+
+    while (limit < bufferSize) {
+        for (i = 0; i < limit; i++) {
+            this.reverseTable[i + limit] = this.reverseTable[i] + bit;
+        }
+
+        limit = limit << 1;
+        bit = bit >> 1;
+    }
+
+    for (i = 0; i < bufferSize; i++) {
+        this.sinTable[i] = Math.sin(-Math.PI/i);
+        this.cosTable[i] = Math.cos(-Math.PI/i);
+    }
+
+
+    this.calculateSpectrum = function(buffer) {
+        // Locally scope variables for speed up
+        var bufferSize = this.bufferSize,
+            cosTable = this.cosTable,
+            sinTable = this.sinTable,
+            reverseTable = this.reverseTable,
+            real = new Float32Array(bufferSize),
+            imag = new Float32Array(bufferSize),
+            bSi = 2 / this.bufferSize,
+            sqrt = Math.sqrt,
+            rval,
+            ival,
+            mag,
+            spectrum = new Float32Array(bufferSize / 2);
+
+        var k = Math.floor(Math.log(bufferSize) / Math.LN2);
+
+        if (Math.pow(2, k) !== bufferSize) {
+            throw 'Invalid buffer size, must be a power of 2.';
+        }
+        if (bufferSize !== buffer.length) {
+            throw 'Supplied buffer is not the same size as defined FFT. FFT Size: ' + bufferSize + ' Buffer Size: ' + buffer.length;
+        }
+
+        var halfSize = 1,
+            phaseShiftStepReal,
+            phaseShiftStepImag,
+            currentPhaseShiftReal,
+            currentPhaseShiftImag,
+            off,
+            tr,
+            ti,
+            tmpReal;
+
+        for (var i = 0; i < bufferSize; i++) {
+            real[i] = buffer[reverseTable[i]] * this.windowValues[reverseTable[i]];
+            imag[i] = 0;
+        }
+
+        while (halfSize < bufferSize) {
+            phaseShiftStepReal = cosTable[halfSize];
+            phaseShiftStepImag = sinTable[halfSize];
+
+            currentPhaseShiftReal = 1;
+            currentPhaseShiftImag = 0;
+
+            for (var fftStep = 0; fftStep < halfSize; fftStep++) {
+                var i = fftStep;
+
+                while (i < bufferSize) {
+                    off = i + halfSize;
+                    tr = (currentPhaseShiftReal * real[off]) - (currentPhaseShiftImag * imag[off]);
+                    ti = (currentPhaseShiftReal * imag[off]) + (currentPhaseShiftImag * real[off]);
+
+                    real[off] = real[i] - tr;
+                    imag[off] = imag[i] - ti;
+                    real[i] += tr;
+                    imag[i] += ti;
+
+                    i += halfSize << 1;
+                }
+
+                tmpReal = currentPhaseShiftReal;
+                currentPhaseShiftReal = (tmpReal * phaseShiftStepReal) - (currentPhaseShiftImag * phaseShiftStepImag);
+                currentPhaseShiftImag = (tmpReal * phaseShiftStepImag) + (currentPhaseShiftImag * phaseShiftStepReal);
+            }
+
+            halfSize = halfSize << 1;
+        }
+
+        for (var i = 0, N = bufferSize / 2; i < N; i++) {
+            rval = real[i];
+            ival = imag[i];
+            mag = bSi * sqrt(rval * rval + ival * ival);
+
+            if (mag > this.peak) {
+                this.peakBand = i;
+                this.peak = mag;
+            }
+            spectrum[i] = mag;
+        }
+        return spectrum;
+    };
+};
+
+WaveSurfer.util.extend(WaveSurfer.Spectrogram, WaveSurfer.Observer, WaveSurfer.FFT);
