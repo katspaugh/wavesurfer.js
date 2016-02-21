@@ -18,6 +18,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
 
         this.mediaType = params.mediaType.toLowerCase();
         this.elementPosition = params.elementPosition;
+        this.setPlaybackRate(this.params.audioRate);
     },
 
     load: function (url, container, peaks) {
