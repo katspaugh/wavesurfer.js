@@ -230,9 +230,15 @@ WaveSurfer.Region = {
     },
 
     /* Update element's position, width, color. */
-    updateRender: function () {
+    updateRender: function (pxPerSec) {
         var dur = this.wavesurfer.getDuration();
-        var width = this.wrapper.scrollWidth;
+        var width;
+        if (pxPerSec) {
+            width = Math.round(this.wavesurfer.getDuration() * pxPerSec);
+        }
+        else {
+            width = this.wrapper.scrollWidth;
+        }
 
         if (this.start < 0) {
           this.start = 0;
