@@ -7,7 +7,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     // Metadata.
     pkg: grunt.file.readJSON('package.json'),
-    banner: '/*! <%= pkg.title || pkg.name %> <%= pkg.version %>\n' +
+    banner: '/*! <%= pkg.title || pkg.name %> <%= pkg.version %> (<%= new Date().toGMTString() %>)\n' +
       '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
       '* @license <%= pkg.license %> */',
     // Task configuration.
