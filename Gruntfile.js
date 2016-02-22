@@ -25,7 +25,7 @@ module.exports = function(grunt) {
           'src/drawer.*.js',
           'src/html-init.js'
         ],
-        dest: 'dist/wavesurfer.js'
+        dest: 'dist/wavesurfer.dev.js'
       }
     },
     connect: {
