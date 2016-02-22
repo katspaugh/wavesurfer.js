@@ -25,7 +25,7 @@ module.exports = function(grunt) {
           'src/drawer.*.js',
           'src/html-init.js'
         ],
-        dest: 'dist/wavesurfer.min.js'
+        dest: 'dist/wavesurfer.js'
       }
     },
     connect: {
@@ -40,7 +40,7 @@ module.exports = function(grunt) {
     umd: {
       main: {
         options: {
-          src: '<%= concat.dist.src %>',
+          src: '<%= concat.dist.dest %>',
           dest: 'dist/wavesurfer.umd.js',
           amdModuleId: 'wavesurfer',
           objectToExport: 'WaveSurfer',
@@ -67,16 +67,19 @@ module.exports = function(grunt) {
           sourceMap: 'dist/wavesurfer.min.js.map',
           sourceMapRoot: '/'
         },
-        src: 'dist/wavesurfer.umd.js',
-        dest: '<%= concat.dist.dest %>'
+        src: '<%= umd.main.options.dest %>',
+        dest: 'dist/wavesurfer.min.js'
       },
       plugins: {
-        files: grunt.file.expandMapping(['dist/plugin/*.js'], '', {
-          rename: function(destBase, destPath) {
-            var newPath = destBase + destPath.replace('.js', '.min.js');
-            return newPath;
+        files: [{
+          expand: true,
+	  cwd: 'dist',
+	  src: 'plugin/*.js',
+	  dest: 'dist/',
+	  rename: function (dest, src) {
+            return dest + src.replace('.js', '.min.js');
           }
-	})
+	}]
       }
     },
     jshint: {
