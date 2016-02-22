@@ -87,12 +87,12 @@ module.exports = function(grunt) {
         dest: '<%= concat.dist.dest %>'
       },
       plugins: {
-        files: grunt.file.expandMapping(['plugin/*.js'], 'dist/', {
+        files: grunt.file.expandMapping(['dist/plugin/*.js'], '', {
           rename: function(destBase, destPath) {
             var newPath = destBase + destPath.replace('.js', '.min.js');
             return newPath;
-          },
-        })
+          }
+	})
       }
     },
     jshint: {
