@@ -53,7 +53,7 @@ module.exports = function(grunt) {
         deps: {
           'default': [ 'WaveSurfer' ],
           amd: [ 'wavesurfer' ],
-	  cjs: [ 'wavesurfer.js' ],
+      	  cjs: [ 'wavesurfer.js' ],
           global: [ 'WaveSurfer' ]
         }
       }
@@ -73,13 +73,13 @@ module.exports = function(grunt) {
       plugins: {
         files: [{
           expand: true,
-	  cwd: 'dist',
-	  src: 'plugin/*.js',
-	  dest: 'dist/',
-	  rename: function (dest, src) {
+      	  cwd: 'dist',
+      	  src: 'plugin/*.js',
+      	  dest: 'dist/',
+      	  rename: function (dest, src) {
             return dest + src.replace('.js', '.min.js');
           }
-	}]
+      	}]
       }
     },
     jshint: {
