@@ -129,8 +129,32 @@
             this.disconnect();
 
             // stop stream from device
-            if (this.stream) {
-                this.stream.stop();
+<<<<<<< HEAD
+            if (this.stream && this.stream.getTracks()) {
+                
+                this.stream.getTracks().forEach(function( stream ) {
+                    stream.stop();
+                });
+=======
+            if (this.stream && this.stream.active) {
+                if( navigator.webkitGetUserMedia && window.webkitRTCPeerConnection ) { //checking if chrome
+                        var extractVersion = function(uastring, expr, pos) {
+                            var match = uastring.match(expr);
+                            return match && match.length >= pos && parseInt(match[pos], 10);
+                        }
+
+                        var version = extractVersion(navigator.userAgent,/Chrom(e|ium)\/([0-9]+)\./, 2);
+
+                        if( version >= 45 ) { //This feature is added after chrome 45
+                                this.stream.getTracks().forEach(function( stream ) {
+                                stream.stop();
+                                });
+                        }   
+                }
+>>>>>>> 8533fc3df982be5d2443c42db7e26e45d0b04258
+                
+            } else {
+                this.stream.stop(); //For firefox and Opera
             }
         },
 
