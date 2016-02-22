@@ -1,5 +1,6 @@
-/dist/wavesurfer.cjs.js
-/dist/wavesurfer.amd.js
+dist/wavesurfer.umd.js
+dist/plugin/*.js
+!/dist/plugin/*.min.js
 /node_modules
 /bower_components
 /npm-debug.log

@@ -40,28 +40,22 @@ module.exports = function(grunt) {
     umd: {
       main: {
         options: {
-          src: 'dist/*.min.js',
+          src: '<%= concat.dist.src %>',
           dest: 'dist/wavesurfer.umd.js',
           amdModuleId: 'wavesurfer',
           objectToExport: 'WaveSurfer',
           globalAlias: 'WaveSurfer'
         }
-      }
-    },
-    commonjs: {
-      modules: {
-        banner: '<%= banner %>',
-        cwd: 'dist',
-        src: ['*.min.js'],
-        dest: 'dist/wavesurfer.cjs.js'
-      }
-    },
-    amd: {
-      modules: {
-        banner: '<%= banner %>',
-        cwd: 'dist',
-        src: ['*.min.js'],
-        dest: 'dist/wavesurfer.amd.js'
+      },
+      plugins: {
+        src: 'plugin/*.js',
+        dest: 'dist',
+        deps: {
+          'default': [ 'WaveSurfer' ],
+          amd: [ 'wavesurfer' ],
+	  cjs: [ 'wavesurfer.js' ],
+          global: [ 'WaveSurfer' ]
+        }
       }
     },
     uglify: {
@@ -73,16 +67,16 @@ module.exports = function(grunt) {
           sourceMap: 'dist/wavesurfer.min.js.map',
           sourceMapRoot: '/'
         },
-        src: '<%= concat.dist.src %>',
+        src: 'dist/wavesurfer.umd.js',
         dest: '<%= concat.dist.dest %>'
       },
       plugins: {
-        files: grunt.file.expandMapping(['plugin/*.js'], 'dist/', {
+        files: grunt.file.expandMapping(['dist/plugin/*.js'], '', {
           rename: function(destBase, destPath) {
             var newPath = destBase + destPath.replace('.js', '.min.js');
             return newPath;
-          },
-        })
+          }
+	})
       }
     },
     jshint: {
@@ -166,27 +160,6 @@ module.exports = function(grunt) {
   // TASKS
   // ==========================================================================
 
-  grunt.registerMultiTask('commonjs', 'Wrap .js files for commonjs.', function () {
-    this.files.forEach(function(file) {
-      return file.src.map(function(filepath) {
-        var original = grunt.file.read(path.join(file.cwd, filepath));
-        return grunt.file.write(file.dest, file.banner + '\n' +
-          original + '\nmodule.exports = WaveSurfer;');
-      });
-    });
-  });
-
-  grunt.registerMultiTask('amd', 'Wrap .js files for AMD.', function () {
-    this.files.forEach(function(file) {
-      return file.src.map(function(filepath) {
-        var definePath = (filepath.replace(/\.\w+$/, '')),
-        original = grunt.file.read(path.join(file.cwd, filepath));
-        return grunt.file.write(file.dest, file.banner +
-          '\ndefine(function () {\n' + original + '\nreturn WaveSurfer;\n});');
-      });
-    });
-  });
-
   // These plugins provide necessary tasks.
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -197,8 +170,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-umd');
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'test', 'coverage', 'concat', 'commonjs',
-                                 'amd', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'test', 'coverage', 'concat', 'umd', 'uglify']);
 
   // Dev
   grunt.registerTask('dev', ['concat', 'uglify', 'connect']);
