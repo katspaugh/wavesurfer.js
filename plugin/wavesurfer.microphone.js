@@ -34,7 +34,7 @@ WaveSurfer.Microphone = {
                 getUserMedia.call(navigator, constraints, successCallback,
                     errorCallback);
             });
-        }
+        };
         // Older browsers might not implement mediaDevices at all, so we set an
         // empty object first
         if (navigator.mediaDevices === undefined) {

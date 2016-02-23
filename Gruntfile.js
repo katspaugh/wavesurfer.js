@@ -92,7 +92,8 @@ module.exports = function(grunt) {
         // Missing "use strict" statement.
         strict: false,
         globals: {
-          WaveSurfer: true
+          WaveSurfer: true,
+          Promise: true
         },
       },
       ignore_warning: {
