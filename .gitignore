@@ -1,5 +1,4 @@
 dist/wavesurfer.dev.js
-dist/wavesurfer.umd.js
 dist/plugin/*.js
 !/dist/plugin/*.min.js
 /node_modules
