@@ -126,8 +126,8 @@ var WaveSurfer = {
         });
     },
 
-    startAnimationLoop: function () {        
-        var my = this;        
+    startAnimationLoop: function () {
+        var my = this;
         var requestFrame = window.requestAnimationFrame ||
                            window.webkitRequestAnimationFrame ||
                            window.mozRequestAnimationFrame;
