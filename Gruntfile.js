@@ -122,6 +122,16 @@ module.exports = function(grunt) {
         src: ['<%= concat.dist.src %>', 'plugin/*.js', 'spec/*.spec.js']
       },
     },
+    jscs: {
+      src: ['<%= concat.dist.src %>', 'plugin/*.js', 'spec/*.spec.js'],
+      options: {
+        config: '.jscsrc',
+        esnext: false, // If you use ES6 http://jscs.info/overview.html#esnext
+        verbose: true, // If you need output with rule names http://jscs.info/overview.html#verbose
+        fix: false, // Autofix code style violations when possible.
+        requireCurlyBraces: [ "if" ]
+      }
+    },
     jasmine: {
       core: {
         src: '<%= concat.dist.src %>',
@@ -179,12 +189,14 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-coveralls');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-umd');
+  grunt.loadNpmTasks("grunt-jscs");
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'test', 'coverage', 'concat', 'umd', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'jscs', 'test', 'coverage', 'concat',
+    'umd', 'uglify']);
 
   // Dev
-  grunt.registerTask('dev', ['concat', 'uglify', 'connect']);
+  grunt.registerTask('dev', ['concat', 'uglify', 'jscs', 'connect']);
   grunt.registerTask('test', ['jasmine:core']);
   grunt.registerTask('coverage', ['jasmine:coverage']);
 };

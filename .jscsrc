@@ -1,0 +1,7 @@
+{
+    "disallowTrailingWhitespace": true,
+    "disallowMixedSpacesAndTabs": true,
+    "requirePaddingNewLinesAfterUseStrict": true,
+    "requireSpaceAfterComma": true,
+    "requireSpaceBetweenArguments": true
+}
