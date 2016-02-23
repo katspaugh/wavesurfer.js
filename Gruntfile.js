@@ -11,6 +11,9 @@ module.exports = function(grunt) {
       '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
       '* @license <%= pkg.license %> */',
     // Task configuration.
+    clean : {
+      build: ['dist']
+    },
     concat: {
       options: {
         stripBanners: true
@@ -189,10 +192,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-coveralls');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-umd');
-  grunt.loadNpmTasks("grunt-jscs");
+  grunt.loadNpmTasks('grunt-jscs');
+  grunt.loadNpmTasks('grunt-contrib-clean');
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'jscs', 'test', 'coverage', 'concat',
+  grunt.registerTask('default', ['clean', 'jshint', 'jscs', 'test', 'coverage', 'concat',
     'umd', 'uglify']);
 
   // Dev
