@@ -52,7 +52,6 @@ WaveSurfer.util = {
     }
 };
 
-
 /* Observer */
 WaveSurfer.Observer = {
     /**
@@ -126,7 +125,6 @@ WaveSurfer.Observer = {
         });
     }
 };
-
 
 /* Make the main WaveSurfer object an observer */
 WaveSurfer.util.extend(WaveSurfer, WaveSurfer.Observer);

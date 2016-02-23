@@ -168,7 +168,7 @@ WaveSurfer.Spectrogram = {
             var uniqueSamplesPerPx = buffer.length / this.canvas.width;
             noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
         }
-        
+
         var fft = new WaveSurfer.FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
 
         var maxSlicesCount = Math.floor(bufferLength/ (fftSamples - noverlap));
@@ -222,7 +222,7 @@ WaveSurfer.Spectrogram = {
                 var newStart = i * newPiece;
                 var newEnd = newStart + newPiece;
 
-                var overlap = (oldEnd <= newStart || newEnd <= oldStart) ? 
+                var overlap = (oldEnd <= newStart || newEnd <= oldStart) ?
                                 0 :
                                 Math.min(Math.max(oldEnd, newStart), Math.max(newEnd, oldStart)) -
                                 Math.max(Math.min(oldEnd, newStart), Math.min(newEnd, oldStart));
@@ -289,7 +289,7 @@ WaveSurfer.FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
                 this.windowValues[i] = Math.cos(Math.PI * i / (bufferSize - 1) - Math.PI / 2);
             }
             break;
-        case 'gauss' : 
+        case 'gauss' :
             alpha = alpha || 0.25;
             for (var i = 0; i<bufferSize; i++) {
                 this.windowValues[i] = Math.pow(Math.E, -0.5 * Math.pow((i - (bufferSize - 1) / 2) / (alpha * (bufferSize - 1) / 2), 2));

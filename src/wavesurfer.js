@@ -365,7 +365,6 @@ var WaveSurfer = {
             }).bind(this))
         );
 
-
         // If no pre-decoded peaks provided, attempt to download the
         // audio file and decode it with Web Audio.
         if (!peaks && this.backend.supportsWebAudio()) {
