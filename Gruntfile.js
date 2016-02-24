@@ -200,7 +200,7 @@ module.exports = function(grunt) {
     'umd', 'uglify']);
 
   // Dev
-  grunt.registerTask('dev', ['concat', 'uglify', 'jscs', 'connect']);
+  grunt.registerTask('dev', ['clean', 'concat', 'uglify', 'jscs', 'connect']);
   grunt.registerTask('test', ['jasmine:core']);
   grunt.registerTask('coverage', ['jasmine:coverage']);
 };

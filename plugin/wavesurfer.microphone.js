@@ -48,6 +48,14 @@ WaveSurfer.Microphone = {
             navigator.mediaDevices.getUserMedia = promisifiedOldGUM;
         }
 
+        // The constraints parameter is a MediaStreamConstaints object with two
+        // members: video and audio, describing the media types requested. Either
+        // or both must be specified.
+        this.constraints = this.params.constraints || {
+            video: false,
+            audio: true
+        };
+
         // The buffer size in units of sample-frames.
         // If specified, the bufferSize must be one of the following values:
         // 256, 512, 1024, 2048, 4096, 8192, 16384. Defaults to 4096.
@@ -70,10 +78,7 @@ WaveSurfer.Microphone = {
      * start the visualization.
      */
     start: function() {
-        navigator.mediaDevices.getUserMedia({
-            video: false,
-            audio: true
-        }).then(
+        navigator.mediaDevices.getUserMedia(this.constraints).then(
             this.gotStream.bind(this)
         ).catch(
             this.deviceError.bind(this)
@@ -144,6 +149,21 @@ WaveSurfer.Microphone = {
 
         // stop stream from device
         if (this.stream) {
+            var result = this.detectBrowser();
+            // MediaStream.stop is deprecated since:
+            // - Firefox 44 (https://www.fxsitecompat.com/en-US/docs/2015/mediastream-stop-has-been-deprecated/)
+            // - Chrome 45 (https://developers.google.com/web/updates/2015/07/mediastream-deprecations)
+            if ((result.browser === 'chrome' && result.version >= 45) ||
+                (result.browser === 'firefox' && result.version >= 44) ||
+                (result.browser === 'edge')) {
+                if (this.stream.getTracks) { // note that this should not be a call
+                    this.stream.getTracks().forEach(function (stream) {
+                        stream.stop();
+                    });
+                    return;
+                }
+            }
+
             this.stream.stop();
         }
     },
@@ -222,6 +242,69 @@ WaveSurfer.Microphone = {
     deviceError: function(code) {
         // notify listeners
         this.fireEvent('deviceError', code);
+    },
+
+    /**
+     * Extract browser version out of the provided user agent string.
+     * @param {!string} uastring userAgent string.
+     * @param {!string} expr Regular expression used as match criteria.
+     * @param {!number} pos position in the version string to be returned.
+     * @return {!number} browser version.
+     */
+    extractVersion: function(uastring, expr, pos) {
+        var match = uastring.match(expr);
+        return match && match.length >= pos && parseInt(match[pos], 10);
+    },
+
+    /**
+     * Browser detector.
+     * @return {object} result containing browser, version and minVersion
+     *     properties.
+     */
+    detectBrowser: function() {
+        // Returned result object.
+        var result = {};
+        result.browser = null;
+        result.version = null;
+        result.minVersion = null;
+
+        // Non supported browser.
+        if (typeof window === 'undefined' || !window.navigator) {
+            result.browser = 'Not a supported browser.';
+            return result;
+        }
+
+        // Firefox.
+        if (navigator.mozGetUserMedia) {
+            result.browser = 'firefox';
+            result.version = this.extractVersion(navigator.userAgent,
+                /Firefox\/([0-9]+)\./, 1);
+            result.minVersion = 31;
+            return result;
+        }
+
+        // Chrome/Chromium/Webview.
+        if (navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) {
+            result.browser = 'chrome';
+            result.version = this.extractVersion(navigator.userAgent,
+                /Chrom(e|ium)\/([0-9]+)\./, 2);
+            result.minVersion = 38;
+            return result;
+        }
+
+        // Edge.
+        if (navigator.mediaDevices &&
+            navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)) {
+            result.browser = 'edge';
+            result.version = this.extractVersion(navigator.userAgent,
+                /Edge\/(\d+).(\d+)$/, 2);
+            result.minVersion = 10547;
+            return result;
+        }
+
+        // Non supported browser default.
+        result.browser = 'Not a supported browser.';
+        return result;
     }
 
 };
