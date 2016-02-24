@@ -48,6 +48,14 @@ WaveSurfer.Microphone = {
             navigator.mediaDevices.getUserMedia = promisifiedOldGUM;
         }
 
+        // The constraints parameter is a MediaStreamConstaints object with two
+        // members: video and audio, describing the media types requested. Either
+        // or both must be specified.
+        this.constraints = this.params.constraints || {
+            video: false,
+            audio: true
+        };
+
         // The buffer size in units of sample-frames.
         // If specified, the bufferSize must be one of the following values:
         // 256, 512, 1024, 2048, 4096, 8192, 16384. Defaults to 4096.
@@ -70,10 +78,7 @@ WaveSurfer.Microphone = {
      * start the visualization.
      */
     start: function() {
-        navigator.mediaDevices.getUserMedia({
-            video: false,
-            audio: true
-        }).then(
+        navigator.mediaDevices.getUserMedia(this.constraints).then(
             this.gotStream.bind(this)
         ).catch(
             this.deviceError.bind(this)
