@@ -10,7 +10,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 zIndex: 1,
                 left: 0,
                 top: 0,
-                bottom: 0
+                bottom: 0,
+                'background-image': this.params.backgroundImage  
             })
         );
         this.waveCc = waveCanvas.getContext('2d');
