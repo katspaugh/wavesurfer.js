@@ -93,6 +93,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `pause()` – Stops playback.
  * `play([start[, end]])` – Starts playback from the current position.  Optional `start` and `end` measured in seconds can be used to set the range of audio to play.
  * `playPause()` – Plays if paused, pauses if playing.
+ * `remount(selector, height)` - Re-mounts container to page in selected DOM Element with specified height.
  * `seekAndCenter(progress)` – Seeks to a progress and centers view `[0..1]` (0 = beginning, 1 = end).
  * `seekTo(progress)` – Seeks to a progress `[0..1]` (0=beginning, 1=end).
  * `setFilter(filters)` - For inserting your own WebAudio nodes into the graph.  See [Connecting Filters](#connecting-filters) below.
@@ -105,6 +106,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `toggleMute()` – Toggles the volume on and off.
  * `toggleInteraction()` – Toggle mouse interaction.
  * `toggleScroll()` – Toggles `scrollParent`.
+ * `unmount(selector)` - Un-mounts component from selected DOM Element.
  * `zoom(pxPerSec)` – Horiontally zooms the waveform in and out. The
    parameter is a number of horizontal pixels per second of audio. It
    also changes the parameter `minPxPerSec` and enables the
