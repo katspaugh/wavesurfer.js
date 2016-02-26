@@ -80,7 +80,7 @@ where you can also add your own project.
 All methods are intentionally public, but the most readily available are the following:
 
  * `init(options)` – Initializes with the options listed above.
- * `destroy()` – Removes events, elements and disconnects Web Audio nodes.
+ * `destroy()` – Removes events, elements, cancels any running ajax requests, and disconnects Web Audio nodes.
  * `empty()` – Clears the waveform as if a zero-length audio is loaded.
  * `getCurrentTime()` – Returns current progress in seconds.
  * `getDuration()` – Returns the duration of an audio clip in seconds.
