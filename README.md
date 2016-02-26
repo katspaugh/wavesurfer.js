@@ -86,6 +86,7 @@ All methods are intentionally public, but the most readily available are the fol
  * `getDuration()` – Returns the duration of an audio clip in seconds.
  * `isPlaying()` – Returns true if currently playing, false otherwise.
  * `load(url)` – Loads audio from URL via XHR. Returns XHR object.
+ * `cancelLoad(xhrObject)` - Cancels the loading of audio from a URL. Takes the XHR object returned from `load`. Used for early navigation if loading is incomplete.
  * `loadBlob(url)` – Loads audio from a `Blob` or `File` object.
  * `on(eventName, callback)` – Subscribes to an event.  See [WaveSurfer Events](#wavesurfer-events) section below for a list.
  * `un(eventName, callback)` – Unsubscribes from an event.

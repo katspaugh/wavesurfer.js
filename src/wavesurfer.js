@@ -342,6 +342,17 @@ var WaveSurfer = {
     },
 
     /**
+     * Cancels the audio loading and destorys all necessary handlers
+     * and connections.
+    **/
+    cancelLoad: function (xhrObject) {
+        xhrObject.xhr.abort();
+        this.Observer.unAll();
+        this.empty();
+        this.destroy();
+    },
+
+    /**
      * Loads audio using Web Audio buffer backend.
      */
     loadBuffer: function (url) {
