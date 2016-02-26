@@ -401,6 +401,9 @@ var WaveSurfer = {
             ajax.on('success', callback),
             ajax.on('error', function (e) {
                 my.fireEvent('error', 'XHR error: ' + e.target.statusText);
+            }),
+            ajax.on('destroy', function (e) {
+                ajax.xhr.abort();
             })
         );
         return ajax;
@@ -463,7 +466,8 @@ var WaveSurfer = {
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();
-    }
+    },
+
 };
 
 WaveSurfer.create = function (params) {
