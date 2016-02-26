@@ -441,6 +441,39 @@ var WaveSurfer = {
     },
 
     /**
+     * Unmounts the wavesurfer instance from the page, but keeps the audio
+     * player in memory
+     */
+    unmount: function (selector) {
+        if (this.container.children.length === 0) {
+            var wsNode = document.querySelectorAll(selector)[0];
+            var newNode = wsNode.cloneNode();
+            this.container.appendChild(newNode.children[0]);
+            // $(this.container).append(newNode.children[0]);
+        }
+    },
+
+    /**
+     * Remounts the wavesurfer object onto selected DOM Element
+     * with specified height
+     */
+    remount: function (selector, height) {
+        var container = document.querySelectorAll(selector)[0];
+        var child = this.container.children[0];
+
+        container.appendChild(child);
+
+        this.container = container;
+        this.mediaContainer = container;
+        this.drawer.container = container;
+
+        this.drawer.height = height;
+        this.drawer.params.height = height;
+
+        this.drawBuffer();
+    },
+
+    /**
      * Display empty waveform.
      */
     empty: function () {
