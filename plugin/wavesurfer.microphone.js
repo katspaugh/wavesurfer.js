@@ -130,7 +130,9 @@
 
             // stop stream from device
             if (this.stream) {
-                this.stream.stop();
+                this.stream.getTracks().forEach(function(track) {
+                    track.stop();
+                });
             }
         },
 
