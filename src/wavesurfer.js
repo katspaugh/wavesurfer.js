@@ -135,7 +135,7 @@ var WaveSurfer = {
             if (!my.backend.isPaused()) {
                 var percent = my.backend.getPlayedPercents();
                 my.drawer.progress(percent);
-                my.fireEvent('audioprocess', percent);
+                my.fireEvent('audioprocess', my.getCurrentTime());
                 requestFrame(frame);
             }
         };
