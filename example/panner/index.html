@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>wavesurfer.js | Panner Example</title>
+
+        <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="../css/ribbon.css" />
+
+        <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+
+        <!-- wavesurfer.js -->
+        <script src="../../dist/wavesurfer.min.js"></script>
+
+        <!-- Demo -->
+        <script src="main.js"></script>
+    </head>
+
+    <body itemscope itemtype="http://schema.org/WebApplication">
+        <div class="container">
+            <div class="header">
+                <ul class="nav nav-pills pull-right">
+                    <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
+                </ul>
+
+                <h1 itemprop="name">Panner Filter Example</h1>
+            </div>
+
+            <div id="demo">
+                <div id="waveform">
+                    <div class="progress progress-striped active" id="progress-bar">
+                        <div class="progress-bar progress-bar-info"></div>
+                    </div>
+
+                    <!-- Here be the waveform -->
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+
+                    <hr />
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            &larr; left
+                        </div>
+                        <div class="col-sm-4">
+                            <!-- Panner -->
+                            <input data-action="pan" type="range" min="-45" max="45" value="0" style="width: 100%" />
+                        </div>
+                        <div class="col-sm-4">
+                            right &rarr;
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row marketing">
+                <h3>How to Create a Panner Interface</h3>
+
+                <p>
+                    This is an example of how to add an arbitrary Web
+                    Audio node into a wavesurfer.js graph. Panner node
+                    is one such node.
+                </p>
+
+                <hr />
+
+                <div class="col-lg-6">
+                    <h4>1. Initialize wavesurfer.js</h4>
+
+                    <p>Create a <code>WaveSurfer</code> instance and load an audio clip.</p>
+                    <noindex><p>
+<pre><code>var wavesurfer = Object.create(WaveSurfer);
+
+wavesurfer.init({
+    container: '#demo' // this is the only required param
+});
+
+wavesurfer.load('media.wav');</code></pre>
+                    </p></noindex>
+
+                    <h4>2. Create a Panner Node</h4>
+
+                    <p>
+                        Create a panner node and add it to the Web
+                        Audio graph using the <code>setFilter</code> method.
+                    </p>
+                    <noindex><p>
+<pre><code>var panner = wavesurfer.backend.ac.createPanner();
+wavesurfer.backend.setFilter(panner);</code></pre>
+                    </p></noindex>
+                </div>
+
+                <div class="col-lg-6">
+                    <h4>3. Create a Range Slider</h4>
+                    <p>
+                        In your HTML, add a range input.
+                    </p>
+                    <noindex><p>
+<pre><code>&lt;input id="panner-input" type="range" min="-45" max="45" value="0" /&gt;</code></pre>
+                    </p></noindex>
+
+                    <h4>4. Bind the Range Slider</h4>
+                    <p>
+                        Listen to the range input's <code>input</code> event and set the panner's position
+                        according to the input's value.
+                        <small>Adapted from <a href="http://stackoverflow.com/a/14412601/352796">this SO answer</a>.</small>
+                    </p>
+
+                    <noindex><p>
+<pre><code>var slider = document.querySelector('#panner-input');
+slider.addEventListener('input', function (e) {
+    var xDeg = parseInt(e.target.value);
+    var x = Math.sin(xDeg * (Math.PI / 180));
+    wavesurfer.panner.setPosition(x, 0, 0);
+});</code></pre>
+                    </p></noindex>
+                </div>
+            </div>
+
+            <div class="footer row">
+                <div class="col-sm-12">
+                    <a rel="license" href="https://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+                </div>
+
+                <div class="col-sm-7">
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/katspaugh/wavesurfer.js" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
+                </div>
+
+                <div class="col-sm-5">
+                    <div class="pull-right">
+                        <noindex>
+                            The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.
+                        </noindex>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="github-fork-ribbon-wrapper right">
+            <div class="github-fork-ribbon">
+                <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+            </div>
+        </div>
+
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+            ga('send', 'pageview');
+        </script>
+    </body>
+</html>
