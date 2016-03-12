@@ -1,0 +1,134 @@
+---
+layout: default
+---
+<section>
+  <h1>WaveSurfer Options</h1>
+
+  <p>This is the list of parameters you can pass to <code>var wavesurfer = WaveSurfer.create({ ... })</code> to create an instance of the player.</p>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>option</th>
+        <th>type</th>
+        <th>default</th>
+        <th>description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>audioContext</code></td>
+        <td>object</td>
+        <td><em>none</em></td>
+        <td>Use your own previously initialized <code>AudioContext</code> or leave blank.</td>
+      </tr>
+      <tr>
+        <td><code>audioRate</code></td>
+        <td>float</td>
+        <td><code>1</code></td>
+        <td>Speed at which to play audio.  Lower number is slower.</td>
+      </tr>
+      <tr>
+        <td><code>backend</code></td>
+        <td>string</td>
+        <td><code>WebAudio</code></td>
+        <td><code>WebAudio</code> or <code>MediaElement</code>. In most cases you don't have to set this manually. <code>MediaElement</code> is a fallback for unsupported browsers.</td>
+      </tr>
+      <tr>
+        <td><code>barWidth</code></td>
+        <td>number</td>
+        <td><em>none</em></td>
+        <td>If specified, the waveform will be drawn like this: ▁ ▂ ▇ ▃ ▅ ▂</td>
+      </tr>
+      <tr>
+        <td><code>container</code></td>
+        <td>mixed</td>
+        <td><em>none</em></td>
+        <td>CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter.</td>
+      </tr>
+      <tr>
+        <td><code>cursorColor</code></td>
+        <td>string</td>
+        <td><code>#333</code></td>
+        <td>The fill color of the cursor indicating the playhead position.</td>
+      </tr>
+      <tr>
+        <td><code>cursorWidth</code></td>
+        <td>integer</td>
+        <td><code>1</code></td>
+        <td>Measured in pixels.</td>
+      </tr>
+      <tr>
+        <td><code>fillParent</code></td>
+        <td>boolean</td>
+        <td><code>true</code></td>
+        <td>Whether to fill the entire container or draw only according to <code>minPxPerSec</code>.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>integer</td>
+        <td><code>128</code></td>
+        <td>The height of the waveform.  Measured in pixels.</td>
+      </tr>
+      <tr>
+        <td><code>hideScrollbar</code></td>
+        <td>boolean</td>
+        <td><code>false</code></td>
+        <td>Whether to hide the horizontal scrollbar when one would normally be shown.</td>
+      </tr>
+      <tr>
+        <td><code>interact</code></td>
+        <td>boolean</td>
+        <td><code>true</code></td>
+        <td>Whether the mouse interaction will be enabled at initialization.  You can switch this parameter at any time later on.</td>
+      </tr>
+      <tr>
+        <td><code>minPxPerSec</code></td>
+        <td>integer</td>
+        <td><code>50</code></td>
+        <td>Minimum number of pixels per second of audio.</td>
+      </tr>
+      <tr>
+        <td><code>normalize</code></td>
+        <td>boolean</td>
+        <td><code>false</code></td>
+        <td>If <code>true</code>, normalize by the maximum peak instead of 1.0.</td>
+      </tr>
+      <tr>
+        <td><code>pixelRatio</code></td>
+        <td>integer</td>
+        <td><code>window.devicePixelRatio</code></td>
+        <td>Can be set to <code>1</code> for faster rendering.</td>
+      </tr>
+      <tr>
+        <td><code>progressColor</code></td>
+        <td>string</td>
+        <td><code>#555</code></td>
+        <td>The fill color of the part of the waveform behind the cursor.</td>
+      </tr>
+      <tr>
+        <td><code>scrollParent</code></td>
+        <td>boolean</td>
+        <td><code>false</code></td>
+        <td>Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrunk to the container width (see <code>fillParent</code>).</td>
+      </tr>
+      <tr>
+        <td><code>skipLength</code></td>
+        <td>float</td>
+        <td><code>2</code></td>
+        <td>Number of seconds to skip with the <code>skipForward()</code> and <code>skipBackward()</code> <a href="/docs/methods.html">methods</a>.</td>
+      </tr>
+      <tr>
+        <td><code>waveColor</code></td>
+        <td>string</td>
+        <td><code>#999</code></td>
+        <td>The fill color of the waveform after the cursor.</td>
+      </tr>
+      <tr>
+        <td><code>autoCenter</code></td>
+        <td>boolean</td>
+        <td>true</td>
+        <td>If a scrollbar is present, center the waveform around the progress</td>
+      </tr>
+  </tbody></table>
+</section>

@@ -1,0 +1,70 @@
+<div layout="column" class="audioPlayerWrapper">
+    <md-toolbar class="md-toolbar-sm {{control.themeClass}} {{control.toolbarClass}} " style="color: #333333; background:
+    none;">
+        <div class="md-toolbar-tools" layout="row">
+            <div flex="initial" layout-align="center start">
+                {{control.currentTime | mdWavesurferTimeFormat}}
+            </div>
+            <div flex="grow" class="text-center">
+                {{control.title}}
+            </div>
+            <div flex="initial" layout-align="center end" class="text-right">
+                {{control.surfer.getDuration() | mdWavesurferTimeFormat}}
+            </div>
+        </div>
+    </md-toolbar>
+    <md-divider></md-divider>
+    <md-content>
+        <div class="waveSurferWave"></div>
+    </md-content>
+    <md-divider md-inset></md-divider>
+    <md-toolbar class="{{control.themeClass}} {{control.toolbarClass}} md-player-controls">
+        <div layout="row" class="md-toolbar-tools">
+            <div flex="initial" layout-align="center start" ng-show="control.extraButtons.length">
+                <md-button ng-click="btn.action()"
+                           ng-repeat="btn in control.extraButtons" class="{{control.themeClass}} {{btn.class}}">
+                    <md-tooltip>
+                        {{btn.title}}
+                    </md-tooltip>
+                    <md-icon md-font-icon="{{btn.icon}}"></md-icon>
+                </md-button>
+            </div>
+
+            <div flex layout="row" layout-align="center center">
+                <md-button ng-click="control.surfer.skipBackward()" type="button"
+                           ng-disabled="!control.surfer.isPlaying()">
+                    <md-tooltip>
+                        Rewind
+                    </md-tooltip>
+                    <md-icon md-font-icon="zmdi zmdi-fast-rewind"></md-icon>
+                </md-button>
+
+                <md-button ng-disabled="!control.isReady" type="button"
+                           ng-click="control.surfer.playPause()">
+                    <md-tooltip>
+                        {{control.surfer.isPlaying() ? 'Pause' : 'Play'}}
+                    </md-tooltip>
+                    <md-icon ng-show="control.surfer.isPlaying()" md-font-icon="zmdi zmdi-pause"></md-icon>
+                    <md-icon ng-show="!control.surfer.isPlaying()" md-font-icon="zmdi zmdi-play"></md-icon>
+                </md-button>
+
+                <md-button type="button" ng-click="control.surfer.skipForward()"
+                           ng-disabled="!control.surfer.isPlaying()">
+                    <md-tooltip>
+                        Skip forward
+                    </md-tooltip>
+                    <md-icon md-font-icon="zmdi zmdi-fast-forward"></md-icon>
+                </md-button>
+            </div>
+            <div flex="initial" layout-align="center end" >
+                <md-button type="button" ng-click="control.toggleMute()" ng-disabled="!control.surfer.isPlaying()">
+                    <md-tooltip>
+                        Toggle mute
+                    </md-tooltip>
+                    <md-icon md-font-icon="zmdi zmdi-volume-off" ng-show="control.isMute"></md-icon>
+                    <md-icon md-font-icon="zmdi zmdi-volume-up" ng-show="!control.isMute"></md-icon>
+                </md-button>
+            </div>
+        </div>
+    </md-toolbar>
+</div>

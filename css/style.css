@@ -1,0 +1,219 @@
+@import url(https://fonts.googleapis.com/css?family=Knewave);
+
+html {
+    height: 100%;
+}
+
+html, body {
+    min-height: 100%;
+}
+
+body {
+    position: relative;
+    padding-bottom: 200px;
+}
+
+header {
+    background:
+      linear-gradient(
+              rgba(0, 0, 0, 0.35),
+              rgba(0, 0, 0, 0.35)
+          ),
+       url('./bg.jpg') no-repeat top center;
+    padding: 5px;
+    padding-right: .9375rem;
+    padding-left: .9375rem;
+}
+
+header h1 {
+    font-family: 'Knewave', cursive;
+    font-size: 30px;
+}
+
+.overview {
+    background:
+      linear-gradient(
+              rgba(0, 0, 0, 0.5),
+              rgba(0, 0, 0, 0.5)
+          ),
+       url('./bg.jpg') no-repeat center;
+    background-size: cover;
+    color: #fff;
+    margin-bottom: 30px;
+    padding-top: 50px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.overview h1 {
+    font-size: 50px;
+    margin: 0 0 30px;
+}
+
+.overview .text-muted,
+.overview a {
+    color: #999;
+}
+
+header h1 a:active,
+header h1 a:hover,
+header h1 a {
+    text-decoration: none;
+    color: #fff;
+}
+
+.demo .controls {
+    padding: 10px 0;
+    text-align: center;
+}
+
+.demo .controls .btn {
+    margin: 10px;
+}
+
+pre code {
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+footer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.1);
+    margin-top: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: .9375rem;
+    padding-left: .9375rem;
+}
+
+footer .privacy {
+    margin-top: 10px;
+    font-size: 10px;
+    color: #999;
+}
+
+footer .privacy h5 {
+    color: #999;
+    font-size: 11px;
+}
+
+footer .privacy p {
+    margin: 3px 0;
+}
+
+section {
+    padding: 30px 0;
+    padding-left: 5%;
+    padding-right: 20%;
+}
+
+@media (max-width: 1024px) {
+    section {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+section h2, section h3 {
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+.col-md-6 h2:first-child {
+    margin-top: 0;
+}
+
+section h1 {
+    margin-bottom: 20px;
+}
+
+.overview section {
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+aside>ul {
+    margin-top: 30px;
+}
+
+aside li {
+    list-style-type: none;
+}
+
+aside li.active>a {
+    display: block;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 3px;
+    margin: -3px;
+}
+
+aside #carbonads {
+    margin-top: 30px;
+}
+
+#waveform {
+    position: relative;
+}
+
+#waveform .progress {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#carbonads {
+    max-width: 400px;
+}
+
+.carbon-wrap {
+    display: block;
+    background: #F0F0F0;
+    padding: 15px 10px 5px 15px;
+}
+
+.carbon-wrap:after {
+    clear: both;
+}
+
+.carbon-wrap:before, .carbon-wrap:after {
+    content: '';
+    display: table;
+}
+
+.carbon-img {
+    float: left;
+    margin-right: 15px;
+    margin-bottom: 10px;
+}
+
+.carbon-text {
+    display: block;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 170%;
+    min-width: 120px;
+    color: #06c;
+    margin-bottom: 10px;
+}
+
+.carbon-poweredby {
+    color: #6e6e6e;
+    text-decoration: underline;
+    font-size: 11px;
+    font-style: italic;
+    text-align: center;
+    display: block;
+    margin: 8px 0 0 0;
+}
+
+.container-fluid>.row:first-child>.col-md-2 .carbon-img {
+    float: none;
+    display: block;
+}

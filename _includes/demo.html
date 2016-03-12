@@ -1,0 +1,55 @@
+<div class="demo">
+  <div id="waveform">
+    <progress id="progress" class="progress progress-striped" value="0" max="100"></progress>
+  </div>
+
+  <script>
+    var wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: '#fff',
+    progressColor: 'hsla(200, 100%, 30%, 0.5)',
+    cursorColor: '#fff'
+    });
+
+    wavesurfer.on('loading', function (percents) {
+    document.getElementById('progress').value = percents;
+    });
+
+    wavesurfer.on('ready', function (percents) {
+    document.getElementById('progress').style.display = 'none';
+    });
+
+    wavesurfer.load('http://ia902606.us.archive.org/35/items/shortpoetry_047_librivox/song_cjrg_teasdale_64kb.mp3');
+  </script>
+
+  <div class="controls">
+    <button class="btn btn-primary" onclick="wavesurfer.skipBackward()">
+      <i class="fa fa-step-backward"></i>
+      Backward
+    </button>
+
+    <button class="btn btn-primary" onclick="wavesurfer.playPause()">
+      <i class="fa fa-play"></i>
+      Play
+      /
+      <i class="fa fa-pause"></i>
+      Pause
+    </button>
+
+    <button class="btn btn-primary" onclick="wavesurfer.skipForward()">
+      <i class="fa fa-step-forward"></i>
+      Forward
+    </button>
+
+    <button class="btn btn-primary" onclick="wavesurfer.toggleMute()">
+      <i class="fa fa-volume-off"></i>
+      Toggle Mute
+    </button>
+  </div>
+
+  <p align="right">
+    <small class="text-muted">
+      The recording is from <a href="https://librivox.org/short-poetry-collection-047/">LibriVox</a> (public domain).
+    </small>
+  </p>
+</div>

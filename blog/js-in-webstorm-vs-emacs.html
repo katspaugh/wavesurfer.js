@@ -1,0 +1,66 @@
+---
+layout: default
+---
+<section>
+  <h1 id="small-nice-things-in-webstorm">Small Nice Things in WebStorm</h1>
+
+  <p>JetBrains were kind enough to&nbsp;give the&nbsp;wavesurfer.js team a&nbsp;license for&nbsp;WebStorm, so I started exploring all the&nbsp;nice JavaScript-specific features in&nbsp;WebStorm. Since WebStorm is so polised, it is something to&nbsp;learn from&nbsp;when comparing with&nbsp;JavaScript packages for&nbsp;Emacs.</p>
+
+  <h2 id="comparing-emacs">Comparing Emacs</h2>
+  <p>Having said that, even though Emacs packages are written by&nbsp;single individuals, mostly, in&nbsp;their free time, they are still <em>quite</em> comparable with&nbsp;the&nbsp;commercial product developed by&nbsp;a&nbsp;company (and&nbsp;sometimes Emacs modes are better).</p>
+
+  <p>Here’s the&nbsp;full list of&nbsp;JavaScript-related packages I use in&nbsp;Emacs:</p>
+
+  <ul>
+    <li><a href="https://github.com/mooz/js2-mode">js2-mode</a></li>
+    <li><a href="https://github.com/marijnh/tern">Tern</a></li>
+    <li><a href="https://github.com/company-mode/company-mode">Company-mode</a> with <a href="https://github.com/proofit404/company-tern">company-tern</a> – Tern-based intelligent completion of variables and objects</li>
+    <li>Flycheck checkers
+      <ul>
+        <li>ESLint (built into <a href="https://github.com/flycheck/flycheck">Flycheck</a>)</li>
+        <li><a href="https://github.com/katspaugh/tern-lint.el">Tern-lint</a> – Tern-based dynamic type linter</li>
+        <li><a href="http://www.coffeelint.org/">CoffeeLint</a> with the <a href="https://github.com/AsaAyers/coffeelint-undefined-variables">undefined-variables plugin</a></li>
+      </ul>
+    </li>
+    <li><a href="https://github.com/abicky/nodejs-repl.el">Node.js REPL</a></li>
+    <li><a href="https://github.com/katspaugh/wooky.el">Wooky.el</a> – eval JavaScript in Chrome</li>
+  </ul>
+
+  <p>I don’t use any Emacs-based JavaScript debuggers (preferring Chrome devtools and&nbsp;<a href="http://katspaugh.github.io/2014/04/14/restoring-nodejs-project-after-git-reset.html">node-inspector</a>), but&nbsp;there are plenty of&nbsp;them: <a href="https://github.com/jscheid/kite">Kite</a>, <a href="https://github.com/swank-js/swank-js">swank-js</a> etc.</p>
+
+  <h2 id="attention-to-details">Attention to Details</h2>
+  <p>So, back to&nbsp;WebStorm.</p>
+
+  <ul>
+    <li>First, I like how it highlights variables in current scope. You can totally do this with Emacs (e.g. with <code>tern-highlight-refs</code>), but WebStorm also highlights the assignment a little differently than usages of the variable:</li>
+  </ul>
+
+  <p><img src="http://i.imgur.com/BljNue6.png" alt="highlight variables" width="562"></p>
+
+  <p>Of course, Emacs’ highlighting of&nbsp;variables can be tweaked the&nbsp;same way, easilly.</p>
+
+  <ul>
+    <li>
+      <p>On the&nbsp;same screenshot you can see another nice feature–WebStorm underlines function arguments and&nbsp;their usages. This let’s you immediatelly understand function’s signature.</p>
+    </li>
+    <li>
+      <p>Intentation level cues</p>
+    </li>
+  </ul>
+
+  <p><img src="http://i.imgur.com/fkY3mky.png" alt="indentation" width="138"></p>
+
+  <p>This is not so important for&nbsp;JavaScript, but&nbsp;for&nbsp;CoffeeScript it is really helpful. In Emacs you cannot display them as&nbsp;nicely and&nbsp;subtly.</p>
+
+  <ul>
+    <li>WebStorm has this UI concept of overlays, showing you a distant, but relevant part of the document without scrolling to it. This is especially handy to quickly view the beginning of a large block, that is somewhere beyond the viewport.</li>
+  </ul>
+
+  <p><img src="http://i.imgur.com/pvt2oEc.png" alt="displaying the beginning of a block" width="359"></p>
+
+  <ul>
+    <li>Another use for these overlays is to preview search terms and linting warnings.</li>
+  </ul>
+
+  <p><img src="http://i.imgur.com/er2Egk1.png" alt="scrollbar overlay" width="582"></p>
+</section>

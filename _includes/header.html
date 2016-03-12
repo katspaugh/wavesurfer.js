@@ -1,0 +1,16 @@
+{% if page.url == '/' %}
+
+<header class="overview">
+  <div class="container">
+    <h1>wavesurfer.js</h1>
+    {% include demo.html %}
+  </div>
+</header>
+
+{% else %}
+
+<header>
+  <h1><a href="/">wavesurfer.js</a></h1>
+</header>
+
+{% endif %}

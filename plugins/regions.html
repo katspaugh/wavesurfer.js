@@ -1,0 +1,114 @@
+---
+layout: default
+---
+<section>
+  <h1>Regions plugin</h1>
+
+  <p>Regions are visual overlays on waveform that can be used to play and loop portions of audio. Regions can be dragged and resized.</p>
+
+  <p>Visual customization is possible via CSS (using the selectors <code>.wavesurfer-region</code> and <code>.wavesurfer-handle</code>).</p>
+
+  <h2>Quick start</h2>
+
+  <p data-height="260" data-theme-id="0" data-slug-hash="obmOXV" data-default-tab="result" data-user="katspaugh" class='codepen'>See the Pen <a href='http://codepen.io/katspaugh/pen/obmOXV/'>wavesurfer.js regions</a> by katspaugh (<a href='http://codepen.io/katspaugh'>@katspaugh</a>) on <a href='http://codepen.io'>CodePen</a>.</p>
+  <script async src="//assets.codepen.io/assets/embed/ei.js"></script>
+
+  <h2>Methods added to the <code>WaveSurfer</code> object</h2>
+
+  <ul>
+    <li>
+      <code>addRegion(options)</code> – Creates a region on the waveform. Returns a Region object. See Region Options, Region Methods and Region Events below.
+
+      Note: You cannot add regions until the audio has finished loading, otherwise the start: and end: properties of the new region will be set to 0, or an unexpected value.
+    </li>
+
+    <li>
+      <code>clearRegions()</code> – Removes all regions.
+    </li>
+
+    <li>
+      <code>enableDragSelection(options)</code> – Lets you create regions by selecting. areas of the waveform with mouse. options are Region objects' params (see below).
+    </li>
+  </ul>
+
+  <h2>Options</h2>
+
+  <p>Region objects have the following options:</p>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>option</th>
+        <th>type</th>
+        <th>default</th>
+        <th>description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>id</code></td>
+        <td>string</td>
+        <td>random</td>
+        <td>The id of the region.</td>
+      </tr>
+      <tr>
+        <td><code>start</code></td>
+        <td>float</td>
+        <td><code>0</code></td>
+        <td>The start position of the region (in seconds).</td>
+      </tr>
+      <tr>
+        <td><code>end</code></td>
+        <td>float</td>
+        <td><code>0</code></td>
+        <td>The end position of the region (in seconds).</td>
+      </tr>
+      <tr>
+        <td><code>loop</code></td>
+        <td>boolean</td>
+        <td><code>false</code></td>
+        <td>Whether to loop the region when played back.</td>
+      </tr>
+      <tr>
+        <td><code>drag</code></td>
+        <td>boolean</td>
+        <td><code>true</code></td>
+        <td>Allow/dissallow dragging the region.</td>
+      </tr>
+      <tr>
+        <td><code>resize</code></td>
+        <td>boolean</td>
+        <td><code>true</code></td>
+        <td>Allow/dissallow resizing the region.</td>
+      </tr>
+      <tr>
+        <td><code>color</code></td>
+        <td>string</td>
+        <td><code>"rgba(0, 0, 0, 0.1)"</code></td>
+        <td>HTML color code.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Events</h2>
+
+  <p>Each region object has the following events:</p>
+
+  <h3>Generic events</h3>
+
+  <ul>
+    <li><code>in</code> - When playback enters the region.</li>
+    <li><code>out</code> - When playback leaves the region.</li>
+    <li><code>remove</code> - Happens just before the region is removed.</li>
+    <li><code>update</code> - When the region's options are updated.</li>
+  </ul>
+
+  <h3>Mouse events</h3>
+
+  <ul>
+    <li><code>click</code> - When the mouse clicks on the region.  Callback will receive a <code>MouseEvent</code>.</li>
+    <li><code>dblclick</code> - When the mouse double-clicks on the region.  Callback will receive a <code>MouseEvent</code>.</li>
+    <li><code>over</code> - When mouse moves over the region.  Callback will receive a <code>MouseEvent</code>.</li>
+    <li><code>leave</code> - When mouse leaves the region.  Callback will receive a <code>MouseEvent</code>.</li>
+  </ul>
+</section>

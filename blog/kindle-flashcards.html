@@ -1,0 +1,54 @@
+---
+layout: default
+---
+<section>
+  <h1>How to extract Kindle vocabulary cards</h1>
+
+  <div class="col-md-5">
+    <img src="http://i.imgur.com/sTbaFVJ.png" width="100%" />
+
+    <p align="center">
+      <a href="http://www.christopherculver.com/languages/kindle-ultimate-language-learning-tool.html">
+        <small class="text-muted">The image source</small>
+      </a>
+    </p>
+  </div>
+
+  <div class="col-md-7">
+    <p>
+      Every time you look up a word on Kindle, it stores it into its vocabulary database.
+    </p>
+
+    <p>
+      Kindle is using an <a href="https://www.sqlite.org/">SQLite</a> database internally, and when you plug the device into your computer, you can extract all the words that you have looked up, together with the book titles and <i>complete sentences</i> (!) where these words were encountered. Here's the SQL request:
+
+<pre><code class="sql">SELECT
+    words.stem, lookups.usage
+    FROM lookups
+    LEFT OUTER JOIN book_info
+    ON lookups.book_key=book_info.id
+    LEFT OUTER JOIN words
+    ON lookups.word_key=words.id;</code></pre>
+
+    </p>
+
+    <p>
+      You can run the query like this (on OS X):
+
+      <pre><code class="shell">cat extract.sql | sqlite3 /Volumes/Kindle/system/vocabulary/vocab.db -separator $'\t' > lookups.txt</code></pre>
+    </p>
+
+    <p>
+      After that you can copy & paste the words into Google Translate and get translations for each word. The resulting CSV can be easily imported into popular <a href="https://en.wikipedia.org/wiki/Spaced_repetition">spaced repetition</a> apps, such as <a href="http://ankisrs.net/">Anki</a> or <a href="http://memrise.com/">Memrise</a>.
+
+    </p>
+
+    <p>
+      <small><i>Note:</i> in Memrise, when you create a course, there's an option to load the words in batch as CSV.</small>
+    </p>
+
+    <p>
+      Here's <a href="https://github.com/katspaugh/kindle-flashcards">the full code on GitHub</a>.
+    </p>
+  </div>
+</section>

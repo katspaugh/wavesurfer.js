@@ -1,0 +1,47 @@
+---
+layout: default
+---
+<section>
+  <h1>WaveSurfer Methods</h1>
+
+  <p>After creating an instance of the player (with <code>var wavesurfer = WaveSurfer.create({ ... })</code>), you can call the following methods on it:</p>
+
+  <ul>
+    <li><code>destroy()</code> – Removes events, elements and disconnects Web Audio nodes.</li>
+    <li><code>empty()</code> – Clears the waveform as if a zero-length audio is loaded.</li>
+    <li><code>getCurrentTime()</code> – Returns current progress in seconds.</li>
+    <li><code>getDuration()</code> – Returns the duration of an audio clip in seconds.</li>
+    <li><code>isPlaying()</code> – Returns true if currently playing, false otherwise.</li>
+    <li><code>load(url)</code> – Loads audio from URL via XHR. Returns XHR object.</li>
+    <li><code>loadBlob(url)</code> – Loads audio from a <code>Blob</code> or <code>File</code> object.</li>
+    <li><code>on(eventName, callback)</code> – Subscribes to an event.  See <a href="/docs/events.html">WaveSurfer Events</a> for the list of all events.</li>
+    <li><code>un(eventName, callback)</code> – Unsubscribes from an event.</li>
+    <li><code>unAll()</code> – Unsubscribes from all events.</li>
+    <li><code>pause()</code> – Stops playback.</li>
+    <li><code>play([start[, end]])</code> – Starts playback from the current position.  Optional <code>start</code> and <code>end</code> measured in seconds can be used to set the range of audio to play.</li>
+    <li><code>playPause()</code> – Plays if paused, pauses if playing.</li>
+    <li><code>seekAndCenter(progress)</code> – Seeks to a progress and centers view <code>[0..1]</code> (0 = beginning, 1 = end).</li>
+    <li><code>seekTo(progress)</code> – Seeks to a progress <code>[0..1]</code> (0 = beginning, 1 = end).</li>
+    <li><code>setFilter(filters)</code> - For inserting your own WebAudio nodes into the graph.  See <a href="#connecting-filters">Connecting Filters</a> below.</li>
+    <li><code>setPlaybackRate(rate)</code> – Sets the speed of playback (<code>0.5</code> is half speed, <code>1</code> is normal speed, <code>2</code> is double speed and so on).</li>
+    <li><code>setVolume(newVolume)</code> – Sets the playback volume to a new value <code>[0..1]</code> (0 = silent, 1 = maximum).</li>
+    <li><code>skip(offset)</code> – Skip a number of seconds from the current position (use a negative value to go backwards).</li>
+    <li><code>skipBackward()</code> - Rewind <code>skipLength</code> seconds.</li>
+    <li><code>skipForward()</code> - Skip ahead <code>skipLength</code> seconds.</li>
+    <li><code>stop()</code> – Stops and goes to the beginning.</li>
+    <li><code>toggleMute()</code> – Toggles the volume on and off.</li>
+    <li><code>toggleInteraction()</code> – Toggle mouse interaction.</li>
+    <li><code>toggleScroll()</code> – Toggles <code>scrollParent</code>.</li>
+    <li><code>zoom(pxPerSec)</code> – Horiontally zooms the waveform in and out. The
+      parameter is a number of horizontal pixels per second of audio. It
+      also changes the parameter <code>minPxPerSec</code> and enables the
+      <code>scrollParent</code> option.</li>
+  </ul>
+
+  <h2 id="connecting-filters">Connecting Filters</h2>
+
+  <p>You can insert your own Web Audio nodes into the graph using the method <code>setFilter()</code>. Example:</p>
+
+  <pre><code>var lowpass = wavesurfer.backend.ac.createBiquadFilter();
+wavesurfer.backend.setFilter(lowpass);</code></pre>
+</section>

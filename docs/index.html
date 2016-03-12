@@ -1,0 +1,73 @@
+---
+layout: default
+---
+<section>
+  <h1>Documentation</h1>
+
+  <h2>Getting started</h2>
+
+  <p>
+    First of all, you need to insert the <b>wavesurfer.js</b> library into your HTML page. You can grab the latest version from <a href="https://cdnjs.com/libraries/wavesurfer.js">cdnjs.com</a>.
+
+    <pre><code class="html">&lt;script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.0.52/wavesurfer.min.js"&gt;&lt;/script&gt;</code></pre>
+  </p>
+
+  <p>
+    Next, in your JavaScript code, create an instance of the global <code>WaveSurfer</code> object.
+
+<pre><code class="javascript">var wavesurfer = WaveSurfer.create({
+    container: '#waveform'
+});</code></pre>
+  </p>
+
+  <h2>Parameters</h2>
+
+  <p>
+    Then only required parameter is <code>container</code>. It can be either a unique CSS3 selector, or a DOM element.
+  </p>
+
+  <p>
+    However, you can also pass any number of <a href="/docs/options.html">options</a>. For example, to make the waveform scrollable, pass the the <code>scrollParent</code> option:
+<pre><code class="javascript">var wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    scrollParent: true
+});</code></pre>
+  </p>
+
+  <h2>Loading the audio</h2>
+
+  <p>
+    After creating an instance, you may want to load an audio track and draw its waveform. You can load files either from the same domain:
+
+    <pre><code class="javascript">wavesurfer.load('../audio/song.mp3');</code></pre>
+  </p>
+
+  <p>
+    Or from another server, if it supports <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS">CORS headers</a>. For example:
+    <pre><code class="javascript">wavesurfer.load('http://ia902606.us.archive.org/35/items/shortpoetry_047_librivox/song_cjrg_teasdale_64kb.mp3');</code></pre>
+  </p>
+
+  <p>
+    <b>wavesurfer.js</b> will load the file, decode it and display a nice waveform image. When it's done, it will fire the <code>ready</code> <a href="/docs/events.html">event</a>.
+  </p>
+
+  <h2>Listening to events</h2>
+
+  <p>
+    <b>wavesurfer.js</b> has a number of useful <a href="/docs/events.html">events</a> you can subscribe to. The <code>ready</code> event, mentioned above, can be used like this:
+
+<pre><code class="javascript">wavesurfer.on('ready', function () {
+    wavesurfer.play();
+});</code></pre>
+  </p>
+
+  <h2>Calling methods</h2>
+
+  <p>
+    You can also trigger various actions on the player, such as <code>wavesurfer.pause()</code>, <code>wavesurfer.skipForward()</code>, <code>wavesurfer.toggleMute()</code> etc.
+  </p>
+
+  <p>
+    Take a look at the list of all available <a href="/docs/methods.html">methods</a>.
+  </p>
+</section>

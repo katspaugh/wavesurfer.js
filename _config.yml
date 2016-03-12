@@ -1,0 +1,66 @@
+# Welcome to Jekyll!
+#
+# This config file is meant for settings that affect your whole blog, values
+# which you are expected to set up once and rarely need to edit after that.
+# For technical reasons, this file is *NOT* reloaded automatically when you use
+# 'jekyll serve'. If you change this file, please restart the server process.
+
+# Site settings
+title: wavesurfer.js
+email: katspaugh@gmail.com
+description: > # this means to ignore newlines until "baseurl:"
+  wavesurfer.js is an HTML 5 audio player and waveform visualizer, made with JavaScript and Web Audio.
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "http://wavesurfer-js.org" # the base hostname & protocol for your site
+twitter_username: jekyllrb
+github_username:  jekyll
+
+# Build settings
+markdown: kramdown
+
+navigation:
+  - title: Overview
+    url: /
+  - title: API docs
+    url: /docs/
+    subnav:
+      - title: Options
+        url: /docs/options.html
+      - title: Methods
+        url: /docs/methods.html
+      - title: Events
+        url: /docs/events.html
+  - title: Examples
+    url: /examples/
+  - title: FAQ
+    url: /faq/
+  - title: Plugins
+    url: /plugins/
+    subnav:
+      - title: Regions
+        url: /plugins/regions.html
+      - title: Timeline
+        url: /plugins/timeline.html
+      - title: Microphone
+        url: /plugins/microphone.html
+  - title: Projects
+    url: /projects/
+  - title: Blog
+    url: /blog/
+    subnav:
+      - title: 19 Feb 2016
+        url: /blog/kindle-flashcards.html
+      - title: 17 Feb 2016
+        url: /blog/netflix-subs.html
+      - title: 09 May 2015
+        url: /blog/emacs-beginning-of-function.html
+      - title: 01 May 2015
+        url: /blog/js-in-webstorm-vs-emacs.html
+      - title: 07 Mar 2015
+        url: /blog/javascript-static-analysers.html
+      - title: 14 Apr 2014
+        url: /blog/restoring-nodejs-project-after-git-reset.html
+      - title: 06 Mar 2014
+        url: /blog/ido-at-point.html
+      - title: 12 Jun 2013
+        url: /blog/emacs-javascript.html

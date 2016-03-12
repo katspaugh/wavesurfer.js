@@ -1,0 +1,19 @@
+---
+layout: default
+---
+<section>
+  <h1>FAQ</h1>
+
+  <h2>Can the audio start playing before the waveform is drawn?</h2>
+
+  <p>Yes, if you use the <code>backend: 'MediaElement'</code> option. See here: <a href="http://wavesurfer-js.org/example/audio-element/">http://wavesurfer-js.org/example/audio-element/</a>. The audio will start playing as you press play. A thin line will be displayed until the whole audio file is downloaded and decoded to draw the waveform.</p>
+
+
+  <h2>Can drawing be done as file loads?</h2>
+
+  <p>No. Web Audio needs the whole file to decode it in the browser. You can however load pre-decoded waveform data to draw the waveform immediately. <a href="/example/audio-element/">See here</a> (the "Pre-recoded Peaks" section).</p>
+
+  <h2>Can I make the audio start playing automatically on iOS?</h2>
+
+  <p>Nope. It's a known issue that iOS won't allow you to play the audio programmatically. It won't play unless the user clicks on the page. It's a power/bandwidth-saving feature of iOS Safari.</p>
+</section>

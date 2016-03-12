@@ -1,0 +1,27 @@
+---
+layout: default
+---
+<section>
+  <h1>WaveSurfer Events</h1>
+
+  <p>You can use <code>on()</code> and <code>un()</code> <a href="/docs/methods.html">methods</a> to subscribe and unsubscribe from various player events. For example:</p>
+
+<pre><code>wavesurfer.on('pause', function () {
+    wavesurfer.params.container.style.opacity = 0.9;
+});</code></pre>
+
+  <p>Here's the list of available events:</p>
+
+  <ul>
+    <li><code>audioprocess</code> – Fires continuously as the audio plays. Also fires on seeking.</li>
+    <li><code>error</code> – Occurs on error.  Callback will receive (string) error message.</li>
+    <li><code>finish</code> – When it finishes playing.</li>
+    <li><code>loading</code> – Fires continuously when loading via XHR or drag'n'drop. Callback will receive (integer) loading progress in percents [0..100] and (object) event target.</li>
+    <li><code>pause</code> – When audio is paused.</li>
+    <li><code>play</code> – When play starts.</li>
+    <li><code>ready</code> – When audio is loaded, decoded and the waveform drawn.</li>
+    <li><code>scroll</code> - When the scrollbar is moved.  Callback will receive a <code>ScrollEvent</code> object.</li>
+    <li><code>seek</code> – On seeking.  Callback will receive (float) progress [0..1].</li>
+    <li><code>zoom</code> – On zooming. Callback will receive (integer) minPxPerSec.</li>
+  </ul>
+</section>

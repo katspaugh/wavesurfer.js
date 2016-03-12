@@ -1,0 +1,36 @@
+<aside>
+  <ul>
+  {% for item in site.navigation %}
+    {% assign class = nil %}
+    {% if page.url == item.url %}
+        {% assign class = 'active' %}
+    {% endif %}
+    <li class="{{ class }}">
+      <a href="{{ item.url }}">
+        {{ item.title }}
+      </a>
+
+      {% if item.subnav and page.url contains item.url %}
+        <ul>
+        {% for subitem in item.subnav %}
+          {% assign class = nil %}
+          {% if page.url == subitem.url %}
+              {% assign class = 'active' %}
+          {% endif %}
+          <li class="{{ class }}">
+            <a href="{{ subitem.url }}">
+              {{ subitem.title }}
+            </a>
+          </li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+
+    </li>
+  {% endfor %}
+  </ul>
+
+  {% if page.url != '/' %}
+    <script async type="text/javascript" src="//cdn.carbonads.com/carbon.js?zoneid=1673&serve=C6AILKT&placement=wavesurfer-jsorg" id="_carbonads_js"></script>
+  {% endif %}
+</aside>

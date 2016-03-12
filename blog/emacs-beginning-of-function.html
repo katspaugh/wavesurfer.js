@@ -1,0 +1,44 @@
+---
+layout: default
+---
+<section>
+  <h1>Display the beginning of a function in Emacs</h1>
+
+  <p>
+    This is an attempt to replicate <a href="/blog/js-in-webstorm-vs-emacs.html">a feature found in WebStorm:</a>
+
+  <p>
+    <img src="http://i.imgur.com/X1EQXfu.png" alt="WebStorm screenshot" width="359" />
+  </p>
+
+  <p>
+    When you are in the end of a block, and the beginning of the block is outside the viewport, it shows you the beginning in a nice overlay.
+  </p>
+
+  <p>
+    In Emacs we can show the beginning of function definition at point in the <a href="http://www.gnu.org/software/emacs/manual/html_node/elisp/Header-Lines.html">header line</a>.
+  </p>
+
+  <p>
+    <img src="http://i.imgur.com/3RsQnWI.png" alt="Emacs screenshot" width="297" />
+  </p>
+
+  <p>
+    Here's the Emacs Lisp code:
+
+<pre><code class="lisp">(defun show-beginning-of-defun ()
+  "Display the beginning of defun in the header line."
+  (let (start end)
+    (save-excursion
+      (beginning-of-defun)
+      (setq start (line-beginning-position)
+            end (line-end-position)))
+    (if (>= start (window-start))
+        (setq header-line-format nil)
+      (setq header-line-format (buffer-substring-no-properties start end)))))
+
+(add-hook 'prog-mode-hook
+          (lambda ()
+            (add-hook 'post-command-hook #'show-beginning-of-defun)))</code></pre>
+  </p>
+</section>

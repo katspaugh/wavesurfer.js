@@ -1,0 +1,63 @@
+---
+layout: default
+---
+<section>
+  <h1 id="emacs--javascript">Emacs + JavaScript</h1>
+
+  <p>JavaScript tooling these days is excellent. DevTools, JSLint, a&nbsp;ton of&nbsp;minimizers. Emacs, too, has a&nbsp;few outstanding JavaScript plug-ins that
+    make authoring JavaScript an&nbsp;enjoyable and&nbsp;truly interactive process.</p>
+
+  <h2 id="syntax-highlighting-and-static-code-analysis">Syntax highlighting and static code analysis</h2>
+
+  <h3 id="js2-mode">js2-mode</h3>
+
+  <p>Initially written by&nbsp;<a href="http://steve-yegge.blogspot.ru/2008/03/js2-mode-new-javascript-mode-for-emacs.html">Steve Yegge</a>,
+    js2-mode alone is sufficient to&nbsp;make a&nbsp;JavaScript IDE out&nbsp;of&nbsp;Emacs. Basically, a&nbsp;port of&nbsp;Rhino’s parser to&nbsp;Emacs Lisp, js2-mode is
+    the&nbsp;best JavaScript highlighter and&nbsp;syntax checker you can find in&nbsp;any
+    editor. It displays detailed syntax error messages, in&nbsp;the&nbsp;same way a&nbsp;real interpreter would.</p>
+
+  <p><img src="http://imgur.com/0zF92fj.png" alt="js2-mode displaying an error"></p>
+
+  <p>js2-mode has automatic indentation and&nbsp;even some basic linting
+    built-in: it warns about undeclared variables and&nbsp;missing semicolons.</p>
+
+  <p><strong>Homepage</strong>: <a href="https://github.com/mooz/js2-mode">https://github.com/mooz/js2-mode</a></p>
+
+  <h3 id="tern">Tern</h3>
+
+  <p>Tern is not specifically an&nbsp;Emacs plugin. On the&nbsp;contrary, it’s a&nbsp;separate Node.js program, that exposes an&nbsp;HTTP API, any editor can
+    take advantage of.  Tern’s author, Marijn Haverbeke, however, included
+    an&nbsp;Emacs plugin to&nbsp;the&nbsp;main repository.</p>
+
+  <p><img src="http://imgur.com/NJ4VcJ8.png" alt="Tern highlighting identifier in scope"></p>
+
+  <p>Tern also uses a&nbsp;full-fledged JavaScript parser, complete with&nbsp;type
+    inference system. Practically, Tern provides symbol completion, type
+    hints, function signature hints and&nbsp;jump-to-definition. Tern
+    understands explicit type annotations, as&nbsp;well.</p>
+
+  <p><img src="http://i.imgur.com/7TCVdFB.png" alt="Tern autocomplete with company-mode"></p>
+
+  <p><strong>Homepage</strong>: <a href="http://ternjs.net">http://ternjs.net</a></p>
+
+  <h2 id="live-editing-and-inspection">Live editing and inspection</h2>
+
+  <h3 id="kite">Kite</h3>
+
+  <p>Kite, by&nbsp;Julian Scheid, is an&nbsp;Emacs front-end for&nbsp;Chrome’s Developer
+    Tools. It connects to&nbsp;any of&nbsp;the&nbsp;opened Chrome tabs from&nbsp;Emacs. Kite
+    has a&nbsp;DOM inspector and&nbsp;allows CSS and&nbsp;JavaScript live editing. You
+    can even set breakpoints and&nbsp;step through JavaScript code from&nbsp;Emacs
+    using Kite.</p>
+
+  <p><strong>Homepage</strong>: <a href="https://github.com/jscheid/kite">https://github.com/jscheid/kite</a></p>
+
+  <h3 id="livenode">Livenode</h3>
+
+  <p>Mihai Bazon wrote a&nbsp;WebSocket server that interacts with&nbsp;Emacs to&nbsp;evaluate arbitrary JavaScript code in&nbsp;the&nbsp;context of&nbsp;a&nbsp;running Node.js
+    program.  Once again, the&nbsp;program uses a&nbsp;real JavaScript parser
+    (UglifyJS 2, by&nbsp;the&nbsp;same author). Livenode can evaluate JavaScript
+    expression under the&nbsp;cursor or an&nbsp;explicitely selected region.</p>
+
+  <p><strong>Homepage</strong>: <a href="https://github.com/mishoo/livenode/">https://github.com/mishoo/livenode/</a></p>
+</section>

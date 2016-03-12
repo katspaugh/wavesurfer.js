@@ -1,0 +1,64 @@
+---
+layout: default
+---
+<section class="row">
+  <div class="col-md-6">
+    <h2>Web Audio waveform</h2>
+
+    <p>
+      <b>wavesurfer.js</b> is a customizable audio waveform visualization, built on top of <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Web Audio API</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">HTML5 Canvas</a>.
+    </p>
+    <p>
+      With <b>wavesurfer.js</b> you can create anything from an HTML5 audio player to a sophisticated DJ application.
+    </p>
+
+    <h2>Quick start</h2>
+
+    <p>
+      In HTML, include the minified script:
+<pre style="white-space: normal"><code style="font-size: 9px">&lt;script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.0.52/wavesurfer.min.js"&gt;&lt;/script&gt;</code></pre>
+    </p>
+
+    <p>
+      Create a container where the waveform is to appear:
+<pre><code>&lt;div id="waveform"&gt;&lt;/div&gt;</code></pre>
+
+    <p>
+      In your JavaScript app, create a <b>wavesurfer</b> instance, passing the container selector along with some <a href="/docs#option">options</a>:
+
+ <pre><code>var wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: 'violet',
+    progressColor: 'purple'
+});</code></pre>
+    </p>
+
+    <p>
+      Finally, load the audio:
+      <pre><code>wavesurfer.load('audio.wav');</code></pre>
+    </p>
+  </div>
+
+  <div class="col-md-6">
+    <script async type="text/javascript" src="//cdn.carbonads.com/carbon.js?zoneid=1673&serve=C6AILKT&placement=wavesurfer-jsorg" id="_carbonads_js"></script>
+
+    <h2><a href="/docs/">Documentation</a></h2>
+
+    <p>
+      Checkout out our small <a href="/docs">tutorial</a>. For the full reference, there's documentation on all <a href="/docs/options.html">parameters</a>, <a href="/docs/methods.html">methods</a> and <a href="/docs/events.html">events</a>.
+    </p>
+
+    <p>
+      If you have questions or you found a bug, feel free to <a href="/contact-us">contact us</a>.
+    </p>
+
+    <p>
+      Enjoy your experience with <b>wavesurfer.js</b>!
+    </p>
+
+    <h2>Browser support</h2>
+    <p>
+      <b>wavesurfer.js</b> runs on modern <a href="http://caniuse.com/#search=web%20audio">browsers supporting Web Audio</a>, including Firefox, Chrome, Safari (desktop and mobile) and Opera.
+    </p>
+  </div>
+</section>

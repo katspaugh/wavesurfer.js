@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include head.html %}
+
+  <body>
+    {% include header.html %}
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-2 col-md-3">
+          {% include sidebar.html %}
+        </div>
+
+        <div class="col-lg-10 col-md-9">
+          {{ content }}
+        </div>
+      </div>
+    </div>
+
+    {% include gh-ribbon.html %}
+
+    {% include footer.html %}
+  </body>
+</html>

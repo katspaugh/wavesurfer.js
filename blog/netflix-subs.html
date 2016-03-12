@@ -1,0 +1,109 @@
+---
+layout: default
+---
+<section>
+  <h1>Hacking Netflix subtitles</h1>
+
+  <h2>Why?</h2>
+
+  <p>
+    I love learning foreign languages, and consider watching movies one of the best way to do that. On the post-intermediate level especially, when you are able to actually enjoy the movie (笑). Subtitles can be a great help in the beginning (though they also may be the greatest obstacle later on). If you pair subtitles with the ability to seek to a specific phrase in the video, they become a powerful instrument.
+  </p>
+
+  <p>
+    Some time ago, I built <a href="https://github.com/katspaugh/videobook">Videobook</a>. You give it a video file and a subtitles file, and it displays a navigation toolbar that lists all the subtitle phrases. You can click on a phrase and listen it over and over. It looks like this:
+  </p>
+
+  <p>
+    <img width="100%" src="http://i.imgur.com/ucCcJ10.png" alt="Videobook screenshot" />
+  </p>
+
+  <p>
+    Videobook works great for downloaded content, but what about streaming video (Netflix, Hulu etc)?
+  </p>
+
+  <h2>Hacking Netflix's JavaScript app</h2>
+
+  <p>
+    Netflix loads it's subtitles via XHR as a single XML file in W3C's <a href="https://en.wikipedia.org/wiki/Timed_Text_Markup_Language">TTML format</a>. After Netflix parses the file into an array of objects with start and end time + the text blocks, its React application displays the subtitles one-by-one is a div placed over the video.
+  </p>
+
+  <p>
+    I was able to hi-jack the parsed subtitles array from the Netflix app by monkey-patching the <code>Array#push</code> method. You need to evaluate this code in the console as soon as the page starts loading:
+
+<pre><code>var subs = (function () {
+    var subs = [];
+    var push = Array.prototype.push;
+    Array.prototype.push = function () {
+        if (arguments[0] && arguments[0].blocks) {
+            subs[subs.length] = arguments[0];
+        }
+        return push.apply(this, arguments);
+    };
+    return subs;
+}());</code></pre>
+
+    I learned where to insert the patch by setting a break-point on DOM sub-tree modification in Chrome DevTools.
+  </p>
+
+  <p>
+    <img src="http://i.imgur.com/0Ff5CdO.png" width="60%" alt="DevTools screenshot" />
+  </p>
+
+  <p>
+    The subtitles are objects like this:
+
+<pre><code>
+{
+    "startTime": 14000,
+    "endTime": 27000,
+    "blocks": [
+        "textNodes": [
+            "text": "Wer seid ihr?"
+        ]
+     ]
+}</code></pre>
+  </p>
+
+  <p>
+    Next I created a simple UI to list the subs:
+
+<pre><code>var overlay = document.createElement('div');
+overlay.style.position = 'fixed';
+overlay.style.zIndex = 1000;
+overlay.style.right = 0;
+overlay.style.top = 0;
+overlay.style.bottom = 0;
+overlay.style.width = '300px';
+overlay.style.backgroundColor = 'white';
+overlay.style.overflow = 'auto';
+overlay.style.color = '#000';
+
+var video = document.querySelector('video');
+
+subs.forEach(function (sub) {
+    var item = document.createElement('div');
+    item.textContent = sub.blocks[0].textNodes.map(function (t) { return t.text; }).join('\n');
+    item.style.whiteSpace = 'nowrap';
+    item.style.padding = '10px 5px';
+
+    item.onclick = function () { video.currentTime = sub.startTime / 1000 };
+
+    overlay.appendChild(item);
+});
+
+document.body.appendChild(overlay);</code></pre>
+  </p>
+
+  <p>
+    The result looks like this:
+  </p>
+
+  <p>
+    <img width="100%" src="http://i.imgur.com/FHSHFSQ.jpg" alt="Netflix screenshot" />
+  </p>
+
+  <p>
+    However, the Netflix app is designed in such way that when you attempt to set the position of the video via its DOM element, an error is displayed and the whole application stops.
+  </p>
+</section>

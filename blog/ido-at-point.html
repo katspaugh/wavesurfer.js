@@ -1,0 +1,67 @@
+---
+layout: default
+---
+<section>
+  <h1 id="ido-at-point">ido-at-point</h1>
+
+  <h2 id="the-problem">The problem</h2>
+  <p>Built-in&nbsp;completion-at-point UI in&nbsp;Emacs is very simple. It’s usable –
+    especially if you don’t mind the&nbsp;popup window, necessity to&nbsp;press tab
+    after each letter, lack of&nbsp;support for&nbsp;asynchronous back-ends.</p>
+
+  <p>Most of&nbsp;the&nbsp;people choose alternatives like <strong>auto-complete</strong> or
+    <strong>company-mode</strong>. However, some people fancy <strong>ido</strong>. They prefer the&nbsp;flexible matching ido provides, and&nbsp;already use ido for&nbsp;finding files
+    and&nbsp;switching buffers. Maybe even for&nbsp;<code>M-x</code>-ing. If only could you
+    have <strong>ido</strong> complete your code, too.</p>
+
+  <p><img src="http://i.imgur.com/DMhVwF9.png" alt="ido-at-point screenshot"></p>
+
+  <h2 id="the-solution">The solution</h2>
+
+  <h3 id="standing-on-the-shoulders-of-giants">Standing on the shoulders of giants</h3>
+  <p><strong>Ido</strong> is modular enough to&nbsp;provide it’s prompt function
+    separately. It’s called <code>ido-completing-read</code>. So the&nbsp;rest seems
+    trivial. Just hook into&nbsp;the&nbsp;<code>completion-in-region-function</code>
+    variable, display <code>completion-all-completions</code> output through
+    <code>ido-completing-read</code> and&nbsp;insert the&nbsp;chosen candidate, right?
+    Suprisingly, the&nbsp;latter is the&nbsp;trickiest part.</p>
+
+  <h3 id="insert-here">Insert here</h3>
+  <p>The trick with&nbsp;inserting a&nbsp;completion is that candidates sometimes
+    come with&nbsp;the&nbsp;common part and&nbsp;sometimes not.</p>
+
+  <p>For instance, in&nbsp;<strong>elisp-mode</strong>, if you autocomplete <code>region-e</code>,
+    predictably, it will give you <code>region-end</code> and&nbsp;<code>region-extract-function</code>. No problem here, just remove the&nbsp;common
+    part, i.e. the&nbsp;original input <code>region-e</code>, and&nbsp;insert the&nbsp;candidate.</p>
+
+  <p>Now take <strong>shell-mode</strong>. Suppose, your input is <code>Sites/Do</code>. Press tab
+    and&nbsp;it suggests the&nbsp;following candidates: <code>Documents</code> and&nbsp;<code>Downloads</code>. See? No common part.</p>
+
+  <p>The good news is that candidates from&nbsp;<code>completion-all-completions</code>
+    come propertized. The common part is
+    <a href="https://gist.github.com/katspaugh/8262387">highlighted</a> with&nbsp;a&nbsp;special face property. Just look up&nbsp;the&nbsp;property span and&nbsp;you’ll see
+    if you need to&nbsp;remove anything from&nbsp;the&nbsp;input.</p>
+
+  <h3 id="async-backends-you-say">Async backends, you say?</h3>
+  <p>Let’s see how
+    <a href="http://katspaugh.github.io/2013/06/12/emacs%2Bjavascript.html#tern">Tern</a>
+    does that. Tern displays its completions for&nbsp;JavaScript objects
+    through the&nbsp;built-in&nbsp;completion-at-point. First, it hooks into&nbsp;the&nbsp;<code>completion-at-point-functions</code> variable, fetches candidates from&nbsp;a&nbsp;Node.js server, then displays them calling <code>completion-in-region</code>.</p>
+
+  <p>Subjectively, <em>every other completions backend should do the same.</em> Exploit the&nbsp;built-in&nbsp;Emacs completions system, while different completion
+    front-ends can just set their own <code>completion-in-region-function</code>.</p>
+
+  <h2 id="all-together--ido-at-point">All together – ido-at-point</h2>
+  <p>You can download <strong>ido-at-point</strong>
+    <a href="http://melpa.milkbox.net/#/ido-at-point">from MELPA</a>. The code is
+    <a href="https://github.com/katspaugh/ido-at-point">on GitHub</a> – contributions
+    are welcome.</p>
+
+  <h2 id="extending-ido-at-point">Extending ido-at-point</h2>
+  <p>By the&nbsp;way, you can override <code>ido-at-point-read</code> to&nbsp;whatever you
+    like. For example, if you like GUI menus,
+    <a href="https://gist.github.com/katspaugh/9416653">this code</a> will display
+    candidates in&nbsp;technicolor.</p>
+
+  <p><img src="http://i.imgur.com/6xKK2KT.png" alt="completions GUI menu"></p>
+</section>

@@ -1,0 +1,47 @@
+---
+layout: default
+---
+<section>
+  <h1 id="restoring-a-nodejs-project-after-a-git-reset">Restoring a Node.js Project after a git-reset</h1>
+
+  <p>Yesterday I did a&nbsp;very stupid thing. Ran <code>git init</code>, <code>git add .</code> and&nbsp;<code>git reset --hard</code> in&nbsp;succession, in&nbsp;a&nbsp;new Node.js project
+    directory. Every modification that I had done before initializing the&nbsp;git repository was gone.</p>
+
+  <p>Fortuntately, I was able to&nbsp;restore the&nbsp;files from&nbsp;a&nbsp;Node.js process
+    that had been still running my app. Here’s how I did it.</p>
+
+  <h2 id="node-inspector">Node Inspector</h2>
+  <p>Node.js is known to&nbsp;provide a&nbsp;debugging interface. One cool thing people did with&nbsp;this interface is build a&nbsp;Chrome DevTools front-end for&nbsp;it. It’s called <a href="https://github.com/node-inspector/node-inspector">Node Inspector</a>. You can view the&nbsp;in-memory resources, set breakpoints, execute expressions step-by-step and&nbsp;inspect variable values.</p>
+
+  <p><img src="http://i.imgur.com/BSzqQQA.png" alt="Node-inspector" width="534"></p>
+
+  <h2 id="how-to-connect-to-a-running-nodejs-process">How to Connect to a Running Node.js Process</h2>
+
+  <p>Firstly, you need to&nbsp;find the&nbsp;process id:</p>
+
+<pre><code>$ ps aux | grep node
+katspaugh       56880   0,0  0,0  2432784    604 s001  S+    2:47     0:00.00 grep node
+katspaugh       56865   0,0  0,3  3049188  26828 s002  S+    2:46     0:00.35 node bin/www</code></pre>
+
+  <p>The id is in&nbsp;the&nbsp;second column.</p>
+
+  <p>Next, send the&nbsp;process a&nbsp;special signal that tells Node.js to&nbsp;start listening for&nbsp;debug RPC:</p>
+
+<pre><code>$ kill -s USR1 56865</code></pre>
+
+  <p>You’ll see Node.js reporting back:</p>
+
+<pre><code class="bash">Hit SIGUSR1 - starting debugger agent.
+debugger listening on port 5858
+</code></pre>
+
+  <p>Finally, install and&nbsp;launch Node Inspector and&nbsp;view the&nbsp;URL it gives you in&nbsp;Chrome or Safari:</p>
+
+<pre><code class="bash">$ npm install -g node-inspector
+$ node-inspector
+Node Inspector v0.7.3
+Visit http://127.0.0.1:8080/debug?port=5858 to start debugging.
+</code></pre>
+
+  <p>That’s it! Now you can just copy &amp; paste all your application files, loaded into&nbsp;the&nbsp;Node.js process, from&nbsp;the&nbsp;DevTools resources panel.</p>
+</section>
