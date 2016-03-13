@@ -21,7 +21,7 @@ markdown: kramdown
 navigation:
   - title: Overview
     url: /
-  - title: API docs
+  - title: Documentation
     url: /docs/
     subnav:
       - title: Options
