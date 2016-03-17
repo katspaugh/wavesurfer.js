@@ -16,4 +16,12 @@ layout: default
   <h2>Can I make the audio start playing automatically on iOS?</h2>
 
   <p>Nope. It's a known issue that iOS won't allow you to play the audio programmatically. It won't play unless the user clicks on the page. It's a power/bandwidth-saving feature of iOS Safari.</p>
+  
+  <h2>How to generate waveform data on the server?</h2>
+  
+  <p>
+    You can use the [audiowaveform](https://github.com/bbcrd/audiowaveform) program. For example:
+    
+  <pre><code>audiowaveform -i some-file.mp3 --pixels-per-second 10 -b 8 -o some-file.json</code></pre>
+  </p>
 </section>
