@@ -8,7 +8,10 @@
       container: '#waveform',
       waveColor: '#fff',
       progressColor: 'hsla(200, 100%, 30%, 0.5)',
-      cursorColor: '#fff'
+      cursorColor: '#fff',
+      backend: 'MediaElement',
+      normalize: true,
+      barWidth: 3
     });
 
     wavesurfer.on('loading', function (percents) {
