@@ -5,21 +5,21 @@
 
   <script>
     var wavesurfer = WaveSurfer.create({
-    container: '#waveform',
-    waveColor: '#fff',
-    progressColor: 'hsla(200, 100%, 30%, 0.5)',
-    cursorColor: '#fff'
+      container: '#waveform',
+      waveColor: '#fff',
+      progressColor: 'hsla(200, 100%, 30%, 0.5)',
+      cursorColor: '#fff'
     });
 
     wavesurfer.on('loading', function (percents) {
-    document.getElementById('progress').value = percents;
+      document.getElementById('progress').value = percents;
     });
 
     wavesurfer.on('ready', function (percents) {
-    document.getElementById('progress').style.display = 'none';
+      document.getElementById('progress').style.display = 'none';
     });
 
-    wavesurfer.load('http://ia902606.us.archive.org/35/items/shortpoetry_047_librivox/song_cjrg_teasdale_64kb.mp3');
+    wavesurfer.load('https://ia801404.us.archive.org/23/items/gd79-09-04.sbd.clugston.9452.sbeok.shnf/gd79-09-04Sbdd1t03.mp3'');
   </script>
 
   <div class="controls">
@@ -49,7 +49,7 @@
 
   <p align="right">
     <small class="text-muted">
-      The recording is from <a href="https://librivox.org/short-poetry-collection-047/">LibriVox</a> (public domain).
+      The recording is from the <a href="https://archive.org/details/gd79-09-04.sbd.clugston.9452.sbeok.shnf">Internet Archive</a>.
     </small>
   </p>
 </div>
