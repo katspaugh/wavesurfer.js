@@ -10,7 +10,7 @@ WaveSurfer.Regions = {
         this.list = {};
     },
 
-    /* Remove a region. */
+    /* Add a region. */
     add: function (params) {
         var region = Object.create(WaveSurfer.Region);
         region.init(params, this.wavesurfer);
@@ -47,6 +47,10 @@ WaveSurfer.Regions = {
         }
         this.wrapper.addEventListener('mousedown', eventDown);
         this.wrapper.addEventListener('touchstart', eventDown);
+        this.on('disable-drag-selection', function() {
+            my.wrapper.removeEventListener('touchstart', eventDown);
+            my.wrapper.removeEventListener('mousedown', eventDown);
+        });
         function eventUp(e) {
             drag = false;
 
@@ -59,6 +63,10 @@ WaveSurfer.Regions = {
         }
         this.wrapper.addEventListener('mouseup', eventUp);
         this.wrapper.addEventListener('touchend', eventUp);
+        this.on('disable-drag-selection', function() {
+            my.wrapper.removeEventListener('touchend', eventUp);
+            my.wrapper.removeEventListener('mouseup', eventUp);
+        });
         function eventMove(e) {
             if (!drag) { return; }
 
@@ -78,8 +86,18 @@ WaveSurfer.Regions = {
         }
         this.wrapper.addEventListener('mousemove', eventMove);
         this.wrapper.addEventListener('touchmove', eventMove);
+        this.on('disable-drag-selection', function() {
+            my.wrapper.removeEventListener('touchmove', eventMove);
+            my.wrapper.removeEventListener('mousemove', eventMove);
+        });
+    },
+
+    disableDragSelection: function () {
+        this.fireEvent('disable-drag-selection');
     }
 };
+
+WaveSurfer.util.extend(WaveSurfer.Regions, WaveSurfer.Observer);
 
 WaveSurfer.Region = {
     /* Helper function to assign CSS styles. */
@@ -446,4 +464,8 @@ WaveSurfer.clearRegions = function () {
 WaveSurfer.enableDragSelection = function (options) {
     this.initRegions();
     this.regions.enableDragSelection(options);
+};
+
+WaveSurfer.disableDragSelection = function () {
+    this.regions.disableDragSelection();
 };
