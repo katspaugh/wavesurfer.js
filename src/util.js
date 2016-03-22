@@ -10,6 +10,28 @@ WaveSurfer.util = {
         return dest;
     },
 
+    min: function(values) {
+        var min = +Infinity;
+        for (var i in values) {
+            if (values[i] < min) {
+                min = values[i];
+            }
+        }
+
+        return min;
+    },
+
+    max: function(values) {
+        var max = -Infinity;
+        for (var i in values) {
+            if (values[i] > max) {
+                max = values[i];
+            }
+        }
+
+        return max;
+    },
+
     getId: function () {
         return 'wavesurfer_' + Math.random().toString(32).substring(2);
     },

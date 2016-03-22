@@ -10,6 +10,7 @@ WaveSurfer.Drawer = {
 
         this.lastPos = 0;
 
+        this.initDrawer(params);
         this.createWrapper();
         this.createElements();
     },
@@ -182,6 +183,8 @@ WaveSurfer.Drawer = {
     },
 
     /* Renderer-specific methods */
+    initDrawer: function () {},
+
     createElements: function () {},
 
     updateSize: function () {},
