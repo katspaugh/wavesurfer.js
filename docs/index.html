@@ -70,4 +70,16 @@ layout: default
   <p>
     Take a look at the list of all available <a href="/docs/methods.html">methods</a>.
   </p>
+
+  <h2>Creating A Custom Renderer</h2>
+
+  <p>
+    The provided <code>Canvas</code> and <code>MultiCanvas</code> renderers should support the vast majority of use cases, but <code>wavesurfer.js</code> allows custom renderers to be
+    loaded. You can create your own renderer object (for example, by copying the <code>Canvas</code> or <code>MultiCanvas</code> renderer code into your own file and changing as necessary).
+    Note that custom renderer objects don't have to be added to the <code>wavesurfer.js</code> repository, but you're welcome to raise a pull request if you think others will find your renderer useful.
+  </p>
+
+  <p>
+    If you name your own renderer <code>WaveSurfer.Drawer.MyDrawer</code>, then you can use the renderer by specifying the <code>renderer</code> parameter as <code>'MyDrawer'</code>.
+  </p>
 </section>
