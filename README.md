@@ -28,7 +28,7 @@ Create an instance, passing the container selector and [options](http://wavesurf
 
 ```javascript
 var wavesurfer = WaveSurfer.create({
-    container: '#wave',
+    container: '#waveform',
     waveColor: 'violet',
     progressColor: 'purple'
 });
