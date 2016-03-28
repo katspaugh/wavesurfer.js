@@ -169,7 +169,7 @@ WaveSurfer.Region = {
     },
 
     /* Remove a single region. */
-    remove: function (region) {
+    remove: function () {
         if (this.element) {
             this.wrapper.removeChild(this.element);
             this.element = null;
