@@ -382,6 +382,22 @@ var WaveSurfer = {
         }
     },
 
+    loadExistingMediaElement: function (elt, peaks) {
+        this.empty();
+        this.backend.loadElt(elt, this.mediaContainer, peaks);
+
+        this.tmpEvents.push(
+            this.backend.once('canplay', (function () {
+                this.drawBuffer();
+                this.fireEvent('ready');
+            }).bind(this)),
+
+            this.backend.once('error', (function (err) {
+                this.fireEvent('error', err);
+            }).bind(this))
+        );
+    },
+
     decodeArrayBuffer: function (arraybuffer, callback) {
         this.backend.decodeArrayBuffer(
             arraybuffer,

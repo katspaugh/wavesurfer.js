@@ -60,6 +60,43 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         this.setPlaybackRate(this.playbackRate);
     },
 
+    loadElt: function (elt, container, peaks) {
+        var my = this;
+
+        var media = elt;
+        media.controls = this.params.mediaControls;
+        media.autoplay = this.params.autoplay || false;
+        media.style.width = '100%';
+
+        media.addEventListener('error', function () {
+            my.fireEvent('error', 'Error loading media element');
+        });
+
+        media.addEventListener('canplay', function () {
+            my.fireEvent('canplay');
+        });
+
+        media.addEventListener('ended', function () {
+            my.fireEvent('finish');
+        });
+
+        media.addEventListener('timeupdate', function () {
+            my.fireEvent('audioprocess', my.getCurrentTime());
+        });
+
+        var prevMedia = container.querySelector(this.mediaType);
+        if (prevMedia) {
+            container.removeChild(prevMedia);
+        }
+        container.appendChild(media);
+
+        this.media = media;
+        this.peaks = peaks;
+        this.onPlayEnd = null;
+        this.buffer = null;
+        this.setPlaybackRate(this.playbackRate);
+    },
+
     isPaused: function () {
         return !this.media || this.media.paused;
     },
