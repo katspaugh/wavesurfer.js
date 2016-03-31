@@ -42,14 +42,15 @@ WaveSurfer.Selection = {
 		};
 
 		var isInsideSelection = function(time) {
-			if (!my.hasSelection)
+			if (!my.hasSelection) {
 				return false;
+			}
 
 			var startTime = my.start * duration;
 			var endTime = my.end * duration;
 
 			return (time >= startTime && time <= endTime);
-		}
+		};
 
 		my.wrapper.addEventListener('mousedown', mouseDownHandler);
 
@@ -72,12 +73,12 @@ WaveSurfer.Selection = {
 
 			playSectionLock = true;
 
-			var startTime = my.start * duration
+			var startTime = my.start * duration;
 			var endTime = my.end * duration;
 
 			setTimeout(function() {
 				my.wavesurfer.play(startTime, endTime);
-			})
+			});
 		});
 
 		this.render();
@@ -89,11 +90,13 @@ WaveSurfer.Selection = {
 		this.start = Math.min(start, end);
 		this.end = Math.max(start, end);
 
-		if (this.start < 0)
+		if (this.start < 0) {
 			this.start = 0;
+		}
 
-		if (this.end > 1)
+		if (this.end > 1) {
 			this.end = 1;
+		}
 
 		this.hasSelection = true;
 
@@ -107,7 +110,7 @@ WaveSurfer.Selection = {
 
 		if (this.wavesurfer.isPlaying()) {
 			this.wavesurfer.play(this.wavesurfer.getCurrentTime());
-		};
+		}
 
 		this.updateRender();
 	},
@@ -135,7 +138,7 @@ WaveSurfer.Selection = {
 			top: '0px',
 		});
 
-		var selectionFill = document.createElement('div')
+		var selectionFill = document.createElement('div');
 
 		this.style(selectionFill, {
 			position: 'absolute',
@@ -147,7 +150,7 @@ WaveSurfer.Selection = {
 			pointerEvents: 'none',
 			boxSizing: 'border-box',
 			zIndex: '2',
-		})
+		});
 
 		selection.appendChild(selectionFill);
 
@@ -193,7 +196,7 @@ WaveSurfer.Selection = {
 			currentSelection = {
 				start: my.start,
 				end: my.end,
-			}
+			};
 
 			window.addEventListener('mousemove', handleMouseMoveHandler);
 			window.addEventListener('mouseup', handleMouseUpHandler);
@@ -279,7 +282,7 @@ WaveSurfer.clearSelection = function() {
 };
 
 WaveSurfer.getSelection = function() {
-	var duration = wavesurfer.getDuration();
+	var duration = WaveSurfer.getDuration();
 
 	if (this.selection) {
 		var selection = this.selection.getSelection();
@@ -292,7 +295,7 @@ WaveSurfer.getSelection = function() {
 };
 
 WaveSurfer.setSelection = function(startTime, endTime) {
-	var duration = wavesurfer.getDuration();
+	var duration = WaveSurfer.getDuration();
 
 	var start = startTime / duration;
 	var end = endTime / duration;
