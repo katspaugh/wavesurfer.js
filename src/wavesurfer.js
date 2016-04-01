@@ -301,6 +301,7 @@ var WaveSurfer = {
         this.params.channel = channel;
         this.drawer.clearWave();
         this.drawBuffer();
+        this.backend.setChannel(channel);
     },
 
     /**
