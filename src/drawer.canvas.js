@@ -75,7 +75,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 return;
             } else if (this.params.channel > -1) { // Channel specified
                 if (this.params.channel >= channels.length) {
-                    throw new error('Channel doesn\'t exist');
+                    throw new Error('Channel doesn\'t exist');
                 }
                 peaks = channels[this.params.channel];
             } else {
@@ -133,7 +133,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 return;
             } else if (this.params.channel > -1) { // Channel specified
                 if (this.params.channel >= channels.length) {
-                    throw new error('Channel doesn\'t exist');
+                    throw new Error('Channel doesn\'t exist');
                 }
                 peaks = channels[this.params.channel];
             } else {
