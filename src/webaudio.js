@@ -225,7 +225,7 @@ WaveSurfer.WebAudio = {
             }
         }
 
-        return this.params.splitChannels ? splitPeaks : mergedPeaks;
+        return (this.params.splitChannels || this.params.channel > -1) ? splitPeaks : mergedPeaks;
     },
 
     getPlayedPercents: function () {

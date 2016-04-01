@@ -73,6 +73,11 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawBars, this);
                 return;
+            } else if (this.params.channel > -1) { // Channel specified
+                if (this.params.channel >= channels.length) {
+                    throw new error('Channel doesn\'t exist');
+                }
+                peaks = channels[this.params.channel];
             } else {
                 peaks = channels[0];
             }
@@ -126,6 +131,11 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawWave, this);
                 return;
+            } else if (this.params.channel > -1) { // Channel specified
+                if (this.params.channel >= channels.length) {
+                    throw new error('Channel doesn\'t exist');
+                }
+                peaks = channels[this.params.channel];
             } else {
                 peaks = channels[0];
             }
