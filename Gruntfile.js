@@ -196,7 +196,7 @@ module.exports = function (grunt) {
 
     // Default task.
     grunt.registerTask('default', [
-        'jshint', 'jscs', 'test', 'coverage', 'concat', 'umd', 'uglify'
+        'clean', 'jshint', 'jscs', 'test', 'coverage', 'concat', 'umd', 'uglify'
     ]);
 
     // Dev
