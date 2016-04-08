@@ -138,7 +138,8 @@ WaveSurfer.Timeline = {
         }
         var pixelsPerSecond = width/duration;
 
-        if (duration > 0) {
+        if (duration <= 0) { return; }
+
         var curPixel = 0,
             curSeconds = 0,
             totalSeconds = parseInt(duration, 10) + 1,
@@ -203,7 +204,6 @@ WaveSurfer.Timeline = {
 
             curSeconds += timeInterval;
             curPixel += pixelsPerSecond * timeInterval;
-        }
         }
     },
 

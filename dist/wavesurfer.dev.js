@@ -21,6 +21,7 @@ var WaveSurfer = {
         audioRate     : 1,
         interact      : true,
         splitChannels : false,
+        channel       : -1,
         mediaContainer: null,
         mediaControls : false,
         renderer      : 'Canvas',
@@ -288,6 +289,13 @@ var WaveSurfer = {
         this.fireEvent('zoom', pxPerSec);
     },
 
+    setChannel: function (channel) {
+        this.params.channel = channel;
+        this.drawer.clearWave();
+        this.drawBuffer();
+        this.backend.setChannel(channel);
+    },
+
     /**
      * Internal method.
      */
@@ -498,6 +506,28 @@ WaveSurfer.util = {
         return dest;
     },
 
+    min: function(values) {
+        var min = +Infinity;
+        for (var i in values) {
+            if (values[i] < min) {
+                min = values[i];
+            }
+        }
+
+        return min;
+    },
+
+    max: function(values) {
+        var max = -Infinity;
+        for (var i in values) {
+            if (values[i] > max) {
+                max = values[i];
+            }
+        }
+
+        return max;
+    },
+
     getId: function () {
         return 'wavesurfer_' + Math.random().toString(32).substring(2);
     },
@@ -676,7 +706,7 @@ WaveSurfer.WebAudio = {
             });
             this.filters = null;
             // Reconnect direct path
-            this.analyser.connect(this.gainNode);
+            this.analyser.connect(this.splitter);
         }
     },
 
@@ -710,7 +740,7 @@ WaveSurfer.WebAudio = {
             filters.reduce(function (prev, curr) {
                 prev.connect(curr);
                 return curr;
-            }, this.analyser).connect(this.gainNode);
+            }, this.analyser).connect(this.splitter);
         }
 
     },
@@ -745,6 +775,30 @@ WaveSurfer.WebAudio = {
 
     removeOnAudioProcess: function () {
         this.scriptNode.onaudioprocess = null;
+    },
+
+    createChannelNodes: function () {
+        var channels = this.buffer.numberOfChannels;
+
+        this.splitter = this.ac.createChannelSplitter(channels);
+        this.merger = this.ac.createChannelMerger(channels);
+
+        this.setChannel(this.params.channel);
+
+        this.analyser.disconnect();
+        this.analyser.connect(this.splitter);
+
+        this.merger.connect(this.gainNode);
+    },
+
+    setChannel: function (channel) {
+        var channels = this.buffer.numberOfChannels;
+
+        this.splitter.disconnect();
+
+        for (var c = 0; c < channels; c++) {
+            this.splitter.connect(this.merger, channel === -1 ? c : channel, c);
+        }
     },
 
     createAnalyserNode: function () {
@@ -816,8 +870,8 @@ WaveSurfer.WebAudio = {
             for (var i = 0; i < length; i++) {
                 var start = ~~(i * sampleSize);
                 var end = ~~(start + sampleSize);
-                var min = chan[0];
-                var max = chan[0];
+                var min = 0;
+                var max = 0;
 
                 for (var j = start; j < end; j += sampleStep) {
                     var value = chan[j];
@@ -844,7 +898,7 @@ WaveSurfer.WebAudio = {
             }
         }
 
-        return this.params.splitChannels ? splitPeaks : mergedPeaks;
+        return (this.params.splitChannels || this.params.channel > -1) ? splitPeaks : mergedPeaks;
     },
 
     getPlayedPercents: function () {
@@ -867,6 +921,8 @@ WaveSurfer.WebAudio = {
         this.disconnectSource();
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
+        this.merger.disconnect();
+        this.splitter.disconnect();
         this.analyser.disconnect();
     },
 
@@ -875,6 +931,7 @@ WaveSurfer.WebAudio = {
         this.lastPlay = this.ac.currentTime;
         this.buffer = buffer;
         this.createSource();
+        this.createChannelNodes();
     },
 
     createSource: function () {
@@ -1210,6 +1267,7 @@ WaveSurfer.Drawer = {
 
         this.lastPos = 0;
 
+        this.initDrawer(params);
         this.createWrapper();
         this.createElements();
     },
@@ -1240,8 +1298,25 @@ WaveSurfer.Drawer = {
 
     handleEvent: function (e) {
         e.preventDefault();
+
         var bbox = this.wrapper.getBoundingClientRect();
-        return ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.wrapper.scrollWidth) || 0;
+
+        var nominalWidth = this.width;
+        var parentWidth = this.getWidth();
+
+        var progress;
+
+        if (!this.params.fillParent && nominalWidth < parentWidth) {
+            progress = ((e.clientX - bbox.left) * this.params.pixelRatio / nominalWidth) || 0;
+
+            if (progress > 1) {
+                progress = 1;
+            }
+        } else {
+            progress = ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.wrapper.scrollWidth) || 0;
+        }
+
+        return progress;
     },
 
     setupWrapperEvents: function () {
@@ -1382,6 +1457,8 @@ WaveSurfer.Drawer = {
     },
 
     /* Renderer-specific methods */
+    initDrawer: function () {},
+
     createElements: function () {},
 
     updateSize: function () {},
@@ -1470,6 +1547,11 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawBars, this);
                 return;
+            } else if (this.params.channel > -1) { // Channel specified
+                if (this.params.channel >= channels.length) {
+                    throw new Error('Channel doesn\'t exist');
+                }
+                peaks = channels[this.params.channel];
             } else {
                 peaks = channels[0];
             }
@@ -1523,6 +1605,11 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawWave, this);
                 return;
+            } else if (this.params.channel > -1) { // Channel specified
+                if (this.params.channel >= channels.length) {
+                    throw new Error('Channel doesn\'t exist');
+                }
+                peaks = channels[this.params.channel];
             } else {
                 peaks = channels[0];
             }
@@ -1587,6 +1674,316 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             // Always draw a median line
             cc.fillRect(0, halfH + offsetY - $, this.width, $);
         }, this);
+    },
+
+    updateProgress: function (progress) {
+        var pos = Math.round(
+            this.width * progress
+        ) / this.params.pixelRatio;
+        this.style(this.progressWave, { width: pos + 'px' });
+    }
+});
+
+'use strict';
+
+WaveSurfer.Drawer.MultiCanvas = Object.create(WaveSurfer.Drawer);
+
+WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
+
+    initDrawer: function (params) {
+        this.maxCanvasWidth = params.maxCanvasWidth != null ? params.maxCanvasWidth : 4000;
+        this.maxCanvasElementWidth = Math.round(this.maxCanvasWidth / this.params.pixelRatio);
+
+        if (this.maxCanvasWidth <= 1) {
+            throw 'maxCanvasWidth must be greater than 1.';
+        } else if (this.maxCanvasWidth % 2 == 1) {
+            throw 'maxCanvasWidth must be an even number.';
+        }
+
+        this.hasProgressCanvas = this.params.waveColor != this.params.progressColor;
+        this.halfPixel = 0.5 / this.params.pixelRatio;
+        this.canvases = [];
+    },
+
+    createElements: function () {
+        this.progressWave = this.wrapper.appendChild(
+            this.style(document.createElement('wave'), {
+                position: 'absolute',
+                zIndex: 2,
+                left: 0,
+                top: 0,
+                bottom: 0,
+                overflow: 'hidden',
+                width: '0',
+                display: 'none',
+                boxSizing: 'border-box',
+                borderRightStyle: 'solid',
+                borderRightWidth: this.params.cursorWidth + 'px',
+                borderRightColor: this.params.cursorColor
+            })
+        );
+
+        this.addCanvas();
+    },
+
+    updateSize: function () {
+        var totalWidth = Math.round(this.width / this.params.pixelRatio),
+            requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
+
+        while (this.canvases.length < requiredCanvases) {
+            this.addCanvas();
+        }
+
+        while (this.canvases.length > requiredCanvases) {
+            this.removeCanvas();
+        }
+
+        for (var i in this.canvases) {
+            // Add some overlap to prevent vertical white stripes, keep the width even for simplicity.
+            var canvasWidth = this.maxCanvasWidth + 2 * Math.ceil(this.params.pixelRatio / 2);
+
+            if (i == this.canvases.length - 1) {
+                canvasWidth = this.width - (this.maxCanvasWidth * (this.canvases.length - 1));
+            }
+
+            this.updateDimensions(this.canvases[i], canvasWidth, this.height);
+            this.clearWave(this.canvases[i]);
+        }
+    },
+
+     addCanvas: function () {
+        var entry = {};
+        var leftOffset = this.maxCanvasElementWidth * this.canvases.length;
+
+        entry.wave = this.wrapper.appendChild(
+            this.style(document.createElement('canvas'), {
+                position: 'absolute',
+                zIndex: 1,
+                left: leftOffset + 'px',
+                top: 0,
+                bottom: 0
+            })
+        );
+        entry.waveCtx = entry.wave.getContext('2d');
+
+        if (this.hasProgressCanvas) {
+            entry.progress = this.progressWave.appendChild(
+                this.style(document.createElement('canvas'), {
+                    position: 'absolute',
+                    left: leftOffset + 'px',
+                    top: 0,
+                    bottom: 0
+                })
+            );
+            entry.progressCtx = entry.progress.getContext('2d');
+        }
+
+        this.canvases.push(entry);
+    },
+
+    removeCanvas: function () {
+        var lastEntry = this.canvases.pop();
+        lastEntry.wave.parentElement.removeChild(lastEntry.wave);
+        if (this.hasProgressCanvas) {
+            lastEntry.progress.parentElement.removeChild(lastEntry.progress);
+        }
+    },
+
+    updateDimensions: function (entry, width, height) {
+        var elementWidth = Math.round(width / this.params.pixelRatio);
+
+        entry.waveCtx.canvas.width = width;
+        entry.waveCtx.canvas.height = height;
+        this.style(entry.waveCtx.canvas, { width: elementWidth + 'px'});
+
+        this.style(this.progressWave, { display: 'block'});
+
+        if (this.hasProgressCanvas) {
+            entry.progressCtx.canvas.width = width;
+            entry.progressCtx.canvas.height = height;
+            this.style(entry.progressCtx.canvas, { width: elementWidth + 'px'});
+        }
+    },
+
+    clearWave: function (entry) {
+        entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
+        if (this.hasProgressCanvas) {
+            entry.progressCtx.clearRect(0, 0, entry.progressCtx.canvas.width, entry.progressCtx.canvas.height);
+        }
+    },
+
+    drawBars: function (peaks, channelIndex) {
+        // Split channels
+        if (peaks[0] instanceof Array) {
+            var channels = peaks;
+            if (this.params.splitChannels) {
+                this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
+                channels.forEach(this.drawBars, this);
+                return;
+            } else {
+                peaks = channels[0];
+            }
+        }
+
+        // Bar wave draws the bottom only as a reflection of the top,
+        // so we don't need negative values
+        var hasMinVals = [].some.call(peaks, function (val) { return val < 0; });
+        if (hasMinVals) {
+            peaks = [].filter.call(peaks, function (_, index) { return index % 2 == 0; });
+        }
+
+        // A half-pixel offset makes lines crisp
+        var width = this.width;
+        var height = this.params.height * this.params.pixelRatio;
+        var offsetY = height * channelIndex || 0;
+        var halfH = height / 2;
+        var length = peaks.length;
+        var bar = this.params.barWidth * this.params.pixelRatio;
+        var gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
+        var step = bar + gap;
+
+        var absmax = 1;
+        if (this.params.normalize) {
+            absmax = WaveSurfer.util.max(peaks);
+        }
+
+        var scale = length / width;
+
+        this.canvases[0].waveCtx.fillStyle = this.params.waveColor;
+        if (this.canvases[0].progressCtx) {
+            this.canvases[0].progressCtx.fillStyle = this.params.progressColor;
+        }
+
+        for (var i = 0; i < width; i += step) {
+            var h = Math.round(peaks[Math.floor(i * scale)] / absmax * halfH);
+            this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
+        }
+    },
+
+    drawWave: function (peaks, channelIndex) {
+        // Split channels
+        if (peaks[0] instanceof Array) {
+            var channels = peaks;
+            if (this.params.splitChannels) {
+                this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
+                channels.forEach(this.drawWave, this);
+                return;
+            } else {
+                peaks = channels[0];
+            }
+        }
+
+        // Support arrays without negative peaks
+        var hasMinValues = [].some.call(peaks, function (val) { return val < 0; });
+        if (!hasMinValues) {
+            var reflectedPeaks = [];
+            for (var i = 0, len = peaks.length; i < len; i++) {
+                reflectedPeaks[2 * i] = peaks[i];
+                reflectedPeaks[2 * i + 1] = -peaks[i];
+            }
+            peaks = reflectedPeaks;
+        }
+
+        // A half-pixel offset makes lines crisp
+        var height = this.params.height * this.params.pixelRatio;
+        var offsetY = height * channelIndex || 0;
+        var halfH = height / 2;
+        var length = ~~(peaks.length / 2);
+
+        var scale = 1;
+        if (this.params.fillParent && this.width != length) {
+            scale = this.width / length;
+        }
+
+        var absmax = 1;
+        if (this.params.normalize) {
+            var max = WaveSurfer.util.max(peaks);
+            var min = WaveSurfer.util.min(peaks);
+            absmax = -min > max ? -min : max;
+        }
+
+        this.drawLine(length, peaks, absmax, halfH, scale, offsetY);
+
+        // Always draw a median line
+        this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
+    },
+
+    drawLine: function (length, peaks, absmax, halfH, scale, offsetY) {
+        for (var index in this.canvases) {
+            var entry = this.canvases[index];
+
+            this.setFillStyles(entry);
+
+            this.drawLineToContext(entry.waveCtx, index, peaks, absmax, halfH, scale, offsetY);
+            this.drawLineToContext(entry.progressCtx, index, peaks, absmax, halfH, scale, offsetY);
+        }
+    },
+
+    drawLineToContext: function (ctx, index, peaks, absmax, halfH, scale, offsetY) {
+        if (!ctx) { return; }
+
+        var first = index * this.maxCanvasWidth,
+            last = first + ctx.canvas.width + 1;
+
+        ctx.beginPath();
+        ctx.moveTo(this.halfPixel, halfH + offsetY);
+
+        for (var i = first; i < last; i++) {
+            var h = Math.round(peaks[2 * i] / absmax * halfH);
+            ctx.lineTo((i - first) * scale + this.halfPixel, halfH - h + offsetY);
+        }
+
+        // Draw the bottom edge going backwards, to make a single
+        // closed hull to fill.
+        for (var i = last - 1; i >= first; i--) {
+            var h = Math.round(peaks[2 * i + 1] / absmax * halfH);
+            ctx.lineTo((i - first) * scale + this.halfPixel, halfH - h + offsetY);
+        }
+
+        ctx.closePath();
+        ctx.fill();
+    },
+
+    fillRect: function (x, y, width, height) {
+        for (var i in this.canvases) {
+            var entry = this.canvases[i],
+                leftOffset = i * this.maxCanvasWidth;
+
+            var intersection = {
+                x1: Math.max(x, i * this.maxCanvasWidth),
+                y1: y,
+                x2: Math.min(x + width, i * this.maxCanvasWidth + entry.waveCtx.canvas.width),
+                y2: y + height
+            };
+
+            if (intersection.x1 < intersection.x2) {
+                this.setFillStyles(entry);
+
+                this.fillRectToContext(entry.waveCtx,
+                        intersection.x1 - leftOffset,
+                        intersection.y1,
+                        intersection.x2 - intersection.x1,
+                        intersection.y2 - intersection.y1);
+
+                this.fillRectToContext(entry.progressCtx,
+                        intersection.x1 - leftOffset,
+                        intersection.y1,
+                        intersection.x2 - intersection.x1,
+                        intersection.y2 - intersection.y1);
+            }
+        }
+    },
+
+    fillRectToContext: function (ctx, x, y, width, height) {
+        if (!ctx) { return; }
+        ctx.fillRect(x, y, width, height);
+    },
+
+    setFillStyles: function (entry) {
+        entry.waveCtx.fillStyle = this.params.waveColor;
+        if (this.hasProgressCanvas) {
+            entry.progressCtx.fillStyle = this.params.progressColor;
+        }
     },
 
     updateProgress: function (progress) {
