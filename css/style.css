@@ -129,7 +129,8 @@ section h2, section h3 {
 }
 
 section h1 {
-    margin-bottom: 20px;
+    margin-top: 30px;
+    margin-bottom: 50px;
 }
 
 .overview section {
