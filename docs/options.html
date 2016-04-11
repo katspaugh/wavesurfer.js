@@ -89,6 +89,12 @@ layout: default
         <td>Maximum width of a single canvas in pixels, excluding a small overlap (<code>2 * pixelRatio</code>, rounded up to the next even integer). If the waveform is longer than this value, additional canvases will be used to render the waveform, which is useful for very large waveforms that may be too wide for browsers to draw on a single canvas. This parameter is only applicable to the <code>MultiCanvas</code> renderer.</td>
       </tr>
       <tr>
+        <td><code>mediaType</code></td>
+        <td>string</td>
+        <td><code>audio</code></td>
+        <td><code>'audio'</code> or <code>'video'</code>. Only used with <code>backend: 'MediaElement'</code>.</td>
+      </tr>
+      <tr>
         <td><code>minPxPerSec</code></td>
         <td>integer</td>
         <td><code>50</code></td>
