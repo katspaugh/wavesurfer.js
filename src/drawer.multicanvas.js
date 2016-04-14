@@ -202,12 +202,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var height = this.params.height * this.params.pixelRatio;
         var offsetY = height * channelIndex || 0;
         var halfH = height / 2;
-        var length = ~~(peaks.length / 2);
-
-        var scale = 1;
-        if (this.params.fillParent && this.width != length) {
-            scale = this.width / length;
-        }
+        var length = ~~(peaks.length / this.canvases.length / 2);
 
         var absmax = 1;
         if (this.params.normalize) {
@@ -216,28 +211,33 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             absmax = -min > max ? -min : max;
         }
 
-        this.drawLine(length, peaks, absmax, halfH, scale, offsetY);
+        this.drawLine(length, peaks, absmax, halfH, offsetY);
 
         // Always draw a median line
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     },
 
-    drawLine: function (length, peaks, absmax, halfH, scale, offsetY) {
+    drawLine: function (length, peaks, absmax, halfH, offsetY) {
         for (var index in this.canvases) {
             var entry = this.canvases[index];
 
             this.setFillStyles(entry);
 
-            this.drawLineToContext(entry.waveCtx, index, peaks, absmax, halfH, scale, offsetY);
-            this.drawLineToContext(entry.progressCtx, index, peaks, absmax, halfH, scale, offsetY);
+            this.drawLineToContext(entry.waveCtx, length, index, peaks, absmax, halfH, offsetY);
+            this.drawLineToContext(entry.progressCtx, length, index, peaks, absmax, halfH, offsetY);
         }
     },
 
-    drawLineToContext: function (ctx, index, peaks, absmax, halfH, scale, offsetY) {
+    drawLineToContext: function (ctx, length, index, peaks, absmax, halfH, offsetY) {
         if (!ctx) { return; }
 
-        var first = index * this.maxCanvasWidth,
-            last = first + ctx.canvas.width + 1;
+        var scale = 1;
+        if (this.params.fillParent && this.width != length) {
+            scale = ctx.canvas.width / length;
+        }
+
+        var first = index * length,
+            last = first + length + 1;
 
         ctx.beginPath();
         ctx.moveTo(this.halfPixel, halfH + offsetY);

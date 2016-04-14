@@ -55,7 +55,7 @@ See the documentation on all available [methods](http://wavesurfer-js.org/docs/m
 ## Related projects
 
 For a list of  projects using wavesurfer.js, check out
-[the wiki](https://github.com/katspaugh/wavesurfer.js/wiki/Projects).
+[the projects page](http://wavesurfer-js.org/projects/).
 
 ## Development
 
