@@ -126,7 +126,8 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
     },
 
     seekTo: function (start) {
-        if (start != null && !isNaN(start)) {
+        var seekAmount = Math.abs(start - this.getCurrentTime() );
+        if (start != null && !isNaN(start) && (start === 0 || seekAmount > 1) ) {
             this.media.currentTime = start;
         }
         this.clearPlayEnd();
