@@ -299,17 +299,17 @@ WaveSurfer.Region = {
         my.firedOut = false;
 
         var onProcess = function (time) {
-            if (!my.firedIn && my.start <= time && my.end > time) {
-                my.firedIn = true;
-                my.firedOut = false;
-                my.fireEvent('in');
-                my.wavesurfer.fireEvent('region-in', my);
-            }
             if (!my.firedOut && my.firedIn && (my.start >= Math.round(time * 100) / 100 || my.end <= Math.round(time * 100) / 100)) {
                 my.firedOut = true;
                 my.firedIn = false;
                 my.fireEvent('out');
                 my.wavesurfer.fireEvent('region-out', my);
+            }
+            if (!my.firedIn && my.start <= time && my.end > time) {
+                my.firedIn = true;
+                my.firedOut = false;
+                my.fireEvent('in');
+                my.wavesurfer.fireEvent('region-in', my);
             }
         };
 

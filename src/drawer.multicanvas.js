@@ -61,7 +61,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             }
 
             this.updateDimensions(this.canvases[i], canvasWidth, this.height);
-            this.clearWave(this.canvases[i]);
+            this.clearWaveForEntry(this.canvases[i]);
         }
     },
 
@@ -119,7 +119,13 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     },
 
-    clearWave: function (entry) {
+    clearWave: function () {
+        for (var i in this.canvases) {
+            this.clearWaveForEntry(this.canvases[i]);
+        }
+    },
+
+    clearWaveForEntry: function (entry) {
         entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
         if (this.hasProgressCanvas) {
             entry.progressCtx.clearRect(0, 0, entry.progressCtx.canvas.width, entry.progressCtx.canvas.height);
