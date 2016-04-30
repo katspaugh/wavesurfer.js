@@ -124,7 +124,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
     },
 
     seekTo: function (start) {
-        if (start) {
+        if (start != null) {
             this.media.currentTime = start;
         }
         this.clearPlayEnd();
@@ -139,7 +139,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
      * relative to the beginning of a clip.
      */
     play: function (start, end) {
-        start && this.seekTo(start);
+        this.seekTo(start);
         this.media.play();
         end && this.setPlayEnd(end);
         this.fireEvent('play');

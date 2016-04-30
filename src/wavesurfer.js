@@ -140,7 +140,7 @@ var WaveSurfer = {
         var frame = function () {
             if (!my.backend.isPaused()) {
                 var percent = my.backend.getPlayedPercents();
-                my.drawer.progress(percent);
+                my.drawer.progress(this.backend.getPlayedPercents());
                 my.fireEvent('audioprocess', my.getCurrentTime());
                 requestFrame(frame);
             }
@@ -366,20 +366,20 @@ var WaveSurfer = {
     /**
      *  Either create a media element, or load
      *  an existing media element.
-     *  @param  {String|HTMLElement} url_or_elt Either a path to a media file,
+     *  @param  {String|HTMLElement} urlOrElt Either a path to a media file,
      *                                          or an existing HTML5 Audio/Video
      *                                          Element
      *  @param  {Array}            [peaks]     Array of peaks. Required to bypass
      *                                          web audio dependency
      */
-    loadMediaElement: function (url_or_elt, peaks) {
+    loadMediaElement: function (urlOrElt, peaks) {
         this.empty();
         var url, elt;
-        if (typeof url_or_elt === 'string') {
-            url = url_or_elt;
+        if (typeof urlOrElt === 'string') {
+            url = urlOrElt;
             this.backend.load(url, this.mediaContainer, peaks);
         } else {
-            elt = url_or_elt;
+            elt = urlOrElt;
             this.backend.loadElt(elt, peaks);
 
             // if peaks are not provided,
