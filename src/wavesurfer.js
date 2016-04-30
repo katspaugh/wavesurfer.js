@@ -140,7 +140,7 @@ var WaveSurfer = {
         var frame = function () {
             if (!my.backend.isPaused()) {
                 var percent = my.backend.getPlayedPercents();
-                my.drawer.progress(this.backend.getPlayedPercents());
+                my.drawer.progress(percent);
                 my.fireEvent('audioprocess', my.getCurrentTime());
                 requestFrame(frame);
             }
@@ -200,8 +200,8 @@ var WaveSurfer = {
         if (paused) {
             this.params.scrollParent = false;
         }
-        this.drawer.progress(progress);
         this.backend.seekTo(progress * this.getDuration());
+        this.drawer.progress(this.backend.getPlayedPercents());
 
         if (!paused) {
             this.backend.pause();
