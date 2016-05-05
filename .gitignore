@@ -7,4 +7,5 @@ dist/plugin/*.js
 /.grunt
 /coverage
 /_SpecRunner.html
+.idea/*
 .DS_Store

@@ -208,6 +208,10 @@ WaveSurfer.WebAudio = {
      * of peaks consisting of (max, min) values for each subrange.
      */
     getPeaks: function (length) {
+        if( this.peaks ) {
+            return this.peaks;
+        }
+
         var sampleSize = this.buffer.length / length;
         var sampleStep = ~~(sampleSize / 10) || 1;
         var channels = this.buffer.numberOfChannels;
@@ -277,7 +281,8 @@ WaveSurfer.WebAudio = {
         this.analyser.disconnect();
     },
 
-    load: function (buffer) {
+    load: function (buffer, peaks) {
+        this.peaks = peaks;
         this.startPosition = 0;
         this.lastPlay = this.ac.currentTime;
         this.buffer = buffer;
