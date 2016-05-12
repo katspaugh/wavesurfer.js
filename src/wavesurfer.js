@@ -363,9 +363,31 @@ var WaveSurfer = {
         return this.getArrayBuffer(url, this.loadArrayBuffer.bind(this));
     },
 
-    loadMediaElement: function (url, peaks) {
+    /**
+     *  Either create a media element, or load
+     *  an existing media element.
+     *  @param  {String|HTMLElement} urlOrElt Either a path to a media file,
+     *                                          or an existing HTML5 Audio/Video
+     *                                          Element
+     *  @param  {Array}            [peaks]     Array of peaks. Required to bypass
+     *                                          web audio dependency
+     */
+    loadMediaElement: function (urlOrElt, peaks) {
         this.empty();
-        this.backend.load(url, this.mediaContainer, peaks);
+        var url, elt;
+        if (typeof urlOrElt === 'string') {
+            url = urlOrElt;
+            this.backend.load(url, this.mediaContainer, peaks);
+        } else {
+            elt = urlOrElt;
+            this.backend.loadElt(elt, peaks);
+
+            // if peaks are not provided,
+            // url = element.src so we can get peaks with web audio
+            if (!peaks) {
+                url = elt.src;
+            }
+        }
 
         this.tmpEvents.push(
             this.backend.once('canplay', (function () {
@@ -380,7 +402,7 @@ var WaveSurfer = {
 
         // If no pre-decoded peaks provided, attempt to download the
         // audio file and decode it with Web Audio.
-        if (!peaks && this.backend.supportsWebAudio()) {
+        if (url && !peaks && this.backend.supportsWebAudio()) {
             this.getArrayBuffer(url, (function (arraybuffer) {
                 this.decodeArrayBuffer(arraybuffer, (function (buffer) {
                     this.backend.buffer = buffer;

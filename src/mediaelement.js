@@ -21,6 +21,13 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         this.setPlaybackRate(this.params.audioRate);
     },
 
+    /**
+     *  Create media element with url as its source,
+     *  and append to container element.
+     *  @param  {String}        url         path to media file
+     *  @param  {HTMLElement}   container   HTML element
+     *  @param  {Array}         peaks       array of peak data
+     */
     load: function (url, container, peaks) {
         var my = this;
 
@@ -30,6 +37,40 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         media.preload = 'auto';
         media.src = url;
         media.style.width = '100%';
+
+        var prevMedia = container.querySelector(this.mediaType);
+        if (prevMedia) {
+            container.removeChild(prevMedia);
+        }
+        container.appendChild(media);
+
+        this._load(media, peaks);
+    },
+
+    /**
+     *  Load existing media element.
+     *  @param  {MediaElement}  elt     HTML5 Audio or Video element
+     *  @param  {Array}         peaks   array of peak data
+     */
+    loadElt: function (elt, peaks) {
+        var my = this;
+
+        var media = elt;
+        media.controls = this.params.mediaControls;
+        media.autoplay = this.params.autoplay || false;
+
+        this._load(media, peaks);
+    },
+
+    /**
+     *  Private method called by both load (from url)
+     *  and loadElt (existing media element).
+     *  @param  {MediaElement}  media     HTML5 Audio or Video element
+     *  @param  {Array}         peaks   array of peak data
+     *  @private
+     */
+    _load: function(media, peaks) {
+        var my = this;
 
         media.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading media element');
@@ -46,12 +87,6 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         media.addEventListener('timeupdate', function () {
             my.fireEvent('audioprocess', my.getCurrentTime());
         });
-
-        var prevMedia = container.querySelector(this.mediaType);
-        if (prevMedia) {
-            container.removeChild(prevMedia);
-        }
-        container.appendChild(media);
 
         this.media = media;
         this.peaks = peaks;
