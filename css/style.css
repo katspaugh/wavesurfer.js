@@ -218,3 +218,21 @@ aside #carbonads {
     float: none;
     display: block;
 }
+
+.home {
+    font-size: 2em;
+}
+
+.home h2 {
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+    font-size: 1.2em;
+}
+
+.home pre {
+    font-size: 100%;
+}
+
+.hero {
+    padding: 50px 5% 0;
+}
