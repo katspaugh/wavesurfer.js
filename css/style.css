@@ -220,12 +220,6 @@ aside #carbonads {
 }
 
 .home {
-    font-size: 2em;
-}
-
-.home h2 {
-    margin-top: 2em;
-    margin-bottom: 0.5em;
     font-size: 1.2em;
 }
 
@@ -234,5 +228,6 @@ aside #carbonads {
 }
 
 .hero {
+    font-size: 1.8em;
     padding: 50px 5% 0;
 }
