@@ -57,7 +57,7 @@ WaveSurfer.WebAudio = {
             });
             this.filters = null;
             // Reconnect direct path
-            this.analyser.connect(this.splitter);
+            this.analyser.connect(this.gainNode);
         }
     },
 
@@ -91,7 +91,7 @@ WaveSurfer.WebAudio = {
             filters.reduce(function (prev, curr) {
                 prev.connect(curr);
                 return curr;
-            }, this.analyser).connect(this.splitter);
+            }, this.analyser).connect(this.gainNode);
         }
 
     },
@@ -126,30 +126,6 @@ WaveSurfer.WebAudio = {
 
     removeOnAudioProcess: function () {
         this.scriptNode.onaudioprocess = null;
-    },
-
-    createChannelNodes: function () {
-        var channels = this.buffer.numberOfChannels;
-
-        this.splitter = this.ac.createChannelSplitter(channels);
-        this.merger = this.ac.createChannelMerger(channels);
-
-        this.setChannel(this.params.channel);
-
-        this.analyser.disconnect();
-        this.analyser.connect(this.splitter);
-
-        this.merger.connect(this.gainNode);
-    },
-
-    setChannel: function (channel) {
-        var channels = this.buffer.numberOfChannels;
-
-        this.splitter.disconnect();
-
-        for (var c = 0; c < channels; c++) {
-            this.splitter.connect(this.merger, channel === -1 ? c : channel, c);
-        }
     },
 
     createAnalyserNode: function () {
@@ -249,7 +225,7 @@ WaveSurfer.WebAudio = {
             }
         }
 
-        return (this.params.splitChannels || this.params.channel > -1) ? splitPeaks : mergedPeaks;
+        return this.params.splitChannels ? splitPeaks : mergedPeaks;
     },
 
     getPlayedPercents: function () {
@@ -272,8 +248,6 @@ WaveSurfer.WebAudio = {
         this.disconnectSource();
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
-        this.merger.disconnect();
-        this.splitter.disconnect();
         this.analyser.disconnect();
     },
 
@@ -282,7 +256,6 @@ WaveSurfer.WebAudio = {
         this.lastPlay = this.ac.currentTime;
         this.buffer = buffer;
         this.createSource();
-        this.createChannelNodes();
     },
 
     createSource: function () {
