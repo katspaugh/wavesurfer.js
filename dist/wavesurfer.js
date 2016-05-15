@@ -1,3 +1,19 @@
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module unless amdModuleId is set
+    define('wavesurfer', [], function () {
+      return (root['WaveSurfer'] = factory());
+    });
+  } else if (typeof exports === 'object') {
+    // Node. Does not work with strict CommonJS, but
+    // only CommonJS-like environments that support module.exports,
+    // like Node.
+    module.exports = factory();
+  } else {
+    root['WaveSurfer'] = factory();
+  }
+}(this, function () {
+
 'use strict';
 
 var WaveSurfer = {
@@ -21,7 +37,6 @@ var WaveSurfer = {
         audioRate     : 1,
         interact      : true,
         splitChannels : false,
-        channel       : -1,
         mediaContainer: null,
         mediaControls : false,
         renderer      : 'Canvas',
@@ -120,25 +135,10 @@ var WaveSurfer = {
         this.backend.on('pause', function () { my.fireEvent('pause'); });
 
         this.backend.on('audioprocess', function (time) {
+            my.drawer.progress(my.backend.getPlayedPercents());
             my.fireEvent('audioprocess', time);
         });
     },
-
-    startAnimationLoop: function () {
-        var my = this;
-        var requestFrame = window.requestAnimationFrame ||
-                           window.webkitRequestAnimationFrame ||
-                           window.mozRequestAnimationFrame;
-        var frame = function () {
-            if (!my.backend.isPaused()) {
-                var percent = my.backend.getPlayedPercents();
-                my.drawer.progress(percent);
-                my.fireEvent('audioprocess', my.getCurrentTime());
-                requestFrame(frame);
-            }
-        };
-        frame();
-     },
 
     getDuration: function () {
         return this.backend.getDuration();
@@ -150,7 +150,6 @@ var WaveSurfer = {
 
     play: function (start, end) {
         this.backend.play(start, end);
-        this.startAnimationLoop();
     },
 
     pause: function () {
@@ -289,13 +288,6 @@ var WaveSurfer = {
         this.fireEvent('zoom', pxPerSec);
     },
 
-    setChannel: function (channel) {
-        this.params.channel = channel;
-        this.drawer.clearWave();
-        this.drawBuffer();
-        this.backend.setChannel(channel);
-    },
-
     /**
      * Internal method.
      */
@@ -355,9 +347,31 @@ var WaveSurfer = {
         return this.getArrayBuffer(url, this.loadArrayBuffer.bind(this));
     },
 
-    loadMediaElement: function (url, peaks) {
+    /**
+     *  Either create a media element, or load
+     *  an existing media element.
+     *  @param  {String|HTMLElement} urlOrElt Either a path to a media file,
+     *                                          or an existing HTML5 Audio/Video
+     *                                          Element
+     *  @param  {Array}            [peaks]     Array of peaks. Required to bypass
+     *                                          web audio dependency
+     */
+    loadMediaElement: function (urlOrElt, peaks) {
         this.empty();
-        this.backend.load(url, this.mediaContainer, peaks);
+        var url, elt;
+        if (typeof urlOrElt === 'string') {
+            url = urlOrElt;
+            this.backend.load(url, this.mediaContainer, peaks);
+        } else {
+            elt = urlOrElt;
+            this.backend.loadElt(elt, peaks);
+
+            // if peaks are not provided,
+            // url = element.src so we can get peaks with web audio
+            if (!peaks) {
+                url = elt.src;
+            }
+        }
 
         this.tmpEvents.push(
             this.backend.once('canplay', (function () {
@@ -372,7 +386,7 @@ var WaveSurfer = {
 
         // If no pre-decoded peaks provided, attempt to download the
         // audio file and decode it with Web Audio.
-        if (!peaks && this.backend.supportsWebAudio()) {
+        if (url && !peaks && this.backend.supportsWebAudio()) {
             this.getArrayBuffer(url, (function (arraybuffer) {
                 this.decodeArrayBuffer(arraybuffer, (function (buffer) {
                     this.backend.buffer = buffer;
@@ -706,7 +720,7 @@ WaveSurfer.WebAudio = {
             });
             this.filters = null;
             // Reconnect direct path
-            this.analyser.connect(this.splitter);
+            this.analyser.connect(this.gainNode);
         }
     },
 
@@ -740,7 +754,7 @@ WaveSurfer.WebAudio = {
             filters.reduce(function (prev, curr) {
                 prev.connect(curr);
                 return curr;
-            }, this.analyser).connect(this.splitter);
+            }, this.analyser).connect(this.gainNode);
         }
 
     },
@@ -775,30 +789,6 @@ WaveSurfer.WebAudio = {
 
     removeOnAudioProcess: function () {
         this.scriptNode.onaudioprocess = null;
-    },
-
-    createChannelNodes: function () {
-        var channels = this.buffer.numberOfChannels;
-
-        this.splitter = this.ac.createChannelSplitter(channels);
-        this.merger = this.ac.createChannelMerger(channels);
-
-        this.setChannel(this.params.channel);
-
-        this.analyser.disconnect();
-        this.analyser.connect(this.splitter);
-
-        this.merger.connect(this.gainNode);
-    },
-
-    setChannel: function (channel) {
-        var channels = this.buffer.numberOfChannels;
-
-        this.splitter.disconnect();
-
-        for (var c = 0; c < channels; c++) {
-            this.splitter.connect(this.merger, channel === -1 ? c : channel, c);
-        }
     },
 
     createAnalyserNode: function () {
@@ -898,7 +888,7 @@ WaveSurfer.WebAudio = {
             }
         }
 
-        return (this.params.splitChannels || this.params.channel > -1) ? splitPeaks : mergedPeaks;
+        return this.params.splitChannels ? splitPeaks : mergedPeaks;
     },
 
     getPlayedPercents: function () {
@@ -921,8 +911,6 @@ WaveSurfer.WebAudio = {
         this.disconnectSource();
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
-        this.merger.disconnect();
-        this.splitter.disconnect();
         this.analyser.disconnect();
     },
 
@@ -931,7 +919,6 @@ WaveSurfer.WebAudio = {
         this.lastPlay = this.ac.currentTime;
         this.buffer = buffer;
         this.createSource();
-        this.createChannelNodes();
     },
 
     createSource: function () {
@@ -1111,8 +1098,37 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         this.mediaType = params.mediaType.toLowerCase();
         this.elementPosition = params.elementPosition;
         this.setPlaybackRate(this.params.audioRate);
+        this.createTimer();
     },
 
+
+    /**
+     * Create a timer to provide a more precise `audioprocess' event.
+     */
+    createTimer: function () {
+        var my = this;
+        var playing = false;
+
+        var onAudioProcess = function () {
+            if (my.isPaused()) { return; }
+
+            my.fireEvent('audioprocess', my.getCurrentTime());
+
+            // Call again in the next frame
+            var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+            requestAnimationFrame(onAudioProcess);
+        };
+
+        this.on('play', onAudioProcess);
+    },
+
+    /**
+     *  Create media element with url as its source,
+     *  and append to container element.
+     *  @param  {String}        url         path to media file
+     *  @param  {HTMLElement}   container   HTML element
+     *  @param  {Array}         peaks       array of peak data
+     */
     load: function (url, container, peaks) {
         var my = this;
 
@@ -1122,6 +1138,40 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         media.preload = 'auto';
         media.src = url;
         media.style.width = '100%';
+
+        var prevMedia = container.querySelector(this.mediaType);
+        if (prevMedia) {
+            container.removeChild(prevMedia);
+        }
+        container.appendChild(media);
+
+        this._load(media, peaks);
+    },
+
+    /**
+     *  Load existing media element.
+     *  @param  {MediaElement}  elt     HTML5 Audio or Video element
+     *  @param  {Array}         peaks   array of peak data
+     */
+    loadElt: function (elt, peaks) {
+        var my = this;
+
+        var media = elt;
+        media.controls = this.params.mediaControls;
+        media.autoplay = this.params.autoplay || false;
+
+        this._load(media, peaks);
+    },
+
+    /**
+     *  Private method called by both load (from url)
+     *  and loadElt (existing media element).
+     *  @param  {MediaElement}  media     HTML5 Audio or Video element
+     *  @param  {Array}         peaks   array of peak data
+     *  @private
+     */
+    _load: function (media, peaks) {
+        var my = this;
 
         media.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading media element');
@@ -1134,16 +1184,6 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         media.addEventListener('ended', function () {
             my.fireEvent('finish');
         });
-
-        media.addEventListener('timeupdate', function () {
-            my.fireEvent('audioprocess', my.getCurrentTime());
-        });
-
-        var prevMedia = container.querySelector(this.mediaType);
-        if (prevMedia) {
-            container.removeChild(prevMedia);
-        }
-        container.appendChild(media);
 
         this.media = media;
         this.peaks = peaks;
@@ -1159,7 +1199,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
     getDuration: function () {
         var duration = this.media.duration;
         if (duration >= Infinity) { // streaming audio
-            duration = this.media.seekable.end();
+            duration = this.media.seekable.end(0);
         }
         return duration;
     },
@@ -1547,11 +1587,6 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawBars, this);
                 return;
-            } else if (this.params.channel > -1) { // Channel specified
-                if (this.params.channel >= channels.length) {
-                    throw new Error('Channel doesn\'t exist');
-                }
-                peaks = channels[this.params.channel];
             } else {
                 peaks = channels[0];
             }
@@ -1605,11 +1640,6 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawWave, this);
                 return;
-            } else if (this.params.channel > -1) { // Channel specified
-                if (this.params.channel >= channels.length) {
-                    throw new Error('Channel doesn\'t exist');
-                }
-                peaks = channels[this.params.channel];
             } else {
                 peaks = channels[0];
             }
@@ -1747,7 +1777,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             }
 
             this.updateDimensions(this.canvases[i], canvasWidth, this.height);
-            this.clearWave(this.canvases[i]);
+            this.clearWaveForEntry(this.canvases[i]);
         }
     },
 
@@ -1805,7 +1835,13 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     },
 
-    clearWave: function (entry) {
+    clearWave: function () {
+        for (var i in this.canvases) {
+            this.clearWaveForEntry(this.canvases[i]);
+        }
+    },
+
+    clearWaveForEntry: function (entry) {
         entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
         if (this.hasProgressCanvas) {
             entry.progressCtx.clearRect(0, 0, entry.progressCtx.canvas.width, entry.progressCtx.canvas.height);
@@ -1888,12 +1924,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var height = this.params.height * this.params.pixelRatio;
         var offsetY = height * channelIndex || 0;
         var halfH = height / 2;
-        var length = ~~(peaks.length / 2);
-
-        var scale = 1;
-        if (this.params.fillParent && this.width != length) {
-            scale = this.width / length;
-        }
+        var length = ~~(peaks.length / this.canvases.length / 2);
 
         var absmax = 1;
         if (this.params.normalize) {
@@ -1902,28 +1933,33 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             absmax = -min > max ? -min : max;
         }
 
-        this.drawLine(length, peaks, absmax, halfH, scale, offsetY);
+        this.drawLine(length, peaks, absmax, halfH, offsetY);
 
         // Always draw a median line
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     },
 
-    drawLine: function (length, peaks, absmax, halfH, scale, offsetY) {
+    drawLine: function (length, peaks, absmax, halfH, offsetY) {
         for (var index in this.canvases) {
             var entry = this.canvases[index];
 
             this.setFillStyles(entry);
 
-            this.drawLineToContext(entry.waveCtx, index, peaks, absmax, halfH, scale, offsetY);
-            this.drawLineToContext(entry.progressCtx, index, peaks, absmax, halfH, scale, offsetY);
+            this.drawLineToContext(entry.waveCtx, length, index, peaks, absmax, halfH, offsetY);
+            this.drawLineToContext(entry.progressCtx, length, index, peaks, absmax, halfH, offsetY);
         }
     },
 
-    drawLineToContext: function (ctx, index, peaks, absmax, halfH, scale, offsetY) {
+    drawLineToContext: function (ctx, length, index, peaks, absmax, halfH, offsetY) {
         if (!ctx) { return; }
 
-        var first = index * this.maxCanvasWidth,
-            last = first + ctx.canvas.width + 1;
+        var scale = 1;
+        if (this.params.fillParent && this.width != length) {
+            scale = ctx.canvas.width / length;
+        }
+
+        var first = index * length,
+            last = first + length + 1;
 
         ctx.beginPath();
         ctx.moveTo(this.halfPixel, halfH + offsetY);
@@ -2026,3 +2062,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         window.addEventListener('load', init);
     }
 }());
+
+return WaveSurfer;
+
+}));
