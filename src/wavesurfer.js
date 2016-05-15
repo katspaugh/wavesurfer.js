@@ -29,7 +29,6 @@ var WaveSurfer = {
         audioRate     : 1,
         interact      : true,
         splitChannels : false,
-        channel       : -1,
         mediaContainer: null,
         mediaControls : false,
         renderer      : 'Canvas',
@@ -279,13 +278,6 @@ var WaveSurfer = {
             this.getCurrentTime() / this.getDuration()
         );
         this.fireEvent('zoom', pxPerSec);
-    },
-
-    setChannel: function (channel) {
-        this.params.channel = channel;
-        this.drawer.clearWave();
-        this.drawBuffer();
-        this.backend.setChannel(channel);
     },
 
     /**
