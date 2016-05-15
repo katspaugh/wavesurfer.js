@@ -27,7 +27,7 @@ module.exports = function (grunt) {
                     'src/drawer.*.js',
                     'src/html-init.js'
                 ],
-                dest: 'dist/wavesurfer.dev.js'
+                dest: 'dist/wavesurfer.js'
             }
         },
         connect: {
@@ -40,14 +40,14 @@ module.exports = function (grunt) {
 	    }
         },
         /* The build has three steps:
-         - concatenation (wavesurfer.dev.js)
-         - UMD wrapping (wavesurfer.min.js)
-         - uglification (wavesurfer.min.js again) */
+         - concatenation (wavesurfer.js)
+         - UMD wrapping (wavesurfer.js)
+         - uglification (wavesurfer.min.js) */
         umd: {
             main: {
                 options: {
                     src: '<%= concat.dist.dest %>',
-                    dest: 'dist/wavesurfer.min.js',
+                    dest: 'dist/wavesurfer.js',
                     amdModuleId: 'wavesurfer',
                     objectToExport: 'WaveSurfer',
                     globalAlias: 'WaveSurfer'
@@ -74,7 +74,7 @@ module.exports = function (grunt) {
                     sourceMapRoot: '/'
                 },
                 src: '<%= umd.main.options.dest %>',
-                dest: '<%= umd.main.options.dest %>'
+                dest: 'dist/wavesurfer.min.js'
             },
             plugins: {
                 files: [{

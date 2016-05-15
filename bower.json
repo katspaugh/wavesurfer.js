@@ -1,12 +1,12 @@
 {
   "name": "wavesurfer.js",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "homepage": "http://wavesurfer-js.org",
   "authors": [
     "katspaugh <katspaugh@gmail.com>"
   ],
   "description": "Navigable waveform built on Web Audio and Canvas",
-  "main": "dist/wavesurfer.min.js",
+  "main": "dist/wavesurfer.js",
   "keywords": [
     "waveform", "audio", "music", "player"
   ],
