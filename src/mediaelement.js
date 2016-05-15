@@ -19,6 +19,28 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         this.mediaType = params.mediaType.toLowerCase();
         this.elementPosition = params.elementPosition;
         this.setPlaybackRate(this.params.audioRate);
+        this.createTimer();
+    },
+
+
+    /**
+     * Create a timer to provide a more precise `audioprocess' event.
+     */
+    createTimer: function () {
+        var my = this;
+        var playing = false;
+
+        var onAudioProcess = function () {
+            if (my.isPaused()) { return; }
+
+            my.fireEvent('audioprocess', my.getCurrentTime());
+
+            // Call again in the next frame
+            var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+            requestAnimationFrame(onAudioProcess);
+        };
+
+        this.on('play', onAudioProcess);
     },
 
     /**
@@ -69,7 +91,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
      *  @param  {Array}         peaks   array of peak data
      *  @private
      */
-    _load: function(media, peaks) {
+    _load: function (media, peaks) {
         var my = this;
 
         media.addEventListener('error', function () {
@@ -82,10 +104,6 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
 
         media.addEventListener('ended', function () {
             my.fireEvent('finish');
-        });
-
-        media.addEventListener('timeupdate', function () {
-            my.fireEvent('audioprocess', my.getCurrentTime());
         });
 
         this.media = media;
