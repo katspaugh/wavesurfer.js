@@ -29,7 +29,6 @@ var WaveSurfer = {
         audioRate     : 1,
         interact      : true,
         splitChannels : false,
-        channel       : -1,
         mediaContainer: null,
         mediaControls : false,
         renderer      : 'Canvas',
@@ -128,25 +127,10 @@ var WaveSurfer = {
         this.backend.on('pause', function () { my.fireEvent('pause'); });
 
         this.backend.on('audioprocess', function (time) {
+            my.drawer.progress(my.backend.getPlayedPercents());
             my.fireEvent('audioprocess', time);
         });
     },
-
-    startAnimationLoop: function () {
-        var my = this;
-        var requestFrame = window.requestAnimationFrame ||
-                           window.webkitRequestAnimationFrame ||
-                           window.mozRequestAnimationFrame;
-        var frame = function () {
-            if (!my.backend.isPaused()) {
-                var percent = my.backend.getPlayedPercents();
-                my.drawer.progress(percent);
-                my.fireEvent('audioprocess', my.getCurrentTime());
-                requestFrame(frame);
-            }
-        };
-        frame();
-     },
 
     getDuration: function () {
         return this.backend.getDuration();
@@ -158,7 +142,6 @@ var WaveSurfer = {
 
     play: function (start, end) {
         this.backend.play(start, end);
-        this.startAnimationLoop();
     },
 
     pause: function () {
@@ -297,13 +280,6 @@ var WaveSurfer = {
         this.fireEvent('zoom', pxPerSec);
     },
 
-    setChannel: function (channel) {
-        this.params.channel = channel;
-        this.drawer.clearWave();
-        this.drawBuffer();
-        this.backend.setChannel(channel);
-    },
-
     /**
      * Internal method.
      */
@@ -358,9 +334,31 @@ var WaveSurfer = {
         return this.loadBuffer(url, peaks);
     },
 
-    loadMediaElement: function (url, peaks) {
+    /**
+     *  Either create a media element, or load
+     *  an existing media element.
+     *  @param  {String|HTMLElement} urlOrElt Either a path to a media file,
+     *                                          or an existing HTML5 Audio/Video
+     *                                          Element
+     *  @param  {Array}            [peaks]     Array of peaks. Required to bypass
+     *                                          web audio dependency
+     */
+    loadMediaElement: function (urlOrElt, peaks) {
         this.empty();
-        this.backend.load(url, this.mediaContainer, peaks);
+        var url, elt;
+        if (typeof urlOrElt === 'string') {
+            url = urlOrElt;
+            this.backend.load(url, this.mediaContainer, peaks);
+        } else {
+            elt = urlOrElt;
+            this.backend.loadElt(elt, peaks);
+
+            // if peaks are not provided,
+            // url = element.src so we can get peaks with web audio
+            if (!peaks) {
+                url = elt.src;
+            }
+        }
 
         this.tmpEvents.push(
             this.backend.once('canplay', (function () {
@@ -375,7 +373,7 @@ var WaveSurfer = {
 
         // If no pre-decoded peaks provided, attempt to download the
         // audio file and decode it with Web Audio.
-        if (!peaks && this.backend.supportsWebAudio()) {
+        if (url && !peaks && this.backend.supportsWebAudio()) {
             this.getArrayBuffer(url, (function (arraybuffer) {
                 this.decodeArrayBuffer(arraybuffer, (function (buffer) {
                     this.backend.buffer = buffer;

@@ -19,8 +19,37 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         this.mediaType = params.mediaType.toLowerCase();
         this.elementPosition = params.elementPosition;
         this.setPlaybackRate(this.params.audioRate);
+        this.createTimer();
     },
 
+
+    /**
+     * Create a timer to provide a more precise `audioprocess' event.
+     */
+    createTimer: function () {
+        var my = this;
+        var playing = false;
+
+        var onAudioProcess = function () {
+            if (my.isPaused()) { return; }
+
+            my.fireEvent('audioprocess', my.getCurrentTime());
+
+            // Call again in the next frame
+            var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+            requestAnimationFrame(onAudioProcess);
+        };
+
+        this.on('play', onAudioProcess);
+    },
+
+    /**
+     *  Create media element with url as its source,
+     *  and append to container element.
+     *  @param  {String}        url         path to media file
+     *  @param  {HTMLElement}   container   HTML element
+     *  @param  {Array}         peaks       array of peak data
+     */
     load: function (url, container, peaks) {
         var my = this;
 
@@ -30,6 +59,40 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         media.preload = 'auto';
         media.src = url;
         media.style.width = '100%';
+
+        var prevMedia = container.querySelector(this.mediaType);
+        if (prevMedia) {
+            container.removeChild(prevMedia);
+        }
+        container.appendChild(media);
+
+        this._load(media, peaks);
+    },
+
+    /**
+     *  Load existing media element.
+     *  @param  {MediaElement}  elt     HTML5 Audio or Video element
+     *  @param  {Array}         peaks   array of peak data
+     */
+    loadElt: function (elt, peaks) {
+        var my = this;
+
+        var media = elt;
+        media.controls = this.params.mediaControls;
+        media.autoplay = this.params.autoplay || false;
+
+        this._load(media, peaks);
+    },
+
+    /**
+     *  Private method called by both load (from url)
+     *  and loadElt (existing media element).
+     *  @param  {MediaElement}  media     HTML5 Audio or Video element
+     *  @param  {Array}         peaks   array of peak data
+     *  @private
+     */
+    _load: function (media, peaks) {
+        var my = this;
 
         media.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading media element');
@@ -42,16 +105,6 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         media.addEventListener('ended', function () {
             my.fireEvent('finish');
         });
-
-        media.addEventListener('timeupdate', function () {
-            my.fireEvent('audioprocess', my.getCurrentTime());
-        });
-
-        var prevMedia = container.querySelector(this.mediaType);
-        if (prevMedia) {
-            container.removeChild(prevMedia);
-        }
-        container.appendChild(media);
 
         this.media = media;
         this.peaks = peaks;
@@ -67,7 +120,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
     getDuration: function () {
         var duration = this.media.duration;
         if (duration >= Infinity) { // streaming audio
-            duration = this.media.seekable.end();
+            duration = this.media.seekable.end(0);
         }
         return duration;
     },
