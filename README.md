@@ -1,5 +1,8 @@
 # [wavesurfer.js](http://wavesurfer-js.org)
 
+[![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
+![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg)
+
 Interactive navigable audio visualization using Web Audio and Canvas.
 
 [![Screenshot](https://raw.githubusercontent.com/katspaugh/wavesurfer.js/gh-pages/example/screenshot.png "Screenshot")](http://wavesurfer-js.org)
