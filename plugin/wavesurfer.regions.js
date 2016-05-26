@@ -36,6 +36,8 @@ WaveSurfer.Regions = {
         var drag;
         var start;
         var region;
+        var slop = params.slop || 2;
+        var pxMove = 0;
 
         function eventDown(e) {
             drag = true;
@@ -53,6 +55,7 @@ WaveSurfer.Regions = {
         });
         function eventUp(e) {
             drag = false;
+            pxMove = 0;
 
             if (region) {
                 region.fireEvent('update-end', e);
@@ -69,6 +72,7 @@ WaveSurfer.Regions = {
         });
         function eventMove(e) {
             if (!drag) { return; }
+            if (++pxMove <= slop) { return; }
 
             if (!region) {
                 region = my.add(params || {});
