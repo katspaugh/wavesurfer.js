@@ -283,17 +283,17 @@ var WaveSurfer = {
     /**
      * Internal method.
      */
-    loadArrayBuffer: function (arraybuffer) {
+    loadArrayBuffer: function (arraybuffer, peaks) {
         this.decodeArrayBuffer(arraybuffer, function (data) {
-            this.loadDecodedBuffer(data);
+            this.loadDecodedBuffer(data, peaks);
         }.bind(this));
     },
 
     /**
      * Directly load an externally decoded AudioBuffer.
      */
-    loadDecodedBuffer: function (buffer) {
-        this.backend.load(buffer);
+    loadDecodedBuffer: function (buffer, peaks) {
+        this.backend.load(buffer, peaks);
         this.drawBuffer();
         this.fireEvent('ready');
     },
@@ -303,7 +303,7 @@ var WaveSurfer = {
      *
      * @param {Blob|File} blob Audio data.
      */
-    loadBlob: function (blob) {
+    loadBlob: function (blob, peaks) {
         var my = this;
         // Create file reader
         var reader = new FileReader();
@@ -311,7 +311,7 @@ var WaveSurfer = {
             my.onProgress(e);
         });
         reader.addEventListener('load', function (e) {
-            my.loadArrayBuffer(e.target.result);
+            my.loadArrayBuffer(e.target.result, peaks);
         });
         reader.addEventListener('error', function () {
             my.fireEvent('error', 'Error reading file');
@@ -325,18 +325,13 @@ var WaveSurfer = {
      */
     load: function (url, peaks) {
         switch (this.params.backend) {
-            case 'WebAudio': return this.loadBuffer(url);
+            case 'WebAudio': return this.loadWebAudio(url, peaks);
             case 'MediaElement': return this.loadMediaElement(url, peaks);
         }
     },
 
-    /**
-     * Loads audio using Web Audio buffer backend.
-     */
-    loadBuffer: function (url) {
-        this.empty();
-        // load via XHR and render all at once
-        return this.getArrayBuffer(url, this.loadArrayBuffer.bind(this));
+    loadWebAudio: function(url, peaks) {
+        return this.loadBuffer(url, peaks);
     },
 
     /**
@@ -388,6 +383,15 @@ var WaveSurfer = {
         }
     },
 
+    /**
+     * Loads audio using Web Audio buffer backend.
+     */
+    loadBuffer: function (url, peaks) {
+        this.empty();
+        // load via XHR and render all at once
+        return this.getArrayBuffer(url, peaks, this.loadArrayBuffer.bind(this));
+    },
+
     decodeArrayBuffer: function (arraybuffer, callback) {
         this.backend.decodeArrayBuffer(
             arraybuffer,
@@ -399,7 +403,7 @@ var WaveSurfer = {
         );
     },
 
-    getArrayBuffer: function (url, callback) {
+    getArrayBuffer: function (url, peaks, callback) {
         var my = this;
 
         var ajax = WaveSurfer.util.ajax({
@@ -414,7 +418,7 @@ var WaveSurfer = {
                 my.onProgress(e);
             }),
             ajax.on('success', function (data, e) {
-                callback(data);
+                callback(data, peaks);
                 my.currentAjax = null;
             }),
             ajax.on('error', function (e) {
