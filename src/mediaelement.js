@@ -107,7 +107,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         });
 
         this.media = media;
-        this.peaks = peaks;
+        this.loadPeaks(peaks);
         this.onPlayEnd = null;
         this.buffer = null;
         this.setPlaybackRate(this.playbackRate);

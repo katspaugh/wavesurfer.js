@@ -36,6 +36,7 @@ var WaveSurfer = {
         mediaType     : 'audio',
         autoCenter    : true
     },
+    tempUrl           : null,
 
     init: function (params) {
         // Extract relevant parameters (or defaults)
@@ -141,6 +142,17 @@ var WaveSurfer = {
     },
 
     play: function (start, end) {
+        if (!this.backend.buffer) {
+            this.load(this.tempUrl, null);
+            this.once('ready', (function() {
+                this._play(start, end);
+            }).bind(this));
+        } else {
+            this._play(start, end);
+        }
+    },
+
+    _play: function(start, end) {
         this.backend.play(start, end);
     },
 
@@ -177,6 +189,25 @@ var WaveSurfer = {
     },
 
     seekTo: function (progress) {
+        if (!this.backend.buffer) {
+            this.load(this.tempUrl, null).once(function() {
+                this._seekTo(progress);
+            });
+        } else {
+            this._seekTo(progress);
+        }
+
+        if (!this.backend.buffer) {
+            this.load(this.tempUrl, null);
+            this.once('ready', (function() {
+                this._seekTo(progress);
+            }).bind(this));
+        } else {
+            this._seekTo(progress);
+        }
+    },
+
+    _seekTo: function (progress) {
         var paused = this.backend.isPaused();
         // avoid small scrolls while paused seeking
         var oldScrollParent = this.params.scrollParent;
@@ -281,24 +312,6 @@ var WaveSurfer = {
     },
 
     /**
-     * Internal method.
-     */
-    loadArrayBuffer: function (arraybuffer, peaks) {
-        this.decodeArrayBuffer(arraybuffer, function (data) {
-            this.loadDecodedBuffer(data, peaks);
-        }.bind(this));
-    },
-
-    /**
-     * Directly load an externally decoded AudioBuffer.
-     */
-    loadDecodedBuffer: function (buffer, peaks) {
-        this.backend.load(buffer, peaks);
-        this.drawBuffer();
-        this.fireEvent('ready');
-    },
-
-    /**
      * Loads audio data from a Blob or File object.
      *
      * @param {Blob|File} blob Audio data.
@@ -320,6 +333,12 @@ var WaveSurfer = {
         this.empty();
     },
 
+    loadPeaksOnly: function (url, peaks) {
+        this.tempUrl = url;
+        this.backend.loadPeaks(peaks);
+        this.drawBuffer();
+    },
+
     /**
      * Loads audio and rerenders the waveform.
      */
@@ -330,6 +349,13 @@ var WaveSurfer = {
         }
     },
 
+    /**
+     *  Prepares and loads audio buffer
+     *  using WebAudio
+     *  @param  {String}           url         Either a path to a media file,
+     *  @param  {Array}            [peaks]     Array of peaks. Allows loading of
+     *                                          waveform without analyzing audio
+     */
     loadWebAudio: function(url, peaks) {
         return this.loadBuffer(url, peaks);
     },
@@ -390,6 +416,24 @@ var WaveSurfer = {
         this.empty();
         // load via XHR and render all at once
         return this.getArrayBuffer(url, peaks, this.loadArrayBuffer.bind(this));
+    },
+
+    /**
+     * Internal method.
+     */
+    loadArrayBuffer: function (arraybuffer, peaks) {
+        this.decodeArrayBuffer(arraybuffer, function (data) {
+            this.loadDecodedBuffer(data, peaks);
+        }.bind(this));
+    },
+
+    /**
+     * Directly load an externally decoded AudioBuffer.
+     */
+    loadDecodedBuffer: function (buffer, peaks) {
+        this.backend.load(buffer, peaks);
+        this.drawBuffer();
+        this.fireEvent('ready');
     },
 
     decodeArrayBuffer: function (arraybuffer, callback) {

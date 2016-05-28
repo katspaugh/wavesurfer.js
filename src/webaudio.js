@@ -184,7 +184,7 @@ WaveSurfer.WebAudio = {
      * of peaks consisting of (max, min) values for each subrange.
      */
     getPeaks: function (length) {
-        if( this.peaks ) {
+        if (this.peaks) {
             return this.peaks;
         }
 
@@ -256,11 +256,17 @@ WaveSurfer.WebAudio = {
     },
 
     load: function (buffer, peaks) {
-        this.peaks = peaks;
+        this.loadPeaks(peaks);
         this.startPosition = 0;
         this.lastPlay = this.ac.currentTime;
         this.buffer = buffer;
         this.createSource();
+    },
+
+    loadPeaks: function (peaks) {
+        if (peaks) {
+            this.peaks = peaks;
+        }
     },
 
     createSource: function () {
