@@ -141,6 +141,7 @@ var WaveSurfer = {
     },
 
     play: function (start, end) {
+        this.fireEvent('interaction', this.play.bind(this, start, end));
         this.backend.play(start, end);
     },
 
@@ -177,6 +178,8 @@ var WaveSurfer = {
     },
 
     seekTo: function (progress) {
+        this.fireEvent('interaction', this.seekTo.bind(this, progress));
+
         var paused = this.backend.isPaused();
         // avoid small scrolls while paused seeking
         var oldScrollParent = this.params.scrollParent;
@@ -321,11 +324,13 @@ var WaveSurfer = {
     },
 
     /**
-     * Loads audio and rerenders the waveform.
+     * Loads audio and re-renders the waveform.
      */
     load: function (url, peaks) {
+        this.empty();
+
         switch (this.params.backend) {
-            case 'WebAudio': return this.loadBuffer(url);
+            case 'WebAudio': return this.loadBuffer(url, peaks);
             case 'MediaElement': return this.loadMediaElement(url, peaks);
         }
     },
@@ -333,10 +338,21 @@ var WaveSurfer = {
     /**
      * Loads audio using Web Audio buffer backend.
      */
-    loadBuffer: function (url) {
-        this.empty();
-        // load via XHR and render all at once
-        return this.getArrayBuffer(url, this.loadArrayBuffer.bind(this));
+    loadBuffer: function (url, peaks) {
+        var load = (function (action) {
+            if (action) {
+                this.tmpEvents.push(this.once('ready', action));
+            }
+            return this.getArrayBuffer(url, this.loadArrayBuffer.bind(this));
+        }).bind(this);
+
+        if (peaks) {
+            this.backend.setPeaks(peaks);
+            this.drawBuffer();
+            this.tmpEvents.push(this.once('interaction', load));
+        } else {
+            return load();
+        }
     },
 
     /**
@@ -349,20 +365,17 @@ var WaveSurfer = {
      *                                          web audio dependency
      */
     loadMediaElement: function (urlOrElt, peaks) {
-        this.empty();
-        var url, elt;
+        var url = urlOrElt;
+
         if (typeof urlOrElt === 'string') {
-            url = urlOrElt;
             this.backend.load(url, this.mediaContainer, peaks);
         } else {
-            elt = urlOrElt;
+            var elt = urlOrElt;
             this.backend.loadElt(elt, peaks);
 
-            // if peaks are not provided,
+            // If peaks are not provided,
             // url = element.src so we can get peaks with web audio
-            if (!peaks) {
-                url = elt.src;
-            }
+            url = elt.src;
         }
 
         this.tmpEvents.push(
@@ -378,7 +391,9 @@ var WaveSurfer = {
 
         // If no pre-decoded peaks provided, attempt to download the
         // audio file and decode it with Web Audio.
-        if (url && !peaks && this.backend.supportsWebAudio()) {
+        if (peaks) {
+            this.backend.setPeaks(peaks);
+        } else if (this.backend.supportsWebAudio()) {
             this.getArrayBuffer(url, (function (arraybuffer) {
                 this.decodeArrayBuffer(arraybuffer, (function (buffer) {
                     this.backend.buffer = buffer;
@@ -389,13 +404,17 @@ var WaveSurfer = {
     },
 
     decodeArrayBuffer: function (arraybuffer, callback) {
+        this.arraybuffer = arraybuffer;
+
         this.backend.decodeArrayBuffer(
             arraybuffer,
-            this.fireEvent.bind(this, 'decoded'),
+            (function (data) {
+                if (this.arraybuffer == arraybuffer) {
+                    callback(data);
+                    this.arraybuffer = null;
+                }
+            }).bind(this),
             this.fireEvent.bind(this, 'error', 'Error decoding audiobuffer')
-        );
-        this.tmpEvents.push(
-            this.once('decoded', callback)
         );
     },
 

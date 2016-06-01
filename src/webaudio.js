@@ -177,6 +177,13 @@ WaveSurfer.WebAudio = {
     },
 
     /**
+     * Set pre-decoded peaks.
+     */
+    setPeaks: function (peaks) {
+        this.peaks = peaks;
+    },
+
+    /**
      * Compute the max and min value of the waveform when broken into
      * <length> subranges.
      * @param {Number} How many subranges to break the waveform into.
@@ -184,6 +191,8 @@ WaveSurfer.WebAudio = {
      * of peaks consisting of (max, min) values for each subrange.
      */
     getPeaks: function (length) {
+        if (this.peaks) { return this.peaks; }
+
         var sampleSize = this.buffer.length / length;
         var sampleStep = ~~(sampleSize / 10) || 1;
         var channels = this.buffer.numberOfChannels;
@@ -283,6 +292,8 @@ WaveSurfer.WebAudio = {
     },
 
     seekTo: function (start, end) {
+        if (!this.buffer) { return; }
+
         this.scheduledPause = null;
 
         if (start == null) {
@@ -318,6 +329,8 @@ WaveSurfer.WebAudio = {
      * relative to the beginning of a clip.
      */
     play: function (start, end) {
+        if (!this.buffer) { return; }
+
         // need to re-create source on each playback
         this.createSource();
 
