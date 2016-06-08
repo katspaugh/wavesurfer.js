@@ -798,8 +798,7 @@ WaveSurfer.WebAudio = {
                 my.setState(my.FINISHED_STATE);
                 my.fireEvent('pause');
             } else if (time >= my.scheduledPause) {
-                my.setState(my.PAUSED_STATE);
-                my.fireEvent('pause');
+                my.pause();
             } else if (my.state === my.states[my.PLAYING_STATE]) {
                 my.fireEvent('audioprocess', time);
             }
