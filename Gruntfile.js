@@ -103,7 +103,7 @@ module.exports = function (grunt) {
                 globals: {
                     WaveSurfer: true,
                     Promise: true
-                },
+                }
             },
             ignore_warning: {
                 options: {
@@ -128,8 +128,6 @@ module.exports = function (grunt) {
             src: [ '<%= concat.dist.src %>', 'plugin/*.js', 'spec/*.spec.js' ],
             options: {
                 config: '.jscsrc',
-                esnext: false, // If you use ES6 http://jscs.info/overview.html#esnext
-                verbose: true, // If you need output with rule names http://jscs.info/overview.html#verbose
                 fix: false, // Autofix code style violations when possible.
                 requireCurlyBraces: [ 'if' ]
             }
@@ -168,14 +166,6 @@ module.exports = function (grunt) {
                     }
                 }
             }
-        },
-        coveralls: {
-            options: {
-                force: true
-            },
-            main_target: {
-                src: 'coverage/lcov/lcov.info'
-            }
         }
     });
 
@@ -188,7 +178,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-jasmine');
-    grunt.loadNpmTasks('grunt-coveralls');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-umd');
     grunt.loadNpmTasks('grunt-jscs');

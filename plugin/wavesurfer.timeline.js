@@ -12,7 +12,7 @@ WaveSurfer.Timeline = {
         var drawer = this.drawer = this.wavesurfer.drawer;
 
         this.container = 'string' == typeof params.container ?
-        document.querySelector(params.container) : params.container;
+            document.querySelector(params.container) : params.container;
 
         if (!this.container) {
             throw Error('No container for WaveSurfer timeline');
@@ -127,9 +127,9 @@ WaveSurfer.Timeline = {
 
     drawTimeCanvases: function() {
         var backend = this.wavesurfer.backend,
-        wsParams = this.wavesurfer.params,
-        duration = backend.getDuration(),
-        self = this;
+            wsParams = this.wavesurfer.params,
+            duration = backend.getDuration(),
+            self = this;
 
         if (wsParams.fillParent && !wsParams.scrollParent) {
             var width = this.drawer.getWidth();
@@ -144,19 +144,19 @@ WaveSurfer.Timeline = {
             curSeconds = 0,
             totalSeconds = parseInt(duration, 10) + 1,
             formatTime = function(seconds) {
-            if (typeof self.formatTimeCallback === 'function') {
-                return self.formatTimeCallback(seconds);
-            }
+                if (typeof self.formatTimeCallback === 'function') {
+                    return self.formatTimeCallback(seconds);
+                }
 
-            if (seconds/60 > 1) {
-                var minutes = parseInt(seconds / 60),
-                seconds = parseInt(seconds % 60);
-                seconds = (seconds < 10) ? '0' + seconds : seconds;
-                return '' + minutes + ':' + seconds;
-            } else {
-                return seconds;
-            }
-        };
+                if (seconds/60 > 1) {
+                    var minutes = parseInt(seconds / 60),
+                        seconds = parseInt(seconds % 60);
+                    seconds = (seconds < 10) ? '0' + seconds : seconds;
+                    return '' + minutes + ':' + seconds;
+                } else {
+                    return seconds;
+                }
+            };
 
         if (pixelsPerSecond * 1 >= 25) {
             var timeInterval = 1;
@@ -254,7 +254,7 @@ WaveSurfer.Timeline = {
             }
 
             if (xOffset + canvasWidth > x) {
-                textWidth = context.measureText(text).width; 
+                textWidth = context.measureText(text).width;
                 context.fillText(text, x - xOffset, y);
             }
 
