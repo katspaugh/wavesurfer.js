@@ -40,7 +40,7 @@ WaveSurfer.Timeline = {
         this.createCanvases();
         this.render();
 
-        drawer.wrapper.addEventListener('scroll', function(e){
+        drawer.wrapper.addEventListener('scroll', function (e) {
             this.updateScroll(e);
         }.bind(this));
         wavesurfer.on('redraw', this.render.bind(this));
