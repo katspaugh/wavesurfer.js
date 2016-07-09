@@ -36,14 +36,15 @@ WaveSurfer.Regions = {
         var drag;
         var start;
         var region;
+        var touchId;
         var slop = params.slop || 2;
         var pxMove = 0;
 
         function eventDown(e) {
+            if (e.touches && e.touches.length > 1) { return; }
+            touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
+
             drag = true;
-            if (typeof e.targetTouches !== 'undefined' && e.targetTouches.length === 1) {
-                e.clientX = e.targetTouches[0].clientX;
-            }
             start = my.wavesurfer.drawer.handleEvent(e);
             region = null;
         }
@@ -54,6 +55,8 @@ WaveSurfer.Regions = {
             my.wrapper.removeEventListener('mousedown', eventDown);
         });
         function eventUp(e) {
+            if (e.touches && e.touches.length > 1) { return; }
+
             drag = false;
             pxMove = 0;
 
@@ -74,14 +77,14 @@ WaveSurfer.Regions = {
             if (!drag) { return; }
             if (++pxMove <= slop) { return; }
 
+            if (e.touches && e.touches.length > 1) { return; }
+            if (e.targetTouches && e.targetTouches[0].identifier != touchId) { return; }
+
             if (!region) {
                 region = my.add(params || {});
             }
 
             var duration = my.wavesurfer.getDuration();
-            if (typeof e.targetTouches !== 'undefined' && e.targetTouches.length === 1) {
-                e.clientX = e.targetTouches[0].clientX;
-            }
             var end = my.wavesurfer.drawer.handleEvent(e);
             region.update({
                 start: Math.min(end * duration, start * duration),
@@ -364,8 +367,12 @@ WaveSurfer.Region = {
             var drag;
             var resize;
             var startTime;
+            var touchId;
 
             var onDown = function (e) {
+                if (e.touches && e.touches.length > 1) { return; }
+                touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
+
                 e.stopPropagation();
                 startTime = my.wavesurfer.drawer.handleEvent(e) * duration;
 
@@ -380,6 +387,8 @@ WaveSurfer.Region = {
                 }
             };
             var onUp = function (e) {
+                if (e.touches && e.touches.length > 1) { return; }
+
                 if (drag || resize) {
                     drag = false;
                     resize = false;
@@ -391,6 +400,9 @@ WaveSurfer.Region = {
                 }
             };
             var onMove = function (e) {
+                if (e.touches && e.touches.length > 1) { return; }
+                if (e.targetTouches && e.targetTouches[0].identifier != touchId) { return; }
+
                 if (drag || resize) {
                     var time = my.wavesurfer.drawer.handleEvent(e) * duration;
                     var delta = time - startTime;
@@ -409,16 +421,24 @@ WaveSurfer.Region = {
             };
 
             my.element.addEventListener('mousedown', onDown);
+            my.element.addEventListener('touchstart', onDown);
+
             my.wrapper.addEventListener('mousemove', onMove);
+            my.wrapper.addEventListener('touchmove', onMove);
+
             document.body.addEventListener('mouseup', onUp);
+            document.body.addEventListener('touchend', onUp);
 
             my.on('remove', function () {
                 document.body.removeEventListener('mouseup', onUp);
+                document.body.removeEventListener('touchend', onUp);
                 my.wrapper.removeEventListener('mousemove', onMove);
+                my.wrapper.removeEventListener('touchmove', onMove);
             });
 
             my.wavesurfer.on('destroy', function () {
                 document.body.removeEventListener('mouseup', onUp);
+                document.body.removeEventListener('touchend', onUp);
             });
         }());
     },
