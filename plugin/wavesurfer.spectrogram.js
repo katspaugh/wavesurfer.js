@@ -52,7 +52,9 @@ WaveSurfer.Spectrogram = {
         this.createCanvas();
         this.render();
 
-        wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this);
+        drawer.wrapper.addEventListener('scroll', function(e){
+            this.updateScroll(e);
+        }.bind(this));
         wavesurfer.on('redraw', this.render.bind(this));
         wavesurfer.on('destroy', this.destroy.bind(this));
     },
