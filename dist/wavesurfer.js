@@ -1374,6 +1374,7 @@ WaveSurfer.Drawer = {
     handleEvent: function (e) {
         e.preventDefault();
 
+        var clientX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
         var bbox = this.wrapper.getBoundingClientRect();
 
         var nominalWidth = this.width;
@@ -1382,13 +1383,13 @@ WaveSurfer.Drawer = {
         var progress;
 
         if (!this.params.fillParent && nominalWidth < parentWidth) {
-            progress = ((e.clientX - bbox.left) * this.params.pixelRatio / nominalWidth) || 0;
+            progress = ((clientX - bbox.left) * this.params.pixelRatio / nominalWidth) || 0;
 
             if (progress > 1) {
                 progress = 1;
             }
         } else {
-            progress = ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.wrapper.scrollWidth) || 0;
+            progress = ((clientX - bbox.left + this.wrapper.scrollLeft) / this.wrapper.scrollWidth) || 0;
         }
 
         return progress;
