@@ -427,8 +427,8 @@ WaveSurfer.Region = {
         var maxEnd = this.wavesurfer.getDuration();
         if ((this.end + delta) > maxEnd || (this.start + delta) < 0) {
             delta = 0;
-        }        
-        
+        }
+
         this.update({
             start: this.start + delta,
             end: this.end + delta
