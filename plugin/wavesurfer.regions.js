@@ -40,21 +40,22 @@ WaveSurfer.Regions = {
         var slop = params.slop || 2;
         var pxMove = 0;
 
-        function eventDown(e) {
+        var eventDown = function (e) {
             if (e.touches && e.touches.length > 1) { return; }
             touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
 
             drag = true;
-            start = my.wavesurfer.drawer.handleEvent(e);
+            start = my.wavesurfer.drawer.handleEvent(e, true);
             region = null;
-        }
+        };
         this.wrapper.addEventListener('mousedown', eventDown);
         this.wrapper.addEventListener('touchstart', eventDown);
         this.on('disable-drag-selection', function() {
             my.wrapper.removeEventListener('touchstart', eventDown);
             my.wrapper.removeEventListener('mousedown', eventDown);
         });
-        function eventUp(e) {
+
+        var eventUp = function (e) {
             if (e.touches && e.touches.length > 1) { return; }
 
             drag = false;
@@ -66,14 +67,15 @@ WaveSurfer.Regions = {
             }
 
             region = null;
-        }
+        };
         this.wrapper.addEventListener('mouseup', eventUp);
         this.wrapper.addEventListener('touchend', eventUp);
         this.on('disable-drag-selection', function() {
             my.wrapper.removeEventListener('touchend', eventUp);
             my.wrapper.removeEventListener('mouseup', eventUp);
         });
-        function eventMove(e) {
+
+        var eventMove = function (e) {
             if (!drag) { return; }
             if (++pxMove <= slop) { return; }
 
@@ -90,7 +92,7 @@ WaveSurfer.Regions = {
                 start: Math.min(end * duration, start * duration),
                 end: Math.max(end * duration, start * duration)
             });
-        }
+        };
         this.wrapper.addEventListener('mousemove', eventMove);
         this.wrapper.addEventListener('touchmove', eventMove);
         this.on('disable-drag-selection', function() {

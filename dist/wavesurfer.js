@@ -1371,8 +1371,8 @@ WaveSurfer.Drawer = {
         this.setupWrapperEvents();
     },
 
-    handleEvent: function (e) {
-        e.preventDefault();
+    handleEvent: function (e, noPrevent) {
+        !noPrevent && e.preventDefault();
 
         var clientX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
         var bbox = this.wrapper.getBoundingClientRect();
