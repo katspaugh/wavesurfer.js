@@ -1,7 +1,7 @@
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module unless amdModuleId is set
-    define(["wavesurfer"], function (a0) {
+    define(["./../wavesurfer"], function (a0) {
       return (factory(a0));
     });
   } else if (typeof exports === 'object') {
@@ -68,7 +68,9 @@ WaveSurfer.Spectrogram = {
         this.createCanvas();
         this.render();
 
-        wavesurfer.drawer.wrapper.onscroll = this.updateScroll.bind(this);
+        drawer.wrapper.addEventListener('scroll', function (e) {
+            this.updateScroll(e);
+        }.bind(this));
         wavesurfer.on('redraw', this.render.bind(this));
         wavesurfer.on('destroy', this.destroy.bind(this));
     },

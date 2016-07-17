@@ -1,7 +1,7 @@
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module unless amdModuleId is set
-    define(["wavesurfer"], function (a0) {
+    define(["./../wavesurfer"], function (a0) {
       return (factory(a0));
     });
   } else if (typeof exports === 'object') {
@@ -52,24 +52,28 @@ WaveSurfer.Regions = {
         var drag;
         var start;
         var region;
+        var touchId;
         var slop = params.slop || 2;
         var pxMove = 0;
 
-        function eventDown(e) {
+        var eventDown = function (e) {
+            if (e.touches && e.touches.length > 1) { return; }
+            touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
+
             drag = true;
-            if (typeof e.targetTouches !== 'undefined' && e.targetTouches.length === 1) {
-                e.clientX = e.targetTouches[0].clientX;
-            }
-            start = my.wavesurfer.drawer.handleEvent(e);
+            start = my.wavesurfer.drawer.handleEvent(e, true);
             region = null;
-        }
+        };
         this.wrapper.addEventListener('mousedown', eventDown);
         this.wrapper.addEventListener('touchstart', eventDown);
         this.on('disable-drag-selection', function() {
             my.wrapper.removeEventListener('touchstart', eventDown);
             my.wrapper.removeEventListener('mousedown', eventDown);
         });
-        function eventUp(e) {
+
+        var eventUp = function (e) {
+            if (e.touches && e.touches.length > 1) { return; }
+
             drag = false;
             pxMove = 0;
 
@@ -79,31 +83,32 @@ WaveSurfer.Regions = {
             }
 
             region = null;
-        }
+        };
         this.wrapper.addEventListener('mouseup', eventUp);
         this.wrapper.addEventListener('touchend', eventUp);
         this.on('disable-drag-selection', function() {
             my.wrapper.removeEventListener('touchend', eventUp);
             my.wrapper.removeEventListener('mouseup', eventUp);
         });
-        function eventMove(e) {
+
+        var eventMove = function (e) {
             if (!drag) { return; }
             if (++pxMove <= slop) { return; }
+
+            if (e.touches && e.touches.length > 1) { return; }
+            if (e.targetTouches && e.targetTouches[0].identifier != touchId) { return; }
 
             if (!region) {
                 region = my.add(params || {});
             }
 
             var duration = my.wavesurfer.getDuration();
-            if (typeof e.targetTouches !== 'undefined' && e.targetTouches.length === 1) {
-                e.clientX = e.targetTouches[0].clientX;
-            }
             var end = my.wavesurfer.drawer.handleEvent(e);
             region.update({
                 start: Math.min(end * duration, start * duration),
                 end: Math.max(end * duration, start * duration)
             });
-        }
+        };
         this.wrapper.addEventListener('mousemove', eventMove);
         this.wrapper.addEventListener('touchmove', eventMove);
         this.on('disable-drag-selection', function() {
@@ -380,10 +385,14 @@ WaveSurfer.Region = {
             var drag;
             var resize;
             var startTime;
+            var touchId;
 
             var onDown = function (e) {
+                if (e.touches && e.touches.length > 1) { return; }
+                touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
+
                 e.stopPropagation();
-                startTime = my.wavesurfer.drawer.handleEvent(e) * duration;
+                startTime = my.wavesurfer.drawer.handleEvent(e, true) * duration;
 
                 if (e.target.tagName.toLowerCase() == 'handle') {
                     if (e.target.classList.contains('wavesurfer-handle-start')) {
@@ -393,20 +402,24 @@ WaveSurfer.Region = {
                     }
                 } else {
                     drag = true;
+                    resize = false;
                 }
             };
             var onUp = function (e) {
+                if (e.touches && e.touches.length > 1) { return; }
+
                 if (drag || resize) {
                     drag = false;
                     resize = false;
-                    e.stopPropagation();
-                    e.preventDefault();
 
                     my.fireEvent('update-end', e);
                     my.wavesurfer.fireEvent('region-update-end', my, e);
                 }
             };
             var onMove = function (e) {
+                if (e.touches && e.touches.length > 1) { return; }
+                if (e.targetTouches && e.targetTouches[0].identifier != touchId) { return; }
+
                 if (drag || resize) {
                     var time = my.wavesurfer.drawer.handleEvent(e) * duration;
                     var delta = time - startTime;
@@ -425,21 +438,34 @@ WaveSurfer.Region = {
             };
 
             my.element.addEventListener('mousedown', onDown);
+            my.element.addEventListener('touchstart', onDown);
+
             my.wrapper.addEventListener('mousemove', onMove);
+            my.wrapper.addEventListener('touchmove', onMove);
+
             document.body.addEventListener('mouseup', onUp);
+            document.body.addEventListener('touchend', onUp);
 
             my.on('remove', function () {
                 document.body.removeEventListener('mouseup', onUp);
+                document.body.removeEventListener('touchend', onUp);
                 my.wrapper.removeEventListener('mousemove', onMove);
+                my.wrapper.removeEventListener('touchmove', onMove);
             });
 
             my.wavesurfer.on('destroy', function () {
                 document.body.removeEventListener('mouseup', onUp);
+                document.body.removeEventListener('touchend', onUp);
             });
         }());
     },
 
     onDrag: function (delta) {
+        var maxEnd = this.wavesurfer.getDuration();
+        if ((this.end + delta) > maxEnd || (this.start + delta) < 0) {
+            return;
+        }
+
         this.update({
             start: this.start + delta,
             end: this.end + delta
