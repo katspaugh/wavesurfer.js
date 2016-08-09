@@ -150,8 +150,6 @@ WaveSurfer.Drawer = {
     },
 
     setWidth: function (width) {
-        if (width == this.width) { return; }
-
         this.width = width;
 
         if (this.params.fillParent || this.params.scrollParent) {
