@@ -66,8 +66,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
      addCanvas: function () {
-        var entry = {};
-        var leftOffset = this.maxCanvasElementWidth * this.canvases.length;
+        var entry = {},
+            leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
         entry.wave = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
@@ -104,7 +104,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     updateDimensions: function (entry, width, height) {
-        var elementWidth = Math.round(width / this.params.pixelRatio);
+        var elementWidth = Math.round(width / this.params.pixelRatio),
+            totalWidth = Math.round(this.width / this.params.pixelRatio);
+
+        // Where the canvas starts and ends in the waveform, represented as a decimal between 0 and 1.
+        entry.start = (entry.waveCtx.canvas.offsetLeft / totalWidth) || 0;
+        entry.end = entry.start + elementWidth / totalWidth;
 
         entry.waveCtx.canvas.width = width;
         entry.waveCtx.canvas.height = height;
@@ -208,7 +213,6 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var height = this.params.height * this.params.pixelRatio;
         var offsetY = height * channelIndex || 0;
         var halfH = height / 2;
-        var length = ~~(peaks.length / this.canvases.length / 2);
 
         var absmax = 1;
         if (this.params.normalize) {
@@ -217,33 +221,35 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             absmax = -min > max ? -min : max;
         }
 
-        this.drawLine(length, peaks, absmax, halfH, offsetY);
+        this.drawLine(peaks, absmax, halfH, offsetY);
 
         // Always draw a median line
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     },
 
-    drawLine: function (length, peaks, absmax, halfH, offsetY) {
+    drawLine: function (peaks, absmax, halfH, offsetY) {
         for (var index in this.canvases) {
             var entry = this.canvases[index];
 
             this.setFillStyles(entry);
 
-            this.drawLineToContext(entry.waveCtx, length, index, peaks, absmax, halfH, offsetY);
-            this.drawLineToContext(entry.progressCtx, length, index, peaks, absmax, halfH, offsetY);
+            this.drawLineToContext(entry, entry.waveCtx, peaks, absmax, halfH, offsetY);
+            this.drawLineToContext(entry, entry.progressCtx, peaks, absmax, halfH, offsetY);
         }
     },
 
-    drawLineToContext: function (ctx, length, index, peaks, absmax, halfH, offsetY) {
+    drawLineToContext: function (entry, ctx, peaks, absmax, halfH, offsetY) {
         if (!ctx) { return; }
+
+        var length = peaks.length / 2;
 
         var scale = 1;
         if (this.params.fillParent && this.width != length) {
             scale = ctx.canvas.width / length;
         }
 
-        var first = index * length,
-            last = first + length + 1;
+        var first = Math.round(length * entry.start),
+            last = Math.round(length * entry.end);
 
         ctx.beginPath();
         ctx.moveTo(this.halfPixel, halfH + offsetY);
