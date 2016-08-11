@@ -37,7 +37,6 @@ WaveSurfer.Timeline = {
         this.canvases = [];
 
         this.createWrapper();
-        this.createCanvases();
         this.render();
 
         drawer.wrapper.addEventListener('scroll', function (e) {
@@ -89,7 +88,16 @@ WaveSurfer.Timeline = {
         });
     },
 
+    removeOldCanvases: function () {
+        while (this.canvases.length > 0) {
+            var canvas = this.canvases.pop();
+            canvas.parentElement.removeChild(canvas);
+        }
+    },
+
     createCanvases: function () {
+        this.removeOldCanvases();
+
         var totalWidth = Math.round(this.drawer.wrapper.scrollWidth),
             requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth),
             canvas;
@@ -105,6 +113,7 @@ WaveSurfer.Timeline = {
     },
 
     render: function () {
+        this.createCanvases();
         this.updateCanvasStyle();
         this.drawTimeCanvases();
     },
