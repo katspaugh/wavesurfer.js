@@ -116,14 +116,14 @@ WaveSurfer.Timeline = {
                 canvasWidth = this.maxCanvasElementWidth;
 
             if (i === requiredCanvases - 1) {
-                canvasWidth = this.width / this.pixelRatio - (this.maxCanvasElementWidth * (requiredCanvases - 1));
+                canvasWidth = this.drawer.wrapper.scrollWidth - (this.maxCanvasElementWidth * (requiredCanvases - 1));
             }
 
             canvas.width = canvasWidth * this.pixelRatio;
             canvas.height = this.height * this.pixelRatio;
             canvas.style.width = canvasWidth + 'px';
             canvas.style.height = this.height + 'px';
-            canvas.style.left = i * canvasWidth + 'px';
+            canvas.style.left = i * this.maxCanvasElementWidth + 'px';
         }
     },
 
