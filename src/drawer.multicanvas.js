@@ -174,11 +174,6 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         var scale = length / width;
 
-        this.canvases[0].waveCtx.fillStyle = this.params.waveColor;
-        if (this.canvases[0].progressCtx) {
-            this.canvases[0].progressCtx.fillStyle = this.params.progressColor;
-        }
-
         for (var i = 0; i < width; i += step) {
             var h = Math.round(peaks[Math.floor(i * scale)] / absmax * halfH);
             this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
