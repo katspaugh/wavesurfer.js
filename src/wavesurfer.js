@@ -277,7 +277,7 @@ var WaveSurfer = {
 
         this.drawBuffer();
 
-        this.seekAndCenter(
+        this.drawer.recenter(
             this.getCurrentTime() / this.getDuration()
         );
         this.fireEvent('zoom', pxPerSec);
