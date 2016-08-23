@@ -98,7 +98,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         var absmax = 1;
         if (this.params.normalize) {
-            absmax = Math.max.apply(Math, peaks);
+            absmax = WaveSurfer.util.max(peaks);
         }
 
         var scale = length / width;
@@ -156,8 +156,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         var absmax = 1;
         if (this.params.normalize) {
-            var max = Math.max.apply(Math, peaks);
-            var min = Math.min.apply(Math, peaks);
+            var max = WaveSurfer.util.max(peaks);
+            var min = WaveSurfer.util.min(peaks);
             absmax = -min > max ? -min : max;
         }
 
