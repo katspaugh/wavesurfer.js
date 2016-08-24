@@ -285,7 +285,7 @@ var WaveSurfer = {
 
         this.drawBuffer();
 
-        this.seekAndCenter(
+        this.drawer.recenter(
             this.getCurrentTime() / this.getDuration()
         );
         this.fireEvent('zoom', pxPerSec);
@@ -1646,7 +1646,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         var absmax = 1;
         if (this.params.normalize) {
-            absmax = Math.max.apply(Math, peaks);
+            absmax = WaveSurfer.util.max(peaks);
         }
 
         var scale = length / width;
@@ -1704,8 +1704,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         var absmax = 1;
         if (this.params.normalize) {
-            var max = Math.max.apply(Math, peaks);
-            var min = Math.min.apply(Math, peaks);
+            var max = WaveSurfer.util.max(peaks);
+            var min = WaveSurfer.util.min(peaks);
             absmax = -min > max ? -min : max;
         }
 
@@ -1923,11 +1923,6 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
 
         var scale = length / width;
-
-        this.canvases[0].waveCtx.fillStyle = this.params.waveColor;
-        if (this.canvases[0].progressCtx) {
-            this.canvases[0].progressCtx.fillStyle = this.params.progressColor;
-        }
 
         for (var i = 0; i < width; i += step) {
             var h = Math.round(peaks[Math.floor(i * scale)] / absmax * halfH);
