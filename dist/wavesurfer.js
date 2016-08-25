@@ -284,6 +284,7 @@ var WaveSurfer = {
         this.params.scrollParent = true;
 
         this.drawBuffer();
+        this.drawer.progress(this.backend.getPlayedPercents());
 
         this.drawer.recenter(
             this.getCurrentTime() / this.getDuration()
