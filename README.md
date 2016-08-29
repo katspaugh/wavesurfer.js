@@ -1,13 +1,13 @@
-# [wavesurfer.js](http://wavesurfer-js.org)
+# [wavesurfer.js](https://wavesurfer-js.org)
 
 [![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
 ![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg) [![Join the chat at https://gitter.im/katspaugh/wavesurfer.js](https://badges.gitter.im/katspaugh/wavesurfer.js.svg)](https://gitter.im/katspaugh/wavesurfer.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Interactive navigable audio visualization using Web Audio and Canvas.
 
-[![Screenshot](https://raw.githubusercontent.com/katspaugh/wavesurfer.js/gh-pages/example/screenshot.png "Screenshot")](http://wavesurfer-js.org)
+[![Screenshot](https://raw.githubusercontent.com/katspaugh/wavesurfer.js/gh-pages/example/screenshot.png "Screenshot")](https://wavesurfer-js.org)
 
-See a [tutorial](http://wavesurfer-js.org/docs) and [examples](http://wavesurfer-js.org/examples) on [wavesurfer-js.org](http://wavesurfer-js.org).
+See a [tutorial](https://wavesurfer-js.org/docs) and [examples](https://wavesurfer-js.org/examples) on [wavesurfer-js.org](https://wavesurfer-js.org).
 
 ## Browser support
 wavesurfer.js works only in [modern browsers supporting Web Audio](http://caniuse.com/audio-api).
@@ -16,10 +16,10 @@ It will fallback to Audio Element in other browsers (without graphics). You can 
 
 ## FAQ
 ### Can the audio start playing before the waveform is drawn?
-Yes, if you use the `backend: 'MediaElement'` option. See here: http://wavesurfer-js.org/example/audio-element/. The audio will start playing as you press play. A thin line will be displayed until the whole audio file is downloaded and decoded to draw the waveform.
+Yes, if you use the `backend: 'MediaElement'` option. See here: https://wavesurfer-js.org/example/audio-element/. The audio will start playing as you press play. A thin line will be displayed until the whole audio file is downloaded and decoded to draw the waveform.
 
 ### Can drawing be done as file loads?
-No. Web Audio needs the whole file to decode it in the browser. You can however load pre-decoded waveform data to draw the waveform immediately. See here: http://wavesurfer-js.org/example/audio-element/ (the "Pre-recoded Peaks" section).
+No. Web Audio needs the whole file to decode it in the browser. You can however load pre-decoded waveform data to draw the waveform immediately. See here: https://wavesurfer-js.org/example/audio-element/ (the "Pre-recoded Peaks" section).
 
 ## API in examples
 
@@ -27,7 +27,7 @@ Choose a container:
 ```html
 <div id="waveform"></div>
 ```
-Create an instance, passing the container selector and [options](http://wavesurfer-js.org):
+Create an instance, passing the container selector and [options](https://wavesurfer-js.org/docs/options.html):
 
 ```javascript
 var wavesurfer = WaveSurfer.create({
@@ -37,7 +37,7 @@ var wavesurfer = WaveSurfer.create({
 });
 ```
 
-Subscribe to some [events](http://wavesurfer-js.org/docs/events.html):
+Subscribe to some [events](https://wavesurfer-js.org/docs/events.html):
 
 ```javascript
 wavesurfer.on('ready', function () {
@@ -53,12 +53,12 @@ wavesurfer.load('example/media/demo.wav');
 
 ## Documentation
 
-See the documentation on all available [methods](http://wavesurfer-js.org/docs/methods.html), [options](http://wavesurfer-js.org/docs/options.html) and [events](http://wavesurfer-js.org/docs/events.html) on the [homepage](http://wavesurfer-js.org/docs/).
+See the documentation on all available [methods](https://wavesurfer-js.org/docs/methods.html), [options](https://wavesurfer-js.org/docs/options.html) and [events](https://wavesurfer-js.org/docs/events.html) on the [homepage](https://wavesurfer-js.org/docs/).
 
 ## Related projects
 
 For a list of  projects using wavesurfer.js, check out
-[the projects page](http://wavesurfer-js.org/projects/).
+[the projects page](https://wavesurfer-js.org/projects/).
 
 ## Development
 
