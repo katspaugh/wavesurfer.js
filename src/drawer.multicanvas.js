@@ -240,7 +240,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         var scale = 1;
         if (this.params.fillParent && this.width != length) {
-            scale = ctx.canvas.width / length;
+            scale = this.width / length;
         }
 
         var first = Math.round(length * entry.start),
