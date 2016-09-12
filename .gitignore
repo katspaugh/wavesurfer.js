@@ -8,3 +8,4 @@ dist/plugin/*.js
 /coverage
 /_SpecRunner.html
 .DS_Store
+.idea

@@ -77,6 +77,8 @@ var WaveSurfer = {
 
         this.createDrawer();
         this.createBackend();
+
+        this.isDestroyed = false;
     },
 
     createDrawer: function () {
@@ -276,6 +278,7 @@ var WaveSurfer = {
         this.params.scrollParent = true;
 
         this.drawBuffer();
+        this.drawer.progress(this.backend.getPlayedPercents());
 
         this.drawer.recenter(
             this.getCurrentTime() / this.getDuration()
@@ -288,7 +291,9 @@ var WaveSurfer = {
      */
     loadArrayBuffer: function (arraybuffer) {
         this.decodeArrayBuffer(arraybuffer, function (data) {
-            this.loadDecodedBuffer(data);
+            if (!this.isDestroyed) {
+                this.loadDecodedBuffer(data);
+            }
         }.bind(this));
     },
 
@@ -409,7 +414,8 @@ var WaveSurfer = {
         this.backend.decodeArrayBuffer(
             arraybuffer,
             (function (data) {
-                if (this.arraybuffer == arraybuffer) {
+                // Only use the decoded data if we haven't been destroyed or another decode started in the meantime
+                if (!this.isDestroyed && this.arraybuffer == arraybuffer) {
                     callback(data);
                     this.arraybuffer = null;
                 }
@@ -511,6 +517,7 @@ var WaveSurfer = {
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();
+        this.isDestroyed = true;
     }
 };
 
