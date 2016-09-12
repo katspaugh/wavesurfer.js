@@ -85,6 +85,8 @@ var WaveSurfer = {
 
         this.createDrawer();
         this.createBackend();
+
+        this.isDestroyed = false;
     },
 
     createDrawer: function () {
@@ -297,7 +299,9 @@ var WaveSurfer = {
      */
     loadArrayBuffer: function (arraybuffer) {
         this.decodeArrayBuffer(arraybuffer, function (data) {
-            this.loadDecodedBuffer(data);
+            if (!this.isDestroyed) {
+                this.loadDecodedBuffer(data);
+            }
         }.bind(this));
     },
 
@@ -418,7 +422,8 @@ var WaveSurfer = {
         this.backend.decodeArrayBuffer(
             arraybuffer,
             (function (data) {
-                if (this.arraybuffer == arraybuffer) {
+                // Only use the decoded data if we haven't been destroyed or another decode started in the meantime
+                if (!this.isDestroyed && this.arraybuffer == arraybuffer) {
                     callback(data);
                     this.arraybuffer = null;
                 }
@@ -520,6 +525,7 @@ var WaveSurfer = {
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();
+        this.isDestroyed = true;
     }
 };
 
@@ -1991,7 +1997,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         var scale = 1;
         if (this.params.fillParent && this.width != length) {
-            scale = ctx.canvas.width / length;
+            scale = this.width / length;
         }
 
         var first = Math.round(length * entry.start),
