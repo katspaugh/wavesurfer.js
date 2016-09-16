@@ -489,6 +489,23 @@ var WaveSurfer = {
         return json;
     },
 
+    /**
+     * Save waveform image as data URI.
+     *
+     * The default format is 'image/png'. Other supported types are
+     * 'image/jpeg' and 'image/webp'.
+     */
+    exportImage: function(format, quality) {
+        if (!format) {
+            format = 'image/png';
+        }
+        if (!quality) {
+            quality = 1;
+        }
+
+        return this.drawer.getImage(format, quality);
+    },
+
     cancelAjax: function () {
         if (this.currentAjax) {
             this.currentAjax.xhr.abort();
@@ -1752,6 +1769,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             this.width * progress
         ) / this.params.pixelRatio;
         this.style(this.progressWave, { width: pos + 'px' });
+    },
+
+    getImage: function(type, quality) {
+        return this.waveCc.canvas.toDataURL(type, quality);
     }
 });
 
