@@ -197,5 +197,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             this.width * progress
         ) / this.params.pixelRatio;
         this.style(this.progressWave, { width: pos + 'px' });
+    },
+
+    getImage: function(type, quality) {
+        return this.waveCc.canvas.toDataURL(type, quality);
     }
 });
