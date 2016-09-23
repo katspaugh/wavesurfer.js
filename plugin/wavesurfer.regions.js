@@ -285,9 +285,15 @@ WaveSurfer.Region = {
         }
 
         if (this.element != null) {
+            // Calculate the left and width values of the region such that
+            // no gaps appear between regions.
+            var left = Math.round(this.start / dur * width);
+            var regionWidth =
+                Math.round(this.end / dur * width) - left;
+
             this.style(this.element, {
-                left: ~~(this.start / dur * width) + 'px',
-                width: ~~((this.end - this.start) / dur * width) + 'px',
+                left: left + 'px',
+                width: regionWidth + 'px',
                 backgroundColor: this.color,
                 cursor: this.drag ? 'move' : 'default'
             });
