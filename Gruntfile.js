@@ -58,7 +58,7 @@ module.exports = function (grunt) {
                 dest: 'dist',
                 deps: {
                     'default': [ 'WaveSurfer' ],
-                    amd: [ './../wavesurfer' ],
+                    amd: [ 'wavesurfer' ],
       	            cjs: [ 'wavesurfer.js' ],
                     global: [ 'WaveSurfer' ]
                 }
