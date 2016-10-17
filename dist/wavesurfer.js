@@ -240,17 +240,26 @@ var WaveSurfer = {
      * value, and then rest the saved value.
      */
     toggleMute: function () {
-        if (this.isMuted) {
-            // If currently muted then restore to the saved volume
-            // and update the mute properties
-            this.backend.setVolume(this.savedVolume);
-            this.isMuted = false;
-        } else {
+        this.setMute(!this.isMuted);
+    },
+
+    setMute: function (mute) {
+        // ignore all muting requests if the audio is already in that state
+        if (mute === this.isMuted) {
+            return;
+        }
+
+        if (mute) {
             // If currently not muted then save current volume,
             // turn off the volume and update the mute properties
             this.savedVolume = this.backend.getVolume();
             this.backend.setVolume(0);
             this.isMuted = true;
+        } else {
+            // If currently muted then restore to the saved volume
+            // and update the mute properties
+            this.backend.setVolume(this.savedVolume);
+            this.isMuted = false;
         }
     },
 
