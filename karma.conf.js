@@ -1,5 +1,5 @@
 module.exports = function (config) {
-    config.set({
+    var configuration = {
         basePath: '',
         frameworks: [
             'jasmine',
@@ -38,6 +38,20 @@ module.exports = function (config) {
         ],
         captureConsole: true,
         colors: true,
-        reporters: ['progress']
-    });
+        reporters: ['progress'],
+
+
+        customLaunchers: {
+            Chrome_travis_ci: {
+                base: 'Chrome',
+                flags: ['--no-sandbox']
+            }
+        }
+    };
+
+    if (process.env.TRAVIS) {
+        configuration.browsers = ['Chrome_travis_ci'];
+    }
+
+    config.set(configuration);
 };
