@@ -132,39 +132,9 @@ module.exports = function (grunt) {
                 requireCurlyBraces: [ 'if' ]
             }
         },
-        jasmine: {
-            core: {
-                src: '<%= concat.dist.src %>',
-                options: {
-                    specs: [ 'spec/*.spec.js' ],
-                    vendor: [
-                        'node_modules/jasmine-expect/dist/jasmine-matchers.js'
-                    ]
-                }
-            },
-            coverage: {
-                src: '<%= concat.dist.src %>',
-                options: {
-                    specs: '<%= jasmine.core.options.specs %>',
-                    vendor: '<%= jasmine.core.options.vendor %>',
-                    template: require('grunt-template-jasmine-istanbul'),
-                    templateOptions: {
-                        coverage: 'coverage/coverage.json',
-                        report: [
-                            {
-                                type: 'lcov',
-                                options: {
-                                    dir: 'coverage/lcov'
-                                }
-                            },
-                            {
-                                type: 'html',
-                                options: {
-                                    dir: 'coverage/html'
-                                }
-                            }]
-                    }
-                }
+        karma: {
+            e2e: {
+                configFile: 'karma.conf.js'
             }
         }
     });
@@ -177,7 +147,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-contrib-jasmine');
+    grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-umd');
     grunt.loadNpmTasks('grunt-jscs');
@@ -185,11 +155,10 @@ module.exports = function (grunt) {
 
     // Default task.
     grunt.registerTask('default', [
-        'clean', 'jshint', 'jscs', 'test', 'coverage', 'concat', 'umd', 'uglify'
+        'clean', 'jshint', 'jscs', 'concat', 'umd', 'uglify', 'test'
     ]);
 
     // Dev
     grunt.registerTask('dev', [ 'clean', 'concat', 'uglify', 'jscs', 'connect' ]);
-    grunt.registerTask('test', [ 'jasmine:core' ]);
-    grunt.registerTask('coverage', [ 'jasmine:coverage' ]);
+    grunt.registerTask('test', [ 'karma:e2e' ]);
 };
