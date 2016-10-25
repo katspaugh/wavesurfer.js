@@ -50,13 +50,17 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
      *  @param  {HTMLElement}   container   HTML element
      *  @param  {Array}         peaks       array of peak data
      */
-    load: function (url, container, peaks) {
+    load: function (url, container, peaks, preload) {
         var my = this;
 
         var media = document.createElement(this.mediaType);
         media.controls = this.params.mediaControls;
         media.autoplay = this.params.autoplay || false;
-        media.preload = 'auto';
+        if (preload) {
+            media.preload = preload;
+        } else {
+            media.preload = 'auto';
+        }
         media.src = url;
         media.style.width = '100%';
 
