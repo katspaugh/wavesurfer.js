@@ -56,11 +56,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         var media = document.createElement(this.mediaType);
         media.controls = this.params.mediaControls;
         media.autoplay = this.params.autoplay || false;
-        if (preload) {
-            media.preload = preload;
-        } else {
-            media.preload = 'auto';
-        }
+        media.preload = preload == null ? 'auto' : preload;
         media.src = url;
         media.style.width = '100%';
 
