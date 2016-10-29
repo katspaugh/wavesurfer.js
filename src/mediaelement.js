@@ -49,6 +49,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
      *  @param  {String}        url         path to media file
      *  @param  {HTMLElement}   container   HTML element
      *  @param  {Array}         peaks       array of peak data
+     *  @param  {String}        preload     HTML 5 preload attribute value
      */
     load: function (url, container, peaks, preload) {
         var my = this;
