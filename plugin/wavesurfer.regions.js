@@ -42,6 +42,12 @@ WaveSurfer.Regions = {
 
         var eventDown = function (e) {
             if (e.touches && e.touches.length > 1) { return; }
+
+            // Check whether the click/tap is on the bottom-most DOM element
+            // Effectively prevent clicks on the scrollbar from registering as
+            // region creation.
+            if (e.target.childElementCount > 0) { return; }
+
             touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
 
             drag = true;
