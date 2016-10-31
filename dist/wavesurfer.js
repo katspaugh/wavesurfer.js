@@ -348,7 +348,7 @@ var WaveSurfer = {
     /**
      * Loads audio and re-renders the waveform.
      */
-    load: function (url, peaks) {
+    load: function (url, peaks, preload) {
         this.empty();
 
         switch (this.params.backend) {
