@@ -353,7 +353,7 @@ var WaveSurfer = {
 
         switch (this.params.backend) {
             case 'WebAudio': return this.loadBuffer(url, peaks);
-            case 'MediaElement': return this.loadMediaElement(url, peaks);
+            case 'MediaElement': return this.loadMediaElement(url, peaks, preload);
         }
     },
 
@@ -386,11 +386,11 @@ var WaveSurfer = {
      *  @param  {Array}            [peaks]     Array of peaks. Required to bypass
      *                                          web audio dependency
      */
-    loadMediaElement: function (urlOrElt, peaks) {
+    loadMediaElement: function (urlOrElt, peaks, preload) {
         var url = urlOrElt;
 
         if (typeof urlOrElt === 'string') {
-            this.backend.load(url, this.mediaContainer, peaks);
+            this.backend.load(url, this.mediaContainer, peaks, preload);
         } else {
             var elt = urlOrElt;
             this.backend.loadElt(elt, peaks);
@@ -1192,13 +1192,15 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
      *  @param  {String}        url         path to media file
      *  @param  {HTMLElement}   container   HTML element
      *  @param  {Array}         peaks       array of peak data
+	 *  @param  {String}        preload     HTML 5 preload attribute value
      */
-    load: function (url, container, peaks) {
+    load: function (url, container, peaks, preload) {
         var my = this;
 
         var media = document.createElement(this.mediaType);
         media.controls = this.params.mediaControls;
         media.autoplay = this.params.autoplay || false;
+		media.preload = preload == null ? 'auto' : preload;
         media.preload = 'auto';
         media.src = url;
         media.style.width = '100%';

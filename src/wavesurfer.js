@@ -345,7 +345,7 @@ var WaveSurfer = {
 
         switch (this.params.backend) {
             case 'WebAudio': return this.loadBuffer(url, peaks);
-            case 'MediaElement': return this.loadMediaElement(url, peaks);
+            case 'MediaElement': return this.loadMediaElement(url, peaks, preload);
         }
     },
 
@@ -378,11 +378,11 @@ var WaveSurfer = {
      *  @param  {Array}            [peaks]     Array of peaks. Required to bypass
      *                                          web audio dependency
      */
-    loadMediaElement: function (urlOrElt, peaks) {
+    loadMediaElement: function (urlOrElt, peaks, preload) {
         var url = urlOrElt;
 
         if (typeof urlOrElt === 'string') {
-            this.backend.load(url, this.mediaContainer, peaks);
+            this.backend.load(url, this.mediaContainer, peaks, preload);
         } else {
             var elt = urlOrElt;
             this.backend.loadElt(elt, peaks);
