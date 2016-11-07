@@ -1,6 +1,13 @@
 wavesurfer.js changelog
 =======================
 
+1.2.2 (31.10.2016)
+------------------
+
+- Determistic way to mute and unmute a track (#841)
+- Replace jasmine with karma / jasmine test suite (#849)
+- Regions plugin: fix a bug when clicking on scroll-bar in Firefox (#851)
+
 1.2.1 (01.10.2016)
 ------------------
 
