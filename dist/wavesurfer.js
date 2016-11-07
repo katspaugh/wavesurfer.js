@@ -1200,7 +1200,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         var media = document.createElement(this.mediaType);
         media.controls = this.params.mediaControls;
         media.autoplay = this.params.autoplay || false;
-	media.preload = preload == null ? 'auto' : preload;
+        media.preload = preload == null ? 'auto' : preload;
         media.src = url;
         media.style.width = '100%';
 
