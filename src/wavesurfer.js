@@ -412,6 +412,7 @@ var WaveSurfer = {
                 this.decodeArrayBuffer(arraybuffer, (function (buffer) {
                     this.backend.buffer = buffer;
                     this.drawBuffer();
+                    this.fireEvent('waveform-ready');
                 }).bind(this));
             }).bind(this));
         }
