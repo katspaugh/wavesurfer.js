@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+1.2.3 (07.11.2016)
+------------------
+
+- Add a ‘preload’ parameter to load function to choose the preload HTML5 audio attribute value if MediaElement backend is choosen (#854)
+
 1.2.2 (31.10.2016)
 ------------------
 
