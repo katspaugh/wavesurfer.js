@@ -1,10 +1,15 @@
 wavesurfer.js changelog
 =======================
 
+1.2.4 (09.11.2016)
+------------------
+
+- Add a 'waveform-ready' event, triggered when waveform is drawn with MediaElement backend (#736)
+
 1.2.3 (07.11.2016)
 ------------------
 
-- Add a ‘preload’ parameter to load function to choose the preload HTML5 audio attribute value if MediaElement backend is choosen (#854)
+- Add a 'preload' parameter to load function to choose the preload HTML5 audio attribute value if MediaElement backend is choosen (#854)
 
 1.2.2 (31.10.2016)
 ------------------
