@@ -1,3 +1,4 @@
+import * as util from './util';
 'use strict';
 
 WaveSurfer.WebAudio = {

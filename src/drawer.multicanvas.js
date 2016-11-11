@@ -1,4 +1,5 @@
 'use strict';
+import * as util from './util';
 
 WaveSurfer.Drawer.MultiCanvas = Object.create(WaveSurfer.Drawer);
 
@@ -169,7 +170,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         var absmax = 1;
         if (this.params.normalize) {
-            absmax = WaveSurfer.util.max(peaks);
+            absmax = util.max(peaks);
         }
 
         var scale = length / width;
@@ -211,8 +212,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         var absmax = 1;
         if (this.params.normalize) {
-            var max = WaveSurfer.util.max(peaks);
-            var min = WaveSurfer.util.min(peaks);
+            var max = util.max(peaks);
+            var min = util.min(peaks);
             absmax = -min > max ? -min : max;
         }
 

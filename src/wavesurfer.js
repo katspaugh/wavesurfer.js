@@ -5,6 +5,7 @@
  *
  * This work is licensed under a Creative Commons Attribution 3.0 Unported License.
  */
+ import * as util from './util';
 
 'use strict';
 
