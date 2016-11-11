@@ -1,4 +1,8 @@
 <div class="demo">
+  <!-- Include wavesurfer.js from cdnjs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.2.4/wavesurfer.min.js"></script>
+
+  <!-- Define an HTML element where the waveform will appear -->
   <div id="waveform">
     <progress id="progress" class="progress progress-striped" value="0" max="100"></progress>
   </div>
@@ -10,10 +14,13 @@
     linGrad.addColorStop(0.5, 'rgba(183, 183, 183, 1.000)');
 
     var wavesurfer = WaveSurfer.create({
+      // Use the id or class-name of the element you created, as a selector
       container: '#waveform',
+      // The color can be either a simple CSS color or a Canvas gradient
       waveColor: linGrad,
       progressColor: 'hsla(200, 100%, 30%, 0.5)',
       cursorColor: '#fff',
+      // This parameter makes the waveform look like SoundCloud's player
       barWidth: 3
     });
 
@@ -52,10 +59,4 @@
       Toggle Mute
     </button>
   </div>
-
-  <p align="right">
-    <small class="text-muted">
-      The recording is from the <a href="https://archive.org/details/gd79-09-04.sbd.clugston.9452.sbeok.shnf">Internet Archive</a>.
-    </small>
-  </p>
 </div>

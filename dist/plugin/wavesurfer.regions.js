@@ -1,7 +1,7 @@
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module unless amdModuleId is set
-    define(["./../wavesurfer"], function (a0) {
+    define(["wavesurfer"], function (a0) {
       return (factory(a0));
     });
   } else if (typeof exports === 'object') {
@@ -58,6 +58,12 @@ WaveSurfer.Regions = {
 
         var eventDown = function (e) {
             if (e.touches && e.touches.length > 1) { return; }
+
+            // Check whether the click/tap is on the bottom-most DOM element
+            // Effectively prevent clicks on the scrollbar from registering as
+            // region creation.
+            if (e.target.childElementCount > 0) { return; }
+
             touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
 
             drag = true;
@@ -301,9 +307,15 @@ WaveSurfer.Region = {
         }
 
         if (this.element != null) {
+            // Calculate the left and width values of the region such that
+            // no gaps appear between regions.
+            var left = Math.round(this.start / dur * width);
+            var regionWidth =
+                Math.round(this.end / dur * width) - left;
+
             this.style(this.element, {
-                left: ~~(this.start / dur * width) + 'px',
-                width: ~~((this.end - this.start) / dur * width) + 'px',
+                left: left + 'px',
+                width: regionWidth + 'px',
                 backgroundColor: this.color,
                 cursor: this.drag ? 'move' : 'default'
             });

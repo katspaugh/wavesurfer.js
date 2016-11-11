@@ -85,6 +85,8 @@ var WaveSurfer = {
 
         this.createDrawer();
         this.createBackend();
+
+        this.isDestroyed = false;
     },
 
     createDrawer: function () {
@@ -238,17 +240,26 @@ var WaveSurfer = {
      * value, and then rest the saved value.
      */
     toggleMute: function () {
-        if (this.isMuted) {
-            // If currently muted then restore to the saved volume
-            // and update the mute properties
-            this.backend.setVolume(this.savedVolume);
-            this.isMuted = false;
-        } else {
+        this.setMute(!this.isMuted);
+    },
+
+    setMute: function (mute) {
+        // ignore all muting requests if the audio is already in that state
+        if (mute === this.isMuted) {
+            return;
+        }
+
+        if (mute) {
             // If currently not muted then save current volume,
             // turn off the volume and update the mute properties
             this.savedVolume = this.backend.getVolume();
             this.backend.setVolume(0);
             this.isMuted = true;
+        } else {
+            // If currently muted then restore to the saved volume
+            // and update the mute properties
+            this.backend.setVolume(this.savedVolume);
+            this.isMuted = false;
         }
     },
 
@@ -284,8 +295,9 @@ var WaveSurfer = {
         this.params.scrollParent = true;
 
         this.drawBuffer();
+        this.drawer.progress(this.backend.getPlayedPercents());
 
-        this.seekAndCenter(
+        this.drawer.recenter(
             this.getCurrentTime() / this.getDuration()
         );
         this.fireEvent('zoom', pxPerSec);
@@ -296,7 +308,9 @@ var WaveSurfer = {
      */
     loadArrayBuffer: function (arraybuffer) {
         this.decodeArrayBuffer(arraybuffer, function (data) {
-            this.loadDecodedBuffer(data);
+            if (!this.isDestroyed) {
+                this.loadDecodedBuffer(data);
+            }
         }.bind(this));
     },
 
@@ -334,12 +348,12 @@ var WaveSurfer = {
     /**
      * Loads audio and re-renders the waveform.
      */
-    load: function (url, peaks) {
+    load: function (url, peaks, preload) {
         this.empty();
 
         switch (this.params.backend) {
             case 'WebAudio': return this.loadBuffer(url, peaks);
-            case 'MediaElement': return this.loadMediaElement(url, peaks);
+            case 'MediaElement': return this.loadMediaElement(url, peaks, preload);
         }
     },
 
@@ -372,11 +386,11 @@ var WaveSurfer = {
      *  @param  {Array}            [peaks]     Array of peaks. Required to bypass
      *                                          web audio dependency
      */
-    loadMediaElement: function (urlOrElt, peaks) {
+    loadMediaElement: function (urlOrElt, peaks, preload) {
         var url = urlOrElt;
 
         if (typeof urlOrElt === 'string') {
-            this.backend.load(url, this.mediaContainer, peaks);
+            this.backend.load(url, this.mediaContainer, peaks, preload);
         } else {
             var elt = urlOrElt;
             this.backend.loadElt(elt, peaks);
@@ -406,6 +420,7 @@ var WaveSurfer = {
                 this.decodeArrayBuffer(arraybuffer, (function (buffer) {
                     this.backend.buffer = buffer;
                     this.drawBuffer();
+                    this.fireEvent('waveform-ready');
                 }).bind(this));
             }).bind(this));
         }
@@ -417,7 +432,8 @@ var WaveSurfer = {
         this.backend.decodeArrayBuffer(
             arraybuffer,
             (function (data) {
-                if (this.arraybuffer == arraybuffer) {
+                // Only use the decoded data if we haven't been destroyed or another decode started in the meantime
+                if (!this.isDestroyed && this.arraybuffer == arraybuffer) {
                     callback(data);
                     this.arraybuffer = null;
                 }
@@ -483,6 +499,23 @@ var WaveSurfer = {
         return json;
     },
 
+    /**
+     * Save waveform image as data URI.
+     *
+     * The default format is 'image/png'. Other supported types are
+     * 'image/jpeg' and 'image/webp'.
+     */
+    exportImage: function(format, quality) {
+        if (!format) {
+            format = 'image/png';
+        }
+        if (!quality) {
+            quality = 1;
+        }
+
+        return this.drawer.getImage(format, quality);
+    },
+
     cancelAjax: function () {
         if (this.currentAjax) {
             this.currentAjax.xhr.abort();
@@ -519,6 +552,7 @@ var WaveSurfer = {
         this.unAll();
         this.backend.destroy();
         this.drawer.destroy();
+        this.isDestroyed = true;
     }
 };
 
@@ -1023,6 +1057,7 @@ WaveSurfer.WebAudio = {
         this.scheduledPause = end;
 
         this.source.start(0, start, end - start);
+        this.ac.resume();
 
         this.setState(this.PLAYING_STATE);
 
@@ -1159,14 +1194,15 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
      *  @param  {String}        url         path to media file
      *  @param  {HTMLElement}   container   HTML element
      *  @param  {Array}         peaks       array of peak data
+     *  @param  {String}        preload     HTML 5 preload attribute value
      */
-    load: function (url, container, peaks) {
+    load: function (url, container, peaks, preload) {
         var my = this;
 
         var media = document.createElement(this.mediaType);
         media.controls = this.params.mediaControls;
         media.autoplay = this.params.autoplay || false;
-        media.preload = 'auto';
+        media.preload = preload == null ? 'auto' : preload;
         media.src = url;
         media.style.width = '100%';
 
@@ -1482,8 +1518,6 @@ WaveSurfer.Drawer = {
     },
 
     setWidth: function (width) {
-        if (width == this.width) { return; }
-
         this.width = width;
 
         if (this.params.fillParent || this.params.scrollParent) {
@@ -1648,7 +1682,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         var absmax = 1;
         if (this.params.normalize) {
-            absmax = Math.max.apply(Math, peaks);
+            absmax = WaveSurfer.util.max(peaks);
         }
 
         var scale = length / width;
@@ -1706,8 +1740,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         var absmax = 1;
         if (this.params.normalize) {
-            var max = Math.max.apply(Math, peaks);
-            var min = Math.min.apply(Math, peaks);
+            var max = WaveSurfer.util.max(peaks);
+            var min = WaveSurfer.util.min(peaks);
             absmax = -min > max ? -min : max;
         }
 
@@ -1747,6 +1781,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             this.width * progress
         ) / this.params.pixelRatio;
         this.style(this.progressWave, { width: pos + 'px' });
+    },
+
+    getImage: function(type, quality) {
+        return this.waveCc.canvas.toDataURL(type, quality);
     }
 });
 
@@ -1818,8 +1856,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
      addCanvas: function () {
-        var entry = {};
-        var leftOffset = this.maxCanvasElementWidth * this.canvases.length;
+        var entry = {},
+            leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
         entry.wave = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
@@ -1856,7 +1894,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     updateDimensions: function (entry, width, height) {
-        var elementWidth = Math.round(width / this.params.pixelRatio);
+        var elementWidth = Math.round(width / this.params.pixelRatio),
+            totalWidth = Math.round(this.width / this.params.pixelRatio);
+
+        // Where the canvas starts and ends in the waveform, represented as a decimal between 0 and 1.
+        entry.start = (entry.waveCtx.canvas.offsetLeft / totalWidth) || 0;
+        entry.end = entry.start + elementWidth / totalWidth;
 
         entry.waveCtx.canvas.width = width;
         entry.waveCtx.canvas.height = height;
@@ -1921,11 +1964,6 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         var scale = length / width;
 
-        this.canvases[0].waveCtx.fillStyle = this.params.waveColor;
-        if (this.canvases[0].progressCtx) {
-            this.canvases[0].progressCtx.fillStyle = this.params.progressColor;
-        }
-
         for (var i = 0; i < width; i += step) {
             var h = Math.round(peaks[Math.floor(i * scale)] / absmax * halfH);
             this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
@@ -1960,7 +1998,6 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var height = this.params.height * this.params.pixelRatio;
         var offsetY = height * channelIndex || 0;
         var halfH = height / 2;
-        var length = ~~(peaks.length / this.canvases.length / 2);
 
         var absmax = 1;
         if (this.params.normalize) {
@@ -1969,33 +2006,35 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             absmax = -min > max ? -min : max;
         }
 
-        this.drawLine(length, peaks, absmax, halfH, offsetY);
+        this.drawLine(peaks, absmax, halfH, offsetY);
 
         // Always draw a median line
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     },
 
-    drawLine: function (length, peaks, absmax, halfH, offsetY) {
+    drawLine: function (peaks, absmax, halfH, offsetY) {
         for (var index in this.canvases) {
             var entry = this.canvases[index];
 
             this.setFillStyles(entry);
 
-            this.drawLineToContext(entry.waveCtx, length, index, peaks, absmax, halfH, offsetY);
-            this.drawLineToContext(entry.progressCtx, length, index, peaks, absmax, halfH, offsetY);
+            this.drawLineToContext(entry, entry.waveCtx, peaks, absmax, halfH, offsetY);
+            this.drawLineToContext(entry, entry.progressCtx, peaks, absmax, halfH, offsetY);
         }
     },
 
-    drawLineToContext: function (ctx, length, index, peaks, absmax, halfH, offsetY) {
+    drawLineToContext: function (entry, ctx, peaks, absmax, halfH, offsetY) {
         if (!ctx) { return; }
+
+        var length = peaks.length / 2;
 
         var scale = 1;
         if (this.params.fillParent && this.width != length) {
-            scale = ctx.canvas.width / length;
+            scale = this.width / length;
         }
 
-        var first = index * length,
-            last = first + length + 1;
+        var first = Math.round(length * entry.start),
+            last = Math.round(length * entry.end);
 
         ctx.beginPath();
         ctx.moveTo(this.halfPixel, halfH + offsetY);

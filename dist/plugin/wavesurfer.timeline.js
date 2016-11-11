@@ -1,7 +1,7 @@
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module unless amdModuleId is set
-    define(["./../wavesurfer"], function (a0) {
+    define(["wavesurfer"], function (a0) {
       return (factory(a0));
     });
   } else if (typeof exports === 'object') {
@@ -53,7 +53,6 @@ WaveSurfer.Timeline = {
         this.canvases = [];
 
         this.createWrapper();
-        this.createCanvases();
         this.render();
 
         drawer.wrapper.addEventListener('scroll', function (e) {
@@ -105,7 +104,16 @@ WaveSurfer.Timeline = {
         });
     },
 
+    removeOldCanvases: function () {
+        while (this.canvases.length > 0) {
+            var canvas = this.canvases.pop();
+            canvas.parentElement.removeChild(canvas);
+        }
+    },
+
     createCanvases: function () {
+        this.removeOldCanvases();
+
         var totalWidth = Math.round(this.drawer.wrapper.scrollWidth),
             requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth),
             canvas;
@@ -121,6 +129,7 @@ WaveSurfer.Timeline = {
     },
 
     render: function () {
+        this.createCanvases();
         this.updateCanvasStyle();
         this.drawTimeCanvases();
     },
@@ -132,14 +141,14 @@ WaveSurfer.Timeline = {
                 canvasWidth = this.maxCanvasElementWidth;
 
             if (i === requiredCanvases - 1) {
-                canvasWidth = this.width / this.pixelRatio - (this.maxCanvasElementWidth * (requiredCanvases - 1));
+                canvasWidth = this.drawer.wrapper.scrollWidth - (this.maxCanvasElementWidth * (requiredCanvases - 1));
             }
 
             canvas.width = canvasWidth * this.pixelRatio;
             canvas.height = this.height * this.pixelRatio;
             canvas.style.width = canvasWidth + 'px';
             canvas.style.height = this.height + 'px';
-            canvas.style.left = i * canvasWidth + 'px';
+            canvas.style.left = i * this.maxCanvasElementWidth + 'px';
         }
     },
 
