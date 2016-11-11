@@ -19,33 +19,49 @@ export default function(params = {}) {
 		instance: {
 			init: function (wavesurfer) {
 				this.wavesurfer = wavesurfer;
-				this.container = this.wavesurfer.drawer.container;
-				this.lastPos = this.wavesurfer.drawer.lastPos;
-				this.params = wavesurfer.util.extend(
-					{}, this.wavesurfer.drawer.params, {
-						showRegions: false,
-						showOverview: false,
-						overviewBorderColor: 'green',
-						overviewBorderSize: 2
-					}, params, {
-						scrollParent: false,
-						fillParent: true
+				this._onCreatedDrawer = () => {
+					this.container = this.wavesurfer.drawer.container;
+					this.lastPos = this.wavesurfer.drawer.lastPos;
+					this.params = wavesurfer.util.extend(
+						{}, this.wavesurfer.drawer.params, {
+							showRegions: false,
+							showOverview: false,
+							overviewBorderColor: 'green',
+							overviewBorderSize: 2
+						}, params, {
+							scrollParent: false,
+							fillParent: true
+						}
+					);
+
+					this.width = 0;
+					this.height = this.params.height * this.params.pixelRatio;
+	
+					this.createWrapper();
+					this.createElements();
+	
+					if (this.wavesurfer.regions && this.params.showRegions) {
+						this.regions();
 					}
-				);
-
-				this.width = 0;
-				this.height = this.params.height * this.params.pixelRatio;
-
-				this.createWrapper();
-				this.createElements();
-
-				if (this.wavesurfer.regions && this.params.showRegions) {
-					this.regions();
+	
+					this.bindWaveSurferEvents();
+					this.bindMinimapEvents();
+				};
+				if (this.wavesurfer.drawer) {
+					this._onCreatedDrawer();
+					// @TODO: This shouldn't be necessary
+					this._onResize();
 				}
 
-				this.bindWaveSurferEvents();
-				this.bindMinimapEvents();
+				this.wavesurfer.on('created-drawer', this._onCreatedDrawer);
 			},
+
+			destroy: function () {
+				window.removeEventListener('resize', this._onResize, true);
+				this.wavesurfer.un('created-drawer', this._onCreatedDrawer);
+				this.wrapper.parentNode.removeChild(this.wrapper);
+			},
+
 			regions: function() {
 				var my = this;
 				this.regions = {};
