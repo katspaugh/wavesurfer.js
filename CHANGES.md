@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+1.2.4 (11.11.2016)
+------------------
+- Fix a problem of Web Audio not playing in Safari on initial load (#749)
+
 1.2.3 (09.11.2016)
 ------------------
 
