@@ -1,3 +1,5 @@
+import WaveSurfer from '../src/wavesurfer.js';
+
 describe('util', function() {
 
     it('getId returns a random string', function() {

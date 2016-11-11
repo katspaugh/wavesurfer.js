@@ -10,14 +10,6 @@ module.exports = function (config) {
         singleRun: true,
         autoWatch: false,
         files: [
-            'dist/wavesurfer.min.js',
-
-            {
-                pattern: 'dist/wavesurfer.min.js.map',
-                included: false,
-                watched: false,
-                served: true
-            },
             {
                 pattern: 'spec/support/demo.wav',
                 included: false,
@@ -26,9 +18,16 @@ module.exports = function (config) {
             },
 
             // specs
-            'spec/**/*.js'
+            'spec/index.js'
         ],
+        preprocessors: {
+            'spec/index.js': ['webpack']
+        },
+        webpackMiddleware: {
+            stats: 'errors-only'
+        },
         plugins: [
+            'karma-webpack',
             'karma-jasmine',
             'karma-jasmine-matchers',
             'karma-chrome-launcher'
