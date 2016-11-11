@@ -12,7 +12,8 @@
 
  import WebAudio from './webaudio';
  import MediaElement from './mediaelement';
-var WaveSurfer = {
+
+ const WaveSurfer = util.extend({}, util.observer, { util }, {
     defaultParams: {
         height        : 128,
         waveColor     : '#999',
@@ -562,10 +563,11 @@ var WaveSurfer = {
         this.drawer.destroy();
         this.isDestroyed = true;
     }
-};
+});
 
 WaveSurfer.create = function (params) {
     var wavesurfer = Object.create(WaveSurfer);
     wavesurfer.init(params);
     return wavesurfer;
 };
+export default WaveSurfer;

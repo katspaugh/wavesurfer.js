@@ -1,8 +1,7 @@
+import webaudio from './webaudio';
 import * as util from './util';
 
-WaveSurfer.MediaElement = Object.create(WaveSurfer.WebAudio);
-
-WaveSurfer.util.extend(WaveSurfer.MediaElement, {
+export default util.extend({}, webaudio, {
     init: function (params) {
         this.params = params;
 
@@ -196,7 +195,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
 
     getPeaks: function (length) {
         if (this.buffer) {
-            return WaveSurfer.WebAudio.getPeaks.call(this, length);
+            return webaudio.getPeaks.call(this, length);
         }
         return this.peaks || [];
     },

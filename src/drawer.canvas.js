@@ -1,8 +1,7 @@
+import drawer from './drawer';
 import * as util from './util';
 
-WaveSurfer.Drawer.Canvas = Object.create(WaveSurfer.Drawer);
-
-WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
+export default util.extend({}, drawer, {
     createElements: function () {
         var waveCanvas = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {

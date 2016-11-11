@@ -1,8 +1,8 @@
+import drawer from './drawer';
 import * as util from './util';
 
-WaveSurfer.Drawer.MultiCanvas = Object.create(WaveSurfer.Drawer);
+export default util.extend({}, drawer, {
 
-WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
     initDrawer: function (params) {
         this.maxCanvasWidth = params.maxCanvasWidth != null ? params.maxCanvasWidth : 4000;

@@ -1,6 +1,6 @@
 import * as util from './util';
 
-WaveSurfer.Drawer = {
+export default util.extend({}, util.observer, {
     init: function (container, params) {
         this.container = container;
         this.params = params;
@@ -210,6 +210,4 @@ WaveSurfer.Drawer = {
     clearWave: function () {},
 
     updateProgress: function (position) {}
-};
-
-WaveSurfer.util.extend(WaveSurfer.Drawer, WaveSurfer.Observer);
+});
