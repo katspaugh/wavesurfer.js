@@ -7,7 +7,6 @@
  */
  import * as util from './util';
 
-'use strict';
 
 var WaveSurfer = {
     defaultParams: {

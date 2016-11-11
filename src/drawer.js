@@ -1,5 +1,4 @@
 import * as util from './util';
-'use strict';
 
 WaveSurfer.Drawer = {
     init: function (container, params) {
