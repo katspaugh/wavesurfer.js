@@ -341,6 +341,7 @@ WaveSurfer.WebAudio = {
         this.scheduledPause = end;
 
         this.source.start(0, start, end - start);
+        this.ac.resume();
 
         this.setState(this.PLAYING_STATE);
 
