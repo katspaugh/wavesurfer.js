@@ -23,17 +23,14 @@ export default function(params) {
                 this.drawer = this.wavesurfer.drawer;
                 this.wrapper = this.drawer.wrapper;
 
-                this.wrapper.addEventListener('mousemove', function (e) {
-                    my.updateCursorPosition(my.drawer.handleEvent(e));
-                });
+                this._handleMousemove = (e) => this.updateCursorPosition(this.drawer.handleEvent(e));
+                this.wrapper.addEventListener('mousemove', this._handleMousemove);
 
-                this.wrapper.addEventListener('mouseenter', function (e) {
-                    my.showCursor();
-                });
+                this._handleMouseenter = () => this.showCursor();
+                this.wrapper.addEventListener('mouseenter', this._handleMouseenter);
 
-                this.wrapper.addEventListener('mouseleave', function (e) {
-                    my.hideCursor();
-                });
+                this._handleMouseLeave = () => this.hideCursor();
+                this.wrapper.addEventListener('mouseleave', this._handleMouseLeave);
 
                 this.cursor = this.wrapper.appendChild(
                     this.drawer.style(document.createElement('wave'), {
@@ -51,6 +48,13 @@ export default function(params) {
                         pointerEvents: 'none'
                     })
                 );
+            },
+
+            destroy() {
+                this.cursor.parentNode.removeChild(this.cursor);
+                this.wrapper.removeEventListener('mousemove', this._handleMousemove);
+                this.wrapper.removeEventListener('mouseenter', this._handleMouseenter);
+                this.wrapper.removeEventListener('mouseleave', this._handleMouseLeave);
             },
 
             updateCursorPosition: function(progress) {
