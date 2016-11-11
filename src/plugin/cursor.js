@@ -1,6 +1,21 @@
-'use strict';
-
-WaveSurfer.Cursor = {
+/**
+ * cursor plugin
+ *
+ * @param  {Object} params parameters use to initialise the plugin
+ * @return {Object} an object representing the plugin
+ */
+export default function(params) {
+	return {
+		name: 'cursor',
+		deferInit: params && params.deferInit ? params.deferInit : false,
+		static: {
+			enableCursor() {
+				console.warn('Deprecated enableCursor! Use wavesurfer.initPlugins("cursor") instead!');
+				this.initPlugins('cursor');
+			}
+		},
+        extends: ['observer'],
+		instance: {
     init: function (wavesurfer) {
         var my = this;
 
@@ -50,13 +65,6 @@ WaveSurfer.Cursor = {
     hideCursor: function() {
         this.drawer.style(this.cursor, { display: 'none' });
     }
+}
 };
-
-WaveSurfer.util.extend(WaveSurfer.Cursor, WaveSurfer.Observer);
-
-WaveSurfer.enableCursor = function () {
-    if (!this.cursor) {
-        this.cursor = Object.create(WaveSurfer.Cursor);
-        this.cursor.init(this);
-    }
-};
+}

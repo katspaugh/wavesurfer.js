@@ -1,12 +1,21 @@
-'use strict';
-
-WaveSurfer.ELAN = {
+/**
+ * elan plugin
+ *
+ * @param  {Object} params parameters use to initialise the plugin
+ * @return {Object} an object representing the plugin
+ */
+export default function(params = {}) {
+	return {
+		name: 'elan',
+		deferInit: params && params.deferInit ? params.deferInit : false,
+		static: {},
+		instance: {
     Types: {
         ALIGNABLE_ANNOTATION: 'ALIGNABLE_ANNOTATION',
         REF_ANNOTATION: 'REF_ANNOTATION'
     },
 
-    init: function (params) {
+    init: function (wavesurfer) {
         this.data = null;
         this.params = params;
         this.container = 'string' == typeof params.container ?
@@ -247,6 +256,6 @@ WaveSurfer.ELAN = {
             'wavesurfer-alignable-' + annotation.id
         );
     }
+}
 };
-
-WaveSurfer.util.extend(WaveSurfer.ELAN, WaveSurfer.Observer);
+}

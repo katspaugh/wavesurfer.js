@@ -1,8 +1,23 @@
-'use strict';
-
-/* Minimap */
-WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Drawer.Canvas, {
-    init: function (wavesurfer, params) {
+/**
+ * minimap plugin
+ *
+ * @param  {Object} params parameters use to initialise the plugin
+ * @return {Object} an object representing the plugin
+ */
+export default function(params = {}) {
+	return {
+		name: 'minimap',
+		deferInit: params && params.deferInit ? params.deferInit : false,
+		static: {
+			initMinimap(customConfig) {
+				console.warn('Deprecated initMinimap! Use wavesurfer.initPlugins("minimap") instead!');
+				params = customConfig;
+				this.initPlugins('minimap');
+			}
+		},
+		extends: ['observer', 'drawer'],
+		instance: {
+    init: function (wavesurfer) {
         this.wavesurfer = wavesurfer;
         this.container = this.wavesurfer.drawer.container;
         this.lastPos = this.wavesurfer.drawer.lastPos;
@@ -24,7 +39,7 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         this.createWrapper();
         this.createElements();
 
-        if (WaveSurfer.Regions && this.params.showRegions) {
+        if (this.wavesurfer.regions && this.params.showRegions) {
             this.regions();
         }
 
@@ -74,7 +89,7 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         });
     },
     createElements: function() {
-        WaveSurfer.Drawer.Canvas.createElements.call(this);
+        this.wavesurfer.renderers.Canvas.createElements.call(this);
 
         if (this.params.showOverview) {
             this.overviewRegion =  this.style(document.createElement('overview'), {
@@ -203,11 +218,6 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         this.overviewRegion.style.left = this.overviewPosition + 'px';
         this.wavesurfer.drawer.wrapper.scrollLeft = this.overviewPosition * this.ratio;
     }
-});
-
-
-WaveSurfer.initMinimap = function (params) {
-    var map = Object.create(WaveSurfer.Minimap);
-    map.init(this, params);
-    return map;
+}
 };
+}

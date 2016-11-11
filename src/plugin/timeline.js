@@ -1,9 +1,18 @@
-'use strict';
-
-WaveSurfer.Timeline = {
-    init: function (params) {
+/**
+ * timeline plugin
+ *
+ * @param  {Object} params parameters use to initialise the plugin
+ * @return {Object} an object representing the plugin
+ */
+export default function(params = {}) {
+    return {
+        name: 'timeline',
+        deferInit: params && params.deferInit ? params.deferInit : false,
+        extends: ['observer'],
+        instance: {
+    init: function (wavesurfer) {
         this.params = params;
-        var wavesurfer = this.wavesurfer = params.wavesurfer;
+        this.wavesurfer = wavesurfer;
 
         if (!this.wavesurfer) {
             throw Error('No WaveSurfer intance provided');
@@ -276,6 +285,6 @@ WaveSurfer.Timeline = {
     updateScroll: function () {
         this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
     }
+}
 };
-
-WaveSurfer.util.extend(WaveSurfer.Timeline, WaveSurfer.Observer);
+}

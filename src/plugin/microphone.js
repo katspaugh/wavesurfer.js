@@ -1,10 +1,24 @@
-'use strict';
-
-WaveSurfer.Microphone = {
-    init: function (params) {
+/**
+ * microphone plugin
+ *
+ * @param  {Object} params parameters use to initialise the plugin
+ * @return {Object} an object representing the plugin
+ */
+export default function(params = {}) {
+	return {
+		name: 'microphone',
+		deferInit: params && params.deferInit ? params.deferInit : false,
+		static: {
+			enableCursor() {
+				console.warn('Deprecated enableCursor! Use wavesurfer.initPlugins("microphone") instead!');
+				this.initPlugins('cursor');
+			}
+		},
+		instance: {
+    init: function (wavesurfer) {
         this.params = params;
 
-        var wavesurfer = this.wavesurfer = params.wavesurfer;
+        this.wavesurfer = wavesurfer;
 
         if (!this.wavesurfer) {
             throw new Error('No WaveSurfer instance provided');
@@ -306,7 +320,6 @@ WaveSurfer.Microphone = {
         result.browser = 'Not a supported browser.';
         return result;
     }
-
+}
 };
-
-WaveSurfer.util.extend(WaveSurfer.Microphone, WaveSurfer.Observer);
+}
