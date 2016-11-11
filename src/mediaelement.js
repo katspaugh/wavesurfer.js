@@ -215,6 +215,3 @@ export default util.extend({}, webaudio, {
         this.media = null;
     }
 });
-
-//For backwards compatibility
-WaveSurfer.AudioElement = WaveSurfer.MediaElement;
