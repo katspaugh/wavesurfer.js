@@ -39,7 +39,8 @@
         renderer      : 'Canvas',
         backend       : 'WebAudio',
         mediaType     : 'audio',
-        autoCenter    : true
+        autoCenter    : true,
+        plugins       : []
     },
 
     renderers: {
@@ -93,10 +94,131 @@
         this.Drawer = this.renderers[this.params.renderer];
         this.Backend = this.backends[this.params.backend];
 
+        // plugins that are currently initialised
+        this.initialisedPluginList = {};
+
+        this.registerPlugins(this.params.plugins);
         this.createDrawer();
         this.createBackend();
 
         this.isDestroyed = false;
+    },
+
+    /**
+     * Add and initialise array of plugins (if plugin.deferInit is falsey)
+     *
+     * @param {Array} plugins
+     */
+    registerPlugins: function (plugins) {
+        // first instantiate all the plugins
+        plugins.forEach(plugin => this.addPlugin(plugin));
+
+        // now run the init functions
+        plugins.forEach(plugin => {
+            // call init function of the plugin if deferInit is falsey
+            // in that case you would manually use initPlugins()
+            if (!plugin.deferInit) {
+                this.initPlugin(plugin.name);
+            }
+        });
+        this.fireEvent('plugins-registered', plugins);
+    },
+
+    /**
+     * Add a plugin object to wavesurfer
+     *
+     * @param {Object} plugin object
+     */
+    addPlugin: function (plugin) {
+        if (!plugin.name) {
+            throw new Error('Plugin does not have a name!');
+        }
+        if (!plugin.instance) {
+            throw new Error(`Plugin ${plugin.name} does not have instance object!`);
+        }
+
+        // static properties are applied to wavesurfer instance
+        if (plugin.static) {
+            Object.keys(plugin.static).forEach(key => {
+                this[key] = plugin.static[key];
+            });
+        }
+
+        // default for deferInit is false
+        plugin.deferInit = plugin.deferInit || false;
+
+        // if there is an extends property on the plugin
+        // iterate over them, try and match them in the
+        // parentsMap and iteratively create a single parent
+        let parent = {};
+        const parentsMap = {
+            'observer': util.observer,
+            'drawer': this.Drawer
+        };
+        if (plugin.extends) {
+            plugin.extends.forEach(key => {
+                if (!parentsMap[key]) {
+                    throw new Error(`Cannot extend plugin ${plugin.name} with ${key}, the object was not found!`);
+                }
+                parent = util.extend({}, parent, parentsMap[key]);
+            });
+        }
+
+        // plugin instance extends
+        this[plugin.name] = Object.create(util.extend({}, parent, plugin.instance));
+        this.fireEvent('plugin-added', plugin.name);
+    },
+
+    /**
+     * Initialise a plugin
+     *
+     * @param {String} plugin name
+     */
+    initPlugin: function (name) {
+        if (!this[name]) {
+            throw new Error(`Plugin ${name} has not been added yet!`);
+        }
+        if (typeof this[name].init !== 'function') {
+            throw new Error(`Plugin ${name} does not have an init function!`);
+        }
+        if (this.initialisedPluginList[name]) {
+            // destroy any already initialised plugins
+            this.destroyPlugin(name);
+        }
+        // call the init function
+        this[name].init(this);
+        this.initialisedPluginList[name] = true;
+        this.fireEvent('plugin-initialised', name);
+    },
+
+    /**
+     * Destroy a plugin
+     *
+     * @param {String} plugin name
+     */
+    destroyPlugin: function (name) {
+        if (!this[name]) {
+            throw new Error(`Plugin ${name} has not been added yet and cannot be destroyed!`);
+        }
+        if (!this.initialisedPluginList[name]) {
+            throw new Error(`Plugin ${name} is not active and cannot be destroyed!`);
+        }
+        if (typeof this[name].destroy !== 'function') {
+            throw new Error(`Plugin ${name} does not have a destroy function!`);
+        }
+
+        this[name].destroy();
+        delete this.initialisedPluginList[name];
+        this.fireEvent('plugin-destroyed', name);
+    },
+
+    /**
+     * Destroy all initialised plugins
+     *
+     * Convenience function to use when wavesurfer is removed
+     */
+    destroyAllPlugins: function () {
+        Object.keys(this.initialisedPluginList).forEach(name => this.destroyPlugin(name));
     },
 
     createDrawer: function () {
@@ -555,6 +677,7 @@
      * Remove events, elements and disconnect WebAudio nodes.
      */
     destroy: function () {
+        this.destroyAllPlugins();
         this.fireEvent('destroy');
         this.cancelAjax();
         this.clearTmpEvents();
