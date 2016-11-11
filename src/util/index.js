@@ -4,3 +4,4 @@ export { default as max } from './max';
 export { default as min } from './min';
 export { default as observer } from './observer';
 export { default as extend } from './extend';
+export { default as style } from './style';

@@ -96,14 +96,8 @@ export default util.extend({}, util.observer, {
             this.drawWave(peaks);
     },
 
-    style: function (el, styles) {
-        Object.keys(styles).forEach(function (prop) {
-            if (el.style[prop] !== styles[prop]) {
-                el.style[prop] = styles[prop];
-            }
-        });
-        return el;
-    },
+    // Backward compatibility
+    style: util.style,
 
     resetScroll: function () {
         if (this.wrapper !== null) {
