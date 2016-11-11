@@ -226,6 +226,7 @@
 
         this.drawer = Object.create(this.Drawer);
         this.drawer.init(this.container, this.params);
+        this.fireEvent('drawer-created', this.drawer);
 
         this.drawer.on('redraw', function () {
             my.drawBuffer();
@@ -263,6 +264,7 @@
 
         this.backend = Object.create(this.Backend);
         this.backend.init(this.params);
+        this.fireEvent('backend-created', this.backend);
 
         this.backend.on('finish', function () { my.fireEvent('finish'); });
         this.backend.on('play', function () { my.fireEvent('play'); });
