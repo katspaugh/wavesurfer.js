@@ -7,7 +7,11 @@
  */
  import * as util from './util';
 
+ import Canvas from './drawer.canvas';
+ import MultiCanvas from './drawer.multicanvas';
 
+ import WebAudio from './webaudio';
+ import MediaElement from './mediaelement';
 var WaveSurfer = {
     defaultParams: {
         height        : 128,
@@ -35,6 +39,15 @@ var WaveSurfer = {
         backend       : 'WebAudio',
         mediaType     : 'audio',
         autoCenter    : true
+    },
+
+    renderers: {
+        Canvas,
+        MultiCanvas
+    },
+    backends: {
+        MediaElement,
+        WebAudio
     },
 
     init: function (params) {
@@ -75,6 +88,10 @@ var WaveSurfer = {
         // Holds any running audio downloads
         this.currentAjax = null;
 
+        // cache constructor objects
+        this.Drawer = this.renderers[this.params.renderer];
+        this.Backend = this.backends[this.params.backend];
+
         this.createDrawer();
         this.createBackend();
 
@@ -84,7 +101,7 @@ var WaveSurfer = {
     createDrawer: function () {
         var my = this;
 
-        this.drawer = Object.create(WaveSurfer.Drawer[this.params.renderer]);
+        this.drawer = Object.create(this.Drawer);
         this.drawer.init(this.container, this.params);
 
         this.drawer.on('redraw', function () {
@@ -117,11 +134,11 @@ var WaveSurfer = {
             this.params.backend = 'MediaElement';
         }
 
-        if (this.params.backend == 'WebAudio' && !WaveSurfer.WebAudio.supportsWebAudio()) {
+        if (this.params.backend == 'WebAudio' && !this.backends.WebAudio.supportsWebAudio()) {
             this.params.backend = 'MediaElement';
         }
 
-        this.backend = Object.create(WaveSurfer[this.params.backend]);
+        this.backend = Object.create(this.Backend);
         this.backend.init(this.params);
 
         this.backend.on('finish', function () { my.fireEvent('finish'); });
