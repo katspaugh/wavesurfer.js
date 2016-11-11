@@ -7,8 +7,12 @@
     "example": "example"
   },
   "scripts": {
-    "start": "grunt; ruby -run -e httpd . -p 8080",
-    "test": "grunt test"
+    "start": "webpack-dev-server",
+    "start:plugins": "webpack-dev-server --env.plugins",
+    "build": "npm run build:normal & npm run build:minified",
+    "build:normal": "webpack & webpack --env.plugins",
+    "build:minified": "webpack --env.minify & webpack --env.plugins --env.minify",
+    "test": "BABEL_ENV=test karma start karma.conf.js"
   },
   "repository": {
     "type": "git",
@@ -20,20 +24,23 @@
     "url": "https://github.com/katspaugh/wavesurfer.js/issues"
   },
   "devDependencies": {
-    "grunt": "^1.0.0",
-    "grunt-contrib-clean": "^1.0.0",
-    "grunt-contrib-concat": ">=0.4.0",
-    "grunt-contrib-connect": "^0.11.2",
-    "grunt-contrib-jshint": ">=0.10.0",
-    "grunt-contrib-uglify": ">=0.5.0",
-    "grunt-jscs": ">=2.7.0",
-    "grunt-karma": "2.0.0",
-    "grunt-template-jasmine-istanbul": ">=0.3.3",
-    "grunt-umd": ">=2.3.5",
-    "karma": "1.3.0",
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.7",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-istanbul": "^2.0.3",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-es2015-native-modules": "^6.9.4",
+    "babel-register": "^6.18.0",
+    "eslint": "^3.9.1",
+    "eslint-loader": "^1.6.1",
+    "karma": "^1.3.0",
     "karma-chrome-launcher": "2.0.0",
+    "karma-coverage": "^1.1.1",
     "karma-jasmine": "1.0.2",
-    "karma-jasmine-matchers": "3.0.1"
+    "karma-jasmine-matchers": "3.0.1",
+    "karma-webpack": "^1.8.0",
+    "webpack": "^2.1.0-beta.25",
+    "webpack-dev-server": "^2.1.0-beta.9"
   },
   "homepage": "https://github.com/katspaugh/wavesurfer.js"
 }
