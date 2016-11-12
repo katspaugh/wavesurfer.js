@@ -367,8 +367,44 @@ const Region = {
     }
 };
 
-/* Regions manager */
-WaveSurfer.Regions = {
+/**
+ * regions plugin
+ *
+ * @param  {Object} params parameters use to initialise the plugin
+ * @return {Object} an object representing the plugin
+*/
+export default function(params = {}) {
+    return {
+        name: 'regions',
+        deferInit: params && params.deferInit ? params.deferInit : false,
+        extends: ['observer'],
+        static: {
+            initRegions() {
+                console.warn('Deprecated initRegions! Use wavesurfer.initPlugins("regions") instead!');
+                this.initPlugin('regions');
+            },
+
+            addRegion(options) {
+                if (!this.initialisedPluginList.regions) {
+                    this.initRegions();
+                }
+                this.regions.add(options);
+            },
+
+            clearRegions() {
+                this.regions && this.regions.clear();
+            },
+
+            enableDragSelection(options) {
+                this.initRegions();
+                this.regions.enableDragSelection(options);
+            },
+
+            disableDragSelection() {
+                this.regions.disableDragSelection();
+            }
+        },
+        instance: {
     init: function (wavesurfer) {
         this.wavesurfer = wavesurfer;
         this.wrapper = this.wavesurfer.drawer.wrapper;
@@ -471,35 +507,6 @@ WaveSurfer.Regions = {
     disableDragSelection: function () {
         this.fireEvent('disable-drag-selection');
     }
+}
 };
-
-WaveSurfer.util.extend(WaveSurfer.Regions, WaveSurfer.Observer);
-
-WaveSurfer.util.extend(WaveSurfer.Region, WaveSurfer.Observer);
-
-
-/* Augment WaveSurfer with region methods. */
-WaveSurfer.initRegions = function () {
-    if (!this.regions) {
-        this.regions = Object.create(WaveSurfer.Regions);
-        this.regions.init(this);
-    }
-};
-
-WaveSurfer.addRegion = function (options) {
-    this.initRegions();
-    return this.regions.add(options);
-};
-
-WaveSurfer.clearRegions = function () {
-    this.regions && this.regions.clear();
-};
-
-WaveSurfer.enableDragSelection = function (options) {
-    this.initRegions();
-    this.regions.enableDragSelection(options);
-};
-
-WaveSurfer.disableDragSelection = function () {
-    this.regions.disableDragSelection();
-};
+}
