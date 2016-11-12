@@ -51,7 +51,7 @@ export default function(params) {
                     );
                 };
 
-                if (this.drawer) {
+                if (this.wavesurfer.drawer) {
                     this._onDrawerCreated();
                 }
                 this.wavesurfer.on('drawer-created', this._onDrawerCreated);
