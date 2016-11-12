@@ -1,12 +1,12 @@
 'use strict';
 
 // Create an instance
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer;
 
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function () {
     // Init
-    wavesurfer.init({
+    wavesurfer = window.WaveSurfer.create({
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',

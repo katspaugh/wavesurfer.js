@@ -1,24 +1,36 @@
 /**
  * Create a WaveSurfer instance.
  */
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer;
 
 /**
  * Init & load.
  */
 document.addEventListener('DOMContentLoaded', function () {
     // Init wavesurfer
-    wavesurfer.init({
+    wavesurfer = window.WaveSurfer.create({
         container: '#waveform',
         height: 100,
         pixelRatio: 1,
         scrollParent: true,
         normalize: true,
         minimap: true,
-        backend: 'MediaElement'
+        backend: 'MediaElement',
+        plugins: [
+            window.WaveSurfer.regions(),
+            window.WaveSurfer.minimap({
+                height: 30,
+                waveColor: '#ddd',
+                progressColor: '#999',
+                cursorColor: '#999'
+            }),
+            window.WaveSurfer.timeline({
+                container: "#wave-timeline"
+            })
+        ]
     });
 
-    wavesurfer.util.ajax({
+    window.WaveSurfer.util.ajax({
         responseType: 'json',
         url: 'rashomon.json'
     }).on('success', function (data) {

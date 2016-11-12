@@ -12,7 +12,18 @@ document.addEventListener('DOMContentLoaded', function () {
         loaderColor   : 'purple',
         cursorColor   : 'navy',
         selectionColor: '#d0e9c6',
-        loopSelection : false
+        loopSelection : false,
+        plugins: [
+            window.WaveSurfer.elan({
+                url: 'transcripts/001z.xml',
+                container: '#annotations',
+                tiers: {
+                    Text: true,
+                    Comments: true
+                }
+            }),
+            window.WaveSurfer.regions()
+        ]
     };
 
     if (location.search.match('scroll')) {
@@ -47,28 +58,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // Init wavesurfer
     wavesurfer.init(options);
 
-    // Init ELAN plugin
-    var elan = Object.create(WaveSurfer.ELAN);
-
-    elan.init({
-        url: 'transcripts/001z.xml',
-        container: '#annotations',
-        tiers: {
-            Text: true,
-            Comments: true
-        }
-    });
-
-    elan.on('ready', function (data) {
+    wavesurfer.elan.on('ready', function (data) {
         wavesurfer.load('transcripts/' + data.media.url);
     });
 
-    elan.on('select', function (start, end) {
+    wavesurfer.elan.on('select', function (start, end) {
         wavesurfer.backend.play(start, end);
     });
 
-    elan.on('ready', function () {
-        var classList = elan.container.querySelector('table').classList;
+    wavesurfer.elan.on('ready', function () {
+        var classList = wavesurfer.elan.container.querySelector('table').classList;
         [ 'table', 'table-striped', 'table-hover' ].forEach(function (cl) {
             classList.add(cl);
         });
@@ -76,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var prevAnnotation, prevRow, region;
     var onProgress = function (time) {
-        var annotation = elan.getRenderedAnnotation(time);
+        var annotation = wavesurfer.elan.getRenderedAnnotation(time);
 
         if (prevAnnotation != annotation) {
             prevAnnotation = annotation;
@@ -86,13 +85,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (annotation) {
                 // Highlight annotation table row
-                var row = elan.getAnnotationNode(annotation);
+                var row = wavesurfer.elan.getAnnotationNode(annotation);
                 prevRow && prevRow.classList.remove('success');
                 prevRow = row;
                 row.classList.add('success');
                 var before = row.previousSibling;
                 if (before) {
-                    elan.container.scrollTop = before.offsetTop;
+                    wavesurfer.elan.container.scrollTop = before.offsetTop;
                 }
 
                 // Region
