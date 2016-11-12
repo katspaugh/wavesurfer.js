@@ -49,6 +49,7 @@ const config = {
 		filename: '[name].js',
 		library: 'WaveSurfer',
 		libraryTarget: 'umd',
+        umdNamedDefine: true
 	},
 	devServer: {
 		outputPath: path.join(__dirname, 'dist'),
