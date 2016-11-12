@@ -179,7 +179,21 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
 };
 /* eslint-enable complexity */
 
-WaveSurfer.Spectrogram = {
+/**
+* spectrogram plugin
+*
+* @param  {Object} params parameters use to initialise the plugin
+* @return {Object} an object representing the plugin
+*/
+export default function(params = {}) {
+	return {
+		name: 'spectrogram',
+        deferInit: params && params.deferInit ? params.deferInit : false,
+		static: {
+			FFT
+		},
+        extends: ['observer'],
+		instance: {
 
     /**
      * List of params:
@@ -429,8 +443,6 @@ WaveSurfer.Spectrogram = {
 
         return newMatrix;
     }
-
+}
 };
-
-
-WaveSurfer.util.extend(WaveSurfer.Spectrogram, WaveSurfer.Observer, WaveSurfer.FFT);
+}
