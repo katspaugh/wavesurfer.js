@@ -383,7 +383,7 @@ export default function(params = {}) {
 
             addRegion(options) {
                 if (!this.initialisedPluginList.regions) {
-                    this.initRegions();
+                    this.initPlugin('regions');
                 }
                 this.regions.add(options);
             },
@@ -393,7 +393,7 @@ export default function(params = {}) {
             },
 
             enableDragSelection(options) {
-                this.initRegions();
+                this.initPlugin('regions');
                 this.regions.enableDragSelection(options);
             },
 
