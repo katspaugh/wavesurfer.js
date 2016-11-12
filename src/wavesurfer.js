@@ -1,10 +1,3 @@
-/**
- * wavesurfer.js
- *
- * https://github.com/katspaugh/wavesurfer.js
- *
- * This work is licensed under a Creative Commons Attribution 3.0 Unported License.
- */
  import * as util from './util';
 
  import Canvas from './drawer.canvas';
@@ -136,7 +129,7 @@
             throw new Error('Plugin does not have a name!');
         }
         if (!plugin.instance) {
-            throw new Error(`Plugin ${plugin.name} does not have instance object!`);
+            throw new Error(`Plugin ${plugin.name} does not have an instance object!`);
         }
 
         // static properties are applied to wavesurfer instance
@@ -166,7 +159,7 @@
             });
         }
 
-        // plugin instance extends
+        // create a new instance with the extended plugin instance property
         this[plugin.name] = Object.create(util.extend({}, parent, plugin.instance));
         this.fireEvent('plugin-added', plugin.name);
         return this;
@@ -190,6 +183,7 @@
         }
         // call the init function
         this[name].init(this);
+        // add the plugin name to the list of initialised plugins
         this.initialisedPluginList[name] = true;
         this.fireEvent('plugin-initialised', name);
         return this;
