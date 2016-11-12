@@ -122,6 +122,7 @@
             }
         });
         this.fireEvent('plugins-registered', plugins);
+        return this;
     },
 
     /**
@@ -167,6 +168,7 @@
         // plugin instance extends
         this[plugin.name] = Object.create(util.extend({}, parent, plugin.instance));
         this.fireEvent('plugin-added', plugin.name);
+        return this;
     },
 
     /**
@@ -189,6 +191,7 @@
         this[name].init(this);
         this.initialisedPluginList[name] = true;
         this.fireEvent('plugin-initialised', name);
+        return this;
     },
 
     /**
@@ -210,6 +213,7 @@
         this[name].destroy();
         delete this.initialisedPluginList[name];
         this.fireEvent('plugin-destroyed', name);
+        return this;
     },
 
     /**
