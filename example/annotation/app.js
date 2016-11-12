@@ -41,11 +41,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     /* Regions */
-    wavesurfer.enableDragSelection({
-        color: randomColor(0.1)
-    });
 
     wavesurfer.on('ready', function () {
+        wavesurfer.enableDragSelection({
+            color: randomColor(0.1)
+        });
+
         if (localStorage.regions) {
             loadRegions(JSON.parse(localStorage.regions));
         } else {
@@ -78,25 +79,6 @@ document.addEventListener('DOMContentLoaded', function () {
         region.once('out', function () {
             wavesurfer.play(region.start);
             wavesurfer.pause();
-        });
-    });
-
-
-    /* Minimap plugin */
-    wavesurfer.initMinimap({
-        height: 30,
-        waveColor: '#ddd',
-        progressColor: '#999',
-        cursorColor: '#999'
-    });
-
-
-    /* Timeline plugin */
-    wavesurfer.on('ready', function () {
-        var timeline = Object.create(WaveSurfer.Timeline);
-        timeline.init({
-            wavesurfer: wavesurfer,
-            container: "#wave-timeline"
         });
     });
 
