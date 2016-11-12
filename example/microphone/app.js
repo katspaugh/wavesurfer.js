@@ -5,9 +5,6 @@ var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function () {
-    var options = {
-
-    };
     var micBtn = document.querySelector('#micBtn');
 
     // Init wavesurfer

@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* Progress bar */
     (function () {
-		console.log(wavesurfer);
         var progressDiv = document.querySelector('#progress-bar');
         var progressBar = progressDiv.querySelector('.progress-bar');
 
