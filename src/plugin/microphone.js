@@ -8,12 +8,6 @@ export default function(params = {}) {
     return {
         name: 'microphone',
         deferInit: params && params.deferInit ? params.deferInit : false,
-        static: {
-            enableCursor() {
-                console.warn('Deprecated enableCursor! Use wavesurfer.initPlugins("microphone") instead!');
-                this.initPlugins('cursor');
-            }
-        },
         extends: ['observer'],
         instance: {
             init: function (wavesurfer) {
