@@ -214,46 +214,50 @@ export default function(params = {}) {
             *   alpha: some window functions have this extra value (0<alpha<1);
             *   noverlap: size of the overlapping window. Must be < fftSamples. Auto deduced from canvas size by default.
             */
-            init: function (params) {
+            init: function (wavesurfer) {
                 this.params = params;
-                var wavesurfer = this.wavesurfer = params.wavesurfer;
-
-                if (!this.wavesurfer) {
-                    throw Error('No WaveSurfer instance provided');
-                }
+                this.wavesurfer = wavesurfer;
 
                 this.frequenciesDataUrl = params.frequenciesDataUrl;
+                this._onReady = () => {
+                    var drawer = this.drawer = this.wavesurfer.drawer;
 
-                var drawer = this.drawer = this.wavesurfer.drawer;
+                    this.container = 'string' == typeof params.container ?
+                    document.querySelector(params.container) : params.container;
 
-                this.container = 'string' == typeof params.container ?
-                document.querySelector(params.container) : params.container;
+                    if (!this.container) {
+                        throw Error('No container for WaveSurfer spectrogram');
+                    }
 
-                if (!this.container) {
-                    throw Error('No container for WaveSurfer spectrogram');
+                    this.width = drawer.width;
+                    this.pixelRatio = this.params.pixelRatio || wavesurfer.params.pixelRatio;
+                    this.fftSamples = this.params.fftSamples || wavesurfer.params.fftSamples || 512;
+                    this.height = this.fftSamples / 2;
+                    this.noverlap = params.noverlap;
+                    this.windowFunc = params.windowFunc;
+                    this.alpha = params.alpha;
+
+                    this.createWrapper();
+                    this.createCanvas();
+                    this.render();
+
+                    drawer.wrapper.addEventListener('scroll', function (e) {
+                        this.updateScroll(e);
+                    }.bind(this));
+                    wavesurfer.on('redraw', this.render.bind(this));
+                };
+
+                // Check if ws is ready
+                if (this.wavesurfer.backend) {
+                    this._onReady();
                 }
 
-                this.width = drawer.width;
-                this.pixelRatio = this.params.pixelRatio || wavesurfer.params.pixelRatio;
-                this.fftSamples = this.params.fftSamples || wavesurfer.params.fftSamples || 512;
-                this.height = this.fftSamples / 2;
-                this.noverlap = params.noverlap;
-                this.windowFunc = params.windowFunc;
-                this.alpha = params.alpha;
-
-                this.createWrapper();
-                this.createCanvas();
-                this.render();
-
-                drawer.wrapper.addEventListener('scroll', function (e) {
-                    this.updateScroll(e);
-                }.bind(this));
-                wavesurfer.on('redraw', this.render.bind(this));
-                wavesurfer.on('destroy', this.destroy.bind(this));
+                this.wavesurfer.on('ready', this._onReady);
             },
 
             destroy: function () {
                 this.unAll();
+                this.wavesurfer.un('ready', this._onReady);
                 if (this.wrapper) {
                     this.wrapper.parentNode.removeChild(this.wrapper);
                     this.wrapper = null;
@@ -313,8 +317,7 @@ export default function(params = {}) {
 
                 if (this.frequenciesDataUrl) {
                     this.loadFrequenciesData(this.frequenciesDataUrl);
-                }
-                else {
+                } else {
                     this.getFrequencies(this.drawSpectrogram);
                 }
             },
@@ -364,7 +367,7 @@ export default function(params = {}) {
                     noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
                 }
 
-                var fft = new WaveSurfer.FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
+                var fft = new FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
 
                 var maxSlicesCount = Math.floor(bufferLength/ (fftSamples - noverlap));
 
@@ -387,7 +390,7 @@ export default function(params = {}) {
             loadFrequenciesData: function (url) {
                 var my = this;
 
-                var ajax = WaveSurfer.util.ajax({ url: url });
+                var ajax = this.wavesurfer.util.ajax({ url: url });
 
                 ajax.on('success', function(data) { my.drawSpectrogram(JSON.parse(data), my); });
                 ajax.on('error', function (e) {
@@ -421,7 +424,7 @@ export default function(params = {}) {
                         0 :
                         Math.min(Math.max(oldEnd, newStart), Math.max(newEnd, oldStart)) -
                         Math.max(Math.min(oldEnd, newStart), Math.min(newEnd, oldStart));
-
+                        /* eslint-disable max-depth */
                         if (overlap > 0) {
                             for (var k = 0; k < oldMatrix[0].length; k++) {
                                 if (column[k] == null) {
@@ -430,6 +433,7 @@ export default function(params = {}) {
                                 column[k] += (overlap / newPiece) * oldMatrix[j][k];
                             }
                         }
+                        /* eslint-enable max-depth */
                     }
 
                     var intColumn = new Uint8Array(oldMatrix[0].length);
