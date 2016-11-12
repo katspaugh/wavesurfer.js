@@ -186,263 +186,263 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
 * @return {Object} an object representing the plugin
 */
 export default function(params = {}) {
-	return {
-		name: 'spectrogram',
+    return {
+        name: 'spectrogram',
         deferInit: params && params.deferInit ? params.deferInit : false,
-		static: {
-			FFT
-		},
+        static: {
+            FFT
+        },
         extends: ['observer'],
-		instance: {
+        instance: {
 
-    /**
-     * List of params:
-     *   wavesurfer: wavesurfer object
-     *   pixelRatio: to control the size of the spectrogram in relation with its canvas. 1=Draw on the whole canvas. 2 = draw on a quarter (1/2 the lenght and 1/2 the width)
-     *   fftSamples: number of samples to fetch to FFT. Must be a pwer of 2. Default = 512
-     *   windowFunc: the window function to be used. Default is 'hann'. Choose from the following:
-     *               + 'bartlett'
-     *               + 'bartlettHann'
-     *               + 'blackman'
-     *               + 'cosine'
-     *               + 'gauss'
-     *               + 'hamming'
-     *               + 'hann'
-     *               + 'lanczoz'
-     *               + 'rectangular'
-     *               + 'triangular'
-     *   alpha: some window functions have this extra value (0<alpha<1);
-     *   noverlap: size of the overlapping window. Must be < fftSamples. Auto deduced from canvas size by default.
-     */
-    init: function (params) {
-        this.params = params;
-        var wavesurfer = this.wavesurfer = params.wavesurfer;
+            /**
+            * List of params:
+            *   wavesurfer: wavesurfer object
+            *   pixelRatio: to control the size of the spectrogram in relation with its canvas. 1=Draw on the whole canvas. 2 = draw on a quarter (1/2 the lenght and 1/2 the width)
+            *   fftSamples: number of samples to fetch to FFT. Must be a pwer of 2. Default = 512
+            *   windowFunc: the window function to be used. Default is 'hann'. Choose from the following:
+            *               + 'bartlett'
+            *               + 'bartlettHann'
+            *               + 'blackman'
+            *               + 'cosine'
+            *               + 'gauss'
+            *               + 'hamming'
+            *               + 'hann'
+            *               + 'lanczoz'
+            *               + 'rectangular'
+            *               + 'triangular'
+            *   alpha: some window functions have this extra value (0<alpha<1);
+            *   noverlap: size of the overlapping window. Must be < fftSamples. Auto deduced from canvas size by default.
+            */
+            init: function (params) {
+                this.params = params;
+                var wavesurfer = this.wavesurfer = params.wavesurfer;
 
-        if (!this.wavesurfer) {
-            throw Error('No WaveSurfer instance provided');
-        }
+                if (!this.wavesurfer) {
+                    throw Error('No WaveSurfer instance provided');
+                }
 
-        this.frequenciesDataUrl = params.frequenciesDataUrl;
+                this.frequenciesDataUrl = params.frequenciesDataUrl;
 
-        var drawer = this.drawer = this.wavesurfer.drawer;
+                var drawer = this.drawer = this.wavesurfer.drawer;
 
-        this.container = 'string' == typeof params.container ?
-            document.querySelector(params.container) : params.container;
+                this.container = 'string' == typeof params.container ?
+                document.querySelector(params.container) : params.container;
 
-        if (!this.container) {
-            throw Error('No container for WaveSurfer spectrogram');
-        }
+                if (!this.container) {
+                    throw Error('No container for WaveSurfer spectrogram');
+                }
 
-        this.width = drawer.width;
-        this.pixelRatio = this.params.pixelRatio || wavesurfer.params.pixelRatio;
-        this.fftSamples = this.params.fftSamples || wavesurfer.params.fftSamples || 512;
-        this.height = this.fftSamples / 2;
-        this.noverlap = params.noverlap;
-        this.windowFunc = params.windowFunc;
-        this.alpha = params.alpha;
+                this.width = drawer.width;
+                this.pixelRatio = this.params.pixelRatio || wavesurfer.params.pixelRatio;
+                this.fftSamples = this.params.fftSamples || wavesurfer.params.fftSamples || 512;
+                this.height = this.fftSamples / 2;
+                this.noverlap = params.noverlap;
+                this.windowFunc = params.windowFunc;
+                this.alpha = params.alpha;
 
-        this.createWrapper();
-        this.createCanvas();
-        this.render();
+                this.createWrapper();
+                this.createCanvas();
+                this.render();
 
-        drawer.wrapper.addEventListener('scroll', function (e) {
-            this.updateScroll(e);
-        }.bind(this));
-        wavesurfer.on('redraw', this.render.bind(this));
-        wavesurfer.on('destroy', this.destroy.bind(this));
-    },
+                drawer.wrapper.addEventListener('scroll', function (e) {
+                    this.updateScroll(e);
+                }.bind(this));
+                wavesurfer.on('redraw', this.render.bind(this));
+                wavesurfer.on('destroy', this.destroy.bind(this));
+            },
 
-    destroy: function () {
-        this.unAll();
-        if (this.wrapper) {
-            this.wrapper.parentNode.removeChild(this.wrapper);
-            this.wrapper = null;
-        }
-    },
+            destroy: function () {
+                this.unAll();
+                if (this.wrapper) {
+                    this.wrapper.parentNode.removeChild(this.wrapper);
+                    this.wrapper = null;
+                }
+            },
 
-    createWrapper: function () {
-        var prevSpectrogram = this.container.querySelector('spectrogram');
-        if (prevSpectrogram) {
-            this.container.removeChild(prevSpectrogram);
-        }
+            createWrapper: function () {
+                var prevSpectrogram = this.container.querySelector('spectrogram');
+                if (prevSpectrogram) {
+                    this.container.removeChild(prevSpectrogram);
+                }
 
-        var wsParams = this.wavesurfer.params;
+                var wsParams = this.wavesurfer.params;
 
-        this.wrapper = this.container.appendChild(
-            document.createElement('spectrogram')
-        );
-        this.drawer.style(this.wrapper, {
-            display: 'block',
-            position: 'relative',
-            userSelect: 'none',
-            webkitUserSelect: 'none',
-            height: this.height + 'px'
-        });
+                this.wrapper = this.container.appendChild(
+                    document.createElement('spectrogram')
+                );
+                this.drawer.style(this.wrapper, {
+                    display: 'block',
+                    position: 'relative',
+                    userSelect: 'none',
+                    webkitUserSelect: 'none',
+                    height: this.height + 'px'
+                });
 
-        if (wsParams.fillParent || wsParams.scrollParent) {
-            this.drawer.style(this.wrapper, {
-                width: '100%',
-                overflowX: 'hidden',
-                overflowY: 'hidden'
-            });
-        }
+                if (wsParams.fillParent || wsParams.scrollParent) {
+                    this.drawer.style(this.wrapper, {
+                        width: '100%',
+                        overflowX: 'hidden',
+                        overflowY: 'hidden'
+                    });
+                }
 
-        var my = this;
-        this.wrapper.addEventListener('click', function (e) {
-            e.preventDefault();
-            var relX = 'offsetX' in e ? e.offsetX : e.layerX;
-            my.fireEvent('click', (relX / my.scrollWidth) || 0);
-        });
-    },
+                var my = this;
+                this.wrapper.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var relX = 'offsetX' in e ? e.offsetX : e.layerX;
+                    my.fireEvent('click', (relX / my.scrollWidth) || 0);
+                });
+            },
 
-    createCanvas: function () {
-        var canvas = this.canvas = this.wrapper.appendChild(
-          document.createElement('canvas')
-        );
+            createCanvas: function () {
+                var canvas = this.canvas = this.wrapper.appendChild(
+                    document.createElement('canvas')
+                );
 
-        this.spectrCc = canvas.getContext('2d');
+                this.spectrCc = canvas.getContext('2d');
 
-        this.wavesurfer.drawer.style(canvas, {
-            position: 'absolute',
-            zIndex: 4
-        });
-    },
+                this.wavesurfer.drawer.style(canvas, {
+                    position: 'absolute',
+                    zIndex: 4
+                });
+            },
 
-    render: function () {
-        this.updateCanvasStyle();
+            render: function () {
+                this.updateCanvasStyle();
 
-        if (this.frequenciesDataUrl) {
-            this.loadFrequenciesData(this.frequenciesDataUrl);
-        }
-        else {
-            this.getFrequencies(this.drawSpectrogram);
-        }
-    },
+                if (this.frequenciesDataUrl) {
+                    this.loadFrequenciesData(this.frequenciesDataUrl);
+                }
+                else {
+                    this.getFrequencies(this.drawSpectrogram);
+                }
+            },
 
-    updateCanvasStyle: function () {
-        var width = Math.round(this.width / this.pixelRatio) + 'px';
-        this.canvas.width = this.width;
-        this.canvas.height = this.height;
-        this.canvas.style.width = width;
-    },
+            updateCanvasStyle: function () {
+                var width = Math.round(this.width / this.pixelRatio) + 'px';
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+                this.canvas.style.width = width;
+            },
 
-    drawSpectrogram: function(frequenciesData, my) {
-        var spectrCc = my.spectrCc;
+            drawSpectrogram: function(frequenciesData, my) {
+                var spectrCc = my.spectrCc;
 
-        var length = my.wavesurfer.backend.getDuration();
-        var height = my.height;
+                var length = my.wavesurfer.backend.getDuration();
+                var height = my.height;
 
-        var pixels = my.resample(frequenciesData);
+                var pixels = my.resample(frequenciesData);
 
-        var heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
+                var heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
 
-        for (var i = 0; i < pixels.length; i++) {
-            for (var j = 0; j < pixels[i].length; j++) {
-                var colorValue = 255 - pixels[i][j];
-                my.spectrCc.fillStyle = 'rgb(' + colorValue + ', '  + colorValue + ', ' + colorValue + ')';
-                my.spectrCc.fillRect(i, height - j * heightFactor, 1, heightFactor);
-            }
-        }
-    },
-
-    getFrequencies: function(callback) {
-        var fftSamples = this.fftSamples;
-        var buffer = this.buffer = this.wavesurfer.backend.buffer;
-        var channelOne = buffer.getChannelData(0);
-        var bufferLength = buffer.length;
-        var sampleRate = buffer.sampleRate;
-        var frequencies = [];
-
-        if (! buffer) {
-            this.fireEvent('error', 'Web Audio buffer is not available');
-            return;
-        }
-
-        var noverlap = this.noverlap;
-        if (! noverlap) {
-            var uniqueSamplesPerPx = buffer.length / this.canvas.width;
-            noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
-        }
-
-        var fft = new WaveSurfer.FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
-
-        var maxSlicesCount = Math.floor(bufferLength/ (fftSamples - noverlap));
-
-        var currentOffset = 0;
-
-        while (currentOffset + fftSamples < channelOne.length) {
-            var segment = channelOne.slice(currentOffset, currentOffset + fftSamples);
-            var spectrum = fft.calculateSpectrum(segment);
-            var array = new Uint8Array(fftSamples/2);
-            for (var j = 0; j<fftSamples/2; j++) {
-                array[j] = Math.max(-255, Math.log10(spectrum[j])*45);
-            }
-            frequencies.push(array);
-            currentOffset += (fftSamples - noverlap);
-        }
-        callback(frequencies, this);
-    },
-
-
-    loadFrequenciesData: function (url) {
-        var my = this;
-
-        var ajax = WaveSurfer.util.ajax({ url: url });
-
-        ajax.on('success', function(data) { my.drawSpectrogram(JSON.parse(data), my); });
-        ajax.on('error', function (e) {
-            my.fireEvent('error', 'XHR error: ' + e.target.statusText);
-        });
-
-        return ajax;
-    },
-
-    updateScroll: function(e) {
-      this.wrapper.scrollLeft = e.target.scrollLeft;
-    },
-
-    resample: function(oldMatrix, columnsNumber) {
-        var columnsNumber = this.width;
-        var newMatrix = [];
-
-        var oldPiece = 1 / oldMatrix.length;
-        var newPiece = 1 / columnsNumber;
-
-        for (var i = 0; i < columnsNumber; i++) {
-            var column = new Array(oldMatrix[0].length);
-
-            for (var j = 0; j < oldMatrix.length; j++) {
-                var oldStart = j * oldPiece;
-                var oldEnd = oldStart + oldPiece;
-                var newStart = i * newPiece;
-                var newEnd = newStart + newPiece;
-
-                var overlap = (oldEnd <= newStart || newEnd <= oldStart) ?
-                                0 :
-                                Math.min(Math.max(oldEnd, newStart), Math.max(newEnd, oldStart)) -
-                                Math.max(Math.min(oldEnd, newStart), Math.min(newEnd, oldStart));
-
-                if (overlap > 0) {
-                    for (var k = 0; k < oldMatrix[0].length; k++) {
-                        if (column[k] == null) {
-                            column[k] = 0;
-                        }
-                        column[k] += (overlap / newPiece) * oldMatrix[j][k];
+                for (var i = 0; i < pixels.length; i++) {
+                    for (var j = 0; j < pixels[i].length; j++) {
+                        var colorValue = 255 - pixels[i][j];
+                        my.spectrCc.fillStyle = 'rgb(' + colorValue + ', '  + colorValue + ', ' + colorValue + ')';
+                        my.spectrCc.fillRect(i, height - j * heightFactor, 1, heightFactor);
                     }
                 }
+            },
+
+            getFrequencies: function(callback) {
+                var fftSamples = this.fftSamples;
+                var buffer = this.buffer = this.wavesurfer.backend.buffer;
+                var channelOne = buffer.getChannelData(0);
+                var bufferLength = buffer.length;
+                var sampleRate = buffer.sampleRate;
+                var frequencies = [];
+
+                if (! buffer) {
+                    this.fireEvent('error', 'Web Audio buffer is not available');
+                    return;
+                }
+
+                var noverlap = this.noverlap;
+                if (! noverlap) {
+                    var uniqueSamplesPerPx = buffer.length / this.canvas.width;
+                    noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
+                }
+
+                var fft = new WaveSurfer.FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
+
+                var maxSlicesCount = Math.floor(bufferLength/ (fftSamples - noverlap));
+
+                var currentOffset = 0;
+
+                while (currentOffset + fftSamples < channelOne.length) {
+                    var segment = channelOne.slice(currentOffset, currentOffset + fftSamples);
+                    var spectrum = fft.calculateSpectrum(segment);
+                    var array = new Uint8Array(fftSamples/2);
+                    for (var j = 0; j<fftSamples/2; j++) {
+                        array[j] = Math.max(-255, Math.log10(spectrum[j])*45);
+                    }
+                    frequencies.push(array);
+                    currentOffset += (fftSamples - noverlap);
+                }
+                callback(frequencies, this);
+            },
+
+
+            loadFrequenciesData: function (url) {
+                var my = this;
+
+                var ajax = WaveSurfer.util.ajax({ url: url });
+
+                ajax.on('success', function(data) { my.drawSpectrogram(JSON.parse(data), my); });
+                ajax.on('error', function (e) {
+                    my.fireEvent('error', 'XHR error: ' + e.target.statusText);
+                });
+
+                return ajax;
+            },
+
+            updateScroll: function(e) {
+                this.wrapper.scrollLeft = e.target.scrollLeft;
+            },
+
+            resample: function(oldMatrix, columnsNumber) {
+                var columnsNumber = this.width;
+                var newMatrix = [];
+
+                var oldPiece = 1 / oldMatrix.length;
+                var newPiece = 1 / columnsNumber;
+
+                for (var i = 0; i < columnsNumber; i++) {
+                    var column = new Array(oldMatrix[0].length);
+
+                    for (var j = 0; j < oldMatrix.length; j++) {
+                        var oldStart = j * oldPiece;
+                        var oldEnd = oldStart + oldPiece;
+                        var newStart = i * newPiece;
+                        var newEnd = newStart + newPiece;
+
+                        var overlap = (oldEnd <= newStart || newEnd <= oldStart) ?
+                        0 :
+                        Math.min(Math.max(oldEnd, newStart), Math.max(newEnd, oldStart)) -
+                        Math.max(Math.min(oldEnd, newStart), Math.min(newEnd, oldStart));
+
+                        if (overlap > 0) {
+                            for (var k = 0; k < oldMatrix[0].length; k++) {
+                                if (column[k] == null) {
+                                    column[k] = 0;
+                                }
+                                column[k] += (overlap / newPiece) * oldMatrix[j][k];
+                            }
+                        }
+                    }
+
+                    var intColumn = new Uint8Array(oldMatrix[0].length);
+
+                    for (var k = 0; k < oldMatrix[0].length; k++) {
+                        intColumn[k] = column[k];
+                    }
+
+                    newMatrix.push(intColumn);
+                }
+
+                return newMatrix;
             }
-
-            var intColumn = new Uint8Array(oldMatrix[0].length);
-
-            for (var k = 0; k < oldMatrix[0].length; k++) {
-                intColumn[k] = column[k];
-            }
-
-            newMatrix.push(intColumn);
         }
-
-        return newMatrix;
-    }
-}
-};
+    };
 }
