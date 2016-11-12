@@ -17,12 +17,7 @@ export default function(params = {}) {
         instance: {
             init: function (wavesurfer) {
                 this.params = params;
-
                 this.wavesurfer = wavesurfer;
-
-                if (!this.wavesurfer) {
-                    throw new Error('No WaveSurfer instance provided');
-                }
 
                 this.active = false;
                 this.paused = false;
@@ -83,8 +78,26 @@ export default function(params = {}) {
                 // defaults to 1. Values of up to 32 are supported.
                 this.numberOfOutputChannels = this.params.numberOfOutputChannels || 1;
 
-                // wavesurfer's AudioContext where we'll route the mic signal to
-                this.micContext = this.wavesurfer.backend.getAudioContext();
+                this._onBackendCreated = () => {
+                    // wavesurfer's AudioContext where we'll route the mic signal to
+                    this.micContext = this.wavesurfer.backend.getAudioContext();
+                };
+                this.wavesurfer.on('backend-created', this._onBackendCreated);
+                if (this.wavesurfer.backend) {
+                    this._onBackendCreated();
+                }
+            },
+
+            /**
+             * Destroy the microphone plugin.
+             */
+            destroy: function() {
+                // make sure the buffer is not redrawn during
+                // cleanup and demolition of this plugin.
+                this.paused = true;
+
+                this.wavesurfer.un('backend-created', this._onBackendCreated);
+                this.stop();
             },
 
             /**
@@ -240,17 +253,6 @@ export default function(params = {}) {
 
                 // notify listeners
                 this.fireEvent('deviceReady', stream);
-            },
-
-            /**
-            * Destroy the microphone plugin.
-            */
-            destroy: function(event) {
-                // make sure the buffer is not redrawn during
-                // cleanup and demolition of this plugin.
-                this.paused = true;
-
-                this.stop();
             },
 
             /**
