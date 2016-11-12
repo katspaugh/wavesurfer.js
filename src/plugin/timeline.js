@@ -18,7 +18,6 @@ export default function(params = {}) {
                     throw Error('No WaveSurfer intance provided');
                 }
 
-                var drawer = this.drawer = this.wavesurfer.drawer;
 
                 this.container = 'string' == typeof params.container ?
                 document.querySelector(params.container) : params.container;
@@ -27,10 +26,6 @@ export default function(params = {}) {
                     throw Error('No container for WaveSurfer timeline');
                 }
 
-                this.width = drawer.width;
-                this.pixelRatio = this.drawer.params.pixelRatio;
-                this.maxCanvasWidth = drawer.maxCanvasWidth || this.width;
-                this.maxCanvasElementWidth = drawer.maxCanvasElementWidth || Math.round(this.maxCanvasWidth / this.pixelRatio);
                 this.height = this.params.height || 20;
                 this.notchPercentHeight = this.params.notchPercentHeight || 90;
                 this.primaryColor = this.params.primaryColor || '#000';
@@ -45,18 +40,33 @@ export default function(params = {}) {
                 this.formatTimeCallback = this.params.formatTimeCallback;
                 this.canvases = [];
 
-                this.createWrapper();
-                this.render();
+                this._onRedraw = () => {
+                    this.render();
+                };
 
-                drawer.wrapper.addEventListener('scroll', function (e) {
-                    this.updateScroll(e);
-                }.bind(this));
-                wavesurfer.on('redraw', this.render.bind(this));
-                wavesurfer.on('destroy', this.destroy.bind(this));
+                this._onReady = () => {
+                    this.drawer = this.wavesurfer.drawer;
+                    this.width = this.wavesurfer.drawer.width;
+                    this.pixelRatio = this.wavesurfer.drawer.params.pixelRatio;
+                    this.maxCanvasWidth = this.wavesurfer.drawer.maxCanvasWidth || this.width;
+                    this.maxCanvasElementWidth = this.wavesurfer.drawer.maxCanvasElementWidth || Math.round(this.maxCanvasWidth / this.pixelRatio);
+
+                    this.createWrapper();
+                    this.render();
+                    this.wavesurfer.drawer.wrapper.addEventListener('scroll', e => this.updateScroll(e));
+                    this.wavesurfer.on('redraw', this._onRedraw);
+                };
+                this.wavesurfer.on('ready', this._onReady);
+                // Check if ws is ready
+                if (this.wavesurfer.backend) {
+                    this._onReady();
+                }
             },
 
             destroy: function () {
                 this.unAll();
+                this.wavesurfer.un('redraw', this._onRedraw);
+                this.wavesurfer.un('ready', this._onReady);
                 if (this.wrapper && this.wrapper.parentNode) {
                     this.wrapper.parentNode.removeChild(this.wrapper);
                     this.wrapper = null;
@@ -64,10 +74,6 @@ export default function(params = {}) {
             },
 
             createWrapper: function () {
-                var prevTimeline = this.container.querySelector('timeline');
-                if (prevTimeline) {
-                    this.container.removeChild(prevTimeline);
-                }
 
                 var wsParams = this.wavesurfer.params;
                 this.wrapper = this.container.appendChild(
