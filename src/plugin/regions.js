@@ -393,7 +393,9 @@ export default function(params = {}) {
             },
 
             enableDragSelection(options) {
-                this.initPlugin('regions');
+                if (!this.initialisedPluginList.regions) {
+                    this.initPlugin('regions');
+                }
                 this.regions.enableDragSelection(options);
             },
 
@@ -412,22 +414,26 @@ export default function(params = {}) {
 
                 // Id-based hash of regions.
                 this.list = {};
-                this._onCreatedBackend = () => {
+                this._onReady = () => {
                     this.wrapper = this.wavesurfer.drawer.wrapper;
                     if (this.params.regions) {
                         this.params.regions.forEach(region => {
                             this.add(region);
                         });
                     }
+                    if (this.params.dragSelection) {
+                        this.enableDragSelection(this.params.dragSelection);
+                    }
                 };
+                // Check if ws is ready
                 if (this.wavesurfer.backend) {
-                    this._onCreatedBackend();
+                    this._onReady();
                 }
-                this.wavesurfer.on('backend-created', this._onCreatedBackend);
+                this.wavesurfer.on('ready', this._onReady);
             },
 
             destroy() {
-                this.wavesurfer.un('backend-created', this._onCreatedBackend);
+                this.wavesurfer.un('ready', this._onReady);
                 this.disableDragSelection();
                 this.clear();
             },
