@@ -19,7 +19,7 @@ export default function(params = {}) {
         instance: {
             init: function (wavesurfer) {
                 this.wavesurfer = wavesurfer;
-                this._onCreatedDrawer = () => {
+                this._onDrawerCreated = () => {
                     this.container = this.wavesurfer.drawer.container;
                     this.lastPos = this.wavesurfer.drawer.lastPos;
                     this.params = wavesurfer.util.extend(
@@ -48,17 +48,17 @@ export default function(params = {}) {
                     this.bindMinimapEvents();
                 };
                 if (this.wavesurfer.drawer) {
-                    this._onCreatedDrawer();
+                    this._onDrawerCreated();
                     // @TODO: This shouldn't be necessary
                     this._onResize();
                 }
 
-                this.wavesurfer.on('created-drawer', this._onCreatedDrawer);
+                this.wavesurfer.on('drawer-created', this._onDrawerCreated);
             },
 
             destroy: function () {
                 window.removeEventListener('resize', this._onResize, true);
-                this.wavesurfer.un('created-drawer', this._onCreatedDrawer);
+                this.wavesurfer.un('drawer-created', this._onDrawerCreated);
                 this.wrapper.parentNode.removeChild(this.wrapper);
             },
 
