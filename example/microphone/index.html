@@ -68,45 +68,40 @@
                     <h4>Quick Start</h4>
 
                     <noindex><p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
+<pre><code>var wavesurfer = WaveSurfer.create({
   container     : '#waveform',
   waveColor     : 'black',
   interact      : false,
-  cursorWidth   : 0
+  cursorWidth   : 0,
+  plugins: [
+    WaveSurfer.microphone()
+  ]
 });
 
-var microphone = Object.create(WaveSurfer.Microphone);
-
-microphone.init({
-    wavesurfer: wavesurfer
-});
-
-microphone.on('deviceReady', function(stream) {
+wavesurfer.microphone.on('deviceReady', function(stream) {
     console.log('Device ready!', stream);
 });
-microphone.on('deviceError', function(code) {
+wavesurfer.microphone.on('deviceError', function(code) {
     console.warn('Device error: ' + code);
 });
 
 // start the microphone
-microphone.start();
+wavesurfer.microphone.start();
 
 // pause rendering
-//microphone.pause();
+//wavesurfer.microphone.pause();
 
 // resume rendering
-//microphone.play();
+//wavesurfer.microphone.play();
 
 // stop visualization and disconnect microphone
-//microphone.stopDevice();
+//wavesurfer.microphone.stopDevice();
 
 // same as stopDevice() but also clears the wavesurfer canvas
-//microphone.stop();
+//wavesurfer.microphone.stop();
 
 // destroy the plugin
-//microphone.destroy();
+//wavesurfer.microphone.destroy();
 </code></pre>
                     </p></noindex>
 

@@ -84,19 +84,13 @@
                     <h4>Quick Start</h4>
 
                     <noindex><p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
+<pre><code>var wavesurfer = window.WaveSurfer.create({
   // your options here
-});
-
-wavesurfer.on('ready', function () {
-    var timeline = Object.create(WaveSurfer.Timeline);
-
-    timeline.init({
-        wavesurfer: wavesurfer,
+  plugins: [
+    window.WaveSurfer.timeline({
         container: "#wave-timeline"
-    });
+    })
+  ]
 });
 
 wavesurfer.load('example/media/demo.mp3');</code></pre>
