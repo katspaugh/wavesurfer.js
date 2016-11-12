@@ -8,7 +8,7 @@ export default function(params = {}) {
     return {
         name: 'elan',
         deferInit: params && params.deferInit ? params.deferInit : false,
-        static: {},
+        extends: ['observer'],
         instance: {
             Types: {
                 ALIGNABLE_ANNOTATION: 'ALIGNABLE_ANNOTATION',
