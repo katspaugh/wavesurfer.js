@@ -403,16 +403,37 @@ export default function(params = {}) {
         },
         instance: {
             init: function (wavesurfer) {
+                this.params = params;
                 this.wavesurfer = wavesurfer;
-                this.wrapper = this.wavesurfer.drawer.wrapper;
 
-                /* Id-based hash of regions. */
+                // cant put this into static since we need to extend
+                // with the observer first
+                this.wavesurfer.Region = this.wavesurfer.util.extend({}, this.wavesurfer.util.observer, Region);
+
+                // Id-based hash of regions.
                 this.list = {};
+                this._onCreatedBackend = () => {
+                    this.wrapper = this.wavesurfer.drawer.wrapper;
+                    if (this.params.regions) {
+                        this.params.regions.forEach(region => {
+                            this.add(region);
+                        });
+                    }
+                };
+                if (this.wavesurfer.backend) {
+                    this._onCreatedBackend();
+                }
+                this.wavesurfer.on('backend-created', this._onCreatedBackend);
             },
 
+            destroy() {
+                this.wavesurfer.un('backend-created', this._onCreatedBackend);
+                this.disableDragSelection();
+                this.clear();
+            },
             /* Add a region. */
             add: function (params) {
-                var region = Object.create(Region);
+                var region = Object.create(this.wavesurfer.Region);
                 region.init(params, this.wavesurfer);
 
                 this.list[region.id] = region;
