@@ -1,12 +1,10 @@
 const Region = {
-    /* Helper function to assign CSS styles. */
-    style: WaveSurfer.Drawer.style,
-
     init: function (params, wavesurfer) {
         this.wavesurfer = wavesurfer;
         this.wrapper = wavesurfer.drawer.wrapper;
+        this.style = wavesurfer.util.style;
 
-        this.id = params.id == null ? WaveSurfer.util.getId() : params.id;
+        this.id = params.id == null ? wavesurfer.util.getId() : params.id;
         this.start = Number(params.start) || 0;
         this.end = params.end == null ?
             // small marker-like region
@@ -415,7 +413,7 @@ export default function(params = {}) {
 
     /* Add a region. */
     add: function (params) {
-        var region = Object.create(WaveSurfer.Region);
+        var region = Object.create(Region);
         region.init(params, this.wavesurfer);
 
         this.list[region.id] = region;
