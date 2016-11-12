@@ -32,6 +32,11 @@ export default function(params = {}) {
                 }
             },
 
+            destroy: function() {
+                this.container.removeEventListener('click', this._onClick);
+                this.container.removeChild(this.table);
+            },
+
             load: function (url) {
                 var my = this;
                 this.loadXML(url, function (xml) {
@@ -169,7 +174,7 @@ export default function(params = {}) {
                 );
 
                 // table
-                var table = document.createElement('table');
+                var table = this.table = document.createElement('table');
                 table.className = 'wavesurfer-annotations';
 
                 // head
@@ -227,7 +232,7 @@ export default function(params = {}) {
 
             bindClick: function () {
                 var my = this;
-                this.container.addEventListener('click', function (e) {
+                this._onClick = e => {
                     var ref = e.target.dataset.ref;
                     if (null != ref) {
                         var annot = my.data.annotations[ref];
@@ -235,7 +240,8 @@ export default function(params = {}) {
                             my.fireEvent('select', annot.start, annot.end);
                         }
                     }
-                });
+                };
+                this.container.addEventListener('click', this._onClick);
             },
 
             getRenderedAnnotation: function (time) {
