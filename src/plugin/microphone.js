@@ -14,6 +14,7 @@ export default function(params = {}) {
                 this.initPlugins('cursor');
             }
         },
+        extends: ['observer'],
         instance: {
             init: function (wavesurfer) {
                 this.params = params;
