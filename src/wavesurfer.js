@@ -102,6 +102,7 @@
         this.createBackend();
 
         this.isDestroyed = false;
+        return this;
     },
 
     /**
