@@ -1,2 +1,2 @@
-const utils = require('./util.spec');
-const wavesurfer = require('./wavesurfer.spec');
+var requireTest = require.context('./', true, /\.spec\.js$/);
+requireTest.keys().forEach(requireTest);
