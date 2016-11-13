@@ -257,6 +257,7 @@ WaveSurfer.WebAudio = {
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
         this.analyser.disconnect();
+        this.ac.close();
     },
 
     load: function (buffer) {
