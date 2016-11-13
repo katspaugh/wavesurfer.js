@@ -481,12 +481,12 @@
     /**
      * Loads audio and re-renders the waveform.
      */
-    load: function (url, peaks) {
+    load: function (url, peaks, preload) {
         this.empty();
 
         switch (this.params.backend) {
             case 'WebAudio': return this.loadBuffer(url, peaks);
-            case 'MediaElement': return this.loadMediaElement(url, peaks);
+            case 'MediaElement': return this.loadMediaElement(url, peaks, preload);
         }
     },
 
@@ -519,11 +519,11 @@
      *  @param  {Array}            [peaks]     Array of peaks. Required to bypass
      *                                          web audio dependency
      */
-    loadMediaElement: function (urlOrElt, peaks) {
+    loadMediaElement: function (urlOrElt, peaks, preload) {
         var url = urlOrElt;
 
         if (typeof urlOrElt === 'string') {
-            this.backend.load(url, this.mediaContainer, peaks);
+            this.backend.load(url, this.mediaContainer, peaks, preload);
         } else {
             var elt = urlOrElt;
             this.backend.loadElt(elt, peaks);
@@ -553,6 +553,7 @@
                 this.decodeArrayBuffer(arraybuffer, (function (buffer) {
                     this.backend.buffer = buffer;
                     this.drawBuffer();
+                    this.fireEvent('waveform-ready');
                 }).bind(this));
             }).bind(this));
         }
