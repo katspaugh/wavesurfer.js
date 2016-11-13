@@ -53,9 +53,9 @@ export default {
     once: function (event, handler) {
         const my = this;
         const fn = function () {
-			/*  eslint-disable no-invalid-this, prefer-rest-params */
+            /*  eslint-disable no-invalid-this, prefer-rest-params */
             handler.apply(this, arguments);
-			/*  eslint-enable no-invalid-this, prefer-rest-params */
+            /*  eslint-enable no-invalid-this, prefer-rest-params */
             setTimeout(function () {
                 my.un(event, fn);
             }, 0);
@@ -67,7 +67,7 @@ export default {
         if (!this.handlers) { return; }
         const handlers = this.handlers[event];
         handlers && handlers.forEach(function (fn) {
-			fn(...args);
+            fn(...args);
         });
     }
 };

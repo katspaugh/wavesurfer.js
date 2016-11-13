@@ -4,19 +4,19 @@ var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function () {
-	// Create an instance
-	wavesurfer = window.WaveSurfer.create({
-		container     : '#waveform',
-		waveColor     : 'violet',
-		progressColor : 'purple',
-		loaderColor   : 'purple',
-		cursorColor   : 'navy',
-		plugins: [
-			window.WaveSurfer.spectrogram({
-				container: '#wave-spectrogram'
-			})
-		]
-	});
+    // Create an instance
+    wavesurfer = window.WaveSurfer.create({
+        container     : '#waveform',
+        waveColor     : 'violet',
+        progressColor : 'purple',
+        loaderColor   : 'purple',
+        cursorColor   : 'navy',
+        plugins: [
+            window.WaveSurfer.spectrogram({
+                container: '#wave-spectrogram'
+            })
+        ]
+    });
 
     if (location.search.match('scroll')) {
         options.minPxPerSec = 100;

@@ -4,35 +4,35 @@ var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function () {
-	var pluginOptions = {
-		minimap: {
-			waveColor     : '#777',
-			progressColor : '#222',
-			height: 30
-		},
-		timeline: {
-			container: '#wave-timeline'
-		},
-		spectrogram: {
-			container: '#wave-spectrogram'
-		},
-		regions: {
-			regions: [
-				{
-			        start: 1,
-			        end: 3,
-			        color: 'hsla(400, 100%, 30%, 0.5)'
-			    },
+    var pluginOptions = {
+        minimap: {
+            waveColor     : '#777',
+            progressColor : '#222',
+            height: 30
+        },
+        timeline: {
+            container: '#wave-timeline'
+        },
+        spectrogram: {
+            container: '#wave-spectrogram'
+        },
+        regions: {
+            regions: [
                 {
-			        start: 4,
-			        end: 5.4
-			    },
+                    start: 1,
+                    end: 3,
+                    color: 'hsla(400, 100%, 30%, 0.5)'
+                },
                 {
-			        start: 6.22,
-			        end: 7.1
-			    }
-			]
-		},
+                    start: 4,
+                    end: 5.4
+                },
+                {
+                    start: 6.22,
+                    end: 7.1
+                }
+            ]
+        },
         elan: {
             url: 'transcripts/001z.xml',
             container: '#annotations',
@@ -41,18 +41,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 Comments: true
             }
         }
-	};
-	var options = {
-		container     : '#waveform',
-		waveColor     : 'violet',
-		progressColor : 'purple',
-		loaderColor   : 'purple',
-		cursorColor   : 'navy',
-		plugins: [
-			window.WaveSurfer.minimap(pluginOptions.minimap),
-			window.WaveSurfer.timeline(pluginOptions.timeline),
-		]
-	};
+    };
+    var options = {
+        container     : '#waveform',
+        waveColor     : 'violet',
+        progressColor : 'purple',
+        loaderColor   : 'purple',
+        cursorColor   : 'navy',
+        plugins: [
+            window.WaveSurfer.minimap(pluginOptions.minimap),
+            window.WaveSurfer.timeline(pluginOptions.timeline),
+        ]
+    };
 
     if (location.search.match('scroll')) {
         options.minPxPerSec = 100;
@@ -63,30 +63,30 @@ document.addEventListener('DOMContentLoaded', function () {
         options.normalize = true;
     }
 
-	// Init wavesurfer
-	wavesurfer = window.WaveSurfer.create(options);
+    // Init wavesurfer
+    wavesurfer = window.WaveSurfer.create(options);
 
-	[].forEach.call(document.querySelectorAll('[data-activate-plugin]'), function (el) {
-		var activePlugins = wavesurfer.initialisedPluginList;
-		Object.keys(activePlugins).forEach(function(name) {
-			if (el.dataset.activatePlugin === name) {
-				el.checked = true;
-			}
-		});
-	});
+    [].forEach.call(document.querySelectorAll('[data-activate-plugin]'), function (el) {
+        var activePlugins = wavesurfer.initialisedPluginList;
+        Object.keys(activePlugins).forEach(function(name) {
+            if (el.dataset.activatePlugin === name) {
+                el.checked = true;
+            }
+        });
+    });
 
-	[].forEach.call(document.querySelectorAll('[data-activate-plugin]'), function (el) {
+    [].forEach.call(document.querySelectorAll('[data-activate-plugin]'), function (el) {
         el.addEventListener('change', function (e) {
             var pluginName = e.currentTarget.dataset.activatePlugin;
-			var activate = e.target.checked;
-			var options = pluginOptions[pluginName] || {};
-			var plugin = window.WaveSurfer[pluginName](options);
+            var activate = e.target.checked;
+            var options = pluginOptions[pluginName] || {};
+            var plugin = window.WaveSurfer[pluginName](options);
 
-			if (activate) {
-				wavesurfer.addPlugin(plugin).initPlugin(pluginName);
-			} else {
-				wavesurfer.destroyPlugin(pluginName);
-			}
+            if (activate) {
+                wavesurfer.addPlugin(plugin).initPlugin(pluginName);
+            } else {
+                wavesurfer.destroyPlugin(pluginName);
+            }
         });
     });
 

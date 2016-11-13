@@ -4,18 +4,18 @@ var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function () {
-	var options = {
-		container     : '#waveform',
-		waveColor     : 'violet',
-		progressColor : 'purple',
-		loaderColor   : 'purple',
-		cursorColor   : 'navy',
-		plugins: [
-			window.WaveSurfer.timeline({
-				container: '#wave-timeline'
-			})
-		]
-	};
+    var options = {
+        container     : '#waveform',
+        waveColor     : 'violet',
+        progressColor : 'purple',
+        loaderColor   : 'purple',
+        cursorColor   : 'navy',
+        plugins: [
+            window.WaveSurfer.timeline({
+                container: '#wave-timeline'
+            })
+        ]
+    };
 
     if (location.search.match('scroll')) {
         options.minPxPerSec = 100;
@@ -26,8 +26,8 @@ document.addEventListener('DOMContentLoaded', function () {
         options.normalize = true;
     }
 
-	// Init wavesurfer
-	wavesurfer = window.WaveSurfer.create(options);
+    // Init wavesurfer
+    wavesurfer = window.WaveSurfer.create(options);
 
     /* Progress bar */
     (function () {

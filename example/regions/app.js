@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', function () {
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
         backend: 'MediaElement',
-		plugins: [
-			window.WaveSurfer.regions({
+        plugins: [
+            window.WaveSurfer.regions({
                 regions: [
                     {
                         start: 1,
@@ -28,13 +28,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     slop: 5
                 }
             })
-		]
+        ]
     });
 
     // Load audio from URL
     wavesurfer.load('../media/demo.wav');
 
-	// this is already being done in /examples/trivia.js
+    // this is already being done in /examples/trivia.js
     // document.querySelector(
     //     '[data-action="play"]'
     // ).addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
