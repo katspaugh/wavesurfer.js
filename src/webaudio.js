@@ -257,7 +257,11 @@ WaveSurfer.WebAudio = {
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
         this.analyser.disconnect();
-        this.ac.close();
+        // close the audioContext if it was created by wavesurfer
+        // not passed in as a parameter
+        if (!this.params.audioContext) {
+            this.ac.close();
+        }
     },
 
     load: function (buffer) {
