@@ -18,10 +18,14 @@ module.exports = function (config) {
             },
 
             // specs
-            'spec/index.js'
+            'spec/plugin-api.spec.js',
+            'spec/util.spec.js',
+            'spec/wavesurfer.spec.js'
         ],
         preprocessors: {
-            'spec/index.js': ['webpack']
+            'spec/plugin-api.spec.js': ['webpack'],
+            'spec/util.spec.js': ['webpack'],
+            'spec/wavesurfer.spec.js': ['webpack']
         },
         webpackMiddleware: {
             stats: 'errors-only'
