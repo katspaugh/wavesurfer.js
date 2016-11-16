@@ -10,15 +10,6 @@ WaveSurfer.WebAudio = {
         return !!(window.AudioContext || window.webkitAudioContext);
     },
 
-    getAudioContext: function () {
-        if (!WaveSurfer.WebAudio.audioContext) {
-            WaveSurfer.WebAudio.audioContext = new (
-                window.AudioContext || window.webkitAudioContext
-            );
-        }
-        return WaveSurfer.WebAudio.audioContext;
-    },
-
     getOfflineAudioContext: function (sampleRate) {
         if (!WaveSurfer.WebAudio.offlineAudioContext) {
             WaveSurfer.WebAudio.offlineAudioContext = new (
@@ -30,7 +21,9 @@ WaveSurfer.WebAudio = {
 
     init: function (params) {
         this.params = params;
-        this.ac = params.audioContext || this.getAudioContext();
+        this.ac = params.audioContext || new (
+            window.AudioContext || window.webkitAudioContext
+        );
 
         this.lastPlay = this.ac.currentTime;
         this.startPosition = 0;
