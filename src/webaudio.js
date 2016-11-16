@@ -11,12 +11,12 @@ WaveSurfer.WebAudio = {
     },
 
     getAudioContext: function () {
-        if (!WaveSurfer.WebAudio.audioContext) {
-            WaveSurfer.WebAudio.audioContext = new (
+        if (!this.ac) {
+            this.ac = new (
                 window.AudioContext || window.webkitAudioContext
             );
         }
-        return WaveSurfer.WebAudio.audioContext;
+        return this.ac;
     },
 
     getOfflineAudioContext: function (sampleRate) {
@@ -257,6 +257,11 @@ WaveSurfer.WebAudio = {
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
         this.analyser.disconnect();
+        // close the audioContext if it was created by wavesurfer
+        // not passed in as a parameter
+        if (!this.params.audioContext) {
+            this.ac.close();
+        }
     },
 
     load: function (buffer) {
