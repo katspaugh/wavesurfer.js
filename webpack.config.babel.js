@@ -52,7 +52,6 @@ const config = {
         umdNamedDefine: true
     },
     devServer: {
-        outputPath: path.join(__dirname, 'dist'),
         contentBase: [
             path.join(__dirname, 'example'),
             path.join(__dirname, 'dist')
