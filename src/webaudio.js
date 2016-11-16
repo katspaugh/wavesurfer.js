@@ -10,6 +10,15 @@ WaveSurfer.WebAudio = {
         return !!(window.AudioContext || window.webkitAudioContext);
     },
 
+    getAudioContext: function () {
+        if (!this.ac) {
+            this.ac = new (
+                window.AudioContext || window.webkitAudioContext
+            );
+        }
+        return this.ac;
+    },
+
     getOfflineAudioContext: function (sampleRate) {
         if (!WaveSurfer.WebAudio.offlineAudioContext) {
             WaveSurfer.WebAudio.offlineAudioContext = new (
@@ -21,9 +30,7 @@ WaveSurfer.WebAudio = {
 
     init: function (params) {
         this.params = params;
-        this.ac = params.audioContext || new (
-            window.AudioContext || window.webkitAudioContext
-        );
+        this.ac = params.audioContext || this.getAudioContext();
 
         this.lastPlay = this.ac.currentTime;
         this.startPosition = 0;
