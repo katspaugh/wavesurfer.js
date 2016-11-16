@@ -114,8 +114,8 @@ export default function(params = {}) {
                 this.removeOldCanvases();
 
                 var totalWidth = Math.round(this.drawer.wrapper.scrollWidth),
-                requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth),
-                canvas;
+                    requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth),
+                    canvas;
 
                 for (var i = 0; i < requiredCanvases; i++) {
                     canvas = this.wrapper.appendChild(document.createElement('canvas'));
@@ -137,7 +137,7 @@ export default function(params = {}) {
                 var requiredCanvases = this.canvases.length;
                 for (var i = 0; i < requiredCanvases; i++) {
                     var canvas = this.canvases[i],
-                    canvasWidth = this.maxCanvasElementWidth;
+                        canvasWidth = this.maxCanvasElementWidth;
 
                     if (i === requiredCanvases - 1) {
                         canvasWidth = this.drawer.wrapper.scrollWidth - (this.maxCanvasElementWidth * (requiredCanvases - 1));
@@ -153,9 +153,9 @@ export default function(params = {}) {
 
             drawTimeCanvases: function() {
                 var backend = this.wavesurfer.backend,
-                wsParams = this.wavesurfer.params,
-                duration = backend.getDuration(),
-                self = this;
+                    wsParams = this.wavesurfer.params,
+                    duration = backend.getDuration(),
+                    self = this;
 
                 if (wsParams.fillParent && !wsParams.scrollParent) {
                     var width = this.drawer.getWidth();
@@ -167,16 +167,16 @@ export default function(params = {}) {
                 if (duration <= 0) { return; }
 
                 var curPixel = 0,
-                curSeconds = 0,
-                totalSeconds = parseInt(duration, 10) + 1,
-                formatTime = function(seconds) {
+                    curSeconds = 0,
+                    totalSeconds = parseInt(duration, 10) + 1;
+                var formatTime = function(seconds) {
                     if (typeof self.formatTimeCallback === 'function') {
                         return self.formatTimeCallback(seconds);
                     }
 
                     if (seconds/60 > 1) {
                         var minutes = parseInt(seconds / 60),
-                        seconds = parseInt(seconds % 60);
+                            seconds = parseInt(seconds % 60);
                         seconds = (seconds < 10) ? '0' + seconds : seconds;
                         return '' + minutes + ':' + seconds;
                     } else {
@@ -207,8 +207,8 @@ export default function(params = {}) {
                 secondaryLabelInterval = this.secondaryLabelInterval || secondaryLabelInterval;
 
                 var height1 = this.height - 4,
-                height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4,
-                fontSize = this.fontSize * wsParams.pixelRatio;
+                    height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4,
+                    fontSize = this.fontSize * wsParams.pixelRatio;
 
                 for (var i = 0; i < totalSeconds/timeInterval; i++) {
                     if (i % primaryLabelInterval == 0) {
@@ -248,7 +248,7 @@ export default function(params = {}) {
             fillRect: function (x, y, width, height) {
                 for (var i in this.canvases) {
                     var canvas = this.canvases[i],
-                    leftOffset = i * this.maxCanvasWidth;
+                        leftOffset = i * this.maxCanvasWidth;
 
                     var intersection = {
                         x1: Math.max(x, i * this.maxCanvasWidth),
@@ -270,11 +270,11 @@ export default function(params = {}) {
 
             fillText: function (text, x, y) {
                 var textWidth,
-                xOffset = 0;
+                    xOffset = 0;
 
                 for (var i in this.canvases) {
                     var context = this.canvases[i].getContext('2d'),
-                    canvasWidth = context.canvas.width;
+                        canvasWidth = context.canvas.width;
 
                     if (xOffset > x + textWidth) {
                         break;
