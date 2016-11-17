@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+Upcoming
+------------------
+- WebAudio backend closes the AudioContext when it is destroyed, unless the AudioContext was passed in as a parameter (params.audioContext) – The AudioContext is no longer cached in WebAudio.audioContext, use the getter-function WebAudio.getAudioContext. (#862)
+
 1.2.4 (11.11.2016)
 ------------------
 - Fix a problem of Web Audio not playing in Safari on initial load (#749)
