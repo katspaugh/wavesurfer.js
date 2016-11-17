@@ -420,7 +420,6 @@ var WaveSurfer = {
                 this.decodeArrayBuffer(arraybuffer, (function (buffer) {
                     this.backend.buffer = buffer;
                     this.drawBuffer();
-                    this.fireEvent('waveform-ready');
                 }).bind(this));
             }).bind(this));
         }
@@ -1057,7 +1056,6 @@ WaveSurfer.WebAudio = {
         this.scheduledPause = end;
 
         this.source.start(0, start, end - start);
-        this.ac.resume();
 
         this.setState(this.PLAYING_STATE);
 
@@ -1194,7 +1192,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
      *  @param  {String}        url         path to media file
      *  @param  {HTMLElement}   container   HTML element
      *  @param  {Array}         peaks       array of peak data
-     *  @param  {String}        preload     HTML 5 preload attribute value
+	 *  @param  {String}        preload     HTML 5 preload attribute value
      */
     load: function (url, container, peaks, preload) {
         var my = this;
@@ -1615,12 +1613,33 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 borderRightColor: this.params.cursorColor
             })
         );
+        this.progressWave2 = this.wrapper.appendChild(
+            this.style(document.createElement('wave'), {
+                position: 'absolute',
+                zIndex: 3,
+                left: 0,
+                top: 0,
+                bottom: 0,
+                overflow: 'hidden',
+                width: '0',
+                display: 'none',
+                boxSizing: 'border-box',
+                borderRightStyle: 'solid',
+                borderRightWidth: this.params.cursorWidth + 'px',
+                borderRightColor: this.params.cursorColor
+            })
+        );
 
         if (this.params.waveColor != this.params.progressColor) {
             var progressCanvas = this.progressWave.appendChild(
                 document.createElement('canvas')
             );
             this.progressCc = progressCanvas.getContext('2d');
+
+            var progressCanvas2 = this.progressWave2.appendChild(
+                document.createElement('canvas')
+            );
+            this.progressCc2 = progressCanvas2.getContext('2d');
         }
     },
 
@@ -1632,11 +1651,17 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         this.style(this.waveCc.canvas, { width: width + 'px'});
 
         this.style(this.progressWave, { display: 'block'});
+        this.style(this.progressWave2, { display: 'block'});
 
         if (this.progressCc) {
             this.progressCc.canvas.width = this.width;
             this.progressCc.canvas.height = this.height;
             this.style(this.progressCc.canvas, { width: width + 'px'});
+			
+            this.progressCc2.canvas.width = this.width;
+            this.progressCc2.canvas.height = this.height;
+            this.style(this.progressCc2.canvas, { width: width + 'px'});
+			
         }
 
         this.clearWave();
@@ -1646,6 +1671,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         this.waveCc.clearRect(0, 0, this.width, this.height);
         if (this.progressCc) {
             this.progressCc.clearRect(0, 0, this.width, this.height);
+            this.progressCc2.clearRect(0, 0, this.width, this.height);
         }
     },
 
@@ -1690,9 +1716,18 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         this.waveCc.fillStyle = this.params.waveColor;
         if (this.progressCc) {
             this.progressCc.fillStyle = this.params.progressColor;
+            this.progressCc2.fillStyle = this.params.progressColor2;
         }
 
         [ this.waveCc, this.progressCc ].forEach(function (cc) {
+            if (!cc) { return; }
+
+            for (var i = 0; i < width; i += step) {
+                var h = Math.round(peaks[Math.floor(i * scale)] / absmax * halfH);
+                cc.fillRect(i + $, halfH - h + offsetY, bar + $, h * 2);
+            }
+        }, this);
+        [ this.waveCc, this.progressCc2 ].forEach(function (cc) {
             if (!cc) { return; }
 
             for (var i = 0; i < width; i += step) {
@@ -1748,9 +1783,33 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         this.waveCc.fillStyle = this.params.waveColor;
         if (this.progressCc) {
             this.progressCc.fillStyle = this.params.progressColor;
-        }
-
+            this.progressCc2.fillStyle = this.params.progressColor2;
+        } 
         [ this.waveCc, this.progressCc ].forEach(function (cc) {
+            if (!cc) { return; }
+
+            cc.beginPath();
+            cc.moveTo($, halfH + offsetY);
+
+            for (var i = 0; i < length; i++) {
+                var h = Math.round(peaks[2 * i] / absmax * halfH);
+                cc.lineTo(i * scale + $, halfH - h + offsetY);
+            }
+
+            // Draw the bottom edge going backwards, to make a single
+            // closed hull to fill.
+            for (var i = length - 1; i >= 0; i--) {
+                var h = Math.round(peaks[2 * i + 1] / absmax * halfH);
+                cc.lineTo(i * scale + $, halfH - h + offsetY);
+            }
+
+            cc.closePath();
+            cc.fill();
+
+            // Always draw a median line
+            cc.fillRect(0, halfH + offsetY - $, this.width, $);
+        }, this); 
+		[ this.waveCc, this.progressCc2 ].forEach(function (cc) {
             if (!cc) { return; }
 
             cc.beginPath();
@@ -1879,7 +1938,16 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                     bottom: 0
                 })
             );
+            entry.progress2 = this.progressWave2.appendChild(
+                this.style(document.createElement('canvas'), {
+                    position: 'absolute',
+                    left: leftOffset + 'px',
+                    top: 0,
+                    bottom: 0
+                })
+            );
             entry.progressCtx = entry.progress.getContext('2d');
+            entry.progressCtx2 = entry.progress2.getContext('2d');
         }
 
         this.canvases.push(entry);
@@ -1890,6 +1958,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         lastEntry.wave.parentElement.removeChild(lastEntry.wave);
         if (this.hasProgressCanvas) {
             lastEntry.progress.parentElement.removeChild(lastEntry.progress);
+            lastEntry.progress2.parentElement.removeChild(lastEntry.progress2);
         }
     },
 
@@ -1911,6 +1980,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             entry.progressCtx.canvas.width = width;
             entry.progressCtx.canvas.height = height;
             this.style(entry.progressCtx.canvas, { width: elementWidth + 'px'});
+			
+			entry.progressCtx2.canvas.width = width;
+            entry.progressCtx2.canvas.height = height;
+            this.style(entry.progressCtx2.canvas, { width: elementWidth + 'px'});
         }
     },
 
@@ -1924,6 +1997,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
         if (this.hasProgressCanvas) {
             entry.progressCtx.clearRect(0, 0, entry.progressCtx.canvas.width, entry.progressCtx.canvas.height);
+            entry.progressCtx2.clearRect(0, 0, entry.progressCtx2.canvas.width, entry.progressCtx2.canvas.height);
         }
     },
 
@@ -2094,6 +2168,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         entry.waveCtx.fillStyle = this.params.waveColor;
         if (this.hasProgressCanvas) {
             entry.progressCtx.fillStyle = this.params.progressColor;
+            entry.progressCtx2.fillStyle = this.params.progressColor2;
         }
     },
 
