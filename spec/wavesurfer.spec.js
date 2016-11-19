@@ -11,11 +11,6 @@ describe('wavesurfer', function () {
         waveformDiv.id = 'waveform';
         document.getElementsByTagName('body')[0].appendChild(waveformDiv);
 
-        var ctx = document.createElement('canvas').getContext('2d');
-        var linGrad = ctx.createLinearGradient(0, 64, 0, 200);
-        linGrad.addColorStop(0.5, 'rgba(225, 225, 225, 1.000)');
-        linGrad.addColorStop(0.5, 'rgba(183, 183, 183, 1.000)');
-
         return WaveSurfer.create({
             container: '#waveform',
             waveColor: 'violet',
@@ -40,13 +35,13 @@ describe('wavesurfer', function () {
         wavesurfer.destroy();
     });
 
-    it('play', function () {
+    it('should play', function () {
         wavesurfer.play();
 
         expect(wavesurfer.isPlaying()).toBeTrue();
     });
 
-    it('pause', function () {
+    it('should pause', function () {
         wavesurfer.play();
         expect(wavesurfer.isPlaying()).toBeTrue();
 
@@ -54,7 +49,7 @@ describe('wavesurfer', function () {
         expect(wavesurfer.isPlaying()).toBeFalse();
     });
 
-    it('playPause', function () {
+    it('should play or pause', function () {
         wavesurfer.playPause();
         expect(wavesurfer.isPlaying()).toBeTrue();
 
@@ -62,12 +57,12 @@ describe('wavesurfer', function () {
         expect(wavesurfer.isPlaying()).toBeFalse();
     });
 
-    it('getDuration', function () {
+    it('should get duration', function () {
         var duration = parseInt(wavesurfer.getDuration(), 10);
         expect(duration).toBeNumber();
     });
 
-    it('toggleMute', function () {
+    it('should toggle mute', function () {
         wavesurfer.toggleMute();
         expect(wavesurfer.isMuted).toBeTrue();
 
@@ -75,7 +70,7 @@ describe('wavesurfer', function () {
         expect(wavesurfer.isMuted).toBeFalse();
     });
 
-    it('setMute', function () {
+    it('should set mute', function () {
         wavesurfer.setMute(true);
         expect(wavesurfer.isMuted).toBeTrue();
 
