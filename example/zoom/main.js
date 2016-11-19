@@ -17,6 +17,21 @@ document.addEventListener('DOMContentLoaded', function () {
     // Load audio from URL
     wavesurfer.load('../media/demo.wav');
 
+    wavesurfer.enableDragSelection({ slop: 5 });
+
+    wavesurfer.on('ready', function () {
+        wavesurfer.addRegion({
+            start: 0,
+            end: 5,
+            color: 'hsla(400, 100%, 30%, 0.1)'
+        });
+
+        wavesurfer.addRegion({
+            start: 10,
+            end: 100,
+            color: 'hsla(200, 50%, 70%, 0.1)'
+        });
+    });
 
     // Zoom slider
     var slider = document.querySelector('[data-action="zoom"]');
