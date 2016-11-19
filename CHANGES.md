@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+1.2.6 (19.11.2016)
+------------------
+- Solve the disappearing canvas problem on zoom (#825)
+
 1.2.5 (19.11.2016)
 ------------------
 - WebAudio backend closes the AudioContext when it is destroyed, unless the AudioContext was passed in as a parameter (params.audioContext) – The AudioContext is no longer cached in WebAudio.audioContext, use the getter-function WebAudio.getAudioContext. (#862)
