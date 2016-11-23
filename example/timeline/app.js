@@ -1,7 +1,6 @@
 'use strict';
 
-// Create an instance
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function () {
@@ -10,7 +9,12 @@ document.addEventListener('DOMContentLoaded', function () {
         waveColor     : 'violet',
         progressColor : 'purple',
         loaderColor   : 'purple',
-        cursorColor   : 'navy'
+        cursorColor   : 'navy',
+        plugins: [
+            window.WaveSurfer.timeline({
+                container: '#wave-timeline'
+            })
+        ]
     };
 
     if (location.search.match('scroll')) {
@@ -21,6 +25,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (location.search.match('normalize')) {
         options.normalize = true;
     }
+
+    // Init wavesurfer
+    wavesurfer = window.WaveSurfer.create(options);
 
     /* Progress bar */
     (function () {
@@ -42,18 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
         wavesurfer.on('error', hideProgress);
     }());
 
-    wavesurfer.on('ready', function () {
-        // Init Timeline plugin
-        var timeline = Object.create(WaveSurfer.Timeline);
 
-        timeline.init({
-            wavesurfer: wavesurfer,
-            container: '#wave-timeline'
-        });
 
-    });
-
-    // Init wavesurfer
-    wavesurfer.init(options);
-    wavesurfer.load('../../example/media/demo.wav');
+    wavesurfer.load('../../media/demo.wav');
 });

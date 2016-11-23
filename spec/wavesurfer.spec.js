@@ -1,3 +1,5 @@
+import WaveSurfer from '../src/wavesurfer.js';
+
 describe('wavesurfer', function () {
     var wavesurfer;
 

@@ -15,10 +15,10 @@
         <link rel="screenshot" itemprop="screenshot" href="//katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
-        <script src="../../dist/wavesurfer.min.js"></script>
+        <script src="/wavesurfer.js"></script>
 
         <!-- timeline format renderer -->
-        <script src="../../dist/plugin/wavesurfer.timeline.min.js"></script>
+        <script src="/plugin/wavesurfer.timeline.js"></script>
 
         <!-- App -->
         <script src="app.js"></script>
@@ -65,18 +65,8 @@
 
                     <p itemprop="about">Adds a simple timeline to your <strong>wavesurfer.js</strong> instances.</p>
 
-                    <h4>Installation</h4>
-
                     <p>
-                      <ol>
-                        <li>add the Timeline plugin script tag</li>
-                        <li>create a <code>WaveSurfer</code> instance</li>
-                        <li>add a container HTML element for the timeline</li>
-                        <li>create a Timeline instance in the <code>WaveSurfer</code>'s <code>"ready"</code> event callback</li>
-                      </ol>
-                    </p>
-                    <p>
-                        <a class="btn btn-large btn-success" href="../../plugin/wavesurfer.timeline.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (5 KB)</a>
+                        <a class="btn btn-large btn-success" href="../../plugin/wavesurfer.timeline.js" itemprop="downloadUrl" download>Download the plugin</a>
                     </p>
                 </div>
 
@@ -84,19 +74,13 @@
                     <h4>Quick Start</h4>
 
                     <noindex><p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
+<pre><code>var wavesurfer = window.WaveSurfer.create({
   // your options here
-});
-
-wavesurfer.on('ready', function () {
-    var timeline = Object.create(WaveSurfer.Timeline);
-
-    timeline.init({
-        wavesurfer: wavesurfer,
+  plugins: [
+    window.WaveSurfer.timeline({
         container: "#wave-timeline"
-    });
+    })
+  ]
 });
 
 wavesurfer.load('example/media/demo.mp3');</code></pre>
@@ -107,7 +91,6 @@ wavesurfer.load('example/media/demo.mp3');</code></pre>
                     <h4>Options</h4>
 
                     <ul class="markdown-body">
-                      <li><code>wavesurfer</code> - <em>required</em> - a WaveSurfer instance</li>
                       <li><code>container</code> - <em>required</em> - the element in which to place the timeline, or a CSS selector to find it</li>
                       <li><code>height</code> - the height (in pixels) of the timeline. The default is 20.</li>
                       <li><code>notchPercentHeight</code> - the height (in percent) of the minor notch lines in the timeline. The default is 90.</li>

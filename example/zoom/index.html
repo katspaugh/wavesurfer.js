@@ -14,9 +14,7 @@
         <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
-        <script src="../../dist/wavesurfer.min.js"></script>
-
-        <script src="../../plugin/wavesurfer.regions.js"></script>
+        <script src="/wavesurfer.js"></script>
 
         <!-- Demo -->
         <script src="main.js"></script>
@@ -70,9 +68,7 @@
                 <hr />
 
                 <p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
+<pre><code>var wavesurfer = WaveSurfer.create({
     container: document.querySelector('#wave'),
     backend: 'MediaElement'
 });

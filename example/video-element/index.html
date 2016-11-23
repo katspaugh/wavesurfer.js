@@ -14,9 +14,9 @@
         <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
-        <script src="../../dist/wavesurfer.min.js"></script>
+        <script src="/wavesurfer.js"></script>
 
-        <script src="../../plugin/wavesurfer.regions.js"></script>
+        <script src="/plugin/wavesurfer.regions.js"></script>
 
         <!-- Demo -->
         <script src="main.js"></script>
@@ -64,20 +64,17 @@
                 </p>
 
                 <p>
-                <pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
-    container: document.querySelector('#waveform'),
-    waveColor: '#A8DBA8',
-    progressColor: '#3B8686',
-    backend: 'MediaElement'
+                <pre><code>var wavesurfer = WaveSurfer.create({
+  container: document.querySelector('#waveform'),
+  waveColor: '#A8DBA8',
+  progressColor: '#3B8686',
+  backend: 'MediaElement'
 });
 
 // Load audio from existing media element
 var mediaElt = document.querySelector('video');
-wavesurfer.load(mediaElt);
 
-                </code></pre>
+wavesurfer.load(mediaElt);</code></pre>
                 </p>
 
                 <h3>Pre-rendered Peaks</h3>

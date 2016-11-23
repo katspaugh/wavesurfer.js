@@ -1,14 +1,12 @@
-/**
- * wavesurfer.js
- *
- * https://github.com/katspaugh/wavesurfer.js
- *
- * This work is licensed under a Creative Commons Attribution 3.0 Unported License.
- */
+ import * as util from './util';
 
-'use strict';
+ import Canvas from './drawer.canvas';
+ import MultiCanvas from './drawer.multicanvas';
 
-var WaveSurfer = {
+ import WebAudio from './webaudio';
+ import MediaElement from './mediaelement';
+
+ const WaveSurfer = util.extend({}, util.observer, { util }, {
     defaultParams: {
         height        : 128,
         waveColor     : '#999',
@@ -34,7 +32,17 @@ var WaveSurfer = {
         renderer      : 'Canvas',
         backend       : 'WebAudio',
         mediaType     : 'audio',
-        autoCenter    : true
+        autoCenter    : true,
+        plugins       : []
+    },
+
+    renderers: {
+        Canvas,
+        MultiCanvas
+    },
+    backends: {
+        MediaElement,
+        WebAudio
     },
 
     init: function (params) {
@@ -75,17 +83,149 @@ var WaveSurfer = {
         // Holds any running audio downloads
         this.currentAjax = null;
 
+        // cache constructor objects
+        this.Drawer = this.renderers[this.params.renderer];
+        this.Backend = this.backends[this.params.backend];
+
+        // plugins that are currently initialised
+        this.initialisedPluginList = {};
+
+        this.registerPlugins(this.params.plugins);
         this.createDrawer();
         this.createBackend();
 
         this.isDestroyed = false;
+        return this;
+    },
+
+    /**
+     * Add and initialise array of plugins (if plugin.deferInit is falsey)
+     *
+     * @param {Array} plugins
+     */
+    registerPlugins: function (plugins) {
+        // first instantiate all the plugins
+        plugins.forEach(plugin => this.addPlugin(plugin));
+
+        // now run the init functions
+        plugins.forEach(plugin => {
+            // call init function of the plugin if deferInit is falsey
+            // in that case you would manually use initPlugins()
+            if (!plugin.deferInit) {
+                this.initPlugin(plugin.name);
+            }
+        });
+        this.fireEvent('plugins-registered', plugins);
+        return this;
+    },
+
+    /**
+     * Add a plugin object to wavesurfer
+     *
+     * @param {Object} plugin object
+     */
+    addPlugin: function (plugin) {
+        if (!plugin.name) {
+            throw new Error('Plugin does not have a name!');
+        }
+        if (!plugin.instance) {
+            throw new Error(`Plugin ${plugin.name} does not have an instance object!`);
+        }
+
+        // static properties are applied to wavesurfer instance
+        if (plugin.static) {
+            Object.keys(plugin.static).forEach(key => {
+                this[key] = plugin.static[key];
+            });
+        }
+
+        // default for deferInit is false
+        plugin.deferInit = plugin.deferInit || false;
+
+        // if there is an extends property on the plugin
+        // iterate over them, try and match them in the
+        // parentsMap and iteratively create a single parent
+        let parent = {};
+        const parentsMap = {
+            'observer': util.observer,
+            'drawer': this.Drawer
+        };
+        if (plugin.extends) {
+            plugin.extends.forEach(key => {
+                if (!parentsMap[key]) {
+                    throw new Error(`Cannot extend plugin ${plugin.name} with ${key}, the object was not found!`);
+                }
+                parent = util.extend({}, parent, parentsMap[key]);
+            });
+        }
+
+        // create a new instance with the extended plugin instance property
+        this[plugin.name] = Object.create(util.extend({}, parent, plugin.instance));
+        this.fireEvent('plugin-added', plugin.name);
+        return this;
+    },
+
+    /**
+     * Initialise a plugin
+     *
+     * @param {String} plugin name
+     */
+    initPlugin: function (name) {
+        if (!this[name]) {
+            throw new Error(`Plugin ${name} has not been added yet!`);
+        }
+        if (typeof this[name].init !== 'function') {
+            throw new Error(`Plugin ${name} does not have an init function!`);
+        }
+        if (this.initialisedPluginList[name]) {
+            // destroy any already initialised plugins
+            this.destroyPlugin(name);
+        }
+        // call the init function
+        this[name].init(this);
+        // add the plugin name to the list of initialised plugins
+        this.initialisedPluginList[name] = true;
+        this.fireEvent('plugin-initialised', name);
+        return this;
+    },
+
+    /**
+     * Destroy a plugin
+     *
+     * @param {String} plugin name
+     */
+    destroyPlugin: function (name) {
+        if (!this[name]) {
+            throw new Error(`Plugin ${name} has not been added yet and cannot be destroyed!`);
+        }
+        if (!this.initialisedPluginList[name]) {
+            throw new Error(`Plugin ${name} is not active and cannot be destroyed!`);
+        }
+        if (typeof this[name].destroy !== 'function') {
+            throw new Error(`Plugin ${name} does not have a destroy function!`);
+        }
+
+        this[name].destroy();
+        delete this.initialisedPluginList[name];
+        this.fireEvent('plugin-destroyed', name);
+        return this;
+    },
+
+    /**
+     * Destroy all initialised plugins
+     *
+     * Convenience function to use when wavesurfer is removed
+     */
+    destroyAllPlugins: function () {
+        Object.keys(this.initialisedPluginList).forEach(name => this.destroyPlugin(name));
     },
 
     createDrawer: function () {
         var my = this;
 
-        this.drawer = Object.create(WaveSurfer.Drawer[this.params.renderer]);
+        this.drawer = Object.create(this.Drawer);
         this.drawer.init(this.container, this.params);
+        this.fireEvent('drawer-created', this.drawer);
 
         this.drawer.on('redraw', function () {
             my.drawBuffer();
@@ -117,12 +257,13 @@ var WaveSurfer = {
             this.params.backend = 'MediaElement';
         }
 
-        if (this.params.backend == 'WebAudio' && !WaveSurfer.WebAudio.supportsWebAudio()) {
+        if (this.params.backend == 'WebAudio' && !this.backends.WebAudio.supportsWebAudio()) {
             this.params.backend = 'MediaElement';
         }
 
-        this.backend = Object.create(WaveSurfer[this.params.backend]);
+        this.backend = Object.create(this.Backend);
         this.backend.init(this.params);
+        this.fireEvent('backend-created', this.backend);
 
         this.backend.on('finish', function () { my.fireEvent('finish'); });
         this.backend.on('play', function () { my.fireEvent('play'); });
@@ -538,6 +679,7 @@ var WaveSurfer = {
      * Remove events, elements and disconnect WebAudio nodes.
      */
     destroy: function () {
+        this.destroyAllPlugins();
         this.fireEvent('destroy');
         this.cancelAjax();
         this.clearTmpEvents();
@@ -546,10 +688,11 @@ var WaveSurfer = {
         this.drawer.destroy();
         this.isDestroyed = true;
     }
-};
+});
 
 WaveSurfer.create = function (params) {
     var wavesurfer = Object.create(WaveSurfer);
     wavesurfer.init(params);
     return wavesurfer;
 };
+export default WaveSurfer;

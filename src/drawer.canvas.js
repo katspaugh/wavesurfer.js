@@ -1,8 +1,7 @@
-'use strict';
+import drawer from './drawer';
+import * as util from './util';
 
-WaveSurfer.Drawer.Canvas = Object.create(WaveSurfer.Drawer);
-
-WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
+export default util.extend({}, drawer, {
     createElements: function () {
         var waveCanvas = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
@@ -98,7 +97,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         var absmax = 1;
         if (this.params.normalize) {
-            absmax = WaveSurfer.util.max(peaks);
+            absmax = util.max(peaks);
         }
 
         var scale = length / width;
@@ -156,8 +155,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         var absmax = 1;
         if (this.params.normalize) {
-            var max = WaveSurfer.util.max(peaks);
-            var min = WaveSurfer.util.min(peaks);
+            var max = util.max(peaks);
+            var min = util.min(peaks);
             absmax = -min > max ? -min : max;
         }
 

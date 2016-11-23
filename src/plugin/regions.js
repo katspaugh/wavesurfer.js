@@ -1,128 +1,10 @@
-'use strict';
-
-/* Regions manager */
-WaveSurfer.Regions = {
-    init: function (wavesurfer) {
-        this.wavesurfer = wavesurfer;
-        this.wrapper = this.wavesurfer.drawer.wrapper;
-
-        /* Id-based hash of regions. */
-        this.list = {};
-    },
-
-    /* Add a region. */
-    add: function (params) {
-        var region = Object.create(WaveSurfer.Region);
-        region.init(params, this.wavesurfer);
-
-        this.list[region.id] = region;
-
-        region.on('remove', (function () {
-            delete this.list[region.id];
-        }).bind(this));
-
-        return region;
-    },
-
-    /* Remove all regions. */
-    clear: function () {
-        Object.keys(this.list).forEach(function (id) {
-            this.list[id].remove();
-        }, this);
-    },
-
-    enableDragSelection: function (params) {
-        var my = this;
-        var drag;
-        var start;
-        var region;
-        var touchId;
-        var slop = params.slop || 2;
-        var pxMove = 0;
-
-        var eventDown = function (e) {
-            if (e.touches && e.touches.length > 1) { return; }
-
-            // Check whether the click/tap is on the bottom-most DOM element
-            // Effectively prevent clicks on the scrollbar from registering as
-            // region creation.
-            if (e.target.childElementCount > 0) { return; }
-
-            touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
-
-            drag = true;
-            start = my.wavesurfer.drawer.handleEvent(e, true);
-            region = null;
-        };
-        this.wrapper.addEventListener('mousedown', eventDown);
-        this.wrapper.addEventListener('touchstart', eventDown);
-        this.on('disable-drag-selection', function() {
-            my.wrapper.removeEventListener('touchstart', eventDown);
-            my.wrapper.removeEventListener('mousedown', eventDown);
-        });
-
-        var eventUp = function (e) {
-            if (e.touches && e.touches.length > 1) { return; }
-
-            drag = false;
-            pxMove = 0;
-
-            if (region) {
-                region.fireEvent('update-end', e);
-                my.wavesurfer.fireEvent('region-update-end', region, e);
-            }
-
-            region = null;
-        };
-        this.wrapper.addEventListener('mouseup', eventUp);
-        this.wrapper.addEventListener('touchend', eventUp);
-        this.on('disable-drag-selection', function() {
-            my.wrapper.removeEventListener('touchend', eventUp);
-            my.wrapper.removeEventListener('mouseup', eventUp);
-        });
-
-        var eventMove = function (e) {
-            if (!drag) { return; }
-            if (++pxMove <= slop) { return; }
-
-            if (e.touches && e.touches.length > 1) { return; }
-            if (e.targetTouches && e.targetTouches[0].identifier != touchId) { return; }
-
-            if (!region) {
-                region = my.add(params || {});
-            }
-
-            var duration = my.wavesurfer.getDuration();
-            var end = my.wavesurfer.drawer.handleEvent(e);
-            region.update({
-                start: Math.min(end * duration, start * duration),
-                end: Math.max(end * duration, start * duration)
-            });
-        };
-        this.wrapper.addEventListener('mousemove', eventMove);
-        this.wrapper.addEventListener('touchmove', eventMove);
-        this.on('disable-drag-selection', function() {
-            my.wrapper.removeEventListener('touchmove', eventMove);
-            my.wrapper.removeEventListener('mousemove', eventMove);
-        });
-    },
-
-    disableDragSelection: function () {
-        this.fireEvent('disable-drag-selection');
-    }
-};
-
-WaveSurfer.util.extend(WaveSurfer.Regions, WaveSurfer.Observer);
-
-WaveSurfer.Region = {
-    /* Helper function to assign CSS styles. */
-    style: WaveSurfer.Drawer.style,
-
+const Region = {
     init: function (params, wavesurfer) {
         this.wavesurfer = wavesurfer;
         this.wrapper = wavesurfer.drawer.wrapper;
+        this.style = wavesurfer.util.style;
 
-        this.id = params.id == null ? WaveSurfer.util.getId() : params.id;
+        this.id = params.id == null ? wavesurfer.util.getId() : params.id;
         this.start = Number(params.start) || 0;
         this.end = params.end == null ?
             // small marker-like region
@@ -268,18 +150,17 @@ WaveSurfer.Region = {
         var width;
         if (pxPerSec) {
             width = Math.round(this.wavesurfer.getDuration() * pxPerSec);
-        }
-        else {
+        } else {
             width = this.wrapper.scrollWidth;
         }
 
         if (this.start < 0) {
-          this.start = 0;
-          this.end = this.end - this.start;
+            this.start = 0;
+            this.end = this.end - this.start;
         }
         if (this.end > dur) {
-          this.end = dur;
-          this.start = dur - (this.end - this.start);
+            this.end = dur;
+            this.start = dur - (this.end - this.start);
         }
 
         if (this.minLength != null) {
@@ -295,7 +176,7 @@ WaveSurfer.Region = {
             // no gaps appear between regions.
             var left = Math.round(this.start / dur * width);
             var regionWidth =
-                Math.round(this.end / dur * width) - left;
+            Math.round(this.end / dur * width) - left;
 
             this.style(this.element, {
                 left: left + 'px',
@@ -483,31 +364,173 @@ WaveSurfer.Region = {
     }
 };
 
-WaveSurfer.util.extend(WaveSurfer.Region, WaveSurfer.Observer);
+/**
+ * regions plugin
+ *
+ * @param  {Object} params parameters use to initialise the plugin
+ * @return {Object} an object representing the plugin
+ */
+export default function(params = {}) {
+    return {
+        name: 'regions',
+        deferInit: params && params.deferInit ? params.deferInit : false,
+        extends: ['observer'],
+        static: {
+            initRegions() {
+                console.warn('Deprecated initRegions! Use wavesurfer.initPlugins("regions") instead!');
+                this.initPlugin('regions');
+            },
 
+            addRegion(options) {
+                if (!this.initialisedPluginList.regions) {
+                    this.initPlugin('regions');
+                }
+                this.regions.add(options);
+            },
 
-/* Augment WaveSurfer with region methods. */
-WaveSurfer.initRegions = function () {
-    if (!this.regions) {
-        this.regions = Object.create(WaveSurfer.Regions);
-        this.regions.init(this);
-    }
-};
+            clearRegions() {
+                this.regions && this.regions.clear();
+            },
 
-WaveSurfer.addRegion = function (options) {
-    this.initRegions();
-    return this.regions.add(options);
-};
+            enableDragSelection(options) {
+                if (!this.initialisedPluginList.regions) {
+                    this.initPlugin('regions');
+                }
+                this.regions.enableDragSelection(options);
+            },
 
-WaveSurfer.clearRegions = function () {
-    this.regions && this.regions.clear();
-};
+            disableDragSelection() {
+                this.regions.disableDragSelection();
+            }
+        },
+        instance: {
+            init: function (wavesurfer) {
+                this.params = params;
+                this.wavesurfer = wavesurfer;
 
-WaveSurfer.enableDragSelection = function (options) {
-    this.initRegions();
-    this.regions.enableDragSelection(options);
-};
+                // cant put this into static since we need to extend
+                // with the observer first
+                this.wavesurfer.Region = this.wavesurfer.util.extend({}, this.wavesurfer.util.observer, Region);
 
-WaveSurfer.disableDragSelection = function () {
-    this.regions.disableDragSelection();
-};
+                // Id-based hash of regions.
+                this.list = {};
+                this._onReady = () => {
+                    this.wrapper = this.wavesurfer.drawer.wrapper;
+                    if (this.params.regions) {
+                        this.params.regions.forEach(region => {
+                            this.add(region);
+                        });
+                    }
+                    if (this.params.dragSelection) {
+                        this.enableDragSelection(this.params.dragSelection);
+                    }
+                };
+                // Check if ws is ready
+                if (this.wavesurfer.backend) {
+                    this._onReady();
+                }
+                this.wavesurfer.on('ready', this._onReady);
+            },
+
+            destroy() {
+                this.wavesurfer.un('ready', this._onReady);
+                this.disableDragSelection();
+                this.clear();
+            },
+            /* Add a region. */
+            add: function (params) {
+                var region = Object.create(this.wavesurfer.Region);
+                region.init(params, this.wavesurfer);
+
+                this.list[region.id] = region;
+
+                region.on('remove', (function () {
+                    delete this.list[region.id];
+                }).bind(this));
+
+                return region;
+            },
+
+            /* Remove all regions. */
+            clear: function () {
+                Object.keys(this.list).forEach(function (id) {
+                    this.list[id].remove();
+                }, this);
+            },
+
+            enableDragSelection: function (params) {
+                var my = this;
+                var drag;
+                var start;
+                var region;
+                var touchId;
+                var slop = params.slop || 2;
+                var pxMove = 0;
+
+                var eventDown = function (e) {
+                    if (e.touches && e.touches.length > 1) { return; }
+                    touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
+
+                    drag = true;
+                    start = my.wavesurfer.drawer.handleEvent(e, true);
+                    region = null;
+                };
+                this.wrapper.addEventListener('mousedown', eventDown);
+                this.wrapper.addEventListener('touchstart', eventDown);
+                this.on('disable-drag-selection', function() {
+                    my.wrapper.removeEventListener('touchstart', eventDown);
+                    my.wrapper.removeEventListener('mousedown', eventDown);
+                });
+
+                var eventUp = function (e) {
+                    if (e.touches && e.touches.length > 1) { return; }
+
+                    drag = false;
+                    pxMove = 0;
+
+                    if (region) {
+                        region.fireEvent('update-end', e);
+                        my.wavesurfer.fireEvent('region-update-end', region, e);
+                    }
+
+                    region = null;
+                };
+                this.wrapper.addEventListener('mouseup', eventUp);
+                this.wrapper.addEventListener('touchend', eventUp);
+                this.on('disable-drag-selection', function() {
+                    my.wrapper.removeEventListener('touchend', eventUp);
+                    my.wrapper.removeEventListener('mouseup', eventUp);
+                });
+
+                var eventMove = function (e) {
+                    if (!drag) { return; }
+                    if (++pxMove <= slop) { return; }
+
+                    if (e.touches && e.touches.length > 1) { return; }
+                    if (e.targetTouches && e.targetTouches[0].identifier != touchId) { return; }
+
+                    if (!region) {
+                        region = my.add(params || {});
+                    }
+
+                    var duration = my.wavesurfer.getDuration();
+                    var end = my.wavesurfer.drawer.handleEvent(e);
+                    region.update({
+                        start: Math.min(end * duration, start * duration),
+                        end: Math.max(end * duration, start * duration)
+                    });
+                };
+                this.wrapper.addEventListener('mousemove', eventMove);
+                this.wrapper.addEventListener('touchmove', eventMove);
+                this.on('disable-drag-selection', function() {
+                    my.wrapper.removeEventListener('touchmove', eventMove);
+                    my.wrapper.removeEventListener('mousemove', eventMove);
+                });
+            },
+
+            disableDragSelection: function () {
+                this.fireEvent('disable-drag-selection');
+            }
+        }
+    };
+}

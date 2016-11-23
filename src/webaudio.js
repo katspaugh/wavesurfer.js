@@ -1,6 +1,6 @@
-'use strict';
+import * as util from './util';
 
-WaveSurfer.WebAudio = {
+const WebAudio = util.extend({}, util.observer, {
     scriptBufferSize: 256,
     PLAYING_STATE: 0,
     PAUSED_STATE: 1,
@@ -11,21 +11,21 @@ WaveSurfer.WebAudio = {
     },
 
     getAudioContext: function () {
-        if (!WaveSurfer.WebAudio.audioContext) {
-            WaveSurfer.WebAudio.audioContext = new (
+        if (!this.audioContext) {
+            this.audioContext = new (
                 window.AudioContext || window.webkitAudioContext
             );
         }
-        return WaveSurfer.WebAudio.audioContext;
+        return this.audioContext;
     },
 
     getOfflineAudioContext: function (sampleRate) {
-        if (!WaveSurfer.WebAudio.offlineAudioContext) {
-            WaveSurfer.WebAudio.offlineAudioContext = new (
+        if (!this.offlineAudioContext) {
+            this.offlineAudioContext = new (
                 window.OfflineAudioContext || window.webkitOfflineAudioContext
             )(1, 2, sampleRate);
         }
-        return WaveSurfer.WebAudio.offlineAudioContext;
+        return this.offlineAudioContext;
     },
 
     init: function (params) {
@@ -37,9 +37,9 @@ WaveSurfer.WebAudio = {
         this.scheduledPause = null;
 
         this.states = [
-            Object.create(WaveSurfer.WebAudio.state.playing),
-            Object.create(WaveSurfer.WebAudio.state.paused),
-            Object.create(WaveSurfer.WebAudio.state.finished)
+            Object.create(WebAudio.state.playing),
+            Object.create(WebAudio.state.paused),
+            Object.create(WebAudio.state.finished)
         ];
 
         this.createVolumeNode();
@@ -382,11 +382,11 @@ WaveSurfer.WebAudio = {
             this.play();
         }
     }
-};
+});
 
-WaveSurfer.WebAudio.state = {};
+WebAudio.state = {};
 
-WaveSurfer.WebAudio.state.playing = {
+WebAudio.state.playing = {
     init: function () {
         this.addOnAudioProcess();
     },
@@ -399,7 +399,7 @@ WaveSurfer.WebAudio.state.playing = {
     }
 };
 
-WaveSurfer.WebAudio.state.paused = {
+WebAudio.state.paused = {
     init: function () {
         this.removeOnAudioProcess();
     },
@@ -412,7 +412,7 @@ WaveSurfer.WebAudio.state.paused = {
     }
 };
 
-WaveSurfer.WebAudio.state.finished = {
+WebAudio.state.finished = {
     init: function () {
         this.removeOnAudioProcess();
         this.fireEvent('finish');
@@ -425,4 +425,4 @@ WaveSurfer.WebAudio.state.finished = {
     }
 };
 
-WaveSurfer.util.extend(WaveSurfer.WebAudio, WaveSurfer.Observer);
+export default WebAudio;

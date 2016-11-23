@@ -13,10 +13,10 @@
         <link rel="stylesheet" href="../css/ribbon.css" />
 
         <!-- wavesurfer.js -->
-        <script src="../../dist/wavesurfer.min.js"></script>
+        <script src="/wavesurfer.js"></script>
 
         <!-- spectrogram format renderer -->
-        <script src="../../dist/plugin/wavesurfer.spectrogram.min.js"></script>
+        <script src="/plugin/wavesurfer.spectrogram.js"></script>
 
         <!-- App -->
         <script src="app.js"></script>
@@ -74,7 +74,7 @@
                       </ol>
                     </p>
                     <p>
-                        <a class="btn btn-large btn-success" href="../../plugin/wavesurfer.spectrogram.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (5 KB)</a>
+                        <a class="btn btn-large btn-success" href="../../plugin/wavesurfer.spectrogram.js" itemprop="downloadUrl" download>Download <strong>the plugin</strong> (5 KB)</a>
                     </p>
                 </div>
 
@@ -82,19 +82,14 @@
                     <h4>Quick Start</h4>
 
                     <noindex><p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
-  // your options here
-});
-
-wavesurfer.on('ready', function () {
-    var spectrogram = Object.create(WaveSurfer.Spectrogram);
-
-    spectrogram.init({
-        wavesurfer: wavesurfer,
-        container: "#wave-spectrogram"
-    });
+<pre><code>var wavesurfer = WaveSurfer.create({
+    // your options here
+    plugins: [
+        window.WaveSurfer.spectrogram({
+            wavesurfer: wavesurfer,
+            container: "#wave-spectrogram"
+        })
+    ]
 });
 
 wavesurfer.load('example/media/demo.wav');</code></pre>

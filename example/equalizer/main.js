@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             input.style.display = 'inline-block';
             input.setAttribute('orient', 'vertical');
-            wavesurfer.drawer.style(input, {
+            wavesurfer.util.style(input, {
                 'webkitAppearance': 'slider-vertical',
                 width: '50px',
                 height: '150px'

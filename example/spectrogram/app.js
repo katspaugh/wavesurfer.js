@@ -1,17 +1,22 @@
 'use strict';
 
-// Create an instance
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function () {
-    var options = {
+    // Create an instance
+    wavesurfer = window.WaveSurfer.create({
         container     : '#waveform',
         waveColor     : 'violet',
         progressColor : 'purple',
         loaderColor   : 'purple',
-        cursorColor   : 'navy'
-    };
+        cursorColor   : 'navy',
+        plugins: [
+            window.WaveSurfer.spectrogram({
+                container: '#wave-spectrogram'
+            })
+        ]
+    });
 
     if (location.search.match('scroll')) {
         options.minPxPerSec = 100;
@@ -42,18 +47,6 @@ document.addEventListener('DOMContentLoaded', function () {
         wavesurfer.on('error', hideProgress);
     }());
 
-    wavesurfer.on('ready', function () {
-        // Init spectrogram plugin
-        var spectrogram = Object.create(WaveSurfer.Spectrogram);
 
-        spectrogram.init({
-            wavesurfer: wavesurfer,
-            container: '#wave-spectrogram'
-        });
-
-    });
-
-    // Init wavesurfer
-    wavesurfer.init(options);
     wavesurfer.load('../media/demo.wav');
 });

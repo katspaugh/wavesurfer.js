@@ -1,6 +1,6 @@
-'use strict';
+import * as util from './util';
 
-WaveSurfer.Drawer = {
+export default util.extend({}, util.observer, {
     init: function (container, params) {
         this.container = container;
         this.params = params;
@@ -96,14 +96,8 @@ WaveSurfer.Drawer = {
             this.drawWave(peaks);
     },
 
-    style: function (el, styles) {
-        Object.keys(styles).forEach(function (prop) {
-            if (el.style[prop] !== styles[prop]) {
-                el.style[prop] = styles[prop];
-            }
-        });
-        return el;
-    },
+    // Backward compatibility
+    style: util.style,
 
     resetScroll: function () {
         if (this.wrapper !== null) {
@@ -210,6 +204,4 @@ WaveSurfer.Drawer = {
     clearWave: function () {},
 
     updateProgress: function (position) {}
-};
-
-WaveSurfer.util.extend(WaveSurfer.Drawer, WaveSurfer.Observer);
+});
