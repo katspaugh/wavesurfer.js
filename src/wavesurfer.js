@@ -1,12 +1,10 @@
- import * as util from './util';
+import * as util from './util';
+import Canvas from './drawer.canvas';
+import MultiCanvas from './drawer.multicanvas';
+import WebAudio from './webaudio';
+import MediaElement from './mediaelement';
 
- import Canvas from './drawer.canvas';
- import MultiCanvas from './drawer.multicanvas';
-
- import WebAudio from './webaudio';
- import MediaElement from './mediaelement';
-
- const WaveSurfer = util.extend({}, util.observer, { util }, {
+const WaveSurfer = util.extend({}, util.observer, { util }, {
     defaultParams: {
         height        : 128,
         waveColor     : '#999',
