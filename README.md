@@ -102,7 +102,7 @@ grunt coverage
 The HTML report can be found in `coverage/html/index.html`.
 
 ## Editing documentation
-The homepage and the documentation are in the [`gh-pages` branch](https://github.com/katspaugh/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
+The homepage and documentation files are maintained in the [`gh-pages` branch](https://github.com/katspaugh/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
 
 ## Credits
 
