@@ -22,7 +22,7 @@ WaveSurfer.Timeline = {
         var wavesurfer = this.wavesurfer = params.wavesurfer;
 
         if (!this.wavesurfer) {
-            throw Error('No WaveSurfer intance provided');
+            throw Error('No WaveSurfer instance provided');
         }
 
         var drawer = this.drawer = this.wavesurfer.drawer;
@@ -58,12 +58,21 @@ WaveSurfer.Timeline = {
         drawer.wrapper.addEventListener('scroll', function (e) {
             this.updateScroll(e);
         }.bind(this));
-        wavesurfer.on('redraw', this.render.bind(this));
-        wavesurfer.on('destroy', this.destroy.bind(this));
+
+        this._onRedraw = wavesurfer.on('redraw', this.render.bind(this));
+        this._onZoom = wavesurfer.on('zoom', this.render.bind(this));
+        this._onDestroy = wavesurfer.on('destroy', this.destroy.bind(this));
     },
 
     destroy: function () {
+        // Unsubscribe from internal wavesurfer events
+        this._onRedraw.un();
+        this._onZoom.un();
+        this._onDestroy.un();
+
+        // Unsubscribe from external timeline events
         this.unAll();
+
         if (this.wrapper && this.wrapper.parentNode) {
             this.wrapper.parentNode.removeChild(this.wrapper);
             this.wrapper = null;
