@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // Load audio from URL
-    wavesurfer.load('../media/demo.wav');
+    wavesurfer.load('../panner/media.wav')
 
     wavesurfer.enableDragSelection({ slop: 5 });
 

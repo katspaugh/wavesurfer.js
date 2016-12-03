@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+1.2.7 (03.12.2016)
+------------------
+- Timeline bugfixes: correctly unsubscribe on destroy and re-render on zoom (#825, #848)
+
 1.2.6 (19.11.2016)
 ------------------
 - Solve the disappearing canvas problem on zoom (#825)
