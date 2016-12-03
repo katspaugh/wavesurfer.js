@@ -44,12 +44,14 @@ WaveSurfer.Timeline = {
         }.bind(this));
 
         this._onRedraw = wavesurfer.on('redraw', this.render.bind(this));
+        this._onZoom = wavesurfer.on('zoom', this.render.bind(this));
         this._onDestroy = wavesurfer.on('destroy', this.destroy.bind(this));
     },
 
     destroy: function () {
         // Unsubscribe from internal wavesurfer events
         this._onRedraw.un();
+        this._onZoom.un();
         this._onDestroy.un();
 
         // Unsubscribe from external timeline events

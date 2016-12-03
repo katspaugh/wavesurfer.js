@@ -31,6 +31,10 @@ document.addEventListener('DOMContentLoaded', function () {
             end: 100,
             color: 'hsla(200, 50%, 70%, 0.1)'
         });
+
+      // Init Timeline plugin
+      var timeline = Object.create(WaveSurfer.Timeline);
+      timeline.init({ wavesurfer: wavesurfer, container: '#timeline' });
     });
 
     // Zoom slider
