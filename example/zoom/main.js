@@ -19,6 +19,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     wavesurfer.enableDragSelection({ slop: 5 });
 
+    // Zoom slider
+    var slider = document.querySelector('[data-action="zoom"]');
+
+    slider.addEventListener('input', function () {
+        wavesurfer.zoom(Number(this.value));
+    });
+
     wavesurfer.on('ready', function () {
         wavesurfer.addRegion({
             start: 0,
@@ -35,18 +42,9 @@ document.addEventListener('DOMContentLoaded', function () {
       // Init Timeline plugin
       var timeline = Object.create(WaveSurfer.Timeline);
       timeline.init({ wavesurfer: wavesurfer, container: '#timeline' });
+
+      slider.value = wavesurfer.params.minPxPerSec;
     });
-
-    // Zoom slider
-    var slider = document.querySelector('[data-action="zoom"]');
-
-    slider.value = wavesurfer.params.minPxPerSec;
-    slider.min = wavesurfer.params.minPxPerSec;
-
-    slider.addEventListener('input', function () {
-        wavesurfer.zoom(Number(this.value));
-    });
-
 
     // Play button
     var button = document.querySelector('[data-action="play"]');
