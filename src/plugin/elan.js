@@ -85,39 +85,32 @@ export default function(params = {}) {
                     timeOrder[slot.getAttribute('TIME_SLOT_ID')] = value;
                 });
 
-                data.tiers = _map.call(xml.querySelectorAll('TIER'), function (tier) {
-                    return {
-                        id: tier.getAttribute('TIER_ID'),
-                        linguisticTypeRef: tier.getAttribute('LINGUISTIC_TYPE_REF'),
-                        defaultLocale: tier.getAttribute('DEFAULT_LOCALE'),
-                        annotations: _map.call(
-                            tier.querySelectorAll('REF_ANNOTATION, ALIGNABLE_ANNOTATION'),
-                            function (node) {
-                                var annot = {
-                                    type: node.nodeName,
-                                    id: node.getAttribute('ANNOTATION_ID'),
-                                    ref: node.getAttribute('ANNOTATION_REF'),
-                                    value: node.querySelector('ANNOTATION_VALUE')
-                                    .textContent.trim()
-                                };
-
-                                if (this.Types.ALIGNABLE_ANNOTATION == annot.type) {
-                                    // Add start & end to alignable annotation
-                                    annot.start = timeOrder[node.getAttribute('TIME_SLOT_REF1')];
-                                    annot.end = timeOrder[node.getAttribute('TIME_SLOT_REF2')];
-
-                                    // Add to the list of alignable annotations
-                                    data.alignableAnnotations.push(annot);
-                                }
-
-                                // Additionally, put into the flat map of all annotations
-                                data.annotations[annot.id] = annot;
-
-                                return annot;
-                            }, this
-                        )
-                    };
-                }, this);
+                data.tiers = _map.call(xml.querySelectorAll('TIER'), tier => ({
+                    id: tier.getAttribute('TIER_ID'),
+                    linguisticTypeRef: tier.getAttribute('LINGUISTIC_TYPE_REF'),
+                    defaultLocale: tier.getAttribute('DEFAULT_LOCALE'),
+                    annotations: _map.call(
+                        tier.querySelectorAll('REF_ANNOTATION, ALIGNABLE_ANNOTATION'), node => {
+                            var annot = {
+                                type: node.nodeName,
+                                id: node.getAttribute('ANNOTATION_ID'),
+                                ref: node.getAttribute('ANNOTATION_REF'),
+                                value: node.querySelector('ANNOTATION_VALUE')
+                                .textContent.trim()
+                            };
+                            if (this.Types.ALIGNABLE_ANNOTATION == annot.type) {
+                                // Add start & end to alignable annotation
+                                annot.start = timeOrder[node.getAttribute('TIME_SLOT_REF1')];
+                                annot.end = timeOrder[node.getAttribute('TIME_SLOT_REF2')];
+                                // Add to the list of alignable annotations
+                                data.alignableAnnotations.push(annot);
+                            }
+                            // Additionally, put into the flat map of all annotations
+                            data.annotations[annot.id] = annot;
+                            return annot;
+                        }
+                    )
+                }));
 
                 // Create JavaScript references between annotations
                 data.tiers.forEach(function (tier) {
