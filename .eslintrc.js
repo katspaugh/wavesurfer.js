@@ -118,7 +118,7 @@ module.exports = {
         "no-continue": "error",
         "no-div-regex": "error",
         "no-duplicate-imports": "error",
-        "no-else-return": "off",
+        "no-else-return": "error",
         "no-empty-function": "off",
         "no-eq-null": "off",
         "no-eval": "error",
