@@ -178,9 +178,9 @@ export default util.extend({}, drawer, {
 
             // Draw the bottom edge going backwards, to make a single
             // closed hull to fill.
-            for (var i = length - 1; i >= 0; i--) {
-                var h = Math.round(peaks[2 * i + 1] / absmax * halfH);
-                cc.lineTo(i * scale + $, halfH - h + offsetY);
+            for (var j = length - 1; j >= 0; j--) {
+                var k = Math.round(peaks[2 * j + 1] / absmax * halfH);
+                cc.lineTo(j * scale + $, halfH - k + offsetY);
             }
 
             cc.closePath();
