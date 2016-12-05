@@ -108,7 +108,7 @@ export default function(params = {}) {
                 this.wavesurfer.renderers.Canvas.createElements.call(this);
 
                 if (this.params.showOverview) {
-                    this.overviewRegion =  this.style(document.createElement('overview'), {
+                    this.overviewRegion = this.style(document.createElement('overview'), {
                         height: (this.wrapper.offsetHeight - (this.params.overviewBorderSize * 2)) + 'px',
                         width: '0px',
                         display: 'block',
@@ -153,7 +153,7 @@ export default function(params = {}) {
                     this.wavesurfer.on('scroll', this._onSeek);
 
                     this.wavesurfer.drawer.wrapper.addEventListener('mouseover', function(event) {
-                        if (my.draggingOverview)  {
+                        if (my.draggingOverview) {
                             my.draggingOverview = false;
                         }
                     });
@@ -173,7 +173,7 @@ export default function(params = {}) {
                 };
 
                 this.on('click', (function (e, position) {
-                    if (seek)  {
+                    if (seek) {
                         this.progress(position);
                         this.wavesurfer.seekAndCenter(position);
                     } else {
@@ -199,7 +199,7 @@ export default function(params = {}) {
                         if (positionMouseDown.clientX - event.clientX === 0 && positionMouseDown.clientX - event.clientX === 0) {
                             seek = true;
                             my.draggingOverview = false;
-                        } else if (my.draggingOverview)  {
+                        } else if (my.draggingOverview) {
                             seek = false;
                             my.draggingOverview = false;
                         }
