@@ -1,7 +1,7 @@
 /**
  * Calculate FFT - Based on https://github.com/corbanbrook/dsp.js
  */
-/* eslint-disable complexity */
+/* eslint-disable complexity, no-redeclare */
 const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
     this.bufferSize = bufferSize;
     this.sampleRate = sampleRate;
@@ -177,7 +177,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
         return spectrum;
     };
 };
-/* eslint-enable complexity */
+/* eslint-enable complexity, no-redeclare */
 
 /**
 * spectrogram plugin
@@ -404,7 +404,7 @@ export default function(params = {}) {
                 this.wrapper.scrollLeft = e.target.scrollLeft;
             },
 
-            resample: function(oldMatrix, columnsNumber) {
+            resample: function(oldMatrix) {
                 var columnsNumber = this.width;
                 var newMatrix = [];
 
@@ -438,8 +438,8 @@ export default function(params = {}) {
 
                     var intColumn = new Uint8Array(oldMatrix[0].length);
 
-                    for (var k = 0; k < oldMatrix[0].length; k++) {
-                        intColumn[k] = column[k];
+                    for (var m = 0; m < oldMatrix[0].length; m++) {
+                        intColumn[m] = column[m];
                     }
 
                     newMatrix.push(intColumn);

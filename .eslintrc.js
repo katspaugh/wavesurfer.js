@@ -106,7 +106,7 @@ module.exports = {
         "newline-after-var": "off",
         "newline-before-return": "off",
         "newline-per-chained-call": "off",
-        "no-redeclare": "off",
+        "no-redeclare": "error",
         "no-unused-vars": "off",
         "no-console": "off",
         "no-alert": "error",
