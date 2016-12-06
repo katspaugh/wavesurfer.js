@@ -179,9 +179,8 @@ export default function(params = {}) {
                         seconds = parseInt(seconds % 60);
                         seconds = (seconds < 10) ? '0' + seconds : seconds;
                         return '' + minutes + ':' + seconds;
-                    } else {
-                        return seconds;
                     }
+                    return seconds;
                 };
 
                 var timeInterval = 60;

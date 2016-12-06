@@ -72,9 +72,8 @@ export default util.extend({}, drawer, {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawBars, this);
                 return;
-            } else {
-                peaks = channels[0];
             }
+            peaks = channels[0];
         }
 
         // Bar wave draws the bottom only as a reflection of the top,
@@ -125,9 +124,8 @@ export default util.extend({}, drawer, {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawWave, this);
                 return;
-            } else {
-                peaks = channels[0];
             }
+            peaks = channels[0];
         }
 
         // Support arrays without negative peaks
