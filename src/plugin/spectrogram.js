@@ -5,15 +5,15 @@
 const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
     this.bufferSize = bufferSize;
     this.sampleRate = sampleRate;
-    this.bandwidth  = 2 / bufferSize * sampleRate / 2;
+    this.bandwidth = 2 / bufferSize * sampleRate / 2;
 
     this.sinTable = new Float32Array(bufferSize);
     this.cosTable = new Float32Array(bufferSize);
     this.windowValues = new Float32Array(bufferSize);
     this.reverseTable = new Uint32Array(bufferSize);
 
-    this.peakBand   = 0;
-    this.peak       = 0;
+    this.peakBand = 0;
+    this.peak = 0;
 
     switch (windowFunc) {
         case 'bartlett' :
@@ -342,7 +342,7 @@ export default function(params = {}) {
                 for (var i = 0; i < pixels.length; i++) {
                     for (var j = 0; j < pixels[i].length; j++) {
                         var colorValue = 255 - pixels[i][j];
-                        my.spectrCc.fillStyle = 'rgb(' + colorValue + ', '  + colorValue + ', ' + colorValue + ')';
+                        my.spectrCc.fillStyle = 'rgb(' + colorValue + ', ' + colorValue + ', ' + colorValue + ')';
                         my.spectrCc.fillRect(i, height - j * heightFactor, 1, heightFactor);
                     }
                 }
