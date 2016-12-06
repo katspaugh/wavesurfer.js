@@ -190,7 +190,7 @@ export default function(params = {}) {
                     });
 
                     this.wrapper.addEventListener('mousemove', function(event) {
-                        if(my.draggingOverview) {
+                        if (my.draggingOverview) {
                             my.moveOverviewRegion(event.clientX - my.container.getBoundingClientRect().left - relativePositionX);
                         }
                     });

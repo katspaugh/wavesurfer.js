@@ -80,7 +80,7 @@ module.exports = {
         "jsx-quotes": "error",
         "key-spacing": "off",
         "keyword-spacing": [
-            "off",
+            "error",
             {
                 "after": true,
                 "before": true
