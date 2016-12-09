@@ -214,7 +214,7 @@ export default function(params = {}) {
             *   alpha: some window functions have this extra value (0<alpha<1);
             *   noverlap: size of the overlapping window. Must be < fftSamples. Auto deduced from canvas size by default.
             */
-            init: function (wavesurfer) {
+            init(wavesurfer) {
                 this.params = params;
                 this.wavesurfer = wavesurfer;
 
@@ -255,7 +255,7 @@ export default function(params = {}) {
                 this.wavesurfer.on('ready', this._onReady);
             },
 
-            destroy: function () {
+            destroy() {
                 this.unAll();
                 this.wavesurfer.un('ready', this._onReady);
                 if (this.wrapper) {
@@ -264,7 +264,7 @@ export default function(params = {}) {
                 }
             },
 
-            createWrapper: function () {
+            createWrapper() {
                 var prevSpectrogram = this.container.querySelector('spectrogram');
                 if (prevSpectrogram) {
                     this.container.removeChild(prevSpectrogram);
@@ -299,7 +299,7 @@ export default function(params = {}) {
                 });
             },
 
-            createCanvas: function () {
+            createCanvas() {
                 var canvas = this.canvas = this.wrapper.appendChild(
                     document.createElement('canvas')
                 );
@@ -312,7 +312,7 @@ export default function(params = {}) {
                 });
             },
 
-            render: function () {
+            render() {
                 this.updateCanvasStyle();
 
                 if (this.frequenciesDataUrl) {
@@ -322,14 +322,14 @@ export default function(params = {}) {
                 }
             },
 
-            updateCanvasStyle: function () {
+            updateCanvasStyle() {
                 var width = Math.round(this.width / this.pixelRatio) + 'px';
                 this.canvas.width = this.width;
                 this.canvas.height = this.height;
                 this.canvas.style.width = width;
             },
 
-            drawSpectrogram: function(frequenciesData, my) {
+            drawSpectrogram(frequenciesData, my) {
                 var spectrCc = my.spectrCc;
 
                 var length = my.wavesurfer.backend.getDuration();
@@ -348,7 +348,7 @@ export default function(params = {}) {
                 }
             },
 
-            getFrequencies: function(callback) {
+            getFrequencies(callback) {
                 var fftSamples = this.fftSamples;
                 var buffer = this.buffer = this.wavesurfer.backend.buffer;
                 var channelOne = buffer.getChannelData(0);
@@ -386,11 +386,10 @@ export default function(params = {}) {
                 callback(frequencies, this);
             },
 
-
-            loadFrequenciesData: function (url) {
+            loadFrequenciesData(url) {
                 var my = this;
 
-                var ajax = this.wavesurfer.util.ajax({ url: url });
+                var ajax = this.wavesurfer.util.ajax({ url });
 
                 ajax.on('success', function(data) { my.drawSpectrogram(JSON.parse(data), my); });
                 ajax.on('error', function (e) {
@@ -400,11 +399,11 @@ export default function(params = {}) {
                 return ajax;
             },
 
-            updateScroll: function(e) {
+            updateScroll(e) {
                 this.wrapper.scrollLeft = e.target.scrollLeft;
             },
 
-            resample: function(oldMatrix) {
+            resample(oldMatrix) {
                 var columnsNumber = this.width;
                 var newMatrix = [];
 

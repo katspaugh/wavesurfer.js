@@ -2,7 +2,7 @@ import webaudio from './webaudio';
 import * as util from './util';
 
 export default util.extend({}, webaudio, {
-    init: function (params) {
+    init(params) {
         this.params = params;
 
         // Dummy media to catch errors
@@ -11,8 +11,8 @@ export default util.extend({}, webaudio, {
             duration: 0,
             paused: true,
             playbackRate: 1,
-            play: function () {},
-            pause: function () {}
+            play() {},
+            pause() {}
         };
 
         this.mediaType = params.mediaType.toLowerCase();
@@ -25,7 +25,7 @@ export default util.extend({}, webaudio, {
     /**
      * Create a timer to provide a more precise `audioprocess' event.
      */
-    createTimer: function () {
+    createTimer() {
         var my = this;
         var playing = false;
 
@@ -50,7 +50,7 @@ export default util.extend({}, webaudio, {
      *  @param  {Array}         peaks       array of peak data
      *  @param  {String}        preload     HTML 5 preload attribute value
      */
-    load: function (url, container, peaks, preload) {
+    load(url, container, peaks, preload) {
         var my = this;
 
         var media = document.createElement(this.mediaType);
@@ -74,7 +74,7 @@ export default util.extend({}, webaudio, {
      *  @param  {MediaElement}  elt     HTML5 Audio or Video element
      *  @param  {Array}         peaks   array of peak data
      */
-    loadElt: function (elt, peaks) {
+    loadElt(elt, peaks) {
         var my = this;
 
         var media = elt;
@@ -91,7 +91,7 @@ export default util.extend({}, webaudio, {
      *  @param  {Array}         peaks   array of peak data
      *  @private
      */
-    _load: function (media, peaks) {
+    _load(media, peaks) {
         var my = this;
 
         // load must be called manually on iOS, otherwise peaks won't draw
@@ -117,11 +117,11 @@ export default util.extend({}, webaudio, {
         this.setPlaybackRate(this.playbackRate);
     },
 
-    isPaused: function () {
+    isPaused() {
         return !this.media || this.media.paused;
     },
 
-    getDuration: function () {
+    getDuration() {
         var duration = this.media.duration;
         if (duration >= Infinity) { // streaming audio
             duration = this.media.seekable.end(0);
@@ -129,23 +129,23 @@ export default util.extend({}, webaudio, {
         return duration;
     },
 
-    getCurrentTime: function () {
+    getCurrentTime() {
         return this.media && this.media.currentTime;
     },
 
-    getPlayedPercents: function () {
+    getPlayedPercents() {
         return (this.getCurrentTime() / this.getDuration()) || 0;
     },
 
     /**
      * Set the audio source playback rate.
      */
-    setPlaybackRate: function (value) {
+    setPlaybackRate(value) {
         this.playbackRate = value || 1;
         this.media.playbackRate = this.playbackRate;
     },
 
-    seekTo: function (start) {
+    seekTo(start) {
         if (start != null) {
             this.media.currentTime = start;
         }
@@ -160,7 +160,7 @@ export default util.extend({}, webaudio, {
      * @param {Number} end End offset in seconds,
      * relative to the beginning of a clip.
      */
-    play: function (start, end) {
+    play(start, end) {
         this.seekTo(start);
         this.media.play();
         end && this.setPlayEnd(end);
@@ -170,13 +170,13 @@ export default util.extend({}, webaudio, {
     /**
      * Pauses the loaded audio.
      */
-    pause: function () {
+    pause() {
         this.media && this.media.pause();
         this.clearPlayEnd();
         this.fireEvent('pause');
     },
 
-    setPlayEnd: function (end) {
+    setPlayEnd(end) {
         var my = this;
         this.onPlayEnd = function (time) {
             if (time >= end) {
@@ -187,29 +187,29 @@ export default util.extend({}, webaudio, {
         this.on('audioprocess', this.onPlayEnd);
     },
 
-    clearPlayEnd: function () {
+    clearPlayEnd() {
         if (this.onPlayEnd) {
             this.un('audioprocess', this.onPlayEnd);
             this.onPlayEnd = null;
         }
     },
 
-    getPeaks: function (length) {
+    getPeaks(length) {
         if (this.buffer) {
             return webaudio.getPeaks.call(this, length);
         }
         return this.peaks || [];
     },
 
-    getVolume: function () {
+    getVolume() {
         return this.media.volume;
     },
 
-    setVolume: function (val) {
+    setVolume(val) {
         this.media.volume = val;
     },
 
-    destroy: function () {
+    destroy() {
         this.pause();
         this.unAll();
         this.media && this.media.parentNode && this.media.parentNode.removeChild(this.media);

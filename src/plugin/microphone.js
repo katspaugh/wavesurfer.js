@@ -10,7 +10,7 @@ export default function(params = {}) {
         deferInit: params && params.deferInit ? params.deferInit : false,
         extends: ['observer'],
         instance: {
-            init: function (wavesurfer) {
+            init(wavesurfer) {
                 this.params = params;
                 this.wavesurfer = wavesurfer;
 
@@ -86,7 +86,7 @@ export default function(params = {}) {
             /**
              * Destroy the microphone plugin.
              */
-            destroy: function() {
+            destroy() {
                 // make sure the buffer is not redrawn during
                 // cleanup and demolition of this plugin.
                 this.paused = true;
@@ -99,7 +99,7 @@ export default function(params = {}) {
             * Allow user to select audio input device, eg. microphone, and
             * start the visualization.
             */
-            start: function() {
+            start() {
                 navigator.mediaDevices.getUserMedia(this.constraints).then(
                     this.gotStream.bind(this)
                 ).catch(
@@ -110,7 +110,7 @@ export default function(params = {}) {
             /**
             * Pause/resume visualization.
             */
-            togglePlay: function() {
+            togglePlay() {
                 if (!this.active) {
                     // start it first
                     this.start();
@@ -129,7 +129,7 @@ export default function(params = {}) {
             /**
             * Play visualization.
             */
-            play: function() {
+            play() {
                 this.paused = false;
 
                 this.connect();
@@ -138,7 +138,7 @@ export default function(params = {}) {
             /**
             * Pause visualization.
             */
-            pause: function() {
+            pause() {
                 this.paused = true;
 
                 // disconnect sources so they can be used elsewhere
@@ -150,7 +150,7 @@ export default function(params = {}) {
             * Stop the device stream and remove any remaining waveform drawing from
             * the wavesurfer canvas.
             */
-            stop: function() {
+            stop() {
                 if (this.active) {
                     // stop visualization and device
                     this.stopDevice();
@@ -163,7 +163,7 @@ export default function(params = {}) {
             /**
             * Stop the device and the visualization.
             */
-            stopDevice: function() {
+            stopDevice() {
                 this.active = false;
 
                 // stop visualization
@@ -193,7 +193,7 @@ export default function(params = {}) {
             /**
             * Connect the media sources that feed the visualization.
             */
-            connect: function() {
+            connect() {
                 if (this.stream !== undefined) {
                     // Create an AudioNode from the stream.
                     this.mediaStreamSource = this.micContext.createMediaStreamSource(this.stream);
@@ -213,7 +213,7 @@ export default function(params = {}) {
             /**
             * Disconnect the media sources that feed the visualization.
             */
-            disconnect: function() {
+            disconnect() {
                 if (this.mediaStreamSource !== undefined) {
                     this.mediaStreamSource.disconnect();
                 }
@@ -227,7 +227,7 @@ export default function(params = {}) {
             /**
             * Redraw the waveform.
             */
-            reloadBuffer: function(event) {
+            reloadBuffer(event) {
                 if (!this.paused) {
                     this.wavesurfer.empty();
                     this.wavesurfer.loadDecodedBuffer(event.inputBuffer);
@@ -239,7 +239,7 @@ export default function(params = {}) {
             *
             * @param {LocalMediaStream} stream: the microphone's media stream.
             */
-            gotStream: function(stream) {
+            gotStream(stream) {
                 this.stream = stream;
                 this.active = true;
 
@@ -253,7 +253,7 @@ export default function(params = {}) {
             /**
             * Device error callback.
             */
-            deviceError: function(code) {
+            deviceError(code) {
                 // notify listeners
                 this.fireEvent('deviceError', code);
             },
@@ -265,7 +265,7 @@ export default function(params = {}) {
             * @param {!number} pos position in the version string to be returned.
             * @return {!number} browser version.
             */
-            extractVersion: function(uastring, expr, pos) {
+            extractVersion(uastring, expr, pos) {
                 var match = uastring.match(expr);
                 return match && match.length >= pos && parseInt(match[pos], 10);
             },
@@ -275,7 +275,7 @@ export default function(params = {}) {
             * @return {object} result containing browser, version and minVersion
             *     properties.
             */
-            detectBrowser: function() {
+            detectBrowser() {
                 // Returned result object.
                 var result = {};
                 result.browser = null;

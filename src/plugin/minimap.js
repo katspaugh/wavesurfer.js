@@ -17,7 +17,7 @@ export default function(params = {}) {
         },
         extends: ['observer', 'drawer'],
         instance: {
-            init: function (wavesurfer) {
+            init(wavesurfer) {
                 this.wavesurfer = wavesurfer;
                 this._onDrawerCreated = () => {
                     this.container = this.wavesurfer.drawer.container;
@@ -56,13 +56,13 @@ export default function(params = {}) {
                 this.wavesurfer.on('drawer-created', this._onDrawerCreated);
             },
 
-            destroy: function () {
+            destroy() {
                 window.removeEventListener('resize', this._onResize, true);
                 this.wavesurfer.un('drawer-created', this._onDrawerCreated);
                 this.wrapper.parentNode.removeChild(this.wrapper);
             },
 
-            regions: function() {
+            regions() {
                 var my = this;
                 this.regions = {};
 
@@ -81,7 +81,8 @@ export default function(params = {}) {
                     my.renderRegions();
                 });
             },
-            renderRegions: function() {
+
+            renderRegions() {
                 var my = this;
                 var regionElements = this.wrapper.querySelectorAll('region');
                 for (var i = 0; i < regionElements.length; ++i) {
@@ -104,7 +105,8 @@ export default function(params = {}) {
                     my.wrapper.appendChild(regionElement);
                 });
             },
-            createElements: function() {
+
+            createElements() {
                 this.wavesurfer.renderers.Canvas.createElements.call(this);
 
                 if (this.params.showOverview) {
@@ -123,7 +125,7 @@ export default function(params = {}) {
                 }
             },
 
-            bindWaveSurferEvents: function () {
+            bindWaveSurferEvents() {
                 var my = this;
                 var prevWidth = 0;
                 this._onResize = () => {
@@ -162,8 +164,7 @@ export default function(params = {}) {
                 window.addEventListener('resize', this._onResize, true);
             },
 
-
-            bindMinimapEvents: function () {
+            bindMinimapEvents() {
                 var my = this;
                 var relativePositionX = 0;
                 var seek = true;
@@ -207,7 +208,7 @@ export default function(params = {}) {
                 }
             },
 
-            render: function () {
+            render() {
                 var len = this.getWidth();
                 var peaks = this.wavesurfer.backend.getPeaks(len);
                 this.drawPeaks(peaks, len);
@@ -223,7 +224,8 @@ export default function(params = {}) {
                     this.overviewRegion.style.width = (this.overviewWidth - (this.params.overviewBorderSize * 2)) + 'px';
                 }
             },
-            moveOverviewRegion: function(pixels) {
+
+            moveOverviewRegion(pixels) {
                 if (pixels < 0) {
                     this.overviewPosition = 0;
                 } else if (pixels + this.overviewWidth < this.width) {

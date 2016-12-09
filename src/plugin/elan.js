@@ -15,7 +15,7 @@ export default function(params = {}) {
                 REF_ANNOTATION: 'REF_ANNOTATION'
             },
 
-            init: function (wavesurfer) {
+            init(wavesurfer) {
                 this.data = null;
                 this.params = params;
                 this.container = 'string' == typeof params.container ?
@@ -32,12 +32,12 @@ export default function(params = {}) {
                 }
             },
 
-            destroy: function() {
+            destroy() {
                 this.container.removeEventListener('click', this._onClick);
                 this.container.removeChild(this.table);
             },
 
-            load: function (url) {
+            load(url) {
                 var my = this;
                 this.loadXML(url, function (xml) {
                     my.data = my.parseElan(xml);
@@ -46,7 +46,7 @@ export default function(params = {}) {
                 });
             },
 
-            loadXML: function (url, callback) {
+            loadXML(url, callback) {
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', url, true);
                 xhr.responseType = 'document';
@@ -56,7 +56,7 @@ export default function(params = {}) {
                 });
             },
 
-            parseElan: function (xml) {
+            parseElan(xml) {
                 var _forEach = Array.prototype.forEach;
                 var _map = Array.prototype.map;
 
@@ -135,7 +135,7 @@ export default function(params = {}) {
                 return data;
             },
 
-            render: function () {
+            render() {
                 // apply tiers filter
                 var tiers = this.data.tiers;
                 if (this.params.tiers) {
@@ -223,7 +223,7 @@ export default function(params = {}) {
                 this.container.appendChild(table);
             },
 
-            bindClick: function () {
+            bindClick() {
                 var my = this;
                 this._onClick = e => {
                     var ref = e.target.dataset.ref;
@@ -237,7 +237,7 @@ export default function(params = {}) {
                 this.container.addEventListener('click', this._onClick);
             },
 
-            getRenderedAnnotation: function (time) {
+            getRenderedAnnotation(time) {
                 var result;
                 this.renderedAlignable.some(function (annotation) {
                     if (annotation.start <= time && annotation.end >= time) {
@@ -249,7 +249,7 @@ export default function(params = {}) {
                 return result;
             },
 
-            getAnnotationNode: function (annotation) {
+            getAnnotationNode(annotation) {
                 return document.getElementById(
                     'wavesurfer-alignable-' + annotation.id
                 );

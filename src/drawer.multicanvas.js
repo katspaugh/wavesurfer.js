@@ -2,9 +2,7 @@ import drawer from './drawer';
 import * as util from './util';
 
 export default util.extend({}, drawer, {
-
-
-    initDrawer: function (params) {
+    initDrawer(params) {
         this.maxCanvasWidth = params.maxCanvasWidth != null ? params.maxCanvasWidth : 4000;
         this.maxCanvasElementWidth = Math.round(this.maxCanvasWidth / this.params.pixelRatio);
 
@@ -19,7 +17,7 @@ export default util.extend({}, drawer, {
         this.canvases = [];
     },
 
-    createElements: function () {
+    createElements() {
         this.progressWave = this.wrapper.appendChild(
             this.style(document.createElement('wave'), {
                 position: 'absolute',
@@ -40,7 +38,7 @@ export default util.extend({}, drawer, {
         this.addCanvas();
     },
 
-    updateSize: function () {
+    updateSize() {
         var totalWidth = Math.round(this.width / this.params.pixelRatio),
             requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
 
@@ -65,7 +63,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    addCanvas: function () {
+    addCanvas() {
         var entry = {},
             leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
@@ -95,7 +93,7 @@ export default util.extend({}, drawer, {
         this.canvases.push(entry);
     },
 
-    removeCanvas: function () {
+    removeCanvas() {
         var lastEntry = this.canvases.pop();
         lastEntry.wave.parentElement.removeChild(lastEntry.wave);
         if (this.hasProgressCanvas) {
@@ -103,7 +101,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    updateDimensions: function (entry, width, height) {
+    updateDimensions(entry, width, height) {
         var elementWidth = Math.round(width / this.params.pixelRatio),
             totalWidth = Math.round(this.width / this.params.pixelRatio);
 
@@ -124,20 +122,20 @@ export default util.extend({}, drawer, {
         }
     },
 
-    clearWave: function () {
+    clearWave() {
         for (var i in this.canvases) {
             this.clearWaveForEntry(this.canvases[i]);
         }
     },
 
-    clearWaveForEntry: function (entry) {
+    clearWaveForEntry(entry) {
         entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
         if (this.hasProgressCanvas) {
             entry.progressCtx.clearRect(0, 0, entry.progressCtx.canvas.width, entry.progressCtx.canvas.height);
         }
     },
 
-    drawBars: function (peaks, channelIndex) {
+    drawBars(peaks, channelIndex) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -179,7 +177,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    drawWave: function (peaks, channelIndex) {
+    drawWave(peaks, channelIndex) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -220,7 +218,7 @@ export default util.extend({}, drawer, {
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     },
 
-    drawLine: function (peaks, absmax, halfH, offsetY) {
+    drawLine(peaks, absmax, halfH, offsetY) {
         for (var index in this.canvases) {
             var entry = this.canvases[index];
 
@@ -231,7 +229,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    drawLineToContext: function (entry, ctx, peaks, absmax, halfH, offsetY) {
+    drawLineToContext(entry, ctx, peaks, absmax, halfH, offsetY) {
         if (!ctx) { return; }
 
         var length = peaks.length / 2;
@@ -263,7 +261,7 @@ export default util.extend({}, drawer, {
         ctx.fill();
     },
 
-    fillRect: function (x, y, width, height) {
+    fillRect(x, y, width, height) {
         for (var i in this.canvases) {
             var entry = this.canvases[i],
                 leftOffset = i * this.maxCanvasWidth;
@@ -293,19 +291,19 @@ export default util.extend({}, drawer, {
         }
     },
 
-    fillRectToContext: function (ctx, x, y, width, height) {
+    fillRectToContext(ctx, x, y, width, height) {
         if (!ctx) { return; }
         ctx.fillRect(x, y, width, height);
     },
 
-    setFillStyles: function (entry) {
+    setFillStyles(entry) {
         entry.waveCtx.fillStyle = this.params.waveColor;
         if (this.hasProgressCanvas) {
             entry.progressCtx.fillStyle = this.params.progressColor;
         }
     },
 
-    updateProgress: function (progress) {
+    updateProgress(progress) {
         var pos = Math.round(
             this.width * progress
         ) / this.params.pixelRatio;

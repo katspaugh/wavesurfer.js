@@ -2,7 +2,7 @@ import drawer from './drawer';
 import * as util from './util';
 
 export default util.extend({}, drawer, {
-    createElements: function () {
+    createElements() {
         var waveCanvas = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
@@ -39,7 +39,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    updateSize: function () {
+    updateSize() {
         var width = Math.round(this.width / this.params.pixelRatio);
 
         this.waveCc.canvas.width = this.width;
@@ -57,14 +57,14 @@ export default util.extend({}, drawer, {
         this.clearWave();
     },
 
-    clearWave: function () {
+    clearWave() {
         this.waveCc.clearRect(0, 0, this.width, this.height);
         if (this.progressCc) {
             this.progressCc.clearRect(0, 0, this.width, this.height);
         }
     },
 
-    drawBars: function (peaks, channelIndex) {
+    drawBars(peaks, channelIndex) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -116,7 +116,7 @@ export default util.extend({}, drawer, {
         }, this);
     },
 
-    drawWave: function (peaks, channelIndex) {
+    drawWave(peaks, channelIndex) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -189,14 +189,14 @@ export default util.extend({}, drawer, {
         }, this);
     },
 
-    updateProgress: function (progress) {
+    updateProgress(progress) {
         var pos = Math.round(
             this.width * progress
         ) / this.params.pixelRatio;
         this.style(this.progressWave, { width: pos + 'px' });
     },
 
-    getImage: function(type, quality) {
+    getImage(type, quality) {
         return this.waveCc.canvas.toDataURL(type, quality);
     }
 });

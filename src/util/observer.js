@@ -2,7 +2,7 @@ export default {
     /**
      * Attach a handler function for an event.
      */
-    on: function (event, fn) {
+    on(event, fn) {
         if (!this.handlers) { this.handlers = {}; }
 
         let handlers = this.handlers[event];
@@ -22,7 +22,7 @@ export default {
     /**
      * Remove an event handler.
      */
-    un: function (event, fn) {
+    un(event, fn) {
         if (!this.handlers) { return; }
 
         const handlers = this.handlers[event];
@@ -42,7 +42,7 @@ export default {
     /**
      * Remove all event handlers.
      */
-    unAll: function () {
+    unAll() {
         this.handlers = null;
     },
 
@@ -50,7 +50,7 @@ export default {
      * Attach a handler to an event. The handler is executed at most once per
      * event type.
      */
-    once: function (event, handler) {
+    once(event, handler) {
         const my = this;
         const fn = function () {
             /*  eslint-disable no-invalid-this, prefer-rest-params */
@@ -63,7 +63,7 @@ export default {
         return this.on(event, fn);
     },
 
-    fireEvent: function (event, ...args) {
+    fireEvent(event, ...args) {
         if (!this.handlers) { return; }
         const handlers = this.handlers[event];
         handlers && handlers.forEach(function (fn) {

@@ -16,7 +16,7 @@ export default function(params) {
         },
         extends: ['observer'],
         instance: {
-            init: function (wavesurfer) {
+            init(wavesurfer) {
                 var my = this;
 
                 this.wavesurfer = wavesurfer;
@@ -65,16 +65,16 @@ export default function(params) {
                 this.wrapper.removeEventListener('mouseleave', this._handleMouseLeave);
             },
 
-            updateCursorPosition: function(progress) {
+            updateCursorPosition(progress) {
                 var pos = Math.round(this.drawer.width * progress) / this.drawer.params.pixelRatio - 1;
                 this.drawer.style(this.cursor, { left: pos + 'px' });
             },
 
-            showCursor: function() {
+            showCursor() {
                 this.drawer.style(this.cursor, { display: 'block' });
             },
 
-            hideCursor: function() {
+            hideCursor() {
                 this.drawer.style(this.cursor, { display: 'none' });
             }
         }
