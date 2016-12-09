@@ -1250,7 +1250,9 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
 
         // load must be called manually on iOS, otherwise peaks won't draw
         // until a user interaction triggers load --> 'ready' event
-        media.load();
+        if (typeof media.load == 'function') {
+            media.load();
+        }
 
         media.addEventListener('error', function () {
             my.fireEvent('error', 'Error loading media element');

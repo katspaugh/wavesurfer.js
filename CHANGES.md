@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+1.2.8 (09.12.2016)
+------------------
+- PhantomJS support with the MediaElement backend (#875)
+
 1.2.7 (03.12.2016)
 ------------------
 - Timeline bugfixes: correctly unsubscribe on destroy and re-render on zoom (#825, #848)
