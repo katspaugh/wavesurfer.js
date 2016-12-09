@@ -175,14 +175,14 @@ export default function(params = {}) {
                 th.textContent = 'Time';
                 th.className = 'wavesurfer-time';
                 headRow.appendChild(th);
-                indeces.forEach(function (index) {
+                indeces.forEach(index => {
                     var tier = tiers[index];
                     var th = document.createElement('th');
                     th.className = 'wavesurfer-tier-' + tier.id;
                     th.textContent = tier.id;
                     th.style.width = this.params.tiers[tier.id];
                     headRow.appendChild(th);
-                }, this);
+                });
 
                 // body
                 var tbody = document.createElement('tbody');
