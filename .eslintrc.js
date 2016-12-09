@@ -123,7 +123,7 @@ module.exports = {
         "no-eq-null": "off",
         "no-eval": "error",
         "no-extend-native": "error",
-        "no-extra-bind": "off",
+        "no-extra-bind": "error",
         "no-extra-label": "error",
         "no-extra-parens": "off",
         "no-floating-decimal": "error",

@@ -170,9 +170,7 @@ const WebAudio = util.extend({}, util.observer, {
         if (!this.offlineAc) {
             this.offlineAc = this.getOfflineAudioContext(this.ac ? this.ac.sampleRate : 44100);
         }
-        this.offlineAc.decodeAudioData(arraybuffer, (function (data) {
-            callback(data);
-        }).bind(this), errback);
+        this.offlineAc.decodeAudioData(arraybuffer, data => callback(data), errback);
     },
 
     /**
