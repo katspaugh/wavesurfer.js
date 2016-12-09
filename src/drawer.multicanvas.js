@@ -152,9 +152,9 @@ export default util.extend({}, drawer, {
 
         // Bar wave draws the bottom only as a reflection of the top,
         // so we don't need negative values
-        var hasMinVals = [].some.call(peaks, function (val) { return val < 0; });
+        var hasMinVals = [].some.call(peaks, val => val < 0);
         if (hasMinVals) {
-            peaks = [].filter.call(peaks, function (_, index) { return index % 2 == 0; });
+            peaks = [].filter.call(peaks, (_, index) => index % 2 == 0);
         }
 
         // A half-pixel offset makes lines crisp
@@ -194,7 +194,7 @@ export default util.extend({}, drawer, {
         }
 
         // Support arrays without negative peaks
-        var hasMinValues = [].some.call(peaks, function (val) { return val < 0; });
+        var hasMinValues = [].some.call(peaks, val => val < 0);
         if (!hasMinValues) {
             var reflectedPeaks = [];
             for (var i = 0, len = peaks.length; i < len; i++) {

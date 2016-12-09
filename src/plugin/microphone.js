@@ -16,10 +16,10 @@ export default function(params = {}) {
 
                 this.active = false;
                 this.paused = false;
-                this.reloadBufferFunction = this.reloadBuffer.bind(this);
+                this.reloadBufferFunction = e => this.reloadBuffer(e);
 
                 // cross-browser getUserMedia
-                var promisifiedOldGUM = function(constraints, successCallback, errorCallback) {
+                var promisifiedOldGUM = (constraints, successCallback, errorCallback) => {
                     // get ahold of getUserMedia, if present
                     var getUserMedia = (navigator.getUserMedia ||
                         navigator.webkitGetUserMedia ||
@@ -35,7 +35,7 @@ export default function(params = {}) {
                     }
                     // otherwise, wrap the call to the old navigator.getUserMedia with
                     // a Promise
-                    return new Promise(function(successCallback, errorCallback) {
+                    return new Promise((successCallback, errorCallback) => {
                         getUserMedia.call(navigator, constraints, successCallback, errorCallback);
                     });
                 };
@@ -100,11 +100,9 @@ export default function(params = {}) {
             * start the visualization.
             */
             start: function() {
-                navigator.mediaDevices.getUserMedia(this.constraints).then(
-                    this.gotStream.bind(this)
-                ).catch(
-                    this.deviceError.bind(this)
-                );
+                navigator.mediaDevices.getUserMedia(this.constraints)
+                    .then((data) => this.gotStream(data))
+                    .catch((data) => this.deviceError(data));
             },
 
             /**
@@ -179,9 +177,7 @@ export default function(params = {}) {
                     (result.browser === 'firefox' && result.version >= 44) ||
                     (result.browser === 'edge')) {
                         if (this.stream.getTracks) { // note that this should not be a call
-                            this.stream.getTracks().forEach(function (stream) {
-                                stream.stop();
-                            });
+                            this.stream.getTracks().forEach(stream => stream.stop());
                             return;
                         }
                     }

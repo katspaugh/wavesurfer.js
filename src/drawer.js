@@ -64,27 +64,23 @@ export default util.extend({}, util.observer, {
     },
 
     setupWrapperEvents: function () {
-        var my = this;
-
-        this.wrapper.addEventListener('click', function (e) {
-            var scrollbarHeight = my.wrapper.offsetHeight - my.wrapper.clientHeight;
+        this.wrapper.addEventListener('click', e => {
+            var scrollbarHeight = this.wrapper.offsetHeight - this.wrapper.clientHeight;
             if (scrollbarHeight != 0) {
                 // scrollbar is visible.  Check if click was on it
-                var bbox = my.wrapper.getBoundingClientRect();
+                var bbox = this.wrapper.getBoundingClientRect();
                 if (e.clientY >= bbox.bottom - scrollbarHeight) {
                     // ignore mousedown as it was on the scrollbar
                     return;
                 }
             }
 
-            if (my.params.interact) {
-                my.fireEvent('click', e, my.handleEvent(e));
+            if (this.params.interact) {
+                this.fireEvent('click', e, this.handleEvent(e));
             }
         });
 
-        this.wrapper.addEventListener('scroll', function (e) {
-            my.fireEvent('scroll', e);
-        });
+        this.wrapper.addEventListener('scroll', e => this.fireEvent('scroll', e));
     },
 
     drawPeaks: function (peaks, length) {

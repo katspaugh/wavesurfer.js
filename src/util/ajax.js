@@ -13,13 +13,13 @@ export default function ajax (options) {
     let fired100 = false;
     xhr.open(options.method || 'GET', options.url, true);
     xhr.responseType = options.responseType || 'json';
-    xhr.addEventListener('progress', function (e) {
+    xhr.addEventListener('progress', e => {
         instance.fireEvent('progress', e);
         if (e.lengthComputable && e.loaded == e.total) {
             fired100 = true;
         }
     });
-    xhr.addEventListener('load', function (e) {
+    xhr.addEventListener('load', e => {
         if (!fired100) {
             instance.fireEvent('progress', e);
         }
@@ -30,9 +30,7 @@ export default function ajax (options) {
             instance.fireEvent('error', e);
         }
     });
-    xhr.addEventListener('error', function (e) {
-        instance.fireEvent('error', e);
-    });
+    xhr.addEventListener('error', e => instance.fireEvent('error', e));
     xhr.send();
     instance.xhr = xhr;
     return instance;
