@@ -69,8 +69,8 @@ const WebAudio = util.extend({}, util.observer, {
     },
 
     // Unpacked filters
-    setFilter: function () {
-        this.setFilters([].slice.call(arguments));
+    setFilter: function (...filters) {
+        this.setFilters(filters);
     },
 
     /**

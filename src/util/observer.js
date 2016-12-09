@@ -52,11 +52,11 @@ export default {
      */
     once: function (event, handler) {
         const my = this;
-        const fn = function () {
-            /*  eslint-disable no-invalid-this, prefer-rest-params */
-            handler.apply(this, arguments);
-            /*  eslint-enable no-invalid-this, prefer-rest-params */
-            setTimeout(function () {
+        const fn = function (...args) {
+            /*  eslint-disable no-invalid-this */
+            handler.apply(this, args);
+            /*  eslint-enable no-invalid-this */
+            setTimeout(() => {
                 my.un(event, fn);
             }, 0);
         };
