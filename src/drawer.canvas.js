@@ -106,7 +106,7 @@ export default util.extend({}, drawer, {
             this.progressCc.fillStyle = this.params.progressColor;
         }
 
-        [ this.waveCc, this.progressCc ].forEach(function (cc) {
+        [this.waveCc, this.progressCc].forEach(function (cc) {
             if (!cc) { return; }
 
             for (var i = 0; i < width; i += step) {
@@ -163,7 +163,7 @@ export default util.extend({}, drawer, {
             this.progressCc.fillStyle = this.params.progressColor;
         }
 
-        [ this.waveCc, this.progressCc ].forEach(function (cc) {
+        [this.waveCc, this.progressCc].forEach(function (cc) {
             if (!cc) { return; }
 
             cc.beginPath();
