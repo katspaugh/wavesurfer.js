@@ -81,16 +81,17 @@ export default function(params = {}) {
                 });
             },
             renderRegions: function() {
-                var regionElements = this.wrapper.querySelectorAll('region');
-                for (var i = 0; i < regionElements.length; ++i) {
+                const regionElements = this.wrapper.querySelectorAll('region');
+                let i;
+                for (i = 0; i < regionElements.length; ++i) {
                     this.wrapper.removeChild(regionElements[i]);
                 }
 
                 Object.keys(this.regions).forEach(id => {
-                    var region = this.regions[id];
-                    var width = (this.width * ((region.end - region.start) / this.wavesurfer.getDuration()));
-                    var left = (this.width * (region.start / this.wavesurfer.getDuration()));
-                    var regionElement = this.style(document.createElement('region'), {
+                    const region = this.regions[id];
+                    const width = (this.width * ((region.end - region.start) / this.wavesurfer.getDuration()));
+                    const left = (this.width * (region.start / this.wavesurfer.getDuration()));
+                    const regionElement = this.style(document.createElement('region'), {
                         height: 'inherit',
                         backgroundColor: region.color,
                         width: width + 'px',
@@ -122,7 +123,7 @@ export default function(params = {}) {
             },
 
             bindWaveSurferEvents: function () {
-                var prevWidth = 0;
+                let prevWidth = 0;
                 this._onResize = () => {
                     if (prevWidth != this.wrapper.clientWidth) {
                         prevWidth = this.wrapper.clientWidth;
@@ -161,12 +162,12 @@ export default function(params = {}) {
 
 
             bindMinimapEvents: function () {
-                var relativePositionX = 0;
-                var seek = true;
-                var positionMouseDown = {
+                const positionMouseDown = {
                     clientX: 0,
                     clientY: 0
                 };
+                let relativePositionX = 0;
+                let seek = true;
 
                 this.on('click', (e, position) => {
                     if (seek) {
@@ -204,8 +205,8 @@ export default function(params = {}) {
             },
 
             render: function () {
-                var len = this.getWidth();
-                var peaks = this.wavesurfer.backend.getPeaks(len);
+                const len = this.getWidth();
+                const peaks = this.wavesurfer.backend.getPeaks(len);
                 this.drawPeaks(peaks, len);
 
                 if (this.params.showOverview) {

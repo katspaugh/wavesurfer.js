@@ -108,7 +108,7 @@ const WebAudio = util.extend({}, util.observer, {
 
     addOnAudioProcess: function () {
         this.scriptNode.onaudioprocess = () => {
-            var time = this.getCurrentTime();
+            const time = this.getCurrentTime();
 
             if (time >= this.getDuration()) {
                 this.setState(this.FINISHED_STATE);
@@ -188,24 +188,27 @@ const WebAudio = util.extend({}, util.observer, {
     getPeaks: function (length) {
         if (this.peaks) { return this.peaks; }
 
-        var sampleSize = this.buffer.length / length;
-        var sampleStep = ~~(sampleSize / 10) || 1;
-        var channels = this.buffer.numberOfChannels;
-        var splitPeaks = [];
-        var mergedPeaks = [];
+        const sampleSize = this.buffer.length / length;
+        const sampleStep = ~~(sampleSize / 10) || 1;
+        const channels = this.buffer.numberOfChannels;
+        const splitPeaks = [];
+        const mergedPeaks = [];
+        let c;
 
-        for (var c = 0; c < channels; c++) {
-            var peaks = splitPeaks[c] = [];
-            var chan = this.buffer.getChannelData(c);
+        for (c = 0; c < channels; c++) {
+            const peaks = splitPeaks[c] = [];
+            const chan = this.buffer.getChannelData(c);
+            let i;
 
-            for (var i = 0; i < length; i++) {
-                var start = ~~(i * sampleSize);
-                var end = ~~(start + sampleSize);
-                var min = 0;
-                var max = 0;
+            for (i = 0; i < length; i++) {
+                const start = ~~(i * sampleSize);
+                const end = ~~(start + sampleSize);
+                let min = 0;
+                let max = 0;
+                let j;
 
-                for (var j = start; j < end; j += sampleStep) {
-                    var value = chan[j];
+                for (j = start; j < end; j += sampleStep) {
+                    const value = chan[j];
 
                     if (value > max) {
                         max = value;
@@ -329,7 +332,7 @@ const WebAudio = util.extend({}, util.observer, {
         // need to re-create source on each playback
         this.createSource();
 
-        var adjustedTime = this.seekTo(start, end);
+        const adjustedTime = this.seekTo(start, end);
 
         start = adjustedTime.start;
         end = adjustedTime.end;
@@ -387,7 +390,7 @@ WebAudio.state.playing = {
         this.addOnAudioProcess();
     },
     getPlayedPercents: function () {
-        var duration = this.getDuration();
+        const duration = this.getDuration();
         return (this.getCurrentTime() / duration) || 0;
     },
     getCurrentTime: function () {
@@ -400,7 +403,7 @@ WebAudio.state.paused = {
         this.removeOnAudioProcess();
     },
     getPlayedPercents: function () {
-        var duration = this.getDuration();
+        const duration = this.getDuration();
         return (this.getCurrentTime() / duration) || 0;
     },
     getCurrentTime: function () {

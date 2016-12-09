@@ -301,8 +301,8 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     },
 
     skip: function (offset) {
-        var position = this.getCurrentTime() || 0;
-        var duration = this.getDuration() || 1;
+        const duration = this.getDuration() || 1;
+        let position = this.getCurrentTime() || 0;
         position = Math.max(0, Math.min(duration, position + (offset || 0)));
         this.seekAndCenter(position / duration);
     },
@@ -315,9 +315,9 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     seekTo: function (progress) {
         this.fireEvent('interaction', () => this.seekTo(progress));
 
-        var paused = this.backend.isPaused();
+        const paused = this.backend.isPaused();
         // avoid small scrolls while paused seeking
-        var oldScrollParent = this.params.scrollParent;
+        const oldScrollParent = this.params.scrollParent;
         if (paused) {
             this.params.scrollParent = false;
         }
@@ -398,18 +398,18 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     },
 
     drawBuffer: function () {
-        var nominalWidth = Math.round(
+        const nominalWidth = Math.round(
             this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio
         );
-        var parentWidth = this.drawer.getWidth();
-        var width = nominalWidth;
+        const parentWidth = this.drawer.getWidth();
+        let width = nominalWidth;
 
         // Fill container
         if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
             width = parentWidth;
         }
 
-        var peaks = this.backend.getPeaks(width);
+        const peaks = this.backend.getPeaks(width);
         this.drawer.drawPeaks(peaks, width);
         this.fireEvent('redraw', peaks, width);
     },
@@ -455,7 +455,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
      */
     loadBlob: function (blob) {
         // Create file reader
-        var reader = new FileReader();
+        const reader = new FileReader();
         reader.addEventListener('progress', e => this.onProgress(e));
         reader.addEventListener('load', e => {
             console.log(e);
@@ -482,7 +482,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
      * Loads audio using Web Audio buffer backend.
      */
     loadBuffer: function (url, peaks) {
-        var load = action => {
+        const load = action => {
             if (action) {
                 this.tmpEvents.push(this.once('ready', action));
             }
@@ -508,12 +508,12 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
      *                                          web audio dependency
      */
     loadMediaElement: function (urlOrElt, peaks, preload) {
-        var url = urlOrElt;
+        let url = urlOrElt;
 
         if (typeof urlOrElt === 'string') {
             this.backend.load(url, this.mediaContainer, peaks, preload);
         } else {
-            var elt = urlOrElt;
+            const elt = urlOrElt;
             this.backend.loadElt(elt, peaks);
 
             // If peaks are not provided,
@@ -561,7 +561,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     },
 
     getArrayBuffer: function (url, callback) {
-        var ajax = WaveSurfer.util.ajax({
+        const ajax = WaveSurfer.util.ajax({
             url: url,
             responseType: 'arraybuffer'
         });
@@ -586,8 +586,9 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     },
 
     onProgress: function (e) {
+        let percentComplete;
         if (e.lengthComputable) {
-            var percentComplete = e.loaded / e.total;
+            percentComplete = e.loaded / e.total;
         } else {
             // Approximate progress with an asymptotic
             // function, and assume downloads in the 1-3 MB range.
@@ -603,9 +604,9 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         length = length || 1024;
         accuracy = accuracy || 10000;
         noWindow = noWindow || false;
-        var peaks = this.backend.getPeaks(length, accuracy);
-        var arr = [].map.call(peaks, val => Math.round(val * accuracy) / accuracy);
-        var json = JSON.stringify(arr);
+        const peaks = this.backend.getPeaks(length, accuracy);
+        const arr = [].map.call(peaks, val => Math.round(val * accuracy) / accuracy);
+        const json = JSON.stringify(arr);
         if (!noWindow) {
             window.open('data:application/json;charset=utf-8,' +
                 encodeURIComponent(json));
@@ -672,7 +673,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
 });
 
 WaveSurfer.create = function (params) {
-    var wavesurfer = Object.create(WaveSurfer);
+    const wavesurfer = Object.create(WaveSurfer);
     wavesurfer.init(params);
     return wavesurfer;
 };

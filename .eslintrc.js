@@ -196,7 +196,7 @@ module.exports = {
         "no-useless-escape": "error",
         "no-useless-rename": "error",
         "no-useless-return": "error",
-        "no-var": "off",
+        "no-var": "error",
         "no-void": "error",
         "no-warning-comments": "off",
         "no-whitespace-before-property": "error",
@@ -205,7 +205,14 @@ module.exports = {
         "object-curly-spacing": "off",
         "object-property-newline": "off",
         "object-shorthand": "off",
-        "one-var": "off",
+        "one-var": [
+            "error",
+            {
+                var: "never",
+                let: "never",
+                const: "never"
+            }
+        ],
         "one-var-declaration-per-line": "error",
         "operator-assignment": "off",
         "operator-linebreak": "off",
