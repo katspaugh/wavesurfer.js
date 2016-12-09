@@ -174,31 +174,29 @@ export default function(params = {}) {
                     }
 
                     if (seconds/60 > 1) {
-                        var minutes = parseInt(seconds / 60),
-                            seconds = parseInt(seconds % 60);
+                        var minutes = parseInt(seconds / 60);
+                        seconds = parseInt(seconds % 60);
                         seconds = (seconds < 10) ? '0' + seconds : seconds;
                         return '' + minutes + ':' + seconds;
-                    } else {
-                        return seconds;
                     }
+                    return seconds;
                 };
 
+                var timeInterval = 60;
+                var primaryLabelInterval = 4;
+                var secondaryLabelInterval = 2;
                 if (pixelsPerSecond * 1 >= 25) {
-                    var timeInterval = 1;
-                    var primaryLabelInterval = 10;
-                    var secondaryLabelInterval = 5;
+                    timeInterval = 1;
+                    primaryLabelInterval = 10;
+                    secondaryLabelInterval = 5;
                 } else if (pixelsPerSecond * 5 >= 25) {
-                    var timeInterval = 5;
-                    var primaryLabelInterval = 6;
-                    var secondaryLabelInterval = 2;
+                    timeInterval = 5;
+                    primaryLabelInterval = 6;
+                    secondaryLabelInterval = 2;
                 } else if (pixelsPerSecond * 15 >= 25) {
-                    var timeInterval = 15;
-                    var primaryLabelInterval = 4;
-                    var secondaryLabelInterval = 2;
-                } else {
-                    var timeInterval = 60;
-                    var primaryLabelInterval = 4;
-                    var secondaryLabelInterval = 2;
+                    timeInterval = 15;
+                    primaryLabelInterval = 4;
+                    secondaryLabelInterval = 2;
                 }
 
                 timeInterval = this.timeInterval || timeInterval;

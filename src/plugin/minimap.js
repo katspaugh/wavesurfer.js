@@ -106,7 +106,7 @@ export default function(params = {}) {
                 this.wavesurfer.renderers.Canvas.createElements.call(this);
 
                 if (this.params.showOverview) {
-                    this.overviewRegion =  this.style(document.createElement('overview'), {
+                    this.overviewRegion = this.style(document.createElement('overview'), {
                         height: (this.wrapper.offsetHeight - (this.params.overviewBorderSize * 2)) + 'px',
                         width: '0px',
                         display: 'block',
@@ -150,7 +150,7 @@ export default function(params = {}) {
                     this.wavesurfer.on('scroll', this._onSeek);
 
                     this.wavesurfer.drawer.wrapper.addEventListener('mouseover', event => {
-                        if (this.draggingOverview)  {
+                        if (this.draggingOverview) {
                             this.draggingOverview = false;
                         }
                     });
@@ -169,7 +169,7 @@ export default function(params = {}) {
                 };
 
                 this.on('click', (e, position) => {
-                    if (seek)  {
+                    if (seek) {
                         this.progress(position);
                         this.wavesurfer.seekAndCenter(position);
                     } else {
@@ -186,7 +186,7 @@ export default function(params = {}) {
                     });
 
                     this.wrapper.addEventListener('mousemove', event => {
-                        if(this.draggingOverview) {
+                        if (this.draggingOverview) {
                             this.moveOverviewRegion(event.clientX - this.container.getBoundingClientRect().left - relativePositionX);
                         }
                     });
@@ -195,7 +195,7 @@ export default function(params = {}) {
                         if (positionMouseDown.clientX - event.clientX === 0 && positionMouseDown.clientX - event.clientX === 0) {
                             seek = true;
                             this.draggingOverview = false;
-                        } else if (this.draggingOverview)  {
+                        } else if (this.draggingOverview) {
                             seek = false;
                             this.draggingOverview = false;
                         }

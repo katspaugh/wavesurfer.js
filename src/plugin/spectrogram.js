@@ -1,19 +1,19 @@
 /**
  * Calculate FFT - Based on https://github.com/corbanbrook/dsp.js
  */
-/* eslint-disable complexity */
+/* eslint-disable complexity, no-redeclare */
 const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
     this.bufferSize = bufferSize;
     this.sampleRate = sampleRate;
-    this.bandwidth  = 2 / bufferSize * sampleRate / 2;
+    this.bandwidth = 2 / bufferSize * sampleRate / 2;
 
     this.sinTable = new Float32Array(bufferSize);
     this.cosTable = new Float32Array(bufferSize);
     this.windowValues = new Float32Array(bufferSize);
     this.reverseTable = new Uint32Array(bufferSize);
 
-    this.peakBand   = 0;
-    this.peak       = 0;
+    this.peakBand = 0;
+    this.peak = 0;
 
     switch (windowFunc) {
         case 'bartlett' :
@@ -177,7 +177,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
         return spectrum;
     };
 };
-/* eslint-enable complexity */
+/* eslint-enable complexity, no-redeclare */
 
 /**
 * spectrogram plugin
@@ -341,7 +341,7 @@ export default function(params = {}) {
                 for (var i = 0; i < pixels.length; i++) {
                     for (var j = 0; j < pixels[i].length; j++) {
                         var colorValue = 255 - pixels[i][j];
-                        my.spectrCc.fillStyle = 'rgb(' + colorValue + ', '  + colorValue + ', ' + colorValue + ')';
+                        my.spectrCc.fillStyle = 'rgb(' + colorValue + ', ' + colorValue + ', ' + colorValue + ')';
                         my.spectrCc.fillRect(i, height - j * heightFactor, 1, heightFactor);
                     }
                 }
@@ -399,7 +399,7 @@ export default function(params = {}) {
                 this.wrapper.scrollLeft = e.target.scrollLeft;
             },
 
-            resample: function(oldMatrix, columnsNumber) {
+            resample: function(oldMatrix) {
                 var columnsNumber = this.width;
                 var newMatrix = [];
 
@@ -433,8 +433,8 @@ export default function(params = {}) {
 
                     var intColumn = new Uint8Array(oldMatrix[0].length);
 
-                    for (var k = 0; k < oldMatrix[0].length; k++) {
-                        intColumn[k] = column[k];
+                    for (var m = 0; m < oldMatrix[0].length; m++) {
+                        intColumn[m] = column[m];
                     }
 
                     newMatrix.push(intColumn);

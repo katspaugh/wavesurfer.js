@@ -234,7 +234,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         });
 
         // Relay the scroll event from the drawer
-        this.drawer.on('scroll', function (e) {
+        this.drawer.on('scroll', e => {
             this.fireEvent('scroll', e);
         });
     },

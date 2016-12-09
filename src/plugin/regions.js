@@ -490,7 +490,7 @@ export default function(params = {}) {
                 };
                 this.wrapper.addEventListener('mouseup', eventUp);
                 this.wrapper.addEventListener('touchend', eventUp);
-                this.on('disable-drag-selection', function() {
+                this.on('disable-drag-selection', () => {
                     this.wrapper.removeEventListener('touchend', eventUp);
                     this.wrapper.removeEventListener('mouseup', eventUp);
                 });

@@ -89,8 +89,7 @@ export default function(params = {}) {
                     linguisticTypeRef: tier.getAttribute('LINGUISTIC_TYPE_REF'),
                     defaultLocale: tier.getAttribute('DEFAULT_LOCALE'),
                     annotations: _map.call(
-                        tier.querySelectorAll('REF_ANNOTATION, ALIGNABLE_ANNOTATION'),
-                        node => {
+                        tier.querySelectorAll('REF_ANNOTATION, ALIGNABLE_ANNOTATION'), node => {
                             var annot = {
                                 type: node.nodeName,
                                 id: node.getAttribute('ANNOTATION_ID'),

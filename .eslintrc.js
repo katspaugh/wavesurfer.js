@@ -80,7 +80,7 @@ module.exports = {
         "jsx-quotes": "error",
         "key-spacing": "off",
         "keyword-spacing": [
-            "off",
+            "error",
             {
                 "after": true,
                 "before": true
@@ -106,7 +106,7 @@ module.exports = {
         "newline-after-var": "off",
         "newline-before-return": "off",
         "newline-per-chained-call": "off",
-        "no-redeclare": "off",
+        "no-redeclare": "error",
         "no-unused-vars": "off",
         "no-console": "off",
         "no-alert": "error",
@@ -118,7 +118,7 @@ module.exports = {
         "no-continue": "error",
         "no-div-regex": "error",
         "no-duplicate-imports": "error",
-        "no-else-return": "off",
+        "no-else-return": "error",
         "no-empty-function": "off",
         "no-eq-null": "off",
         "no-eval": "error",
@@ -135,7 +135,7 @@ module.exports = {
             "error",
             "functions"
         ],
-        "no-invalid-this": "off",
+        "no-invalid-this": "error",
         "no-iterator": "error",
         "no-label-var": "error",
         "no-labels": "error",
@@ -145,7 +145,7 @@ module.exports = {
         "no-magic-numbers": "off",
         "no-mixed-operators": "off",
         "no-mixed-requires": "error",
-        "no-multi-spaces": "off",
+        "no-multi-spaces": "error",
         "no-multi-str": "error",
         "no-multiple-empty-lines": "off",
         "no-native-reassign": "error",

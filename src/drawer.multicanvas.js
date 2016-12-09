@@ -145,9 +145,8 @@ export default util.extend({}, drawer, {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawBars, this);
                 return;
-            } else {
-                peaks = channels[0];
             }
+            peaks = channels[0];
         }
 
         // Bar wave draws the bottom only as a reflection of the top,
@@ -188,9 +187,8 @@ export default util.extend({}, drawer, {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawWave, this);
                 return;
-            } else {
-                peaks = channels[0];
             }
+            peaks = channels[0];
         }
 
         // Support arrays without negative peaks
@@ -256,9 +254,9 @@ export default util.extend({}, drawer, {
 
         // Draw the bottom edge going backwards, to make a single
         // closed hull to fill.
-        for (var i = last - 1; i >= first; i--) {
-            var h = Math.round(peaks[2 * i + 1] / absmax * halfH);
-            ctx.lineTo((i - first) * scale + this.halfPixel, halfH - h + offsetY);
+        for (var j = last - 1; j >= first; j--) {
+            var k = Math.round(peaks[2 * j + 1] / absmax * halfH);
+            ctx.lineTo((j - first) * scale + this.halfPixel, halfH - k + offsetY);
         }
 
         ctx.closePath();
