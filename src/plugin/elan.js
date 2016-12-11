@@ -46,7 +46,7 @@ export default function(params = {}) {
             },
 
             loadXML: function (url, callback) {
-                var xhr = new XMLHttpRequest();
+                const xhr = new XMLHttpRequest();
                 xhr.open('GET', url, true);
                 xhr.responseType = 'document';
                 xhr.send();
@@ -56,10 +56,10 @@ export default function(params = {}) {
             },
 
             parseElan: function (xml) {
-                var _forEach = Array.prototype.forEach;
-                var _map = Array.prototype.map;
+                const _forEach = Array.prototype.forEach;
+                const _map = Array.prototype.map;
 
-                var data = {
+                const data = {
                     media: {},
                     timeOrder: {},
                     tiers: [],
@@ -67,16 +67,16 @@ export default function(params = {}) {
                     alignableAnnotations: []
                 };
 
-                var header = xml.querySelector('HEADER');
-                var inMilliseconds = header.getAttribute('TIME_UNITS') == 'milliseconds';
-                var media = header.querySelector('MEDIA_DESCRIPTOR');
+                const header = xml.querySelector('HEADER');
+                const inMilliseconds = header.getAttribute('TIME_UNITS') == 'milliseconds';
+                const media = header.querySelector('MEDIA_DESCRIPTOR');
                 data.media.url = media.getAttribute('MEDIA_URL');
                 data.media.type = media.getAttribute('MIME_TYPE');
 
-                var timeSlots = xml.querySelectorAll('TIME_ORDER TIME_SLOT');
-                var timeOrder = {};
+                const timeSlots = xml.querySelectorAll('TIME_ORDER TIME_SLOT');
+                const timeOrder = {};
                 _forEach.call(timeSlots, slot => {
-                    var value = parseFloat(slot.getAttribute('TIME_VALUE'));
+                    let value = parseFloat(slot.getAttribute('TIME_VALUE'));
                     // If in milliseconds, convert to seconds with rounding
                     if (inMilliseconds) {
                         value = Math.round(value * 1e2) / 1e5;
@@ -90,7 +90,7 @@ export default function(params = {}) {
                     defaultLocale: tier.getAttribute('DEFAULT_LOCALE'),
                     annotations: _map.call(
                         tier.querySelectorAll('REF_ANNOTATION, ALIGNABLE_ANNOTATION'), node => {
-                            var annot = {
+                            const annot = {
                                 type: node.nodeName,
                                 id: node.getAttribute('ANNOTATION_ID'),
                                 ref: node.getAttribute('ANNOTATION_REF'),
@@ -125,7 +125,7 @@ export default function(params = {}) {
 
                 // Sort alignable annotations by start & end
                 data.alignableAnnotations.sort((a, b) => {
-                    var d = a.start - b.start;
+                    let d = a.start - b.start;
                     if (d == 0) {
                         d = b.end - a.end;
                     }
@@ -139,14 +139,14 @@ export default function(params = {}) {
 
             render: function () {
                 // apply tiers filter
-                var tiers = this.data.tiers;
+                let tiers = this.data.tiers;
                 if (this.params.tiers) {
                     tiers = tiers.filter(tier => tier.id in this.params.tiers);
                 }
 
                 // denormalize references to alignable annotations
-                var backRefs = {};
-                var indeces = {};
+                const backRefs = {};
+                let indeces = {};
                 tiers.forEach((tier, index) => {
                     tier.annotations.forEach(annot => {
                         if (annot.reference && annot.reference.type == this.Types.ALIGNABLE_ANNOTATION) {
@@ -163,21 +163,21 @@ export default function(params = {}) {
                 this.renderedAlignable = this.data.alignableAnnotations.filter(alignable => backRefs[alignable.id]);
 
                 // table
-                var table = this.table = document.createElement('table');
+                const table = this.table = document.createElement('table');
                 table.className = 'wavesurfer-annotations';
 
                 // head
-                var thead = document.createElement('thead');
-                var headRow = document.createElement('tr');
+                const thead = document.createElement('thead');
+                const headRow = document.createElement('tr');
                 thead.appendChild(headRow);
                 table.appendChild(thead);
-                var th = document.createElement('th');
+                const th = document.createElement('th');
                 th.textContent = 'Time';
                 th.className = 'wavesurfer-time';
                 headRow.appendChild(th);
-                indeces.forEach(index => {
-                    var tier = tiers[index];
-                    var th = document.createElement('th');
+                indeces.forEach(function (index) {
+                    const tier = tiers[index];
+                    const th = document.createElement('th');
                     th.className = 'wavesurfer-tier-' + tier.id;
                     th.textContent = tier.id;
                     th.style.width = this.params.tiers[tier.id];
@@ -185,24 +185,24 @@ export default function(params = {}) {
                 });
 
                 // body
-                var tbody = document.createElement('tbody');
+                const tbody = document.createElement('tbody');
                 table.appendChild(tbody);
                 this.renderedAlignable.forEach(alignable => {
-                    var row = document.createElement('tr');
+                    const row = document.createElement('tr');
                     row.id = 'wavesurfer-alignable-' + alignable.id;
                     tbody.appendChild(row);
 
-                    var td = document.createElement('td');
+                    const td = document.createElement('td');
                     td.className = 'wavesurfer-time';
                     td.textContent = alignable.start.toFixed(1) + '–' +
                     alignable.end.toFixed(1);
                     row.appendChild(td);
 
-                    var backRef = backRefs[alignable.id];
+                    const backRef = backRefs[alignable.id];
                     indeces.forEach(index => {
-                        var tier = tiers[index];
-                        var td = document.createElement('td');
-                        var annotation = backRef[index];
+                        const tier = tiers[index];
+                        const td = document.createElement('td');
+                        const annotation = backRef[index];
                         if (annotation) {
                             td.id = 'wavesurfer-annotation-' + annotation.id;
                             td.dataset.ref = alignable.id;
@@ -221,9 +221,9 @@ export default function(params = {}) {
 
             bindClick: function () {
                 this._onClick = e => {
-                    var ref = e.target.dataset.ref;
+                    const ref = e.target.dataset.ref;
                     if (null != ref) {
-                        var annot = this.data.annotations[ref];
+                        const annot = this.data.annotations[ref];
                         if (annot) {
                             this.fireEvent('select', annot.start, annot.end);
                         }
@@ -233,7 +233,7 @@ export default function(params = {}) {
             },
 
             getRenderedAnnotation: function (time) {
-                var result;
+                let result;
                 this.renderedAlignable.some(annotation => {
                     if (annotation.start <= time && annotation.end >= time) {
                         result = annotation;

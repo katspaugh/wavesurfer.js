@@ -26,9 +26,10 @@ export default {
         if (!this.handlers) { return; }
 
         const handlers = this.handlers[event];
+        let i;
         if (handlers) {
             if (fn) {
-                for (var i = handlers.length - 1; i >= 0; i--) {
+                for (i = handlers.length - 1; i >= 0; i--) {
                     if (handlers[i] == fn) {
                         handlers.splice(i, 1);
                     }

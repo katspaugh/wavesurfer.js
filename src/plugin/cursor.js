@@ -64,7 +64,7 @@ export default function(params) {
             },
 
             updateCursorPosition: function(progress) {
-                var pos = Math.round(this.drawer.width * progress) / this.drawer.params.pixelRatio - 1;
+                const pos = Math.round(this.drawer.width * progress) / this.drawer.params.pixelRatio - 1;
                 this.drawer.style(this.cursor, { left: pos + 'px' });
             },
 

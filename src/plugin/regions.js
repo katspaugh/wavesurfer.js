@@ -91,16 +91,16 @@ const Region = {
 
     /* Render a region as a DOM element. */
     render: function () {
-        var regionEl = document.createElement('region');
+        const regionEl = document.createElement('region');
         regionEl.className = 'wavesurfer-region';
         regionEl.title = this.formatTime(this.start, this.end);
         regionEl.setAttribute('data-id', this.id);
 
-        for (var attrname in this.attributes) {
+        for (const attrname in this.attributes) {
             regionEl.setAttribute('data-region-' + attrname, this.attributes[attrname]);
         }
 
-        var width = this.wrapper.scrollWidth;
+        const width = this.wrapper.scrollWidth;
         this.style(regionEl, {
             position: 'absolute',
             zIndex: 2,
@@ -110,11 +110,11 @@ const Region = {
 
         /* Resize handles */
         if (this.resize) {
-            var handleLeft = regionEl.appendChild(document.createElement('handle'));
-            var handleRight = regionEl.appendChild(document.createElement('handle'));
+            const handleLeft = regionEl.appendChild(document.createElement('handle'));
+            const handleRight = regionEl.appendChild(document.createElement('handle'));
             handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
             handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
-            var css = {
+            const css = {
                 cursor: 'col-resize',
                 position: 'absolute',
                 left: '0px',
@@ -144,8 +144,8 @@ const Region = {
 
     /* Update element's position, width, color. */
     updateRender: function (pxPerSec) {
-        var dur = this.wavesurfer.getDuration();
-        var width;
+        const dur = this.wavesurfer.getDuration();
+        let width;
         if (pxPerSec) {
             width = Math.round(this.wavesurfer.getDuration() * pxPerSec);
         } else {
@@ -172,8 +172,8 @@ const Region = {
         if (this.element != null) {
             // Calculate the left and width values of the region such that
             // no gaps appear between regions.
-            var left = Math.round(this.start / dur * width);
-            var regionWidth =
+            const left = Math.round(this.start / dur * width);
+            const regionWidth =
             Math.round(this.end / dur * width) - left;
 
             this.style(this.element, {
@@ -183,7 +183,7 @@ const Region = {
                 cursor: this.drag ? 'move' : 'default'
             });
 
-            for (var attrname in this.attributes) {
+            for (const attrname in this.attributes) {
                 this.element.setAttribute('data-region-' + attrname, this.attributes[attrname]);
             }
 
@@ -196,7 +196,7 @@ const Region = {
         this.firedIn = false;
         this.firedOut = false;
 
-        var onProcess = time => {
+        const onProcess = time => {
             if (!this.firedOut && this.firedIn && (this.start >= Math.round(time * 100) / 100 || this.end <= Math.round(time * 100) / 100)) {
                 this.firedOut = true;
                 this.firedIn = false;
@@ -252,13 +252,13 @@ const Region = {
 
         /* Drag or resize on mousemove. */
         (this.drag || this.resize) && (() => {
-            var duration = this.wavesurfer.getDuration();
-            var drag;
-            var resize;
-            var startTime;
-            var touchId;
+            const duration = this.wavesurfer.getDuration();
+            let startTime;
+            let touchId;
+            let drag;
+            let resize;
 
-            var onDown = e => {
+            const onDown = e => {
                 if (e.touches && e.touches.length > 1) { return; }
                 touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
 
@@ -276,7 +276,7 @@ const Region = {
                     resize = false;
                 }
             };
-            var onUp = e => {
+            const onUp = e => {
                 if (e.touches && e.touches.length > 1) { return; }
 
                 if (drag || resize) {
@@ -287,13 +287,13 @@ const Region = {
                     this.wavesurfer.fireEvent('region-update-end', this, e);
                 }
             };
-            var onMove = (e) => {
+            const onMove = e => {
                 if (e.touches && e.touches.length > 1) { return; }
                 if (e.targetTouches && e.targetTouches[0].identifier != touchId) { return; }
 
                 if (drag || resize) {
-                    var time = this.wavesurfer.drawer.handleEvent(e) * duration;
-                    var delta = time - startTime;
+                    const time = this.wavesurfer.drawer.handleEvent(e) * duration;
+                    const delta = time - startTime;
                     startTime = time;
 
                     // Drag
@@ -332,7 +332,7 @@ const Region = {
     },
 
     onDrag: function (delta) {
-        var maxEnd = this.wavesurfer.getDuration();
+        const maxEnd = this.wavesurfer.getDuration();
         if ((this.end + delta) > maxEnd || (this.start + delta) < 0) {
             return;
         }
@@ -433,7 +433,7 @@ export default function(params = {}) {
             },
             /* Add a region. */
             add: function (params) {
-                var region = Object.create(this.wavesurfer.Region);
+                const region = Object.create(this.wavesurfer.Region);
                 region.init(params, this.wavesurfer);
 
                 this.list[region.id] = region;
@@ -453,14 +453,14 @@ export default function(params = {}) {
             },
 
             enableDragSelection: function (params) {
-                var drag;
-                var start;
-                var region;
-                var touchId;
-                var slop = params.slop || 2;
-                var pxMove = 0;
+                const slop = params.slop || 2;
+                let drag;
+                let start;
+                let region;
+                let touchId;
+                let pxMove = 0;
 
-                var eventDown = e => {
+                const eventDown = e => {
                     if (e.touches && e.touches.length > 1) { return; }
                     touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
 
@@ -475,7 +475,7 @@ export default function(params = {}) {
                     this.wrapper.removeEventListener('mousedown', eventDown);
                 });
 
-                var eventUp = e => {
+                const eventUp = e => {
                     if (e.touches && e.touches.length > 1) { return; }
 
                     drag = false;
@@ -495,7 +495,7 @@ export default function(params = {}) {
                     this.wrapper.removeEventListener('mouseup', eventUp);
                 });
 
-                var eventMove = e => {
+                const eventMove = e => {
                     if (!drag) { return; }
                     if (++pxMove <= slop) { return; }
 
@@ -506,8 +506,8 @@ export default function(params = {}) {
                         region = this.add(params || {});
                     }
 
-                    var duration = this.wavesurfer.getDuration();
-                    var end = this.wavesurfer.drawer.handleEvent(e);
+                    const duration = this.wavesurfer.getDuration();
+                    const end = this.wavesurfer.drawer.handleEvent(e);
                     region.update({
                         start: Math.min(end * duration, start * duration),
                         end: Math.max(end * duration, start * duration)

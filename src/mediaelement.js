@@ -26,15 +26,12 @@ export default util.extend({}, webaudio, {
      * Create a timer to provide a more precise `audioprocess' event.
      */
     createTimer: function () {
-        var playing = false;
-
-        var onAudioProcess = () => {
+        const onAudioProcess = () => {
             if (this.isPaused()) { return; }
-
             this.fireEvent('audioprocess', this.getCurrentTime());
 
             // Call again in the next frame
-            var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+            const requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
             requestAnimationFrame(onAudioProcess);
         };
 
@@ -50,14 +47,14 @@ export default util.extend({}, webaudio, {
      *  @param  {String}        preload     HTML 5 preload attribute value
      */
     load: function (url, container, peaks, preload) {
-        var media = document.createElement(this.mediaType);
+        const media = document.createElement(this.mediaType);
         media.controls = this.params.mediaControls;
         media.autoplay = this.params.autoplay || false;
         media.preload = preload == null ? 'auto' : preload;
         media.src = url;
         media.style.width = '100%';
 
-        var prevMedia = container.querySelector(this.mediaType);
+        const prevMedia = container.querySelector(this.mediaType);
         if (prevMedia) {
             container.removeChild(prevMedia);
         }
@@ -72,11 +69,10 @@ export default util.extend({}, webaudio, {
      *  @param  {Array}         peaks   array of peak data
      */
     loadElt: function (elt, peaks) {
-        var media = elt;
-        media.controls = this.params.mediaControls;
-        media.autoplay = this.params.autoplay || false;
+        elt.controls = this.params.mediaControls;
+        elt.autoplay = this.params.autoplay || false;
 
-        this._load(media, peaks);
+        this._load(elt, peaks);
     },
 
     /**
@@ -115,7 +111,7 @@ export default util.extend({}, webaudio, {
     },
 
     getDuration: function () {
-        var duration = this.media.duration;
+        let duration = this.media.duration;
         if (duration >= Infinity) { // streaming audio
             duration = this.media.seekable.end(0);
         }

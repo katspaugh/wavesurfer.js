@@ -19,9 +19,9 @@ export default function(params = {}) {
                 this.reloadBufferFunction = e => this.reloadBuffer(e);
 
                 // cross-browser getUserMedia
-                var promisifiedOldGUM = (constraints, successCallback, errorCallback) => {
+                const promisifiedOldGUM = (constraints, successCallback, errorCallback) => {
                     // get ahold of getUserMedia, if present
-                    var getUserMedia = (navigator.getUserMedia ||
+                    const getUserMedia = (navigator.getUserMedia ||
                         navigator.webkitGetUserMedia ||
                         navigator.mozGetUserMedia ||
                         navigator.msGetUserMedia
@@ -169,7 +169,7 @@ export default function(params = {}) {
 
                 // stop stream from device
                 if (this.stream) {
-                    var result = this.detectBrowser();
+                    const result = this.detectBrowser();
                     // MediaStream.stop is deprecated since:
                     // - Firefox 44 (https://www.fxsitecompat.com/en-US/docs/2015/mediastream-stop-has-been-deprecated/)
                     // - Chrome 45 (https://developers.google.com/web/updates/2015/07/mediastream-deprecations)
@@ -262,7 +262,7 @@ export default function(params = {}) {
             * @return {!number} browser version.
             */
             extractVersion: function(uastring, expr, pos) {
-                var match = uastring.match(expr);
+                const match = uastring.match(expr);
                 return match && match.length >= pos && parseInt(match[pos], 10);
             },
 
@@ -273,7 +273,7 @@ export default function(params = {}) {
             */
             detectBrowser: function() {
                 // Returned result object.
-                var result = {};
+                const result = {};
                 result.browser = null;
                 result.version = null;
                 result.minVersion = null;

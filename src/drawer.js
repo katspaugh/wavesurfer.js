@@ -42,13 +42,13 @@ export default util.extend({}, util.observer, {
     handleEvent: function (e, noPrevent) {
         !noPrevent && e.preventDefault();
 
-        var clientX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
-        var bbox = this.wrapper.getBoundingClientRect();
+        const clientX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
+        const bbox = this.wrapper.getBoundingClientRect();
 
-        var nominalWidth = this.width;
-        var parentWidth = this.getWidth();
+        const nominalWidth = this.width;
+        const parentWidth = this.getWidth();
 
-        var progress;
+        let progress;
 
         if (!this.params.fillParent && nominalWidth < parentWidth) {
             progress = ((clientX - bbox.left) * this.params.pixelRatio / nominalWidth) || 0;
@@ -65,10 +65,10 @@ export default util.extend({}, util.observer, {
 
     setupWrapperEvents: function () {
         this.wrapper.addEventListener('click', e => {
-            var scrollbarHeight = this.wrapper.offsetHeight - this.wrapper.clientHeight;
+            const scrollbarHeight = this.wrapper.offsetHeight - this.wrapper.clientHeight;
             if (scrollbarHeight != 0) {
                 // scrollbar is visible.  Check if click was on it
-                var bbox = this.wrapper.getBoundingClientRect();
+                const bbox = this.wrapper.getBoundingClientRect();
                 if (e.clientY >= bbox.bottom - scrollbarHeight) {
                     // ignore mousedown as it was on the scrollbar
                     return;
@@ -102,16 +102,16 @@ export default util.extend({}, util.observer, {
     },
 
     recenter: function (percent) {
-        var position = this.wrapper.scrollWidth * percent;
+        const position = this.wrapper.scrollWidth * percent;
         this.recenterOnPosition(position, true);
     },
 
     recenterOnPosition: function (position, immediate) {
-        var scrollLeft = this.wrapper.scrollLeft;
-        var half = ~~(this.wrapper.clientWidth / 2);
-        var target = position - half;
-        var offset = target - scrollLeft;
-        var maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
+        const scrollLeft = this.wrapper.scrollLeft;
+        const half = ~~(this.wrapper.clientWidth / 2);
+        const maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
+        let target = position - half;
+        let offset = target - scrollLeft;
 
         if (maxScroll == 0) {
             // no need to continue if scrollbar is not there
@@ -121,7 +121,7 @@ export default util.extend({}, util.observer, {
         // if the cursor is currently visible...
         if (!immediate && -half <= offset && offset < half) {
             // we'll limit the "re-center" rate.
-            var rate = 5;
+            const rate = 5;
             offset = Math.max(-rate, Math.min(rate, offset));
             target = scrollLeft + offset;
         }
@@ -165,14 +165,14 @@ export default util.extend({}, util.observer, {
     },
 
     progress: function (progress) {
-        var minPxDelta = 1 / this.params.pixelRatio;
-        var pos = Math.round(progress * this.width) * minPxDelta;
+        const minPxDelta = 1 / this.params.pixelRatio;
+        const pos = Math.round(progress * this.width) * minPxDelta;
 
         if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {
             this.lastPos = pos;
 
             if (this.params.scrollParent && this.params.autoCenter) {
-                var newPos = ~~(this.wrapper.scrollWidth * progress);
+                const newPos = ~~(this.wrapper.scrollWidth * progress);
                 this.recenterOnPosition(newPos);
             }
 
