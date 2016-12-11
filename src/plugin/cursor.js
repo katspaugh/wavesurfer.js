@@ -18,6 +18,7 @@ export default function(params) {
         instance: {
             init: function (wavesurfer) {
                 this.wavesurfer = wavesurfer;
+                this.style = wavesurfer.util.style;
                 this._onDrawerCreated = () => {
                     this.drawer = this.wavesurfer.drawer;
                     this.wrapper = this.drawer.wrapper;
@@ -32,7 +33,7 @@ export default function(params) {
                     this.wrapper.addEventListener('mouseleave', this._handleMouseLeave);
 
                     this.cursor = this.wrapper.appendChild(
-                        this.drawer.style(document.createElement('wave'), {
+                        this.style(document.createElement('wave'), {
                             position: 'absolute',
                             zIndex: 3,
                             left: 0,
@@ -65,15 +66,21 @@ export default function(params) {
 
             updateCursorPosition: function(progress) {
                 const pos = Math.round(this.drawer.width * progress) / this.drawer.params.pixelRatio - 1;
-                this.drawer.style(this.cursor, { left: pos + 'px' });
+                this.style(this.cursor, {
+                    left: `${pos}px`
+                });
             },
 
             showCursor: function() {
-                this.drawer.style(this.cursor, { display: 'block' });
+                this.style(this.cursor, {
+                    display: 'block'
+                });
             },
 
             hideCursor: function() {
-                this.drawer.style(this.cursor, { display: 'none' });
+                this.style(this.cursor, {
+                    display: 'none'
+                });
             }
         }
     };
