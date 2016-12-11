@@ -26,13 +26,12 @@ export default util.extend({}, webaudio, {
      * Create a timer to provide a more precise `audioprocess' event.
      */
     createTimer: function () {
-        var my = this;
         var playing = false;
 
-        var onAudioProcess = function () {
-            if (my.isPaused()) { return; }
+        var onAudioProcess = () => {
+            if (this.isPaused()) { return; }
 
-            my.fireEvent('audioprocess', my.getCurrentTime());
+            this.fireEvent('audioprocess', this.getCurrentTime());
 
             // Call again in the next frame
             var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
@@ -51,8 +50,6 @@ export default util.extend({}, webaudio, {
      *  @param  {String}        preload     HTML 5 preload attribute value
      */
     load: function (url, container, peaks, preload) {
-        var my = this;
-
         var media = document.createElement(this.mediaType);
         media.controls = this.params.mediaControls;
         media.autoplay = this.params.autoplay || false;
@@ -75,8 +72,6 @@ export default util.extend({}, webaudio, {
      *  @param  {Array}         peaks   array of peak data
      */
     loadElt: function (elt, peaks) {
-        var my = this;
-
         var media = elt;
         media.controls = this.params.mediaControls;
         media.autoplay = this.params.autoplay || false;
@@ -92,22 +87,20 @@ export default util.extend({}, webaudio, {
      *  @private
      */
     _load: function (media, peaks) {
-        var my = this;
-
         // load must be called manually on iOS, otherwise peaks won't draw
         // until a user interaction triggers load --> 'ready' event
         media.load();
 
-        media.addEventListener('error', function () {
-            my.fireEvent('error', 'Error loading media element');
+        media.addEventListener('error', () => {
+            this.fireEvent('error', 'Error loading media element');
         });
 
-        media.addEventListener('canplay', function () {
-            my.fireEvent('canplay');
+        media.addEventListener('canplay', () => {
+            this.fireEvent('canplay');
         });
 
-        media.addEventListener('ended', function () {
-            my.fireEvent('finish');
+        media.addEventListener('ended', () => {
+            this.fireEvent('finish');
         });
 
         this.media = media;
@@ -177,11 +170,10 @@ export default util.extend({}, webaudio, {
     },
 
     setPlayEnd: function (end) {
-        var my = this;
-        this.onPlayEnd = function (time) {
+        this.onPlayEnd = time => {
             if (time >= end) {
-                my.pause();
-                my.seekTo(end);
+                this.pause();
+                this.seekTo(end);
             }
         };
         this.on('audioprocess', this.onPlayEnd);

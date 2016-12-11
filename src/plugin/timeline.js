@@ -95,11 +95,10 @@ export default function(params = {}) {
                     });
                 }
 
-                var my = this;
-                this.wrapper.addEventListener('click', function (e) {
+                this.wrapper.addEventListener('click', e => {
                     e.preventDefault();
                     var relX = 'offsetX' in e ? e.offsetX : e.layerX;
-                    my.fireEvent('click', (relX / my.wrapper.scrollWidth) || 0);
+                    this.fireEvent('click', (relX / this.wrapper.scrollWidth) || 0);
                 });
             },
 
@@ -169,7 +168,7 @@ export default function(params = {}) {
                 var curPixel = 0,
                     curSeconds = 0,
                     totalSeconds = parseInt(duration, 10) + 1;
-                var formatTime = function(seconds) {
+                var formatTime = seconds => {
                     if (typeof self.formatTimeCallback === 'function') {
                         return self.formatTimeCallback(seconds);
                     }

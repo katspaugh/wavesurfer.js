@@ -241,10 +241,10 @@ export default function(params = {}) {
                     this.createCanvas();
                     this.render();
 
-                    drawer.wrapper.addEventListener('scroll', function (e) {
+                    drawer.wrapper.addEventListener('scroll', e => {
                         this.updateScroll(e);
-                    }.bind(this));
-                    wavesurfer.on('redraw', this.render.bind(this));
+                    });
+                    wavesurfer.on('redraw', () => this.render());
                 };
 
                 // Check if ws is ready
@@ -291,11 +291,10 @@ export default function(params = {}) {
                     });
                 }
 
-                var my = this;
-                this.wrapper.addEventListener('click', function (e) {
+                this.wrapper.addEventListener('click', e => {
                     e.preventDefault();
                     var relX = 'offsetX' in e ? e.offsetX : e.layerX;
-                    my.fireEvent('click', (relX / my.scrollWidth) || 0);
+                    this.fireEvent('click', (relX / this.scrollWidth) || 0);
                 });
             },
 
@@ -388,14 +387,10 @@ export default function(params = {}) {
 
 
             loadFrequenciesData: function (url) {
-                var my = this;
-
                 var ajax = this.wavesurfer.util.ajax({ url: url });
 
-                ajax.on('success', function(data) { my.drawSpectrogram(JSON.parse(data), my); });
-                ajax.on('error', function (e) {
-                    my.fireEvent('error', 'XHR error: ' + e.target.statusText);
-                });
+                ajax.on('success', data => this.drawSpectrogram(JSON.parse(data), this));
+                ajax.on('error', e => this.fireEvent('error', 'XHR error: ' + e.target.statusText));
 
                 return ajax;
             },

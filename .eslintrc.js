@@ -210,7 +210,7 @@ module.exports = {
         "operator-assignment": "off",
         "operator-linebreak": "off",
         "padded-blocks": "off",
-        "prefer-arrow-callback": "off",
+        "prefer-arrow-callback": "error",
         "prefer-const": "error",
         "prefer-numeric-literals": "error",
         "prefer-reflect": "off",

@@ -52,7 +52,7 @@ const WebAudio = util.extend({}, util.observer, {
 
     disconnectFilters: function () {
         if (this.filters) {
-            this.filters.forEach(function (filter) {
+            this.filters.forEach(filter => {
                 filter && filter.disconnect();
             });
             this.filters = null;
@@ -88,7 +88,7 @@ const WebAudio = util.extend({}, util.observer, {
             this.analyser.disconnect();
 
             // Connect each filter in turn
-            filters.reduce(function (prev, curr) {
+            filters.reduce((prev, curr) => {
                 prev.connect(curr);
                 return curr;
             }, this.analyser).connect(this.gainNode);
@@ -107,18 +107,16 @@ const WebAudio = util.extend({}, util.observer, {
     },
 
     addOnAudioProcess: function () {
-        var my = this;
+        this.scriptNode.onaudioprocess = () => {
+            var time = this.getCurrentTime();
 
-        this.scriptNode.onaudioprocess = function () {
-            var time = my.getCurrentTime();
-
-            if (time >= my.getDuration()) {
-                my.setState(my.FINISHED_STATE);
-                my.fireEvent('pause');
-            } else if (time >= my.scheduledPause) {
-                my.pause();
-            } else if (my.state === my.states[my.PLAYING_STATE]) {
-                my.fireEvent('audioprocess', time);
+            if (time >= this.getDuration()) {
+                this.setState(this.FINISHED_STATE);
+                this.fireEvent('pause');
+            } else if (time >= this.scheduledPause) {
+                this.pause();
+            } else if (this.state === this.states[this.PLAYING_STATE]) {
+                this.fireEvent('audioprocess', time);
             }
         };
     },
