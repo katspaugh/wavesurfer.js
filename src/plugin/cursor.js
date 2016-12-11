@@ -50,10 +50,13 @@ export default function(params) {
                     );
                 };
 
-                if (this.wavesurfer.drawer) {
+                // drawer already existed, just call initialisation code
+                if (wavesurfer.drawer) {
                     this._onDrawerCreated();
                 }
-                this.wavesurfer.on('drawer-created', this._onDrawerCreated);
+
+                // the drawer was initialised, call the initialisation code
+                wavesurfer.on('drawer-created', this._onDrawerCreated);
             },
 
             destroy() {
