@@ -52,9 +52,9 @@ export default {
      * event type.
      */
     once: function (event, handler) {
-        const fn = () => {
+        const fn = (...args) => {
             /*  eslint-disable no-invalid-this, prefer-rest-params */
-            handler.apply(this, arguments);
+            handler.apply(this, args);
             /*  eslint-enable no-invalid-this, prefer-rest-params */
             setTimeout(() => {
                 this.un(event, fn);
