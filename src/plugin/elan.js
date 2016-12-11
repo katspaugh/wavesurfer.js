@@ -182,7 +182,7 @@ export default function(params = {}) {
                     th.textContent = tier.id;
                     th.style.width = this.params.tiers[tier.id];
                     headRow.appendChild(th);
-                }, this);
+                });
 
                 // body
                 const tbody = document.createElement('tbody');

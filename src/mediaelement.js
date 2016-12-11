@@ -28,7 +28,6 @@ export default util.extend({}, webaudio, {
     createTimer: function () {
         const onAudioProcess = () => {
             if (this.isPaused()) { return; }
-
             this.fireEvent('audioprocess', this.getCurrentTime());
 
             // Call again in the next frame

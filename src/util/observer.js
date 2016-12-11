@@ -15,7 +15,7 @@ export default {
         return {
             name: event,
             callback: fn,
-            un: this.un.bind(this, event, fn)
+            un: (e, fn) => this.un(e, fn)
         };
     },
 

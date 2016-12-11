@@ -287,7 +287,7 @@ const Region = {
                     this.wavesurfer.fireEvent('region-update-end', this, e);
                 }
             };
-            const onMove = (e) => {
+            const onMove = e => {
                 if (e.touches && e.touches.length > 1) { return; }
                 if (e.targetTouches && e.targetTouches[0].identifier != touchId) { return; }
 

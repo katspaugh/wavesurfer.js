@@ -166,7 +166,7 @@ export default util.extend({}, drawer, {
             this.progressCc.fillStyle = this.params.progressColor;
         }
 
-        [ this.waveCc, this.progressCc ].forEach(function (cc) {
+        [ this.waveCc, this.progressCc ].forEach(cc => {
             if (!cc) { return; }
             let i;
             let j;
@@ -191,7 +191,7 @@ export default util.extend({}, drawer, {
 
             // Always draw a median line
             cc.fillRect(0, halfH + offsetY - $, this.width, $);
-        }, this);
+        });
     },
 
     updateProgress: function (progress) {

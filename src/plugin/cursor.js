@@ -17,8 +17,6 @@ export default function(params) {
         extends: ['observer'],
         instance: {
             init: function (wavesurfer) {
-                const my = this;
-
                 this.wavesurfer = wavesurfer;
                 this._onDrawerCreated = () => {
                     this.drawer = this.wavesurfer.drawer;
