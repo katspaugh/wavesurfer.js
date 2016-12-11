@@ -106,7 +106,7 @@ export default util.extend({}, drawer, {
             this.progressCc.fillStyle = this.params.progressColor;
         }
 
-        [ this.waveCc, this.progressCc ].forEach(cc => {
+        [this.waveCc, this.progressCc].forEach(cc => {
             if (!cc) { return; }
             let i;
 
@@ -166,7 +166,7 @@ export default util.extend({}, drawer, {
             this.progressCc.fillStyle = this.params.progressColor;
         }
 
-        [ this.waveCc, this.progressCc ].forEach(cc => {
+        [this.waveCc, this.progressCc].forEach(cc => {
             if (!cc) { return; }
             let i;
             let j;
