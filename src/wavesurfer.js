@@ -219,33 +219,27 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     },
 
     createDrawer: function () {
-        var my = this;
-
         this.drawer = Object.create(this.Drawer);
         this.drawer.init(this.container, this.params);
         this.fireEvent('drawer-created', this.drawer);
 
-        this.drawer.on('redraw', function () {
-            my.drawBuffer();
-            my.drawer.progress(my.backend.getPlayedPercents());
+        this.drawer.on('redraw', () => {
+            this.drawBuffer();
+            this.drawer.progress(this.backend.getPlayedPercents());
         });
 
         // Click-to-seek
-        this.drawer.on('click', function (e, progress) {
-            setTimeout(function () {
-                my.seekTo(progress);
-            }, 0);
+        this.drawer.on('click', (e, progress) => {
+            setTimeout(() => this.seekTo(progress), 0);
         });
 
         // Relay the scroll event from the drawer
-        this.drawer.on('scroll', function (e) {
-            my.fireEvent('scroll', e);
+        this.drawer.on('scroll', e => {
+            this.fireEvent('scroll', e);
         });
     },
 
     createBackend: function () {
-        var my = this;
-
         if (this.backend) {
             this.backend.destroy();
         }
@@ -263,13 +257,13 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         this.backend.init(this.params);
         this.fireEvent('backend-created', this.backend);
 
-        this.backend.on('finish', function () { my.fireEvent('finish'); });
-        this.backend.on('play', function () { my.fireEvent('play'); });
-        this.backend.on('pause', function () { my.fireEvent('pause'); });
+        this.backend.on('finish', () => this.fireEvent('finish'));
+        this.backend.on('play', () => this.fireEvent('play'));
+        this.backend.on('pause', () => this.fireEvent('pause'));
 
-        this.backend.on('audioprocess', function (time) {
-            my.drawer.progress(my.backend.getPlayedPercents());
-            my.fireEvent('audioprocess', time);
+        this.backend.on('audioprocess', time => {
+            this.drawer.progress(this.backend.getPlayedPercents());
+            this.fireEvent('audioprocess', time);
         });
     },
 
@@ -282,7 +276,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     },
 
     play: function (start, end) {
-        this.fireEvent('interaction', this.play.bind(this, start, end));
+        this.fireEvent('interaction', () => this.play(start, end));
         this.backend.play(start, end);
     },
 
@@ -307,8 +301,8 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     },
 
     skip: function (offset) {
-        var position = this.getCurrentTime() || 0;
-        var duration = this.getDuration() || 1;
+        const duration = this.getDuration() || 1;
+        let position = this.getCurrentTime() || 0;
         position = Math.max(0, Math.min(duration, position + (offset || 0)));
         this.seekAndCenter(position / duration);
     },
@@ -319,11 +313,11 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     },
 
     seekTo: function (progress) {
-        this.fireEvent('interaction', this.seekTo.bind(this, progress));
+        this.fireEvent('interaction', () => this.seekTo(progress));
 
-        var paused = this.backend.isPaused();
+        const paused = this.backend.isPaused();
         // avoid small scrolls while paused seeking
-        var oldScrollParent = this.params.scrollParent;
+        const oldScrollParent = this.params.scrollParent;
         if (paused) {
             this.params.scrollParent = false;
         }
@@ -404,18 +398,18 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     },
 
     drawBuffer: function () {
-        var nominalWidth = Math.round(
+        const nominalWidth = Math.round(
             this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio
         );
-        var parentWidth = this.drawer.getWidth();
-        var width = nominalWidth;
+        const parentWidth = this.drawer.getWidth();
+        let width = nominalWidth;
 
         // Fill container
         if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
             width = parentWidth;
         }
 
-        var peaks = this.backend.getPeaks(width);
+        const peaks = this.backend.getPeaks(width);
         this.drawer.drawPeaks(peaks, width);
         this.fireEvent('redraw', peaks, width);
     },
@@ -438,11 +432,11 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
      * Internal method.
      */
     loadArrayBuffer: function (arraybuffer) {
-        this.decodeArrayBuffer(arraybuffer, function (data) {
+        this.decodeArrayBuffer(arraybuffer, data => {
             if (!this.isDestroyed) {
                 this.loadDecodedBuffer(data);
             }
-        }.bind(this));
+        });
     },
 
     /**
@@ -460,18 +454,14 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
      * @param {Blob|File} blob Audio data.
      */
     loadBlob: function (blob) {
-        var my = this;
         // Create file reader
-        var reader = new FileReader();
-        reader.addEventListener('progress', function (e) {
-            my.onProgress(e);
+        const reader = new FileReader();
+        reader.addEventListener('progress', e => this.onProgress(e));
+        reader.addEventListener('load', e => {
+            console.log(e);
+            this.loadArrayBuffer(e.target.result);
         });
-        reader.addEventListener('load', function (e) {
-            my.loadArrayBuffer(e.target.result);
-        });
-        reader.addEventListener('error', function () {
-            my.fireEvent('error', 'Error reading file');
-        });
+        reader.addEventListener('error', () => this.fireEvent('error', 'Error reading file'));
         reader.readAsArrayBuffer(blob);
         this.empty();
     },
@@ -492,12 +482,12 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
      * Loads audio using Web Audio buffer backend.
      */
     loadBuffer: function (url, peaks) {
-        var load = (function (action) {
+        const load = action => {
             if (action) {
                 this.tmpEvents.push(this.once('ready', action));
             }
-            return this.getArrayBuffer(url, this.loadArrayBuffer.bind(this));
-        }).bind(this);
+            return this.getArrayBuffer(url, (data) => this.loadArrayBuffer(data));
+        };
 
         if (peaks) {
             this.backend.setPeaks(peaks);
@@ -518,12 +508,12 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
      *                                          web audio dependency
      */
     loadMediaElement: function (urlOrElt, peaks, preload) {
-        var url = urlOrElt;
+        let url = urlOrElt;
 
         if (typeof urlOrElt === 'string') {
             this.backend.load(url, this.mediaContainer, peaks, preload);
         } else {
-            var elt = urlOrElt;
+            const elt = urlOrElt;
             this.backend.loadElt(elt, peaks);
 
             // If peaks are not provided,
@@ -532,14 +522,11 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         }
 
         this.tmpEvents.push(
-            this.backend.once('canplay', (function () {
+            this.backend.once('canplay', () => {
                 this.drawBuffer();
                 this.fireEvent('ready');
-            }).bind(this)),
-
-            this.backend.once('error', (function (err) {
-                this.fireEvent('error', err);
-            }).bind(this))
+            }),
+            this.backend.once('error', err => this.fireEvent('error', err))
         );
 
         // If no pre-decoded peaks provided, attempt to download the
@@ -547,13 +534,13 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         if (peaks) {
             this.backend.setPeaks(peaks);
         } else if (this.backend.supportsWebAudio()) {
-            this.getArrayBuffer(url, (function (arraybuffer) {
-                this.decodeArrayBuffer(arraybuffer, (function (buffer) {
+            this.getArrayBuffer(url, arraybuffer => {
+                this.decodeArrayBuffer(arraybuffer, buffer => {
                     this.backend.buffer = buffer;
                     this.drawBuffer();
                     this.fireEvent('waveform-ready');
-                }).bind(this));
-            }).bind(this));
+                });
+            });
         }
     },
 
@@ -562,21 +549,19 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
 
         this.backend.decodeArrayBuffer(
             arraybuffer,
-            (function (data) {
+            data => {
                 // Only use the decoded data if we haven't been destroyed or another decode started in the meantime
                 if (!this.isDestroyed && this.arraybuffer == arraybuffer) {
                     callback(data);
                     this.arraybuffer = null;
                 }
-            }).bind(this),
-            this.fireEvent.bind(this, 'error', 'Error decoding audiobuffer')
+            },
+            () => this.fireEvent('error', 'Error decoding audiobuffer')
         );
     },
 
     getArrayBuffer: function (url, callback) {
-        var my = this;
-
-        var ajax = WaveSurfer.util.ajax({
+        const ajax = WaveSurfer.util.ajax({
             url: url,
             responseType: 'arraybuffer'
         });
@@ -584,16 +569,16 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         this.currentAjax = ajax;
 
         this.tmpEvents.push(
-            ajax.on('progress', function (e) {
-                my.onProgress(e);
+            ajax.on('progress', e => {
+                this.onProgress(e);
             }),
-            ajax.on('success', function (data, e) {
+            ajax.on('success', (data, e) => {
                 callback(data);
-                my.currentAjax = null;
+                this.currentAjax = null;
             }),
-            ajax.on('error', function (e) {
-                my.fireEvent('error', 'XHR error: ' + e.target.statusText);
-                my.currentAjax = null;
+            ajax.on('error', e => {
+                this.fireEvent('error', 'XHR error: ' + e.target.statusText);
+                this.currentAjax = null;
             })
         );
 
@@ -601,8 +586,9 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     },
 
     onProgress: function (e) {
+        let percentComplete;
         if (e.lengthComputable) {
-            var percentComplete = e.loaded / e.total;
+            percentComplete = e.loaded / e.total;
         } else {
             // Approximate progress with an asymptotic
             // function, and assume downloads in the 1-3 MB range.
@@ -618,11 +604,9 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         length = length || 1024;
         accuracy = accuracy || 10000;
         noWindow = noWindow || false;
-        var peaks = this.backend.getPeaks(length, accuracy);
-        var arr = [].map.call(peaks, function (val) {
-            return Math.round(val * accuracy) / accuracy;
-        });
-        var json = JSON.stringify(arr);
+        const peaks = this.backend.getPeaks(length, accuracy);
+        const arr = [].map.call(peaks, val => Math.round(val * accuracy) / accuracy);
+        const json = JSON.stringify(arr);
         if (!noWindow) {
             window.open('data:application/json;charset=utf-8,' +
                 encodeURIComponent(json));
@@ -655,7 +639,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     },
 
     clearTmpEvents: function () {
-        this.tmpEvents.forEach(function (e) { e.un(); });
+        this.tmpEvents.forEach(e => e.un());
     },
 
     /**
@@ -689,7 +673,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
 });
 
 WaveSurfer.create = function (params) {
-    var wavesurfer = Object.create(WaveSurfer);
+    const wavesurfer = Object.create(WaveSurfer);
     wavesurfer.init(params);
     return wavesurfer;
 };

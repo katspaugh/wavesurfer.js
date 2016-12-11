@@ -15,7 +15,7 @@ export default {
         return {
             name: event,
             callback: fn,
-            un: this.un.bind(this, event, fn)
+            un: (e, fn) => this.un(e, fn)
         };
     },
 
@@ -26,9 +26,10 @@ export default {
         if (!this.handlers) { return; }
 
         const handlers = this.handlers[event];
+        let i;
         if (handlers) {
             if (fn) {
-                for (var i = handlers.length - 1; i >= 0; i--) {
+                for (i = handlers.length - 1; i >= 0; i--) {
                     if (handlers[i] == fn) {
                         handlers.splice(i, 1);
                     }
@@ -51,13 +52,12 @@ export default {
      * event type.
      */
     once: function (event, handler) {
-        const my = this;
-        const fn = function () {
+        const fn = () => {
             /*  eslint-disable no-invalid-this, prefer-rest-params */
             handler.apply(this, arguments);
             /*  eslint-enable no-invalid-this, prefer-rest-params */
-            setTimeout(function () {
-                my.un(event, fn);
+            setTimeout(() => {
+                this.un(event, fn);
             }, 0);
         };
         return this.on(event, fn);
@@ -66,7 +66,7 @@ export default {
     fireEvent: function (event, ...args) {
         if (!this.handlers) { return; }
         const handlers = this.handlers[event];
-        handlers && handlers.forEach(function (fn) {
+        handlers && handlers.forEach(fn => {
             fn(...args);
         });
     }
