@@ -1,7 +1,7 @@
 /**
  * Calculate FFT - Based on https://github.com/corbanbrook/dsp.js
  */
-/* eslint-disable complexity, no-redeclare */
+/* eslint-disable complexity, no-redeclare, no-var, one-var */
 const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
     this.bufferSize = bufferSize;
     this.sampleRate = sampleRate;
@@ -177,7 +177,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
         return spectrum;
     };
 };
-/* eslint-enable complexity, no-redeclare */
+/* eslint-enable complexity, no-redeclare, no-var, one-var */
 
 /**
 * spectrogram plugin
@@ -220,7 +220,7 @@ export default function(params = {}) {
 
                 this.frequenciesDataUrl = params.frequenciesDataUrl;
                 this._onReady = () => {
-                    var drawer = this.drawer = this.wavesurfer.drawer;
+                    const drawer = this.drawer = this.wavesurfer.drawer;
 
                     this.container = 'string' == typeof params.container ?
                     document.querySelector(params.container) : params.container;
@@ -241,10 +241,10 @@ export default function(params = {}) {
                     this.createCanvas();
                     this.render();
 
-                    drawer.wrapper.addEventListener('scroll', function (e) {
+                    drawer.wrapper.addEventListener('scroll', e => {
                         this.updateScroll(e);
-                    }.bind(this));
-                    wavesurfer.on('redraw', this.render.bind(this));
+                    });
+                    wavesurfer.on('redraw', () => this.render());
                 };
 
                 // Check if ws is ready
@@ -265,12 +265,12 @@ export default function(params = {}) {
             },
 
             createWrapper: function () {
-                var prevSpectrogram = this.container.querySelector('spectrogram');
+                const prevSpectrogram = this.container.querySelector('spectrogram');
                 if (prevSpectrogram) {
                     this.container.removeChild(prevSpectrogram);
                 }
 
-                var wsParams = this.wavesurfer.params;
+                const wsParams = this.wavesurfer.params;
 
                 this.wrapper = this.container.appendChild(
                     document.createElement('spectrogram')
@@ -291,16 +291,15 @@ export default function(params = {}) {
                     });
                 }
 
-                var my = this;
-                this.wrapper.addEventListener('click', function (e) {
+                this.wrapper.addEventListener('click', e => {
                     e.preventDefault();
-                    var relX = 'offsetX' in e ? e.offsetX : e.layerX;
-                    my.fireEvent('click', (relX / my.scrollWidth) || 0);
+                    const relX = 'offsetX' in e ? e.offsetX : e.layerX;
+                    this.fireEvent('click', (relX / this.scrollWidth) || 0);
                 });
             },
 
             createCanvas: function () {
-                var canvas = this.canvas = this.wrapper.appendChild(
+                const canvas = this.canvas = this.wrapper.appendChild(
                     document.createElement('canvas')
                 );
 
@@ -323,25 +322,24 @@ export default function(params = {}) {
             },
 
             updateCanvasStyle: function () {
-                var width = Math.round(this.width / this.pixelRatio) + 'px';
+                const width = Math.round(this.width / this.pixelRatio) + 'px';
                 this.canvas.width = this.width;
                 this.canvas.height = this.height;
                 this.canvas.style.width = width;
             },
 
             drawSpectrogram: function(frequenciesData, my) {
-                var spectrCc = my.spectrCc;
+                const spectrCc = my.spectrCc;
+                const length = my.wavesurfer.backend.getDuration();
+                const height = my.height;
+                const pixels = my.resample(frequenciesData);
+                const heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
+                let i;
+                let j;
 
-                var length = my.wavesurfer.backend.getDuration();
-                var height = my.height;
-
-                var pixels = my.resample(frequenciesData);
-
-                var heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
-
-                for (var i = 0; i < pixels.length; i++) {
-                    for (var j = 0; j < pixels[i].length; j++) {
-                        var colorValue = 255 - pixels[i][j];
+                for (i = 0; i < pixels.length; i++) {
+                    for (j = 0; j < pixels[i].length; j++) {
+                        const colorValue = 255 - pixels[i][j];
                         my.spectrCc.fillStyle = 'rgb(' + colorValue + ', ' + colorValue + ', ' + colorValue + ')';
                         my.spectrCc.fillRect(i, height - j * heightFactor, 1, heightFactor);
                     }
@@ -349,35 +347,34 @@ export default function(params = {}) {
             },
 
             getFrequencies: function(callback) {
-                var fftSamples = this.fftSamples;
-                var buffer = this.buffer = this.wavesurfer.backend.buffer;
-                var channelOne = buffer.getChannelData(0);
-                var bufferLength = buffer.length;
-                var sampleRate = buffer.sampleRate;
-                var frequencies = [];
+                const fftSamples = this.fftSamples;
+                const buffer = this.buffer = this.wavesurfer.backend.buffer;
+                const channelOne = buffer.getChannelData(0);
+                const bufferLength = buffer.length;
+                const sampleRate = buffer.sampleRate;
+                const frequencies = [];
 
-                if (! buffer) {
+                if (!buffer) {
                     this.fireEvent('error', 'Web Audio buffer is not available');
                     return;
                 }
 
-                var noverlap = this.noverlap;
-                if (! noverlap) {
-                    var uniqueSamplesPerPx = buffer.length / this.canvas.width;
+                let noverlap = this.noverlap;
+                if (!noverlap) {
+                    const uniqueSamplesPerPx = buffer.length / this.canvas.width;
                     noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
                 }
 
-                var fft = new FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
-
-                var maxSlicesCount = Math.floor(bufferLength/ (fftSamples - noverlap));
-
-                var currentOffset = 0;
+                const fft = new FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
+                const maxSlicesCount = Math.floor(bufferLength/ (fftSamples - noverlap));
+                let currentOffset = 0;
 
                 while (currentOffset + fftSamples < channelOne.length) {
-                    var segment = channelOne.slice(currentOffset, currentOffset + fftSamples);
-                    var spectrum = fft.calculateSpectrum(segment);
-                    var array = new Uint8Array(fftSamples/2);
-                    for (var j = 0; j<fftSamples/2; j++) {
+                    const segment = channelOne.slice(currentOffset, currentOffset + fftSamples);
+                    const spectrum = fft.calculateSpectrum(segment);
+                    const array = new Uint8Array(fftSamples/2);
+                    let j;
+                    for (j = 0; j<fftSamples/2; j++) {
                         array[j] = Math.max(-255, Math.log10(spectrum[j])*45);
                     }
                     frequencies.push(array);
@@ -388,14 +385,10 @@ export default function(params = {}) {
 
 
             loadFrequenciesData: function (url) {
-                var my = this;
+                const ajax = this.wavesurfer.util.ajax({ url: url });
 
-                var ajax = this.wavesurfer.util.ajax({ url: url });
-
-                ajax.on('success', function(data) { my.drawSpectrogram(JSON.parse(data), my); });
-                ajax.on('error', function (e) {
-                    my.fireEvent('error', 'XHR error: ' + e.target.statusText);
-                });
+                ajax.on('success', data => this.drawSpectrogram(JSON.parse(data), this));
+                ajax.on('error', e => this.fireEvent('error', 'XHR error: ' + e.target.statusText));
 
                 return ajax;
             },
@@ -405,28 +398,31 @@ export default function(params = {}) {
             },
 
             resample: function(oldMatrix) {
-                var columnsNumber = this.width;
-                var newMatrix = [];
+                const columnsNumber = this.width;
+                const newMatrix = [];
 
-                var oldPiece = 1 / oldMatrix.length;
-                var newPiece = 1 / columnsNumber;
+                const oldPiece = 1 / oldMatrix.length;
+                const newPiece = 1 / columnsNumber;
+                let i;
 
-                for (var i = 0; i < columnsNumber; i++) {
-                    var column = new Array(oldMatrix[0].length);
+                for (i = 0; i < columnsNumber; i++) {
+                    const column = new Array(oldMatrix[0].length);
+                    let j;
 
-                    for (var j = 0; j < oldMatrix.length; j++) {
-                        var oldStart = j * oldPiece;
-                        var oldEnd = oldStart + oldPiece;
-                        var newStart = i * newPiece;
-                        var newEnd = newStart + newPiece;
+                    for (j = 0; j < oldMatrix.length; j++) {
+                        const oldStart = j * oldPiece;
+                        const oldEnd = oldStart + oldPiece;
+                        const newStart = i * newPiece;
+                        const newEnd = newStart + newPiece;
 
-                        var overlap = (oldEnd <= newStart || newEnd <= oldStart) ?
+                        const overlap = (oldEnd <= newStart || newEnd <= oldStart) ?
                         0 :
                         Math.min(Math.max(oldEnd, newStart), Math.max(newEnd, oldStart)) -
                         Math.max(Math.min(oldEnd, newStart), Math.min(newEnd, oldStart));
+                        let k;
                         /* eslint-disable max-depth */
                         if (overlap > 0) {
-                            for (var k = 0; k < oldMatrix[0].length; k++) {
+                            for (k = 0; k < oldMatrix[0].length; k++) {
                                 if (column[k] == null) {
                                     column[k] = 0;
                                 }
@@ -436,9 +432,10 @@ export default function(params = {}) {
                         /* eslint-enable max-depth */
                     }
 
-                    var intColumn = new Uint8Array(oldMatrix[0].length);
+                    const intColumn = new Uint8Array(oldMatrix[0].length);
+                    let m;
 
-                    for (var m = 0; m < oldMatrix[0].length; m++) {
+                    for (m = 0; m < oldMatrix[0].length; m++) {
                         intColumn[m] = column[m];
                     }
 

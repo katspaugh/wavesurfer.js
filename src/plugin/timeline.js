@@ -75,7 +75,7 @@ export default function(params = {}) {
 
             createWrapper: function () {
 
-                var wsParams = this.wavesurfer.params;
+                const wsParams = this.wavesurfer.params;
                 this.wrapper = this.container.appendChild(
                     document.createElement('timeline')
                 );
@@ -95,17 +95,16 @@ export default function(params = {}) {
                     });
                 }
 
-                var my = this;
-                this.wrapper.addEventListener('click', function (e) {
+                this.wrapper.addEventListener('click', e => {
                     e.preventDefault();
-                    var relX = 'offsetX' in e ? e.offsetX : e.layerX;
-                    my.fireEvent('click', (relX / my.wrapper.scrollWidth) || 0);
+                    const relX = 'offsetX' in e ? e.offsetX : e.layerX;
+                    this.fireEvent('click', (relX / this.wrapper.scrollWidth) || 0);
                 });
             },
 
             removeOldCanvases: function () {
                 while (this.canvases.length > 0) {
-                    var canvas = this.canvases.pop();
+                    const canvas = this.canvases.pop();
                     canvas.parentElement.removeChild(canvas);
                 }
             },
@@ -113,11 +112,12 @@ export default function(params = {}) {
             createCanvases: function () {
                 this.removeOldCanvases();
 
-                var totalWidth = Math.round(this.drawer.wrapper.scrollWidth),
-                    requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth),
-                    canvas;
+                const totalWidth = Math.round(this.drawer.wrapper.scrollWidth);
+                const requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
+                let canvas;
+                let i;
 
-                for (var i = 0; i < requiredCanvases; i++) {
+                for (i = 0; i < requiredCanvases; i++) {
                     canvas = this.wrapper.appendChild(document.createElement('canvas'));
                     this.canvases.push(canvas);
                     this.drawer.style(canvas, {
@@ -134,10 +134,11 @@ export default function(params = {}) {
             },
 
             updateCanvasStyle: function () {
-                var requiredCanvases = this.canvases.length;
-                for (var i = 0; i < requiredCanvases; i++) {
-                    var canvas = this.canvases[i],
-                        canvasWidth = this.maxCanvasElementWidth;
+                const requiredCanvases = this.canvases.length;
+                let i;
+                for (i = 0; i < requiredCanvases; i++) {
+                    const canvas = this.canvases[i];
+                    let canvasWidth = this.maxCanvasElementWidth;
 
                     if (i === requiredCanvases - 1) {
                         canvasWidth = this.drawer.wrapper.scrollWidth - (this.maxCanvasElementWidth * (requiredCanvases - 1));
@@ -152,30 +153,30 @@ export default function(params = {}) {
             },
 
             drawTimeCanvases: function() {
-                var backend = this.wavesurfer.backend,
-                    wsParams = this.wavesurfer.params,
-                    duration = backend.getDuration(),
-                    self = this;
+                const backend = this.wavesurfer.backend;
+                const wsParams = this.wavesurfer.params;
+                const duration = backend.getDuration();
+                const totalSeconds = parseInt(duration, 10) + 1;
+                let width;
+                let curPixel = 0;
+                let curSeconds = 0;
 
                 if (wsParams.fillParent && !wsParams.scrollParent) {
-                    var width = this.drawer.getWidth();
+                    width = this.drawer.getWidth();
                 } else {
                     width = this.drawer.wrapper.scrollWidth * wsParams.pixelRatio;
                 }
-                var pixelsPerSecond = width/duration;
+                const pixelsPerSecond = width/duration;
 
                 if (duration <= 0) { return; }
 
-                var curPixel = 0,
-                    curSeconds = 0,
-                    totalSeconds = parseInt(duration, 10) + 1;
-                var formatTime = function(seconds) {
-                    if (typeof self.formatTimeCallback === 'function') {
-                        return self.formatTimeCallback(seconds);
+                const formatTime = seconds => {
+                    if (typeof this.formatTimeCallback === 'function') {
+                        return this.formatTimeCallback(seconds);
                     }
 
                     if (seconds/60 > 1) {
-                        var minutes = parseInt(seconds / 60);
+                        const minutes = parseInt(seconds / 60);
                         seconds = parseInt(seconds % 60);
                         seconds = (seconds < 10) ? '0' + seconds : seconds;
                         return '' + minutes + ':' + seconds;
@@ -183,9 +184,9 @@ export default function(params = {}) {
                     return seconds;
                 };
 
-                var timeInterval = 60;
-                var primaryLabelInterval = 4;
-                var secondaryLabelInterval = 2;
+                let timeInterval = 60;
+                let primaryLabelInterval = 4;
+                let secondaryLabelInterval = 2;
                 if (pixelsPerSecond * 1 >= 25) {
                     timeInterval = 1;
                     primaryLabelInterval = 10;
@@ -204,11 +205,12 @@ export default function(params = {}) {
                 primaryLabelInterval = this.primaryLabelInterval || primaryLabelInterval;
                 secondaryLabelInterval = this.secondaryLabelInterval || secondaryLabelInterval;
 
-                var height1 = this.height - 4,
-                    height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4,
-                    fontSize = this.fontSize * wsParams.pixelRatio;
+                const height1 = this.height - 4;
+                const height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4;
+                const fontSize = this.fontSize * wsParams.pixelRatio;
+                let i;
 
-                for (var i = 0; i < totalSeconds/timeInterval; i++) {
+                for (i = 0; i < totalSeconds/timeInterval; i++) {
                     if (i % primaryLabelInterval == 0) {
                         this.setFillStyles(this.primaryColor);
                         this.fillRect(curPixel, 0, 1, height1);
@@ -232,23 +234,26 @@ export default function(params = {}) {
             },
 
             setFillStyles: function (fillStyle) {
-                for (var i in this.canvases) {
+                let i;
+                for (i in this.canvases) {
                     this.canvases[i].getContext('2d').fillStyle = fillStyle;
                 }
             },
 
             setFonts: function (font) {
-                for (var i in this.canvases) {
+                let i;
+                for (i in this.canvases) {
                     this.canvases[i].getContext('2d').font = font;
                 }
             },
 
             fillRect: function (x, y, width, height) {
-                for (var i in this.canvases) {
-                    var canvas = this.canvases[i],
-                        leftOffset = i * this.maxCanvasWidth;
+                let i;
+                for (i in this.canvases) {
+                    const canvas = this.canvases[i];
+                    const leftOffset = i * this.maxCanvasWidth;
 
-                    var intersection = {
+                    const intersection = {
                         x1: Math.max(x, i * this.maxCanvasWidth),
                         y1: y,
                         x2: Math.min(x + width, i * this.maxCanvasWidth + canvas.width),
@@ -267,12 +272,13 @@ export default function(params = {}) {
             },
 
             fillText: function (text, x, y) {
-                var textWidth,
-                    xOffset = 0;
+                let textWidth;
+                let xOffset = 0;
+                let i;
 
-                for (var i in this.canvases) {
-                    var context = this.canvases[i].getContext('2d'),
-                        canvasWidth = context.canvas.width;
+                for (i in this.canvases) {
+                    const context = this.canvases[i].getContext('2d');
+                    const canvasWidth = context.canvas.width;
 
                     if (xOffset > x + textWidth) {
                         break;

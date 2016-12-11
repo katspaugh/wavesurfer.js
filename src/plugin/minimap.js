@@ -63,36 +63,35 @@ export default function(params = {}) {
             },
 
             regions: function() {
-                var my = this;
                 this.regions = {};
 
-                this.wavesurfer.on('region-created', function(region) {
-                    my.regions[region.id] = region;
-                    my.renderRegions();
+                this.wavesurfer.on('region-created', region => {
+                    this.regions[region.id] = region;
+                    this.renderRegions();
                 });
 
-                this.wavesurfer.on('region-updated', function(region) {
-                    my.regions[region.id] = region;
-                    my.renderRegions();
+                this.wavesurfer.on('region-updated', region => {
+                    this.regions[region.id] = region;
+                    this.renderRegions();
                 });
 
-                this.wavesurfer.on('region-removed', function(region) {
-                    delete my.regions[region.id];
-                    my.renderRegions();
+                this.wavesurfer.on('region-removed', region => {
+                    delete this.regions[region.id];
+                    this.renderRegions();
                 });
             },
             renderRegions: function() {
-                var my = this;
-                var regionElements = this.wrapper.querySelectorAll('region');
-                for (var i = 0; i < regionElements.length; ++i) {
+                const regionElements = this.wrapper.querySelectorAll('region');
+                let i;
+                for (i = 0; i < regionElements.length; ++i) {
                     this.wrapper.removeChild(regionElements[i]);
                 }
 
-                Object.keys(this.regions).forEach(function(id){
-                    var region = my.regions[id];
-                    var width = (my.width * ((region.end - region.start) / my.wavesurfer.getDuration()));
-                    var left = (my.width * (region.start / my.wavesurfer.getDuration()));
-                    var regionElement = my.style(document.createElement('region'), {
+                Object.keys(this.regions).forEach(id => {
+                    const region = this.regions[id];
+                    const width = (this.width * ((region.end - region.start) / this.wavesurfer.getDuration()));
+                    const left = (this.width * (region.start / this.wavesurfer.getDuration()));
+                    const regionElement = this.style(document.createElement('region'), {
                         height: 'inherit',
                         backgroundColor: region.color,
                         width: width + 'px',
@@ -101,7 +100,7 @@ export default function(params = {}) {
                         position: 'absolute'
                     });
                     regionElement.classList.add(id);
-                    my.wrapper.appendChild(regionElement);
+                    this.wrapper.appendChild(regionElement);
                 });
             },
             createElements: function() {
@@ -124,19 +123,18 @@ export default function(params = {}) {
             },
 
             bindWaveSurferEvents: function () {
-                var my = this;
-                var prevWidth = 0;
+                let prevWidth = 0;
                 this._onResize = () => {
-                    if (prevWidth != my.wrapper.clientWidth) {
-                        prevWidth = my.wrapper.clientWidth;
-                        my.render();
-                        my.progress(my.wavesurfer.backend.getPlayedPercents());
+                    if (prevWidth != this.wrapper.clientWidth) {
+                        prevWidth = this.wrapper.clientWidth;
+                        this.render();
+                        this.progress(this.wavesurfer.backend.getPlayedPercents());
                     }
                 };
                 this._onReady = () => this.render();
                 this.wavesurfer.on('ready', this._onReady);
 
-                this._onAudioprocess = (currentTime) => {
+                this._onAudioprocess = currentTime => {
                     this.progress(this.wavesurfer.backend.getPlayedPercents());
                 };
                 this.wavesurfer.on('audioprocess', this._onAudioprocess);
@@ -145,16 +143,16 @@ export default function(params = {}) {
                 this.wavesurfer.on('seek', this._onSeek);
 
                 if (this.params.showOverview) {
-                    this._onScroll = e => {
-                        if (!my.draggingOverview) {
-                            my.moveOverviewRegion(event.target.scrollLeft / my.ratio);
+                    this._onScroll = event => {
+                        if (!this.draggingOverview) {
+                            this.moveOverviewRegion(event.target.scrollLeft / this.ratio);
                         }
                     };
                     this.wavesurfer.on('scroll', this._onSeek);
 
-                    this.wavesurfer.drawer.wrapper.addEventListener('mouseover', function(event) {
-                        if (my.draggingOverview) {
-                            my.draggingOverview = false;
+                    this.wavesurfer.drawer.wrapper.addEventListener('mouseover', event => {
+                        if (this.draggingOverview) {
+                            this.draggingOverview = false;
                         }
                     });
                 }
@@ -164,52 +162,51 @@ export default function(params = {}) {
 
 
             bindMinimapEvents: function () {
-                var my = this;
-                var relativePositionX = 0;
-                var seek = true;
-                var positionMouseDown = {
+                const positionMouseDown = {
                     clientX: 0,
                     clientY: 0
                 };
+                let relativePositionX = 0;
+                let seek = true;
 
-                this.on('click', (function (e, position) {
+                this.on('click', (e, position) => {
                     if (seek) {
                         this.progress(position);
                         this.wavesurfer.seekAndCenter(position);
                     } else {
                         seek = true;
                     }
-                }).bind(this));
+                });
 
                 if (this.params.showOverview) {
-                    this.overviewRegion.addEventListener('mousedown', function(event) {
-                        my.draggingOverview = true;
+                    this.overviewRegion.addEventListener('mousedown', event => {
+                        this.draggingOverview = true;
                         relativePositionX = event.layerX;
                         positionMouseDown.clientX = event.clientX;
                         positionMouseDown.clientY = event.clientY;
                     });
 
-                    this.wrapper.addEventListener('mousemove', function(event) {
-                        if (my.draggingOverview) {
-                            my.moveOverviewRegion(event.clientX - my.container.getBoundingClientRect().left - relativePositionX);
+                    this.wrapper.addEventListener('mousemove', event => {
+                        if (this.draggingOverview) {
+                            this.moveOverviewRegion(event.clientX - this.container.getBoundingClientRect().left - relativePositionX);
                         }
                     });
 
-                    this.wrapper.addEventListener('mouseup', function(event) {
+                    this.wrapper.addEventListener('mouseup', event => {
                         if (positionMouseDown.clientX - event.clientX === 0 && positionMouseDown.clientX - event.clientX === 0) {
                             seek = true;
-                            my.draggingOverview = false;
-                        } else if (my.draggingOverview) {
+                            this.draggingOverview = false;
+                        } else if (this.draggingOverview) {
                             seek = false;
-                            my.draggingOverview = false;
+                            this.draggingOverview = false;
                         }
                     });
                 }
             },
 
             render: function () {
-                var len = this.getWidth();
-                var peaks = this.wavesurfer.backend.getPeaks(len);
+                const len = this.getWidth();
+                const peaks = this.wavesurfer.backend.getPeaks(len);
                 this.drawPeaks(peaks, len);
 
                 if (this.params.showOverview) {

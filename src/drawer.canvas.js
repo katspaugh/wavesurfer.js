@@ -3,7 +3,7 @@ import * as util from './util';
 
 export default util.extend({}, drawer, {
     createElements: function () {
-        var waveCanvas = this.wrapper.appendChild(
+        const waveCanvas = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
                 zIndex: 1,
@@ -32,7 +32,7 @@ export default util.extend({}, drawer, {
         );
 
         if (this.params.waveColor != this.params.progressColor) {
-            var progressCanvas = this.progressWave.appendChild(
+            const progressCanvas = this.progressWave.appendChild(
                 document.createElement('canvas')
             );
             this.progressCc = progressCanvas.getContext('2d');
@@ -40,7 +40,7 @@ export default util.extend({}, drawer, {
     },
 
     updateSize: function () {
-        var width = Math.round(this.width / this.params.pixelRatio);
+        const width = Math.round(this.width / this.params.pixelRatio);
 
         this.waveCc.canvas.width = this.width;
         this.waveCc.canvas.height = this.height;
@@ -67,7 +67,7 @@ export default util.extend({}, drawer, {
     drawBars: function (peaks, channelIndex) {
         // Split channels
         if (peaks[0] instanceof Array) {
-            var channels = peaks;
+            const channels = peaks;
             if (this.params.splitChannels) {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawBars, this);
@@ -78,48 +78,49 @@ export default util.extend({}, drawer, {
 
         // Bar wave draws the bottom only as a reflection of the top,
         // so we don't need negative values
-        var hasMinVals = [].some.call(peaks, function (val) { return val < 0; });
+        const hasMinVals = [].some.call(peaks, val => val < 0);
         if (hasMinVals) {
-            peaks = [].filter.call(peaks, function (_, index) { return index % 2 == 0; });
+            peaks = [].filter.call(peaks, (_, index) => index % 2 == 0);
         }
 
         // A half-pixel offset makes lines crisp
-        var $ = 0.5 / this.params.pixelRatio;
-        var width = this.width;
-        var height = this.params.height * this.params.pixelRatio;
-        var offsetY = height * channelIndex || 0;
-        var halfH = height / 2;
-        var length = peaks.length;
-        var bar = this.params.barWidth * this.params.pixelRatio;
-        var gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
-        var step = bar + gap;
+        const $ = 0.5 / this.params.pixelRatio;
+        const width = this.width;
+        const height = this.params.height * this.params.pixelRatio;
+        const offsetY = height * channelIndex || 0;
+        const halfH = height / 2;
+        const length = peaks.length;
+        const bar = this.params.barWidth * this.params.pixelRatio;
+        const gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
+        const step = bar + gap;
 
-        var absmax = 1;
+        let absmax = 1;
         if (this.params.normalize) {
             absmax = util.max(peaks);
         }
 
-        var scale = length / width;
+        const scale = length / width;
 
         this.waveCc.fillStyle = this.params.waveColor;
         if (this.progressCc) {
             this.progressCc.fillStyle = this.params.progressColor;
         }
 
-        [ this.waveCc, this.progressCc ].forEach(function (cc) {
+        [this.waveCc, this.progressCc].forEach(cc => {
             if (!cc) { return; }
+            let i;
 
-            for (var i = 0; i < width; i += step) {
-                var h = Math.round(peaks[Math.floor(i * scale)] / absmax * halfH);
+            for (i = 0; i < width; i += step) {
+                const h = Math.round(peaks[Math.floor(i * scale)] / absmax * halfH);
                 cc.fillRect(i + $, halfH - h + offsetY, bar + $, h * 2);
             }
-        }, this);
+        });
     },
 
     drawWave: function (peaks, channelIndex) {
         // Split channels
         if (peaks[0] instanceof Array) {
-            var channels = peaks;
+            const channels = peaks;
             if (this.params.splitChannels) {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(this.drawWave, this);
@@ -129,10 +130,12 @@ export default util.extend({}, drawer, {
         }
 
         // Support arrays without negative peaks
-        var hasMinValues = [].some.call(peaks, function (val) { return val < 0; });
+        const hasMinValues = [].some.call(peaks, val => val < 0);
         if (!hasMinValues) {
-            var reflectedPeaks = [];
-            for (var i = 0, len = peaks.length; i < len; i++) {
+            const reflectedPeaks = [];
+            let i;
+            let len;
+            for (i = 0, len = peaks.length; i < len; i++) {
                 reflectedPeaks[2 * i] = peaks[i];
                 reflectedPeaks[2 * i + 1] = -peaks[i];
             }
@@ -140,21 +143,21 @@ export default util.extend({}, drawer, {
         }
 
         // A half-pixel offset makes lines crisp
-        var $ = 0.5 / this.params.pixelRatio;
-        var height = this.params.height * this.params.pixelRatio;
-        var offsetY = height * channelIndex || 0;
-        var halfH = height / 2;
-        var length = ~~(peaks.length / 2);
+        const $ = 0.5 / this.params.pixelRatio;
+        const height = this.params.height * this.params.pixelRatio;
+        const offsetY = height * channelIndex || 0;
+        const halfH = height / 2;
+        const length = ~~(peaks.length / 2);
 
-        var scale = 1;
+        let scale = 1;
         if (this.params.fillParent && this.width != length) {
             scale = this.width / length;
         }
 
-        var absmax = 1;
+        let absmax = 1;
         if (this.params.normalize) {
-            var max = util.max(peaks);
-            var min = util.min(peaks);
+            const max = util.max(peaks);
+            const min = util.min(peaks);
             absmax = -min > max ? -min : max;
         }
 
@@ -163,21 +166,23 @@ export default util.extend({}, drawer, {
             this.progressCc.fillStyle = this.params.progressColor;
         }
 
-        [ this.waveCc, this.progressCc ].forEach(function (cc) {
+        [this.waveCc, this.progressCc].forEach(cc => {
             if (!cc) { return; }
+            let i;
+            let j;
 
             cc.beginPath();
             cc.moveTo($, halfH + offsetY);
 
-            for (var i = 0; i < length; i++) {
-                var h = Math.round(peaks[2 * i] / absmax * halfH);
+            for (i = 0; i < length; i++) {
+                const h = Math.round(peaks[2 * i] / absmax * halfH);
                 cc.lineTo(i * scale + $, halfH - h + offsetY);
             }
 
             // Draw the bottom edge going backwards, to make a single
             // closed hull to fill.
-            for (var j = length - 1; j >= 0; j--) {
-                var k = Math.round(peaks[2 * j + 1] / absmax * halfH);
+            for (j = length - 1; j >= 0; j--) {
+                const k = Math.round(peaks[2 * j + 1] / absmax * halfH);
                 cc.lineTo(j * scale + $, halfH - k + offsetY);
             }
 
@@ -186,11 +191,11 @@ export default util.extend({}, drawer, {
 
             // Always draw a median line
             cc.fillRect(0, halfH + offsetY - $, this.width, $);
-        }, this);
+        });
     },
 
     updateProgress: function (progress) {
-        var pos = Math.round(
+        const pos = Math.round(
             this.width * progress
         ) / this.params.pixelRatio;
         this.style(this.progressWave, { width: pos + 'px' });

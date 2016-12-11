@@ -26,16 +26,12 @@ export default util.extend({}, webaudio, {
      * Create a timer to provide a more precise `audioprocess' event.
      */
     createTimer: function () {
-        var my = this;
-        var playing = false;
-
-        var onAudioProcess = function () {
-            if (my.isPaused()) { return; }
-
-            my.fireEvent('audioprocess', my.getCurrentTime());
+        const onAudioProcess = () => {
+            if (this.isPaused()) { return; }
+            this.fireEvent('audioprocess', this.getCurrentTime());
 
             // Call again in the next frame
-            var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+            const requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
             requestAnimationFrame(onAudioProcess);
         };
 
@@ -51,16 +47,14 @@ export default util.extend({}, webaudio, {
      *  @param  {String}        preload     HTML 5 preload attribute value
      */
     load: function (url, container, peaks, preload) {
-        var my = this;
-
-        var media = document.createElement(this.mediaType);
+        const media = document.createElement(this.mediaType);
         media.controls = this.params.mediaControls;
         media.autoplay = this.params.autoplay || false;
         media.preload = preload == null ? 'auto' : preload;
         media.src = url;
         media.style.width = '100%';
 
-        var prevMedia = container.querySelector(this.mediaType);
+        const prevMedia = container.querySelector(this.mediaType);
         if (prevMedia) {
             container.removeChild(prevMedia);
         }
@@ -75,13 +69,10 @@ export default util.extend({}, webaudio, {
      *  @param  {Array}         peaks   array of peak data
      */
     loadElt: function (elt, peaks) {
-        var my = this;
+        elt.controls = this.params.mediaControls;
+        elt.autoplay = this.params.autoplay || false;
 
-        var media = elt;
-        media.controls = this.params.mediaControls;
-        media.autoplay = this.params.autoplay || false;
-
-        this._load(media, peaks);
+        this._load(elt, peaks);
     },
 
     /**
@@ -92,22 +83,20 @@ export default util.extend({}, webaudio, {
      *  @private
      */
     _load: function (media, peaks) {
-        var my = this;
-
         // load must be called manually on iOS, otherwise peaks won't draw
         // until a user interaction triggers load --> 'ready' event
         media.load();
 
-        media.addEventListener('error', function () {
-            my.fireEvent('error', 'Error loading media element');
+        media.addEventListener('error', () => {
+            this.fireEvent('error', 'Error loading media element');
         });
 
-        media.addEventListener('canplay', function () {
-            my.fireEvent('canplay');
+        media.addEventListener('canplay', () => {
+            this.fireEvent('canplay');
         });
 
-        media.addEventListener('ended', function () {
-            my.fireEvent('finish');
+        media.addEventListener('ended', () => {
+            this.fireEvent('finish');
         });
 
         this.media = media;
@@ -122,7 +111,7 @@ export default util.extend({}, webaudio, {
     },
 
     getDuration: function () {
-        var duration = this.media.duration;
+        let duration = this.media.duration;
         if (duration >= Infinity) { // streaming audio
             duration = this.media.seekable.end(0);
         }
@@ -177,11 +166,10 @@ export default util.extend({}, webaudio, {
     },
 
     setPlayEnd: function (end) {
-        var my = this;
-        this.onPlayEnd = function (time) {
+        this.onPlayEnd = time => {
             if (time >= end) {
-                my.pause();
-                my.seekTo(end);
+                this.pause();
+                this.seekTo(end);
             }
         };
         this.on('audioprocess', this.onPlayEnd);
