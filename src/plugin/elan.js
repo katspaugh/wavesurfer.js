@@ -175,7 +175,7 @@ export default function(params = {}) {
                 th.textContent = 'Time';
                 th.className = 'wavesurfer-time';
                 headRow.appendChild(th);
-                indeces.forEach(function (index) {
+                indeces.forEach(index => {
                     const tier = tiers[index];
                     const th = document.createElement('th');
                     th.className = 'wavesurfer-tier-' + tier.id;
