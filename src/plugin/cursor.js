@@ -17,8 +17,6 @@ export default function(params) {
         extends: ['observer'],
         instance: {
             init(wavesurfer) {
-                var my = this;
-
                 this.wavesurfer = wavesurfer;
                 this._onDrawerCreated = () => {
                     this.drawer = this.wavesurfer.drawer;
@@ -66,7 +64,7 @@ export default function(params) {
             },
 
             updateCursorPosition(progress) {
-                var pos = Math.round(this.drawer.width * progress) / this.drawer.params.pixelRatio - 1;
+                const pos = Math.round(this.drawer.width * progress) / this.drawer.params.pixelRatio - 1;
                 this.drawer.style(this.cursor, { left: pos + 'px' });
             },
 

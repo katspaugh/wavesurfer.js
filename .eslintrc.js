@@ -10,7 +10,7 @@ module.exports = {
     },
     "rules": {
         "accessor-pairs": "error",
-        "array-bracket-spacing": "off",
+        "array-bracket-spacing": "error",
         "array-callback-return": "error",
         "arrow-body-style": "error",
         "arrow-parens": "off",
@@ -196,7 +196,7 @@ module.exports = {
         "no-useless-escape": "error",
         "no-useless-rename": "error",
         "no-useless-return": "error",
-        "no-var": "off",
+        "no-var": "error",
         "no-void": "error",
         "no-warning-comments": "off",
         "no-whitespace-before-property": "error",
@@ -211,16 +211,23 @@ module.exports = {
                 avoidQuotes: true
             }
         ],
-        "one-var": "off",
+        "one-var": [
+            "error",
+            {
+                var: "never",
+                let: "never",
+                const: "never"
+            }
+        ],
         "one-var-declaration-per-line": "error",
         "operator-assignment": "off",
         "operator-linebreak": "off",
         "padded-blocks": "off",
-        "prefer-arrow-callback": "off",
+        "prefer-arrow-callback": "error",
         "prefer-const": "error",
         "prefer-numeric-literals": "error",
         "prefer-reflect": "off",
-        "prefer-rest-params": "off",
+        "prefer-rest-params": "error",
         "prefer-spread": "error",
         "prefer-template": "off",
         "quote-props": "off",
