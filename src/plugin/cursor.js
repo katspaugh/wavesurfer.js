@@ -61,7 +61,12 @@ export default function(params) {
 
             destroy() {
                 this.wavesurfer.un('drawer-created', this._onDrawerCreated);
-                this.cursor.parentNode.removeChild(this.cursor);
+
+                // if cursor was appended, remove it
+                if (this.cursor) {
+                    this.cursor.parentNode.removeChild(this.cursor);
+                }
+
                 // if the drawer existed (the cached version referenced in the init code),
                 // remove the event listeners attached to it
                 if (this.drawer) {
