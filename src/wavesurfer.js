@@ -577,8 +577,8 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         var my = this;
 
         var ajax = WaveSurfer.util.ajax({
-            responseType: 'arraybuffer',
-            url
+            url: url,
+            responseType: 'arraybuffer'
         });
 
         this.currentAjax = ajax;

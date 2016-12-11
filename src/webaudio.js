@@ -310,7 +310,10 @@ const WebAudio = util.extend({}, util.observer, {
             this.setState(this.PAUSED_STATE);
         }
 
-        return { start, end };
+        return {
+            start: start,
+            end: end
+        };
     },
 
     getPlayedTime() {
