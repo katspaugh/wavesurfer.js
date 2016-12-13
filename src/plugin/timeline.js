@@ -80,22 +80,24 @@ export default function(params = {}) {
                 };
                 this._onRedraw = () => this.render();
                 this._onReady = () => {
-                    this.drawer = this.wavesurfer.drawer;
-                    this.width = this.wavesurfer.drawer.width;
-                    this.pixelRatio = this.wavesurfer.drawer.params.pixelRatio;
-                    this.maxCanvasWidth = this.wavesurfer.drawer.maxCanvasWidth || this.width;
-                    this.maxCanvasElementWidth = this.wavesurfer.drawer.maxCanvasElementWidth || Math.round(this.maxCanvasWidth / this.pixelRatio);
+                    this.drawer = wavesurfer.drawer;
+                    this.pixelRatio = wavesurfer.drawer.params.pixelRatio;
+                    this.maxCanvasWidth = wavesurfer.drawer.maxCanvasWidth || wavesurfer.drawer.width;
+                    this.maxCanvasElementWidth = wavesurfer.drawer.maxCanvasElementWidth || Math.round(this.maxCanvasWidth / this.pixelRatio);
 
                     this.createWrapper();
                     this.render();
                     wavesurfer.drawer.wrapper.addEventListener('scroll', this._onScroll);
-                    this.wavesurfer.on('redraw', this._onRedraw);
+                    wavesurfer.on('redraw', this._onRedraw);
                 };
-                this.wavesurfer.on('ready', this._onReady);
-                // Check if ws is ready
-                if (this.wavesurfer.backend) {
+
+                // backend (and drawer) already existed, just call
+                // initialisation code
+                if (wavesurfer.backend) {
                     this._onReady();
                 }
+                // ws is ready, call the initialisation code
+                wavesurfer.on('ready', this._onReady);
             },
 
             destroy: function () {
