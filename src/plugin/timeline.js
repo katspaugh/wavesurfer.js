@@ -197,11 +197,14 @@ export default function(params = {}) {
             },
 
             drawTimeCanvases: function() {
-                const backend = this.wavesurfer.backend;
                 const wsParams = this.wavesurfer.params;
-                const duration = backend.getDuration();
+                const duration = this.wavesurfer.backend.getDuration();
                 const totalSeconds = parseInt(duration, 10) + 1;
-                let width;
+                const width = wsParams.fillParent && !wsParams.scrollParent
+                    ? this.drawer.getWidth()
+                    : this.drawer.wrapper.scrollWidth * wsParams.pixelRatio;
+                const pixelsPerSecond = width / duration;
+
                 const formatTime = this.opts.formatTimeCallback;
                 // if parameter is function, call the function with
                 // pixelsPerSecond, otherwise simply take the value as-is
@@ -213,14 +216,8 @@ export default function(params = {}) {
                 let curPixel = 0;
                 let curSeconds = 0;
 
-                if (wsParams.fillParent && !wsParams.scrollParent) {
-                    width = this.drawer.getWidth();
-                } else {
-                    width = this.drawer.wrapper.scrollWidth * wsParams.pixelRatio;
-                }
-                const pixelsPerSecond = width/duration;
-
-                if (duration <= 0) { return; }
+                if (duration <= 0) {
+                    return;
                 }
 
                 const height1 = this.opts.height - 4;
