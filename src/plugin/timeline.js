@@ -106,12 +106,9 @@ export default function(params = {}) {
                 this.wavesurfer.un('redraw', this._onRedraw);
                 this.wavesurfer.un('ready', this._onReady);
                 this.wavesurfer.drawer.wrapper.removeEventListener('scroll', this._onScroll);
-                if (this.wrapper) {
-                    this.wrapper.removeEventListener('click', this._onClick);
-                    if (this.wrapper.parentNode) {
-                        this.wrapper.parentNode.removeChild(this.wrapper);
-                        this.wrapper = null;
-                    }
+                if (this.wrapper && this.wrapper.parentNode) {
+                    this.wrapper.parentNode.removeChild(this.wrapper);
+                    this.wrapper = null;
                 }
             },
 
