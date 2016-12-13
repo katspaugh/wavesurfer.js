@@ -14,11 +14,6 @@ export default function(params = {}) {
                 this.params = params;
                 this.wavesurfer = wavesurfer;
 
-                if (!this.wavesurfer) {
-                    throw Error('No WaveSurfer intance provided');
-                }
-
-
                 this.container = 'string' == typeof params.container ?
                 document.querySelector(params.container) : params.container;
 
