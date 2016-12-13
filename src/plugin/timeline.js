@@ -12,6 +12,7 @@ export default function(params = {}) {
         instance: {
             init: function (wavesurfer) {
                 this.wavesurfer = wavesurfer;
+                this.style = wavesurfer.util.style;
 
                 this.container = 'string' == typeof params.container
                     ? document.querySelector(params.container)
@@ -113,7 +114,7 @@ export default function(params = {}) {
                 this.wrapper = this.container.appendChild(
                     document.createElement('timeline')
                 );
-                this.drawer.style(this.wrapper, {
+                this.style(this.wrapper, {
                     display: 'block',
                     position: 'relative',
                     userSelect: 'none',
@@ -122,7 +123,7 @@ export default function(params = {}) {
                 });
 
                 if (wsParams.fillParent || wsParams.scrollParent) {
-                    this.drawer.style(this.wrapper, {
+                    this.style(this.wrapper, {
                         width: '100%',
                         overflowX: 'hidden',
                         overflowY: 'hidden'
@@ -154,7 +155,7 @@ export default function(params = {}) {
                 for (i = 0; i < requiredCanvases; i++) {
                     canvas = this.wrapper.appendChild(document.createElement('canvas'));
                     this.canvases.push(canvas);
-                    this.drawer.style(canvas, {
+                    this.style(canvas, {
                         position: 'absolute',
                         zIndex: 4
                     });
@@ -180,9 +181,11 @@ export default function(params = {}) {
 
                     canvas.width = canvasWidth * this.pixelRatio;
                     canvas.height = this.opts.height * this.pixelRatio;
-                    canvas.style.width = canvasWidth + 'px';
-                    canvas.style.left = i * this.maxCanvasElementWidth + 'px';
-                    canvas.style.height = `${this.opts.height}px`;
+                    this.style(canvas, {
+                        width: `${canvasWidth}px`,
+                        height: `${this.opts.height}px`,
+                        left: `${i * this.maxCanvasElementWidth}px`
+                    });
                 }
             },
 
