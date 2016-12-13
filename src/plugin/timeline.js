@@ -11,7 +11,6 @@ export default function(params = {}) {
         extends: ['observer'],
         instance: {
             init: function (wavesurfer) {
-                this.params = params;
                 this.wavesurfer = wavesurfer;
 
                 this.container = 'string' == typeof params.container
@@ -22,18 +21,57 @@ export default function(params = {}) {
                     throw new Error('No container for WaveSurfer timeline');
                 }
 
-                this.height = this.params.height || 20;
-                this.notchPercentHeight = this.params.notchPercentHeight || 90;
-                this.primaryColor = this.params.primaryColor || '#000';
-                this.secondaryColor = this.params.secondaryColor || '#c0c0c0';
-                this.primaryFontColor = this.params.primaryFontColor || '#000';
-                this.secondaryFontColor = this.params.secondaryFontColor || '#000';
-                this.fontFamily = this.params.fontFamily || 'Arial';
-                this.fontSize = this.params.fontSize || 10;
-                this.timeInterval = this.params.timeInterval;
-                this.primaryLabelInterval = this.params.primaryLabelInterval;
-                this.secondaryLabelInterval = this.params.secondaryLabelInterval;
-                this.formatTimeCallback = this.params.formatTimeCallback;
+                this.opts = wavesurfer.util.extend({}, {
+                    height: 20,
+                    notchPercentHeight: 90,
+                    primaryColor: '#000',
+                    secondaryColor: '#c0c0c0',
+                    primaryFontColor: '#000',
+                    secondaryFontColor: '#000',
+                    fontFamily: 'Arial',
+                    fontSize: 10,
+                    formatTimeCallback(seconds) {
+                        if (seconds / 60 > 1) {
+                            // calculate minutes and seconds from seconds count
+                            const minutes = parseInt(seconds / 60, 10);
+                            seconds = parseInt(seconds % 60, 10);
+                            // fill up seconds with zeroes
+                            seconds = (seconds < 10) ? '0' + seconds : seconds;
+                            return `${minutes}:${seconds}`;
+                        }
+                        return seconds;
+                    },
+                    timeInterval(pxPerSec) {
+                        if (pxPerSec >= 25) {
+                            return 1;
+                        } else if (pxPerSec * 5 >= 25) {
+                            return 5;
+                        } else if (pxPerSec * 15 >= 25) {
+                            return 15;
+                        }
+                        return 60;
+                    },
+                    primaryLabelInterval(pxPerSec) {
+                        if (pxPerSec >= 25) {
+                            return 10;
+                        } else if (pxPerSec * 5 >= 25) {
+                            return 6;
+                        } else if (pxPerSec * 15 >= 25) {
+                            return 4;
+                        }
+                        return 4;
+                    },
+                    secondaryLabelInterval(pxPerSec) {
+                        if (pxPerSec >= 25) {
+                            return 5;
+                        } else if (pxPerSec * 5 >= 25) {
+                            return 2;
+                        } else if (pxPerSec * 15 >= 25) {
+                            return 2;
+                        }
+                        return 2;
+                    }
+                }, params);
                 this.canvases = [];
 
                 this._onRedraw = () => {
@@ -80,7 +118,7 @@ export default function(params = {}) {
                     position: 'relative',
                     userSelect: 'none',
                     webkitUserSelect: 'none',
-                    height: this.height + 'px'
+                    height: `${this.opts.height}px`
                 });
 
                 if (wsParams.fillParent || wsParams.scrollParent) {
@@ -141,10 +179,10 @@ export default function(params = {}) {
                     }
 
                     canvas.width = canvasWidth * this.pixelRatio;
-                    canvas.height = this.height * this.pixelRatio;
+                    canvas.height = this.opts.height * this.pixelRatio;
                     canvas.style.width = canvasWidth + 'px';
-                    canvas.style.height = this.height + 'px';
                     canvas.style.left = i * this.maxCanvasElementWidth + 'px';
+                    canvas.style.height = `${this.opts.height}px`;
                 }
             },
 
@@ -154,6 +192,14 @@ export default function(params = {}) {
                 const duration = backend.getDuration();
                 const totalSeconds = parseInt(duration, 10) + 1;
                 let width;
+                const formatTime = this.opts.formatTimeCallback;
+                // if parameter is function, call the function with
+                // pixelsPerSecond, otherwise simply take the value as-is
+                const intervalFnOrVal = option => (typeof option === 'function' ? option(pixelsPerSecond) : option);
+                const timeInterval = intervalFnOrVal(this.opts.timeInterval);
+                const primaryLabelInterval = intervalFnOrVal(this.opts.primaryLabelInterval);
+                const secondaryLabelInterval = intervalFnOrVal(this.opts.secondaryLabelInterval);
+
                 let curPixel = 0;
                 let curSeconds = 0;
 
@@ -165,62 +211,28 @@ export default function(params = {}) {
                 const pixelsPerSecond = width/duration;
 
                 if (duration <= 0) { return; }
-
-                const formatTime = seconds => {
-                    if (typeof this.formatTimeCallback === 'function') {
-                        return this.formatTimeCallback(seconds);
-                    }
-
-                    if (seconds/60 > 1) {
-                        const minutes = parseInt(seconds / 60);
-                        seconds = parseInt(seconds % 60);
-                        seconds = (seconds < 10) ? '0' + seconds : seconds;
-                        return '' + minutes + ':' + seconds;
-                    }
-                    return seconds;
-                };
-
-                let timeInterval = 60;
-                let primaryLabelInterval = 4;
-                let secondaryLabelInterval = 2;
-                if (pixelsPerSecond * 1 >= 25) {
-                    timeInterval = 1;
-                    primaryLabelInterval = 10;
-                    secondaryLabelInterval = 5;
-                } else if (pixelsPerSecond * 5 >= 25) {
-                    timeInterval = 5;
-                    primaryLabelInterval = 6;
-                    secondaryLabelInterval = 2;
-                } else if (pixelsPerSecond * 15 >= 25) {
-                    timeInterval = 15;
-                    primaryLabelInterval = 4;
-                    secondaryLabelInterval = 2;
                 }
 
-                timeInterval = this.timeInterval || timeInterval;
-                primaryLabelInterval = this.primaryLabelInterval || primaryLabelInterval;
-                secondaryLabelInterval = this.secondaryLabelInterval || secondaryLabelInterval;
-
-                const height1 = this.height - 4;
-                const height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4;
-                const fontSize = this.fontSize * wsParams.pixelRatio;
+                const height1 = this.opts.height - 4;
+                const height2 = (this.opts.height * (this.opts.notchPercentHeight / 100)) - 4;
+                const fontSize = this.opts.fontSize * wsParams.pixelRatio;
                 let i;
 
                 for (i = 0; i < totalSeconds/timeInterval; i++) {
                     if (i % primaryLabelInterval == 0) {
-                        this.setFillStyles(this.primaryColor);
+                        this.setFillStyles(this.opts.primaryColor);
                         this.fillRect(curPixel, 0, 1, height1);
-                        this.setFonts(fontSize + 'px ' + this.fontFamily);
-                        this.setFillStyles(this.primaryFontColor);
+                        this.setFonts(`${fontSize}px ${this.opts.fontFamily}`);
+                        this.setFillStyles(this.opts.primaryFontColor);
                         this.fillText(formatTime(curSeconds), curPixel + 5, height1);
                     } else if (i % secondaryLabelInterval == 0) {
-                        this.setFillStyles(this.secondaryColor);
+                        this.setFillStyles(this.opts.secondaryColor);
                         this.fillRect(curPixel, 0, 1, height1);
-                        this.setFonts(fontSize + 'px ' + this.fontFamily);
-                        this.setFillStyles(this.secondaryFontColor);
+                        this.setFonts(`${fontSize}px ${this.opts.fontFamily}`);
+                        this.setFillStyles(this.opts.secondaryFontColor);
                         this.fillText(formatTime(curSeconds), curPixel + 5, height1);
                     } else {
-                        this.setFillStyles(this.secondaryColor);
+                        this.setFillStyles(this.opts.secondaryColor);
                         this.fillRect(curPixel, 0, 1, height2);
                     }
 
