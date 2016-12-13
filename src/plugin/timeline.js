@@ -75,10 +75,10 @@ export default function(params = {}) {
                 }, params);
                 this.canvases = [];
 
-                this._onRedraw = () => {
-                    this.render();
+                this._onScroll = () => {
+                    this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
                 };
-
+                this._onRedraw = () => this.render();
                 this._onReady = () => {
                     this.drawer = this.wavesurfer.drawer;
                     this.width = this.wavesurfer.drawer.width;
@@ -88,7 +88,7 @@ export default function(params = {}) {
 
                     this.createWrapper();
                     this.render();
-                    this.wavesurfer.drawer.wrapper.addEventListener('scroll', e => this.updateScroll(e));
+                    wavesurfer.drawer.wrapper.addEventListener('scroll', this._onScroll);
                     this.wavesurfer.on('redraw', this._onRedraw);
                 };
                 this.wavesurfer.on('ready', this._onReady);
@@ -102,6 +102,8 @@ export default function(params = {}) {
                 this.unAll();
                 this.wavesurfer.un('redraw', this._onRedraw);
                 this.wavesurfer.un('ready', this._onReady);
+                this.wavesurfer.drawer.wrapper.removeEventListener('scroll', this._onScroll);
+                    this.wrapper.removeEventListener('click', this._onClick);
                 if (this.wrapper && this.wrapper.parentNode) {
                     this.wrapper.parentNode.removeChild(this.wrapper);
                     this.wrapper = null;
@@ -130,11 +132,13 @@ export default function(params = {}) {
                     });
                 }
 
-                this.wrapper.addEventListener('click', e => {
+                this._onClick = e => {
                     e.preventDefault();
                     const relX = 'offsetX' in e ? e.offsetX : e.layerX;
                     this.fireEvent('click', (relX / this.wrapper.scrollWidth) || 0);
-                });
+                };
+
+                this.wrapper.addEventListener('click', this._onClick);
             },
 
             removeOldCanvases: function () {
@@ -302,10 +306,6 @@ export default function(params = {}) {
 
                     xOffset += canvasWidth;
                 }
-            },
-
-            updateScroll: function () {
-                this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
             }
         }
     };
