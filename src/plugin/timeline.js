@@ -14,8 +14,9 @@ export default function(params = {}) {
                 this.params = params;
                 this.wavesurfer = wavesurfer;
 
-                this.container = 'string' == typeof params.container ?
-                document.querySelector(params.container) : params.container;
+                this.container = 'string' == typeof params.container
+                    ? document.querySelector(params.container)
+                    : params.container;
 
                 if (!this.container) {
                     throw new Error('No container for WaveSurfer timeline');
