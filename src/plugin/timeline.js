@@ -73,6 +73,7 @@ export default function(params = {}) {
                         return 2;
                     }
                 }, params);
+
                 this.canvases = [];
 
                 this._onScroll = () => {
@@ -115,7 +116,6 @@ export default function(params = {}) {
             },
 
             createWrapper: function () {
-
                 const wsParams = this.wavesurfer.params;
                 this.wrapper = this.container.appendChild(
                     document.createElement('timeline')
@@ -225,7 +225,7 @@ export default function(params = {}) {
                 const fontSize = this.opts.fontSize * wsParams.pixelRatio;
                 let i;
 
-                for (i = 0; i < totalSeconds/timeInterval; i++) {
+                for (i = 0; i < totalSeconds / timeInterval; i++) {
                     if (i % primaryLabelInterval == 0) {
                         this.setFillStyles(this.opts.primaryColor);
                         this.fillRect(curPixel, 0, 1, height1);
