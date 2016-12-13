@@ -157,11 +157,10 @@ export default function(params = {}) {
 
                 const totalWidth = Math.round(this.drawer.wrapper.scrollWidth);
                 const requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
-                let canvas;
                 let i;
 
                 for (i = 0; i < requiredCanvases; i++) {
-                    canvas = this.wrapper.appendChild(document.createElement('canvas'));
+                    const canvas = this.wrapper.appendChild(document.createElement('canvas'));
                     this.canvases.push(canvas);
                     this.style(canvas, {
                         position: 'absolute',
