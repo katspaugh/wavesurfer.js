@@ -23,7 +23,7 @@ export default function(params = {}) {
                 document.querySelector(params.container) : params.container;
 
                 if (!this.container) {
-                    throw Error('No container for WaveSurfer timeline');
+                    throw new Error('No container for WaveSurfer timeline');
                 }
 
                 this.height = this.params.height || 20;
