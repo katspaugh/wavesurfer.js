@@ -1,8 +1,8 @@
 import * as util from './util';
 import Canvas from './drawer.canvas';
 import MultiCanvas from './drawer.multicanvas';
-import WebAudio from './webaudio';
-import MediaElement from './mediaelement';
+import WebAudio from './backends/webaudio';
+import MediaElement from './backends/mediaelement';
 
 const WaveSurfer = util.extend({}, util.observer, { util }, {
     defaultParams: {

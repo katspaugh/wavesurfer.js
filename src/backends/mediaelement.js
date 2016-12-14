@@ -1,5 +1,5 @@
 import webaudio from './webaudio';
-import * as util from './util';
+import * as util from '../util';
 
 export default util.extend({}, webaudio, {
     init: function (params) {
