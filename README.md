@@ -21,6 +21,9 @@ Yes, if you use the `backend: 'MediaElement'` option. See here: https://wavesurf
 ### Can drawing be done as file loads?
 No. Web Audio needs the whole file to decode it in the browser. You can however load pre-decoded waveform data to draw the waveform immediately. See here: https://wavesurfer-js.org/example/audio-element/ (the "Pre-recoded Peaks" section).
 
+### Is wavesurfer.js ES6-compatible?
+ES6 refactoring is going on in the `next` branch. In the meanwhile, you can import wavesurfer.js as an ES6 module via WebPack as described [here](https://github.com/katspaugh/wavesurfer.js/issues/767#issuecomment-267768714).
+
 ## API in examples
 
 Choose a container:
