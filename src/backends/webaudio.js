@@ -1,4 +1,4 @@
-import * as util from './util';
+import * as util from '../util';
 
 const WebAudio = util.extend({}, util.observer, {
     scriptBufferSize: 256,
