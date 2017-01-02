@@ -6,7 +6,7 @@ module.exports = function (config) {
             'jasmine-matchers'
         ],
         hostname: 'localhost',
-        post: 9876,
+        port: 9876,
         singleRun: true,
         autoWatch: false,
         files: [

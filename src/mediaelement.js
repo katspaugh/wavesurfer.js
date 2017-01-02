@@ -197,9 +197,9 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         }
     },
 
-    getPeaks: function (length) {
+    getPeaks: function (length, start, end) {
         if (this.buffer) {
-            return WaveSurfer.WebAudio.getPeaks.call(this, length);
+            return WaveSurfer.WebAudio.getPeaks.call(this, length, start, end);
         }
         return this.peaks || [];
     },
