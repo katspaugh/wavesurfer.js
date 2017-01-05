@@ -186,7 +186,7 @@ WaveSurfer.Drawer = {
                 this.recenterOnPosition(newPos);
             }
 
-            this.updateProgress(progress);
+            this.updateProgress(progress, true);
         }
     },
 
