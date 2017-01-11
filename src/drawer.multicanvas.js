@@ -157,7 +157,9 @@ export default util.extend({}, drawer, {
 
         let absmax = 1;
         if (this.params.normalize) {
-            absmax = util.max(peaks);
+            var max = util.max(peaks);
+            var min = util.min(peaks);
+            absmax = -min > max ? -min : max;
         }
 
         const scale = length / width;
