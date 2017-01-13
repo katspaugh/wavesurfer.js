@@ -158,7 +158,13 @@ WaveSurfer.Timeline = {
         }
         var pixelsPerSecond = width/duration;
 
-        if (duration <= 0 || isNaN(duration)) { return; }
+        if (duration <= 0 || isNaN(duration)) {
+            var prevTimeline = this.container.querySelector('timeline');
+            if (prevTimeline) {
+                this.container.removeChild(prevTimeline);
+            }
+            return;
+        }
 
         var curPixel = 0,
             curSeconds = 0,
