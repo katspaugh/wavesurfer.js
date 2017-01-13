@@ -158,7 +158,7 @@ WaveSurfer.Timeline = {
         }
         var pixelsPerSecond = width/duration;
 
-        if (duration <= 0) { return; }
+        if (duration <= 0 || isNaN(duration)) { return; }
 
         var curPixel = 0,
             curSeconds = 0,
