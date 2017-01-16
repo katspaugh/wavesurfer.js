@@ -183,7 +183,7 @@ var WaveSurfer = {
         this.fireEvent('interaction', this.seekTo.bind(this, progress));
 
         var paused = this.backend.isPaused();
-        // avoid draw wrong positon while playing backward seeking
+        // avoid draw wrong position while playing backward seeking
         if (!paused) {
             this.backend.pause();
         }
