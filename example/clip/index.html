@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>wavesurfer.js | Clip Example</title>
+    <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+    <!-- Bootstrap -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <!-- wavesurfer.js -->
+    <script src="../../dist/wavesurfer.min.js"></script>
+    <script src="../../plugin/wavesurfer.timeline.js"></script>
+    <script src="../../plugin/wavesurfer.regions.js"></script>
+    <script src="../../plugin/wavesurfer.controls.js"></script>
+    <script src="../../plugin/wavesurfer.clip.js"></script>
+    <!-- Demo -->
+    <script src="main.js"></script>
+
+    <style>
+        .float-right {
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="waveform"></div>
+        <div id="waveform-timeline"></div>
+        <div id="waveform-controls"></div>
+        <div id="waveform-clip"></div>
+    </div>
+
+    <script type="text/html" id="tpl-controls">
+        <div class="row" id="controls">
+            <div class="col-sm-offset-3 col-sm-6 text-center">
+                <div class="btn-group">
+                    <button id="waveform-controls-restart" class="btn btn-custom">
+                        <span title="Restart" class="glyphicon glyphicon-step-backward aligned fa-3x"></span>
+                    </button>
+                    <button id="waveform-controls-backward5" class="btn btn-custom">
+                        <span title="-5 seconds" class="glyphicon glyphicon-fast-backward aligned fa-3x"></span>
+                    </button>
+
+                    <button id="waveform-controls-play" class="btn btn-custom">
+                        <span title="Play" class="glyphicon glyphicon-play aligned fa-3x"></span>
+                    </button>
+                    <button id="waveform-controls-pause" class="btn btn-custom">
+                        <span title="Stop" class="glyphicon glyphicon-stop aligned fa-3x"></span>
+                    </button>
+
+                    <button id="waveform-controls-forward5" class="btn btn-custom">
+                        <span title="+5 seconds" class="glyphicon glyphicon-fast-forward aligned fa-3x"></span>
+                    </button>
+                    <button id="waveform-controls-end" class="btn btn-custom">
+                        <span title="To the end" class="glyphicon glyphicon-step-forward aligned fa-3x"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="row">
+                    <div class="float-right" id="waveform-controls-pos-info">
+                        <span class="cur"></span>/<span class="total"></span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div style="display: inline">
+                        <span id="waveform-controls-volume-up" class="glyphicon glyphicon-volume-up" style="left: 18px; top: 27px; cursor: pointer;"></span>
+                        <span id="waveform-controls-volume-down" class="glyphicon glyphicon-volume-down" style="left: 18px; top: 27px; cursor: pointer; display: none"></span>
+                        <span id="waveform-controls-volume-off" class="glyphicon glyphicon-volume-off" style="left: 18px; top: 27px; cursor: pointer; display: none"></span>
+                        <div style="width: 100px; display: inline-block; margin-left: 20px;">
+                            <input id="waveform-controls-volume" type="text" />
+                        </div>
+                    </div>
+                    <div class="btn-group float-right" style="margin-top: 20px;">
+                        <button id="waveform-controls-zoomup" type="button" class="btn btn-custom" data-method="zoom" data-option="0.1" title="Zoom In">
+                            <span class="docs-tooltip" data-toggle="tooltip" title="zoom in">
+                                <span class="fa fa-search-plus">+</span>
+                            </span>
+                        </button>
+                        <button id="waveform-controls-zoomdown" type="button" class="btn btn-custom" data-method="zoom" data-option="-0.1" title="Zoom Out">
+                            <span class="docs-tooltip" data-toggle="tooltip" title="zoom out">
+                                <span class="fa fa-search-minus">-</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="tpl-clip">
+        <div class="row" id="clip">
+            <div class="row" id="clip-operator">
+                <!--
+                                <div class="col-sm-6 text-center">
+                                    <button id="waveform-clip-segment-start" class="btn btn-dark">设置片段开始点</button>
+                                    <button id="waveform-clip-segment-end" class="btn btn-dark">设置片段结束点</button>
+                                </div>
+                                <div class="col-sm-6 text-center">
+                                    <button id="waveform-clip-region-start" class="btn btn-primary">标记块开始点</button>
+                                    <button id="waveform-clip-region-end" class="btn btn-primary">标记块结束点</button>
+                                </div>
+                -->
+                <div class="text-center">
+                    <button id="waveform-clip-submit" class="btn btn-danger">忽略标记块合并</button>
+                    <button id="waveform-clip-region-submit" class="btn btn-danger">标记块合并</button>
+                    <button id="waveform-clip-reset" class="btn btn-danger">重置</button>
+                </div>
+            </div>
+            <div class="row">
+                <h5 class="text-center">输出成片时应忽略的片段</h5>
+                <table id="region-table" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="col-sm-1"></th>
+                            <th class="col-sm-4">时间</th>
+                            <th class="col-sm-4">长度</th>
+                            <th class="col-sm-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="region-list">
+                        <tr><td>1</td><td></td><td></td><td></td></tr>
+                        <tr><td>2</td><td></td><td></td><td></td></tr>
+                        <tr><td>3</td><td></td><td></td><td></td></tr>
+                        <tr><td>4</td><td></td><td></td><td></td></tr>
+                        <tr><td>5</td><td></td><td></td><td></td></tr>
+                        <tr><td>6</td><td></td><td></td><td></td></tr>
+                        <tr><td>7</td><td></td><td></td><td></td></tr>
+                        <tr><td>8</td><td></td><td></td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </script>
+
+    <script>
+        var wavesurfer = Object.create(WaveSurfer);
+        document.addEventListener('DOMContentLoaded',
+            function () {
+                wavesurfer.init({
+                    container: document.querySelector('#waveform'),
+                    waveColor: '#73879C',
+                    progressColor: '#1ABB9C',
+                    backend: 'MediaElement',
+                    height: 249,
+                    normalize: true
+                });
+
+                wavesurfer.once('ready', function () {
+                    var timeline = Object.create(WaveSurfer.Timeline);
+                    wavesurfer.enableDragSelection({
+                        color: 'hsla(200, 100%, 30%, 0.5)'
+                    });
+
+                    timeline.init({
+                        wavesurfer: wavesurfer,
+                        container: '#waveform-timeline'
+                    });
+
+                    var controls = Object.create(WaveSurfer.Controls);
+                    controls.init({
+                        wavesurfer: wavesurfer,
+                        container: '#waveform-controls',
+                        template: document.querySelector('#tpl-controls').innerHTML
+                    });
+                    //$("#waveform-controls-volume")
+                    //    .ionRangeSlider({
+                    //        from: 100,
+                    //        min: 0,
+                    //        hide_min_max: true,
+                    //        hide_from_to: true
+                    //    });
+
+                    var clip = Object.create(WaveSurfer.Clip);
+                    clip.init({
+                        wavesurfer: wavesurfer,
+                        container: '#waveform-clip',
+                        template: document.querySelector('#tpl-clip').innerHTML,
+                        submit: function (clips) {
+                            console.log(clips);
+                        },
+                        regionSubmit: function (clips) {
+                            console.log(clips);
+                        }
+                    });
+                });
+            });
+
+        function load(url, wfm) {
+            wavesurfer.clearRegions();
+            wavesurfer.util.ajax({
+                responseType: 'arraybuffer',
+                url: wfm
+            }).on('success', function (data) {
+                var arr = new Int16Array(data, 568);
+                wavesurfer.clearRegions();
+                wavesurfer.load(url, arr);
+                wavesurfer.play();
+            });
+        }
+
+        // addRegion(5, 15, 'hsla(200, 100%, 30%, 0.5)');
+        function addRegion(start, end, color) {
+            wavesurfer.addRegion({
+                start: start,
+                end: end,
+                drag: false,
+                color: color
+            });
+        }
+
+        load('http://infomedia-audio.oss-cn-beijing.aliyuncs.com/LoggerFile/20161024/dev_201513220393/ch1/15-11-15.m4a', 'http://infomedia-audio.oss-cn-beijing.aliyuncs.com/LoggerFile/20161024/dev_201513220393/ch1/15-11-15.m4a.wfm');
+    </script>
+</body>
+</html>

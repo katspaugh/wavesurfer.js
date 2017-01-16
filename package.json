@@ -7,7 +7,7 @@
     "example": "example"
   },
   "scripts": {
-    "start": "grunt; ruby -run -e httpd . -p 8080",
+    "start": "grunt && ruby -run -e httpd . -p 8080",
     "test": "grunt test"
   },
   "repository": {
@@ -30,6 +30,7 @@
     "grunt-karma": "2.0.0",
     "grunt-template-jasmine-istanbul": ">=0.3.3",
     "grunt-umd": ">=2.3.5",
+    "jasmine-core": "^2.5.2",
     "karma": "1.3.0",
     "karma-chrome-launcher": "2.0.0",
     "karma-jasmine": "1.0.2",
