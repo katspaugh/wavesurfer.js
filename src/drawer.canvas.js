@@ -194,10 +194,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         }, this);
     },
 
-    updateProgress: function (progress) {
-        var pos = Math.round(
-            this.width * progress
-        ) / this.params.pixelRatio;
+    updateProgress: function (pos) {
         this.style(this.progressWave, { width: pos + 'px' });
     },
 
