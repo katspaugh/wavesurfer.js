@@ -3,6 +3,7 @@ import Canvas from './drawer.canvas';
 import MultiCanvas from './drawer.multicanvas';
 import WebAudio from './webaudio';
 import MediaElement from './mediaelement';
+import PeakCache from './peakcache';
 
 const WaveSurfer = util.extend({}, util.observer, { util }, {
     defaultParams: {
@@ -31,6 +32,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         backend       : 'WebAudio',
         mediaType     : 'audio',
         autoCenter    : true,
+        partialRender : false,
         plugins       : []
     },
 
@@ -42,6 +44,8 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         MediaElement,
         WebAudio
     },
+
+    PeakCache: PeakCache,
 
     init(params) {
         // Extract relevant parameters (or defaults)
@@ -91,6 +95,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         this.registerPlugins(this.params.plugins);
         this.createDrawer();
         this.createBackend();
+        this.createPeakCache();
 
         this.isDestroyed = false;
         return this;
@@ -235,6 +240,9 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
 
         // Relay the scroll event from the drawer
         this.drawer.on('scroll', e => {
+            if (this.params.partialRender) {
+                this.drawBuffer();
+            }
             this.fireEvent('scroll', e);
         });
     },
@@ -265,6 +273,13 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
             this.drawer.progress(this.backend.getPlayedPercents());
             this.fireEvent('audioprocess', time);
         });
+    },
+
+    createPeakCache() {
+        if (this.params.partialRender) {
+            this.peakCache = Object.create(PeakCache);
+            this.peakCache.init();
+        }
     },
 
     getDuration() {
@@ -403,14 +418,30 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         );
         const parentWidth = this.drawer.getWidth();
         let width = nominalWidth;
+        let start = this.drawer.getScrollX();
+        let end = Math.min(start + parentWidth, width);
 
         // Fill container
         if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
             width = parentWidth;
+            start = 0;
+            end = width;
         }
 
-        const peaks = this.backend.getPeaks(width);
-        this.drawer.drawPeaks(peaks, width);
+        let peaks;
+        if (this.params.partialRender) {
+            const newRanges = this.peakCache.addRangeToPeakCache(width, start, end);
+            let i;
+            for (i = 0; i < newRanges.length; i++) {
+                peaks = this.backend.getPeaks(width, newRanges[i][0], newRanges[i][1]);
+                this.drawer.drawPeaks(peaks, width, newRanges[i][0], newRanges[i][1]);
+            }
+        } else {
+            start = 0;
+            end = width;
+            peaks = this.backend.getPeaks(width, start, end);
+            this.drawer.drawPeaks(peaks, width, start, end);
+        }
         this.fireEvent('redraw', peaks, width);
     },
 

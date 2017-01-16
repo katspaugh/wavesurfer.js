@@ -83,13 +83,12 @@ export default util.extend({}, util.observer, {
         this.wrapper.addEventListener('scroll', e => this.fireEvent('scroll', e));
     },
 
-    drawPeaks(peaks, length) {
-        this.resetScroll();
+    drawPeaks(peaks, length, start, end) {
         this.setWidth(length);
 
         this.params.barWidth ?
-            this.drawBars(peaks) :
-            this.drawWave(peaks);
+            this.drawBars(peaks, 0, start, end) :
+            this.drawWave(peaks, 0, start, end);
     },
 
     // Backward compatibility
@@ -135,11 +134,19 @@ export default util.extend({}, util.observer, {
 
     },
 
+    getScrollX() {
+        return Math.round(this.wrapper.scrollLeft * this.params.pixelRatio);
+    },
+
     getWidth() {
         return Math.round(this.container.clientWidth * this.params.pixelRatio);
     },
 
     setWidth(width) {
+        if (this.width == width) {
+            return;
+        }
+
         this.width = width;
 
         if (this.params.fillParent || this.params.scrollParent) {

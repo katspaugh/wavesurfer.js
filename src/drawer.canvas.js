@@ -64,7 +64,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    drawBars(peaks, channelIndex) {
+    drawBars(peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             const channels = peaks;
@@ -79,9 +79,8 @@ export default util.extend({}, drawer, {
         // Bar wave draws the bottom only as a reflection of the top,
         // so we don't need negative values
         const hasMinVals = [].some.call(peaks, val => val < 0);
-        if (hasMinVals) {
-            peaks = [].filter.call(peaks, (_, index) => index % 2 == 0);
-        }
+        // Skip every other value if there are negatives.
+        const peakIndexScale = hasMinVals ? 2 : 1;
 
         // A half-pixel offset makes lines crisp
         const $ = 0.5 / this.params.pixelRatio;
@@ -89,7 +88,7 @@ export default util.extend({}, drawer, {
         const height = this.params.height * this.params.pixelRatio;
         const offsetY = height * channelIndex || 0;
         const halfH = height / 2;
-        const length = peaks.length;
+        const length = peaks.length / peakIndexScale;
         const bar = this.params.barWidth * this.params.pixelRatio;
         const gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
         const step = bar + gap;
@@ -110,14 +109,15 @@ export default util.extend({}, drawer, {
             if (!cc) { return; }
             let i;
 
-            for (i = 0; i < width; i += step) {
-                const h = Math.round(peaks[Math.floor(i * scale)] / absmax * halfH);
+            for (i = (start / scale); i < (end / scale); i += step) {
+                const peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
+                const h = Math.round(peak / absmax * halfH);
                 cc.fillRect(i + $, halfH - h + offsetY, bar + $, h * 2);
             }
         });
     },
 
-    drawWave(peaks, channelIndex) {
+    drawWave(peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             const channels = peaks;
@@ -172,16 +172,16 @@ export default util.extend({}, drawer, {
             let j;
 
             cc.beginPath();
-            cc.moveTo($, halfH + offsetY);
+            cc.moveTo(start * scale + $, halfH + offsetY);
 
-            for (i = 0; i < length; i++) {
+            for (i = start; i < end; i++) {
                 const h = Math.round(peaks[2 * i] / absmax * halfH);
                 cc.lineTo(i * scale + $, halfH - h + offsetY);
             }
 
             // Draw the bottom edge going backwards, to make a single
             // closed hull to fill.
-            for (j = length - 1; j >= 0; j--) {
+            for (j = end - 1; j >= start; j--) {
                 const k = Math.round(peaks[2 * j + 1] / absmax * halfH);
                 cc.lineTo(j * scale + $, halfH - k + offsetY);
             }
