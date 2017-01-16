@@ -34,7 +34,8 @@ var WaveSurfer = {
         renderer      : 'Canvas',
         backend       : 'WebAudio',
         mediaType     : 'audio',
-        autoCenter    : true
+        autoCenter    : true,
+        partialRender : false
     },
 
     init: function (params) {
@@ -77,6 +78,7 @@ var WaveSurfer = {
 
         this.createDrawer();
         this.createBackend();
+        this.createPeakCache();
 
         this.isDestroyed = false;
     },
@@ -101,6 +103,9 @@ var WaveSurfer = {
 
         // Relay the scroll event from the drawer
         this.drawer.on('scroll', function (e) {
+            if (my.params.partialRender) {
+                my.drawBuffer();
+            }
             my.fireEvent('scroll', e);
         });
     },
@@ -132,6 +137,13 @@ var WaveSurfer = {
             my.drawer.progress(my.backend.getPlayedPercents());
             my.fireEvent('audioprocess', time);
         });
+    },
+
+    createPeakCache: function() {
+        if (this.params.partialRender) {
+            this.peakCache = Object.create(WaveSurfer.PeakCache);
+            this.peakCache.init();
+        }
     },
 
     getDuration: function () {
@@ -270,14 +282,28 @@ var WaveSurfer = {
         );
         var parentWidth = this.drawer.getWidth();
         var width = nominalWidth;
+        var start = this.drawer.getScrollX();
+        var end = Math.min(start + parentWidth, width);
 
         // Fill container
         if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
             width = parentWidth;
+            start = 0;
+            end = width;
         }
 
-        var peaks = this.backend.getPeaks(width);
-        this.drawer.drawPeaks(peaks, width);
+        if (this.params.partialRender) {
+            var newRanges = this.peakCache.addRangeToPeakCache(width, start, end);
+            for (var i = 0; i < newRanges.length; i++) {
+              var peaks = this.backend.getPeaks(width, newRanges[i][0], newRanges[i][1]);
+              this.drawer.drawPeaks(peaks, width, newRanges[i][0], newRanges[i][1]);
+            }
+        } else {
+            start = 0;
+            end = width;
+            var peaks = this.backend.getPeaks(width, start, end);
+            this.drawer.drawPeaks(peaks, width, start, end);
+        }
         this.fireEvent('redraw', peaks, width);
     },
 

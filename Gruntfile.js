@@ -25,6 +25,7 @@ module.exports = function (grunt) {
                     'src/mediaelement.js',
                     'src/drawer.js',
                     'src/drawer.*.js',
+                    'src/peakcache.js',
                     'src/html-init.js'
                 ],
                 dest: 'dist/wavesurfer.js'

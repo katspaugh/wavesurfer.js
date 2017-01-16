@@ -137,7 +137,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     },
 
-    drawBars: function (peaks, channelIndex) {
+    drawBars: function (peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -153,8 +153,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         // Bar wave draws the bottom only as a reflection of the top,
         // so we don't need negative values
         var hasMinVals = [].some.call(peaks, function (val) { return val < 0; });
+        // Skip every other value if there are negatives.
+        var peakIndexScale = 1;
         if (hasMinVals) {
-            peaks = [].filter.call(peaks, function (_, index) { return index % 2 == 0; });
+            peakIndexScale = 2;
         }
 
         // A half-pixel offset makes lines crisp
@@ -162,7 +164,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var height = this.params.height * this.params.pixelRatio;
         var offsetY = height * channelIndex || 0;
         var halfH = height / 2;
-        var length = peaks.length;
+        var length = peaks.length / peakIndexScale;
         var bar = this.params.barWidth * this.params.pixelRatio;
         var gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
         var step = bar + gap;
@@ -176,13 +178,14 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         var scale = length / width;
 
-        for (var i = 0; i < width; i += step) {
-            var h = Math.round(peaks[Math.floor(i * scale)] / absmax * halfH);
+        for (var i = (start / scale); i < (end / scale); i += step) {
+            var peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
+            var h = Math.round(peak / absmax * halfH);
             this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
         }
     },
 
-    drawWave: function (peaks, channelIndex) {
+    drawWave: function (peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -218,24 +221,24 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             absmax = -min > max ? -min : max;
         }
 
-        this.drawLine(peaks, absmax, halfH, offsetY);
+        this.drawLine(peaks, absmax, halfH, offsetY, start, end);
 
         // Always draw a median line
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     },
 
-    drawLine: function (peaks, absmax, halfH, offsetY) {
+    drawLine: function (peaks, absmax, halfH, offsetY, start, end) {
         for (var index in this.canvases) {
             var entry = this.canvases[index];
 
             this.setFillStyles(entry);
 
-            this.drawLineToContext(entry, entry.waveCtx, peaks, absmax, halfH, offsetY);
-            this.drawLineToContext(entry, entry.progressCtx, peaks, absmax, halfH, offsetY);
+            this.drawLineToContext(entry, entry.waveCtx, peaks, absmax, halfH, offsetY, start, end);
+            this.drawLineToContext(entry, entry.progressCtx, peaks, absmax, halfH, offsetY, start, end);
         }
     },
 
-    drawLineToContext: function (entry, ctx, peaks, absmax, halfH, offsetY) {
+    drawLineToContext: function (entry, ctx, peaks, absmax, halfH, offsetY, start, end) {
         if (!ctx) { return; }
 
         var length = peaks.length / 2;
@@ -247,19 +250,24 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         var first = Math.round(length * entry.start),
             last = Math.round(length * entry.end);
+        if (first > end || last < start) { return; }
+        var canvasStart = Math.max(first, start);
+        var canvasEnd = Math.min(last, end);
 
         ctx.beginPath();
-        ctx.moveTo(this.halfPixel, halfH + offsetY);
+        ctx.moveTo((canvasStart - first) * scale + this.halfPixel, halfH + offsetY);
 
-        for (var i = first; i < last; i++) {
-            var h = Math.round(peaks[2 * i] / absmax * halfH);
+        for (var i = canvasStart; i < canvasEnd; i++) {
+            var peak = peaks[2 * i] || 0;
+            var h = Math.round(peak / absmax * halfH);
             ctx.lineTo((i - first) * scale + this.halfPixel, halfH - h + offsetY);
         }
 
         // Draw the bottom edge going backwards, to make a single
         // closed hull to fill.
-        for (var i = last - 1; i >= first; i--) {
-            var h = Math.round(peaks[2 * i + 1] / absmax * halfH);
+        for (var i = canvasEnd - 1; i >= canvasStart; i--) {
+            var peak = peaks[2 * i + 1] || 0;
+            var h = Math.round(peak / absmax * halfH);
             ctx.lineTo((i - first) * scale + this.halfPixel, halfH - h + offsetY);
         }
 
@@ -268,7 +276,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     fillRect: function (x, y, width, height) {
-        for (var i in this.canvases) {
+        var startCanvas = Math.floor(x / this.maxCanvasWidth);
+        var endCanvas = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1,
+                                 this.canvases.length);
+        for (var i = startCanvas; i < endCanvas; i++) {
             var entry = this.canvases[i],
                 leftOffset = i * this.maxCanvasWidth;
 

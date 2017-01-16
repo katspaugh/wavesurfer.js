@@ -87,13 +87,12 @@ WaveSurfer.Drawer = {
         });
     },
 
-    drawPeaks: function (peaks, length) {
-        this.resetScroll();
+    drawPeaks: function (peaks, length, start, end) {
         this.setWidth(length);
 
         this.params.barWidth ?
-            this.drawBars(peaks) :
-            this.drawWave(peaks);
+            this.drawBars(peaks, 0, start, end) :
+            this.drawWave(peaks, 0, start, end);
     },
 
     style: function (el, styles) {
@@ -145,11 +144,19 @@ WaveSurfer.Drawer = {
 
     },
 
+    getScrollX: function() {
+        return Math.round(this.wrapper.scrollLeft * this.params.pixelRatio);
+    },
+
     getWidth: function () {
         return Math.round(this.container.clientWidth * this.params.pixelRatio);
     },
 
     setWidth: function (width) {
+        if (this.width == width) {
+          return;
+        }
+
         this.width = width;
 
         if (this.params.fillParent || this.params.scrollParent) {
