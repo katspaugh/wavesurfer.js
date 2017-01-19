@@ -204,7 +204,13 @@ module.exports = {
         "object-curly-newline": "off",
         "object-curly-spacing": "off",
         "object-property-newline": "off",
-        "object-shorthand": "off",
+        "object-shorthand": [
+            "error",
+            "methods",
+            {
+                avoidQuotes: true
+            }
+        ],
         "one-var": [
             "error",
             {

@@ -2,7 +2,7 @@ import drawer from './drawer';
 import * as util from './util';
 
 export default util.extend({}, drawer, {
-    initDrawer: function (params) {
+    initDrawer(params) {
         this.maxCanvasWidth = params.maxCanvasWidth != null ? params.maxCanvasWidth : 4000;
         this.maxCanvasElementWidth = Math.round(this.maxCanvasWidth / this.params.pixelRatio);
 
@@ -17,7 +17,7 @@ export default util.extend({}, drawer, {
         this.canvases = [];
     },
 
-    createElements: function () {
+    createElements() {
         this.progressWave = this.wrapper.appendChild(
             this.style(document.createElement('wave'), {
                 position: 'absolute',
@@ -38,7 +38,7 @@ export default util.extend({}, drawer, {
         this.addCanvas();
     },
 
-    updateSize: function () {
+    updateSize() {
         const totalWidth = Math.round(this.width / this.params.pixelRatio);
         const requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
         let i;
@@ -64,7 +64,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    addCanvas: function () {
+    addCanvas() {
         const entry = {};
         const leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
@@ -94,7 +94,7 @@ export default util.extend({}, drawer, {
         this.canvases.push(entry);
     },
 
-    removeCanvas: function () {
+    removeCanvas() {
         const lastEntry = this.canvases.pop();
         lastEntry.wave.parentElement.removeChild(lastEntry.wave);
         if (this.hasProgressCanvas) {
@@ -102,7 +102,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    updateDimensions: function (entry, width, height) {
+    updateDimensions(entry, width, height) {
         const elementWidth = Math.round(width / this.params.pixelRatio);
         const totalWidth = Math.round(this.width / this.params.pixelRatio);
 
@@ -123,21 +123,21 @@ export default util.extend({}, drawer, {
         }
     },
 
-    clearWave: function () {
+    clearWave() {
         let i;
         for (i in this.canvases) {
             this.clearWaveForEntry(this.canvases[i]);
         }
     },
 
-    clearWaveForEntry: function (entry) {
+    clearWaveForEntry(entry) {
         entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
         if (this.hasProgressCanvas) {
             entry.progressCtx.clearRect(0, 0, entry.progressCtx.canvas.width, entry.progressCtx.canvas.height);
         }
     },
 
-    drawBars: function (peaks, channelIndex) {
+    drawBars(peaks, channelIndex) {
         // Split channels
         if (peaks[0] instanceof Array) {
             const channels = peaks;
@@ -180,7 +180,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    drawWave: function (peaks, channelIndex) {
+    drawWave(peaks, channelIndex) {
         // Split channels
         if (peaks[0] instanceof Array) {
             const channels = peaks;
@@ -223,9 +223,10 @@ export default util.extend({}, drawer, {
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     },
 
-    drawLine: function (peaks, absmax, halfH, offsetY) {
-        for (const index in this.canvases) {
-            const entry = this.canvases[index];
+    drawLine(peaks, absmax, halfH, offsetY) {
+        let i;
+        for (i in this.canvases) {
+            const entry = this.canvases[i];
 
             this.setFillStyles(entry);
 
@@ -234,7 +235,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    drawLineToContext: function (entry, ctx, peaks, absmax, halfH, offsetY) {
+    drawLineToContext(entry, ctx, peaks, absmax, halfH, offsetY) {
         if (!ctx) { return; }
 
         const length = peaks.length / 2;
@@ -268,7 +269,7 @@ export default util.extend({}, drawer, {
         ctx.fill();
     },
 
-    fillRect: function (x, y, width, height) {
+    fillRect(x, y, width, height) {
         let i;
         for (i in this.canvases) {
             const entry = this.canvases[i];
@@ -299,19 +300,19 @@ export default util.extend({}, drawer, {
         }
     },
 
-    fillRectToContext: function (ctx, x, y, width, height) {
+    fillRectToContext(ctx, x, y, width, height) {
         if (!ctx) { return; }
         ctx.fillRect(x, y, width, height);
     },
 
-    setFillStyles: function (entry) {
+    setFillStyles(entry) {
         entry.waveCtx.fillStyle = this.params.waveColor;
         if (this.hasProgressCanvas) {
             entry.progressCtx.fillStyle = this.params.progressColor;
         }
     },
 
-    updateProgress: function (progress) {
+    updateProgress(progress) {
         const pos = Math.round(
             this.width * progress
         ) / this.params.pixelRatio;
