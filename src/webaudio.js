@@ -340,7 +340,10 @@ const WebAudio = util.extend({}, util.observer, {
         this.scheduledPause = end;
 
         this.source.start(0, start, end - start);
-        this.ac.resume();
+
+        if (this.ac.state == 'suspended') {
+          this.ac.resume && this.ac.resume();
+        }
 
         this.setState(this.PLAYING_STATE);
 
