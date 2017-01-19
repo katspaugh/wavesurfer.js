@@ -18,21 +18,22 @@ export default function(params) {
         instance: {
             init(wavesurfer) {
                 this.wavesurfer = wavesurfer;
+                this.style = wavesurfer.util.style;
                 this._onDrawerCreated = () => {
-                    this.drawer = this.wavesurfer.drawer;
-                    this.wrapper = this.drawer.wrapper;
+                    this.drawer = wavesurfer.drawer;
+                    this.wrapper = wavesurfer.drawer.wrapper;
 
-                    this._handleMousemove = (e) => this.updateCursorPosition(this.drawer.handleEvent(e));
-                    this.wrapper.addEventListener('mousemove', this._handleMousemove);
+                    this._onMousemove = e => this.updateCursorPosition(this.drawer.handleEvent(e));
+                    this.wrapper.addEventListener('mousemove', this._onMousemove);
 
-                    this._handleMouseenter = () => this.showCursor();
-                    this.wrapper.addEventListener('mouseenter', this._handleMouseenter);
+                    this._onMouseenter = () => this.showCursor();
+                    this.wrapper.addEventListener('mouseenter', this._onMouseenter);
 
-                    this._handleMouseLeave = () => this.hideCursor();
-                    this.wrapper.addEventListener('mouseleave', this._handleMouseLeave);
+                    this._onMouseleave = () => this.hideCursor();
+                    this.wrapper.addEventListener('mouseleave', this._onMouseleave);
 
                     this.cursor = this.wrapper.appendChild(
-                        this.drawer.style(document.createElement('wave'), {
+                        this.style(document.createElement('wave'), {
                             position: 'absolute',
                             zIndex: 3,
                             left: 0,
@@ -49,31 +50,49 @@ export default function(params) {
                     );
                 };
 
-                if (this.wavesurfer.drawer) {
+                // drawer already existed, just call initialisation code
+                if (wavesurfer.drawer) {
                     this._onDrawerCreated();
                 }
-                this.wavesurfer.on('drawer-created', this._onDrawerCreated);
+
+                // the drawer was initialised, call the initialisation code
+                wavesurfer.on('drawer-created', this._onDrawerCreated);
             },
 
             destroy() {
                 this.wavesurfer.un('drawer-created', this._onDrawerCreated);
-                this.cursor.parentNode.removeChild(this.cursor);
-                this.wrapper.removeEventListener('mousemove', this._handleMousemove);
-                this.wrapper.removeEventListener('mouseenter', this._handleMouseenter);
-                this.wrapper.removeEventListener('mouseleave', this._handleMouseLeave);
+
+                // if cursor was appended, remove it
+                if (this.cursor) {
+                    this.cursor.parentNode.removeChild(this.cursor);
+                }
+
+                // if the drawer existed (the cached version referenced in the init code),
+                // remove the event listeners attached to it
+                if (this.drawer) {
+                    this.wrapper.removeEventListener('mousemove', this._onMousemove);
+                    this.wrapper.removeEventListener('mouseenter', this._onMouseenter);
+                    this.wrapper.removeEventListener('mouseleave', this._onMouseleave);
+                }
             },
 
             updateCursorPosition(progress) {
                 const pos = Math.round(this.drawer.width * progress) / this.drawer.params.pixelRatio - 1;
-                this.drawer.style(this.cursor, { left: pos + 'px' });
+                this.style(this.cursor, {
+                    left: `${pos}px`
+                });
             },
 
             showCursor() {
-                this.drawer.style(this.cursor, { display: 'block' });
+                this.style(this.cursor, {
+                    display: 'block'
+                });
             },
 
             hideCursor() {
-                this.drawer.style(this.cursor, { display: 'none' });
+                this.style(this.cursor, {
+                    display: 'none'
+                });
             }
         }
     };
