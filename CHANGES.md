@@ -1,6 +1,13 @@
 wavesurfer.js changelog
 =======================
 
+1.3.0 (19.01.2017)
+------------------
+- MultiCanvas is now the default renderer. Single Canvas will be soon removed.
+- Fix backward seeking with Media Element (#918)
+- Fix normalize + bar-style waveform (#916)
+- New option `partialRender` for better performance with high zoom (#909)
+
 1.2.8 (09.12.2016)
 ------------------
 - PhantomJS support with the MediaElement backend (#875)

@@ -31,7 +31,7 @@ var WaveSurfer = {
         splitChannels : false,
         mediaContainer: null,
         mediaControls : false,
-        renderer      : 'Canvas',
+        renderer      : 'MultiCanvas',
         backend       : 'WebAudio',
         mediaType     : 'audio',
         autoCenter    : true,
