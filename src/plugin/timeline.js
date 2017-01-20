@@ -22,7 +22,7 @@ export default function(params = {}) {
                     throw new Error('No container for WaveSurfer timeline');
                 }
 
-                this.opts = wavesurfer.util.extend({}, {
+                this.params = wavesurfer.util.extend({}, {
                     height: 20,
                     notchPercentHeight: 90,
                     primaryColor: '#000',
@@ -122,7 +122,7 @@ export default function(params = {}) {
                     position: 'relative',
                     userSelect: 'none',
                     webkitUserSelect: 'none',
-                    height: `${this.opts.height}px`
+                    height: `${this.params.height}px`
                 });
 
                 if (wsParams.fillParent || wsParams.scrollParent) {
@@ -184,10 +184,10 @@ export default function(params = {}) {
                     }
 
                     canvas.width = canvasWidth * this.pixelRatio;
-                    canvas.height = this.opts.height * this.pixelRatio;
+                    canvas.height = this.params.height * this.pixelRatio;
                     this.style(canvas, {
                         width: `${canvasWidth}px`,
-                        height: `${this.opts.height}px`,
+                        height: `${this.params.height}px`,
                         left: `${i * this.maxCanvasElementWidth}px`
                     });
                 }
@@ -202,13 +202,13 @@ export default function(params = {}) {
                     : this.drawer.wrapper.scrollWidth * wsParams.pixelRatio;
                 const pixelsPerSecond = width / duration;
 
-                const formatTime = this.opts.formatTimeCallback;
+                const formatTime = this.params.formatTimeCallback;
                 // if parameter is function, call the function with
                 // pixelsPerSecond, otherwise simply take the value as-is
                 const intervalFnOrVal = option => (typeof option === 'function' ? option(pixelsPerSecond) : option);
-                const timeInterval = intervalFnOrVal(this.opts.timeInterval);
-                const primaryLabelInterval = intervalFnOrVal(this.opts.primaryLabelInterval);
-                const secondaryLabelInterval = intervalFnOrVal(this.opts.secondaryLabelInterval);
+                const timeInterval = intervalFnOrVal(this.params.timeInterval);
+                const primaryLabelInterval = intervalFnOrVal(this.params.primaryLabelInterval);
+                const secondaryLabelInterval = intervalFnOrVal(this.params.secondaryLabelInterval);
 
                 let curPixel = 0;
                 let curSeconds = 0;
@@ -217,26 +217,26 @@ export default function(params = {}) {
                     return;
                 }
 
-                const height1 = this.opts.height - 4;
-                const height2 = (this.opts.height * (this.opts.notchPercentHeight / 100)) - 4;
-                const fontSize = this.opts.fontSize * wsParams.pixelRatio;
+                const height1 = this.params.height - 4;
+                const height2 = (this.params.height * (this.params.notchPercentHeight / 100)) - 4;
+                const fontSize = this.params.fontSize * wsParams.pixelRatio;
                 let i;
 
                 for (i = 0; i < totalSeconds / timeInterval; i++) {
                     if (i % primaryLabelInterval == 0) {
-                        this.setFillStyles(this.opts.primaryColor);
+                        this.setFillStyles(this.params.primaryColor);
                         this.fillRect(curPixel, 0, 1, height1);
-                        this.setFonts(`${fontSize}px ${this.opts.fontFamily}`);
-                        this.setFillStyles(this.opts.primaryFontColor);
+                        this.setFonts(`${fontSize}px ${this.params.fontFamily}`);
+                        this.setFillStyles(this.params.primaryFontColor);
                         this.fillText(formatTime(curSeconds), curPixel + 5, height1);
                     } else if (i % secondaryLabelInterval == 0) {
-                        this.setFillStyles(this.opts.secondaryColor);
+                        this.setFillStyles(this.params.secondaryColor);
                         this.fillRect(curPixel, 0, 1, height1);
-                        this.setFonts(`${fontSize}px ${this.opts.fontFamily}`);
-                        this.setFillStyles(this.opts.secondaryFontColor);
+                        this.setFonts(`${fontSize}px ${this.params.fontFamily}`);
+                        this.setFillStyles(this.params.secondaryFontColor);
                         this.fillText(formatTime(curSeconds), curPixel + 5, height1);
                     } else {
-                        this.setFillStyles(this.opts.secondaryColor);
+                        this.setFillStyles(this.params.secondaryColor);
                         this.fillRect(curPixel, 0, 1, height2);
                     }
 
