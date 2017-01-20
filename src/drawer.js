@@ -1,7 +1,7 @@
 import * as util from './util';
 
 export default util.extend({}, util.observer, {
-    init: function (container, params) {
+    init(container, params) {
         this.container = container;
         this.params = params;
 
@@ -15,7 +15,7 @@ export default util.extend({}, util.observer, {
         this.createElements();
     },
 
-    createWrapper: function () {
+    createWrapper() {
         this.wrapper = this.container.appendChild(
             document.createElement('wave')
         );
@@ -39,7 +39,7 @@ export default util.extend({}, util.observer, {
         this.setupWrapperEvents();
     },
 
-    handleEvent: function (e, noPrevent) {
+    handleEvent(e, noPrevent) {
         !noPrevent && e.preventDefault();
 
         const clientX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
@@ -63,7 +63,7 @@ export default util.extend({}, util.observer, {
         return progress;
     },
 
-    setupWrapperEvents: function () {
+    setupWrapperEvents() {
         this.wrapper.addEventListener('click', e => {
             const scrollbarHeight = this.wrapper.offsetHeight - this.wrapper.clientHeight;
             if (scrollbarHeight != 0) {
@@ -83,7 +83,7 @@ export default util.extend({}, util.observer, {
         this.wrapper.addEventListener('scroll', e => this.fireEvent('scroll', e));
     },
 
-    drawPeaks: function (peaks, length) {
+    drawPeaks(peaks, length) {
         this.resetScroll();
         this.setWidth(length);
 
@@ -95,18 +95,18 @@ export default util.extend({}, util.observer, {
     // Backward compatibility
     style: util.style,
 
-    resetScroll: function () {
+    resetScroll() {
         if (this.wrapper !== null) {
             this.wrapper.scrollLeft = 0;
         }
     },
 
-    recenter: function (percent) {
+    recenter(percent) {
         const position = this.wrapper.scrollWidth * percent;
         this.recenterOnPosition(position, true);
     },
 
-    recenterOnPosition: function (position, immediate) {
+    recenterOnPosition(position, immediate) {
         const scrollLeft = this.wrapper.scrollLeft;
         const half = ~~(this.wrapper.clientWidth / 2);
         const maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
@@ -135,11 +135,11 @@ export default util.extend({}, util.observer, {
 
     },
 
-    getWidth: function () {
+    getWidth() {
         return Math.round(this.container.clientWidth * this.params.pixelRatio);
     },
 
-    setWidth: function (width) {
+    setWidth(width) {
         this.width = width;
 
         if (this.params.fillParent || this.params.scrollParent) {
@@ -155,7 +155,7 @@ export default util.extend({}, util.observer, {
         this.updateSize();
     },
 
-    setHeight: function (height) {
+    setHeight(height) {
         if (height == this.height) { return; }
         this.height = height;
         this.style(this.wrapper, {
@@ -164,7 +164,7 @@ export default util.extend({}, util.observer, {
         this.updateSize();
     },
 
-    progress: function (progress) {
+    progress(progress) {
         const minPxDelta = 1 / this.params.pixelRatio;
         const pos = Math.round(progress * this.width) * minPxDelta;
 
@@ -180,7 +180,7 @@ export default util.extend({}, util.observer, {
         }
     },
 
-    destroy: function () {
+    destroy() {
         this.unAll();
         if (this.wrapper) {
             this.container.removeChild(this.wrapper);
@@ -189,15 +189,15 @@ export default util.extend({}, util.observer, {
     },
 
     /* Renderer-specific methods */
-    initDrawer: function () {},
+    initDrawer() {},
 
-    createElements: function () {},
+    createElements() {},
 
-    updateSize: function () {},
+    updateSize() {},
 
-    drawWave: function (peaks, max) {},
+    drawWave(peaks, max) {},
 
-    clearWave: function () {},
+    clearWave() {},
 
-    updateProgress: function (position) {}
+    updateProgress(position) {}
 });

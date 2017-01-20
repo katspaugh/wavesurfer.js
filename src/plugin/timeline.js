@@ -10,7 +10,8 @@ export default function(params = {}) {
         deferInit: params && params.deferInit ? params.deferInit : false,
         extends: ['observer'],
         instance: {
-            init: function (wavesurfer) {
+            init(wavesurfer) {
+                this.params = params;
                 this.wavesurfer = wavesurfer;
                 this.style = wavesurfer.util.style;
 
@@ -101,7 +102,7 @@ export default function(params = {}) {
                 wavesurfer.on('ready', this._onReady);
             },
 
-            destroy: function () {
+            destroy() {
                 this.unAll();
                 this.wavesurfer.un('redraw', this._onRedraw);
                 this.wavesurfer.un('ready', this._onReady);
@@ -112,7 +113,7 @@ export default function(params = {}) {
                 }
             },
 
-            createWrapper: function () {
+            createWrapper() {
                 const wsParams = this.wavesurfer.params;
                 this.wrapper = this.container.appendChild(
                     document.createElement('timeline')
@@ -142,14 +143,14 @@ export default function(params = {}) {
                 this.wrapper.addEventListener('click', this._onClick);
             },
 
-            removeOldCanvases: function () {
+            removeOldCanvases() {
                 while (this.canvases.length > 0) {
                     const canvas = this.canvases.pop();
                     canvas.parentElement.removeChild(canvas);
                 }
             },
 
-            createCanvases: function () {
+            createCanvases() {
                 this.removeOldCanvases();
 
                 const totalWidth = Math.round(this.drawer.wrapper.scrollWidth);
@@ -166,13 +167,13 @@ export default function(params = {}) {
                 }
             },
 
-            render: function () {
+            render() {
                 this.createCanvases();
                 this.updateCanvasStyle();
                 this.drawTimeCanvases();
             },
 
-            updateCanvasStyle: function () {
+            updateCanvasStyle() {
                 const requiredCanvases = this.canvases.length;
                 let i;
                 for (i = 0; i < requiredCanvases; i++) {
@@ -193,7 +194,8 @@ export default function(params = {}) {
                 }
             },
 
-            drawTimeCanvases: function() {
+            drawTimeCanvases() {
+                const backend = this.wavesurfer.backend;
                 const wsParams = this.wavesurfer.params;
                 const duration = this.wavesurfer.backend.getDuration();
                 const totalSeconds = parseInt(duration, 10) + 1;
@@ -245,21 +247,21 @@ export default function(params = {}) {
                 }
             },
 
-            setFillStyles: function (fillStyle) {
+            setFillStyles(fillStyle) {
                 let i;
                 for (i in this.canvases) {
                     this.canvases[i].getContext('2d').fillStyle = fillStyle;
                 }
             },
 
-            setFonts: function (font) {
+            setFonts(font) {
                 let i;
                 for (i in this.canvases) {
                     this.canvases[i].getContext('2d').font = font;
                 }
             },
 
-            fillRect: function (x, y, width, height) {
+            fillRect(x, y, width, height) {
                 let i;
                 for (i in this.canvases) {
                     const canvas = this.canvases[i];
@@ -283,7 +285,7 @@ export default function(params = {}) {
                 }
             },
 
-            fillText: function (text, x, y) {
+            fillText(text, x, y) {
                 let textWidth;
                 let xOffset = 0;
                 let i;

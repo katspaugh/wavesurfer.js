@@ -6,11 +6,11 @@ const WebAudio = util.extend({}, util.observer, {
     PAUSED_STATE: 1,
     FINISHED_STATE: 2,
 
-    supportsWebAudio: function () {
+    supportsWebAudio() {
         return !!(window.AudioContext || window.webkitAudioContext);
     },
 
-    getAudioContext: function () {
+    getAudioContext() {
         if (!this.audioContext) {
             this.audioContext = new (
                 window.AudioContext || window.webkitAudioContext
@@ -19,7 +19,7 @@ const WebAudio = util.extend({}, util.observer, {
         return this.audioContext;
     },
 
-    getOfflineAudioContext: function (sampleRate) {
+    getOfflineAudioContext(sampleRate) {
         if (!this.offlineAudioContext) {
             this.offlineAudioContext = new (
                 window.OfflineAudioContext || window.webkitOfflineAudioContext
@@ -28,7 +28,7 @@ const WebAudio = util.extend({}, util.observer, {
         return this.offlineAudioContext;
     },
 
-    init: function (params) {
+    init(params) {
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
 
@@ -50,7 +50,7 @@ const WebAudio = util.extend({}, util.observer, {
         this.setPlaybackRate(this.params.audioRate);
     },
 
-    disconnectFilters: function () {
+    disconnectFilters() {
         if (this.filters) {
             this.filters.forEach(filter => {
                 filter && filter.disconnect();
@@ -61,7 +61,7 @@ const WebAudio = util.extend({}, util.observer, {
         }
     },
 
-    setState: function (state) {
+    setState(state) {
         if (this.state !== this.states[state]) {
             this.state = this.states[state];
             this.state.init.call(this);
@@ -69,14 +69,14 @@ const WebAudio = util.extend({}, util.observer, {
     },
 
     // Unpacked filters
-    setFilter: function (...filters) {
+    setFilter(...filters) {
         this.setFilters(filters);
     },
 
     /**
      * @param {Array} filters Packed ilters array
      */
-    setFilters: function (filters) {
+    setFilters(filters) {
         // Remove existing filters
         this.disconnectFilters();
 
@@ -96,7 +96,7 @@ const WebAudio = util.extend({}, util.observer, {
 
     },
 
-    createScriptNode: function () {
+    createScriptNode() {
         if (this.ac.createScriptProcessor) {
             this.scriptNode = this.ac.createScriptProcessor(this.scriptBufferSize);
         } else {
@@ -106,7 +106,7 @@ const WebAudio = util.extend({}, util.observer, {
         this.scriptNode.connect(this.ac.destination);
     },
 
-    addOnAudioProcess: function () {
+    addOnAudioProcess() {
         this.scriptNode.onaudioprocess = () => {
             const time = this.getCurrentTime();
 
@@ -121,11 +121,11 @@ const WebAudio = util.extend({}, util.observer, {
         };
     },
 
-    removeOnAudioProcess: function () {
+    removeOnAudioProcess() {
         this.scriptNode.onaudioprocess = null;
     },
 
-    createAnalyserNode: function () {
+    createAnalyserNode() {
         this.analyser = this.ac.createAnalyser();
         this.analyser.connect(this.gainNode);
     },
@@ -133,7 +133,7 @@ const WebAudio = util.extend({}, util.observer, {
     /**
      * Create the gain node needed to control the playback volume.
      */
-    createVolumeNode: function () {
+    createVolumeNode() {
         // Create gain node using the AudioContext
         if (this.ac.createGain) {
             this.gainNode = this.ac.createGain();
@@ -150,7 +150,7 @@ const WebAudio = util.extend({}, util.observer, {
      * @param {Number} newGain The new gain, a floating point value
      * between 0 and 1. 0 being no gain and 1 being maximum gain.
      */
-    setVolume: function (newGain) {
+    setVolume(newGain) {
         this.gainNode.gain.value = newGain;
     },
 
@@ -160,11 +160,11 @@ const WebAudio = util.extend({}, util.observer, {
      * @returns {Number} The current gain, a floating point value
      * between 0 and 1. 0 being no gain and 1 being maximum gain.
      */
-    getVolume: function () {
+    getVolume() {
         return this.gainNode.gain.value;
     },
 
-    decodeArrayBuffer: function (arraybuffer, callback, errback) {
+    decodeArrayBuffer(arraybuffer, callback, errback) {
         if (!this.offlineAc) {
             this.offlineAc = this.getOfflineAudioContext(this.ac ? this.ac.sampleRate : 44100);
         }
@@ -174,7 +174,7 @@ const WebAudio = util.extend({}, util.observer, {
     /**
      * Set pre-decoded peaks.
      */
-    setPeaks: function (peaks) {
+    setPeaks(peaks) {
         this.peaks = peaks;
     },
 
@@ -185,7 +185,7 @@ const WebAudio = util.extend({}, util.observer, {
      * @returns {Array} Array of 2*<length> peaks or array of arrays
      * of peaks consisting of (max, min) values for each subrange.
      */
-    getPeaks: function (length) {
+    getPeaks(length) {
         if (this.peaks) { return this.peaks; }
 
         const sampleSize = this.buffer.length / length;
@@ -235,17 +235,17 @@ const WebAudio = util.extend({}, util.observer, {
         return this.params.splitChannels ? splitPeaks : mergedPeaks;
     },
 
-    getPlayedPercents: function () {
+    getPlayedPercents() {
         return this.state.getPlayedPercents.call(this);
     },
 
-    disconnectSource: function () {
+    disconnectSource() {
         if (this.source) {
             this.source.disconnect();
         }
     },
 
-    destroy: function () {
+    destroy() {
         if (!this.isPaused()) {
             this.pause();
         }
@@ -258,14 +258,14 @@ const WebAudio = util.extend({}, util.observer, {
         this.analyser.disconnect();
     },
 
-    load: function (buffer) {
+    load(buffer) {
         this.startPosition = 0;
         this.lastPlay = this.ac.currentTime;
         this.buffer = buffer;
         this.createSource();
     },
 
-    createSource: function () {
+    createSource() {
         this.disconnectSource();
         this.source = this.ac.createBufferSource();
 
@@ -278,18 +278,18 @@ const WebAudio = util.extend({}, util.observer, {
         this.source.connect(this.analyser);
     },
 
-    isPaused: function () {
+    isPaused() {
         return this.state !== this.states[this.PLAYING_STATE];
     },
 
-    getDuration: function () {
+    getDuration() {
         if (!this.buffer) {
             return 0;
         }
         return this.buffer.duration;
     },
 
-    seekTo: function (start, end) {
+    seekTo(start, end) {
         if (!this.buffer) { return; }
 
         this.scheduledPause = null;
@@ -311,10 +311,13 @@ const WebAudio = util.extend({}, util.observer, {
             this.setState(this.PAUSED_STATE);
         }
 
-        return { start: start, end: end };
+        return {
+            start: start,
+            end: end
+        };
     },
 
-    getPlayedTime: function () {
+    getPlayedTime() {
         return (this.ac.currentTime - this.lastPlay) * this.playbackRate;
     },
 
@@ -326,7 +329,7 @@ const WebAudio = util.extend({}, util.observer, {
      * @param {Number} end When to stop
      * relative to the beginning of a clip.
      */
-    play: function (start, end) {
+    play(start, end) {
         if (!this.buffer) { return; }
 
         // need to re-create source on each playback
@@ -340,7 +343,10 @@ const WebAudio = util.extend({}, util.observer, {
         this.scheduledPause = end;
 
         this.source.start(0, start, end - start);
-        this.ac.resume();
+
+        if (this.ac.state == 'suspended') {
+          this.ac.resume && this.ac.resume();
+        }
 
         this.setState(this.PLAYING_STATE);
 
@@ -350,7 +356,7 @@ const WebAudio = util.extend({}, util.observer, {
     /**
      * Pauses the loaded audio.
      */
-    pause: function () {
+    pause() {
         this.scheduledPause = null;
 
         this.startPosition += this.getPlayedTime();
@@ -364,14 +370,14 @@ const WebAudio = util.extend({}, util.observer, {
     /**
     *   Returns the current time in seconds relative to the audioclip's duration.
     */
-    getCurrentTime: function () {
+    getCurrentTime() {
         return this.state.getCurrentTime.call(this);
     },
 
     /**
      * Set the audio source playback rate.
      */
-    setPlaybackRate: function (value) {
+    setPlaybackRate(value) {
         value = value || 1;
         if (this.isPaused()) {
             this.playbackRate = value;
@@ -386,40 +392,40 @@ const WebAudio = util.extend({}, util.observer, {
 WebAudio.state = {};
 
 WebAudio.state.playing = {
-    init: function () {
+    init() {
         this.addOnAudioProcess();
     },
-    getPlayedPercents: function () {
+    getPlayedPercents() {
         const duration = this.getDuration();
         return (this.getCurrentTime() / duration) || 0;
     },
-    getCurrentTime: function () {
+    getCurrentTime() {
         return this.startPosition + this.getPlayedTime();
     }
 };
 
 WebAudio.state.paused = {
-    init: function () {
+    init() {
         this.removeOnAudioProcess();
     },
-    getPlayedPercents: function () {
+    getPlayedPercents() {
         const duration = this.getDuration();
         return (this.getCurrentTime() / duration) || 0;
     },
-    getCurrentTime: function () {
+    getCurrentTime() {
         return this.startPosition;
     }
 };
 
 WebAudio.state.finished = {
-    init: function () {
+    init() {
         this.removeOnAudioProcess();
         this.fireEvent('finish');
     },
-    getPlayedPercents: function () {
+    getPlayedPercents() {
         return 1;
     },
-    getCurrentTime: function () {
+    getCurrentTime() {
         return this.getDuration();
     }
 };

@@ -15,7 +15,7 @@ export default function(params = {}) {
                 REF_ANNOTATION: 'REF_ANNOTATION'
             },
 
-            init: function (wavesurfer) {
+            init(wavesurfer) {
                 this.data = null;
                 this.params = params;
                 this.container = 'string' == typeof params.container ?
@@ -32,12 +32,12 @@ export default function(params = {}) {
                 }
             },
 
-            destroy: function() {
+            destroy() {
                 this.container.removeEventListener('click', this._onClick);
                 this.container.removeChild(this.table);
             },
 
-            load: function (url) {
+            load(url) {
                 this.loadXML(url, xml => {
                     this.data = this.parseElan(xml);
                     this.render();
@@ -45,7 +45,7 @@ export default function(params = {}) {
                 });
             },
 
-            loadXML: function (url, callback) {
+            loadXML(url, callback) {
                 const xhr = new XMLHttpRequest();
                 xhr.open('GET', url, true);
                 xhr.responseType = 'document';
@@ -55,7 +55,7 @@ export default function(params = {}) {
                 });
             },
 
-            parseElan: function (xml) {
+            parseElan(xml) {
                 const _forEach = Array.prototype.forEach;
                 const _map = Array.prototype.map;
 
@@ -137,7 +137,7 @@ export default function(params = {}) {
                 return data;
             },
 
-            render: function () {
+            render() {
                 // apply tiers filter
                 let tiers = this.data.tiers;
                 if (this.params.tiers) {
@@ -175,7 +175,7 @@ export default function(params = {}) {
                 th.textContent = 'Time';
                 th.className = 'wavesurfer-time';
                 headRow.appendChild(th);
-                indeces.forEach(function (index) {
+                indeces.forEach(index => {
                     const tier = tiers[index];
                     const th = document.createElement('th');
                     th.className = 'wavesurfer-tier-' + tier.id;
@@ -219,7 +219,7 @@ export default function(params = {}) {
                 this.container.appendChild(table);
             },
 
-            bindClick: function () {
+            bindClick() {
                 this._onClick = e => {
                     const ref = e.target.dataset.ref;
                     if (null != ref) {
@@ -232,7 +232,7 @@ export default function(params = {}) {
                 this.container.addEventListener('click', this._onClick);
             },
 
-            getRenderedAnnotation: function (time) {
+            getRenderedAnnotation(time) {
                 let result;
                 this.renderedAlignable.some(annotation => {
                     if (annotation.start <= time && annotation.end >= time) {
@@ -244,7 +244,7 @@ export default function(params = {}) {
                 return result;
             },
 
-            getAnnotationNode: function (annotation) {
+            getAnnotationNode(annotation) {
                 return document.getElementById(
                     'wavesurfer-alignable-' + annotation.id
                 );

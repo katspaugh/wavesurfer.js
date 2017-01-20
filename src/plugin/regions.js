@@ -1,5 +1,5 @@
 const Region = {
-    init: function (params, wavesurfer) {
+    init(params, wavesurfer) {
         this.wavesurfer = wavesurfer;
         this.wrapper = wavesurfer.drawer.wrapper;
         this.style = wavesurfer.util.style;
@@ -28,7 +28,7 @@ const Region = {
     },
 
     /* Update region params. */
-    update: function (params) {
+    update(params) {
         if (null != params.start) {
             this.start = Number(params.start);
         }
@@ -66,7 +66,7 @@ const Region = {
     },
 
     /* Remove a single region. */
-    remove: function () {
+    remove() {
         if (this.element) {
             this.wrapper.removeChild(this.element);
             this.element = null;
@@ -77,20 +77,20 @@ const Region = {
     },
 
     /* Play the audio region. */
-    play: function () {
+    play() {
         this.wavesurfer.play(this.start, this.end);
         this.fireEvent('play');
         this.wavesurfer.fireEvent('region-play', this);
     },
 
     /* Play the region in loop. */
-    playLoop: function () {
+    playLoop() {
         this.play();
         this.once('out', () => this.playLoop());
     },
 
     /* Render a region as a DOM element. */
-    render: function () {
+    render() {
         const regionEl = document.createElement('region');
         regionEl.className = 'wavesurfer-region';
         regionEl.title = this.formatTime(this.start, this.end);
@@ -135,7 +135,7 @@ const Region = {
         this.bindEvents(regionEl);
     },
 
-    formatTime: function (start, end) {
+    formatTime(start, end) {
         return (start == end ? [start] : [start, end]).map(time => [
             Math.floor((time % 3600) / 60), // minutes
             ('00' + Math.floor(time % 60)).slice(-2) // seconds
@@ -143,7 +143,7 @@ const Region = {
     },
 
     /* Update element's position, width, color. */
-    updateRender: function (pxPerSec) {
+    updateRender(pxPerSec) {
         const dur = this.wavesurfer.getDuration();
         let width;
         if (pxPerSec) {
@@ -192,7 +192,7 @@ const Region = {
     },
 
     /* Bind audio events. */
-    bindInOut: function () {
+    bindInOut() {
         this.firedIn = false;
         this.firedOut = false;
 
@@ -226,7 +226,7 @@ const Region = {
     },
 
     /* Bind DOM events. */
-    bindEvents: function () {
+    bindEvents() {
         this.element.addEventListener('mouseenter', e => {
             this.fireEvent('mouseenter', e);
             this.wavesurfer.fireEvent('region-mouseenter', this, e);
@@ -331,7 +331,7 @@ const Region = {
         })();
     },
 
-    onDrag: function (delta) {
+    onDrag(delta) {
         const maxEnd = this.wavesurfer.getDuration();
         if ((this.end + delta) > maxEnd || (this.start + delta) < 0) {
             return;
@@ -343,7 +343,7 @@ const Region = {
         });
     },
 
-    onResize: function (delta, direction) {
+    onResize(delta, direction) {
         if (direction == 'start') {
             this.update({
                 start: Math.min(this.start + delta, this.end),
@@ -398,7 +398,7 @@ export default function(params = {}) {
             }
         },
         instance: {
-            init: function (wavesurfer) {
+            init(wavesurfer) {
                 this.params = params;
                 this.wavesurfer = wavesurfer;
 
@@ -432,7 +432,7 @@ export default function(params = {}) {
                 this.clear();
             },
             /* Add a region. */
-            add: function (params) {
+            add(params) {
                 const region = Object.create(this.wavesurfer.Region);
                 region.init(params, this.wavesurfer);
 
@@ -446,13 +446,13 @@ export default function(params = {}) {
             },
 
             /* Remove all regions. */
-            clear: function () {
+            clear() {
                 Object.keys(this.list).forEach(id => {
                     this.list[id].remove();
                 });
             },
 
-            enableDragSelection: function (params) {
+            enableDragSelection(params) {
                 const slop = params.slop || 2;
                 let drag;
                 let start;
@@ -521,7 +521,7 @@ export default function(params = {}) {
                 });
             },
 
-            disableDragSelection: function () {
+            disableDragSelection() {
                 this.fireEvent('disable-drag-selection');
             }
         }
