@@ -39,8 +39,8 @@
     "karma-jasmine": "1.0.2",
     "karma-jasmine-matchers": "3.0.1",
     "karma-webpack": "^1.8.0",
-    "webpack": "^2.1.0-beta.25",
-    "webpack-dev-server": "^2.1.0-beta.9"
+    "webpack": "2",
+    "webpack-dev-server": "2"
   },
   "homepage": "https://github.com/katspaugh/wavesurfer.js"
 }
