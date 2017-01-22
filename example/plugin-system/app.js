@@ -110,7 +110,5 @@ document.addEventListener('DOMContentLoaded', function () {
         wavesurfer.on('error', hideProgress);
     }());
 
-
-
-    wavesurfer.load('../../media/demo.wav');
+    wavesurfer.load('../media/demo.wav');
 });
