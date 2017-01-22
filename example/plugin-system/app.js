@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ]
         },
         elan: {
-            url: 'transcripts/001z.xml',
+            url: '../elan/transcripts/001z.xml',
             container: '#annotations',
             tiers: {
                 Text: true,
