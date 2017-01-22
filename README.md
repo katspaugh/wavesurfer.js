@@ -66,40 +66,36 @@ For a list of  projects using wavesurfer.js, check out
 [![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg)]()
 [![Build Status](https://travis-ci.org/katspaugh/wavesurfer.js.svg?branch=master)](https://travis-ci.org/katspaugh/wavesurfer.js)
 
-Install `grunt-cli` using npm:
-
-```
-npm install -g grunt-cli
-```
-
 Install development dependencies:
 
 ```
 npm install
 ```
+Development tasks automatically rebuild certain parts of the library when files are changed (`start` – wavesurfer, `start:plugins` – plugins). Start a dev task and go to `localhost:8080/example/` to test the current build.
 
-Build a minified version of the library and plugins. This command also checks
-for code-style mistakes and runs the tests:
+Start development server for core library:
 
 ```
-grunt
+npm run start
 ```
 
-Generated files are placed in the `dist` directory.
+Start development server for plugins:
+
+```
+npm run start:plugins
+```
+
+Build all the files. (generated files are placed in the `dist` directory.)
+
+```
+npm run build
+```
 
 Running tests only:
 
 ```
-grunt test
+npm run test
 ```
-
-Creating a coverage report:
-
-```
-grunt coverage
-```
-
-The HTML report can be found in `coverage/html/index.html`.
 
 ## Editing documentation
 The homepage and the documentation are in the [`gh-pages` branch](https://github.com/katspaugh/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
