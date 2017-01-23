@@ -312,10 +312,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    updateProgress(progress) {
-        const pos = Math.round(
-            this.width * progress
-        ) / this.params.pixelRatio;
+    updateProgress(pos) {
         this.style(this.progressWave, { width: pos + 'px' });
     }
 });

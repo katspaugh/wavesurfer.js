@@ -176,7 +176,7 @@ export default util.extend({}, util.observer, {
                 this.recenterOnPosition(newPos);
             }
 
-            this.updateProgress(progress);
+            this.updateProgress(pos);
         }
     },
 
