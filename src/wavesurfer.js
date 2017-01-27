@@ -242,7 +242,7 @@ var WaveSurfer = {
      * Get the playback rate.
      */
     getPlaybackRate: function () {
-        this.backend.getPlaybackRate();
+        this.backend.playbackRate;
     },
 
     /**
