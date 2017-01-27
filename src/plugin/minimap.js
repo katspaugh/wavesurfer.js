@@ -19,20 +19,30 @@ export default function(params = {}) {
         instance: {
             init(wavesurfer) {
                 this.wavesurfer = wavesurfer;
+
+                this.params = wavesurfer.util.extend(
+                    {}, wavesurfer.params, {
+                        showRegions: false,
+                        showOverview: false,
+                        overviewBorderColor: 'green',
+                        overviewBorderSize: 2
+                    }, params, {
+                        scrollParent: false,
+                        fillParent: true
+                    }
+                );
+
+                // add required multicanvas drawer values
+                this.maxCanvasWidth = this.params.maxCanvasWidth;
+                this.maxCanvasElementWidth = Math.round(this.params.maxCanvasWidth / this.params.pixelRatio);
+                this.hasProgressCanvas = this.params.waveColor != this.params.progressColor;
+                this.halfPixel = 0.5 / this.params.pixelRatio;
+                this.canvases = [];
+
+                // when the root drawer was created, add minimap
                 this._onDrawerCreated = () => {
-                    this.container = this.wavesurfer.drawer.container;
-                    this.lastPos = this.wavesurfer.drawer.lastPos;
-                    this.params = wavesurfer.util.extend(
-                        {}, this.wavesurfer.drawer.params, {
-                            showRegions: false,
-                            showOverview: false,
-                            overviewBorderColor: 'green',
-                            overviewBorderSize: 2
-                        }, params, {
-                            scrollParent: false,
-                            fillParent: true
-                        }
-                    );
+                    this.container = wavesurfer.drawer.container;
+                    this.lastPos = wavesurfer.drawer.lastPos;
 
                     this.width = 0;
                     this.height = this.params.height * this.params.pixelRatio;
@@ -40,20 +50,20 @@ export default function(params = {}) {
                     this.createWrapper();
                     this.createElements();
 
-                    if (this.wavesurfer.regions && this.params.showRegions) {
+                    if (wavesurfer.regions && this.params.showRegions) {
                         this.regions();
                     }
 
                     this.bindWaveSurferEvents();
                     this.bindMinimapEvents();
                 };
-                if (this.wavesurfer.drawer) {
+                if (wavesurfer.drawer) {
                     this._onDrawerCreated();
                     // @TODO: This shouldn't be necessary
                     this._onResize();
                 }
 
-                this.wavesurfer.on('drawer-created', this._onDrawerCreated);
+                wavesurfer.on('drawer-created', this._onDrawerCreated);
             },
 
             destroy() {
@@ -106,7 +116,7 @@ export default function(params = {}) {
             },
 
             createElements() {
-                this.wavesurfer.renderers.Canvas.createElements.call(this);
+                this.wavesurfer.drawer.createElements.call(this);
 
                 if (this.params.showOverview) {
                     this.overviewRegion = this.style(document.createElement('overview'), {

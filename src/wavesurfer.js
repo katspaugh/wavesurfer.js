@@ -1,5 +1,4 @@
 import * as util from './util';
-import Canvas from './drawer.canvas';
 import MultiCanvas from './drawer.multicanvas';
 import WebAudio from './webaudio';
 import MediaElement from './mediaelement';
@@ -28,7 +27,8 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         splitChannels : false,
         mediaContainer: null,
         mediaControls : false,
-        renderer      : 'Canvas',
+        renderer      : MultiCanvas,
+        maxCanvasWidth: 4000,
         backend       : 'WebAudio',
         mediaType     : 'audio',
         autoCenter    : true,
@@ -36,10 +36,6 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         plugins       : []
     },
 
-    renderers: {
-        Canvas,
-        MultiCanvas
-    },
     backends: {
         MediaElement,
         WebAudio
@@ -71,6 +67,12 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
             throw new Error('Media Container element not found');
         }
 
+        if (this.params.maxCanvasWidth <= 1) {
+            throw new Error('maxCanvasWidth must be greater than 1');
+        } else if (this.params.maxCanvasWidth % 2 == 1) {
+            throw new Error('maxCanvasWidth must be an even number');
+        }
+
         // Used to save the current volume when muting so we can
         // restore once unmuted
         this.savedVolume = 0;
@@ -86,7 +88,10 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         this.currentAjax = null;
 
         // cache constructor objects
-        this.Drawer = this.renderers[this.params.renderer];
+        if (typeof this.params.renderer !== 'object' || typeof this.params.renderer.init !== 'function') {
+            throw new Error('Renderer parameter is invalid');
+        }
+        this.Drawer = this.params.renderer;
         this.Backend = this.backends[this.params.backend];
 
         // plugins that are currently initialised

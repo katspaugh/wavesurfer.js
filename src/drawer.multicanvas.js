@@ -3,17 +3,11 @@ import * as util from './util';
 
 export default util.extend({}, drawer, {
     initDrawer(params) {
-        this.maxCanvasWidth = params.maxCanvasWidth != null ? params.maxCanvasWidth : 4000;
-        this.maxCanvasElementWidth = Math.round(this.maxCanvasWidth / this.params.pixelRatio);
+        this.maxCanvasWidth = params.maxCanvasWidth;
+        this.maxCanvasElementWidth = Math.round(params.maxCanvasWidth / params.pixelRatio);
 
-        if (this.maxCanvasWidth <= 1) {
-            throw 'maxCanvasWidth must be greater than 1.';
-        } else if (this.maxCanvasWidth % 2 == 1) {
-            throw 'maxCanvasWidth must be an even number.';
-        }
-
-        this.hasProgressCanvas = this.params.waveColor != this.params.progressColor;
-        this.halfPixel = 0.5 / this.params.pixelRatio;
+        this.hasProgressCanvas = params.waveColor != params.progressColor;
+        this.halfPixel = 0.5 / params.pixelRatio;
         this.canvases = [];
     },
 
