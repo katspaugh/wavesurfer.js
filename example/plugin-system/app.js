@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ]
         },
         elan: {
-            url: 'transcripts/001z.xml',
+            url: '../elan/transcripts/001z.xml',
             container: '#annotations',
             tiers: {
                 Text: true,
@@ -110,7 +110,5 @@ document.addEventListener('DOMContentLoaded', function () {
         wavesurfer.on('error', hideProgress);
     }());
 
-
-
-    wavesurfer.load('../../media/demo.wav');
+    wavesurfer.load('../media/demo.wav');
 });

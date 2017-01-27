@@ -42,20 +42,22 @@ const config = {
     context: __dirname,
     devtool: 'source-map',
     entry: {
-        wavesurfer: path.join(__dirname, 'src', 'wavesurfer.js')
+        wavesurfer: path.resolve(__dirname, 'src', 'wavesurfer.js')
     },
     output: {
-        path: path.join(__dirname, 'dist'),
+        path: path.resolve(__dirname, 'dist'),
+        publicPath: 'localhost:8080/dist/',
         filename: '[name].js',
         library: 'WaveSurfer',
         libraryTarget: 'umd',
         umdNamedDefine: true
     },
     devServer: {
+        hot: true,
         contentBase: [
-            path.join(__dirname, 'example'),
-            path.join(__dirname, 'dist')
+            path.join(__dirname)
         ],
+        publicPath: 'localhost:8080/dist/',
         watchContentBase: true
     },
     module: {
@@ -83,7 +85,8 @@ const config = {
     },
 
     plugins: [
-        bannerPlugin
+        bannerPlugin,
+        new webpack.HotModuleReplacementPlugin()
     ],
 };
 
@@ -97,7 +100,7 @@ const config = {
 */
 function buildPluginEntry(plugins) {
     const result = {};
-    plugins.forEach(plugin => result[plugin] = path.join(__dirname, 'src', 'plugin', plugin));
+    plugins.forEach(plugin => result[plugin] = path.resolve(__dirname, 'src', 'plugin', plugin));
     return result;
 }
 
@@ -116,9 +119,13 @@ export default function (options) {
                 'elan'
             ]),
             output: {
-                path: path.join(__dirname, 'dist', 'plugin'),
+                path: path.resolve(__dirname, 'dist', 'plugin'),
                 filename: 'wavesurfer.[name].js',
-                library: ['WaveSurfer', '[name]']
+                library: ['WaveSurfer', '[name]'],
+                publicPath: 'localhost:8080/dist/plugin/'
+            },
+            devServer: {
+                publicPath: 'localhost:8080/dist/plugin/'
             }
         });
     }

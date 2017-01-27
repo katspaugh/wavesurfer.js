@@ -114,7 +114,12 @@ module.exports = {
         "no-bitwise": "off",
         "no-caller": "error",
         "no-catch-shadow": "error",
-        "no-confusing-arrow": "error",
+        "no-confusing-arrow": [
+            "error",
+            {
+                "allowParens": true
+            }
+        ],
         "no-continue": "error",
         "no-div-regex": "error",
         "no-duplicate-imports": "error",

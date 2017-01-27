@@ -51,5 +51,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-    wavesurfer.load('../../media/demo.wav');
+    wavesurfer.load('../media/demo.wav');
 });

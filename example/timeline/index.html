@@ -15,10 +15,10 @@
         <link rel="screenshot" itemprop="screenshot" href="//katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
-        <script src="/wavesurfer.js"></script>
+        <script src="../../dist/wavesurfer.js"></script>
 
         <!-- timeline format renderer -->
-        <script src="/plugin/wavesurfer.timeline.js"></script>
+        <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
 
         <!-- App -->
         <script src="app.js"></script>
@@ -98,10 +98,10 @@ wavesurfer.load('example/media/demo.mp3');</code></pre>
                       <li><code>secondaryColor</code> - the color of the non-modulo-ten notch lines. The default is '#c0c0c0'.</li>
                       <li><code>primaryFontColor</code> - the color of the non-modulo-ten time labels (e.g. 10sec, 20sec). The default is '#000'.</li>
                       <li><code>primaryFontColor</code> - the color of the non-modulo-ten time labels (e.g. 5sec, 15sec). The default is '#c0c0c0'.</li>
-                      <li><code>timeInterval</code> - number of intervals that records consists of. Usually it is equal to the duration in minutes.</li>
-                      <li><code>primaryLabelInterval</code> - number of primary time labels.</li>
-                      <li><code>secondaryLabelInterval</code> - number of secondary time labels (Time labels between primary labels).</li>
-                      <li><code>formatTimeCallback</code> - custom time format callback.</li>
+                      <li><code>timeInterval</code> - number of intervals that records consists of. Usually it is equal to the duration in minutes. (Integer or function which receives pxPerSec value and reurns value)</li>
+                      <li><code>primaryLabelInterval</code> - number of primary time labels. (Integer or function which receives pxPerSec value and reurns value)</li>
+                      <li><code>secondaryLabelInterval</code> - number of secondary time labels (Time labels between primary labels, integer or function which receives pxPerSec value and reurns value).</li>
+                      <li><code>formatTimeCallback</code> - custom time format callback. (Function which receives number of seconds and returns formatted string)</li>
                     </ul>
                 </div>
             </div>

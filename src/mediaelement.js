@@ -182,9 +182,9 @@ export default util.extend({}, webaudio, {
         }
     },
 
-    getPeaks(length) {
+    getPeaks(length, start, end) {
         if (this.buffer) {
-            return webaudio.getPeaks.call(this, length);
+            return webaudio.getPeaks.call(this, length, start, end);
         }
         return this.peaks || [];
     },
