@@ -239,6 +239,13 @@ var WaveSurfer = {
     },
 
     /**
+     * Get the playback rate.
+     */
+    getPlaybackRate: function () {
+        this.backend.playbackRate;
+    },
+
+    /**
      * Toggle the volume on and off. It not currenly muted it will
      * save the current volume value and turn the volume off.
      * If currently muted then it will restore the volume to the saved
