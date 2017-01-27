@@ -84,8 +84,8 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         this.currentAjax = null;
 
         // cache constructor objects
-        if (typeof this.params.renderer === 'string') {
-            throw new Error('Renderer parameter is invalid renderer');
+        if (typeof this.params.renderer !== 'object' || typeof this.params.renderer.init !== 'function') {
+            throw new Error('Renderer parameter is invalid');
         }
         this.Drawer = this.params.renderer;
         this.Backend = this.backends[this.params.backend];
