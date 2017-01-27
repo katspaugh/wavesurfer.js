@@ -404,6 +404,13 @@ WaveSurfer.WebAudio = {
     },
 
     /**
+    *   Returns the current playback rate.
+    */
+    getPlaybackRate: function () {
+        return this.playbackRate;
+    },
+
+    /**
      * Set the audio source playback rate.
      */
     setPlaybackRate: function (value) {
