@@ -737,6 +737,15 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Get the playback rate.
+     *
+     * @return {number}
+     */
+    getPlaybackRate() {
+        return this.backend.getPlaybackRate();
+    }
+
+    /**
      * Toggle the volume on and off. It not currenly muted it will save the
      * current volume value and turn the volume off. If currently muted then it
      * will restore the volume to the saved value, and then rest the saved
