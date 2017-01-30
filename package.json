@@ -8,9 +8,10 @@
   },
   "scripts": {
     "start": "webpack --env.plugins && webpack-dev-server",
+    "start:htmlinit": "webpack --env.plugins & webpack && webpack-dev-server --env.htmlinit",
     "build": "npm run build:normal & npm run build:minified",
-    "build:normal": "webpack & webpack --env.plugins",
-    "build:minified": "webpack --env.minify & webpack --env.plugins --env.minify",
+    "build:normal": "webpack & webpack --env.plugins & webpack --env.htmlinit",
+    "build:minified": "webpack --env.minify & webpack --env.plugins --env.minify & webpack --env.htmlinit --env.minify",
     "test": "BABEL_ENV=test karma start karma.conf.js"
   },
   "repository": {
@@ -39,6 +40,7 @@
     "karma-jasmine": "1.0.2",
     "karma-jasmine-matchers": "3.0.1",
     "karma-webpack": "^1.8.0",
+    "load-script": "^1.0.0",
     "webpack": "^2.1.0-beta.25",
     "webpack-dev-server": "^2.1.0-beta.9"
   },
