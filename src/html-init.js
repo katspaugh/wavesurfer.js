@@ -26,7 +26,7 @@ class Init {
             // containers to instantiate on, can be selector string or HTMLElement
             containers: 'wavesurfer',
             // @TODO insert plugin CDN URIs
-            pluginCdnTemplate: '//localhost:8080/plugin/wavesurfer.[name].js',
+            pluginCdnTemplate: '//localhost:8080/dist/plugin/wavesurfer.[name].js',
             // loadPlugin function can be overriden to inject plugin definition
             // objects, this default function uses load-script to load a plugin
             // and pass it to a callback

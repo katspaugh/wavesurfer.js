@@ -48,6 +48,7 @@ const WebAudio = util.extend({}, util.observer, {
 
         this.setState(this.PAUSED_STATE);
         this.setPlaybackRate(this.params.audioRate);
+        this.setLength(0);
     },
 
     disconnectFilters() {
@@ -179,28 +180,54 @@ const WebAudio = util.extend({}, util.observer, {
     },
 
     /**
+     * Set the rendered length (different from the length of the audio).
+     */
+    setLength(length) {
+        // No resize, we can preserve the cached peaks.
+        if (this.mergedPeaks && length == ((2 * this.mergedPeaks.length - 1) + 2)) {
+            return;
+        }
+
+        this.splitPeaks = [];
+        this.mergedPeaks = [];
+        // Set the last element of the sparse array so the peak arrays are
+        // appropriately sized for other calculations.
+        const channels = this.buffer ? this.buffer.numberOfChannels : 1;
+        let c;
+        for (c = 0; c < channels; c++) {
+            this.splitPeaks[c] = [];
+            this.splitPeaks[c][2 * (length - 1)] = 0;
+            this.splitPeaks[c][2 * (length - 1) + 1] = 0;
+        }
+        this.mergedPeaks[2 * (length - 1)] = 0;
+        this.mergedPeaks[2 * (length - 1) + 1] = 0;
+    },
+
+    /**
      * Compute the max and min value of the waveform when broken into
      * <length> subranges.
-     * @param {Number} How many subranges to break the waveform into.
+     * @param {Number} length How many subranges to break the waveform into.
+     * @param {Number} first First sample in the required range.
+     * @param {Number} last Last sample in the required range.
      * @returns {Array} Array of 2*<length> peaks or array of arrays
      * of peaks consisting of (max, min) values for each subrange.
      */
-    getPeaks(length) {
+    getPeaks(length, first, last) {
         if (this.peaks) { return this.peaks; }
+
+        this.setLength(length);
 
         const sampleSize = this.buffer.length / length;
         const sampleStep = ~~(sampleSize / 10) || 1;
         const channels = this.buffer.numberOfChannels;
-        const splitPeaks = [];
-        const mergedPeaks = [];
         let c;
 
         for (c = 0; c < channels; c++) {
-            const peaks = splitPeaks[c] = [];
+            const peaks = this.splitPeaks[c];
             const chan = this.buffer.getChannelData(c);
             let i;
 
-            for (i = 0; i < length; i++) {
+            for (i = first; i <= last; i++) {
                 const start = ~~(i * sampleSize);
                 const end = ~~(start + sampleSize);
                 let min = 0;
@@ -222,17 +249,17 @@ const WebAudio = util.extend({}, util.observer, {
                 peaks[2 * i] = max;
                 peaks[2 * i + 1] = min;
 
-                if (c == 0 || max > mergedPeaks[2 * i]) {
-                    mergedPeaks[2 * i] = max;
+                if (c == 0 || max > this.mergedPeaks[2 * i]) {
+                    this.mergedPeaks[2 * i] = max;
                 }
 
-                if (c == 0 || min < mergedPeaks[2 * i + 1]) {
-                    mergedPeaks[2 * i + 1] = min;
+                if (c == 0 || min < this.mergedPeaks[2 * i + 1]) {
+                    this.mergedPeaks[2 * i + 1] = min;
                 }
             }
         }
 
-        return this.params.splitChannels ? splitPeaks : mergedPeaks;
+        return this.params.splitChannels ? this.splitPeaks : this.mergedPeaks;
     },
 
     getPlayedPercents() {
@@ -345,7 +372,7 @@ const WebAudio = util.extend({}, util.observer, {
         this.source.start(0, start, end - start);
 
         if (this.ac.state == 'suspended') {
-          this.ac.resume && this.ac.resume();
+            this.ac.resume && this.ac.resume();
         }
 
         this.setState(this.PLAYING_STATE);

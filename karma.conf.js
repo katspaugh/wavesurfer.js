@@ -6,7 +6,7 @@ module.exports = function (config) {
             'jasmine-matchers'
         ],
         hostname: 'localhost',
-        post: 9876,
+        port: 9876,
         singleRun: true,
         autoWatch: false,
         files: [
@@ -20,12 +20,14 @@ module.exports = function (config) {
             // specs
             'spec/plugin-api.spec.js',
             'spec/util.spec.js',
-            'spec/wavesurfer.spec.js'
+            'spec/wavesurfer.spec.js',
+            'spec/peakcache.spec.js'
         ],
         preprocessors: {
             'spec/plugin-api.spec.js': ['webpack'],
             'spec/util.spec.js': ['webpack'],
-            'spec/wavesurfer.spec.js': ['webpack']
+            'spec/wavesurfer.spec.js': ['webpack'],
+            'spec/peakcache.spec.js': ['webpack']
         },
         webpackMiddleware: {
             stats: 'errors-only'

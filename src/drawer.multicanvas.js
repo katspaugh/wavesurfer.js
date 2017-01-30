@@ -3,17 +3,11 @@ import * as util from './util';
 
 export default util.extend({}, drawer, {
     initDrawer(params) {
-        this.maxCanvasWidth = params.maxCanvasWidth != null ? params.maxCanvasWidth : 4000;
-        this.maxCanvasElementWidth = Math.round(this.maxCanvasWidth / this.params.pixelRatio);
+        this.maxCanvasWidth = params.maxCanvasWidth;
+        this.maxCanvasElementWidth = Math.round(params.maxCanvasWidth / params.pixelRatio);
 
-        if (this.maxCanvasWidth <= 1) {
-            throw 'maxCanvasWidth must be greater than 1.';
-        } else if (this.maxCanvasWidth % 2 == 1) {
-            throw 'maxCanvasWidth must be an even number.';
-        }
-
-        this.hasProgressCanvas = this.params.waveColor != this.params.progressColor;
-        this.halfPixel = 0.5 / this.params.pixelRatio;
+        this.hasProgressCanvas = params.waveColor != params.progressColor;
+        this.halfPixel = 0.5 / params.pixelRatio;
         this.canvases = [];
     },
 
@@ -137,7 +131,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    drawBars(peaks, channelIndex) {
+    drawBars(peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             const channels = peaks;
@@ -152,16 +146,15 @@ export default util.extend({}, drawer, {
         // Bar wave draws the bottom only as a reflection of the top,
         // so we don't need negative values
         const hasMinVals = [].some.call(peaks, val => val < 0);
-        if (hasMinVals) {
-            peaks = [].filter.call(peaks, (_, index) => index % 2 == 0);
-        }
+        // Skip every other value if there are negatives.
+        const peakIndexScale = hasMinVals ? 2 : 1;
 
         // A half-pixel offset makes lines crisp
         const width = this.width;
         const height = this.params.height * this.params.pixelRatio;
         const offsetY = height * channelIndex || 0;
         const halfH = height / 2;
-        const length = peaks.length;
+        const length = peaks.length / peakIndexScale;
         const bar = this.params.barWidth * this.params.pixelRatio;
         const gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
         const step = bar + gap;
@@ -174,13 +167,14 @@ export default util.extend({}, drawer, {
         const scale = length / width;
         let i;
 
-        for (i = 0; i < width; i += step) {
-            const h = Math.round(peaks[Math.floor(i * scale)] / absmax * halfH);
+        for (i = (start / scale); i < (end / scale); i += step) {
+            const peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
+            const h = Math.round(peak / absmax * halfH);
             this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
         }
     },
 
-    drawWave(peaks, channelIndex) {
+    drawWave(peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             const channels = peaks;
@@ -217,25 +211,25 @@ export default util.extend({}, drawer, {
             absmax = -min > max ? -min : max;
         }
 
-        this.drawLine(peaks, absmax, halfH, offsetY);
+        this.drawLine(peaks, absmax, halfH, offsetY, start, end);
 
         // Always draw a median line
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     },
 
-    drawLine(peaks, absmax, halfH, offsetY) {
+    drawLine(peaks, absmax, halfH, offsetY, start, end) {
         let i;
         for (i in this.canvases) {
             const entry = this.canvases[i];
 
             this.setFillStyles(entry);
 
-            this.drawLineToContext(entry, entry.waveCtx, peaks, absmax, halfH, offsetY);
-            this.drawLineToContext(entry, entry.progressCtx, peaks, absmax, halfH, offsetY);
+            this.drawLineToContext(entry, entry.waveCtx, peaks, absmax, halfH, offsetY, start, end);
+            this.drawLineToContext(entry, entry.progressCtx, peaks, absmax, halfH, offsetY, start, end);
         }
     },
 
-    drawLineToContext(entry, ctx, peaks, absmax, halfH, offsetY) {
+    drawLineToContext(entry, ctx, peaks, absmax, halfH, offsetY, start, end) {
         if (!ctx) { return; }
 
         const length = peaks.length / 2;
@@ -247,22 +241,27 @@ export default util.extend({}, drawer, {
 
         const first = Math.round(length * entry.start);
         const last = Math.round(length * entry.end);
+        if (first > end || last < start) { return; }
+        const canvasStart = Math.max(first, start);
+        const canvasEnd = Math.min(last, end);
         let i;
         let j;
 
         ctx.beginPath();
-        ctx.moveTo(this.halfPixel, halfH + offsetY);
+        ctx.moveTo((canvasStart - first) * scale + this.halfPixel, halfH + offsetY);
 
-        for (i = first; i < last; i++) {
-            const h = Math.round(peaks[2 * i] / absmax * halfH);
+        for (i = canvasStart; i < canvasEnd; i++) {
+            const peak = peaks[2 * i] || 0;
+            const h = Math.round(peak / absmax * halfH);
             ctx.lineTo((i - first) * scale + this.halfPixel, halfH - h + offsetY);
         }
 
         // Draw the bottom edge going backwards, to make a single
         // closed hull to fill.
-        for (j = last - 1; j >= first; j--) {
-            const k = Math.round(peaks[2 * j + 1] / absmax * halfH);
-            ctx.lineTo((j - first) * scale + this.halfPixel, halfH - k + offsetY);
+        for (j = canvasEnd - 1; j >= canvasStart; j--) {
+            const peak = peaks[2 * j + 1] || 0;
+            const h = Math.round(peak / absmax * halfH);
+            ctx.lineTo((i - first) * scale + this.halfPixel, halfH - h + offsetY);
         }
 
         ctx.closePath();
@@ -270,8 +269,13 @@ export default util.extend({}, drawer, {
     },
 
     fillRect(x, y, width, height) {
+        const startCanvas = Math.floor(x / this.maxCanvasWidth);
+        const endCanvas = Math.min(
+          Math.ceil((x + width) / this.maxCanvasWidth) + 1,
+          this.canvases.length
+        );
         let i;
-        for (i in this.canvases) {
+        for (i = startCanvas; i < endCanvas; i++) {
             const entry = this.canvases[i];
             const leftOffset = i * this.maxCanvasWidth;
 
@@ -312,10 +316,7 @@ export default util.extend({}, drawer, {
         }
     },
 
-    updateProgress(progress) {
-        const pos = Math.round(
-            this.width * progress
-        ) / this.params.pixelRatio;
+    updateProgress(pos) {
         this.style(this.progressWave, { width: pos + 'px' });
     }
 });

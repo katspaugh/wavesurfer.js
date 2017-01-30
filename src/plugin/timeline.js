@@ -13,60 +13,100 @@ export default function(params = {}) {
             init(wavesurfer) {
                 this.params = params;
                 this.wavesurfer = wavesurfer;
+                this.style = wavesurfer.util.style;
 
-                if (!this.wavesurfer) {
-                    throw Error('No WaveSurfer intance provided');
-                }
-
-
-                this.container = 'string' == typeof params.container ?
-                document.querySelector(params.container) : params.container;
+                this.container = 'string' == typeof params.container
+                    ? document.querySelector(params.container)
+                    : params.container;
 
                 if (!this.container) {
-                    throw Error('No container for WaveSurfer timeline');
+                    throw new Error('No container for WaveSurfer timeline');
                 }
 
-                this.height = this.params.height || 20;
-                this.notchPercentHeight = this.params.notchPercentHeight || 90;
-                this.primaryColor = this.params.primaryColor || '#000';
-                this.secondaryColor = this.params.secondaryColor || '#c0c0c0';
-                this.primaryFontColor = this.params.primaryFontColor || '#000';
-                this.secondaryFontColor = this.params.secondaryFontColor || '#000';
-                this.fontFamily = this.params.fontFamily || 'Arial';
-                this.fontSize = this.params.fontSize || 10;
-                this.timeInterval = this.params.timeInterval;
-                this.primaryLabelInterval = this.params.primaryLabelInterval;
-                this.secondaryLabelInterval = this.params.secondaryLabelInterval;
-                this.formatTimeCallback = this.params.formatTimeCallback;
+                this.params = wavesurfer.util.extend({}, {
+                    height: 20,
+                    notchPercentHeight: 90,
+                    primaryColor: '#000',
+                    secondaryColor: '#c0c0c0',
+                    primaryFontColor: '#000',
+                    secondaryFontColor: '#000',
+                    fontFamily: 'Arial',
+                    fontSize: 10,
+                    formatTimeCallback(seconds) {
+                        if (seconds / 60 > 1) {
+                            // calculate minutes and seconds from seconds count
+                            const minutes = parseInt(seconds / 60, 10);
+                            seconds = parseInt(seconds % 60, 10);
+                            // fill up seconds with zeroes
+                            seconds = (seconds < 10) ? '0' + seconds : seconds;
+                            return `${minutes}:${seconds}`;
+                        }
+                        return seconds;
+                    },
+                    timeInterval(pxPerSec) {
+                        if (pxPerSec >= 25) {
+                            return 1;
+                        } else if (pxPerSec * 5 >= 25) {
+                            return 5;
+                        } else if (pxPerSec * 15 >= 25) {
+                            return 15;
+                        }
+                        return 60;
+                    },
+                    primaryLabelInterval(pxPerSec) {
+                        if (pxPerSec >= 25) {
+                            return 10;
+                        } else if (pxPerSec * 5 >= 25) {
+                            return 6;
+                        } else if (pxPerSec * 15 >= 25) {
+                            return 4;
+                        }
+                        return 4;
+                    },
+                    secondaryLabelInterval(pxPerSec) {
+                        if (pxPerSec >= 25) {
+                            return 5;
+                        } else if (pxPerSec * 5 >= 25) {
+                            return 2;
+                        } else if (pxPerSec * 15 >= 25) {
+                            return 2;
+                        }
+                        return 2;
+                    }
+                }, params);
+
                 this.canvases = [];
 
-                this._onRedraw = () => {
-                    this.render();
+                this._onScroll = () => {
+                    this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
                 };
-
+                this._onRedraw = () => this.render();
                 this._onReady = () => {
-                    this.drawer = this.wavesurfer.drawer;
-                    this.width = this.wavesurfer.drawer.width;
-                    this.pixelRatio = this.wavesurfer.drawer.params.pixelRatio;
-                    this.maxCanvasWidth = this.wavesurfer.drawer.maxCanvasWidth || this.width;
-                    this.maxCanvasElementWidth = this.wavesurfer.drawer.maxCanvasElementWidth || Math.round(this.maxCanvasWidth / this.pixelRatio);
+                    this.drawer = wavesurfer.drawer;
+                    this.pixelRatio = wavesurfer.drawer.params.pixelRatio;
+                    this.maxCanvasWidth = wavesurfer.drawer.maxCanvasWidth || wavesurfer.drawer.width;
+                    this.maxCanvasElementWidth = wavesurfer.drawer.maxCanvasElementWidth || Math.round(this.maxCanvasWidth / this.pixelRatio);
 
                     this.createWrapper();
                     this.render();
-                    this.wavesurfer.drawer.wrapper.addEventListener('scroll', e => this.updateScroll(e));
-                    this.wavesurfer.on('redraw', this._onRedraw);
+                    wavesurfer.drawer.wrapper.addEventListener('scroll', this._onScroll);
+                    wavesurfer.on('redraw', this._onRedraw);
                 };
-                this.wavesurfer.on('ready', this._onReady);
-                // Check if ws is ready
-                if (this.wavesurfer.backend) {
+
+                // backend (and drawer) already existed, just call
+                // initialisation code
+                if (wavesurfer.backend) {
                     this._onReady();
                 }
+                // ws is ready, call the initialisation code
+                wavesurfer.on('ready', this._onReady);
             },
 
             destroy() {
                 this.unAll();
                 this.wavesurfer.un('redraw', this._onRedraw);
                 this.wavesurfer.un('ready', this._onReady);
+                this.wavesurfer.drawer.wrapper.removeEventListener('scroll', this._onScroll);
                 if (this.wrapper && this.wrapper.parentNode) {
                     this.wrapper.parentNode.removeChild(this.wrapper);
                     this.wrapper = null;
@@ -74,32 +114,33 @@ export default function(params = {}) {
             },
 
             createWrapper() {
-
                 const wsParams = this.wavesurfer.params;
                 this.wrapper = this.container.appendChild(
                     document.createElement('timeline')
                 );
-                this.drawer.style(this.wrapper, {
+                this.style(this.wrapper, {
                     display: 'block',
                     position: 'relative',
                     userSelect: 'none',
                     webkitUserSelect: 'none',
-                    height: this.height + 'px'
+                    height: `${this.params.height}px`
                 });
 
                 if (wsParams.fillParent || wsParams.scrollParent) {
-                    this.drawer.style(this.wrapper, {
+                    this.style(this.wrapper, {
                         width: '100%',
                         overflowX: 'hidden',
                         overflowY: 'hidden'
                     });
                 }
 
-                this.wrapper.addEventListener('click', e => {
+                this._onClick = e => {
                     e.preventDefault();
                     const relX = 'offsetX' in e ? e.offsetX : e.layerX;
                     this.fireEvent('click', (relX / this.wrapper.scrollWidth) || 0);
-                });
+                };
+
+                this.wrapper.addEventListener('click', this._onClick);
             },
 
             removeOldCanvases() {
@@ -114,13 +155,12 @@ export default function(params = {}) {
 
                 const totalWidth = Math.round(this.drawer.wrapper.scrollWidth);
                 const requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
-                let canvas;
                 let i;
 
                 for (i = 0; i < requiredCanvases; i++) {
-                    canvas = this.wrapper.appendChild(document.createElement('canvas'));
+                    const canvas = this.wrapper.appendChild(document.createElement('canvas'));
                     this.canvases.push(canvas);
-                    this.drawer.style(canvas, {
+                    this.style(canvas, {
                         position: 'absolute',
                         zIndex: 4
                     });
@@ -145,86 +185,60 @@ export default function(params = {}) {
                     }
 
                     canvas.width = canvasWidth * this.pixelRatio;
-                    canvas.height = this.height * this.pixelRatio;
-                    canvas.style.width = canvasWidth + 'px';
-                    canvas.style.height = this.height + 'px';
-                    canvas.style.left = i * this.maxCanvasElementWidth + 'px';
+                    canvas.height = this.params.height * this.pixelRatio;
+                    this.style(canvas, {
+                        width: `${canvasWidth}px`,
+                        height: `${this.params.height}px`,
+                        left: `${i * this.maxCanvasElementWidth}px`
+                    });
                 }
             },
 
             drawTimeCanvases() {
                 const backend = this.wavesurfer.backend;
                 const wsParams = this.wavesurfer.params;
-                const duration = backend.getDuration();
+                const duration = this.wavesurfer.backend.getDuration();
                 const totalSeconds = parseInt(duration, 10) + 1;
-                let width;
+                const width = wsParams.fillParent && !wsParams.scrollParent
+                    ? this.drawer.getWidth()
+                    : this.drawer.wrapper.scrollWidth * wsParams.pixelRatio;
+                const pixelsPerSecond = width / duration;
+
+                const formatTime = this.params.formatTimeCallback;
+                // if parameter is function, call the function with
+                // pixelsPerSecond, otherwise simply take the value as-is
+                const intervalFnOrVal = option => (typeof option === 'function' ? option(pixelsPerSecond) : option);
+                const timeInterval = intervalFnOrVal(this.params.timeInterval);
+                const primaryLabelInterval = intervalFnOrVal(this.params.primaryLabelInterval);
+                const secondaryLabelInterval = intervalFnOrVal(this.params.secondaryLabelInterval);
+
                 let curPixel = 0;
                 let curSeconds = 0;
 
-                if (wsParams.fillParent && !wsParams.scrollParent) {
-                    width = this.drawer.getWidth();
-                } else {
-                    width = this.drawer.wrapper.scrollWidth * wsParams.pixelRatio;
-                }
-                const pixelsPerSecond = width/duration;
-
-                if (duration <= 0) { return; }
-
-                const formatTime = seconds => {
-                    if (typeof this.formatTimeCallback === 'function') {
-                        return this.formatTimeCallback(seconds);
-                    }
-
-                    if (seconds/60 > 1) {
-                        const minutes = parseInt(seconds / 60);
-                        seconds = parseInt(seconds % 60);
-                        seconds = (seconds < 10) ? '0' + seconds : seconds;
-                        return '' + minutes + ':' + seconds;
-                    }
-                    return seconds;
-                };
-
-                let timeInterval = 60;
-                let primaryLabelInterval = 4;
-                let secondaryLabelInterval = 2;
-                if (pixelsPerSecond * 1 >= 25) {
-                    timeInterval = 1;
-                    primaryLabelInterval = 10;
-                    secondaryLabelInterval = 5;
-                } else if (pixelsPerSecond * 5 >= 25) {
-                    timeInterval = 5;
-                    primaryLabelInterval = 6;
-                    secondaryLabelInterval = 2;
-                } else if (pixelsPerSecond * 15 >= 25) {
-                    timeInterval = 15;
-                    primaryLabelInterval = 4;
-                    secondaryLabelInterval = 2;
+                if (duration <= 0) {
+                    return;
                 }
 
-                timeInterval = this.timeInterval || timeInterval;
-                primaryLabelInterval = this.primaryLabelInterval || primaryLabelInterval;
-                secondaryLabelInterval = this.secondaryLabelInterval || secondaryLabelInterval;
-
-                const height1 = this.height - 4;
-                const height2 = (this.height * (this.notchPercentHeight / 100.0)) - 4;
-                const fontSize = this.fontSize * wsParams.pixelRatio;
+                const height1 = this.params.height - 4;
+                const height2 = (this.params.height * (this.params.notchPercentHeight / 100)) - 4;
+                const fontSize = this.params.fontSize * wsParams.pixelRatio;
                 let i;
 
-                for (i = 0; i < totalSeconds/timeInterval; i++) {
+                for (i = 0; i < totalSeconds / timeInterval; i++) {
                     if (i % primaryLabelInterval == 0) {
-                        this.setFillStyles(this.primaryColor);
+                        this.setFillStyles(this.params.primaryColor);
                         this.fillRect(curPixel, 0, 1, height1);
-                        this.setFonts(fontSize + 'px ' + this.fontFamily);
-                        this.setFillStyles(this.primaryFontColor);
+                        this.setFonts(`${fontSize}px ${this.params.fontFamily}`);
+                        this.setFillStyles(this.params.primaryFontColor);
                         this.fillText(formatTime(curSeconds), curPixel + 5, height1);
                     } else if (i % secondaryLabelInterval == 0) {
-                        this.setFillStyles(this.secondaryColor);
+                        this.setFillStyles(this.params.secondaryColor);
                         this.fillRect(curPixel, 0, 1, height1);
-                        this.setFonts(fontSize + 'px ' + this.fontFamily);
-                        this.setFillStyles(this.secondaryFontColor);
+                        this.setFonts(`${fontSize}px ${this.params.fontFamily}`);
+                        this.setFillStyles(this.params.secondaryFontColor);
                         this.fillText(formatTime(curSeconds), curPixel + 5, height1);
                     } else {
-                        this.setFillStyles(this.secondaryColor);
+                        this.setFillStyles(this.params.secondaryColor);
                         this.fillRect(curPixel, 0, 1, height2);
                     }
 
@@ -291,10 +305,6 @@ export default function(params = {}) {
 
                     xOffset += canvasWidth;
                 }
-            },
-
-            updateScroll() {
-                this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
             }
         }
     };

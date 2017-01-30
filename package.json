@@ -7,8 +7,9 @@
     "example": "example"
   },
   "scripts": {
-    "start": "webpack --env.plugins && webpack-dev-server",
-    "start:htmlinit": "webpack --env.plugins & webpack && webpack-dev-server --env.htmlinit",
+    "start": "webpack --env.plugins && webpack --env.htmlinit && webpack-dev-server",
+    "start:htmlinit": "webpack && webpack --env.plugins && webpack-dev-server --env.htmlinit",
+    "start:plugins": "webpack && webpack --env.htmlinit && webpack-dev-server --env.plugins",
     "build": "npm run build:normal & npm run build:minified",
     "build:normal": "webpack & webpack --env.plugins & webpack --env.htmlinit",
     "build:minified": "webpack --env.minify & webpack --env.plugins --env.minify & webpack --env.htmlinit --env.minify",
@@ -39,10 +40,10 @@
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "1.0.2",
     "karma-jasmine-matchers": "3.0.1",
-    "karma-webpack": "^1.8.0",
     "load-script": "^1.0.0",
-    "webpack": "^2.1.0-beta.25",
-    "webpack-dev-server": "^2.1.0-beta.9"
+    "karma-webpack": "^2.0.2",
+    "webpack": "2",
+    "webpack-dev-server": "2"
   },
   "homepage": "https://github.com/katspaugh/wavesurfer.js"
 }
