@@ -66,12 +66,15 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     drawBars: function (peaks, channelIndex, start, end) {
+        var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
             if (this.params.splitChannels) {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach(this.drawBars, this);
+                channels.forEach(function(channelPeaks, i) {
+                    my.drawBars(channelPeaks, i, start, end);
+                });
                 return;
             } else {
                 peaks = channels[0];
@@ -124,12 +127,15 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     drawWave: function (peaks, channelIndex, start, end) {
+        var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
             if (this.params.splitChannels) {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach(this.drawWave, this);
+                channels.forEach(function(channelPeaks, i) {
+                    my.drawWave(channelPeaks, i, start, end);
+                });
                 return;
             } else {
                 peaks = channels[0];
