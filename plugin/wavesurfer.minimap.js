@@ -94,7 +94,7 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
 
     bindWaveSurferEvents: function () {
         var my = this;
-        this.wavesurfer.on('ready', this.render.bind(this));
+        this.wavesurfer.on('ready', my.render.bind(this));
         this.wavesurfer.on('audioprocess', function (currentTime) {
             my.progress(my.wavesurfer.backend.getPlayedPercents());
         });
