@@ -217,8 +217,8 @@ export default function(params = {}) {
 
             render() {
                 const len = this.getWidth();
-                const peaks = this.wavesurfer.backend.getPeaks(len);
-                this.drawPeaks(peaks, len);
+                const peaks = this.wavesurfer.backend.getPeaks(len, 0, len);
+                this.drawPeaks(peaks, len, 0, len);
 
                 if (this.params.showOverview) {
                     //get proportional width of overview region considering the respective
