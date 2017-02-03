@@ -60,6 +60,9 @@ const config = {
         publicPath: 'localhost:8080/dist/',
         watchContentBase: true
     },
+    performance: {
+      hints: false
+    },
     module: {
         rules: [
             {
@@ -105,53 +108,75 @@ function buildPluginEntry(plugins) {
 }
 
 export default function (options) {
-
-    if (options && options.plugins) {
-        delete config.entry;
-        mergeDeep(config, {
-            entry: buildPluginEntry([
-                'timeline',
-                'minimap',
-                'regions',
-                'spectrogram',
-                'cursor',
-                'microphone',
-                'elan'
-            ]),
-            output: {
-                path: path.resolve(__dirname, 'dist', 'plugin'),
-                filename: 'wavesurfer.[name].js',
-                library: ['WaveSurfer', '[name]'],
-                publicPath: 'localhost:8080/dist/plugin/'
-            },
-            devServer: {
-                publicPath: 'localhost:8080/dist/plugin/'
-            }
-        });
-    }
-    if (options && options.minify) {
-        mergeDeep(config, {
-            plugins: [
-                new webpack.optimize.UglifyJsPlugin({
-                    sourceMap: true
-                }),
-                bannerPlugin
-            ]
-        });
-
-        // rename outputs
-        if (options.plugins) {
+    if (options) {
+        // html init code
+        if (options.htmlinit) {
+            delete config.entry;
             mergeDeep(config, {
+                entry: {
+                    'html-init': path.join(__dirname, 'src', 'html-init.js')
+                },
                 output: {
-                    filename: 'wavesurfer.[name].min.js'
+                    filename: 'wavesurfer-[name].js',
+                    library: ['WaveSurfer', '[name]']
                 }
             });
-        } else {
+        }
+        // plugins
+        if (options.plugins) {
+            delete config.entry;
             mergeDeep(config, {
+                entry: buildPluginEntry([
+                    'timeline',
+                    'minimap',
+                    'regions',
+                    'spectrogram',
+                    'cursor',
+                    'microphone',
+                    'elan'
+                ]),
                 output: {
-                    filename: '[name].min.js'
+                    path: path.resolve(__dirname, 'dist', 'plugin'),
+                    filename: 'wavesurfer.[name].js',
+                    library: ['WaveSurfer', '[name]'],
+                    publicPath: 'localhost:8080/dist/plugin/'
+                },
+                devServer: {
+                    publicPath: 'localhost:8080/dist/plugin/'
                 }
-            })
+            });
+        }
+        // minified builds
+        if (options.minify) {
+            mergeDeep(config, {
+                plugins: [
+                    new webpack.optimize.UglifyJsPlugin({
+                        sourceMap: true
+                    }),
+                    bannerPlugin
+                ]
+            });
+
+            // rename outputs
+            if (options.plugins) {
+                mergeDeep(config, {
+                    output: {
+                        filename: 'wavesurfer.[name].min.js'
+                    }
+                });
+            } else if (options.htmlinit) {
+                mergeDeep(config, {
+                    output: {
+                        filename: 'wavesurfer-[name].min.js'
+                    }
+                });
+            } else {
+                mergeDeep(config, {
+                    output: {
+                        filename: '[name].min.js'
+                    }
+                })
+            }
         }
     }
 
