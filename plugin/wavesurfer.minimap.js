@@ -178,8 +178,8 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
 
     render: function () {
         var len = this.getWidth();
-        var peaks = this.wavesurfer.backend.getPeaks(len);
-        this.drawPeaks(peaks, len);
+        var peaks = this.wavesurfer.backend.getPeaks(len, 0, len);
+        this.drawPeaks(peaks, len, 0, len);
 
         if (this.params.showOverview) {
             //get proportional width of overview region considering the respective
