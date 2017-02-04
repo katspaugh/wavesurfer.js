@@ -24,7 +24,7 @@ WaveSurfer.util = {
             var callNow = immediate && !timeout;
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
-            if(!timeout){
+            if (!timeout) {
                 timout = setTimeout(later, wait);   
             }
             if (callNow) {
@@ -33,7 +33,7 @@ WaveSurfer.util = {
         }
     },
 
-    min: function(values) {
+    min: function (values) {
         var min = +Infinity;
         for (var i in values) {
             if (values[i] < min) {
@@ -44,7 +44,7 @@ WaveSurfer.util = {
         return min;
     },
 
-    max: function(values) {
+    max: function (values) {
         var max = -Infinity;
         for (var i in values) {
             if (values[i] > max) {
