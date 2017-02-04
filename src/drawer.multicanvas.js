@@ -35,7 +35,6 @@ export default util.extend({}, drawer, {
     updateSize() {
         const totalWidth = Math.round(this.width / this.params.pixelRatio);
         const requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
-        let i;
 
         while (this.canvases.length < requiredCanvases) {
             this.addCanvas();
@@ -45,7 +44,7 @@ export default util.extend({}, drawer, {
             this.removeCanvas();
         }
 
-        for (i in this.canvases) {
+        this.canvases.forEach((entry, i) => {
             // Add some overlap to prevent vertical white stripes, keep the width even for simplicity.
             let canvasWidth = this.maxCanvasWidth + 2 * Math.ceil(this.params.pixelRatio / 2);
 
@@ -53,9 +52,9 @@ export default util.extend({}, drawer, {
                 canvasWidth = this.width - (this.maxCanvasWidth * (this.canvases.length - 1));
             }
 
-            this.updateDimensions(this.canvases[i], canvasWidth, this.height);
-            this.clearWaveForEntry(this.canvases[i]);
-        }
+            this.updateDimensions(entry, canvasWidth, this.height);
+            this.clearWaveForEntry(entry);
+        });
     },
 
     addCanvas() {
@@ -118,10 +117,7 @@ export default util.extend({}, drawer, {
     },
 
     clearWave() {
-        let i;
-        for (i in this.canvases) {
-            this.clearWaveForEntry(this.canvases[i]);
-        }
+        this.canvases.forEach(entry => this.clearWaveForEntry(entry));
     },
 
     clearWaveForEntry(entry) {
@@ -218,15 +214,11 @@ export default util.extend({}, drawer, {
     },
 
     drawLine(peaks, absmax, halfH, offsetY, start, end) {
-        let i;
-        for (i in this.canvases) {
-            const entry = this.canvases[i];
-
+        this.canvases.forEach(entry => {
             this.setFillStyles(entry);
-
             this.drawLineToContext(entry, entry.waveCtx, peaks, absmax, halfH, offsetY, start, end);
             this.drawLineToContext(entry, entry.progressCtx, peaks, absmax, halfH, offsetY, start, end);
-        }
+        });
     },
 
     drawLineToContext(entry, ctx, peaks, absmax, halfH, offsetY, start, end) {
