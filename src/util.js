@@ -9,13 +9,13 @@ WaveSurfer.util = {
         });
         return dest;
     },
-    
+
     debounce: function (func, wait, immediate) {
         var args, context, timeout;
         var later = function() {
             timeout = null;
             if (!immediate) {
-                func.apply(context, args);   
+                func.apply(context, args);
             }
         };
         return function() {
@@ -25,10 +25,10 @@ WaveSurfer.util = {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
             if (!timeout) {
-                timout = setTimeout(later, wait);   
+                timeout = setTimeout(later, wait);
             }
             if (callNow) {
-                func.apply(context, args);   
+                func.apply(context, args);
             }
         };
     },
