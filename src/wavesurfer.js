@@ -33,6 +33,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         mediaType     : 'audio',
         autoCenter    : true,
         partialRender : false,
+        responsive    : false,
         plugins       : []
     },
 
@@ -232,6 +233,18 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         this.drawer = Object.create(this.Drawer);
         this.drawer.init(this.container, this.params);
         this.fireEvent('drawer-created', this.drawer);
+        let prevWidth = 0;
+        this._onResize = () => {
+            if (prevWidth != this.drawer.wrapper.clientWidth) {
+                prevWidth = this.drawer.wrapper.clientWidth;
+                this.empty();
+                this.drawBuffer();
+            }
+        };
+
+        if (this.params.responsive) {
+            window.addEventListener('resize', this._onResize, true);
+        }
 
         this.drawer.on('redraw', () => {
             this.drawBuffer();
@@ -699,6 +712,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         this.cancelAjax();
         this.clearTmpEvents();
         this.unAll();
+        window.removeEventListener('resize', this._onResize, true);
         this.backend.destroy();
         this.drawer.destroy();
         this.isDestroyed = true;
