@@ -9,6 +9,29 @@ WaveSurfer.util = {
         });
         return dest;
     },
+    
+    debounce: function (func, wait, immediate) {
+        var args, context, timeout;
+        var later = function() {
+            timeout = null;
+            if (!immediate) {
+                func.apply(context, args);   
+            }
+        };
+        return function() {
+            context = this;
+            args = arguments;
+            var callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if(!timeout){
+                timout = setTimeout(later, wait);   
+            }
+            if (callNow) {
+                func.apply(context, args);   
+            }
+        }
+    },
 
     min: function(values) {
         var min = +Infinity;
