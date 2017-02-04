@@ -30,7 +30,7 @@ WaveSurfer.util = {
             if (callNow) {
                 func.apply(context, args);   
             }
-        }
+        };
     },
 
     min: function (values) {
