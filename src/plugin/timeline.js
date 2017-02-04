@@ -248,23 +248,19 @@ export default function(params = {}) {
             },
 
             setFillStyles(fillStyle) {
-                let i;
-                for (i in this.canvases) {
-                    this.canvases[i].getContext('2d').fillStyle = fillStyle;
-                }
+                this.canvases.forEach(canvas => {
+                    canvas.getContext('2d').fillStyle = fillStyle;
+                });
             },
 
             setFonts(font) {
-                let i;
-                for (i in this.canvases) {
-                    this.canvases[i].getContext('2d').font = font;
-                }
+                this.canvases.forEach(canvas => {
+                    canvas.getContext('2d').font = font;
+                });
             },
 
             fillRect(x, y, width, height) {
-                let i;
-                for (i in this.canvases) {
-                    const canvas = this.canvases[i];
+                this.canvases.forEach((canvas, i) => {
                     const leftOffset = i * this.maxCanvasWidth;
 
                     const intersection = {
@@ -282,7 +278,7 @@ export default function(params = {}) {
                             intersection.y2 - intersection.y1
                         );
                     }
-                }
+                });
             },
 
             fillText(text, x, y) {
