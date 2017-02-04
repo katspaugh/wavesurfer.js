@@ -186,9 +186,9 @@ export default util.extend({}, drawer, {
         const hasMinValues = [].some.call(peaks, val => val < 0);
         if (!hasMinValues) {
             const reflectedPeaks = [];
+            const len = peaks.length;
             let i;
-            let len;
-            for (i = 0, len = peaks.length; i < len; i++) {
+            for (i = 0; i < len; i++) {
                 reflectedPeaks[2 * i] = peaks[i];
                 reflectedPeaks[2 * i + 1] = -peaks[i];
             }
