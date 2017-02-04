@@ -261,7 +261,7 @@ export default util.extend({}, drawer, {
         for (j = canvasEnd - 1; j >= canvasStart; j--) {
             const peak = peaks[2 * j + 1] || 0;
             const h = Math.round(peak / absmax * halfH);
-            ctx.lineTo((i - first) * scale + this.halfPixel, halfH - h + offsetY);
+            ctx.lineTo((j - first) * scale + this.halfPixel, halfH - h + offsetY);
         }
 
         ctx.closePath();
