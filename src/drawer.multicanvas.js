@@ -133,7 +133,7 @@ export default util.extend({}, drawer, {
             const channels = peaks;
             if (this.params.splitChannels) {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach(this.drawBars, this);
+                channels.forEach((channelPeaks, i) => this.drawBars(channelPeaks, i, start, end));
                 return;
             }
             peaks = channels[0];
@@ -178,7 +178,7 @@ export default util.extend({}, drawer, {
             const channels = peaks;
             if (this.params.splitChannels) {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach(this.drawWave, this);
+                channels.forEach((channelPeaks, i) => this.drawWave(channelPeaks, i, start, end));
                 return;
             }
             peaks = channels[0];
