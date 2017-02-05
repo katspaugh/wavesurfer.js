@@ -335,13 +335,13 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
     seekTo(progress) {
         this.fireEvent('interaction', () => this.seekTo(progress));
 
-        var paused = this.backend.isPaused();
+        const paused = this.backend.isPaused();
         // avoid draw wrong position while playing backward seeking
         if (!paused) {
             this.backend.pause();
         }
         // avoid small scrolls while paused seeking
-        var oldScrollParent = this.params.scrollParent;
+        const oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
         this.drawer.progress(this.backend.getPlayedPercents());
