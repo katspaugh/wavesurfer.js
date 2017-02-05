@@ -404,7 +404,7 @@ const WebAudio = util.extend({}, util.observer, {
     /**
     *   Returns the current playback rate.
     */
-    getPlaybackRate: function () {
+    getPlaybackRate() {
         return this.playbackRate;
     },
 
