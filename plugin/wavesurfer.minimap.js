@@ -99,10 +99,10 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         if (typeof this.params.miniRenderOnLoad !== 'undefined') {
             if (miniRenderOnLoad) {
                 this.render();
-            } else{
+            } else {
                 this.wavesurfer.on('ready', this.render.bind(this));
             }
-        } else{
+        } else {
             this.wavesurfer.on('ready', this.render.bind(this));
         }
         this.wavesurfer.on('audioprocess', function (currentTime) {
