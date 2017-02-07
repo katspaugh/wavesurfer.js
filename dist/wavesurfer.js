@@ -247,6 +247,13 @@ var WaveSurfer = {
     },
 
     /**
+     * Get the playback rate.
+     */
+    getPlaybackRate: function () {
+        return this.backend.getPlaybackRate();
+    },
+
+    /**
      * Toggle the volume on and off. It not currenly muted it will
      * save the current volume value and turn the volume off.
      * If currently muted then it will restore the volume to the saved
@@ -600,7 +607,30 @@ WaveSurfer.util = {
         return dest;
     },
 
-    min: function(values) {
+    debounce: function (func, wait, immediate) {
+        var args, context, timeout;
+        var later = function() {
+            timeout = null;
+            if (!immediate) {
+                func.apply(context, args);
+            }
+        };
+        return function() {
+            context = this;
+            args = arguments;
+            var callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (!timeout) {
+                timeout = setTimeout(later, wait);
+            }
+            if (callNow) {
+                func.apply(context, args);
+            }
+        };
+    },
+
+    min: function (values) {
         var min = +Infinity;
         for (var i in values) {
             if (values[i] < min) {
@@ -611,7 +641,7 @@ WaveSurfer.util = {
         return min;
     },
 
-    max: function(values) {
+    max: function (values) {
         var max = -Infinity;
         for (var i in values) {
             if (values[i] > max) {
@@ -1029,7 +1059,10 @@ WaveSurfer.WebAudio = {
         // close the audioContext if it was created by wavesurfer
         // not passed in as a parameter
         if (!this.params.audioContext) {
-            this.ac.close();
+            // check if browser supports AudioContext.close()
+            if (typeof this.ac.close() !== 'undefined') {
+                this.ac.close();
+            }
         }
     },
 
@@ -1144,6 +1177,13 @@ WaveSurfer.WebAudio = {
     */
     getCurrentTime: function () {
         return this.state.getCurrentTime.call(this);
+    },
+
+    /**
+    *   Returns the current playback rate.
+    */
+    getPlaybackRate: function () {
+        return this.playbackRate;
     },
 
     /**
@@ -1331,7 +1371,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
     },
 
     getDuration: function () {
-        var duration = this.media.duration;
+        var duration = (this.buffer || this.media).duration;
         if (duration >= Infinity) { // streaming audio
             duration = this.media.seekable.end(0);
         }
@@ -1720,12 +1760,15 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     drawBars: function (peaks, channelIndex, start, end) {
+        var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
             if (this.params.splitChannels) {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach(this.drawBars, this);
+                channels.forEach(function(channelPeaks, i) {
+                    my.drawBars(channelPeaks, i, start, end);
+                });
                 return;
             } else {
                 peaks = channels[0];
@@ -1778,12 +1821,15 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
     },
 
     drawWave: function (peaks, channelIndex, start, end) {
+        var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
             if (this.params.splitChannels) {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach(this.drawWave, this);
+                channels.forEach(function(channelPeaks, i) {
+                    my.drawWave(channelPeaks, i, start, end);
+                });
                 return;
             } else {
                 peaks = channels[0];
@@ -2000,12 +2046,15 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     drawBars: function (peaks, channelIndex, start, end) {
+        var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
             if (this.params.splitChannels) {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach(this.drawBars, this);
+                channels.forEach(function(channelPeaks, i) {
+                    my.drawBars(channelPeaks, i, start, end);
+                });
                 return;
             } else {
                 peaks = channels[0];
@@ -2048,12 +2097,15 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     drawWave: function (peaks, channelIndex, start, end) {
+        var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
             if (this.params.splitChannels) {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach(this.drawWave, this);
+                channels.forEach(function(channelPeaks, i) {
+                    my.drawWave(channelPeaks, i, start, end);
+                });
                 return;
             } else {
                 peaks = channels[0];

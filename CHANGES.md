@@ -1,6 +1,12 @@
 wavesurfer.js changelog
 =======================
 
+1.3.1 (07.02.2017)
+------------------
+- Add a `getPlaybackRate` method (#936)
+- Add a `debounce` utility (#964)
+- Fixes for MultiCanvas & peaks cache, a fix the minimap plugin – thanks @entonbiba!
+
 1.3.0 (19.01.2017)
 ------------------
 - MultiCanvas is now the default renderer. Single Canvas will be soon removed.
