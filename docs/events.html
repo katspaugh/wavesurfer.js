@@ -19,9 +19,10 @@ layout: default
     <li><code>loading</code> – Fires continuously when loading via XHR or drag'n'drop. Callback will receive (integer) loading progress in percents [0..100] and (object) event target.</li>
     <li><code>pause</code> – When audio is paused.</li>
     <li><code>play</code> – When play starts.</li>
-    <li><code>ready</code> – When audio is loaded, decoded and the waveform drawn.</li>
+    <li><code>ready</code> – When audio is loaded, decoded and the waveform drawn. This fires before the waveform is drawn when using MediaElement, see <code>waveform-ready</code>.</li>
     <li><code>scroll</code> - When the scrollbar is moved.  Callback will receive a <code>ScrollEvent</code> object.</li>
     <li><code>seek</code> – On seeking.  Callback will receive (float) progress [0..1].</li>
+    <li><code>waveform-ready</code> – Fires after the waveform is drawn when using the MediaElement backend. If your using the WebAudio backend you can use <code>ready</code>.</li>
     <li><code>zoom</code> – On zooming. Callback will receive (integer) minPxPerSec.</li>
   </ul>
 </section>
