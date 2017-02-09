@@ -160,7 +160,7 @@ var WaveSurfer = {
     },
 
     pause: function () {
-        this.backend.pause();
+        this.backend.isPaused() || this.backend.pause();
     },
 
     playPause: function () {
