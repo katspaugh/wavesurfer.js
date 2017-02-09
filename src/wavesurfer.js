@@ -590,7 +590,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.pause();
      */
     pause() {
-        this.backend.pause();
+        this.backend.isPaused() || this.backend.pause();
     }
 
     /**
