@@ -291,12 +291,14 @@ var WaveSurfer = {
 
     /**
      * Get the list of current set filters as an array.
+     *
+     * Filters must be set with setFilters method first
      */
     getFilters: function() {
         if (typeof this.backend.filters !== 'undefined') {
             return this.backend.filters;
         }
-    }
+    },
 
     toggleScroll: function () {
         this.params.scrollParent = !this.params.scrollParent;
