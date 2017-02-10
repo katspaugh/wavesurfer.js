@@ -229,6 +229,13 @@ var WaveSurfer = {
     },
 
     /**
+     * Get the playback volume.
+     */
+    getVolume: function () {
+        return this.backend.getVolume();
+    },
+
+    /**
      * Set the playback rate.
      *
      * @param {Number} rate A positive number. E.g. 0.5 means half the
