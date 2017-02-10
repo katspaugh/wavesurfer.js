@@ -289,6 +289,15 @@ var WaveSurfer = {
         return this.isMuted;
     },
 
+    /**
+     * Get the list of current set filters as an array.
+     */
+    getFilters: function() {
+        if (typeof this.backend.filters !== 'undefined') {
+            return this.backend.filters;
+        }
+    }
+
     toggleScroll: function () {
         this.params.scrollParent = !this.params.scrollParent;
         this.drawBuffer();
