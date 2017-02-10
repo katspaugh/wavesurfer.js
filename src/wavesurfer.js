@@ -716,6 +716,13 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Get the playback volume.
+     */
+    getVolume: function () {
+        return this.backend.getVolume();
+    },
+
+    /**
      * Set the playback rate.
      *
      * @param {number} rate A positive number. E.g. 0.5 means half the normal
