@@ -227,7 +227,7 @@ var WaveSurfer = {
     setVolume: function (newVolume) {
         this.backend.setVolume(newVolume);
     },
-    
+
     /**
      * Get the playback volume.
      */
