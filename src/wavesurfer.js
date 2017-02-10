@@ -231,7 +231,7 @@ var WaveSurfer = {
     /**
      * Get the playback volume.
      */
-    getVolume: function (newVolume) {
+    getVolume: function () {
         return this.backend.getVolume();
     },
 
