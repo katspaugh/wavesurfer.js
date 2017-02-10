@@ -282,6 +282,13 @@ var WaveSurfer = {
         }
     },
 
+    /**
+     * Get the current mute status.
+     */
+    getMute: function () {
+        return this.isMuted;
+    },
+
     toggleScroll: function () {
         this.params.scrollParent = !this.params.scrollParent;
         this.drawBuffer();
