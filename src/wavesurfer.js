@@ -227,6 +227,13 @@ var WaveSurfer = {
     setVolume: function (newVolume) {
         this.backend.setVolume(newVolume);
     },
+    
+    /**
+     * Get the playback volume.
+     */
+    getVolume: function (newVolume) {
+        return this.backend.getVolume();
+    },
 
     /**
      * Set the playback rate.
