@@ -1,4 +1,4 @@
-import observer from './observer';
+import Observer from './observer';
 
 /**
  * Perform an ajax request
@@ -8,7 +8,7 @@ import observer from './observer';
  * @returns {Object} Observer instance
  */
 export default function ajax (options) {
-    const instance = Object.create(observer);
+    const instance = new Observer();
     const xhr = new XMLHttpRequest();
     let fired100 = false;
     xhr.open(options.method || 'GET', options.url, true);

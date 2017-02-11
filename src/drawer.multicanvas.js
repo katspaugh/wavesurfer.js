@@ -1,15 +1,21 @@
-import drawer from './drawer';
+import Drawer from './drawer';
 import * as util from './util';
 
-export default util.extend({}, drawer, {
-    initDrawer(params) {
+export default class MultiCanvas extends Drawer {
+    constructor(container, params) {
+        super(container, params);
         this.maxCanvasWidth = params.maxCanvasWidth;
         this.maxCanvasElementWidth = Math.round(params.maxCanvasWidth / params.pixelRatio);
 
         this.hasProgressCanvas = params.waveColor != params.progressColor;
         this.halfPixel = 0.5 / params.pixelRatio;
         this.canvases = [];
-    },
+    }
+
+    init() {
+        this.createWrapper();
+        this.createElements();
+    }
 
     createElements() {
         this.progressWave = this.wrapper.appendChild(
@@ -30,7 +36,7 @@ export default util.extend({}, drawer, {
         );
 
         this.addCanvas();
-    },
+    }
 
     updateSize() {
         const totalWidth = Math.round(this.width / this.params.pixelRatio);
@@ -56,7 +62,7 @@ export default util.extend({}, drawer, {
             this.updateDimensions(this.canvases[i], canvasWidth, this.height);
             this.clearWaveForEntry(this.canvases[i]);
         }
-    },
+    }
 
     addCanvas() {
         const entry = {};
@@ -86,7 +92,7 @@ export default util.extend({}, drawer, {
         }
 
         this.canvases.push(entry);
-    },
+    }
 
     removeCanvas() {
         const lastEntry = this.canvases.pop();
@@ -94,7 +100,7 @@ export default util.extend({}, drawer, {
         if (this.hasProgressCanvas) {
             lastEntry.progress.parentElement.removeChild(lastEntry.progress);
         }
-    },
+    }
 
     updateDimensions(entry, width, height) {
         const elementWidth = Math.round(width / this.params.pixelRatio);
@@ -115,21 +121,21 @@ export default util.extend({}, drawer, {
             entry.progressCtx.canvas.height = height;
             this.style(entry.progressCtx.canvas, { width: elementWidth + 'px'});
         }
-    },
+    }
 
     clearWave() {
         let i;
         for (i in this.canvases) {
             this.clearWaveForEntry(this.canvases[i]);
         }
-    },
+    }
 
     clearWaveForEntry(entry) {
         entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
         if (this.hasProgressCanvas) {
             entry.progressCtx.clearRect(0, 0, entry.progressCtx.canvas.width, entry.progressCtx.canvas.height);
         }
-    },
+    }
 
     drawBars(peaks, channelIndex, start, end) {
         // Split channels
@@ -172,7 +178,7 @@ export default util.extend({}, drawer, {
             const h = Math.round(peak / absmax * halfH);
             this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
         }
-    },
+    }
 
     drawWave(peaks, channelIndex, start, end) {
         // Split channels
@@ -215,7 +221,7 @@ export default util.extend({}, drawer, {
 
         // Always draw a median line
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
-    },
+    }
 
     drawLine(peaks, absmax, halfH, offsetY, start, end) {
         let i;
@@ -227,7 +233,7 @@ export default util.extend({}, drawer, {
             this.drawLineToContext(entry, entry.waveCtx, peaks, absmax, halfH, offsetY, start, end);
             this.drawLineToContext(entry, entry.progressCtx, peaks, absmax, halfH, offsetY, start, end);
         }
-    },
+    }
 
     drawLineToContext(entry, ctx, peaks, absmax, halfH, offsetY, start, end) {
         if (!ctx) { return; }
@@ -266,7 +272,7 @@ export default util.extend({}, drawer, {
 
         ctx.closePath();
         ctx.fill();
-    },
+    }
 
     fillRect(x, y, width, height) {
         const startCanvas = Math.floor(x / this.maxCanvasWidth);
@@ -302,21 +308,21 @@ export default util.extend({}, drawer, {
                         intersection.y2 - intersection.y1);
             }
         }
-    },
+    }
 
     fillRectToContext(ctx, x, y, width, height) {
         if (!ctx) { return; }
         ctx.fillRect(x, y, width, height);
-    },
+    }
 
     setFillStyles(entry) {
         entry.waveCtx.fillStyle = this.params.waveColor;
         if (this.hasProgressCanvas) {
             entry.progressCtx.fillStyle = this.params.progressColor;
         }
-    },
+    }
 
     updateProgress(pos) {
         this.style(this.progressWave, { width: pos + 'px' });
     }
-});
+}

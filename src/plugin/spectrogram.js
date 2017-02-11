@@ -180,12 +180,12 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
 /* eslint-enable complexity, no-redeclare, no-var, one-var */
 
 /**
-* spectrogram plugin
-*
-* @param  {Object} params parameters use to initialise the plugin
-* @return {Object} an object representing the plugin
-*/
-export default function(params = {}) {
+ * spectrogram plugin
+ *
+ * @param  {Object} params - parameters use to initialise the plugin
+ * @return {Object} plugin - an object representing the plugin
+ */
+export default function spectrogram(params = {}) {
     return {
         name: 'spectrogram',
         deferInit: params && params.deferInit ? params.deferInit : false,
@@ -193,8 +193,7 @@ export default function(params = {}) {
             FFT
         },
         extends: ['observer'],
-        instance: {
-
+        instance: Observer => class SpectrogramPlugin extends Observer {
             /**
             * List of params:
             *   wavesurfer: wavesurfer object
@@ -214,7 +213,8 @@ export default function(params = {}) {
             *   alpha: some window functions have this extra value (0<alpha<1);
             *   noverlap: size of the overlapping window. Must be < fftSamples. Auto deduced from canvas size by default.
             */
-            init(wavesurfer) {
+            constructor(wavesurfer) {
+                super();
                 this.params = params;
                 this.wavesurfer = wavesurfer;
 
@@ -246,14 +246,16 @@ export default function(params = {}) {
                     });
                     wavesurfer.on('redraw', () => this.render());
                 };
+            }
 
+            init() {
                 // Check if ws is ready
-                if (this.wavesurfer.backend) {
+                if (this.wavesurfer.isReady) {
                     this._onReady();
                 }
 
                 this.wavesurfer.on('ready', this._onReady);
-            },
+            }
 
             destroy() {
                 this.unAll();
@@ -262,7 +264,7 @@ export default function(params = {}) {
                     this.wrapper.parentNode.removeChild(this.wrapper);
                     this.wrapper = null;
                 }
-            },
+            }
 
             createWrapper() {
                 const prevSpectrogram = this.container.querySelector('spectrogram');
@@ -296,7 +298,7 @@ export default function(params = {}) {
                     const relX = 'offsetX' in e ? e.offsetX : e.layerX;
                     this.fireEvent('click', (relX / this.scrollWidth) || 0);
                 });
-            },
+            }
 
             createCanvas() {
                 const canvas = this.canvas = this.wrapper.appendChild(
@@ -309,7 +311,7 @@ export default function(params = {}) {
                     position: 'absolute',
                     zIndex: 4
                 });
-            },
+            }
 
             render() {
                 this.updateCanvasStyle();
@@ -319,14 +321,14 @@ export default function(params = {}) {
                 } else {
                     this.getFrequencies(this.drawSpectrogram);
                 }
-            },
+            }
 
             updateCanvasStyle() {
                 const width = Math.round(this.width / this.pixelRatio) + 'px';
                 this.canvas.width = this.width;
                 this.canvas.height = this.height;
                 this.canvas.style.width = width;
-            },
+            }
 
             drawSpectrogram(frequenciesData, my) {
                 const spectrCc = my.spectrCc;
@@ -344,7 +346,7 @@ export default function(params = {}) {
                         my.spectrCc.fillRect(i, height - j * heightFactor, 1, heightFactor);
                     }
                 }
-            },
+            }
 
             getFrequencies(callback) {
                 const fftSamples = this.fftSamples;
@@ -381,7 +383,7 @@ export default function(params = {}) {
                     currentOffset += (fftSamples - noverlap);
                 }
                 callback(frequencies, this);
-            },
+            }
 
             loadFrequenciesData(url) {
                 const ajax = this.wavesurfer.util.ajax({ url: url });
@@ -390,11 +392,11 @@ export default function(params = {}) {
                 ajax.on('error', e => this.fireEvent('error', 'XHR error: ' + e.target.statusText));
 
                 return ajax;
-            },
+            }
 
             updateScroll(e) {
                 this.wrapper.scrollLeft = e.target.scrollLeft;
-            },
+            }
 
             resample(oldMatrix) {
                 const columnsNumber = this.width;

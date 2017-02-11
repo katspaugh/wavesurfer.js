@@ -9,13 +9,14 @@ export default function(params = {}) {
         name: 'elan',
         deferInit: params && params.deferInit ? params.deferInit : false,
         extends: ['observer'],
-        instance: {
-            Types: {
+        instance: Observer => class ElanPlugin extends Observer {
+            Types = {
                 ALIGNABLE_ANNOTATION: 'ALIGNABLE_ANNOTATION',
                 REF_ANNOTATION: 'REF_ANNOTATION'
-            },
+            }
 
-            init(wavesurfer) {
+            constructor(wavesurfer) {
+                super();
                 this.data = null;
                 this.params = params;
                 this.container = 'string' == typeof params.container ?
@@ -24,18 +25,20 @@ export default function(params = {}) {
                 if (!this.container) {
                     throw Error('No container for ELAN');
                 }
+            }
 
+            init() {
                 this.bindClick();
 
                 if (params.url) {
                     this.load(params.url);
                 }
-            },
+            }
 
             destroy() {
                 this.container.removeEventListener('click', this._onClick);
                 this.container.removeChild(this.table);
-            },
+            }
 
             load(url) {
                 this.loadXML(url, xml => {
@@ -43,7 +46,7 @@ export default function(params = {}) {
                     this.render();
                     this.fireEvent('ready', this.data);
                 });
-            },
+            }
 
             loadXML(url, callback) {
                 const xhr = new XMLHttpRequest();
@@ -53,7 +56,7 @@ export default function(params = {}) {
                 xhr.addEventListener('load', e => {
                     callback && callback(e.target.responseXML);
                 });
-            },
+            }
 
             parseElan(xml) {
                 const _forEach = Array.prototype.forEach;
@@ -135,7 +138,7 @@ export default function(params = {}) {
                 data.length = data.alignableAnnotations.length;
 
                 return data;
-            },
+            }
 
             render() {
                 // apply tiers filter
@@ -217,7 +220,7 @@ export default function(params = {}) {
 
                 this.container.innerHTML = '';
                 this.container.appendChild(table);
-            },
+            }
 
             bindClick() {
                 this._onClick = e => {
@@ -230,7 +233,7 @@ export default function(params = {}) {
                     }
                 };
                 this.container.addEventListener('click', this._onClick);
-            },
+            }
 
             getRenderedAnnotation(time) {
                 let result;
@@ -242,7 +245,7 @@ export default function(params = {}) {
                     return false;
                 });
                 return result;
-            },
+            }
 
             getAnnotationNode(annotation) {
                 return document.getElementById(

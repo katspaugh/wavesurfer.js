@@ -1,4 +1,9 @@
-export default {
+/**
+ * @desc Observer
+ */
+export default class Observer {
+    constructor() {
+    }
     /**
      * Attach a handler function for an event.
      */
@@ -17,7 +22,7 @@ export default {
             callback: fn,
             un: (e, fn) => this.un(e, fn)
         };
-    },
+    }
 
     /**
      * Remove an event handler.
@@ -38,14 +43,14 @@ export default {
                 handlers.length = 0;
             }
         }
-    },
+    }
 
     /**
      * Remove all event handlers.
      */
     unAll() {
         this.handlers = null;
-    },
+    }
 
     /**
      * Attach a handler to an event. The handler is executed at most once per
@@ -61,7 +66,7 @@ export default {
             }, 0);
         };
         return this.on(event, fn);
-    },
+    }
 
     fireEvent(event, ...args) {
         if (!this.handlers) { return; }
@@ -70,4 +75,4 @@ export default {
             fn(...args);
         });
     }
-};
+}

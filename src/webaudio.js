@@ -1,14 +1,55 @@
 import * as util from './util';
 
-const WebAudio = util.extend({}, util.observer, {
-    scriptBufferSize: 256,
-    PLAYING_STATE: 0,
-    PAUSED_STATE: 1,
-    FINISHED_STATE: 2,
+// using consts to prevent someone writing the string wrong
+const PLAYING = 'playing';
+const PAUSED = 'paused';
+const FINISHED = 'finished';
+
+export default class WebAudio extends util.Observer {
+    static scriptBufferSize = 256
+
+    stateBehaviors = {
+        [PLAYING]: {
+            init() {
+                this.addOnAudioProcess();
+            },
+            getPlayedPercents() {
+                const duration = this.getDuration();
+                return (this.getCurrentTime() / duration) || 0;
+            },
+            getCurrentTime() {
+                return this.startPosition + this.getPlayedTime();
+            }
+        },
+        [PAUSED]: {
+            init() {
+                this.removeOnAudioProcess();
+            },
+            getPlayedPercents() {
+                const duration = this.getDuration();
+                return (this.getCurrentTime() / duration) || 0;
+            },
+            getCurrentTime() {
+                return this.startPosition;
+            }
+        },
+        [FINISHED]: {
+            init() {
+                this.removeOnAudioProcess();
+                this.fireEvent('finish');
+            },
+            getPlayedPercents() {
+                return 1;
+            },
+            getCurrentTime() {
+                return this.getDuration();
+            }
+        }
+    }
 
     supportsWebAudio() {
         return !!(window.AudioContext || window.webkitAudioContext);
-    },
+    }
 
     getAudioContext() {
         if (!this.audioContext) {
@@ -17,7 +58,7 @@ const WebAudio = util.extend({}, util.observer, {
             );
         }
         return this.audioContext;
-    },
+    }
 
     getOfflineAudioContext(sampleRate) {
         if (!this.offlineAudioContext) {
@@ -26,9 +67,10 @@ const WebAudio = util.extend({}, util.observer, {
             )(1, 2, sampleRate);
         }
         return this.offlineAudioContext;
-    },
+    }
 
-    init(params) {
+    constructor(params) {
+        super();
         this.params = params;
         this.ac = params.audioContext || this.getAudioContext();
 
@@ -36,20 +78,22 @@ const WebAudio = util.extend({}, util.observer, {
         this.startPosition = 0;
         this.scheduledPause = null;
 
-        this.states = [
-            Object.create(WebAudio.state.playing),
-            Object.create(WebAudio.state.paused),
-            Object.create(WebAudio.state.finished)
-        ];
+        this.states = {
+            [PLAYING]: Object.create(this.stateBehaviors[PLAYING]),
+            [PAUSED]: Object.create(this.stateBehaviors[PAUSED]),
+            [FINISHED]: Object.create(this.stateBehaviors[FINISHED])
+        };
+    }
 
+    init() {
         this.createVolumeNode();
         this.createScriptNode();
         this.createAnalyserNode();
 
-        this.setState(this.PAUSED_STATE);
+        this.setState(PAUSED);
         this.setPlaybackRate(this.params.audioRate);
         this.setLength(0);
-    },
+    }
 
     disconnectFilters() {
         if (this.filters) {
@@ -60,19 +104,19 @@ const WebAudio = util.extend({}, util.observer, {
             // Reconnect direct path
             this.analyser.connect(this.gainNode);
         }
-    },
+    }
 
     setState(state) {
         if (this.state !== this.states[state]) {
             this.state = this.states[state];
             this.state.init.call(this);
         }
-    },
+    }
 
     // Unpacked filters
     setFilter(...filters) {
         this.setFilters(filters);
-    },
+    }
 
     /**
      * @param {Array} filters Packed ilters array
@@ -95,7 +139,7 @@ const WebAudio = util.extend({}, util.observer, {
             }, this.analyser).connect(this.gainNode);
         }
 
-    },
+    }
 
     createScriptNode() {
         if (this.ac.createScriptProcessor) {
@@ -105,31 +149,31 @@ const WebAudio = util.extend({}, util.observer, {
         }
 
         this.scriptNode.connect(this.ac.destination);
-    },
+    }
 
     addOnAudioProcess() {
         this.scriptNode.onaudioprocess = () => {
             const time = this.getCurrentTime();
 
             if (time >= this.getDuration()) {
-                this.setState(this.FINISHED_STATE);
+                this.setState(FINISHED);
                 this.fireEvent('pause');
             } else if (time >= this.scheduledPause) {
                 this.pause();
-            } else if (this.state === this.states[this.PLAYING_STATE]) {
+            } else if (this.state === this.states[PLAYING]) {
                 this.fireEvent('audioprocess', time);
             }
         };
-    },
+    }
 
     removeOnAudioProcess() {
         this.scriptNode.onaudioprocess = null;
-    },
+    }
 
     createAnalyserNode() {
         this.analyser = this.ac.createAnalyser();
         this.analyser.connect(this.gainNode);
-    },
+    }
 
     /**
      * Create the gain node needed to control the playback volume.
@@ -143,7 +187,7 @@ const WebAudio = util.extend({}, util.observer, {
         }
         // Add the gain node to the graph
         this.gainNode.connect(this.ac.destination);
-    },
+    }
 
     /**
      * Set the gain to a new value.
@@ -153,7 +197,7 @@ const WebAudio = util.extend({}, util.observer, {
      */
     setVolume(newGain) {
         this.gainNode.gain.value = newGain;
-    },
+    }
 
     /**
      * Get the current gain.
@@ -163,21 +207,21 @@ const WebAudio = util.extend({}, util.observer, {
      */
     getVolume() {
         return this.gainNode.gain.value;
-    },
+    }
 
     decodeArrayBuffer(arraybuffer, callback, errback) {
         if (!this.offlineAc) {
             this.offlineAc = this.getOfflineAudioContext(this.ac ? this.ac.sampleRate : 44100);
         }
         this.offlineAc.decodeAudioData(arraybuffer, data => callback(data), errback);
-    },
+    }
 
     /**
      * Set pre-decoded peaks.
      */
     setPeaks(peaks) {
         this.peaks = peaks;
-    },
+    }
 
     /**
      * Set the rendered length (different from the length of the audio).
@@ -201,7 +245,7 @@ const WebAudio = util.extend({}, util.observer, {
         }
         this.mergedPeaks[2 * (length - 1)] = 0;
         this.mergedPeaks[2 * (length - 1) + 1] = 0;
-    },
+    }
 
     /**
      * Compute the max and min value of the waveform when broken into
@@ -260,17 +304,17 @@ const WebAudio = util.extend({}, util.observer, {
         }
 
         return this.params.splitChannels ? this.splitPeaks : this.mergedPeaks;
-    },
+    }
 
     getPlayedPercents() {
         return this.state.getPlayedPercents.call(this);
-    },
+    }
 
     disconnectSource() {
         if (this.source) {
             this.source.disconnect();
         }
-    },
+    }
 
     destroy() {
         if (!this.isPaused()) {
@@ -283,14 +327,14 @@ const WebAudio = util.extend({}, util.observer, {
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
         this.analyser.disconnect();
-    },
+    }
 
     load(buffer) {
         this.startPosition = 0;
         this.lastPlay = this.ac.currentTime;
         this.buffer = buffer;
         this.createSource();
-    },
+    }
 
     createSource() {
         this.disconnectSource();
@@ -303,18 +347,18 @@ const WebAudio = util.extend({}, util.observer, {
         this.source.playbackRate.value = this.playbackRate;
         this.source.buffer = this.buffer;
         this.source.connect(this.analyser);
-    },
+    }
 
     isPaused() {
-        return this.state !== this.states[this.PLAYING_STATE];
-    },
+        return this.state !== this.states[PLAYING];
+    }
 
     getDuration() {
         if (!this.buffer) {
             return 0;
         }
         return this.buffer.duration;
-    },
+    }
 
     seekTo(start, end) {
         if (!this.buffer) { return; }
@@ -334,19 +378,19 @@ const WebAudio = util.extend({}, util.observer, {
         this.startPosition = start;
         this.lastPlay = this.ac.currentTime;
 
-        if (this.state === this.states[this.FINISHED_STATE]) {
-            this.setState(this.PAUSED_STATE);
+        if (this.state === this.states[FINISHED]) {
+            this.setState(PAUSED);
         }
 
         return {
             start: start,
             end: end
         };
-    },
+    }
 
     getPlayedTime() {
         return (this.ac.currentTime - this.lastPlay) * this.playbackRate;
-    },
+    }
 
     /**
      * Plays the loaded audio region.
@@ -375,10 +419,10 @@ const WebAudio = util.extend({}, util.observer, {
             this.ac.resume && this.ac.resume();
         }
 
-        this.setState(this.PLAYING_STATE);
+        this.setState(PLAYING);
 
         this.fireEvent('play');
-    },
+    }
 
     /**
      * Pauses the loaded audio.
@@ -389,17 +433,17 @@ const WebAudio = util.extend({}, util.observer, {
         this.startPosition += this.getPlayedTime();
         this.source && this.source.stop(0);
 
-        this.setState(this.PAUSED_STATE);
+        this.setState(PAUSED);
 
         this.fireEvent('pause');
-    },
+    }
 
     /**
     *   Returns the current time in seconds relative to the audioclip's duration.
     */
     getCurrentTime() {
         return this.state.getCurrentTime.call(this);
-    },
+    }
 
     /**
      * Set the audio source playback rate.
@@ -414,47 +458,4 @@ const WebAudio = util.extend({}, util.observer, {
             this.play();
         }
     }
-});
-
-WebAudio.state = {};
-
-WebAudio.state.playing = {
-    init() {
-        this.addOnAudioProcess();
-    },
-    getPlayedPercents() {
-        const duration = this.getDuration();
-        return (this.getCurrentTime() / duration) || 0;
-    },
-    getCurrentTime() {
-        return this.startPosition + this.getPlayedTime();
-    }
-};
-
-WebAudio.state.paused = {
-    init() {
-        this.removeOnAudioProcess();
-    },
-    getPlayedPercents() {
-        const duration = this.getDuration();
-        return (this.getCurrentTime() / duration) || 0;
-    },
-    getCurrentTime() {
-        return this.startPosition;
-    }
-};
-
-WebAudio.state.finished = {
-    init() {
-        this.removeOnAudioProcess();
-        this.fireEvent('finish');
-    },
-    getPlayedPercents() {
-        return 1;
-    },
-    getCurrentTime() {
-        return this.getDuration();
-    }
-};
-
-export default WebAudio;
+}
