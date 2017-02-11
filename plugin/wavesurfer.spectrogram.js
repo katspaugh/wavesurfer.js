@@ -224,11 +224,11 @@ WaveSurfer.Spectrogram = {
     },
 
     freqType: function (freq) {
-      return (freq >= 1000 ? (freq/1000).toFixed(1) : Math.round(freq));
+        return (freq >= 1000 ? (freq/1000).toFixed(1) : Math.round(freq));
     },
 
-    unitType: function(freq) {
-      return (freq >= 1000 ? 'KHz' : 'Hz');
+    unitType: function (freq) {
+        return (freq >= 1000 ? 'KHz' : 'Hz');
     },
 
     loadLabels: function (bgFill, fontSizeFreq, fontSizeUnit, fontType, textColorFreq, textColorUnit, textAlign, container) {
@@ -251,7 +251,7 @@ WaveSurfer.Spectrogram = {
         document.querySelectorAll(container+' canvas')[0].width = 55;
 
         cLabel.fillStyle = bgFill;
-        cLabel.fillRect(0,0,55,getMaxY);
+        cLabel.fillRect(0, 0, 55, getMaxY);
         cLabel.fill();
 
         for (var i = 0; i <= labelIndex; i++) {
@@ -267,7 +267,7 @@ WaveSurfer.Spectrogram = {
             var units = this.unitType(freq);
             var x = 16;
             var yLabelOffset = 2;
-            
+
             if (i==0) {
                 cLabel.fillStyle = textColorUnit;
                 cLabel.font = fontSizeUnit+' '+fontType;
@@ -285,7 +285,7 @@ WaveSurfer.Spectrogram = {
             }
         }
     },
-    
+
     updateScroll: function(e) {
       this.wrapper.scrollLeft = e.target.scrollLeft;
     },
