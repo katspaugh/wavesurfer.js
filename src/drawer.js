@@ -194,7 +194,6 @@ export default class Drawer extends util.Observer {
     }
 
      /* Renderer-specific methods */
-    
     createElements() {}
 
     updateSize() {}
