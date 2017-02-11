@@ -1,10 +1,10 @@
 // Create a WaveSurfer instance
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer;
 
 
 // Init on DOM ready
 document.addEventListener('DOMContentLoaded', function () {
-    wavesurfer.init({
+    wavesurfer = WaveSurfer.create({
         container: '#waveform',
         waveColor: '#428bca',
         progressColor: '#31708f',

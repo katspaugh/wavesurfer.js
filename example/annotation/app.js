@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ]
     });
 
-    window.WaveSurfer.util.ajax({
+    wavesurfer.util.ajax({
         responseType: 'json',
         url: 'rashomon.json'
     }).on('success', function (data) {

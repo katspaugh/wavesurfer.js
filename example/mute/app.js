@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function () {
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setMuteOffButton = document.querySelector('#setMuteOffBtn');
 
     // Init wavesurfer
-    wavesurfer.init({
+    wavesurfer = WaveSurfer.create({
         container     : '#waveform',
         waveColor     : 'black',
         interact      : false,
