@@ -289,7 +289,6 @@
         control.isReady = false;
         control.currentTime = 0;
         if (!control.surfer) {
-          control.surfer = Object.create(window.WaveSurfer);
           var options = {
             container: $element[0].querySelector('.waveSurferWave')
           }, defaults = {
@@ -299,7 +298,7 @@
           };
 
           options = angular.extend(defaults, attributes, (control.properties || {}), options);
-          control.surfer.init(options);
+          control.surfer = WaveSurfer.create(options);
 
           control.surfer.on('ready', function () {
             control.isReady = true;

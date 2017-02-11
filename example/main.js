@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer;
 
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function () {
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Init
-    wavesurfer.init(options);
+    wavesurfer = WaveSurfer.create(options);
     // Load audio from URL
     wavesurfer.load('example/media/demo.wav');
 

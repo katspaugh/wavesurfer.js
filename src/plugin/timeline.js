@@ -9,8 +9,9 @@ export default function(params = {}) {
         name: 'timeline',
         deferInit: params && params.deferInit ? params.deferInit : false,
         extends: ['observer'],
-        instance: {
-            init(wavesurfer) {
+        instance: Observer => class TimelinePlugin extends Observer {
+            constructor(wavesurfer) {
+                super();
                 this.params = params;
                 this.wavesurfer = wavesurfer;
                 this.style = wavesurfer.util.style;
@@ -92,15 +93,15 @@ export default function(params = {}) {
                     wavesurfer.drawer.wrapper.addEventListener('scroll', this._onScroll);
                     wavesurfer.on('redraw', this._onRedraw);
                 };
+            }
 
-                // backend (and drawer) already existed, just call
-                // initialisation code
-                if (wavesurfer.backend) {
+            init() {
+                this.wavesurfer.on('ready', this._onReady);
+                // Check if ws is ready
+                if (this.wavesurfer.isReady) {
                     this._onReady();
                 }
-                // ws is ready, call the initialisation code
-                wavesurfer.on('ready', this._onReady);
-            },
+            }
 
             destroy() {
                 this.unAll();
@@ -111,7 +112,7 @@ export default function(params = {}) {
                     this.wrapper.parentNode.removeChild(this.wrapper);
                     this.wrapper = null;
                 }
-            },
+            }
 
             createWrapper() {
                 const wsParams = this.wavesurfer.params;
@@ -139,16 +140,15 @@ export default function(params = {}) {
                     const relX = 'offsetX' in e ? e.offsetX : e.layerX;
                     this.fireEvent('click', (relX / this.wrapper.scrollWidth) || 0);
                 };
-
                 this.wrapper.addEventListener('click', this._onClick);
-            },
+            }
 
             removeOldCanvases() {
                 while (this.canvases.length > 0) {
                     const canvas = this.canvases.pop();
                     canvas.parentElement.removeChild(canvas);
                 }
-            },
+            }
 
             createCanvases() {
                 this.removeOldCanvases();
@@ -165,13 +165,13 @@ export default function(params = {}) {
                         zIndex: 4
                     });
                 }
-            },
+            }
 
             render() {
                 this.createCanvases();
                 this.updateCanvasStyle();
                 this.drawTimeCanvases();
-            },
+            }
 
             updateCanvasStyle() {
                 const requiredCanvases = this.canvases.length;
@@ -192,7 +192,7 @@ export default function(params = {}) {
                         left: `${i * this.maxCanvasElementWidth}px`
                     });
                 }
-            },
+            }
 
             drawTimeCanvases() {
                 const backend = this.wavesurfer.backend;
@@ -245,19 +245,19 @@ export default function(params = {}) {
                     curSeconds += timeInterval;
                     curPixel += pixelsPerSecond * timeInterval;
                 }
-            },
+            }
 
             setFillStyles(fillStyle) {
                 this.canvases.forEach(canvas => {
                     canvas.getContext('2d').fillStyle = fillStyle;
                 });
-            },
+            }
 
             setFonts(font) {
                 this.canvases.forEach(canvas => {
                     canvas.getContext('2d').font = font;
                 });
-            },
+            }
 
             fillRect(x, y, width, height) {
                 this.canvases.forEach((canvas, i) => {
@@ -279,7 +279,7 @@ export default function(params = {}) {
                         );
                     }
                 });
-            },
+            }
 
             fillText(text, x, y) {
                 let textWidth;

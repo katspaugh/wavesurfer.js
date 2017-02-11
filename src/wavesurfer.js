@@ -4,8 +4,8 @@ import WebAudio from './webaudio';
 import MediaElement from './mediaelement';
 import PeakCache from './peakcache';
 
-const WaveSurfer = util.extend({}, util.observer, { util }, {
-    defaultParams: {
+export default class WaveSurfer extends util.Observer {
+    defaultParams = {
         height        : 128,
         waveColor     : '#999',
         progressColor : '#555',
@@ -34,18 +34,30 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         autoCenter    : true,
         partialRender : false,
         plugins       : []
-    },
+    }
 
-    backends: {
+    backends = {
         MediaElement,
         WebAudio
-    },
+    }
 
-    PeakCache: PeakCache,
+    static create(params) {
+        const wavesurfer = new WaveSurfer(params);
+        return wavesurfer.init();
+    }
 
-    init(params) {
+    util = util
+
+    /**
+     * Initialise wavesurfer instance
+     *
+     * @param {WavesurferParams} params Instantiation options for wavesurfer
+     * @returns {WavesurferInstance} wavesurfer instance
+     */
+    constructor(params) {
+        super();
         // Extract relevant parameters (or defaults)
-        this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
+        this.params = util.extend({}, this.defaultParams, params);
 
         this.container = 'string' == typeof params.container ?
             document.querySelector(this.params.container) :
@@ -88,7 +100,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         this.currentAjax = null;
 
         // cache constructor objects
-        if (typeof this.params.renderer !== 'object' || typeof this.params.renderer.init !== 'function') {
+        if (typeof this.params.renderer !== 'function') {
             throw new Error('Renderer parameter is invalid');
         }
         this.Drawer = this.params.renderer;
@@ -96,20 +108,23 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
 
         // plugins that are currently initialised
         this.initialisedPluginList = {};
+        this.isDestroyed = false;
+        this.isReady = false;
+        return this;
+    }
 
+    init() {
         this.registerPlugins(this.params.plugins);
         this.createDrawer();
         this.createBackend();
         this.createPeakCache();
-
-        this.isDestroyed = false;
         return this;
-    },
+    }
 
     /**
      * Add and initialise array of plugins (if plugin.deferInit is falsey)
      *
-     * @param {Array} plugins
+     * @param {PluginDefinition[]} plugins a list of plugin definitions
      */
     registerPlugins(plugins) {
         // first instantiate all the plugins
@@ -125,19 +140,19 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         });
         this.fireEvent('plugins-registered', plugins);
         return this;
-    },
+    }
 
     /**
      * Add a plugin object to wavesurfer
      *
-     * @param {Object} plugin object
+     * @param {PluginDefinition} plugin a plugin definition
      */
     addPlugin(plugin) {
         if (!plugin.name) {
             throw new Error('Plugin does not have a name!');
         }
         if (!plugin.instance) {
-            throw new Error(`Plugin ${plugin.name} does not have an instance object!`);
+            throw new Error(`Plugin ${plugin.name} does not have an instance factory!`);
         }
 
         // static properties are applied to wavesurfer instance
@@ -150,57 +165,62 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         // default for deferInit is false
         plugin.deferInit = plugin.deferInit || false;
 
-        // if there is an extends property on the plugin
-        // iterate over them, try and match them in the
-        // parentsMap and iteratively create a single parent
-        let parent = {};
-        const parentsMap = {
-            'observer': util.observer,
-            'drawer': this.Drawer
+        // SuperClass of the plugin class is built iteratively out of the super
+        // class names in the extends property. These are mapped to their
+        // objects in the superClassMap. The first name in the extends property
+        // is the first super class of the plugin class, it is superclassed by
+        // the next extends property and so on
+        let SuperClass = function() {};
+        const superClassMap = {
+            observer: util.Observer,
+            drawer: this.Drawer
         };
         if (plugin.extends) {
-            plugin.extends.forEach(key => {
-                if (!parentsMap[key]) {
+            plugin.extends.forEach((key, i) => {
+                if (!superClassMap[key]) {
                     throw new Error(`Cannot extend plugin ${plugin.name} with ${key}, the object was not found!`);
                 }
-                parent = util.extend({}, parent, parentsMap[key]);
+                // first parent is root object in SuperClass
+                if (i === 0) {
+                    SuperClass = superClassMap[key];
+                } else {
+                    // same as: class SuperClass extends superClassMap[key]
+                    util.inherits(SuperClass, superClassMap[key]);
+                }
             });
         }
 
-        // create a new instance with the extended plugin instance property
-        this[plugin.name] = Object.create(util.extend({}, parent, plugin.instance));
+        // instantiate plugin class
+        /* eslint-disable new-cap */
+        this[plugin.name] = new (plugin.instance(SuperClass))(this);
+        /* eslint-enable new-cap */
         this.fireEvent('plugin-added', plugin.name);
         return this;
-    },
+    }
 
     /**
      * Initialise a plugin
      *
-     * @param {String} plugin name
+     * @param {string} name a plugin name
      */
     initPlugin(name) {
         if (!this[name]) {
             throw new Error(`Plugin ${name} has not been added yet!`);
         }
-        if (typeof this[name].init !== 'function') {
-            throw new Error(`Plugin ${name} does not have an init function!`);
-        }
         if (this.initialisedPluginList[name]) {
             // destroy any already initialised plugins
             this.destroyPlugin(name);
         }
-        // call the init function
-        this[name].init(this);
-        // add the plugin name to the list of initialised plugins
+        this[name].init();
         this.initialisedPluginList[name] = true;
         this.fireEvent('plugin-initialised', name);
         return this;
-    },
+    }
 
     /**
      * Destroy a plugin
      *
-     * @param {String} plugin name
+     * @param {string} name a plugin name
      */
     destroyPlugin(name) {
         if (!this[name]) {
@@ -217,7 +237,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         delete this.initialisedPluginList[name];
         this.fireEvent('plugin-destroyed', name);
         return this;
-    },
+    }
 
     /**
      * Destroy all initialised plugins
@@ -226,11 +246,11 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
      */
     destroyAllPlugins() {
         Object.keys(this.initialisedPluginList).forEach(name => this.destroyPlugin(name));
-    },
+    }
 
     createDrawer() {
-        this.drawer = Object.create(this.Drawer);
-        this.drawer.init(this.container, this.params);
+        this.drawer = new this.Drawer(this.container, this.params, this);
+        this.drawer.init();
         this.fireEvent('drawer-created', this.drawer);
 
         this.drawer.on('redraw', () => {
@@ -250,7 +270,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
             }
             this.fireEvent('scroll', e);
         });
-    },
+    }
 
     createBackend() {
         if (this.backend) {
@@ -262,12 +282,12 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
             this.params.backend = 'MediaElement';
         }
 
-        if (this.params.backend == 'WebAudio' && !this.backends.WebAudio.supportsWebAudio()) {
+        if (this.params.backend == 'WebAudio' && !this.Backend.prototype.supportsWebAudio.call(null)) {
             this.params.backend = 'MediaElement';
         }
 
-        this.backend = Object.create(this.Backend);
-        this.backend.init(this.params);
+        this.backend = new this.Backend(this.params);
+        this.backend.init();
         this.fireEvent('backend-created', this.backend);
 
         this.backend.on('finish', () => this.fireEvent('finish'));
@@ -278,59 +298,58 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
             this.drawer.progress(this.backend.getPlayedPercents());
             this.fireEvent('audioprocess', time);
         });
-    },
+    }
 
     createPeakCache() {
         if (this.params.partialRender) {
-            this.peakCache = Object.create(PeakCache);
-            this.peakCache.init();
+            this.peakCache = new PeakCache();
         }
-    },
+    }
 
     getDuration() {
         return this.backend.getDuration();
-    },
+    }
 
     getCurrentTime() {
         return this.backend.getCurrentTime();
-    },
+    }
 
     play(start, end) {
         this.fireEvent('interaction', () => this.play(start, end));
         this.backend.play(start, end);
-    },
+    }
 
     pause() {
         this.backend.pause();
-    },
+    }
 
     playPause() {
         this.backend.isPaused() ? this.play() : this.pause();
-    },
+    }
 
     isPlaying() {
         return !this.backend.isPaused();
-    },
+    }
 
     skipBackward(seconds) {
         this.skip(-seconds || -this.params.skipLength);
-    },
+    }
 
     skipForward(seconds) {
         this.skip(seconds || this.params.skipLength);
-    },
+    }
 
     skip(offset) {
         const duration = this.getDuration() || 1;
         let position = this.getCurrentTime() || 0;
         position = Math.max(0, Math.min(duration, position + (offset || 0)));
         this.seekAndCenter(position / duration);
-    },
+    }
 
     seekAndCenter(progress) {
         this.seekTo(progress);
         this.drawer.recenter(progress);
-    },
+    }
 
     seekTo(progress) {
         this.fireEvent('interaction', () => this.seekTo(progress));
@@ -351,13 +370,13 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         }
         this.params.scrollParent = oldScrollParent;
         this.fireEvent('seek', progress);
-    },
+    }
 
     stop() {
         this.pause();
         this.seekTo(0);
         this.drawer.progress(0);
-    },
+    }
 
     /**
      * Set the playback volume.
@@ -367,7 +386,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
      */
     setVolume(newVolume) {
         this.backend.setVolume(newVolume);
-    },
+    }
 
     /**
      * Set the playback rate.
@@ -377,7 +396,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
      */
     setPlaybackRate(rate) {
         this.backend.setPlaybackRate(rate);
-    },
+    }
 
     /**
      * Toggle the volume on and off. It not currenly muted it will
@@ -387,7 +406,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
      */
     toggleMute() {
         this.setMute(!this.isMuted);
-    },
+    }
 
     setMute(mute) {
         // ignore all muting requests if the audio is already in that state
@@ -407,16 +426,16 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
             this.backend.setVolume(this.savedVolume);
             this.isMuted = false;
         }
-    },
+    }
 
     toggleScroll() {
         this.params.scrollParent = !this.params.scrollParent;
         this.drawBuffer();
-    },
+    }
 
     toggleInteraction() {
         this.params.interact = !this.params.interact;
-    },
+    }
 
     drawBuffer() {
         const nominalWidth = Math.round(
@@ -449,7 +468,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
             this.drawer.drawPeaks(peaks, width, start, end);
         }
         this.fireEvent('redraw', peaks, width);
-    },
+    }
 
     zoom(pxPerSec) {
         this.params.minPxPerSec = pxPerSec;
@@ -463,7 +482,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
             this.getCurrentTime() / this.getDuration()
         );
         this.fireEvent('zoom', pxPerSec);
-    },
+    }
 
     /**
      * Internal method.
@@ -474,7 +493,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
                 this.loadDecodedBuffer(data);
             }
         });
-    },
+    }
 
     /**
      * Directly load an externally decoded AudioBuffer.
@@ -483,7 +502,8 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         this.backend.load(buffer);
         this.drawBuffer();
         this.fireEvent('ready');
-    },
+        this.isReady = true;
+    }
 
     /**
      * Loads audio data from a Blob or File object.
@@ -498,7 +518,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         reader.addEventListener('error', () => this.fireEvent('error', 'Error reading file'));
         reader.readAsArrayBuffer(blob);
         this.empty();
-    },
+    }
 
     /**
      * Loads audio and re-renders the waveform.
@@ -510,7 +530,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
             case 'WebAudio': return this.loadBuffer(url, peaks);
             case 'MediaElement': return this.loadMediaElement(url, peaks, preload);
         }
-    },
+    }
 
     /**
      * Loads audio using Web Audio buffer backend.
@@ -530,7 +550,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         } else {
             return load();
         }
-    },
+    }
 
     /**
      *  Either create a media element, or load
@@ -576,7 +596,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
                 });
             });
         }
-    },
+    }
 
     decodeArrayBuffer(arraybuffer, callback) {
         this.arraybuffer = arraybuffer;
@@ -592,10 +612,10 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
             },
             () => this.fireEvent('error', 'Error decoding audiobuffer')
         );
-    },
+    }
 
     getArrayBuffer(url, callback) {
-        const ajax = WaveSurfer.util.ajax({
+        const ajax = util.ajax({
             url: url,
             responseType: 'arraybuffer'
         });
@@ -617,7 +637,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         );
 
         return ajax;
-    },
+    }
 
     onProgress(e) {
         let percentComplete;
@@ -629,7 +649,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
             percentComplete = e.loaded / (e.loaded + 1000000);
         }
         this.fireEvent('loading', Math.round(percentComplete * 100), e.target);
-    },
+    }
 
     /**
      * Exports PCM data into a JSON array and opens in a new window.
@@ -646,7 +666,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
                 encodeURIComponent(json));
         }
         return json;
-    },
+    }
 
     /**
      * Save waveform image as data URI.
@@ -663,18 +683,18 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         }
 
         return this.drawer.getImage(format, quality);
-    },
+    }
 
     cancelAjax() {
         if (this.currentAjax) {
             this.currentAjax.xhr.abort();
             this.currentAjax = null;
         }
-    },
+    }
 
     clearTmpEvents() {
         this.tmpEvents.forEach(e => e.un());
-    },
+    }
 
     /**
      * Display empty waveform.
@@ -689,7 +709,7 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         this.drawer.progress(0);
         this.drawer.setWidth(0);
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
-    },
+    }
 
     /**
      * Remove events, elements and disconnect WebAudio nodes.
@@ -704,11 +724,4 @@ const WaveSurfer = util.extend({}, util.observer, { util }, {
         this.drawer.destroy();
         this.isDestroyed = true;
     }
-});
-
-WaveSurfer.create = function (params) {
-    const wavesurfer = Object.create(WaveSurfer);
-    wavesurfer.init(params);
-    return wavesurfer;
-};
-export default WaveSurfer;
+}
