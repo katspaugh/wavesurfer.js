@@ -86,7 +86,7 @@ WaveSurfer.Spectrogram = {
             // can be customized in next version
             this.loadLabels('rgba(68,68,68,0.5)', '12px', '10px', '', '#fff', '#f7f7f7', 'center', '#specLabels');
         }
-        
+
         var wsParams = this.wavesurfer.params;
 
         var specView = document.createElement('spectrogram');
