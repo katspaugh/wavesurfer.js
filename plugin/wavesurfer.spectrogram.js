@@ -77,7 +77,7 @@ WaveSurfer.Spectrogram = {
         // if labels are active
         if (specLabels) {
             var specLabelsdiv = document.createElement('div');
-            specLabelsdiv.setAttribute("id", "specLabels");
+            specLabelsdiv.setAttribute('id', 'specLabels');
             specLabelsdiv.style.cssText = 'position:absolute;left:0;z-index: 9;';
             specLabelsdiv.innerHTML = '<canvas></canvas>';
             this.wrapper = this.container.appendChild(
@@ -256,7 +256,7 @@ WaveSurfer.Spectrogram = {
 
         for (var i = 0; i <= labelIndex; i++) {
             cLabel.textAlign = textAlign;
-            cLabel.textBaseline = "middle";
+            cLabel.textBaseline = 'middle';
 
             var freq = freqStart + (step * i);
             var index = Math.round(freq/this.sampleRate/2 * this.fftSamples);
