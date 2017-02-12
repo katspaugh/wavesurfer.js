@@ -77,7 +77,7 @@ WaveSurfer.Spectrogram = {
         if (this.params.labels) {
             var specLabelsdiv = document.createElement('div');
             specLabelsdiv.setAttribute('id', 'specLabels');
-            this.drawer.style(specView, {
+            this.drawer.style(specLabelsdiv, {
                 left: 0,
                 position: 'relative',
                 zIndex: 9
