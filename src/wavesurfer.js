@@ -46,7 +46,10 @@ export default class WaveSurfer extends util.Observer {
         return wavesurfer.init();
     }
 
+    // util should be available as a prototype property to all instances and as
+    // a static property on the uninstantiated wavesurfer class
     util = util
+    static util = util
 
     /**
      * Initialise wavesurfer instance
