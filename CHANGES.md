@@ -1,6 +1,13 @@
 wavesurfer.js changelog
 =======================
 
+1.3.2 (10.02.2017)
+------------------
+- Add a `getVolume` method (#979)
+- Add a `getMute` method (#980)
+- Add a `getFilters` method (#982)
+- New feature for spectrogram plugin to display frequency labels
+
 1.3.1 (07.02.2017)
 ------------------
 - Add a `getPlaybackRate` method (#936)
