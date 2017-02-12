@@ -111,6 +111,32 @@ function buildPluginEntry(plugins) {
 
 export default function (options) {
     if (options) {
+        if (options.test) {
+            mergeDeep(config, {
+                devtool: 'inline-source-map',
+                // @TODO: Remove this and allow normal linting for tests and fix
+                // the linting issues. (test files should have the same rules
+                // property as the rest of the code)
+                module: {
+                    rules: [
+                        {
+                            test: /\.js$/,
+                            exclude: /node_modules/,
+                            use: [{
+                                loader: 'babel-loader',
+                                options: {
+                                    plugins: ["transform-class-properties", "add-module-exports"],
+                                    presets: [
+                                        ['es2015', { modules: false }],
+                                        'stage-0'
+                                    ]
+                                }
+                            }]
+                        }
+                    ]
+                }
+            })
+        }
         // html init code
         if (options.htmlinit) {
             delete config.entry;
