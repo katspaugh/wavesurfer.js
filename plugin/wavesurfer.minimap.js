@@ -126,6 +126,7 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
             }
         }, 100);
         window.addEventListener('resize', onResize, true);
+        window.addEventListener('orientationchange', onResize, true);
 
         this.wavesurfer.on('destroy', function () {
             my.destroy.bind(this);
