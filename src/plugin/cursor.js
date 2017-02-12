@@ -14,7 +14,7 @@ export default function(params) {
                 this.initPlugins('cursor');
             }
         },
-        extends: ['observer'],
+        extends: 'observer',
         instance: Observer => class CursorPlugin extends Observer {
             constructor(wavesurfer) {
                 super();

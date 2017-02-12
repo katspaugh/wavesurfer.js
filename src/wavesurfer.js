@@ -168,29 +168,20 @@ export default class WaveSurfer extends util.Observer {
         // default for deferInit is false
         plugin.deferInit = plugin.deferInit || false;
 
-        // SuperClass of the plugin class is built iteratively out of the super
-        // class names in the extends property. These are mapped to their
-        // objects in the superClassMap. The first name in the extends property
-        // is the first super class of the plugin class, it is superclassed by
-        // the next extends property and so on
-        let SuperClass = function() {};
+        // The super class of the plugin instance (the class the plugin instance
+        // extends) is defined in the extends property in the plugin definition
+        // object. This string is mapped to a class in the superClassMap below
+        // and injected into the plugin instance generator function.
+        let SuperClass = null;
         const superClassMap = {
             observer: util.Observer,
             drawer: this.Drawer
         };
         if (plugin.extends) {
-            plugin.extends.forEach((key, i) => {
-                if (!superClassMap[key]) {
-                    throw new Error(`Cannot extend plugin ${plugin.name} with ${key}, the object was not found!`);
-                }
-                // first parent is root object in SuperClass
-                if (i === 0) {
-                    SuperClass = superClassMap[key];
-                } else {
-                    // same as: class SuperClass extends superClassMap[key]
-                    util.inherits(SuperClass, superClassMap[key]);
-                }
-            });
+            if (!superClassMap[plugin.extends]) {
+                throw new Error(`Plugin ${plugin.name} has invalid extends property: ${plugin.extends}!`);
+            }
+            SuperClass = superClassMap[plugin.extends];
         }
 
         // instantiate plugin class

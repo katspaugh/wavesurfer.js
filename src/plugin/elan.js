@@ -8,7 +8,7 @@ export default function(params = {}) {
     return {
         name: 'elan',
         deferInit: params && params.deferInit ? params.deferInit : false,
-        extends: ['observer'],
+        extends: 'observer',
         instance: Observer => class ElanPlugin extends Observer {
             Types = {
                 ALIGNABLE_ANNOTATION: 'ALIGNABLE_ANNOTATION',

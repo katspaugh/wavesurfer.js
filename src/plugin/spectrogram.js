@@ -192,7 +192,7 @@ export default function spectrogram(params = {}) {
         static: {
             FFT
         },
-        extends: ['observer'],
+        extends: 'observer',
         instance: Observer => class SpectrogramPlugin extends Observer {
             /**
             * List of params:

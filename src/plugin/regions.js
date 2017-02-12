@@ -377,7 +377,7 @@ export default function(params = {}) {
     return {
         name: 'regions',
         deferInit: params && params.deferInit ? params.deferInit : false,
-        extends: ['observer'],
+        extends: 'observer',
         static: {
             initRegions() {
                 console.warn('Deprecated initRegions! Use wavesurfer.initPlugins("regions") instead!');

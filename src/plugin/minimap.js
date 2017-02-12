@@ -15,7 +15,7 @@ export default function(params = {}) {
                 this.initPlugins('minimap');
             }
         },
-        extends: ['drawer'],
+        extends: 'drawer',
         instance: Drawer => class MinimapPlugin extends Drawer {
             constructor(wavesurfer) {
                 params = wavesurfer.util.extend(

@@ -8,7 +8,7 @@ export default function(params = {}) {
     return {
         name: 'microphone',
         deferInit: params && params.deferInit ? params.deferInit : false,
-        extends: ['observer'],
+        extends: 'observer',
         instance: Observer => class MicrophonePlugin extends Observer {
             constructor(wavesurfer) {
                 super();

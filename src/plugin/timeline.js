@@ -8,7 +8,7 @@ export default function(params = {}) {
     return {
         name: 'timeline',
         deferInit: params && params.deferInit ? params.deferInit : false,
-        extends: ['observer'],
+        extends: 'observer',
         instance: Observer => class TimelinePlugin extends Observer {
             constructor(wavesurfer) {
                 super();
