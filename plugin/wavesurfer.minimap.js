@@ -118,13 +118,13 @@ WaveSurfer.Minimap = WaveSurfer.util.extend({}, WaveSurfer.Drawer, WaveSurfer.Dr
         }
 
         var prevWidth = 0;
-        var onResize = function () {
+        var onResize = this.wavesurfer.util.debounce(function () {
             if (prevWidth != my.wrapper.clientWidth) {
                 prevWidth = my.wrapper.clientWidth;
                 my.render();
                 my.progress(my.wavesurfer.backend.getPlayedPercents());
             }
-        };
+        }, 100);
         window.addEventListener('resize', onResize, true);
 
         this.wavesurfer.on('destroy', function () {
