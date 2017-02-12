@@ -78,6 +78,7 @@ const config = {
                 use: [{
                     loader: 'babel-loader',
                     options: {
+                        plugins: ["transform-class-properties", "add-module-exports"],
                         presets: [
                             ['es2015', { modules: false }],
                             'stage-0'
