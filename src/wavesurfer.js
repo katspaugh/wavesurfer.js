@@ -297,6 +297,8 @@ var WaveSurfer = {
     getFilters: function() {
         if (typeof this.backend.filters !== 'undefined') {
             return this.backend.filters;
+        } else{
+            return [];
         }
     },
 
