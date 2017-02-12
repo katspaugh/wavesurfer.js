@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-1.3.2 (10.02.2017)
+1.3.2 (12.02.2017)
 ------------------
 - Add a `getVolume` method (#979)
 - Add a `getMute` method (#980)

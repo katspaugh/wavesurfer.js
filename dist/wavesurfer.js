@@ -168,7 +168,7 @@ var WaveSurfer = {
     },
 
     pause: function () {
-        this.backend.pause();
+        this.backend.isPaused() || this.backend.pause();
     },
 
     playPause: function () {
@@ -237,6 +237,13 @@ var WaveSurfer = {
     },
 
     /**
+     * Get the playback volume.
+     */
+    getVolume: function () {
+        return this.backend.getVolume();
+    },
+
+    /**
      * Set the playback rate.
      *
      * @param {Number} rate A positive number. E.g. 0.5 means half the
@@ -281,6 +288,22 @@ var WaveSurfer = {
             this.backend.setVolume(this.savedVolume);
             this.isMuted = false;
         }
+    },
+
+    /**
+     * Get the current mute status.
+     */
+    getMute: function () {
+        return this.isMuted;
+    },
+
+    /**
+     * Get the list of current set filters as an array.
+     *
+     * Filters must be set with setFilters method first
+     */
+    getFilters: function() {
+        return this.backend.filters || [];
     },
 
     toggleScroll: function () {
