@@ -1,8 +1,9 @@
-import webaudio from './webaudio';
+import Webaudio from './webaudio';
 import * as util from './util';
 
-export default util.extend({}, webaudio, {
-    init(params) {
+export default class MediaElement extends Webaudio {
+    constructor(params) {
+        super(params);
         this.params = params;
 
         // Dummy media to catch errors
@@ -17,10 +18,12 @@ export default util.extend({}, webaudio, {
 
         this.mediaType = params.mediaType.toLowerCase();
         this.elementPosition = params.elementPosition;
+    }
+
+    init() {
         this.setPlaybackRate(this.params.audioRate);
         this.createTimer();
-    },
-
+    }
 
     /**
      * Create a timer to provide a more precise `audioprocess' event.
@@ -36,7 +39,7 @@ export default util.extend({}, webaudio, {
         };
 
         this.on('play', onAudioProcess);
-    },
+    }
 
     /**
      *  Create media element with url as its source,
@@ -61,7 +64,7 @@ export default util.extend({}, webaudio, {
         container.appendChild(media);
 
         this._load(media, peaks);
-    },
+    }
 
     /**
      *  Load existing media element.
@@ -73,7 +76,7 @@ export default util.extend({}, webaudio, {
         elt.autoplay = this.params.autoplay || false;
 
         this._load(elt, peaks);
-    },
+    }
 
     /**
      *  Private method called by both load (from url)
@@ -106,11 +109,11 @@ export default util.extend({}, webaudio, {
         this.onPlayEnd = null;
         this.buffer = null;
         this.setPlaybackRate(this.playbackRate);
-    },
+    }
 
     isPaused() {
         return !this.media || this.media.paused;
-    },
+    }
 
     getDuration() {
         let duration = this.media.duration;
@@ -118,15 +121,15 @@ export default util.extend({}, webaudio, {
             duration = this.media.seekable.end(0);
         }
         return duration;
-    },
+    }
 
     getCurrentTime() {
         return this.media && this.media.currentTime;
-    },
+    }
 
     getPlayedPercents() {
         return (this.getCurrentTime() / this.getDuration()) || 0;
-    },
+    }
 
     /**
      * Set the audio source playback rate.
@@ -134,14 +137,14 @@ export default util.extend({}, webaudio, {
     setPlaybackRate(value) {
         this.playbackRate = value || 1;
         this.media.playbackRate = this.playbackRate;
-    },
+    }
 
     seekTo(start) {
         if (start != null) {
             this.media.currentTime = start;
         }
         this.clearPlayEnd();
-    },
+    }
 
     /**
      * Plays the loaded audio region.
@@ -156,7 +159,7 @@ export default util.extend({}, webaudio, {
         this.media.play();
         end && this.setPlayEnd(end);
         this.fireEvent('play');
-    },
+    }
 
     /**
      * Pauses the loaded audio.
@@ -165,39 +168,39 @@ export default util.extend({}, webaudio, {
         this.media && this.media.pause();
         this.clearPlayEnd();
         this.fireEvent('pause');
-    },
+    }
 
     setPlayEnd(end) {
-        this.onPlayEnd = time => {
+        this._onPlayEnd = time => {
             if (time >= end) {
                 this.pause();
                 this.seekTo(end);
             }
         };
-        this.on('audioprocess', this.onPlayEnd);
-    },
+        this.on('audioprocess', this._onPlayEnd);
+    }
 
     clearPlayEnd() {
-        if (this.onPlayEnd) {
-            this.un('audioprocess', this.onPlayEnd);
-            this.onPlayEnd = null;
+        if (this._onPlayEnd) {
+            this.un('audioprocess', this._onPlayEnd);
+            this._onPlayEnd = null;
         }
-    },
+    }
 
     getPeaks(length, start, end) {
         if (this.buffer) {
-            return webaudio.getPeaks.call(this, length, start, end);
+            return super.getPeaks(length, start, end);
         }
         return this.peaks || [];
-    },
+    }
 
     getVolume() {
         return this.media.volume;
-    },
+    }
 
     setVolume(val) {
         this.media.volume = val;
-    },
+    }
 
     destroy() {
         this.pause();
@@ -205,4 +208,4 @@ export default util.extend({}, webaudio, {
         this.media && this.media.parentNode && this.media.parentNode.removeChild(this.media);
         this.media = null;
     }
-});
+}

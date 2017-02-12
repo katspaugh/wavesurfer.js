@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function () {
@@ -35,6 +35,9 @@ document.addEventListener('DOMContentLoaded', function () {
         options.normalize = true;
     }
 
+    // Init wavesurfer
+    wavesurfer = WaveSurfer.create(options);
+
     /* Progress bar */
     (function () {
         var progressDiv = document.querySelector('#progress-bar');
@@ -54,9 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
         wavesurfer.on('destroy', hideProgress);
         wavesurfer.on('error', hideProgress);
     }());
-
-    // Init wavesurfer
-    wavesurfer.init(options);
 
     wavesurfer.elan.on('ready', function (data) {
         wavesurfer.load('transcripts/' + data.media.url);

@@ -1,3 +1,6 @@
+require('babel-register');
+var webpackConfig = require('./webpack.config.babel.js').default({ test: true });
+
 module.exports = function (config) {
     var configuration = {
         basePath: '',
@@ -44,7 +47,7 @@ module.exports = function (config) {
         captureConsole: true,
         colors: true,
         reporters: ['progress'],
-
+        webpack: webpackConfig,
 
         customLaunchers: {
             Chrome_travis_ci: {

@@ -1,12 +1,12 @@
 'use strict';
 
 // Create an instance
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer;
 
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function () {
     // Init
-    wavesurfer.init({
+    wavesurfer = WaveSurfer.create({
         container: document.querySelector('#waveform'),
         minPxPerSec: 30,
         scrollParent: true,

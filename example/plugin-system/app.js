@@ -49,8 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
         loaderColor   : 'purple',
         cursorColor   : 'navy',
         plugins: [
-            window.WaveSurfer.minimap(pluginOptions.minimap),
-            window.WaveSurfer.timeline(pluginOptions.timeline),
+            window.WaveSurfer.minimap(pluginOptions.minimap)
         ]
     };
 

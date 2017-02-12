@@ -1,7 +1,7 @@
-export default {
-    init() {
+export default class PeakCache {
+    constructor() {
         this.clearPeakCache();
-    },
+    }
 
     clearPeakCache() {
         // Flat array with entries that are always in pairs to mark the
@@ -11,7 +11,7 @@ export default {
         // Length of the entire cachable region, used for resetting the cache
         // when this changes (zoom events, for instance).
         this.peakCacheLength = -1;
-    },
+    }
 
     addRangeToPeakCache(length, start, end) {
         if (length != this.peakCacheLength) {
@@ -73,7 +73,7 @@ export default {
         }
 
         return uncachedRangePairs;
-    },
+    }
 
     // For testing
     getCacheRanges() {
@@ -84,4 +84,4 @@ export default {
         }
         return peakCacheRangePairs;
     }
-};
+}

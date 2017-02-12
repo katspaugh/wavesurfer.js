@@ -8,9 +8,10 @@ export default function(params = {}) {
     return {
         name: 'microphone',
         deferInit: params && params.deferInit ? params.deferInit : false,
-        extends: ['observer'],
-        instance: {
-            init(wavesurfer) {
+        extends: 'observer',
+        instance: Observer => class MicrophonePlugin extends Observer {
+            constructor(wavesurfer) {
+                super();
                 this.params = params;
                 this.wavesurfer = wavesurfer;
 
@@ -77,11 +78,14 @@ export default function(params = {}) {
                     // wavesurfer's AudioContext where we'll route the mic signal to
                     this.micContext = this.wavesurfer.backend.getAudioContext();
                 };
+            }
+
+            init() {
                 this.wavesurfer.on('backend-created', this._onBackendCreated);
                 if (this.wavesurfer.backend) {
                     this._onBackendCreated();
                 }
-            },
+            }
 
             /**
              * Destroy the microphone plugin.
@@ -93,7 +97,7 @@ export default function(params = {}) {
 
                 this.wavesurfer.un('backend-created', this._onBackendCreated);
                 this.stop();
-            },
+            }
 
             /**
             * Allow user to select audio input device, eg. microphone, and
@@ -103,7 +107,7 @@ export default function(params = {}) {
                 navigator.mediaDevices.getUserMedia(this.constraints)
                     .then((data) => this.gotStream(data))
                     .catch((data) => this.deviceError(data));
-            },
+            }
 
             /**
             * Pause/resume visualization.
@@ -122,7 +126,7 @@ export default function(params = {}) {
                         this.play();
                     }
                 }
-            },
+            }
 
             /**
             * Play visualization.
@@ -131,7 +135,7 @@ export default function(params = {}) {
                 this.paused = false;
 
                 this.connect();
-            },
+            }
 
             /**
             * Pause visualization.
@@ -142,7 +146,7 @@ export default function(params = {}) {
                 // disconnect sources so they can be used elsewhere
                 // (eg. during audio playback)
                 this.disconnect();
-            },
+            }
 
             /**
             * Stop the device stream and remove any remaining waveform drawing from
@@ -156,7 +160,7 @@ export default function(params = {}) {
                     // empty last frame
                     this.wavesurfer.empty();
                 }
-            },
+            }
 
             /**
             * Stop the device and the visualization.
@@ -184,7 +188,7 @@ export default function(params = {}) {
 
                     this.stream.stop();
                 }
-            },
+            }
 
             /**
             * Connect the media sources that feed the visualization.
@@ -204,7 +208,7 @@ export default function(params = {}) {
                     this.levelChecker.connect(this.micContext.destination);
                     this.levelChecker.onaudioprocess = this.reloadBufferFunction;
                 }
-            },
+            }
 
             /**
             * Disconnect the media sources that feed the visualization.
@@ -218,7 +222,7 @@ export default function(params = {}) {
                     this.levelChecker.disconnect();
                     this.levelChecker.onaudioprocess = undefined;
                 }
-            },
+            }
 
             /**
             * Redraw the waveform.
@@ -228,7 +232,7 @@ export default function(params = {}) {
                     this.wavesurfer.empty();
                     this.wavesurfer.loadDecodedBuffer(event.inputBuffer);
                 }
-            },
+            }
 
             /**
             * Audio input device is ready.
@@ -244,7 +248,7 @@ export default function(params = {}) {
 
                 // notify listeners
                 this.fireEvent('deviceReady', stream);
-            },
+            }
 
             /**
             * Device error callback.
@@ -252,7 +256,7 @@ export default function(params = {}) {
             deviceError(code) {
                 // notify listeners
                 this.fireEvent('deviceError', code);
-            },
+            }
 
             /**
             * Extract browser version out of the provided user agent string.
@@ -264,7 +268,7 @@ export default function(params = {}) {
             extractVersion(uastring, expr, pos) {
                 const match = uastring.match(expr);
                 return match && match.length >= pos && parseInt(match[pos], 10);
-            },
+            }
 
             /**
             * Browser detector.

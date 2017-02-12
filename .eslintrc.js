@@ -5,8 +5,13 @@ module.exports = {
         "es6": true
     },
     "extends": "eslint:recommended",
+    "parser": "babel-eslint",
     "parserOptions": {
-        "sourceType": "module"
+        "ecmaVersion": 7,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "classes": true
+        },
     },
     "rules": {
         "accessor-pairs": "error",
@@ -35,7 +40,7 @@ module.exports = {
         ],
         "callback-return": "off",
         "camelcase": "error",
-        "class-methods-use-this": "error",
+        "class-methods-use-this": "off",
         "comma-dangle": "error",
         "comma-spacing": [
             "error",
@@ -140,7 +145,7 @@ module.exports = {
             "error",
             "functions"
         ],
-        "no-invalid-this": "error",
+        "no-invalid-this": "off",
         "no-iterator": "error",
         "no-label-var": "error",
         "no-labels": "error",
@@ -197,7 +202,7 @@ module.exports = {
         "no-useless-call": "error",
         "no-useless-computed-key": "error",
         "no-useless-concat": "error",
-        "no-useless-constructor": "error",
+        "no-useless-constructor": "off",
         "no-useless-escape": "error",
         "no-useless-rename": "error",
         "no-useless-return": "error",

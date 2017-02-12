@@ -14,9 +14,10 @@ export default function(params) {
                 this.initPlugins('cursor');
             }
         },
-        extends: ['observer'],
-        instance: {
-            init(wavesurfer) {
+        extends: 'observer',
+        instance: Observer => class CursorPlugin extends Observer {
+            constructor(wavesurfer) {
+                super();
                 this.wavesurfer = wavesurfer;
                 this.style = wavesurfer.util.style;
                 this._onDrawerCreated = () => {
@@ -49,15 +50,17 @@ export default function(params) {
                         })
                     );
                 };
+            }
 
+            init() {
                 // drawer already existed, just call initialisation code
-                if (wavesurfer.drawer) {
+                if (this.wavesurfer.drawer) {
                     this._onDrawerCreated();
                 }
 
                 // the drawer was initialised, call the initialisation code
-                wavesurfer.on('drawer-created', this._onDrawerCreated);
-            },
+                this.wavesurfer.on('drawer-created', this._onDrawerCreated);
+            }
 
             destroy() {
                 this.wavesurfer.un('drawer-created', this._onDrawerCreated);
@@ -74,20 +77,20 @@ export default function(params) {
                     this.wrapper.removeEventListener('mouseenter', this._onMouseenter);
                     this.wrapper.removeEventListener('mouseleave', this._onMouseleave);
                 }
-            },
+            }
 
             updateCursorPosition(progress) {
                 const pos = Math.round(this.drawer.width * progress) / this.drawer.params.pixelRatio - 1;
                 this.style(this.cursor, {
                     left: `${pos}px`
                 });
-            },
+            }
 
             showCursor() {
                 this.style(this.cursor, {
                     display: 'block'
                 });
-            },
+            }
 
             hideCursor() {
                 this.style(this.cursor, {

@@ -1,7 +1,8 @@
 import * as util from './util';
 
-export default util.extend({}, util.observer, {
-    init(container, params) {
+export default class Drawer extends util.Observer {
+    constructor(container, params) {
+        super();
         this.container = container;
         this.params = params;
 
@@ -9,11 +10,11 @@ export default util.extend({}, util.observer, {
         this.height = params.height * this.params.pixelRatio;
 
         this.lastPos = 0;
+    }
 
-        this.initDrawer(params);
-        this.createWrapper();
-        this.createElements();
-    },
+    style(...params) {
+        return util.style(...params);
+    }
 
     createWrapper() {
         this.wrapper = this.container.appendChild(
@@ -37,7 +38,7 @@ export default util.extend({}, util.observer, {
         }
 
         this.setupWrapperEvents();
-    },
+    }
 
     handleEvent(e, noPrevent) {
         !noPrevent && e.preventDefault();
@@ -61,7 +62,7 @@ export default util.extend({}, util.observer, {
         }
 
         return progress;
-    },
+    }
 
     setupWrapperEvents() {
         this.wrapper.addEventListener('click', e => {
@@ -81,7 +82,7 @@ export default util.extend({}, util.observer, {
         });
 
         this.wrapper.addEventListener('scroll', e => this.fireEvent('scroll', e));
-    },
+    }
 
     drawPeaks(peaks, length, start, end) {
         this.setWidth(length);
@@ -89,21 +90,18 @@ export default util.extend({}, util.observer, {
         this.params.barWidth ?
             this.drawBars(peaks, 0, start, end) :
             this.drawWave(peaks, 0, start, end);
-    },
-
-    // Backward compatibility
-    style: util.style,
+    }
 
     resetScroll() {
         if (this.wrapper !== null) {
             this.wrapper.scrollLeft = 0;
         }
-    },
+    }
 
     recenter(percent) {
         const position = this.wrapper.scrollWidth * percent;
         this.recenterOnPosition(position, true);
-    },
+    }
 
     recenterOnPosition(position, immediate) {
         const scrollLeft = this.wrapper.scrollLeft;
@@ -132,15 +130,15 @@ export default util.extend({}, util.observer, {
             this.wrapper.scrollLeft = target;
         }
 
-    },
+    }
 
     getScrollX() {
         return Math.round(this.wrapper.scrollLeft * this.params.pixelRatio);
-    },
+    }
 
     getWidth() {
         return Math.round(this.container.clientWidth * this.params.pixelRatio);
-    },
+    }
 
     setWidth(width) {
         if (this.width == width) {
@@ -160,7 +158,7 @@ export default util.extend({}, util.observer, {
         }
 
         this.updateSize();
-    },
+    }
 
     setHeight(height) {
         if (height == this.height) { return; }
@@ -169,7 +167,7 @@ export default util.extend({}, util.observer, {
             height: ~~(this.height / this.params.pixelRatio) + 'px'
         });
         this.updateSize();
-    },
+    }
 
     progress(progress) {
         const minPxDelta = 1 / this.params.pixelRatio;
@@ -185,7 +183,7 @@ export default util.extend({}, util.observer, {
 
             this.updateProgress(pos);
         }
-    },
+    }
 
     destroy() {
         this.unAll();
@@ -193,18 +191,16 @@ export default util.extend({}, util.observer, {
             this.container.removeChild(this.wrapper);
             this.wrapper = null;
         }
-    },
+    }
 
-    /* Renderer-specific methods */
-    initDrawer() {},
+     /* Renderer-specific methods */
+    createElements() {}
 
-    createElements() {},
+    updateSize() {}
 
-    updateSize() {},
+    drawWave(peaks, max) {}
 
-    drawWave(peaks, max) {},
-
-    clearWave() {},
+    clearWave() {}
 
     updateProgress(position) {}
-});
+}

@@ -15,62 +15,94 @@ export default function(params = {}) {
                 this.initPlugins('minimap');
             }
         },
-        extends: ['observer', 'drawer'],
-        instance: {
-            init(wavesurfer) {
-                this.wavesurfer = wavesurfer;
-
-                this.params = wavesurfer.util.extend(
+        extends: 'drawer',
+        instance: Drawer => class MinimapPlugin extends Drawer {
+            constructor(wavesurfer) {
+                params = wavesurfer.util.extend(
                     {}, wavesurfer.params, {
                         showRegions: false,
                         showOverview: false,
                         overviewBorderColor: 'green',
-                        overviewBorderSize: 2
+                        overviewBorderSize: 2,
+                        // the container should be different
+                        container: false,
+                        height: Math.max(Math.round(wavesurfer.params.height / 4), 20)
                     }, params, {
                         scrollParent: false,
                         fillParent: true
                     }
                 );
+                // if no container is specified add a new element and insert it
+                if (!params.container) {
+                    params.container = wavesurfer.util.style(document.createElement('minimap'), {
+                        display: 'block'
+                    });
+                }
+                // initialise drawer superclass
+                super(params.container, params);
+                this.wavesurfer = wavesurfer;
 
-                // add required multicanvas drawer values
-                this.maxCanvasWidth = this.params.maxCanvasWidth;
-                this.maxCanvasElementWidth = Math.round(this.params.maxCanvasWidth / this.params.pixelRatio);
-                this.hasProgressCanvas = this.params.waveColor != this.params.progressColor;
-                this.halfPixel = 0.5 / this.params.pixelRatio;
-                this.canvases = [];
-
-                // when the root drawer was created, add minimap
-                this._onDrawerCreated = () => {
-                    this.container = wavesurfer.drawer.container;
-                    this.lastPos = wavesurfer.drawer.lastPos;
-
-                    this.width = 0;
-                    this.height = this.params.height * this.params.pixelRatio;
-
-                    this.createWrapper();
-                    this.createElements();
-
-                    if (wavesurfer.regions && this.params.showRegions) {
+                // wavesurfer ready event listener
+                this._onReady = () => {
+                    if (!document.body.contains(params.container)) {
+                        wavesurfer.container.insertBefore(params.container, null);
+                    }
+                    super.init();
+                    if (this.wavesurfer.regions && this.params.showRegions) {
                         this.regions();
                     }
-
                     this.bindWaveSurferEvents();
                     this.bindMinimapEvents();
+                    this.render();
                 };
-                if (wavesurfer.drawer) {
-                    this._onDrawerCreated();
-                    // @TODO: This shouldn't be necessary
-                    this._onResize();
-                }
 
-                wavesurfer.on('drawer-created', this._onDrawerCreated);
-            },
+                this._onAudioprocess = currentTime => {
+                    this.progress(this.wavesurfer.backend.getPlayedPercents());
+                };
+
+                // wavesurfer seek event listener
+                this._onSeek = () => this.progress(this.wavesurfer.backend.getPlayedPercents());
+
+                // event listeners for the overview region
+                this._onScroll = e => {
+                    if (!this.draggingOverview) {
+                        this.moveOverviewRegion(e.target.scrollLeft / this.ratio);
+                    }
+                };
+                this._onMouseover = e => {
+                    if (this.draggingOverview) {
+                        this.draggingOverview = false;
+                    }
+                };
+                let prevWidth = 0;
+                this._onResize = () => {
+                    if (prevWidth != this.wrapper.clientWidth) {
+                        prevWidth = this.wrapper.clientWidth;
+                        this.render();
+                        this.progress(this.wavesurfer.backend.getPlayedPercents());
+                    }
+                };
+            }
+
+            init() {
+                if (this.wavesurfer.isReady) {
+                    this._onReady();
+                }
+                this.wavesurfer.on('ready', this._onReady);
+            }
 
             destroy() {
                 window.removeEventListener('resize', this._onResize, true);
-                this.wavesurfer.un('drawer-created', this._onDrawerCreated);
+                this.wavesurfer.drawer.wrapper.removeEventListener('mouseover', this._onMouseover);
+                this.wavesurfer.un('ready', this._onReady);
+                this.wavesurfer.un('seek', this._onSeek);
+                this.wavesurfer.un('scroll', this._onSeek);
+                this.wavesurfer.un('audioprocess', this._onAudioprocess);
                 this.wrapper.parentNode.removeChild(this.wrapper);
-            },
+                this.wrapper = null;
+                this.overviewRegion = null;
+                this.unAll();
+            }
 
             regions() {
                 this.regions = {};
@@ -89,7 +121,7 @@ export default function(params = {}) {
                     delete this.regions[region.id];
                     this.renderRegions();
                 });
-            },
+            }
 
             renderRegions() {
                 const regionElements = this.wrapper.querySelectorAll('region');
@@ -113,11 +145,10 @@ export default function(params = {}) {
                     regionElement.classList.add(id);
                     this.wrapper.appendChild(regionElement);
                 });
-            },
+            }
 
             createElements() {
-                this.wavesurfer.drawer.createElements.call(this);
-
+                super.createElements();
                 if (this.params.showOverview) {
                     this.overviewRegion = this.style(document.createElement('overview'), {
                         height: (this.wrapper.offsetHeight - (this.params.overviewBorderSize * 2)) + 'px',
@@ -132,45 +163,17 @@ export default function(params = {}) {
 
                     this.wrapper.appendChild(this.overviewRegion);
                 }
-            },
+            }
 
             bindWaveSurferEvents() {
-                let prevWidth = 0;
-                this._onResize = () => {
-                    if (prevWidth != this.wrapper.clientWidth) {
-                        prevWidth = this.wrapper.clientWidth;
-                        this.render();
-                        this.progress(this.wavesurfer.backend.getPlayedPercents());
-                    }
-                };
-                this._onReady = () => this.render();
-                this.wavesurfer.on('ready', this._onReady);
-
-                this._onAudioprocess = currentTime => {
-                    this.progress(this.wavesurfer.backend.getPlayedPercents());
-                };
-                this.wavesurfer.on('audioprocess', this._onAudioprocess);
-
-                this._onSeek = () => this.progress(this.wavesurfer.backend.getPlayedPercents());
-                this.wavesurfer.on('seek', this._onSeek);
-
-                if (this.params.showOverview) {
-                    this._onScroll = event => {
-                        if (!this.draggingOverview) {
-                            this.moveOverviewRegion(event.target.scrollLeft / this.ratio);
-                        }
-                    };
-                    this.wavesurfer.on('scroll', this._onSeek);
-
-                    this.wavesurfer.drawer.wrapper.addEventListener('mouseover', event => {
-                        if (this.draggingOverview) {
-                            this.draggingOverview = false;
-                        }
-                    });
-                }
-
                 window.addEventListener('resize', this._onResize, true);
-            },
+                this.wavesurfer.on('audioprocess', this._onAudioprocess);
+                this.wavesurfer.on('seek', this._onSeek);
+                if (this.params.showOverview) {
+                    this.wavesurfer.on('scroll', this._onSeek);
+                    this.wavesurfer.drawer.wrapper.addEventListener('mouseover', this._onMouseover);
+                }
+            }
 
             bindMinimapEvents() {
                 const positionMouseDown = {
@@ -180,6 +183,9 @@ export default function(params = {}) {
                 let relativePositionX = 0;
                 let seek = true;
 
+                // the following event listeners will be destroyed by using
+                // this.unAll() and nullifying the DOM node references after
+                // removing them
                 this.on('click', (e, position) => {
                     if (seek) {
                         this.progress(position);
@@ -213,7 +219,7 @@ export default function(params = {}) {
                         }
                     });
                 }
-            },
+            }
 
             render() {
                 const len = this.getWidth();
@@ -230,7 +236,7 @@ export default function(params = {}) {
                     this.overviewPosition = 0;
                     this.overviewRegion.style.width = (this.overviewWidth - (this.params.overviewBorderSize * 2)) + 'px';
                 }
-            },
+            }
 
             moveOverviewRegion(pixels) {
                 if (pixels < 0) {
