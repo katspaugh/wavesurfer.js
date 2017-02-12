@@ -73,12 +73,15 @@ WaveSurfer.Spectrogram = {
             this.container.removeChild(prevSpectrogram);
         }
 
-        var specLabels = (this.params.labels||false);
         // if labels are active
-        if (specLabels) {
+        if (this.params.labels) {
             var specLabelsdiv = document.createElement('div');
             specLabelsdiv.setAttribute('id', 'specLabels');
-            specLabelsdiv.style.cssText = 'position:absolute;left:0;z-index: 9;';
+            this.drawer.style(specView, {
+                left: 0,
+                position: 'relative',
+                zIndex: 9
+            });
             specLabelsdiv.innerHTML = '<canvas></canvas>';
             this.wrapper = this.container.appendChild(
                 specLabelsdiv
@@ -91,8 +94,11 @@ WaveSurfer.Spectrogram = {
 
         var specView = document.createElement('spectrogram');
         // if labels are active
-        if (specLabels) {
-            specView.style.cssText = 'position: relative;left:0;';
+        if (this.params.labels) {
+            this.drawer.style(specView, {
+                left: 0,
+                position: 'relative' 
+            });
         }
         this.wrapper = this.container.appendChild(
             specView
@@ -224,7 +230,7 @@ WaveSurfer.Spectrogram = {
     },
 
     freqType: function (freq) {
-        return (freq >= 1000 ? (freq/1000).toFixed(1) : Math.round(freq));
+        return (freq >= 1000 ? (freq / 1000).toFixed(1) : Math.round(freq));
     },
 
     unitType: function (freq) {
@@ -242,9 +248,9 @@ WaveSurfer.Spectrogram = {
         var textAlign = textAlign || 'center';
         var container = container || '#specLabels';
         var getMaxY = frequenciesHeight || 512;
-        var labelIndex = 5 * (getMaxY/256);
+        var labelIndex = 5 * (getMaxY / 256);
         var freqStart = 0;
-        var step = ((this.wavesurfer.backend.ac.sampleRate/2) - freqStart) / labelIndex;
+        var step = ((this.wavesurfer.backend.ac.sampleRate / 2) - freqStart) / labelIndex;
 
         var cLabel = document.querySelectorAll(container+' canvas')[0].getContext('2d');
         document.querySelectorAll(container+' canvas')[0].height = this.height;
@@ -259,10 +265,10 @@ WaveSurfer.Spectrogram = {
             cLabel.textBaseline = 'middle';
 
             var freq = freqStart + (step * i);
-            var index = Math.round(freq/this.sampleRate/2 * this.fftSamples);
-            var index = Math.round(freq/(this.fftSamples/2) * this.fftSamples);
+            var index = Math.round(freq / this.sampleRate / 2 * this.fftSamples);
+            var index = Math.round(freq / (this.fftSamples / 2) * this.fftSamples);
             var percent = index / this.fftSamples/2;
-            var y = (1-percent) * this.height;
+            var y = (1 - percent) * this.height;
             var label = this.freqType(freq);
             var units = this.unitType(freq);
             var x = 16;
@@ -270,18 +276,18 @@ WaveSurfer.Spectrogram = {
 
             if (i==0) {
                 cLabel.fillStyle = textColorUnit;
-                cLabel.font = fontSizeUnit+' '+fontType;
-                cLabel.fillText(units, x + 24, getMaxY+i-10);
+                cLabel.font = fontSizeUnit + ' ' + fontType;
+                cLabel.fillText(units, x + 24, getMaxY + i - 10);
                 cLabel.fillStyle = textColorFreq;
-                cLabel.font = fontSizeFreq+' '+fontType;
-                cLabel.fillText(label, x, getMaxY+i-10);
+                cLabel.font = fontSizeFreq + ' ' + fontType;
+                cLabel.fillText(label, x, getMaxY + i - 10);
             } else {
                 cLabel.fillStyle = textColorUnit;
-                cLabel.font = fontSizeUnit+' '+fontType;
-                cLabel.fillText(units, x + 24, getMaxY-i*50+yLabelOffset);
+                cLabel.font = fontSizeUnit + ' ' + fontType;
+                cLabel.fillText(units, x + 24, getMaxY - i * 50 + yLabelOffset);
                 cLabel.fillStyle = textColorFreq;
-                cLabel.font = fontSizeFreq+' '+fontType;
-                cLabel.fillText(label, x, getMaxY-i*50+yLabelOffset);
+                cLabel.font = fontSizeFreq + ' ' + fontType;
+                cLabel.fillText(label, x, getMaxY - i * 50 + yLabelOffset);
             }
         }
     },
