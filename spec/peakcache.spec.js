@@ -14,8 +14,7 @@ describe('peakcache', function() {
     var window_size = 20;
 
     function __createPeakCache() {
-        peakcache = Object.create(PeakCache);
-        peakcache.init();
+        peakcache = new PeakCache();
     }
 
     beforeEach(function (done) {

@@ -22,11 +22,22 @@ describe('Wavesurfer plugin API:', () => {
             static: {
                 [`${name}Static`]: 'static property value'
             },
-            instance: {
-                init() {},
+            extends: 'observer',
+            instance: Observer => class MockPlugin extends Observer {
+                constructor(wavesurfer) {
+                    super();
+                    this.wavesurfer = wavesurfer;
+                    // using the instance factory unfortunately makes it
+                    // difficult to use the spyOn function, so we use this
+                    // instead
+                    this.isInitialised = false;
+                }
+                init() {
+                    this.isInitialised = true;
+                }
                 destroy() {}
             }
-        }
+        };
     }
 
     // utility function to generate wavesurfer instances for testing
@@ -38,65 +49,64 @@ describe('Wavesurfer plugin API:', () => {
             container: waveformDiv
         }, options));
         wavesurfer.load('/base/spec/support/demo.wav');
-
-        return wavesurfer;
     }
 
-    it('adds and calls the plugins init function when adding it with configuration', () => {
+    // plugin methods
+    it('addPlugin adds static properties and correctly builds and instantiates plugin class', () => {
         dummyPlugin = mockPlugin('dummy');
-        spyOn(dummyPlugin.instance, 'init');
-        // register the plugin (= add and initialise automatically)
-        wavesurfer = __createWaveform({
-            plugins: [
-            dummyPlugin
-            ]
-        });
+        __createWaveform();
+        wavesurfer.addPlugin(dummyPlugin);
 
-        expect(Object.getPrototypeOf(wavesurfer.dummy)).toEqual(dummyPlugin.instance);
         expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.static.dummyStatic);
-        expect(wavesurfer.dummy.init).toHaveBeenCalledWith(wavesurfer);
+        expect(wavesurfer.dummy.wavesurfer).toEqual(wavesurfer);
+        expect(Object.getPrototypeOf(wavesurfer.dummy).constructor.name === 'Observer');
     });
 
-    it('adds a plugin but does not call plugin init function it if the plugin property deferInit is truethy', () => {
+    it('initPlugin calls init function of the plugin and adds its name to the initialisedPluginList', () => {
+        dummyPlugin = mockPlugin('dummy');
+        __createWaveform();
+        wavesurfer.addPlugin(dummyPlugin);
+        spyOn(wavesurfer.dummy, 'init');
+        wavesurfer.initPlugin('dummy');
+
+        expect(wavesurfer.dummy.init).toHaveBeenCalled();
+        expect(wavesurfer.initialisedPluginList.dummy).toBeTrue();
+    });
+
+    it('destroyPlugin calls plugin destroy function and removes the plugin name from the initialisedPluginList', () => {
+        dummyPlugin = mockPlugin('dummy');
+        __createWaveform();
+        wavesurfer.addPlugin(dummyPlugin);
+        wavesurfer.initPlugin('dummy');
+        spyOn(wavesurfer.dummy, 'destroy');
+        wavesurfer.destroyPlugin('dummy');
+
+        expect(wavesurfer.dummy.destroy).toHaveBeenCalled();
+        expect(wavesurfer.initialisedPluginList.dummy).toBeUndefined();
+    });
+
+    // auto-adding and initialising of plugins (registerPlugins)
+    it('registerPlugin adds a plugin but does not call plugin init function if the plugin property deferInit is truethy', () => {
         dummyPlugin = mockPlugin('dummy', true);
-        spyOn(dummyPlugin.instance, 'init');
-        // register the plugin (= add and initialise automatically)
-        wavesurfer = __createWaveform({
+        __createWaveform({
             plugins: [
                 dummyPlugin
             ]
         });
-
-        expect(Object.getPrototypeOf(wavesurfer.dummy)).toEqual(dummyPlugin.instance);
         expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.static.dummyStatic);
-        expect(wavesurfer.dummy.init).not.toHaveBeenCalled();
+        expect(wavesurfer.dummy.wavesurfer).toEqual(wavesurfer);
+        expect(wavesurfer.dummy.isInitialised).toBeFalse();
     });
 
-    it('adds the plugin when calling addPlugin, calls the plugin init function when calling initPlugin', () => {
-        wavesurfer = __createWaveform();
+    it('registerPlugin adds a plugin ands calls plugin init function if the plugin property deferInit is falsey', () => {
         dummyPlugin = mockPlugin('dummy');
-
-        // add the plugin dynamically
-        wavesurfer.addPlugin(dummyPlugin);
-        expect(Object.getPrototypeOf(wavesurfer.dummy)).toEqual(dummyPlugin.instance);
-        expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.static.dummyStatic);
-
-        // initialise the plugin dynamically
-        spyOn(wavesurfer.dummy, 'init');
-        wavesurfer.initPlugin('dummy');
-        expect(wavesurfer.dummy.init).toHaveBeenCalledWith(wavesurfer);
-    });
-
-    it('calls the plugin destroy function when calling destroyPlugin', () => {
-        dummyPlugin = mockPlugin('dummy');
-        spyOn(dummyPlugin.instance, 'destroy');
-        // register the plugin (= add and initialise automatically)
-        wavesurfer = __createWaveform({
+        __createWaveform({
             plugins: [
-            dummyPlugin
+                dummyPlugin
             ]
         });
-        wavesurfer.destroyPlugin('dummy');
-        expect(wavesurfer.dummy.destroy).toHaveBeenCalled();
+        expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.static.dummyStatic);
+        expect(wavesurfer.dummy.wavesurfer).toEqual(wavesurfer);
+        expect(wavesurfer.dummy.isInitialised).toBeTrue();
     });
 });
