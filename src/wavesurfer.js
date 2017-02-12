@@ -767,6 +767,16 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Get the current mute status.
+     *
+     * @example const isMuted = wavesurfer.getMute();
+     * @return {boolean}
+     */
+    getMute() {
+        return this.isMuted;
+    }
+
+    /**
      * Toggles `scrollParent` and redraws
      *
      * @example wavesurfer.toggleScroll();
