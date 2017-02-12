@@ -97,7 +97,7 @@ WaveSurfer.Spectrogram = {
         if (this.params.labels) {
             this.drawer.style(specView, {
                 left: 0,
-                position: 'relative' 
+                position: 'relative'
             });
         }
         this.wrapper = this.container.appendChild(
