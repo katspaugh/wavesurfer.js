@@ -840,6 +840,17 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Get the list of current set filters as an array.
+     *
+     * Filters must be set with setFilters method first
+     *
+     * @return {array}
+     */
+    getFilters() {
+        return this.backend.filters || [];
+    }
+
+    /**
      * Toggles `scrollParent` and redraws
      *
      * @example wavesurfer.toggleScroll();
