@@ -97,6 +97,11 @@ Running tests only:
 npm run test
 ```
 
+Build documentation with esdoc (generated files are placed in the `doc` directory.)
+```
+npm run doc
+```
+
 ## Editing documentation
 The homepage and the documentation are in the [`gh-pages` branch](https://github.com/katspaugh/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
 
