@@ -13,6 +13,7 @@
     "build": "npm run build:normal & npm run build:minified",
     "build:normal": "webpack & webpack --env.plugins & webpack --env.htmlinit",
     "build:minified": "webpack --env.minify & webpack --env.plugins --env.minify & webpack --env.htmlinit --env.minify",
+    "doc": "esdoc",
     "test": "BABEL_ENV=test karma start karma.conf.js"
   },
   "repository": {
@@ -35,6 +36,7 @@
     "babel-preset-es2015-native-modules": "^6.9.4",
     "babel-preset-stage-0": "^6.22.0",
     "babel-register": "^6.18.0",
+    "esdoc": "^0.5.2",
     "eslint": "^3.9.1",
     "eslint-loader": "^1.6.1",
     "jasmine-core": "^2.5.2",

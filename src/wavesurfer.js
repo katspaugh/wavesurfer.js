@@ -547,13 +547,13 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     *  Either create a media element, or load
-     *  an existing media element.
-     *  @param  {String|HTMLElement} urlOrElt Either a path to a media file,
-     *                                          or an existing HTML5 Audio/Video
-     *                                          Element
-     *  @param  {Array}            [peaks]     Array of peaks. Required to bypass
-     *                                          web audio dependency
+     * Either create a media element, or load an existing media element.
+     * @param {String|HTMLElement} urlOrElt Either a path to a media file, or an
+     * existing HTML5 Audio/Video Element
+     * @param {Number[]} peaks Array of peaks. Required to bypass web audio
+     * dependency
+     * @param {Boolean} preload Set to true if the preload attribute of the audio
+     * element should be enabled
      */
     loadMediaElement(urlOrElt, peaks, preload) {
         let url = urlOrElt;
