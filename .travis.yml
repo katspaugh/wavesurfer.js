@@ -2,7 +2,7 @@ sudo: required
 dist: trusty
 language: node_js
 node_js:
-  - "4"
+  - "6.9.4"
 before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
