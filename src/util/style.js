@@ -2,7 +2,7 @@
  * Apply a map of styles to an element
  *
  * @param {HTMLElement} el The element that the styles will be applied to
- * @param {Object} styes The map of propName: attribute, both are used as-is
+ * @param {Object} styles The map of propName: attribute, both are used as-is
  *
  * @returns {HTMLElement} el
  */
