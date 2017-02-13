@@ -1,0 +1,9 @@
+{
+  "source": "./src",
+  "destination": "./doc",
+  "experimentalProposal": {
+    "classProperties": true,
+    "objectRestSpread": true,
+    "exportExtensions": true
+  }
+}
