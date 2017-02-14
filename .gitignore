@@ -9,3 +9,4 @@ dist/plugin/*.js
 /_SpecRunner.html
 .DS_Store
 .idea
+.project
