@@ -1,3 +1,5 @@
-/dist/wavesurfer.min.js.map
-/dist/wavesurfer.amd.js
-/dist/wavesurfer.min.js
+# exclude everything except dist, plugin and src
+**/*
+!dist/**
+!plugin/**
+!src/**
