@@ -1,5 +1,6 @@
 # exclude everything except dist, plugin and src
 **/*
-!dist/**
+!dist/*
+!dist/plugin/*.min.js
 !plugin/**
 !src/**
