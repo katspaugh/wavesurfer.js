@@ -10,19 +10,31 @@ WaveSurfer.MediaSession = {
             throw new Error('No WaveSurfer instance provided');
         }
 
-        if ('mediaSession' in navigator && typeof MediaMetadata === typeof Function)
-        {
-            var metadata = this.params.metadata;
-            console.log('metadata', metadata);
+        if ('mediaSession' in navigator) {
+            this.metadata = this.params.metadata;
+            console.log('metadata', this.metadata);
 
+            // update metadata
+            this.update();
+
+            // set playback action handlers
+            navigator.mediaSession.setActionHandler('play', wavesurfer.play);
+            navigator.mediaSession.setActionHandler('pause', wavesurfer.playPause);
+            navigator.mediaSession.setActionHandler('seekbackward', wavesurfer.skipBackward);
+            navigator.mediaSession.setActionHandler('seekforward', wavesurfer.skipForward);
+
+            var here = this;
+            wavesurfer.on('play', function () {
+                here.update();
+            });
+        }
+    },
+
+    update: function()
+    {
+        if (typeof MediaMetadata === typeof Function) {
             // set metadata
-            navigator.mediaSession.metadata = new MediaMetadata(metadata);
-
-            // set action handlers
-            navigator.mediaSession.setActionHandler('play', function() {});
-            navigator.mediaSession.setActionHandler('pause', function() {});
-            navigator.mediaSession.setActionHandler('seekbackward', function() {});
-            navigator.mediaSession.setActionHandler('seekforward', function() {});
+            navigator.mediaSession.metadata = new MediaMetadata(this.metadata);
         }
     }
 
