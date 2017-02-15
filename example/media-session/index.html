@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>wavesurfer.js | Media Sesssion plugin</title>
+
+        <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="../css/ribbon.css" />
+
+        <!-- wavesurfer.js -->
+        <script src="../../dist/wavesurfer.min.js"></script>
+
+        <!-- media session plugin -->
+        <!--<script src="../../dist/plugin/wavesurfer.mediasession.min.js"></script>   -->
+        <script src="../../plugin/wavesurfer.mediasession.js"></script>
+
+        <!-- App -->
+        <script src="app.js"></script>
+    </head>
+
+    <body itemscope itemtype="http://schema.org/WebApplication">
+        <div class="container">
+            <div class="header">
+                <h1 itemprop="name"><a href="http://wavesurfer-js.org">wavesurfer.js</a><noindex> + Media Session API</noindex></h1>
+            </div>
+
+            <div id="demo">
+                <div id="waveform"></div>
+            </div>
+
+            <div class="row marketing">
+                <div class="col-lg-4">
+                    <h4>wavesurfer.js Media Session Plugin</h4>
+
+                    <p itemprop="about">The <a href='https://wicg.github.io/mediasession/' target='blank'>Media Session API</a> plugin for <strong>wavesurfer.js</strong> allows you to customize media notifications
+                    by providing metadata for the media your web app is playing. It also allows you to handle media related events such as
+                    seeking or playback which may come from notifications or media keys.</p>
+                    
+                    <p><strong>Note</strong>: this plugin only works in Chrome 57 and newer.</p>
+
+                    <h4>Installation</h4>
+
+                    <p>
+                      <ol>
+                        <li>add the MediaSession plugin script tag</li>
+                        <li>create a <code>WaveSurfer</code> instance and supply an object for the <code>metadata</code> property</li>
+                        <li>create a <code>MediaSession</code> instance</li>
+                        <li>control playback from the notification screen on a mobile device</li>
+                      </ol>
+                    </p>
+                    <p>
+                        <a class="btn btn-large btn-success" href="../../plugin/wavesurfer.mediasession.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (1.2 KB)</a>
+                    </p>
+                </div>
+
+                <div class="col-lg-8">
+                    <h4>Quick Start</h4>
+
+                    <noindex><p>
+<pre><code>var wavesurfer = Object.create(WaveSurfer);
+
+wavesurfer.init({
+  container     : '#waveform',
+  waveColor     : 'black',
+  interact      : false,
+  cursorWidth   : 0,
+  metadata: {
+      title: 'Wavesurfer.js Example',
+      artist: 'The Wavesurfer.js Project',
+      album: 'Media Session Example',
+      artwork: [
+          {src: 'images/hal-9000-96x96.png',   sizes: '96x96',   type: 'image/png'},
+          {src: 'images/hal-9000-128x128.png', sizes: '128x128', type: 'image/png'},
+          {src: 'images/hal-9000-192x192.png', sizes: '192x192', type: 'image/png'},
+          {src: 'images/hal-9000-256x256.png', sizes: '256x256', type: 'image/png'},
+          {src: 'images/hal-9000-384x384.png', sizes: '384x384', type: 'image/png'},
+          {src: 'images/hal-9000-512x512.png', sizes: '512x512', type: 'image/png'},
+      ]
+  }
+});
+
+var msPlugin = Object.create(WaveSurfer.MediaSession);
+
+msPlugin.init({
+    wavesurfer: wavesurfer
+});
+</code></pre>
+                    </p></noindex>
+
+                    <br />
+
+                    <h4>Options</h4>
+
+                    <table class="table table-striped table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Required</th>
+                          <th>Default</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><code>wavesurfer</code></td>
+                          <td>yes</td>
+                          <td></td>
+                          <td>A WaveSurfer instance.</td>
+                        </tr>
+                        <tr>
+                          <td><code>metadata</code></td>
+                          <td>yes</td>
+                          <td></td>
+                          <td>A <a href='https://wicg.github.io/mediasession/#mediametadata' target='blank'>MediaMetadata</a> object: a representation of the metadata associated with a MediaSession that can be used by
+                          user agents to provide customized user interface.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="footer row">
+                <div class="col-sm-12">
+                    <a rel="license" href="https://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+                </div>
+
+                <div class="col-sm-12">
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/katspaugh/wavesurfer.js" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
+                </div>
+            </div>
+        </div>
+
+        <div class="github-fork-ribbon-wrapper right">
+            <div class="github-fork-ribbon">
+                <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+            </div>
+        </div>
+        
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+            ga('send', 'pageview');
+        </script>
+    </body>
+</html>
