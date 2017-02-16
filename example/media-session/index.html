@@ -31,6 +31,18 @@
 
             <div id="demo">
                 <div id="waveform"></div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+                </div>
+
+                <audio src='../media/demo.wav' controls />
             </div>
 
             <div class="row marketing">
@@ -40,8 +52,8 @@
                     <p itemprop="about">The <a href='https://wicg.github.io/mediasession/' target='blank'>Media Session API</a> plugin for <strong>wavesurfer.js</strong> allows you to customize media notifications
                     by providing metadata for the media your web app is playing. It also allows you to handle media related events such as
                     seeking or playback which may come from notifications or media keys.</p>
-                    
-                    <p><strong>Note</strong>: this plugin only works in Chrome 57 and newer.</p>
+
+                    <p><strong>Note</strong>: this plugin only works in Chrome 57 and newer (Firefox is <a href='https://bugzilla.mozilla.org/show_bug.cgi?id=1112032' target='blank'>working on it</a>).</p>
 
                     <h4>Installation</h4>
 
@@ -67,8 +79,7 @@
 wavesurfer.init({
   container     : '#waveform',
   waveColor     : 'black',
-  interact      : false,
-  cursorWidth   : 0
+  backend       : 'MediaElement'
 });
 
 var msPlugin = Object.create(WaveSurfer.MediaSession);
@@ -80,15 +91,19 @@ msPlugin.init({
         artist: 'The Wavesurfer.js Project',
         album: 'Media Session Example',
         artwork: [
-          {src: 'images/hal-9000-96x96.png',   sizes: '96x96',   type: 'image/png'},
-          {src: 'images/hal-9000-128x128.png', sizes: '128x128', type: 'image/png'},
-          {src: 'images/hal-9000-192x192.png', sizes: '192x192', type: 'image/png'},
-          {src: 'images/hal-9000-256x256.png', sizes: '256x256', type: 'image/png'},
-          {src: 'images/hal-9000-384x384.png', sizes: '384x384', type: 'image/png'},
-          {src: 'images/hal-9000-512x512.png', sizes: '512x512', type: 'image/png'}
+          {src: 'https://dummyimage.com/96x96',   sizes: '96x96',   type: 'image/png'},
+          {src: 'https://dummyimage.com/128x128', sizes: '128x128', type: 'image/png'},
+          {src: 'https://dummyimage.com/192x192', sizes: '192x192', type: 'image/png'},
+          {src: 'https://dummyimage.com/256x256', sizes: '256x256', type: 'image/png'},
+          {src: 'https://dummyimage.com/384x384', sizes: '384x384', type: 'image/png'},
+          {src: 'https://dummyimage.com/512x512', sizes: '512x512', type: 'image/png'},
         ]
     }
 });
+
+// load audio from existing media element
+var mediaElt = document.querySelector('audio');
+wavesurfer.load(mediaElt);
 </code></pre>
                     </p></noindex>
 
