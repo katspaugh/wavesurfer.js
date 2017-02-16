@@ -103,7 +103,8 @@ module.exports = function (grunt) {
                 strict: false,
                 globals: {
                     WaveSurfer: true,
-                    Promise: true
+                    Promise: true,
+                    MediaMetadata: true
                 }
             },
             ignore_warning: {
