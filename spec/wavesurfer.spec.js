@@ -1,6 +1,7 @@
 import WaveSurfer from '../src/wavesurfer.js';
 
-describe('wavesurfer', function () {
+/** @test {WaveSurfer} */
+describe('WaveSurfer/playback:', function () {
     var wavesurfer;
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -37,12 +38,21 @@ describe('wavesurfer', function () {
         wavesurfer.destroy();
     });
 
+    /**
+     * @test {WaveSurfer#play}
+     * @test {WaveSurfer#isPlaying}
+     */
     it('should play', function () {
         wavesurfer.play();
 
         expect(wavesurfer.isPlaying()).toBeTrue();
     });
 
+    /**
+     * @test {WaveSurfer#play}
+     * @test {WaveSurfer#isPlaying}
+     * @test {WaveSurfer#pause}
+     */
     it('should pause', function () {
         wavesurfer.play();
         expect(wavesurfer.isPlaying()).toBeTrue();
@@ -51,6 +61,10 @@ describe('wavesurfer', function () {
         expect(wavesurfer.isPlaying()).toBeFalse();
     });
 
+    /**
+     * @test {WaveSurfer#playPause}
+     * @test {WaveSurfer#isPlaying}
+     */
     it('should play or pause', function () {
         wavesurfer.playPause();
         expect(wavesurfer.isPlaying()).toBeTrue();
@@ -59,11 +73,13 @@ describe('wavesurfer', function () {
         expect(wavesurfer.isPlaying()).toBeFalse();
     });
 
+    /** @test {WaveSurfer#getDuration}  */
     it('should get duration', function () {
         var duration = parseInt(wavesurfer.getDuration(), 10);
         expect(duration).toBeNumber();
     });
 
+    /** @test {WaveSurfer#toggleMute}  */
     it('should toggle mute', function () {
         wavesurfer.toggleMute();
         expect(wavesurfer.isMuted).toBeTrue();
@@ -72,6 +88,7 @@ describe('wavesurfer', function () {
         expect(wavesurfer.isMuted).toBeFalse();
     });
 
+    /** @test {WaveSurfer#setMute}  */
     it('should set mute', function () {
         wavesurfer.setMute(true);
         expect(wavesurfer.isMuted).toBeTrue();
