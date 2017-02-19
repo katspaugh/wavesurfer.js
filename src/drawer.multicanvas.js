@@ -18,6 +18,10 @@ import * as util from './util';
  * in renderer.
  */
 export default class MultiCanvas extends Drawer {
+    /**
+     * @param {HTMLElement} container The container node of the wavesurfer instance
+     * @param {WavesurferParams} params The wavesurfer initialisation options
+     */
     constructor(container, params) {
         super(container, params);
         this.maxCanvasWidth = params.maxCanvasWidth;
@@ -28,11 +32,19 @@ export default class MultiCanvas extends Drawer {
         this.canvases = [];
     }
 
+    /**
+     * Initialise the drawer
+     */
     init() {
         this.createWrapper();
         this.createElements();
     }
 
+    /**
+     * Create the canvas elements and style them
+     *
+     * @private
+     */
     createElements() {
         this.progressWave = this.wrapper.appendChild(
             this.style(document.createElement('wave'), {
@@ -54,6 +66,9 @@ export default class MultiCanvas extends Drawer {
         this.addCanvas();
     }
 
+    /**
+     * Adjust to the updated size by adding or removing canvases
+     */
     updateSize() {
         const totalWidth = Math.round(this.width / this.params.pixelRatio);
         const requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
@@ -79,6 +94,11 @@ export default class MultiCanvas extends Drawer {
         });
     }
 
+    /**
+     * Add a canvas to the canvas list
+     *
+     * @private
+     */
     addCanvas() {
         const entry = {};
         const leftOffset = this.maxCanvasElementWidth * this.canvases.length;
@@ -109,6 +129,11 @@ export default class MultiCanvas extends Drawer {
         this.canvases.push(entry);
     }
 
+    /**
+     * Pop one canvas from the list
+     *
+     * @private
+     */
     removeCanvas() {
         const lastEntry = this.canvases.pop();
         lastEntry.wave.parentElement.removeChild(lastEntry.wave);
@@ -117,6 +142,14 @@ export default class MultiCanvas extends Drawer {
         }
     }
 
+    /**
+     * Update the dimensions of a canvas element
+     *
+     * @private
+     * @param {CanvasEntry} entry
+     * @param {number} width The new width of the element
+     * @param {number} height The new height of the element
+     */
     updateDimensions(entry, width, height) {
         const elementWidth = Math.round(width / this.params.pixelRatio);
         const totalWidth = Math.round(this.width / this.params.pixelRatio);
@@ -138,10 +171,19 @@ export default class MultiCanvas extends Drawer {
         }
     }
 
+    /**
+     * Clear the whole waveform
+     */
     clearWave() {
         this.canvases.forEach(entry => this.clearWaveForEntry(entry));
     }
 
+    /**
+     * Clear one canvas
+     *
+     * @private
+     * @param {CanvasEntry} entry
+     */
     clearWaveForEntry(entry) {
         entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
         if (this.hasProgressCanvas) {
@@ -149,6 +191,18 @@ export default class MultiCanvas extends Drawer {
         }
     }
 
+    /**
+     * Draw a waveform with bars
+     *
+     * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
+     * rendering
+     * @param {number} channelIndex The index of the current channel. Normally
+     * should be 0. Must be an integer.
+     * @param {number} start The x-offset of the beginning of the area that
+     * should be rendered
+     * @param {number} end The x-offset of the end of the area that should be
+     * rendered
+     */
     drawBars(peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
@@ -194,6 +248,18 @@ export default class MultiCanvas extends Drawer {
         }
     }
 
+    /**
+     * Draw a waveform
+     *
+     * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
+     * rendering
+     * @param {number} channelIndex The index of the current channel. Normally
+     * should be 0
+     * @param {number} start The x-offset of the beginning of the area that
+     * should be rendered
+     * @param {number} end The x-offset of the end of the area that should be
+     * rendered
+     */
     drawWave(peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
@@ -237,6 +303,19 @@ export default class MultiCanvas extends Drawer {
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     }
 
+    /**
+     * Tell the canvas entries to render their portion of the waveform
+     *
+     * @private
+     * @param {number[]} peaks Peak data
+     * @param {number} absmax Maximum peak value (absolute)
+     * @param {number} halfH Half the height of the waveform
+     * @param {number} offsetY Offset to the top
+     * @param {number} start The x-offset of the beginning of the area that
+     * should be rendered
+     * @param {number} end The x-offset of the end of the area that
+     * should be rendered
+     */
     drawLine(peaks, absmax, halfH, offsetY, start, end) {
         this.canvases.forEach(entry => {
             this.setFillStyles(entry);
@@ -245,6 +324,21 @@ export default class MultiCanvas extends Drawer {
         });
     }
 
+    /**
+     * Render the actual waveform line on a canvas
+     *
+     * @private
+     * @param {CanvasEntry} entry
+     * @param {Canvas2DContextAttributes} ctx Essentially `entry.[wave|progress]Ctx`
+     * @param {number[]} peaks
+     * @param {number} absmax Maximum peak value (absolute)
+     * @param {number} halfH Half the height of the waveform
+     * @param {number} offsetY Offset to the top
+     * @param {number} start The x-offset of the beginning of the area that
+     * should be rendered
+     * @param {number} end The x-offset of the end of the area that
+     * should be rendered
+     */
     drawLineToContext(entry, ctx, peaks, absmax, halfH, offsetY, start, end) {
         if (!ctx) { return; }
 
@@ -284,6 +378,14 @@ export default class MultiCanvas extends Drawer {
         ctx.fill();
     }
 
+    /**
+     * Draw a rectangle on the waveform
+     *
+     * @param {number} x
+     * @param {number} y
+     * @param {number} width
+     * @param {number} height
+     */
     fillRect(x, y, width, height) {
         const startCanvas = Math.floor(x / this.maxCanvasWidth);
         const endCanvas = Math.min(
@@ -320,11 +422,27 @@ export default class MultiCanvas extends Drawer {
         }
     }
 
+    /**
+     * Draw the actual rectangle on a canvas
+     *
+     * @private
+     * @param {Canvas2DContextAttributes} ctx
+     * @param {number} x
+     * @param {number} y
+     * @param {number} width
+     * @param {number} height
+     */
     fillRectToContext(ctx, x, y, width, height) {
         if (!ctx) { return; }
         ctx.fillRect(x, y, width, height);
     }
 
+    /**
+     * Set the fill styles for a certain entry (wave and progress)
+     *
+     * @private
+     * @param {CanvasEntry} entry
+     */
     setFillStyles(entry) {
         entry.waveCtx.fillStyle = this.params.waveColor;
         if (this.hasProgressCanvas) {
@@ -332,7 +450,12 @@ export default class MultiCanvas extends Drawer {
         }
     }
 
-    updateProgress(pos) {
-        this.style(this.progressWave, { width: pos + 'px' });
+    /**
+     * Render the new progress
+     *
+     * @param {number} position X-Offset of progress position in pixels
+     */
+    updateProgress(position) {
+        this.style(this.progressWave, { width: position + 'px' });
     }
 }

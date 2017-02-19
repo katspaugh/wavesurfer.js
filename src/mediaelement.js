@@ -5,6 +5,11 @@ import * as util from './util';
  * MediaElement backend
  */
 export default class MediaElement extends WebAudio {
+    /**
+     * Construct the backend
+     *
+     * @param {WavesurferParams} params
+     */
     constructor(params) {
         super(params);
         this.params = params;
@@ -23,13 +28,18 @@ export default class MediaElement extends WebAudio {
         this.elementPosition = params.elementPosition;
     }
 
+    /**
+     * Initialise the backend, called in `wavesurfer.createBackend()`
+     */
     init() {
         this.setPlaybackRate(this.params.audioRate);
         this.createTimer();
     }
 
     /**
-     * Create a timer to provide a more precise `audioprocess' event.
+     * Create a timer to provide a more precise `audioprocess` event.
+     *
+     * @private
      */
     createTimer() {
         const onAudioProcess = () => {
@@ -47,10 +57,11 @@ export default class MediaElement extends WebAudio {
     /**
      *  Create media element with url as its source,
      *  and append to container element.
-     *  @param  {String}        url         path to media file
-     *  @param  {HTMLElement}   container   HTML element
-     *  @param  {Array}         peaks       array of peak data
-     *  @param  {String}        preload     HTML 5 preload attribute value
+     *
+     *  @param {string} url Path to media file
+     *  @param {HTMLElement} container HTML element
+     *  @param {Array} peaks Array of peak data
+     *  @param {string} preload HTML 5 preload attribute value
      */
     load(url, container, peaks, preload) {
         const media = document.createElement(this.mediaType);
@@ -71,8 +82,9 @@ export default class MediaElement extends WebAudio {
 
     /**
      *  Load existing media element.
-     *  @param  {MediaElement}  elt     HTML5 Audio or Video element
-     *  @param  {Array}         peaks   array of peak data
+     *
+     *  @param {MediaElement} elt HTML5 Audio or Video element
+     *  @param {Array} peaks Array of peak data
      */
     loadElt(elt, peaks) {
         elt.controls = this.params.mediaControls;
@@ -84,6 +96,7 @@ export default class MediaElement extends WebAudio {
     /**
      *  Private method called by both load (from url)
      *  and loadElt (existing media element).
+     *
      *  @param  {MediaElement}  media     HTML5 Audio or Video element
      *  @param  {Array}         peaks   array of peak data
      *  @private
@@ -114,10 +127,20 @@ export default class MediaElement extends WebAudio {
         this.setPlaybackRate(this.playbackRate);
     }
 
+    /**
+     * Used by `wavesurfer.isPlaying()` and `wavesurfer.playPause()`
+     *
+     * @return {boolean}
+     */
     isPaused() {
         return !this.media || this.media.paused;
     }
 
+    /**
+     * Used by `wavesurfer.getDuration()`
+     *
+     * @return {number}
+     */
     getDuration() {
         let duration = this.media.duration;
         if (duration >= Infinity) { // streaming audio
@@ -126,22 +149,40 @@ export default class MediaElement extends WebAudio {
         return duration;
     }
 
+    /**
+    * Returns the current time in seconds relative to the audioclip's
+    * duration.
+    *
+    * @return {number}
+    */
     getCurrentTime() {
         return this.media && this.media.currentTime;
     }
 
+    /**
+     * Get the position from 0 to 1
+     *
+     * @return {number}
+     */
     getPlayedPercents() {
         return (this.getCurrentTime() / this.getDuration()) || 0;
     }
 
     /**
      * Set the audio source playback rate.
+     *
+     * @param {number} value
      */
     setPlaybackRate(value) {
         this.playbackRate = value || 1;
         this.media.playbackRate = this.playbackRate;
     }
 
+    /**
+     * Used by `wavesurfer.seekTo()`
+     *
+     * @param {number} start Position to start at in seconds
+     */
     seekTo(start) {
         if (start != null) {
             this.media.currentTime = start;
@@ -152,10 +193,10 @@ export default class MediaElement extends WebAudio {
     /**
      * Plays the loaded audio region.
      *
-     * @param {Number} start Start offset in seconds,
-     * relative to the beginning of a clip.
-     * @param {Number} end End offset in seconds,
-     * relative to the beginning of a clip.
+     * @param {Number} start Start offset in seconds, relative to the beginning
+     * of a clip.
+     * @param {Number} end When to stop relative to the beginning of a clip.
+     * @emits MediaElement#play
      */
     play(start, end) {
         this.seekTo(start);
@@ -166,6 +207,8 @@ export default class MediaElement extends WebAudio {
 
     /**
      * Pauses the loaded audio.
+     *
+     * @emits MediaElement#pause
      */
     pause() {
         this.media && this.media.pause();
@@ -173,6 +216,7 @@ export default class MediaElement extends WebAudio {
         this.fireEvent('pause');
     }
 
+    /** @private */
     setPlayEnd(end) {
         this._onPlayEnd = time => {
             if (time >= end) {
@@ -183,6 +227,7 @@ export default class MediaElement extends WebAudio {
         this.on('audioprocess', this._onPlayEnd);
     }
 
+    /** @private */
     clearPlayEnd() {
         if (this._onPlayEnd) {
             this.un('audioprocess', this._onPlayEnd);
@@ -190,21 +235,45 @@ export default class MediaElement extends WebAudio {
         }
     }
 
-    getPeaks(length, start, end) {
+    /**
+     * Compute the max and min value of the waveform when broken into
+     * <length> subranges.
+     *
+     * @param {number} length How many subranges to break the waveform into.
+     * @param {number} first First sample in the required range.
+     * @param {number} last Last sample in the required range.
+     * @return {number[]|number[][]} Array of 2*<length> peaks or array of
+     * arrays of peaks consisting of (max, min) values for each subrange.
+     */
+    getPeaks(length, first, last) {
         if (this.buffer) {
-            return super.getPeaks(length, start, end);
+            return super.getPeaks(length, first, last);
         }
         return this.peaks || [];
     }
 
+    /**
+     * Get the current volume
+     *
+     * @return {number} value A floating point value between 0 and 1.
+     */
     getVolume() {
         return this.media.volume;
     }
 
-    setVolume(val) {
-        this.media.volume = val;
+    /**
+     * Set the audio volume
+     *
+     * @param {number} value A floating point value between 0 and 1.
+     */
+    setVolume(value) {
+        this.media.volume = value;
     }
 
+    /**
+     * This is called when wavesurfer is destroyed
+     *
+     */
     destroy() {
         this.pause();
         this.unAll();

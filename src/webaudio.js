@@ -52,10 +52,20 @@ export default class WebAudio extends util.Observer {
         }
     }
 
+    /**
+     * Does the browser support this backend
+     *
+     * @return {boolean}
+     */
     supportsWebAudio() {
         return !!(window.AudioContext || window.webkitAudioContext);
     }
 
+    /**
+     * Get the audio context used by this backend or create one
+     *
+     * @return {AudioContext}
+     */
     getAudioContext() {
         if (!this.audioContext) {
             this.audioContext = new (
@@ -65,6 +75,12 @@ export default class WebAudio extends util.Observer {
         return this.audioContext;
     }
 
+    /**
+     * Get the offline audio context used by this backend or create one
+     *
+     * @param {number} sampleRate
+     * @return {OfflineAudioContext}
+     */
     getOfflineAudioContext(sampleRate) {
         if (!this.offlineAudioContext) {
             this.offlineAudioContext = new (
@@ -74,6 +90,11 @@ export default class WebAudio extends util.Observer {
         return this.offlineAudioContext;
     }
 
+    /**
+     * Construct the backend
+     *
+     * @param {WavesurferParams} params
+     */
     constructor(params) {
         super();
         this.params = params;
@@ -90,6 +111,9 @@ export default class WebAudio extends util.Observer {
         };
     }
 
+    /**
+     * Initialise the backend, called in `wavesurfer.createBackend()`
+     */
     init() {
         this.createVolumeNode();
         this.createScriptNode();
@@ -100,6 +124,7 @@ export default class WebAudio extends util.Observer {
         this.setLength(0);
     }
 
+    /** @private */
     disconnectFilters() {
         if (this.filters) {
             this.filters.forEach(filter => {
@@ -111,6 +136,7 @@ export default class WebAudio extends util.Observer {
         }
     }
 
+    /** @private */
     setState(state) {
         if (this.state !== this.states[state]) {
             this.state = this.states[state];
@@ -118,13 +144,22 @@ export default class WebAudio extends util.Observer {
         }
     }
 
-    // Unpacked filters
+    /**
+     * Unpacked `setFilters()`
+     *
+     * @param {...AudioNode} filters
+     */
     setFilter(...filters) {
         this.setFilters(filters);
     }
 
     /**
-     * @param {Array} filters Packed ilters array
+     * Insert custom Web Audio nodes into the graph
+     *
+     * @param {AudioNode[]} filters Packed filters array
+     * @example
+     * const lowpass = wavesurfer.backend.ac.createBiquadFilter();
+     * wavesurfer.backend.setFilter(lowpass);
      */
     setFilters(filters) {
         // Remove existing filters
@@ -146,6 +181,7 @@ export default class WebAudio extends util.Observer {
 
     }
 
+    /** @private */
     createScriptNode() {
         if (this.ac.createScriptProcessor) {
             this.scriptNode = this.ac.createScriptProcessor(this.scriptBufferSize);
@@ -156,6 +192,7 @@ export default class WebAudio extends util.Observer {
         this.scriptNode.connect(this.ac.destination);
     }
 
+    /** @private */
     addOnAudioProcess() {
         this.scriptNode.onaudioprocess = () => {
             const time = this.getCurrentTime();
@@ -171,10 +208,12 @@ export default class WebAudio extends util.Observer {
         };
     }
 
+    /** @private */
     removeOnAudioProcess() {
         this.scriptNode.onaudioprocess = null;
     }
 
+    /** @private */
     createAnalyserNode() {
         this.analyser = this.ac.createAnalyser();
         this.analyser.connect(this.gainNode);
@@ -182,6 +221,8 @@ export default class WebAudio extends util.Observer {
 
     /**
      * Create the gain node needed to control the playback volume.
+     *
+     * @private
      */
     createVolumeNode() {
         // Create gain node using the AudioContext
@@ -195,25 +236,24 @@ export default class WebAudio extends util.Observer {
     }
 
     /**
-     * Set the gain to a new value.
+     * Set the audio volume
      *
-     * @param {Number} newGain The new gain, a floating point value
-     * between 0 and 1. 0 being no gain and 1 being maximum gain.
+     * @param {number} value A floating point value between 0 and 1.
      */
-    setVolume(newGain) {
-        this.gainNode.gain.value = newGain;
+    setVolume(value) {
+        this.gainNode.gain.value = value;
     }
 
     /**
-     * Get the current gain.
+     * Get the current volume
      *
-     * @returns {Number} The current gain, a floating point value
-     * between 0 and 1. 0 being no gain and 1 being maximum gain.
+     * @return {number} value A floating point value between 0 and 1.
      */
     getVolume() {
         return this.gainNode.gain.value;
     }
 
+    /** @private */
     decodeArrayBuffer(arraybuffer, callback, errback) {
         if (!this.offlineAc) {
             this.offlineAc = this.getOfflineAudioContext(this.ac ? this.ac.sampleRate : 44100);
@@ -222,7 +262,9 @@ export default class WebAudio extends util.Observer {
     }
 
     /**
-     * Set pre-decoded peaks.
+     * Set pre-decoded peaks
+     *
+     * @param {Array} peaks
      */
     setPeaks(peaks) {
         this.peaks = peaks;
@@ -230,6 +272,8 @@ export default class WebAudio extends util.Observer {
 
     /**
      * Set the rendered length (different from the length of the audio).
+     *
+     * @param {number} length
      */
     setLength(length) {
         // No resize, we can preserve the cached peaks.
@@ -253,13 +297,13 @@ export default class WebAudio extends util.Observer {
     }
 
     /**
-     * Compute the max and min value of the waveform when broken into
-     * <length> subranges.
-     * @param {Number} length How many subranges to break the waveform into.
-     * @param {Number} first First sample in the required range.
-     * @param {Number} last Last sample in the required range.
-     * @returns {Array} Array of 2*<length> peaks or array of arrays
-     * of peaks consisting of (max, min) values for each subrange.
+     * Compute the max and min value of the waveform when broken into <length> subranges.
+     *
+     * @param {number} length How many subranges to break the waveform into.
+     * @param {number} first First sample in the required range.
+     * @param {number} last Last sample in the required range.
+     * @return {number[]|number[][]} Array of 2*<length> peaks or array of arrays of
+     * peaks consisting of (max, min) values for each subrange.
      */
     getPeaks(length, first, last) {
         if (this.peaks) { return this.peaks; }
@@ -311,16 +355,25 @@ export default class WebAudio extends util.Observer {
         return this.params.splitChannels ? this.splitPeaks : this.mergedPeaks;
     }
 
+    /**
+     * Get the position from 0 to 1
+     *
+     * @return {number}
+     */
     getPlayedPercents() {
         return this.state.getPlayedPercents.call(this);
     }
 
+    /** @private */
     disconnectSource() {
         if (this.source) {
             this.source.disconnect();
         }
     }
 
+    /**
+     * This is called when wavesurfer is destroyed
+     */
     destroy() {
         if (!this.isPaused()) {
             this.pause();
@@ -334,6 +387,11 @@ export default class WebAudio extends util.Observer {
         this.analyser.disconnect();
     }
 
+    /**
+     * Loaded a decoded audio buffer
+     *
+     * @param {Object} buffer
+     */
     load(buffer) {
         this.startPosition = 0;
         this.lastPlay = this.ac.currentTime;
@@ -341,6 +399,7 @@ export default class WebAudio extends util.Observer {
         this.createSource();
     }
 
+    /** @private */
     createSource() {
         this.disconnectSource();
         this.source = this.ac.createBufferSource();
@@ -354,10 +413,20 @@ export default class WebAudio extends util.Observer {
         this.source.connect(this.analyser);
     }
 
+    /**
+     * Used by `wavesurfer.isPlaying()` and `wavesurfer.playPause()`
+     *
+     * @return {boolean}
+     */
     isPaused() {
         return this.state !== this.states[PLAYING];
     }
 
+    /**
+     * Used by `wavesurfer.getDuration()`
+     *
+     * @return {number}
+     */
     getDuration() {
         if (!this.buffer) {
             return 0;
@@ -365,6 +434,13 @@ export default class WebAudio extends util.Observer {
         return this.buffer.duration;
     }
 
+    /**
+     * Used by `wavesurfer.seekTo()`
+     *
+     * @param {number} start Position to start at in seconds
+     * @param {number} end Position to end at in seconds
+     * @return {{start: number, end: number}}
+     */
     seekTo(start, end) {
         if (!this.buffer) { return; }
 
@@ -393,6 +469,11 @@ export default class WebAudio extends util.Observer {
         };
     }
 
+    /**
+     * Get the playback position in seconds
+     *
+     * @return {number}
+     */
     getPlayedTime() {
         return (this.ac.currentTime - this.lastPlay) * this.playbackRate;
     }
@@ -400,10 +481,9 @@ export default class WebAudio extends util.Observer {
     /**
      * Plays the loaded audio region.
      *
-     * @param {Number} start Start offset in seconds,
-     * relative to the beginning of a clip.
-     * @param {Number} end When to stop
-     * relative to the beginning of a clip.
+     * @param {number} start Start offset in seconds, relative to the beginning
+     * of a clip.
+     * @param {number} end When to stop relative to the beginning of a clip.
      */
     play(start, end) {
         if (!this.buffer) { return; }
@@ -444,14 +524,19 @@ export default class WebAudio extends util.Observer {
     }
 
     /**
-    *   Returns the current time in seconds relative to the audioclip's duration.
+    * Returns the current time in seconds relative to the audioclip's
+    * duration.
+    *
+    * @return {number}
     */
     getCurrentTime() {
         return this.state.getCurrentTime.call(this);
     }
 
     /**
-    *   Returns the current playback rate.
+    * Returns the current playback rate. (0=no playback, 1=normal playback)
+    *
+    * @return {number}
     */
     getPlaybackRate() {
         return this.playbackRate;
@@ -459,6 +544,8 @@ export default class WebAudio extends util.Observer {
 
     /**
      * Set the audio source playback rate.
+     *
+     * @param {number} value
      */
     setPlaybackRate(value) {
         value = value || 1;

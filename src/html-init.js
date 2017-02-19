@@ -50,10 +50,13 @@ import loadScript from 'load-script';
  */
 class Init {
     /**
-     * Construct Init class
+     * Instantiate Init class and initialise elements
      *
-     * @param {Object} WaveSurfer {The WaveSurfer library object}
-     * @param {Object} params {initialisation options}
+     * This is done automatically if `window` is defined and
+     * `window.WS_StopAutoInit` is not set to true
+     *
+     * @param {WaveSurfer} WaveSurfer The WaveSurfer library object
+     * @param {InitParams} params initialisation options
      */
     constructor(WaveSurfer, params = {}) {
         if (!WaveSurfer) {
@@ -132,11 +135,11 @@ class Init {
     }
 
     /**
-     * Initialise a single container element and add to this.instances
+     * Initialise a single container element and add to `this.instances`
      *
-     * @param  {HTMLElement} el - The Container to instantiate wavesurfer to
-     * @param  {plugin[]} plugins - An Array of plugin names to initialise with
-     * @return {WaveSurferInstance}
+     * @param  {HTMLElement} el The container to instantiate wavesurfer to
+     * @param  {PluginDefinition[]} plugins An Array of plugin names to initialise with
+     * @return {Object} Wavesurfer instance
      */
     initEl(el, plugins = []) {
         const jsonRegex = /^[[|{]/;

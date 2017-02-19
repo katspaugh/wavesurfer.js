@@ -4,10 +4,16 @@
  * Is used if the option parameter `partialRender` is set to `true`
  */
 export default class PeakCache {
+    /**
+     * Instantiate cache
+     */
     constructor() {
         this.clearPeakCache();
     }
 
+    /**
+     * Empty the cache
+     */
     clearPeakCache() {
         // Flat array with entries that are always in pairs to mark the
         // beginning and end of each subrange.  This is a convenience so we can
@@ -18,6 +24,14 @@ export default class PeakCache {
         this.peakCacheLength = -1;
     }
 
+    /**
+     * Add a range of peaks to the cache
+     *
+     * @param {number} length The length of the range
+     * @param {number} start The x offset of the start of the range
+     * @param {number} end The x offset of the end of the range
+     * @return {number[][]}
+     */
     addRangeToPeakCache(length, start, end) {
         if (length != this.peakCacheLength) {
             this.clearPeakCache();
@@ -80,7 +94,11 @@ export default class PeakCache {
         return uncachedRangePairs;
     }
 
-    // For testing
+    /**
+     * For testing
+     *
+     * @return {number[][]}
+     */
     getCacheRanges() {
         const peakCacheRangePairs = [];
         let i;
