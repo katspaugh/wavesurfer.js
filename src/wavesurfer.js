@@ -454,7 +454,7 @@ export default class WaveSurfer extends util.Observer {
      * @emits WaveSurfer#drawer-created
      */
     createDrawer() {
-        this.drawer = new this.Drawer(this.container, this.params, this);
+        this.drawer = new this.Drawer(this.container, this.params);
         this.drawer.init();
         this.fireEvent('drawer-created', this.drawer);
 
