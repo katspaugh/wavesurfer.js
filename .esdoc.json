@@ -1,9 +1,20 @@
 {
   "source": "./src",
   "destination": "./doc",
+  "title": "wavesurfer.js documentation",
+  "styles": ["example/css/doc.css"],
+  "lint": true,
+  "builtinExternal": true,
   "experimentalProposal": {
     "classProperties": true,
     "objectRestSpread": true,
     "exportExtensions": true
+  },
+  "test": {
+    "type": "mocha",
+    "source": "spec"
+  },
+  "manual": {
+    "changelog": ["CHANGES.md"]
   }
 }
