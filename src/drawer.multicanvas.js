@@ -24,12 +24,35 @@ export default class MultiCanvas extends Drawer {
      */
     constructor(container, params) {
         super(container, params);
+        /**
+         * @type {number}
+         * @private
+         */
         this.maxCanvasWidth = params.maxCanvasWidth;
+        /**
+         * @private
+         * @type {number}
+         */
         this.maxCanvasElementWidth = Math.round(params.maxCanvasWidth / params.pixelRatio);
 
+        /**
+         * Whether or not the progress wave is renderered. If the `waveColor`
+         * and `progressColor` are the same colour it is not.
+         * @type {boolean}
+         */
         this.hasProgressCanvas = params.waveColor != params.progressColor;
+        /**
+         * @private
+         * @type {number}
+         */
         this.halfPixel = 0.5 / params.pixelRatio;
+        /**
+         * @private
+         * @type {Array}
+         */
         this.canvases = [];
+        /** @private */
+        this.progressWave = null;
     }
 
     /**

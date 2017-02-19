@@ -11,8 +11,13 @@ const FINISHED = 'finished';
  * @extends {Observer}
  */
 export default class WebAudio extends util.Observer {
+    /** @private */
     static scriptBufferSize = 256
-
+    /** @private */
+    audioContext = null
+    /** @private */
+    offlineAudioContext = null
+    /** @private */
     stateBehaviors = {
         [PLAYING]: {
             init() {
@@ -97,18 +102,48 @@ export default class WebAudio extends util.Observer {
      */
     constructor(params) {
         super();
+        /** @private */
         this.params = params;
+        /** @private */
         this.ac = params.audioContext || this.getAudioContext();
-
+        /**@private */
         this.lastPlay = this.ac.currentTime;
+        /** @private */
         this.startPosition = 0;
+        /** @private  */
         this.scheduledPause = null;
-
+        /** @private */
         this.states = {
             [PLAYING]: Object.create(this.stateBehaviors[PLAYING]),
             [PAUSED]: Object.create(this.stateBehaviors[PAUSED]),
             [FINISHED]: Object.create(this.stateBehaviors[FINISHED])
         };
+        /** @private */
+        this.analyser = null;
+        /** @private */
+        this.buffer = null;
+        /** @private */
+        this.filters = [];
+        /** @private */
+        this.gainNode = null;
+        /** @private */
+        this.mergedPeaks = null;
+        /** @private */
+        this.offlineAc = null;
+        /** @private */
+        this.peaks = null;
+        /** @private */
+        this.playbackRate = 1;
+        /** @private */
+        this.analyser = null;
+        /** @private */
+        this.scriptNode = null;
+        /** @private */
+        this.source = null;
+        /** @private */
+        this.splitPeaks = [];
+        /** @private */
+        this.state = null;
     }
 
     /**

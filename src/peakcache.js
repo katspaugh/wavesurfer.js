@@ -15,12 +15,18 @@ export default class PeakCache {
      * Empty the cache
      */
     clearPeakCache() {
-        // Flat array with entries that are always in pairs to mark the
-        // beginning and end of each subrange.  This is a convenience so we can
-        // iterate over the pairs for easy set difference operations.
+        /**
+         * Flat array with entries that are always in pairs to mark the
+         * beginning and end of each subrange.  This is a convenience so we can
+         * iterate over the pairs for easy set difference operations.
+         * @private
+         */
         this.peakCacheRanges = [];
-        // Length of the entire cachable region, used for resetting the cache
-        // when this changes (zoom events, for instance).
+        /**
+         * Length of the entire cachable region, used for resetting the cache
+         * when this changes (zoom events, for instance).
+         * @private
+         */
         this.peakCacheLength = -1;
     }
 

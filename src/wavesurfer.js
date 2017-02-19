@@ -198,9 +198,13 @@ export default class WaveSurfer extends util.Observer {
      */
     constructor(params) {
         super();
-        // Extract relevant parameters (or defaults)
+        /**
+         * Extract relevant parameters (or defaults)
+         * @private
+         */
         this.params = util.extend({}, this.defaultParams, params);
 
+        /** @private */
         this.container = 'string' == typeof params.container ?
             document.querySelector(this.params.container) :
             this.params.container;
@@ -210,10 +214,13 @@ export default class WaveSurfer extends util.Observer {
         }
 
         if (this.params.mediaContainer == null) {
+            /** @private */
             this.mediaContainer = this.container;
         } else if (typeof this.params.mediaContainer == 'string') {
+            /** @private */
             this.mediaContainer = document.querySelector(this.params.mediaContainer);
         } else {
+            /** @private */
             this.mediaContainer = this.params.mediaContainer;
         }
 
@@ -227,30 +234,60 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('maxCanvasWidth must be an even number');
         }
 
-        // Used to save the current volume when muting so we can
-        // restore once unmuted
+        /**
+         * @private Used to save the current volume when muting so we can
+         * restore once unmuted
+         * @type {number}
+         */
         this.savedVolume = 0;
 
-        // The current muted state
+        /**
+         * @private The current muted state
+         * @type {boolean}
+         */
         this.isMuted = false;
 
-        // Will hold a list of event descriptors that need to be
-        // cancelled on subsequent loads of audio
+        /**
+         * @private Will hold a list of event descriptors that need to be
+         * cancelled on subsequent loads of audio
+         * @type {Object[]}
+         */
         this.tmpEvents = [];
 
-        // Holds any running audio downloads
+        /**
+         * @private Holds any running audio downloads
+         * @type {Observer}
+         */
         this.currentAjax = null;
+        /** @private */
+        this.arraybuffer = null;
+        /** @private */
+        this.drawer = null;
+        /** @private */
+        this.backend = null;
+        /** @private */
+        this.peakCache = null;
 
         // cache constructor objects
         if (typeof this.params.renderer !== 'function') {
             throw new Error('Renderer parameter is invalid');
         }
+        /**
+         * @private The uninitialised Drawer class
+         */
         this.Drawer = this.params.renderer;
+        /**
+         * @private The uninitialised Backend class
+         */
         this.Backend = this.backends[this.params.backend];
 
-        // plugins that are currently initialised
+        /**
+         * @private map of plugin names that are currently initialised
+         */
         this.initialisedPluginList = {};
+        /** @private */
         this.isDestroyed = false;
+        /** @private */
         this.isReady = false;
         return this;
     }
@@ -313,8 +350,12 @@ export default class WaveSurfer extends util.Observer {
 
         // static properties are applied to wavesurfer instance
         if (plugin.static) {
-            Object.keys(plugin.static).forEach(key => {
-                this[key] = plugin.static[key];
+            Object.keys(plugin.static).forEach(pluginStaticProperty => {
+                /**
+                 * Properties defined in a plugin definition's `static` property are added as
+                 * static properties of the WaveSurfer instance
+                 */
+                this[pluginStaticProperty] = plugin.static[pluginStaticProperty];
             });
         }
 
@@ -337,8 +378,12 @@ export default class WaveSurfer extends util.Observer {
             SuperClass = superClassMap[plugin.extends];
         }
 
-        // instantiate plugin class
         /* eslint-disable new-cap */
+        /**
+         * Instantiated plugin classes are added as a property of the wavesurfer
+         * instance
+         * @type {Object}
+         */
         this[plugin.name] = new (plugin.instance(SuperClass))(this);
         /* eslint-enable new-cap */
         this.fireEvent('plugin-added', plugin.name);
@@ -904,8 +949,8 @@ export default class WaveSurfer extends util.Observer {
             this.backend.once('error', err => this.fireEvent('error', err))
         );
 
-        // If no pre-decoded peaks provided, attempt to download the
-        // audio file and decode it with Web Audio.
+        // If no pre-decoded peaks provided, attempt to download the audio file
+        // and decode it with Web Audio.
         if (peaks) {
             this.backend.setPeaks(peaks);
         } else if (this.backend.supportsWebAudio()) {
@@ -932,7 +977,8 @@ export default class WaveSurfer extends util.Observer {
         this.backend.decodeArrayBuffer(
             arraybuffer,
             data => {
-                // Only use the decoded data if we haven't been destroyed or another decode started in the meantime
+                // Only use the decoded data if we haven't been destroyed or
+                // another decode started in the meantime
                 if (!this.isDestroyed && this.arraybuffer == arraybuffer) {
                     callback(data);
                     this.arraybuffer = null;

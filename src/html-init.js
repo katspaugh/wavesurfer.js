@@ -63,10 +63,16 @@ class Init {
             throw new Error('WaveSurfer is not available!');
         }
 
-        // cache WaveSurfer
+        /**
+         * cache WaveSurfer
+         * @private
+         */
         this.WaveSurfer = WaveSurfer;
 
-        // build parameters, cache them in _params so minified builds are smaller
+        /**
+         * build parameters, cache them in _params so minified builds are smaller
+         * @private
+         */
         const _params = this.params = WaveSurfer.util.extend({}, {
             // wavesurfer parameter defaults so by default the audio player is
             // usable with native media element controls
@@ -74,7 +80,7 @@ class Init {
                 backend: 'MediaElement',
                 mediaControls: true
             },
-            // containers to instantiate on, can be selector string or HTMLElement
+            // containers to instantiate on, can be selector string or NodeList
             containers: 'wavesurfer',
             // @TODO insert plugin CDN URIs
             pluginCdnTemplate: '//localhost:8080/dist/plugin/wavesurfer.[name].js',
@@ -91,10 +97,19 @@ class Init {
                 });
             }
         }, params);
+        /**
+         * The nodes that should have instances attached to them
+         * @type {NodeList}
+         */
         this.containers = typeof _params.containers == 'string'
             ? document.querySelectorAll(_params.containers)
             : _params.containers;
+        /** @private */
         this.pluginCache = {};
+        /**
+         * An array of wavesurfer instances
+         * @type {Object[]}
+         */
         this.instances = [];
 
         this.initAllEls();

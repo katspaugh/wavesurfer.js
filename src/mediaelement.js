@@ -12,9 +12,11 @@ export default class MediaElement extends WebAudio {
      */
     constructor(params) {
         super(params);
+        /** @private */
         this.params = params;
 
         // Dummy media to catch errors
+        /** @private */
         this.media = {
             currentTime: 0,
             duration: 0,
@@ -24,8 +26,18 @@ export default class MediaElement extends WebAudio {
             pause() {}
         };
 
+        /** @private */
         this.mediaType = params.mediaType.toLowerCase();
+        /** @private */
         this.elementPosition = params.elementPosition;
+        /** @private */
+        this.peaks = null;
+        /** @private */
+        this.playbackRate = 1;
+        /** @private */
+        this.buffer = null;
+        /** @private */
+        this.onPlayEnd = null;
     }
 
     /**

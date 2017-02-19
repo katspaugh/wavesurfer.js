@@ -11,13 +11,30 @@ export default class Drawer extends util.Observer {
      */
     constructor(container, params) {
         super();
+        /** @private */
         this.container = container;
+        /**
+         * @type {WavesurferParams}
+         * @private
+         */
         this.params = params;
-
+        /**
+         * The width of the renderer
+         * @type {number}
+         */
         this.width = 0;
+        /**
+         * The height of the renderer
+         * @type {number}
+         */
         this.height = params.height * this.params.pixelRatio;
-
+        /** @private */
         this.lastPos = 0;
+        /**
+         * The `<wave>` element which is added to the container
+         * @type {HTMLElement}
+         */
+        this.wrapper = null;
     }
 
     /**

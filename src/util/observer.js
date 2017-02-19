@@ -13,6 +13,12 @@ export default class Observer {
      * Instantiate Observer
      */
     constructor() {
+        /**
+         * @private
+         * @todo Initialise the handlers here already and remove the conditional
+         * assignment in `on()`
+         */
+        this.handlers = null;
     }
     /**
      * Attach a handler function for an event.
