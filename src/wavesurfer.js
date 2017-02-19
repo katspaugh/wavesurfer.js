@@ -117,35 +117,36 @@ import PeakCache from './peakcache';
  * wavesurfer.load('example/media/demo.wav');
  */
 export default class WaveSurfer extends util.Observer {
+    /** @private */
     defaultParams = {
-        height        : 128,
-        waveColor     : '#999',
-        progressColor : '#555',
+        audioContext  : null,
+        audioRate     : 1,
+        autoCenter    : true,
+        backend       : 'WebAudio',
+        container     : null,
         cursorColor   : '#333',
         cursorWidth   : 1,
-        skipLength    : 2,
-        minPxPerSec   : 20,
-        pixelRatio    : window.devicePixelRatio || screen.deviceXDPI / screen.logicalXDPI,
-        fillParent    : true,
-        scrollParent  : false,
-        hideScrollbar : false,
-        normalize     : false,
-        audioContext  : null,
-        container     : null,
         dragSelection : true,
-        loopSelection : true,
-        audioRate     : 1,
+        fillParent    : true,
+        height        : 128,
+        hideScrollbar : false,
         interact      : true,
-        splitChannels : false,
+        loopSelection : true,
+        maxCanvasWidth: 4000,
         mediaContainer: null,
         mediaControls : false,
-        renderer      : MultiCanvas,
-        maxCanvasWidth: 4000,
-        backend       : 'WebAudio',
         mediaType     : 'audio',
-        autoCenter    : true,
+        minPxPerSec   : 20,
+        normalize     : false,
         partialRender : false,
-        plugins       : []
+        pixelRatio    : window.devicePixelRatio || screen.deviceXDPI / screen.logicalXDPI,
+        plugins       : [],
+        progressColor : '#555',
+        renderer      : MultiCanvas,
+        scrollParent  : false,
+        skipLength    : 2,
+        splitChannels : false,
+        waveColor     : '#999'
     }
 
     backends = {
