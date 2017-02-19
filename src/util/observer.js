@@ -1,5 +1,12 @@
 /**
- * @desc Observer
+ * @typedef {Object} ListenerDescriptor
+ * @property {string} name The name of the event
+ * @property {function} callback The callback
+ * @property {function} un The function to call to remove the listener
+ */
+
+/**
+ * Observer class
  */
 export default class Observer {
     constructor() {

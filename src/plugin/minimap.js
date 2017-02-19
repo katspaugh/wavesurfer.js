@@ -1,8 +1,18 @@
 /**
- * minimap plugin
+ * @typedef {Object} MinimapPluginParams
+ * @desc Extends WavesurferParams
+ * @property {?string|HTMLElement} container CSS selector or HTML element where
+ * the ELAN information should be renderer. By default it is simply appended
+ * after the waveform.
+ * @property {?boolean} deferInit Set to true to manually call
+ * `initPlugin('minimap')`
+ */
+
+/**
+ * Minimap plugin definition factory
  *
- * @param  {Object} params parameters use to initialise the plugin
- * @return {Object} an object representing the plugin
+ * @param  {MinimapPluginParams} params parameters use to initialise the plugin
+ * @return {PluginDefinition} an object representing the plugin
  */
 export default function(params = {}) {
     return {

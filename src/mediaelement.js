@@ -1,7 +1,10 @@
-import Webaudio from './webaudio';
+import WebAudio from './webaudio';
 import * as util from './util';
 
-export default class MediaElement extends Webaudio {
+/**
+ * MediaElement backend
+ */
+export default class MediaElement extends WebAudio {
     constructor(params) {
         super(params);
         this.params = params;

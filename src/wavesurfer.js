@@ -4,6 +4,118 @@ import WebAudio from './webaudio';
 import MediaElement from './mediaelement';
 import PeakCache from './peakcache';
 
+/** @external {HTMLElement} https://developer.mozilla.org/en/docs/Web/API/HTMLElement */
+/** @external {OfflineAudioContext} https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext */
+/** @external {File} https://developer.mozilla.org/en-US/docs/Web/API/File */
+/** @external {Blob} https://developer.mozilla.org/en-US/docs/Web/API/Blob */
+/** @external {CanvasRenderingContext2D} https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D */
+/** @external {MediaStreamConstraints} https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints */
+/** @external {AudioNode} https://developer.mozilla.org/de/docs/Web/API/AudioNode */
+
+/**
+ * @typedef {Object} WavesurferParams
+ * @property {AudioContext} audioContext=null Use your own previously
+ * initialized AudioContext or leave blank.
+ * @property {number} audioRate=1 Speed at which to play audio. Lower number is
+ * slower.
+ * @property {boolean} autoCenter=true If a scrollbar is present, center the
+ * waveform around the progress
+ * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'` In most cases
+ * you don't have to set this manually. MediaElement is a fallback for
+ * unsupported browsers.
+ * @property {!string|HTMLElement} container CSS selector or HTML element where
+ * the waveform should be drawn. This is the only required parameter.
+ * @property {string} cursorColor='#333' The fill color of the cursor indicating
+ * the playhead position.
+ * @property {number} cursorWidth=1 Measured in pixels.
+ * @property {boolean} fillParent=true Whether to fill the entire container or
+ * draw only according to `minPxPerSec`.
+ * @property {number} height=128 The height of the waveform. Measured in
+ * pixels.
+ * @property {boolean} hideScrollbar=false Whether to hide the horizontal
+ * scrollbar when one would normally be shown.
+ * @property {boolean} interact=true Whether the mouse interaction will be
+ * enabled at initialization. You can switch this parameter at any time later
+ * on.
+ * @property {boolean} loopSelection=true (Use with regions plugin) Enable
+ * looping of selected regions
+ * @property {number} maxCanvasWidth=4000 Maximum width of a single canvas in
+ * pixels, excluding a small overlap (2 * `pixelRatio`, rounded up to the next
+ * even integer). If the waveform is longer than this value, additional canvases
+ * will be used to render the waveform, which is useful for very large waveforms
+ * that may be too wide for browsers to draw on a single canvas.
+ * @property {boolean} mediaControls=false (Use with backend `MediaElement`)
+ * this enables the native controls for the media element
+ * @property {string} mediaType='audio' (Use with backend `MediaElement`)
+ * `'audio'|'video'`
+ * @property {number} minPxPerSec=20 Minimum number of pixels per second of
+ * audio.
+ * @property {boolean} normalize=false If true, normalize by the maximum peak
+ * instead of 1.0.
+ * @property {boolean} partialRender=false Use the PeakCache to improve
+ * rendering speed of large waveforms
+ * @property {number} pixelRatio=window.devicePixelRatio The pixel ratio used to
+ * calculate display
+ * @property {PluginDefinition[]} plugins=[] An array of plugin definitions to
+ * register during instantiation, they will be directly initialised unless they
+ * are added with the `deferInit` property set to true.
+ * @property {string} progressColor='#555' The fill color of the part of the
+ * waveform behind the cursor.
+ * @property {Object} renderer=MultiCanvas Can be used to inject a custom
+ * renderer.
+ * @property {boolean} scrollParent=false Whether to scroll the container with a
+ * lengthy waveform. Otherwise the waveform is shrunk to the container width
+ * (see fillParent).
+ * @property {number} skipLength=2 Number of seconds to skip with the
+ * skipForward() and skipBackward() methods.
+ * @property {boolean} splitChannels=false Render with seperate waveforms for
+ * the channels of the audio
+ * @property {string} waveColor='#999' The fill color of the waveform after the
+ * cursor.
+ */
+
+/**
+ * @typedef {Object} PluginDefinition
+ * @desc The Object used to describe a plugin
+ * @example wavesurfer.addPlugin(pluginDefinition);
+ * @property {string} name The name of the plugin, the plugin instance will be
+ * added as a property to the wavesurfer instance under this name
+ * @property {boolean} deferInit=params.deferInit||false Don't initialise plugin
+ * automatically
+ * @property {string} extends `'observer'|'drawer'` The name of the object to
+ * inject into the plugin instance factory. Currently only the observer and
+ * drawer objects are possible.
+ * @property {PluginClass} instance The plugin instance factory, is called with
+ * the dependency specified in extends. Returns the plugin class.
+ */
+
+/**
+ * @typedef {function} PluginClass
+ * @property {function} init The method to initialise the plugin
+ * @property {function} destroy Destroy the plugin instance
+ */
+
+/**
+ * WaveSurfer core library class
+ *
+ * @extends {Observer}
+ * @example
+ * const params = {
+ *   container: '#waveform',
+ *   waveColor: 'violet',
+ *   progressColor: 'purple'
+ * };
+ *
+ * // initialise like this
+ * const wavesurfer = WaveSurfer.create(params);
+ *
+ * // or like this ...
+ * const wavesurfer = new WaveSurfer(params);
+ * wavesurfer.init();
+ *
+ * // load audio file
+ * wavesurfer.load('example/media/demo.wav');
+ */
 export default class WaveSurfer extends util.Observer {
     defaultParams = {
         height        : 128,

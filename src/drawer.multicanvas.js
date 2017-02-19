@@ -1,6 +1,22 @@
 import Drawer from './drawer';
 import * as util from './util';
 
+/**
+ * @typedef {Object} CanvasEntry
+ * @private
+ * @property {HTMLElement} wave The wave node
+ * @property {CanvasRenderingContext2D} waveCtx The canvas rendering context
+ * @property {?HTMLElement} progress The progress wave node
+ * @property {?CanvasRenderingContext2D} progressCtx The progress wave canvas
+ * rendering context
+ * @property {?number} start Start of the area the canvas should render, between 0 and 1
+ * @property {?number} end End of the area the canvas should render, between 0 and 1
+ */
+
+/**
+ * MultiCanvas renderer for wavesurfer. Is currently the default and sole built
+ * in renderer.
+ */
 export default class MultiCanvas extends Drawer {
     constructor(container, params) {
         super(container, params);

@@ -1,5 +1,9 @@
 import * as util from './util';
-
+/**
+ * Parent class for renderers
+ *
+ * @extends {Observer}
+ */
 export default class Drawer extends util.Observer {
     constructor(container, params) {
         super();

@@ -1,5 +1,53 @@
 import loadScript from 'load-script';
 
+/**
+ * @typedef {Object} InitParams
+ * @property {WavesurferParams} [defaults={backend: 'MediaElement,
+ * mediaControls: true}] The default wavesurfer initialisation parameters
+ * @property {string|NodeList} containers='wavesurfer' Selector or NodeList of
+ * elements to attach instances to
+ * @property {string}
+ * pluginCdnTemplate='//localhost:8080/dist/plugin/wavesurfer.[name].js' URL
+ * template for the dynamic loading of plugins
+ * @property {function} loadPlugin If set overwrites the default ajax function,
+ * can be used to inject plugins differently.
+ */
+/**
+ * The HTML initialisation API is not part of the main library bundle file and
+ * must be additionally included.
+ *
+ * The API attaches wavesurfer instances to all `<wavesurfer>` (can be
+ * customised), parsing their `data-` attributes to construct an options object
+ * for initialisation. Among other things it can dynamically load plugin code.
+ *
+ * The automatic initialisation can be prevented by setting the
+ * `window.WS_StopAutoInit` flag to true. The `html-init[.min].js` file exports
+ * the `Init` class, which can be called manually.
+ *
+ * Site-wide defaults can be added by setting `window.WS_InitOptions`.
+ *
+ * @example
+ * <!-- with minimap and timeline plugin -->
+ * <wavesurfer
+ *   data-url="../media/demo.wav"
+ *   data-plugins="minimap,timeline"
+ *   data-minimap-height="30"
+ *   data-minimap-wave-color="#ddd"
+ *   data-minimap-progress-color="#999"
+ *   data-timeline-font-size="13px"
+ *   data-timeline-container="#timeline"
+ * >
+ * </wavesurfer>
+ * <div id="timeline"></div>
+ *
+ * <!-- with regions plugin -->
+ * <wavesurfer
+ *   data-url="../media/demo.wav"
+ *   data-plugins="regions"
+ *   data-regions-regions='[{"start": 1,"end": 3,"color": "hsla(400, 100%, 30%, 0.5)"}]'
+ * >
+ * </wavesurfer>
+ */
 class Init {
     /**
      * Construct Init class

@@ -1,8 +1,18 @@
 /**
- * elan plugin
+ * @typedef {Object} ElanPluginParams
+ * @property {string|HTMLElement} container CSS selector or HTML element where
+ * the ELAN information should be renderer.
+ * @property {string} url The location of ELAN XML data
+ * @property {?boolean} deferInit Set to true to manually call
+ * @property {?Object} tiers If set only shows the data tiers with the `TIER_ID`
+ * in this map.
+ */
+
+/**
+ * Elan plugin definition factory
  *
- * @param  {Object} params parameters use to initialise the plugin
- * @return {Object} an object representing the plugin
+ * @param  {ElanPluginParams} params parameters use to initialise the plugin
+ * @return {PluginDefinition} an object representing the plugin
  */
 export default function(params = {}) {
     return {

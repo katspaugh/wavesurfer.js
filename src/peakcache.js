@@ -1,3 +1,8 @@
+/**
+ * Caches the decoded peaks data to improve rendering speed for lage audio
+ *
+ * Is used if the option parameter `partialRender` is set to `true`
+ */
 export default class PeakCache {
     constructor() {
         this.clearPeakCache();

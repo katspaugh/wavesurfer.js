@@ -5,6 +5,11 @@ const PLAYING = 'playing';
 const PAUSED = 'paused';
 const FINISHED = 'finished';
 
+/**
+ * WebAudio backend
+ *
+ * @extends {Observer}
+ */
 export default class WebAudio extends util.Observer {
     static scriptBufferSize = 256
 
