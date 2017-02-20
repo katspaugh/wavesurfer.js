@@ -154,7 +154,7 @@ aside li>a {
     margin: 5px -3px;
 }
 
-aside li.active>a, aside li:hover a {
+aside li.active>a, aside li:hover>a {
     display: block;
     background: rgba(0, 0, 0, 0.05);
     border-left: 4px solid #0275d8;
