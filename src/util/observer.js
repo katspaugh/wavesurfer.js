@@ -1,11 +1,31 @@
 /**
- * @desc Observer
+ * @typedef {Object} ListenerDescriptor
+ * @property {string} name The name of the event
+ * @property {function} callback The callback
+ * @property {function} un The function to call to remove the listener
+ */
+
+/**
+ * Observer class
  */
 export default class Observer {
+    /**
+     * Instantiate Observer
+     */
     constructor() {
+        /**
+         * @private
+         * @todo Initialise the handlers here already and remove the conditional
+         * assignment in `on()`
+         */
+        this.handlers = null;
     }
     /**
      * Attach a handler function for an event.
+     *
+     * @param {string} event Name of the event to listen to
+     * @param {function} fn The callback to trigger when the event is fired
+     * @return {ListenerDescriptor}
      */
     on(event, fn) {
         if (!this.handlers) { this.handlers = {}; }
@@ -26,6 +46,10 @@ export default class Observer {
 
     /**
      * Remove an event handler.
+     *
+     * @param {string} event Name of the event the listener that should be
+     * removed listens to
+     * @param {function} fn The callback that should be removed
      */
     un(event, fn) {
         if (!this.handlers) { return; }
@@ -55,6 +79,10 @@ export default class Observer {
     /**
      * Attach a handler to an event. The handler is executed at most once per
      * event type.
+     *
+     * @param {string} event The event to listen to
+     * @param {function} handler The callback that is only to be called once
+     * @return {ListenerDescriptor}
      */
     once(event, handler) {
         const fn = (...args) => {
@@ -68,6 +96,12 @@ export default class Observer {
         return this.on(event, fn);
     }
 
+    /**
+     * Manually fire an event
+     *
+     * @param {string} event The event to fire manually
+     * @param {...any} args The arguments with which to call the listeners
+     */
     fireEvent(event, ...args) {
         if (!this.handlers) { return; }
         const handlers = this.handlers[event];

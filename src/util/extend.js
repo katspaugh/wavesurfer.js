@@ -1,10 +1,10 @@
  /**
-  * extend - Extend an object shallowly with others
+  * Extend an object shallowly with others
   *
-  * @param {type}  dest    The target object
-  * @param {array} sources The objects to use for extending
+  * @param {Object} dest The target object
+  * @param {Object[]} sources The objects to use for extending
   *
-  * @returns {type} Description
+  * @return {Object} Merged object
   */
 export default function extend (dest, ...sources) {
     sources.forEach(source => {

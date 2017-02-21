@@ -180,10 +180,29 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
 /* eslint-enable complexity, no-redeclare, no-var, one-var */
 
 /**
- * spectrogram plugin
+ * @typedef {Object} SpectrogramPluginParams
+ * @property {string|HTMLElement} container Selector of element or element in
+ * which to render
+ * @property {number} fftSamples=512 number of samples to fetch to FFT. Must be
+ * a pwer of 2.
+ * @property {number} noverlap Size of the overlapping window. Must be <
+ * fftSamples. Auto deduced from canvas size by default.
+ * @property {string} windowFunc='hann' The window function to be used. One of
+ * these: `'bartlett'`, `'bartlettHann'`, `'blackman'`, `'cosine'`, `'gauss'`,
+ * `'hamming'`, `'hann'`, `'lanczoz'`, `'rectangular'`, `'triangular'`
+ * @property {?number} alpha Some window functions have this extra value.
+ * (Between 0 and 1)
+ * @property {number} pixelRatio=wavesurfer.params.pixelRatio to control the
+ * size of the spectrogram in relation with its canvas. 1 = Draw on the whole
+ * canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)
+ * @property {?boolean} deferInit Set to true to manually call
+ * `initPlugin('spectrogram')`
+ */
+/**
+ * Timeline plugin definition factory
  *
- * @param  {Object} params - parameters use to initialise the plugin
- * @return {Object} plugin - an object representing the plugin
+ * @param  {SpectrogramPluginParams} params parameters use to initialise the plugin
+ * @return {PluginDefinition} an object representing the plugin
  */
 export default function spectrogram(params = {}) {
     return {
@@ -194,25 +213,6 @@ export default function spectrogram(params = {}) {
         },
         extends: 'observer',
         instance: Observer => class SpectrogramPlugin extends Observer {
-            /**
-            * List of params:
-            *   wavesurfer: wavesurfer object
-            *   pixelRatio: to control the size of the spectrogram in relation with its canvas. 1=Draw on the whole canvas. 2 = draw on a quarter (1/2 the lenght and 1/2 the width)
-            *   fftSamples: number of samples to fetch to FFT. Must be a pwer of 2. Default = 512
-            *   windowFunc: the window function to be used. Default is 'hann'. Choose from the following:
-            *               + 'bartlett'
-            *               + 'bartlettHann'
-            *               + 'blackman'
-            *               + 'cosine'
-            *               + 'gauss'
-            *               + 'hamming'
-            *               + 'hann'
-            *               + 'lanczoz'
-            *               + 'rectangular'
-            *               + 'triangular'
-            *   alpha: some window functions have this extra value (0<alpha<1);
-            *   noverlap: size of the overlapping window. Must be < fftSamples. Auto deduced from canvas size by default.
-            */
             constructor(wavesurfer) {
                 super();
                 this.params = params;

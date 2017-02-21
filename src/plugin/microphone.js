@@ -1,8 +1,22 @@
 /**
- * microphone plugin
+ * @typedef {Object} MicrophonePluginParams
+ * @property {MediaStreamConstraints} constraints The constraints parameter is a
+ * MediaStreamConstaints object with two members: video and audio, describing
+ * the media types requested. Either or both must be specified.
+ * @property {number} bufferSize=4096 The buffer size in units of sample-frames.
+ * If specified, the bufferSize must be one of the following values: `256`,
+ * `512`, `1024`, `2048`, `4096`, `8192`, `16384`
+ * @property {number} numberOfInputChannels=1 Integer specifying the number of
+ * channels for this node's input. Values of up to 32 are supported.
+ * @property {?boolean} deferInit Set to true to manually call
+ * `initPlugin('microphone')`
+ */
+
+/**
+ * Microphone plugin definition factory
  *
- * @param  {Object} params parameters use to initialise the plugin
- * @return {Object} an object representing the plugin
+ * @param  {MicrophonePluginParams} params parameters use to initialise the plugin
+ * @return {PluginDefinition} an object representing the plugin
  */
 export default function(params = {}) {
     return {
@@ -52,26 +66,12 @@ export default function(params = {}) {
                 if (navigator.mediaDevices.getUserMedia === undefined) {
                     navigator.mediaDevices.getUserMedia = promisifiedOldGUM;
                 }
-
-                // The constraints parameter is a MediaStreamConstaints object with two
-                // members: video and audio, describing the media types requested. Either
-                // or both must be specified.
                 this.constraints = this.params.constraints || {
                     video: false,
                     audio: true
                 };
-
-                // The buffer size in units of sample-frames.
-                // If specified, the bufferSize must be one of the following values:
-                // 256, 512, 1024, 2048, 4096, 8192, 16384. Defaults to 4096.
                 this.bufferSize = this.params.bufferSize || 4096;
-
-                // Integer specifying the number of channels for this node's input,
-                // defaults to 1. Values of up to 32 are supported.
                 this.numberOfInputChannels = this.params.numberOfInputChannels || 1;
-
-                // Integer specifying the number of channels for this node's output,
-                // defaults to 1. Values of up to 32 are supported.
                 this.numberOfOutputChannels = this.params.numberOfOutputChannels || 1;
 
                 this._onBackendCreated = () => {

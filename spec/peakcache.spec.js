@@ -1,6 +1,6 @@
 import PeakCache from '../src/peakcache';
 
-describe('peakcache', function() {
+describe('PeakCache:', function() {
     var peakcache;
     var test_length = 200;
     var test_length2 = 300;
@@ -22,6 +22,7 @@ describe('peakcache', function() {
         done();
     });
 
+    /** @test {PeakCache#addRangeToPeakCache} */
     it('empty cache returns full range', function() {
         var newranges = peakcache.addRangeToPeakCache(test_length, test_start, test_end);
         expect(newranges.length).toEqual(1);
@@ -29,6 +30,7 @@ describe('peakcache', function() {
         expect(newranges[0][1]).toEqual(test_end);
     });
 
+    /** @test {PeakCache#addRangeToPeakCache} */
     it('different length clears cache', function() {
         peakcache.addRangeToPeakCache(test_length, test_start, test_end);
         var newranges = peakcache.addRangeToPeakCache(test_length2, test_start, test_end);
@@ -37,12 +39,14 @@ describe('peakcache', function() {
         expect(newranges[0][1]).toEqual(test_end);
     });
 
+    /** @test {PeakCache#addRangeToPeakCache} */
     it('consecutive calls return no ranges', function() {
         peakcache.addRangeToPeakCache(test_length, test_start, test_end);
         var newranges = peakcache.addRangeToPeakCache(test_length, test_start, test_end);
         expect(newranges.length).toEqual(0);
     });
 
+    /** @test {PeakCache#addRangeToPeakCache} */
     it('sliding window returns window sized range', function() {
         var newranges = peakcache.addRangeToPeakCache(test_length, test_start, test_end);
         expect(newranges.length).toEqual(1);
@@ -58,6 +62,8 @@ describe('peakcache', function() {
         expect(newranges[0][1]).toEqual(test_end + window_size * 2);
     });
 
+    /** @test {PeakCache#addRangeToPeakCache} */
+    /** @test {PeakCache#getCacheRanges} */
     it('disjoint set creates two ranges', function() {
         peakcache.addRangeToPeakCache(test_length, test_start, test_end);
         peakcache.addRangeToPeakCache(test_length, test_start3, test_end3);
@@ -69,6 +75,8 @@ describe('peakcache', function() {
         expect(ranges[1][1]).toEqual(test_end3);
     });
 
+    /** @test {PeakCache#addRangeToPeakCache} */
+    /** @test {PeakCache#getCacheRanges} */
     it('filling in disjoint sets coalesces', function() {
         peakcache.addRangeToPeakCache(test_length, test_start, test_end);
         peakcache.addRangeToPeakCache(test_length, test_start3, test_end3);
@@ -82,6 +90,8 @@ describe('peakcache', function() {
         expect(ranges[0][1]).toEqual(test_end3);
     });
 
+    /** @test {PeakCache#addRangeToPeakCache} */
+    /** @test {PeakCache#getCacheRanges} */
     it('filling in disjoint sets coalesces / edge cases', function() {
         peakcache.addRangeToPeakCache(test_length, test_start, test_end);
         peakcache.addRangeToPeakCache(test_length, test_start3, test_end3);

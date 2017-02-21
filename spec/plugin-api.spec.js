@@ -1,6 +1,7 @@
 import WaveSurfer from '../src/wavesurfer.js';
 
-describe('Wavesurfer plugin API:', () => {
+/** @test {WaveSurfer} */
+describe('WaveSurfer/plugin API:', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
     let waveformDiv;
@@ -52,6 +53,7 @@ describe('Wavesurfer plugin API:', () => {
     }
 
     // plugin methods
+    /** @test {WaveSurfer#addPlugin} */
     it('addPlugin adds static properties and correctly builds and instantiates plugin class', () => {
         dummyPlugin = mockPlugin('dummy');
         __createWaveform();
@@ -62,6 +64,7 @@ describe('Wavesurfer plugin API:', () => {
         expect(Object.getPrototypeOf(wavesurfer.dummy).constructor.name === 'Observer');
     });
 
+    /** @test {WaveSurfer#initPlugin} */
     it('initPlugin calls init function of the plugin and adds its name to the initialisedPluginList', () => {
         dummyPlugin = mockPlugin('dummy');
         __createWaveform();
@@ -73,6 +76,7 @@ describe('Wavesurfer plugin API:', () => {
         expect(wavesurfer.initialisedPluginList.dummy).toBeTrue();
     });
 
+    /** @test {WaveSurfer#destroyPlugin} */
     it('destroyPlugin calls plugin destroy function and removes the plugin name from the initialisedPluginList', () => {
         dummyPlugin = mockPlugin('dummy');
         __createWaveform();
@@ -86,6 +90,7 @@ describe('Wavesurfer plugin API:', () => {
     });
 
     // auto-adding and initialising of plugins (registerPlugins)
+    /** @test {WaveSurfer#registerPlugins} */
     it('registerPlugin adds a plugin but does not call plugin init function if the plugin property deferInit is truethy', () => {
         dummyPlugin = mockPlugin('dummy', true);
         __createWaveform({
@@ -98,6 +103,7 @@ describe('Wavesurfer plugin API:', () => {
         expect(wavesurfer.dummy.isInitialised).toBeFalse();
     });
 
+    /** @test {WaveSurfer#registerPlugins} */
     it('registerPlugin adds a plugin ands calls plugin init function if the plugin property deferInit is falsey', () => {
         dummyPlugin = mockPlugin('dummy');
         __createWaveform({

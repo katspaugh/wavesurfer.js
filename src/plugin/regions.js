@@ -1,11 +1,10 @@
-
 /**
  * Generate Region class
  *
- * @param {any} Observer
- * @returns
+ * @param {Observer} Observer
+ * @return {Region}
  */
-function regionGenerator(Observer) {
+function regionFactory(Observer) {
     return class Region extends Observer {
         init(params, wavesurfer) {
             this.wavesurfer = wavesurfer;
@@ -368,12 +367,36 @@ function regionGenerator(Observer) {
 }
 
 /**
- * regions plugin
- *
- * @param  {Object} params parameters use to initialise the plugin
- * @return {Object} an object representing the plugin
+ * @typedef {Object} RegionsPluginParams
+ * @property {?boolean} dragSelection Enable creating regions by dragging wih
+ * the mouse
+ * @property {?RegionParams[]} regions Regions that should be added upon
+ * initialisation
+ * @property {number} slop=2 The sensitivity of the mouse dragging
+ * @property {?boolean} deferInit Set to true to manually call
+ * `initPlugin('regions')`
  */
-export default function(params = {}) {
+
+/**
+ * @typedef {Object} RegionParams
+ * @desc The parameters used to describe a region.
+ * @example wavesurfer.addRegion(regionParams);
+ * @property {string} id=→random The id of the region
+ * @property {number} start=0 The start position of the region (in seconds).
+ * @property {number} end=0 The end position of the region (in seconds).
+ * @property {?boolean} loop Whether to loop the region when played back.
+ * @property {boolean} drag=true Allow/dissallow dragging the region.
+ * @property {boolean} resize=true Allow/dissallow resizing the region.
+ * @property {string} [color='rgba(0, 0, 0, 0.1)'] HTML color code.
+ */
+
+/**
+ * Regions plugin definition factory
+ *
+ * @param {RegionsPluginParams} params parameters use to initialise the plugin
+ * @return {PluginDefinition} an object representing the plugin
+ */
+export default function regions(params = {}) {
     return {
         name: 'regions',
         deferInit: params && params.deferInit ? params.deferInit : false,
@@ -413,7 +436,7 @@ export default function(params = {}) {
                 this.wavesurfer = wavesurfer;
 
                 // generate Region class from Observer
-                this.wavesurfer.Region = regionGenerator(wavesurfer.util.Observer);
+                this.wavesurfer.Region = regionFactory(wavesurfer.util.Observer);
 
                 // Id-based hash of regions.
                 this.list = {};
