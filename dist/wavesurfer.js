@@ -1083,7 +1083,7 @@ WaveSurfer.WebAudio = {
         // not passed in as a parameter
         if (!this.params.audioContext) {
             // check if browser supports AudioContext.close()
-            if (typeof this.ac.close() !== 'undefined') {
+            if (typeof this.ac.close === 'function') {
                 this.ac.close();
             }
         }

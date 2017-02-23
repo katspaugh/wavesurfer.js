@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+1.3.3 (23.02.2017)
+------------------
+- Add Media Session plugin (#996)
+- Fix check for AudioContext.close (#998)
+
 1.3.2 (12.02.2017)
 ------------------
 - Add a `getVolume` method (#979)
