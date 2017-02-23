@@ -146,20 +146,22 @@ aside>ul {
 
 aside li {
     list-style-type: none;
+    margin: 5px 0;
 }
 
 aside li>a {
     display: block;
-    padding: 3px;
-    margin: 5px -3px;
+    padding: 3px 5px;
 }
 
-aside li.active>a, aside li:hover>a {
-    display: block;
+aside li.active, aside li:hover {
     background: rgba(0, 0, 0, 0.05);
     border-left: 4px solid #0275d8;
-    padding: 3px;
-    margin: 5px -3px;
+    margin-left: -4px;
+}
+
+aside li.active>a:hover {
+    text-decoration: none;
 }
 
 aside #carbonads {
