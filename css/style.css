@@ -162,6 +162,8 @@ aside li.active, aside li:hover {
 
 aside li.active>a:hover {
     text-decoration: none;
+    cursor: default;
+    color: #0275d8;
 }
 
 aside #carbonads {
