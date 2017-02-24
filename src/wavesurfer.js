@@ -464,7 +464,7 @@ var WaveSurfer = {
         // If no pre-decoded peaks provided or pre-decoded peaks are
         // provided with forceDecode flag, attempt to download the
         // audio file and decode it with Web Audio.
-        if (peaks) this.backend.setPeaks(peaks);
+        if (peaks) { this.backend.setPeaks(peaks); }
 
         if ((!peaks || this.params.forceDecode) && this.backend.supportsWebAudio()) {
             this.getArrayBuffer(url, (function (arraybuffer) {
