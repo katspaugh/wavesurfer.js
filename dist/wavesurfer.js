@@ -18,32 +18,33 @@
 
 var WaveSurfer = {
     defaultParams: {
-        height        : 128,
-        waveColor     : '#999',
-        progressColor : '#555',
+        audioContext  : null,
+        audioRate     : 1,
+        autoCenter    : true,
+        backend       : 'WebAudio',
+        container     : null,
         cursorColor   : '#333',
         cursorWidth   : 1,
-        skipLength    : 2,
-        minPxPerSec   : 20,
-        pixelRatio    : window.devicePixelRatio || screen.deviceXDPI / screen.logicalXDPI,
-        fillParent    : true,
-        scrollParent  : false,
-        hideScrollbar : false,
-        normalize     : false,
-        audioContext  : null,
-        container     : null,
         dragSelection : true,
-        loopSelection : true,
-        audioRate     : 1,
+        fillParent    : true,
+        forceDecode   : false,
+        height        : 128,
+        hideScrollbar : false,
         interact      : true,
-        splitChannels : false,
+        loopSelection : true,
         mediaContainer: null,
         mediaControls : false,
-        renderer      : 'MultiCanvas',
-        backend       : 'WebAudio',
         mediaType     : 'audio',
-        autoCenter    : true,
-        partialRender : false
+        minPxPerSec   : 20,
+        partialRender : false,
+        pixelRatio    : window.devicePixelRatio || screen.deviceXDPI / screen.logicalXDPI,
+        progressColor : '#555',
+        normalize     : false,
+        renderer      : 'MultiCanvas',
+        scrollParent  : false,
+        skipLength    : 2,
+        splitChannels : false,
+        waveColor     : '#999',
     },
 
     init: function (params) {
@@ -468,14 +469,16 @@ var WaveSurfer = {
             }).bind(this))
         );
 
-        // If no pre-decoded peaks provided, attempt to download the
+        // If no pre-decoded peaks provided or pre-decoded peaks are
+        // provided with forceDecode flag, attempt to download the
         // audio file and decode it with Web Audio.
-        if (peaks) {
-            this.backend.setPeaks(peaks);
-        } else if (this.backend.supportsWebAudio()) {
+        if (peaks) { this.backend.setPeaks(peaks); }
+
+        if ((!peaks || this.params.forceDecode) && this.backend.supportsWebAudio()) {
             this.getArrayBuffer(url, (function (arraybuffer) {
                 this.decodeArrayBuffer(arraybuffer, (function (buffer) {
                     this.backend.buffer = buffer;
+                    this.backend.setPeaks(null);
                     this.drawBuffer();
                     this.fireEvent('waveform-ready');
                 }).bind(this));

@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+1.3.4 (25.02.2017)
+------------------
+- Add a new parameter `forceDecode` (#1009)
+
 1.3.3 (23.02.2017)
 ------------------
 - Add Media Session plugin (#996)
