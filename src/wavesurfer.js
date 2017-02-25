@@ -32,6 +32,8 @@ import PeakCache from './peakcache';
  * @property {number} cursorWidth=1 Measured in pixels.
  * @property {boolean} fillParent=true Whether to fill the entire container or
  * draw only according to `minPxPerSec`.
+ * @property {boolean} forceDecode=false Force decoding of audio using web audio
+ * when zooming to get a more detailed waveform.
  * @property {number} height=128 The height of the waveform. Measured in
  * pixels.
  * @property {boolean} hideScrollbar=false Whether to hide the horizontal
@@ -94,6 +96,7 @@ import PeakCache from './peakcache';
  * the dependency specified in extends. Returns the plugin class.
  */
 
+<<<<<<< HEAD
 /**
  * @typedef {function} PluginClass
  * @property {function} init The method to initialise the plugin
@@ -128,12 +131,12 @@ export default class WaveSurfer extends util.Observer {
         audioRate     : 1,
         autoCenter    : true,
         backend       : 'WebAudio',
-        closeAudioContext: false,
         container     : null,
         cursorColor   : '#333',
         cursorWidth   : 1,
         dragSelection : true,
         fillParent    : true,
+        forceDecode   : true,
         height        : 128,
         hideScrollbar : false,
         interact      : true,
@@ -973,14 +976,18 @@ export default class WaveSurfer extends util.Observer {
             this.backend.once('error', err => this.fireEvent('error', err))
         );
 
-        // If no pre-decoded peaks provided, attempt to download the audio file
-        // and decode it with Web Audio.
+        // If no pre-decoded peaks provided or pre-decoded peaks are
+        // provided with forceDecode flag, attempt to download the
+        // audio file and decode it with Web Audio.
         if (peaks) {
             this.backend.setPeaks(peaks);
-        } else if (this.backend.supportsWebAudio()) {
+        }
+
+        if ((!peaks || this.params.forceDecode) && this.backend.supportsWebAudio()) {
             this.getArrayBuffer(url, arraybuffer => {
                 this.decodeArrayBuffer(arraybuffer, buffer => {
                     this.backend.buffer = buffer;
+                    this.backend.setPeaks(null);
                     this.drawBuffer();
                     this.fireEvent('waveform-ready');
                 });
