@@ -43,6 +43,8 @@ navigation:
         url: /plugins/timeline.html
       - title: Microphone
         url: /plugins/microphone.html
+      - title: Minimap
+        url: /plugins/minimap.html
   - title: Projects
     url: /projects/
   - title: Blog
