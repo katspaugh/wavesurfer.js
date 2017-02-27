@@ -14,14 +14,14 @@ WaveSurfer.WebAudio = {
         if (!this.ac) {
             // check if audiocontext limit has been reached
             if(this.ac.length >= 6){
-                var hwcText = 'This browser supports up to 6 hardware contexts';
-                if (typeof console != "undefined") {
-                    console.log(hwcText);
-                } else{
-                    window.alert(hwcText);
+                var contextlimitText = 'This browser supports up to 6 hardware contexts';
+                if (typeof console != 'undefined') {
+                    console.log(contextlimitText);
+                } else {
+                    window.alert(contextlimitText);
                 }
                 return false;
-            } else{
+            } else {
                 this.ac = new (
                     window.AudioContext || window.webkitAudioContext
                 );
