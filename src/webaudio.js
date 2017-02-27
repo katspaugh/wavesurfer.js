@@ -12,9 +12,15 @@ WaveSurfer.WebAudio = {
 
     getAudioContext: function () {
         if (!this.ac) {
-            this.ac = new (
-                window.AudioContext || window.webkitAudioContext
-            );
+            // check if audiocontext limit has been reached
+            if(this.ac.length >= 6){
+                console.log('This browser supports up to 6 hardware contexts');
+                return false;
+            } else{
+                this.ac = new (
+                    window.AudioContext || window.webkitAudioContext
+                );
+            }
         }
         return this.ac;
     },
