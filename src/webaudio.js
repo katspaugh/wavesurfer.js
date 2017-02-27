@@ -14,7 +14,12 @@ WaveSurfer.WebAudio = {
         if (!this.ac) {
             // check if audiocontext limit has been reached
             if(this.ac.length >= 6){
-                console.log('This browser supports up to 6 hardware contexts');
+                var hwcText = 'This browser supports up to 6 hardware contexts';
+                if (typeof console != "undefined") {
+                    console.log(hwcText);
+                } else{
+                    window.alert(hwcText);
+                }
                 return false;
             } else{
                 this.ac = new (
