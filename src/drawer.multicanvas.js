@@ -336,7 +336,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         for (var i in this.canvases) {
             var getEntry = this.canvases[i].wave.getContext('2d');
             availableCanvas += getEntry.canvas.toDataURL(type, quality);
-        };
+        }
         return availableCanvas;
     }
 });
