@@ -14,11 +14,11 @@ WaveSurfer.PlaylistParser = {
         // parse playlist and set params
         this.playlistFile = this.params.playlistFile || null;
         this.playlistType = this.params.playlistType || null;
-        
+
         if (this.playlistFile != null) {
             this.parse();
         } else{
-            throw new Error('No playlist file provided');        
+            throw new Error('No playlist file provided');
         }
     },
 
@@ -29,20 +29,20 @@ WaveSurfer.PlaylistParser = {
             playlist = this.playlistFile.replace(/^.*#.*$|#EXTM3U|#EXTINF:/mg, '').split('\n');
         } else if (this.playlistType == 'pls' || this.playlistType == 'audio/x-scpls') {
             // to do
-        } else if (this.playlistType == 'smil' || this.playlistType == 'application/smil'){
+        } else if (this.playlistType == 'smil' || this.playlistType == 'application/smil') {
             // to do
-        } else if (this.playlistType == 'json' || this.playlistType == 'application/json'){
+        } else if (this.playlistType == 'json' || this.playlistType == 'application/json') {
 		        // to do
 	      } else {
-            throw new Error('No valid playlist file provided, valid formats are m3u pls smil json or their valid mime types');            
+            throw new Error('No valid playlist file provided, valid formats are m3u pls smil json or their valid mime types');
         }
 
         // playlist type is set return the playlist
         var outputArray = [];
-        for (var i = 0; i < playlist.length; i++){
+        for (var i = 0; i < playlist.length; i++) {
             if (playlist[i]) {
                 // check if file name has .mp3 or .wav before adding the playlist array
-                if(playlist[i].indexOf('.mp3') !== -1 || playlist[i].indexOf('.wav') !== -1){
+                if(playlist[i].indexOf('.mp3') !== -1 || playlist[i].indexOf('.wav') !== -1) {
                     outputArray.push(playlist[i]);
                 }
             }
