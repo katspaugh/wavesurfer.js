@@ -331,8 +331,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     getImage: function(type, quality) {
-        // this.canvases
-        var getEntry = this.canvases[0].wave.getContext('2d');
-        return getEntry.canvas.toDataURL(type, quality);
+        // combine all available canvasses together
+        var availableCanvas = "";
+        for (var i in this.canvases) {
+            var getEntry = this.canvases[i].wave.getContext('2d');
+            availableCanvas += getEntry.canvas.toDataURL(type, quality);            
+        };
+        return availableCanvas;
     }
 });
