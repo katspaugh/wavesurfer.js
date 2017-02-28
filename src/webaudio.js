@@ -13,9 +13,8 @@ WaveSurfer.WebAudio = {
     getAudioContext: function () {
         if (!this.ac) {
             // check if audiocontext limit has been reached
-            if(this.ac.length >= 5){
-                var contextlimitText = 'This browser supports up to 6 hardware contexts';
-                throw new Error(contextlimitText);
+            if (this.ac.length >= 5) {
+                throw new Error('This browser supports up to 6 hardware contexts at a time');
             } else {
                 this.ac = new (
                     window.AudioContext || window.webkitAudioContext
