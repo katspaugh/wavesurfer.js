@@ -32,8 +32,8 @@ WaveSurfer.PlaylistParser = {
         } else if (this.playlistType == 'smil' || this.playlistType == 'application/smil') {
             // to do
         } else if (this.playlistType == 'json' || this.playlistType == 'application/json') {
-		        // to do
-	      } else {
+            // to do
+	    } else {
             throw new Error('No valid playlist file provided, valid formats are m3u pls smil json or their valid mime types');
         }
 
