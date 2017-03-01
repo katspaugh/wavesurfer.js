@@ -20,7 +20,7 @@ WaveSurfer.PlaylistParser = {
                 url: this.playlistFileGET,
                 responseType: 'text'
             });
-            
+
             if (this.playlistFile != null || this.playlistFile != 'undefined') {
                 this.parse();
             } else {
