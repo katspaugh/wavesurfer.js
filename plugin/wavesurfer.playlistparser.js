@@ -12,8 +12,8 @@ WaveSurfer.PlaylistParser = {
         }
 
         // parse playlist and set params
-        this.playlistFile = this.params.playlistFile || null;
-        this.playlistType = this.params.playlistType || null;
+        this.playlistFileGET = this.params.playlistFile || null;
+        this.playlistType = this.params.playlistType || 'm3u';
 
         if (this.playlistFileGET != null) {
             this.playlistFile = this.util.ajax({
@@ -36,12 +36,6 @@ WaveSurfer.PlaylistParser = {
         var playlist = [];
         if (this.playlistType == 'm3u' || 'audio/mpegurl') {
             playlist = this.playlistFile.replace(/^.*#.*$|#EXTM3U|#EXTINF:/mg, '').split('\n');
-        } else if (this.playlistType == 'pls' || this.playlistType == 'audio/x-scpls') {
-            // to do
-        } else if (this.playlistType == 'smil' || this.playlistType == 'application/smil') {
-            // to do
-        } else if (this.playlistType == 'json' || this.playlistType == 'application/json') {
-            // to do
         } else {
             throw new Error('No valid playlist file provided, valid formats are m3u pls smil json or their valid mime types');
         }
