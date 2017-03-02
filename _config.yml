@@ -45,6 +45,8 @@ navigation:
         url: /plugins/microphone.html
       - title: Minimap
         url: /plugins/minimap.html
+      - title: Playlist
+        url: /plugins/playlist.html
   - title: Projects
     url: /projects/
   - title: Blog
