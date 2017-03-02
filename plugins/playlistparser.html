@@ -2,9 +2,9 @@
 layout: default
 ---
 <section>
-  <h1>Playlist Parser plugin</h1>
+  <h1>Playlist plugin</h1>
 
-  <p>Adds a playlist parser capability to wavesurfer.</p>
+  <p>Adds a playlist capability to wavesurfer.</p>
 
   <h2>Parameters</h2>
   <p>
@@ -24,15 +24,15 @@ layout: default
 
   <p>
     <ol>
-      <li>Add the Playlist Parser plugin script tag</li>
+      <li>Add the Playlist plugin script tag</li>
       <li>Create a <code>WaveSurfer</code> instance</li>
-      <li>*Create a Playlist Parser instance and use the `playlist-ready` event</li>
+      <li>*Create a Playlist instance and use the `playlist-ready` event</li>
     </ol>
   </p>
 
   <h4>*Create Playlist Parser</h4>
   ```
-  var myPlaylist = wavesurfer.PlaylistParser;
+  var myPlaylist = wavesurfer.Playlist;
   myPlaylist.init({
     wavesurfer: wavesurfer,
     playlistFile: 'http://linktosupportedplaylistfile.com/playlist.m3u',
