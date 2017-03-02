@@ -172,7 +172,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
         var step = bar + gap;
 
-        var absmax = 1;
+        var absmax = this.params.barHeight;
         if (this.params.normalize) {
             var max = WaveSurfer.util.max(peaks);
             var min = WaveSurfer.util.min(peaks);
@@ -220,7 +220,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var offsetY = height * channelIndex || 0;
         var halfH = height / 2;
 
-        var absmax = 1;
+        var absmax = this.params.barHeight;
         if (this.params.normalize) {
             var max = WaveSurfer.util.max(peaks);
             var min = WaveSurfer.util.min(peaks);
