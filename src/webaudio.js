@@ -286,10 +286,19 @@ WaveSurfer.WebAudio = {
         // close the audioContext if closeAudioContext option is set to true
         if (this.params.closeAudioContext) {
             // check if browser supports AudioContext.close()
-            if (typeof WaveSurfer.WebAudio.audioContext.close === 'function') {
-                WaveSurfer.WebAudio.audioContext.close();
+            if (typeof this.ac.close === 'function') {
+                this.ac.close();
             }
-            WaveSurfer.WebAudio.audioContext = null;
+            // clear the reference to the audiocontext
+            this.ac = null;
+            // clear the actual audiocontext, either passed as param or the
+            // global singleton
+            if (!this.params.audioContext) {
+                WaveSurfer.WebAudio.audioContext = null;
+            } else {
+                this.params.audioContext = null;
+            }
+            // clear the offlineAudioContext
             WaveSurfer.WebAudio.offlineAudioContext = null;
         }
     },
