@@ -1,7 +1,7 @@
 'use strict';
 
-/* Playlist Parser */
-WaveSurfer.PlaylistParser = {
+/* Playlist Plugin */
+WaveSurfer.Playlist = {
     init: function (params) {
         this.params = params;
 
@@ -65,4 +65,4 @@ WaveSurfer.PlaylistParser = {
     }
 };
 
-WaveSurfer.util.extend(WaveSurfer.PlaylistParser, WaveSurfer.Observer);
+WaveSurfer.util.extend(WaveSurfer.Playlist, WaveSurfer.Observer);
