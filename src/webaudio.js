@@ -11,12 +11,12 @@ WaveSurfer.WebAudio = {
     },
 
     getAudioContext: function () {
-        if (!window.WaveSurfer.WebAudio.audioContext) {
-            window.WaveSurfer.WebAudio.audioContext = new (
+        if (!WaveSurfer.WebAudio.audioContext) {
+            WaveSurfer.WebAudio.audioContext = new (
                 window.AudioContext || window.webkitAudioContext
             );
         }
-        return window.WaveSurfer.WebAudio.audioContext;
+        return WaveSurfer.WebAudio.audioContext;
     },
 
     getOfflineAudioContext: function (sampleRate) {
