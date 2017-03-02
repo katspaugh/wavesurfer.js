@@ -328,5 +328,15 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
     updateProgress: function (pos) {
         this.style(this.progressWave, { width: pos + 'px' });
+    },
+
+    getImage: function(type, quality) {
+        // combine all available canvasses together
+        var availableCanvas = '';
+        for (var i in this.canvases) {
+            var getEntry = this.canvases[i].wave.getContext('2d');
+            availableCanvas += getEntry.canvas.toDataURL(type, quality);
+        }
+        return availableCanvas;
     }
 });
