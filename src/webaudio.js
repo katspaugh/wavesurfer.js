@@ -11,12 +11,12 @@ WaveSurfer.WebAudio = {
     },
 
     getAudioContext: function () {
-        if (!this.ac) {
-            this.ac = new (
+        if (!window.WaveSurfer.WebAudio.audioContext) {
+            window.WaveSurfer.WebAudio.audioContext = new (
                 window.AudioContext || window.webkitAudioContext
             );
         }
-        return this.ac;
+        return window.WaveSurfer.WebAudio.audioContext;
     },
 
     getOfflineAudioContext: function (sampleRate) {
@@ -283,13 +283,14 @@ WaveSurfer.WebAudio = {
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
         this.analyser.disconnect();
-        // close the audioContext if it was created by wavesurfer
-        // not passed in as a parameter
-        if (!this.params.audioContext) {
+        // close the audioContext if closeAudioContext option is set to true
+        if (this.params.closeAudioContext) {
             // check if browser supports AudioContext.close()
-            if (typeof this.ac.close === 'function') {
-                this.ac.close();
+            if (typeof WaveSurfer.WebAudio.audioContext.close === 'function') {
+                WaveSurfer.WebAudio.audioContext.close();
             }
+            WaveSurfer.WebAudio.audioContext = null;
+            WaveSurfer.WebAudio.offlineAudioContext = null;
         }
     },
 
