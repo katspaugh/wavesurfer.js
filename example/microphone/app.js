@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
         interact      : false,
         cursorWidth   : 0,
         plugins: [
-            window.WaveSurfer.microphone()
+            window.WaveSurfer.microphone.default()
         ]
     });
 

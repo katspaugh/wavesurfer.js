@@ -180,7 +180,7 @@ class Init {
                     options[unprefixedOptionName] = prop;
                 }
             }
-            return this.pluginCache[plugin](options);
+            return this.pluginCache[plugin].default(options);
         });
         // build parameter object for this container
         const params = this.WaveSurfer.util.extend(

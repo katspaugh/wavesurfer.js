@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
         loaderColor   : 'purple',
         cursorColor   : 'navy',
         plugins: [
-            window.WaveSurfer.spectrogram({
+            window.WaveSurfer.spectrogram.default({
                 container: '#wave-spectrogram'
             })
         ]

@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
         progressColor: '#3B8686',
         backend: 'MediaElement',
         plugins: [
-            window.WaveSurfer.regions({
+            window.WaveSurfer.regions.default({
                 regions: [
                     {
                         start: 1,
