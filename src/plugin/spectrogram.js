@@ -180,6 +180,251 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
 /* eslint-enable complexity, no-redeclare, no-var, one-var */
 
 /**
+ * Spectrogram plugin class
+ *
+ * @implements {PluginClass}
+ * @extends {Observer}
+ */
+export class SpectrogramPlugin {
+    constructor(params, ws) {
+        this.params = params;
+        this.wavesurfer = ws;
+        this.util = ws.util;
+
+        this.frequenciesDataUrl = params.frequenciesDataUrl;
+        this._onScroll = e => {
+            this.updateScroll(e);
+        };
+        this._onReady = () => {
+            const drawer = this.drawer = ws.drawer;
+
+            this.container = 'string' == typeof params.container ?
+                document.querySelector(params.container) : params.container;
+
+            if (!this.container) {
+                throw Error('No container for WaveSurfer spectrogram');
+            }
+
+            this.width = drawer.width;
+            this.pixelRatio = this.params.pixelRatio || ws.params.pixelRatio;
+            this.fftSamples = this.params.fftSamples || ws.params.fftSamples || 512;
+            this.height = this.fftSamples / 2;
+            this.noverlap = params.noverlap;
+            this.windowFunc = params.windowFunc;
+            this.alpha = params.alpha;
+
+            this.createWrapper();
+            this.createCanvas();
+            this.render();
+
+            drawer.wrapper.addEventListener('scroll', this._onScroll);
+            ws.on('redraw', () => this.render());
+        };
+    }
+
+    init() {
+        // Check if ws is ready
+        if (this.wavesurfer.isReady) {
+            this._onReady();
+        }
+
+        this.wavesurfer.on('ready', this._onReady);
+    }
+
+    destroy() {
+        this.unAll();
+        this.wavesurfer.un('ready', this._onReady);
+        this.drawer.wrapper.removeEventListener('scroll', this._onScroll);
+        this.wavesurfer = null;
+        this.util = null;
+        this.params = null;
+        if (this.wrapper) {
+            this.wrapper.parentNode.removeChild(this.wrapper);
+            this.wrapper = null;
+        }
+    }
+
+    createWrapper() {
+        const prevSpectrogram = this.container.querySelector('spectrogram');
+        if (prevSpectrogram) {
+            this.container.removeChild(prevSpectrogram);
+        }
+
+        const wsParams = this.wavesurfer.params;
+
+        this.wrapper = document.createElement('spectrogram');
+        this.wavesurfer.util.style(this.wrapper, {
+            display: 'block',
+            position: 'relative',
+            userSelect: 'none',
+            webkitUserSelect: 'none',
+            height: this.height + 'px'
+        });
+        this.container.appendChild(this.wrapper);
+
+        if (wsParams.fillParent || wsParams.scrollParent) {
+            this.util.style(this.wrapper, {
+                width: '100%',
+                overflowX: 'hidden',
+                overflowY: 'hidden'
+            });
+        }
+
+        this.wrapper.addEventListener('click', e => {
+            e.preventDefault();
+            const relX = 'offsetX' in e ? e.offsetX : e.layerX;
+            this.fireEvent('click', (relX / this.scrollWidth) || 0);
+        });
+    }
+
+    createCanvas() {
+        const canvas = this.canvas = this.wrapper.appendChild(
+            document.createElement('canvas')
+        );
+
+        this.spectrCc = canvas.getContext('2d');
+
+        this.util.style(canvas, {
+            position: 'absolute',
+            zIndex: 4
+        });
+    }
+
+    render() {
+        this.updateCanvasStyle();
+
+        if (this.frequenciesDataUrl) {
+            this.loadFrequenciesData(this.frequenciesDataUrl);
+        } else {
+            this.getFrequencies(this.drawSpectrogram);
+        }
+    }
+
+    updateCanvasStyle() {
+        const width = Math.round(this.width / this.pixelRatio) + 'px';
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        this.canvas.style.width = width;
+    }
+
+    drawSpectrogram(frequenciesData, my) {
+        const spectrCc = my.spectrCc;
+        const length = my.ws.backend.getDuration();
+        const height = my.height;
+        const pixels = my.resample(frequenciesData);
+        const heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
+        let i;
+        let j;
+
+        for (i = 0; i < pixels.length; i++) {
+            for (j = 0; j < pixels[i].length; j++) {
+                const colorValue = 255 - pixels[i][j];
+                my.spectrCc.fillStyle = 'rgb(' + colorValue + ', ' + colorValue + ', ' + colorValue + ')';
+                my.spectrCc.fillRect(i, height - j * heightFactor, 1, heightFactor);
+            }
+        }
+    }
+
+    getFrequencies(callback) {
+        const fftSamples = this.fftSamples;
+        const buffer = this.buffer = this.wavesurfer.backend.buffer;
+        const channelOne = buffer.getChannelData(0);
+        const bufferLength = buffer.length;
+        const sampleRate = buffer.sampleRate;
+        const frequencies = [];
+
+        if (!buffer) {
+            this.fireEvent('error', 'Web Audio buffer is not available');
+            return;
+        }
+
+        let noverlap = this.noverlap;
+        if (!noverlap) {
+            const uniqueSamplesPerPx = buffer.length / this.canvas.width;
+            noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
+        }
+
+        const fft = new FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
+        const maxSlicesCount = Math.floor(bufferLength / (fftSamples - noverlap));
+        let currentOffset = 0;
+
+        while (currentOffset + fftSamples < channelOne.length) {
+            const segment = channelOne.slice(currentOffset, currentOffset + fftSamples);
+            const spectrum = fft.calculateSpectrum(segment);
+            const array = new Uint8Array(fftSamples / 2);
+            let j;
+            for (j = 0; j < fftSamples / 2; j++) {
+                array[j] = Math.max(-255, Math.log10(spectrum[j]) * 45);
+            }
+            frequencies.push(array);
+            currentOffset += (fftSamples - noverlap);
+        }
+        callback(frequencies, this);
+    }
+
+    loadFrequenciesData(url) {
+        const ajax = this.util.ajax({ url: url });
+
+        ajax.on('success', data => this.drawSpectrogram(JSON.parse(data), this));
+        ajax.on('error', e => this.fireEvent('error', 'XHR error: ' + e.target.statusText));
+
+        return ajax;
+    }
+
+    updateScroll(e) {
+        this.wrapper.scrollLeft = e.target.scrollLeft;
+    }
+
+    resample(oldMatrix) {
+        const columnsNumber = this.width;
+        const newMatrix = [];
+
+        const oldPiece = 1 / oldMatrix.length;
+        const newPiece = 1 / columnsNumber;
+        let i;
+
+        for (i = 0; i < columnsNumber; i++) {
+            const column = new Array(oldMatrix[0].length);
+            let j;
+
+            for (j = 0; j < oldMatrix.length; j++) {
+                const oldStart = j * oldPiece;
+                const oldEnd = oldStart + oldPiece;
+                const newStart = i * newPiece;
+                const newEnd = newStart + newPiece;
+
+                const overlap = (oldEnd <= newStart || newEnd <= oldStart) ?
+                    0 :
+                    Math.min(Math.max(oldEnd, newStart), Math.max(newEnd, oldStart)) -
+                    Math.max(Math.min(oldEnd, newStart), Math.min(newEnd, oldStart));
+                let k;
+                /* eslint-disable max-depth */
+                if (overlap > 0) {
+                    for (k = 0; k < oldMatrix[0].length; k++) {
+                        if (column[k] == null) {
+                            column[k] = 0;
+                        }
+                        column[k] += (overlap / newPiece) * oldMatrix[j][k];
+                    }
+                }
+                /* eslint-enable max-depth */
+            }
+
+            const intColumn = new Uint8Array(oldMatrix[0].length);
+            let m;
+
+            for (m = 0; m < oldMatrix[0].length; m++) {
+                intColumn[m] = column[m];
+            }
+
+            newMatrix.push(intColumn);
+        }
+
+        return newMatrix;
+    }
+}
+
+/**
  * @typedef {Object} SpectrogramPluginParams
  * @property {string|HTMLElement} container Selector of element or element in
  * which to render
@@ -198,253 +443,21 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('spectrogram')`
  */
+
 /**
  * Timeline plugin definition factory
  *
  * @param  {SpectrogramPluginParams} params parameters use to initialise the plugin
  * @return {PluginDefinition} an object representing the plugin
  */
-export default function spectrogram(params = {}) {
+export default function createSpectrogram(params) {
     return {
         name: 'spectrogram',
         deferInit: params && params.deferInit ? params.deferInit : false,
-        static: {
-            FFT
+        params: params,
+        staticProps: {
+            FFT: FFT
         },
-        extends: 'observer',
-        instance: Observer => class SpectrogramPlugin extends Observer {
-            constructor(wavesurfer) {
-                super();
-                this.params = params;
-                this.wavesurfer = wavesurfer;
-
-                this.frequenciesDataUrl = params.frequenciesDataUrl;
-                this._onReady = () => {
-                    const drawer = this.drawer = this.wavesurfer.drawer;
-
-                    this.container = 'string' == typeof params.container ?
-                    document.querySelector(params.container) : params.container;
-
-                    if (!this.container) {
-                        throw Error('No container for WaveSurfer spectrogram');
-                    }
-
-                    this.width = drawer.width;
-                    this.pixelRatio = this.params.pixelRatio || wavesurfer.params.pixelRatio;
-                    this.fftSamples = this.params.fftSamples || wavesurfer.params.fftSamples || 512;
-                    this.height = this.fftSamples / 2;
-                    this.noverlap = params.noverlap;
-                    this.windowFunc = params.windowFunc;
-                    this.alpha = params.alpha;
-
-                    this.createWrapper();
-                    this.createCanvas();
-                    this.render();
-
-                    drawer.wrapper.addEventListener('scroll', e => {
-                        this.updateScroll(e);
-                    });
-                    wavesurfer.on('redraw', () => this.render());
-                };
-            }
-
-            init() {
-                // Check if ws is ready
-                if (this.wavesurfer.isReady) {
-                    this._onReady();
-                }
-
-                this.wavesurfer.on('ready', this._onReady);
-            }
-
-            destroy() {
-                this.unAll();
-                this.wavesurfer.un('ready', this._onReady);
-                if (this.wrapper) {
-                    this.wrapper.parentNode.removeChild(this.wrapper);
-                    this.wrapper = null;
-                }
-            }
-
-            createWrapper() {
-                const prevSpectrogram = this.container.querySelector('spectrogram');
-                if (prevSpectrogram) {
-                    this.container.removeChild(prevSpectrogram);
-                }
-
-                const wsParams = this.wavesurfer.params;
-
-                this.wrapper = this.container.appendChild(
-                    document.createElement('spectrogram')
-                );
-                this.drawer.style(this.wrapper, {
-                    display: 'block',
-                    position: 'relative',
-                    userSelect: 'none',
-                    webkitUserSelect: 'none',
-                    height: this.height + 'px'
-                });
-
-                if (wsParams.fillParent || wsParams.scrollParent) {
-                    this.drawer.style(this.wrapper, {
-                        width: '100%',
-                        overflowX: 'hidden',
-                        overflowY: 'hidden'
-                    });
-                }
-
-                this.wrapper.addEventListener('click', e => {
-                    e.preventDefault();
-                    const relX = 'offsetX' in e ? e.offsetX : e.layerX;
-                    this.fireEvent('click', (relX / this.scrollWidth) || 0);
-                });
-            }
-
-            createCanvas() {
-                const canvas = this.canvas = this.wrapper.appendChild(
-                    document.createElement('canvas')
-                );
-
-                this.spectrCc = canvas.getContext('2d');
-
-                this.wavesurfer.drawer.style(canvas, {
-                    position: 'absolute',
-                    zIndex: 4
-                });
-            }
-
-            render() {
-                this.updateCanvasStyle();
-
-                if (this.frequenciesDataUrl) {
-                    this.loadFrequenciesData(this.frequenciesDataUrl);
-                } else {
-                    this.getFrequencies(this.drawSpectrogram);
-                }
-            }
-
-            updateCanvasStyle() {
-                const width = Math.round(this.width / this.pixelRatio) + 'px';
-                this.canvas.width = this.width;
-                this.canvas.height = this.height;
-                this.canvas.style.width = width;
-            }
-
-            drawSpectrogram(frequenciesData, my) {
-                const spectrCc = my.spectrCc;
-                const length = my.wavesurfer.backend.getDuration();
-                const height = my.height;
-                const pixels = my.resample(frequenciesData);
-                const heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
-                let i;
-                let j;
-
-                for (i = 0; i < pixels.length; i++) {
-                    for (j = 0; j < pixels[i].length; j++) {
-                        const colorValue = 255 - pixels[i][j];
-                        my.spectrCc.fillStyle = 'rgb(' + colorValue + ', ' + colorValue + ', ' + colorValue + ')';
-                        my.spectrCc.fillRect(i, height - j * heightFactor, 1, heightFactor);
-                    }
-                }
-            }
-
-            getFrequencies(callback) {
-                const fftSamples = this.fftSamples;
-                const buffer = this.buffer = this.wavesurfer.backend.buffer;
-                const channelOne = buffer.getChannelData(0);
-                const bufferLength = buffer.length;
-                const sampleRate = buffer.sampleRate;
-                const frequencies = [];
-
-                if (!buffer) {
-                    this.fireEvent('error', 'Web Audio buffer is not available');
-                    return;
-                }
-
-                let noverlap = this.noverlap;
-                if (!noverlap) {
-                    const uniqueSamplesPerPx = buffer.length / this.canvas.width;
-                    noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
-                }
-
-                const fft = new FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
-                const maxSlicesCount = Math.floor(bufferLength/ (fftSamples - noverlap));
-                let currentOffset = 0;
-
-                while (currentOffset + fftSamples < channelOne.length) {
-                    const segment = channelOne.slice(currentOffset, currentOffset + fftSamples);
-                    const spectrum = fft.calculateSpectrum(segment);
-                    const array = new Uint8Array(fftSamples/2);
-                    let j;
-                    for (j = 0; j<fftSamples/2; j++) {
-                        array[j] = Math.max(-255, Math.log10(spectrum[j])*45);
-                    }
-                    frequencies.push(array);
-                    currentOffset += (fftSamples - noverlap);
-                }
-                callback(frequencies, this);
-            }
-
-            loadFrequenciesData(url) {
-                const ajax = this.wavesurfer.util.ajax({ url: url });
-
-                ajax.on('success', data => this.drawSpectrogram(JSON.parse(data), this));
-                ajax.on('error', e => this.fireEvent('error', 'XHR error: ' + e.target.statusText));
-
-                return ajax;
-            }
-
-            updateScroll(e) {
-                this.wrapper.scrollLeft = e.target.scrollLeft;
-            }
-
-            resample(oldMatrix) {
-                const columnsNumber = this.width;
-                const newMatrix = [];
-
-                const oldPiece = 1 / oldMatrix.length;
-                const newPiece = 1 / columnsNumber;
-                let i;
-
-                for (i = 0; i < columnsNumber; i++) {
-                    const column = new Array(oldMatrix[0].length);
-                    let j;
-
-                    for (j = 0; j < oldMatrix.length; j++) {
-                        const oldStart = j * oldPiece;
-                        const oldEnd = oldStart + oldPiece;
-                        const newStart = i * newPiece;
-                        const newEnd = newStart + newPiece;
-
-                        const overlap = (oldEnd <= newStart || newEnd <= oldStart) ?
-                        0 :
-                        Math.min(Math.max(oldEnd, newStart), Math.max(newEnd, oldStart)) -
-                        Math.max(Math.min(oldEnd, newStart), Math.min(newEnd, oldStart));
-                        let k;
-                        /* eslint-disable max-depth */
-                        if (overlap > 0) {
-                            for (k = 0; k < oldMatrix[0].length; k++) {
-                                if (column[k] == null) {
-                                    column[k] = 0;
-                                }
-                                column[k] += (overlap / newPiece) * oldMatrix[j][k];
-                            }
-                        }
-                        /* eslint-enable max-depth */
-                    }
-
-                    const intColumn = new Uint8Array(oldMatrix[0].length);
-                    let m;
-
-                    for (m = 0; m < oldMatrix[0].length; m++) {
-                        intColumn[m] = column[m];
-                    }
-
-                    newMatrix.push(intColumn);
-                }
-
-                return newMatrix;
-            }
-        }
+        instance: SpectrogramPlugin
     };
 }
