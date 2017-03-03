@@ -53,7 +53,6 @@ const config = {
         umdNamedDefine: true
     },
     devServer: {
-        hot: true,
         contentBase: [
             path.join(__dirname)
         ],
@@ -90,8 +89,7 @@ const config = {
     },
 
     plugins: [
-        bannerPlugin,
-        new webpack.HotModuleReplacementPlugin()
+        bannerPlugin
     ],
 };
 
@@ -113,7 +111,7 @@ export default function (options) {
     if (options) {
         if (options.test) {
             mergeDeep(config, {
-                devtool: 'inline-source-map',
+                devtool: 'source-map',
                 // @TODO: Remove this and allow normal linting for tests and fix
                 // the linting issues. (test files should have the same rules
                 // property as the rest of the code)
