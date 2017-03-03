@@ -80,20 +80,46 @@ import PeakCache from './peakcache';
  * @example wavesurfer.addPlugin(pluginDefinition);
  * @property {string} name The name of the plugin, the plugin instance will be
  * added as a property to the wavesurfer instance under this name
- * @property {boolean} deferInit=params.deferInit||false Don't initialise plugin
+ * @property {?Object} staticProps The properties that should be added to the
+ * wavesurfer instance as static properties
+ * @property {?boolean} deferInit Don't initialise plugin
  * automatically
- * @property {string} extends `'observer'|'drawer'` The name of the object to
- * inject into the plugin instance factory. Currently only the observer and
- * drawer objects are possible.
+ * @property {Object} params={} The plugin parameters, they are the first parameter
+ * passed to the plugin class constructor function
  * @property {PluginClass} instance The plugin instance factory, is called with
  * the dependency specified in extends. Returns the plugin class.
  */
 
 /**
- * @typedef {function} PluginClass
- * @property {function} init The method to initialise the plugin
- * @property {function} destroy Destroy the plugin instance
+ * @interface PluginClass
+ *
+ * This is the interface which is implemented by all plugin classes
+ *
+ * @extends {Observer}
  */
+class PluginClass {
+    /**
+     * Construct the plugin
+     *
+     * @param {Object} ws The wavesurfer instance
+     * @param {Object} params={} The plugin params (specific to the plugin)
+     */
+    constructor(ws, params) {}
+    /**
+     * Initialise the plugin
+     *
+     * Start doing something. This is called by
+     * `wavesurfer.initPlugin(pluginName)`
+     */
+    init() {}
+    /**
+     * Destroy the plugin instance
+     *
+     * Stop doing something. This is called by
+     * `wavesurfer.destroyPlugin(pluginName)`
+     */
+    destroy() {}
+}
 
 /**
  * WaveSurfer core library class
