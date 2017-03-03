@@ -140,6 +140,10 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         return (this.getCurrentTime() / this.getDuration()) || 0;
     },
 
+    getPlaybackRate: function () {
+        return this.playbackRate || this.media.playbackRate;
+    },
+
     /**
      * Set the audio source playback rate.
      */
