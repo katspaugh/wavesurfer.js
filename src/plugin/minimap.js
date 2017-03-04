@@ -1,10 +1,64 @@
 /**
- * Minimap plugin class
+ * @typedef {Object} MinimapPluginParams
+ * @desc Extends the `WavesurferParams` wavesurfer was initialised with
+ * @property {?string|HTMLElement} container CSS selector or HTML element where
+ * the ELAN information should be renderer. By default it is simply appended
+ * after the waveform.
+ * @property {?boolean} deferInit Set to true to manually call
+ * `initPlugin('minimap')`
+ */
+
+/**
+ * Renders a smaller version waveform as a minimap of the main waveform.
  *
  * @implements {PluginClass}
  * @extends {Observer}
+ * @example
+ * // es6
+ * import MinimapPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.minimap.js';
+ *
+ * // commonjs
+ * var MinimapPlugin = require('wavesurfer.js/dist/plugin/wavesurfer.minimap.js');
+ *
+ * // if you are using <script> tags
+ * var MinimapPlugin = window.WaveSurfer.minimap;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     MinimapPlugin.create({
+ *       // plugin options ...
+ *     })
+ *   ]
+ * });
  */
-export class MinimapPlugin {
+export default class MinimapPlugin {
+    /**
+     * Minimap plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {MinimapPluginParams} params parameters use to initialise the plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: 'minimap',
+            deferInit: params && params.deferInit ? params.deferInit : false,
+            params: params,
+            staticProps: {
+                initMinimap(customConfig) {
+                    console.warn('Deprecated initMinimap!');
+                    params = customConfig;
+                    this.initPlugins('minimap');
+                }
+            },
+            instance: MinimapPlugin
+        };
+    }
+
     constructor(params, ws) {
         this.params = ws.util.extend(
             {}, ws.params, {
@@ -248,36 +302,4 @@ export class MinimapPlugin {
             this.wavesurfer.drawer.wrapper.scrollLeft = this.overviewPosition * this.ratio;
         }
     }
-}
-
-/**
- * @typedef {Object} MinimapPluginParams
- * @desc Extends the `WavesurferParams` wavesurfer was initialised with
- * @property {?string|HTMLElement} container CSS selector or HTML element where
- * the ELAN information should be renderer. By default it is simply appended
- * after the waveform.
- * @property {?boolean} deferInit Set to true to manually call
- * `initPlugin('minimap')`
- */
-
-/**
- * Minimap plugin definition factory
- *
- * @param  {MinimapPluginParams} params parameters use to initialise the plugin
- * @return {PluginDefinition} an object representing the plugin
- */
-export default function createMinimap(params) {
-    return {
-        name: 'minimap',
-        deferInit: params && params.deferInit ? params.deferInit : false,
-        params: params,
-        staticProps: {
-            initMinimap(customConfig) {
-                console.warn('Deprecated initMinimap! Use ws.initPlugins("minimap") instead!');
-                params = customConfig;
-                this.initPlugins('minimap');
-            }
-        },
-        instance: MinimapPlugin
-    };
 }

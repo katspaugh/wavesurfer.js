@@ -1,10 +1,61 @@
 /**
- * Microphone plugin class
+ * @typedef {Object} MicrophonePluginParams
+ * @property {MediaStreamConstraints} constraints The constraints parameter is a
+ * MediaStreamConstaints object with two members: video and audio, describing
+ * the media types requested. Either or both must be specified.
+ * @property {number} bufferSize=4096 The buffer size in units of sample-frames.
+ * If specified, the bufferSize must be one of the following values: `256`,
+ * `512`, `1024`, `2048`, `4096`, `8192`, `16384`
+ * @property {number} numberOfInputChannels=1 Integer specifying the number of
+ * channels for this node's input. Values of up to 32 are supported.
+ * @property {?boolean} deferInit Set to true to manually call
+ * `initPlugin('microphone')`
+ */
+
+/**
+ * Visualise microphone input in a wavesurfer instance.
  *
  * @implements {PluginClass}
  * @extends {Observer}
+ * @example
+ * // es6
+ * import MicrophonePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.microphone.js';
+ *
+ * // commonjs
+ * var MicrophonePlugin = require('wavesurfer.js/dist/plugin/wavesurfer.microphone.js');
+ *
+ * // if you are using <script> tags
+ * var MicrophonePlugin = window.WaveSurfer.microphone;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     MicrophonePlugin.create({
+ *       // plugin options ...
+ *     })
+ *   ]
+ * });
  */
-export class MicrophonePlugin {
+export default class MicrophonePlugin {
+    /**
+     * Microphone plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {MicrophonePluginParams} params parameters use to initialise the plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: 'microphone',
+            deferInit: params && params.deferInit ? params.deferInit : false,
+            params: params,
+            instance: MicrophonePlugin
+        };
+    }
+
     constructor(params, ws) {
         this.params = params;
         this.wavesurfer = ws;
@@ -296,33 +347,4 @@ export class MicrophonePlugin {
         result.browser = 'Not a supported browser.';
         return result;
     }
-}
-
-/**
- * @typedef {Object} MicrophonePluginParams
- * @property {MediaStreamConstraints} constraints The constraints parameter is a
- * MediaStreamConstaints object with two members: video and audio, describing
- * the media types requested. Either or both must be specified.
- * @property {number} bufferSize=4096 The buffer size in units of sample-frames.
- * If specified, the bufferSize must be one of the following values: `256`,
- * `512`, `1024`, `2048`, `4096`, `8192`, `16384`
- * @property {number} numberOfInputChannels=1 Integer specifying the number of
- * channels for this node's input. Values of up to 32 are supported.
- * @property {?boolean} deferInit Set to true to manually call
- * `initPlugin('microphone')`
- */
-
-/**
- * Microphone plugin definition factory
- *
- * @param  {MicrophonePluginParams} params parameters use to initialise the plugin
- * @return {PluginDefinition} an object representing the plugin
- */
-export default function createMicrophone(params) {
-    return {
-        name: 'microphone',
-        deferInit: params && params.deferInit ? params.deferInit : false,
-        params: params,
-        instance: MicrophonePlugin
-    };
 }

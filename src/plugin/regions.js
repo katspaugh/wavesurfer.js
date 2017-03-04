@@ -6,7 +6,7 @@
  *
  * @extends {Observer}
  */
-export class Region {
+class Region {
     constructor(params, ws) {
         this.wavesurfer = ws;
         this.wrapper = ws.drawer.wrapper;
@@ -367,12 +367,106 @@ export class Region {
 }
 
 /**
- * Regions plugin class
+ * @typedef {Object} RegionsPluginParams
+ * @property {?boolean} dragSelection Enable creating regions by dragging wih
+ * the mouse
+ * @property {?RegionParams[]} regions Regions that should be added upon
+ * initialisation
+ * @property {number} slop=2 The sensitivity of the mouse dragging
+ * @property {?boolean} deferInit Set to true to manually call
+ * `initPlugin('regions')`
+ */
+
+/**
+ * @typedef {Object} RegionParams
+ * @desc The parameters used to describe a region.
+ * @example wavesurfer.addRegion(regionParams);
+ * @property {string} id=→random The id of the region
+ * @property {number} start=0 The start position of the region (in seconds).
+ * @property {number} end=0 The end position of the region (in seconds).
+ * @property {?boolean} loop Whether to loop the region when played back.
+ * @property {boolean} drag=true Allow/dissallow dragging the region.
+ * @property {boolean} resize=true Allow/dissallow resizing the region.
+ * @property {string} [color='rgba(0, 0, 0, 0.1)'] HTML color code.
+ */
+
+/**
+ * Regions are visual overlays on waveform that can be used to play and loop
+ * portions of audio. Regions can be dragged and resized.
+ *
+ * Visual customization is possible via CSS (using the selectors
+ * `.wavesurfer-region` and `.wavesurfer-handle`).
  *
  * @implements {PluginClass}
  * @extends {Observer}
+ *
+ * @example
+ * // es6
+ * import RegionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions.js';
+ *
+ * // commonjs
+ * var RegionsPlugin = require('wavesurfer.js/dist/plugin/wavesurfer.regions.js');
+ *
+ * // if you are using <script> tags
+ * var RegionsPlugin = window.WaveSurfer.regions;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     RegionsPlugin.create({
+ *       // plugin options ...
+ *     })
+ *   ]
+ * });
  */
-export class RegionsPlugin {
+export default class RegionsPlugin {
+    /**
+     * Regions plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param {RegionsPluginParams} params parameters use to initialise the plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: 'regions',
+            deferInit: params && params.deferInit ? params.deferInit : false,
+            params: params,
+            staticProps: {
+                initRegions() {
+                    console.warn('Deprecated initRegions! Use wavesurfer.initPlugins("regions") instead!');
+                    this.initPlugin('regions');
+                },
+
+                addRegion(options) {
+                    if (!this.initialisedPluginList.regions) {
+                        this.initPlugin('regions');
+                    }
+                    this.regions.add(options);
+                },
+
+                clearRegions() {
+                    this.regions && this.regions.clear();
+                },
+
+                enableDragSelection(options) {
+                    if (!this.initialisedPluginList.regions) {
+                        this.initPlugin('regions');
+                    }
+                    this.regions.enableDragSelection(options);
+                },
+
+                disableDragSelection() {
+                    this.regions.disableDragSelection();
+                }
+            },
+            instance: RegionsPlugin
+        };
+    }
+
     constructor(params, ws) {
         this.params = params;
         this.wavesurfer = ws;
@@ -505,71 +599,4 @@ export class RegionsPlugin {
     disableDragSelection() {
         this.fireEvent('disable-drag-selection');
     }
-}
-
-/**
- * @typedef {Object} RegionsPluginParams
- * @property {?boolean} dragSelection Enable creating regions by dragging wih
- * the mouse
- * @property {?RegionParams[]} regions Regions that should be added upon
- * initialisation
- * @property {number} slop=2 The sensitivity of the mouse dragging
- * @property {?boolean} deferInit Set to true to manually call
- * `initPlugin('regions')`
- */
-
-/**
- * @typedef {Object} RegionParams
- * @desc The parameters used to describe a region.
- * @example wavesurfer.addRegion(regionParams);
- * @property {string} id=→random The id of the region
- * @property {number} start=0 The start position of the region (in seconds).
- * @property {number} end=0 The end position of the region (in seconds).
- * @property {?boolean} loop Whether to loop the region when played back.
- * @property {boolean} drag=true Allow/dissallow dragging the region.
- * @property {boolean} resize=true Allow/dissallow resizing the region.
- * @property {string} [color='rgba(0, 0, 0, 0.1)'] HTML color code.
- */
-
-/**
- * Regions plugin definition factory
- *
- * @param {RegionsPluginParams} params parameters use to initialise the plugin
- * @return {PluginDefinition} an object representing the plugin
- */
-export default function createRegions(params) {
-    return {
-        name: 'regions',
-        deferInit: params && params.deferInit ? params.deferInit : false,
-        params: params,
-        staticProps: {
-            initRegions() {
-                console.warn('Deprecated initRegions! Use wavesurfer.initPlugins("regions") instead!');
-                this.initPlugin('regions');
-            },
-
-            addRegion(options) {
-                if (!this.initialisedPluginList.regions) {
-                    this.initPlugin('regions');
-                }
-                this.regions.add(options);
-            },
-
-            clearRegions() {
-                this.regions && this.regions.clear();
-            },
-
-            enableDragSelection(options) {
-                if (!this.initialisedPluginList.regions) {
-                    this.initPlugin('regions');
-                }
-                this.regions.enableDragSelection(options);
-            },
-
-            disableDragSelection() {
-                this.regions.disableDragSelection();
-            }
-        },
-        instance: RegionsPlugin
-    };
 }

@@ -1,10 +1,67 @@
 /**
- * Timeline plugin class
+ * @typedef {Object} TimelinePluginParams
+ * @desc Extends the `WavesurferParams` wavesurfer was initialised with
+ * @property {!string|HTMLElement} container CSS selector or HTML element where
+ * the timeline should be drawn. This is the only required parameter.
+ * @property {number} notchPercentHeight=90 Height of notches in percent
+ * @property {string} primaryColor='#000' The colour of the main notches
+ * @property {string} secondaryColor='#c0c0c0' The colour of the secondary
+ * notches
+ * @property {string} primaryFontColor='#000' The colour of the labels next to
+ * the main notches
+ * @property {string} secondaryFontColor='#000' The colour of the labels next to
+ * the secondary notches
+ * @property {string} fontFamily='Arial'
+ * @property {number} fontSize=10 Font size of labels in pixels
+ * @property {function} formatTimeCallback=→00:00
+ * @property {?boolean} deferInit Set to true to manually call
+ * `initPlugin('timeline')`
+ */
+
+/**
+ * Adds a timeline to the waveform.
  *
  * @implements {PluginClass}
  * @extends {Observer}
+ * @example
+ * // es6
+ * import TimelinePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.timeline.js';
+ *
+ * // commonjs
+ * var TimelinePlugin = require('wavesurfer.js/dist/plugin/wavesurfer.timeline.js');
+ *
+ * // if you are using <script> tags
+ * var TimelinePlugin = window.WaveSurfer.timeline;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     TimelinePlugin.create({
+ *       // plugin options ...
+ *     })
+ *   ]
+ * });
  */
-export class TimelinePlugin {
+export default class TimelinePlugin {
+    /**
+     * Timeline plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {TimelinePluginParams} params parameters use to initialise the plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: 'timeline',
+            deferInit: params && params.deferInit ? params.deferInit : false,
+            params: params,
+            instance: TimelinePlugin
+        };
+    }
+
     constructor(params, ws) {
         this.container = 'string' == typeof params.container
             ? document.querySelector(params.container)
@@ -293,39 +350,4 @@ export class TimelinePlugin {
             xOffset += canvasWidth;
         }
     }
-}
-
-/**
- * @typedef {Object} TimelinePluginParams
- * @desc Extends the `WavesurferParams` wavesurfer was initialised with
- * @property {!string|HTMLElement} container CSS selector or HTML element where
- * the timeline should be drawn. This is the only required parameter.
- * @property {number} notchPercentHeight=90 Height of notches in percent
- * @property {string} primaryColor='#000' The colour of the main notches
- * @property {string} secondaryColor='#c0c0c0' The colour of the secondary
- * notches
- * @property {string} primaryFontColor='#000' The colour of the labels next to
- * the main notches
- * @property {string} secondaryFontColor='#000' The colour of the labels next to
- * the secondary notches
- * @property {string} fontFamily='Arial'
- * @property {number} fontSize=10 Font size of labels in pixels
- * @property {function} formatTimeCallback=→00:00
- * @property {?boolean} deferInit Set to true to manually call
- * `initPlugin('timeline')`
- */
-
-/**
- * Timeline plugin definition factory
- *
- * @param  {TimelinePluginParams} params parameters use to initialise the plugin
- * @return {PluginDefinition} an object representing the plugin
- */
-export default function createTimeline(params) {
-    return {
-        name: 'timeline',
-        deferInit: params && params.deferInit ? params.deferInit : false,
-        params: params,
-        instance: TimelinePlugin
-    };
 }

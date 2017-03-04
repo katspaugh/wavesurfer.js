@@ -1,10 +1,58 @@
 /**
- * Elan plugin class
+ * @typedef {Object} ElanPluginParams
+ * @property {string|HTMLElement} container CSS selector or HTML element where
+ * the ELAN information should be renderer.
+ * @property {string} url The location of ELAN XML data
+ * @property {?boolean} deferInit Set to true to manually call
+ * @property {?Object} tiers If set only shows the data tiers with the `TIER_ID`
+ * in this map.
+ */
+
+/**
+ * Downloads and renders ELAN audio transcription documents alongside the
+ * waveform.
  *
  * @implements {PluginClass}
  * @extends {Observer}
+ * @example
+ * // es6
+ * import ElanPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.elan.js';
+ *
+ * // commonjs
+ * var ElanPlugin = require('wavesurfer.js/dist/plugin/wavesurfer.elan.js');
+ *
+ * // if you are using <script> tags
+ * var ElanPlugin = window.WaveSurfer.elan;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     ElanPlugin.create({
+ *       // plugin options ...
+ *     })
+ *   ]
+ * });
  */
-export class ElanPlugin {
+export default class ElanPlugin {
+    /**
+     * Elan plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {ElanPluginParams} params parameters use to initialise the plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: 'elan',
+            deferInit: params && params.deferInit ? params.deferInit : false,
+            params: params,
+            instance: ElanPlugin
+        };
+    }
+
     Types = {
         ALIGNABLE_ANNOTATION: 'ALIGNABLE_ANNOTATION',
         REF_ANNOTATION: 'REF_ANNOTATION'
@@ -246,29 +294,4 @@ export class ElanPlugin {
             'wavesurfer-alignable-' + annotation.id
         );
     }
-}
-
-/**
- * @typedef {Object} ElanPluginParams
- * @property {string|HTMLElement} container CSS selector or HTML element where
- * the ELAN information should be renderer.
- * @property {string} url The location of ELAN XML data
- * @property {?boolean} deferInit Set to true to manually call
- * @property {?Object} tiers If set only shows the data tiers with the `TIER_ID`
- * in this map.
- */
-
-/**
- * Elan plugin definition factory
- *
- * @param  {ElanPluginParams} params parameters use to initialise the plugin
- * @return {PluginDefinition} an object representing the plugin
- */
-export default function createElan(params) {
-    return {
-        name: 'elan',
-        deferInit: params && params.deferInit ? params.deferInit : false,
-        params: params,
-        instance: ElanPlugin
-    };
 }

@@ -1,10 +1,59 @@
 /**
- * Cursor plugin class
+ * @typedef {Object} CursorPluginParams
+ * @property {?boolean} deferInit Set to true to stop auto init in `addPlugin()`
+ */
+
+/**
+ * Displays a thin line at the position of the cursor on the waveform.
  *
  * @implements {PluginClass}
  * @extends {Observer}
+ * @example
+ * // es6
+ * import CursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor.js';
+ *
+ * // commonjs
+ * var CursorPlugin = require('wavesurfer.js/dist/plugin/wavesurfer.cursor.js');
+ *
+ * // if you are using <script> tags
+ * var CursorPlugin = window.WaveSurfer.cursor;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     CursorPlugin.create({
+ *       // plugin options ...
+ *     })
+ *   ]
+ * });
  */
-export class CursorPlugin {
+export default class CursorPlugin {
+    /**
+     * Cursor plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {CursorPluginParams} params parameters use to initialise the
+     * plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: 'cursor',
+            deferInit: params && params.deferInit ? params.deferInit : false,
+            params: params,
+            staticProps: {
+                enableCursor() {
+                    console.warn('Deprecated enableCursor!');
+                    this.initPlugins('cursor');
+                }
+            },
+            instance: CursorPlugin
+        };
+    }
+
     constructor(params, ws) {
         this.wavesurfer = ws;
         this.style = ws.util.style;
@@ -85,30 +134,4 @@ export class CursorPlugin {
             display: 'none'
         });
     }
-}
-
-/**
- * @typedef {Object} CursorPluginParams
- * @property {?boolean} deferInit Set to true to stop auto init in `addPlugin()`
- */
-
-/**
- * Cursor plugin definition factory
- *
- * @param  {CursorPluginParams} params parameters use to initialise the plugin
- * @return {PluginDefinition} an object representing the plugin
- */
-export default function createCursor(params) {
-    return {
-        name: 'cursor',
-        deferInit: params && params.deferInit ? params.deferInit : false,
-        params: params,
-        staticProps: {
-            enableCursor() {
-                console.warn('Deprecated enableCursor! Use ws.initPlugins("cursor") instead!');
-                this.initPlugins('cursor');
-            }
-        },
-        instance: CursorPlugin
-    };
 }

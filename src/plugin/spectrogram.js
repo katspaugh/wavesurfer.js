@@ -180,12 +180,72 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
 /* eslint-enable complexity, no-redeclare, no-var, one-var */
 
 /**
- * Spectrogram plugin class
+ * @typedef {Object} SpectrogramPluginParams
+ * @property {string|HTMLElement} container Selector of element or element in
+ * which to render
+ * @property {number} fftSamples=512 number of samples to fetch to FFT. Must be
+ * a pwer of 2.
+ * @property {number} noverlap Size of the overlapping window. Must be <
+ * fftSamples. Auto deduced from canvas size by default.
+ * @property {string} windowFunc='hann' The window function to be used. One of
+ * these: `'bartlett'`, `'bartlettHann'`, `'blackman'`, `'cosine'`, `'gauss'`,
+ * `'hamming'`, `'hann'`, `'lanczoz'`, `'rectangular'`, `'triangular'`
+ * @property {?number} alpha Some window functions have this extra value.
+ * (Between 0 and 1)
+ * @property {number} pixelRatio=wavesurfer.params.pixelRatio to control the
+ * size of the spectrogram in relation with its canvas. 1 = Draw on the whole
+ * canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)
+ * @property {?boolean} deferInit Set to true to manually call
+ * `initPlugin('spectrogram')`
+ */
+
+/**
+ * Render a spectrogram visualisation of the audio.
  *
  * @implements {PluginClass}
  * @extends {Observer}
+ * @example
+ * // es6
+ * import SpectrogramPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.spectrogram.js';
+ *
+ * // commonjs
+ * var SpectrogramPlugin = require('wavesurfer.js/dist/plugin/wavesurfer.spectrogram.js');
+ *
+ * // if you are using <script> tags
+ * var SpectrogramPlugin = window.WaveSurfer.spectrogram;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     SpectrogramPlugin.create({
+ *       // plugin options ...
+ *     })
+ *   ]
+ * });
  */
-export class SpectrogramPlugin {
+export default class SpectrogramPlugin {
+    /**
+     * Spectrogram plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {SpectrogramPluginParams} params parameters use to initialise the plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: 'spectrogram',
+            deferInit: params && params.deferInit ? params.deferInit : false,
+            params: params,
+            staticProps: {
+                FFT: FFT
+            },
+            instance: SpectrogramPlugin
+        };
+    }
+
     constructor(params, ws) {
         this.params = params;
         this.wavesurfer = ws;
@@ -309,7 +369,7 @@ export class SpectrogramPlugin {
 
     drawSpectrogram(frequenciesData, my) {
         const spectrCc = my.spectrCc;
-        const length = my.ws.backend.getDuration();
+        const length = my.wavesurfer.backend.getDuration();
         const height = my.height;
         const pixels = my.resample(frequenciesData);
         const heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
@@ -422,42 +482,4 @@ export class SpectrogramPlugin {
 
         return newMatrix;
     }
-}
-
-/**
- * @typedef {Object} SpectrogramPluginParams
- * @property {string|HTMLElement} container Selector of element or element in
- * which to render
- * @property {number} fftSamples=512 number of samples to fetch to FFT. Must be
- * a pwer of 2.
- * @property {number} noverlap Size of the overlapping window. Must be <
- * fftSamples. Auto deduced from canvas size by default.
- * @property {string} windowFunc='hann' The window function to be used. One of
- * these: `'bartlett'`, `'bartlettHann'`, `'blackman'`, `'cosine'`, `'gauss'`,
- * `'hamming'`, `'hann'`, `'lanczoz'`, `'rectangular'`, `'triangular'`
- * @property {?number} alpha Some window functions have this extra value.
- * (Between 0 and 1)
- * @property {number} pixelRatio=wavesurfer.params.pixelRatio to control the
- * size of the spectrogram in relation with its canvas. 1 = Draw on the whole
- * canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)
- * @property {?boolean} deferInit Set to true to manually call
- * `initPlugin('spectrogram')`
- */
-
-/**
- * Timeline plugin definition factory
- *
- * @param  {SpectrogramPluginParams} params parameters use to initialise the plugin
- * @return {PluginDefinition} an object representing the plugin
- */
-export default function createSpectrogram(params) {
-    return {
-        name: 'spectrogram',
-        deferInit: params && params.deferInit ? params.deferInit : false,
-        params: params,
-        staticProps: {
-            FFT: FFT
-        },
-        instance: SpectrogramPlugin
-    };
 }
