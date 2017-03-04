@@ -126,7 +126,7 @@
     waveColor: 'violet',
     // ... other wavesurfer options
     plugins: [
-        WaveSurfer.timeline({
+        WaveSurfer.timeline.create{
             container: '#wave-timeline',
             // ... other timeline options
         })
@@ -147,7 +147,7 @@ wavesurfer.load('example/media/demo.mp3');</code></pre>
 });
 
 // adding and initialising a plugin after initialisation
-wavesurfer.addPlugin(WaveSurfer.timeline({
+wavesurfer.addPlugin(WaveSurfer.timeline.create{
     container: '#wave-timeline',
     // ... other timeline options
 })).initPlugin('timeline')

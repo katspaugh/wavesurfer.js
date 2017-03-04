@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer = window.WaveSurfer.create({
         container: document.querySelector('#waveform'),
         plugins: [
-            window.WaveSurfer.cursor.default()
+            window.WaveSurfer.cursor.create()
         ]
     });
 

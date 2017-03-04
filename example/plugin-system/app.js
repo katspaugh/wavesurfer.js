@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
         loaderColor   : 'purple',
         cursorColor   : 'navy',
         plugins: [
-            window.WaveSurfer.minimap.default(pluginOptions.minimap)
+            window.WaveSurfer.minimap.create(pluginOptions.minimap)
         ]
     };
 
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var pluginName = e.currentTarget.dataset.activatePlugin;
             var activate = e.target.checked;
             var options = pluginOptions[pluginName] || {};
-            var plugin = window.WaveSurfer[pluginName].default(options);
+            var plugin = window.WaveSurfer[pluginName].create(options);
 
             if (activate) {
                 wavesurfer.addPlugin(plugin).initPlugin(pluginName);

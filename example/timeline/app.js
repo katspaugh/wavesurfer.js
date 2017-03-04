@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
         loaderColor   : 'purple',
         cursorColor   : 'navy',
         plugins: [
-            window.WaveSurfer.timeline.default({
+            window.WaveSurfer.timeline.create({
                 container: '#wave-timeline'
             })
         ]
