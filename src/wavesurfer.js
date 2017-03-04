@@ -93,11 +93,23 @@ import PeakCache from './peakcache';
 /**
  * @interface PluginClass
  *
- * This is the interface which is implemented by all plugin classes
+ * @desc This is the interface which is implemented by all plugin classes. Note
+ * that this only turns into an observer after being passed through
+ * `wavesurfer.addPlugin`.
  *
  * @extends {Observer}
  */
 class PluginClass {
+    /**
+     * Plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {Object} params={} The plugin params (specific to the plugin)
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    create(params) {}
     /**
      * Construct the plugin
      *
