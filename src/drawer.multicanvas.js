@@ -182,35 +182,46 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var scale = length / width;
         var maxPeak = -Infinity;
         var peaksToDraw = [];
-        for (var j = (start / scale); j < (end / scale); j += step) {
-            var idx = Math.floor(j * scale * peakIndexScale);
-            //Fix, get only positive:
-            if(peakIndexScale == 2 && idx % 2 != 0){
-                idx = idx + 1;
+
+        if(this.params.waveStyle == 'soundWave'){
+            // do the new style here
+            for (var j = (start / scale); j < (end / scale); j += step) {
+                var idx = Math.floor(j * scale * peakIndexScale);
+                //Fix, get only positive:
+                if(peakIndexScale == 2 && idx % 2 != 0){
+                    idx = idx + 1;
+                }
+                //Sum Negative + Positive
+                var pk = Math.abs(peaks[idx]) + Math.abs(peaks[idx + 1])  || 0;
+                //Set max peak:
+                if(maxPeak < pk){
+                    maxPeak = pk;
+                }
+                //Save peak to draw:
+                var item = {};
+                item.index = j;
+                item.fixedIndex = idx;
+                peaksToDraw.push(item);
             }
-            //Sum Negative + Positive
-            var pk = Math.abs(peaks[idx]) + Math.abs(peaks[idx + 1])  || 0;
-            //Set max peak:
-            if(maxPeak < pk){
-                maxPeak = pk;
+            //Draw Waveform:
+            for (var k = 0; k < peaksToDraw.length; k++) {
+                var fixedIndex = peaksToDraw[k].fixedIndex;
+                var i = peaksToDraw[k].index;
+                var peak = (Math.abs(peaks[fixedIndex]) + Math.abs(peaks[fixedIndex + 1])  || 0) / maxPeak;
+                var h = Math.round((peak / absmax * halfH));
+                //If is less or equal to zero, set to 1
+                if(h <= 0){
+                    h = 1;
+                }
+                this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
             }
-            //Save peak to draw:
-            var item = {};
-            item.index = j;
-            item.fixedIndex = idx;
-            peaksToDraw.push(item);
-        }
-        //Draw Waveform:
-        for (var k = 0; k < peaksToDraw.length; k++) {
-            var fixedIndex = peaksToDraw[k].fixedIndex;
-            var i = peaksToDraw[k].index;
-            var peak = (Math.abs(peaks[fixedIndex]) + Math.abs(peaks[fixedIndex + 1])  || 0) / maxPeak;
-            var h = Math.round((peak / absmax * halfH));
-            //If is less or equal to zero, set to 1
-            if(h <= 0){
-                h = 1;
+        } else{
+            // default style
+            for (var i = (start / scale); i < (end / scale); i += step) {
+                var peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
+                var h = Math.round(peak / absmax * halfH);
+                this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
             }
-            this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
         }
     },
 

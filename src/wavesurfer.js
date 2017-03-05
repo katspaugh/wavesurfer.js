@@ -37,6 +37,7 @@ var WaveSurfer = {
         skipLength    : 2,
         splitChannels : false,
         waveColor     : '#999',
+        waveStyle: 'default'
     },
 
     init: function (params) {
