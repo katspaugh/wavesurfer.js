@@ -101,7 +101,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         var gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
         var step = bar + gap;
 
-        var absmax = 1;
+        var absmax = 1 / this.params.barHeight;
         if (this.params.normalize) {
             var max = WaveSurfer.util.max(peaks);
             var min = WaveSurfer.util.min(peaks);
@@ -165,7 +165,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             scale = this.width / length;
         }
 
-        var absmax = 1;
+        var absmax = 1 / this.params.barHeight;
         if (this.params.normalize) {
             var max = WaveSurfer.util.max(peaks);
             var min = WaveSurfer.util.min(peaks);
