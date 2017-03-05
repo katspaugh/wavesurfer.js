@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
         selectionColor: '#d0e9c6',
         loopSelection : false,
         plugins: [
-            window.WaveSurfer.elan.create({
+            WaveSurfer.elan.create({
                 url: 'transcripts/001z.xml',
                 container: '#annotations',
                 tiers: {
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     Comments: true
                 }
             }),
-            window.WaveSurfer.regions.create()
+            WaveSurfer.regions.create()
         ]
     };
 

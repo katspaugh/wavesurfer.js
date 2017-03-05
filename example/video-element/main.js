@@ -6,7 +6,7 @@ var wavesurfer;
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function () {
     // Init
-    wavesurfer = window.WaveSurfer.create({
+    wavesurfer = WaveSurfer.create({
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',

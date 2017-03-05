@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
         loaderColor   : 'purple',
         cursorColor   : 'navy',
         plugins: [
-            window.WaveSurfer.timeline.create({
+            WaveSurfer.timeline.create({
                 container: '#wave-timeline'
             })
         ]
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Init wavesurfer
-    wavesurfer = window.WaveSurfer.create(options);
+    wavesurfer = WaveSurfer.create(options);
 
     /* Progress bar */
     (function () {

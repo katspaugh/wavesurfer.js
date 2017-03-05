@@ -5,14 +5,14 @@ var wavesurfer;
 // Init & load
 document.addEventListener('DOMContentLoaded', function () {
     // Create an instance
-    wavesurfer = window.WaveSurfer.create({
+    wavesurfer = WaveSurfer.create({
         container     : '#waveform',
         waveColor     : 'violet',
         progressColor : 'purple',
         loaderColor   : 'purple',
         cursorColor   : 'navy',
         plugins: [
-            window.WaveSurfer.spectrogram.create({
+            WaveSurfer.spectrogram.create({
                 container: '#wave-spectrogram'
             })
         ]

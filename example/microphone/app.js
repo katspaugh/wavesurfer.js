@@ -8,13 +8,13 @@ document.addEventListener('DOMContentLoaded', function () {
     var micBtn = document.querySelector('#micBtn');
 
     // Init wavesurfer
-    wavesurfer = window.WaveSurfer.create({
+    wavesurfer = WaveSurfer.create({
         container     : '#waveform',
         waveColor     : 'black',
         interact      : false,
         cursorWidth   : 0,
         plugins: [
-            window.WaveSurfer.microphone.create()
+            WaveSurfer.microphone.create()
         ]
     });
 
