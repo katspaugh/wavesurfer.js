@@ -23,6 +23,8 @@ import PeakCache from './peakcache';
  * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'` In most cases
  * you don't have to set this manually. MediaElement is a fallback for
  * unsupported browsers.
+ * @property {boolean} closeAudioContext=false Close and nullify all audio
+ * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
  * the waveform should be drawn. This is the only required parameter.
  * @property {string} cursorColor='#333' The fill color of the cursor indicating
@@ -126,6 +128,7 @@ export default class WaveSurfer extends util.Observer {
         audioRate     : 1,
         autoCenter    : true,
         backend       : 'WebAudio',
+        closeAudioContext: false,
         container     : null,
         cursorColor   : '#333',
         cursorWidth   : 1,
