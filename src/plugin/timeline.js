@@ -25,10 +25,10 @@
  * @extends {Observer}
  * @example
  * // es6
- * import TimelinePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.timeline.js';
+ * import TimelinePlugin from 'wavesurfer.timeline.js';
  *
  * // commonjs
- * var TimelinePlugin = require('wavesurfer.js/dist/plugin/wavesurfer.timeline.js');
+ * var TimelinePlugin = require('wavesurfer.timeline.js');
  *
  * // if you are using <script> tags
  * var TimelinePlugin = window.WaveSurfer.timeline;

@@ -10,10 +10,10 @@
  * @extends {Observer}
  * @example
  * // es6
- * import CursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor.js';
+ * import CursorPlugin from 'wavesurfer.cursor.js';
  *
  * // commonjs
- * var CursorPlugin = require('wavesurfer.js/dist/plugin/wavesurfer.cursor.js');
+ * var CursorPlugin = require('wavesurfer.cursor.js');
  *
  * // if you are using <script> tags
  * var CursorPlugin = window.WaveSurfer.cursor;

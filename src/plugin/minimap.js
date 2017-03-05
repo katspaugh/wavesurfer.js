@@ -15,10 +15,10 @@
  * @extends {Observer}
  * @example
  * // es6
- * import MinimapPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.minimap.js';
+ * import MinimapPlugin from 'wavesurfer.minimap.js';
  *
  * // commonjs
- * var MinimapPlugin = require('wavesurfer.js/dist/plugin/wavesurfer.minimap.js');
+ * var MinimapPlugin = require('wavesurfer.minimap.js');
  *
  * // if you are using <script> tags
  * var MinimapPlugin = window.WaveSurfer.minimap;

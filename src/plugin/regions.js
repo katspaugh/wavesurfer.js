@@ -402,10 +402,10 @@ class Region {
  *
  * @example
  * // es6
- * import RegionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions.js';
+ * import RegionsPlugin from 'wavesurfer.regions.js';
  *
  * // commonjs
- * var RegionsPlugin = require('wavesurfer.js/dist/plugin/wavesurfer.regions.js');
+ * var RegionsPlugin = require('wavesurfer.regions.js');
  *
  * // if you are using <script> tags
  * var RegionsPlugin = window.WaveSurfer.regions;

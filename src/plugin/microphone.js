@@ -19,10 +19,10 @@
  * @extends {Observer}
  * @example
  * // es6
- * import MicrophonePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.microphone.js';
+ * import MicrophonePlugin from 'wavesurfer.microphone.js';
  *
  * // commonjs
- * var MicrophonePlugin = require('wavesurfer.js/dist/plugin/wavesurfer.microphone.js');
+ * var MicrophonePlugin = require('wavesurfer.microphone.js');
  *
  * // if you are using <script> tags
  * var MicrophonePlugin = window.WaveSurfer.microphone;

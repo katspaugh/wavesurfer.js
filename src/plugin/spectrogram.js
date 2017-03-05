@@ -206,10 +206,10 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
  * @extends {Observer}
  * @example
  * // es6
- * import SpectrogramPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.spectrogram.js';
+ * import SpectrogramPlugin from 'wavesurfer.spectrogram.js';
  *
  * // commonjs
- * var SpectrogramPlugin = require('wavesurfer.js/dist/plugin/wavesurfer.spectrogram.js');
+ * var SpectrogramPlugin = require('wavesurfer.spectrogram.js');
  *
  * // if you are using <script> tags
  * var SpectrogramPlugin = window.WaveSurfer.spectrogram;

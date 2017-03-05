@@ -16,10 +16,10 @@
  * @extends {Observer}
  * @example
  * // es6
- * import ElanPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.elan.js';
+ * import ElanPlugin from 'wavesurfer.elan.js';
  *
  * // commonjs
- * var ElanPlugin = require('wavesurfer.js/dist/plugin/wavesurfer.elan.js');
+ * var ElanPlugin = require('wavesurfer.elan.js');
  *
  * // if you are using <script> tags
  * var ElanPlugin = window.WaveSurfer.elan;
