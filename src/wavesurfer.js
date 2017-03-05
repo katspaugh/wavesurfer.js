@@ -63,6 +63,9 @@ import PeakCache from './peakcache';
  * waveform behind the cursor.
  * @property {Object} renderer=MultiCanvas Can be used to inject a custom
  * renderer.
+ * @property {boolean|number} responsive=false If set to `true` resize the
+ * waveform, when the window is resized. This is debounced with a `100ms`
+ * timeout by default. If this parameter is a number it represents that timeout.
  * @property {boolean} scrollParent=false Whether to scroll the container with a
  * lengthy waveform. Otherwise the waveform is shrunk to the container width
  * (see fillParent).
@@ -143,6 +146,7 @@ export default class WaveSurfer extends util.Observer {
         plugins       : [],
         progressColor : '#555',
         renderer      : MultiCanvas,
+        responsive    : false,
         scrollParent  : false,
         skipLength    : 2,
         splitChannels : false,
@@ -289,6 +293,19 @@ export default class WaveSurfer extends util.Observer {
         this.isDestroyed = false;
         /** @private */
         this.isReady = false;
+
+        // responsive debounced event listener. If this.params.responsive is not
+        // set, this is never called. Use 100ms or this.params.responsive as
+        // timeout for the debounce function.
+        let prevWidth = 0;
+        this._onResize = util.debounce(() => {
+            if (prevWidth != this.drawer.wrapper.clientWidth) {
+                prevWidth = this.drawer.wrapper.clientWidth;
+                this.empty();
+                this.drawBuffer();
+            }
+        }, typeof this.params.responsive === 'number' ? this.params.responsive : 100);
+
         return this;
     }
 
@@ -457,6 +474,10 @@ export default class WaveSurfer extends util.Observer {
         this.drawer = new this.Drawer(this.container, this.params);
         this.drawer.init();
         this.fireEvent('drawer-created', this.drawer);
+
+        if (this.params.responsive) {
+            window.addEventListener('resize', this._onResize, true);
+        }
 
         this.drawer.on('redraw', () => {
             this.drawBuffer();
@@ -1127,6 +1148,9 @@ export default class WaveSurfer extends util.Observer {
         this.cancelAjax();
         this.clearTmpEvents();
         this.unAll();
+        if (this.params.responsive) {
+            window.removeEventListener('resize', this._onResize, true);
+        }
         this.backend.destroy();
         this.drawer.destroy();
         this.isDestroyed = true;
