@@ -26,28 +26,80 @@ layout: default
     <ol>
       <li>Add the Playlist plugin script tag</li>
       <li>Create a <code>WaveSurfer</code> instance</li>
-      <li>*Create a Playlist instance and use the `playlist-ready` event</li>
+      <li>*Create a Playlist instance and use the <code>playlist-ready</code> event</li>
     </ol>
   </p>
 
-  <h4>*Create Playlist</h4>
-  ```
+  <h3>*Create Playlist</h3>
+  <pre><code>
   var myPlaylist = wavesurfer.Playlist;
   myPlaylist.init({
     wavesurfer: wavesurfer,
     playlistFile: 'http://linktosupportedplaylistfile.com/playlist.m3u',
     playlistType: 'm3u'
   });    
-  ```
+  </code></pre>
   
-  <h4>*Return the parsed playlist</h4>
+  <h3>*Return the playlist</h3>
   <p>
-  The parsed playlist will be available in the playlist-ready event.
+    The playlist will be available in the <code>playlist-ready</code> event.
   </p>
-  ```
-  var myList;
-  wavesurfer.on('playlist-ready', function () {
-    myList = myPlaylist.parsedList();
-  });  
-  ```
+  <pre><code>
+    var myList;
+      wavesurfer.on('playlist-ready', function () {
+      myList = myPlaylist.getPlaylist();
+    });  
+  </code></pre>
+
+
+  <h2>Options</h2>
+
+  <table class="table table-striped table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Required</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>wavesurfer</code></td>
+        <td>yes</td>
+        <td></td>
+        <td>A WaveSurfer instance.</td>
+      </tr>
+      <tr>
+        <td><code>playlistFile</code></td>
+        <td>yes</td>
+        <td></td>
+        <td>The link to the m3u file.</td>
+      </tr>
+      <tr>
+        <td><code>playlistType</code></td>
+        <td>no</td>
+        <td>m3u</td>
+        <td>The playlist file type.</td>
+      </tr>      
+    </tbody>
+  </table>
+
+  <h2>Events</h2>
+
+  <table class="table table-striped table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>playlist-ready</code></td>
+        <td>Invoked when the playlist is ready to use. Use the <code>getPlaylist()</code> method to get the playlist array.</td>
+      </tr>
+    </tbody>
+  </table>
+
 </section>
