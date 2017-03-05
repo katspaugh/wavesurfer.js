@@ -83,20 +83,46 @@ import PeakCache from './peakcache';
  * @example wavesurfer.addPlugin(pluginDefinition);
  * @property {string} name The name of the plugin, the plugin instance will be
  * added as a property to the wavesurfer instance under this name
- * @property {boolean} deferInit=params.deferInit||false Don't initialise plugin
+ * @property {?Object} staticProps The properties that should be added to the
+ * wavesurfer instance as static properties
+ * @property {?boolean} deferInit Don't initialise plugin
  * automatically
- * @property {string} extends `'observer'|'drawer'` The name of the object to
- * inject into the plugin instance factory. Currently only the observer and
- * drawer objects are possible.
+ * @property {Object} params={} The plugin parameters, they are the first parameter
+ * passed to the plugin class constructor function
  * @property {PluginClass} instance The plugin instance factory, is called with
  * the dependency specified in extends. Returns the plugin class.
  */
 
 /**
- * @typedef {function} PluginClass
- * @property {function} init The method to initialise the plugin
- * @property {function} destroy Destroy the plugin instance
+ * @interface PluginClass
+ *
+ * This is the interface which is implemented by all plugin classes
+ *
+ * @extends {Observer}
  */
+class PluginClass {
+    /**
+     * Construct the plugin
+     *
+     * @param {Object} ws The wavesurfer instance
+     * @param {Object} params={} The plugin params (specific to the plugin)
+     */
+    constructor(ws, params) {}
+    /**
+     * Initialise the plugin
+     *
+     * Start doing something. This is called by
+     * `wavesurfer.initPlugin(pluginName)`
+     */
+    init() {}
+    /**
+     * Destroy the plugin instance
+     *
+     * Stop doing something. This is called by
+     * `wavesurfer.destroyPlugin(pluginName)`
+     */
+    destroy() {}
+}
 
 /**
  * WaveSurfer core library class
@@ -362,47 +388,34 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('Plugin does not have a name!');
         }
         if (!plugin.instance) {
-            throw new Error(`Plugin ${plugin.name} does not have an instance factory!`);
+            throw new Error(`Plugin ${plugin.name} does not have an instance property!`);
         }
 
-        // static properties are applied to wavesurfer instance
-        if (plugin.static) {
-            Object.keys(plugin.static).forEach(pluginStaticProperty => {
+        // staticProps properties are applied to wavesurfer instance
+        if (plugin.staticProps) {
+            Object.keys(plugin.staticProps).forEach(pluginStaticProp => {
                 /**
-                 * Properties defined in a plugin definition's `static` property are added as
-                 * static properties of the WaveSurfer instance
+                 * Properties defined in a plugin definition's `staticProps` property are added as
+                 * staticProps properties of the WaveSurfer instance
                  */
-                this[pluginStaticProperty] = plugin.static[pluginStaticProperty];
+                this[pluginStaticProp] = plugin.staticProps[pluginStaticProp];
             });
         }
 
-        // default for deferInit is false
-        plugin.deferInit = plugin.deferInit || false;
+        const Instance = plugin.instance;
 
-        // The super class of the plugin instance (the class the plugin instance
-        // extends) is defined in the extends property in the plugin definition
-        // object. This string is mapped to a class in the superClassMap below
-        // and injected into the plugin instance generator function.
-        let SuperClass = null;
-        const superClassMap = {
-            observer: util.Observer,
-            drawer: this.Drawer
-        };
-        if (plugin.extends) {
-            if (!superClassMap[plugin.extends]) {
-                throw new Error(`Plugin ${plugin.name} has invalid extends property: ${plugin.extends}!`);
-            }
-            SuperClass = superClassMap[plugin.extends];
-        }
+        // turn the plugin instance into an observer
+        const observerPrototypeKeys = Object.getOwnPropertyNames(util.Observer.prototype);
+        observerPrototypeKeys.forEach(key => {
+            Instance.prototype[key] = util.Observer.prototype[key];
+        });
 
-        /* eslint-disable new-cap */
         /**
          * Instantiated plugin classes are added as a property of the wavesurfer
          * instance
          * @type {Object}
          */
-        this[plugin.name] = new (plugin.instance(SuperClass))(this);
-        /* eslint-enable new-cap */
+        this[plugin.name] = new Instance(plugin.params || {}, this);
         this.fireEvent('plugin-added', plugin.name);
         return this;
     }

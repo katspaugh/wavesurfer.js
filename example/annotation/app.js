@@ -17,14 +17,14 @@ document.addEventListener('DOMContentLoaded', function () {
         minimap: true,
         backend: 'MediaElement',
         plugins: [
-            window.WaveSurfer.regions(),
-            window.WaveSurfer.minimap({
+            window.WaveSurfer.regions.default(),
+            window.WaveSurfer.minimap.default({
                 height: 30,
                 waveColor: '#ddd',
                 progressColor: '#999',
                 cursorColor: '#999'
             }),
-            window.WaveSurfer.timeline({
+            window.WaveSurfer.timeline.default({
                 container: "#wave-timeline"
             })
         ]

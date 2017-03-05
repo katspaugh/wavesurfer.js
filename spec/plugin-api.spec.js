@@ -1,5 +1,6 @@
 import WaveSurfer from '../src/wavesurfer.js';
 
+
 /** @test {WaveSurfer} */
 describe('WaveSurfer/plugin API:', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -17,27 +18,26 @@ describe('WaveSurfer/plugin API:', () => {
 
     // utility function to generate a mock plugin object
     function mockPlugin(name, deferInit = false) {
+        class MockPlugin {
+            constructor(params, ws) {
+                this.ws = ws;
+                // using the instance factory unfortunately makes it
+                // difficult to use the spyOn function, so we use this
+                // instead
+                this.isInitialised = false;
+            }
+            init() {
+                this.isInitialised = true;
+            }
+            destroy() { }
+        }
         return {
             name,
             deferInit,
-            static: {
+            staticProps: {
                 [`${name}Static`]: 'static property value'
             },
-            extends: 'observer',
-            instance: Observer => class MockPlugin extends Observer {
-                constructor(wavesurfer) {
-                    super();
-                    this.wavesurfer = wavesurfer;
-                    // using the instance factory unfortunately makes it
-                    // difficult to use the spyOn function, so we use this
-                    // instead
-                    this.isInitialised = false;
-                }
-                init() {
-                    this.isInitialised = true;
-                }
-                destroy() {}
-            }
+            instance: MockPlugin
         };
     }
 
@@ -54,14 +54,14 @@ describe('WaveSurfer/plugin API:', () => {
 
     // plugin methods
     /** @test {WaveSurfer#addPlugin} */
-    it('addPlugin adds static properties and correctly builds and instantiates plugin class', () => {
+    it('addPlugin adds staticProps and correctly builds and instantiates plugin class', () => {
         dummyPlugin = mockPlugin('dummy');
         __createWaveform();
         wavesurfer.addPlugin(dummyPlugin);
 
-        expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.static.dummyStatic);
-        expect(wavesurfer.dummy.wavesurfer).toEqual(wavesurfer);
-        expect(Object.getPrototypeOf(wavesurfer.dummy).constructor.name === 'Observer');
+        expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.staticProps.dummyStatic);
+        expect(wavesurfer.dummy.ws).toEqual(wavesurfer);
+        expect(typeof Object.getPrototypeOf(wavesurfer.dummy).on).toEqual('function');
     });
 
     /** @test {WaveSurfer#initPlugin} */
@@ -98,8 +98,8 @@ describe('WaveSurfer/plugin API:', () => {
                 dummyPlugin
             ]
         });
-        expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.static.dummyStatic);
-        expect(wavesurfer.dummy.wavesurfer).toEqual(wavesurfer);
+        expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.staticProps.dummyStatic);
+        expect(wavesurfer.dummy.ws).toEqual(wavesurfer);
         expect(wavesurfer.dummy.isInitialised).toBeFalse();
     });
 
@@ -111,8 +111,8 @@ describe('WaveSurfer/plugin API:', () => {
                 dummyPlugin
             ]
         });
-        expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.static.dummyStatic);
-        expect(wavesurfer.dummy.wavesurfer).toEqual(wavesurfer);
+        expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.staticProps.dummyStatic);
+        expect(wavesurfer.dummy.ws).toEqual(wavesurfer);
         expect(wavesurfer.dummy.isInitialised).toBeTrue();
     });
 });
