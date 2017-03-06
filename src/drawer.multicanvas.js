@@ -65,7 +65,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     },
 
-     addCanvas: function () {
+    addCanvas: function () {
         var entry = {},
             leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
@@ -330,13 +330,18 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         this.style(this.progressWave, { width: pos + 'px' });
     },
 
+    /**
+     * Combine all available canvasses together.
+     *
+     * @param {String} type - an optional value of a format type. Default is image/png.
+     * @param {Number} quality - an optional value between 0 and 1. Default is 0.92.
+     *
+     */
     getImage: function(type, quality) {
-        // combine all available canvasses together
-        var availableCanvas = '';
-        for (var i in this.canvases) {
-            var getEntry = this.canvases[i].wave.getContext('2d');
-            availableCanvas += getEntry.canvas.toDataURL(type, quality);
-        }
-        return availableCanvas;
+        var availableCanvas = [];
+        this.canvases.forEach(function (entry) {
+            availableCanvas.push(entry.wave.toDataURL(type, quality));
+        });
+        return availableCanvas.length > 1 ? availableCanvas : availableCanvas[0];
     }
 });
