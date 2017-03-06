@@ -65,7 +65,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     },
 
-     addCanvas: function () {
+    addCanvas: function () {
         var entry = {},
             leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
@@ -330,8 +330,14 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         this.style(this.progressWave, { width: pos + 'px' });
     },
 
+    /**
+     * Combine all available canvasses together.
+     *
+     * @param {String} type An optional value of a format type. Default is image/png
+     * @param {Number} quality An optional value between 0 and 1. Default is 0.92
+     *
+     */
     getImage: function(type, quality) {
-        // combine all available canvasses together
         var availableCanvas = [];
         this.canvases.forEach(function (entry) {
             availableCanvas.push(entry.wave.toDataURL(type, quality));
