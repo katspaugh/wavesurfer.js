@@ -717,10 +717,13 @@ export default class WaveSurfer extends util.Observer {
 
     /**
      * Get the playback volume.
+     *
+     * @return {number} A value between 0 and 1, 0 being no
+     * volume and 1 being full volume.
      */
-    getVolume: function () {
+    getVolume () {
         return this.backend.getVolume();
-    },
+    }
 
     /**
      * Set the playback rate.
