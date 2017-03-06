@@ -474,6 +474,21 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
+     * Combine all available canvasses together.
+     *
+     * @param {String} type - an optional value of a format type. Default is image/png.
+     * @param {Number} quality - an optional value between 0 and 1. Default is 0.92.
+     *
+     */
+    getImage(type, quality) {
+        var availableCanvas = [];
+        this.canvases.forEach(function (entry) {
+            availableCanvas.push(entry.wave.toDataURL(type, quality));
+        });
+        return availableCanvas.length > 1 ? availableCanvas : availableCanvas[0];
+    }
+
+    /**
      * Render the new progress
      *
      * @param {number} position X-Offset of progress position in pixels
