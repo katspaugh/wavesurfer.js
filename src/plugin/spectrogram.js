@@ -271,36 +271,22 @@ export default function spectrogram(params = {}) {
                 if (prevSpectrogram) {
                     this.container.removeChild(prevSpectrogram);
                 }
-
+                const wsParams = this.wavesurfer.params;
+                this.wrapper = document.createElement('spectrogram');
                 // if labels are active
                 if (this.params.labels) {
-                    var specLabelsdiv = document.createElement('div');
-                    specLabelsdiv.setAttribute('id', 'specLabels');
-                    this.drawer.style(specLabelsdiv, {
+                    const labelsEl = this.labelsEl = document.createElement('canvas');
+                    labelsEl.classList.add('spec-labels');
+                    this.drawer.style(labelsEl, {
                         left: 0,
-                        position: 'relative',
+                        position: 'absolute',
                         zIndex: 9
                     });
-                    specLabelsdiv.innerHTML = '<canvas></canvas>';
-                    this.wrapper = this.container.appendChild(
-                        specLabelsdiv
-                    );
+                    this.wrapper.appendChild(labelsEl);
                     // can be customized in next version
                     this.loadLabels('rgba(68,68,68,0.5)', '12px', '10px', '', '#fff', '#f7f7f7', 'center', '#specLabels');
                 }
 
-                const wsParams = this.wavesurfer.params;
-
-                var specView = document.createElement('spectrogram');
-                // if labels are active
-                if (this.params.labels) {
-                    this.drawer.style(specView, {
-                        left: 0,
-                        position: 'relative'
-                    });
-                }
-
-                this.wrapper = this.container.appendChild(specView);
                 this.drawer.style(this.wrapper, {
                     display: 'block',
                     position: 'relative',
@@ -316,6 +302,7 @@ export default function spectrogram(params = {}) {
                         overflowY: 'hidden'
                     });
                 }
+                this.container.appendChild(this.wrapper);
 
                 this.wrapper.addEventListener('click', e => {
                     e.preventDefault();
@@ -427,56 +414,56 @@ export default function spectrogram(params = {}) {
             }
 
             loadLabels(bgFill, fontSizeFreq, fontSizeUnit, fontType, textColorFreq, textColorUnit, textAlign, container) {
-                var frequenciesHeight = this.height;
-                var bgFill = bgFill || 'rgba(68,68,68,0.5)';
-                var fontSizeFreq = fontSizeFreq || '12px';
-                var fontSizeUnit = fontSizeUnit || '10px';
-                var fontType = fontType || 'Helvetica';
-                var textColorFreq = textColorFreq || '#fff';
-                var textColorUnit = textColorUnit || '#fff';
-                var textAlign = textAlign || 'center';
-                var container = container || '#specLabels';
-                var getMaxY = frequenciesHeight || 512;
-                var labelIndex = 5 * (getMaxY / 256);
-                var freqStart = 0;
-                var step = ((this.wavesurfer.backend.ac.sampleRate / 2) - freqStart) / labelIndex;
+                const frequenciesHeight = this.height;
+                bgFill = bgFill || 'rgba(68,68,68,0)';
+                fontSizeFreq = fontSizeFreq || '12px';
+                fontSizeUnit = fontSizeUnit || '10px';
+                fontType = fontType || 'Helvetica';
+                textColorFreq = textColorFreq || '#fff';
+                textColorUnit = textColorUnit || '#fff';
+                textAlign = textAlign || 'center';
+                container = container || '#specLabels';
+                const getMaxY = frequenciesHeight || 512;
+                const labelIndex = 5 * (getMaxY / 256);
+                const freqStart = 0;
+                const step = ((this.wavesurfer.backend.ac.sampleRate / 2) - freqStart) / labelIndex;
 
-                var cLabel = document.querySelectorAll(container + ' canvas')[0].getContext('2d');
-                document.querySelectorAll(container + ' canvas')[0].height = this.height;
-                document.querySelectorAll(container + ' canvas')[0].width = 55;
+                const ctx = this.labelsEl.getContext('2d');
+                this.labelsEl.height = this.height / this.pixelRatio;
+                this.labelsEl.width = 55;
 
-                cLabel.fillStyle = bgFill;
-                cLabel.fillRect(0, 0, 55, getMaxY);
-                cLabel.fill();
+                ctx.fillStyle = bgFill;
+                ctx.fillRect(0, 0, 55, getMaxY);
+                ctx.fill();
+                let i;
 
-                for (var i = 0; i <= labelIndex; i++) {
-                    cLabel.textAlign = textAlign;
-                    cLabel.textBaseline = 'middle';
+                for (i = 0; i <= labelIndex; i++) {
+                    ctx.textAlign = textAlign;
+                    ctx.textBaseline = 'middle';
 
-                    var freq = freqStart + (step * i);
-                    var index = Math.round(freq / this.sampleRate / 2 * this.fftSamples);
-                    var index = Math.round(freq / (this.fftSamples / 2) * this.fftSamples);
-                    var percent = index / this.fftSamples / 2;
-                    var y = (1 - percent) * this.height;
-                    var label = this.freqType(freq);
-                    var units = this.unitType(freq);
-                    var x = 16;
-                    var yLabelOffset = 2;
+                    const freq = freqStart + (step * i);
+                    const index = Math.round(freq / (this.sampleRate / 2) * this.fftSamples);
+                    const percent = index / this.fftSamples / 2;
+                    const y = (1 - percent) * this.height;
+                    const label = this.freqType(freq);
+                    const units = this.unitType(freq);
+                    const x = 16;
+                    const yLabelOffset = 2;
 
                     if (i == 0) {
-                        cLabel.fillStyle = textColorUnit;
-                        cLabel.font = fontSizeUnit + ' ' + fontType;
-                        cLabel.fillText(units, x + 24, getMaxY + i - 10);
-                        cLabel.fillStyle = textColorFreq;
-                        cLabel.font = fontSizeFreq + ' ' + fontType;
-                        cLabel.fillText(label, x, getMaxY + i - 10);
+                        ctx.fillStyle = textColorUnit;
+                        ctx.font = fontSizeUnit + ' ' + fontType;
+                        ctx.fillText(units, x + 24, getMaxY + i - 10);
+                        ctx.fillStyle = textColorFreq;
+                        ctx.font = fontSizeFreq + ' ' + fontType;
+                        ctx.fillText(label, x, getMaxY + i - 10);
                     } else {
-                        cLabel.fillStyle = textColorUnit;
-                        cLabel.font = fontSizeUnit + ' ' + fontType;
-                        cLabel.fillText(units, x + 24, getMaxY - i * 50 + yLabelOffset);
-                        cLabel.fillStyle = textColorFreq;
-                        cLabel.font = fontSizeFreq + ' ' + fontType;
-                        cLabel.fillText(label, x, getMaxY - i * 50 + yLabelOffset);
+                        ctx.fillStyle = textColorUnit;
+                        ctx.font = fontSizeUnit + ' ' + fontType;
+                        ctx.fillText(units, x + 24, getMaxY - i * 50 + yLabelOffset);
+                        ctx.fillStyle = textColorFreq;
+                        ctx.font = fontSizeFreq + ' ' + fontType;
+                        ctx.fillText(label, x, getMaxY - i * 50 + yLabelOffset);
                     }
                 }
             }
