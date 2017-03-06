@@ -474,18 +474,15 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
-     * Combine all available canvasses together.
+     * Return image data of the waveform
      *
-     * @param {String} type - an optional value of a format type. Default is image/png.
-     * @param {Number} quality - an optional value between 0 and 1. Default is 0.92.
-     *
+     * @param {string} type='image/png' An optional value of a format type.
+     * @param {number} quality=0.92 An optional value between 0 and 1.
+     * @return {string|string[]} images A data URL or an array of data URLs
      */
     getImage(type, quality) {
-        var availableCanvas = [];
-        this.canvases.forEach(function (entry) {
-            availableCanvas.push(entry.wave.toDataURL(type, quality));
-        });
-        return availableCanvas.length > 1 ? availableCanvas : availableCanvas[0];
+        const images = this.canvases.map(entry => entry.wave.toDataURL(type, quality));
+        return images.length > 1 ? images : images[0];
     }
 
     /**
