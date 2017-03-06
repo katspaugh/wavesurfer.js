@@ -333,14 +333,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     getImage: function(type, quality) {
         // combine all available canvasses together
         var availableCanvas = [];
-        for (var i in this.canvases) {
-            var getEntry = this.canvases[i].wave.getContext('2d');
-            availableCanvas.push(getEntry.canvas.toDataURL(type, quality));
+        this.canvases.forEach(function (entry) {
+            availableCanvas.push(entry.wave.toDataURL(type, quality));
         }
-        if (this.canvases.length == 1) {
-            return availableCanvas[0];
-        } else {
-            return availableCanvas;
-        }
+        return availableCanvas.length > 1 ? availableCanvas : availableCanvas[0];
     }
 });
