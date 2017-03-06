@@ -333,15 +333,15 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     /**
      * Combine all available canvasses together.
      *
-     * @param {String} type An optional value of a format type. Default is image/png
-     * @param {Number} quality An optional value between 0 and 1. Default is 0.92
+     * @param {String} type - an optional value of a format type. Default is image/png.
+     * @param {Number} quality - an optional value between 0 and 1. Default is 0.92.
      *
      */
     getImage: function(type, quality) {
         var availableCanvas = [];
         this.canvases.forEach(function (entry) {
             availableCanvas.push(entry.wave.toDataURL(type, quality));
-        }
+        });
         return availableCanvas.length > 1 ? availableCanvas : availableCanvas[0];
     }
 });
