@@ -15,6 +15,7 @@ var WaveSurfer = {
         autoCenter    : true,
         backend       : 'WebAudio',
         barHeight     : 1,
+        closeAudioContext: false,
         container     : null,
         cursorColor   : '#333',
         cursorWidth   : 1,
