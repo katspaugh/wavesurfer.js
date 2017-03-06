@@ -96,7 +96,6 @@ import PeakCache from './peakcache';
  * the dependency specified in extends. Returns the plugin class.
  */
 
-<<<<<<< HEAD
 /**
  * @typedef {function} PluginClass
  * @property {function} init The method to initialise the plugin
