@@ -439,7 +439,7 @@ export default class WebAudio extends util.Observer {
         // close the audioContext if closeAudioContext option is set to true
         if (this.params.closeAudioContext) {
             // check if browser supports AudioContext.close()
-            if (typeof this.ac.close === 'function') {
+            if (typeof this.ac.close === 'function' && this.ac.state != 'closed') {
                 this.ac.close();
             }
             // clear the reference to the audiocontext
