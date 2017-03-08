@@ -23,6 +23,8 @@ import PeakCache from './peakcache';
  * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'` In most cases
  * you don't have to set this manually. MediaElement is a fallback for
  * unsupported browsers.
+ * @property {boolean} closeAudioContext=false Close and nullify all audio
+ * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
  * the waveform should be drawn. This is the only required parameter.
  * @property {string} cursorColor='#333' The fill color of the cursor indicating
@@ -30,6 +32,8 @@ import PeakCache from './peakcache';
  * @property {number} cursorWidth=1 Measured in pixels.
  * @property {boolean} fillParent=true Whether to fill the entire container or
  * draw only according to `minPxPerSec`.
+ * @property {boolean} forceDecode=false Force decoding of audio using web audio
+ * when zooming to get a more detailed waveform.
  * @property {number} height=128 The height of the waveform. Measured in
  * pixels.
  * @property {boolean} hideScrollbar=false Whether to hide the horizontal
@@ -131,6 +135,7 @@ export default class WaveSurfer extends util.Observer {
         cursorWidth   : 1,
         dragSelection : true,
         fillParent    : true,
+        forceDecode   : true,
         height        : 128,
         hideScrollbar : false,
         interact      : true,
@@ -585,7 +590,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.pause();
      */
     pause() {
-        this.backend.pause();
+        this.backend.isPaused() || this.backend.pause();
     }
 
     /**
@@ -711,6 +716,16 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Get the playback volume.
+     *
+     * @return {number} A value between 0 and 1, 0 being no
+     * volume and 1 being full volume.
+     */
+    getVolume () {
+        return this.backend.getVolume();
+    }
+
+    /**
      * Set the playback rate.
      *
      * @param {number} rate A positive number. E.g. 0.5 means half the normal
@@ -719,6 +734,15 @@ export default class WaveSurfer extends util.Observer {
      */
     setPlaybackRate(rate) {
         this.backend.setPlaybackRate(rate);
+    }
+
+    /**
+     * Get the playback rate.
+     *
+     * @return {number}
+     */
+    getPlaybackRate() {
+        return this.backend.getPlaybackRate();
     }
 
     /**
@@ -759,6 +783,16 @@ export default class WaveSurfer extends util.Observer {
             this.backend.setVolume(this.savedVolume);
             this.isMuted = false;
         }
+    }
+
+    /**
+     * Get the current mute status.
+     *
+     * @example const isMuted = wavesurfer.getMute();
+     * @return {boolean}
+     */
+    getMute() {
+        return this.isMuted;
     }
 
     /**
@@ -970,14 +1004,18 @@ export default class WaveSurfer extends util.Observer {
             this.backend.once('error', err => this.fireEvent('error', err))
         );
 
-        // If no pre-decoded peaks provided, attempt to download the audio file
-        // and decode it with Web Audio.
+        // If no pre-decoded peaks provided or pre-decoded peaks are
+        // provided with forceDecode flag, attempt to download the
+        // audio file and decode it with Web Audio.
         if (peaks) {
             this.backend.setPeaks(peaks);
-        } else if (this.backend.supportsWebAudio()) {
+        }
+
+        if ((!peaks || this.params.forceDecode) && this.backend.supportsWebAudio()) {
             this.getArrayBuffer(url, arraybuffer => {
                 this.decodeArrayBuffer(arraybuffer, buffer => {
                     this.backend.buffer = buffer;
+                    this.backend.setPeaks(null);
                     this.drawBuffer();
                     this.fireEvent('waveform-ready');
                 });
@@ -1154,5 +1192,6 @@ export default class WaveSurfer extends util.Observer {
         this.backend.destroy();
         this.drawer.destroy();
         this.isDestroyed = true;
+        this.arraybuffer = null;
     }
 }

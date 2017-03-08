@@ -85,13 +85,13 @@ export default function(params = {}) {
                     }
                 };
                 let prevWidth = 0;
-                this._onResize = () => {
+                this._onResize = wavesurfer.util.debounce(() => {
                     if (prevWidth != this.wrapper.clientWidth) {
                         prevWidth = this.wrapper.clientWidth;
                         this.render();
                         this.progress(this.wavesurfer.backend.getPlayedPercents());
                     }
-                };
+                });
             }
 
             init() {
@@ -103,6 +103,7 @@ export default function(params = {}) {
 
             destroy() {
                 window.removeEventListener('resize', this._onResize, true);
+                window.removeEventListener('orientationchange', this._onResize, true);
                 this.wavesurfer.drawer.wrapper.removeEventListener('mouseover', this._onMouseover);
                 this.wavesurfer.un('ready', this._onReady);
                 this.wavesurfer.un('seek', this._onSeek);
@@ -177,6 +178,7 @@ export default function(params = {}) {
 
             bindWaveSurferEvents() {
                 window.addEventListener('resize', this._onResize, true);
+                window.addEventListener('orientationchange', this._onResize, true);
                 this.wavesurfer.on('audioprocess', this._onAudioprocess);
                 this.wavesurfer.on('seek', this._onSeek);
                 if (this.params.showOverview) {

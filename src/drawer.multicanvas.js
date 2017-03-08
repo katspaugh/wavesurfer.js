@@ -474,6 +474,18 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
+     * Return image data of the waveform
+     *
+     * @param {string} type='image/png' An optional value of a format type.
+     * @param {number} quality=0.92 An optional value between 0 and 1.
+     * @return {string|string[]} images A data URL or an array of data URLs
+     */
+    getImage(type, quality) {
+        const images = this.canvases.map(entry => entry.wave.toDataURL(type, quality));
+        return images.length > 1 ? images : images[0];
+    }
+
+    /**
      * Render the new progress
      *
      * @param {number} position X-Offset of progress position in pixels
