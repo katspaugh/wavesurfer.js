@@ -1,6 +1,14 @@
 wavesurfer.js changelog
 =======================
 
+1.3.5 (10.03.2017)
+------------------
+- Add a `getImage` method for MultiCanvas (#1012)
+- Add Playlist plugin (#1018)
+- Add Playlist plugin sample (#1019)
+- Add a new parameter `barHeight` (#1020)
+- Add a `playBackRate` method for MediaElement (#1022)
+
 1.3.4 (25.02.2017)
 ------------------
 - Add a new parameter `forceDecode` (#1009)
