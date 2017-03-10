@@ -72,12 +72,12 @@ export default class WebAudio extends util.Observer {
      * @return {AudioContext}
      */
     getAudioContext() {
-        if (!this.audioContext) {
-            this.audioContext = new (
+        if (!window.WaveSurferAudioContext) {
+            window.WaveSurferAudioContext = new (
                 window.AudioContext || window.webkitAudioContext
             );
         }
-        return this.audioContext;
+        return window.WaveSurferAudioContext;
     }
 
     /**
@@ -87,12 +87,12 @@ export default class WebAudio extends util.Observer {
      * @return {OfflineAudioContext}
      */
     getOfflineAudioContext(sampleRate) {
-        if (!this.offlineAudioContext) {
-            this.offlineAudioContext = new (
+        if (!window.WaveSurferOfflineAudioContext) {
+            window.WaveSurferOfflineAudioContext = new (
                 window.OfflineAudioContext || window.webkitOfflineAudioContext
             )(1, 2, sampleRate);
         }
-        return this.offlineAudioContext;
+        return window.WaveSurferOfflineAudioContext;
     }
 
     /**
@@ -420,6 +420,25 @@ export default class WebAudio extends util.Observer {
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
         this.analyser.disconnect();
+
+        // close the audioContext if closeAudioContext option is set to true
+        if (this.params.closeAudioContext) {
+            // check if browser supports AudioContext.close()
+            if (typeof this.ac.close === 'function') {
+                this.ac.close();
+            }
+            // clear the reference to the audiocontext
+            this.ac = null;
+            // clear the actual audiocontext, either passed as param or the
+            // global singleton
+            if (!this.params.audioContext) {
+                window.WaveSurferAudioContext = null;
+            } else {
+                this.params.audioContext = null;
+            }
+            // clear the offlineAudioContext
+            window.WaveSurferOfflineAudioContext = null;
+        }
     }
 
     /**

@@ -92,6 +92,7 @@ export default class MinimapPlugin {
          * @see https://github.com/katspaugh/wavesurfer.js/issues/736
          */
         this.renderEvent = ws.params.backend === 'MediaElement' ? 'waveform-ready' : 'ready';
+        this.renderEvent = 'ready';
 
         // ws ready event listener
         this._onShouldRender = () => {
@@ -127,13 +128,13 @@ export default class MinimapPlugin {
             }
         };
         let prevWidth = 0;
-        this._onResize = () => {
+        this._onResize = ws.util.debounce(() => {
             if (prevWidth != this.drawer.wrapper.clientWidth) {
                 prevWidth = this.drawer.wrapper.clientWidth;
                 this.render();
-                this.drawer.progress(ws.backend.getPlayedPercents());
+                this.drawer.progress(this.wavesurfer.backend.getPlayedPercents());
             }
-        };
+        });
     }
 
     init() {
@@ -145,6 +146,7 @@ export default class MinimapPlugin {
 
     destroy() {
         window.removeEventListener('resize', this._onResize, true);
+        window.removeEventListener('orientationchange', this._onResize, true);
         this.wavesurfer.drawer.wrapper.removeEventListener('mouseover', this._onMouseover);
         this.wavesurfer.un(this.renderEvent, this._onShouldRender);
         this.wavesurfer.un('seek', this._onSeek);
@@ -217,6 +219,7 @@ export default class MinimapPlugin {
 
     bindWavesurferEvents() {
         window.addEventListener('resize', this._onResize, true);
+        window.addEventListener('orientationchange', this._onResize, true);
         this.wavesurfer.on('audioprocess', this._onAudioprocess);
         this.wavesurfer.on('seek', this._onSeek);
         if (this.params.showOverview) {
