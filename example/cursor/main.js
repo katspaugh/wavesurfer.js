@@ -6,10 +6,10 @@ var wavesurfer = {};
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function () {
 
-    wavesurfer = window.WaveSurfer.create({
+    wavesurfer = WaveSurfer.create({
         container: document.querySelector('#waveform'),
         plugins: [
-            window.WaveSurfer.cursor()
+            WaveSurfer.cursor.create()
         ]
     });
 

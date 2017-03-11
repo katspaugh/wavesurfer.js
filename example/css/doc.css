@@ -1,3 +1,6 @@
+body {
+  line-height: 1.6;
+}
 .content {
   max-width: 65em;
   padding: 15px 5%;
@@ -105,6 +108,10 @@ table.summary thead {
 *[data-ice="appendix"] li {
   margin: 0;
 }
+p {
+  line-height: inherit;
+  margin-bottom: 1em;
+}
 
 /* links */
 a,
@@ -133,6 +140,9 @@ a:active,
 .navigation li a:focus,
 .navigation li a:active {
   color: #333;
+}
+.navigation *[data-ice="kind"] {
+  line-height: 1.25em;
 }
 
 /* active state for sections */

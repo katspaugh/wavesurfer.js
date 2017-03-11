@@ -154,7 +154,7 @@ export default class MediaElement extends WebAudio {
      * @return {number}
      */
     getDuration() {
-        var duration = (this.buffer || this.media).duration;
+        let duration = (this.buffer || this.media).duration;
         if (duration >= Infinity) { // streaming audio
             duration = this.media.seekable.end(0);
         }

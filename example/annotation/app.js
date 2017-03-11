@@ -8,7 +8,7 @@ var wavesurfer;
  */
 document.addEventListener('DOMContentLoaded', function () {
     // Init wavesurfer
-    wavesurfer = window.WaveSurfer.create({
+    wavesurfer = WaveSurfer.create({
         container: '#waveform',
         height: 100,
         pixelRatio: 1,
@@ -17,14 +17,14 @@ document.addEventListener('DOMContentLoaded', function () {
         minimap: true,
         backend: 'MediaElement',
         plugins: [
-            window.WaveSurfer.regions(),
-            window.WaveSurfer.minimap({
+            WaveSurfer.regions.create(),
+            WaveSurfer.minimap.create({
                 height: 30,
                 waveColor: '#ddd',
                 progressColor: '#999',
                 cursorColor: '#999'
             }),
-            window.WaveSurfer.timeline({
+            WaveSurfer.timeline.create({
                 container: "#wave-timeline"
             })
         ]

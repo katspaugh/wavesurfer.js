@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
         loaderColor   : 'purple',
         cursorColor   : 'navy',
         plugins: [
-            window.WaveSurfer.minimap(pluginOptions.minimap)
+            WaveSurfer.minimap.create(pluginOptions.minimap)
         ]
     };
 
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Init wavesurfer
-    wavesurfer = window.WaveSurfer.create(options);
+    wavesurfer = WaveSurfer.create(options);
 
     [].forEach.call(document.querySelectorAll('[data-activate-plugin]'), function (el) {
         var activePlugins = wavesurfer.initialisedPluginList;
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var pluginName = e.currentTarget.dataset.activatePlugin;
             var activate = e.target.checked;
             var options = pluginOptions[pluginName] || {};
-            var plugin = window.WaveSurfer[pluginName](options);
+            var plugin = WaveSurfer[pluginName].create(options);
 
             if (activate) {
                 wavesurfer.addPlugin(plugin).initPlugin(pluginName);

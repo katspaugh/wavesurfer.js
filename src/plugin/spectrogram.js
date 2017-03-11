@@ -198,327 +198,365 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('spectrogram')`
  */
+
 /**
- * Timeline plugin definition factory
+ * Render a spectrogram visualisation of the audio.
  *
- * @param  {SpectrogramPluginParams} params parameters use to initialise the plugin
- * @return {PluginDefinition} an object representing the plugin
+ * @implements {PluginClass}
+ * @extends {Observer}
+ * @example
+ * // es6
+ * import SpectrogramPlugin from 'wavesurfer.spectrogram.js';
+ *
+ * // commonjs
+ * var SpectrogramPlugin = require('wavesurfer.spectrogram.js');
+ *
+ * // if you are using <script> tags
+ * var SpectrogramPlugin = window.WaveSurfer.spectrogram;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     SpectrogramPlugin.create({
+ *       // plugin options ...
+ *     })
+ *   ]
+ * });
  */
-export default function spectrogram(params = {}) {
-    return {
-        name: 'spectrogram',
-        deferInit: params && params.deferInit ? params.deferInit : false,
-        static: {
-            FFT
-        },
-        extends: 'observer',
-        instance: Observer => class SpectrogramPlugin extends Observer {
-            constructor(wavesurfer) {
-                super();
-                this.params = params;
-                this.wavesurfer = wavesurfer;
+export default class SpectrogramPlugin {
+    /**
+     * Spectrogram plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {SpectrogramPluginParams} params parameters use to initialise the plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: 'spectrogram',
+            deferInit: params && params.deferInit ? params.deferInit : false,
+            params: params,
+            staticProps: {
+                FFT: FFT
+            },
+            instance: SpectrogramPlugin
+        };
+    }
 
-                this.frequenciesDataUrl = params.frequenciesDataUrl;
-                this._onReady = () => {
-                    const drawer = this.drawer = this.wavesurfer.drawer;
+    constructor(params, ws) {
+        this.params = params;
+        this.wavesurfer = ws;
+        this.util = ws.util;
 
-                    this.container = 'string' == typeof params.container ?
-                    document.querySelector(params.container) : params.container;
+        this.frequenciesDataUrl = params.frequenciesDataUrl;
+        this._onScroll = e => {
+            this.updateScroll(e);
+        };
+        this._onReady = () => {
+            const drawer = this.drawer = ws.drawer;
 
-                    if (!this.container) {
-                        throw Error('No container for WaveSurfer spectrogram');
-                    }
+            this.container = 'string' == typeof params.container ?
+                document.querySelector(params.container) : params.container;
 
-                    this.width = drawer.width;
-                    this.pixelRatio = this.params.pixelRatio || wavesurfer.params.pixelRatio;
-                    this.fftSamples = this.params.fftSamples || wavesurfer.params.fftSamples || 512;
-                    this.height = this.fftSamples / 2;
-                    this.noverlap = params.noverlap;
-                    this.windowFunc = params.windowFunc;
-                    this.alpha = params.alpha;
-
-                    this.createWrapper();
-                    this.createCanvas();
-                    this.render();
-
-                    drawer.wrapper.addEventListener('scroll', e => {
-                        this.updateScroll(e);
-                    });
-                    wavesurfer.on('redraw', () => this.render());
-                };
+            if (!this.container) {
+                throw Error('No container for WaveSurfer spectrogram');
             }
 
-            init() {
-                // Check if ws is ready
-                if (this.wavesurfer.isReady) {
-                    this._onReady();
-                }
+            this.width = drawer.width;
+            this.pixelRatio = this.params.pixelRatio || ws.params.pixelRatio;
+            this.fftSamples = this.params.fftSamples || ws.params.fftSamples || 512;
+            this.height = this.fftSamples / 2;
+            this.noverlap = params.noverlap;
+            this.windowFunc = params.windowFunc;
+            this.alpha = params.alpha;
 
-                this.wavesurfer.on('ready', this._onReady);
-            }
+            this.createWrapper();
+            this.createCanvas();
+            this.render();
 
-            destroy() {
-                this.unAll();
-                this.wavesurfer.un('ready', this._onReady);
-                if (this.wrapper) {
-                    this.wrapper.parentNode.removeChild(this.wrapper);
-                    this.wrapper = null;
-                }
-            }
+            drawer.wrapper.addEventListener('scroll', this._onScroll);
+            ws.on('redraw', () => this.render());
+        };
+    }
 
-            createWrapper() {
-                const prevSpectrogram = this.container.querySelector('spectrogram');
-                if (prevSpectrogram) {
-                    this.container.removeChild(prevSpectrogram);
-                }
-                const wsParams = this.wavesurfer.params;
-                this.wrapper = document.createElement('spectrogram');
-                // if labels are active
-                if (this.params.labels) {
-                    const labelsEl = this.labelsEl = document.createElement('canvas');
-                    labelsEl.classList.add('spec-labels');
-                    this.drawer.style(labelsEl, {
-                        left: 0,
-                        position: 'absolute',
-                        zIndex: 9
-                    });
-                    this.wrapper.appendChild(labelsEl);
-                    // can be customized in next version
-                    this.loadLabels('rgba(68,68,68,0.5)', '12px', '10px', '', '#fff', '#f7f7f7', 'center', '#specLabels');
-                }
+    init() {
+        // Check if ws is ready
+        if (this.wavesurfer.isReady) {
+            this._onReady();
+        }
 
-                this.drawer.style(this.wrapper, {
-                    display: 'block',
-                    position: 'relative',
-                    userSelect: 'none',
-                    webkitUserSelect: 'none',
-                    height: this.height + 'px'
-                });
+        this.wavesurfer.on('ready', this._onReady);
+    }
 
-                if (wsParams.fillParent || wsParams.scrollParent) {
-                    this.drawer.style(this.wrapper, {
-                        width: '100%',
-                        overflowX: 'hidden',
-                        overflowY: 'hidden'
-                    });
-                }
-                this.container.appendChild(this.wrapper);
+    destroy() {
+        this.unAll();
+        this.wavesurfer.un('ready', this._onReady);
+        this.drawer.wrapper.removeEventListener('scroll', this._onScroll);
+        this.wavesurfer = null;
+        this.util = null;
+        this.params = null;
+        if (this.wrapper) {
+            this.wrapper.parentNode.removeChild(this.wrapper);
+            this.wrapper = null;
+        }
+    }
 
-                this.wrapper.addEventListener('click', e => {
-                    e.preventDefault();
-                    const relX = 'offsetX' in e ? e.offsetX : e.layerX;
-                    this.fireEvent('click', (relX / this.scrollWidth) || 0);
-                });
-            }
+    createWrapper() {
+        const prevSpectrogram = this.container.querySelector('spectrogram');
+        if (prevSpectrogram) {
+            this.container.removeChild(prevSpectrogram);
+        }
+        const wsParams = this.wavesurfer.params;
+        this.wrapper = document.createElement('spectrogram');
+        // if labels are active
+        if (this.params.labels) {
+            const labelsEl = this.labelsEl = document.createElement('canvas');
+            labelsEl.classList.add('spec-labels');
+            this.drawer.style(labelsEl, {
+                left: 0,
+                position: 'absolute',
+                zIndex: 9,
+                height: `${this.height / this.pixelRatio}px`,
+                width: `${55 / this.pixelRatio}px`
+            });
+            this.wrapper.appendChild(labelsEl);
+            // can be customized in next version
+            this.loadLabels('rgba(68,68,68,0.5)', '12px', '10px', '', '#fff', '#f7f7f7', 'center', '#specLabels');
+        }
 
-            createCanvas() {
-                const canvas = this.canvas = this.wrapper.appendChild(
-                    document.createElement('canvas')
-                );
+        this.drawer.style(this.wrapper, {
+            display: 'block',
+            position: 'relative',
+            userSelect: 'none',
+            webkitUserSelect: 'none',
+            height: this.height + 'px'
+        });
 
-                this.spectrCc = canvas.getContext('2d');
+        if (wsParams.fillParent || wsParams.scrollParent) {
+            this.drawer.style(this.wrapper, {
+                width: '100%',
+                overflowX: 'hidden',
+                overflowY: 'hidden'
+            });
+        }
+        this.container.appendChild(this.wrapper);
 
-                this.wavesurfer.drawer.style(canvas, {
-                    position: 'absolute',
-                    zIndex: 4
-                });
-            }
+        this.wrapper.addEventListener('click', e => {
+            e.preventDefault();
+            const relX = 'offsetX' in e ? e.offsetX : e.layerX;
+            this.fireEvent('click', (relX / this.scrollWidth) || 0);
+        });
+    }
 
-            render() {
-                this.updateCanvasStyle();
+    createCanvas() {
+        const canvas = this.canvas = this.wrapper.appendChild(
+            document.createElement('canvas')
+        );
 
-                if (this.frequenciesDataUrl) {
-                    this.loadFrequenciesData(this.frequenciesDataUrl);
-                } else {
-                    this.getFrequencies(this.drawSpectrogram);
-                }
-            }
+        this.spectrCc = canvas.getContext('2d');
 
-            updateCanvasStyle() {
-                const width = Math.round(this.width / this.pixelRatio) + 'px';
-                this.canvas.width = this.width;
-                this.canvas.height = this.height;
-                this.canvas.style.width = width;
-            }
+        this.util.style(canvas, {
+            position: 'absolute',
+            zIndex: 4
+        });
+    }
 
-            drawSpectrogram(frequenciesData, my) {
-                const spectrCc = my.spectrCc;
-                const length = my.wavesurfer.backend.getDuration();
-                const height = my.height;
-                const pixels = my.resample(frequenciesData);
-                const heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
-                let i;
-                let j;
+    render() {
+        this.updateCanvasStyle();
 
-                for (i = 0; i < pixels.length; i++) {
-                    for (j = 0; j < pixels[i].length; j++) {
-                        const colorValue = 255 - pixels[i][j];
-                        my.spectrCc.fillStyle = 'rgb(' + colorValue + ', ' + colorValue + ', ' + colorValue + ')';
-                        my.spectrCc.fillRect(i, height - j * heightFactor, 1, heightFactor);
-                    }
-                }
-            }
+        if (this.frequenciesDataUrl) {
+            this.loadFrequenciesData(this.frequenciesDataUrl);
+        } else {
+            this.getFrequencies(this.drawSpectrogram);
+        }
+    }
 
-            getFrequencies(callback) {
-                const fftSamples = this.fftSamples;
-                const buffer = this.buffer = this.wavesurfer.backend.buffer;
-                const channelOne = buffer.getChannelData(0);
-                const bufferLength = buffer.length;
-                const sampleRate = buffer.sampleRate;
-                const frequencies = [];
+    updateCanvasStyle() {
+        const width = Math.round(this.width / this.pixelRatio) + 'px';
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        this.canvas.style.width = width;
+    }
 
-                if (!buffer) {
-                    this.fireEvent('error', 'Web Audio buffer is not available');
-                    return;
-                }
+    drawSpectrogram(frequenciesData, my) {
+        const spectrCc = my.spectrCc;
+        const length = my.wavesurfer.backend.getDuration();
+        const height = my.height;
+        const pixels = my.resample(frequenciesData);
+        const heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
+        let i;
+        let j;
 
-                let noverlap = this.noverlap;
-                if (!noverlap) {
-                    const uniqueSamplesPerPx = buffer.length / this.canvas.width;
-                    noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
-                }
-
-                const fft = new FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
-                const maxSlicesCount = Math.floor(bufferLength/ (fftSamples - noverlap));
-                let currentOffset = 0;
-
-                while (currentOffset + fftSamples < channelOne.length) {
-                    const segment = channelOne.slice(currentOffset, currentOffset + fftSamples);
-                    const spectrum = fft.calculateSpectrum(segment);
-                    const array = new Uint8Array(fftSamples/2);
-                    let j;
-                    for (j = 0; j<fftSamples/2; j++) {
-                        array[j] = Math.max(-255, Math.log10(spectrum[j])*45);
-                    }
-                    frequencies.push(array);
-                    currentOffset += (fftSamples - noverlap);
-                }
-                callback(frequencies, this);
-            }
-
-            loadFrequenciesData(url) {
-                const ajax = this.wavesurfer.util.ajax({ url: url });
-
-                ajax.on('success', data => this.drawSpectrogram(JSON.parse(data), this));
-                ajax.on('error', e => this.fireEvent('error', 'XHR error: ' + e.target.statusText));
-
-                return ajax;
-            }
-
-            freqType(freq) {
-                return (freq >= 1000 ? (freq / 1000).toFixed(1) : Math.round(freq));
-            }
-
-            unitType(freq) {
-                return (freq >= 1000 ? 'KHz' : 'Hz');
-            }
-
-            loadLabels(bgFill, fontSizeFreq, fontSizeUnit, fontType, textColorFreq, textColorUnit, textAlign, container) {
-                const frequenciesHeight = this.height;
-                bgFill = bgFill || 'rgba(68,68,68,0)';
-                fontSizeFreq = fontSizeFreq || '12px';
-                fontSizeUnit = fontSizeUnit || '10px';
-                fontType = fontType || 'Helvetica';
-                textColorFreq = textColorFreq || '#fff';
-                textColorUnit = textColorUnit || '#fff';
-                textAlign = textAlign || 'center';
-                container = container || '#specLabels';
-                const getMaxY = frequenciesHeight || 512;
-                const labelIndex = 5 * (getMaxY / 256);
-                const freqStart = 0;
-                const step = ((this.wavesurfer.backend.ac.sampleRate / 2) - freqStart) / labelIndex;
-
-                const ctx = this.labelsEl.getContext('2d');
-                this.labelsEl.height = this.height / this.pixelRatio;
-                this.labelsEl.width = 55;
-
-                ctx.fillStyle = bgFill;
-                ctx.fillRect(0, 0, 55, getMaxY);
-                ctx.fill();
-                let i;
-
-                for (i = 0; i <= labelIndex; i++) {
-                    ctx.textAlign = textAlign;
-                    ctx.textBaseline = 'middle';
-
-                    const freq = freqStart + (step * i);
-                    const index = Math.round(freq / (this.sampleRate / 2) * this.fftSamples);
-                    const percent = index / this.fftSamples / 2;
-                    const y = (1 - percent) * this.height;
-                    const label = this.freqType(freq);
-                    const units = this.unitType(freq);
-                    const x = 16;
-                    const yLabelOffset = 2;
-
-                    if (i == 0) {
-                        ctx.fillStyle = textColorUnit;
-                        ctx.font = fontSizeUnit + ' ' + fontType;
-                        ctx.fillText(units, x + 24, getMaxY + i - 10);
-                        ctx.fillStyle = textColorFreq;
-                        ctx.font = fontSizeFreq + ' ' + fontType;
-                        ctx.fillText(label, x, getMaxY + i - 10);
-                    } else {
-                        ctx.fillStyle = textColorUnit;
-                        ctx.font = fontSizeUnit + ' ' + fontType;
-                        ctx.fillText(units, x + 24, getMaxY - i * 50 + yLabelOffset);
-                        ctx.fillStyle = textColorFreq;
-                        ctx.font = fontSizeFreq + ' ' + fontType;
-                        ctx.fillText(label, x, getMaxY - i * 50 + yLabelOffset);
-                    }
-                }
-            }
-
-            updateScroll(e) {
-                this.wrapper.scrollLeft = e.target.scrollLeft;
-            }
-
-            resample(oldMatrix) {
-                const columnsNumber = this.width;
-                const newMatrix = [];
-
-                const oldPiece = 1 / oldMatrix.length;
-                const newPiece = 1 / columnsNumber;
-                let i;
-
-                for (i = 0; i < columnsNumber; i++) {
-                    const column = new Array(oldMatrix[0].length);
-                    let j;
-
-                    for (j = 0; j < oldMatrix.length; j++) {
-                        const oldStart = j * oldPiece;
-                        const oldEnd = oldStart + oldPiece;
-                        const newStart = i * newPiece;
-                        const newEnd = newStart + newPiece;
-
-                        const overlap = (oldEnd <= newStart || newEnd <= oldStart) ?
-                        0 :
-                        Math.min(Math.max(oldEnd, newStart), Math.max(newEnd, oldStart)) -
-                        Math.max(Math.min(oldEnd, newStart), Math.min(newEnd, oldStart));
-                        let k;
-                        /* eslint-disable max-depth */
-                        if (overlap > 0) {
-                            for (k = 0; k < oldMatrix[0].length; k++) {
-                                if (column[k] == null) {
-                                    column[k] = 0;
-                                }
-                                column[k] += (overlap / newPiece) * oldMatrix[j][k];
-                            }
-                        }
-                        /* eslint-enable max-depth */
-                    }
-
-                    const intColumn = new Uint8Array(oldMatrix[0].length);
-                    let m;
-
-                    for (m = 0; m < oldMatrix[0].length; m++) {
-                        intColumn[m] = column[m];
-                    }
-
-                    newMatrix.push(intColumn);
-                }
-
-                return newMatrix;
+        for (i = 0; i < pixels.length; i++) {
+            for (j = 0; j < pixels[i].length; j++) {
+                const colorValue = 255 - pixels[i][j];
+                my.spectrCc.fillStyle = 'rgb(' + colorValue + ', ' + colorValue + ', ' + colorValue + ')';
+                my.spectrCc.fillRect(i, height - j * heightFactor, 1, heightFactor);
             }
         }
-    };
+    }
+
+    getFrequencies(callback) {
+        const fftSamples = this.fftSamples;
+        const buffer = this.buffer = this.wavesurfer.backend.buffer;
+        const channelOne = buffer.getChannelData(0);
+        const bufferLength = buffer.length;
+        const sampleRate = buffer.sampleRate;
+        const frequencies = [];
+
+        if (!buffer) {
+            this.fireEvent('error', 'Web Audio buffer is not available');
+            return;
+        }
+
+        let noverlap = this.noverlap;
+        if (!noverlap) {
+            const uniqueSamplesPerPx = buffer.length / this.canvas.width;
+            noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
+        }
+
+        const fft = new FFT(fftSamples, sampleRate, this.windowFunc, this.alpha);
+        const maxSlicesCount = Math.floor(bufferLength / (fftSamples - noverlap));
+        let currentOffset = 0;
+
+        while (currentOffset + fftSamples < channelOne.length) {
+            const segment = channelOne.slice(currentOffset, currentOffset + fftSamples);
+            const spectrum = fft.calculateSpectrum(segment);
+            const array = new Uint8Array(fftSamples / 2);
+            let j;
+            for (j = 0; j < fftSamples / 2; j++) {
+                array[j] = Math.max(-255, Math.log10(spectrum[j]) * 45);
+            }
+            frequencies.push(array);
+            currentOffset += (fftSamples - noverlap);
+        }
+        callback(frequencies, this);
+    }
+
+    loadFrequenciesData(url) {
+        const ajax = this.util.ajax({ url: url });
+
+        ajax.on('success', data => this.drawSpectrogram(JSON.parse(data), this));
+        ajax.on('error', e => this.fireEvent('error', 'XHR error: ' + e.target.statusText));
+
+        return ajax;
+    }
+
+    freqType(freq) {
+        return (freq >= 1000 ? (freq / 1000).toFixed(1) : Math.round(freq));
+    }
+
+    unitType(freq) {
+        return (freq >= 1000 ? 'KHz' : 'Hz');
+    }
+
+    loadLabels(bgFill, fontSizeFreq, fontSizeUnit, fontType, textColorFreq, textColorUnit, textAlign, container) {
+        const frequenciesHeight = this.height;
+        bgFill = bgFill || 'rgba(68,68,68,0)';
+        fontSizeFreq = fontSizeFreq || '12px';
+        fontSizeUnit = fontSizeUnit || '10px';
+        fontType = fontType || 'Helvetica';
+        textColorFreq = textColorFreq || '#fff';
+        textColorUnit = textColorUnit || '#fff';
+        textAlign = textAlign || 'center';
+        container = container || '#specLabels';
+        const getMaxY = frequenciesHeight || 512;
+        const labelIndex = 5 * (getMaxY / 256);
+        const freqStart = 0;
+        const step = ((this.wavesurfer.backend.ac.sampleRate / 2) - freqStart) / labelIndex;
+
+        const ctx = this.labelsEl.getContext('2d');
+        this.labelsEl.height = this.height;
+        this.labelsEl.width = 55;
+
+        ctx.fillStyle = bgFill;
+        ctx.fillRect(0, 0, 55, getMaxY);
+        ctx.fill();
+        let i;
+
+        for (i = 0; i <= labelIndex; i++) {
+            ctx.textAlign = textAlign;
+            ctx.textBaseline = 'middle';
+
+            const freq = freqStart + (step * i);
+            const index = Math.round(freq / (this.sampleRate / 2) * this.fftSamples);
+            const percent = index / this.fftSamples / 2;
+            const y = (1 - percent) * this.height;
+            const label = this.freqType(freq);
+            const units = this.unitType(freq);
+            const x = 16;
+            const yLabelOffset = 2;
+
+            if (i == 0) {
+                ctx.fillStyle = textColorUnit;
+                ctx.font = fontSizeUnit + ' ' + fontType;
+                ctx.fillText(units, x + 24, getMaxY + i - 10);
+                ctx.fillStyle = textColorFreq;
+                ctx.font = fontSizeFreq + ' ' + fontType;
+                ctx.fillText(label, x, getMaxY + i - 10);
+            } else {
+                ctx.fillStyle = textColorUnit;
+                ctx.font = fontSizeUnit + ' ' + fontType;
+                ctx.fillText(units, x + 24, getMaxY - i * 50 + yLabelOffset);
+                ctx.fillStyle = textColorFreq;
+                ctx.font = fontSizeFreq + ' ' + fontType;
+                ctx.fillText(label, x, getMaxY - i * 50 + yLabelOffset);
+            }
+        }
+    }
+
+    updateScroll(e) {
+        this.wrapper.scrollLeft = e.target.scrollLeft;
+    }
+
+    resample(oldMatrix) {
+        const columnsNumber = this.width;
+        const newMatrix = [];
+
+        const oldPiece = 1 / oldMatrix.length;
+        const newPiece = 1 / columnsNumber;
+        let i;
+
+        for (i = 0; i < columnsNumber; i++) {
+            const column = new Array(oldMatrix[0].length);
+            let j;
+
+            for (j = 0; j < oldMatrix.length; j++) {
+                const oldStart = j * oldPiece;
+                const oldEnd = oldStart + oldPiece;
+                const newStart = i * newPiece;
+                const newEnd = newStart + newPiece;
+
+                const overlap = (oldEnd <= newStart || newEnd <= oldStart) ?
+                    0 :
+                    Math.min(Math.max(oldEnd, newStart), Math.max(newEnd, oldStart)) -
+                    Math.max(Math.min(oldEnd, newStart), Math.min(newEnd, oldStart));
+                let k;
+                /* eslint-disable max-depth */
+                if (overlap > 0) {
+                    for (k = 0; k < oldMatrix[0].length; k++) {
+                        if (column[k] == null) {
+                            column[k] = 0;
+                        }
+                        column[k] += (overlap / newPiece) * oldMatrix[j][k];
+                    }
+                }
+                /* eslint-enable max-depth */
+            }
+
+            const intColumn = new Uint8Array(oldMatrix[0].length);
+            let m;
+
+            for (m = 0; m < oldMatrix[0].length; m++) {
+                intColumn[m] = column[m];
+            }
+
+            newMatrix.push(intColumn);
+        }
+
+        return newMatrix;
+    }
 }
