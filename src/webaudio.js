@@ -11,12 +11,12 @@ WaveSurfer.WebAudio = {
     },
 
     getAudioContext: function () {
-        if (!this.ac) {
-            this.ac = new (
+        if (!WaveSurfer.WebAudio.audioContext) {
+            WaveSurfer.WebAudio.audioContext = new (
                 window.AudioContext || window.webkitAudioContext
             );
         }
-        return this.ac;
+        return WaveSurfer.WebAudio.audioContext;
     },
 
     getOfflineAudioContext: function (sampleRate) {
@@ -283,13 +283,23 @@ WaveSurfer.WebAudio = {
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
         this.analyser.disconnect();
-        // close the audioContext if it was created by wavesurfer
-        // not passed in as a parameter
-        if (!this.params.audioContext) {
+        // close the audioContext if closeAudioContext option is set to true
+        if (this.params.closeAudioContext) {
             // check if browser supports AudioContext.close()
-            if (typeof this.ac.close === 'function') {
+            if (typeof this.ac.close === 'function' && this.ac.state != 'closed') {
                 this.ac.close();
             }
+            // clear the reference to the audiocontext
+            this.ac = null;
+            // clear the actual audiocontext, either passed as param or the
+            // global singleton
+            if (!this.params.audioContext) {
+                WaveSurfer.WebAudio.audioContext = null;
+            } else {
+                this.params.audioContext = null;
+            }
+            // clear the offlineAudioContext
+            WaveSurfer.WebAudio.offlineAudioContext = null;
         }
     },
 
