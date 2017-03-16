@@ -402,6 +402,7 @@ var WaveSurfer = {
      */
     load: function (url, peaks, preload) {
         this.empty();
+        this.isMuted = false;
 
         switch (this.params.backend) {
             case 'WebAudio': return this.loadBuffer(url, peaks);
