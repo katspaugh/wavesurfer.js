@@ -153,10 +153,6 @@ var WaveSurfer = {
         return this.backend.getDuration();
     },
 
-    getCurrentTime: function () {
-        return this.backend.getCurrentTime();
-    },
-
     play: function (start, end) {
         this.fireEvent('interaction', this.play.bind(this, start, end));
         this.backend.play(start, end);
@@ -236,6 +232,41 @@ var WaveSurfer = {
      */
     getVolume: function () {
         return this.backend.getVolume();
+    },
+
+    /**
+     * Get the current play time.
+     */    
+    getCurrentTime: function () {
+        return this.backend.getCurrentTime();
+    },
+
+    /**
+     * Set the current play time in seconds.
+     *
+     * @param {Number} seconds A positive number in seconds. E.g. 10 means 10 seconds, 60 means 1 minute     
+     */
+    setCurrentTime: function (seconds) {
+        if(this.getDuration() >= seconds) {
+            this.seekTo(1);
+        } else {            
+            this.seekTo(seconds/this.getDuration());
+        }
+    },
+
+    /**
+     * Set the current play time in between a start and end time.
+     *
+     * @param {Number} start A positive number in seconds. E.g. 10 means start at 10 seconds
+     * @param {Number} end A positive number in seconds. E.g. 60 means end at 60 seconds
+    */
+    setCurrentTimeBetween: function (start,end) {
+        var sec = this.getDuration();
+        if(sec < start || end > sec ) {
+            this.seekTo(0);
+        } else {            
+            this.seekTo((start/sec)+(end/sec)*.5);
+        }
     },
 
     /**
