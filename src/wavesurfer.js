@@ -265,7 +265,7 @@ var WaveSurfer = {
         if(sec < start || end > sec ) {
             this.seekTo(0);
         } else {            
-            this.seekTo((start/sec)+(end/sec)*.5);
+            this.seekTo((start/sec) + (end/sec) * 0.5);
         }
     },
 
