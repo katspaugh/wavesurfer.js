@@ -244,12 +244,12 @@ var WaveSurfer = {
     /**
      * Set the current play time in seconds.
      *
-     * @param {Number} seconds A positive number in seconds. E.g. 10 means 10 seconds, 60 means 1 minute     
+     * @param {Number} seconds A positive number in seconds. E.g. 10 means 10 seconds, 60 means 1 minute
      */
     setCurrentTime: function (seconds) {
         if(this.getDuration() >= seconds) {
             this.seekTo(1);
-        } else {            
+        } else {
             this.seekTo(seconds/this.getDuration());
         }
     },
@@ -260,11 +260,11 @@ var WaveSurfer = {
      * @param {Number} start A positive number in seconds. E.g. 10 means start at 10 seconds
      * @param {Number} end A positive number in seconds. E.g. 60 means end at 60 seconds
     */
-    setCurrentTimeBetween: function (start,end) {
+    setCurrentTimeBetween: function (start, end) {
         var sec = this.getDuration();
         if(sec < start || end > sec ) {
             this.seekTo(0);
-        } else {            
+        } else {
             this.seekTo((start/sec) + (end/sec) * 0.5);
         }
     },
