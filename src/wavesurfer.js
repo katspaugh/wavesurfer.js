@@ -236,7 +236,7 @@ var WaveSurfer = {
 
     /**
      * Get the current play time.
-     */    
+     */
     getCurrentTime: function () {
         return this.backend.getCurrentTime();
     },
@@ -259,7 +259,7 @@ var WaveSurfer = {
      *
      * @param {Number} start A positive number in seconds. E.g. 10 means start at 10 seconds
      * @param {Number} end A positive number in seconds. E.g. 60 means end at 60 seconds
-    */
+     */
     setCurrentTimeBetween: function (start, end) {
         var sec = this.getDuration();
         if(sec < start || end > sec ) {
