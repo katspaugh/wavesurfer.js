@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+1.3.7 (19.03.2017)
+------------------
+- A fix for the timeline plugin (#1049)
+
 1.3.6 (19.03.2017)
 ------------------
 - New renderer: `SplitWavePointPlot` (#1048)
