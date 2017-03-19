@@ -191,7 +191,7 @@ WaveSurfer.Timeline = {
             var primaryLabelInterval = 4;
             var secondaryLabelInterval = 2;
         } else {
-            var timeInterval = 60;
+            var timeInterval = Math.ceil(0.5 / pixelsPerSecond) * 60;
             var primaryLabelInterval = 4;
             var secondaryLabelInterval = 2;
         }
