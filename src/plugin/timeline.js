@@ -100,7 +100,7 @@ export default class TimelinePlugin {
                 } else if (pxPerSec * 15 >= 25) {
                     return 15;
                 }
-                return 60;
+                return Math.ceil(0.5 / pxPerSec) * 60;
             },
             primaryLabelInterval(pxPerSec) {
                 if (pxPerSec >= 25) {
