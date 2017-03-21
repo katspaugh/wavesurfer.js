@@ -1,6 +1,14 @@
 wavesurfer.js changelog
 =======================
 
+1.3.7 (19.03.2017)
+------------------
+- A fix for the timeline plugin (#1049)
+
+1.3.6 (19.03.2017)
+------------------
+- New renderer: `SplitWavePointPlot` (#1048)
+
 1.3.5 (10.03.2017)
 ------------------
 - Add a `getImage` method for MultiCanvas (#1012)
