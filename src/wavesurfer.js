@@ -3,7 +3,7 @@
  *
  * https://github.com/katspaugh/wavesurfer.js
  *
- * This work is licensed under a Creative Commons Attribution 3.0 Unported License.
+ * This work is licensed under a BSD-3-Clause License.
  */
 
 'use strict';
