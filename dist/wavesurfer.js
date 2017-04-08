@@ -4,7 +4,7 @@
     define('wavesurfer', [], function () {
       return (root['WaveSurfer'] = factory());
     });
-  } else if (typeof exports === 'object') {
+  } else if (typeof module === 'object' && module.exports) {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
@@ -2025,7 +2025,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 zIndex: 1,
                 left: leftOffset + 'px',
                 top: 0,
-                bottom: 0
+                bottom: 0,
+                height: '100%'
             })
         );
         entry.waveCtx = entry.wave.getContext('2d');
@@ -2036,7 +2037,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                     position: 'absolute',
                     left: leftOffset + 'px',
                     top: 0,
-                    bottom: 0
+                    bottom: 0,
+                    height: '100%'
                 })
             );
             entry.progressCtx = entry.progress.getContext('2d');
