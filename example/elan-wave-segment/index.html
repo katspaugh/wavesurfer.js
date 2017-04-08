@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>wavesurfer.js | ELAN Wave Segment player</title>
+
+        <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="../css/ribbon.css" />
+        <link rel="stylesheet" href="css/elan.css" />
+        <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+
+        <!-- wavesurfer.js -->
+        <script src="../../dist/wavesurfer.min.js"></script>
+
+        <!-- regions plugin -->
+        <script src="../../dist/plugin/wavesurfer.regions.min.js"></script>
+
+        <!-- ELAN format renderer -->
+        <script src="../../dist/plugin/wavesurfer.elan.min.js"></script>
+
+        <!-- ELAN wave segment renderer -->
+        <script src="../../plugin/wavesurfer.elan-wave-segment.js"></script>
+
+        <!-- App -->
+        <script src="app.js"></script>
+        <script src="../trivia.js"></script>
+    </head>
+
+    <body itemscope itemtype="http://schema.org/WebApplication">
+        <div class="container">
+            <div class="header">
+                <noindex>
+                <ul class="nav nav-pills pull-right">
+                    <li><a href="?fill">Fill</a></li>
+                    <li><a href="?scroll">Scroll</a></li>
+                </ul>
+                </noindex>
+
+                <h1 itemprop="name"><a href="http://wavesurfer-js.org">wavesurfer.js</a><noindex> + <a rel="nofollow" href="http://spokencorpora.ru/showelan.py">ELAN</a> + Wave Segment</noindex></h1>
+            </div>
+            <div><p>The Elan Wave Segment Plugin uses the table and the time values created by the
+                <a href="../elan/index.html">ELAN plugin</a> to insert a wave form column for each row.
+            </p></div>
+
+            <div id="demo">
+                <div id="waveform">
+                    <div class="progress progress-striped active" id="progress-bar">
+                        <div class="progress-bar progress-bar-info"></div>
+                    </div>
+
+                    <!-- Here be waveform -->
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+                </div>
+            </div>
+
+            <div id="annotations" class="table-responsive">
+                <!-- Here be transcript -->
+            </div>
+
+            <h2>How to Enable Elan Wave Segment</h2>
+
+            <h3>Javascript Dependencies</h3>
+            <ul>
+                <li>Wavesufer <code></code></li>
+                <li>Region Plugin <code></code></li></li>
+                <li>ElAN Plugin <code></code></li></li>
+                <li>ELAN Wave Segment</li>
+                <pre><code>&lt;script src="[path_to]/wavesurfer.min.js"&gt;&lt;/script&gt;
+&lt;script src="[path_to]/plugin/wavesurfer.region.min.js"&gt;&lt;/script&gt;
+&lt;script src="[path_to]/plugin/wavesurfer.elan.min.js"&gt;&lt;/script&gt;
+&lt;script src="[path_to]/plugin/wavesurfer.elan-wave-segment.min.js"&gt;&lt;/script&gt; </code></pre>
+
+            </ul>
+
+            <h2>Javascript Initialization</h2>
+            <pre><code>// Create the wave surfer instance
+var wavesurfer = Object.create(WaveSurfer);
+
+// Create elan instance
+var elan = Object.create(WaveSurfer.ELAN);
+
+// Create Elan Wave Segment instance
+var elanWaveSegment = Object.create(WaveSurfer.ELANWaveSegment);
+
+document.addEventListener('DOMContentLoaded', function () {
+    var options = {
+        container     : '#waveform',
+    };
+
+    //################## set up some listeners ####################
+
+    //set up listener for when elan is done
+    elan.on('ready', function (data) {
+        wavesurfer.load('../elan/transcripts/001z.mp3');
+    });
+
+    //set up listener for playing when clicked on
+    elan.on('select', function (start, end) {
+        wavesurfer.backend.play(start, end);
+    });
+    //############################## initialize wavesurfer and related plugins###############
+
+    // Init wavesurfer
+    wavesurfer.init(options);
+
+    //init elan
+    elan.init({
+        url: '../elan/transcripts/001z.xml',
+        container: '#annotations',
+        tiers: {
+            Text: true,
+            Comments: true
+        }
+    });
+
+    //int elanWaveSegment when wavesurfer is done loading the sound file
+    wavesurfer.on('ready', function() {
+        options.plotTimeEnd = wavesurfer.backend.getDuration();
+        options.wavesurfer = wavesurfer;
+        options.ELAN = elan;
+        elanWaveSegment.init(options);
+    });
+
+    //update waveSegments when time advances
+    var onProgress = function (time) {
+        elanWaveSegment.onProgress(time);
+        //code for scrolling Elan goes here
+    };
+    wavesurfer.on('audioprocess', onProgress);
+}); </code></pre>
+            <h2>Options</h2>
+            <ul>
+                <li><code>ELAN:</code>                       required - The ELAN instance used to parse the elan data</li>
+                <li><code>wafesurver:</code>                 required - The wavesurfer instance used to draw the original waveform</li>
+                <li><code>waveSegmentWidth:</code>           optional - The width of each wave segment (defaults to 200)</li>
+                <li><code>waveSegmentPeaksPerSegment:</code> optional - The number of peaks that should be drawn (defaults to 400)</li>
+                <li><code>waveSegmentHeight:</code>          optional - The height of each wave segment (defaults to 30)</li>
+                <li><code>waveSegmentRenderer:</code>        optional - The renderer (drawer) to be used for the wave segments</li>
+                <li><code>waveSegmentNormalizeTo:</code>     optional - What to normalize each wave segment to [whole, segment,none]</li>
+                <li><code>waveSegmentBorderWidth:</code>     optional - The width of the border of the container element</li>
+                <li><code>waveSegmentBarHeight:</code>       optional - the height of the peaks/bars (defaults to 1)</li>
+            </ul>
+            <div class="footer row">
+                <div class="col-sm-12">
+                    <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
+                </div>
+
+                <div class="col-sm-8">
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
+                </div>
+
+                <div class="col-sm-4">
+                    <p>
+                        The ELAN program and format were developed by <a href="http://tla.mpi.nl/tools/tla-tools/elan/">Max Planck Institute</a>.
+                    </p>
+
+                    <p>
+                        The sample ELAN file and audio are from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="github-fork-ribbon-wrapper right">
+            <div class="github-fork-ribbon">
+                <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+            </div>
+        </div>
+
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+            ga('send', 'pageview');
+        </script>
+    </body>
+</html>
