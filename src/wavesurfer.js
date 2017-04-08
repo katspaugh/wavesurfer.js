@@ -4,6 +4,10 @@ import WebAudio from './webaudio';
 import MediaElement from './mediaelement';
 import PeakCache from './peakcache';
 
+/*
+ * This work is licensed under a BSD-3-Clause License.
+ */
+
 /** @external {HTMLElement} https://developer.mozilla.org/en/docs/Web/API/HTMLElement */
 /** @external {OfflineAudioContext} https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext */
 /** @external {File} https://developer.mozilla.org/en-US/docs/Web/API/File */
