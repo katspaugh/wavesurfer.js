@@ -4,7 +4,7 @@
     define('wavesurfer', [], function () {
       return (root['WaveSurfer'] = factory());
     });
-  } else if (typeof module === 'object' && module.exports) {
+  } else if (typeof exports === 'object') {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
@@ -410,6 +410,7 @@ var WaveSurfer = {
      */
     load: function (url, peaks, preload) {
         this.empty();
+        this.isMuted = false;
 
         switch (this.params.backend) {
             case 'WebAudio': return this.loadBuffer(url, peaks);
