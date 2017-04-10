@@ -1,6 +1,14 @@
 wavesurfer.js changelog
 =======================
 
+1.4.0 (10.04.2017)
+------------------
+- A "breaking" change: a new license. We switched to BSD 3 (#1060).
+– Reset the mute state on subsequent file loads (#1045)
+– A fix for vertical scroll (#1054)
+– A new plugin for linguists: `elan-wave-segment` (#1052)
+
+
 1.3.7 (19.03.2017)
 ------------------
 - A fix for the timeline plugin (#1049)

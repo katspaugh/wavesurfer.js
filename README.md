@@ -115,7 +115,7 @@ thanks to
 
 ## License
 
-![cc-by](https://i.creativecommons.org/l/by/3.0/88x31.png)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 This work is licensed under a
-[Creative Commons Attribution 3.0 Unported License](https://creativecommons.org/licenses/by/3.0/deed.en_US).
+[BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause).

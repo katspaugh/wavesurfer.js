@@ -410,6 +410,7 @@ var WaveSurfer = {
      */
     load: function (url, peaks, preload) {
         this.empty();
+        this.isMuted = false;
 
         switch (this.params.backend) {
             case 'WebAudio': return this.loadBuffer(url, peaks);
@@ -2025,7 +2026,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 zIndex: 1,
                 left: leftOffset + 'px',
                 top: 0,
-                bottom: 0
+                bottom: 0,
+                height: '100%'
             })
         );
         entry.waveCtx = entry.wave.getContext('2d');
@@ -2036,7 +2038,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                     position: 'absolute',
                     left: leftOffset + 'px',
                     top: 0,
-                    bottom: 0
+                    bottom: 0,
+                    height: '100%'
                 })
             );
             entry.progressCtx = entry.progress.getContext('2d');
