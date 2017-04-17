@@ -255,21 +255,6 @@ var WaveSurfer = {
     },
 
     /**
-     * Set the current play time in between a start and end time.
-     *
-     * @param {Number} start A positive number in seconds. E.g. 10 means start at 10 seconds
-     * @param {Number} end A positive number in seconds. E.g. 60 means end at 60 seconds
-     */
-    setCurrentTimeBetween: function (start, end) {
-        var sec = this.getDuration();
-        if(sec < start || end > sec ) {
-            this.seekTo(0);
-        } else {
-            this.seekTo((start/sec) + (end/sec) * 0.5);
-        }
-    },
-
-    /**
      * Set the playback rate.
      *
      * @param {Number} rate A positive number. E.g. 0.5 means half the
