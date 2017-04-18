@@ -594,6 +594,20 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Set the current play time in seconds.
+     *
+     * @param {Number} seconds A positive number in seconds. E.g. 10 means 10
+     * seconds, 60 means 1 minute
+     */
+    setCurrentTime(seconds) {
+        if (this.getDuration() >= seconds) {
+            this.seekTo(1);
+        } else {
+            this.seekTo(seconds/this.getDuration());
+        }
+    }
+
+    /**
      * Starts playback from the current position. Optional start and end
      * measured in seconds can be used to set the range of audio to play.
      *
