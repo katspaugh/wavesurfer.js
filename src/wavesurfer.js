@@ -267,7 +267,7 @@ var WaveSurfer = {
              this.seekTo((start/sec) + (end/sec) * 0.5);
          }
      },
- 		
+
     /**
      * Set the playback rate.
      *
