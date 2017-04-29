@@ -79,7 +79,7 @@ WaveSurfer.Spectrogram = {
             specLabelsdiv.setAttribute('id', 'specLabels');
             this.drawer.style(specLabelsdiv, {
                 left: 0,
-                position: 'relative',
+                position: 'absolute',
                 zIndex: 9
             });
             specLabelsdiv.innerHTML = '<canvas></canvas>';
