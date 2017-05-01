@@ -185,7 +185,7 @@ WaveSurfer.Region = {
 
         this.updateRender();
 
-        var regionEl = document.querySelector("[data-id='"+this.id+"']");
+        var regionEl = document.querySelector('[data-id="'+this.id+'"]');
 
         /* Resize handles */
         if (this.resize && !regionEl.firstChild) {
