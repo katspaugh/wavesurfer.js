@@ -211,7 +211,7 @@ WaveSurfer.Region = {
         }
 
         if(!currentDrag || !currentResize){
-            this.bindEvents(regionEl); 
+            this.bindEvents(regionEl);
         }
 
         this.fireEvent('update');
