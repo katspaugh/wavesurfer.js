@@ -165,9 +165,11 @@ WaveSurfer.Region = {
         if (null != params.data) {
             this.data = params.data;
         }
+        var currentResize = this.resize;
         if (null != params.resize) {
             this.resize = Boolean(params.resize);
         }
+        var currentDrag = this.drag;
         if (null != params.drag) {
             this.drag = Boolean(params.drag);
         }
@@ -182,6 +184,36 @@ WaveSurfer.Region = {
         }
 
         this.updateRender();
+
+        var regionEl = document.querySelector("[data-id='"+this.id+"']");
+
+        /* Resize handles */
+        if (this.resize && !regionEl.firstChild) {
+            var handleLeft = regionEl.appendChild(document.createElement('handle'));
+            var handleRight = regionEl.appendChild(document.createElement('handle'));
+            handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
+            handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
+            var css = {
+                cursor: 'col-resize',
+                position: 'absolute',
+                left: '0px',
+                top: '0px',
+                width: '1%',
+                maxWidth: '4px',
+                height: '100%'
+            };
+            this.style(handleLeft, css);
+            this.style(handleRight, css);
+            this.style(handleRight, {
+                left: '100%'
+            });
+            this.element = this.wrapper.appendChild(regionEl);
+        }
+
+        if(!currentDrag || !currentResize){
+            this.bindEvents(regionEl); 
+        }
+
         this.fireEvent('update');
         this.wavesurfer.fireEvent('region-updated', this);
     },
