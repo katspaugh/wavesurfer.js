@@ -1,6 +1,7 @@
 dist/wavesurfer.dev.js
 dist/plugin/*.js
 !/dist/plugin/*.min.js
+dist/**/*.map
 /node_modules
 /bower_components
 /npm-debug.log
