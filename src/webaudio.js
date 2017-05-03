@@ -218,8 +218,8 @@ WaveSurfer.WebAudio = {
     getPeaks: function (length, first, last) {
         if (this.peaks) { return this.peaks; }
 
-        var first = first || 0;
-        var last = last || length-1;
+        first = first || 0;
+        last = last || length - 1;
 
         this.setLength(length);
 
