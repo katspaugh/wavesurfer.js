@@ -41,6 +41,8 @@ var WaveSurfer = {
         waveColor     : '#999',
     },
 
+    seekIsLocked: false,
+
     init: function (params) {
         // Extract relevant parameters (or defaults)
         this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
@@ -86,6 +88,18 @@ var WaveSurfer = {
         this.isDestroyed = false;
     },
 
+    setSeekLock: function() {
+        this.seekIsLocked = true;
+    },
+
+    consumeSeekLock: function() {
+        var seekWasLocked = this.seekIsLocked;
+
+        this.seekIsLocked = false;
+
+        return seekWasLocked;
+    },
+
     createDrawer: function () {
         var my = this;
 
@@ -99,6 +113,10 @@ var WaveSurfer = {
 
         // Click-to-seek
         this.drawer.on('click', function (e, progress) {
+            if (my.consumeSeekLock()) {
+                return;
+            }
+
             setTimeout(function () {
                 my.seekTo(progress);
             }, 0);
