@@ -41,7 +41,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     updateSize: function () {
-        var my = this
+        var my = this;
         var totalWidth = Math.round(this.width / this.params.pixelRatio),
             requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
 
@@ -63,7 +63,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
             my.updateDimensions(canvas, canvasWidth, my.height);
             my.clearWaveForEntry(canvas);
-        })
+        });
     },
 
     addCanvas: function () {
@@ -129,7 +129,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
     clearWave: function () {
         var my = this
-        my.canvases.forEach (function (canvas) {my.clearWaveForEntry(canvas);})
+        my.canvases.forEach (function (canvas) {my.clearWaveForEntry(canvas);});
     },
 
     clearWaveForEntry: function (canvas) {
@@ -160,7 +160,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var hasMinVals = [].some.call(peaks, function (val) {return val < 0;});
         // Skip every other value if there are negatives.
         var peakIndexScale = 1;
-        if (hasMinVals) peakIndexScale = 2;
+        if (hasMinVals) {peakIndexScale = 2;}
 
         // A half-pixel offset makes lines crisp
         var width = this.width;
@@ -239,11 +239,11 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             my.setFillStyles(canvas);
             my.drawLineToContext(canvas, canvas.waveCtx, peaks, absmax, halfH, offsetY, start, end);
             my.drawLineToContext(canvas, canvas.progressCtx, peaks, absmax, halfH, offsetY, start, end);
-        })
+        });
     },
 
     drawLineToContext: function (canvas, ctx, peaks, absmax, halfH, offsetY, start, end) {
-        if (!ctx) return;
+        if (!ctx) {return;}
 
         var length = peaks.length / 2;
 
@@ -313,7 +313,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     fillRectToContext: function (ctx, x, y, width, height) {
-        if (!ctx) return;
+        if (!ctx) {return;}
         ctx.fillRect(x, y, width, height);
     },
 
