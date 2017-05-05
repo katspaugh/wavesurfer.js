@@ -128,7 +128,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     clearWave: function () {
-        var my = this
+        var my = this;
         my.canvases.forEach (function (canvas) {my.clearWaveForEntry(canvas);});
     },
 
@@ -234,8 +234,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     drawLine: function (peaks, absmax, halfH, offsetY, start, end) {
-        var my = this
-        my.forEach (function (canvas) {
+        var my = this;
+        my.canvases.forEach (function (canvas) {
             my.setFillStyles(canvas);
             my.drawLineToContext(canvas, canvas.waveCtx, peaks, absmax, halfH, offsetY, start, end);
             my.drawLineToContext(canvas, canvas.progressCtx, peaks, absmax, halfH, offsetY, start, end);
