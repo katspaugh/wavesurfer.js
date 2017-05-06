@@ -282,10 +282,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     fillRect: function (x, y, width, height) {
-        var startCanvas = Math.floor(x / this.maxCanvasWidth);
-        var endCanvas   = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1,
+        var startCanvas = Math.floor(x / this.maxCanvasWidth),
+            endCanvas = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1,
             this.canvases.length);
-
         for (var i = startCanvas; i < endCanvas; i++) {
             var entry = this.canvases[i];
             var leftOffset = i * this.maxCanvasWidth;
