@@ -67,8 +67,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     addCanvas: function () {
-        var canvas = {};
-        var leftOffset = this.maxCanvasElementWidth * this.canvases.length;
+        var canvas = {},
+            leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
         canvas.wave = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
@@ -107,8 +107,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     updateDimensions: function (entry, width, height) {
-        var elementWidth = Math.round(width / this.params.pixelRatio);
-        var totalWidth   = Math.round(this.width / this.params.pixelRatio);
+        var elementWidth = Math.round(width / this.params.pixelRatio),
+            totalWidth = Math.round(this.width / this.params.pixelRatio);
 
         // Where the canvas starts and ends in the waveform, represented as a decimal between 0 and 1.
         entry.start = (entry.waveCtx.canvas.offsetLeft / totalWidth) || 0;
@@ -283,7 +283,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
     fillRect: function (x, y, width, height) {
         var startCanvas = Math.floor(x / this.maxCanvasWidth);
-        var endCanvas   = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1, this.canvases.length);
+        var endCanvas   = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1,
+            this.canvases.length);
 
         for (var i = startCanvas; i < endCanvas; i++) {
             var canvas = this.canvases[i];
