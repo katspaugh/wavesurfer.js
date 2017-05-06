@@ -53,7 +53,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             this.removeCanvas();
         }
 
-        my.canvases.forEach (function (canvas, i) {
+        my.canvases.forEach(function (entry, i) {
             // Add some overlap to prevent vertical white stripes, keep the width even for simplicity.
             var canvasWidth = my.maxCanvasWidth + 2 * Math.ceil(my.params.pixelRatio / 2);
 
@@ -61,8 +61,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 canvasWidth = my.width - (my.maxCanvasWidth * (my.canvases.length - 1));
             }
 
-            my.updateDimensions(canvas, canvasWidth, my.height);
-            my.clearWaveForEntry(canvas);
+            my.updateDimensions(entry, canvasWidth, my.height);
+            my.clearWaveForEntry(entry);
         });
     },
 
@@ -106,38 +106,38 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     },
 
-    updateDimensions: function (canvas, width, height) {
+    updateDimensions: function (entry, width, height) {
         var elementWidth = Math.round(width / this.params.pixelRatio);
         var totalWidth   = Math.round(this.width / this.params.pixelRatio);
 
         // Where the canvas starts and ends in the waveform, represented as a decimal between 0 and 1.
-        canvas.start = (canvas.waveCtx.canvas.offsetLeft / totalWidth) || 0;
-        canvas.end = canvas.start + elementWidth / totalWidth;
+        entry.start = (entry.waveCtx.canvas.offsetLeft / totalWidth) || 0;
+        entry.end = entry.start + elementWidth / totalWidth;
 
-        canvas.waveCtx.canvas.width = width;
-        canvas.waveCtx.canvas.height = height;
-        this.style(canvas.waveCtx.canvas, {width: elementWidth + 'px'});
+        entry.waveCtx.canvas.width = width;
+        entry.waveCtx.canvas.height = height;
+        this.style(entry.waveCtx.canvas, {width: elementWidth + 'px'});
 
         this.style(this.progressWave, {display: 'block'});
 
         if (this.hasProgressCanvas) {
-            canvas.progressCtx.canvas.width  = width;
-            canvas.progressCtx.canvas.height = height;
-            this.style(canvas.progressCtx.canvas, {width: elementWidth + 'px'});
+            entry.progressCtx.canvas.width  = width;
+            entry.progressCtx.canvas.height = height;
+            this.style(entry.progressCtx.canvas, {width: elementWidth + 'px'});
         }
     },
 
     clearWave: function () {
         var my = this;
-        my.canvases.forEach (function (canvas) {
-            my.clearWaveForEntry(canvas);
+        my.canvases.forEach(function (entry) {
+            my.clearWaveForEntry(entry);
         });
     },
 
-    clearWaveForEntry: function (canvas) {
-        canvas.waveCtx.clearRect(0, 0, canvas.waveCtx.canvas.width, canvas.waveCtx.canvas.height);
+    clearWaveForEntry: function (entry) {
+        entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
         if (this.hasProgressCanvas) {
-            canvas.progressCtx.clearRect(0, 0, canvas.progressCtx.canvas.width, canvas.progressCtx.canvas.height);
+            entry.progressCtx.clearRect(0, 0, entry.progressCtx.canvas.width, entry.progressCtx.canvas.height);
         }
     },
 
@@ -244,7 +244,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         });
     },
 
-    drawLineToContext: function (canvas, ctx, peaks, absmax, halfH, offsetY, start, end) {
+    drawLineToContext: function (entry, ctx, peaks, absmax, halfH, offsetY, start, end) {
         if (!ctx) {return;}
 
         var length = peaks.length / 2;
@@ -254,8 +254,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             scale = this.width / length;
         }
 
-        var first = Math.round(length * canvas.start),
-            last = Math.round(length * canvas.end);
+        var first = Math.round(length * entry.start),
+            last = Math.round(length * entry.end);
         if (first > end || last < start) { return; }
         var canvasStart = Math.max(first, start);
         var canvasEnd = Math.min(last, end);
