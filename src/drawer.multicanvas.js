@@ -41,7 +41,6 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     updateSize: function () {
-        var my = this;
         var totalWidth = Math.round(this.width / this.params.pixelRatio),
             requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
 
@@ -53,7 +52,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             this.removeCanvas();
         }
 
-        my.canvases.forEach(function (entry, i) {
+        this.canvases.forEach(function (entry, i) {
             // Add some overlap to prevent vertical white stripes, keep the width even for simplicity.
             var canvasWidth = my.maxCanvasWidth + 2 * Math.ceil(my.params.pixelRatio / 2);
 
@@ -61,9 +60,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 canvasWidth = my.width - (my.maxCanvasWidth * (my.canvases.length - 1));
             }
 
-            my.updateDimensions(entry, canvasWidth, my.height);
-            my.clearWaveForEntry(entry);
-        });
+            this.updateDimensions(entry, canvasWidth, my.height);
+            this.clearWaveForEntry(entry);
+        }, this);
     },
 
     addCanvas: function () {
@@ -128,10 +127,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     clearWave: function () {
-        var my = this;
-        my.canvases.forEach(function (entry) {
-            my.clearWaveForEntry(entry);
-        });
+        this.canvases.forEach(function (entry) {
+            this.clearWaveForEntry(entry);
+        }, this);
     },
 
     clearWaveForEntry: function (entry) {
@@ -142,15 +140,14 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     drawBars: function (peaks, channelIndex, start, end) {
-        var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
             if (this.params.splitChannels) {
                 this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(function(channelPeaks, i) {
-                    my.drawBars(channelPeaks, i, start, end);
-                });
+                    this.drawBars(channelPeaks, i, start, end);
+                }, this);
                 return;
             } else {
                 peaks = channels[0];
@@ -191,15 +188,14 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     drawWave: function (peaks, channelIndex, start, end) {
-        var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
-            if (my.params.splitChannels) {
-                my.setHeight(channels.length * my.params.height * my.params.pixelRatio);
+            if (this.params.splitChannels) {
+                this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
                 channels.forEach(function(channelPeaks, i) {
-                    my.drawWave(channelPeaks, i, start, end);
-                });
+                    this.drawWave(channelPeaks, i, start, end);
+                }, this);
                 return;
             } else {
                 peaks = channels[0];
@@ -223,7 +219,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var halfH = height / 2;
 
         var absmax = 1 / this.params.barHeight;
-        if (my.params.normalize) {
+        if (this.params.normalize) {
             var max = WaveSurfer.util.max(peaks);
             var min = WaveSurfer.util.min(peaks);
             absmax = -min > max ? -min : max;
@@ -236,12 +232,11 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     drawLine: function (peaks, absmax, halfH, offsetY, start, end) {
-        var my = this;
-        my.canvases.forEach (function (canvas) {
-            my.setFillStyles(canvas);
-            my.drawLineToContext(canvas, canvas.waveCtx, peaks, absmax, halfH, offsetY, start, end);
-            my.drawLineToContext(canvas, canvas.progressCtx, peaks, absmax, halfH, offsetY, start, end);
-        });
+        this.canvases.forEach (function (canvas) {
+            this.setFillStyles(canvas);
+            this.drawLineToContext(canvas, canvas.waveCtx, peaks, absmax, halfH, offsetY, start, end);
+            this.drawLineToContext(canvas, canvas.progressCtx, peaks, absmax, halfH, offsetY, start, end);
+        }, this);
     },
 
     drawLineToContext: function (entry, ctx, peaks, absmax, halfH, offsetY, start, end) {
