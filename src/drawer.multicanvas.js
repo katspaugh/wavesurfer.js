@@ -99,10 +99,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     removeCanvas: function () {
-        var lastCanvas = this.canvases.pop();
-        lastCanvas.wave.parentElement.removeChild(lastCanvas.wave);
+        var lastEntry = this.canvases.pop();
+        lastEntry.wave.parentElement.removeChild(lastEntry.wave);
         if (this.hasProgressCanvas) {
-            lastCanvas.progress.parentElement.removeChild(lastCanvas.progress);
+            lastEntry.progress.parentElement.removeChild(lastEntry.progress);
         }
     },
 
@@ -339,8 +339,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
      */
     getImage: function (type, quality) {
         var availableCanvas = [];
-        this.canvases.forEach(function (canvas) {
-            availableCanvas.push(canvas.wave.toDataURL(type, quality));
+        this.canvases.forEach(function (entry) {
+            availableCanvas.push(entry.wave.toDataURL(type, quality));
         });
         return availableCanvas.length > 1 ? availableCanvas : availableCanvas[0];
     }
