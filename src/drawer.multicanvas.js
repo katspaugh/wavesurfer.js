@@ -283,8 +283,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var endCanvas = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1,
                                 this.canvases.length);
         for (var i = startCanvas; i < endCanvas; i++) {
-            var entry = this.canvases[i];
-            var leftOffset = i * this.maxCanvasWidth;
+            var entry = this.canvases[i],
+                leftOffset = i * this.maxCanvasWidth;
             var intersection = {
                 x1: Math.max(x, i * this.maxCanvasWidth),
                 y1: y,
