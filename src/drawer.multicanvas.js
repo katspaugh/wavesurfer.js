@@ -129,7 +129,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
     clearWave: function () {
         var my = this;
-        my.canvases.forEach (function (canvas) {my.clearWaveForEntry(canvas);});
+        my.canvases.forEach (function (canvas) {
+            my.clearWaveForEntry(canvas);
+        });
     },
 
     clearWaveForEntry: function (canvas) {
@@ -194,7 +196,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         if (peaks[0] instanceof Array) {
             var channels = peaks;
             if (my.params.splitChannels) {
-                my.setHeight(channels.length * my.params.height * this.params.pixelRatio);
+                my.setHeight(channels.length * my.params.height * my.params.pixelRatio);
                 channels.forEach(function(channelPeaks, i) {
                     my.drawWave(channelPeaks, i, start, end);
                 });
