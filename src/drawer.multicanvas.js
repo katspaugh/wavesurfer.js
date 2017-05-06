@@ -67,10 +67,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     addCanvas: function () {
-        var canvas = {},
+        var entry = {},
             leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
-        canvas.wave = this.wrapper.appendChild(
+        entry.wave = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
                 zIndex: 1,
@@ -80,10 +80,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 height: '100%'
             })
         );
-        canvas.waveCtx = canvas.wave.getContext('2d');
+        entry.waveCtx = entry.wave.getContext('2d');
 
         if (this.hasProgressCanvas) {
-            canvas.progress = this.progressWave.appendChild(
+            entry.progress = this.progressWave.appendChild(
                 this.style(document.createElement('canvas'), {
                     position: 'absolute',
                     left: leftOffset + 'px',
@@ -92,10 +92,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                     height: '100%'
                 })
             );
-            canvas.progressCtx = canvas.progress.getContext('2d');
+            entry.progressCtx = entry.progress.getContext('2d');
         }
 
-        this.canvases.push(canvas);
+        this.canvases.push(entry);
     },
 
     removeCanvas: function () {
