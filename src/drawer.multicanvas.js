@@ -327,7 +327,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     updateProgress: function (pos) {
-        this.style(this.progressWave, { width: pos + 'px' });
+        this.style(this.progressWave, {width: pos + 'px'});
     },
 
     /**
