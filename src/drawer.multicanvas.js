@@ -319,10 +319,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         ctx.fillRect(x, y, width, height);
     },
 
-    setFillStyles: function (canvas) {
-        canvas.waveCtx.fillStyle = this.params.waveColor;
+    setFillStyles: function (entry) {
+        entry.waveCtx.fillStyle = this.params.waveColor;
         if (this.hasProgressCanvas) {
-            canvas.progressCtx.fillStyle = this.params.progressColor;
+            entry.progressCtx.fillStyle = this.params.progressColor;
         }
     },
 
