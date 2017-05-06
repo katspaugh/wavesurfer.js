@@ -218,6 +218,9 @@ WaveSurfer.WebAudio = {
     getPeaks: function (length, first, last) {
         if (this.peaks) { return this.peaks; }
 
+        first = first || 0;
+        last = last || length - 1;
+
         this.setLength(length);
 
         var sampleSize = this.buffer.length / length;
