@@ -287,25 +287,25 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             this.canvases.length);
 
         for (var i = startCanvas; i < endCanvas; i++) {
-            var canvas = this.canvases[i];
+            var entry = this.canvases[i];
             var leftOffset = i * this.maxCanvasWidth;
             var intersection = {
                 x1: Math.max(x, i * this.maxCanvasWidth),
                 y1: y,
-                x2: Math.min(x + width, i * this.maxCanvasWidth + canvas.waveCtx.canvas.width),
+                x2: Math.min(x + width, i * this.maxCanvasWidth + entry.waveCtx.canvas.width),
                 y2: y + height
             };
 
             if (intersection.x1 < intersection.x2) {
-                this.setFillStyles(canvas);
+                this.setFillStyles(entry);
 
-                this.fillRectToContext(canvas.waveCtx,
+                this.fillRectToContext(entry.waveCtx,
                         intersection.x1 - leftOffset,
                         intersection.y1,
                         intersection.x2 - intersection.x1,
                         intersection.y2 - intersection.y1);
 
-                this.fillRectToContext(canvas.progressCtx,
+                this.fillRectToContext(entry.progressCtx,
                         intersection.x1 - leftOffset,
                         intersection.y1,
                         intersection.x2 - intersection.x1,
