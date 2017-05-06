@@ -120,7 +120,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         this.style(this.progressWave, {display: 'block'});
 
         if (this.hasProgressCanvas) {
-            entry.progressCtx.canvas.width  = width;
+            entry.progressCtx.canvas.width = width;
             entry.progressCtx.canvas.height = height;
             this.style(entry.progressCtx.canvas, {width: elementWidth + 'px'});
         }
