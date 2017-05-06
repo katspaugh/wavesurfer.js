@@ -229,10 +229,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             absmax = -min > max ? -min : max;
         }
 
-        my.drawLine(peaks, absmax, halfH, offsetY, start, end);
+        this.drawLine(peaks, absmax, halfH, offsetY, start, end);
 
         // Always draw a median line
-        my.fillRect(0, halfH + offsetY - my.halfPixel, my.width, my.halfPixel);
+        this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     },
 
     drawLine: function (peaks, absmax, halfH, offsetY, start, end) {
