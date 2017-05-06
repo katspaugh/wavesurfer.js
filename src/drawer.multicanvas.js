@@ -159,7 +159,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var hasMinVals = [].some.call(peaks, function (val) {return val < 0;});
         // Skip every other value if there are negatives.
         var peakIndexScale = 1;
-        if (hasMinVals) {peakIndexScale = 2;}
+        if (hasMinVals) {
+            peakIndexScale = 2;
+        }
 
         // A half-pixel offset makes lines crisp
         var width = this.width;
@@ -232,10 +234,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     drawLine: function (peaks, absmax, halfH, offsetY, start, end) {
-        this.canvases.forEach (function (canvas) {
-            this.setFillStyles(canvas);
-            this.drawLineToContext(canvas, canvas.waveCtx, peaks, absmax, halfH, offsetY, start, end);
-            this.drawLineToContext(canvas, canvas.progressCtx, peaks, absmax, halfH, offsetY, start, end);
+        this.canvases.forEach (function (entry) {
+            this.setFillStyles(entry);
+            this.drawLineToContext(entry, entry.waveCtx, peaks, absmax, halfH, offsetY, start, end);
+            this.drawLineToContext(entry, entry.progressCtx, peaks, absmax, halfH, offsetY, start, end);
         }, this);
     },
 
