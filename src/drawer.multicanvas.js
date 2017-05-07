@@ -242,7 +242,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     drawLineToContext: function (entry, ctx, peaks, absmax, halfH, offsetY, start, end) {
-        if (!ctx) {return;}
+        if (!ctx) { return; }
 
         var length = peaks.length / 2;
 
@@ -323,7 +323,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     updateProgress: function (pos) {
-        this.style(this.progressWave, {width: pos + 'px'});
+        this.style(this.progressWave, { width: pos + 'px' });
     },
 
     /**
