@@ -115,14 +115,14 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         entry.waveCtx.canvas.width = width;
         entry.waveCtx.canvas.height = height;
-        this.style(entry.waveCtx.canvas, {width: elementWidth + 'px'});
+        this.style(entry.waveCtx.canvas, { width: elementWidth + 'px' });
 
-        this.style(this.progressWave, {display: 'block'});
+        this.style(this.progressWave, { display: 'block' });
 
         if (this.hasProgressCanvas) {
             entry.progressCtx.canvas.width = width;
             entry.progressCtx.canvas.height = height;
-            this.style(entry.progressCtx.canvas, {width: elementWidth + 'px'});
+            this.style(entry.progressCtx.canvas, { width: elementWidth + 'px' });
         }
     },
 
