@@ -311,7 +311,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     fillRectToContext: function (ctx, x, y, width, height) {
-        if (!ctx) {return;}
+        if (!ctx) { return; }
         ctx.fillRect(x, y, width, height);
     },
 
