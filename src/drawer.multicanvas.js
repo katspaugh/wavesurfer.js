@@ -205,7 +205,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
 
         // Support arrays without negative peaks
-        var hasMinValues = [].some.call(peaks, function (val) {return val < 0;});
+        var hasMinValues = [].some.call(peaks, function (val) { return val < 0; });
         if (!hasMinValues) {
             var reflectedPeaks = [];
             for (var i = 0, len = peaks.length; i < len; i++) {
