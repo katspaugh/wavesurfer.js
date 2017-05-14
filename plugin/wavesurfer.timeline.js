@@ -174,7 +174,7 @@ WaveSurfer.Timeline = {
                     seconds = (seconds < 10) ? '0' + seconds : seconds;
                     return '' + minutes + ':' + seconds;
                 } else {
-                    return seconds;
+                    return Math.round(seconds * 1000) / 1000;
                 }
             };
 
