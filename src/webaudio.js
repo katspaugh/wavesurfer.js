@@ -223,6 +223,12 @@ WaveSurfer.WebAudio = {
 
         this.setLength(length);
 
+        if (!this.buffer.length) {
+            var newBuffer = this.createBuffer(1, 1, this.sampleRate);
+            var newBufferSource = this.createBufferSource();
+            this.buffer = newBufferSource.buffer;
+        }
+
         var sampleSize = this.buffer.length / length;
         var sampleStep = ~~(sampleSize / 10) || 1;
         var channels = this.buffer.numberOfChannels;
