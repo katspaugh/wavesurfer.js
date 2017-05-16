@@ -225,8 +225,7 @@ WaveSurfer.WebAudio = {
 
         if (!this.buffer.length) {
             var newBuffer = this.createBuffer(1, 1, this.sampleRate);
-            var newBufferSource = this.createBufferSource();
-            this.buffer = newBufferSource.buffer;
+            this.buffer = newBuffer.buffer;
         }
 
         var sampleSize = this.buffer.length / length;
