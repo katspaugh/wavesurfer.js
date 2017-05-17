@@ -92,10 +92,10 @@ var WaveSurfer = {
         // setting the responsive paramater to false will disable the responsive waveform
         var prevWidth = 0;
         this.onResize = this.wavesurfer.util.debounce(function () {
-            if (prevWidth != my.wrapper.clientWidth) {
-                prevWidth = my.wrapper.clientWidth;
-                my.render();
-                my.progress(my.wavesurfer.backend.getPlayedPercents());
+            if (prevWidth != this.wrapper.clientWidth) {
+                prevWidth = this.wrapper.clientWidth;
+                this.render();
+                this.progress(this.wavesurfer.backend.getPlayedPercents());
             }
         }, 100);
         if (this.params.responsive) {
