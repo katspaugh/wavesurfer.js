@@ -35,6 +35,7 @@ var WaveSurfer = {
         progressColor : '#555',
         normalize     : false,
         renderer      : 'MultiCanvas',
+        responsive    : true,
         scrollParent  : false,
         skipLength    : 2,
         splitChannels : false,
@@ -84,6 +85,23 @@ var WaveSurfer = {
         this.createPeakCache();
 
         this.isDestroyed = false;
+
+        // Responsive waveform on resize and device orientation change
+        // the waveform will be responsive by default
+        // if the responsive parameter is not set or set to true
+        // setting the responsive paramater to false will disable the responsive waveform
+        var prevWidth = 0;
+        this.onResize = this.wavesurfer.util.debounce(function () {
+            if (prevWidth != my.wrapper.clientWidth) {
+                prevWidth = my.wrapper.clientWidth;
+                my.render();
+                my.progress(my.wavesurfer.backend.getPlayedPercents());
+            }
+        }, 100);
+        if (this.params.responsive) {
+            window.addEventListener('resize', this.onResize, true);
+            window.addEventListener('orientationchange', this.onResize, true);
+        }
     },
 
     createDrawer: function () {
@@ -624,6 +642,10 @@ var WaveSurfer = {
         this.backend.destroy();
         this.drawer.destroy();
         this.isDestroyed = true;
+        if (this.params.responsive) {
+            window.removeEventListener('resize', this.onResize, true);
+            window.removeEventListener('orientationchange', this.onResize, true);
+        }
     }
 };
 
