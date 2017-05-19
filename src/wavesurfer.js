@@ -1130,14 +1130,16 @@ export default class WaveSurfer extends util.Observer {
      * @param {number} accuracy=10000 (Integer)
      * @param {?boolean} noWindow Set to true to disable opening a new
      * window with the JSON
+     * @param {number} start
      * @todo Update exportPCM to work with new getPeaks signature
      * @return {JSON} JSON of peaks
      */
-    exportPCM(length, accuracy, noWindow) {
+    exportPCM(length, accuracy, noWindow, start) {
         length = length || 1024;
+        start = start || 0;
         accuracy = accuracy || 10000;
         noWindow = noWindow || false;
-        const peaks = this.backend.getPeaks(length, accuracy);
+        const peaks = this.backend.getPeaks(length, start);
         const arr = [].map.call(peaks, val => Math.round(val * accuracy) / accuracy);
         const json = JSON.stringify(arr);
         if (!noWindow) {
