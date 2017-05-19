@@ -219,9 +219,9 @@ export default class WebAudio extends util.Observer {
     /** @private */
     createScriptNode() {
         if (this.ac.createScriptProcessor) {
-            this.scriptNode = this.ac.createScriptProcessor(this.scriptBufferSize);
+            this.scriptNode = this.ac.createScriptProcessor(WebAudio.scriptBufferSize);
         } else {
-            this.scriptNode = this.ac.createJavaScriptNode(this.scriptBufferSize);
+            this.scriptNode = this.ac.createJavaScriptNode(WebAudio.scriptBufferSize);
         }
 
         this.scriptNode.connect(this.ac.destination);
