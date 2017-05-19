@@ -554,11 +554,12 @@ var WaveSurfer = {
     /**
      * Exports PCM data into a JSON array and opens in a new window.
      */
-    exportPCM: function (length, accuracy, noWindow) {
+    exportPCM: function (length, accuracy, noWindow, start) {
         length = length || 1024;
+        start = start || 0;
         accuracy = accuracy || 10000;
         noWindow = noWindow || false;
-        var peaks = this.backend.getPeaks(length, accuracy);
+        var peaks = this.backend.getPeaks(length, start);
         var arr = [].map.call(peaks, function (val) {
             return Math.round(val * accuracy) / accuracy;
         });
