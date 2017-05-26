@@ -506,7 +506,7 @@ WaveSurfer.Region = {
                 document.body.removeEventListener('mouseup', onUp);
                 document.body.removeEventListener('touchend', onUp);
             });
-        }()};
+        }();};
     },
 
     onDrag: function (delta) {
