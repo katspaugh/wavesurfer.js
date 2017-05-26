@@ -409,7 +409,7 @@ WaveSurfer.Region = {
         });
 
         /* Drag or resize on mousemove. */
-        if (this.drag || this.resize) void function () {
+        if (this.drag || this.resize) {void function () {
             var duration = my.wavesurfer.getDuration();
             var drag;
             var resize;
@@ -435,7 +435,7 @@ WaveSurfer.Region = {
                 } else {
                     drag = true;
                     resize = false;
-                    if (my.drag) my.regionManager.regionAction = 'drag';
+                    if (my.drag) { my.regionManager.regionAction = 'drag'; }
                 }
                 my.regionManager.updateCursor();
             };
@@ -443,7 +443,7 @@ WaveSurfer.Region = {
                 my.regionManager.regionAction = undefined;
                 my.regionManager.updateCursor();
                 if (e.touches && e.touches.length > 1) { return; }
-                
+
                 if (drag || resize) {
                     drag = false;
                     resize = false;
@@ -507,7 +507,7 @@ WaveSurfer.Region = {
                 document.body.removeEventListener('mouseup', onUp);
                 document.body.removeEventListener('touchend', onUp);
             });
-        }();
+        }()};
     },
 
     onDrag: function (delta) {
