@@ -481,10 +481,10 @@ WaveSurfer.Region = {
                 my.regionManager.activeRegion = undefined;
                 my.regionManager.updateCursor();
             };
-            
+
             my.element.addEventListener('mouseover', onMouseOver);
             my.element.addEventListener('mouseout', onMouseOut);
-            
+
             my.element.addEventListener('mousedown', onDown);
             my.element.addEventListener('touchstart', onDown);
 
