@@ -112,7 +112,7 @@ WaveSurfer.Regions = {
     updateCursor: function () {
         var my = this;
         WaveSurfer.Drawer.style(my.wrapper, {
-            cursor: ((my.regionAction == 'resize-start' || my.regionAction == 'resize-end')) ? 'col-resize' : ((my.regionAction == "drag" || (my.activeRegion && my.activeRegion.drag)) ? 'move' : 'default')
+            cursor: ((my.regionAction == 'resize-start' || my.regionAction == 'resize-end')) ? 'col-resize' : ((my.regionAction == 'drag' || (my.activeRegion && my.activeRegion.drag)) ? 'move' : 'default')
         });
     },
 
@@ -240,7 +240,7 @@ WaveSurfer.Region = {
     render: function () {
         var regionEl = document.createElement('region');
         regionEl.className = 'wavesurfer-region';
-        if (this.showTitle) regionEl.title = this.formatTime(this.start, this.end);
+        if (this.showTitle) { regionEl.title = this.formatTime(this.start, this.end); }
         regionEl.setAttribute('data-id', this.id);
 
         for (var attrname in this.attributes) {
@@ -341,7 +341,7 @@ WaveSurfer.Region = {
                 this.element.setAttribute('data-region-' + attrname, this.attributes[attrname]);
             }
 
-            if (this.showTitle) this.element.title = this.formatTime(this.start, this.end);
+            if (this.showTitle) { this.element.title = this.formatTime(this.start, this.end); }
         }
     },
 
@@ -423,7 +423,7 @@ WaveSurfer.Region = {
                 e.stopPropagation();
                 startTime = my.wavesurfer.drawer.handleEvent(e, true) * duration;
 
-                if (my.regionManager.regionAction !== undefined) return;
+                if (my.regionManager.regionAction !== undefined) { return; }
                 if (e.target.tagName.toLowerCase() == 'handle') {
                     if (e.target.classList.contains('wavesurfer-handle-start')) {
                         resize = 'start';
@@ -435,7 +435,7 @@ WaveSurfer.Region = {
                 } else {
                     drag = true;
                     resize = false;
-                    my.regionManager.regionAction = 'drag';
+                    if (my.drag) my.regionManager.regionAction = 'drag';
                 }
                 my.regionManager.updateCursor();
             };
@@ -472,12 +472,12 @@ WaveSurfer.Region = {
                 }
             };
             var onMouseOver = function (e) {
-                if (!my.drag) return
+                if (!my.drag) { return; }
                 my.regionManager.activeRegion = my;
                 my.regionManager.updateCursor();
             };
             var onMouseOut = function (e) {
-                if (!my.drag) return
+                if (!my.drag) { return; }
                 my.regionManager.activeRegion = undefined;
                 my.regionManager.updateCursor();
             };
