@@ -495,7 +495,7 @@ WaveSurfer.Region = {
             document.body.addEventListener('touchend', onUp);
 
             my.on('remove', function () {
-                onUp ();
+                onUp();
                 document.body.removeEventListener('mouseup', onUp);
                 document.body.removeEventListener('touchend', onUp);
                 my.wrapper.removeEventListener('mousemove', onMove);
@@ -503,7 +503,6 @@ WaveSurfer.Region = {
             });
 
             my.wavesurfer.on('destroy', function () {
-                onUp ();
                 document.body.removeEventListener('mouseup', onUp);
                 document.body.removeEventListener('touchend', onUp);
             });
