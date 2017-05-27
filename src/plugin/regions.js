@@ -489,7 +489,7 @@ export default class RegionsPlugin {
                 });
             }
             if (this.params.dragSelection) {
-                this.enableDragSelection(this.params.dragSelection);
+                this.enableDragSelection(this.params);
             }
         };
     }
