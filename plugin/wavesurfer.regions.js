@@ -480,10 +480,10 @@ WaveSurfer.Region = {
                 my.regionManager.activeRegion = undefined;
                 my.regionManager.updateCursor();
             };
-            
+
             my.element.addEventListener('mouseover', onMouseOver);
             my.element.addEventListener('mouseout', onMouseOut);
-            
+
             my.element.addEventListener('mousedown', onDown);
             my.element.addEventListener('touchstart', onDown);
 
@@ -512,7 +512,7 @@ WaveSurfer.Region = {
         var maxEnd = this.wavesurfer.getDuration();
         var newStart = initialStart + currentTime - initialTime;
         var newEnd = initialEnd + currentTime - initialTime;
-        
+
         this.update({
             start: newStart < 0 ? 0 : newStart,
             end: newEnd > maxEnd ? maxEnd : newEnd
