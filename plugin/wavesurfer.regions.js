@@ -414,7 +414,7 @@ WaveSurfer.Region = {
             var drag;
             var resize;
             var startTime;
-            var initialStart, initialEnd
+            var initialStart, initialEnd;
             var touchId;
 
             var onDown = function (e) {
@@ -423,8 +423,7 @@ WaveSurfer.Region = {
 
                 e.stopPropagation();
                 startTime = my.wavesurfer.drawer.handleEvent(e, true) * duration;
-                initialStart = my.start
-                initialEnd = my.end
+                initialStart = my.start, initialEnd = my.end;
 
                 if (my.regionManager.regionAction !== undefined) { return; }
                 if (e.target.tagName.toLowerCase() == 'handle') {
@@ -506,7 +505,7 @@ WaveSurfer.Region = {
                 document.body.removeEventListener('mouseup', onUp);
                 document.body.removeEventListener('touchend', onUp);
             });
-        }()};
+        };()}
     },
 
     onDrag: function (initialStart, initialEnd, initialTime, currentTime) {
