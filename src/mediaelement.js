@@ -113,6 +113,16 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
             my.fireEvent('finish');
         });
 
+        // Listen to and relay play and pause events to enable
+        // playback control from the external media element
+        media.addEventListener('play', function () {
+            my.fireEvent('play');
+        });
+
+        media.addEventListener('ended', function () {
+            my.fireEvent('pause');
+        });
+
         this.media = media;
         this.peaks = peaks;
         this.onPlayEnd = null;
