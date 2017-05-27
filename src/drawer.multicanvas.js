@@ -190,7 +190,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 var h = Math.round(peak / absmax * halfH);
                 my.fillRect(i + my.halfPixel, halfH - h + offsetY, bar + my.halfPixel, h * 2);
             }
-        })
+        });
     },
 
     drawWave: function (peaks, channelIndex, start, end) {
@@ -238,7 +238,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
             // Always draw a median line
             my.fillRect(0, halfH + offsetY - my.halfPixel, my.width, my.halfPixel);
-        })
+        });
     },
 
     drawLine: function (peaks, absmax, halfH, offsetY, start, end) {
