@@ -76,7 +76,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                     my.setHeight(channels.length * my.params.height * my.params.pixelRatio);
                     channels.forEach(function(channelPeaks, i) {
                         my.drawBars(channelPeaks, i, start, end);
-                        });
+                    });
                     return;
                 } else {
                     peaks = channels[0];
@@ -125,8 +125,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                     var h = Math.round(peak / absmax * halfH);
                     cc.fillRect(i + $, halfH - h + offsetY, bar + $, h * 2);
                 }
-            }, my);
-        })
+            });
+        });
     },
 
     drawWave: function (peaks, channelIndex, start, end) {
@@ -205,8 +205,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
                // Always draw a median line
                 cc.fillRect(0, halfH + offsetY - $, this.width, $);
-            }, my);
-        })
+            });
+        });
     },
 
     updateProgress: function (pos) {
