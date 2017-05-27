@@ -140,9 +140,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     drawBars: function (peaks, channelIndex, start, end) {
-        var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
         var my = this;
-        requestAnimationFrame(function() {
+        Wavesurfer.util.requestAnimationFrame(function() {
             // Split channels
             if (peaks[0] instanceof Array) {
                 var channels = peaks;
@@ -194,9 +193,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     drawWave: function (peaks, channelIndex, start, end) {
-        var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
         var my = this;
-        requestAnimationFrame(function() {
+        Wavesurfer.util.requestAnimationFrame(function() {
             // Split channels
             if (peaks[0] instanceof Array) {
                 var channels = peaks;
