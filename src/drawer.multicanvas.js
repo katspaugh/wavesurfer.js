@@ -53,7 +53,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
 
         this.canvases.forEach(function (entry, i) {
-            // Add some overlap to prevent vertical white stripes, keep the width even for simplicity.
+            // Add some overlap to prevent vertical white stripes -- keep the width even for simplicity.
             var canvasWidth = this.maxCanvasWidth + 2 * Math.ceil(this.params.pixelRatio / 2);
 
             if (i == this.canvases.length - 1) {
