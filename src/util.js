@@ -1,13 +1,14 @@
 /* Common utilities */
 WaveSurfer.util = {
-    requestAnimationFrame:
+    requestAnimationFrame: (
         window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
         window.mozRequestAnimationFrame ||
         window.oRequestAnimationFrame ||
         window.msRequestAnimationFrame ||
         function (callback, element) {window.setTimeout(callback, 1000 / 60);}
-    ,
+    ),
+
     extend: function (dest) {
         var sources = Array.prototype.slice.call(arguments, 1);
         sources.forEach(function (source) {
