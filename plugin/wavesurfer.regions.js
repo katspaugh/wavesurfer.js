@@ -485,10 +485,10 @@ WaveSurfer.Region = {
             my.element.addEventListener('mouseout', onMouseOut);
 
             my.element.addEventListener('mousedown', onDown);
-            my.element.addEventListener('touchstart', onDown);
+            my.element.addEventListener('touchstart', onDown, {passive: true});
 
             my.wrapper.addEventListener('mousemove', onMove);
-            my.wrapper.addEventListener('touchmove', onMove);
+            my.wrapper.addEventListener('touchmove', onMove, {passive: true});
 
             document.body.addEventListener('mouseup', onUp);
             document.body.addEventListener('touchend', onUp);
