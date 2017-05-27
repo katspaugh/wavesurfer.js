@@ -414,6 +414,7 @@ WaveSurfer.Region = {
             var drag;
             var resize;
             var startTime;
+            var initialStart, initialEnd
             var touchId;
 
             var onDown = function (e) {
@@ -422,6 +423,8 @@ WaveSurfer.Region = {
 
                 e.stopPropagation();
                 startTime = my.wavesurfer.drawer.handleEvent(e, true) * duration;
+                initialStart = my.start
+                initialEnd = my.end
 
                 if (my.regionManager.regionAction !== undefined) { return; }
                 if (e.target.tagName.toLowerCase() == 'handle') {
@@ -457,17 +460,14 @@ WaveSurfer.Region = {
 
                 if (drag || resize) {
                     var time = my.wavesurfer.drawer.handleEvent(e) * duration;
-                    var delta = time - startTime;
-                    startTime = time;
-
                     // Drag
                     if (my.drag && drag) {
-                        my.onDrag(delta);
+                        my.onDrag(initialStart, initialEnd, startTime, time);
                     }
 
                     // Resize
                     if (my.resize && resize) {
-                        my.onResize(delta, resize);
+                        my.onResize(startTime, time, resize);
                     }
                 }
             };
@@ -481,10 +481,10 @@ WaveSurfer.Region = {
                 my.regionManager.activeRegion = undefined;
                 my.regionManager.updateCursor();
             };
-
+            
             my.element.addEventListener('mouseover', onMouseOver);
             my.element.addEventListener('mouseout', onMouseOut);
-
+            
             my.element.addEventListener('mousedown', onDown);
             my.element.addEventListener('touchstart', onDown);
 
@@ -506,32 +506,25 @@ WaveSurfer.Region = {
                 document.body.removeEventListener('mouseup', onUp);
                 document.body.removeEventListener('touchend', onUp);
             });
-        }();}
+        }()};
     },
 
-    onDrag: function (delta) {
+    onDrag: function (initialStart, initialEnd, initialTime, currentTime) {
         var maxEnd = this.wavesurfer.getDuration();
-        if ((this.end + delta) > maxEnd || (this.start + delta) < 0) {
-            return;
-        }
-
+        var newStart = initialStart + currentTime - initialTime;
+        var newEnd = initialEnd + currentTime - initialTime;
+        
         this.update({
-            start: this.start + delta,
-            end: this.end + delta
+            start: newStart < 0 ? 0 : newStart,
+            end: newEnd > maxEnd ? maxEnd : newEnd
         });
     },
 
-    onResize: function (delta, direction) {
+    onResize: function (initialTime, currentTime, direction) {
         if (direction == 'start') {
-            this.update({
-                start: Math.min(this.start + delta, this.end),
-                end: Math.max(this.start + delta, this.end)
-            });
+            this.update({start: currentTime});
         } else {
-            this.update({
-                start: Math.min(this.end + delta, this.start),
-                end: Math.max(this.end + delta, this.start)
-            });
+            this.update({end: currentTime});
         }
     }
 };
