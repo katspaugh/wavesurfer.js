@@ -119,7 +119,7 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
             my.fireEvent('play');
         });
 
-        media.addEventListener('ended', function () {
+        media.addEventListener('pause', function () {
             my.fireEvent('pause');
         });
 
