@@ -170,6 +170,7 @@ WaveSurfer.Region = {
     /* Update region params. */
     update: function (params) {
         var updatedList = {};
+        // Define the thing to check for changes, and define any wrapper function around that value.
         [
             {'start': Number},
             {'end': Number},
