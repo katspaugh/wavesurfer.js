@@ -110,6 +110,7 @@ WaveSurfer.Regions = {
 
     updateCursor: function () {
         var my = this;
+        console.log (my.regionAction)
         WaveSurfer.Drawer.style(my.wrapper, {
             cursor: ((my.regionAction == 'resize_from_start' || my.regionAction == 'resize_from_end')) ? 'col-resize' : ((my.regionAction == 'drag' || (my.activeRegion && my.activeRegion.drag)) ? 'move' : 'default')
         });
@@ -168,46 +169,38 @@ WaveSurfer.Region = {
 
     /* Update region params. */
     update: function (params) {
-        if (params.start != null && this.start != Number(params.start)) {
-            this.start = Number(params.start);
-            var resized = true, resizedStart = true;
-        }
-        if (params.end != null && this.end != Number(params.end)) {
-            this.end = Number(params.end);
-            var resized = true, resizedEnd = true;
-        }
-        if (params.loop != null) {
-            this.loop = Boolean(params.loop);
-        }
-        if (params.color != null) {
-            this.color = params.color;
-        }
-        if (params.data != null) {
-            this.data = params.data;
-        }
-        if (params.resize != null) {
-            this.resize = Boolean(params.resize);
-        }
-        if (params.drag != null) {
-            this.drag = Boolean(params.drag);
-            var dragged = true
-        }
-        if (params.maxLength != null) {
-            this.maxLength = Number(params.maxLength);
-        }
-        if (params.minLength != null) {
-            this.minLength = Number(params.minLength);
-        }
-        if (params.attributes != null) {
-            this.attributes = params.attributes;
-        }
+        var updatedList = {};
+        [
+            {'start': Number},
+            {'end': Number},
+            {'loop': Boolean},
+            {'color': undefined},
+            {'data': undefined},
+            {'resize': Boolean},
+            {'drag': Boolean},
+            {'maxLength': Number},
+            {'minLength': Number},
+            {'attributes': undefined}
+        ].forEach (function (object) {
+         var param = Object.keys(object)[0];
+         if (params[param] == null) return;
+         var func = (typeof object[param] == 'undefined') ? function (n) { return n; } : object[param];
+         var wrappedValue = func(params[param]);
+         if (this[param] == wrappedValue) return;
+         updatedList[param] = true;
+         this[param] = wrappedValue;
+        }, this)
+        if (Object.keys(updatedList).length == 0) return;
 
         this.updateRender();
-
-        if (resizedStart == true) { this.fireEventPropagate('resize_from_start'); }
-        if (resizedEnd == true) { this.fireEventPropagate('resize_from_end'); }
-        if (resized == true) { this.fireEventPropagate('resize'); }
-        if (dragged == true) { this.fireEventPropagate('drag'); }
+        if (this.regionManager.regionAction && (this.regionManager.regionAction == 'resize_from_start' || this.regionManager.regionAction == 'resize_from_end')) {
+            if (updatedList.start) { this.fireEventPropagate('resize_from_start'); }
+            if (updatedList.end) { this.fireEventPropagate('resize_from_end'); }
+            if (updatedList.end || updatedList.start) { this.fireEventPropagate('resize'); }
+        }
+        if (this.regionManager.regionAction && this.regionManager.regionAction == 'drag') {
+            if (updatedList.end || updatedList.start) { this.fireEventPropagate('drag'); }
+        }
         this.fireEventPropagate('update');
     },
 
