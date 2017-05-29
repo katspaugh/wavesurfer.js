@@ -65,7 +65,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         }
     },
 
-    drawBars: utils.frame(function(peaks, channelIndex, start, end) {
+    drawBars: WaveSurfer.utils.frame(function (peaks, channelIndex, start, end) {
         var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
@@ -126,7 +126,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         }, this);
     }),
 
-    drawWave: utils.frame(function(peaks, channelIndex, start, end) {
+    drawWave: WaveSurfer.utils.frame(function (peaks, channelIndex, start, end) {
         var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
