@@ -139,7 +139,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     },
 
-    drawBars: utils.frame(function(peaks, channelIndex, start, end) {
+    drawBars: WaveSurfer.utils.frame(function (peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -187,9 +187,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             var h = Math.round(peak / absmax * halfH);
             this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
         }
-    },
+    }),
 
-    drawWave: function (peaks, channelIndex, start, end) {
+    drawWave: WaveSurfer.utils.frame(function (peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -233,13 +233,13 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     }),
 
-    drawLine: utils.frame(function(peaks, absmax, halfH, offsetY, start, end) {
+    drawLine: function (peaks, absmax, halfH, offsetY, start, end) {
         this.canvases.forEach (function (entry) {
             this.setFillStyles(entry);
             this.drawLineToContext(entry, entry.waveCtx, peaks, absmax, halfH, offsetY, start, end);
             this.drawLineToContext(entry, entry.progressCtx, peaks, absmax, halfH, offsetY, start, end);
         }, this);
-    }),
+    },
 
     drawLineToContext: function (entry, ctx, peaks, absmax, halfH, offsetY, start, end) {
         if (!ctx) { return; }
