@@ -6,8 +6,17 @@ WaveSurfer.util = {
         window.mozRequestAnimationFrame ||
         window.oRequestAnimationFrame ||
         window.msRequestAnimationFrame ||
-        function (callback, element) {window.setTimeout(callback, 1000 / 60);}
+        function (callback, element) { setTimeout(callback, 1000 / 60); }
     ),
+
+    frame: function (func) {
+        return function () {
+            var my = this, args = arguments;
+            requestAnimationFrame(function () {
+                func.apply (my, args)
+            });
+        };
+    },
 
     extend: function (dest) {
         var sources = Array.prototype.slice.call(arguments, 1);
