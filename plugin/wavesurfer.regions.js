@@ -70,8 +70,7 @@ WaveSurfer.Regions = {
             pxMove = 0;
 
             if (region) {
-                region.fireEvent('update-end', e);
-                my.wavesurfer.fireEvent('region-update-end', region, e);
+                region.fireEventPropagate('update-end', e);
             }
 
             region = null;
@@ -112,7 +111,7 @@ WaveSurfer.Regions = {
     updateCursor: function () {
         var my = this;
         WaveSurfer.Drawer.style(my.wrapper, {
-            cursor: ((my.regionAction == 'resize-start' || my.regionAction == 'resize-end')) ? 'col-resize' : ((my.regionAction == 'drag' || (my.activeRegion && my.activeRegion.drag)) ? 'move' : 'default')
+            cursor: ((my.regionAction == 'resize_from_start' || my.regionAction == 'resize_from_end')) ? 'col-resize' : ((my.regionAction == 'drag' || (my.activeRegion && my.activeRegion.drag)) ? 'move' : 'default')
         });
     },
 
@@ -163,53 +162,53 @@ WaveSurfer.Region = {
 
     },
 
+    fireEventPropagate: function (eventName, evt) {
+     this.wavesurfer.fireEvent("region-" + eventName, this, evt)
+    },
+
     /* Update region params. */
     update: function (params) {
-        if (null != params.start) {
+        if (params.start != null && this.start != Number(params.start)) {
             this.start = Number(params.start);
-            var resizedStart = true;
+            var resized = true, resizedStart = true;
         }
-        if (null != params.end) {
+        if (params.end != null && this.end != Number(params.end)) {
             this.end = Number(params.end);
-            var resizedEnd = true;
+            var resized = true, resizedEnd = true;
         }
-        if (null != params.loop) {
+        if (params.loop != null) {
             this.loop = Boolean(params.loop);
         }
-        if (null != params.color) {
+        if (params.color != null) {
             this.color = params.color;
         }
-        if (null != params.data) {
+        if (params.data != null) {
             this.data = params.data;
         }
-        if (null != params.resize) {
+        if (params.resize != null) {
             this.resize = Boolean(params.resize);
         }
-        if (null != params.drag) {
+        if (params.drag != null) {
             this.drag = Boolean(params.drag);
+            var dragged = true
         }
-        if (null != params.maxLength) {
+        if (params.maxLength != null) {
             this.maxLength = Number(params.maxLength);
         }
-        if (null != params.minLength) {
+        if (params.minLength != null) {
             this.minLength = Number(params.minLength);
         }
-        if (null != params.attributes) {
+        if (params.attributes != null) {
             this.attributes = params.attributes;
         }
 
         this.updateRender();
 
-        if (resizedStart == true) {
-            this.fireEvent('region-resized-start');
-            this.wavesurfer.fireEvent('region-resized-start', this);
-        }
-        if (resizedEnd == true) {
-            this.fireEvent('region-resized-end');
-            this.wavesurfer.fireEvent('region-resized-end', this);
-        }
-        this.fireEvent('update');
-        this.wavesurfer.fireEvent('region-updated', this);
+        if (resizedStart == true) { this.fireEventPropagate('resize_from_start'); }
+        if (resizedEnd == true) { this.fireEventPropagate('resize_from_end'); }
+        if (resized == true) { this.fireEventPropagate('resize'); }
+        if (dragged == true) { this.fireEventPropagate('drag'); }
+        this.fireEventPropagate('update');
     },
 
     /* Remove a single region. */
@@ -218,16 +217,14 @@ WaveSurfer.Region = {
             this.wrapper.removeChild(this.element);
             this.element = null;
             this.wavesurfer.un('zoom', this.onZoom);
-            this.fireEvent('remove');
-            this.wavesurfer.fireEvent('region-removed', this);
+            this.fireEventPropagate('remove');
         }
     },
 
     /* Play the audio region. */
     play: function () {
         this.wavesurfer.play(this.start, this.end);
-        this.fireEvent('play');
-        this.wavesurfer.fireEvent('region-play', this);
+        this.fireEventPropagate('play');
     },
 
     /* Play the region in loop. */
@@ -356,14 +353,12 @@ WaveSurfer.Region = {
             if (!my.firedOut && my.firedIn && (my.start >= Math.round(time * 100) / 100 || my.end <= Math.round(time * 100) / 100)) {
                 my.firedOut = true;
                 my.firedIn = false;
-                my.fireEvent('out');
-                my.wavesurfer.fireEvent('region-out', my);
+                my.fireEventPropagate('out');
             }
             if (!my.firedIn && my.start <= time && my.end > time) {
                 my.firedIn = true;
                 my.firedOut = false;
-                my.fireEvent('in');
-                my.wavesurfer.fireEvent('region-in', my);
+                my.fireEventPropagate('in');
             }
         };
 
@@ -386,57 +381,51 @@ WaveSurfer.Region = {
         var my = this;
 
         this.element.addEventListener('mouseenter', function (e) {
-            my.fireEvent('mouseenter', e);
-            my.wavesurfer.fireEvent('region-mouseenter', my, e);
+            my.fireEventPropagate('mouseenter', e);
         });
 
         this.element.addEventListener('mouseleave', function (e) {
-            my.fireEvent('mouseleave', e);
-            my.wavesurfer.fireEvent('region-mouseleave', my, e);
+            my.fireEventPropagate('mouseleave', e);
         });
 
         this.element.addEventListener('click', function (e) {
             e.preventDefault();
-            my.fireEvent('click', e);
-            my.wavesurfer.fireEvent('region-click', my, e);
+            my.fireEventPropagate('click', e);
         });
 
         this.element.addEventListener('dblclick', function (e) {
             e.stopPropagation();
             e.preventDefault();
-            my.fireEvent('dblclick', e);
-            my.wavesurfer.fireEvent('region-dblclick', my, e);
+            my.fireEventPropagate('dblclick', e);
         });
 
         /* Drag or resize on mousemove. */
         if (this.drag || this.resize) {void function () {
             var duration = my.wavesurfer.getDuration();
-            var drag;
-            var resize;
-            var startTime;
-            var initialStart, initialEnd;
+            var drag, resize;
             var touchId;
+            var initialTime, initialStart, initialEnd;
 
             var onDown = function (e) {
                 if (e.touches && e.touches.length > 1) { return; }
                 touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
 
                 e.stopPropagation();
-                startTime = my.wavesurfer.drawer.handleEvent(e, true) * duration;
+                initialTime = my.wavesurfer.drawer.handleEvent(e, true) * duration;
                 initialStart = my.start, initialEnd = my.end;
 
                 if (my.regionManager.regionAction !== undefined) { return; }
                 if (e.target.tagName.toLowerCase() == 'handle') {
                     if (e.target.classList.contains('wavesurfer-handle-start')) {
                         resize = 'start';
-                        my.regionManager.regionAction = 'resize-start';
+                        my.regionManager.regionAction = 'resize_from_start';
                     } else {
                         resize = 'end';
-                        my.regionManager.regionAction = 'resize-end';
+                        my.regionManager.regionAction = 'resize_from_end';
                     }
                 } else {
                     drag = true;
-                    resize = false;
+                    resize = undefined;
                     if (my.drag) { my.regionManager.regionAction = 'drag'; }
                 }
                 my.regionManager.updateCursor();
@@ -447,10 +436,14 @@ WaveSurfer.Region = {
                 if (e.touches && e.touches.length > 1) { return; }
 
                 if (drag || resize) {
-                    drag = false;
-                    resize = false;
-                    my.fireEvent('update-end', e);
-                    my.wavesurfer.fireEvent('region-update-end', my, e);
+                    if (typeof resize != 'undefined') {
+                        my.fireEventPropagate('resize-end');
+                        my.fireEventPropagate('resize_from_' + resize + '-end');
+                    }
+                    if (typeof drag != 'undefined') { my.fireEventPropagate('drag-end'); }
+                    my.fireEventPropagate('update-end', e);
+                    drag = undefined;
+                    resize = undefined;
                 }
             };
             var onMove = function (e) {
@@ -461,12 +454,12 @@ WaveSurfer.Region = {
                     var time = my.wavesurfer.drawer.handleEvent(e) * duration;
                     // Drag
                     if (my.drag && drag) {
-                        my.onDrag(initialStart, initialEnd, startTime, time);
+                        my.onDrag(initialStart, initialEnd, time - initialTime);
                     }
 
                     // Resize
                     if (my.resize && resize) {
-                        my.onResize(startTime, time, resize);
+                        my.onResize(resize, initialStart, initialEnd, time);
                     }
                 }
             };
@@ -508,23 +501,18 @@ WaveSurfer.Region = {
         }();}
     },
 
-    onDrag: function (initialStart, initialEnd, initialTime, currentTime) {
+    onDrag: function (initialStart, initialEnd, delta) {
         var maxEnd = this.wavesurfer.getDuration();
-        var newStart = initialStart + currentTime - initialTime;
-        var newEnd = initialEnd + currentTime - initialTime;
 
         this.update({
-            start: newStart < 0 ? 0 : newStart,
-            end: newEnd > maxEnd ? maxEnd : newEnd
+            start: initialStart + delta < 0 ? 0 : initialStart + delta,
+            end: initialEnd + delta > maxEnd ? maxEnd : initialEnd + delta
         });
     },
 
-    onResize: function (initialTime, currentTime, direction) {
-        if (direction == 'start') {
-            this.update({start: currentTime});
-        } else {
-            this.update({end: currentTime});
-        }
+    onResize: function (direction, initialStart, initialEnd, newTime) {
+        var limitPosition = (direction == 'start') ? initialEnd : initialStart;
+        this.update({start: Math.min(newTime, limitPosition), end: Math.max(newTime, limitPosition)});
     }
 };
 
