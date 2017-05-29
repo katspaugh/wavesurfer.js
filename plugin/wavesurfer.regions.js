@@ -110,7 +110,6 @@ WaveSurfer.Regions = {
 
     updateCursor: function () {
         var my = this;
-        console.log (my.regionAction)
         WaveSurfer.Drawer.style(my.wrapper, {
             cursor: ((my.regionAction == 'resize_from_start' || my.regionAction == 'resize_from_end')) ? 'col-resize' : ((my.regionAction == 'drag' || (my.activeRegion && my.activeRegion.drag)) ? 'move' : 'default')
         });
@@ -164,7 +163,7 @@ WaveSurfer.Region = {
     },
 
     fireEventPropagate: function (eventName, evt) {
-     this.wavesurfer.fireEvent("region-" + eventName, this, evt)
+        this.wavesurfer.fireEvent('region-' + eventName, this, evt);
     },
 
     /* Update region params. */
@@ -187,11 +186,11 @@ WaveSurfer.Region = {
          if (params[param] == null) return;
          var func = (typeof object[param] == 'undefined') ? function (n) { return n; } : object[param];
          var wrappedValue = func(params[param]);
-         if (this[param] == wrappedValue) return;
+         if (this[param] == wrappedValue) { return; }
          updatedList[param] = true;
          this[param] = wrappedValue;
-        }, this)
-        if (Object.keys(updatedList).length == 0) return;
+        }, this);
+        if (Object.keys(updatedList).length == 0) { return; }
 
         this.updateRender();
         if (this.regionManager.regionAction && (this.regionManager.regionAction == 'resize_from_start' || this.regionManager.regionAction == 'resize_from_end')) {
