@@ -183,7 +183,7 @@ WaveSurfer.Region = {
             {'attributes': undefined}
         ].forEach (function (object) {
          var param = Object.keys(object)[0];
-         if (params[param] == null) return;
+         if (params[param] == null) { return; }
          var func = (typeof object[param] == 'undefined') ? function (n) { return n; } : object[param];
          var wrappedValue = func(params[param]);
          if (this[param] == wrappedValue) { return; }
