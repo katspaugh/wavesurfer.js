@@ -326,21 +326,30 @@ var WaveSurfer = {
         this.params.interact = !this.params.interact;
     },
 
-    drawBuffer: function () {
-        var nominalWidth = Math.round(
-            this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio
-        );
+    getComputedWidthStartEnd: function () {
+        var nominalWidth = Math.round(this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio);
         var parentWidth = this.drawer.getWidth();
-        var width = nominalWidth;
-        var start = this.drawer.getScrollX();
-        var end = Math.min(start + parentWidth, width);
 
-        // Fill container
         if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
-            width = parentWidth;
-            start = 0;
-            end = width;
+            // Use the fill container.
+            var width = parentWidth;
+            var start = 0;
+            var end = width;
+        } else {
+            var width = nominalWidth;
+            var start = this.drawer.getScrollX();
+            var end = Math.min(start + parentWidth, width);
         }
+        return { width: width, start: start, end: end };
+    },
+
+    getComputedWidth: function () { return this.getComputedWidthStartEnd().width; },
+    getComputedStart: function () { return this.getComputedWidthStartEnd().start; },
+    getComputedEnd: function () { return this.getComputedWidthStartEnd().end; },
+
+    drawBuffer: function () {
+        var wse = this.getComputedWidthStartEnd();
+        var width = wse.width, start = wse.start, end = wse.end;
 
         if (this.params.partialRender) {
             var newRanges = this.peakCache.addRangeToPeakCache(width, start, end);
