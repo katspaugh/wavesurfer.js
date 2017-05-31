@@ -167,7 +167,7 @@ WaveSurfer.Region = {
     },
 
     fireEventPropagate: function (eventName, evt) {
-     this.wavesurfer.fireEvent("region-" + eventName, this, evt)
+     this.wavesurfer.fireEvent('region-' + eventName, this, evt);
     },
 
     /* Update region params. */
@@ -190,11 +190,11 @@ WaveSurfer.Region = {
          if (params[param] == null) return;
          var func = (typeof object[param] == 'undefined') ? function (n) { return n; } : object[param];
          var wrappedValue = func(params[param]);
-         if (this[param] == wrappedValue) return;
+         if (this[param] == wrappedValue) { return; }
          updatedList[param] = true;
          this[param] = wrappedValue;
-        }, this)
-        if (Object.keys(updatedList).length == 0) return;
+        }, this);
+        if (Object.keys(updatedList).length == 0) { return; }
 
         this.updateRender();
         if (this.regionManager.regionAction && (this.regionManager.regionAction == 'resize_from_start' || this.regionManager.regionAction == 'resize_from_end')) {
@@ -435,8 +435,8 @@ WaveSurfer.Region = {
                 if (e.touches && e.touches.length > 1) { return; }
 
                 // Prevent the seek from changing positions.
-                my.wavesurfer.params.interact = false
-                setTimeout (function () {my.wavesurfer.params.interact = true}, 0)
+                my.wavesurfer.params.interact = false;
+                setTimeout (function () {my.wavesurfer.params.interact = true}, 0);
 
                 if (drag || resize) {
                     if (typeof resize != 'undefined') {
