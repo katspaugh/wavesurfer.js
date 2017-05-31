@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "1.3.5",
+  "version": "1.4.0",
   "homepage": "http://wavesurfer-js.org",
   "authors": [
     "katspaugh <katspaugh@gmail.com>"
@@ -10,5 +10,5 @@
   "keywords": [
     "waveform", "audio", "music", "player"
   ],
-  "license": "CC BY 3.0"
+  "license": "BSD-3-Clause"
 }

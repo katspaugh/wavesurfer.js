@@ -3,7 +3,7 @@
  *
  * https://github.com/katspaugh/wavesurfer.js
  *
- * This work is licensed under a Creative Commons Attribution 3.0 Unported License.
+ * This work is licensed under a BSD-3-Clause License.
  */
 
 'use strict';
@@ -154,10 +154,6 @@ var WaveSurfer = {
         return this.backend.getDuration();
     },
 
-    getCurrentTime: function () {
-        return this.backend.getCurrentTime();
-    },
-
     play: function (start, end) {
         this.fireEvent('interaction', this.play.bind(this, start, end));
         this.backend.play(start, end);
@@ -237,6 +233,26 @@ var WaveSurfer = {
      */
     getVolume: function () {
         return this.backend.getVolume();
+    },
+
+    /**
+     * Get the current play time.
+     */
+    getCurrentTime: function () {
+        return this.backend.getCurrentTime();
+    },
+
+    /**
+     * Set the current play time in seconds.
+     *
+     * @param {Number} seconds A positive number in seconds. E.g. 10 means 10 seconds, 60 means 1 minute
+     */
+    setCurrentTime: function (seconds) {
+        if(this.getDuration() >= seconds) {
+            this.seekTo(1);
+        } else {
+            this.seekTo(seconds/this.getDuration());
+        }
     },
 
     /**
@@ -403,6 +419,7 @@ var WaveSurfer = {
      */
     load: function (url, peaks, preload) {
         this.empty();
+        this.isMuted = false;
 
         switch (this.params.backend) {
             case 'WebAudio': return this.loadBuffer(url, peaks);
@@ -538,11 +555,12 @@ var WaveSurfer = {
     /**
      * Exports PCM data into a JSON array and opens in a new window.
      */
-    exportPCM: function (length, accuracy, noWindow) {
+    exportPCM: function (length, accuracy, noWindow, start) {
         length = length || 1024;
+        start = start || 0;
         accuracy = accuracy || 10000;
         noWindow = noWindow || false;
-        var peaks = this.backend.getPeaks(length, accuracy);
+        var peaks = this.backend.getPeaks(length, start);
         var arr = [].map.call(peaks, function (val) {
             return Math.round(val * accuracy) / accuracy;
         });

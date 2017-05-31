@@ -174,7 +174,7 @@ WaveSurfer.Timeline = {
                     seconds = (seconds < 10) ? '0' + seconds : seconds;
                     return '' + minutes + ':' + seconds;
                 } else {
-                    return seconds;
+                    return Math.round(seconds * 1000) / 1000;
                 }
             };
 
@@ -191,7 +191,7 @@ WaveSurfer.Timeline = {
             var primaryLabelInterval = 4;
             var secondaryLabelInterval = 2;
         } else {
-            var timeInterval = 60;
+            var timeInterval = Math.ceil(0.5 / pixelsPerSecond) * 60;
             var primaryLabelInterval = 4;
             var secondaryLabelInterval = 2;
         }
