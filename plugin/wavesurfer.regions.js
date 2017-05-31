@@ -111,7 +111,11 @@ WaveSurfer.Regions = {
     updateCursor: function () {
         var my = this;
         WaveSurfer.Drawer.style(my.wrapper, {
-            cursor: ((my.regionAction == 'resize_from_start' || my.regionAction == 'resize_from_end')) ? 'col-resize' : ((my.regionAction == 'drag' || (my.activeRegion && my.activeRegion.drag)) ? 'move' : 'default')
+            cursor: (my.regionAction == 'resize_from_start' || my.regionAction == 'resize_from_end') ?
+                        'col-resize' :
+                        ((my.regionAction == 'dragstart' || my.regionAction == 'drag' || (my.activeRegion && my.activeRegion.drag)) ?
+                            'move' : 'default'
+                        )
         });
     },
 
@@ -163,7 +167,7 @@ WaveSurfer.Region = {
     },
 
     fireEventPropagate: function (eventName, evt) {
-        this.wavesurfer.fireEvent('region-' + eventName, this, evt);
+     this.wavesurfer.fireEvent("region-" + eventName, this, evt)
     },
 
     /* Update region params. */
@@ -183,14 +187,14 @@ WaveSurfer.Region = {
             {'attributes': undefined}
         ].forEach (function (object) {
          var param = Object.keys(object)[0];
-         if (params[param] == null) { return; }
+         if (params[param] == null) return;
          var func = (typeof object[param] == 'undefined') ? function (n) { return n; } : object[param];
          var wrappedValue = func(params[param]);
-         if (this[param] == wrappedValue) { return; }
+         if (this[param] == wrappedValue) return;
          updatedList[param] = true;
          this[param] = wrappedValue;
-        }, this);
-        if (Object.keys(updatedList).length == 0) { return; }
+        }, this)
+        if (Object.keys(updatedList).length == 0) return;
 
         this.updateRender();
         if (this.regionManager.regionAction && (this.regionManager.regionAction == 'resize_from_start' || this.regionManager.regionAction == 'resize_from_end')) {
@@ -395,7 +399,7 @@ WaveSurfer.Region = {
         /* Drag or resize on mousemove. */
         if (this.drag || this.resize) {void function () {
             var duration = my.wavesurfer.getDuration();
-            var drag, resize;
+            var dragStart, drag, resize;
             var touchId;
             var initialTime, initialStart, initialEnd;
 
@@ -408,6 +412,7 @@ WaveSurfer.Region = {
                 initialStart = my.start, initialEnd = my.end;
 
                 if (my.regionManager.regionAction !== undefined) { return; }
+
                 if (e.target.tagName.toLowerCase() == 'handle') {
                     if (e.target.classList.contains('wavesurfer-handle-start')) {
                         resize = 'start';
@@ -416,17 +421,22 @@ WaveSurfer.Region = {
                         resize = 'end';
                         my.regionManager.regionAction = 'resize_from_end';
                     }
-                } else {
-                    drag = true;
-                    resize = undefined;
-                    if (my.drag) { my.regionManager.regionAction = 'drag'; }
+                } else if (my.drag) {
+                    my.regionManager.regionAction = 'dragstart';
+                    dragStart = true;
                 }
                 my.regionManager.updateCursor();
             };
             var onUp = function (e) {
+                dragStart = undefined;
+                if (typeof dragStart == 'undefined' && typeof drag == 'undefined' && typeof resize == 'undefined') { return; }
                 my.regionManager.regionAction = undefined;
                 my.regionManager.updateCursor();
                 if (e.touches && e.touches.length > 1) { return; }
+
+                // Prevent the seek from changing positions.
+                my.wavesurfer.params.interact = false
+                setTimeout (function () {my.wavesurfer.params.interact = true}, 0)
 
                 if (drag || resize) {
                     if (typeof resize != 'undefined') {
@@ -443,6 +453,12 @@ WaveSurfer.Region = {
                 if (e.touches && e.touches.length > 1) { return; }
                 if (e.targetTouches && e.targetTouches[0].identifier != touchId) { return; }
 
+                if (dragStart) {
+                   dragStart = undefined;
+                   drag = true;
+                   if (my.drag) { my.regionManager.regionAction = 'drag'; }
+                }
+                    
                 if (drag || resize) {
                     var time = my.wavesurfer.drawer.handleEvent(e) * duration;
                     // Drag
