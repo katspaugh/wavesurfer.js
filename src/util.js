@@ -12,7 +12,7 @@ WaveSurfer.util = {
     frame: function (func) {
         return function () {
             var my = this, args = arguments;
-            requestAnimationFrame(function () {
+            WaveSurfer.util.requestAnimationFrame(function () {
                 func.apply (my, args);
             });
         };
