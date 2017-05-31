@@ -241,7 +241,6 @@ WaveSurfer.Region = {
             regionEl.setAttribute('data-region-' + attrname, this.attributes[attrname]);
         }
 
-        var width = this.wrapper.scrollWidth;
         this.style(regionEl, {
             position: 'absolute',
             zIndex: 2,
@@ -269,11 +268,8 @@ WaveSurfer.Region = {
                 var handleRight = regionEl.appendChild(document.createElement('handle'));
                 handleRight.className = 'wavesurfer-handle wavesurfer-handle-end' + ((this.cssResizeEndClass !== undefined) ? this.cssResizeEndClass : '');
                 this.style(handleRight, css);
-                this.style(handleRight, {
-                    left: '100%'
-                });
+                this.style(handleRight, { left: '100%' });
             }
-
         }
 
         this.element = this.wrapper.appendChild(regionEl);
@@ -291,10 +287,10 @@ WaveSurfer.Region = {
     },
 
     getWidth: function () {
-        return this.wavesurfer.drawer.width / this.wavesurfer.params.pixelRatio;
+        return (this.wavesurfer.drawer.width || this.wavesurfer.width) / this.wavesurfer.params.pixelRatio;
     },
 
-    /* Update element's position, width, color. */
+    /* Update the element's position, width, and color. */
     updateRender: function () {
         var dur = this.wavesurfer.getDuration();
         var width = this.getWidth();
@@ -320,8 +316,7 @@ WaveSurfer.Region = {
             // Calculate the left and width values of the region such that
             // no gaps appear between regions.
             var left = Math.round(this.start / dur * width);
-            var regionWidth =
-                Math.round(this.end / dur * width) - left;
+            var regionWidth = Math.round(this.end / dur * width) - left;
 
             this.style(this.element, {
                 left: left + 'px',
@@ -458,7 +453,7 @@ WaveSurfer.Region = {
                    drag = true;
                    if (my.drag) { my.regionManager.regionAction = 'drag'; }
                 }
-                    
+
                 if (drag || resize) {
                     var time = my.wavesurfer.drawer.handleEvent(e) * duration;
                     // Drag
