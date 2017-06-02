@@ -12,6 +12,20 @@ WaveSurfer.Regions = {
         this.activeRegion = undefined;
     },
 
+'use strict';
+
+/* Region manager */
+WaveSurfer.Regions = {
+    init: function (wavesurfer) {
+        this.wavesurfer = wavesurfer;
+        this.wrapper = this.wavesurfer.drawer.wrapper;
+
+        /* Id-based hash of regions. */
+        this.list = {};
+        this.regionAction = undefined;
+        this.activeRegion = undefined;
+    },
+
     /* Add a region. */
     add: function (params) {
         var region = Object.create(WaveSurfer.Region);
@@ -142,9 +156,15 @@ WaveSurfer.Region = {
             Number(params.end);
         this.resize = params.resize === undefined ? true : Boolean(params.resize);
         this.showTitle = params.showTitle === undefined ? true : Boolean(params.showTitle);
-        this.cssResizeStyle = params.cssResizeStyle || undefined;
-        this.cssResizeStartClass = params.cssResizeStartClass || undefined;
-        this.cssResizeEndClass = params.cssResizeEndClass || undefined;
+        
+        this.classList = {};
+        this.styleList = {};
+        if (params.classList === undefined) params.classList = {};
+        if (params.styleList === undefined) params.styleList = {};
+        ['region', 'resize', 'resizeStart', 'resizeEnd'].forEach (function (prop) {
+            this.classList[prop] = params.classList[prop] || undefined;
+            this.styleList[prop] = params.styleList[prop] || undefined;
+        }, this);
         this.resizeStart = params.resizeStart === undefined ? true : Boolean(params.resizeStart);
         this.resizeEnd = params.resizeEnd === undefined ? true : Boolean(params.resizeEnd);
         this.drag = params.drag === undefined ? true : Boolean(params.drag);
@@ -233,7 +253,7 @@ WaveSurfer.Region = {
     /* Render a region as a DOM element. */
     render: function () {
         var regionEl = document.createElement('region');
-        regionEl.className = 'wavesurfer-region';
+        regionEl.className = 'wavesurfer-region' + (this.classList.region !== undefined ? (' ' + this.classList.region) : '');
         if (this.showTitle) { regionEl.title = this.formatTime(this.start, this.end); }
         regionEl.setAttribute('data-id', this.id);
 
@@ -241,7 +261,7 @@ WaveSurfer.Region = {
             regionEl.setAttribute('data-region-' + attrname, this.attributes[attrname]);
         }
 
-        this.style(regionEl, {
+        this.style(regionEl, (this.styleList.region !== undefined) ? this.styleList.region : {
             position: 'absolute',
             zIndex: 2,
             height: '100%',
@@ -250,7 +270,9 @@ WaveSurfer.Region = {
 
         /* Resize handles */
         if (this.resize) {
-            var css = (this.cssResizeStyle !== undefined) ? this.cssResizeStyle : {
+            function capitalizeFirstLetter (string) {return string.charAt(0).toUpperCase() + string.slice(1);}
+
+            var resizeStyle = (this.styleList.resize !== undefined) ? this.styleList.resize: {
                 cursor: 'col-resize',
                 position: 'absolute',
                 left: '0px',
@@ -259,17 +281,15 @@ WaveSurfer.Region = {
                 maxWidth: '4px',
                 height: '100%'
             };
-            if (this.resizeStart) {
-                var handleLeft = regionEl.appendChild(document.createElement('handle'));
-                handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start' + ((this.cssResizeStartClass !== undefined) ? this.cssResizeStartClass : '');
-                this.style(handleLeft, css);
-            }
-            if (this.resizeEnd) {
-                var handleRight = regionEl.appendChild(document.createElement('handle'));
-                handleRight.className = 'wavesurfer-handle wavesurfer-handle-end' + ((this.cssResizeEndClass !== undefined) ? this.cssResizeEndClass : '');
-                this.style(handleRight, css);
-                this.style(handleRight, { left: '100%' });
-            }
+            var resizeClass = (this.classList.resize !== undefined ? (' ' + this.classList.resize) : '');
+            ['start', 'end'].forEach (function (side) {
+                if (!this[handleName]) return
+                var handleName = 'resize' + capitalizeFirstLetter(side);
+                var handle = regionEl.appendChild(document.createElement('handle'));
+                handle.classList = 'wavesurfer-handle wavesurfer-handle-' + side + resizeClass + (this.classList[handleName] !== undefined ? (' ' + this.classList[handleName]) : '');
+                this.style(handle, resizeStyle);
+                if (side == 'end') this.style(handle, { left: '100%' });
+            }, this)
         }
 
         this.element = this.wrapper.appendChild(regionEl);
