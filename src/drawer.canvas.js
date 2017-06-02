@@ -65,7 +65,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
         }
     },
 
-    drawBars: function (peaks, channelIndex, start, end) {
+    drawBars: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
         var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
@@ -124,9 +124,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 cc.fillRect(i + $, halfH - h + offsetY, bar + $, h * 2);
             }
         }, this);
-    },
+    }),
 
-    drawWave: function (peaks, channelIndex, start, end) {
+    drawWave: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
         var my = this;
         // Split channels
         if (peaks[0] instanceof Array) {
@@ -201,7 +201,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             // Always draw a median line
             cc.fillRect(0, halfH + offsetY - $, this.width, $);
         }, this);
-    },
+    }),
 
     updateProgress: function (pos) {
         this.style(this.progressWave, { width: pos + 'px' });
