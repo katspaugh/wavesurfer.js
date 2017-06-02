@@ -1,5 +1,23 @@
 /* Common utilities */
 WaveSurfer.util = {
+    requestAnimationFrame: (
+        window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function (callback, element) { setTimeout(callback, 1000 / 60); }
+    ),
+
+    frame: function (func) {
+        return function () {
+            var my = this, args = arguments;
+            WaveSurfer.util.requestAnimationFrame(function () {
+                func.apply(my, args);
+            });
+        };
+    },
+
     extend: function (dest) {
         var sources = Array.prototype.slice.call(arguments, 1);
         sources.forEach(function (source) {
