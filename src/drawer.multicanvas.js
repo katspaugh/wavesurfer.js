@@ -23,7 +23,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         this.progressWave = this.wrapper.appendChild(
             this.style(document.createElement('wave'), {
                 position: 'absolute',
-                zIndex: 3,
+                zIndex: 2,
                 left: 0,
                 top: 0,
                 bottom: 0,
@@ -73,7 +73,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         entry.wave = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
-                zIndex: 3,
+                zIndex: 2,
                 left: leftOffset + 'px',
                 top: 0,
                 bottom: 0,
