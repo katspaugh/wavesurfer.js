@@ -10,7 +10,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 zIndex: 1,
                 left: 0,
                 top: 0,
-                bottom: 0
+                bottom: 0,
+                pointerEvents: 'none'
             })
         );
         this.waveCc = waveCanvas.getContext('2d');
@@ -35,10 +36,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         if (this.params.waveColor != this.params.progressColor) {
             var progressCanvas = this.progressWave.appendChild(
-                this.style(document.createElement('canvas'), {
-                    zIndex: 2,
-                    pointerEvents: 'none'
-                })
+                document.createElement('canvas')
             );
             this.progressCc = progressCanvas.getContext('2d');
         }
