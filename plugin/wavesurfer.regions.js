@@ -274,7 +274,7 @@ WaveSurfer.Region = {
                 var handle = regionEl.appendChild(document.createElement('handle'));
                 handle.classList = 'wavesurfer-handle wavesurfer-handle-' + side + resizeClass + (this.classList[handleName] !== undefined ? (' ' + this.classList[handleName]) : '');
                 this.style(handle, resizeStyle);
-                if (this.styleList[handleName] !== undefined) this.style(handle, this.styleList[handleName]);
+                if (this.styleList[handleName] !== undefined) { this.style(handle, this.styleList[handleName]); }
                 if (side == 'end') { this.style(handle, { left: '100%' }); }
             }, this);
         }
