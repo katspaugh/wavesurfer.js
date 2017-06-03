@@ -142,7 +142,7 @@ WaveSurfer.Region = {
             Number(params.end);
         this.resize = params.resize === undefined ? true : Boolean(params.resize);
         this.showTitle = params.showTitle === undefined ? true : Boolean(params.showTitle);
-        
+
         this.classList = {};
         this.styleList = {};
         if (params.classList === undefined) { params.classList = {}; }
