@@ -28,13 +28,17 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
                 borderRightWidth: this.params.cursorWidth + 'px',
-                borderRightColor: this.params.cursorColor
+                borderRightColor: this.params.cursorColor,
+                pointerEvents: 'none'
             })
         );
 
         if (this.params.waveColor != this.params.progressColor) {
             var progressCanvas = this.progressWave.appendChild(
-                document.createElement('canvas')
+                this.style(document.createElement('canvas'), {
+                    zIndex: 2,
+                    pointerEvents: 'none'
+                })
             );
             this.progressCc = progressCanvas.getContext('2d');
         }
