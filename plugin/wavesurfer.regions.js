@@ -416,10 +416,10 @@ WaveSurfer.Region = {
                 if (my.regionManager.regionAction !== undefined) { return; }
 
                 if (e.target.tagName.toLowerCase() == 'handle') {
-                    if (e.target.classList.contains('wavesurfer-handle-start')) {
+                    if (e.target.classList.contains('wavesurfer-handle-start') && my.resizeStart) {
                         resize = 'start';
                         my.regionManager.regionAction = 'resize_from_start';
-                    } else {
+                    } else if (my.resizeEnd) {
                         resize = 'end';
                         my.regionManager.regionAction = 'resize_from_end';
                     }
