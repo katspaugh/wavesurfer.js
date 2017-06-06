@@ -313,6 +313,134 @@ WaveSurfer.WebAudio = {
         this.createSource();
     },
 
+    setGraph: function (source, destination) {
+    	this.analyser.disconnect();
+    	this.analyser.connect(source);
+    	destination.connect(this.gainNode);
+    },
+
+    /**
+     * Disconnects the AudioNodes in the argument
+     * 	@param arguments[0,...,N-1]: AudioNodes involved in the disconnection
+     */
+    disconnect: function() {
+    	var args = [].slice.call(arguments);
+        this.disconnectNodes(args);
+    },
+    
+    /**
+     * @param {Array} Array of AudioNodes to be set for disconnection
+     */
+    disconnectNodes: function (nodesArray) {
+		nodesArray.forEach(function (node) {
+			node.disconnect();
+		});
+    },
+    
+    /**
+     * Connects the AudioNodes in the argument using the specified mode
+     * 	@param arguments[0,...,N-2]: AudioNodes involved in the connection
+     *	@param arguments[N-1]: mode to connect the AudioNodes ['series','parallel','simo','miso']
+     */
+    connect: function() {
+    	var args = [].slice.call(arguments);
+        // at least two AudioNodes and the mode of connection must be defined
+    	if (args.length > 2) {
+			var mode = args.pop();
+			this.connectionWrapper(args,mode);
+    	}
+    },
+
+	/**
+     * Wrapper between connect method and connectionCore method
+     */
+    connectionWrapper: function (args,mode) {
+		switch (mode) {
+			case 'series':
+				/**
+				 * Connects the AudioNodes in the argument in series in the order specified
+				 * 	@param arguments[0]: source
+				 *	@param arguments[1,...,N-2]: Array of AudioNodes to be connected to the source and destination
+				 * 	@param arguments[N-1]: destination
+				 */
+				var source = args.shift();
+				var dest = args.pop();
+				this.connectionCore(source,args,dest,mode);
+				break;
+			case 'parallel':
+				/**
+				 * Connects the AudioNodes in the argument in parallel in the order specified
+				 * 	@param arguments[0]: source
+				 *	@param arguments[1,...,N-2]: Array of AudioNodes to be connected to the source and destination
+				 * 	@param arguments[N-1]: destination
+				 */
+				var source = args.shift();
+				var dest = args.pop();
+				this.connectionCore(source,args,dest,mode);
+				break;
+			case 'simo':
+				/**
+				 * Connects the AudioNodes in the argument from a single input to multiple outputs
+				 * 	@param arguments[0]: source AudioNode
+				 * 	@param arguments[1,...,N-1]: AudioNodes to be connected to source
+				 */
+				var source = args.shift();
+				this.connectionCore(source,args,dest,mode);
+				break;
+			case 'miso':
+				/**
+				 * Connects the AudioNodes in the argument from multiple inputs to single output
+				 * 	@param arguments[0,...,N-2]: AudioNodes to be connected to destination
+				 * 	@param arguments[N-1]: destination AudioNode
+				 */
+				var dest = args.pop();
+				this.connectionCore(source,args,dest,mode);
+				break;
+		}
+    },
+
+	/**
+	 * Connects the AudioNodes in the argument in series in the order specified
+	 * 	@param source: source
+	 *	@param args: Array of AudioNodes to be connected to the source and destination
+	 * 	@param dest: destination
+	 *	@param mode: mode to connect the AudioNodes ['series','parallel','simo','miso']
+	 */
+    connectionCore: function (source,args,dest,mode) {
+		switch (mode) {
+			case 'series':
+				if (args.length > 0) {
+					args.reduce(function (prev, curr) {
+						prev.connect(curr);
+						return curr;
+					}, source).connect(dest);
+				} else {
+					source.connect(dest);
+				}
+				break;
+			case 'parallel':
+				if (args.length > 0) {
+					args.forEach(function (element) {
+						source.connect(element);						
+						element.connect(dest);
+					});
+				} else {
+					source.connect(dest);
+				}
+				break;
+			case 'simo':
+				args.forEach(function (element) {
+					source.connect(element);
+				});
+				break;
+			case 'miso':
+				args.forEach(function (element) {
+					element.connect(dest);
+				});
+				break;
+		}
+    },
+    
     createSource: function () {
         this.disconnectSource();
         this.source = this.ac.createBufferSource();
