@@ -113,6 +113,16 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
             my.fireEvent('finish');
         });
 
+        // Listen to and relay play and pause events to enable
+        // playback control from the external media element
+        media.addEventListener('play', function () {
+            my.fireEvent('play');
+        });
+
+        media.addEventListener('pause', function () {
+            my.fireEvent('pause');
+        });
+
         this.media = media;
         this.peaks = peaks;
         this.onPlayEnd = null;
@@ -171,7 +181,6 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
         this.seekTo(start);
         this.media.play();
         end && this.setPlayEnd(end);
-        this.fireEvent('play');
     },
 
     /**
@@ -180,7 +189,6 @@ WaveSurfer.util.extend(WaveSurfer.MediaElement, {
     pause: function () {
         this.media && this.media.pause();
         this.clearPlayEnd();
-        this.fireEvent('pause');
     },
 
     setPlayEnd: function (end) {
