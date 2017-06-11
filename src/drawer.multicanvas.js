@@ -82,7 +82,8 @@ export default class MultiCanvas extends Drawer {
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
                 borderRightWidth: this.params.cursorWidth + 'px',
-                borderRightColor: this.params.cursorColor
+                borderRightColor: this.params.cursorColor,
+                pointerEvents: 'none'
             })
         );
 
@@ -129,10 +130,12 @@ export default class MultiCanvas extends Drawer {
         entry.wave = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
-                zIndex: 1,
+                zIndex: 2,
                 left: leftOffset + 'px',
                 top: 0,
-                bottom: 0
+                bottom: 0,
+                height: '100%',
+                pointerEvents: 'none'
             })
         );
         entry.waveCtx = entry.wave.getContext('2d');
@@ -143,7 +146,8 @@ export default class MultiCanvas extends Drawer {
                     position: 'absolute',
                     left: leftOffset + 'px',
                     top: 0,
-                    bottom: 0
+                    bottom: 0,
+                    height: '100%'
                 })
             );
             entry.progressCtx = entry.progress.getContext('2d');
