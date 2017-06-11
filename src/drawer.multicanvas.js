@@ -33,7 +33,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
                 borderRightWidth: this.params.cursorWidth + 'px',
-                borderRightColor: this.params.cursorColor
+                borderRightColor: this.params.cursorColor,
+                pointerEvents: 'none'
             })
         );
 
@@ -72,11 +73,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         entry.wave = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
-                zIndex: 1,
+                zIndex: 2,
                 left: leftOffset + 'px',
                 top: 0,
                 bottom: 0,
-                height: '100%'
+                height: '100%',
+                pointerEvents: 'none'
             })
         );
         entry.waveCtx = entry.wave.getContext('2d');

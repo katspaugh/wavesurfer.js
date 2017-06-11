@@ -10,7 +10,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 zIndex: 1,
                 left: 0,
                 top: 0,
-                bottom: 0
+                bottom: 0,
+                pointerEvents: 'none'
             })
         );
         this.waveCc = waveCanvas.getContext('2d');
@@ -28,7 +29,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
                 borderRightWidth: this.params.cursorWidth + 'px',
-                borderRightColor: this.params.cursorColor
+                borderRightColor: this.params.cursorColor,
+                pointerEvents: 'none'
             })
         );
 
