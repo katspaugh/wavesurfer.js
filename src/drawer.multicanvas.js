@@ -141,7 +141,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     },
 
-    drawBars: function (peaks, channelIndex, start, end) {
+    drawBars: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -189,9 +189,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             var h = Math.round(peak / absmax * halfH);
             this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
         }
-    },
+    }),
 
-    drawWave: function (peaks, channelIndex, start, end) {
+    drawWave: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -233,7 +233,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         // Always draw a median line
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
-    },
+    }),
 
     drawLine: function (peaks, absmax, halfH, offsetY, start, end) {
         this.canvases.forEach (function (entry) {
