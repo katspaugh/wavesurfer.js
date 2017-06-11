@@ -227,48 +227,51 @@ export default class MultiCanvas extends Drawer {
      * rendered
      */
     drawBars(peaks, channelIndex, start, end) {
-        // Split channels
-        if (peaks[0] instanceof Array) {
-            const channels = peaks;
-            if (this.params.splitChannels) {
-                this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach((channelPeaks, i) => this.drawBars(channelPeaks, i, start, end));
-                return;
+        util.frame((peaks, channelIndex, start, end) => {
+            // Split channels
+            if (peaks[0] instanceof Array) {
+                const channels = peaks;
+                if (this.params.splitChannels) {
+                    this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
+                    channels.forEach((channelPeaks, i) => this.drawBars(channelPeaks, i, start, end));
+                    return;
+                }
+                peaks = channels[0];
             }
-            peaks = channels[0];
-        }
 
-        // Bar wave draws the bottom only as a reflection of the top,
-        // so we don't need negative values
-        const hasMinVals = [].some.call(peaks, val => val < 0);
-        // Skip every other value if there are negatives.
-        const peakIndexScale = hasMinVals ? 2 : 1;
+            // Bar wave draws the bottom only as a reflection of the top,
+            // so we don't need negative values
+            const hasMinVals = [].some.call(peaks, val => val < 0);
+            // Skip every other value if there are negatives.
+            const peakIndexScale = hasMinVals ? 2 : 1;
 
-        // A half-pixel offset makes lines crisp
-        const width = this.width;
-        const height = this.params.height * this.params.pixelRatio;
-        const offsetY = height * channelIndex || 0;
-        const halfH = height / 2;
-        const length = peaks.length / peakIndexScale;
-        const bar = this.params.barWidth * this.params.pixelRatio;
-        const gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
-        const step = bar + gap;
+            // A half-pixel offset makes lines crisp
+            const width = this.width;
+            const height = this.params.height * this.params.pixelRatio;
+            const offsetY = height * channelIndex || 0;
+            const halfH = height / 2;
+            const length = peaks.length / peakIndexScale;
+            const bar = this.params.barWidth * this.params.pixelRatio;
+            const gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
+            const step = bar + gap;
 
-        let absmax = 1;
-        if (this.params.normalize) {
-            const max = util.max(peaks);
-            const min = util.min(peaks);
-            absmax = -min > max ? -min : max;
-        }
+            let absmax = 1;
+            if (this.params.normalize) {
+                const max = util.max(peaks);
+                const min = util.min(peaks);
+                absmax = -min > max ? -min : max;
+            }
 
-        const scale = length / width;
-        let i;
+            const scale = length / width;
+            let i;
 
-        for (i = (start / scale); i < (end / scale); i += step) {
-            const peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
-            const h = Math.round(peak / absmax * halfH);
-            this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
-        }
+            for (i = (start / scale); i < (end / scale); i += step) {
+                const peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
+                const h = Math.round(peak / absmax * halfH);
+                this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
+            }
+
+        });
     }
 
     /**
@@ -284,46 +287,48 @@ export default class MultiCanvas extends Drawer {
      * rendered
      */
     drawWave(peaks, channelIndex, start, end) {
-        // Split channels
-        if (peaks[0] instanceof Array) {
-            const channels = peaks;
-            if (this.params.splitChannels) {
-                this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach((channelPeaks, i) => this.drawWave(channelPeaks, i, start, end));
-                return;
+        util.frame((peaks, channelIndex, start, end) => {
+            // Split channels
+            if (peaks[0] instanceof Array) {
+                const channels = peaks;
+                if (this.params.splitChannels) {
+                    this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
+                    channels.forEach((channelPeaks, i) => this.drawWave(channelPeaks, i, start, end));
+                    return;
+                }
+                peaks = channels[0];
             }
-            peaks = channels[0];
-        }
 
-        // Support arrays without negative peaks
-        const hasMinValues = [].some.call(peaks, val => val < 0);
-        if (!hasMinValues) {
-            const reflectedPeaks = [];
-            const len = peaks.length;
-            let i;
-            for (i = 0; i < len; i++) {
-                reflectedPeaks[2 * i] = peaks[i];
-                reflectedPeaks[2 * i + 1] = -peaks[i];
+            // Support arrays without negative peaks
+            const hasMinValues = [].some.call(peaks, val => val < 0);
+            if (!hasMinValues) {
+                const reflectedPeaks = [];
+                const len = peaks.length;
+                let i;
+                for (i = 0; i < len; i++) {
+                    reflectedPeaks[2 * i] = peaks[i];
+                    reflectedPeaks[2 * i + 1] = -peaks[i];
+                }
+                peaks = reflectedPeaks;
             }
-            peaks = reflectedPeaks;
-        }
 
-        // A half-pixel offset makes lines crisp
-        const height = this.params.height * this.params.pixelRatio;
-        const offsetY = height * channelIndex || 0;
-        const halfH = height / 2;
+            // A half-pixel offset makes lines crisp
+            const height = this.params.height * this.params.pixelRatio;
+            const offsetY = height * channelIndex || 0;
+            const halfH = height / 2;
 
-        let absmax = 1;
-        if (this.params.normalize) {
-            const max = util.max(peaks);
-            const min = util.min(peaks);
-            absmax = -min > max ? -min : max;
-        }
+            let absmax = 1;
+            if (this.params.normalize) {
+                const max = util.max(peaks);
+                const min = util.min(peaks);
+                absmax = -min > max ? -min : max;
+            }
 
-        this.drawLine(peaks, absmax, halfH, offsetY, start, end);
+            this.drawLine(peaks, absmax, halfH, offsetY, start, end);
 
-        // Always draw a median line
-        this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
+            // Always draw a median line
+            this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
+        });
     }
 
     /**
