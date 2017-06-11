@@ -26,7 +26,6 @@ var WaveSurfer = {
         hideScrollbar : false,
         interact      : true,
         invertTransparency: false,
-        invertTransparencySettings: undefined,
         loopSelection : true,
         mediaContainer: null,
         mediaControls : false,
