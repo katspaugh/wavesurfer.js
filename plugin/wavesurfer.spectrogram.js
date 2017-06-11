@@ -153,9 +153,11 @@ WaveSurfer.Spectrogram = {
 
     updateCanvasStyle: function () {
         var width = Math.round(this.width / this.pixelRatio) + 'px';
+        var height = this.height + 'px';
         this.canvas.width = this.width;
         this.canvas.height = this.height;
         this.canvas.style.width = width;
+        this.canvas.style.height = height;
     },
 
     drawSpectrogram: function(frequenciesData, my) {
