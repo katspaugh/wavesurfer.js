@@ -70,8 +70,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             entry[waveType] = this[waveType].appendChild(
                 this.style(document.createElement('canvas'), {
                     position: 'absolute',
-                    left: leftOffset + 'px',
-                    top: !this.invertTransparency ? 0 : (this.halfPixel / 2) + 'px', // Add a small buffer to prevent gaps.
+                    left: leftOffset + 'px',top: !this.invertTransparency ? 0 : -(this.halfPixel / 2) + 'px', // Add a small buffer to prevent gaps.
                     height: !this.invertTransparency ? '100%' : 'calc(100% + ' + this.halfPixel + 'px)'
                 }));
             entry[waveType + 'Ctx'] = entry[waveType].getContext('2d');
@@ -214,7 +213,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 temp.getContext('2d').drawImage (canvas, 0, 0);
                 var ctx = canvas.getContext('2d');
                 ctx.fillStyle = (waveType == 'wave' || this.params.progressColor === undefined) ? this.params.waveColor : this.params.progressColor;
-                ctx.fillRect(0, 0, canvas.width, canvas.height); 
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.drawImage (temp, 0, 0);
                 ctx.globalCompositeOperation = 'source-in';
