@@ -7,7 +7,7 @@ WaveSurfer.util = {
         window.oRequestAnimationFrame ||
         window.msRequestAnimationFrame ||
         function (callback, element) { setTimeout(callback, 1000 / 60); }
-    ),
+    ).bind(window),
 
     frame: function (func) {
         return function () {
