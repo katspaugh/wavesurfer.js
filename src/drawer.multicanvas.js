@@ -33,7 +33,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
                 borderRightWidth: this.params.cursorWidth + 'px',
-                borderRightColor: this.params.cursorColor
+                borderRightColor: this.params.cursorColor,
+                pointerEvents: 'none'
             })
         );
 
@@ -72,11 +73,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         entry.wave = this.wrapper.appendChild(
             this.style(document.createElement('canvas'), {
                 position: 'absolute',
-                zIndex: 1,
+                zIndex: 2,
                 left: leftOffset + 'px',
                 top: 0,
                 bottom: 0,
-                height: '100%'
+                height: '100%',
+                pointerEvents: 'none'
             })
         );
         entry.waveCtx = entry.wave.getContext('2d');
@@ -139,7 +141,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     },
 
-    drawBars: function (peaks, channelIndex, start, end) {
+    drawBars: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -187,9 +189,9 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             var h = Math.round(peak / absmax * halfH);
             this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
         }
-    },
+    }),
 
-    drawWave: function (peaks, channelIndex, start, end) {
+    drawWave: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
         // Split channels
         if (peaks[0] instanceof Array) {
             var channels = peaks;
@@ -231,7 +233,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         // Always draw a median line
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
-    },
+    }),
 
     drawLine: function (peaks, absmax, halfH, offsetY, start, end) {
         this.canvases.forEach (function (entry) {
