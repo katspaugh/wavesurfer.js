@@ -215,8 +215,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
     invertTransparency: function () {
         this.canvases.forEach (function (canvasGroup) {
-            var waveTypeList = ['wave'].concat(canvasGroup.progressWaveCtx ? ['progressWave'] : []);
-            waveTypeList.forEach (function (waveType) {
+            ['wave'].concat(canvas.progressWaveCtx ? ['progressWave'] : []).forEach (function (waveType) {
                 var canvas = canvasGroup[waveType];
                 var temp = document.createElement('canvas');
                 temp.width = canvas.width; temp.height = canvas.height;
@@ -292,8 +291,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
             if (intersection.x1 < intersection.x2) {
                 this.setFillStyles(canvas);
-                var waveTypeList = ['wave'].concat(canvas.progressWaveCtx ? ['progressWave'] : []);
-                waveTypeList.forEach (function (waveType) {
+                ['wave'].concat(canvas.progressWaveCtx ? ['progressWave'] : []).forEach (function (waveType) {
                     this.fillRectToContext(canvas[waveType + 'Ctx'],
                         intersection.x1 - leftOffset,
                         intersection.y1,
