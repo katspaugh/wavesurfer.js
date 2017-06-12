@@ -291,7 +291,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
             if (intersection.x1 < intersection.x2) {
                 this.setFillStyles(canvas);
-                ['wave'].concat(canvas['progressWaveCtx'] ? ['progressWave'] : []).forEach (function (waveType) {
+                ['wave'].concat(canvas.progressWaveCtx ? ['progressWave'] : []).forEach (function (waveType) {
                     this.fillRectToContext(canvas[waveType + 'Ctx'],
                         intersection.x1 - leftOffset,
                         intersection.y1,
@@ -303,7 +303,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     fillRectToContext: function (ctx, x, y, width, height) {
-        if (ctx) ctx.fillRect(x, y, width, height);
+        if (ctx) { ctx.fillRect(x, y, width, height); }
     },
 
     setFillStyles: function (canvas) {
@@ -319,7 +319,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }, this);
         var cursorPos = pos - ((this.params.cursorAlignment == 'right') ? 0
             : (this.params.cursorAlignment == 'middle') ? (this.params.cursorWidth / 2)
-            : this.params.cursorWidth)
+            : this.params.cursorWidth);
         this.style(this.cursor, { left: cursorPos + 'px' });
         if (this.progressWave) { this.style(this.progressWave, { width: pos + 'px' }); }
     },
