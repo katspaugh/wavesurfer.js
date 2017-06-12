@@ -34,13 +34,19 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                     pointerEvents: 'none'
                 })
             );
-            if (waveType == 'progressWave') this.style(this[waveType], {
-                display: 'none',
-                borderRightStyle: 'solid',
-                borderRightWidth: this.params.cursorWidth + 'px',
-                borderRightColor: this.params.cursorColor
-            });
+            if (waveType == 'progressWave') this[waveType].style.display = 'none';
         }, this);
+        this.cursor = this.wrapper.appendChild(
+            this.style(document.createElement('div'), {
+                backgroundColor: this.params.cursorColor,
+                position: 'absolute',
+                zIndex: 2,
+                width: this.params.cursorWidth + 'px',
+                height: '100%',
+                left: 0,
+                display: 'none'
+            })
+        );
         this.addCanvas();
     },
 
@@ -240,7 +246,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var first = Math.round(length * canvas.start);
         var last = Math.round(length * canvas.end);
         if (first > end || last < start) { return; }
-        
+
         var canvasStart = Math.max(first, start);
         var canvasEnd = Math.min(last, end);
 
@@ -307,7 +313,11 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         this.style(this.wave, { left: pos + 'px', width: 'calc(100% - ' + pos + 'px)' });
         this.canvases.forEach (function (canvas, i) {
             this.style(canvas.wave, { left: -pos + 'px' });
-        }, this)
+        }, this);
+        var cursorPos = pos - ((this.params.cursorAlignment == 'right') ? 0
+            : (this.params.cursorAlignment == 'middle') ? (this.params.cursorWidth / 2)
+            : this.params.cursorWidth)
+        this.style(this.cursor, { left: cursorPos + 'px' });
         if (this.progressWave) this.style(this.progressWave, { width: pos + 'px' });
     },
 
