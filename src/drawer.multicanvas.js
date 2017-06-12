@@ -215,7 +215,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
     invertTransparency: function () {
         this.canvases.forEach (function (canvasGroup) {
-            ['wave'].concat(canvas.progressWaveCtx ? ['progressWave'] : []).forEach (function (waveType) {
+            ['wave'].concat(canvasGroup.progressWaveCtx ? ['progressWave'] : []).forEach (function (waveType) {
                 var canvas = canvasGroup[waveType];
                 var temp = document.createElement('canvas');
                 temp.width = canvas.width; temp.height = canvas.height;
