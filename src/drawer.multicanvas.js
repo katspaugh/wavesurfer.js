@@ -20,7 +20,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     createElements: function () {
-        ['wave', 'progressWave'].forEach(function (waveType) {
+        ['progressWave', 'wave'].forEach(function (waveType) {
             this[waveType] = this.wrapper.appendChild(
                 this.style(document.createElement('wave'), {
                     position: 'absolute',
@@ -34,7 +34,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                     pointerEvents: 'none'
                 })
             );
-            if (waveType == 'progressWave') this[waveType].style.display = 'none';
+            if (waveType == 'progressWave') { this[waveType].style.display = 'none'; }
         }, this);
         this.cursor = this.wrapper.appendChild(
             this.style(document.createElement('div'), {
@@ -51,7 +51,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     updateSize: function () {
-        var totalWidth = Math.round(this.width / this.params.pixelRatio)
+        var totalWidth = Math.round(this.width / this.params.pixelRatio);
         var requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
 
         while (this.canvases.length < requiredCanvases) { this.addCanvas(); }
@@ -72,11 +72,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     addCanvas: function () {
         var entry = {};
         var leftOffset = this.maxCanvasElementWidth * this.canvases.length;
-        ['wave', 'progressWave'].forEach (function (waveType) {
+        ['progressWave', 'wave'].forEach (function (waveType) {
             entry[waveType] = this[waveType].appendChild(
                 this.style(document.createElement('canvas'), {
                     position: 'absolute',
-                    left: leftOffset + 'px',top: !this.invertTransparency ? 0 : -(this.halfPixel / 2) + 'px', // Add a small buffer to prevent gaps.
+                    left: leftOffset + 'px',
+                    top: !this.invertTransparency ? 0 : -(this.halfPixel / 2) + 'px', // Add a small buffer to prevent gaps.
                     height: !this.invertTransparency ? '100%' : 'calc(100% + ' + this.halfPixel + 'px)'
                 }));
             entry[waveType + 'Ctx'] = entry[waveType].getContext('2d');
@@ -100,11 +101,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         canvas.waveCtx.canvas.width = width;
         canvas.waveCtx.canvas.height = height;
-        
+
         this.style(this.wave, {height: height / this.params.pixelRatio + 'px'});
         this.style(canvas.waveCtx.canvas, {width: elementWidth + 'px'});
 
-        if (!canvas.progressWaveCtx) return;
+        this.style(this.cursor, {display: 'block'});
+        if (!canvas.progressWaveCtx) { return; }
         this.style(this.progressWave, {height: height / this.params.pixelRatio + 'px'});
         canvas.progressWaveCtx.canvas.width  = width;
         canvas.progressWaveCtx.canvas.height = height;
@@ -113,12 +115,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     clearWave: function () {
-        my.canvases.forEach (function (canvas) { my.clearWaveForEntry(canvas); }, this);
+        this.canvases.forEach (function (canvas) { this.clearWaveForEntry(canvas); }, this);
     },
 
     clearWaveForEntry: function (canvas) {
         canvas.waveCtx.clearRect(0, 0, canvas.waveCtx.canvas.width, canvas.waveCtx.canvas.height);
-        if (!canvas.progressWaveCtx) return
+        if (!canvas.progressWaveCtx) { return; }
         canvas.progressWaveCtx.clearRect(0, 0, canvas.progressWaveCtx.canvas.width, canvas.progressWaveCtx.canvas.height);
     },
 
@@ -165,12 +167,13 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
         }
 
-        if (this.params.invertTransparency) this.invertTransparency()
+        if (this.params.invertTransparency) { this.invertTransparency(); }
     }),
 
     drawWave: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
         // Split channels if they exist.
         if (this.params.splitChannels) {
+            var channels = peaks;
             this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
             channels.forEach(function(channelPeaks, i) { this.drawWave(channelPeaks, i, start, end); }, this);
             return;
@@ -206,13 +209,13 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         // Always draw a median line.
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
-        
-        if (this.params.invertTransparency) this.invertTransparency()
+
+        if (this.params.invertTransparency) { this.invertTransparency(); }
     }),
 
     invertTransparency: function () {
         this.canvases.forEach (function (canvasGroup) {
-            ['wave'].concat(canvasGroup['progressWaveCtx'] ? ['progressWave'] : []).forEach (function (waveType) {
+            (canvasGroup.progressWaveCtx ? ['progressWave'] : []).concat('wave').forEach (function (waveType) {
                 var canvas = canvasGroup[waveType];
                 var temp = document.createElement('canvas');
                 temp.width = canvas.width; temp.height = canvas.height;
@@ -223,7 +226,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.drawImage (temp, 0, 0);
                 ctx.globalCompositeOperation = 'source-in';
-            }, this)
+            }, this);
         }, this);
     },
 
@@ -236,7 +239,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     drawLineToContext: function (canvas, ctx, peaks, absmax, halfH, offsetY, start, end) {
-        if (!ctx) return;
+        if (!ctx) { return; }
 
         var length = peaks.length / 2;
 
@@ -246,7 +249,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var first = Math.round(length * canvas.start);
         var last = Math.round(length * canvas.end);
         if (first > end || last < start) { return; }
-
+        
         var canvasStart = Math.max(first, start);
         var canvasEnd = Math.min(last, end);
 
@@ -274,7 +277,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     fillRect: function (x, y, width, height) {
         var startCanvas = Math.floor(x / this.maxCanvasWidth);
         var endCanvas   = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1, this.canvases.length);
-        
+
         for (var i = startCanvas; i < endCanvas; i++) {
             var canvas = this.canvases[i];
             var leftOffset = i * this.maxCanvasWidth;
@@ -318,7 +321,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             : (this.params.cursorAlignment == 'middle') ? (this.params.cursorWidth / 2)
             : this.params.cursorWidth)
         this.style(this.cursor, { left: cursorPos + 'px' });
-        if (this.progressWave) this.style(this.progressWave, { width: pos + 'px' });
+        if (this.progressWave) { this.style(this.progressWave, { width: pos + 'px' }); }
     },
 
     /**
