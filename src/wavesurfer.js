@@ -17,6 +17,7 @@ var WaveSurfer = {
         barHeight     : 1,
         closeAudioContext: false,
         container     : null,
+        cursorAlignment: 'middle',
         cursorColor   : '#333',
         cursorWidth   : 1,
         dragSelection : true,
