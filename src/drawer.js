@@ -51,13 +51,13 @@ WaveSurfer.Drawer = {
         var progress;
 
         if (!this.params.fillParent && nominalWidth < parentWidth) {
-            progress = ((clientX - bbox.left) * this.params.pixelRatio / nominalWidth) || 0;
+            progress = ((clientX - bbox.left) * this.params.pixelRatio / (nominalWidth - 1)) || 0;
 
             if (progress > 1) {
                 progress = 1;
             }
         } else {
-            progress = ((clientX - bbox.left + this.wrapper.scrollLeft) / this.wrapper.scrollWidth) || 0;
+            progress = ((clientX - bbox.left + this.wrapper.scrollLeft) / (this.wrapper.scrollWidth - 1)) || 0;
         }
 
         return progress;
@@ -183,7 +183,7 @@ WaveSurfer.Drawer = {
 
     progress: function (progress) {
         var minPxDelta = 1 / this.params.pixelRatio;
-        var pos = Math.round(progress * this.width) * minPxDelta;
+        var pos = Math.ceil(progress * this.width) * minPxDelta;
 
         if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {
             this.lastPos = pos;
