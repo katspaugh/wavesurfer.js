@@ -109,7 +109,7 @@ module.exports = function (grunt) {
             },
             ignore_warning: {
                 options: {
-                    '-W294': false,
+                    '-W294': true,
                     // Don't make functions within a loop.
                     '-W004': true,
                     // Expected an assignment or function call and instead saw an expression.
