@@ -326,7 +326,7 @@ var WaveSurfer = {
         this.params.interact = !this.params.interact;
     },
 
-    getComputedWidthStartEnd: function () {
+    getComputedWidthAndRange: function () {
         var nominalWidth = Math.round(this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio);
         var parentWidth = this.drawer.getWidth();
 
@@ -348,7 +348,7 @@ var WaveSurfer = {
     getComputedEnd: function () { return this.getComputedWidthStartEnd().end; },
 
     drawBuffer: function () {
-        var wse = this.getComputedWidthStartEnd();
+        var wse = this.getComputedWidthAndRange();
         var width = wse.width, start = wse.start, end = wse.end;
 
         if (this.params.partialRender) {
