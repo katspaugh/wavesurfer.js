@@ -15,6 +15,8 @@ var WaveSurfer = {
         autoCenter    : true,
         backend       : 'WebAudio',
         barHeight     : 1,
+        classList     : {},
+        styleList     : {},
         closeAudioContext: false,
         container     : null,
         cursorAlignment: 'middle',
