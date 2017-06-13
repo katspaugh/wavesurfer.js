@@ -417,7 +417,7 @@ var WaveSurfer = {
      * Loads audio and re-renders the waveform.
      */
     load: function (url, peaks, preload) {
-        this.empty();
+        this.empty({ drawPeaks: peaks === undefined });
         this.isMuted = false;
 
         switch (this.params.backend) {
@@ -602,7 +602,8 @@ var WaveSurfer = {
     /**
      * Display empty waveform.
      */
-    empty: function () {
+    empty: function (init) {
+        init = init || {}
         if (!this.backend.isPaused()) {
             this.stop();
             this.backend.disconnectSource();
@@ -611,7 +612,7 @@ var WaveSurfer = {
         this.clearTmpEvents();
         this.drawer.progress(0);
         this.drawer.setWidth(0);
-        this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
+        if ((!'drawPeaks' in init) || (init.drawPeaks == true)) this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     },
 
     /**
