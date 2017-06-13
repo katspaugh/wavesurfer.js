@@ -109,8 +109,7 @@ module.exports = function (grunt) {
             },
             ignore_warning: {
                 options: {
-                    '-W083': true,
-                    // Don't make functions within a loop.
+                    // {a} is already defined.
                     '-W004': true,
                     // Expected an assignment or function call and instead saw an expression.
                     '-W030': true,
@@ -118,10 +117,14 @@ module.exports = function (grunt) {
                     '-W038': true,
                     // Use '!==' to compare with ''.
                     '-W041': true,
+                    // Bad constructor.
                     '-W056': true,
                     // Missing '()' invoking a constructor.
                     '-W058': true,
+                    // Use the function form of 'use strict'.
                     '-W079': true,
+                    // Don't make functions within a loop.
+                    '-W083': true,
                     // Use the function form of 'use strict'.
                     '-W097': true
                 },
