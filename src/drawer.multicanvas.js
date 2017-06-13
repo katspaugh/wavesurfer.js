@@ -106,7 +106,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         this.style(this.wave, {height: height / this.params.pixelRatio + 'px'});
         this.style(canvas.waveCtx.canvas, {width: elementWidth + 'px'});
         this.style(this.cursor, {display: 'block'});
-        
+
         if (!canvas.progressWaveCtx) { return; }
         this.style(this.progressWave, {height: height / this.params.pixelRatio + 'px'});
         canvas.progressWaveCtx.canvas.width  = width;
@@ -255,7 +255,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         var first = Math.round(length * canvas.start);
         var last = Math.round(length * canvas.end);
         if (first > end || last < start) { return; }
-        
+
         var canvasStart = Math.max(first, start);
         var canvasEnd = Math.min(last, end);
 
