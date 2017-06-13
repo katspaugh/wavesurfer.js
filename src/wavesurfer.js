@@ -440,7 +440,7 @@ var WaveSurfer = {
         if (peaks) {
             this.backend.setPeaks(peaks);
             this.drawBuffer();
-            this.tmpEvents.push(this.once('interaction', load));
+            this.tmpEvents.push(this.once('interaction', function () {load()}));
         } else {
             return load();
         }
