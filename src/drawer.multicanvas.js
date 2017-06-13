@@ -104,8 +104,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         this.style(this.wave, {height: height / this.params.pixelRatio + 'px'});
         this.style(canvas.waveCtx.canvas, {width: elementWidth + 'px'});
-
         this.style(this.cursor, {display: 'block'});
+
         if (!canvas.progressWaveCtx) { return; }
         this.style(this.progressWave, {height: height / this.params.pixelRatio + 'px'});
         canvas.progressWaveCtx.canvas.width  = width;
@@ -225,7 +225,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.drawImage (temp, 0, 0);
-                ctx.globalCompositeOperation = 'source-in';
+                ctx.globalCompositeOperation = 'source-over';
             }, this);
         }, this);
     },
