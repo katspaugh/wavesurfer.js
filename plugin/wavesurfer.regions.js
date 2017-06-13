@@ -294,7 +294,7 @@ WaveSurfer.Region = {
     },
 
     getWidth: function () {
-        return (this.wavesurfer.drawer.width || this.wavesurfer.getComputedWidth()) / this.wavesurfer.params.pixelRatio;
+        return (this.wavesurfer.drawer.width || this.wavesurfer.getComputedWidthAndRange().width) / this.wavesurfer.params.pixelRatio;
     },
 
     /* Update the element's position, width, and color. */
