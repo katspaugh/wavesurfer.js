@@ -48,18 +48,17 @@ WaveSurfer.Drawer = {
         var nominalWidth = this.width;
         var parentWidth = this.getWidth();
 
-        var progress;
-
         if (!this.params.fillParent && nominalWidth < parentWidth) {
-            progress = ((clientX - bbox.left) * this.params.pixelRatio / (nominalWidth - 1)) || 0;
-
-            if (progress > 1) {
-                progress = 1;
-            }
+            var numerator = (clientX - bbox.left) * this.params.pixelRatio;
+            var denominator = nominalWidth - 1;
         } else {
-            progress = ((clientX - bbox.left + this.wrapper.scrollLeft) / (this.wrapper.scrollWidth - 1)) || 0;
+            var numerator = (clientX - bbox.left + this.wrapper.scrollLeft);
+            var denominator = this.wrapper.scrollWidth - 1;
         }
-
+        // The clicked pixel is never equal the width. It's always 1 pixel less.
+        // A 100-pixel element can be clicked at position 0 through position 99. And the range must include 0 as well as 1.
+        // Thus, clicking at the 100th pixel (99) means progress is 1, not 99/100 or .99.
+        var progress = (numerator > denominator) ? 1 : (numerator / denominator || 0);
         return progress;
     },
 
