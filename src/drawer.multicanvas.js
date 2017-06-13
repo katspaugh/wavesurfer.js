@@ -22,18 +22,19 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     createElements: function () {
         ['progressWave', 'wave'].forEach(function (waveType) {
             this[waveType] = this.wrapper.appendChild(
-                this.style(document.createElement('wave'), {
+                this.style(document.createElement('wave'), Object.assign({}, this.params.styleList[waveType], {
                     position: 'absolute',
                     zIndex: 2,
                     left: 0,
                     top: 0,
                     height: '100%',
                     overflow: 'hidden',
-                    width: (waveType == 'progressWave') ? '100%' : '0',
+                    width: (waveType == 'progressWave') ? '0' : '100%',
                     boxSizing: 'border-box',
                     pointerEvents: 'none'
-                })
+                }))
             );
+            this[waveType].classList.add(this.params.classList[waveType]);
             if (waveType == 'progressWave') { this[waveType].style.display = 'none'; }
         }, this);
         this.cursor = this.wrapper.appendChild(
@@ -65,7 +66,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 var canvasWidth = this.width - (this.maxCanvasWidth * (this.canvases.length - 1));
             }
             this.updateDimensions(canvas, canvasWidth, this.height);
-            this.clearWaveForEntry(canvas);
+            this.clearWaveType(canvas);
         }, this);
     },
 
@@ -105,7 +106,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         this.style(this.wave, {height: height / this.params.pixelRatio + 'px'});
         this.style(canvas.waveCtx.canvas, {width: elementWidth + 'px'});
         this.style(this.cursor, {display: 'block'});
-
+        
         if (!canvas.progressWaveCtx) { return; }
         this.style(this.progressWave, {height: height / this.params.pixelRatio + 'px'});
         canvas.progressWaveCtx.canvas.width  = width;
@@ -114,38 +115,46 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         this.style(this.progressWave, {display: 'block'});
     },
 
-    clearWave: function () {
-        this.canvases.forEach (function (canvas) { this.clearWaveForEntry(canvas); }, this);
+    clearCanvas: function () {
+        this.canvases.forEach (function (canvas) { this.clearWaveType(canvas); }, this);
     },
 
-    clearWaveForEntry: function (canvas) {
+    clearWaveType: function (canvas) {
         canvas.waveCtx.clearRect(0, 0, canvas.waveCtx.canvas.width, canvas.waveCtx.canvas.height);
         if (!canvas.progressWaveCtx) { return; }
         canvas.progressWaveCtx.clearRect(0, 0, canvas.progressWaveCtx.canvas.width, canvas.progressWaveCtx.canvas.height);
     },
 
-    drawBars: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
+    routeAndClear: function (functionName, peaks, start, end) {
         // Split channels if they exist.
         if (this.params.splitChannels) {
             var channels = peaks;
             this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-            channels.forEach(function(channelPeaks, i) { this.drawBars(channelPeaks, i, start, end); }, this);
+            channels.forEach(function(channelPeaks, i) { this[functionName](channelPeaks, i, start, end); }, this);
             return;
         }
-        // Extract peaks if it's in an array.
+        // Extract peaks if they are in an array.
         if (peaks[0] instanceof Array) {peaks = peaks[0]; }
+
+        this.clearCanvas();
+    },
+
+    drawBars: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
+        // Split channels if they exist, extract peaks if they are in an array, and clear the canvas.
+        this.routeAndClear ('drawBars', peaks, start, end);
 
         // Bar wave draws the bottom only as a reflection of the top,
         // so we don't need negative values.
         var hasMinVals = [].some.call(peaks, function (val) {return val < 0;});
+
         // Skip every other value if there are negatives.
         var peakIndexScale = (hasMinVals) ? 2 : 1;
 
         // A half-pixel offset makes lines crisp.
-        var width = this.width;
         var height = this.params.height * this.params.pixelRatio;
         var offsetY = height * channelIndex || 0;
         var halfH = height / 2;
+
         var length = peaks.length / peakIndexScale;
         var bar = this.params.barWidth * this.params.pixelRatio;
         var gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
@@ -159,7 +168,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             var absmax = -min > max ? -min : max;
         }
 
-        var scale = length / width;
+        var scale = length / this.width;
 
         for (var i = (start / scale); i < (end / scale); i += step) {
             var peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
@@ -171,15 +180,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     }),
 
     drawWave: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
-        // Split channels if they exist.
-        if (this.params.splitChannels) {
-            var channels = peaks;
-            this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-            channels.forEach(function(channelPeaks, i) { this.drawWave(channelPeaks, i, start, end); }, this);
-            return;
-        }
-        // Extract peaks if it's in an array.
-        if (peaks[0] instanceof Array) { peaks = peaks[0]; }
+        // Split channels if they exist, extract peaks if they are in an array, and clear the canvas.
+        this.routeAndClear ('drawWave', peaks, start, end);
 
         // Support arrays without negative peaks.
         var hasMinValues = [].some.call(peaks, function (val) { return val < 0; });
@@ -216,13 +218,17 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     invertTransparency: function () {
         this.canvases.forEach (function (canvasGroup) {
             ['wave'].concat(canvasGroup.progressWaveCtx ? ['progressWave'] : []).forEach (function (waveType) {
+                // Draw the wave canvas onto a new empty canvas.
                 var canvas = canvasGroup[waveType];
                 var temp = document.createElement('canvas');
                 temp.width = canvas.width; temp.height = canvas.height;
                 temp.getContext('2d').drawImage (canvas, 0, 0);
                 var ctx = canvas.getContext('2d');
                 ctx.fillStyle = (waveType == 'wave' || this.params.progressColor === undefined) ? this.params.waveColor : this.params.progressColor;
+                // Draw a rectangle onto the wave canvas to fill it with a certain color.
+                ctx.globalCompositeOperation = 'copy';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // Cut out the wave shape from the rectangle and reset globalCompositeOperation.
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.drawImage (temp, 0, 0);
                 ctx.globalCompositeOperation = 'source-over';
