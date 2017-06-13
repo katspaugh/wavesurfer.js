@@ -603,7 +603,7 @@ var WaveSurfer = {
      * Display empty waveform.
      */
     empty: function (init) {
-        init = init || {}
+        init = init || {};
         if (!this.backend.isPaused()) {
             this.stop();
             this.backend.disconnectSource();
@@ -612,7 +612,7 @@ var WaveSurfer = {
         this.clearTmpEvents();
         this.drawer.progress(0);
         this.drawer.setWidth(0);
-        if ((!'drawPeaks' in init) || (init.drawPeaks == true)) this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
+        if (!('drawPeaks' in init) || (init.drawPeaks == true)) { this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0); }
     },
 
     /**
