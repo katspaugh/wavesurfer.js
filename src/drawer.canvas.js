@@ -112,13 +112,18 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
 
         var scale = length / width;
 
-        this.waveCc.fillStyle = this.params.waveColor;
+        this.waveCc.waveFillStyle = this.params.waveColor;
         if (this.progressCc) {
-            this.progressCc.fillStyle = this.params.progressColor;
+            this.progressCc.waveFillStyle = this.params.progressColor;
         }
 
         [ this.waveCc, this.progressCc ].forEach(function (cc) {
             if (!cc) { return; }
+            if (this.params.backgroundColor) {
+              cc.fillStyle = this.params.backgroundColor;
+              cc.fillRect(0, 0, this.width, this.height);
+            }
+            cc.fillStyle = cc.waveFillStyle;
 
             for (var i = (start / scale); i < (end / scale); i += step) {
                 var peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
@@ -174,14 +179,18 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.Canvas, {
             absmax = -min > max ? -min : max;
         }
 
-        this.waveCc.fillStyle = this.params.waveColor;
+        this.waveCc.waveFillStyle = this.params.waveColor;
         if (this.progressCc) {
-            this.progressCc.fillStyle = this.params.progressColor;
+            this.progressCc.waveFillStyle = this.params.progressColor;
         }
 
         [ this.waveCc, this.progressCc ].forEach(function (cc) {
             if (!cc) { return; }
-
+            if (this.params.backgroundColor) {
+              cc.fillStyle = this.params.backgroundColor;
+              cc.fillRect(0, 0, this.width, this.height);
+            }
+            cc.fillStyle = cc.waveFillStyle;
             cc.beginPath();
             cc.moveTo(start * scale + $, halfH + offsetY);
 

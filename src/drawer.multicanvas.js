@@ -184,6 +184,13 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         var scale = length / width;
 
+        if (this.params.backgroundColor){
+          this.canvases.forEach (function (entry) {
+            this.setBackgroundFillStyles(entry);
+            this.fillCanvas(entry.waveCtx);
+          }, this);
+        }
+
         for (var i = (start / scale); i < (end / scale); i += step) {
             var peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
             var h = Math.round(peak / absmax * halfH);
@@ -229,6 +236,12 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             absmax = -min > max ? -min : max;
         }
 
+        if (this.params.backgroundColor){
+          this.canvases.forEach (function (entry) {
+            this.setBackgroundFillStyles(entry);
+            this.fillCanvas(entry.waveCtx);
+          }, this);
+        }
         this.drawLine(peaks, absmax, halfH, offsetY, start, end);
 
         // Always draw a median line
@@ -317,6 +330,14 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         ctx.fillRect(x, y, width, height);
     },
 
+    fillCanvas: function (ctx) {
+      if (!ctx) { return; }
+      ctx.fillRect(0, 0, this.maxCanvasWidth, this.params.height * this.params.pixelRatio);
+    },
+
+    setBackgroundFillStyles: function(entry) {
+      entry.waveCtx.fillStyle = this.params.backgroundColor;
+    },
     setFillStyles: function (entry) {
         entry.waveCtx.fillStyle = this.params.waveColor;
         if (this.hasProgressCanvas) {
