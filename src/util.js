@@ -47,8 +47,7 @@ WaveSurfer.util = {
         init.sourceList.forEach(function (source) {
             if ('get' in source) {
                 Object.defineProperty(source.object, source.property, {
-                    configurable: true,
-                    get: function () { return source.get(target_object[target_property]); }
+                    configurable: true, get: function () { return source.get(target_object[target_property]); }
                 });
             } else {
                 Object.defineProperty(source.object, source.property, {
