@@ -27,22 +27,23 @@ WaveSurfer.util = {
         });
         return dest;
     },
+
     deepMerge: function (target, obj) {
-        if (obj === null || typeof(obj) != 'object' || 'isActiveClone' in obj) return (typeof(target) != 'object') ? obj : target;
+        if (obj === null || typeof(obj) != 'object' || 'isActiveClone' in obj) { return (typeof(target) != 'object') ? obj : target; }
         if (target === null || typeof(target) != 'object') {
             var target = (obj instanceof Date) ? new obj.constructor() : obj.constructor();
         }
         for (var key in obj) {
             if (!Object.prototype.hasOwnProperty.call(obj, key)) { return; }
-            obj['isActiveClone'] = null;
+            obj.isActiveClone = null;
             target[key] = (obj[key] instanceof Element) ? obj[key] : this.deepMerge(target[key], obj[key]);
-            delete obj['isActiveClone'];
+            delete obj.isActiveClone;
         }
         return target;
     },
 
     setAliases: function (init) {
-        var target_object = init.target.object, target_property = init.target.property
+        var target_object = init.target.object, target_property = init.target.property;
         init.sourceList.forEach(function (source) {
             if ('get' in source) {
                 Object.defineProperty(source.object, source.property, {
