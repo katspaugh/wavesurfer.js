@@ -296,7 +296,7 @@ WaveSurfer.Spectrogram = {
       this.wrapper.scrollLeft = e.target.scrollLeft;
     },
 
-    resample: function(oldMatrix, columnsNumber) {
+    resample: function(oldMatrix) {
         var columnsNumber = this.width;
         var newMatrix = [];
 
