@@ -27,6 +27,44 @@ WaveSurfer.util = {
         });
         return dest;
     },
+    deepMerge: function (target, obj) {
+        if (obj === null || typeof(obj) != 'object' || 'isActiveClone' in obj) return (typeof(target) != 'object') ? obj : target;
+        if (target === null || typeof(target) != 'object') {
+            var target = (obj instanceof Date) ? new obj.constructor() : obj.constructor();
+        }
+        for (var key in obj) {
+            if (!Object.prototype.hasOwnProperty.call(obj, key)) { return; }
+            obj['isActiveClone'] = null;
+            target[key] = (obj[key] instanceof Element) ? obj[key] : this.deepMerge(target[key], obj[key]);
+            delete obj['isActiveClone'];
+        }
+        return target;
+    },
+
+    setAliases: function (init) {
+        var target_object = init.target.object, target_property = init.target.property
+        init.sourceList.forEach(function (source) {
+            if ('get' in source) {
+                Object.defineProperty(source.object, source.property, {
+                    configurable: true,
+                    get: function () { return source.get(target_object[target_property]); }
+                });
+            } else {
+                Object.defineProperty(source.object, source.property, {
+                    configurable: true, get: function () { return target_object[target_property]; }
+                });
+            }
+            if ('set' in source) {
+                Object.defineProperty(source.object, source.property, {
+                    set: function (value) { target_object[target_property] = source.set(value); }
+                });
+            } else {
+                Object.defineProperty(source.object, source.property, {
+                    set: function (value) { target_object[target_property] = value; }
+                });
+            }
+        });
+    },
 
     debounce: function (func, wait, immediate) {
         var args, context, timeout;
