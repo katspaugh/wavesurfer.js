@@ -20,125 +20,110 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     createElements: function () {
-        this.progressWave = this.wrapper.appendChild(
-            this.style(document.createElement('wave'), {
+        ['progressWave', 'wave'].forEach(function (waveType) {
+            this[waveType] = this.wrapper.appendChild(
+                this.style(document.createElement('wave'), Object.assign({}, this.params.styleList[waveType], {
+                    position: 'absolute',
+                    zIndex: 2,
+                    left: 0,
+                    top: 0,
+                    height: '100%',
+                    overflow: 'hidden',
+                    width: (waveType == 'progressWave') ? '0' : '100%',
+                    boxSizing: 'border-box',
+                    pointerEvents: 'none'
+                }))
+            );
+            if (this.params.classList[waveType]) { this[waveType].classList.add(this.params.classList[waveType]); }
+            if (waveType == 'progressWave') { this[waveType].style.display = 'none'; }
+        }, this);
+        this.cursor = this.wrapper.appendChild(
+            this.style(document.createElement('div'), Object.assign({}, this.params.styleList.cursor, {
+                backgroundColor: this.params.cursorColor,
                 position: 'absolute',
                 zIndex: 2,
+                width: this.params.cursorWidth + 'px',
+                height: '100%',
                 left: 0,
-                top: 0,
-                bottom: 0,
-                overflow: 'hidden',
-                width: '0',
-                display: 'none',
-                boxSizing: 'border-box',
-                borderRightStyle: 'solid',
-                borderRightWidth: this.params.cursorWidth + 'px',
-                borderRightColor: this.params.cursorColor,
-                pointerEvents: 'none'
-            })
+                display: 'none'
+            }))
         );
-
+        if (this.params.classList.cursor) { this.cursor.classList.add(this.params.classList.cursor); }
         this.addCanvas();
     },
 
     updateSize: function () {
-        var totalWidth = Math.round(this.width / this.params.pixelRatio),
-            requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
+        var totalWidth = Math.round(this.width / this.params.pixelRatio);
+        var requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
 
-        while (this.canvases.length < requiredCanvases) {
-            this.addCanvas();
-        }
+        while (this.canvases.length < requiredCanvases) { this.addCanvas(); }
+        while (this.canvases.length > requiredCanvases) { this.removeCanvas(); }
 
-        while (this.canvases.length > requiredCanvases) {
-            this.removeCanvas();
-        }
-
-        this.canvases.forEach(function (entry, i) {
-            // Add some overlap to prevent vertical white stripes, keep the width even for simplicity.
-            var canvasWidth = this.maxCanvasWidth + 2 * Math.ceil(this.params.pixelRatio / 2);
-
-            if (i == this.canvases.length - 1) {
-                canvasWidth = this.width - (this.maxCanvasWidth * (this.canvases.length - 1));
+        this.canvases.forEach (function (canvas, i) {
+            // Add some overlap to prevent vertical white stripes; keep the width even for simplicity.
+            if (i != this.canvases.length - 1) {
+                var canvasWidth = this.maxCanvasWidth + 2 * Math.ceil(this.params.pixelRatio / 2);
+            } else {
+                var canvasWidth = this.width - (this.maxCanvasWidth * (this.canvases.length - 1));
             }
-
-            this.updateDimensions(entry, canvasWidth, this.height);
-            this.clearWaveForEntry(entry);
+            this.updateDimensions(canvas, canvasWidth, this.height);
+            this.clearWaveForEntry(canvas);
         }, this);
     },
 
     addCanvas: function () {
-        var entry = {},
-            leftOffset = this.maxCanvasElementWidth * this.canvases.length;
-
-        entry.wave = this.wrapper.appendChild(
-            this.style(document.createElement('canvas'), {
-                position: 'absolute',
-                zIndex: 2,
-                left: leftOffset + 'px',
-                top: 0,
-                bottom: 0,
-                height: '100%',
-                pointerEvents: 'none'
-            })
-        );
-        entry.waveCtx = entry.wave.getContext('2d');
-
-        if (this.hasProgressCanvas) {
-            entry.progress = this.progressWave.appendChild(
+        var entry = {};
+        var leftOffset = this.maxCanvasElementWidth * this.canvases.length;
+        ['progressWave', 'wave'].forEach (function (waveType) {
+            entry[waveType] = this[waveType].appendChild(
                 this.style(document.createElement('canvas'), {
                     position: 'absolute',
                     left: leftOffset + 'px',
-                    top: 0,
-                    bottom: 0,
-                    height: '100%'
-                })
-            );
-            entry.progressCtx = entry.progress.getContext('2d');
-        }
-
+                    top: !this.invertTransparency ? 0 : -(this.halfPixel / 2) + 'px', // Add a small buffer to prevent gaps.
+                    height: !this.invertTransparency ? '100%' : 'calc(100% + ' + this.halfPixel + 'px)'
+                }));
+            entry[waveType + 'Ctx'] = entry[waveType].getContext('2d');
+        }, this);
         this.canvases.push(entry);
     },
 
     removeCanvas: function () {
         var lastEntry = this.canvases.pop();
         lastEntry.wave.parentElement.removeChild(lastEntry.wave);
-        if (this.hasProgressCanvas) {
-            lastEntry.progress.parentElement.removeChild(lastEntry.progress);
-        }
+        if (lastEntry.progressWave) { lastEntry.progressWave.parentElement.removeChild(lastEntry.progressWave); }
     },
 
-    updateDimensions: function (entry, width, height) {
-        var elementWidth = Math.round(width / this.params.pixelRatio),
-            totalWidth = Math.round(this.width / this.params.pixelRatio);
+    updateDimensions: function (canvas, width, height) {
+        var elementWidth = Math.round(width / this.params.pixelRatio);
+        var totalWidth   = Math.round(this.width / this.params.pixelRatio);
 
-        // Where the canvas starts and ends in the waveform, represented as a decimal between 0 and 1.
-        entry.start = (entry.waveCtx.canvas.offsetLeft / totalWidth) || 0;
-        entry.end = entry.start + elementWidth / totalWidth;
+        // Specify where the canvas starts and ends in the waveform, represented as a decimal between 0 and 1.
+        canvas.start = (canvas.waveCtx.canvas.offsetLeft / totalWidth) || 0;
+        canvas.end = canvas.start + elementWidth / totalWidth;
 
-        entry.waveCtx.canvas.width = width;
-        entry.waveCtx.canvas.height = height;
-        this.style(entry.waveCtx.canvas, { width: elementWidth + 'px' });
+        canvas.waveCtx.canvas.width = width;
+        canvas.waveCtx.canvas.height = height;
 
-        this.style(this.progressWave, { display: 'block' });
+        this.style(this.wave, {height: height / this.params.pixelRatio + 'px'});
+        this.style(canvas.waveCtx.canvas, {width: elementWidth + 'px'});
+        this.style(this.cursor, {display: 'block'});
 
-        if (this.hasProgressCanvas) {
-            entry.progressCtx.canvas.width = width;
-            entry.progressCtx.canvas.height = height;
-            this.style(entry.progressCtx.canvas, { width: elementWidth + 'px' });
-        }
+        if (!canvas.progressWaveCtx) { return; }
+        this.style(this.progressWave, {height: height / this.params.pixelRatio + 'px'});
+        canvas.progressWaveCtx.canvas.width  = width;
+        canvas.progressWaveCtx.canvas.height = height;
+        this.style(canvas.progressWaveCtx.canvas, {width: elementWidth + 'px'});
+        this.style(this.progressWave, {display: 'block'});
     },
 
     clearWave: function () {
-        this.canvases.forEach(function (entry) {
-            this.clearWaveForEntry(entry);
-        }, this);
+        this.canvases.forEach (function (canvas) { this.clearWaveForEntry(canvas); }, this);
     },
 
-    clearWaveForEntry: function (entry) {
-        entry.waveCtx.clearRect(0, 0, entry.waveCtx.canvas.width, entry.waveCtx.canvas.height);
-        if (this.hasProgressCanvas) {
-            entry.progressCtx.clearRect(0, 0, entry.progressCtx.canvas.width, entry.progressCtx.canvas.height);
-        }
+    clearWaveForEntry: function (canvas) {
+        canvas.waveCtx.clearRect(0, 0, canvas.waveCtx.canvas.width, canvas.waveCtx.canvas.height);
+        if (!canvas.progressWaveCtx) { return; }
+        canvas.progressWaveCtx.clearRect(0, 0, canvas.progressWaveCtx.canvas.width, canvas.progressWaveCtx.canvas.height);
     },
 
     drawBars: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
@@ -282,50 +267,52 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
     fillRect: function (x, y, width, height) {
         var startCanvas = Math.floor(x / this.maxCanvasWidth);
-        var endCanvas = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1,
-                                this.canvases.length);
+        var endCanvas   = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1, this.canvases.length);
+
         for (var i = startCanvas; i < endCanvas; i++) {
-            var entry = this.canvases[i],
-                leftOffset = i * this.maxCanvasWidth;
+            var canvas = this.canvases[i];
+            var leftOffset = i * this.maxCanvasWidth;
+
             var intersection = {
                 x1: Math.max(x, i * this.maxCanvasWidth),
                 y1: y,
-                x2: Math.min(x + width, i * this.maxCanvasWidth + entry.waveCtx.canvas.width),
+                x2: Math.min(x + width, i * this.maxCanvasWidth + canvas.waveCtx.canvas.width),
                 y2: y + height
             };
 
             if (intersection.x1 < intersection.x2) {
-                this.setFillStyles(entry);
-
-                this.fillRectToContext(entry.waveCtx,
+                this.setFillStyles(canvas);
+                ['wave'].concat(canvas.progressWaveCtx ? ['progressWave'] : []).forEach (function (waveType) {
+                    this.fillRectToContext(canvas[waveType + 'Ctx'],
                         intersection.x1 - leftOffset,
                         intersection.y1,
                         intersection.x2 - intersection.x1,
                         intersection.y2 - intersection.y1);
-
-                this.fillRectToContext(entry.progressCtx,
-                        intersection.x1 - leftOffset,
-                        intersection.y1,
-                        intersection.x2 - intersection.x1,
-                        intersection.y2 - intersection.y1);
+               }, this);
             }
         }
     },
 
     fillRectToContext: function (ctx, x, y, width, height) {
-        if (!ctx) { return; }
-        ctx.fillRect(x, y, width, height);
+        if (ctx) { ctx.fillRect(x, y, width, height); }
     },
 
-    setFillStyles: function (entry) {
-        entry.waveCtx.fillStyle = this.params.waveColor;
-        if (this.hasProgressCanvas) {
-            entry.progressCtx.fillStyle = this.params.progressColor;
-        }
+    setFillStyles: function (canvas) {
+        if (this.invertTransparency) { var cutColor = ('cutColor' in this.invertTransparency) ? this.invertTransparency.cutColor : '#fefefe'; }
+        canvas.waveCtx.fillStyle = this.invertTransparency ? cutColor : this.params.waveColor;
+        if (canvas.progressWaveCtx) { canvas.progressWaveCtx.fillStyle = this.invertTransparency ? cutColor : this.params.progressColor; }
     },
 
     updateProgress: function (pos) {
-        this.style(this.progressWave, { width: pos + 'px' });
+        this.style(this.wave, { left: pos + 'px', width: 'calc(100% - ' + pos + 'px)' });
+        this.canvases.forEach (function (canvas, i) {
+            this.style(canvas.wave, { left: -pos + 'px' });
+        }, this);
+        var cursorPos = pos - ((this.params.cursorAlignment == 'right') ? 0
+            : (this.params.cursorAlignment == 'middle') ? (this.params.cursorWidth / 2)
+            : this.params.cursorWidth);
+        this.style(this.cursor, { left: cursorPos + 'px' });
+        if (this.progressWave) { this.style(this.progressWave, { width: pos + 'px' }); }
     },
 
     /**
