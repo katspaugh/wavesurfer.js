@@ -141,48 +141,53 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     },
 
-    drawBars: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
-        // Split channels
-        if (peaks[0] instanceof Array) {
+    routeAndClear: function (functionName, peaks, start, end) {
+        // Split channels if they exist.
+        if (this.params.splitChannels) {
             var channels = peaks;
-            if (this.params.splitChannels) {
-                this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach(function(channelPeaks, i) {
-                    this.drawBars(channelPeaks, i, start, end);
-                }, this);
-                return;
-            } else {
-                peaks = channels[0];
-            }
+            this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
+            channels.forEach(function(channelPeaks, i) { this[functionName](channelPeaks, i, start, end); }, this);
+            return;
         }
+        // Extract peaks if they are in an array.
+        if (peaks[0] instanceof Array) { peaks = peaks[0]; }
+
+        this.clearWave();
+
+        return peaks;
+    },
+
+    drawBars: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
+        // Split channels if they exist, extract peaks if they are in an array, and clear the canvas.
+        peaks = this.routeAndClear ('drawBars', peaks, start, end);
+        if (peaks === undefined) { return; }
 
         // Bar wave draws the bottom only as a reflection of the top,
-        // so we don't need negative values
+        // so we don't need negative values.
         var hasMinVals = [].some.call(peaks, function (val) {return val < 0;});
-        // Skip every other value if there are negatives.
-        var peakIndexScale = 1;
-        if (hasMinVals) {
-            peakIndexScale = 2;
-        }
 
-        // A half-pixel offset makes lines crisp
-        var width = this.width;
+        // Skip every other value if there are negatives.
+        var peakIndexScale = (hasMinVals) ? 2 : 1;
+
+        // A half-pixel offset makes lines crisp.
         var height = this.params.height * this.params.pixelRatio;
         var offsetY = height * channelIndex || 0;
         var halfH = height / 2;
+
         var length = peaks.length / peakIndexScale;
         var bar = this.params.barWidth * this.params.pixelRatio;
         var gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
         var step = bar + gap;
 
-        var absmax = 1 / this.params.barHeight;
-        if (this.params.normalize) {
+        if (!this.params.normalize) {
+            var absmax = 1 / this.params.barHeight;
+        } else {
             var max = WaveSurfer.util.max(peaks);
             var min = WaveSurfer.util.min(peaks);
-            absmax = -min > max ? -min : max;
+            var absmax = -min > max ? -min : max;
         }
 
-        var scale = length / width;
+        var scale = length / this.width;
 
         for (var i = (start / scale); i < (end / scale); i += step) {
             var peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
@@ -192,21 +197,11 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     }),
 
     drawWave: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
-        // Split channels
-        if (peaks[0] instanceof Array) {
-            var channels = peaks;
-            if (this.params.splitChannels) {
-                this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                channels.forEach(function(channelPeaks, i) {
-                    this.drawWave(channelPeaks, i, start, end);
-                }, this);
-                return;
-            } else {
-                peaks = channels[0];
-            }
-        }
+        // Split channels if they exist, extract peaks if they are in an array, and clear the canvas.
+        peaks = this.routeAndClear ('drawWave', peaks, start, end);
+        if (peaks === undefined) { return; }
 
-        // Support arrays without negative peaks
+        // Support arrays without negative peaks.
         var hasMinValues = [].some.call(peaks, function (val) { return val < 0; });
         if (!hasMinValues) {
             var reflectedPeaks = [];
@@ -217,21 +212,22 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             peaks = reflectedPeaks;
         }
 
-        // A half-pixel offset makes lines crisp
+        // A half-pixel offset makes lines crisp.
         var height = this.params.height * this.params.pixelRatio;
         var offsetY = height * channelIndex || 0;
         var halfH = height / 2;
 
-        var absmax = 1 / this.params.barHeight;
-        if (this.params.normalize) {
+        if (!this.params.normalize) {
+            var absmax = 1 / this.params.barHeight;
+        } else {
             var max = WaveSurfer.util.max(peaks);
             var min = WaveSurfer.util.min(peaks);
-            absmax = -min > max ? -min : max;
+            var absmax = -min > max ? -min : max;
         }
 
         this.drawLine(peaks, absmax, halfH, offsetY, start, end);
 
-        // Always draw a median line
+        // Always draw a median line.
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
     }),
 
