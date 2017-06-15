@@ -15,6 +15,8 @@ var WaveSurfer = {
         autoCenter    : true,
         backend       : 'WebAudio',
         barHeight     : 1,
+        classList     : {},
+        styleList     : {cursor: {}},
         closeAudioContext: false,
         container     : null,
         cursorColor   : '#333',
@@ -42,8 +44,25 @@ var WaveSurfer = {
     },
 
     init: function (params) {
-        // Extract relevant parameters (or defaults)
-        this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
+        // Get defaults.
+        var temp = Object.assign ({}, this.defaultParams);
+
+        // Set aliases.
+        WaveSurfer.util.setAliases ({
+            target: {object: temp.styleList.cursor, property: '_backgroundColor'},
+            sourceList: [
+                {object: temp, property: 'cursorColor'},
+                {object: temp.styleList.cursor, property: 'backgroundColor'}
+            ]
+        });
+
+        WaveSurfer.util.setAliases ({
+            target: {object: temp.styleList.cursor, property: '_width'},
+            sourceList: [
+                {object: temp, property: 'cursorWidth', get: function (n) { return parseFloat(n); }, set: function (n) { return n + 'px'; }},
+                {object: temp.styleList.cursor, property: 'width'}
+            ]
+        });
 
         this.container = 'string' == typeof params.container ?
             document.querySelector(this.params.container) :
