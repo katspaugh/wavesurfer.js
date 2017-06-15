@@ -109,18 +109,23 @@ module.exports = function (grunt) {
             },
             ignore_warning: {
                 options: {
+                    // {a} is already defined.
                     '-W004': true,
-                    // Expected an assignment or function call and instead saw an expression
+                    // Expected an assignment or function call and instead saw an expression.
                     '-W030': true,
-                    // {a} used out of scope
+                    // {a} used out of scope.
                     '-W038': true,
-                    // Use '!==' to compare with ''
+                    // Use '!==' to compare with ''.
                     '-W041': true,
+                    // Bad constructor.
                     '-W056': true,
                     // Missing '()' invoking a constructor.
                     '-W058': true,
+                    // Use the function form of 'use strict'.
                     '-W079': true,
-                    // Use the function form of 'use strict'
+                    // Don't make functions within a loop.
+                    '-W083': true,
+                    // Use the function form of 'use strict'.
                     '-W097': true
                 },
                 src: [ '<%= concat.dist.src %>', 'plugin/*.js', 'spec/*.spec.js' ]
