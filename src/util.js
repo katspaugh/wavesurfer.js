@@ -34,7 +34,7 @@ WaveSurfer.util = {
             var target = (obj instanceof Date) ? new obj.constructor() : obj.constructor();
         }
         for (var key in obj) {
-            if (!Object.prototype.hasOwnProperty.call(obj, key)) { return; }
+            if (!Object.prototype.hasOwnProperty.call(obj, key)) { continue; }
             obj.isActiveClone = null;
             target[key] = (obj[key] instanceof Element) ? obj[key] : this.deepMerge(target[key], obj[key]);
             delete obj.isActiveClone;
