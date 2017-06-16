@@ -43,24 +43,24 @@ WaveSurfer.util = {
     },
 
     setAliases: function (init) {
-        var target_object = init.target.object, target_property = init.target.property;
+        var targetObject = init.target.object, targetProperty = init.target.property;
         init.sourceList.forEach(function (source) {
             if ('get' in source) {
                 Object.defineProperty(source.object, source.property, {
-                    configurable: true, get: function () { return source.get(target_object[target_property]); }
+                    configurable: true, get: function () { return source.get(targetObject[targetProperty]); }
                 });
             } else {
                 Object.defineProperty(source.object, source.property, {
-                    configurable: true, get: function () { return target_object[target_property]; }
+                    configurable: true, get: function () { return targetObject[targetProperty]; }
                 });
             }
             if ('set' in source) {
                 Object.defineProperty(source.object, source.property, {
-                    set: function (value) { target_object[target_property] = source.set(value); }
+                    set: function (value) { targetObject[targetProperty] = source.set(value); }
                 });
             } else {
                 Object.defineProperty(source.object, source.property, {
-                    set: function (value) { target_object[target_property] = value; }
+                    set: function (value) { targetObject[targetProperty] = value; }
                 });
             }
         });
