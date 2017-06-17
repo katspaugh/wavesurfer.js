@@ -20,9 +20,10 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
     },
 
     createElements: function () {
+        var params = this.params;
         ['progressWave', 'wave'].forEach(function (waveType) {
             this[waveType] = this.wrapper.appendChild(
-                this.style(document.createElement('wave'), Object.assign({}, this.params.styleList[waveType], {
+                this.style(document.createElement('wave'), Object.assign({}, params.styleList[waveType], {
                     position: 'absolute',
                     zIndex: 2,
                     left: 0,
@@ -34,21 +35,25 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                     pointerEvents: 'none'
                 }))
             );
-            if (this.params.classList[waveType]) { this[waveType].classList.add(this.params.classList[waveType]); }
+            if (params.classList[waveType]) { this[waveType].classList.add(params.classList[waveType]); }
             if (waveType == 'progressWave') { this[waveType].style.display = 'none'; }
         }, this);
         this.cursor = this.wrapper.appendChild(
-            this.style(document.createElement('div'), Object.assign({}, this.params.styleList.cursor, {
-                backgroundColor: this.params.cursorColor,
+            this.style(document.createElement('div'), Object.assign({}, params.styleList.cursor, {
+                backgroundColor: params.cursorColor,
                 position: 'absolute',
                 zIndex: 2,
-                width: this.params.cursorWidth + 'px',
+                width: params.cursorWidth + 'px',
                 height: '100%',
                 left: 0,
                 display: 'none'
             }))
         );
-        if (this.params.classList.cursor) { this.cursor.classList.add(this.params.classList.cursor); }
+        WaveSurfer.util.refreshAliases (this.aliases, {
+            cursorColor: { styleSource: {object: this.cursor.style, property: 'backgroundColor'} },
+            cursorWidth: { styleSource: {object: this.cursor.style, property: 'width'} },
+        });
+        if (params.classList.cursor) { this.cursor.classList.add(params.classList.cursor); }
         this.addCanvas();
     },
 
