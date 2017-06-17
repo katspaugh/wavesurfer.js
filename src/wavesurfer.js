@@ -422,12 +422,12 @@ var WaveSurfer = {
     /**
      * Loads audio and re-renders the waveform.
      */
-    load: function (url, peaks, preload) {
+    load: function (url, peaks, preload, loadOnInteraction) {
         this.empty({drawPeaks: peaks === undefined});
         this.isMuted = false;
 
         switch (this.params.backend) {
-            case 'WebAudio': return this.loadBuffer(url, peaks);
+            case 'WebAudio': return this.loadBuffer(url, peaks, true, loadOnInteraction);
             case 'MediaElement': return this.loadMediaElement(url, peaks, preload);
         }
     },
@@ -435,7 +435,7 @@ var WaveSurfer = {
     /**
      * Loads audio using Web Audio buffer backend.
      */
-    loadBuffer: function (url, peaks) {
+    loadBuffer: function (url, peaks, preload, loadOnInteraction) {
         var load = (function (action) {
             if (action) {
                 this.tmpEvents.push(this.once('ready', action));
@@ -447,7 +447,11 @@ var WaveSurfer = {
             this.backend.setPeaks(peaks);
             this.drawBuffer();
         }
-        return load();
+        if (loadOnInteraction) {
+            this.tmpEvents.push(this.once('interaction', function (result) { load(result); }));
+        } else {
+            return load();
+        }
     },
 
     /**
