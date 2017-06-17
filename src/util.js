@@ -31,7 +31,6 @@ WaveSurfer.util = {
     deepMerge: function (target, obj, levels) {
         if (obj === null || typeof(obj) != 'object' || 'isActiveClone' in obj) { return (typeof(target) != 'object') ? obj : target; }
         if (target === null || typeof(target) != 'object') {
-        console.log (target)
             var target = (obj instanceof Date) ? new obj.constructor() : obj.constructor();
         }
         for (var key in obj) {
@@ -50,8 +49,8 @@ WaveSurfer.util = {
             var styleSourceObject = init.styleSource.object, styleSourceProperty = init.styleSource.property;
             var styleSourcePropertyUnderscore = styleSourceProperty.replace(/([A-Z])/g, '-$1').toLowerCase();
             Object.defineProperty(styleSourceObject, styleSourceProperty, {
-                get: function () { return this.getPropertyValue(styleSourcePropertyUnderscore) },
-                set: function (n) {targetObject[targetProperty] = n; this.setProperty(styleSourcePropertyUnderscore, n) }
+                get: function () { return this.getPropertyValue(styleSourcePropertyUnderscore); },
+                set: function (n) {targetObject[targetProperty] = n; this.setProperty(styleSourcePropertyUnderscore, n); }
             });
         }
         init.sourceList.forEach(function (source) {
@@ -79,7 +78,7 @@ WaveSurfer.util = {
 
     refreshAliases: function (aliases, changes) {
         for (var aliasName in aliases) {
-            var alias = aliases[aliasName]
+            var alias = aliases[aliasName];
             if (changes[aliasName]) { WaveSurfer.util.deepMerge(alias, changes[aliasName], 1); }
             WaveSurfer.util.setAliases(alias);
         }
