@@ -28,7 +28,7 @@ WaveSurfer.util = {
         return dest;
     },
 
-    deepMerge: function (target, obj, levels) {
+    deepMerge: function (target, obj, level) {
         if (obj === null || typeof(obj) != 'object' || 'isActiveClone' in obj) { return (typeof(target) != 'object') ? obj : target; }
         if (target === null || typeof(target) != 'object') {
             var target = (obj instanceof Date) ? new obj.constructor() : obj.constructor();
@@ -36,10 +36,10 @@ WaveSurfer.util = {
         for (var key in obj) {
             if (!Object.prototype.hasOwnProperty.call(obj, key)) { continue; }
             obj.isActiveClone = null;
-            if (obj[key] instanceof Element || (levels !== undefined && levels == 0)) {
+            if (obj[key] instanceof Element || (level !== undefined && level == 0)) {
                 target[key] = obj[key];
             } else {
-                target[key] = this.deepMerge(target[key], obj[key], levels === undefined ? undefined : levels - 1);
+                target[key] = this.deepMerge(target[key], obj[key], level === undefined ? undefined : level - 1);
             }
             delete obj.isActiveClone;
         }
