@@ -110,7 +110,7 @@ var WaveSurfer = {
         var my = this;
 
         this.drawer = Object.create(WaveSurfer.Drawer[this.params.renderer]);
-        this.drawer.init(this.container, this.params);
+        this.drawer.init(this.container, this.params, this.aliases);
 
         this.drawer.on('redraw', function () {
             my.drawBuffer();
