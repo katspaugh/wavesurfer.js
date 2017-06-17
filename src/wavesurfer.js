@@ -63,7 +63,7 @@ var WaveSurfer = {
                 {object: temp.styleList.cursor, property: 'width'}
             ]
         };
-        for (var aliasName in this.aliases) { WaveSurfer.util.setAliases (this.aliases[aliasName]); }
+        WaveSurfer.util.refreshAliases (this.aliases);
 
         this.container = 'string' == typeof params.container ?
             document.querySelector(this.params.container) :
