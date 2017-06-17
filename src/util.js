@@ -83,7 +83,7 @@ WaveSurfer.util = {
     refreshAliases: function (aliases, changes) {
         for (var aliasName in aliases) {
             var alias = aliases[aliasName];
-            if (changes[aliasName]) { WaveSurfer.util.deepMerge(alias, changes[aliasName], 1); }
+            if (changes && changes[aliasName]) { WaveSurfer.util.deepMerge(alias, changes[aliasName], 1); }
             WaveSurfer.util.setAliases(alias);
         }
     },
