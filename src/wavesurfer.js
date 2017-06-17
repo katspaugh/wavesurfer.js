@@ -48,21 +48,22 @@ var WaveSurfer = {
         var temp = Object.assign ({}, this.defaultParams);
 
         // Set aliases.
-        WaveSurfer.util.setAliases ({
+        this.aliases = {};
+        this.aliases.cursorColor = {
             target: {object: temp.styleList.cursor, property: '_backgroundColor'},
             sourceList: [
                 {object: temp, property: 'cursorColor'},
                 {object: temp.styleList.cursor, property: 'backgroundColor'}
             ]
-        });
-
-        WaveSurfer.util.setAliases ({
+        };
+        this.aliases.cursorWidth = {
             target: {object: temp.styleList.cursor, property: '_width'},
             sourceList: [
                 {object: temp, property: 'cursorWidth', get: function (n) { return parseFloat(n); }, set: function (n) { return n + 'px'; }},
                 {object: temp.styleList.cursor, property: 'width'}
             ]
-        });
+        };
+        for (var aliasName in this.aliases) { WaveSurfer.util.setAliases (this.aliases[aliasName]); }
 
         this.container = 'string' == typeof params.container ?
             document.querySelector(this.params.container) :
