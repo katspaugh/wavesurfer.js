@@ -154,16 +154,26 @@ var WaveSurfer = {
     },
 
     play: function (start, end) {
-        this.fireEvent('interaction', this.play.bind(this, start, end));
-        this.backend.play(start, end);
+        var my = this;
+        if (my.audioIsReady == true) {
+            action();
+            return true;
+        } else {
+            this.tmpEvents.push(this.once('ready', action));
+            return false;
+        }
+        function action () {
+            my.fireEvent('interaction', my.play.bind(my, start, end));
+            my.backend.play(start, end)
+        }
     },
 
     pause: function () {
-        this.backend.isPaused() || this.backend.pause();
+        return this.backend.isPaused() || this.backend.pause();
     },
 
     playPause: function () {
-        this.backend.isPaused() ? this.play() : this.pause();
+        return this.backend.isPaused() ? this.play() : this.pause();
     },
 
     isPlaying: function () {
