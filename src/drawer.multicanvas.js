@@ -141,27 +141,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     },
 
-    routeAndClear: function (functionName, peaks, start, end) {
-        // Split channels if they exist.
-        if (this.params.splitChannels) {
-            var channels = peaks;
-            this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-            channels.forEach(function(channelPeaks, i) { this[functionName](channelPeaks, i, start, end); }, this);
-            return;
-        }
-        // Extract peaks if they are in an array.
-        if (peaks[0] instanceof Array) { peaks = peaks[0]; }
-
-        this.clearWave();
-
-        return peaks;
-    },
-
-    drawBars: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
-        // Split channels if they exist, extract peaks if they are in an array, and clear the canvas.
-        peaks = this.routeAndClear ('drawBars', peaks, start, end);
-        if (peaks === undefined) { return; }
-
+    drawBars: function (peaks, channelIndex, start, end) {
         // Bar wave draws the bottom only as a reflection of the top,
         // so we don't need negative values.
         var hasMinVals = [].some.call(peaks, function (val) {return val < 0;});
@@ -196,11 +176,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         }
     }),
 
-    drawWave: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
-        // Split channels if they exist, extract peaks if they are in an array, and clear the canvas.
-        peaks = this.routeAndClear ('drawWave', peaks, start, end);
-        if (peaks === undefined) { return; }
-
+    drawWave: function (peaks, channelIndex, start, end) {
         // Support arrays without negative peaks.
         var hasMinValues = [].some.call(peaks, function (val) { return val < 0; });
         if (!hasMinValues) {
@@ -229,7 +205,7 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         // Always draw a median line.
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
-    }),
+    },
 
     drawLine: function (peaks, absmax, halfH, offsetY, start, end) {
         this.canvases.forEach (function (entry) {
