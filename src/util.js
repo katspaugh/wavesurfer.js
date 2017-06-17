@@ -28,15 +28,16 @@ WaveSurfer.util = {
         return dest;
     },
 
-    deepMerge: function (target, obj) {
+    deepMerge: function (target, obj, levels) {
         if (obj === null || typeof(obj) != 'object' || 'isActiveClone' in obj) { return (typeof(target) != 'object') ? obj : target; }
         if (target === null || typeof(target) != 'object') {
+        console.log (target)
             var target = (obj instanceof Date) ? new obj.constructor() : obj.constructor();
         }
         for (var key in obj) {
             if (!Object.prototype.hasOwnProperty.call(obj, key)) { continue; }
             obj.isActiveClone = null;
-            target[key] = (obj[key] instanceof Element) ? obj[key] : this.deepMerge(target[key], obj[key]);
+            target[key] = (obj[key] instanceof Element || (levels !== undefined && levels == 0)) ? obj[key] : this.deepMerge(target[key], obj[key], levels - 1);
             delete obj.isActiveClone;
         }
         return target;
@@ -44,26 +45,44 @@ WaveSurfer.util = {
 
     setAliases: function (init) {
         var targetObject = init.target.object, targetProperty = init.target.property;
+        if (init.styleSource) {
+            var setExtra = function (n) { styleSourceObject[styleSourceProperty] = n; };
+            var styleSourceObject = init.styleSource.object, styleSourceProperty = init.styleSource.property;
+            var styleSourcePropertyUnderscore = styleSourceProperty.replace(/([A-Z])/g, '-$1').toLowerCase();
+            Object.defineProperty(styleSourceObject, styleSourceProperty, {
+                get: function () { return this.getPropertyValue(styleSourcePropertyUnderscore) },
+                set: function (n) {targetObject[targetProperty] = n; this.setProperty(styleSourcePropertyUnderscore, n) }
+            });
+        }
         init.sourceList.forEach(function (source) {
-            if ('get' in source) {
-                Object.defineProperty(source.object, source.property, {
-                    configurable: true, get: function () { return source.get(targetObject[targetProperty]); }
-                });
+            if (source.get) {
+                var get = function () { return source.get(targetObject[targetProperty]); };
             } else {
-                Object.defineProperty(source.object, source.property, {
-                    configurable: true, get: function () { return targetObject[targetProperty]; }
-                });
+                var get = function () { return targetObject[targetProperty]; };
             }
-            if ('set' in source) {
-                Object.defineProperty(source.object, source.property, {
-                    set: function (value) { targetObject[targetProperty] = source.set(value); }
-                });
+            if (source.set) {
+                if (setExtra) {
+                    var set = function (value) { setExtra(value); targetObject[targetProperty] = source.set(value); };
+                } else {
+                    var set = function (value) { targetObject[targetProperty] = source.set(value); };
+                }
             } else {
-                Object.defineProperty(source.object, source.property, {
-                    set: function (value) { targetObject[targetProperty] = value; }
-                });
+                if (setExtra) {
+                    var set = function (value) { setExtra(value); targetObject[targetProperty] = value; };
+                } else {
+                    var set = function (value) { targetObject[targetProperty] = value; };
+                }
             }
+            Object.defineProperty(source.object, source.property, { configurable: true, get: get, set: set });
         });
+    },
+
+    refreshAliases: function (aliases, changes) {
+        for (var aliasName in aliases) {
+            var alias = aliases[aliasName]
+            if (changes[aliasName]) { WaveSurfer.util.deepMerge(alias, changes[aliasName], 1); }
+            WaveSurfer.util.setAliases(alias);
+        }
     },
 
     debounce: function (func, wait, immediate) {
