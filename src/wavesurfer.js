@@ -202,7 +202,7 @@ var WaveSurfer = {
         var oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
-        this.drawer.progress(progress);
+        this.drawer.progress(this.backend.getPlayedPercents());
 
         if (!paused) {
             this.backend.play();
