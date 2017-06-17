@@ -42,6 +42,8 @@ var WaveSurfer = {
     },
 
     init: function (params) {
+        var my = this;
+
         // Extract relevant parameters (or defaults)
         this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
 
@@ -84,6 +86,10 @@ var WaveSurfer = {
         this.createPeakCache();
 
         this.isDestroyed = false;
+        my.on ('ready', function () {
+            my.audioIsReady = true;
+            if (my.progress !== undefined) { my.seekTo(my.progress); }
+        });
     },
 
     createDrawer: function () {
@@ -202,7 +208,7 @@ var WaveSurfer = {
         var oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
-        this.drawer.progress(this.backend.getPlayedPercents());
+        this.drawer.progress(progress);
 
         if (!paused) {
             this.backend.play();
@@ -417,7 +423,7 @@ var WaveSurfer = {
      * Loads audio and re-renders the waveform.
      */
     load: function (url, peaks, preload) {
-        this.empty({ drawPeaks: peaks === undefined });
+        this.empty({drawPeaks: peaks === undefined});
         this.isMuted = false;
 
         switch (this.params.backend) {
@@ -440,10 +446,8 @@ var WaveSurfer = {
         if (peaks) {
             this.backend.setPeaks(peaks);
             this.drawBuffer();
-            this.tmpEvents.push(this.once('interaction', function () { load(); }));
-        } else {
-            return load();
         }
+        return load();
     },
 
     /**
