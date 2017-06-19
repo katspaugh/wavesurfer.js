@@ -312,6 +312,14 @@ export default class Drawer extends util.Observer {
     }
 
     /* Renderer-specific methods */
+
+    /**
+     * Called after cursor related params have changed.
+     *
+     * @abstract
+     */
+    updateCursor() {}
+
     /**
      * Called when the size of the container changes so the renderer can adjust
      *
