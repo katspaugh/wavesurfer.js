@@ -299,31 +299,25 @@ WaveSurfer.Region = {
 
     /* Update the element's position, width, and color. */
     updateRender: function () {
-        var dur = this.wavesurfer.getDuration();
+        var duration = this.wavesurfer.getDuration();
         var width = this.getWidth();
-
         if (this.start < 0) {
           this.start = 0;
           this.end = this.end - this.start;
         }
-        if (this.end > dur) {
-          this.end = dur;
-          this.start = dur - (this.end - this.start);
+        if (this.end > duration) {
+          this.end = duration;
+          this.start = duration - (this.end - this.start);
         }
 
-        if (this.minLength != null) {
-            this.end = Math.max(this.start + this.minLength, this.end);
-        }
-
-        if (this.maxLength != null) {
-            this.end = Math.min(this.start + this.maxLength, this.end);
-        }
+        if (this.minLength != null) { this.end = Math.max(this.start + this.minLength, this.end); }
+        if (this.maxLength != null) { this.end = Math.min(this.start + this.maxLength, this.end); }
 
         if (this.element != null) {
             // Calculate the left and width values of the region such that
             // no gaps appear between regions.
-            var left = Math.round(this.start / dur * width);
-            var regionWidth = Math.round(this.end / dur * width) - left;
+            var left = Math.round(this.start / duration * width);
+            var regionWidth = Math.round(this.end / duration * width) - left;
 
             this.style(this.element, {
                 left: left + 'px',
