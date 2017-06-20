@@ -50,11 +50,11 @@ WaveSurfer.Drawer = {
 
         // If the entire container is not filled and further if the nominal width is less than the parent width...
         if (!this.params.fillParent && visibleWidth < scrollWidth) {
-            var numerator = (clientX - bbox.left) * this.params.pixelRatio // Apparently we need to scale this here...
-            var denominator = visibleWidth - 1
+            var numerator = (clientX - bbox.left) * this.params.pixelRatio; // Apparently we need to scale this here...
+            var denominator = visibleWidth - 1;
         } else {
-            var numerator = clientX - bbox.left + this.wrapper.scrollLeft
-            var denominator = this.wrapper.scrollWidth - 1
+            var numerator = clientX - bbox.left + this.wrapper.scrollLeft;
+            var denominator = this.wrapper.scrollWidth - 1;
         }
 
         // The clicked pixel is never equal the width. It's always 1 pixel less.
