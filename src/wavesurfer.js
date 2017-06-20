@@ -343,10 +343,6 @@ var WaveSurfer = {
         return { width: width, start: start, end: end };
     },
 
-    getComputedWidth: function () { return this.getComputedWidthStartEnd().width; },
-    getComputedStart: function () { return this.getComputedWidthStartEnd().start; },
-    getComputedEnd: function () { return this.getComputedWidthStartEnd().end; },
-
     drawBuffer: function () {
         var wse = this.getComputedWidthAndRange();
         var width = wse.width, start = wse.start, end = wse.end;
