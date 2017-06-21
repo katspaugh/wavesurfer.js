@@ -362,13 +362,17 @@ var WaveSurfer = {
 
         this.params.scrollParent = true;
 
-        this.drawBuffer();
-        this.drawer.progress(this.backend.getPlayedPercents());
+        this.refresh();
 
         this.drawer.recenter(
             this.getCurrentTime() / this.getDuration()
         );
         this.fireEvent('zoom', pxPerSec);
+    },
+
+    refresh: function() {
+        this.drawBuffer();
+        this.drawer.progress(this.backend.getPlayedPercents());
     },
 
     /**
