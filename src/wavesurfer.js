@@ -92,11 +92,6 @@ var WaveSurfer = {
         this.drawer = Object.create(WaveSurfer.Drawer[this.params.renderer]);
         this.drawer.init(this.container, this.params);
 
-        this.drawer.on('redraw', function () {
-            my.drawBuffer();
-            my.drawer.progress(my.backend.getPlayedPercents());
-        });
-
         // Click-to-seek
         this.drawer.on('click', function (e, progress) {
             setTimeout(function () {
