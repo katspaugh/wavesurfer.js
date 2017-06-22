@@ -49,8 +49,11 @@ WaveSurfer.util = {
     setAliases: function (init) {
         var targetObject = init.target.object, targetProperty = init.target.property;
         if (init.styleSource) {
-            var setExtra = function (n) { styleSourceObject[styleSourceProperty] = n; };
-            var styleSourceObject = init.styleSource.object, styleSourceProperty = init.styleSource.property;
+            var styleSource = init.styleSource;
+            var styleAfterSet = (styleSource.set)
+                ? function (n) { styleSourceObject[styleSourceProperty] = styleSource.set(n); }
+                : function (n) { styleSourceObject[styleSourceProperty] = n; };
+            var styleSourceObject = styleSource.object, styleSourceProperty = styleSource.property;
             var styleSourcePropertyUnderscore = styleSourceProperty.replace(/([A-Z])/g, '-$1').toLowerCase();
             Object.defineProperty(styleSourceObject, styleSourceProperty, {
                 get: function () { return this.getPropertyValue(styleSourcePropertyUnderscore); },
@@ -63,15 +66,21 @@ WaveSurfer.util = {
             } else {
                 var get = function () { return targetObject[targetProperty]; };
             }
+            var afterSet = source.afterSet;
+            if (styleAfterSet) {
+                var setExtra = (afterSet) ? function (n) { styleAfterSet(n); afterSet(n); } : styleAfterSet;
+            } else {
+                var setExtra = (afterSet) ? afterSet : undefined;
+            }
             if (source.set) {
                 if (setExtra) {
-                    var set = function (value) { setExtra(value); targetObject[targetProperty] = source.set(value); };
+                    var set = function (value) { value = targetObject[targetProperty] = source.set(value); setExtra(value); };
                 } else {
                     var set = function (value) { targetObject[targetProperty] = source.set(value); };
                 }
             } else {
                 if (setExtra) {
-                    var set = function (value) { setExtra(value); targetObject[targetProperty] = value; };
+                    var set = function (value) { value = targetObject[targetProperty] = value; setExtra(value); };
                 } else {
                     var set = function (value) { targetObject[targetProperty] = value; };
                 }
