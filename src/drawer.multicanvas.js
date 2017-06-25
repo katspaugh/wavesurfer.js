@@ -46,7 +46,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
                 height: '100%',
                 width: '100%',
                 left: 0,
-                display: 'block'
+                display: 'block',
+                pointerEvents: 'none'
             })
         );
         this.cursor = this.cursorWrapper.appendChild(
