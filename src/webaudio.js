@@ -223,6 +223,17 @@ WaveSurfer.WebAudio = {
 
         this.setLength(length);
 
+       /**
+        * The following snippet fixes a buffering data issue on the Safari browser which returned undefined
+        * It creates the missing buffer based on 1 channel, 4096 samples and the sampleRate from the current webaudio context
+        * 4096 samples seemed to be the best fit for rendering
+        * will review this code once a stable version of Safari TP is out
+        */
+        if (!this.buffer.length) {
+            var newBuffer = this.createBuffer(1, 4096, this.sampleRate);
+            this.buffer = newBuffer.buffer;
+        }
+
         var sampleSize = this.buffer.length / length;
         var sampleStep = ~~(sampleSize / 10) || 1;
         var channels = this.buffer.numberOfChannels;
