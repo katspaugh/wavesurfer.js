@@ -483,8 +483,6 @@ export default class SpectrogramPlugin {
 
             const freq = freqStart + (step * i);
             const index = Math.round(freq / (this.sampleRate / 2) * this.fftSamples);
-            const percent = index / this.fftSamples / 2;
-            const y = (1 - percent) * this.height;
             const label = this.freqType(freq);
             const units = this.unitType(freq);
             const x = 16;
