@@ -83,6 +83,9 @@ WaveSurfer.util = {
         var fired100 = false;
 
         xhr.open(options.method || 'GET', options.url, true);
+        if(options.xhrWithCredentials) {
+            xhr.withCredentials = true;
+        }
         xhr.responseType = options.responseType || 'json';
 
         xhr.addEventListener('progress', function (e) {

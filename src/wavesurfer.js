@@ -17,6 +17,7 @@ var WaveSurfer = {
         barHeight     : 1,
         closeAudioContext: false,
         container     : null,
+        xhrWithCredentials   : false,
         cursorColor   : '#333',
         cursorWidth   : 1,
         dragSelection : true,
@@ -52,6 +53,7 @@ var WaveSurfer = {
         if (!this.container) {
             throw new Error('Container element not found');
         }
+        this.xhrWithCredentials=this.params.xhrWithCredentials;
 
         if (this.params.mediaContainer == null) {
             this.mediaContainer = this.container;
@@ -518,7 +520,8 @@ var WaveSurfer = {
 
         var ajax = WaveSurfer.util.ajax({
             url: url,
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
+            xhrWithCredentials: this.xhrWithCredentials
         });
 
         this.currentAjax = ajax;
