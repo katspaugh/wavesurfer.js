@@ -247,14 +247,11 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
         if (!ctx) { return; }
 
         var length = peaks.length / 2;
+        var scale = (this.params.fillParent && this.width != length) ? this.width / length : 1;
 
-        var scale = 1;
-        if (this.params.fillParent && this.width != length) {
-            scale = this.width / length;
-        }
-
-        var first = Math.round(length * entry.start),
-            last = Math.round(length * entry.end);
+        var first = Math.round(length * entry.start);
+        // Use one more peak value to make sure we join peaks at ends -- unless, of course, this is the last canvas.
+        var last = Math.round(length * entry.end) + 1;
         if (first > end || last < start) { return; }
         var canvasStart = Math.max(first, start);
         var canvasEnd = Math.min(last, end);
