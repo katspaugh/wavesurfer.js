@@ -1,9 +1,10 @@
 'use strict';
 
 WaveSurfer.Drawer = {
-    init: function (container, params) {
+    init: function (container, params, aliases) {
         this.container = container;
         this.params = params;
+        this.aliases = aliases;
 
         this.width = 0;
         this.height = params.height * this.params.pixelRatio;
