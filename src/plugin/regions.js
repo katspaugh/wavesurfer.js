@@ -30,7 +30,8 @@ class Region {
 
         this.bindInOut();
         this.render();
-        this.wavesurfer.on('zoom', () => this.updateRender());
+        this.onZoom = this.updateRender.bind(this);
+        this.wavesurfer.on('zoom', this.onZoom);
         this.wavesurfer.fireEvent('region-created', this);
 
     }
@@ -79,7 +80,7 @@ class Region {
             this.wrapper.removeChild(this.element);
             this.element = null;
             this.fireEvent('remove');
-            this.wavesurfer.un('zoom', pxPerSec => this.updateRender(pxPerSec));
+            this.wavesurfer.un('zoom', this.onZoom);
             this.wavesurfer.fireEvent('region-removed', this);
         }
     }
@@ -150,15 +151,14 @@ class Region {
         ].join(':')).join('-');
     }
 
+    getWidth() {
+        return this.wavesurfer.drawer.width / this.wavesurfer.params.pixelRatio;
+    }
+
     /* Update element's position, width, color. */
-    updateRender(pxPerSec) {
+    updateRender() {
         const dur = this.wavesurfer.getDuration();
-        let width;
-        if (pxPerSec) {
-            width = Math.round(this.wavesurfer.getDuration() * pxPerSec);
-        } else {
-            width = this.wrapper.scrollWidth;
-        }
+        const width = this.getWidth();
 
         if (this.start < 0) {
             this.start = 0;
