@@ -424,12 +424,12 @@ WaveSurfer.Region = {
 
                     // Drag
                     if (my.drag && drag) {
-                        my.onDrag(delta);
+                        my.drag(delta);
                     }
 
                     // Resize
                     if (my.resize && resize) {
-                        my.onResize(delta, resize);
+                        my.resize(delta, resize);
                     }
                 }
             };
@@ -457,7 +457,7 @@ WaveSurfer.Region = {
         }());
     },
 
-    onDrag: function (delta) {
+    drag: function (delta) {
         var maxEnd = this.wavesurfer.getDuration();
         if ((this.end + delta) > maxEnd || (this.start + delta) < 0) {
             return;
@@ -469,7 +469,7 @@ WaveSurfer.Region = {
         });
     },
 
-    onResize: function (delta, direction) {
+    resize: function (delta, direction) {
         if (direction == 'start') {
             this.update({
                 start: Math.min(this.start + delta, this.end),
