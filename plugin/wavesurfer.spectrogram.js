@@ -239,14 +239,14 @@ WaveSurfer.Spectrogram = {
 
     loadLabels: function (bgFill, fontSizeFreq, fontSizeUnit, fontType, textColorFreq, textColorUnit, textAlign, container) {
         var frequenciesHeight = this.height;
-        var bgFill = bgFill || 'rgba(68,68,68,0.5)';
-        var fontSizeFreq = fontSizeFreq || '12px';
-        var fontSizeUnit = fontSizeUnit || '10px';
-        var fontType = fontType || 'Helvetica';
-        var textColorFreq = textColorFreq || '#fff';
-        var textColorUnit = textColorUnit || '#fff';
-        var textAlign = textAlign || 'center';
-        var container = container || '#specLabels';
+        bgFill = bgFill || 'rgba(68,68,68,0.5)';
+        fontSizeFreq = fontSizeFreq || '12px';
+        fontSizeUnit = fontSizeUnit || '10px';
+        fontType = fontType || 'Helvetica';
+        textColorFreq = textColorFreq || '#fff';
+        textColorUnit = textColorUnit || '#fff';
+        textAlign = textAlign || 'center';
+        container = container || '#specLabels';
         var getMaxY = frequenciesHeight || 512;
         var labelIndex = 5 * (getMaxY / 256);
         var freqStart = 0;
@@ -265,10 +265,7 @@ WaveSurfer.Spectrogram = {
             cLabel.textBaseline = 'middle';
 
             var freq = freqStart + (step * i);
-            var index = Math.round(freq / this.sampleRate / 2 * this.fftSamples);
             var index = Math.round(freq / (this.fftSamples / 2) * this.fftSamples);
-            var percent = index / this.fftSamples/2;
-            var y = (1 - percent) * this.height;
             var label = this.freqType(freq);
             var units = this.unitType(freq);
             var x = 16;
