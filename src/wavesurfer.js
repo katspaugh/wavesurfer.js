@@ -159,11 +159,11 @@ var WaveSurfer = {
     },
 
     pause: function () {
-        this.backend.isPaused() || this.backend.pause();
+        return this.backend.isPaused() || this.backend.pause();
     },
 
     playPause: function () {
-        this.backend.isPaused() ? this.play() : this.pause();
+        return this.backend.isPaused() ? this.play() : this.pause();
     },
 
     isPlaying: function () {
