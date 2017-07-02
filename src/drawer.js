@@ -87,13 +87,29 @@ WaveSurfer.Drawer = {
         });
     },
 
-    drawPeaks: function (peaks, length, start, end) {
-        this.setWidth(length);
+    drawPeaks: WaveSurfer.util.frame(function (peaks, length, start, end) {
+        var my = this;
 
-        this.params.barWidth ?
-            this.drawBars(peaks, 0, start, end) :
-            this.drawWave(peaks, 0, start, end);
-    },
+        my.setWidth(length);
+
+        // Clear the canvas.
+        my.clearCanvas();
+
+        // Run the draw function if there are no channels to split. Otherwise, split the channels.
+        if (!my.params.splitChannels) {
+            drawFunction(peaks, 0);
+        } else {
+            var channels = peaks;
+            my.setHeight(channels.length * my.params.height * my.params.pixelRatio);
+            channels.forEach(function(channelPeaks, channelIndex) {drawFunction(peaks, channelIndex); });
+        }
+
+        function drawFunction (peaks, channelIndex) {
+            // Extract peaks if they are in an array.
+            if (peaks[0] instanceof Array) { peaks = peaks[0]; }
+            my[my.params.barWidth ? "drawBars" : "drawWave"](peaks, channelIndex, start, end);
+        }
+    }),
 
     style: function (el, styles) {
         Object.keys(styles).forEach(function (prop) {
