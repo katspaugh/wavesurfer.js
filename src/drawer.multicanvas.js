@@ -366,14 +366,14 @@ export default class MultiCanvas extends Drawer {
         if (!ctx) { return; }
 
         const length = peaks.length / 2;
-
-        let scale = 1;
-        if (this.params.fillParent && this.width != length) {
-            scale = this.width / length;
-        }
+        const scale = (this.params.fillParent && this.width != length)
+          ? this.width / length
+          : 1;
 
         const first = Math.round(length * entry.start);
-        const last = Math.round(length * entry.end);
+        // Use one more peak value to make sure we join peaks at ends -- unless,
+        // of course, this is the last canvas.
+        const last = Math.round(length * entry.end) + 1;
         if (first > end || last < start) { return; }
         const canvasStart = Math.max(first, start);
         const canvasEnd = Math.min(last, end);
