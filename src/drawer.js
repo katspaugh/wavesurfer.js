@@ -44,22 +44,25 @@ WaveSurfer.Drawer = {
 
         var clientX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
         var bbox = this.wrapper.getBoundingClientRect();
+        
+        // We must subtract 1 from the denominator:
+        // The expected return range for the "progress" variable is between 0 and 1.
+        // A 100-pixel element can be clicked at position 0 through position 99.
+        // Clicking at the 100th pixel (pixel position 99) should yield 1. If we don't subtract 1, it will yield 99/100 or .99.
 
-        var nominalWidth = this.width;
-        var parentWidth = this.getWidth();
+        var visibleWidth = this.width - 1; // Actual size.
+        var scrollContainerWidth = this.getWidth() - 1; // Constant size -- doesn't change if pixelRatio goes up or down.
 
-        var progress;
-
-        if (!this.params.fillParent && nominalWidth < parentWidth) {
-            progress = ((clientX - bbox.left) * this.params.pixelRatio / nominalWidth) || 0;
-
-            if (progress > 1) {
-                progress = 1;
-            }
+        // If the entire container is not filled and further if the visible width is less than the scroll container width...
+        if (!this.params.fillParent && visibleWidth < scrollContainerWidth) {
+            var numerator = clientX - bbox.left;
+            var denominator = visibleWidth / this.params.pixelRatio;;
         } else {
-            progress = ((clientX - bbox.left + this.wrapper.scrollLeft) / this.wrapper.scrollWidth) || 0;
+            var numerator = clientX - bbox.left + this.wrapper.scrollLeft;
+            var denominator = this.wrapper.scrollWidth;
         }
 
+        var progress = (numerator > denominator) ? 1 : (numerator / denominator || 0);
         return progress;
     },
 
@@ -192,7 +195,7 @@ WaveSurfer.Drawer = {
 
     progress: function (progress) {
         var minPxDelta = 1 / this.params.pixelRatio;
-        var pos = Math.round(progress * this.width) * minPxDelta;
+        var pos = Math.ceil(progress * this.width) * minPxDelta;
 
         if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {
             this.lastPos = pos;
