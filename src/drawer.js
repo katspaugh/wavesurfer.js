@@ -88,7 +88,9 @@ WaveSurfer.Drawer = {
     },
 
     drawPeaks: function (peaks, length, start, end) {
-        this.setWidth(length);
+        if (!this.setWidth(length)) {
+            this.clearWave();
+        }
 
         this.params.barWidth ?
             this.drawBars(peaks, 0, start, end) :
@@ -154,7 +156,7 @@ WaveSurfer.Drawer = {
 
     setWidth: function (width) {
         if (this.width == width) {
-          return;
+            return false;
         }
 
         this.width = width;
@@ -170,15 +172,22 @@ WaveSurfer.Drawer = {
         }
 
         this.updateSize();
+        return true;
     },
 
     setHeight: function (height) {
-        if (height == this.height) { return; }
+        if (height == this.height) {
+            return false;
+        }
+
         this.height = height;
+
         this.style(this.wrapper, {
             height: ~~(this.height / this.params.pixelRatio) + 'px'
         });
+
         this.updateSize();
+        return true;
     },
 
     progress: function (progress) {
