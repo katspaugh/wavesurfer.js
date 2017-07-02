@@ -89,10 +89,35 @@ WaveSurfer.Spectrogram = {
             this.container.removeChild(prevSpectrogram);
         }
 
+        // if labels are active
+        if (this.params.labels) {
+            var specLabelsdiv = document.createElement('div');
+            specLabelsdiv.setAttribute('id', 'specLabels');
+            this.drawer.style(specLabelsdiv, {
+                left: 0,
+                position: 'absolute',
+                zIndex: 9
+            });
+            specLabelsdiv.innerHTML = '<canvas></canvas>';
+            this.wrapper = this.container.appendChild(
+                specLabelsdiv
+            );
+            // can be customized in next version
+            this.loadLabels('rgba(68,68,68,0.5)', '12px', '10px', '', '#fff', '#f7f7f7', 'center', '#specLabels');
+        }
+
         var wsParams = this.wavesurfer.params;
 
+        var specView = document.createElement('spectrogram');
+        // if labels are active
+        if (this.params.labels) {
+            this.drawer.style(specView, {
+                left: 0,
+                position: 'relative'
+            });
+        }
         this.wrapper = this.container.appendChild(
-            document.createElement('spectrogram')
+            specView
         );
         this.drawer.style(this.wrapper, {
             display: 'block',
@@ -220,11 +245,74 @@ WaveSurfer.Spectrogram = {
         return ajax;
     },
 
+    freqType: function (freq) {
+        return (freq >= 1000 ? (freq / 1000).toFixed(1) : Math.round(freq));
+    },
+
+    unitType: function (freq) {
+        return (freq >= 1000 ? 'KHz' : 'Hz');
+    },
+
+    loadLabels: function (bgFill, fontSizeFreq, fontSizeUnit, fontType, textColorFreq, textColorUnit, textAlign, container) {
+        var frequenciesHeight = this.height;
+        var bgFill = bgFill || 'rgba(68,68,68,0.5)';
+        var fontSizeFreq = fontSizeFreq || '12px';
+        var fontSizeUnit = fontSizeUnit || '10px';
+        var fontType = fontType || 'Helvetica';
+        var textColorFreq = textColorFreq || '#fff';
+        var textColorUnit = textColorUnit || '#fff';
+        var textAlign = textAlign || 'center';
+        var container = container || '#specLabels';
+        var getMaxY = frequenciesHeight || 512;
+        var labelIndex = 5 * (getMaxY / 256);
+        var freqStart = 0;
+        var step = ((this.wavesurfer.backend.ac.sampleRate / 2) - freqStart) / labelIndex;
+
+        var cLabel = document.querySelectorAll(container+' canvas')[0].getContext('2d');
+        document.querySelectorAll(container+' canvas')[0].height = this.height;
+        document.querySelectorAll(container+' canvas')[0].width = 55;
+
+        cLabel.fillStyle = bgFill;
+        cLabel.fillRect(0, 0, 55, getMaxY);
+        cLabel.fill();
+
+        for (var i = 0; i <= labelIndex; i++) {
+            cLabel.textAlign = textAlign;
+            cLabel.textBaseline = 'middle';
+
+            var freq = freqStart + (step * i);
+            var index = Math.round(freq / this.sampleRate / 2 * this.fftSamples);
+            var index = Math.round(freq / (this.fftSamples / 2) * this.fftSamples);
+            var percent = index / this.fftSamples/2;
+            var y = (1 - percent) * this.height;
+            var label = this.freqType(freq);
+            var units = this.unitType(freq);
+            var x = 16;
+            var yLabelOffset = 2;
+
+            if (i==0) {
+                cLabel.fillStyle = textColorUnit;
+                cLabel.font = fontSizeUnit + ' ' + fontType;
+                cLabel.fillText(units, x + 24, getMaxY + i - 10);
+                cLabel.fillStyle = textColorFreq;
+                cLabel.font = fontSizeFreq + ' ' + fontType;
+                cLabel.fillText(label, x, getMaxY + i - 10);
+            } else {
+                cLabel.fillStyle = textColorUnit;
+                cLabel.font = fontSizeUnit + ' ' + fontType;
+                cLabel.fillText(units, x + 24, getMaxY - i * 50 + yLabelOffset);
+                cLabel.fillStyle = textColorFreq;
+                cLabel.font = fontSizeFreq + ' ' + fontType;
+                cLabel.fillText(label, x, getMaxY - i * 50 + yLabelOffset);
+            }
+        }
+    },
+
     updateScroll: function(e) {
       this.wrapper.scrollLeft = e.target.scrollLeft;
     },
 
-    resample: function(oldMatrix, columnsNumber) {
+    resample: function(oldMatrix) {
         var columnsNumber = this.width;
         var newMatrix = [];
 

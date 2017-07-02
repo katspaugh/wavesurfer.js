@@ -190,7 +190,7 @@ WaveSurfer.Timeline = {
                     seconds = (seconds < 10) ? '0' + seconds : seconds;
                     return '' + minutes + ':' + seconds;
                 } else {
-                    return seconds;
+                    return Math.round(seconds * 1000) / 1000;
                 }
             };
 
@@ -207,7 +207,7 @@ WaveSurfer.Timeline = {
             var primaryLabelInterval = 4;
             var secondaryLabelInterval = 2;
         } else {
-            var timeInterval = 60;
+            var timeInterval = Math.ceil(0.5 / pixelsPerSecond) * 60;
             var primaryLabelInterval = 4;
             var secondaryLabelInterval = 2;
         }
@@ -244,19 +244,19 @@ WaveSurfer.Timeline = {
     },
 
     setFillStyles: function (fillStyle) {
-        for (var i in this.canvases) {
+        for (var i = 0; i < this.canvases.length; i++) {
             this.canvases[i].getContext('2d').fillStyle = fillStyle;
         }
     },
 
     setFonts: function (font) {
-        for (var i in this.canvases) {
+        for (var i = 0; i < this.canvases.length; i++) {
             this.canvases[i].getContext('2d').font = font;
         }
     },
 
     fillRect: function (x, y, width, height) {
-        for (var i in this.canvases) {
+        for (var i = 0; i < this.canvases.length; i++) {
             var canvas = this.canvases[i],
                 leftOffset = i * this.maxCanvasWidth;
 
@@ -281,7 +281,7 @@ WaveSurfer.Timeline = {
         var textWidth,
             xOffset = 0;
 
-        for (var i in this.canvases) {
+        for (var i = 0; i < this.canvases.length; i++) {
             var context = this.canvases[i].getContext('2d'),
                 canvasWidth = context.canvas.width;
 
