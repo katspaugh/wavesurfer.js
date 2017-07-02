@@ -189,6 +189,8 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
             var h = Math.round(peak / absmax * halfH);
             this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
         }
+
+        if (this.params.invertTransparency) { this.invertTransparency(); }
     }),
 
     drawWave: WaveSurfer.util.frame(function (peaks, channelIndex, start, end) {
@@ -233,7 +235,30 @@ WaveSurfer.util.extend(WaveSurfer.Drawer.MultiCanvas, {
 
         // Always draw a median line
         this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
+
+        if (this.params.invertTransparency) { this.invertTransparency(); }
     }),
+
+    invertTransparency: function () {
+        this.canvases.forEach (function (canvasGroup) {
+            ['wave'].concat(canvasGroup.progressWaveCtx ? ['progressWave'] : []).forEach (function (waveType) {
+                // Draw the wave canvas onto a new empty canvas.
+                var canvas = canvasGroup[waveType];
+                var temp = document.createElement('canvas');
+                temp.width = canvas.width; temp.height = canvas.height;
+                temp.getContext('2d').drawImage (canvas, 0, 0);
+                var ctx = canvas.getContext('2d');
+                ctx.fillStyle = (waveType == 'wave' || this.params.progressColor === undefined) ? this.params.waveColor : this.params.progressColor;
+                // Draw a rectangle onto the wave canvas to fill it with a certain color.
+                ctx.globalCompositeOperation = 'copy';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // Cut out the wave shape from the rectangle and reset globalCompositeOperation.
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.drawImage (temp, 0, 0);
+                ctx.globalCompositeOperation = 'source-over';
+            }, this);
+        }, this);
+    },
 
     drawLine: function (peaks, absmax, halfH, offsetY, start, end) {
         this.canvases.forEach (function (entry) {
