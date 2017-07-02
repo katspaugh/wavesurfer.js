@@ -42,6 +42,8 @@ var WaveSurfer = {
     },
 
     init: function (params) {
+        var my = this;
+
         // Extract relevant parameters (or defaults)
         this.params = WaveSurfer.util.extend({}, this.defaultParams, params);
 
@@ -84,6 +86,10 @@ var WaveSurfer = {
         this.createPeakCache();
 
         this.isDestroyed = false;
+        my.on ('ready', function () {
+            my.audioIsReady = true;
+            if (my.progress !== undefined) { my.seekTo(my.progress); }
+        });
     },
 
     createDrawer: function () {
@@ -202,7 +208,7 @@ var WaveSurfer = {
         var oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
-        this.drawer.progress(this.backend.getPlayedPercents());
+        this.drawer.progress(progress);
 
         if (!paused) {
             this.backend.play();
@@ -416,12 +422,12 @@ var WaveSurfer = {
     /**
      * Loads audio and re-renders the waveform.
      */
-    load: function (url, peaks, preload) {
-        this.empty();
+    load: function (url, peaks, preload, loadOnInteraction) {
+        this.empty({drawPeaks: peaks === undefined});
         this.isMuted = false;
 
         switch (this.params.backend) {
-            case 'WebAudio': return this.loadBuffer(url, peaks);
+            case 'WebAudio': return this.loadBuffer(url, peaks, true, loadOnInteraction);
             case 'MediaElement': return this.loadMediaElement(url, peaks, preload);
         }
     },
@@ -429,7 +435,7 @@ var WaveSurfer = {
     /**
      * Loads audio using Web Audio buffer backend.
      */
-    loadBuffer: function (url, peaks) {
+    loadBuffer: function (url, peaks, preload, loadOnInteraction) {
         var load = (function (action) {
             if (action) {
                 this.tmpEvents.push(this.once('ready', action));
@@ -440,7 +446,9 @@ var WaveSurfer = {
         if (peaks) {
             this.backend.setPeaks(peaks);
             this.drawBuffer();
-            this.tmpEvents.push(this.once('interaction', load));
+        }
+        if (loadOnInteraction) {
+            this.tmpEvents.push(this.once('interaction', function (result) { load(result); }));
         } else {
             return load();
         }
@@ -602,7 +610,8 @@ var WaveSurfer = {
     /**
      * Display empty waveform.
      */
-    empty: function () {
+    empty: function (init) {
+        init = init || {};
         if (!this.backend.isPaused()) {
             this.stop();
             this.backend.disconnectSource();
@@ -611,7 +620,7 @@ var WaveSurfer = {
         this.clearTmpEvents();
         this.drawer.progress(0);
         this.drawer.setWidth(0);
-        this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
+        if (!('drawPeaks' in init) || (init.drawPeaks == true)) { this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0); }
     },
 
     /**
