@@ -3193,7 +3193,7 @@ var WaveSurfer = function (_util$Observer) {
             cursorWidth: 1,
             dragSelection: true,
             fillParent: true,
-            forceDecode: true,
+            forceDecode: false,
             height: 128,
             hideScrollbar: false,
             interact: true,
