@@ -365,6 +365,12 @@ var WaveSurfer = {
         this.fireEvent('zoom', pxPerSec);
     },
 
+    /**
+     * Redraw the waveform, for example when the width of the
+     * container changed.
+     *
+     * @example wavesurfer.refresh();
+     */
     refresh: function() {
         this.drawBuffer();
         this.drawer.progress(this.backend.getPlayedPercents());
