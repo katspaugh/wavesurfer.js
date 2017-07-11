@@ -169,8 +169,8 @@ WaveSurfer.Timeline = {
                 }
 
                 if (seconds/60 > 1) {
-                    var minutes = parseInt(seconds / 60),
-                        seconds = parseInt(seconds % 60);
+                    var minutes = parseInt(seconds / 60);
+                    seconds = parseInt(seconds % 60);
                     seconds = (seconds < 10) ? '0' + seconds : seconds;
                     return '' + minutes + ':' + seconds;
                 } else {
