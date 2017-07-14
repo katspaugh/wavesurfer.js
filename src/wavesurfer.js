@@ -39,6 +39,8 @@ var WaveSurfer = {
         skipLength    : 2,
         splitChannels : false,
         waveColor     : '#999',
+        waveStyle: 'default',
+        mbLimit: null
     },
 
     init: function (params) {
@@ -524,6 +526,11 @@ var WaveSurfer = {
         this.currentAjax = ajax;
 
         this.tmpEvents.push(
+            ajax.on('progress', function (e) {
+                if(my.params.mbLimit !== null && (my.params.mbLimit * 1000000) <= e.total){
+                    ajax.xhr.abort();
+                }
+            }),
             ajax.on('progress', function (e) {
                 my.onProgress(e);
             }),
