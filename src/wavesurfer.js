@@ -350,7 +350,7 @@ var WaveSurfer = {
             }
         } else {
             start = 0;
-            end = width;
+            end = width*end;
             var peaks = this.backend.getPeaks(width, start, end);
             this.drawer.drawPeaks(peaks, width, start, end);
         }
