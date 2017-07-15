@@ -18,8 +18,11 @@ document.addEventListener('DOMContentLoaded', function () {
   // Time stretcher
   wavesurfer.on('ready', function () {
     var st = new soundtouch.SoundTouch(wavesurfer.backend.ac.sampleRate);
-    var data = wavesurfer.backend.buffer.getChannelData(0);
-    var length = data.length;
+    var buffer = wavesurfer.backend.buffer;
+    var channels = buffer.numberOfChannels;
+    var l = buffer.getChannelData(0);
+    var r = channels > 1 ? buffer.getChannelData(1) : l;
+    var length = buffer.length;
     var seekingPos = null;
     var seekingDiff = 0;
 
@@ -33,8 +36,10 @@ document.addEventListener('DOMContentLoaded', function () {
         position += seekingDiff;
 
         for (var i = 0; i < numFrames; i++) {
-          target[i * 2] = data[i + position];
+          target[i * 2] = l[i + position];
+          if (r) target[i * 2 + 1] = r[i + position];
         }
+
         return Math.min(numFrames, length - position);
       }
     };

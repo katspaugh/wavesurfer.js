@@ -889,7 +889,6 @@ WebAudioBufferSource.prototype = {
 
 function getWebAudioNode(context, filter) {
     var BUFFER_SIZE = 4096;
-    console.log(context);
     var node = context.createScriptProcessor(BUFFER_SIZE, 2, 2),
         samples = new Float32Array(BUFFER_SIZE * 2);
     node.onaudioprocess = function(e) {
