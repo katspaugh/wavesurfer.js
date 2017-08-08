@@ -8,8 +8,7 @@ layout: default
 
   <p>
     First of all, you need to insert the <b>wavesurfer.js</b> library into your HTML page. You can grab the latest version from <a href="https://cdnjs.com/libraries/wavesurfer.js">cdnjs.com</a>.
-
-    <pre><code class="html">&lt;script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.3.7/wavesurfer.min.js"&gt;&lt;/script&gt;</code></pre>
+    <pre><code>&lt;div id="waveform"&gt;&lt;/div&gt;</code></pre>
   </p>
 
   <p>
@@ -88,3 +87,19 @@ layout: default
     If you name your own renderer <code>WaveSurfer.Drawer.MyDrawer</code>, then you can use the renderer by specifying the <code>renderer</code> parameter as <code>'MyDrawer'</code>.
   </p>
 </section>
+
+<script>
+ var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      var wsVersion = JSON.parse(xhr.responseText);
+      document.getElementById('wsVersion').innerHTML = '&lt;script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/'+wsVersion.value.replace('v','')+'/wavesurfer.min.js"&gt;&lt;/script&gt;'; 
+    }
+  };
+  xhr.open('GET', 'https://img.shields.io/cdnjs/v/wavesurfer.js.json?maxAge=2592000');
+
+  function sendAJAX() {
+    xhr.send( );
+  }
+  sendAJAX();
+</script>
