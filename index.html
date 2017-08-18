@@ -23,7 +23,9 @@ layout: default
 
     <p>
       In HTML, include the minified script:
-<pre style="white-space: normal"><code>&lt;script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.3.7/wavesurfer.min.js"&gt;&lt;/script&gt;</code></pre>
+      <pre style="white-space: normal">
+        <code id="wsVersion"></code>
+      </pre>
     </p>
 
     <p>
@@ -81,3 +83,20 @@ layout: default
     </p>
   </div>
 </section>
+
+
+<script>
+ var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      var wsVersion = JSON.parse(xhr.responseText);
+      document.getElementById('wsVersion').innerHTML = '&lt;script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/'+wsVersion.value.replace('v','')+'/wavesurfer.min.js"&gt;&lt;/script&gt;'; 
+    }
+  };
+  xhr.open('GET', 'https://img.shields.io/cdnjs/v/wavesurfer.js.json?maxAge=2592000');
+
+  function sendAJAX() {
+    xhr.send( );
+  }
+  sendAJAX();
+</script>
