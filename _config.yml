@@ -21,6 +21,17 @@ markdown: kramdown
 navigation:
   - title: Overview
     url: /
+  - title: Version 2
+    url: /v2/
+    subnav:
+      - title: Changes
+        url: /v2/changes.html
+      - title: Upgrading
+        url: /v2/upgrading.html
+      - title: Plugin class example
+        url: /v2/plugin-class.html
+      - title: Documentation
+        url: /doc/
   - title: Documentation
     url: /docs/
     subnav:
