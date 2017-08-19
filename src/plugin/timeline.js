@@ -127,7 +127,9 @@ export default class TimelinePlugin {
         this.canvases = [];
 
         this._onScroll = () => {
-            this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
+            if (this.wrapper && this.drawer.wrapper) {
+                this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
+            }
         };
         this._onRedraw = () => this.render();
         this._onReady = () => {

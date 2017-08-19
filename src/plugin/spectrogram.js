@@ -507,7 +507,9 @@ export default class SpectrogramPlugin {
     }
 
     updateScroll(e) {
-        this.wrapper.scrollLeft = e.target.scrollLeft;
+        if (this.wrapper) {
+            this.wrapper.scrollLeft = e.target.scrollLeft;
+        }
     }
 
     resample(oldMatrix) {
