@@ -91,7 +91,7 @@ class Init {
                 const src = _params.pluginCdnTemplate.replace('[name]', name);
                 loadScript(src, { async: false }, (err, plugin) => {
                     if (err) {
-                        return console.error(`WaveSurfer plugin ${name} not found at ${src}`);
+                        return console.error(`WaveSurfer plugin ${ name } not found at ${ src }`);
                     }
                     cb(window.WaveSurfer[name]);
                 });

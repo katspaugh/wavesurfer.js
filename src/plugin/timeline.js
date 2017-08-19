@@ -88,7 +88,7 @@ export default class TimelinePlugin {
                     seconds = parseInt(seconds % 60, 10);
                     // fill up seconds with zeroes
                     seconds = (seconds < 10) ? '0' + seconds : seconds;
-                    return `${minutes}:${seconds}`;
+                    return `${ minutes }:${ seconds }`;
                 }
                 return Math.round(seconds * 1000) / 1000;
             },
@@ -174,7 +174,7 @@ export default class TimelinePlugin {
             position: 'relative',
             userSelect: 'none',
             webkitUserSelect: 'none',
-            height: `${this.params.height}px`
+            height: `${ this.params.height }px`
         });
 
         if (wsParams.fillParent || wsParams.scrollParent) {
@@ -237,9 +237,9 @@ export default class TimelinePlugin {
             canvas.width = canvasWidth * this.pixelRatio;
             canvas.height = this.params.height * this.pixelRatio;
             this.util.style(canvas, {
-                width: `${canvasWidth}px`,
-                height: `${this.params.height}px`,
-                left: `${i * this.maxCanvasElementWidth}px`
+                width: `${ canvasWidth }px`,
+                height: `${ this.params.height }px`,
+                left: `${ i * this.maxCanvasElementWidth }px`
             });
         }
     }
@@ -278,13 +278,13 @@ export default class TimelinePlugin {
             if (i % primaryLabelInterval == 0) {
                 this.setFillStyles(this.params.primaryColor);
                 this.fillRect(curPixel, 0, 1, height1);
-                this.setFonts(`${fontSize}px ${this.params.fontFamily}`);
+                this.setFonts(`${ fontSize }px ${ this.params.fontFamily }`);
                 this.setFillStyles(this.params.primaryFontColor);
                 this.fillText(formatTime(curSeconds), curPixel + 5, height1);
             } else if (i % secondaryLabelInterval == 0) {
                 this.setFillStyles(this.params.secondaryColor);
                 this.fillRect(curPixel, 0, 1, height1);
-                this.setFonts(`${fontSize}px ${this.params.fontFamily}`);
+                this.setFonts(`${ fontSize }px ${ this.params.fontFamily }`);
                 this.setFillStyles(this.params.secondaryFontColor);
                 this.fillText(formatTime(curSeconds), curPixel + 5, height1);
             } else {

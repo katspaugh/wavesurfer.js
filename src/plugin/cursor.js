@@ -119,7 +119,7 @@ export default class CursorPlugin {
     updateCursorPosition(progress) {
         const pos = Math.round(this.drawer.width * progress) / this.drawer.params.pixelRatio - 1;
         this.style(this.cursor, {
-            left: `${pos}px`
+            left: `${ pos }px`
         });
     }
 

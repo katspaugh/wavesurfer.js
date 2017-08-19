@@ -319,8 +319,8 @@ export default class SpectrogramPlugin {
                 left: 0,
                 position: 'absolute',
                 zIndex: 9,
-                height: `${this.height / this.pixelRatio}px`,
-                width: `${55 / this.pixelRatio}px`
+                height: `${ this.height / this.pixelRatio }px`,
+                width: `${ 55 / this.pixelRatio }px`
             });
             this.wrapper.appendChild(labelsEl);
             // can be customized in next version
