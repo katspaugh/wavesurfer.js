@@ -94,7 +94,7 @@ export default class PeakCache {
         // iteration in the functions that call this.
         const uncachedRangePairs = [];
         for (i = 0; i < uncachedRanges.length; i += 2) {
-            uncachedRangePairs.push([uncachedRanges[i], uncachedRanges[i+1]]);
+            uncachedRangePairs.push([ uncachedRanges[i], uncachedRanges[i+1] ]);
         }
 
         return uncachedRangePairs;
@@ -109,7 +109,7 @@ export default class PeakCache {
         const peakCacheRangePairs = [];
         let i;
         for (i = 0; i < this.peakCacheRanges.length; i += 2) {
-            peakCacheRangePairs.push([this.peakCacheRanges[i], this.peakCacheRanges[i+1]]);
+            peakCacheRangePairs.push([ this.peakCacheRanges[i], this.peakCacheRanges[i+1] ]);
         }
         return peakCacheRangePairs;
     }

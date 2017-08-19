@@ -409,7 +409,7 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('Plugin does not have a name!');
         }
         if (!plugin.instance) {
-            throw new Error(`Plugin ${plugin.name} does not have an instance property!`);
+            throw new Error(`Plugin ${ plugin.name } does not have an instance property!`);
         }
 
         // staticProps properties are applied to wavesurfer instance
@@ -451,7 +451,7 @@ export default class WaveSurfer extends util.Observer {
      */
     initPlugin(name) {
         if (!this[name]) {
-            throw new Error(`Plugin ${name} has not been added yet!`);
+            throw new Error(`Plugin ${ name } has not been added yet!`);
         }
         if (this.initialisedPluginList[name]) {
             // destroy any already initialised plugins
@@ -473,13 +473,13 @@ export default class WaveSurfer extends util.Observer {
      */
     destroyPlugin(name) {
         if (!this[name]) {
-            throw new Error(`Plugin ${name} has not been added yet and cannot be destroyed!`);
+            throw new Error(`Plugin ${ name } has not been added yet and cannot be destroyed!`);
         }
         if (!this.initialisedPluginList[name]) {
-            throw new Error(`Plugin ${name} is not active and cannot be destroyed!`);
+            throw new Error(`Plugin ${ name } is not active and cannot be destroyed!`);
         }
         if (typeof this[name].destroy !== 'function') {
-            throw new Error(`Plugin ${name} does not have a destroy function!`);
+            throw new Error(`Plugin ${ name } does not have a destroy function!`);
         }
 
         this[name].destroy();
