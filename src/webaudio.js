@@ -343,7 +343,22 @@ export default class WebAudio extends util.Observer {
     getPeaks(length, first, last) {
         if (this.peaks) { return this.peaks; }
 
+        first = first || 0;
+        last = last || length - 1;
+
         this.setLength(length);
+
+        /**
+         * The following snippet fixes a buffering data issue on the Safari
+         * browser which returned undefined It creates the missing buffer based
+         * on 1 channel, 4096 samples and the sampleRate from the current
+         * webaudio context 4096 samples seemed to be the best fit for rendering
+         * will review this code once a stable version of Safari TP is out
+         */
+        if (!this.buffer.length) {
+            const newBuffer = this.createBuffer(1, 4096, this.sampleRate);
+            this.buffer = newBuffer.buffer;
+        }
 
         const sampleSize = this.buffer.length / length;
         const sampleStep = ~~(sampleSize / 10) || 1;

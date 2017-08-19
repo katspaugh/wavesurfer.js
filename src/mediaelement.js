@@ -132,6 +132,16 @@ export default class MediaElement extends WebAudio {
             this.fireEvent('finish');
         });
 
+        // Listen to and relay play and pause events to enable
+        // playback control from the external media element
+        media.addEventListener('play', () => {
+            this.fireEvent('play');
+        });
+
+        media.addEventListener('pause', () => {
+            this.fireEvent('pause');
+        });
+
         this.media = media;
         this.peaks = peaks;
         this.onPlayEnd = null;
@@ -214,7 +224,6 @@ export default class MediaElement extends WebAudio {
         this.seekTo(start);
         this.media.play();
         end && this.setPlayEnd(end);
-        this.fireEvent('play');
     }
 
     /**
@@ -225,7 +234,6 @@ export default class MediaElement extends WebAudio {
     pause() {
         this.media && this.media.pause();
         this.clearPlayEnd();
-        this.fireEvent('pause');
     }
 
     /** @private */

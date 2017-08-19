@@ -90,7 +90,7 @@ export default class TimelinePlugin {
                     seconds = (seconds < 10) ? '0' + seconds : seconds;
                     return `${minutes}:${seconds}`;
                 }
-                return seconds;
+                return Math.round(seconds * 1000) / 1000;
             },
             timeInterval(pxPerSec) {
                 if (pxPerSec >= 25) {
@@ -100,7 +100,7 @@ export default class TimelinePlugin {
                 } else if (pxPerSec * 15 >= 25) {
                     return 15;
                 }
-                return 60;
+                return Math.ceil(0.5 / pxPerSec) * 60;
             },
             primaryLabelInterval(pxPerSec) {
                 if (pxPerSec >= 25) {

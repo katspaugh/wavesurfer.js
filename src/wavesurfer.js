@@ -4,6 +4,10 @@ import WebAudio from './webaudio';
 import MediaElement from './mediaelement';
 import PeakCache from './peakcache';
 
+/*
+ * This work is licensed under a BSD-3-Clause License.
+ */
+
 /** @external {HTMLElement} https://developer.mozilla.org/en/docs/Web/API/HTMLElement */
 /** @external {OfflineAudioContext} https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext */
 /** @external {File} https://developer.mozilla.org/en-US/docs/Web/API/File */
@@ -594,6 +598,20 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Set the current play time in seconds.
+     *
+     * @param {Number} seconds A positive number in seconds. E.g. 10 means 10
+     * seconds, 60 means 1 minute
+     */
+    setCurrentTime(seconds) {
+        if (this.getDuration() >= seconds) {
+            this.seekTo(1);
+        } else {
+            this.seekTo(seconds/this.getDuration());
+        }
+    }
+
+    /**
      * Starts playback from the current position. Optional start and end
      * measured in seconds can be used to set the range of audio to play.
      *
@@ -965,6 +983,7 @@ export default class WaveSurfer extends util.Observer {
      */
     load(url, peaks, preload) {
         this.empty();
+        this.isMuted = false;
 
         switch (this.params.backend) {
             case 'WebAudio': return this.loadBuffer(url, peaks);
@@ -1130,14 +1149,16 @@ export default class WaveSurfer extends util.Observer {
      * @param {number} accuracy=10000 (Integer)
      * @param {?boolean} noWindow Set to true to disable opening a new
      * window with the JSON
+     * @param {number} start
      * @todo Update exportPCM to work with new getPeaks signature
      * @return {JSON} JSON of peaks
      */
-    exportPCM(length, accuracy, noWindow) {
+    exportPCM(length, accuracy, noWindow, start) {
         length = length || 1024;
+        start = start || 0;
         accuracy = accuracy || 10000;
         noWindow = noWindow || false;
-        const peaks = this.backend.getPeaks(length, accuracy);
+        const peaks = this.backend.getPeaks(length, start);
         const arr = [].map.call(peaks, val => Math.round(val * accuracy) / accuracy);
         const json = JSON.stringify(arr);
         if (!noWindow) {
