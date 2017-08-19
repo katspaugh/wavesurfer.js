@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">src/plugin/timeline.js | wavesurfer.js documentation API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+<link data-ice="userStyle" rel="stylesheet" href="user/css/0-doc.css">
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  <a href="./manual/index.html" data-ice="manualHeaderLink">Manual</a>
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html">WaveSurfer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html">WebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-InitParams">InitParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-WavesurferParams">WavesurferParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/de/docs/Web/API/AudioNode">AudioNode</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D">CanvasRenderingContext2D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints">MediaStreamConstraints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext">OfflineAudioContext</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">plugin</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html">CursorPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/elan.js~ElanPlugin.html">ElanPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/timeline.js~TimelinePlugin.html">TimelinePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ElanPluginParams">ElanPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SpectrogramPluginParams">SpectrogramPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TimelinePluginParams">TimelinePluginParams</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">util</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/plugin/timeline.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+ * @typedef {Object} TimelinePluginParams
+ * @desc Extends the `WavesurferParams` wavesurfer was initialised with
+ * @property {!string|HTMLElement} container CSS selector or HTML element where
+ * the timeline should be drawn. This is the only required parameter.
+ * @property {number} notchPercentHeight=90 Height of notches in percent
+ * @property {string} primaryColor=&apos;#000&apos; The colour of the main notches
+ * @property {string} secondaryColor=&apos;#c0c0c0&apos; The colour of the secondary
+ * notches
+ * @property {string} primaryFontColor=&apos;#000&apos; The colour of the labels next to
+ * the main notches
+ * @property {string} secondaryFontColor=&apos;#000&apos; The colour of the labels next to
+ * the secondary notches
+ * @property {string} fontFamily=&apos;Arial&apos;
+ * @property {number} fontSize=10 Font size of labels in pixels
+ * @property {function} formatTimeCallback=&#x2192;00:00
+ * @property {?boolean} deferInit Set to true to manually call
+ * `initPlugin(&apos;timeline&apos;)`
+ */
+
+/**
+ * Adds a timeline to the waveform.
+ *
+ * @implements {PluginClass}
+ * @extends {Observer}
+ * @example
+ * // es6
+ * import TimelinePlugin from &apos;wavesurfer.timeline.js&apos;;
+ *
+ * // commonjs
+ * var TimelinePlugin = require(&apos;wavesurfer.timeline.js&apos;);
+ *
+ * // if you are using &lt;script&gt; tags
+ * var TimelinePlugin = window.WaveSurfer.timeline;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     TimelinePlugin.create({
+ *       // plugin options ...
+ *     })
+ *   ]
+ * });
+ */
+export default class TimelinePlugin {
+    /**
+     * Timeline plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {TimelinePluginParams} params parameters use to initialise the plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: &apos;timeline&apos;,
+            deferInit: params &amp;&amp; params.deferInit ? params.deferInit : false,
+            params: params,
+            instance: TimelinePlugin
+        };
+    }
+
+    constructor(params, ws) {
+        this.container = &apos;string&apos; == typeof params.container
+            ? document.querySelector(params.container)
+            : params.container;
+
+        if (!this.container) {
+            throw new Error(&apos;No container for wavesurfer timeline&apos;);
+        }
+        this.wavesurfer = ws;
+        this.util = ws.util;
+        this.params = this.util.extend({}, {
+            height: 20,
+            notchPercentHeight: 90,
+            primaryColor: &apos;#000&apos;,
+            secondaryColor: &apos;#c0c0c0&apos;,
+            primaryFontColor: &apos;#000&apos;,
+            secondaryFontColor: &apos;#000&apos;,
+            fontFamily: &apos;Arial&apos;,
+            fontSize: 10,
+            formatTimeCallback(seconds) {
+                if (seconds / 60 &gt; 1) {
+                    // calculate minutes and seconds from seconds count
+                    const minutes = parseInt(seconds / 60, 10);
+                    seconds = parseInt(seconds % 60, 10);
+                    // fill up seconds with zeroes
+                    seconds = (seconds &lt; 10) ? &apos;0&apos; + seconds : seconds;
+                    return `${minutes}:${seconds}`;
+                }
+                return Math.round(seconds * 1000) / 1000;
+            },
+            timeInterval(pxPerSec) {
+                if (pxPerSec &gt;= 25) {
+                    return 1;
+                } else if (pxPerSec * 5 &gt;= 25) {
+                    return 5;
+                } else if (pxPerSec * 15 &gt;= 25) {
+                    return 15;
+                }
+                return Math.ceil(0.5 / pxPerSec) * 60;
+            },
+            primaryLabelInterval(pxPerSec) {
+                if (pxPerSec &gt;= 25) {
+                    return 10;
+                } else if (pxPerSec * 5 &gt;= 25) {
+                    return 6;
+                } else if (pxPerSec * 15 &gt;= 25) {
+                    return 4;
+                }
+                return 4;
+            },
+            secondaryLabelInterval(pxPerSec) {
+                if (pxPerSec &gt;= 25) {
+                    return 5;
+                } else if (pxPerSec * 5 &gt;= 25) {
+                    return 2;
+                } else if (pxPerSec * 15 &gt;= 25) {
+                    return 2;
+                }
+                return 2;
+            }
+        }, params);
+
+        this.canvases = [];
+
+        this._onScroll = () =&gt; {
+            if (this.wrapper &amp;&amp; this.drawer.wrapper) {
+                this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
+            }
+        };
+        this._onRedraw = () =&gt; this.render();
+        this._onReady = () =&gt; {
+            this.drawer = ws.drawer;
+            this.pixelRatio = ws.drawer.params.pixelRatio;
+            this.maxCanvasWidth = ws.drawer.maxCanvasWidth || ws.drawer.width;
+            this.maxCanvasElementWidth = ws.drawer.maxCanvasElementWidth || Math.round(this.maxCanvasWidth / this.pixelRatio);
+
+            this.createWrapper();
+            this.render();
+            ws.drawer.wrapper.addEventListener(&apos;scroll&apos;, this._onScroll);
+            ws.on(&apos;redraw&apos;, this._onRedraw);
+        };
+    }
+
+    init() {
+        this.wavesurfer.on(&apos;ready&apos;, this._onReady);
+        // Check if ws is ready
+        if (this.wavesurfer.isReady) {
+            this._onReady();
+        }
+    }
+
+    destroy() {
+        this.unAll();
+        this.wavesurfer.un(&apos;redraw&apos;, this._onRedraw);
+        this.wavesurfer.un(&apos;ready&apos;, this._onReady);
+        this.wavesurfer.drawer.wrapper.removeEventListener(&apos;scroll&apos;, this._onScroll);
+        if (this.wrapper &amp;&amp; this.wrapper.parentNode) {
+            this.wrapper.parentNode.removeChild(this.wrapper);
+            this.wrapper = null;
+        }
+    }
+
+    createWrapper() {
+        const wsParams = this.wavesurfer.params;
+        this.wrapper = this.container.appendChild(
+            document.createElement(&apos;timeline&apos;)
+        );
+        this.util.style(this.wrapper, {
+            display: &apos;block&apos;,
+            position: &apos;relative&apos;,
+            userSelect: &apos;none&apos;,
+            webkitUserSelect: &apos;none&apos;,
+            height: `${this.params.height}px`
+        });
+
+        if (wsParams.fillParent || wsParams.scrollParent) {
+            this.util.style(this.wrapper, {
+                width: &apos;100%&apos;,
+                overflowX: &apos;hidden&apos;,
+                overflowY: &apos;hidden&apos;
+            });
+        }
+
+        this._onClick = e =&gt; {
+            e.preventDefault();
+            const relX = &apos;offsetX&apos; in e ? e.offsetX : e.layerX;
+            this.fireEvent(&apos;click&apos;, (relX / this.wrapper.scrollWidth) || 0);
+        };
+        this.wrapper.addEventListener(&apos;click&apos;, this._onClick);
+    }
+
+    removeOldCanvases() {
+        while (this.canvases.length &gt; 0) {
+            const canvas = this.canvases.pop();
+            canvas.parentElement.removeChild(canvas);
+        }
+    }
+
+    createCanvases() {
+        this.removeOldCanvases();
+
+        const totalWidth = Math.round(this.drawer.wrapper.scrollWidth);
+        const requiredCanvases = Math.ceil(totalWidth / this.maxCanvasElementWidth);
+        let i;
+
+        for (i = 0; i &lt; requiredCanvases; i++) {
+            const canvas = this.wrapper.appendChild(document.createElement(&apos;canvas&apos;));
+            this.canvases.push(canvas);
+            this.util.style(canvas, {
+                position: &apos;absolute&apos;,
+                zIndex: 4
+            });
+        }
+    }
+
+    render() {
+        this.createCanvases();
+        this.updateCanvasStyle();
+        this.drawTimeCanvases();
+    }
+
+    updateCanvasStyle() {
+        const requiredCanvases = this.canvases.length;
+        let i;
+        for (i = 0; i &lt; requiredCanvases; i++) {
+            const canvas = this.canvases[i];
+            let canvasWidth = this.maxCanvasElementWidth;
+
+            if (i === requiredCanvases - 1) {
+                canvasWidth = this.drawer.wrapper.scrollWidth - (this.maxCanvasElementWidth * (requiredCanvases - 1));
+            }
+
+            canvas.width = canvasWidth * this.pixelRatio;
+            canvas.height = this.params.height * this.pixelRatio;
+            this.util.style(canvas, {
+                width: `${canvasWidth}px`,
+                height: `${this.params.height}px`,
+                left: `${i * this.maxCanvasElementWidth}px`
+            });
+        }
+    }
+
+    drawTimeCanvases() {
+        const backend = this.wavesurfer.backend;
+        const wsParams = this.wavesurfer.params;
+        const duration = this.wavesurfer.backend.getDuration();
+        const totalSeconds = parseInt(duration, 10) + 1;
+        const width = wsParams.fillParent &amp;&amp; !wsParams.scrollParent
+            ? this.drawer.getWidth()
+            : this.drawer.wrapper.scrollWidth * wsParams.pixelRatio;
+        const pixelsPerSecond = width / duration;
+
+        const formatTime = this.params.formatTimeCallback;
+        // if parameter is function, call the function with
+        // pixelsPerSecond, otherwise simply take the value as-is
+        const intervalFnOrVal = option =&gt; (typeof option === &apos;function&apos; ? option(pixelsPerSecond) : option);
+        const timeInterval = intervalFnOrVal(this.params.timeInterval);
+        const primaryLabelInterval = intervalFnOrVal(this.params.primaryLabelInterval);
+        const secondaryLabelInterval = intervalFnOrVal(this.params.secondaryLabelInterval);
+
+        let curPixel = 0;
+        let curSeconds = 0;
+
+        if (duration &lt;= 0) {
+            return;
+        }
+
+        const height1 = this.params.height - 4;
+        const height2 = (this.params.height * (this.params.notchPercentHeight / 100)) - 4;
+        const fontSize = this.params.fontSize * wsParams.pixelRatio;
+        let i;
+
+        for (i = 0; i &lt; totalSeconds / timeInterval; i++) {
+            if (i % primaryLabelInterval == 0) {
+                this.setFillStyles(this.params.primaryColor);
+                this.fillRect(curPixel, 0, 1, height1);
+                this.setFonts(`${fontSize}px ${this.params.fontFamily}`);
+                this.setFillStyles(this.params.primaryFontColor);
+                this.fillText(formatTime(curSeconds), curPixel + 5, height1);
+            } else if (i % secondaryLabelInterval == 0) {
+                this.setFillStyles(this.params.secondaryColor);
+                this.fillRect(curPixel, 0, 1, height1);
+                this.setFonts(`${fontSize}px ${this.params.fontFamily}`);
+                this.setFillStyles(this.params.secondaryFontColor);
+                this.fillText(formatTime(curSeconds), curPixel + 5, height1);
+            } else {
+                this.setFillStyles(this.params.secondaryColor);
+                this.fillRect(curPixel, 0, 1, height2);
+            }
+
+            curSeconds += timeInterval;
+            curPixel += pixelsPerSecond * timeInterval;
+        }
+    }
+
+    setFillStyles(fillStyle) {
+        this.canvases.forEach(canvas =&gt; {
+            canvas.getContext(&apos;2d&apos;).fillStyle = fillStyle;
+        });
+    }
+
+    setFonts(font) {
+        this.canvases.forEach(canvas =&gt; {
+            canvas.getContext(&apos;2d&apos;).font = font;
+        });
+    }
+
+    fillRect(x, y, width, height) {
+        this.canvases.forEach((canvas, i) =&gt; {
+            const leftOffset = i * this.maxCanvasWidth;
+
+            const intersection = {
+                x1: Math.max(x, i * this.maxCanvasWidth),
+                y1: y,
+                x2: Math.min(x + width, i * this.maxCanvasWidth + canvas.width),
+                y2: y + height
+            };
+
+            if (intersection.x1 &lt; intersection.x2) {
+                canvas.getContext(&apos;2d&apos;).fillRect(
+                    intersection.x1 - leftOffset,
+                    intersection.y1,
+                    intersection.x2 - intersection.x1,
+                    intersection.y2 - intersection.y1
+                );
+            }
+        });
+    }
+
+    fillText(text, x, y) {
+        let textWidth;
+        let xOffset = 0;
+        let i;
+
+        for (i in this.canvases) {
+            const context = this.canvases[i].getContext(&apos;2d&apos;);
+            const canvasWidth = context.canvas.width;
+
+            if (xOffset &gt; x + textWidth) {
+                break;
+            }
+
+            if (xOffset + canvasWidth &gt; x) {
+                textWidth = context.measureText(text).width;
+                context.fillText(text, x - xOffset, y);
+            }
+
+            xOffset += canvasWidth;
+        }
+    }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.5.2)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
