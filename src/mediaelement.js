@@ -190,9 +190,14 @@ export default class MediaElement extends WebAudio {
         return (this.getCurrentTime() / this.getDuration()) || 0;
     }
 
-    getPlaybackRate: function () {
+    /**
+     * Get the audio source playback rate.
+     *
+     * @return {number}
+     */
+    getPlaybackRate() {
         return this.playbackRate || this.media.playbackRate;
-    },
+    }
 
     /**
      * Set the audio source playback rate.
