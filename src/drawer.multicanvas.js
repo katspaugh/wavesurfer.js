@@ -275,7 +275,7 @@ export default class MultiCanvas extends Drawer {
                 this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
             }
 
-        });
+        })(peaks, channelIndex, start, end);
     }
 
     /**
@@ -332,7 +332,7 @@ export default class MultiCanvas extends Drawer {
 
             // Always draw a median line
             this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
-        });
+        })(peaks, channelIndex, start, end);
     }
 
     /**
