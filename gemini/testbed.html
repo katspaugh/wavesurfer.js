@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>wavesurfer.js | Visual tests</title>
+        <script src="../../dist/wavesurfer.js"></script>
+        <script src="../../dist/plugin/wavesurfer.cursor.js"></script>
+        <script src="../../dist/plugin/wavesurfer.elan.js"></script>
+        <script src="../../dist/plugin/wavesurfer.microphone.js"></script>
+        <script src="../../dist/plugin/wavesurfer.minimap.js"></script>
+        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
+        <script src="../../dist/plugin/wavesurfer.spectrogram.js"></script>
+        <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
+
+        <style type="text/css">
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css');
+        .wrapper {
+          max-width: 800px;
+        }
+        </style>
+        <script type="text/javascript">
+        (function(window) {
+          var document = window.document;
+
+          /**
+           * Remove the instances
+           */
+          window.cleanInstance = function cleanInstances() {
+            // if instances exist, remove them
+            if (window.INSTANCE) {
+              window.INSTANCE.remove();
+              window.INSTANCE = null;
+            }
+          };
+
+          /**
+           * Create an instance of wavesurfer with specific options
+           *
+           * @param {WaveSurferParams} options Wavesurfer initialisation options
+           * @return { instance: WaveSurferInstance, remove: function }
+           */
+          window.createInstance = function createInstance(options) {
+              var wrapper = document.querySelector('.wrapper');
+              var el = document.createElement('div');
+              el.setAttribute('class', options.containerClass || 'waveform');
+              wrapper.appendChild(el);
+              options.container = el;
+              var ws = window.WaveSurfer.create(options);
+
+              ws.load(options.audioFile);
+
+              window.INSTANCE = {
+                  ws: ws,
+                  remove: function() {
+                      ws.destroy();
+                      wrapper.removeChild(el);
+                      el = null;
+                  }
+              };
+          };
+        })(window);
+        </script>
+    </head>
+
+    <body>
+      <div class="wrapper">
+      </div>
+    </body>
+</html>
