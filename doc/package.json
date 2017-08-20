@@ -1,0 +1,55 @@
+{
+  "name": "wavesurfer.js",
+  "version": "2.0.0-beta01",
+  "description": "Interactive navigable audio visualization using Web Audio and Canvas",
+  "main": "dist/wavesurfer.min.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "start": "webpack --env.plugins && webpack --env.htmlinit && webpack-dev-server",
+    "start:htmlinit": "webpack && webpack --env.plugins && webpack-dev-server --env.htmlinit",
+    "start:plugins": "webpack && webpack --env.htmlinit && webpack-dev-server --env.plugins",
+    "build": "npm run build:normal & npm run build:minified",
+    "build:normal": "webpack & webpack --env.plugins & webpack --env.htmlinit",
+    "build:minified": "webpack --env.minify & webpack --env.plugins --env.minify & webpack --env.htmlinit --env.minify",
+    "doc": "esdoc",
+    "test": "BABEL_ENV=test karma start karma.conf.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/katspaugh/wavesurfer.js.git"
+  },
+  "author": "",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/katspaugh/wavesurfer.js/issues"
+  },
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-eslint": "^7.1.1",
+    "babel-loader": "^6.2.7",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-istanbul": "^2.0.3",
+    "babel-plugin-transform-class-properties": "^6.22.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-es2015-native-modules": "^6.9.4",
+    "babel-preset-stage-0": "^6.22.0",
+    "babel-register": "^6.18.0",
+    "debounce": "^1.0.0",
+    "esdoc": "^0.5.2",
+    "eslint": "^3.9.1",
+    "eslint-loader": "^1.6.1",
+    "jasmine-core": "^2.5.2",
+    "karma": "^1.3.0",
+    "karma-chrome-launcher": "2.0.0",
+    "karma-coverage": "^1.1.1",
+    "karma-jasmine": "1.0.2",
+    "karma-jasmine-matchers": "3.0.1",
+    "load-script": "^1.0.0",
+    "karma-webpack": "^2.0.2",
+    "webpack": "2",
+    "webpack-dev-server": "2"
+  },
+  "homepage": "https://github.com/katspaugh/wavesurfer.js"
+}

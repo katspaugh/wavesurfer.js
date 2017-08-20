@@ -1,0 +1,251 @@
+{
+  "coverage": "58.22%",
+  "expectCount": 304,
+  "actualCount": 177,
+  "files": {
+    "src/plugin/cursor.js": {
+      "expectCount": 13,
+      "actualCount": 2,
+      "undocumentLines": [
+        57,
+        73,
+        102,
+        61,
+        132,
+        92,
+        126,
+        59,
+        119,
+        58,
+        62
+      ]
+    },
+    "src/drawer.js": {
+      "expectCount": 23,
+      "actualCount": 23,
+      "undocumentLines": []
+    },
+    "src/plugin/elan.js": {
+      "expectCount": 17,
+      "actualCount": 2,
+      "undocumentLines": [
+        56,
+        267,
+        61,
+        64,
+        62,
+        80,
+        292,
+        280,
+        72,
+        85,
+        93,
+        63,
+        103,
+        185,
+        208
+      ]
+    },
+    "src/html-init.js": {
+      "expectCount": 6,
+      "actualCount": 6,
+      "undocumentLines": []
+    },
+    "src/mediaelement.js": {
+      "expectCount": 17,
+      "actualCount": 17,
+      "undocumentLines": []
+    },
+    "src/plugin/microphone.js": {
+      "expectCount": 31,
+      "actualCount": 16,
+      "undocumentLines": [
+        63,
+        104,
+        100,
+        59,
+        114,
+        232,
+        230,
+        110,
+        105,
+        106,
+        60,
+        64,
+        65,
+        274,
+        61
+      ]
+    },
+    "src/plugin/minimap.js": {
+      "expectCount": 24,
+      "actualCount": 3,
+      "undocumentLines": [
+        231,
+        220,
+        62,
+        203,
+        147,
+        127,
+        83,
+        140,
+        295,
+        289,
+        156,
+        288,
+        63,
+        285,
+        160,
+        277,
+        179,
+        85,
+        286,
+        287,
+        84
+      ]
+    },
+    "src/drawer.multicanvas.js": {
+      "expectCount": 11,
+      "actualCount": 11,
+      "undocumentLines": []
+    },
+    "src/util/observer.js": {
+      "expectCount": 7,
+      "actualCount": 7,
+      "undocumentLines": []
+    },
+    "src/peakcache.js": {
+      "expectCount": 5,
+      "actualCount": 5,
+      "undocumentLines": []
+    },
+    "src/wavesurfer.js": {
+      "expectCount": 47,
+      "actualCount": 47,
+      "undocumentLines": []
+    },
+    "src/plugin/regions.js": {
+      "expectCount": 15,
+      "actualCount": 2,
+      "undocumentLines": [
+        511,
+        524,
+        470,
+        505,
+        599,
+        530,
+        497,
+        483,
+        471,
+        452,
+        473,
+        472,
+        485
+      ]
+    },
+    "src/plugin/spectrogram.js": {
+      "expectCount": 31,
+      "actualCount": 2,
+      "undocumentLines": [
+        274,
+        249,
+        261,
+        354,
+        307,
+        294,
+        384,
+        270,
+        448,
+        254,
+        402,
+        271,
+        285,
+        439,
+        456,
+        272,
+        250,
+        269,
+        367,
+        515,
+        359,
+        452,
+        377,
+        509,
+        252,
+        251,
+        268,
+        273,
+        303
+      ]
+    },
+    "src/plugin/timeline.js": {
+      "expectCount": 25,
+      "actualCount": 2,
+      "undocumentLines": [
+        127,
+        65,
+        66,
+        203,
+        167,
+        156,
+        247,
+        136,
+        312,
+        334,
+        148,
+        139,
+        138,
+        75,
+        137,
+        196,
+        220,
+        300,
+        306,
+        226,
+        74,
+        73,
+        163
+      ]
+    },
+    "src/webaudio.js": {
+      "expectCount": 25,
+      "actualCount": 25,
+      "undocumentLines": []
+    },
+    "src/util/ajax.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
+    "src/util/extend.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
+    "src/util/frame.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
+    "src/util/get-id.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
+    "src/util/max.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
+    "src/util/min.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
+    "src/util/style.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    }
+  }
+}

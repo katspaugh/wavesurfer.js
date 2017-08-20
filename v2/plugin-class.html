@@ -1,0 +1,49 @@
+---
+layout: default
+---
+
+<section>
+  <h1>Standardised plugin format</h1>
+  <p>
+    All plugins now follow a common format and their initialisation is handled by wavesurfer core. It is no longer necessary to manually initialise them.
+  </p>
+  <pre><code class="javascript">export default class MyAwesomePlugin {
+    /**
+     * MyAwesome plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {MyAwesomePluginParams} params parameters use to initialise the
+     * plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: 'myawesome',
+            deferInit: params && params.deferInit ? params.deferInit : false,
+            params: params,
+            staticProps: {
+                staticMethod() {
+                    // this will be added to the wavesurfer instance and can then be called
+                    // wavesurfer.staticMethod();
+                }
+            },
+            instance: MyAwesomePlugin
+        };
+    }
+
+    constructor(params, ws) {
+      // instantiate the plugin
+    }
+
+    init() {
+      // start doing something
+    }
+
+    destroy() {
+      // stop doing something
+    }
+}
+</code></pre>
+</section>

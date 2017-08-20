@@ -1,0 +1,189 @@
+body {
+  line-height: 1.6;
+}
+.content {
+  max-width: 65em;
+  padding: 15px 5%;
+}
+.content > div {
+  margin-bottom: 4em;
+}
+.self-detail {
+  margin-bottom: 2em;
+}
+
+/* detail */
+.content .detail > div {
+  margin-left: 0;
+}
+.content .detail h4 + :not(pre) {
+  margin-left: 0;
+}
+.content .detail {
+  margin-top: 2em;
+}
+.content .detail + .detail {
+  border-top: 1px solid #f5f5f5;
+}
+.content .detail + .detail h3 {
+  padding-top: 3em;
+}
+.content .detail > h3 {
+  color: #4d4e53;
+  margin-top: 0;
+}
+
+/* table styling */
+table.params tr:hover td,
+table.summary tr:hover td {
+  background: #F5F5F5;
+}
+table.params td,
+table.summary td {
+  border: 2px solid #fff;
+  background: #FAFAFA;
+  padding: 0.25em;
+  vertical-align: baseline;
+}
+table.summary thead {
+  background: transparent;
+}
+
+/* Property tables should follow some sort of grid */
+div[data-ice="properties"] td:nth-child(1) {
+  width: 10% !important;
+}
+div[data-ice="properties"] td:nth-child(2),
+div[data-ice="properties"] td:nth-child(3) {
+  width: 20% !important;
+}
+div[data-ice="properties"] td:nth-child(4) {
+  width: 50% !important;
+}
+
+/* headings */
+h1,
+.github-markdown h1 a {
+  font-weight: normal;
+  border-bottom: 0;
+  margin-bottom: 1.5em;
+  font-size: 2.5rem;
+}
+h2,
+.github-markdown h2 {
+  font-size: 1.5rem;
+  border-bottom: 0;
+  border-top: 4px solid #f5f5f5;
+  padding-top: 1em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+h3 {
+  font-size: 1.25em;
+  background: transparent;
+  padding: 0;
+}
+
+h3 [data-ice="name"] {
+  font-weight: 600;
+}
+h4,
+table.summary thead {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.075em;
+  color: #555;
+}
+
+/* misc & type */
+.access  {
+  font-style: italic;
+  opacity: 0.5;
+}
+.abstract {
+  font-style: italic;
+  color: #009800;
+}
+*[data-ice="appendix"] li {
+  margin: 0;
+}
+p {
+  line-height: inherit;
+  margin-bottom: 1em;
+}
+
+/* links */
+a,
+.inherited-summary thead a {
+  color: #528DD9;
+  border-bottom: 1px solid #DDEBFE;
+}
+a:hover,
+a:focus,
+a:active,
+.inherited-summary thead a:hover,
+.inherited-summary thead a:focus,
+.inherited-summary thead a:active {
+  color: #4271ae;
+  border-bottom-color: #4271ae;
+}
+
+/* sidebar  */
+.navigation {
+  border: 0;
+}
+.navigation li a {
+  border: 0;
+}
+.navigation li a:hover,
+.navigation li a:focus,
+.navigation li a:active {
+  color: #333;
+}
+.navigation *[data-ice="kind"] {
+  line-height: 1.25em;
+}
+
+/* active state for sections */
+.inner-link-active {
+  background: transparent;
+}
+.inner-link-active::before {
+  content: '';
+  display: block;
+  height: 0.5em;
+  width: 0.5em;
+  background: #009800;
+  position: absolute;
+  left: -1.5em;
+  top: 0.5em;
+}
+/* position for other than the first detail container */
+.content .detail + .detail .inner-link-active::before  {
+  top: 3.5em;
+}
+
+/* search */
+.search-box.active .search-input-edge {
+  display: none;
+}
+.search-box {
+  font-size: 0.85rem;
+}
+.search-result {
+  height: auto;
+  max-height: 90vh;
+  white-space: normal;
+  box-shadow: -2px 5px 10px rgba(0,0,0,.05);
+  border: 1px solid #ddd;
+  border-top: 0;
+}
+.search-result li a {
+  border: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.search-result li.search-separator {
+  background: #4d4e53;
+}
