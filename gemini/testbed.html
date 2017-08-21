@@ -13,57 +13,23 @@
         <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
 
         <style type="text/css">
-        @import url('https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css');
-        .wrapper {
-          max-width: 800px;
-        }
-        </style>
-        <script type="text/javascript">
-        (function(window) {
-          var document = window.document;
-
-          /**
-           * Remove the instances
-           */
-          window.cleanInstance = function cleanInstances() {
-            // if instances exist, remove them
-            if (window.INSTANCE) {
-              window.INSTANCE.remove();
-              window.INSTANCE = null;
+            @import url('https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css');
+            .testbed {
+                max-width: 800px;
+                width:  99%;
             }
-          };
-
-          /**
-           * Create an instance of wavesurfer with specific options
-           *
-           * @param {WaveSurferParams} options Wavesurfer initialisation options
-           * @return { instance: WaveSurferInstance, remove: function }
-           */
-          window.createInstance = function createInstance(options) {
-              var wrapper = document.querySelector('.wrapper');
-              var el = document.createElement('div');
-              el.setAttribute('class', options.containerClass || 'waveform');
-              wrapper.appendChild(el);
-              options.container = el;
-              var ws = window.WaveSurfer.create(options);
-
-              ws.load(options.audioFile);
-
-              window.INSTANCE = {
-                  ws: ws,
-                  remove: function() {
-                      ws.destroy();
-                      wrapper.removeChild(el);
-                      el = null;
-                  }
-              };
-          };
-        })(window);
-        </script>
+            /* the only uniform scrollbar is a hidden scrollbar */
+            body * {
+                overflow: hidden !important;
+            }
+        </style>
     </head>
 
     <body>
-      <div class="wrapper">
-      </div>
+        <div class="testbed">
+            <div class="testbed__waveform"></div>
+            <div class="testbed__timeline"></div>
+            <div class="testbed__minimap"></div>
+        </div>
     </body>
 </html>
