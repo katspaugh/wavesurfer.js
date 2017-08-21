@@ -176,6 +176,34 @@ Build documentation with esdoc (generated files are placed in the `doc` director
 npm run doc
 ```
 
+## Visual regression tests
+
+To set up visual regression testing do:
+
+```bash
+npm install -g gemini
+npm install -g selenium-standalone
+selenium-standalone install
+```
+
+Then to update reference images:
+```bash
+# needs to run in a seperate tab
+selenium-standalone start
+
+# for some reason creating reference images can't
+# happen in one go, simply run this until you
+# don't have any failing tests anymore
+gemini update
+```
+
+To test against references images do:
+```
+gemini test
+```
+
+This will hopefully be automised and integrated into the CI infrastructure with a service like browserstack in future.
+
 ## Editing documentation
 The homepage and documentation files are maintained in the [`gh-pages` branch](https://github.com/katspaugh/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
 
