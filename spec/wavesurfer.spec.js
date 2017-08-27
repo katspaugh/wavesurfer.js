@@ -107,7 +107,7 @@ describe('WaveSurfer/playback:', function () {
     /** @test {WaveSurfer#zoom}  */
     it('should set unzoom parameters', function () {
         wavesurfer.zoom(false);
-        expect(wavesurfer.params.minPxPerSec).toEqual(null);
+        expect(wavesurfer.params.minPxPerSec).toEqual(wavesurfer.defaultParams.minPxPerSec);
         expect(wavesurfer.params.scrollParent).toBe(false);
     });
 });

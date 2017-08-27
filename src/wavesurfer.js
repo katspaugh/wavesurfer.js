@@ -920,7 +920,7 @@ export default class WaveSurfer extends util.Observer {
      */
     zoom(pxPerSec) {
         if (!pxPerSec) {
-            this.params.minPxPerSec = null;
+            this.params.minPxPerSec = this.defaultParams.minPxPerSec;
             this.params.scrollParent = false;
         } else {
             this.params.minPxPerSec = pxPerSec;
