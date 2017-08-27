@@ -882,8 +882,7 @@ export default class WaveSurfer extends util.Observer {
         const parentWidth = this.drawer.getWidth();
         let width = nominalWidth;
         let start = this.drawer.getScrollX();
-        let end = Math.min(start + parentWidth, width);
-
+        let end = Math.max(start + parentWidth, width);
         // Fill container
         if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
             width = parentWidth;
@@ -900,8 +899,6 @@ export default class WaveSurfer extends util.Observer {
                 this.drawer.drawPeaks(peaks, width, newRanges[i][0], newRanges[i][1]);
             }
         } else {
-            start = 0;
-            end = width;
             peaks = this.backend.getPeaks(width, start, end);
             this.drawer.drawPeaks(peaks, width, start, end);
         }
