@@ -910,16 +910,22 @@ export default class WaveSurfer extends util.Observer {
 
     /**
      * Horizontally zooms the waveform in and out. It also changes the parameter
-     * `minPxPerSec` and enables the `scrollParent` option.
+     * `minPxPerSec` and enables the `scrollParent` option. Calling the function
+     * with a falsey parameter will reset the zoom state.
      *
-     * @param {number} pxPerSec Number of horizontal pixels per second of audio
+     * @param {number?} pxPerSec Number of horizontal pixels per second of
+     * audio, if none is set the waveform returns to unzoomed state
      * @emits WaveSurfer#zoom
      * @example wavesurfer.zoom(20);
      */
     zoom(pxPerSec) {
-        this.params.minPxPerSec = pxPerSec;
-
-        this.params.scrollParent = true;
+        if (!pxPerSec) {
+            this.params.minPxPerSec = null;
+            this.params.scrollParent = false;
+        } else {
+            this.params.minPxPerSec = pxPerSec;
+            this.params.scrollParent = true;
+        }
 
         this.drawBuffer();
         this.drawer.progress(this.backend.getPlayedPercents());
