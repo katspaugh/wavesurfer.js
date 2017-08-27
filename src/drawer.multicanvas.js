@@ -72,7 +72,7 @@ export default class MultiCanvas extends Drawer {
         this.progressWave = this.wrapper.appendChild(
             this.style(document.createElement('wave'), {
                 position: 'absolute',
-                zIndex: 2,
+                zIndex: 3,
                 left: 0,
                 top: 0,
                 bottom: 0,
