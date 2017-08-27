@@ -231,51 +231,36 @@ export default class MultiCanvas extends Drawer {
      * rendered
      */
     drawBars(peaks, channelIndex, start, end) {
-        util.frame((peaks, channelIndex, start, end) => {
-            // Split channels
-            if (peaks[0] instanceof Array) {
-                const channels = peaks;
-                if (this.params.splitChannels) {
-                    this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                    channels.forEach((channelPeaks, i) => this.drawBars(channelPeaks, i, start, end));
-                    return;
-                }
-                peaks = channels[0];
+        return this.prepareDraw(peaks, channelIndex, start, end, ({
+            absmax,
+            hasMinVals,
+            height,
+            offsetY,
+            halfH
+        }) => {
+            // if drawBars was called within ws.empty we don't pass a start and
+            // don't want anything to happen
+            if (start === undefined) {
+                return;
             }
-
-            // Bar wave draws the bottom only as a reflection of the top,
-            // so we don't need negative values
-            const hasMinVals = [].some.call(peaks, val => val < 0);
             // Skip every other value if there are negatives.
             const peakIndexScale = hasMinVals ? 2 : 1;
-
-            // A half-pixel offset makes lines crisp
-            const width = this.width;
-            const height = this.params.height * this.params.pixelRatio;
-            const offsetY = height * channelIndex || 0;
-            const halfH = height / 2;
             const length = peaks.length / peakIndexScale;
             const bar = this.params.barWidth * this.params.pixelRatio;
             const gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
             const step = bar + gap;
 
-            let absmax = 1 / this.params.barHeight;
-            if (this.params.normalize) {
-                const max = util.max(peaks);
-                const min = util.min(peaks);
-                absmax = -min > max ? -min : max;
-            }
-
-            const scale = length / width;
+            const scale = length / this.width;
+            const first = start;
+            const last = end;
             let i;
 
-            for (i = (start / scale); i < (end / scale); i += step) {
+            for (i = first; i < last; i += step) {
                 const peak = peaks[Math.floor(i * scale * peakIndexScale)] || 0;
                 const h = Math.round(peak / absmax * halfH);
                 this.fillRect(i + this.halfPixel, halfH - h + offsetY, bar + this.halfPixel, h * 2);
             }
-
-        })(peaks, channelIndex, start, end);
+        });
     }
 
     /**
@@ -285,27 +270,20 @@ export default class MultiCanvas extends Drawer {
      * rendering
      * @param {number} channelIndex The index of the current channel. Normally
      * should be 0
-     * @param {number} start The x-offset of the beginning of the area that
-     * should be rendered
-     * @param {number} end The x-offset of the end of the area that should be
+     * @param {number?} start The x-offset of the beginning of the area that
+     * should be rendered (If this isn't set only a flat line is rendered)
+     * @param {number?} end The x-offset of the end of the area that should be
      * rendered
      */
     drawWave(peaks, channelIndex, start, end) {
-        util.frame((peaks, channelIndex, start, end) => {
-            // Split channels
-            if (peaks[0] instanceof Array) {
-                const channels = peaks;
-                if (this.params.splitChannels) {
-                    this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
-                    channels.forEach((channelPeaks, i) => this.drawWave(channelPeaks, i, start, end));
-                    return;
-                }
-                peaks = channels[0];
-            }
-
-            // Support arrays without negative peaks
-            const hasMinValues = [].some.call(peaks, val => val < 0);
-            if (!hasMinValues) {
+        return this.prepareDraw(peaks, channelIndex, start, end, ({
+            absmax,
+            hasMinVals,
+            height,
+            offsetY,
+            halfH
+        }) => {
+            if (!hasMinVals) {
                 const reflectedPeaks = [];
                 const len = peaks.length;
                 let i;
@@ -316,23 +294,15 @@ export default class MultiCanvas extends Drawer {
                 peaks = reflectedPeaks;
             }
 
-            // A half-pixel offset makes lines crisp
-            const height = this.params.height * this.params.pixelRatio;
-            const offsetY = height * channelIndex || 0;
-            const halfH = height / 2;
-
-            let absmax = 1 / this.params.barHeight;
-            if (this.params.normalize) {
-                const max = util.max(peaks);
-                const min = util.min(peaks);
-                absmax = -min > max ? -min : max;
+            // if drawWave was called within ws.empty we don't pass a start and
+            // end and simply want a flat line
+            if (start !== undefined) {
+                this.drawLine(peaks, absmax, halfH, offsetY, start, end);
             }
-
-            this.drawLine(peaks, absmax, halfH, offsetY, start, end);
 
             // Always draw a median line
             this.fillRect(0, halfH + offsetY - this.halfPixel, this.width, this.halfPixel);
-        })(peaks, channelIndex, start, end);
+        });
     }
 
     /**
@@ -384,8 +354,8 @@ export default class MultiCanvas extends Drawer {
         // of course, this is the last canvas.
         const last = Math.round(length * entry.end) + 1;
         if (first > end || last < start) { return; }
-        const canvasStart = Math.max(first, start);
-        const canvasEnd = Math.min(last, end);
+        const canvasStart = Math.min(first, start);
+        const canvasEnd = Math.max(last, end);
         let i;
         let j;
 
@@ -452,6 +422,60 @@ export default class MultiCanvas extends Drawer {
                         intersection.y2 - intersection.y1);
             }
         }
+    }
+
+    /**
+     * Performs preparation tasks and calculations which are shared by drawBars and drawWave
+     *
+     * @private
+     * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
+     * rendering
+     * @param {number} channelIndex The index of the current channel. Normally
+     * should be 0
+     * @param {number?} start The x-offset of the beginning of the area that
+     * should be rendered (If this isn't set only a flat line is rendered)
+     * @param {number?} end The x-offset of the end of the area that should be
+     * rendered
+     * @param {function} fn The render function to call
+     */
+    prepareDraw(peaks, channelIndex, start, end, fn) {
+        return util.frame(() => {
+            // Split channels and call this function with the channelIndex set
+            if (peaks[0] instanceof Array) {
+                const channels = peaks;
+                if (this.params.splitChannels) {
+                    this.setHeight(channels.length * this.params.height * this.params.pixelRatio);
+                    channels.forEach((channelPeaks, i) => this.prepareDraw(channelPeaks, i, start, end, fn));
+                    return;
+                }
+                peaks = channels[0];
+            }
+
+            // calculate maximum modulation value, either from the barHeight
+            // parameter or if normalize=true from the largest value in the peak
+            // set
+            let absmax = 1 / this.params.barHeight;
+            if (this.params.normalize) {
+                const max = util.max(peaks);
+                const min = util.min(peaks);
+                absmax = -min > max ? -min : max;
+            }
+
+            // Bar wave draws the bottom only as a reflection of the top,
+            // so we don't need negative values
+            const hasMinVals = [].some.call(peaks, val => val < 0);
+            const height = this.params.height * this.params.pixelRatio;
+            const offsetY = height * channelIndex || 0;
+            const halfH = height / 2;
+
+            return fn({
+                absmax: absmax,
+                hasMinVals: hasMinVals,
+                height: height,
+                offsetY: offsetY,
+                halfH: halfH
+            });
+        })();
     }
 
     /**
