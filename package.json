@@ -21,7 +21,7 @@
     "url": "git://github.com/katspaugh/wavesurfer.js.git"
   },
   "author": "",
-  "license": "CC-BY-3.0",
+  "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/katspaugh/wavesurfer.js/issues"
   },

@@ -142,7 +142,9 @@ export default class Drawer extends util.Observer {
      * rendered
      */
     drawPeaks(peaks, length, start, end) {
-        this.setWidth(length);
+        if (!this.setWidth(length)) {
+            this.clearWave();
+        }
 
         this.params.barWidth ?
             this.drawBars(peaks, 0, start, end) :
@@ -228,7 +230,7 @@ export default class Drawer extends util.Observer {
      */
     setWidth(width) {
         if (this.width == width) {
-            return;
+            return false;
         }
 
         this.width = width;
@@ -244,6 +246,7 @@ export default class Drawer extends util.Observer {
         }
 
         this.updateSize();
+        return true;
     }
 
     /**
@@ -252,12 +255,17 @@ export default class Drawer extends util.Observer {
      * @param {number} height
      */
     setHeight(height) {
-        if (height == this.height) { return; }
+        if (height == this.height) {
+            return false;
+        }
         this.height = height;
+
         this.style(this.wrapper, {
             height: ~~(this.height / this.params.pixelRatio) + 'px'
         });
+
         this.updateSize();
+        return true;
     }
 
     /**

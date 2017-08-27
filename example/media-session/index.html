@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>wavesurfer.js | Media Sesssion plugin</title>
+
+        <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="../css/ribbon.css" />
+
+        <!-- wavesurfer.js -->
+        <script src="../../dist/wavesurfer.min.js"></script>
+
+        <!-- media session plugin -->
+        <script src="../../dist/plugin/wavesurfer.mediasession.min.js"></script>
+
+        <!-- App -->
+        <script src="app.js"></script>
+    </head>
+
+    <body itemscope itemtype="http://schema.org/WebApplication">
+        <div class="container">
+            <div class="header">
+                <h1 itemprop="name"><a href="http://wavesurfer-js.org">wavesurfer.js</a><noindex> + Media Session API</noindex></h1>
+            </div>
+
+            <div id="demo">
+                <div id="waveform"></div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+                </div>
+
+                <audio src='../media/demo.wav' controls />
+            </div>
+
+            <div class="row marketing">
+                <div class="col-lg-4">
+                    <h4>wavesurfer.js Media Session Plugin</h4>
+
+                    <p itemprop="about">The <a href='https://wicg.github.io/mediasession/' target='blank'>Media Session API</a> plugin for <strong>wavesurfer.js</strong> allows you to customize media notifications
+                    by providing metadata for the media your web app is playing. It also allows you to handle media related events such as
+                    seeking or playback which may come from notifications or media keys.</p>
+
+                    <p><strong>Note</strong>: this plugin only works in Chrome 57 and newer (Firefox is <a href='https://bugzilla.mozilla.org/show_bug.cgi?id=1112032' target='blank'>working on it</a>).</p>
+
+                    <h4>Installation</h4>
+
+                    <p>
+                      <ol>
+                        <li>add the MediaSession plugin script tag</li>
+                        <li>create a <code>WaveSurfer</code> instance and supply an object for the <code>metadata</code> property</li>
+                        <li>create a <code>MediaSession</code> instance</li>
+                        <li>control playback from the notification screen on a mobile device</li>
+                      </ol>
+                    </p>
+                    <p>
+                        <a class="btn btn-large btn-success" href="../../plugin/wavesurfer.mediasession.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (1.2 KB)</a>
+                    </p>
+                </div>
+
+                <div class="col-lg-8">
+                    <h4>Quick Start</h4>
+
+                    <noindex><p>
+<pre><code>var wavesurfer = Object.create(WaveSurfer);
+
+wavesurfer.init({
+  container     : '#waveform',
+  waveColor     : 'black',
+  backend       : 'MediaElement'
+});
+
+var msPlugin = Object.create(WaveSurfer.MediaSession);
+
+msPlugin.init({
+    wavesurfer: wavesurfer,
+    metadata: {
+        title: 'Wavesurfer.js Example',
+        artist: 'The Wavesurfer.js Project',
+        album: 'Media Session Example',
+        artwork: [
+          {src: 'https://dummyimage.com/96x96',   sizes: '96x96',   type: 'image/png'},
+          {src: 'https://dummyimage.com/128x128', sizes: '128x128', type: 'image/png'},
+          {src: 'https://dummyimage.com/192x192', sizes: '192x192', type: 'image/png'},
+          {src: 'https://dummyimage.com/256x256', sizes: '256x256', type: 'image/png'},
+          {src: 'https://dummyimage.com/384x384', sizes: '384x384', type: 'image/png'},
+          {src: 'https://dummyimage.com/512x512', sizes: '512x512', type: 'image/png'},
+        ]
+    }
+});
+
+// load audio from existing media element
+var mediaElt = document.querySelector('audio');
+wavesurfer.load(mediaElt);
+</code></pre>
+                    </p></noindex>
+
+                    <br />
+
+                    <h4>Options</h4>
+
+                    <table class="table table-striped table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Required</th>
+                          <th>Default</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><code>wavesurfer</code></td>
+                          <td>yes</td>
+                          <td></td>
+                          <td>A WaveSurfer instance.</td>
+                        </tr>
+                        <tr>
+                          <td><code>metadata</code></td>
+                          <td>yes</td>
+                          <td></td>
+                          <td>A <a href='https://wicg.github.io/mediasession/#mediametadata' target='blank'>MediaMetadata</a> object: a representation of the metadata associated with a MediaSession that can be used by
+                          user agents to provide customized user interface.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="footer row">
+                <div class="col-sm-12">
+                    <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
+                </div>
+
+                <div class="col-sm-12">
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
+                </div>
+            </div>
+        </div>
+
+        <div class="github-fork-ribbon-wrapper right">
+            <div class="github-fork-ribbon">
+                <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+            </div>
+        </div>
+
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+            ga('send', 'pageview');
+        </script>
+    </body>
+</html>

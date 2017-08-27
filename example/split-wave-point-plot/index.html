@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>wavesurfer.js | Split Wave Point Plot Example</title>
+
+        <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="../css/ribbon.css" />
+        <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+
+        <!-- wavesurfer.js -->
+        <script src="../../dist/wavesurfer.min.js"></script>
+
+        <script src="../../plugin/wavesurfer.regions.js"></script>
+
+        <!-- Demo -->
+        <script src="app.js"></script>
+    </head>
+
+    <body itemscope itemtype="http://schema.org/WebApplication">
+        <div class="container">
+            <div class="header">
+                <ul class="nav nav-pills pull-right">
+                    <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
+                </ul>
+
+                <h1 itemprop="name">Split Wave / Point Plot </h1>
+            </div>
+            <div>
+                <p>
+                The Split Wave Point Plot drawer splits the graphic in two, with the upper half being a plot of
+                points defined by time and a range of values. The following example shows the calculated pitch
+                at each point in time.
+                </p>
+            </div>
+
+            <div id="demo">
+                <div id="waveform">
+                    <!-- Here be the waveform -->
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+                </div>
+            </div>
+
+
+            <div class="row marketing">
+                <h3>How to Enable Split Wave/Point Plot</h3>
+
+                <p>
+                    Set the <code>renderer</code> option to <code>SplitWavePointPlot</code> and the <code>plotFileUrl</code> to the file containing the time aligned data.
+                </p>
+
+                <p>
+<pre><code>var wavesurfer = WaveSurfer.create({
+    container: document.querySelector('#wave'),
+    renderer: 'SplitWavePointPlot',
+    plotFileUrl: 'data.txt'
+});
+</code></pre>
+                </p>
+
+                <h3>Providing Point Data</h3>
+                <p>The data to be graphed can be provided by either providing a file defined in the <code>plotFileUrl</code> or by passing in an array of data in the <code>plotArray</code> option. The time data does not need to be continous and can have gaps.</p>
+                <strong>Note: if the timing of your data does not span the duration of the sound file you should set <code>plotTimeEnd</code> to the total duration of the sound file or the points may not be aligned correctly</strong></li>
+                <h4>Data File Format</h4>
+                <p>If providing data by loading a file, each line of the file must contain two elements: the time and the value of the point separated by a delimiter (defaults to tab).  E.g.</p>
+<pre><code>0.01 123
+0.02 121
+0.03 127
+0.22 120
+0.23 119</code></pre>
+
+                <h4>Data Array Format</h4>
+                <p>If providing data by a javascript array via the <code>plotArray</code> option the array should have the following form:</p>
+<pre><code>[
+{time: 0.02, value: 121},
+{time: 0.03, value: 127},
+{time: 0.22, value: 120},
+{time: 0.03, value: 119}
+]</code></pre>
+
+                <h3>Options</h3>
+                <p>The following additional options can be set when initializing wavesurfer to control the waveform</p>
+                <ul>
+                    <li><code>plotArray:</code>               array of objects with time and plot (required unless plotFileUrl is set)</li>
+                    <li><code>plotFileUrl:</code>              url of the file that contains the plot information (required unless plotArray is set)</li>
+                    <li><code>plotNormalizeTo:</code>          [whole/segment/none/values] - what value to normalize the plot to (defaults to "whole")</li>
+                    <li><code>plotMin:</code>                  the minimum value to normalize points to.  Any value below this will be ignored (defaults to 0)</li>
+                    <li><code>plotMax:</code>                  the maximum value to normalize points to.  Any value above this will be ignored (defaults to 1)</li>
+                    <li><code>plotTimeStart:</code>            the time included in the plot file which corresponds with the start of the displayed wave (defaults to 0)</li>
+                    <li><code>plotTimeEnd:</code>              the time included in the plot file which corresponds with the end of the displayed wave (defaults maximum plot time)</li>
+                    <li><code>plotColor:</code>                the color of the plot (defaults to #f63)</li>
+                    <li><code>plotProgressColor:</code>       the color of the progress plot (defaults to '#F00')</li>
+                    <li><code>plotFileDelimiter:</code>        the delimiter which separates the time from the value in the plot file (defaults to tab characater = "\t")</li>
+                    <li><code>plotPointHeight:</code>          the canvas height of each plot point (defaults to 2)</li>
+                    <li><code>plotPointWidth:</code>           the canvas width of each plot point (defaults to 2)</li>
+                    <li><code>plotSeparator:</code>            boolean indicating a separator should be included between the wave and point plot</li>
+                    <li><code>plotRangeDisplay:</code>         boolean indicating if the min and max range should be displayed (defaults to false)</li>
+                    <li><code>plotRangePrecision:</code>       integer determining the precision of the displayed plot range</li>
+                    <li><code>plotRangeUnits:</code>           units appended to the range</li>
+                    <li><code>plotRangeFontSize:</code>        the font for displaying the range - defaults to 20</li>
+                    <li><code>plotRangeFontType:</code>        the font type for displaying range - defaults to Ariel</li>
+                    <li><code>plotRangeIgnoreOutliers:</code>  boolean indicating if values outside of range should be ignored or plotted at min/max</li>
+                </ul>
+            </div>
+
+
+            <div class="footer row">
+                <div class="col-sm-12">
+                    <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
+                </div>
+
+                <div class="col-sm-7">
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
+                </div>
+
+                <div class="col-sm-5">
+                    <noindex>
+                        Demo is selection of from The Hobbit by J.R.R. Tolkien
+                    </noindex>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="github-fork-ribbon-wrapper right">
+            <div class="github-fork-ribbon">
+                <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+            </div>
+        </div>
+
+        <script>
+            /*
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+            ga('send', 'pageview');
+            */
+        </script>
+    </body>
+</html>
