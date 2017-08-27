@@ -22,6 +22,68 @@ gemini.suite('core', core => {
             }));
     });
 
+    gemini.suite('core: webaudio: peaks: rendering', webaudio => {
+        webaudio
+            .before(actions => actions.executeJS(function(win) {
+                win._instance = win.WaveSurfer.create({
+                    backend: 'WebAudio',
+                    container: '.testbed__waveform',
+                    responsive: true
+                });
+                win._instance.load('/spec/support/demo.wav', win.demoPeaks);
+            }))
+            .capture('rendering')
+            .capture('zooming', actions => actions.executeJS(function(win) {
+                win._instance.zoom(200);
+            }))
+            .capture('skipping', actions => actions.executeJS(function(win) {
+                win._instance.skip(5);
+            }))
+            .capture('resize', actions => actions.setWindowSize(300, 1000));
+    });
+
+    gemini.suite('core: webaudio: peakcache: rendering', webaudio => {
+        webaudio
+            .before(actions => actions.executeJS(function(win) {
+                win._instance = win.WaveSurfer.create({
+                    backend: 'WebAudio',
+                    container: '.testbed__waveform',
+                    responsive: true,
+                    partialRender: true
+                });
+                win._instance.load('/spec/support/demo.wav');
+            }))
+            .capture('rendering')
+            .capture('zooming', actions => actions.executeJS(function(win) {
+                win._instance.zoom(200);
+            }))
+            .capture('skipping', actions => actions.executeJS(function(win) {
+                win._instance.skip(5);
+            }))
+            .capture('resize', actions => actions.setWindowSize(300, 1000));
+    });
+
+    gemini.suite('core: webaudio: peakcache: peaks: rendering', webaudio => {
+        webaudio
+            .before(actions => actions.executeJS(function(win) {
+                win._instance = win.WaveSurfer.create({
+                    backend: 'WebAudio',
+                    container: '.testbed__waveform',
+                    responsive: true,
+                    partialRender: true
+                });
+                win._instance.load('/spec/support/demo.wav', win.demoPeaks);
+            }))
+            .capture('rendering')
+            .capture('zooming', actions => actions.executeJS(function(win) {
+                win._instance.zoom(200);
+            }))
+            .capture('skipping', actions => actions.executeJS(function(win) {
+                win._instance.skip(5);
+            }))
+            .capture('resize', actions => actions.setWindowSize(300, 1000));
+    });
+
     gemini.suite('core: webaudio: custom rendering', webaudio => {
       webaudio
           .before(actions => actions.executeJS(function(win) {
@@ -56,8 +118,11 @@ gemini.suite('core', core => {
           .capture('resize', actions => actions.setWindowSize(300, 1000));
     });
 
+
+
+
     // MediaElement test suites
-    gemini.suite('core: MediaElement: basic rendering', webaudio => {
+    gemini.suite('core: mediaelement: basic rendering', webaudio => {
         webaudio
             .before(actions => actions.executeJS(function(win) {
                 win._instance = win.WaveSurfer.create({
@@ -73,6 +138,68 @@ gemini.suite('core', core => {
             .capture('skipping', actions => actions.executeJS(function(win) {
                 win._instance.skip(5);
             }));
+    });
+
+    gemini.suite('core: mediaelement: peaks: rendering', webaudio => {
+        webaudio
+            .before(actions => actions.executeJS(function(win) {
+                win._instance = win.WaveSurfer.create({
+                    backend: 'MediaElement',
+                    container: '.testbed__waveform',
+                    responsive: true
+                });
+                win._instance.load('/spec/support/demo.wav', win.demoPeaks);
+            }))
+            .capture('rendering')
+            .capture('zooming', actions => actions.executeJS(function(win) {
+                win._instance.zoom(200);
+            }))
+            .capture('skipping', actions => actions.executeJS(function(win) {
+                win._instance.skip(5);
+            }))
+            .capture('resize', actions => actions.setWindowSize(300, 1000));
+    });
+
+    gemini.suite('core: mediaelement: peakcache: rendering', webaudio => {
+        webaudio
+            .before(actions => actions.executeJS(function(win) {
+                win._instance = win.WaveSurfer.create({
+                    backend: 'MediaElement',
+                    container: '.testbed__waveform',
+                    responsive: true,
+                    partialRender: true
+                });
+                win._instance.load('/spec/support/demo.wav');
+            }))
+            .capture('rendering')
+            .capture('zooming', actions => actions.executeJS(function(win) {
+                win._instance.zoom(200);
+            }))
+            .capture('skipping', actions => actions.executeJS(function(win) {
+                win._instance.skip(5);
+            }))
+            .capture('resize', actions => actions.setWindowSize(300, 1000));
+    });
+
+    gemini.suite('core: mediaelement: peakcache: peaks: rendering', webaudio => {
+        webaudio
+            .before(actions => actions.executeJS(function(win) {
+                win._instance = win.WaveSurfer.create({
+                    backend: 'MediaElement',
+                    container: '.testbed__waveform',
+                    responsive: true,
+                    partialRender: true
+                });
+                win._instance.load('/spec/support/demo.wav', win.demoPeaks);
+            }))
+            .capture('rendering')
+            .capture('zooming', actions => actions.executeJS(function(win) {
+                win._instance.zoom(200);
+            }))
+            .capture('skipping', actions => actions.executeJS(function(win) {
+                win._instance.skip(5);
+            }))
+            .capture('resize', actions => actions.setWindowSize(300, 1000));
     });
 
     gemini.suite('core: mediaelement: custom rendering', webaudio => {
