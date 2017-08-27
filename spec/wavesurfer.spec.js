@@ -96,4 +96,18 @@ describe('WaveSurfer/playback:', function () {
         wavesurfer.setMute(false);
         expect(wavesurfer.isMuted).toBeFalse();
     });
+
+    /** @test {WaveSurfer#zoom}  */
+    it('should set zoom parameters', function () {
+        wavesurfer.zoom(20);
+        expect(wavesurfer.params.minPxPerSec).toEqual(20);
+        expect(wavesurfer.params.scrollParent).toBe(true);
+    });
+
+    /** @test {WaveSurfer#zoom}  */
+    it('should set unzoom parameters', function () {
+        wavesurfer.zoom(false);
+        expect(wavesurfer.params.minPxPerSec).toEqual(null);
+        expect(wavesurfer.params.scrollParent).toBe(false);
+    });
 });
