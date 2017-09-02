@@ -913,7 +913,7 @@ export default class WaveSurfer extends util.Observer {
      * `minPxPerSec` and enables the `scrollParent` option. Calling the function
      * with a falsey parameter will reset the zoom state.
      *
-     * @param {number?} pxPerSec Number of horizontal pixels per second of
+     * @param {?number} pxPerSec Number of horizontal pixels per second of
      * audio, if none is set the waveform returns to unzoomed state
      * @emits WaveSurfer#zoom
      * @example wavesurfer.zoom(20);
