@@ -599,4 +599,24 @@ export default class RegionsPlugin {
     disableDragSelection() {
         this.fireEvent('disable-drag-selection');
     }
+
+    /* Get current region
+     *  The smallest region that contains the current time.
+     *  If several such regions exist, we take the first.
+     *  Return null if none exist. */
+    getCurrentRegion() {
+        const time = this.wavesurfer.getCurrentTime();
+        let min = null;
+        Object.keys(this.list).forEach(id => {
+            const cur = this.list[id];
+            if (cur.start <= time && cur.end >= time) {
+                if (!min || ((cur.end - cur.start) < (min.end - min.start))) {
+                    min = cur;
+                }
+            }
+        });
+
+        return min;
+    }
+
 }
