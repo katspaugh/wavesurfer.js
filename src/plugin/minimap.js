@@ -92,17 +92,25 @@ export default class MinimapPlugin {
          * @see https://github.com/katspaugh/wavesurfer.js/issues/736
          */
         this.renderEvent = ws.params.backend === 'MediaElement' ? 'waveform-ready' : 'ready';
-        this.renderEvent = 'ready';
+        this.overviewRegion = null;
+
+        this.drawer.createWrapper();
+        this.createElements();
+
+        let isInitialised = false;
 
         // ws ready event listener
         this._onShouldRender = () => {
+            // only bind the events in the first run
+            if (!isInitialised) {
+                this.bindWavesurferEvents();
+                this.bindMinimapEvents();
+                isInitialised = true;
+            }
             if (!document.body.contains(this.params.container)) {
                 ws.container.insertBefore(this.params.container, null);
             }
-            this.drawer.createWrapper();
-            this.createElements();
-            this.bindWavesurferEvents();
-            this.bindMinimapEvents();
+
             if (this.wavesurfer.regions && this.params.showRegions) {
                 this.regions();
             }
@@ -275,6 +283,7 @@ export default class MinimapPlugin {
     }
 
     render() {
+        this.drawer.progress(0);
         const len = this.drawer.getWidth();
         const peaks = this.wavesurfer.backend.getPeaks(len, 0, len);
         this.drawer.drawPeaks(peaks, len, 0, len);
