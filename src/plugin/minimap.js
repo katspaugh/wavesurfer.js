@@ -283,10 +283,10 @@ export default class MinimapPlugin {
     }
 
     render() {
-        this.drawer.progress(0);
         const len = this.drawer.getWidth();
         const peaks = this.wavesurfer.backend.getPeaks(len, 0, len);
         this.drawer.drawPeaks(peaks, len, 0, len);
+        this.drawer.progress(this.wavesurfer.backend.getPlayedPercents());
 
         if (this.params.showOverview) {
             //get proportional width of overview region considering the respective
