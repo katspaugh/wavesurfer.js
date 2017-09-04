@@ -74,6 +74,14 @@ export default class MinimapPlugin {
                 fillParent: true
             }
         );
+        // if container is a selector, get the element
+        if (typeof params.container === 'string') {
+            const el = document.querySelector(params.container);
+            if (!el) {
+                console.warn(`Wavesurfer minimap container ${params.container} was not found! The minimap will be automatically appended below the waveform.`);
+            }
+            this.params.container = el;
+        }
         // if no container is specified add a new element and insert it
         if (!params.container) {
             this.params.container = ws.util.style(document.createElement('minimap'), {
@@ -96,6 +104,8 @@ export default class MinimapPlugin {
 
         // ws ready event listener
         this._onShouldRender = () => {
+            // if there is no such element, append it to the container (below
+            // the waveform)
             if (!document.body.contains(this.params.container)) {
                 ws.container.insertBefore(this.params.container, null);
             }
