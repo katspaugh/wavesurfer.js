@@ -1059,6 +1059,7 @@ export default class WaveSurfer extends util.Observer {
             this.backend.once('canplay', () => {
                 this.drawBuffer();
                 this.fireEvent('ready');
+                this.isReady = true;
             }),
             this.backend.once('error', err => this.fireEvent('error', err))
         );
