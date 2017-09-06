@@ -352,7 +352,7 @@ export default class WaveSurfer extends util.Observer {
         this._onResize = util.debounce(() => {
             if (prevWidth != this.drawer.wrapper.clientWidth && !this.params.scrollParent) {
                 prevWidth = this.drawer.wrapper.clientWidth;
-                this.drawBuffer();
+                this.drawer.fireEvent('redraw');
             }
         }, typeof this.params.responsive === 'number' ? this.params.responsive : 100);
 
