@@ -74,6 +74,14 @@ export default class MinimapPlugin {
                 fillParent: true
             }
         );
+        // if container is a selector, get the element
+        if (typeof params.container === 'string') {
+            const el = document.querySelector(params.container);
+            if (!el) {
+                console.warn(`Wavesurfer minimap container ${params.container} was not found! The minimap will be automatically appended below the waveform.`);
+            }
+            this.params.container = el;
+        }
         // if no container is specified add a new element and insert it
         if (!params.container) {
             this.params.container = ws.util.style(document.createElement('minimap'), {
@@ -92,17 +100,26 @@ export default class MinimapPlugin {
          * @see https://github.com/katspaugh/wavesurfer.js/issues/736
          */
         this.renderEvent = ws.params.backend === 'MediaElement' ? 'waveform-ready' : 'ready';
-        this.renderEvent = 'ready';
+        this.overviewRegion = null;
+
+        this.drawer.createWrapper();
+        this.createElements();
+        let isInitialised = false;
 
         // ws ready event listener
         this._onShouldRender = () => {
+            // only bind the events in the first run
+            if (!isInitialised) {
+                this.bindWavesurferEvents();
+                this.bindMinimapEvents();
+                isInitialised = true;
+            }
+            // if there is no such element, append it to the container (below
+            // the waveform)
             if (!document.body.contains(this.params.container)) {
                 ws.container.insertBefore(this.params.container, null);
             }
-            this.drawer.createWrapper();
-            this.createElements();
-            this.bindWavesurferEvents();
-            this.bindMinimapEvents();
+
             if (this.wavesurfer.regions && this.params.showRegions) {
                 this.regions();
             }
@@ -278,6 +295,7 @@ export default class MinimapPlugin {
         const len = this.drawer.getWidth();
         const peaks = this.wavesurfer.backend.getPeaks(len, 0, len);
         this.drawer.drawPeaks(peaks, len, 0, len);
+        this.drawer.progress(this.wavesurfer.backend.getPlayedPercents());
 
         if (this.params.showOverview) {
             //get proportional width of overview region considering the respective

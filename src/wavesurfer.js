@@ -179,7 +179,7 @@ export default class WaveSurfer extends util.Observer {
         cursorWidth   : 1,
         dragSelection : true,
         fillParent    : true,
-        forceDecode   : true,
+        forceDecode   : false,
         height        : 128,
         hideScrollbar : false,
         interact      : true,
@@ -882,8 +882,7 @@ export default class WaveSurfer extends util.Observer {
         const parentWidth = this.drawer.getWidth();
         let width = nominalWidth;
         let start = this.drawer.getScrollX();
-        let end = Math.min(start + parentWidth, width);
-
+        let end = Math.max(start + parentWidth, width);
         // Fill container
         if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
             width = parentWidth;
@@ -900,8 +899,6 @@ export default class WaveSurfer extends util.Observer {
                 this.drawer.drawPeaks(peaks, width, newRanges[i][0], newRanges[i][1]);
             }
         } else {
-            start = 0;
-            end = width;
             peaks = this.backend.getPeaks(width, start, end);
             this.drawer.drawPeaks(peaks, width, start, end);
         }
@@ -910,16 +907,22 @@ export default class WaveSurfer extends util.Observer {
 
     /**
      * Horizontally zooms the waveform in and out. It also changes the parameter
-     * `minPxPerSec` and enables the `scrollParent` option.
+     * `minPxPerSec` and enables the `scrollParent` option. Calling the function
+     * with a falsey parameter will reset the zoom state.
      *
-     * @param {number} pxPerSec Number of horizontal pixels per second of audio
+     * @param {?number} pxPerSec Number of horizontal pixels per second of
+     * audio, if none is set the waveform returns to unzoomed state
      * @emits WaveSurfer#zoom
      * @example wavesurfer.zoom(20);
      */
     zoom(pxPerSec) {
-        this.params.minPxPerSec = pxPerSec;
-
-        this.params.scrollParent = true;
+        if (!pxPerSec) {
+            this.params.minPxPerSec = this.defaultParams.minPxPerSec;
+            this.params.scrollParent = false;
+        } else {
+            this.params.minPxPerSec = pxPerSec;
+            this.params.scrollParent = true;
+        }
 
         this.drawBuffer();
         this.drawer.progress(this.backend.getPlayedPercents());
@@ -1056,6 +1059,7 @@ export default class WaveSurfer extends util.Observer {
             this.backend.once('canplay', () => {
                 this.drawBuffer();
                 this.fireEvent('ready');
+                this.isReady = true;
             }),
             this.backend.once('error', err => this.fireEvent('error', err))
         );
