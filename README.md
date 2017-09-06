@@ -188,18 +188,14 @@ selenium-standalone install
 
 Then to update reference images:
 ```bash
-# needs to run in a seperate tab
+# start the selenium server (needs to run in a seperate tab)
 selenium-standalone start
 
-# for some reason creating reference images can't
-# happen in one go, simply run this until you
-# don't have any failing tests anymore
-gemini update
-```
+# start the webpack server (needs to run in a seperate tab)
+npm start
 
-To test against references images do:
-```
-gemini test
+# start the gemini ui
+gemini-gui
 ```
 
 This will hopefully be automised and integrated into the CI infrastructure with a service like browserstack in future.
