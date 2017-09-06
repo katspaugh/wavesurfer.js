@@ -524,7 +524,7 @@ export default class WaveSurfer extends util.Observer {
         this.drawer.init();
         this.fireEvent('drawer-created', this.drawer);
 
-        if (this.params.responsive) {
+        if (this.params.responsive !== false) {
             window.addEventListener('resize', this._onResize, true);
         }
 
@@ -1295,7 +1295,7 @@ export default class WaveSurfer extends util.Observer {
         this.cancelAjax();
         this.clearTmpEvents();
         this.unAll();
-        if (this.params.responsive) {
+        if (this.params.responsive !== false) {
             window.removeEventListener('resize', this._onResize, true);
         }
         this.backend.destroy();
