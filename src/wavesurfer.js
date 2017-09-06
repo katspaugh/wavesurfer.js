@@ -959,9 +959,10 @@ export default class WaveSurfer extends util.Observer {
      */
     loadDecodedBuffer(buffer) {
         this.backend.load(buffer);
-        this.drawBuffer();
         this.fireEvent('ready');
         this.isReady = true;
+        this.drawBuffer();
+        this.fireEvent('waveform-ready');
     }
 
     /**
@@ -1027,6 +1028,7 @@ export default class WaveSurfer extends util.Observer {
         if (peaks) {
             this.backend.setPeaks(peaks);
             this.drawBuffer();
+            this.fireEvent('waveform-ready');
             this.tmpEvents.push(this.once('interaction', load));
         } else {
             return load();
@@ -1060,9 +1062,10 @@ export default class WaveSurfer extends util.Observer {
 
         this.tmpEvents.push(
             this.backend.once('canplay', () => {
-                this.drawBuffer();
                 this.fireEvent('ready');
                 this.isReady = true;
+                this.drawBuffer();
+                this.fireEvent('waveform-ready');
             }),
             this.backend.once('error', err => this.fireEvent('error', err))
         );
