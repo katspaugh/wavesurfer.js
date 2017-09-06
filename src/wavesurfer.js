@@ -342,6 +342,8 @@ export default class WaveSurfer extends util.Observer {
         this.isDestroyed = false;
         /** @private */
         this.isReady = false;
+        /** @private */
+        this.hasWave = false;
 
         // responsive debounced event listener. If this.params.responsive is not
         // set, this is never called. Use 100ms or this.params.responsive as
@@ -876,6 +878,7 @@ export default class WaveSurfer extends util.Observer {
      * @emits WaveSurfer#redraw
      */
     drawBuffer() {
+        this.hasWave = true;
         const nominalWidth = Math.round(
             this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio
         );
