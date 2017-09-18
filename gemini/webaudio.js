@@ -38,16 +38,16 @@ gemini.suite('webaudio', situ => {
                 container: '.testbed__waveform',
                 responsive: true
             });
-            win._ws.load('/spec/support/demo.wav', win.demoPeaks);
+            win._ws.load('/spec/support/demo.wav', win.demoPeaks, null, 21.77387755102041);
         }).waitForJSCondition(function(win) {
             return win._ws.hasWave;
         }))
         .capture('rendering')
-        .capture('zooming', actions => actions.executeJS(function(win) {
-            win._ws.zoom(200);
-        }))
         .capture('skipping', actions => actions.executeJS(function(win) {
             win._ws.skip(5);
+        }))
+        .capture('zooming', actions => actions.executeJS(function(win) {
+            win._ws.zoom(200);
         }))
         .capture('zoom-out', actions => actions.executeJS(function(win) {
             win._ws.zoom(false);
@@ -82,7 +82,7 @@ gemini.suite('webaudio', situ => {
                 container: '.testbed__waveform',
                 partialRender: true
             });
-            win._ws.load('/spec/support/demo.wav', win.demoPeaks);
+            win._ws.load('/spec/support/demo.wav', win.demoPeaks, null, 21.77387755102041);
         }))
         .capture('rendering')
         .capture('zooming', actions => actions.executeJS(function(win) {
