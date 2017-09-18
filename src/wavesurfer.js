@@ -905,7 +905,6 @@ export default class WaveSurfer extends util.Observer {
             peaks = this.backend.getPeaks(width, start, end);
             this.drawer.drawPeaks(peaks, width, start, end);
         }
-        this.fireEvent('redraw', peaks, width);
     }
 
     /**
