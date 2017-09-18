@@ -445,7 +445,7 @@ export default class RegionsPlugin {
                     if (!this.initialisedPluginList.regions) {
                         this.initPlugin('regions');
                     }
-                    this.regions.add(options);
+                    return this.regions.add(options);
                 },
 
                 clearRegions() {
