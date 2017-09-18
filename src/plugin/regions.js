@@ -481,7 +481,7 @@ export default class RegionsPlugin {
 
         // Id-based hash of regions.
         this.list = {};
-        this._onReady = () => {
+        this._onWaveformReady = () => {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             if (this.params.regions) {
                 this.params.regions.forEach(region => {
@@ -496,14 +496,14 @@ export default class RegionsPlugin {
 
     init() {
         // Check if ws is ready
-        if (this.wavesurfer.isReady) {
-            this._onReady();
+        if (this.wavesurfer.hasWave) {
+            this._onWaveformReady();
         }
-        this.wavesurfer.on('ready', this._onReady);
+        this.wavesurfer.on('waveform-ready', this._onWaveformReady);
     }
 
     destroy() {
-        this.wavesurfer.un('ready', this._onReady);
+        this.wavesurfer.un('waveform-ready', this._onWaveformReady);
         this.disableDragSelection();
         this.clear();
     }
