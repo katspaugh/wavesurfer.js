@@ -984,10 +984,14 @@ export default class WaveSurfer extends util.Observer {
      * Loads audio and re-renders the waveform.
      *
      * @param {string} url The url of the audio file
-     * @param {?number[]|number[][]} peaks Wavesurfer does not have to decode the audio to
-     * render the waveform if this is specified
+     * @param {?number[]|number[][]} peaks Wavesurfer does not have to decode
+     * the audio to render the waveform if this is specified
      * @param {?string} preload (Use with backend `MediaElement`)
      * `'none'|'metadata'|'auto'` Preload attribute for the media element
+     * @param {?number} duration The duration of the track in seconds, this is
+     * only necessary in one specific case: Using peaks and webaudio backend.
+     * The renderer has no way of knowing how to scale the waveform
+     * (minPxPerSec) without decoding the audio.
      * @example
      * // using ajax or media element to load (depending on backend)
      * wavesurfer.load('http://example.com/demo.wav');
@@ -999,12 +1003,12 @@ export default class WaveSurfer extends util.Observer {
      *   true,
      * );
      */
-    load(url, peaks, preload) {
+    load(url, peaks, preload, duration) {
         this.empty();
         this.isMuted = false;
 
         switch (this.params.backend) {
-            case 'WebAudio': return this.loadBuffer(url, peaks);
+            case 'WebAudio': return this.loadBuffer(url, peaks, duration);
             case 'MediaElement': return this.loadMediaElement(url, peaks, preload);
         }
     }
@@ -1016,7 +1020,7 @@ export default class WaveSurfer extends util.Observer {
      * @param {string} url
      * @param {?number[]|number[][]} peaks
      */
-    loadBuffer(url, peaks) {
+    loadBuffer(url, peaks, duration) {
         const load = action => {
             if (action) {
                 this.tmpEvents.push(this.once('ready', action));
@@ -1025,7 +1029,7 @@ export default class WaveSurfer extends util.Observer {
         };
 
         if (peaks) {
-            this.backend.setPeaks(peaks);
+            this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
             this.fireEvent('waveform-ready');
             this.tmpEvents.push(this.once('interaction', load));

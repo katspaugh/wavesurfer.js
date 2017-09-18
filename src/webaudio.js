@@ -299,9 +299,12 @@ export default class WebAudio extends util.Observer {
     /**
      * Set pre-decoded peaks
      *
-     * @param {Array} peaks
+     * @param {array} peaks
+     * @param {?number} duration Explicitly set duration, see the documentation
+     * of the load method of ws
      */
-    setPeaks(peaks) {
+    setPeaks(peaks, duration) {
+        this.explicitDuration = duration;
         this.peaks = peaks;
     }
 
@@ -498,6 +501,9 @@ export default class WebAudio extends util.Observer {
      */
     getDuration() {
         if (!this.buffer) {
+            if (this.explicitDuration) {
+                return this.explicitDuration;
+            }
             return 0;
         }
         return this.buffer.duration;
