@@ -133,7 +133,7 @@ export default class TimelinePlugin {
             }
         };
         this._onRedraw = () => this.render();
-        this._onReady = () => {
+        this._onWaveformReady = () => {
             this.drawer = ws.drawer;
             this.pixelRatio = ws.drawer.params.pixelRatio;
             this.maxCanvasWidth = ws.drawer.maxCanvasWidth || ws.drawer.width;
@@ -148,10 +148,10 @@ export default class TimelinePlugin {
     }
 
     init() {
-        this.wavesurfer.on('ready', this._onReady);
+        this.wavesurfer.on('waveform-ready', this._onWaveformReady);
         // Check if ws is ready
-        if (this.wavesurfer.isReady) {
-            this._onReady();
+        if (this.wavesurfer.hasWave) {
+            this._onWaveformReady();
         }
     }
 
@@ -159,7 +159,7 @@ export default class TimelinePlugin {
         this.unAll();
         this.wavesurfer.un('redraw', this._onRedraw);
         this.wavesurfer.un('zoom', this._onZoom);
-        this.wavesurfer.un('ready', this._onReady);
+        this.wavesurfer.un('waveform-ready', this._onWaveformReady);
         this.wavesurfer.drawer.wrapper.removeEventListener('scroll', this._onScroll);
         if (this.wrapper && this.wrapper.parentNode) {
             this.wrapper.parentNode.removeChild(this.wrapper);
