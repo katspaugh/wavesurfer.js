@@ -13,6 +13,9 @@
     "build": "npm run build:normal & npm run build:minified",
     "build:normal": "webpack & webpack --env.plugins & webpack --env.htmlinit",
     "build:minified": "webpack --env.minify & webpack --env.plugins --env.minify & webpack --env.htmlinit --env.minify",
+    "format": "prettier --single-quote true 'src/**/*.js*' 'example/**/*.js*' 'spec/**/*.js*' 'website/**/*.js*' --write",
+    "lint": "eslint src example spec website",
+    "lint-and-format-staged": "lint-staged",
     "doc": "esdoc",
     "test": "BABEL_ENV=test karma start karma.conf.js"
   },
@@ -39,17 +42,26 @@
     "debounce": "^1.0.0",
     "esdoc": "^0.5.2",
     "eslint": "^3.9.1",
+    "eslint-config-prettier": "^2.6.0",
     "eslint-loader": "^1.6.1",
+    "eslint-plugin-prettier": "^2.3.1",
     "jasmine-core": "^2.5.2",
     "karma": "^1.3.0",
     "karma-chrome-launcher": "2.0.0",
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "1.0.2",
     "karma-jasmine-matchers": "3.0.1",
-    "load-script": "^1.0.0",
     "karma-webpack": "^2.0.2",
+    "lint-staged": "^4.2.3",
+    "load-script": "^1.0.0",
+    "pre-commit": "^1.2.2",
+    "prettier": "^1.7.3",
     "webpack": "2",
     "webpack-dev-server": "2"
   },
-  "homepage": "https://github.com/katspaugh/wavesurfer.js"
+  "homepage": "https://github.com/katspaugh/wavesurfer.js",
+  "pre-commit": "lint-and-format-staged",
+  "lint-staged": {
+    "*.js": ["prettier --single-quote true --write", "eslint", "git add"]
+  }
 }
