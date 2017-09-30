@@ -86,7 +86,9 @@ export default class Drawer extends util.Observer {
     handleEvent(e, noPrevent) {
         !noPrevent && e.preventDefault();
 
-        const clientX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
+        const clientX = e.targetTouches
+            ? e.targetTouches[0].clientX
+            : e.clientX;
         const bbox = this.wrapper.getBoundingClientRect();
 
         const nominalWidth = this.width;
@@ -95,13 +97,17 @@ export default class Drawer extends util.Observer {
         let progress;
 
         if (!this.params.fillParent && nominalWidth < parentWidth) {
-            progress = ((clientX - bbox.left) * this.params.pixelRatio / nominalWidth) || 0;
+            progress =
+                (clientX - bbox.left) * this.params.pixelRatio / nominalWidth ||
+                0;
 
             if (progress > 1) {
                 progress = 1;
             }
         } else {
-            progress = ((clientX - bbox.left + this.wrapper.scrollLeft) / this.wrapper.scrollWidth) || 0;
+            progress =
+                (clientX - bbox.left + this.wrapper.scrollLeft) /
+                    this.wrapper.scrollWidth || 0;
         }
 
         return progress;
@@ -112,7 +118,8 @@ export default class Drawer extends util.Observer {
      */
     setupWrapperEvents() {
         this.wrapper.addEventListener('click', e => {
-            const scrollbarHeight = this.wrapper.offsetHeight - this.wrapper.clientHeight;
+            const scrollbarHeight =
+                this.wrapper.offsetHeight - this.wrapper.clientHeight;
             if (scrollbarHeight != 0) {
                 // scrollbar is visible.  Check if click was on it
                 const bbox = this.wrapper.getBoundingClientRect();
@@ -127,7 +134,9 @@ export default class Drawer extends util.Observer {
             }
         });
 
-        this.wrapper.addEventListener('scroll', e => this.fireEvent('scroll', e));
+        this.wrapper.addEventListener('scroll', e =>
+            this.fireEvent('scroll', e)
+        );
     }
 
     /**
@@ -146,9 +155,9 @@ export default class Drawer extends util.Observer {
             this.clearWave();
         }
 
-        this.params.barWidth ?
-            this.drawBars(peaks, 0, start, end) :
-            this.drawWave(peaks, 0, start, end);
+        this.params.barWidth
+            ? this.drawBars(peaks, 0, start, end)
+            : this.drawWave(peaks, 0, start, end);
     }
 
     /**

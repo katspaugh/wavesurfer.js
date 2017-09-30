@@ -13,7 +13,7 @@
     "build": "npm run build:normal & npm run build:minified",
     "build:normal": "webpack & webpack --env.plugins & webpack --env.htmlinit",
     "build:minified": "webpack --env.minify & webpack --env.plugins --env.minify & webpack --env.htmlinit --env.minify",
-    "format": "prettier --single-quote true 'src/**/*.js*' 'example/**/*.js*' 'spec/**/*.js*' 'website/**/*.js*' --write",
+    "format": "prettier --single-quote true --tab-width 4 'src/**/*.js*' 'example/**/*.js*' 'spec/**/*.js*' 'website/**/*.js*' --write",
     "lint": "eslint src example spec website",
     "lint-and-format-staged": "lint-staged",
     "doc": "esdoc",
@@ -62,6 +62,6 @@
   "homepage": "https://github.com/katspaugh/wavesurfer.js",
   "pre-commit": "lint-and-format-staged",
   "lint-staged": {
-    "*.js": ["prettier --single-quote true --write", "eslint", "git add"]
+    "*.js": ["prettier --single-quote true --tab-width 4 --write", "eslint", "git add"]
   }
 }

@@ -4,7 +4,7 @@
  * @param   {Array} values Array of numbers
  * @returns {Number}       Smallest number found
  */
-export default function min (values) {
+export default function min(values) {
     let smallest = Number(Infinity);
     Object.keys(values).forEach(i => {
         if (values[i] < smallest) {

@@ -61,7 +61,9 @@ export default class MinimapPlugin {
 
     constructor(params, ws) {
         this.params = ws.util.extend(
-            {}, ws.params, {
+            {},
+            ws.params,
+            {
                 showRegions: false,
                 showOverview: false,
                 overviewBorderColor: 'green',
@@ -69,7 +71,9 @@ export default class MinimapPlugin {
                 // the container should be different
                 container: false,
                 height: Math.max(Math.round(ws.params.height / 4), 20)
-            }, params, {
+            },
+            params,
+            {
                 scrollParent: false,
                 fillParent: true
             }
@@ -78,17 +82,22 @@ export default class MinimapPlugin {
         if (typeof params.container === 'string') {
             const el = document.querySelector(params.container);
             if (!el) {
-                console.warn(`Wavesurfer minimap container ${params.container} was not found! The minimap will be automatically appended below the waveform.`);
+                console.warn(
+                    `Wavesurfer minimap container ${params.container} was not found! The minimap will be automatically appended below the waveform.`
+                );
             }
             this.params.container = el;
         }
         // if no container is specified add a new element and insert it
         if (!params.container) {
-            this.params.container = ws.util.style(document.createElement('minimap'), {
-                display: 'block'
-            });
+            this.params.container = ws.util.style(
+                document.createElement('minimap'),
+                {
+                    display: 'block'
+                }
+            );
         }
-        this.drawer = new (ws.Drawer)(this.params.container, this.params);
+        this.drawer = new ws.Drawer(this.params.container, this.params);
         this.wavesurfer = ws;
         this.util = ws.util;
         /**
@@ -99,7 +108,8 @@ export default class MinimapPlugin {
          * @type {string}
          * @see https://github.com/katspaugh/wavesurfer.js/issues/736
          */
-        this.renderEvent = ws.params.backend === 'MediaElement' ? 'waveform-ready' : 'ready';
+        this.renderEvent =
+            ws.params.backend === 'MediaElement' ? 'waveform-ready' : 'ready';
         this.overviewRegion = null;
 
         this.drawer.createWrapper();
@@ -131,7 +141,8 @@ export default class MinimapPlugin {
         };
 
         // ws seek event listener
-        this._onSeek = () => this.drawer.progress(ws.backend.getPlayedPercents());
+        this._onSeek = () =>
+            this.drawer.progress(ws.backend.getPlayedPercents());
 
         // event listeners for the overview region
         this._onScroll = e => {
@@ -149,7 +160,9 @@ export default class MinimapPlugin {
             if (prevWidth != this.drawer.wrapper.clientWidth) {
                 prevWidth = this.drawer.wrapper.clientWidth;
                 this.render();
-                this.drawer.progress(this.wavesurfer.backend.getPlayedPercents());
+                this.drawer.progress(
+                    this.wavesurfer.backend.getPlayedPercents()
+                );
             }
         });
     }
@@ -164,7 +177,10 @@ export default class MinimapPlugin {
     destroy() {
         window.removeEventListener('resize', this._onResize, true);
         window.removeEventListener('orientationchange', this._onResize, true);
-        this.wavesurfer.drawer.wrapper.removeEventListener('mouseover', this._onMouseover);
+        this.wavesurfer.drawer.wrapper.removeEventListener(
+            'mouseover',
+            this._onMouseover
+        );
         this.wavesurfer.un(this.renderEvent, this._onShouldRender);
         this.wavesurfer.un('seek', this._onSeek);
         this.wavesurfer.un('scroll', this._onScroll);
@@ -202,16 +218,23 @@ export default class MinimapPlugin {
 
         Object.keys(this.regions).forEach(id => {
             const region = this.regions[id];
-            const width = (this.drawer.width * ((region.end - region.start) / this.wavesurfer.getDuration()));
-            const left = (this.drawer.width * (region.start / this.wavesurfer.getDuration()));
-            const regionElement = this.util.style(document.createElement('region'), {
-                height: 'inherit',
-                backgroundColor: region.color,
-                width: width + 'px',
-                left: left + 'px',
-                display: 'block',
-                position: 'absolute'
-            });
+            const width =
+                this.drawer.width *
+                ((region.end - region.start) / this.wavesurfer.getDuration());
+            const left =
+                this.drawer.width *
+                (region.start / this.wavesurfer.getDuration());
+            const regionElement = this.util.style(
+                document.createElement('region'),
+                {
+                    height: 'inherit',
+                    backgroundColor: region.color,
+                    width: width + 'px',
+                    left: left + 'px',
+                    display: 'block',
+                    position: 'absolute'
+                }
+            );
             regionElement.classList.add(id);
             this.drawer.wrapper.appendChild(regionElement);
         });
@@ -220,16 +243,25 @@ export default class MinimapPlugin {
     createElements() {
         this.drawer.createElements();
         if (this.params.showOverview) {
-            this.overviewRegion = this.util.style(document.createElement('overview'), {
-                height: (this.drawer.wrapper.offsetHeight - (this.params.overviewBorderSize * 2)) + 'px',
-                width: '0px',
-                display: 'block',
-                position: 'absolute',
-                cursor: 'move',
-                border: this.params.overviewBorderSize + 'px solid ' + this.params.overviewBorderColor,
-                zIndex: 2,
-                opacity: this.params.overviewOpacity
-            });
+            this.overviewRegion = this.util.style(
+                document.createElement('overview'),
+                {
+                    height:
+                        this.drawer.wrapper.offsetHeight -
+                        this.params.overviewBorderSize * 2 +
+                        'px',
+                    width: '0px',
+                    display: 'block',
+                    position: 'absolute',
+                    cursor: 'move',
+                    border:
+                        this.params.overviewBorderSize +
+                        'px solid ' +
+                        this.params.overviewBorderColor,
+                    zIndex: 2,
+                    opacity: this.params.overviewOpacity
+                }
+            );
             this.drawer.wrapper.appendChild(this.overviewRegion);
         }
     }
@@ -241,7 +273,10 @@ export default class MinimapPlugin {
         this.wavesurfer.on('seek', this._onSeek);
         if (this.params.showOverview) {
             this.wavesurfer.on('scroll', this._onScroll);
-            this.wavesurfer.drawer.wrapper.addEventListener('mouseover', this._onMouseover);
+            this.wavesurfer.drawer.wrapper.addEventListener(
+                'mouseover',
+                this._onMouseover
+            );
         }
     }
 
@@ -275,12 +310,19 @@ export default class MinimapPlugin {
 
             this.drawer.wrapper.addEventListener('mousemove', event => {
                 if (this.draggingOverview) {
-                    this.moveOverviewRegion(event.clientX - this.drawer.container.getBoundingClientRect().left - relativePositionX);
+                    this.moveOverviewRegion(
+                        event.clientX -
+                            this.drawer.container.getBoundingClientRect().left -
+                            relativePositionX
+                    );
                 }
             });
 
             this.drawer.wrapper.addEventListener('mouseup', event => {
-                if (positionMouseDown.clientX - event.clientX === 0 && positionMouseDown.clientX - event.clientX === 0) {
+                if (
+                    positionMouseDown.clientX - event.clientX === 0 &&
+                    positionMouseDown.clientX - event.clientX === 0
+                ) {
                     seek = true;
                     this.draggingOverview = false;
                 } else if (this.draggingOverview) {
@@ -303,10 +345,13 @@ export default class MinimapPlugin {
             this.ratio = this.wavesurfer.drawer.width / this.drawer.width;
             this.waveShowedWidth = this.wavesurfer.drawer.width / this.ratio;
             this.waveWidth = this.wavesurfer.drawer.width;
-            this.overviewWidth = (this.drawer.width / this.ratio);
+            this.overviewWidth = this.drawer.width / this.ratio;
             this.overviewPosition = 0;
-            this.moveOverviewRegion(this.wavesurfer.drawer.wrapper.scrollLeft / this.ratio);
-            this.overviewRegion.style.width = (this.overviewWidth - (this.params.overviewBorderSize * 2)) + 'px';
+            this.moveOverviewRegion(
+                this.wavesurfer.drawer.wrapper.scrollLeft / this.ratio
+            );
+            this.overviewRegion.style.width =
+                this.overviewWidth - this.params.overviewBorderSize * 2 + 'px';
         }
     }
 
@@ -316,11 +361,12 @@ export default class MinimapPlugin {
         } else if (pixels + this.overviewWidth < this.drawer.width) {
             this.overviewPosition = pixels;
         } else {
-            this.overviewPosition = (this.drawer.width - this.overviewWidth);
+            this.overviewPosition = this.drawer.width - this.overviewWidth;
         }
         this.overviewRegion.style.left = this.overviewPosition + 'px';
         if (this.draggingOverview) {
-            this.wavesurfer.drawer.wrapper.scrollLeft = this.overviewPosition * this.ratio;
+            this.wavesurfer.drawer.wrapper.scrollLeft =
+                this.overviewPosition * this.ratio;
         }
     }
 }

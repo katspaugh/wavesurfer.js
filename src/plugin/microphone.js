@@ -65,13 +65,17 @@ export default class MicrophonePlugin {
         this.reloadBufferFunction = e => this.reloadBuffer(e);
 
         // cross-browser getUserMedia
-        const promisifiedOldGUM = (constraints, successCallback, errorCallback) => {
+        const promisifiedOldGUM = (
+            constraints,
+            successCallback,
+            errorCallback
+        ) => {
             // get ahold of getUserMedia, if present
-            const getUserMedia = (navigator.getUserMedia ||
+            const getUserMedia =
+                navigator.getUserMedia ||
                 navigator.webkitGetUserMedia ||
                 navigator.mozGetUserMedia ||
-                navigator.msGetUserMedia
-            );
+                navigator.msGetUserMedia;
             // Some browsers just don't implement it - return a rejected
             // promise with an error to keep a consistent interface
             if (!getUserMedia) {
@@ -82,7 +86,12 @@ export default class MicrophonePlugin {
             // otherwise, wrap the call to the old navigator.getUserMedia with
             // a Promise
             return new Promise((successCallback, errorCallback) => {
-                getUserMedia.call(navigator, constraints, successCallback, errorCallback);
+                getUserMedia.call(
+                    navigator,
+                    constraints,
+                    successCallback,
+                    errorCallback
+                );
             });
         };
         // Older browsers might not implement mediaDevices at all, so we set an
@@ -135,9 +144,10 @@ export default class MicrophonePlugin {
     * start the visualization.
     */
     start() {
-        navigator.mediaDevices.getUserMedia(this.constraints)
-            .then((data) => this.gotStream(data))
-            .catch((data) => this.deviceError(data));
+        navigator.mediaDevices
+            .getUserMedia(this.constraints)
+            .then(data => this.gotStream(data))
+            .catch(data => this.deviceError(data));
     }
 
     /**
@@ -208,10 +218,13 @@ export default class MicrophonePlugin {
             // MediaStream.stop is deprecated since:
             // - Firefox 44 (https://www.fxsitecompat.com/en-US/docs/2015/mediastream-stop-has-been-deprecated/)
             // - Chrome 45 (https://developers.google.com/web/updates/2015/07/mediastream-deprecations)
-            if ((result.browser === 'chrome' && result.version >= 45) ||
+            if (
+                (result.browser === 'chrome' && result.version >= 45) ||
                 (result.browser === 'firefox' && result.version >= 44) ||
-                (result.browser === 'edge')) {
-                if (this.stream.getTracks) { // note that this should not be a call
+                result.browser === 'edge'
+            ) {
+                if (this.stream.getTracks) {
+                    // note that this should not be a call
                     this.stream.getTracks().forEach(stream => stream.stop());
                     return;
                 }
@@ -227,7 +240,9 @@ export default class MicrophonePlugin {
     connect() {
         if (this.stream !== undefined) {
             // Create an AudioNode from the stream.
-            this.mediaStreamSource = this.micContext.createMediaStreamSource(this.stream);
+            this.mediaStreamSource = this.micContext.createMediaStreamSource(
+                this.stream
+            );
 
             this.levelChecker = this.micContext.createScriptProcessor(
                 this.bufferSize,
@@ -322,7 +337,11 @@ export default class MicrophonePlugin {
         // Firefox.
         if (navigator.mozGetUserMedia) {
             result.browser = 'firefox';
-            result.version = this.extractVersion(navigator.userAgent, /Firefox\/([0-9]+)\./, 1);
+            result.version = this.extractVersion(
+                navigator.userAgent,
+                /Firefox\/([0-9]+)\./,
+                1
+            );
             result.minVersion = 31;
             return result;
         }
@@ -330,15 +349,26 @@ export default class MicrophonePlugin {
         // Chrome/Chromium/Webview.
         if (navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) {
             result.browser = 'chrome';
-            result.version = this.extractVersion(navigator.userAgent, /Chrom(e|ium)\/([0-9]+)\./, 2);
+            result.version = this.extractVersion(
+                navigator.userAgent,
+                /Chrom(e|ium)\/([0-9]+)\./,
+                2
+            );
             result.minVersion = 38;
             return result;
         }
 
         // Edge.
-        if (navigator.mediaDevices && navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)) {
+        if (
+            navigator.mediaDevices &&
+            navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)
+        ) {
             result.browser = 'edge';
-            result.version = this.extractVersion(navigator.userAgent, /Edge\/(\d+).(\d+)$/, 2);
+            result.version = this.extractVersion(
+                navigator.userAgent,
+                /Edge\/(\d+).(\d+)$/,
+                2
+            );
             result.minVersion = 10547;
             return result;
         }

@@ -56,13 +56,15 @@ export default class ElanPlugin {
     Types = {
         ALIGNABLE_ANNOTATION: 'ALIGNABLE_ANNOTATION',
         REF_ANNOTATION: 'REF_ANNOTATION'
-    }
+    };
 
     constructor(params, ws) {
         this.data = null;
         this.params = params;
-        this.container = 'string' == typeof params.container ?
-            document.querySelector(params.container) : params.container;
+        this.container =
+            'string' == typeof params.container
+                ? document.querySelector(params.container)
+                : params.container;
 
         if (!this.container) {
             throw Error('No container for ELAN');
@@ -113,7 +115,8 @@ export default class ElanPlugin {
         };
 
         const header = xml.querySelector('HEADER');
-        const inMilliseconds = header.getAttribute('TIME_UNITS') == 'milliseconds';
+        const inMilliseconds =
+            header.getAttribute('TIME_UNITS') == 'milliseconds';
         const media = header.querySelector('MEDIA_DESCRIPTOR');
         data.media.url = media.getAttribute('MEDIA_URL');
         data.media.type = media.getAttribute('MIME_TYPE');
@@ -134,19 +137,23 @@ export default class ElanPlugin {
             linguisticTypeRef: tier.getAttribute('LINGUISTIC_TYPE_REF'),
             defaultLocale: tier.getAttribute('DEFAULT_LOCALE'),
             annotations: _map.call(
-                tier.querySelectorAll('REF_ANNOTATION, ALIGNABLE_ANNOTATION'), node => {
+                tier.querySelectorAll('REF_ANNOTATION, ALIGNABLE_ANNOTATION'),
+                node => {
                     const annot = {
                         type: node.nodeName,
                         id: node.getAttribute('ANNOTATION_ID'),
                         ref: node.getAttribute('ANNOTATION_REF'),
-                        value: node.querySelector('ANNOTATION_VALUE')
+                        value: node
+                            .querySelector('ANNOTATION_VALUE')
                             .textContent.trim()
                     };
 
                     if (this.Types.ALIGNABLE_ANNOTATION == annot.type) {
                         // Add start & end to alignable annotation
-                        annot.start = timeOrder[node.getAttribute('TIME_SLOT_REF1')];
-                        annot.end = timeOrder[node.getAttribute('TIME_SLOT_REF2')];
+                        annot.start =
+                            timeOrder[node.getAttribute('TIME_SLOT_REF1')];
+                        annot.end =
+                            timeOrder[node.getAttribute('TIME_SLOT_REF2')];
                         // Add to the list of alignable annotations
                         data.alignableAnnotations.push(annot);
                     }
@@ -194,7 +201,10 @@ export default class ElanPlugin {
         let indeces = {};
         tiers.forEach((tier, index) => {
             tier.annotations.forEach(annot => {
-                if (annot.reference && annot.reference.type == this.Types.ALIGNABLE_ANNOTATION) {
+                if (
+                    annot.reference &&
+                    annot.reference.type == this.Types.ALIGNABLE_ANNOTATION
+                ) {
                     if (!(annot.reference.id in backRefs)) {
                         backRefs[annot.ref] = {};
                     }
@@ -205,10 +215,12 @@ export default class ElanPlugin {
         });
         indeces = Object.keys(indeces).sort();
 
-        this.renderedAlignable = this.data.alignableAnnotations.filter(alignable => backRefs[alignable.id]);
+        this.renderedAlignable = this.data.alignableAnnotations.filter(
+            alignable => backRefs[alignable.id]
+        );
 
         // table
-        const table = this.table = document.createElement('table');
+        const table = (this.table = document.createElement('table'));
         table.className = 'wavesurfer-annotations';
 
         // head
@@ -239,8 +251,8 @@ export default class ElanPlugin {
 
             const td = document.createElement('td');
             td.className = 'wavesurfer-time';
-            td.textContent = alignable.start.toFixed(1) + '–' +
-                alignable.end.toFixed(1);
+            td.textContent =
+                alignable.start.toFixed(1) + '–' + alignable.end.toFixed(1);
             row.appendChild(td);
 
             const backRef = backRefs[alignable.id];
@@ -290,8 +302,6 @@ export default class ElanPlugin {
     }
 
     getAnnotationNode(annotation) {
-        return document.getElementById(
-            'wavesurfer-alignable-' + annotation.id
-        );
+        return document.getElementById('wavesurfer-alignable-' + annotation.id);
     }
 }

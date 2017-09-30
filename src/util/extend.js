@@ -1,4 +1,4 @@
- /**
+/**
   * Extend an object shallowly with others
   *
   * @param {Object} dest The target object
@@ -6,7 +6,7 @@
   *
   * @return {Object} Merged object
   */
-export default function extend (dest, ...sources) {
+export default function extend(dest, ...sources) {
     sources.forEach(source => {
         Object.keys(source).forEach(key => {
             dest[key] = source[key];

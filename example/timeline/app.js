@@ -3,13 +3,13 @@
 var wavesurfer;
 
 // Init & load
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     var options = {
-        container     : '#waveform',
-        waveColor     : 'violet',
-        progressColor : 'purple',
-        loaderColor   : 'purple',
-        cursorColor   : 'navy',
+        container: '#waveform',
+        waveColor: 'violet',
+        progressColor: 'purple',
+        loaderColor: 'purple',
+        cursorColor: 'navy',
         plugins: [
             WaveSurfer.timeline.create({
                 container: '#wave-timeline'
@@ -30,16 +30,16 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer = WaveSurfer.create(options);
 
     /* Progress bar */
-    (function () {
+    (function() {
         var progressDiv = document.querySelector('#progress-bar');
         var progressBar = progressDiv.querySelector('.progress-bar');
 
-        var showProgress = function (percent) {
+        var showProgress = function(percent) {
             progressDiv.style.display = 'block';
             progressBar.style.width = percent + '%';
         };
 
-        var hideProgress = function () {
+        var hideProgress = function() {
             progressDiv.style.display = 'none';
         };
 
@@ -47,9 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
         wavesurfer.on('ready', hideProgress);
         wavesurfer.on('destroy', hideProgress);
         wavesurfer.on('error', hideProgress);
-    }());
-
-
+    })();
 
     wavesurfer.load('../media/demo.wav');
 });
