@@ -12,11 +12,11 @@ const FINISHED = 'finished';
  */
 export default class WebAudio extends util.Observer {
     /** @private */
-    static scriptBufferSize = 256
+    static scriptBufferSize = 256;
     /** @private */
-    audioContext = null
+    audioContext = null;
     /** @private */
-    offlineAudioContext = null
+    offlineAudioContext = null;
     /** @private */
     stateBehaviors = {
         [PLAYING]: {
@@ -25,7 +25,7 @@ export default class WebAudio extends util.Observer {
             },
             getPlayedPercents() {
                 const duration = this.getDuration();
-                return (this.getCurrentTime() / duration) || 0;
+                return this.getCurrentTime() / duration || 0;
             },
             getCurrentTime() {
                 return this.startPosition + this.getPlayedTime();
@@ -37,7 +37,7 @@ export default class WebAudio extends util.Observer {
             },
             getPlayedPercents() {
                 const duration = this.getDuration();
-                return (this.getCurrentTime() / duration) || 0;
+                return this.getCurrentTime() / duration || 0;
             },
             getCurrentTime() {
                 return this.startPosition;
@@ -55,7 +55,7 @@ export default class WebAudio extends util.Observer {
                 return this.getDuration();
             }
         }
-    }
+    };
 
     /**
      * Does the browser support this backend
@@ -73,9 +73,8 @@ export default class WebAudio extends util.Observer {
      */
     getAudioContext() {
         if (!window.WaveSurferAudioContext) {
-            window.WaveSurferAudioContext = new (
-                window.AudioContext || window.webkitAudioContext
-            );
+            window.WaveSurferAudioContext = new (window.AudioContext ||
+                window.webkitAudioContext)();
         }
         return window.WaveSurferAudioContext;
     }
@@ -88,9 +87,8 @@ export default class WebAudio extends util.Observer {
      */
     getOfflineAudioContext(sampleRate) {
         if (!window.WaveSurferOfflineAudioContext) {
-            window.WaveSurferOfflineAudioContext = new (
-                window.OfflineAudioContext || window.webkitOfflineAudioContext
-            )(1, 2, sampleRate);
+            window.WaveSurferOfflineAudioContext = new (window.OfflineAudioContext ||
+                window.webkitOfflineAudioContext)(1, 2, sampleRate);
         }
         return window.WaveSurferOfflineAudioContext;
     }
@@ -208,20 +206,25 @@ export default class WebAudio extends util.Observer {
             this.analyser.disconnect();
 
             // Connect each filter in turn
-            filters.reduce((prev, curr) => {
-                prev.connect(curr);
-                return curr;
-            }, this.analyser).connect(this.gainNode);
+            filters
+                .reduce((prev, curr) => {
+                    prev.connect(curr);
+                    return curr;
+                }, this.analyser)
+                .connect(this.gainNode);
         }
-
     }
 
     /** @private */
     createScriptNode() {
         if (this.ac.createScriptProcessor) {
-            this.scriptNode = this.ac.createScriptProcessor(WebAudio.scriptBufferSize);
+            this.scriptNode = this.ac.createScriptProcessor(
+                WebAudio.scriptBufferSize
+            );
         } else {
-            this.scriptNode = this.ac.createJavaScriptNode(WebAudio.scriptBufferSize);
+            this.scriptNode = this.ac.createJavaScriptNode(
+                WebAudio.scriptBufferSize
+            );
         }
 
         this.scriptNode.connect(this.ac.destination);
@@ -291,9 +294,15 @@ export default class WebAudio extends util.Observer {
     /** @private */
     decodeArrayBuffer(arraybuffer, callback, errback) {
         if (!this.offlineAc) {
-            this.offlineAc = this.getOfflineAudioContext(this.ac ? this.ac.sampleRate : 44100);
+            this.offlineAc = this.getOfflineAudioContext(
+                this.ac ? this.ac.sampleRate : 44100
+            );
         }
-        this.offlineAc.decodeAudioData(arraybuffer, data => callback(data), errback);
+        this.offlineAc.decodeAudioData(
+            arraybuffer,
+            data => callback(data),
+            errback
+        );
     }
 
     /**
@@ -312,7 +321,7 @@ export default class WebAudio extends util.Observer {
      */
     setLength(length) {
         // No resize, we can preserve the cached peaks.
-        if (this.mergedPeaks && length == ((2 * this.mergedPeaks.length - 1) + 2)) {
+        if (this.mergedPeaks && length == 2 * this.mergedPeaks.length - 1 + 2) {
             return;
         }
 
@@ -341,7 +350,9 @@ export default class WebAudio extends util.Observer {
      * peaks consisting of (max, min) values for each subrange.
      */
     getPeaks(length, first, last) {
-        if (this.peaks) { return this.peaks; }
+        if (this.peaks) {
+            return this.peaks;
+        }
 
         first = first || 0;
         last = last || length - 1;
@@ -439,7 +450,10 @@ export default class WebAudio extends util.Observer {
         // close the audioContext if closeAudioContext option is set to true
         if (this.params.closeAudioContext) {
             // check if browser supports AudioContext.close()
-            if (typeof this.ac.close === 'function' && this.ac.state != 'closed') {
+            if (
+                typeof this.ac.close === 'function' &&
+                this.ac.state != 'closed'
+            ) {
                 this.ac.close();
             }
             // clear the reference to the audiocontext
@@ -511,7 +525,9 @@ export default class WebAudio extends util.Observer {
      * @return {{start: number, end: number}}
      */
     seekTo(start, end) {
-        if (!this.buffer) { return; }
+        if (!this.buffer) {
+            return;
+        }
 
         this.scheduledPause = null;
 
@@ -555,7 +571,9 @@ export default class WebAudio extends util.Observer {
      * @param {number} end When to stop relative to the beginning of a clip.
      */
     play(start, end) {
-        if (!this.buffer) { return; }
+        if (!this.buffer) {
+            return;
+        }
 
         // need to re-create source on each playback
         this.createSource();

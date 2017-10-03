@@ -4,18 +4,16 @@
 var wavesurfer;
 
 // Init & load
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     var micBtn = document.querySelector('#micBtn');
 
     // Init wavesurfer
     wavesurfer = WaveSurfer.create({
-        container     : '#waveform',
-        waveColor     : 'black',
-        interact      : false,
-        cursorWidth   : 0,
-        plugins: [
-            WaveSurfer.microphone.create()
-        ]
+        container: '#waveform',
+        waveColor: 'black',
+        interact: false,
+        cursorWidth: 0,
+        plugins: [WaveSurfer.microphone.create()]
     });
 
     wavesurfer.microphone.on('deviceReady', function() {

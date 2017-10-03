@@ -4,12 +4,12 @@
 var wavesurfer;
 
 // Init & load audio file
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     var options = {
-        container     : document.querySelector('#waveform'),
-        waveColor     : 'violet',
-        progressColor : 'purple',
-        cursorColor   : 'navy'
+        container: document.querySelector('#waveform'),
+        waveColor: 'violet',
+        progressColor: 'purple',
+        cursorColor: 'navy'
     };
 
     if (location.search.match('scroll')) {
@@ -32,32 +32,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Play at once when ready
 // Won't work on iOS until you touch the page
-wavesurfer.on('ready', function () {
+wavesurfer.on('ready', function() {
     //wavesurfer.play();
 });
 
 // Report errors
-wavesurfer.on('error', function (err) {
+wavesurfer.on('error', function(err) {
     console.error(err);
 });
 
 // Do something when the clip is over
-wavesurfer.on('finish', function () {
+wavesurfer.on('finish', function() {
     console.log('Finished playing');
 });
 
-
 /* Progress bar */
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     var progressDiv = document.querySelector('#progress-bar');
     var progressBar = progressDiv.querySelector('.progress-bar');
 
-    var showProgress = function (percent) {
+    var showProgress = function(percent) {
         progressDiv.style.display = 'block';
         progressBar.style.width = percent + '%';
     };
 
-    var hideProgress = function () {
+    var hideProgress = function() {
         progressDiv.style.display = 'none';
     };
 
@@ -67,19 +66,19 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.on('error', hideProgress);
 });
 
-
 // Drag'n'drop
-document.addEventListener('DOMContentLoaded', function () {
-    var toggleActive = function (e, toggle) {
+document.addEventListener('DOMContentLoaded', function() {
+    var toggleActive = function(e, toggle) {
         e.stopPropagation();
         e.preventDefault();
-        toggle ? e.target.classList.add('wavesurfer-dragover') :
-            e.target.classList.remove('wavesurfer-dragover');
+        toggle
+            ? e.target.classList.add('wavesurfer-dragover')
+            : e.target.classList.remove('wavesurfer-dragover');
     };
 
     var handlers = {
         // Drop event
-        drop: function (e) {
+        drop: function(e) {
             toggleActive(e, false);
 
             // Load the file into wavesurfer
@@ -91,18 +90,18 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         // Drag-over event
-        dragover: function (e) {
+        dragover: function(e) {
             toggleActive(e, true);
         },
 
         // Drag-leave event
-        dragleave: function (e) {
+        dragleave: function(e) {
             toggleActive(e, false);
         }
     };
 
     var dropTarget = document.querySelector('#drop');
-    Object.keys(handlers).forEach(function (event) {
+    Object.keys(handlers).forEach(function(event) {
         dropTarget.addEventListener(event, handlers[event]);
     });
 });

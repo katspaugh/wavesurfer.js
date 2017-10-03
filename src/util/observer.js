@@ -28,7 +28,9 @@ export default class Observer {
      * @return {ListenerDescriptor}
      */
     on(event, fn) {
-        if (!this.handlers) { this.handlers = {}; }
+        if (!this.handlers) {
+            this.handlers = {};
+        }
 
         let handlers = this.handlers[event];
         if (!handlers) {
@@ -52,7 +54,9 @@ export default class Observer {
      * @param {function} fn The callback that should be removed
      */
     un(event, fn) {
-        if (!this.handlers) { return; }
+        if (!this.handlers) {
+            return;
+        }
 
         const handlers = this.handlers[event];
         let i;
@@ -103,10 +107,13 @@ export default class Observer {
      * @param {...any} args The arguments with which to call the listeners
      */
     fireEvent(event, ...args) {
-        if (!this.handlers) { return; }
+        if (!this.handlers) {
+            return;
+        }
         const handlers = this.handlers[event];
-        handlers && handlers.forEach(fn => {
-            fn(...args);
-        });
+        handlers &&
+            handlers.forEach(fn => {
+                fn(...args);
+            });
     }
 }

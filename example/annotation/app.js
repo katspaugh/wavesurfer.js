@@ -6,7 +6,7 @@ var wavesurfer;
 /**
  * Init & load.
  */
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     // Init wavesurfer
     wavesurfer = WaveSurfer.create({
         container: '#waveform',
@@ -25,24 +25,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 cursorColor: '#999'
             }),
             WaveSurfer.timeline.create({
-                container: "#wave-timeline"
+                container: '#wave-timeline'
             })
         ]
     });
 
-    wavesurfer.util.ajax({
-        responseType: 'json',
-        url: 'rashomon.json'
-    }).on('success', function (data) {
-        wavesurfer.load(
-            'http://www.archive.org/download/mshortworks_001_1202_librivox/msw001_03_rashomon_akutagawa_mt_64kb.mp3',
-            data
-        );
-    });
+    wavesurfer.util
+        .ajax({
+            responseType: 'json',
+            url: 'rashomon.json'
+        })
+        .on('success', function(data) {
+            wavesurfer.load(
+                'http://www.archive.org/download/mshortworks_001_1202_librivox/msw001_03_rashomon_akutagawa_mt_64kb.mp3',
+                data
+            );
+        });
 
     /* Regions */
 
-    wavesurfer.on('ready', function () {
+    wavesurfer.on('ready', function() {
         wavesurfer.enableDragSelection({
             color: randomColor(0.1)
         });
@@ -56,16 +58,18 @@ document.addEventListener('DOMContentLoaded', function () {
             //         wavesurfer.getDuration()
             //     )
             // );
-            wavesurfer.util.ajax({
-                responseType: 'json',
-                url: 'annotations.json'
-            }).on('success', function (data) {
-                loadRegions(data);
-                saveRegions();
-            });
+            wavesurfer.util
+                .ajax({
+                    responseType: 'json',
+                    url: 'annotations.json'
+                })
+                .on('success', function(data) {
+                    loadRegions(data);
+                    saveRegions();
+                });
         }
     });
-    wavesurfer.on('region-click', function (region, e) {
+    wavesurfer.on('region-click', function(region, e) {
         e.stopPropagation();
         // Play on click, loop on shift click
         e.shiftKey ? region.playLoop() : region.play();
@@ -75,34 +79,32 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer.on('region-removed', saveRegions);
     wavesurfer.on('region-in', showNote);
 
-    wavesurfer.on('region-play', function (region) {
-        region.once('out', function () {
+    wavesurfer.on('region-play', function(region) {
+        region.once('out', function() {
             wavesurfer.play(region.start);
             wavesurfer.pause();
         });
     });
 
-
     /* Toggle play/pause buttons. */
     var playButton = document.querySelector('#play');
     var pauseButton = document.querySelector('#pause');
-    wavesurfer.on('play', function () {
+    wavesurfer.on('play', function() {
         playButton.style.display = 'none';
         pauseButton.style.display = '';
     });
-    wavesurfer.on('pause', function () {
+    wavesurfer.on('pause', function() {
         playButton.style.display = '';
         pauseButton.style.display = 'none';
     });
 });
-
 
 /**
  * Save annotations to localStorage.
  */
 function saveRegions() {
     localStorage.regions = JSON.stringify(
-        Object.keys(wavesurfer.regions.list).map(function (id) {
+        Object.keys(wavesurfer.regions.list).map(function(id) {
             var region = wavesurfer.regions.list[id];
             return {
                 start: region.start,
@@ -114,17 +116,15 @@ function saveRegions() {
     );
 }
 
-
 /**
  * Load regions from localStorage.
  */
 function loadRegions(regions) {
-    regions.forEach(function (region) {
+    regions.forEach(function(region) {
         region.color = randomColor(0.1);
         wavesurfer.addRegion(region);
     });
 }
-
 
 /**
  * Extract regions separated by silence.
@@ -140,7 +140,7 @@ function extractRegions(peaks, duration) {
 
     // Gather silence indeces
     var silences = [];
-    Array.prototype.forEach.call(peaks, function (val, index) {
+    Array.prototype.forEach.call(peaks, function(val, index) {
         if (Math.abs(val) <= minValue) {
             silences.push(index);
         }
@@ -148,25 +148,25 @@ function extractRegions(peaks, duration) {
 
     // Cluster silence values
     var clusters = [];
-    silences.forEach(function (val, index) {
+    silences.forEach(function(val, index) {
         if (clusters.length && val == silences[index - 1] + 1) {
             clusters[clusters.length - 1].push(val);
         } else {
-            clusters.push([ val ]);
+            clusters.push([val]);
         }
     });
 
     // Filter silence clusters by minimum length
-    var fClusters = clusters.filter(function (cluster) {
+    var fClusters = clusters.filter(function(cluster) {
         return cluster.length >= minLen;
     });
 
     // Create regions on the edges of silences
-    var regions = fClusters.map(function (cluster, index) {
+    var regions = fClusters.map(function(cluster, index) {
         var next = fClusters[index + 1];
         return {
             start: cluster[cluster.length - 1],
-            end: (next ? next[0] : length - 1)
+            end: next ? next[0] : length - 1
         };
     });
 
@@ -180,12 +180,12 @@ function extractRegions(peaks, duration) {
     }
 
     // Filter regions by minimum length
-    var fRegions = regions.filter(function (reg) {
+    var fRegions = regions.filter(function(reg) {
         return reg.end - reg.start >= minLen;
     });
 
     // Return time-based regions
-    return fRegions.map(function (reg) {
+    return fRegions.map(function(reg) {
         return {
             start: Math.round(reg.start * coef * 10) / 10,
             end: Math.round(reg.end * coef * 10) / 10
@@ -193,31 +193,32 @@ function extractRegions(peaks, duration) {
     });
 }
 
-
 /**
  * Random RGBA color.
  */
 function randomColor(alpha) {
-    return 'rgba(' + [
-        ~~(Math.random() * 255),
-        ~~(Math.random() * 255),
-        ~~(Math.random() * 255),
-        alpha || 1
-    ] + ')';
-
+    return (
+        'rgba(' +
+        [
+            ~~(Math.random() * 255),
+            ~~(Math.random() * 255),
+            ~~(Math.random() * 255),
+            alpha || 1
+        ] +
+        ')'
+    );
 }
-
 
 /**
  * Edit annotation for a region.
  */
-function editAnnotation (region) {
+function editAnnotation(region) {
     var form = document.forms.edit;
     form.style.opacity = 1;
-    form.elements.start.value = Math.round(region.start * 10) / 10,
-    form.elements.end.value = Math.round(region.end * 10) / 10;
+    (form.elements.start.value = Math.round(region.start * 10) / 10),
+        (form.elements.end.value = Math.round(region.end * 10) / 10);
     form.elements.note.value = region.data.note || '';
-    form.onsubmit = function (e) {
+    form.onsubmit = function(e) {
         e.preventDefault();
         region.update({
             start: form.elements.start.value,
@@ -228,18 +229,17 @@ function editAnnotation (region) {
         });
         form.style.opacity = 0;
     };
-    form.onreset = function () {
+    form.onreset = function() {
         form.style.opacity = 0;
         form.dataset.region = null;
     };
     form.dataset.region = region.id;
 }
 
-
 /**
  * Display annotation.
  */
-function showNote (region) {
+function showNote(region) {
     if (!showNote.el) {
         showNote.el = document.querySelector('#subtitle');
     }
@@ -249,7 +249,7 @@ function showNote (region) {
 /**
  * Bind controls.
  */
-GLOBAL_ACTIONS['delete-region'] = function () {
+window.GLOBAL_ACTIONS['delete-region'] = function() {
     var form = document.forms.edit;
     var regionId = form.dataset.region;
     if (regionId) {
@@ -258,7 +258,9 @@ GLOBAL_ACTIONS['delete-region'] = function () {
     }
 };
 
-GLOBAL_ACTIONS['export'] = function () {
-    window.open('data:application/json;charset=utf-8,' +
-        encodeURIComponent(localStorage.regions));
+window.GLOBAL_ACTIONS['export'] = function() {
+    window.open(
+        'data:application/json;charset=utf-8,' +
+            encodeURIComponent(localStorage.regions)
+    );
 };

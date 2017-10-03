@@ -8,6 +8,6 @@ import reqAnimationFrame from './request-animation-frame';
  *
  * @return {func} The function wrapped within a requestAnimationFrame
  */
-export default function frame (func) {
+export default function frame(func) {
     return (...args) => reqAnimationFrame(() => func(...args));
 }

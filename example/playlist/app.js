@@ -1,9 +1,8 @@
 // Create a WaveSurfer instance
 var wavesurfer;
 
-
 // Init on DOM ready
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     wavesurfer = WaveSurfer.create({
         container: '#waveform',
         waveColor: '#428bca',
@@ -13,31 +12,29 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-
 // Bind controls
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     var playPause = document.querySelector('#playPause');
-    playPause.addEventListener('click', function () {
+    playPause.addEventListener('click', function() {
         wavesurfer.playPause();
     });
 
     // Toggle play/pause text
-    wavesurfer.on('play', function () {
+    wavesurfer.on('play', function() {
         document.querySelector('#play').style.display = 'none';
         document.querySelector('#pause').style.display = '';
     });
-    wavesurfer.on('pause', function () {
+    wavesurfer.on('pause', function() {
         document.querySelector('#play').style.display = '';
         document.querySelector('#pause').style.display = 'none';
     });
-
 
     // The playlist links
     var links = document.querySelectorAll('#playlist a');
     var currentTrack = 0;
 
     // Load a track by index and highlight the corresponding link
-    var setCurrentSong = function (index) {
+    var setCurrentSong = function(index) {
         links[currentTrack].classList.remove('active');
         currentTrack = index;
         links[currentTrack].classList.add('active');
@@ -45,20 +42,20 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Load the track on click
-    Array.prototype.forEach.call(links, function (link, index) {
-        link.addEventListener('click', function (e) {
+    Array.prototype.forEach.call(links, function(link, index) {
+        link.addEventListener('click', function(e) {
             e.preventDefault();
             setCurrentSong(index);
         });
     });
 
     // Play on audio load
-    wavesurfer.on('ready', function () {
+    wavesurfer.on('ready', function() {
         wavesurfer.play();
     });
 
     // Go to the next track on finish
-    wavesurfer.on('finish', function () {
+    wavesurfer.on('finish', function() {
         setCurrentSong((currentTrack + 1) % links.length);
     });
 

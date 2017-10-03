@@ -1,3 +1,4 @@
+/* eslint-env jasmine */
 import WaveSurfer from '../src/wavesurfer.js';
 
 /** @test {util} */
