@@ -1,10 +1,12 @@
+/* global angular */
+
 var app = angular.module('ngWavesurfer', []);
 
-app.directive('ngWavesurfer', function () {
+app.directive('ngWavesurfer', function() {
     return {
         restrict: 'E',
 
-        link: function ($scope, $element, $attrs) {
+        link: function($scope, $element, $attrs) {
             $element.css('display', 'block');
 
             var options = angular.extend({ container: $element[0] }, $attrs);
@@ -19,37 +21,37 @@ app.directive('ngWavesurfer', function () {
     };
 });
 
-app.controller('PlaylistController', function ($scope) {
+app.controller('PlaylistController', function($scope) {
     var activeUrl = null;
 
     $scope.paused = true;
 
-    $scope.$on('wavesurferInit', function (e, wavesurfer) {
+    $scope.$on('wavesurferInit', function(e, wavesurfer) {
         $scope.wavesurfer = wavesurfer;
 
-        $scope.wavesurfer.on('play', function () {
+        $scope.wavesurfer.on('play', function() {
             $scope.paused = false;
         });
 
-        $scope.wavesurfer.on('pause', function () {
+        $scope.wavesurfer.on('pause', function() {
             $scope.paused = true;
         });
 
-        $scope.wavesurfer.on('finish', function () {
+        $scope.wavesurfer.on('finish', function() {
             $scope.paused = true;
             $scope.wavesurfer.seekTo(0);
             $scope.$apply();
         });
     });
 
-    $scope.play = function (url) {
+    $scope.play = function(url) {
         if (!$scope.wavesurfer) {
             return;
         }
 
         activeUrl = url;
 
-        $scope.wavesurfer.once('ready', function () {
+        $scope.wavesurfer.once('ready', function() {
             $scope.wavesurfer.play();
             $scope.$apply();
         });
@@ -57,7 +59,7 @@ app.controller('PlaylistController', function ($scope) {
         $scope.wavesurfer.load(activeUrl);
     };
 
-    $scope.isPlaying = function (url) {
+    $scope.isPlaying = function(url) {
         return url == activeUrl;
     };
 });

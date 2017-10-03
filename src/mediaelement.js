@@ -55,11 +55,15 @@ export default class MediaElement extends WebAudio {
      */
     createTimer() {
         const onAudioProcess = () => {
-            if (this.isPaused()) { return; }
+            if (this.isPaused()) {
+                return;
+            }
             this.fireEvent('audioprocess', this.getCurrentTime());
 
             // Call again in the next frame
-            const requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+            const requestAnimationFrame =
+                window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame;
             requestAnimationFrame(onAudioProcess);
         };
 
@@ -165,7 +169,8 @@ export default class MediaElement extends WebAudio {
      */
     getDuration() {
         let duration = (this.buffer || this.media).duration;
-        if (duration >= Infinity) { // streaming audio
+        if (duration >= Infinity) {
+            // streaming audio
             duration = this.media.seekable.end(0);
         }
         return duration;
@@ -187,7 +192,7 @@ export default class MediaElement extends WebAudio {
      * @return {number}
      */
     getPlayedPercents() {
-        return (this.getCurrentTime() / this.getDuration()) || 0;
+        return this.getCurrentTime() / this.getDuration() || 0;
     }
 
     /**
@@ -306,7 +311,9 @@ export default class MediaElement extends WebAudio {
     destroy() {
         this.pause();
         this.unAll();
-        this.media && this.media.parentNode && this.media.parentNode.removeChild(this.media);
+        this.media &&
+            this.media.parentNode &&
+            this.media.parentNode.removeChild(this.media);
         this.media = null;
     }
 }

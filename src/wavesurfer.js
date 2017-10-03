@@ -169,44 +169,45 @@ class PluginClass {
 export default class WaveSurfer extends util.Observer {
     /** @private */
     defaultParams = {
-        audioContext  : null,
-        audioRate     : 1,
-        autoCenter    : true,
-        backend       : 'WebAudio',
-        barHeight     : 1,
-        container     : null,
-        cursorColor   : '#333',
-        cursorWidth   : 1,
-        dragSelection : true,
-        fillParent    : true,
-        forceDecode   : false,
-        height        : 128,
-        hideScrollbar : false,
-        interact      : true,
-        loopSelection : true,
+        audioContext: null,
+        audioRate: 1,
+        autoCenter: true,
+        backend: 'WebAudio',
+        barHeight: 1,
+        container: null,
+        cursorColor: '#333',
+        cursorWidth: 1,
+        dragSelection: true,
+        fillParent: true,
+        forceDecode: false,
+        height: 128,
+        hideScrollbar: false,
+        interact: true,
+        loopSelection: true,
         maxCanvasWidth: 4000,
         mediaContainer: null,
-        mediaControls : false,
-        mediaType     : 'audio',
-        minPxPerSec   : 20,
-        normalize     : false,
-        partialRender : false,
-        pixelRatio    : window.devicePixelRatio || screen.deviceXDPI / screen.logicalXDPI,
-        plugins       : [],
-        progressColor : '#555',
-        renderer      : MultiCanvas,
-        responsive    : false,
-        scrollParent  : false,
-        skipLength    : 2,
-        splitChannels : false,
-        waveColor     : '#999'
-    }
+        mediaControls: false,
+        mediaType: 'audio',
+        minPxPerSec: 20,
+        normalize: false,
+        partialRender: false,
+        pixelRatio:
+            window.devicePixelRatio || screen.deviceXDPI / screen.logicalXDPI,
+        plugins: [],
+        progressColor: '#555',
+        renderer: MultiCanvas,
+        responsive: false,
+        scrollParent: false,
+        skipLength: 2,
+        splitChannels: false,
+        waveColor: '#999'
+    };
 
     /** @private */
     backends = {
         MediaElement,
         WebAudio
-    }
+    };
 
     /**
      * Instantiate this class, call its `init` function and returns it
@@ -229,7 +230,7 @@ export default class WaveSurfer extends util.Observer {
      * const wavesurfer = WaveSurfer.create(params);
      * wavesurfer.util.style(myElement, { background: 'blue' });
      */
-    util = util
+    util = util;
 
     /**
      * Functions in the `util` property are available as a static property of the
@@ -239,7 +240,7 @@ export default class WaveSurfer extends util.Observer {
      * @example
      * WaveSurfer.util.style(myElement, { background: 'blue' });
      */
-    static util = util
+    static util = util;
 
     /**
      * Initialise wavesurfer instance
@@ -258,9 +259,10 @@ export default class WaveSurfer extends util.Observer {
         this.params = util.extend({}, this.defaultParams, params);
 
         /** @private */
-        this.container = 'string' == typeof params.container ?
-            document.querySelector(this.params.container) :
-            this.params.container;
+        this.container =
+            'string' == typeof params.container
+                ? document.querySelector(this.params.container)
+                : this.params.container;
 
         if (!this.container) {
             throw new Error('Container element not found');
@@ -271,7 +273,9 @@ export default class WaveSurfer extends util.Observer {
             this.mediaContainer = this.container;
         } else if (typeof this.params.mediaContainer == 'string') {
             /** @private */
-            this.mediaContainer = document.querySelector(this.params.mediaContainer);
+            this.mediaContainer = document.querySelector(
+                this.params.mediaContainer
+            );
         } else {
             /** @private */
             this.mediaContainer = this.params.mediaContainer;
@@ -410,7 +414,9 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('Plugin does not have a name!');
         }
         if (!plugin.instance) {
-            throw new Error(`Plugin ${plugin.name} does not have an instance property!`);
+            throw new Error(
+                `Plugin ${plugin.name} does not have an instance property!`
+            );
         }
 
         // staticProps properties are applied to wavesurfer instance
@@ -427,7 +433,9 @@ export default class WaveSurfer extends util.Observer {
         const Instance = plugin.instance;
 
         // turn the plugin instance into an observer
-        const observerPrototypeKeys = Object.getOwnPropertyNames(util.Observer.prototype);
+        const observerPrototypeKeys = Object.getOwnPropertyNames(
+            util.Observer.prototype
+        );
         observerPrototypeKeys.forEach(key => {
             Instance.prototype[key] = util.Observer.prototype[key];
         });
@@ -474,10 +482,14 @@ export default class WaveSurfer extends util.Observer {
      */
     destroyPlugin(name) {
         if (!this[name]) {
-            throw new Error(`Plugin ${name} has not been added yet and cannot be destroyed!`);
+            throw new Error(
+                `Plugin ${name} has not been added yet and cannot be destroyed!`
+            );
         }
         if (!this.initialisedPluginList[name]) {
-            throw new Error(`Plugin ${name} is not active and cannot be destroyed!`);
+            throw new Error(
+                `Plugin ${name} is not active and cannot be destroyed!`
+            );
         }
         if (typeof this[name].destroy !== 'function') {
             throw new Error(`Plugin ${name} does not have a destroy function!`);
@@ -496,7 +508,9 @@ export default class WaveSurfer extends util.Observer {
      * @private
      */
     destroyAllPlugins() {
-        Object.keys(this.initialisedPluginList).forEach(name => this.destroyPlugin(name));
+        Object.keys(this.initialisedPluginList).forEach(name =>
+            this.destroyPlugin(name)
+        );
     }
 
     /**
@@ -549,7 +563,10 @@ export default class WaveSurfer extends util.Observer {
             this.params.backend = 'MediaElement';
         }
 
-        if (this.params.backend == 'WebAudio' && !this.Backend.prototype.supportsWebAudio.call(null)) {
+        if (
+            this.params.backend == 'WebAudio' &&
+            !this.Backend.prototype.supportsWebAudio.call(null)
+        ) {
             this.params.backend = 'MediaElement';
         }
 
@@ -608,7 +625,7 @@ export default class WaveSurfer extends util.Observer {
         if (this.getDuration() >= seconds) {
             this.seekTo(1);
         } else {
-            this.seekTo(seconds/this.getDuration());
+            this.seekTo(seconds / this.getDuration());
         }
     }
 
@@ -765,7 +782,7 @@ export default class WaveSurfer extends util.Observer {
      * @return {number} A value between 0 and 1, 0 being no
      * volume and 1 being full volume.
      */
-    getVolume () {
+    getVolume() {
         return this.backend.getVolume();
     }
 
@@ -877,14 +894,19 @@ export default class WaveSurfer extends util.Observer {
      */
     drawBuffer() {
         const nominalWidth = Math.round(
-            this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio
+            this.getDuration() *
+                this.params.minPxPerSec *
+                this.params.pixelRatio
         );
         const parentWidth = this.drawer.getWidth();
         let width = nominalWidth;
         let start = this.drawer.getScrollX();
         let end = Math.max(start + parentWidth, width);
         // Fill container
-        if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
+        if (
+            this.params.fillParent &&
+            (!this.params.scrollParent || nominalWidth < parentWidth)
+        ) {
             width = parentWidth;
             start = 0;
             end = width;
@@ -892,11 +914,24 @@ export default class WaveSurfer extends util.Observer {
 
         let peaks;
         if (this.params.partialRender) {
-            const newRanges = this.peakCache.addRangeToPeakCache(width, start, end);
+            const newRanges = this.peakCache.addRangeToPeakCache(
+                width,
+                start,
+                end
+            );
             let i;
             for (i = 0; i < newRanges.length; i++) {
-                peaks = this.backend.getPeaks(width, newRanges[i][0], newRanges[i][1]);
-                this.drawer.drawPeaks(peaks, width, newRanges[i][0], newRanges[i][1]);
+                peaks = this.backend.getPeaks(
+                    width,
+                    newRanges[i][0],
+                    newRanges[i][1]
+                );
+                this.drawer.drawPeaks(
+                    peaks,
+                    width,
+                    newRanges[i][0],
+                    newRanges[i][1]
+                );
             }
         } else {
             peaks = this.backend.getPeaks(width, start, end);
@@ -927,9 +962,7 @@ export default class WaveSurfer extends util.Observer {
         this.drawBuffer();
         this.drawer.progress(this.backend.getPlayedPercents());
 
-        this.drawer.recenter(
-            this.getCurrentTime() / this.getDuration()
-        );
+        this.drawer.recenter(this.getCurrentTime() / this.getDuration());
         this.fireEvent('zoom', pxPerSec);
     }
 
@@ -971,8 +1004,12 @@ export default class WaveSurfer extends util.Observer {
         // Create file reader
         const reader = new FileReader();
         reader.addEventListener('progress', e => this.onProgress(e));
-        reader.addEventListener('load', e => this.loadArrayBuffer(e.target.result));
-        reader.addEventListener('error', () => this.fireEvent('error', 'Error reading file'));
+        reader.addEventListener('load', e =>
+            this.loadArrayBuffer(e.target.result)
+        );
+        reader.addEventListener('error', () =>
+            this.fireEvent('error', 'Error reading file')
+        );
         reader.readAsArrayBuffer(blob);
         this.empty();
     }
@@ -1001,8 +1038,10 @@ export default class WaveSurfer extends util.Observer {
         this.isMuted = false;
 
         switch (this.params.backend) {
-            case 'WebAudio': return this.loadBuffer(url, peaks);
-            case 'MediaElement': return this.loadMediaElement(url, peaks, preload);
+            case 'WebAudio':
+                return this.loadBuffer(url, peaks);
+            case 'MediaElement':
+                return this.loadMediaElement(url, peaks, preload);
         }
     }
 
@@ -1018,7 +1057,7 @@ export default class WaveSurfer extends util.Observer {
             if (action) {
                 this.tmpEvents.push(this.once('ready', action));
             }
-            return this.getArrayBuffer(url, (data) => this.loadArrayBuffer(data));
+            return this.getArrayBuffer(url, data => this.loadArrayBuffer(data));
         };
 
         if (peaks) {
@@ -1071,7 +1110,10 @@ export default class WaveSurfer extends util.Observer {
             this.backend.setPeaks(peaks);
         }
 
-        if ((!peaks || this.params.forceDecode) && this.backend.supportsWebAudio()) {
+        if (
+            (!peaks || this.params.forceDecode) &&
+            this.backend.supportsWebAudio()
+        ) {
             this.getArrayBuffer(url, arraybuffer => {
                 this.decodeArrayBuffer(arraybuffer, buffer => {
                     this.backend.buffer = buffer;
@@ -1175,11 +1217,16 @@ export default class WaveSurfer extends util.Observer {
         accuracy = accuracy || 10000;
         noWindow = noWindow || false;
         const peaks = this.backend.getPeaks(length, start);
-        const arr = [].map.call(peaks, val => Math.round(val * accuracy) / accuracy);
+        const arr = [].map.call(
+            peaks,
+            val => Math.round(val * accuracy) / accuracy
+        );
         const json = JSON.stringify(arr);
         if (!noWindow) {
-            window.open('data:application/json;charset=utf-8,' +
-                encodeURIComponent(json));
+            window.open(
+                'data:application/json;charset=utf-8,' +
+                    encodeURIComponent(json)
+            );
         }
         return json;
     }

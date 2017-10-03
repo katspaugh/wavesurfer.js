@@ -1,5 +1,5 @@
+/* eslint-env jasmine */
 import WaveSurfer from '../src/wavesurfer.js';
-
 
 /** @test {WaveSurfer} */
 describe('WaveSurfer/plugin API:', () => {
@@ -29,7 +29,7 @@ describe('WaveSurfer/plugin API:', () => {
             init() {
                 this.isInitialised = true;
             }
-            destroy() { }
+            destroy() {}
         }
         return {
             name,
@@ -46,9 +46,14 @@ describe('WaveSurfer/plugin API:', () => {
         waveformDiv = document.createElement('div');
         document.getElementsByTagName('body')[0].appendChild(waveformDiv);
 
-        wavesurfer =  WaveSurfer.create(Object.assign({
-            container: waveformDiv
-        }, options));
+        wavesurfer = WaveSurfer.create(
+            Object.assign(
+                {
+                    container: waveformDiv
+                },
+                options
+            )
+        );
         wavesurfer.load('/base/spec/support/demo.wav');
     }
 
@@ -59,9 +64,13 @@ describe('WaveSurfer/plugin API:', () => {
         __createWaveform();
         wavesurfer.addPlugin(dummyPlugin);
 
-        expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.staticProps.dummyStatic);
+        expect(wavesurfer.dummyStatic).toEqual(
+            dummyPlugin.staticProps.dummyStatic
+        );
         expect(wavesurfer.dummy.ws).toEqual(wavesurfer);
-        expect(typeof Object.getPrototypeOf(wavesurfer.dummy).on).toEqual('function');
+        expect(typeof Object.getPrototypeOf(wavesurfer.dummy).on).toEqual(
+            'function'
+        );
     });
 
     /** @test {WaveSurfer#initPlugin} */
@@ -94,11 +103,11 @@ describe('WaveSurfer/plugin API:', () => {
     it('registerPlugin adds a plugin but does not call plugin init function if the plugin property deferInit is truethy', () => {
         dummyPlugin = mockPlugin('dummy', true);
         __createWaveform({
-            plugins: [
-                dummyPlugin
-            ]
+            plugins: [dummyPlugin]
         });
-        expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.staticProps.dummyStatic);
+        expect(wavesurfer.dummyStatic).toEqual(
+            dummyPlugin.staticProps.dummyStatic
+        );
         expect(wavesurfer.dummy.ws).toEqual(wavesurfer);
         expect(wavesurfer.dummy.isInitialised).toBeFalse();
     });
@@ -107,11 +116,11 @@ describe('WaveSurfer/plugin API:', () => {
     it('registerPlugin adds a plugin ands calls plugin init function if the plugin property deferInit is falsey', () => {
         dummyPlugin = mockPlugin('dummy');
         __createWaveform({
-            plugins: [
-                dummyPlugin
-            ]
+            plugins: [dummyPlugin]
         });
-        expect(wavesurfer.dummyStatic).toEqual(dummyPlugin.staticProps.dummyStatic);
+        expect(wavesurfer.dummyStatic).toEqual(
+            dummyPlugin.staticProps.dummyStatic
+        );
         expect(wavesurfer.dummy.ws).toEqual(wavesurfer);
         expect(wavesurfer.dummy.isInitialised).toBeTrue();
     });

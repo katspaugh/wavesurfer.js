@@ -4,8 +4,7 @@
  *
  * @return {function}
  */
-export default (
-    window.requestAnimationFrame ||
+export default (window.requestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
     window.mozRequestAnimationFrame ||
     window.oRequestAnimationFrame ||
