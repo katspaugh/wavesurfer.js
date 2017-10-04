@@ -352,7 +352,10 @@ export default class WaveSurfer extends util.Observer {
         // timeout for the debounce function.
         let prevWidth = 0;
         this._onResize = util.debounce(() => {
-            if (prevWidth != this.drawer.wrapper.clientWidth && !this.params.scrollParent) {
+            if (
+                prevWidth != this.drawer.wrapper.clientWidth &&
+                !this.params.scrollParent
+            ) {
                 prevWidth = this.drawer.wrapper.clientWidth;
                 this.drawer.fireEvent('redraw');
             }
