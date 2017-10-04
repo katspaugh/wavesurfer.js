@@ -529,6 +529,7 @@ export default class WaveSurfer extends util.Observer {
 
         if (this.params.responsive !== false) {
             window.addEventListener('resize', this._onResize, true);
+            window.addEventListener('orientationchange', this._onResize, true);
         }
 
         this.drawer.on('redraw', () => {
@@ -1300,6 +1301,11 @@ export default class WaveSurfer extends util.Observer {
         this.unAll();
         if (this.params.responsive !== false) {
             window.removeEventListener('resize', this._onResize, true);
+            window.removeEventListener(
+                'orientationchange',
+                this._onResize,
+                true
+            );
         }
         this.backend.destroy();
         this.drawer.destroy();
