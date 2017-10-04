@@ -890,7 +890,7 @@ export default class WaveSurfer extends util.Observer {
      * Get the correct peaks for current wave viewport and render wave
      *
      * @private
-     * @emits WaveSurfer#redraw
+     * @emits WaveSurfer#redrew
      */
     drawBuffer() {
         const nominalWidth = Math.round(
@@ -937,7 +937,7 @@ export default class WaveSurfer extends util.Observer {
             peaks = this.backend.getPeaks(width, start, end);
             this.drawer.drawPeaks(peaks, width, start, end);
         }
-        this.fireEvent('redraw', peaks, width);
+        this.fireEvent('redrew', peaks, width);
     }
 
     /**
