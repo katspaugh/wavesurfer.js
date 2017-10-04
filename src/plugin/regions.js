@@ -30,11 +30,12 @@ class Region {
 
         this.maxLength = params.maxLength;
         this.minLength = params.minLength;
+        this._onRedraw = () => this.updateRender();
 
         this.bindInOut();
         this.render();
-        this.onZoom = this.updateRender.bind(this);
-        this.wavesurfer.on('zoom', this.onZoom);
+        this.wavesurfer.on('zoom', this._onRedraw);
+        this.wavesurfer.on('redraw', this._onRedraw);
         this.wavesurfer.fireEvent('region-created', this);
     }
 
@@ -82,7 +83,8 @@ class Region {
             this.wrapper.removeChild(this.element);
             this.element = null;
             this.fireEvent('remove');
-            this.wavesurfer.un('zoom', this.onZoom);
+            this.wavesurfer.un('zoom', this._onRedraw);
+            this.wavesurfer.un('redraw', this._onRedraw);
             this.wavesurfer.fireEvent('region-removed', this);
         }
     }
