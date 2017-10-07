@@ -364,8 +364,8 @@ export default class TimelinePlugin {
         let xOffset = 0;
         let i;
 
-        for (i in this.canvases) {
-            const context = this.canvases[i].getContext('2d');
+        this.canvases.forEach(canvas => {
+            const context = canvas.getContext('2d');
             const canvasWidth = context.canvas.width;
 
             if (xOffset > x + textWidth) {
