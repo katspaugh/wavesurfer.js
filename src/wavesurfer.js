@@ -642,7 +642,7 @@ export default class WaveSurfer extends util.Observer {
      */
     play(start, end) {
         this.fireEvent('interaction', () => this.play(start, end));
-        this.backend.play(start, end);
+        return this.backend.play(start, end);
     }
 
     /**
@@ -651,7 +651,9 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.pause();
      */
     pause() {
-        this.backend.isPaused() || this.backend.pause();
+        if (!this.backend.isPaused()) {
+            return this.backend.pause();
+        }
     }
 
     /**
@@ -660,7 +662,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.playPause();
      */
     playPause() {
-        this.backend.isPaused() ? this.play() : this.pause();
+        return this.backend.isPaused() ? this.play() : this.pause();
     }
 
     /**

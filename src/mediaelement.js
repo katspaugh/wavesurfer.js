@@ -236,8 +236,10 @@ export default class MediaElement extends WebAudio {
      */
     play(start, end) {
         this.seekTo(start);
-        this.media.play();
+        const promise = this.media.play();
         end && this.setPlayEnd(end);
+
+        return promise;
     }
 
     /**
@@ -246,8 +248,14 @@ export default class MediaElement extends WebAudio {
      * @emits MediaElement#pause
      */
     pause() {
-        this.media && this.media.pause();
+        let promise;
+        
+        if (this.media) {
+            promise = this.media.pause();
+        }
         this.clearPlayEnd();
+
+        return promise;
     }
 
     /** @private */
