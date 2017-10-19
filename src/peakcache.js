@@ -48,7 +48,10 @@ export default class PeakCache {
         let uncachedRanges = [];
         let i = 0;
         // Skip ranges before the current start.
-        while (i < this.peakCacheRanges.length && this.peakCacheRanges[i] < start) {
+        while (
+            i < this.peakCacheRanges.length &&
+            this.peakCacheRanges[i] < start
+        ) {
             i++;
         }
         // If |i| is even, |start| falls after an existing range.  Otherwise,
@@ -58,7 +61,10 @@ export default class PeakCache {
         if (i % 2 == 0) {
             uncachedRanges.push(start);
         }
-        while (i < this.peakCacheRanges.length && this.peakCacheRanges[i] <= end) {
+        while (
+            i < this.peakCacheRanges.length &&
+            this.peakCacheRanges[i] <= end
+        ) {
             uncachedRanges.push(this.peakCacheRanges[i]);
             i++;
         }
@@ -81,20 +87,22 @@ export default class PeakCache {
         // wholly new points, or duplicates of points in peakCacheRanges.  If
         // duplicates are detected, remove both and extend the range.
         this.peakCacheRanges = this.peakCacheRanges.concat(uncachedRanges);
-        this.peakCacheRanges = this.peakCacheRanges.sort((a, b) => a - b).filter((item, pos, arr) => {
-            if (pos == 0) {
-                return item != arr[pos + 1];
-            } else if (pos == arr.length - 1) {
-                return item != arr[pos - 1];
-            }
-            return item != arr[pos - 1] && item != arr[pos + 1];
-        });
+        this.peakCacheRanges = this.peakCacheRanges
+            .sort((a, b) => a - b)
+            .filter((item, pos, arr) => {
+                if (pos == 0) {
+                    return item != arr[pos + 1];
+                } else if (pos == arr.length - 1) {
+                    return item != arr[pos - 1];
+                }
+                return item != arr[pos - 1] && item != arr[pos + 1];
+            });
 
         // Push the uncached ranges into an array of arrays for ease of
         // iteration in the functions that call this.
         const uncachedRangePairs = [];
         for (i = 0; i < uncachedRanges.length; i += 2) {
-            uncachedRangePairs.push([uncachedRanges[i], uncachedRanges[i+1]]);
+            uncachedRangePairs.push([uncachedRanges[i], uncachedRanges[i + 1]]);
         }
 
         return uncachedRangePairs;
@@ -109,7 +117,10 @@ export default class PeakCache {
         const peakCacheRangePairs = [];
         let i;
         for (i = 0; i < this.peakCacheRanges.length; i += 2) {
-            peakCacheRangePairs.push([this.peakCacheRanges[i], this.peakCacheRanges[i+1]]);
+            peakCacheRangePairs.push([
+                this.peakCacheRanges[i],
+                this.peakCacheRanges[i + 1]
+            ]);
         }
         return peakCacheRangePairs;
     }

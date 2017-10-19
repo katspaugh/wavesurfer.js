@@ -3,11 +3,11 @@
 var wavesurfer;
 
 // Init & load
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     var pluginOptions = {
         minimap: {
-            waveColor     : '#777',
-            progressColor : '#222',
+            waveColor: '#777',
+            progressColor: '#222',
             height: 30
         },
         timeline: {
@@ -43,14 +43,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
     var options = {
-        container     : '#waveform',
-        waveColor     : 'violet',
-        progressColor : 'purple',
-        loaderColor   : 'purple',
-        cursorColor   : 'navy',
-        plugins: [
-            WaveSurfer.minimap.create(pluginOptions.minimap)
-        ]
+        container: '#waveform',
+        waveColor: 'violet',
+        progressColor: 'purple',
+        loaderColor: 'purple',
+        cursorColor: 'navy',
+        plugins: [WaveSurfer.minimap.create(pluginOptions.minimap)]
     };
 
     if (location.search.match('scroll')) {
@@ -65,41 +63,47 @@ document.addEventListener('DOMContentLoaded', function () {
     // Init wavesurfer
     wavesurfer = WaveSurfer.create(options);
 
-    [].forEach.call(document.querySelectorAll('[data-activate-plugin]'), function (el) {
-        var activePlugins = wavesurfer.initialisedPluginList;
-        Object.keys(activePlugins).forEach(function(name) {
-            if (el.dataset.activatePlugin === name) {
-                el.checked = true;
-            }
-        });
-    });
+    [].forEach.call(
+        document.querySelectorAll('[data-activate-plugin]'),
+        function(el) {
+            var activePlugins = wavesurfer.initialisedPluginList;
+            Object.keys(activePlugins).forEach(function(name) {
+                if (el.dataset.activatePlugin === name) {
+                    el.checked = true;
+                }
+            });
+        }
+    );
 
-    [].forEach.call(document.querySelectorAll('[data-activate-plugin]'), function (el) {
-        el.addEventListener('change', function (e) {
-            var pluginName = e.currentTarget.dataset.activatePlugin;
-            var activate = e.target.checked;
-            var options = pluginOptions[pluginName] || {};
-            var plugin = WaveSurfer[pluginName].create(options);
+    [].forEach.call(
+        document.querySelectorAll('[data-activate-plugin]'),
+        function(el) {
+            el.addEventListener('change', function(e) {
+                var pluginName = e.currentTarget.dataset.activatePlugin;
+                var activate = e.target.checked;
+                var options = pluginOptions[pluginName] || {};
+                var plugin = WaveSurfer[pluginName].create(options);
 
-            if (activate) {
-                wavesurfer.addPlugin(plugin).initPlugin(pluginName);
-            } else {
-                wavesurfer.destroyPlugin(pluginName);
-            }
-        });
-    });
+                if (activate) {
+                    wavesurfer.addPlugin(plugin).initPlugin(pluginName);
+                } else {
+                    wavesurfer.destroyPlugin(pluginName);
+                }
+            });
+        }
+    );
 
     /* Progress bar */
-    (function () {
+    (function() {
         var progressDiv = document.querySelector('#progress-bar');
         var progressBar = progressDiv.querySelector('.progress-bar');
 
-        var showProgress = function (percent) {
+        var showProgress = function(percent) {
             progressDiv.style.display = 'block';
             progressBar.style.width = percent + '%';
         };
 
-        var hideProgress = function () {
+        var hideProgress = function() {
             progressDiv.style.display = 'none';
         };
 
@@ -107,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
         wavesurfer.on('ready', hideProgress);
         wavesurfer.on('destroy', hideProgress);
         wavesurfer.on('error', hideProgress);
-    }());
+    })();
 
     wavesurfer.load('../media/demo.wav');
 });

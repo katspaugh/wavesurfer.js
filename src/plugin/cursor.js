@@ -61,7 +61,8 @@ export default class CursorPlugin {
             this.drawer = this.wavesurfer.drawer;
             this.wrapper = this.wavesurfer.drawer.wrapper;
 
-            this._onMousemove = e => this.updateCursorPosition(this.drawer.handleEvent(e));
+            this._onMousemove = e =>
+                this.updateCursorPosition(this.drawer.handleEvent(e));
             this.wrapper.addEventListener('mousemove', this._onMousemove);
 
             this._onMouseenter = () => this.showCursor();
@@ -117,7 +118,10 @@ export default class CursorPlugin {
     }
 
     updateCursorPosition(progress) {
-        const pos = Math.round(this.drawer.width * progress) / this.drawer.params.pixelRatio - 1;
+        const pos =
+            Math.round(this.drawer.width * progress) /
+                this.drawer.params.pixelRatio -
+            1;
         this.style(this.cursor, {
             left: `${pos}px`
         });

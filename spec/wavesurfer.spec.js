@@ -1,7 +1,8 @@
+/* eslint-env jasmine */
 import WaveSurfer from '../src/wavesurfer.js';
 
 /** @test {WaveSurfer} */
-describe('WaveSurfer/playback:', function () {
+describe('WaveSurfer/playback:', function() {
     var wavesurfer;
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -21,20 +22,20 @@ describe('WaveSurfer/playback:', function () {
         });
     }
 
-    beforeAll(function (done) {
+    beforeAll(function(done) {
         wavesurfer = __createWaveform();
         wavesurfer.load('/base/spec/support/demo.wav');
 
-        wavesurfer.on('ready', function () {
+        wavesurfer.on('ready', function() {
             done();
         });
     });
 
-    beforeEach(function () {
+    beforeEach(function() {
         wavesurfer.seekTo(0);
     });
 
-    afterAll(function () {
+    afterAll(function() {
         wavesurfer.destroy();
     });
 
@@ -42,7 +43,7 @@ describe('WaveSurfer/playback:', function () {
      * @test {WaveSurfer#play}
      * @test {WaveSurfer#isPlaying}
      */
-    it('should play', function () {
+    it('should play', function() {
         wavesurfer.play();
 
         expect(wavesurfer.isPlaying()).toBeTrue();
@@ -53,7 +54,7 @@ describe('WaveSurfer/playback:', function () {
      * @test {WaveSurfer#isPlaying}
      * @test {WaveSurfer#pause}
      */
-    it('should pause', function () {
+    it('should pause', function() {
         wavesurfer.play();
         expect(wavesurfer.isPlaying()).toBeTrue();
 
@@ -65,7 +66,7 @@ describe('WaveSurfer/playback:', function () {
      * @test {WaveSurfer#playPause}
      * @test {WaveSurfer#isPlaying}
      */
-    it('should play or pause', function () {
+    it('should play or pause', function() {
         wavesurfer.playPause();
         expect(wavesurfer.isPlaying()).toBeTrue();
 
@@ -74,13 +75,13 @@ describe('WaveSurfer/playback:', function () {
     });
 
     /** @test {WaveSurfer#getDuration}  */
-    it('should get duration', function () {
+    it('should get duration', function() {
         var duration = parseInt(wavesurfer.getDuration(), 10);
         expect(duration).toBeNumber();
     });
 
     /** @test {WaveSurfer#toggleMute}  */
-    it('should toggle mute', function () {
+    it('should toggle mute', function() {
         wavesurfer.toggleMute();
         expect(wavesurfer.isMuted).toBeTrue();
 
@@ -89,7 +90,7 @@ describe('WaveSurfer/playback:', function () {
     });
 
     /** @test {WaveSurfer#setMute}  */
-    it('should set mute', function () {
+    it('should set mute', function() {
         wavesurfer.setMute(true);
         expect(wavesurfer.isMuted).toBeTrue();
 
@@ -98,16 +99,18 @@ describe('WaveSurfer/playback:', function () {
     });
 
     /** @test {WaveSurfer#zoom}  */
-    it('should set zoom parameters', function () {
+    it('should set zoom parameters', function() {
         wavesurfer.zoom(20);
         expect(wavesurfer.params.minPxPerSec).toEqual(20);
         expect(wavesurfer.params.scrollParent).toBe(true);
     });
 
     /** @test {WaveSurfer#zoom}  */
-    it('should set unzoom parameters', function () {
+    it('should set unzoom parameters', function() {
         wavesurfer.zoom(false);
-        expect(wavesurfer.params.minPxPerSec).toEqual(wavesurfer.defaultParams.minPxPerSec);
+        expect(wavesurfer.params.minPxPerSec).toEqual(
+            wavesurfer.defaultParams.minPxPerSec
+        );
         expect(wavesurfer.params.scrollParent).toBe(false);
     });
 });

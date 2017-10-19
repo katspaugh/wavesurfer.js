@@ -14,11 +14,14 @@ class Region {
 
         this.id = params.id == null ? ws.util.getId() : params.id;
         this.start = Number(params.start) || 0;
-        this.end = params.end == null ?
-            // small marker-like region
-            this.start + (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration() :
-            Number(params.end);
-        this.resize = params.resize === undefined ? true : Boolean(params.resize);
+        this.end =
+            params.end == null
+                ? // small marker-like region
+                  this.start +
+                  4 / this.wrapper.scrollWidth * this.wavesurfer.getDuration()
+                : Number(params.end);
+        this.resize =
+            params.resize === undefined ? true : Boolean(params.resize);
         this.drag = params.drag === undefined ? true : Boolean(params.drag);
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
@@ -33,7 +36,6 @@ class Region {
         this.onZoom = this.updateRender.bind(this);
         this.wavesurfer.on('zoom', this.onZoom);
         this.wavesurfer.fireEvent('region-created', this);
-
     }
 
     /* Update region params. */
@@ -106,7 +108,10 @@ class Region {
         regionEl.setAttribute('data-id', this.id);
 
         for (const attrname in this.attributes) {
-            regionEl.setAttribute('data-region-' + attrname, this.attributes[attrname]);
+            regionEl.setAttribute(
+                'data-region-' + attrname,
+                this.attributes[attrname]
+            );
         }
 
         const width = this.wrapper.scrollWidth;
@@ -119,8 +124,12 @@ class Region {
 
         /* Resize handles */
         if (this.resize) {
-            const handleLeft = regionEl.appendChild(document.createElement('handle'));
-            const handleRight = regionEl.appendChild(document.createElement('handle'));
+            const handleLeft = regionEl.appendChild(
+                document.createElement('handle')
+            );
+            const handleRight = regionEl.appendChild(
+                document.createElement('handle')
+            );
             handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
             handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
             const css = {
@@ -145,10 +154,14 @@ class Region {
     }
 
     formatTime(start, end) {
-        return (start == end ? [start] : [start, end]).map(time => [
-            Math.floor((time % 3600) / 60), // minutes
-            ('00' + Math.floor(time % 60)).slice(-2) // seconds
-        ].join(':')).join('-');
+        return (start == end ? [start] : [start, end])
+            .map(time =>
+                [
+                    Math.floor((time % 3600) / 60), // minutes
+                    ('00' + Math.floor(time % 60)).slice(-2) // seconds
+                ].join(':')
+            )
+            .join('-');
     }
 
     getWidth() {
@@ -181,8 +194,7 @@ class Region {
             // Calculate the left and width values of the region such that
             // no gaps appear between regions.
             const left = Math.round(this.start / dur * width);
-            const regionWidth =
-                Math.round(this.end / dur * width) - left;
+            const regionWidth = Math.round(this.end / dur * width) - left;
 
             this.style(this.element, {
                 left: left + 'px',
@@ -192,7 +204,10 @@ class Region {
             });
 
             for (const attrname in this.attributes) {
-                this.element.setAttribute('data-region-' + attrname, this.attributes[attrname]);
+                this.element.setAttribute(
+                    'data-region-' + attrname,
+                    this.attributes[attrname]
+                );
             }
 
             this.element.title = this.formatTime(this.start, this.end);
@@ -205,7 +220,12 @@ class Region {
         this.firedOut = false;
 
         const onProcess = time => {
-            if (!this.firedOut && this.firedIn && (this.start >= Math.round(time * 100) / 100 || this.end <= Math.round(time * 100) / 100)) {
+            if (
+                !this.firedOut &&
+                this.firedIn &&
+                (this.start >= Math.round(time * 100) / 100 ||
+                    this.end <= Math.round(time * 100) / 100)
+            ) {
                 this.firedOut = true;
                 this.firedIn = false;
                 this.fireEvent('out');
@@ -259,89 +279,109 @@ class Region {
         });
 
         /* Drag or resize on mousemove. */
-        (this.drag || this.resize) && (() => {
-            const duration = this.wavesurfer.getDuration();
-            let startTime;
-            let touchId;
-            let drag;
-            let resize;
+        (this.drag || this.resize) &&
+            (() => {
+                const duration = this.wavesurfer.getDuration();
+                let startTime;
+                let touchId;
+                let drag;
+                let resize;
 
-            const onDown = e => {
-                if (e.touches && e.touches.length > 1) { return; }
-                touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
+                const onDown = e => {
+                    if (e.touches && e.touches.length > 1) {
+                        return;
+                    }
+                    touchId = e.targetTouches
+                        ? e.targetTouches[0].identifier
+                        : null;
 
-                e.stopPropagation();
-                startTime = this.wavesurfer.drawer.handleEvent(e, true) * duration;
+                    e.stopPropagation();
+                    startTime =
+                        this.wavesurfer.drawer.handleEvent(e, true) * duration;
 
-                if (e.target.tagName.toLowerCase() == 'handle') {
-                    if (e.target.classList.contains('wavesurfer-handle-start')) {
-                        resize = 'start';
+                    if (e.target.tagName.toLowerCase() == 'handle') {
+                        if (
+                            e.target.classList.contains(
+                                'wavesurfer-handle-start'
+                            )
+                        ) {
+                            resize = 'start';
+                        } else {
+                            resize = 'end';
+                        }
                     } else {
-                        resize = 'end';
+                        drag = true;
+                        resize = false;
                     }
-                } else {
-                    drag = true;
-                    resize = false;
-                }
-            };
-            const onUp = e => {
-                if (e.touches && e.touches.length > 1) { return; }
-
-                if (drag || resize) {
-                    drag = false;
-                    resize = false;
-
-                    this.fireEvent('update-end', e);
-                    this.wavesurfer.fireEvent('region-update-end', this, e);
-                }
-            };
-            const onMove = e => {
-                if (e.touches && e.touches.length > 1) { return; }
-                if (e.targetTouches && e.targetTouches[0].identifier != touchId) { return; }
-
-                if (drag || resize) {
-                    const time = this.wavesurfer.drawer.handleEvent(e) * duration;
-                    const delta = time - startTime;
-                    startTime = time;
-
-                    // Drag
-                    if (this.drag && drag) {
-                        this.onDrag(delta);
+                };
+                const onUp = e => {
+                    if (e.touches && e.touches.length > 1) {
+                        return;
                     }
 
-                    // Resize
-                    if (this.resize && resize) {
-                        this.onResize(delta, resize);
+                    if (drag || resize) {
+                        drag = false;
+                        resize = false;
+
+                        this.fireEvent('update-end', e);
+                        this.wavesurfer.fireEvent('region-update-end', this, e);
                     }
-                }
-            };
+                };
+                const onMove = e => {
+                    if (e.touches && e.touches.length > 1) {
+                        return;
+                    }
+                    if (
+                        e.targetTouches &&
+                        e.targetTouches[0].identifier != touchId
+                    ) {
+                        return;
+                    }
 
-            this.element.addEventListener('mousedown', onDown);
-            this.element.addEventListener('touchstart', onDown);
+                    if (drag || resize) {
+                        const time =
+                            this.wavesurfer.drawer.handleEvent(e) * duration;
+                        const delta = time - startTime;
+                        startTime = time;
 
-            this.wrapper.addEventListener('mousemove', onMove);
-            this.wrapper.addEventListener('touchmove', onMove);
+                        // Drag
+                        if (this.drag && drag) {
+                            this.onDrag(delta);
+                        }
 
-            document.body.addEventListener('mouseup', onUp);
-            document.body.addEventListener('touchend', onUp);
+                        // Resize
+                        if (this.resize && resize) {
+                            this.onResize(delta, resize);
+                        }
+                    }
+                };
 
-            this.on('remove', () => {
-                document.body.removeEventListener('mouseup', onUp);
-                document.body.removeEventListener('touchend', onUp);
-                this.wrapper.removeEventListener('mousemove', onMove);
-                this.wrapper.removeEventListener('touchmove', onMove);
-            });
+                this.element.addEventListener('mousedown', onDown);
+                this.element.addEventListener('touchstart', onDown);
 
-            this.wavesurfer.on('destroy', () => {
-                document.body.removeEventListener('mouseup', onUp);
-                document.body.removeEventListener('touchend', onUp);
-            });
-        })();
+                this.wrapper.addEventListener('mousemove', onMove);
+                this.wrapper.addEventListener('touchmove', onMove);
+
+                document.body.addEventListener('mouseup', onUp);
+                document.body.addEventListener('touchend', onUp);
+
+                this.on('remove', () => {
+                    document.body.removeEventListener('mouseup', onUp);
+                    document.body.removeEventListener('touchend', onUp);
+                    this.wrapper.removeEventListener('mousemove', onMove);
+                    this.wrapper.removeEventListener('touchmove', onMove);
+                });
+
+                this.wavesurfer.on('destroy', () => {
+                    document.body.removeEventListener('mouseup', onUp);
+                    document.body.removeEventListener('touchend', onUp);
+                });
+            })();
     }
 
     onDrag(delta) {
         const maxEnd = this.wavesurfer.getDuration();
-        if ((this.end + delta) > maxEnd || (this.start + delta) < 0) {
+        if (this.end + delta > maxEnd || this.start + delta < 0) {
             return;
         }
 
@@ -437,7 +477,9 @@ export default class RegionsPlugin {
             params: params,
             staticProps: {
                 initRegions() {
-                    console.warn('Deprecated initRegions! Use wavesurfer.initPlugins("regions") instead!');
+                    console.warn(
+                        'Deprecated initRegions! Use wavesurfer.initPlugins("regions") instead!'
+                    );
                     this.initPlugin('regions');
                 },
 
@@ -473,7 +515,9 @@ export default class RegionsPlugin {
         this.util = ws.util;
 
         // turn the plugin instance into an observer
-        const observerPrototypeKeys = Object.getOwnPropertyNames(this.util.Observer.prototype);
+        const observerPrototypeKeys = Object.getOwnPropertyNames(
+            this.util.Observer.prototype
+        );
         observerPrototypeKeys.forEach(key => {
             Region.prototype[key] = this.util.Observer.prototype[key];
         });
@@ -536,7 +580,9 @@ export default class RegionsPlugin {
         let pxMove = 0;
 
         const eventDown = e => {
-            if (e.touches && e.touches.length > 1) { return; }
+            if (e.touches && e.touches.length > 1) {
+                return;
+            }
             touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
 
             drag = true;
@@ -551,7 +597,9 @@ export default class RegionsPlugin {
         });
 
         const eventUp = e => {
-            if (e.touches && e.touches.length > 1) { return; }
+            if (e.touches && e.touches.length > 1) {
+                return;
+            }
 
             drag = false;
             pxMove = 0;
@@ -571,11 +619,19 @@ export default class RegionsPlugin {
         });
 
         const eventMove = e => {
-            if (!drag) { return; }
-            if (++pxMove <= slop) { return; }
+            if (!drag) {
+                return;
+            }
+            if (++pxMove <= slop) {
+                return;
+            }
 
-            if (e.touches && e.touches.length > 1) { return; }
-            if (e.targetTouches && e.targetTouches[0].identifier != touchId) { return; }
+            if (e.touches && e.touches.length > 1) {
+                return;
+            }
+            if (e.targetTouches && e.targetTouches[0].identifier != touchId) {
+                return;
+            }
 
             if (!region) {
                 region = this.add(params || {});
@@ -610,7 +666,7 @@ export default class RegionsPlugin {
         Object.keys(this.list).forEach(id => {
             const cur = this.list[id];
             if (cur.start <= time && cur.end >= time) {
-                if (!min || ((cur.end - cur.start) < (min.end - min.start))) {
+                if (!min || cur.end - cur.start < min.end - min.start) {
                     min = cur;
                 }
             }
@@ -618,5 +674,4 @@ export default class RegionsPlugin {
 
         return min;
     }
-
 }

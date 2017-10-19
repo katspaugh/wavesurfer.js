@@ -4,15 +4,15 @@
 var wavesurfer;
 
 // Init & load
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     var options = {
-        container     : '#waveform',
-        waveColor     : 'violet',
-        progressColor : 'purple',
-        loaderColor   : 'purple',
-        cursorColor   : 'navy',
+        container: '#waveform',
+        waveColor: 'violet',
+        progressColor: 'purple',
+        loaderColor: 'purple',
+        cursorColor: 'navy',
         selectionColor: '#d0e9c6',
-        loopSelection : false,
+        loopSelection: false,
         plugins: [
             WaveSurfer.elan.create({
                 url: 'transcripts/001z.xml',
@@ -39,16 +39,16 @@ document.addEventListener('DOMContentLoaded', function () {
     wavesurfer = WaveSurfer.create(options);
 
     /* Progress bar */
-    (function () {
+    (function() {
         var progressDiv = document.querySelector('#progress-bar');
         var progressBar = progressDiv.querySelector('.progress-bar');
 
-        var showProgress = function (percent) {
+        var showProgress = function(percent) {
             progressDiv.style.display = 'block';
             progressBar.style.width = percent + '%';
         };
 
-        var hideProgress = function () {
+        var hideProgress = function() {
             progressDiv.style.display = 'none';
         };
 
@@ -56,25 +56,26 @@ document.addEventListener('DOMContentLoaded', function () {
         wavesurfer.on('ready', hideProgress);
         wavesurfer.on('destroy', hideProgress);
         wavesurfer.on('error', hideProgress);
-    }());
+    })();
 
-    wavesurfer.elan.on('ready', function (data) {
+    wavesurfer.elan.on('ready', function(data) {
         wavesurfer.load('transcripts/' + data.media.url);
     });
 
-    wavesurfer.elan.on('select', function (start, end) {
+    wavesurfer.elan.on('select', function(start, end) {
         wavesurfer.backend.play(start, end);
     });
 
-    wavesurfer.elan.on('ready', function () {
-        var classList = wavesurfer.elan.container.querySelector('table').classList;
-        [ 'table', 'table-striped', 'table-hover' ].forEach(function (cl) {
+    wavesurfer.elan.on('ready', function() {
+        var classList = wavesurfer.elan.container.querySelector('table')
+            .classList;
+        ['table', 'table-striped', 'table-hover'].forEach(function(cl) {
             classList.add(cl);
         });
     });
 
     var prevAnnotation, prevRow, region;
-    var onProgress = function (time) {
+    var onProgress = function(time) {
         var annotation = wavesurfer.elan.getRenderedAnnotation(time);
 
         if (prevAnnotation != annotation) {

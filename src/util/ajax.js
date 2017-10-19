@@ -7,7 +7,7 @@ import Observer from './observer';
  *
  * @returns {Object} Observer instance
  */
-export default function ajax (options) {
+export default function ajax(options) {
     const instance = new Observer();
     const xhr = new XMLHttpRequest();
     let fired100 = false;
