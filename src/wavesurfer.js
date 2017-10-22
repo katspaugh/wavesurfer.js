@@ -352,9 +352,12 @@ export default class WaveSurfer extends util.Observer {
         // timeout for the debounce function.
         let prevWidth = 0;
         this._onResize = util.debounce(() => {
-            if (prevWidth != this.drawer.wrapper.clientWidth) {
+            if (
+                prevWidth != this.drawer.wrapper.clientWidth &&
+                !this.params.scrollParent
+            ) {
                 prevWidth = this.drawer.wrapper.clientWidth;
-                this.drawBuffer();
+                this.drawer.fireEvent('redraw');
             }
         }, typeof this.params.responsive === 'number' ? this.params.responsive : 100);
 
@@ -524,8 +527,9 @@ export default class WaveSurfer extends util.Observer {
         this.drawer.init();
         this.fireEvent('drawer-created', this.drawer);
 
-        if (this.params.responsive) {
+        if (this.params.responsive !== false) {
             window.addEventListener('resize', this._onResize, true);
+            window.addEventListener('orientationchange', this._onResize, true);
         }
 
         this.drawer.on('redraw', () => {
@@ -1295,8 +1299,13 @@ export default class WaveSurfer extends util.Observer {
         this.cancelAjax();
         this.clearTmpEvents();
         this.unAll();
-        if (this.params.responsive) {
+        if (this.params.responsive !== false) {
             window.removeEventListener('resize', this._onResize, true);
+            window.removeEventListener(
+                'orientationchange',
+                this._onResize,
+                true
+            );
         }
         this.backend.destroy();
         this.drawer.destroy();
