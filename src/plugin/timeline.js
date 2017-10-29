@@ -223,7 +223,7 @@ export default class TimelinePlugin {
     destroy() {
         this.unAll();
         this.wavesurfer.un('redraw', this._onRedraw);
-        this.wavesurfer.un('zoom', this._onRedraw);
+        this.wavesurfer.un('zoom', this._onZoom);
         this.wavesurfer.un('ready', this._onReady);
         this.wavesurfer.drawer.wrapper.removeEventListener(
             'scroll',
