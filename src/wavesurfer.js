@@ -1042,6 +1042,30 @@ export default class WaveSurfer extends util.Observer {
         this.empty();
         this.isMuted = false;
 
+        if (preload) {
+            // check whether the preload attribute will be usable and if not log
+            // a warning listing the reasons why not and nullify the variable
+            const preloadIgnoreReasons = {
+                "Preload is not 'auto', 'none' or 'metadata'":
+                    ['auto', 'metadata', 'none'].indexOf(preload) === -1,
+                'Peaks are not provided': !peaks,
+                'Backend is not of type MediaElement':
+                    this.params.backend !== 'MediaElement',
+                'Url is not of type string': typeof url !== 'string'
+            };
+            const activeReasons = Object.keys(preloadIgnoreReasons).filter(
+                reason => preloadIgnoreReasons[reason]
+            );
+            if (activeReasons.length) {
+                console.warn(
+                    'Preload parameter of wavesurfer.load will be ignored because:\n\t- ' +
+                        activeReasons.join('\n\t- ')
+                );
+                // stop invalid values from being used
+                preload = null;
+            }
+        }
+
         switch (this.params.backend) {
             case 'WebAudio':
                 return this.loadBuffer(url, peaks);
