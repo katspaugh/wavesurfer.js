@@ -131,7 +131,7 @@ export default class TimelinePlugin {
 
         this.canvases = [];
 
-        this._onZoom = () => this.render();
+        this._onZoom = () => ws.util.debounce(() => this.render(), 100);
         this._onScroll = () => {
             if (this.wrapper && this.drawer.wrapper) {
                 this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
