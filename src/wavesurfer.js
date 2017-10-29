@@ -622,7 +622,7 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Set the current play time in seconds.
      *
-     * @param {Number} seconds A positive number in seconds. E.g. 10 means 10
+     * @param {number} seconds A positive number in seconds. E.g. 10 means 10
      * seconds, 60 means 1 minute
      */
     setCurrentTime(seconds) {
@@ -1021,9 +1021,10 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Loads audio and re-renders the waveform.
      *
-     * @param {string} url The url of the audio file
-     * @param {?number[]|number[][]} peaks Wavesurfer does not have to decode the audio to
-     * render the waveform if this is specified
+     * @param {string|HTMLMediaElement} url The url of the audio file or the
+     * audio element with the audio
+     * @param {?number[]|number[][]} peaks Wavesurfer does not have to decode
+     * the audio to render the waveform if this is specified
      * @param {?string} preload (Use with backend `MediaElement`)
      * `'none'|'metadata'|'auto'` Preload attribute for the media element
      * @example
@@ -1077,7 +1078,7 @@ export default class WaveSurfer extends util.Observer {
      * Either create a media element, or load an existing media element.
      *
      * @private
-     * @param {string|HTMLElement} urlOrElt Either a path to a media file, or an
+     * @param {string|HTMLMediaElement} urlOrElt Either a path to a media file, or an
      * existing HTML5 Audio/Video Element
      * @param {number[]|number[][]} peaks Array of peaks. Required to bypass web audio
      * dependency
