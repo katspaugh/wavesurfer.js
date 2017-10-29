@@ -179,6 +179,7 @@ export default class TimelinePlugin {
 
     createWrapper() {
         const wsParams = this.wavesurfer.params;
+        this.container.innerHTML = '';
         this.wrapper = this.container.appendChild(
             document.createElement('timeline')
         );
