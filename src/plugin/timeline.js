@@ -62,6 +62,14 @@ export default class TimelinePlugin {
         };
     }
 
+    /**
+     * Creates an instance of TimelinePlugin.
+     *
+     * You probably want to use TimelinePlugin.create()
+     *
+     * @param {TimelinePluginParams} params Plugin parameters
+     * @param {object} ws Wavesurfer instance
+     */
     constructor(params, ws) {
         this.container =
             'string' == typeof params.container
@@ -154,6 +162,9 @@ export default class TimelinePlugin {
         };
     }
 
+    /**
+     * Initialisation function used by the plugin API
+     */
     init() {
         this.wavesurfer.on('ready', this._onReady);
         // Check if ws is ready
@@ -162,6 +173,9 @@ export default class TimelinePlugin {
         }
     }
 
+    /**
+     * Destroy function used by the plugin API
+     */
     destroy() {
         this.unAll();
         this.wavesurfer.un('redraw', this._onRedraw);
@@ -177,6 +191,11 @@ export default class TimelinePlugin {
         }
     }
 
+    /**
+     * Create a timeline element to wrap the canvases drawn by this plugin
+     *
+     * @private
+     */
     createWrapper() {
         const wsParams = this.wavesurfer.params;
         this.container.innerHTML = '';
@@ -324,18 +343,41 @@ export default class TimelinePlugin {
         }
     }
 
+    /**
+     * Set the canvas fill style
+     *
+     * @param {DOMString|CanvasGradient|CanvasPattern} fillStyle
+     * @private
+     */
     setFillStyles(fillStyle) {
         this.canvases.forEach(canvas => {
             canvas.getContext('2d').fillStyle = fillStyle;
         });
     }
 
+    /**
+     * Set the canvas font
+     *
+     * @param {DOMString} font
+     * @private
+     */
     setFonts(font) {
         this.canvases.forEach(canvas => {
             canvas.getContext('2d').font = font;
         });
     }
 
+    /**
+     * Draw a rectangle on the canvases
+     *
+     * (it figures out the offset for each canvas)
+     *
+     * @param {number} x
+     * @param {number} y
+     * @param {number} width
+     * @param {number} height
+     * @private
+     */
     fillRect(x, y, width, height) {
         this.canvases.forEach((canvas, i) => {
             const leftOffset = i * this.maxCanvasWidth;
@@ -360,6 +402,14 @@ export default class TimelinePlugin {
         });
     }
 
+    /**
+     * Fill a given text on the canvases
+     *
+     * @param {string} text
+     * @param {number} x
+     * @param {number} y
+     * @private
+     */
     fillText(text, x, y) {
         let textWidth;
         let xOffset = 0;
