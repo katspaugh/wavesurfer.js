@@ -57,13 +57,21 @@ export default class CursorPlugin {
     constructor(params, ws) {
         this.wavesurfer = ws;
         this.style = ws.util.style;
+        this._mouseX = null;
         this._onDrawerCreated = () => {
             this.drawer = this.wavesurfer.drawer;
-            this.wrapper = this.wavesurfer.drawer.wrapper;
+            this.wrapper = this.wavesurfer.container;
 
-            this._onMousemove = e =>
-                this.updateCursorPosition(this.drawer.handleEvent(e));
+            this._onMousemove = e => {
+                const bbox = this.wrapper.getBoundingClientRect();
+                this._mouseX = e.clientX - bbox.left;
+                this.updateCursorPosition(this._mouseX);
+            };
             this.wrapper.addEventListener('mousemove', this._onMousemove);
+
+            this._onAudioProcess = () =>
+                this.updateCursorPosition(this._mouseX);
+            this.wavesurfer.on('audioprocess', this._onAudioProcess);
 
             this._onMouseenter = () => this.showCursor();
             this.wrapper.addEventListener('mouseenter', this._onMouseenter);
@@ -72,7 +80,7 @@ export default class CursorPlugin {
             this.wrapper.addEventListener('mouseleave', this._onMouseleave);
 
             this.cursor = this.wrapper.appendChild(
-                this.style(document.createElement('wave'), {
+                this.style(document.createElement('cursor'), {
                     position: 'absolute',
                     zIndex: 3,
                     left: 0,
@@ -117,11 +125,8 @@ export default class CursorPlugin {
         }
     }
 
-    updateCursorPosition(progress) {
-        const pos =
-            Math.round(this.drawer.width * progress) /
-                this.drawer.params.pixelRatio -
-            1;
+    updateCursorPosition(pos) {
+        console.log('POS: ', pos);
         this.style(this.cursor, {
             left: `${pos}px`
         });
