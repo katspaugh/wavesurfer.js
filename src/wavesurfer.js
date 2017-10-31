@@ -622,7 +622,7 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Set the current play time in seconds.
      *
-     * @param {Number} seconds A positive number in seconds. E.g. 10 means 10
+     * @param {number} seconds A positive number in seconds. E.g. 10 means 10
      * seconds, 60 means 1 minute
      */
     setCurrentTime(seconds) {
@@ -1031,9 +1031,10 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Loads audio and re-renders the waveform.
      *
-     * @param {string} url The url of the audio file
-     * @param {?number[]|number[][]} peaks Wavesurfer does not have to decode the audio to
-     * render the waveform if this is specified
+     * @param {string|HTMLMediaElement} url The url of the audio file or the
+     * audio element with the audio
+     * @param {?number[]|number[][]} peaks Wavesurfer does not have to decode
+     * the audio to render the waveform if this is specified
      * @param {?string} preload (Use with backend `MediaElement`)
      * `'none'|'metadata'|'auto'` Preload attribute for the media element
      * @example
@@ -1050,6 +1051,30 @@ export default class WaveSurfer extends util.Observer {
     load(url, peaks, preload) {
         this.empty();
         this.isMuted = false;
+
+        if (preload) {
+            // check whether the preload attribute will be usable and if not log
+            // a warning listing the reasons why not and nullify the variable
+            const preloadIgnoreReasons = {
+                "Preload is not 'auto', 'none' or 'metadata'":
+                    ['auto', 'metadata', 'none'].indexOf(preload) === -1,
+                'Peaks are not provided': !peaks,
+                'Backend is not of type MediaElement':
+                    this.params.backend !== 'MediaElement',
+                'Url is not of type string': typeof url !== 'string'
+            };
+            const activeReasons = Object.keys(preloadIgnoreReasons).filter(
+                reason => preloadIgnoreReasons[reason]
+            );
+            if (activeReasons.length) {
+                console.warn(
+                    'Preload parameter of wavesurfer.load will be ignored because:\n\t- ' +
+                        activeReasons.join('\n\t- ')
+                );
+                // stop invalid values from being used
+                preload = null;
+            }
+        }
 
         switch (this.params.backend) {
             case 'WebAudio':
@@ -1087,7 +1112,7 @@ export default class WaveSurfer extends util.Observer {
      * Either create a media element, or load an existing media element.
      *
      * @private
-     * @param {string|HTMLElement} urlOrElt Either a path to a media file, or an
+     * @param {string|HTMLMediaElement} urlOrElt Either a path to a media file, or an
      * existing HTML5 Audio/Video Element
      * @param {number[]|number[][]} peaks Array of peaks. Required to bypass web audio
      * dependency
