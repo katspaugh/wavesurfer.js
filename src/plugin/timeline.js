@@ -362,14 +362,13 @@ export default class TimelinePlugin {
     fillText(text, x, y) {
         let textWidth;
         let xOffset = 0;
-        let i;
 
         this.canvases.forEach(canvas => {
             const context = canvas.getContext('2d');
             const canvasWidth = context.canvas.width;
 
             if (xOffset > x + textWidth) {
-                break;
+                return;
             }
 
             if (xOffset + canvasWidth > x) {
@@ -378,6 +377,6 @@ export default class TimelinePlugin {
             }
 
             xOffset += canvasWidth;
-        }
+        });
     }
 }
