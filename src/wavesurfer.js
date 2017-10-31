@@ -1022,10 +1022,12 @@ export default class WaveSurfer extends util.Observer {
      * Loads audio and re-renders the waveform.
      *
      * @param {string} url The url of the audio file
-     * @param {?number[]|number[][]} peaks Wavesurfer does not have to decode the audio to
-     * render the waveform if this is specified
+     * @param {?number[]|number[][]} peaks Wavesurfer does not have to decode
+     * the audio to render the waveform if this is specified
      * @param {?string} preload (Use with backend `MediaElement`)
      * `'none'|'metadata'|'auto'` Preload attribute for the media element
+     * @param {?number} duration The duration of the audio. This is required to
+     * render the peaks data correctly without having to decode the audio
      * @example
      * // using ajax or media element to load (depending on backend)
      * wavesurfer.load('http://example.com/demo.wav');
@@ -1037,15 +1039,15 @@ export default class WaveSurfer extends util.Observer {
      *   true,
      * );
      */
-    load(url, peaks, preload) {
+    load(url, peaks, preload, duration) {
         this.empty();
         this.isMuted = false;
 
         switch (this.params.backend) {
             case 'WebAudio':
-                return this.loadBuffer(url, peaks);
+                return this.loadBuffer(url, peaks, duration);
             case 'MediaElement':
-                return this.loadMediaElement(url, peaks, preload);
+                return this.loadMediaElement(url, peaks, preload, duration);
         }
     }
 
@@ -1055,8 +1057,10 @@ export default class WaveSurfer extends util.Observer {
      * @private
      * @param {string} url
      * @param {?number[]|number[][]} peaks
+     * @param {?number} duration The duration of the audio. This is required to
+     * render the peaks data correctly without having to decode the audio
      */
-    loadBuffer(url, peaks) {
+    loadBuffer(url, peaks, duration) {
         const load = action => {
             if (action) {
                 this.tmpEvents.push(this.once('ready', action));
@@ -1065,7 +1069,7 @@ export default class WaveSurfer extends util.Observer {
         };
 
         if (peaks) {
-            this.backend.setPeaks(peaks);
+            this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
             this.tmpEvents.push(this.once('interaction', load));
         } else {
@@ -1083,8 +1087,10 @@ export default class WaveSurfer extends util.Observer {
      * dependency
      * @param {?boolean} preload Set to true if the preload attribute of the
      * audio element should be enabled
+     * @param {?number} duration The duration of the audio. This is required to
+     * render the peaks data correctly without having to decode the audio
      */
-    loadMediaElement(urlOrElt, peaks, preload) {
+    loadMediaElement(urlOrElt, peaks, preload, duration) {
         let url = urlOrElt;
 
         if (typeof urlOrElt === 'string') {
@@ -1111,7 +1117,7 @@ export default class WaveSurfer extends util.Observer {
         // provided with forceDecode flag, attempt to download the
         // audio file and decode it with Web Audio.
         if (peaks) {
-            this.backend.setPeaks(peaks);
+            this.backend.setPeaks(peaks, duration);
         }
 
         if (
