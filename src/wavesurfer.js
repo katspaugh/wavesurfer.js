@@ -352,9 +352,12 @@ export default class WaveSurfer extends util.Observer {
         // timeout for the debounce function.
         let prevWidth = 0;
         this._onResize = util.debounce(() => {
-            if (prevWidth != this.drawer.wrapper.clientWidth) {
+            if (
+                prevWidth != this.drawer.wrapper.clientWidth &&
+                !this.params.scrollParent
+            ) {
                 prevWidth = this.drawer.wrapper.clientWidth;
-                this.drawBuffer();
+                this.drawer.fireEvent('redraw');
             }
         }, typeof this.params.responsive === 'number' ? this.params.responsive : 100);
 
@@ -524,8 +527,9 @@ export default class WaveSurfer extends util.Observer {
         this.drawer.init();
         this.fireEvent('drawer-created', this.drawer);
 
-        if (this.params.responsive) {
+        if (this.params.responsive !== false) {
             window.addEventListener('resize', this._onResize, true);
+            window.addEventListener('orientationchange', this._onResize, true);
         }
 
         this.drawer.on('redraw', () => {
@@ -618,7 +622,7 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Set the current play time in seconds.
      *
-     * @param {Number} seconds A positive number in seconds. E.g. 10 means 10
+     * @param {number} seconds A positive number in seconds. E.g. 10 means 10
      * seconds, 60 means 1 minute
      */
     setCurrentTime(seconds) {
@@ -746,7 +750,7 @@ export default class WaveSurfer extends util.Observer {
         const oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
-        this.drawer.progress(this.backend.getPlayedPercents());
+        this.drawer.progress(progress);
 
         if (!paused) {
             this.backend.play();
@@ -1017,11 +1021,16 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Loads audio and re-renders the waveform.
      *
-     * @param {string} url The url of the audio file
-     * @param {?number[]|number[][]} peaks Wavesurfer does not have to decode the audio to
-     * render the waveform if this is specified
+     * @param {string|HTMLMediaElement} url The url of the audio file or the
+     * audio element with the audio
+     * @param {?number[]|number[][]} peaks Wavesurfer does not have to decode
+     * the audio to render the waveform if this is specified
      * @param {?string} preload (Use with backend `MediaElement`)
      * `'none'|'metadata'|'auto'` Preload attribute for the media element
+     * @param {?number} duration The duration of the audio. This is used to
+     * render the peaks data in the correct size for the audio duration (as
+     * befits the current minPxPerSec and zoom value) without having to decode
+     * the audio.
      * @example
      * // using ajax or media element to load (depending on backend)
      * wavesurfer.load('http://example.com/demo.wav');
@@ -1033,15 +1042,39 @@ export default class WaveSurfer extends util.Observer {
      *   true,
      * );
      */
-    load(url, peaks, preload) {
+    load(url, peaks, preload, duration) {
         this.empty();
         this.isMuted = false;
 
+        if (preload) {
+            // check whether the preload attribute will be usable and if not log
+            // a warning listing the reasons why not and nullify the variable
+            const preloadIgnoreReasons = {
+                "Preload is not 'auto', 'none' or 'metadata'":
+                    ['auto', 'metadata', 'none'].indexOf(preload) === -1,
+                'Peaks are not provided': !peaks,
+                'Backend is not of type MediaElement':
+                    this.params.backend !== 'MediaElement',
+                'Url is not of type string': typeof url !== 'string'
+            };
+            const activeReasons = Object.keys(preloadIgnoreReasons).filter(
+                reason => preloadIgnoreReasons[reason]
+            );
+            if (activeReasons.length) {
+                console.warn(
+                    'Preload parameter of wavesurfer.load will be ignored because:\n\t- ' +
+                        activeReasons.join('\n\t- ')
+                );
+                // stop invalid values from being used
+                preload = null;
+            }
+        }
+
         switch (this.params.backend) {
             case 'WebAudio':
-                return this.loadBuffer(url, peaks);
+                return this.loadBuffer(url, peaks, duration);
             case 'MediaElement':
-                return this.loadMediaElement(url, peaks, preload);
+                return this.loadMediaElement(url, peaks, preload, duration);
         }
     }
 
@@ -1051,8 +1084,9 @@ export default class WaveSurfer extends util.Observer {
      * @private
      * @param {string} url
      * @param {?number[]|number[][]} peaks
+     * @param {?number} duration
      */
-    loadBuffer(url, peaks) {
+    loadBuffer(url, peaks, duration) {
         const load = action => {
             if (action) {
                 this.tmpEvents.push(this.once('ready', action));
@@ -1061,7 +1095,7 @@ export default class WaveSurfer extends util.Observer {
         };
 
         if (peaks) {
-            this.backend.setPeaks(peaks);
+            this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
             this.tmpEvents.push(this.once('interaction', load));
         } else {
@@ -1073,14 +1107,15 @@ export default class WaveSurfer extends util.Observer {
      * Either create a media element, or load an existing media element.
      *
      * @private
-     * @param {string|HTMLElement} urlOrElt Either a path to a media file, or an
+     * @param {string|HTMLMediaElement} urlOrElt Either a path to a media file, or an
      * existing HTML5 Audio/Video Element
      * @param {number[]|number[][]} peaks Array of peaks. Required to bypass web audio
      * dependency
      * @param {?boolean} preload Set to true if the preload attribute of the
      * audio element should be enabled
+     * @param {?number} duration
      */
-    loadMediaElement(urlOrElt, peaks, preload) {
+    loadMediaElement(urlOrElt, peaks, preload, duration) {
         let url = urlOrElt;
 
         if (typeof urlOrElt === 'string') {
@@ -1107,7 +1142,7 @@ export default class WaveSurfer extends util.Observer {
         // provided with forceDecode flag, attempt to download the
         // audio file and decode it with Web Audio.
         if (peaks) {
-            this.backend.setPeaks(peaks);
+            this.backend.setPeaks(peaks, duration);
         }
 
         if (
@@ -1295,8 +1330,13 @@ export default class WaveSurfer extends util.Observer {
         this.cancelAjax();
         this.clearTmpEvents();
         this.unAll();
-        if (this.params.responsive) {
+        if (this.params.responsive !== false) {
             window.removeEventListener('resize', this._onResize, true);
+            window.removeEventListener(
+                'orientationchange',
+                this._onResize,
+                true
+            );
         }
         this.backend.destroy();
         this.drawer.destroy();

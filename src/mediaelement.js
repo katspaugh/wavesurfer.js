@@ -71,13 +71,13 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
-     *  Create media element with url as its source,
-     *  and append to container element.
+     * Create media element with url as its source,
+     * and append to container element.
      *
-     *  @param {string} url Path to media file
-     *  @param {HTMLElement} container HTML element
-     *  @param {Array} peaks Array of peak data
-     *  @param {string} preload HTML 5 preload attribute value
+     * @param {string} url Path to media file
+     * @param {HTMLElement} container HTML element
+     * @param {number[]|number[][]} peaks Array of peak data
+     * @param {string} preload HTML 5 preload attribute value
      */
     load(url, container, peaks, preload) {
         const media = document.createElement(this.mediaType);
@@ -97,10 +97,10 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
-     *  Load existing media element.
+     * Load existing media element.
      *
-     *  @param {MediaElement} elt HTML5 Audio or Video element
-     *  @param {Array} peaks Array of peak data
+     * @param {HTMLMediaElement} elt HTML5 Audio or Video element
+     * @param {number[]|number[][]} peaks Array of peak data
      */
     loadElt(elt, peaks) {
         elt.controls = this.params.mediaControls;
@@ -110,17 +110,20 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
-     *  Private method called by both load (from url)
-     *  and loadElt (existing media element).
+     * Private method called by both load (from url)
+     * and loadElt (existing media element).
      *
-     *  @param  {MediaElement}  media     HTML5 Audio or Video element
-     *  @param  {Array}         peaks   array of peak data
-     *  @private
+     * @param {HTMLMediaElement} media HTML5 Audio or Video element
+     * @param {number[]|number[][]} peaks Array of peak data
+     * @private
      */
     _load(media, peaks) {
         // load must be called manually on iOS, otherwise peaks won't draw
         // until a user interaction triggers load --> 'ready' event
         if (typeof media.load == 'function') {
+            // Resets the media element and restarts the media resource. Any
+            // pending events are discarded. How much media data is fetched is
+            // still affected by the preload attribute.
             media.load();
         }
 
@@ -168,6 +171,9 @@ export default class MediaElement extends WebAudio {
      * @return {number}
      */
     getDuration() {
+        if (this.explicitDuration) {
+            return this.explicitDuration;
+        }
         let duration = (this.buffer || this.media).duration;
         if (duration >= Infinity) {
             // streaming audio
@@ -229,9 +235,9 @@ export default class MediaElement extends WebAudio {
     /**
      * Plays the loaded audio region.
      *
-     * @param {Number} start Start offset in seconds, relative to the beginning
+     * @param {number} start Start offset in seconds, relative to the beginning
      * of a clip.
-     * @param {Number} end When to stop relative to the beginning of a clip.
+     * @param {number} end When to stop relative to the beginning of a clip.
      * @emits MediaElement#play
      */
     play(start, end) {
