@@ -1026,8 +1026,10 @@ export default class WaveSurfer extends util.Observer {
      * the audio to render the waveform if this is specified
      * @param {?string} preload (Use with backend `MediaElement`)
      * `'none'|'metadata'|'auto'` Preload attribute for the media element
-     * @param {?number} duration The duration of the audio. This is required to
-     * render the peaks data correctly without having to decode the audio
+     * @param {?number} duration The duration of the audio. This is used to
+     * render the peaks data in the correct size for the audio duration (as
+     * befits the current minPxPerSec and zoom value) without having to decode
+     * the audio.
      * @example
      * // using ajax or media element to load (depending on backend)
      * wavesurfer.load('http://example.com/demo.wav');
@@ -1057,8 +1059,7 @@ export default class WaveSurfer extends util.Observer {
      * @private
      * @param {string} url
      * @param {?number[]|number[][]} peaks
-     * @param {?number} duration The duration of the audio. This is required to
-     * render the peaks data correctly without having to decode the audio
+     * @param {?number} duration
      */
     loadBuffer(url, peaks, duration) {
         const load = action => {
@@ -1087,8 +1088,7 @@ export default class WaveSurfer extends util.Observer {
      * dependency
      * @param {?boolean} preload Set to true if the preload attribute of the
      * audio element should be enabled
-     * @param {?number} duration The duration of the audio. This is required to
-     * render the peaks data correctly without having to decode the audio
+     * @param {?number} duration
      */
     loadMediaElement(urlOrElt, peaks, preload, duration) {
         let url = urlOrElt;
