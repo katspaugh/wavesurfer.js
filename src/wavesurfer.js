@@ -761,7 +761,7 @@ export default class WaveSurfer extends util.Observer {
         const oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
-        this.drawer.progress(this.backend.getPlayedPercents());
+        this.drawer.progress(progress);
 
         if (!paused) {
             this.backend.play();
