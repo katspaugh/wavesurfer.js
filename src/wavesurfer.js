@@ -739,6 +739,7 @@ export default class WaveSurfer extends util.Observer {
      * wavesurfer.seekTo(0.5);
      */
     seekTo(progress) {
+        // return an error if progress is not a number between 0 and 1
         if (
             typeof progress !== 'number' ||
             !isFinite(progress) ||
