@@ -381,7 +381,7 @@ export default class SpectrogramPlugin {
             position: 'relative',
             userSelect: 'none',
             webkitUserSelect: 'none',
-            height: `${this.height/this.pixelRatio}px`
+            height: `${this.height / this.pixelRatio}px`
         });
 
         if (wsParams.fillParent || wsParams.scrollParent) {
