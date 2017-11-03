@@ -739,6 +739,17 @@ export default class WaveSurfer extends util.Observer {
      * wavesurfer.seekTo(0.5);
      */
     seekTo(progress) {
+        // return an error if progress is not a number between 0 and 1
+        if (
+            typeof progress !== 'number' ||
+            !isFinite(progress) ||
+            progress < 0 ||
+            progress > 1
+        ) {
+            return console.error(
+                'Error calling wavesurfer.seekTo, parameter must be a number between 0 and 1!'
+            );
+        }
         this.fireEvent('interaction', () => this.seekTo(progress));
 
         const paused = this.backend.isPaused();
