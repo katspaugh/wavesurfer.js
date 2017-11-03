@@ -83,13 +83,22 @@ export default class MultiCanvas extends Drawer {
                 display: 'none',
                 boxSizing: 'border-box',
                 borderRightStyle: 'solid',
-                borderRightWidth: this.params.cursorWidth + 'px',
-                borderRightColor: this.params.cursorColor,
                 pointerEvents: 'none'
             })
         );
 
         this.addCanvas();
+        this.updateCursor();
+    }
+
+    /**
+     * Update cursor style from params.
+     */
+    updateCursor() {
+        this.style(this.progressWave, {
+            borderRightWidth: this.params.cursorWidth + 'px',
+            borderRightColor: this.params.cursorColor
+        });
     }
 
     /**
