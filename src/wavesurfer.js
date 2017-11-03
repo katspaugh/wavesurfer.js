@@ -917,7 +917,7 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Set the fill color of the waveform after the cursor.
      *
-     * @param {string} A CSS color string.
+     * @param {string} color A CSS color string.
      * @example wavesurfer.setWaveColor('#ddd');
      */
     setWaveColor(color) {
@@ -937,7 +937,7 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Set the fill color of the waveform behind the cursor.
      *
-     * @param {string} A CSS color string.
+     * @param {string} color A CSS color string.
      * @example wavesurfer.setProgressColor('#400');
      */
     setProgressColor(color) {
@@ -959,7 +959,7 @@ export default class WaveSurfer extends util.Observer {
      * Set the fill color of the cursor indicating the playhead
      * position.
      *
-     * @param {string} A CSS color string.
+     * @param {string} color A CSS color string.
      * @example wavesurfer.setCursorColor('#222');
      */
     setCursorColor(color) {
@@ -979,7 +979,7 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Set the height of the waveform.
      *
-     * @param {number} Height measured in pixels.
+     * @param {number} height Height measured in pixels.
      * @example wavesurfer.setHeight(200);
      */
     setHeight(height) {
