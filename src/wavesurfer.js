@@ -70,6 +70,9 @@ import PeakCache from './peakcache';
  * are added with the `deferInit` property set to true.
  * @property {string} progressColor='#555' The fill color of the part of the
  * waveform behind the cursor.
+ * @property {boolean} removeMediaElementOnDestroy=true Set to false to keep the
+ * media element in the DOM when the player is destroyed. This is useful when
+ * reusing an existing media element via the `loadMediaElement` method.
  * @property {Object} renderer=MultiCanvas Can be used to inject a custom
  * renderer.
  * @property {boolean|number} responsive=false If set to `true` resize the
@@ -195,6 +198,7 @@ export default class WaveSurfer extends util.Observer {
             window.devicePixelRatio || screen.deviceXDPI / screen.logicalXDPI,
         plugins: [],
         progressColor: '#555',
+        removeMediaElementOnDestroy: true,
         renderer: MultiCanvas,
         responsive: false,
         scrollParent: false,
