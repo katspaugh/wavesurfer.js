@@ -70,6 +70,9 @@ import PeakCache from './peakcache';
  * are added with the `deferInit` property set to true.
  * @property {string} progressColor='#555' The fill color of the part of the
  * waveform behind the cursor.
+ * @property {boolean} removeMediaElementOnDestroy=true Set to false to keep the
+ * media element in the DOM when the player is destroyed. This is useful when
+ * reusing an existing media element via the `loadMediaElement` method.
  * @property {Object} renderer=MultiCanvas Can be used to inject a custom
  * renderer.
  * @property {boolean|number} responsive=false If set to `true` resize the
@@ -195,6 +198,7 @@ export default class WaveSurfer extends util.Observer {
             window.devicePixelRatio || screen.deviceXDPI / screen.logicalXDPI,
         plugins: [],
         progressColor: '#555',
+        removeMediaElementOnDestroy: true,
         renderer: MultiCanvas,
         responsive: false,
         scrollParent: false,
@@ -899,6 +903,89 @@ export default class WaveSurfer extends util.Observer {
      */
     toggleInteraction() {
         this.params.interact = !this.params.interact;
+    }
+
+    /**
+     * Get the fill color of the waveform after the cursor.
+     *
+     * @return {string} A CSS color string.
+     */
+    getWaveColor() {
+        return this.params.waveColor;
+    }
+
+    /**
+     * Set the fill color of the waveform after the cursor.
+     *
+     * @param {string} color A CSS color string.
+     * @example wavesurfer.setWaveColor('#ddd');
+     */
+    setWaveColor(color) {
+        this.params.waveColor = color;
+        this.drawBuffer();
+    }
+
+    /**
+     * Get the fill color of the waveform behind the cursor.
+     *
+     * @return {string} A CSS color string.
+     */
+    getProgressColor() {
+        return this.params.progressColor;
+    }
+
+    /**
+     * Set the fill color of the waveform behind the cursor.
+     *
+     * @param {string} color A CSS color string.
+     * @example wavesurfer.setProgressColor('#400');
+     */
+    setProgressColor(color) {
+        this.params.progressColor = color;
+        this.drawBuffer();
+    }
+
+    /**
+     * Get the fill color of the cursor indicating the playhead
+     * position.
+     *
+     * @return {string} A CSS color string.
+     */
+    getCursorColor() {
+        return this.params.cursorColor;
+    }
+
+    /**
+     * Set the fill color of the cursor indicating the playhead
+     * position.
+     *
+     * @param {string} color A CSS color string.
+     * @example wavesurfer.setCursorColor('#222');
+     */
+    setCursorColor(color) {
+        this.params.cursorColor = color;
+        this.drawer.updateCursor();
+    }
+
+    /**
+     * Get the height of the waveform.
+     *
+     * @return {number} Height measured in pixels.
+     */
+    getHeight() {
+        return this.params.height;
+    }
+
+    /**
+     * Set the height of the waveform.
+     *
+     * @param {number} height Height measured in pixels.
+     * @example wavesurfer.setHeight(200);
+     */
+    setHeight(height) {
+        this.params.height = height;
+        this.drawer.setHeight(height * this.params.pixelRatio);
+        this.drawBuffer();
     }
 
     /**
