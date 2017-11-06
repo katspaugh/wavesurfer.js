@@ -1,5 +1,7 @@
+/* eslint-env node */
+
 require('babel-register');
-var webpackConfig = require('./webpack.config.babel.js').default({ test: true });
+var webpackConfig = require('./build-config/webpack.prod.main.js');
 
 module.exports = function (config) {
     var configuration = {
