@@ -49,6 +49,7 @@ module.exports = function (config) {
         captureConsole: true,
         colors: true,
         reporters: ['progress'],
+        reporters: ['progress', 'coverage'],
         webpack: webpackConfig,
 
         customLaunchers: {
