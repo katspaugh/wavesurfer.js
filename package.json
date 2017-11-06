@@ -11,7 +11,6 @@
     "start:htmlinit": "npm run build:main && npm run build:plugins && webpack-dev-server --config ./build-config/webpack.dev.htmlinit.js",
     "start:plugins": "npm run build:main && npm run build:htmlinit && webpack-dev-server --config ./build-config/webpack.dev.plugins.js",
     "build": "npm run build:normal && npm run build:minified",
-    "format": "prettier --single-quote true --tab-width 4 'src/**/*.js*' 'example/**/*.js*' 'spec/**/*.js*' 'website/**/*.js*' --write",
     "build:main": "webpack --config ./build-config/webpack.prod.main.js",
     "build:main:min": "webpack --config ./build-config/webpack.prod.main.min.js",
     "build:plugins": "webpack --config ./build-config/webpack.prod.plugins.js",
@@ -20,6 +19,7 @@
     "build:htmlinit:min": "webpack --config ./build-config/webpack.prod.htmlinit.min.js",
     "build:normal": "npm run build:main && npm run build:plugins && npm run build:htmlinit",
     "build:minified": "npm run build:main:min && npm run build:plugins:min && npm run build:htmlinit:min",
+    "format": "prettier 'src/**/*.js*' 'example/**/*.js*' 'spec/**/*.js*' 'website/**/*.js*' 'build-config/**/*.js' karma.conf.js --write",
     "lint": "eslint src example spec website",
     "lint-and-format-staged": "lint-staged",
     "doc": "esdoc",
@@ -67,6 +67,9 @@
   "homepage": "https://github.com/katspaugh/wavesurfer.js",
   "pre-commit": "lint-and-format-staged",
   "lint-staged": {
-    "*.js": ["prettier --single-quote true --tab-width 4 --write", "eslint", "git add"]
+    "*.js": [
+      "prettier",
+      "eslint"
+    ]
   }
 }
