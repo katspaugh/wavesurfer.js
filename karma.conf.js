@@ -3,13 +3,10 @@
 require('babel-register');
 var webpackConfig = require('./build-config/webpack.prod.main.js');
 
-module.exports = function (config) {
+module.exports = function(config) {
     var configuration = {
         basePath: '',
-        frameworks: [
-            'jasmine',
-            'jasmine-matchers'
-        ],
+        frameworks: ['jasmine', 'jasmine-matchers'],
         hostname: 'localhost',
         port: 9876,
         singleRun: true,
@@ -41,17 +38,14 @@ module.exports = function (config) {
             'karma-webpack',
             'karma-jasmine',
             'karma-jasmine-matchers',
-            'karma-chrome-launcher'
+            'karma-chrome-launcher',
+            'karma-coverage'
         ],
-        browsers: [
-            'Chrome'
-        ],
+        browsers: ['Chrome'],
         captureConsole: true,
         colors: true,
-        reporters: ['progress'],
         reporters: ['progress', 'coverage'],
         webpack: webpackConfig,
-
         customLaunchers: {
             Chrome_travis_ci: {
                 base: 'Chrome',
