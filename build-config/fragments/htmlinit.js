@@ -13,6 +13,7 @@ module.exports = {
         )
     },
     output: {
+        path: path.resolve(__dirname, '../', '../', 'dist'),
         filename: 'wavesurfer-[name].js',
         library: ['WaveSurfer', '[name]']
     }
