@@ -325,9 +325,15 @@ export default class MediaElement extends WebAudio {
     destroy() {
         this.pause();
         this.unAll();
-        this.media &&
-            this.media.parentNode &&
+
+        if (
+            this.params.removeMediaElementOnDestroy &&
+            this.media &&
+            this.media.parentNode
+        ) {
             this.media.parentNode.removeChild(this.media);
+        }
+
         this.media = null;
     }
 }
