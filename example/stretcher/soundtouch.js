@@ -20,57 +20,57 @@
 
 (function(window) {
     /**
-* Giving this value for the sequence length sets automatic parameter value
-* according to tempo setting (recommended)
-*/
+     * Giving this value for the sequence length sets automatic parameter value
+     * according to tempo setting (recommended)
+     */
     var USE_AUTO_SEQUENCE_LEN = 0;
 
     /**
-* Default length of a single processing sequence, in milliseconds. This determines to how
-* long sequences the original sound is chopped in the time-stretch algorithm.
-*
-* The larger this value is, the lesser sequences are used in processing. In principle
-* a bigger value sounds better when slowing down tempo, but worse when increasing tempo
-* and vice versa.
-*
-* Increasing this value reduces computational burden and vice versa.
-*/
+     * Default length of a single processing sequence, in milliseconds. This determines to how
+     * long sequences the original sound is chopped in the time-stretch algorithm.
+     *
+     * The larger this value is, the lesser sequences are used in processing. In principle
+     * a bigger value sounds better when slowing down tempo, but worse when increasing tempo
+     * and vice versa.
+     *
+     * Increasing this value reduces computational burden and vice versa.
+     */
     //var DEFAULT_SEQUENCE_MS = 130
     var DEFAULT_SEQUENCE_MS = USE_AUTO_SEQUENCE_LEN;
 
     /**
-* Giving this value for the seek window length sets automatic parameter value
-* according to tempo setting (recommended)
-*/
+     * Giving this value for the seek window length sets automatic parameter value
+     * according to tempo setting (recommended)
+     */
     var USE_AUTO_SEEKWINDOW_LEN = 0;
 
     /**
-* Seeking window default length in milliseconds for algorithm that finds the best possible
-* overlapping location. This determines from how wide window the algorithm may look for an
-* optimal joining location when mixing the sound sequences back together.
-*
-* The bigger this window setting is, the higher the possibility to find a better mixing
-* position will become, but at the same time large values may cause a "drifting" artifact
-* because consequent sequences will be taken at more uneven intervals.
-*
-* If there's a disturbing artifact that sounds as if a constant frequency was drifting
-* around, try reducing this setting.
-*
-* Increasing this value increases computational burden and vice versa.
-*/
+     * Seeking window default length in milliseconds for algorithm that finds the best possible
+     * overlapping location. This determines from how wide window the algorithm may look for an
+     * optimal joining location when mixing the sound sequences back together.
+     *
+     * The bigger this window setting is, the higher the possibility to find a better mixing
+     * position will become, but at the same time large values may cause a "drifting" artifact
+     * because consequent sequences will be taken at more uneven intervals.
+     *
+     * If there's a disturbing artifact that sounds as if a constant frequency was drifting
+     * around, try reducing this setting.
+     *
+     * Increasing this value increases computational burden and vice versa.
+     */
     //var DEFAULT_SEEKWINDOW_MS = 25;
     var DEFAULT_SEEKWINDOW_MS = USE_AUTO_SEEKWINDOW_LEN;
 
     /**
-* Overlap length in milliseconds. When the chopped sound sequences are mixed back together,
-* to form a continuous sound stream, this parameter defines over how long period the two
-* consecutive sequences are let to overlap each other.
-*
-* This shouldn't be that critical parameter. If you reduce the DEFAULT_SEQUENCE_MS setting
-* by a large amount, you might wish to try a smaller value on this.
-*
-* Increasing this value increases computational burden and vice versa.
-*/
+     * Overlap length in milliseconds. When the chopped sound sequences are mixed back together,
+     * to form a continuous sound stream, this parameter defines over how long period the two
+     * consecutive sequences are let to overlap each other.
+     *
+     * This shouldn't be that critical parameter. If you reduce the DEFAULT_SEQUENCE_MS setting
+     * by a large amount, you might wish to try a smaller value on this.
+     *
+     * Increasing this value increases computational burden and vice versa.
+     */
     var DEFAULT_OVERLAP_MS = 8;
 
     // Table for the hierarchical mixing position seeking algorithm
@@ -576,15 +576,15 @@
         },
 
         /**
-    * Sets routine control parameters. These control are certain time constants
-    * defining how the sound is stretched to the desired duration.
-    *
-    * 'sampleRate' = sample rate of the sound
-    * 'sequenceMS' = one processing sequence length in milliseconds (default = 82 ms)
-    * 'seekwindowMS' = seeking window length for scanning the best overlapping
-    *      position (default = 28 ms)
-    * 'overlapMS' = overlapping length (default = 12 ms)
-    */
+         * Sets routine control parameters. These control are certain time constants
+         * defining how the sound is stretched to the desired duration.
+         *
+         * 'sampleRate' = sample rate of the sound
+         * 'sequenceMS' = one processing sequence length in milliseconds (default = 82 ms)
+         * 'seekwindowMS' = seeking window length for scanning the best overlapping
+         *      position (default = 28 ms)
+         * 'overlapMS' = overlapping length (default = 12 ms)
+         */
         setParameters: function(
             aSampleRate,
             aSequenceMS,
@@ -624,9 +624,9 @@
         },
 
         /**
-    * Sets new target tempo. Normal tempo = 'SCALE', smaller values represent slower
-    * tempo, larger faster tempo.
-    */
+         * Sets new target tempo. Normal tempo = 'SCALE', smaller values represent slower
+         * tempo, larger faster tempo.
+         */
         set tempo(newTempo) {
             var intskip;
 
@@ -658,8 +658,8 @@
         },
 
         /**
-    * Calculates overlapInMsec period length in samples.
-    */
+         * Calculates overlapInMsec period length in samples.
+         */
         calculateOverlapLength: function(overlapInMsec) {
             var newOvl;
 
@@ -680,8 +680,8 @@
         },
 
         /**
-    * Calculates processing sequence length according to tempo setting
-    */
+         * Calculates processing sequence length according to tempo setting
+         */
         calcSeqParameters: function() {
             var seq;
             var seek;
@@ -708,15 +708,15 @@
         },
 
         /**
-    * Enables/disables the quick position seeking algorithm.
-    */
+         * Enables/disables the quick position seeking algorithm.
+         */
         set quickSeek(enable) {
             this.bQuickSeek = enable;
         },
 
         /**
-    * Seeks for the optimal overlap-mixing position.
-    */
+         * Seeks for the optimal overlap-mixing position.
+         */
         seekBestOverlapPosition: function() {
             if (this.bQuickSeek) {
                 return this.seekBestOverlapPositionStereoQuick();
@@ -726,13 +726,13 @@
         },
 
         /**
-    * Seeks for the optimal overlap-mixing position. The 'stereo' version of the
-    * routine
-    *
-    * The best position is determined as the position where the two overlapped
-    * sample sequences are 'most alike', in terms of the highest cross-correlation
-    * value over the overlapping period
-    */
+         * Seeks for the optimal overlap-mixing position. The 'stereo' version of the
+         * routine
+         *
+         * The best position is determined as the position where the two overlapped
+         * sample sequences are 'most alike', in terms of the highest cross-correlation
+         * value over the overlapping period
+         */
         seekBestOverlapPositionStereo: function() {
             var bestOffs, bestCorr, corr, i;
 
@@ -759,13 +759,13 @@
         },
 
         /**
-    * Seeks for the optimal overlap-mixing position. The 'stereo' version of the
-    * routine
-    *
-    * The best position is determined as the position where the two overlapped
-    * sample sequences are 'most alike', in terms of the highest cross-correlation
-    * value over the overlapping period
-    */
+         * Seeks for the optimal overlap-mixing position. The 'stereo' version of the
+         * routine
+         *
+         * The best position is determined as the position where the two overlapped
+         * sample sequences are 'most alike', in terms of the highest cross-correlation
+         * value over the overlapping period
+         */
         seekBestOverlapPositionStereoQuick: function() {
             var j, bestOffs, bestCorr, corr, scanCount, corrOffset, tempOffset;
 
@@ -811,9 +811,9 @@
         },
 
         /**
-    * Slopes the amplitude of the 'midBuffer' samples so that cross correlation
-    * is faster to calculate
-    */
+         * Slopes the amplitude of the 'midBuffer' samples so that cross correlation
+         * is faster to calculate
+         */
         precalcCorrReferenceStereo: function() {
             var i, cnt2, temp;
 
@@ -842,16 +842,16 @@
 
         // TODO inline
         /**
-    * Overlaps samples in 'midBuffer' with the samples in 'pInputBuffer' at position
-    * of 'ovlPos'.
-    */
+         * Overlaps samples in 'midBuffer' with the samples in 'pInputBuffer' at position
+         * of 'ovlPos'.
+         */
         overlap: function(ovlPos) {
             this.overlapStereo(2 * ovlPos);
         },
 
         /**
-    * Overlaps samples in 'midBuffer' with the samples in 'pInput'
-    */
+         * Overlaps samples in 'midBuffer' with the samples in 'pInput'
+         */
         overlapStereo: function(pInputPos) {
             var pInput = this._inputBuffer.vector;
             pInputPos += this._inputBuffer.startIndex;
