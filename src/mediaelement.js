@@ -183,11 +183,11 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
-    * Returns the current time in seconds relative to the audioclip's
-    * duration.
-    *
-    * @return {number}
-    */
+     * Returns the current time in seconds relative to the audioclip's
+     * duration.
+     *
+     * @return {number}
+     */
     getCurrentTime() {
         return this.media && this.media.currentTime;
     }

@@ -618,20 +618,20 @@ export default class WebAudio extends util.Observer {
     }
 
     /**
-    * Returns the current time in seconds relative to the audioclip's
-    * duration.
-    *
-    * @return {number}
-    */
+     * Returns the current time in seconds relative to the audioclip's
+     * duration.
+     *
+     * @return {number}
+     */
     getCurrentTime() {
         return this.state.getCurrentTime.call(this);
     }
 
     /**
-    * Returns the current playback rate. (0=no playback, 1=normal playback)
-    *
-    * @return {number}
-    */
+     * Returns the current playback rate. (0=no playback, 1=normal playback)
+     *
+     * @return {number}
+     */
     getPlaybackRate() {
         return this.playbackRate;
     }
