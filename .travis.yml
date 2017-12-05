@@ -15,3 +15,6 @@ script:
   - npm run test
   - npm run build
   - npm run doc
+cache:
+  directories:
+  - node_modules
