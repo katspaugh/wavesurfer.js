@@ -23,7 +23,7 @@
     "lint": "eslint src example spec website",
     "lint-and-format-staged": "lint-staged",
     "doc": "esdoc",
-    "test": "BABEL_ENV=test karma start karma.conf.js"
+    "test": "karma start karma.conf.js"
   },
   "repository": {
     "type": "git",
