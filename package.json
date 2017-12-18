@@ -23,7 +23,8 @@
     "lint": "eslint src example spec website",
     "lint-and-format-staged": "lint-staged",
     "doc": "esdoc",
-    "test": "karma start karma.conf.js"
+    "test": "karma start karma.conf.js",
+    "prepublish": "not-in-install && npm run build || in-install"
   },
   "repository": {
     "type": "git",
@@ -55,6 +56,7 @@
     "eslint-config-prettier": "^2.9.0",
     "eslint-loader": "^1.9.0",
     "eslint-plugin-prettier": "^2.4.0",
+    "in-publish": "^2.0.0",
     "jasmine-core": "^2.8.0",
     "karma": "^1.7.1",
     "karma-chrome-launcher": "2.2.0",
