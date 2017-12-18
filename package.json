@@ -20,7 +20,9 @@
     "build:normal": "npm run build:main && npm run build:plugins && npm run build:htmlinit",
     "build:minified": "npm run build:main:min && npm run build:plugins:min && npm run build:htmlinit:min",
     "format": "prettier 'src/**/*.js*' 'example/**/*.js*' 'spec/**/*.js*' 'website/**/*.js*' 'build-config/**/*.js' karma.conf.js --write",
-    "lint": "eslint src example spec website",
+    "lint": "npm run lint:js && npm run lint:html",
+    "lint:js": "eslint src example spec website",
+    "lint:html": "htmlhint example",
     "lint-and-format-staged": "lint-staged",
     "doc": "esdoc",
     "test": "karma start karma.conf.js",
@@ -56,6 +58,7 @@
     "eslint-config-prettier": "^2.9.0",
     "eslint-loader": "^1.9.0",
     "eslint-plugin-prettier": "^2.4.0",
+    "htmlhint": "^0.9.13",
     "in-publish": "^2.0.0",
     "jasmine-core": "^2.8.0",
     "karma": "^1.7.1",
@@ -78,6 +81,9 @@
     "*.js": [
       "prettier",
       "eslint"
+    ],
+    "*.html": [
+      "htmlhint"
     ]
   }
 }
