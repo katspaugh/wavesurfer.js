@@ -11,3 +11,4 @@ dist/**/*.map
 .DS_Store
 .idea
 .project
+package-lock.json
