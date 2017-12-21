@@ -255,7 +255,7 @@ export default class MediaElement extends WebAudio {
      */
     pause() {
         let promise;
-        
+
         if (this.media) {
             promise = this.media.pause();
         }
