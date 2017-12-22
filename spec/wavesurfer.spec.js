@@ -19,7 +19,7 @@ describe('WaveSurfer/playback:', function() {
             container: '#waveform',
             waveColor: 'violet',
             progressColor: 'purple',
-            cursorColor: 'white',
+            cursorColor: 'white'
         });
     }
 
@@ -116,13 +116,13 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#getWaveColor} */
-    it('should allow getting waveColor', function () {
+    it('should allow getting waveColor', function() {
         var waveColor = wavesurfer.getWaveColor();
         expect(waveColor).toEqual('violet');
     });
 
     /** @test {WaveSurfer#setWaveColor} */
-    it('should allow setting waveColor', function () {
+    it('should allow setting waveColor', function() {
         wavesurfer.setWaveColor('red');
         var waveColor = wavesurfer.getWaveColor();
 
@@ -130,13 +130,13 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#getProgressColor} */
-    it('should allow getting progressColor', function () {
+    it('should allow getting progressColor', function() {
         var progressColor = wavesurfer.getProgressColor();
         expect(progressColor).toEqual('purple');
     });
 
     /** @test {WaveSurfer#setProgressColor} */
-    it('should allow setting progressColor', function () {
+    it('should allow setting progressColor', function() {
         wavesurfer.setProgressColor('green');
         var progressColor = wavesurfer.getProgressColor();
 
@@ -144,13 +144,13 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#getCursorColor} */
-    it('should allow getting cursorColor', function () {
+    it('should allow getting cursorColor', function() {
         var cursorColor = wavesurfer.getCursorColor();
         expect(cursorColor).toEqual('white');
     });
 
     /** @test {WaveSurfer#setCursorColor} */
-    it('should allow setting cursorColor', function () {
+    it('should allow setting cursorColor', function() {
         wavesurfer.setCursorColor('black');
         var cursorColor = wavesurfer.getCursorColor();
 
@@ -158,13 +158,13 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#getHeight} */
-    it('should allow getting height', function () {
+    it('should allow getting height', function() {
         var height = wavesurfer.getHeight();
         expect(height).toEqual(128);
     });
 
     /** @test {WaveSurfer#setHeight} */
-    it('should allow setting height', function () {
+    it('should allow setting height', function() {
         wavesurfer.setHeight(150);
         var height = wavesurfer.getHeight();
 

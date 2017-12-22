@@ -140,9 +140,9 @@ export default class MicrophonePlugin {
     }
 
     /**
-    * Allow user to select audio input device, eg. microphone, and
-    * start the visualization.
-    */
+     * Allow user to select audio input device, eg. microphone, and
+     * start the visualization.
+     */
     start() {
         navigator.mediaDevices
             .getUserMedia(this.constraints)
@@ -151,8 +151,8 @@ export default class MicrophonePlugin {
     }
 
     /**
-    * Pause/resume visualization.
-    */
+     * Pause/resume visualization.
+     */
     togglePlay() {
         if (!this.active) {
             // start it first
@@ -170,8 +170,8 @@ export default class MicrophonePlugin {
     }
 
     /**
-    * Play visualization.
-    */
+     * Play visualization.
+     */
     play() {
         this.paused = false;
 
@@ -179,8 +179,8 @@ export default class MicrophonePlugin {
     }
 
     /**
-    * Pause visualization.
-    */
+     * Pause visualization.
+     */
     pause() {
         this.paused = true;
 
@@ -190,9 +190,9 @@ export default class MicrophonePlugin {
     }
 
     /**
-    * Stop the device stream and remove any remaining waveform drawing from
-    * the wavesurfer canvas.
-    */
+     * Stop the device stream and remove any remaining waveform drawing from
+     * the wavesurfer canvas.
+     */
     stop() {
         if (this.active) {
             // stop visualization and device
@@ -204,8 +204,8 @@ export default class MicrophonePlugin {
     }
 
     /**
-    * Stop the device and the visualization.
-    */
+     * Stop the device and the visualization.
+     */
     stopDevice() {
         this.active = false;
 
@@ -235,8 +235,8 @@ export default class MicrophonePlugin {
     }
 
     /**
-    * Connect the media sources that feed the visualization.
-    */
+     * Connect the media sources that feed the visualization.
+     */
     connect() {
         if (this.stream !== undefined) {
             // Create an AudioNode from the stream.
@@ -257,8 +257,8 @@ export default class MicrophonePlugin {
     }
 
     /**
-    * Disconnect the media sources that feed the visualization.
-    */
+     * Disconnect the media sources that feed the visualization.
+     */
     disconnect() {
         if (this.mediaStreamSource !== undefined) {
             this.mediaStreamSource.disconnect();
@@ -271,8 +271,8 @@ export default class MicrophonePlugin {
     }
 
     /**
-    * Redraw the waveform.
-    */
+     * Redraw the waveform.
+     */
     reloadBuffer(event) {
         if (!this.paused) {
             this.wavesurfer.empty();
@@ -281,10 +281,10 @@ export default class MicrophonePlugin {
     }
 
     /**
-    * Audio input device is ready.
-    *
-    * @param {LocalMediaStream} stream The microphone's media stream.
-    */
+     * Audio input device is ready.
+     *
+     * @param {LocalMediaStream} stream The microphone's media stream.
+     */
     gotStream(stream) {
         this.stream = stream;
         this.active = true;
@@ -297,30 +297,30 @@ export default class MicrophonePlugin {
     }
 
     /**
-    * Device error callback.
-    */
+     * Device error callback.
+     */
     deviceError(code) {
         // notify listeners
         this.fireEvent('deviceError', code);
     }
 
     /**
-    * Extract browser version out of the provided user agent string.
-    * @param {!string} uastring userAgent string.
-    * @param {!string} expr Regular expression used as match criteria.
-    * @param {!number} pos position in the version string to be returned.
-    * @return {!number} browser version.
-    */
+     * Extract browser version out of the provided user agent string.
+     * @param {!string} uastring userAgent string.
+     * @param {!string} expr Regular expression used as match criteria.
+     * @param {!number} pos position in the version string to be returned.
+     * @return {!number} browser version.
+     */
     extractVersion(uastring, expr, pos) {
         const match = uastring.match(expr);
         return match && match.length >= pos && parseInt(match[pos], 10);
     }
 
     /**
-    * Browser detector.
-    * @return {object} result containing browser, version and minVersion
-    *     properties.
-    */
+     * Browser detector.
+     * @return {object} result containing browser, version and minVersion
+     *     properties.
+     */
     detectBrowser() {
         // Returned result object.
         const result = {};

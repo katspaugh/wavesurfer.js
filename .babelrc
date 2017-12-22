@@ -1,11 +1,8 @@
 {
     "presets": [
-        ["es2015", "stage-0"]
+        ["env"]
     ],
-    "plugins": [
-        "transform-class-properties",
-        "add-module-exports"
-    ],
+    "plugins": ["transform-class-properties", "add-module-exports"],
     "env": {
         "test": {
             "plugins": [ "istanbul" ]

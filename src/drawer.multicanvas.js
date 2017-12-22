@@ -264,7 +264,7 @@ export default class MultiCanvas extends Drawer {
             channelIndex,
             start,
             end,
-            ({ absmax, hasMinVals, height, offsetY, halfH }) => {
+            ({ absmax, hasMinVals, height, offsetY, halfH, peaks }) => {
                 // if drawBars was called within ws.empty we don't pass a start and
                 // don't want anything to happen
                 if (start === undefined) {
@@ -274,7 +274,13 @@ export default class MultiCanvas extends Drawer {
                 const peakIndexScale = hasMinVals ? 2 : 1;
                 const length = peaks.length / peakIndexScale;
                 const bar = this.params.barWidth * this.params.pixelRatio;
-                const gap = Math.max(this.params.pixelRatio, ~~(bar / 2));
+                const gap =
+                    this.params.barGap === null
+                        ? Math.max(this.params.pixelRatio, ~~(bar / 2))
+                        : Math.max(
+                              this.params.pixelRatio,
+                              this.params.barGap * this.params.pixelRatio
+                          );
                 const step = bar + gap;
 
                 const scale = length / this.width;
@@ -315,7 +321,7 @@ export default class MultiCanvas extends Drawer {
             channelIndex,
             start,
             end,
-            ({ absmax, hasMinVals, height, offsetY, halfH }) => {
+            ({ absmax, hasMinVals, height, offsetY, halfH, peaks }) => {
                 if (!hasMinVals) {
                     const reflectedPeaks = [];
                     const len = peaks.length;
@@ -527,14 +533,12 @@ export default class MultiCanvas extends Drawer {
                             this.params.height *
                             this.params.pixelRatio
                     );
-                    channels.forEach((channelPeaks, i) =>
+                    return channels.forEach((channelPeaks, i) =>
                         this.prepareDraw(channelPeaks, i, start, end, fn)
                     );
-                    return;
                 }
                 peaks = channels[0];
             }
-
             // calculate maximum modulation value, either from the barHeight
             // parameter or if normalize=true from the largest value in the peak
             // set
@@ -557,7 +561,8 @@ export default class MultiCanvas extends Drawer {
                 hasMinVals: hasMinVals,
                 height: height,
                 offsetY: offsetY,
-                halfH: halfH
+                halfH: halfH,
+                peaks: peaks
             });
         })();
     }
