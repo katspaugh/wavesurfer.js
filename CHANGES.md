@@ -1,8 +1,30 @@
 wavesurfer.js changelog
 =======================
 
+next (unreleased)
+-----------------
+
+- MediaElement backend: Update progress on pause events (#1267) 
+
+2.0.1 (18.12.2017)
+------------------
+
+- Core library and the plugins were refactored to be modular so it can be used with a module bundler
+- Code updated to ES6/ES7 syntax and is transpiled with babel and webpack
+- New plugin API
+- `MultiCanvas` renderer is now the default
+- Added getters and setters for height and color options (#1145)
+- Introduce option to prevent removing media element on destroy (#1163)
+- Added duration parameter for the load function (#1239)
+- New soundtouch.js filter to preserve pitch when changing tempo (#149)
+- Add `getPlaybackRate` method (#1022) 
+- Switched to BSD license (#1060)
+- Added `setCurrentTime` method
+- Added `util.debounce` (#993) 
+
 1.2.4 (11.11.2016)
 ------------------
+
 - Fix a problem of Web Audio not playing in Safari on initial load (#749)
 
 1.2.3 (09.11.2016)

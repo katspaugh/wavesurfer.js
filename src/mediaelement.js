@@ -23,7 +23,8 @@ export default class MediaElement extends WebAudio {
             paused: true,
             playbackRate: 1,
             play() {},
-            pause() {}
+            pause() {},
+            volume: 0
         };
 
         /** @private */
@@ -34,6 +35,8 @@ export default class MediaElement extends WebAudio {
         this.peaks = null;
         /** @private */
         this.playbackRate = 1;
+        /** @private */
+        this.volume = 1;
         /** @private */
         this.buffer = null;
         /** @private */
@@ -68,6 +71,11 @@ export default class MediaElement extends WebAudio {
         };
 
         this.on('play', onAudioProcess);
+
+        // Update the progress one more time to prevent it from being stuck in case of lower framerates
+        this.on('pause', () => {
+            this.fireEvent('audioprocess', this.getCurrentTime());
+        });
     }
 
     /**
@@ -154,6 +162,7 @@ export default class MediaElement extends WebAudio {
         this.onPlayEnd = null;
         this.buffer = null;
         this.setPlaybackRate(this.playbackRate);
+        this.setVolume(this.volume);
     }
 
     /**
@@ -306,7 +315,7 @@ export default class MediaElement extends WebAudio {
      * @return {number} value A floating point value between 0 and 1.
      */
     getVolume() {
-        return this.media.volume;
+        return this.volume || this.media.volume;
     }
 
     /**
@@ -315,7 +324,8 @@ export default class MediaElement extends WebAudio {
      * @param {number} value A floating point value between 0 and 1.
      */
     setVolume(value) {
-        this.media.volume = value;
+        this.volume = value;
+        this.media.volume = this.volume;
     }
 
     /**
