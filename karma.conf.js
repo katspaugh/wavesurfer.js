@@ -1,5 +1,7 @@
 /* eslint-env node */
 
+process.env.BABEL_ENV = 'test';
+
 require('babel-register');
 var webpackConfig = require('./build-config/webpack.prod.main.js');
 
