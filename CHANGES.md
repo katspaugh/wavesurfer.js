@@ -5,6 +5,7 @@ next (unreleased)
 -----------------
 
 - MediaElement backend: Update progress on pause events (#1267) 
+- Play/pause now properly return Promises (#1229)
 
 2.0.1 (18.12.2017)
 ------------------
