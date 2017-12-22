@@ -275,7 +275,7 @@ export default class MultiCanvas extends Drawer {
                 const length = peaks.length / peakIndexScale;
                 const bar = this.params.barWidth * this.params.pixelRatio;
                 const gap =
-                    this.params.barGap === undefined
+                    this.params.barGap === null
                         ? Math.max(this.params.pixelRatio, ~~(bar / 2))
                         : Math.max(
                               this.params.pixelRatio,
