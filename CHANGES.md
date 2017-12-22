@@ -4,6 +4,8 @@ wavesurfer.js changelog
 next (unreleased)
 -----------------
 
+- Added `barGap` parameter to set the space between bars (#1058)
+- Replace deprecated gain.value setter (#1277)
 - MediaElement backend: Update progress on pause events (#1267) 
 - Play/pause now properly return Promises (#1229)
 

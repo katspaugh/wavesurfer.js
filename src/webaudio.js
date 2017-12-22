@@ -281,7 +281,7 @@ export default class WebAudio extends util.Observer {
      * @param {number} value A floating point value between 0 and 1.
      */
     setVolume(value) {
-        this.gainNode.gain.value = value;
+        this.gainNode.gain.setValueAtTime(value, this.ac.currentTime);
     }
 
     /**
