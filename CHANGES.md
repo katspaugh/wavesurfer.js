@@ -4,6 +4,7 @@ wavesurfer.js changelog
 next (unreleased)
 -----------------
 
+- Replace deprecated gain.value setter (#1277)
 - MediaElement backend: Update progress on pause events (#1267) 
 
 2.0.1 (18.12.2017)
