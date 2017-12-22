@@ -28,6 +28,8 @@ import PeakCache from './peakcache';
  * you don't have to set this manually. MediaElement is a fallback for
  * unsupported browsers.
  * @property {number} barHeight=1 The height of the wave
+ * @property {number} barGap=1 The optional spacing between bars of the wave,
+ * if not provided will be calculated in legacy format.
  * @property {boolean} closeAudioContext=false Close and nullify all audio
  * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
