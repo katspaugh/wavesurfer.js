@@ -1142,7 +1142,6 @@ export default class WaveSurfer extends util.Observer {
      */
     load(url, peaks, preload, duration) {
         this.empty();
-        this.isMuted = false;
 
         if (preload) {
             // check whether the preload attribute will be usable and if not log
