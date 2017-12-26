@@ -246,8 +246,9 @@ export default class MediaElement extends WebAudio {
      *
      * @param {number} start Start offset in seconds, relative to the beginning
      * of a clip.
-     * @param {number} end When to stop relative to the beginning of a clip.
+     * @param {number} end When to stop, relative to the beginning of a clip.
      * @emits MediaElement#play
+     * @return {Promise}
      */
     play(start, end) {
         this.seekTo(start);
@@ -261,6 +262,7 @@ export default class MediaElement extends WebAudio {
      * Pauses the loaded audio.
      *
      * @emits MediaElement#pause
+     * @return {Promise}
      */
     pause() {
         let promise;
