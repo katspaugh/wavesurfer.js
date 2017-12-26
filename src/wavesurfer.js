@@ -647,6 +647,7 @@ export default class WaveSurfer extends util.Observer {
      * @param {?number} start Position to start at
      * @param {?number} end Position to end at
      * @emits WaveSurfer#interaction
+     * @return {Promise}
      * @example
      * // play from second 1 to 5
      * wavesurfer.play(1, 5);
@@ -660,6 +661,7 @@ export default class WaveSurfer extends util.Observer {
      * Stops playback
      *
      * @example wavesurfer.pause();
+     * @return {Promise}
      */
     pause() {
         if (!this.backend.isPaused()) {
@@ -671,6 +673,7 @@ export default class WaveSurfer extends util.Observer {
      * Toggle playback
      *
      * @example wavesurfer.playPause();
+     * @return {Promise}
      */
     playPause() {
         return this.backend.isPaused() ? this.play() : this.pause();
