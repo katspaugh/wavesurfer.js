@@ -16,7 +16,7 @@
         <script src="../../dist/wavesurfer.min.js"></script>
 
         <!-- media session plugin -->
-        <script src="../../dist/plugin/wavesurfer.mediasession.min.js"></script>
+        <script src="../../dist/plugin/wavesurfer.mediasession.js"></script>
 
         <!-- App -->
         <script src="app.js"></script>
@@ -65,7 +65,7 @@
                       </ol>
                     </p>
                     <p>
-                        <a class="btn btn-large btn-success" href="../../plugin/wavesurfer.mediasession.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (1.2 KB)</a>
+                        <a class="btn btn-large btn-success" href="../../dist/plugin/wavesurfer.mediasession.js" itemprop="downloadUrl">Download <strong>the plugin</strong></a>
                     </p>
                 </div>
 
@@ -73,31 +73,27 @@
                     <h4>Quick Start</h4>
 
                     <noindex><p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
+<pre><code>
+var wavesurfer = WaveSurfer.create({
   container     : '#waveform',
   waveColor     : 'black',
-  backend       : 'MediaElement'
-});
-
-var msPlugin = Object.create(WaveSurfer.MediaSession);
-
-msPlugin.init({
-    wavesurfer: wavesurfer,
-    metadata: {
-        title: 'Wavesurfer.js Example',
-        artist: 'The Wavesurfer.js Project',
-        album: 'Media Session Example',
-        artwork: [
-          {src: 'https://dummyimage.com/96x96',   sizes: '96x96',   type: 'image/png'},
-          {src: 'https://dummyimage.com/128x128', sizes: '128x128', type: 'image/png'},
-          {src: 'https://dummyimage.com/192x192', sizes: '192x192', type: 'image/png'},
-          {src: 'https://dummyimage.com/256x256', sizes: '256x256', type: 'image/png'},
-          {src: 'https://dummyimage.com/384x384', sizes: '384x384', type: 'image/png'},
-          {src: 'https://dummyimage.com/512x512', sizes: '512x512', type: 'image/png'},
-        ]
-    }
+  plugins: [
+    WaveSurfer.microphone.create({
+        metadata: {
+            title: 'Wavesurfer.js Example',
+            artist: 'The Wavesurfer.js Project',
+            album: 'Media Session Example',
+            artwork: [
+              {src: 'https://dummyimage.com/96x96',   sizes: '96x96',   type: 'image/png'},
+              {src: 'https://dummyimage.com/128x128', sizes: '128x128', type: 'image/png'},
+              {src: 'https://dummyimage.com/192x192', sizes: '192x192', type: 'image/png'},
+              {src: 'https://dummyimage.com/256x256', sizes: '256x256', type: 'image/png'},
+              {src: 'https://dummyimage.com/384x384', sizes: '384x384', type: 'image/png'},
+              {src: 'https://dummyimage.com/512x512', sizes: '512x512', type: 'image/png'},
+            ]
+        }
+    })
+  ]
 });
 
 // load audio from existing media element

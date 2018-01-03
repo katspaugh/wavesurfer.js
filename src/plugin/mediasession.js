@@ -83,6 +83,10 @@ export default class MediaSessionPlugin {
         }
     }
 
+    init() {}
+
+    destroy() {}
+
     update() {
         if (typeof MediaMetadata === typeof Function) {
             // set metadata
