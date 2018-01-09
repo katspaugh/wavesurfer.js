@@ -36,6 +36,7 @@ var WaveSurfer = {
         normalize     : false,
         renderer      : 'MultiCanvas',
         scrollParent  : false,
+        sendCredentials: false,
         skipLength    : 2,
         splitChannels : false,
         waveColor     : '#999',
@@ -518,7 +519,8 @@ var WaveSurfer = {
 
         var ajax = WaveSurfer.util.ajax({
             url: url,
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
+            sendCredentials: this.params.sendCredentials,
         });
 
         this.currentAjax = ajax;
