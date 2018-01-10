@@ -1,12 +1,12 @@
 'use strict';
 
 // Create an instance
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer = {};
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function() {
     // Init wavesurfer
-    wavesurfer.init({
+    wavesurfer = WaveSurfer.create({
         container: '#waveform',
         waveColor: 'violet',
         progressColor: 'purple',
