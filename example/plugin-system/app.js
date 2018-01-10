@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
         spectrogram: {
             container: '#wave-spectrogram'
         },
+        cursor: {},
         regions: {
             regions: [
                 {
