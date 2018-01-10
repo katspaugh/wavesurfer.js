@@ -1,12 +1,13 @@
 wavesurfer.js changelog
 =======================
 
-next (unreleased)
------------------
+2.0.2 (10.01.2018)
+------------------
 
 - Added `barGap` parameter to set the space between bars (#1058)
 - Replace deprecated gain.value setter (#1277)
 - MediaElement backend: Update progress on pause events (#1267) 
+- Restore missing MediaSession plugin (#1286)
 
 2.0.1 (18.12.2017)
 ------------------
