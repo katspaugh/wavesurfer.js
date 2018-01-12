@@ -11,6 +11,7 @@ class Region {
         this.wavesurfer = ws;
         this.wrapper = ws.drawer.wrapper;
         this.style = ws.util.style;
+        this.util = ws.util;
 
         this.id = params.id == null ? ws.util.getId() : params.id;
         this.start = Number(params.start) || 0;
@@ -296,6 +297,7 @@ class Region {
                 let drag;
                 let maxScroll;
                 let resize;
+                let updated = false;
                 let scrollDirection;
                 let wrapperRect;
 
@@ -369,7 +371,11 @@ class Region {
                         drag = false;
                         scrollDirection = null;
                         resize = false;
+                    }
 
+                    if (updated) {
+                        updated = false;
+                        this.util.preventClick();
                         this.fireEvent('update-end', e);
                         this.wavesurfer.fireEvent('region-update-end', this, e);
                     }
@@ -394,11 +400,13 @@ class Region {
 
                         // Drag
                         if (this.drag && drag) {
+                            updated = updated || !!delta;
                             this.onDrag(delta);
                         }
 
                         // Resize
                         if (this.resize && resize) {
+                            updated = updated || !!delta;
                             this.onResize(delta, resize);
                         }
 
@@ -748,6 +756,7 @@ export default class RegionsPlugin {
             scrollDirection = null;
 
             if (region) {
+                this.util.preventClick();
                 region.fireEvent('update-end', e);
                 this.wavesurfer.fireEvent('region-update-end', region, e);
             }
@@ -756,7 +765,12 @@ export default class RegionsPlugin {
         };
         this.wrapper.addEventListener('mouseup', eventUp);
         this.wrapper.addEventListener('touchend', eventUp);
+
+        document.body.addEventListener('mouseup', eventUp);
+        document.body.addEventListener('touchend', eventUp);
         this.on('disable-drag-selection', () => {
+            document.body.removeEventListener('mouseup', eventUp);
+            document.body.removeEventListener('touchend', eventUp);
             this.wrapper.removeEventListener('touchend', eventUp);
             this.wrapper.removeEventListener('mouseup', eventUp);
         });
