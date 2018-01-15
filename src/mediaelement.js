@@ -302,6 +302,21 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
+     * Set the sink id for the media player
+     *
+     * @param {string} deviceId String value representing audio device id.
+     */
+    setSinkId(deviceId) {
+        if (deviceId) {
+            if (!this.media.setSinkId) {
+                console.warn("setSinkId is not supported in your browser")
+                return;
+            }
+            this.media.setSinkId(deviceId);
+        }
+    }
+
+    /**
      * Get the current volume
      *
      * @return {number} value A floating point value between 0 and 1.
