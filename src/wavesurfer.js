@@ -791,7 +791,7 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Set the playback volume.
      *
-     * @param {number} deviceId String value representing underlying output device
+     * @param {string} deviceId String value representing underlying output device
      */
     setSinkId(deviceId) {
         this.backend.setSinkId(deviceId);

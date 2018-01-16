@@ -282,10 +282,14 @@ export default class WebAudio extends util.Observer {
      */
     setSinkId(deviceId) {
         if (deviceId) {
+            /**
+             * The webaudio api doesn't currently support setting the device
+             * output. Here we create an HTMLAudioElement, connect the
+             * webaudio stream to that element and setSinkId there.
+             */
             let audio = new window.Audio();
             if (!audio.setSinkId) {
-                console.warn('setSinkId is not supported in your browser');
-                return;
+                throw new Error('setSinkId is not supported in your browser');
             }
             audio.autoplay = true;
             var dest = this.ac.createMediaStreamDestination();
