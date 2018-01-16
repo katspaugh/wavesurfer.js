@@ -276,6 +276,31 @@ export default class WebAudio extends util.Observer {
     }
 
     /**
+     * Set the sink id for the media player
+     *
+     * @param {string} deviceId String value representing audio device id.
+     */
+    setSinkId(deviceId) {
+        if (deviceId) {
+            /**
+             * The webaudio api doesn't currently support setting the device
+             * output. Here we create an HTMLAudioElement, connect the
+             * webaudio stream to that element and setSinkId there.
+             */
+            let audio = new window.Audio();
+            if (!audio.setSinkId) {
+                throw new Error('setSinkId is not supported in your browser');
+            }
+            audio.autoplay = true;
+            var dest = this.ac.createMediaStreamDestination();
+            this.gainNode.disconnect();
+            this.gainNode.connect(dest);
+            audio.src = URL.createObjectURL(dest.stream);
+            audio.setSinkId(deviceId);
+        }
+    }
+
+    /**
      * Set the audio volume
      *
      * @param {number} value A floating point value between 0 and 1.

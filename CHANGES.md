@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+next (unreleased)
+-----------------
+
+- Added support for selecting different audio output devices using `setSinkId` (#1293)
+
 2.0.2 (10.01.2018)
 ------------------
 
