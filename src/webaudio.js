@@ -284,7 +284,7 @@ export default class WebAudio extends util.Observer {
         if (deviceId) {
             let audio = new window.Audio();
             if (!audio.setSinkId) {
-                console.warn("setSinkId is not supported in your browser")
+                console.warn('setSinkId is not supported in your browser')
                 return;
             }
             audio.autoplay = true;
