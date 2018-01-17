@@ -5,6 +5,7 @@ next (unreleased)
 -----------------
 
 - Added support for selecting different audio output devices using `setSinkId` (#1293)
+- Replace deprecated playbackRate.value setter (#1302)
 
 2.0.2 (10.01.2018)
 ------------------

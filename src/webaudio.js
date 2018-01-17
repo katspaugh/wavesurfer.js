@@ -516,11 +516,14 @@ export default class WebAudio extends util.Observer {
         this.disconnectSource();
         this.source = this.ac.createBufferSource();
 
-        //adjust for old browsers.
+        // adjust for old browsers
         this.source.start = this.source.start || this.source.noteGrainOn;
         this.source.stop = this.source.stop || this.source.noteOff;
 
-        this.source.playbackRate.value = this.playbackRate;
+        this.source.playbackRate.setValueAtTime(
+            this.playbackRate,
+            this.ac.currentTime
+        );
         this.source.buffer = this.buffer;
         this.source.connect(this.analyser);
     }
