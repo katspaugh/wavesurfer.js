@@ -794,7 +794,7 @@ export default class WaveSurfer extends util.Observer {
      * @param {string} deviceId String value representing underlying output device
      */
     setSinkId(deviceId) {
-        this.backend.setSinkId(deviceId);
+        return this.backend.setSinkId(deviceId);
     }
 
     /**

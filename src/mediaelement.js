@@ -311,8 +311,10 @@ export default class MediaElement extends WebAudio {
             if (!this.media.setSinkId) {
                 throw new Error('setSinkId is not supported in your browser');
             }
-            this.media.setSinkId(deviceId);
+            return this.media.setSinkId(deviceId);
         }
+
+        return Promise.reject(new Error('Invalid deviceId: ' + deviceId));
     }
 
     /**

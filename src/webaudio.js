@@ -296,7 +296,10 @@ export default class WebAudio extends util.Observer {
             this.gainNode.disconnect();
             this.gainNode.connect(dest);
             audio.src = URL.createObjectURL(dest.stream);
-            audio.setSinkId(deviceId);
+
+            return audio.setSinkId(deviceId);
+        } else {
+            return Promise.reject(new Error('Invalid deviceId: ' + deviceId));
         }
     }
 
