@@ -289,7 +289,9 @@ export default class WebAudio extends util.Observer {
              */
             let audio = new window.Audio();
             if (!audio.setSinkId) {
-                throw new Error('setSinkId is not supported in your browser');
+                return Promise.reject(
+                    new Error('setSinkId is not supported in your browser')
+                );
             }
             audio.autoplay = true;
             var dest = this.ac.createMediaStreamDestination();
