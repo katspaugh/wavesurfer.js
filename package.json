@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.min.js",
   "directories": {
@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
-    "babel-eslint": "^8.0.3",
+    "babel-eslint": "^8.2.1",
     "babel-loader": "^7.1.2",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-istanbul": "^4.1.5",
@@ -54,14 +54,14 @@
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-integrate-test-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^4.13.1",
+    "eslint": "^4.15.0",
     "eslint-config-prettier": "^2.9.0",
     "eslint-loader": "^1.9.0",
     "eslint-plugin-prettier": "^2.4.0",
     "htmlhint": "^0.9.13",
     "in-publish": "^2.0.0",
     "jasmine-core": "^2.8.0",
-    "karma": "^1.7.1",
+    "karma": "^2.0.0",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "1.1.1",
@@ -70,7 +70,7 @@
     "lint-staged": "^6.0.0",
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
-    "prettier": "^1.9.2",
+    "prettier": "^1.10.1",
     "webpack": "3",
     "webpack-dev-server": "2",
     "webpack-merge": "^4.1.1"
