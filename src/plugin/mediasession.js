@@ -36,7 +36,7 @@
  */
 export default class MediaSessionPlugin {
     /**
-     * MediaSEssion plugin definition factory
+     * MediaSession plugin definition factory
      *
      * This function must be used to create a plugin definition which can be
      * used by wavesurfer to correctly instantiate the plugin.
