@@ -246,23 +246,33 @@ export default class MediaElement extends WebAudio {
      *
      * @param {number} start Start offset in seconds, relative to the beginning
      * of a clip.
-     * @param {number} end When to stop relative to the beginning of a clip.
+     * @param {number} end When to stop, relative to the beginning of a clip.
      * @emits MediaElement#play
+     * @return {Promise}
      */
     play(start, end) {
         this.seekTo(start);
-        this.media.play();
+        const promise = this.media.play();
         end && this.setPlayEnd(end);
+
+        return promise;
     }
 
     /**
      * Pauses the loaded audio.
      *
      * @emits MediaElement#pause
+     * @return {Promise}
      */
     pause() {
-        this.media && this.media.pause();
+        let promise;
+
+        if (this.media) {
+            promise = this.media.pause();
+        }
         this.clearPlayEnd();
+
+        return promise;
     }
 
     /** @private */
@@ -299,6 +309,24 @@ export default class MediaElement extends WebAudio {
             return super.getPeaks(length, first, last);
         }
         return this.peaks || [];
+    }
+
+    /**
+     * Set the sink id for the media player
+     *
+     * @param {string} deviceId String value representing audio device id.
+     */
+    setSinkId(deviceId) {
+        if (deviceId) {
+            if (!this.media.setSinkId) {
+                return Promise.reject(
+                    new Error('setSinkId is not supported in your browser')
+                );
+            }
+            return this.media.setSinkId(deviceId);
+        }
+
+        return Promise.reject(new Error('Invalid deviceId: ' + deviceId));
     }
 
     /**

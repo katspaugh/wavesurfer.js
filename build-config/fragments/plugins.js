@@ -33,6 +33,7 @@ module.exports = {
         'spectrogram',
         'cursor',
         'microphone',
+        'mediasession',
         'elan'
     ]),
     output: {
