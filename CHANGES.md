@@ -1,8 +1,8 @@
 wavesurfer.js changelog
 =======================
 
-next (unreleased)
------------------
+2.0.3 (22.01.2018)
+------------------
 
 - Added support for selecting different audio output devices using `setSinkId` (#1293)
 - Replace deprecated playbackRate.value setter (#1302)
