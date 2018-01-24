@@ -13,6 +13,13 @@ export default function ajax(options) {
     let fired100 = false;
     xhr.open(options.method || 'GET', options.url, true);
     xhr.responseType = options.responseType || 'json';
+
+    if (options.requestHeaders) {
+        for (let header in options.requestHeaders) {
+            xhr.setRequestHeader(header.key, header.value);
+        }
+    }
+
     xhr.addEventListener('progress', e => {
         instance.fireEvent('progress', e);
         if (e.lengthComputable && e.loaded == e.total) {
