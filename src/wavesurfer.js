@@ -1170,7 +1170,9 @@ export default class WaveSurfer extends util.Observer {
                 'Backend is not of type MediaElement':
                     this.params.backend !== 'MediaElement',
                 'Url is not of type string or object':
-                    typeof url !== 'string' || typeof url !== 'object'
+                    typeof url !== 'string' || typeof url !== 'object',
+                'Url object does not contain a "url" property':
+                    typeof url === 'object' && typeof url.url !== 'string'
             };
             const activeReasons = Object.keys(preloadIgnoreReasons).filter(
                 reason => preloadIgnoreReasons[reason]
