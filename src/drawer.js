@@ -221,8 +221,12 @@ export default class Drawer extends util.Observer {
      */
     getScrollX() {
         var maxScroll = this.params.scrollParent
-            ? this.wrapper.scrollWidth - this.getWidth()
+            ? ~~(
+                  this.wrapper.scrollWidth * this.params.pixelRatio -
+                  this.getWidth()
+              )
             : this.getWidth();
+
         return Math.min(
             maxScroll,
             Math.max(
