@@ -633,7 +633,7 @@ export default class WaveSurfer extends util.Observer {
      * seconds, 60 means 1 minute
      */
     setCurrentTime(seconds) {
-        if (this.getDuration() >= seconds) {
+        if (seconds >= this.getDuration()) {
             this.seekTo(1);
         } else {
             this.seekTo(seconds / this.getDuration());
