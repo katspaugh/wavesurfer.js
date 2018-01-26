@@ -293,14 +293,20 @@ export default class MinimapPlugin {
         // the following event listeners will be destroyed by using
         // this.unAll() and nullifying the DOM node references after
         // removing them
-        this.on('click', (e, position) => {
-            if (seek) {
-                this.progress(position);
-                this.wavesurfer.seekAndCenter(position);
-            } else {
-                seek = true;
-            }
-        });
+        if (this.params.interact) {
+            this.drawer.wrapper.addEventListener('click', event => {
+                this.fireEvent('click', event, this.drawer.handleEvent(event));
+            });
+
+            this.on('click', (event, position) => {
+                if (seek) {
+                    this.drawer.progress(position);
+                    this.wavesurfer.seekAndCenter(position);
+                } else {
+                    seek = true;
+                }
+            });
+        }
 
         if (this.params.showOverview) {
             this.overviewRegion.addEventListener('mousedown', event => {
