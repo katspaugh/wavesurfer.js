@@ -1,6 +1,12 @@
 wavesurfer.js changelog
 =======================
 
+next (unreleased)
+-----------------
+
+- Fix `setCurrentTime` method (#1292)
+- Minimap plugin: fix initial load, canvas click did not work (#1265)
+
 2.0.3 (22.01.2018)
 ------------------
 
