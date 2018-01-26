@@ -220,20 +220,23 @@ export default class Drawer extends util.Observer {
      * @return {number}
      */
     getScrollX() {
-        var maxScroll = this.params.scrollParent
-            ? ~~(
-                  this.wrapper.scrollWidth * this.params.pixelRatio -
-                  this.getWidth()
-              )
-            : this.getWidth();
+        const pixelRatio = this.params.pixelRatio;
+        let x = Math.round(this.wrapper.scrollLeft * pixelRatio);
 
-        return Math.min(
-            maxScroll,
-            Math.max(
-                0,
-                Math.round(this.wrapper.scrollLeft * this.params.pixelRatio)
-            )
-        );
+        // In cases of elastic scroll (safari with mouse wheel) you can
+        // scroll beyond the limits of the container
+        // Calculate and floor the scrollable extent to make sure an out
+        // of bounds value is not returned
+        // https://github.com/katspaugh/wavesurfer.js/issues/1312
+        if (this.params.scrollParent) {
+            const maxScroll = ~~(
+                this.wrapper.scrollWidth * pixelRatio -
+                this.getWidth()
+            );
+            x = Math.min(maxScroll, Math.max(0, x));
+        }
+
+        return x;
     }
 
     /**
