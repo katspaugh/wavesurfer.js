@@ -220,7 +220,7 @@ export default class Drawer extends util.Observer {
      * @return {number}
      */
     getScrollX() {
-        return Math.round(this.wrapper.scrollLeft * this.params.pixelRatio);
+        return Math.min(this.getWidth(), Math.max(0, Math.round(this.wrapper.scrollLeft * this.params.pixelRatio)));
     }
 
     /**
