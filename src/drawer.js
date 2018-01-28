@@ -227,7 +227,7 @@ export default class Drawer extends util.Observer {
         // scroll beyond the limits of the container
         // Calculate and floor the scrollable extent to make sure an out
         // of bounds value is not returned
-        // https://github.com/katspaugh/wavesurfer.js/issues/1312
+        // Ticket #1312
         if (this.params.scrollParent) {
             const maxScroll = ~~(
                 this.wrapper.scrollWidth * pixelRatio -
