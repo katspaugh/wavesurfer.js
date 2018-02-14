@@ -1,8 +1,8 @@
 wavesurfer.js changelog
 =======================
 
-next (unreleased)
------------------
+2.0.4 (14.02.2018)
+------------------
 
 - Added `xhr` option to configure util.ajax for authorization (#1310, #1038, #1100)
 - Fix `setCurrentTime` method (#1292)
