@@ -4,6 +4,7 @@ wavesurfer.js changelog
 next (unreleased)
 -----------------
 
+- Added `xhr` option to configure util.ajax for authorization (#1310, #1038, #1100)
 - Fix `setCurrentTime` method (#1292)
 - Fix `getScrollX` method: Check bounds when `scrollParent: true` (#1312)
 - Minimap plugin: fix initial load, canvas click did not work (#1265)

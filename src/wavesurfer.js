@@ -89,6 +89,7 @@ import PeakCache from './peakcache';
  * the channels of the audio
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
+ * @property {object} xhr={} XHR options.
  */
 
 /**
@@ -207,7 +208,8 @@ export default class WaveSurfer extends util.Observer {
         scrollParent: false,
         skipLength: 2,
         splitChannels: false,
-        waveColor: '#999'
+        waveColor: '#999',
+        xhr: {}
     };
 
     /** @private */
@@ -1308,7 +1310,8 @@ export default class WaveSurfer extends util.Observer {
     getArrayBuffer(url, callback) {
         const ajax = util.ajax({
             url: url,
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
+            xhr: this.params.xhr
         });
 
         this.currentAjax = ajax;
