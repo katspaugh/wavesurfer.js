@@ -5,8 +5,9 @@ next (unreleased)
 -----------------
 
 - Fix `setCurrentTime` method (#1292)
-- Minimap plugin: fix initial load, canvas click did not work (#1265)
 - Fix `getScrollX` method: Check bounds when `scrollParent: true` (#1312)
+- Minimap plugin: fix initial load, canvas click did not work (#1265)
+- Regions plugin: fix dragging a region utside of scrollbar (#430)
 
 2.0.3 (22.01.2018)
 ------------------
