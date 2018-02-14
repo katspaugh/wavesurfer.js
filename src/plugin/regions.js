@@ -32,6 +32,10 @@ class Region {
         this.minLength = params.minLength;
         this._onRedraw = () => this.updateRender();
 
+        this.scroll = params.scroll !== false && ws.params.scrollParent;
+        this.scrollSpeed = params.scrollSpeed || 1;
+        this.scrollThreshold = params.scrollThreshold || 10;
+
         this.bindInOut();
         this.render();
         this.wavesurfer.on('zoom', this._onRedraw);
@@ -283,11 +287,46 @@ class Region {
         /* Drag or resize on mousemove. */
         (this.drag || this.resize) &&
             (() => {
+                const container = this.wavesurfer.drawer.container;
                 const duration = this.wavesurfer.getDuration();
+                const scrollSpeed = this.scrollSpeed;
+                const scrollThreshold = this.scrollThreshold;
                 let startTime;
                 let touchId;
                 let drag;
+                let maxScroll;
                 let resize;
+                let scrollDirection;
+                let wrapperRect;
+
+                // Scroll when the user is dragging within the threshold
+                const edgeScroll = e => {
+                    if (!scrollDirection || (!drag && !resize)) {
+                        return;
+                    }
+
+                    // Update scroll position
+                    let scrollLeft =
+                        this.wrapper.scrollLeft + scrollSpeed * scrollDirection;
+                    this.wrapper.scrollLeft = scrollLeft = Math.min(
+                        maxScroll,
+                        Math.max(0, scrollLeft)
+                    );
+
+                    // Update time
+                    const time =
+                        this.wavesurfer.drawer.handleEvent(e) * duration;
+                    const delta = time - startTime;
+                    startTime = time;
+
+                    // Continue dragging or resizing
+                    drag ? this.onDrag(delta) : this.onResize(delta, resize);
+
+                    // Repeat
+                    window.requestAnimationFrame(() => {
+                        edgeScroll(e);
+                    });
+                };
 
                 const onDown = e => {
                     if (e.touches && e.touches.length > 1) {
@@ -300,6 +339,11 @@ class Region {
                     e.stopPropagation();
                     startTime =
                         this.wavesurfer.drawer.handleEvent(e, true) * duration;
+
+                    // Store for scroll calculations
+                    maxScroll =
+                        this.wrapper.scrollWidth - this.wrapper.clientWidth;
+                    wrapperRect = this.wrapper.getBoundingClientRect();
 
                     if (e.target.tagName.toLowerCase() == 'handle') {
                         if (
@@ -323,6 +367,7 @@ class Region {
 
                     if (drag || resize) {
                         drag = false;
+                        scrollDirection = null;
                         resize = false;
 
                         this.fireEvent('update-end', e);
@@ -341,6 +386,7 @@ class Region {
                     }
 
                     if (drag || resize) {
+                        const oldTime = startTime;
                         const time =
                             this.wavesurfer.drawer.handleEvent(e) * duration;
                         const delta = time - startTime;
@@ -354,6 +400,56 @@ class Region {
                         // Resize
                         if (this.resize && resize) {
                             this.onResize(delta, resize);
+                        }
+
+                        if (
+                            this.scroll &&
+                            container.clientWidth < this.wrapper.scrollWidth
+                        ) {
+                            if (drag) {
+                                // The threshold is not between the mouse and the container edge
+                                // but is between the region and the container edge
+                                const regionRect = this.element.getBoundingClientRect();
+                                let x = regionRect.left - wrapperRect.left;
+
+                                // Check direction
+                                if (time < oldTime && x >= 0) {
+                                    scrollDirection = -1;
+                                } else if (
+                                    time > oldTime &&
+                                    x + regionRect.width <= wrapperRect.right
+                                ) {
+                                    scrollDirection = 1;
+                                }
+
+                                // Check that we are still beyond the threshold
+                                if (
+                                    (scrollDirection === -1 &&
+                                        x > scrollThreshold) ||
+                                    (scrollDirection === 1 &&
+                                        x + regionRect.width <
+                                            wrapperRect.right - scrollThreshold)
+                                ) {
+                                    scrollDirection = null;
+                                }
+                            } else {
+                                // Mouse based threshold
+                                let x = e.clientX - wrapperRect.left;
+
+                                // Check direction
+                                if (x <= scrollThreshold) {
+                                    scrollDirection = -1;
+                                } else if (
+                                    x >=
+                                    wrapperRect.right - scrollThreshold
+                                ) {
+                                    scrollDirection = 1;
+                                } else {
+                                    scrollDirection = null;
+                                }
+                            }
+
+                            scrollDirection && edgeScroll(e);
                         }
                     }
                 };
@@ -575,21 +671,65 @@ export default class RegionsPlugin {
 
     enableDragSelection(params) {
         const slop = params.slop || 2;
+        const container = this.wavesurfer.drawer.container;
+        const scroll =
+            params.scroll !== false && this.wavesurfer.params.scrollParent;
+        const scrollSpeed = params.scrollSpeed || 1;
+        const scrollThreshold = params.scrollThreshold || 10;
         let drag;
+        let duration = this.wavesurfer.getDuration();
+        let maxScroll;
         let start;
         let region;
         let touchId;
         let pxMove = 0;
+        let scrollDirection;
+        let wrapperRect;
+
+        // Scroll when the user is dragging within the threshold
+        const edgeScroll = e => {
+            if (!region || !scrollDirection) {
+                return;
+            }
+
+            // Update scroll position
+            let scrollLeft =
+                this.wrapper.scrollLeft + scrollSpeed * scrollDirection;
+            this.wrapper.scrollLeft = scrollLeft = Math.min(
+                maxScroll,
+                Math.max(0, scrollLeft)
+            );
+
+            // Update range
+            const end = this.wavesurfer.drawer.handleEvent(e);
+            region.update({
+                start: Math.min(end * duration, start * duration),
+                end: Math.max(end * duration, start * duration)
+            });
+
+            // Check that there is more to scroll and repeat
+            if (scrollLeft < maxScroll && scrollLeft > 0) {
+                window.requestAnimationFrame(() => {
+                    edgeScroll(e);
+                });
+            }
+        };
 
         const eventDown = e => {
             if (e.touches && e.touches.length > 1) {
                 return;
             }
+            duration = this.wavesurfer.getDuration();
             touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
+
+            // Store for scroll calculations
+            maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
+            wrapperRect = this.wrapper.getBoundingClientRect();
 
             drag = true;
             start = this.wavesurfer.drawer.handleEvent(e, true);
             region = null;
+            scrollDirection = null;
         };
         this.wrapper.addEventListener('mousedown', eventDown);
         this.wrapper.addEventListener('touchstart', eventDown);
@@ -605,6 +745,7 @@ export default class RegionsPlugin {
 
             drag = false;
             pxMove = 0;
+            scrollDirection = null;
 
             if (region) {
                 region.fireEvent('update-end', e);
@@ -639,12 +780,25 @@ export default class RegionsPlugin {
                 region = this.add(params || {});
             }
 
-            const duration = this.wavesurfer.getDuration();
             const end = this.wavesurfer.drawer.handleEvent(e);
             region.update({
                 start: Math.min(end * duration, start * duration),
                 end: Math.max(end * duration, start * duration)
             });
+
+            // If scrolling is enabled
+            if (scroll && container.clientWidth < this.wrapper.scrollWidth) {
+                // Check threshold based on mouse
+                const x = e.clientX - wrapperRect.left;
+                if (x <= scrollThreshold) {
+                    scrollDirection = -1;
+                } else if (x >= wrapperRect.right - scrollThreshold) {
+                    scrollDirection = 1;
+                } else {
+                    scrollDirection = null;
+                }
+                scrollDirection && edgeScroll(e);
+            }
         };
         this.wrapper.addEventListener('mousemove', eventMove);
         this.wrapper.addEventListener('touchmove', eventMove);
