@@ -89,6 +89,7 @@ import PeakCache from './peakcache';
  * the channels of the audio
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
+ * @property {object} xhr={} XHR options.
  */
 
 /**
@@ -207,7 +208,8 @@ export default class WaveSurfer extends util.Observer {
         scrollParent: false,
         skipLength: 2,
         splitChannels: false,
-        waveColor: '#999'
+        waveColor: '#999',
+        xhr: {}
     };
 
     /** @private */
@@ -1136,8 +1138,8 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Loads audio and re-renders the waveform.
      *
-     * @param {string|HTMLMediaElement|object} url The url of the audio file, the
-     * audio element with the audio or an object descripting the AJAX request
+     * @param {string|HTMLMediaElement} url The url of the audio file or the
+     * audio element with the audio
      * @param {?number[]|number[][]} peaks Wavesurfer does not have to decode
      * the audio to render the waveform if this is specified
      * @param {?string} preload (Use with backend `MediaElement`)
@@ -1169,10 +1171,7 @@ export default class WaveSurfer extends util.Observer {
                 'Peaks are not provided': !peaks,
                 'Backend is not of type MediaElement':
                     this.params.backend !== 'MediaElement',
-                'Url is not of type string or object':
-                    typeof url !== 'string' || typeof url !== 'object',
-                'Url object does not contain a "url" property':
-                    typeof url === 'object' && typeof url.url !== 'string'
+                'Url is not of type string': typeof url !== 'string'
             };
             const activeReasons = Object.keys(preloadIgnoreReasons).filter(
                 reason => preloadIgnoreReasons[reason]
@@ -1235,7 +1234,7 @@ export default class WaveSurfer extends util.Observer {
     loadMediaElement(urlOrElt, peaks, preload, duration) {
         let url = urlOrElt;
 
-        if (typeof urlOrElt === 'string' || typeof urlOrElt === 'object') {
+        if (typeof urlOrElt === 'string') {
             this.backend.load(url, this.mediaContainer, peaks, preload);
         } else {
             const elt = urlOrElt;
@@ -1304,20 +1303,16 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Load an array buffer by ajax and pass to a callback
      *
-     * @param {string|object} obj a string or an object for the AJAX request
+     * @param {string} url
      * @param {function} callback
      * @private
      */
-    getArrayBuffer(obj, callback) {
-        const defaultOptions = { responseType: 'arraybuffer' };
-        let options;
-        if (typeof obj === 'object') {
-            options = Object.assign({}, defaultOptions, obj);
-        } else {
-            options = Object.assign({}, defaultOptions, { url: obj });
-        }
-
-        const ajax = util.ajax(options);
+    getArrayBuffer(url, callback) {
+        const ajax = util.ajax({
+            url: url,
+            responseType: 'arraybuffer',
+            xhr: this.params.xhr
+        });
 
         this.currentAjax = ajax;
 
