@@ -14,9 +14,16 @@ export default function ajax(options) {
     xhr.open(options.method || 'GET', options.url, true);
     xhr.responseType = options.responseType || 'json';
 
-    if (options.requestHeaders) {
-        for (let header in options.requestHeaders) {
-            xhr.setRequestHeader(header.key, header.value);
+    if (options.xhr) {
+        if (options.xhr.requestHeaders) {
+            // add custom request headers
+            for (let header in options.xhr.requestHeaders) {
+                xhr.setRequestHeader(header.key, header.value);
+            }
+        }
+        if (options.xhr.withCredentials) {
+            // use credentials
+            xhr.withCredentials = true;
         }
     }
 
