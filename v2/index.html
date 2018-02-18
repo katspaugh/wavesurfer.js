@@ -12,14 +12,11 @@ layout: default
     <li>The multicanvas renderer is now the default, the monocanvas renderer has been removed to keep the library size small.</li>
   </ul>
   <h2>Current status</h2>
-  <p>The version is stable and functional. Due to the nature of the refactor (an integrated plugin system for adding, initialising and destroying of plugin instances) all plugins are somehow affected. Some plugins are still buggy when used with the dynamic plugin API.
+  <p>The version is stable and released. Due to the nature of the refactor (an integrated plugin system for adding, initialising and destroying of plugin instances) all plugins are somehow affected. Some plugins are still buggy when used with the dynamic plugin API.
   <p>Conventional use cases (i.e. cases where you just want to create an instance with some plugins – no dynamic adding or removing – should work just fine) (Below in the plugin API examples, this means 1. should already work, 2. and 3. don't yet always work in all situations and for all plugins)</p>
-  <h2>Installing the release</h2>
-  <p>See the beta versions available by running <code>npm view wavesurfer.js versions | grep 2.0.0</code> in your console.</p>
-  <p>Then install the version you want with <code>npm install wavesurfer.js@2.0.0-betaXX</code></p>
   <h2>Developing</h2>
   <p><code>npm install</code> and then <code>npm start</code> – The library directory is exposed under http://localhost:8080</p>
-  <p>Generate the documention by running <code>npm run doc</code> (see below) – Tests can be run by calling <code>npm run test</code></p>
+  <p>Generate the documention by running <code>npm run doc</code> – Tests can be run by calling <code>npm run test</code></p>
   <p>There are still lots of things which need doing. We are thankful for any help we can get. Please see right at the bottom of this page how you can help.</p>
   <h2>Things left to do</h2>
   <ul>
