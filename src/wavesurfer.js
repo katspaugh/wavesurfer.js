@@ -294,6 +294,9 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('Media Container element not found');
         }
 
+        /** set dir always ltr, only way 'today' to work independant of inheritance */
+        this.container.dir='ltr';
+
         if (this.params.maxCanvasWidth <= 1) {
             throw new Error('maxCanvasWidth must be greater than 1');
         } else if (this.params.maxCanvasWidth % 2 == 1) {
