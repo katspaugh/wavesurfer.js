@@ -1,6 +1,12 @@
 wavesurfer.js changelog
 =======================
 
+2.0.5 (unreleased)
+------------------
+
+- Add version information to minified file
+
+
 2.0.4 (14.02.2018)
 ------------------
 
