@@ -17,9 +17,9 @@ export default function ajax(options) {
     if (options.xhr) {
         if (options.xhr.requestHeaders) {
             // add custom request headers
-            for (let header in options.xhr.requestHeaders) {
+            options.xhr.requestHeaders.forEach(header => {
                 xhr.setRequestHeader(header.key, header.value);
-            }
+            });
         }
         if (options.xhr.withCredentials) {
             // use credentials
