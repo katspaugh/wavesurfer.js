@@ -417,7 +417,6 @@ export default class MultiCanvas extends Drawer {
 
         const first = Math.round(length * entry.start);
         const last = Math.round(length * entry.end);
-        
         const canvasStart = Math.min(first, start);
         const canvasEnd = Math.max(last, end);
         let i;
