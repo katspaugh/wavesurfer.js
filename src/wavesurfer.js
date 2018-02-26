@@ -901,7 +901,7 @@ export default class WaveSurfer extends util.Observer {
      * @return {boolean}
      */
     isReady() {
-        return this.isMuted;
+        return this.isReady;
     }
 
     /**
