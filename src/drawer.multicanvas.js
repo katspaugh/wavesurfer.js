@@ -416,12 +416,8 @@ export default class MultiCanvas extends Drawer {
                 : 1;
 
         const first = Math.round(length * entry.start);
-        // Use one more peak value to make sure we join peaks at ends -- unless,
-        // of course, this is the last canvas.
-        const last = Math.round(length * entry.end) + 1;
-        if (first > end || last < start) {
-            return;
-        }
+        const last = Math.round(length * entry.end);
+        
         const canvasStart = Math.min(first, start);
         const canvasEnd = Math.max(last, end);
         let i;
@@ -433,7 +429,7 @@ export default class MultiCanvas extends Drawer {
             halfH + offsetY
         );
 
-        for (i = canvasStart; i < canvasEnd; i++) {
+        for (i = canvasStart; i <= canvasEnd; i++) {
             const peak = peaks[2 * i] || 0;
             const h = Math.round(peak / absmax * halfH);
             ctx.lineTo(
@@ -444,7 +440,7 @@ export default class MultiCanvas extends Drawer {
 
         // Draw the bottom edge going backwards, to make a single
         // closed hull to fill.
-        for (j = canvasEnd - 1; j >= canvasStart; j--) {
+        for (j = canvasEnd; j >= canvasStart; j--) {
             const peak = peaks[2 * j + 1] || 0;
             const h = Math.round(peak / absmax * halfH);
             ctx.lineTo(
