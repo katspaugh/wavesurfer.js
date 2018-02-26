@@ -10,8 +10,8 @@ class Region {
     constructor(params, ws) {
         this.wavesurfer = ws;
         this.wrapper = ws.drawer.wrapper;
-        this.style = ws.util.style;
         this.util = ws.util;
+        this.style = this.util.style;
 
         this.id = params.id == null ? ws.util.getId() : params.id;
         this.start = Number(params.start) || 0;
