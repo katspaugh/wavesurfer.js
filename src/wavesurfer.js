@@ -895,6 +895,16 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Get the current ready status.
+     *
+     * @example const isReady = wavesurfer.isReady();
+     * @return {boolean}
+     */
+    isReady() {
+        return this.isReady;
+    }
+
+    /**
      * Get the list of current set filters as an array.
      *
      * Filters must be set with setFilters method first
