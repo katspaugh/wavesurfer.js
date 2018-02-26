@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-+2.0.5 (unreleased)
++2.0.5 (26.02.2018)
 -------------------
 
 - Fix `util.ajax` on iterating `requestHeaders` (#1329)
