@@ -295,7 +295,7 @@ export default class WaveSurfer extends util.Observer {
         }
 
         /** set dir always ltr, only way 'today' to work independant of inheritance */
-        this.container.dir='ltr';
+        this.container.dir = 'ltr';
 
         if (this.params.maxCanvasWidth <= 1) {
             throw new Error('maxCanvasWidth must be greater than 1');
