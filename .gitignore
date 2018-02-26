@@ -12,3 +12,4 @@ dist/**/*.map
 .idea
 .project
 package-lock.json
+.package.json.swp
