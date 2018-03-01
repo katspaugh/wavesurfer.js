@@ -972,7 +972,7 @@ export default class TiledRenderer extends Drawer {
  * avoid generating and using peak data in the situation. We also
  * turn on the tiled rendering feature if it is needed.
  */
-var overDrawBuffer = function() {
+var tiledDrawBuffer = function() {
     var nominalWidth = Math.round(this.getDuration() * this.params.minPxPerSec);
     var parentWidth = this.drawer.getWidth();
     var width = nominalWidth;
@@ -997,4 +997,4 @@ var overDrawBuffer = function() {
     this.fireEvent('redraw', peaks, width);
 };
 
-export { TiledRenderer, overDrawBuffer };
+export { TiledRenderer, tiledDrawBuffer };
