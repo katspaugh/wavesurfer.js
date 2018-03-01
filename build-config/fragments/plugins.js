@@ -34,6 +34,7 @@ module.exports = {
         'cursor',
         'microphone',
         'mediasession',
+        'tiledrenderer',
         'elan'
     ]),
     output: {
