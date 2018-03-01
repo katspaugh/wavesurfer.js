@@ -333,7 +333,8 @@ export default class TiledRenderer extends Drawer {
     }
 
     /**
-     * Draw peaks on the canvas
+     * Draw peaks on the (first) canvas
+     * (control comes thru here via the minimap plugin or when clearing the waveform).
      *
      * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
      * rendering
@@ -363,6 +364,7 @@ export default class TiledRenderer extends Drawer {
      * should be rendered
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
+     * @param (canvas) the canvas to draw the wave on,
      */
     drawBars(peaks, channelIndex, start, end, canvas) {
         this.prepareDraw(
@@ -422,6 +424,7 @@ export default class TiledRenderer extends Drawer {
      * should be rendered (If this isn't set only a flat line is rendered)
      * @param {number?} end The x-offset of the end of the area that should be
      * rendered
+     * @param (canvas) the canvas to draw the wave on,
      */
     drawWave(peaks, channelIndex, start, end, canvas) {
         this.prepareDraw(
@@ -469,7 +472,7 @@ export default class TiledRenderer extends Drawer {
     }
 
     /**
-     * Tell the canvas entries to render their portion of the waveform
+     * Draw part of the waveform on a particular canvas
      *
      * @private
      * @param {number[]} peaks Peak data
@@ -586,6 +589,7 @@ export default class TiledRenderer extends Drawer {
      * @param {number} y
      * @param {number} width
      * @param {number} height
+       @param {canvas} entry
      */
     fillRect(x, y, width, height, entry) {
         this.setFillStyles(entry);
@@ -608,6 +612,7 @@ export default class TiledRenderer extends Drawer {
      * @param {number?} end The x-offset of the end of the area that should be
      * rendered
      * @param {function} fn The render function to call
+     * @param {canvas} The canvas to draw upon.
      */
     prepareDraw(peaks, channelIndex, start, end, fn, canvas) {
         //      if (!peaks) {
@@ -712,37 +717,50 @@ export default class TiledRenderer extends Drawer {
         this.style(this.progressWave, { width: position + 'px' });
     }
 
-    calcCanvasInfo(surfer, xN) {
-        const duration = surfer.getDuration();
-        const durScale = duration * this.params.minPxPerSec;
-        let x1 = xN * durScale / this.params.pixelRatio;
-        let canN = Math.floor(x1 / this.maxCanvasElementWidth);
+    /**
+     * Calculate position and width of the canvas corresponding to the normalized
+     * X position supplied.
+     *
+     * @param surfer {Wavesurfer} wavesurfer instance that has channel data
+     * @param xNorm {number} Normalized X position to use to determine canvas info.
+     * @returns: lhs (number) left hand side coordianate of canvas in css coordinates.
+     * canvaWidth (number) width of canvas (in canvas coordinates), adjusted if need be for last.
+     * leftOff (number) left coordinate of canvas (in canvas coordinates).
+     */
+    calcCanvasInfo(surfer, xNorm) {
+        const durScale = surfer.getDuration() * this.params.minPxPerSec;
+        let xc = xNorm * durScale / this.params.pixelRatio;
+        let canNum = Math.floor(xc / this.maxCanvasElementWidth);
 
-        let lhs = canN * this.maxCanvasElementWidth; // lhs in css coordinates
-        let leftOff = canN * this.maxCanvasWidth;
+        let lhs = canNum * this.maxCanvasElementWidth; // lhs in css coordinates
+        let leftOff = canNum * this.maxCanvasWidth;
         let canvasWidth =
             this.maxCanvasWidth + 2 * Math.ceil(this.params.pixelRatio / 2);
 
         // If this is the last canvas position, trim its size back so as to not overhang
-        let rhsc = (canN + 1) * this.maxCanvasWidth;
-        if (rhsc > this.width) {
-            canvasWidth = this.width - this.maxCanvasWidth * canN;
+        if ((canNum + 1) * this.maxCanvasWidth > this.width) {
+            canvasWidth = this.width - this.maxCanvasWidth * canNum;
         }
-
-        // actually used: canvasWidth, left, leftOff;
         return {
-            number: canN,
             left: lhs,
             canvasWidth: canvasWidth,
             leftOff: leftOff
         };
     }
 
+    /**
+     * fill the given canvas entry with data from the peaks array or the channel buffers
+     *
+     * @private
+     * @param surfer {Wavesurfer} wavesurfer instance that has channel data
+     * @param entry {Canvas} canvas to draw onto.
+     * @param peaks (Peaks array) peak data to draw with if not using channel data.
+     */
     imageSingleCanvas(surfer, entry, peaks) {
-        let t0 = performance.now();
+        //  let t0 = performance.now();
         let buffer = surfer.backend.buffer;
-        let { numberOfChannels, sampleRate } = buffer;
-        let spDx = sampleRate / this.params.minPxPerSec;
+        const { numberOfChannels, sampleRate } = buffer;
+        const spDx = sampleRate / this.params.minPxPerSec;
         const height = Math.round(this.params.height * this.params.pixelRatio); // ?
         const halfH = Math.round(height / 2);
         const pixH = 2;
@@ -780,19 +798,21 @@ export default class TiledRenderer extends Drawer {
                 if (progressCtx) progressCtx.fillRect(x, y, pixW, pixH);
             }
         }
-        let t1 = performance.now();
-        let dT = t1 - t0;
+        // let t1 = performance.now();
+        // let dT = t1 - t0;
         //console.log(dT);
     }
 
-    // periodic function called in order to maintain the tile strip.
-    // returns true if a canvas to reimage was found.
+    /**
+     * periodic function called in order to maintain the tile strip.
+     * returns true if a canvas to reimage was found.
+     * @private
+     * @param surfer {Wavesurfer} wavesurfer instance that has channel data
+     * @param peaks (Peaks array) peak data to draw with if not using channel data.
+     * @returns: (boolean) true if a reimage was accomplished, false if not.
+     */
     scrollCheck(surfer, peaks) {
         let scrX = surfer.drawer.getScrollX(); // scrX should be in canvas coordinates.
-        // Track derivative.
-        if (this.lastScrollX === undefined) this.lastScrollX = 0;
-        let lastX = this.lastScrollX;
-        this.lastScrollX = scrX;
 
         let duration = surfer.getDuration();
         let durScale = duration * this.params.minPxPerSec;
@@ -874,17 +894,6 @@ export default class TiledRenderer extends Drawer {
                 left,
                 leftOff
             );
-            if (whereX < canvToFill.start || whereX > canvToFill.end + 0.0001) {
-                console.log(
-                    'whereX out of range: ' +
-                        whereX +
-                        ' start: ' +
-                        canvToFill.start +
-                        ' end: ' +
-                        canvToFill.end
-                );
-            }
-            //          console.log("imaging: " + whereX + " " + can.number + " " + can.left + " " + can.canvasWidth + " " + canvToFill.start + " " + canvToFill.end);
             this.clearWaveForEntry(canvToFill);
             this.imageSingleCanvas(surfer, canvToFill, peaks);
             canvToFill.hidden = false;
@@ -894,6 +903,16 @@ export default class TiledRenderer extends Drawer {
         return false;
     }
 
+    /**
+     * called from overDrawBuffer to reimage the tiles. If we are using tiled rendering,
+     * arrange to repaint the visible area and set up an event listener for scrolling.
+     * If we aren't using tiled rendering, then fill up all the canvases.
+     *
+     * @private
+     * @param surfer {Wavesurfer} wavesurfer instance that has channel data
+     * @param entry {Canvas} canvas to draw onto.
+     * @param peaks (Peaks array) peak data to draw with if not using channel data.
+     */
     drawTiles(surfer, width, peaks) {
         //      console.log("drawSampes " + this.maxCanvasElementWidth + " " + this.maxCanvasWidth);
         this.setWidth(width);
@@ -915,7 +934,7 @@ export default class TiledRenderer extends Drawer {
                 let ctr = 0;
                 while (that.scrollCheck(surfer, peaks)) {
                     //  console.log('Imaging tile ' + ctr);
-                    if (ctr++ > this.canvasLimit) {
+                    if (ctr++ > that.canvasLimit) {
                         console.log('Over limit imaging tiles');
                         return;
                     }
@@ -947,9 +966,12 @@ export default class TiledRenderer extends Drawer {
     }
 } // End of class.
 
-// A hacked-up version of the drawBuffer routine defined in wavesurfer.js
-// The idea is that at a suitably high level of magnification, say 11025
-// we should plot samples directly rather than deal with peak data.
+/**
+ * A hacked-up version of the drawBuffer routine defined in wavesurfer.js,
+ * Since we don't want to use peak data at high magnification levels, we
+ * avoid generating and using peak data in the situation. We also
+ * turn on the tiled rendering feature if it is needed.
+ */
 var overDrawBuffer = function() {
     var nominalWidth = Math.round(this.getDuration() * this.params.minPxPerSec);
     var parentWidth = this.drawer.getWidth();
