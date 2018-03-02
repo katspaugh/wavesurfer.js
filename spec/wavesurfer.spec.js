@@ -41,6 +41,18 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /**
+     * @test {WaveSurfer#isReady}
+     */
+    it('should be ready', function() {
+        wavesurfer.play();
+        expect(wavesurfer.isReady).toBeFalse();
+
+        wavesurfer.on('ready', function() {
+            expect(wavesurfer.isReady()).toBeTrue();
+        });
+    });
+
+    /**
      * @test {WaveSurfer#play}
      * @test {WaveSurfer#isPlaying}
      */
@@ -182,7 +194,7 @@ describe('WaveSurfer/playback:', function() {
 
     /** @test {WaveSurfer#exportPCM} */
     it('should return PCM data formatted using JSON.stringify', function() {
-        var expectedResult = require('./support/json/pcm.json');
+        var expectedResult = require('./support/json/demo-pcm.json');
         var pcmData = wavesurfer.exportPCM();
 
         expect(pcmData).toEqual(expectedResult);
