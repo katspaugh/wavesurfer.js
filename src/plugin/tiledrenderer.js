@@ -401,7 +401,7 @@ export default class TiledRenderer extends Drawer {
                         peaks[Math.floor(i * scale * peakIndexScale)] || 0;
                     const h = Math.round(peak / absmax * halfH);
                     this.fillRect(
-                        i + this.halfPixel,
+                        i - first + this.halfPixel,
                         halfH - h + offsetY,
                         bar + this.halfPixel,
                         h * 2,
