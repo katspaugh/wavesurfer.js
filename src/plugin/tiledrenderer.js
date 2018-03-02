@@ -14,8 +14,9 @@ import * as util from '../util';
  */
 
 /**
- * MultiCanvas renderer for wavesurfer. Is currently the default and sole built
- * in renderer.
+ * TiledRenderer for wavesurfer. Based on the MultiCanvas renderer bundled with WaveSurfer.
+ * TiledRenderer works with a pool of Canvas objects, automatically drawing and positioning them
+ * as needed.
  */
 
 export default class TiledRenderer extends Drawer {
