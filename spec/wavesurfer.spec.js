@@ -170,4 +170,12 @@ describe('WaveSurfer/playback:', function() {
 
         expect(height).toEqual(150);
     });
+
+    /** @test {WaveSurfer#exportPCM} */
+    it('should return PCM data formatted using JSON.stringify', function() {
+        var expectedResult = require('./support/json/pcm.json');
+        var pcmData = wavesurfer.exportPCM();
+
+        expect(pcmData).toEqual(expectedResult);
+    });
 });
