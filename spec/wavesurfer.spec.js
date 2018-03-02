@@ -99,6 +99,15 @@ describe('WaveSurfer/playback:', function() {
         expect(wavesurfer.isMuted).toBeFalse();
     });
 
+    /** @test {WaveSurfer#getMute}  */
+    it('should get mute', function() {
+        wavesurfer.setMute(true);
+        expect(wavesurfer.getMute()).toBeTrue();
+
+        wavesurfer.setMute(false);
+        expect(wavesurfer.getMute()).toBeFalse();
+    });
+
     /** @test {WaveSurfer#zoom}  */
     it('should set zoom parameters', function() {
         wavesurfer.zoom(20);
