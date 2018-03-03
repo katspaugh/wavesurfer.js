@@ -508,9 +508,6 @@ export default class TiledRenderer extends Drawer {
             start,
             end
         );
-        // let t1 = performance.now();
-        // let dT = t1 - t0;
-        // console.log(dT);
     }
 
     /**
@@ -758,7 +755,6 @@ export default class TiledRenderer extends Drawer {
      * @param peaks (Peaks array) peak data to draw with if not using channel data.
      */
     imageSingleCanvas(surfer, entry, peaks) {
-        //  let t0 = performance.now();
         let buffer = surfer.backend.buffer;
         const { numberOfChannels, sampleRate } = buffer;
         const spDx = sampleRate / this.params.minPxPerSec;
@@ -786,9 +782,6 @@ export default class TiledRenderer extends Drawer {
             var chan = buffer.getChannelData(c);
             let yoff = halfH + c * height;
             let { progressCtx, waveCtx } = entry;
-
-            //      console.log(lhs + ", " + rhs + " " + entry.start + " " + entry.end);
-
             this.setFillStyles(entry);
             let sx = entry.start * duration * sampleRate;
             let w = rhs - lhs;
@@ -799,9 +792,6 @@ export default class TiledRenderer extends Drawer {
                 if (progressCtx) progressCtx.fillRect(x, y, pixW, pixH);
             }
         }
-        // let t1 = performance.now();
-        // let dT = t1 - t0;
-        //console.log(dT);
     }
 
     /**
@@ -822,16 +812,15 @@ export default class TiledRenderer extends Drawer {
         let playState = surfer.isPlaying();
 
         if (normX > 1.0) {
-            console.log('clipping normX from: ' + normX);
             normX = 1.0;
         }
 
-        // console.log(normX);
         let foundCan;
         let canvToFill;
-        let maxDist = 0;
-        // Find the canvas which is visable.
 
+        let maxDist = 0;
+        // Find the canvas which is visable. Also determine the canvas that is farthest away or hidden
+        // that we can recycle if need be.
         this.canvases.forEach(entry => {
             if (normX >= entry.start && normX < entry.end && !entry.hidden) {
                 foundCan = entry;
@@ -858,7 +847,6 @@ export default class TiledRenderer extends Drawer {
 
         if (!foundCan) {
             whereX = normX;
-            //          console.log("Filling missing.");
         } else {
             let ourWid = foundCan.end - foundCan.start;
             let ourMid = foundCan.start + ourWid / 2;
@@ -870,7 +858,6 @@ export default class TiledRenderer extends Drawer {
                 });
             }
             if (!foundUp && seekX < 1.0) {
-                //              console.log("Filling forward.");
                 whereX = seekX;
             } else {
                 seekX = ourMid - ourWid;
@@ -880,7 +867,6 @@ export default class TiledRenderer extends Drawer {
                 });
                 if (!foundDn) {
                     whereX = seekX;
-                    //                  console.log("Filling backward.");
                 }
             }
         }
@@ -905,7 +891,7 @@ export default class TiledRenderer extends Drawer {
     }
 
     /**
-     * called from overDrawBuffer to reimage the tiles. If we are using tiled rendering,
+     * called from tiledDrawBuffer to reimage the tiles. If we are using tiled rendering,
      * arrange to repaint the visible area and set up an event listener for scrolling.
      * If we aren't using tiled rendering, then fill up all the canvases.
      *
@@ -915,14 +901,12 @@ export default class TiledRenderer extends Drawer {
      * @param peaks (Peaks array) peak data to draw with if not using channel data.
      */
     drawTiles(surfer, width, peaks) {
-        //      console.log("drawSampes " + this.maxCanvasElementWidth + " " + this.maxCanvasWidth);
         this.setWidth(width);
         this.clearWave();
         let that = this;
 
         // Csncel any existing scroll watcher.
         if (this.scrollWatcher) {
-            //  console.log("Cancelling existing scrollWatcher");
             surfer.un('scroll', this.scrollWatcher);
             this.scrollWatcher = undefined;
         }
@@ -934,9 +918,7 @@ export default class TiledRenderer extends Drawer {
             let repaint = function() {
                 let ctr = 0;
                 while (that.scrollCheck(surfer, peaks)) {
-                    //  console.log('Imaging tile ' + ctr);
                     if (ctr++ > that.canvasLimit) {
-                        console.log('Over limit imaging tiles');
                         return;
                     }
                 }
@@ -955,7 +937,6 @@ export default class TiledRenderer extends Drawer {
                     if (that.params.minPxPerSec < that.sampleSpeed && !peaks) {
                         return;
                     }
-                    //console.log("Peaks Length at scrollcheck: " + peaks[0].length);
                     if (that.scrollCheck(surfer, peaks)) {
                         that.scrollCheck(surfer, peaks);
                     }
@@ -982,10 +963,7 @@ var tiledDrawBuffer = function() {
     const requiredCanvases = Math.ceil(width / this.params.maxCanvasWidth);
     this.drawer.tiledRendering = requiredCanvases > this.drawer.canvasLimit;
     let needPeaks = this.params.minPxPerSec < this.drawer.sampleSpeed;
-
-    var end = Math.max(parentWidth, width);
-
-    // console.log("*** overDrawBuffer w:" + width + " end: " + end + " minxPxPerSec: " + this.params.minPxPerSec);
+    let end = Math.max(parentWidth, width);
 
     this.peaks = undefined;
     var peaks = void 0;
