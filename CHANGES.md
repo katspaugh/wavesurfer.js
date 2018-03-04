@@ -1,11 +1,13 @@
 wavesurfer.js changelog
 =======================
 
-2.0.5 (unreleased)
+2.0.5 (26.02.2018)
 ------------------
 
-- Add version information to minified files (#1330)
-
+- Fix `util.ajax` on iterating `requestHeaders` (#1329)
+- Add version information to distributed files (#1330)
+- Regions plugin: prevent click when creating / updating region (#1295)
+- Add `wavesurfer.isReady` method (#1333)
 
 2.0.4 (14.02.2018)
 ------------------
