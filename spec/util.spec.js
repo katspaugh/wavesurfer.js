@@ -1,49 +1,65 @@
 /* eslint-env jasmine */
-import WaveSurfer from '../src/wavesurfer.js';
-import { TestResponses } from './support/helpers/test_responses.js';
+/* global ArrayBuffer */
 
-let ja = require('jasmine-ajax');
+import WaveSurfer from '../src/wavesurfer.js';
 
 /** @test {util.ajax} */
 describe('util.ajax:', function() {
-    // Put our http response in a variable.
-    var success = {
-        status: 200,
-        responseText: 'Oh yeah!'
-    };
+    var defaultUrl = '/base/spec/support/demo.wav';
 
-    // declare the variable within the suite's scope
-    var request;
-    beforeEach(function(done) {
-        // start listening to xhr requests
-        jasmine.Ajax.install();
-
-        // make the actual request
+    it('can load an arraybuffer', function(done) {
         var options = {
-            method: 'GET',
-            url: 'http://localhost/test',
-            xhr: {}
+            url: defaultUrl,
+            responseType: 'arraybuffer'
         };
-        WaveSurfer.util.ajax(options);
+        var instance = WaveSurfer.util.ajax(options);
+        instance.on('success', (data, e) => {
+            // url
+            expect(e.target.responseURL).toContain(options.url);
 
-        // answer the request
-        request = jasmine.Ajax.requests.mostRecent();
-        request.respondWith(TestResponses.search.success);
-        done();
+            // responseType
+            expect(instance.xhr.responseType).toBe(options.responseType);
+
+            // returned data is an arraybuffer
+            expect(data).toEqual(jasmine.any(ArrayBuffer));
+
+            done();
+        });
     });
 
-    afterEach(function() {
-        jasmine.Ajax.uninstall();
+    it('error event is fired when file is not found', function(done) {
+        var options = {
+            url: '/foo/bar'
+        };
+        var instance = WaveSurfer.util.ajax(options);
+        instance.on('error', e => {
+            // url
+            expect(e.target.responseURL).toContain(options.url);
+
+            // error message
+            expect(e.target.statusText).toBe('Not Found');
+            expect(e.target.status).toBe(404);
+
+            done();
+        });
     });
 
-    it('sends the request to the right end point', function(done) {
-        expect(request.url).toBe('http://localhost/test');
-        done();
-    });
+    it('progress event is fired during loading', function(done) {
+        var options = {
+            url: defaultUrl,
+            responseType: 'arraybuffer'
+        };
+        var instance = WaveSurfer.util.ajax(options);
+        instance.on('progress', e => {
+            // url
+            expect(e.target.responseURL).toContain(options.url);
 
-    it('uses the correct method', function(done) {
-        expect(request.method).toBe('GET');
-        done();
+            // progress message
+            expect(e.target.statusText).toBe('OK');
+            expect(e.target.status).toBe(200);
+
+            done();
+        });
     });
 });
 

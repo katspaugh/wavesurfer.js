@@ -8,7 +8,7 @@ var webpackConfig = require('./build-config/webpack.prod.main.js');
 module.exports = function(config) {
     var configuration = {
         basePath: '',
-        frameworks: ['jasmine-ajax', 'jasmine', 'jasmine-matchers'],
+        frameworks: ['jasmine', 'jasmine-matchers'],
         hostname: 'localhost',
         port: 9876,
         singleRun: true,
@@ -39,7 +39,6 @@ module.exports = function(config) {
         plugins: [
             'karma-webpack',
             'karma-jasmine',
-            'karma-jasmine-ajax',
             'karma-jasmine-matchers',
             'karma-chrome-launcher',
             'karma-coverage'
