@@ -3,6 +3,23 @@ import WaveSurfer from '../src/wavesurfer.js';
 
 /** @test {util} */
 describe('util:', function() {
+    /** @test {extend} */
+    it('extend extends an object shallowly with others', function() {
+        var obj = {
+            style: {}
+        };
+        var sources = {
+            prop1: 'red',
+            prop2: 123
+        };
+        var result = {
+            style: {},
+            prop1: 'red',
+            prop2: 123
+        };
+        expect(WaveSurfer.util.extend(obj, sources)).toEqual(result);
+    });
+
     /** @test {getId} */
     it('getId returns a random string', function() {
         expect(WaveSurfer.util.getId()).toStartWith('wavesurfer_');
