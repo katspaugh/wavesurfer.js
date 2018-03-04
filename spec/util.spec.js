@@ -27,4 +27,19 @@ describe('util:', function() {
     it('max returns -Infinity for an empty array', function() {
         expect(WaveSurfer.util.max([])).toEqual(-Infinity);
     });
+
+    /** @test {style} */
+    it('style applies a map of styles to an element', function() {
+        var el = {
+            style: {}
+        };
+        var styles = {
+            backgroundcolor: 'red',
+            'background-color': 'blue'
+        };
+        var result = {
+            style: styles
+        };
+        expect(WaveSurfer.util.style(el, styles)).toEqual(result);
+    });
 });
