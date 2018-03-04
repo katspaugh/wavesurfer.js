@@ -1,5 +1,51 @@
 /* eslint-env jasmine */
 import WaveSurfer from '../src/wavesurfer.js';
+import { TestResponses } from './support/helpers/test_responses.js';
+
+let ja = require('jasmine-ajax');
+
+/** @test {util.ajax} */
+describe('util.ajax:', function() {
+    // Put our http response in a variable.
+    var success = {
+        status: 200,
+        responseText: 'Oh yeah!'
+    };
+
+    // declare the variable within the suite's scope
+    var request;
+    beforeEach(function(done) {
+        // start listening to xhr requests
+        jasmine.Ajax.install();
+
+        // make the actual request
+        var options = {
+            method: 'GET',
+            url: 'http://localhost/test',
+            xhr: {}
+        };
+        WaveSurfer.util.ajax(options);
+
+        // answer the request
+        request = jasmine.Ajax.requests.mostRecent();
+        request.respondWith(TestResponses.search.success);
+        done();
+    });
+
+    afterEach(function() {
+        jasmine.Ajax.uninstall();
+    });
+
+    it('sends the request to the right end point', function(done) {
+        expect(request.url).toBe('http://localhost/test');
+        done();
+    });
+
+    it('uses the correct method', function(done) {
+        expect(request.method).toBe('GET');
+        done();
+    });
+});
 
 /** @test {util} */
 describe('util:', function() {

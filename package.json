@@ -65,6 +65,7 @@
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "1.1.1",
+    "karma-jasmine-ajax": "^0.1.13",
     "karma-jasmine-matchers": "3.7.0",
     "karma-webpack": "^2.0.9",
     "lint-staged": "^6.0.0",
