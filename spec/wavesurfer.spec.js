@@ -41,6 +41,18 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /**
+     * @test {WaveSurfer#isReady}
+     */
+    it('should be ready', function() {
+        wavesurfer.play();
+        expect(wavesurfer.isReady).toBeFalse();
+
+        wavesurfer.on('ready', function() {
+            expect(wavesurfer.isReady()).toBeTrue();
+        });
+    });
+
+    /**
      * @test {WaveSurfer#play}
      * @test {WaveSurfer#isPlaying}
      */
@@ -97,6 +109,15 @@ describe('WaveSurfer/playback:', function() {
 
         wavesurfer.setMute(false);
         expect(wavesurfer.isMuted).toBeFalse();
+    });
+
+    /** @test {WaveSurfer#getMute}  */
+    it('should get mute', function() {
+        wavesurfer.setMute(true);
+        expect(wavesurfer.getMute()).toBeTrue();
+
+        wavesurfer.setMute(false);
+        expect(wavesurfer.getMute()).toBeFalse();
     });
 
     /** @test {WaveSurfer#zoom}  */
@@ -169,5 +190,13 @@ describe('WaveSurfer/playback:', function() {
         var height = wavesurfer.getHeight();
 
         expect(height).toEqual(150);
+    });
+
+    /** @test {WaveSurfer#exportPCM} */
+    it('should return PCM data formatted using JSON.stringify', function() {
+        var expectedResult = require('./support/json/demo-pcm.json');
+        var pcmData = wavesurfer.exportPCM();
+
+        expect(pcmData).toEqual(expectedResult);
     });
 });
