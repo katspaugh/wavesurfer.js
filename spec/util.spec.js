@@ -1,5 +1,4 @@
 /* eslint-env jasmine */
-/* global ArrayBuffer */
 
 import WaveSurfer from '../src/wavesurfer.js';
 
