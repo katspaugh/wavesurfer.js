@@ -14,6 +14,7 @@ module.exports = function(config) {
         singleRun: true,
         autoWatch: false,
         files: [
+            // demo audio file
             {
                 pattern: 'spec/support/demo.wav',
                 included: false,
@@ -31,7 +32,10 @@ module.exports = function(config) {
             'spec/plugin-api.spec.js': ['webpack'],
             'spec/util.spec.js': ['webpack'],
             'spec/wavesurfer.spec.js': ['webpack'],
-            'spec/peakcache.spec.js': ['webpack']
+            'spec/peakcache.spec.js': ['webpack'],
+            // source files, that you want to generate coverage for
+            // do not include tests or libraries
+            'src/**/*.js': ['coverage']
         },
         webpackMiddleware: {
             stats: 'errors-only'
@@ -47,6 +51,10 @@ module.exports = function(config) {
         captureConsole: true,
         colors: true,
         reporters: ['progress', 'coverage'],
+        coverageReporter: {
+            type: 'html',
+            dir: 'coverage/'
+        },
         webpack: webpackConfig,
         customLaunchers: {
             Chrome_travis_ci: {
