@@ -1371,7 +1371,7 @@ export default class WaveSurfer extends util.Observer {
      * window with the JSON
      * @param {number} start
      * @todo Update exportPCM to work with new getPeaks signature
-     * @return {JSON} JSON of peaks
+     * @return {string} JSON of peaks
      */
     exportPCM(length, accuracy, noWindow, start) {
         length = length || 1024;
