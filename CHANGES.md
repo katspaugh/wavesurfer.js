@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+2.0.6 (unreleased)
+------------------
+
+- Added `mute` and `volume` events (#1345)
+
 2.0.5 (26.02.2018)
 ------------------
 

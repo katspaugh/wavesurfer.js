@@ -809,9 +809,11 @@ export default class WaveSurfer extends util.Observer {
      *
      * @param {number} newVolume A value between 0 and 1, 0 being no
      * volume and 1 being full volume.
+     * @emits WaveSurfer#volume
      */
     setVolume(newVolume) {
         this.backend.setVolume(newVolume);
+        this.fireEvent('volume', newVolume);
     }
 
     /**
@@ -860,6 +862,8 @@ export default class WaveSurfer extends util.Observer {
      * Enable or disable muted audio
      *
      * @param {boolean} mute
+     * @emits WaveSurfer#volume
+     * @emits WaveSurfer#mute
      * @example
      * // unmute
      * wavesurfer.setMute(false);
@@ -867,6 +871,7 @@ export default class WaveSurfer extends util.Observer {
     setMute(mute) {
         // ignore all muting requests if the audio is already in that state
         if (mute === this.isMuted) {
+            this.fireEvent('mute', this.isMuted);
             return;
         }
 
@@ -876,12 +881,15 @@ export default class WaveSurfer extends util.Observer {
             this.savedVolume = this.backend.getVolume();
             this.backend.setVolume(0);
             this.isMuted = true;
+            this.fireEvent('volume', 0);
         } else {
             // If currently muted then restore to the saved volume
             // and update the mute properties
             this.backend.setVolume(this.savedVolume);
             this.isMuted = false;
+            this.fireEvent('volume', this.savedVolume);
         }
+        this.fireEvent('mute', this.isMuted);
     }
 
     /**
