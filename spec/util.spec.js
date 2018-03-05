@@ -26,7 +26,7 @@ describe('util.ajax:', function() {
         });
     });
 
-    it('error event is fired when file is not found', function(done) {
+    it('fires the error event when the file is not found', function(done) {
         var options = {
             url: '/foo/bar'
         };
@@ -43,7 +43,7 @@ describe('util.ajax:', function() {
         });
     });
 
-    it('progress event is fired during loading', function(done) {
+    it('fires the progress event during loading', function(done) {
         var options = {
             url: defaultUrl,
             responseType: 'arraybuffer'
@@ -61,7 +61,7 @@ describe('util.ajax:', function() {
         });
     });
 
-    it('custom request headers and credentials can be specified', function(done) {
+    it('accepts custom request headers and credentials', function(done) {
         var options = {
             url: defaultUrl,
             responseType: 'arraybuffer',
