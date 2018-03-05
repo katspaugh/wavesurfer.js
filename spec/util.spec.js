@@ -61,6 +61,30 @@ describe('util.ajax:', function() {
             done();
         });
     });
+
+    it('custom request headers and credentials can be specified', function(done) {
+        var options = {
+            url: defaultUrl,
+            responseType: 'arraybuffer',
+            xhr: {
+                withCredentials: true,
+                requestHeaders: [
+                    {
+                        key: 'Authorization',
+                        value: 'my-token'
+                    }
+                ]
+            }
+        };
+        var instance = WaveSurfer.util.ajax(options);
+        instance.on('success', (data, e) => {
+            // with credentials
+            expect(e.target.withCredentials).toBeTrue();
+
+            // XXX: find a way to retrieve request headers
+            done();
+        });
+    });
 });
 
 /** @test {util} */
