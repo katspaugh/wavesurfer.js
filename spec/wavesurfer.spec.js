@@ -5,6 +5,9 @@ import WaveSurfer from '../src/wavesurfer.js';
 describe('WaveSurfer/playback:', function() {
     var wavesurfer;
 
+    const EXAMPLE_FILE_PATH = '/base/spec/support/demo.wav';
+    const EXAMPLE_FILE_DURATION = 21;
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
     /*
@@ -25,7 +28,7 @@ describe('WaveSurfer/playback:', function() {
 
     beforeAll(function(done) {
         wavesurfer = __createWaveform();
-        wavesurfer.load('/base/spec/support/demo.wav');
+        wavesurfer.load(EXAMPLE_FILE_PATH);
 
         wavesurfer.on('ready', function() {
             done();
@@ -90,7 +93,7 @@ describe('WaveSurfer/playback:', function() {
     /** @test {WaveSurfer#getDuration}  */
     it('should get duration', function() {
         var duration = parseInt(wavesurfer.getDuration(), 10);
-        expect(duration).toEqual(21);
+        expect(duration).toEqual(EXAMPLE_FILE_DURATION);
     });
 
     /** @test {WaveSurfer#getCurrentTime}  */
@@ -121,7 +124,7 @@ describe('WaveSurfer/playback:', function() {
         time = wavesurfer.getCurrentTime();
         // sets it to end of track
         time = parseInt(wavesurfer.getCurrentTime(), 10);
-        expect(time).toEqual(21);
+        expect(time).toEqual(EXAMPLE_FILE_DURATION);
     });
 
     /** @test {WaveSurfer#toggleMute}  */
@@ -131,6 +134,37 @@ describe('WaveSurfer/playback:', function() {
 
         wavesurfer.toggleMute();
         expect(wavesurfer.isMuted).toBeFalse();
+    });
+
+    /** @test {WaveSurfer#skipBackward}  */
+    it('should skip backward', function() {
+        // seek to 50%
+        wavesurfer.seekTo(0.5);
+
+        // skip 4 seconds backward
+        wavesurfer.skipBackward(4);
+        let time = wavesurfer.getCurrentTime();
+        let expectedTime = 6.886938775510204;
+        expect(time).toEqual(expectedTime);
+
+        // skip backward with params.skipLength (default: 2 seconds)
+        wavesurfer.skipBackward();
+        time = wavesurfer.getCurrentTime();
+        expect(time).toEqual(expectedTime - 2);
+    });
+
+    /** @test {WaveSurfer#skipForward}  */
+    it('should skip forward', function() {
+        // skip 4 seconds forward
+        wavesurfer.skipForward(4);
+        let time = wavesurfer.getCurrentTime();
+        let expectedTime = 3.9999999999999996;
+        expect(time).toEqual(expectedTime);
+
+        // skip forward with params.skipLength (default: 2 seconds)
+        wavesurfer.skipForward();
+        time = wavesurfer.getCurrentTime();
+        expect(time).toEqual(expectedTime + 2);
     });
 
     /** @test {WaveSurfer#setMute}  */
