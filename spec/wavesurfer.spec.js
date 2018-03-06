@@ -205,6 +205,20 @@ describe('WaveSurfer/playback:', function() {
         expect(wavesurfer.getMute()).toBeFalse();
     });
 
+    /** @test {WaveSurfer#getPlaybackRate}  */
+    it('should get playback rate', function() {
+        let rate = wavesurfer.getPlaybackRate();
+        expect(rate).toEqual(1);
+    });
+
+    /** @test {WaveSurfer#setPlaybackRate}  */
+    it('should set playback rate', function() {
+        let rate = 0.5;
+        wavesurfer.setPlaybackRate(rate);
+
+        expect(wavesurfer.getPlaybackRate()).toEqual(rate);
+    });
+
     /** @test {WaveSurfer#zoom}  */
     it('should set zoom parameters', function() {
         wavesurfer.zoom(20);
