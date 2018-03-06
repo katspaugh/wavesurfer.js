@@ -298,4 +298,11 @@ describe('WaveSurfer/playback:', function() {
 
         expect(pcmData).toEqual(expectedResult);
     });
+
+    /** @test {WaveSurfer#getFilters} */
+    it('should return the list of current set filters as an array', function() {
+        var list = wavesurfer.getFilters();
+
+        expect(list).toEqual([]);
+    });
 });
