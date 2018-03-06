@@ -90,7 +90,38 @@ describe('WaveSurfer/playback:', function() {
     /** @test {WaveSurfer#getDuration}  */
     it('should get duration', function() {
         var duration = parseInt(wavesurfer.getDuration(), 10);
-        expect(duration).toBeNumber();
+        expect(duration).toEqual(21);
+    });
+
+    /** @test {WaveSurfer#getCurrentTime}  */
+    it('should get currentTime', function() {
+        // initally zero
+        var time = wavesurfer.getCurrentTime();
+        expect(time).toEqual(0);
+
+        // seek to 50%
+        wavesurfer.seekTo(0.5);
+        time = parseInt(wavesurfer.getCurrentTime(), 10);
+        expect(time).toEqual(10);
+    });
+
+    /** @test {WaveSurfer#setCurrentTime}  */
+    it('should set currentTime', function() {
+        // initally zero
+        var time = wavesurfer.getCurrentTime();
+        expect(time).toEqual(0);
+
+        // set to 10 seconds
+        wavesurfer.setCurrentTime(10);
+        time = wavesurfer.getCurrentTime();
+        expect(time).toEqual(10);
+
+        // set to something higher than duration
+        wavesurfer.setCurrentTime(1000);
+        time = wavesurfer.getCurrentTime();
+        // sets it to end of track
+        time = parseInt(wavesurfer.getCurrentTime(), 10);
+        expect(time).toEqual(21);
     });
 
     /** @test {WaveSurfer#toggleMute}  */
