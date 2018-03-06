@@ -92,14 +92,14 @@ describe('WaveSurfer/playback:', function() {
 
     /** @test {WaveSurfer#getDuration}  */
     it('should get duration', function() {
-        var duration = parseInt(wavesurfer.getDuration(), 10);
+        let duration = parseInt(wavesurfer.getDuration(), 10);
         expect(duration).toEqual(EXAMPLE_FILE_DURATION);
     });
 
     /** @test {WaveSurfer#getCurrentTime}  */
     it('should get currentTime', function() {
         // initally zero
-        var time = wavesurfer.getCurrentTime();
+        let time = wavesurfer.getCurrentTime();
         expect(time).toEqual(0);
 
         // seek to 50%
@@ -111,7 +111,7 @@ describe('WaveSurfer/playback:', function() {
     /** @test {WaveSurfer#setCurrentTime}  */
     it('should set currentTime', function() {
         // initally zero
-        var time = wavesurfer.getCurrentTime();
+        let time = wavesurfer.getCurrentTime();
         expect(time).toEqual(0);
 
         // set to 10 seconds
@@ -125,15 +125,6 @@ describe('WaveSurfer/playback:', function() {
         // sets it to end of track
         time = parseInt(wavesurfer.getCurrentTime(), 10);
         expect(time).toEqual(EXAMPLE_FILE_DURATION);
-    });
-
-    /** @test {WaveSurfer#toggleMute}  */
-    it('should toggle mute', function() {
-        wavesurfer.toggleMute();
-        expect(wavesurfer.isMuted).toBeTrue();
-
-        wavesurfer.toggleMute();
-        expect(wavesurfer.isMuted).toBeFalse();
     });
 
     /** @test {WaveSurfer#skipBackward}  */
@@ -165,6 +156,35 @@ describe('WaveSurfer/playback:', function() {
         wavesurfer.skipForward();
         time = wavesurfer.getCurrentTime();
         expect(time).toEqual(expectedTime + 2);
+    });
+
+    /** @test {WaveSurfer#getVolume}  */
+    it('should get volume', function() {
+        let volume = wavesurfer.getVolume();
+        expect(volume).toEqual(1);
+    });
+
+    /** @test {WaveSurfer#setVolume}  */
+    it('should set volume', function() {
+        let targetVolume = 0.5;
+
+        wavesurfer.on('volume', function(result) {
+            expect(result).toEqual(targetVolume);
+            // cleanup
+            wavesurfer.un('volume');
+        });
+
+        wavesurfer.setVolume(targetVolume);
+    });
+
+    /** @test {WaveSurfer#toggleMute}  */
+    it('should toggle mute', function() {
+        wavesurfer.setMute(false);
+        wavesurfer.toggleMute();
+        expect(wavesurfer.isMuted).toBeTrue();
+
+        wavesurfer.toggleMute();
+        expect(wavesurfer.isMuted).toBeFalse();
     });
 
     /** @test {WaveSurfer#setMute}  */
