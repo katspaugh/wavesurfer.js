@@ -20,7 +20,7 @@ describe('WaveSurfer/playback:', function() {
 
         return WaveSurfer.create({
             container: '#waveform',
-            waveColor: 'violet',
+            waveColor: '#90F09B',
             progressColor: 'purple',
             cursorColor: 'white'
         });
@@ -238,15 +238,16 @@ describe('WaveSurfer/playback:', function() {
     /** @test {WaveSurfer#getWaveColor} */
     it('should allow getting waveColor', function() {
         var waveColor = wavesurfer.getWaveColor();
-        expect(waveColor).toEqual('violet');
+        expect(waveColor).toEqual('#90F09B');
     });
 
     /** @test {WaveSurfer#setWaveColor} */
     it('should allow setting waveColor', function() {
-        wavesurfer.setWaveColor('red');
+        let color = 'blue';
+        wavesurfer.setWaveColor(color);
         var waveColor = wavesurfer.getWaveColor();
 
-        expect(waveColor).toEqual('red');
+        expect(waveColor).toEqual(color);
     });
 
     /** @test {WaveSurfer#getProgressColor} */
