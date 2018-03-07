@@ -5,6 +5,9 @@ import WaveSurfer from '../src/wavesurfer.js';
 describe('WaveSurfer/playback:', function() {
     var wavesurfer;
 
+    const EXAMPLE_FILE_PATH = '/base/spec/support/demo.wav';
+    const EXAMPLE_FILE_DURATION = 21;
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
     /*
@@ -17,7 +20,7 @@ describe('WaveSurfer/playback:', function() {
 
         return WaveSurfer.create({
             container: '#waveform',
-            waveColor: 'violet',
+            waveColor: '#90F09B',
             progressColor: 'purple',
             cursorColor: 'white'
         });
@@ -25,7 +28,7 @@ describe('WaveSurfer/playback:', function() {
 
     beforeAll(function(done) {
         wavesurfer = __createWaveform();
-        wavesurfer.load('/base/spec/support/demo.wav');
+        wavesurfer.load(EXAMPLE_FILE_PATH);
 
         wavesurfer.on('ready', function() {
             done();
@@ -89,8 +92,87 @@ describe('WaveSurfer/playback:', function() {
 
     /** @test {WaveSurfer#getDuration}  */
     it('should get duration', function() {
-        var duration = parseInt(wavesurfer.getDuration(), 10);
-        expect(duration).toBeNumber();
+        let duration = parseInt(wavesurfer.getDuration(), 10);
+        expect(duration).toEqual(EXAMPLE_FILE_DURATION);
+    });
+
+    /** @test {WaveSurfer#getCurrentTime}  */
+    it('should get currentTime', function() {
+        // initally zero
+        let time = wavesurfer.getCurrentTime();
+        expect(time).toEqual(0);
+
+        // seek to 50%
+        wavesurfer.seekTo(0.5);
+        time = parseInt(wavesurfer.getCurrentTime(), 10);
+        expect(time).toEqual(10);
+    });
+
+    /** @test {WaveSurfer#setCurrentTime}  */
+    it('should set currentTime', function() {
+        // initally zero
+        let time = wavesurfer.getCurrentTime();
+        expect(time).toEqual(0);
+
+        // set to 10 seconds
+        wavesurfer.setCurrentTime(10);
+        time = wavesurfer.getCurrentTime();
+        expect(time).toEqual(10);
+
+        // set to something higher than duration
+        wavesurfer.setCurrentTime(1000);
+        time = wavesurfer.getCurrentTime();
+        // sets it to end of track
+        time = parseInt(wavesurfer.getCurrentTime(), 10);
+        expect(time).toEqual(EXAMPLE_FILE_DURATION);
+    });
+
+    /** @test {WaveSurfer#skipBackward}  */
+    it('should skip backward', function() {
+        // seek to 50%
+        wavesurfer.seekTo(0.5);
+
+        // skip 4 seconds backward
+        wavesurfer.skipBackward(4);
+        let time = wavesurfer.getCurrentTime();
+        let expectedTime = 6.886938775510204;
+        expect(time).toEqual(expectedTime);
+
+        // skip backward with params.skipLength (default: 2 seconds)
+        wavesurfer.skipBackward();
+        time = wavesurfer.getCurrentTime();
+        expect(time).toEqual(expectedTime - 2);
+    });
+
+    /** @test {WaveSurfer#skipForward}  */
+    it('should skip forward', function() {
+        // skip 4 seconds forward
+        wavesurfer.skipForward(4);
+        let time = wavesurfer.getCurrentTime();
+        let expectedTime = 3.9999999999999996;
+        expect(time).toEqual(expectedTime);
+
+        // skip forward with params.skipLength (default: 2 seconds)
+        wavesurfer.skipForward();
+        time = wavesurfer.getCurrentTime();
+        expect(time).toEqual(expectedTime + 2);
+    });
+
+    /** @test {WaveSurfer#getVolume}  */
+    it('should get volume', function() {
+        let volume = wavesurfer.getVolume();
+        expect(volume).toEqual(1);
+    });
+
+    /** @test {WaveSurfer#setVolume}  */
+    it('should set volume', function() {
+        let targetVolume = 0.5;
+
+        wavesurfer.once('volume', function(result) {
+            expect(result).toEqual(targetVolume);
+        });
+
+        wavesurfer.setVolume(targetVolume);
     });
 
     /** @test {WaveSurfer#toggleMute}  */
@@ -120,6 +202,20 @@ describe('WaveSurfer/playback:', function() {
         expect(wavesurfer.getMute()).toBeFalse();
     });
 
+    /** @test {WaveSurfer#getPlaybackRate}  */
+    it('should get playback rate', function() {
+        let rate = wavesurfer.getPlaybackRate();
+        expect(rate).toEqual(1);
+    });
+
+    /** @test {WaveSurfer#setPlaybackRate}  */
+    it('should set playback rate', function() {
+        let rate = 0.5;
+        wavesurfer.setPlaybackRate(rate);
+
+        expect(wavesurfer.getPlaybackRate()).toEqual(rate);
+    });
+
     /** @test {WaveSurfer#zoom}  */
     it('should set zoom parameters', function() {
         wavesurfer.zoom(20);
@@ -139,15 +235,16 @@ describe('WaveSurfer/playback:', function() {
     /** @test {WaveSurfer#getWaveColor} */
     it('should allow getting waveColor', function() {
         var waveColor = wavesurfer.getWaveColor();
-        expect(waveColor).toEqual('violet');
+        expect(waveColor).toEqual('#90F09B');
     });
 
     /** @test {WaveSurfer#setWaveColor} */
     it('should allow setting waveColor', function() {
-        wavesurfer.setWaveColor('red');
+        let color = 'blue';
+        wavesurfer.setWaveColor(color);
         var waveColor = wavesurfer.getWaveColor();
 
-        expect(waveColor).toEqual('red');
+        expect(waveColor).toEqual(color);
     });
 
     /** @test {WaveSurfer#getProgressColor} */
@@ -198,5 +295,12 @@ describe('WaveSurfer/playback:', function() {
         var pcmData = wavesurfer.exportPCM();
 
         expect(pcmData).toEqual(expectedResult);
+    });
+
+    /** @test {WaveSurfer#getFilters} */
+    it('should return the list of current set filters as an array', function() {
+        var list = wavesurfer.getFilters();
+
+        expect(list).toEqual([]);
     });
 });
