@@ -168,10 +168,8 @@ describe('WaveSurfer/playback:', function() {
     it('should set volume', function() {
         let targetVolume = 0.5;
 
-        wavesurfer.on('volume', function(result) {
+        wavesurfer.once('volume', function(result) {
             expect(result).toEqual(targetVolume);
-            // cleanup
-            wavesurfer.un('volume');
         });
 
         wavesurfer.setVolume(targetVolume);
