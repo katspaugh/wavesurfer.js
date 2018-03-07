@@ -5,9 +5,13 @@
     "plugins": ["transform-class-properties", "add-module-exports"],
     "env": {
         "test": {
-            "plugins": [["istanbul", {
-            "exclude": ["spec/**/*.js"]
-         }]]
-      }
+            "plugins": [
+                ["istanbul", {
+                    "exclude": [
+                        "spec/**/*.spec.js"
+                    ]
+                }]
+            ]    
+        }
     }
 }

@@ -177,7 +177,6 @@ describe('WaveSurfer/playback:', function() {
 
     /** @test {WaveSurfer#toggleMute}  */
     it('should toggle mute', function() {
-        wavesurfer.setMute(false);
         wavesurfer.toggleMute();
         expect(wavesurfer.isMuted).toBeTrue();
 
