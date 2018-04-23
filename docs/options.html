@@ -132,9 +132,9 @@ layout: default
       </tr>
       <tr>
         <td><code>responsive</code></td>
-        <td>boolean</td>
-        <td><code>true</code></td>
-        <td>By default the waveform will be responsive on resize and device orientation change. You may set this parameter to <code>false</code> which will disable the responsive waveform.</td>
+        <td>boolean or float</td>
+        <td><code>false</code></td>
+        <td>If set to <code>true</code> resize the waveform, when the window is resized. This is debounced with a 100ms timeout by default. If this parameter is a number it represents that timeout.</td>
       </tr>
       <tr>
         <td><code>scrollParent</code></td>
