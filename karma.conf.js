@@ -1,6 +1,7 @@
 /* eslint-env node */
 
 process.env.BABEL_ENV = 'test';
+process.traceDeprecation = true;
 
 require('babel-register');
 var webpackConfig = require('./build-config/webpack.prod.main.js');
@@ -65,7 +66,7 @@ module.exports = function(config) {
             'karma-chrome-launcher',
             'karma-coverage'
         ],
-        browsers: ['Chrome'],
+        browsers: ['Chrome_dev'],
         captureConsole: true,
         colors: true,
         reporters: ['progress', 'coverage'],
@@ -75,6 +76,10 @@ module.exports = function(config) {
         },
         webpack: webpackConfig,
         customLaunchers: {
+            Chrome_dev: {
+                base: 'Chrome',
+                flags: chromeFlags
+            },
             Chrome_ci: {
                 base: 'ChromeHeadless',
                 flags: chromeFlags

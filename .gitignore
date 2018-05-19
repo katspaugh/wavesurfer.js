@@ -13,6 +13,7 @@ dist/**/*.map
 .DS_Store
 .idea
 .project
+.chrome
 
 package-lock.json
 .package.json.swp

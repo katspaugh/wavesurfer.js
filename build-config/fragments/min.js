@@ -1,12 +1,13 @@
 /* eslint-env node */
 
-const path = require('path');
-const webpack = require('webpack');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
-    plugins: [
-        new webpack.optimize.UglifyJsPlugin({
-            sourceMap: true
-        })
-    ]
+    optimization: {
+        minimizer: [
+            new UglifyJSPlugin({
+                sourceMap: true
+            })
+        ]
+    }
 };
