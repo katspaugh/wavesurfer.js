@@ -1,3 +1,8 @@
 _site
 .sass-cache
 .jekyll-metadata
+
+*.swp
+coverage/
+package-lock.json
+node_modules/
