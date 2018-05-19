@@ -60,6 +60,8 @@ navigation:
         url: /plugins/playlist.html
       - title: Cursor
         url: /plugins/cursor.html
+      - title: Spectrogram
+        url: /plugins/spectrogram.html
   - title: Projects
     url: /projects/
   - title: Blog
