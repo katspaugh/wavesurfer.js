@@ -58,6 +58,8 @@ navigation:
         url: /plugins/minimap.html
       - title: Playlist
         url: /plugins/playlist.html
+      - title: Cursor
+        url: /plugins/cursor.html
   - title: Projects
     url: /projects/
   - title: Blog
