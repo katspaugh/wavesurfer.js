@@ -26,7 +26,7 @@
     "lint-and-format-staged": "lint-staged",
     "doc": "esdoc",
     "test": "karma start karma.conf.js",
-    "prepublish": "not-in-install && npm run build || in-install"
+    "prepublishOnly": "not-in-install && npm run build || in-install"
   },
   "repository": {
     "type": "git",
