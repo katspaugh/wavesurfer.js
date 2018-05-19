@@ -5,7 +5,7 @@ const rootDir = path.resolve(__dirname, '..', '..');
 
 module.exports = {
     entry: {
-        'html-init': path.join('src', 'html-init.js')
+        'html-init': path.join(rootDir, 'src', 'html-init.js')
     },
     output: {
         path: path.join(rootDir, 'dist'),
