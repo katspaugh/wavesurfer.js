@@ -4,6 +4,23 @@ process.env.BABEL_ENV = 'test';
 
 require('babel-register');
 var webpackConfig = require('./build-config/webpack.prod.main.js');
+var ci = process.env.TRAVIS || process.env.APPVEYOR;
+
+// Chrome CLI options
+// http://peter.sh/experiments/chromium-command-line-switches/
+var chromeFlags = [
+    '--no-sandbox',
+    '--no-first-run',
+    '--noerrdialogs',
+    '--no-default-browser-check',
+    '--autoplay-policy=no-user-gesture-required',
+    '--user-data-dir=.chrome',
+    '--disable-translate',
+    '--disable-extensions',
+    '--disable-infobars',
+    '--ignore-certificate-errors',
+    '--allow-insecure-localhost'
+];
 
 module.exports = function(config) {
     var configuration = {
@@ -11,6 +28,7 @@ module.exports = function(config) {
         frameworks: ['jasmine', 'jasmine-matchers'],
         hostname: 'localhost',
         port: 9876,
+        logLevel: config.LOG_INFO,
         singleRun: true,
         autoWatch: false,
         files: [
@@ -53,19 +71,19 @@ module.exports = function(config) {
         reporters: ['progress', 'coverage'],
         coverageReporter: {
             type: 'html',
-            dir: 'coverage/'
+            dir: 'coverage'
         },
         webpack: webpackConfig,
         customLaunchers: {
-            Chrome_travis_ci: {
-                base: 'Chrome',
-                flags: ['--no-sandbox']
+            Chrome_ci: {
+                base: 'ChromeHeadless',
+                flags: chromeFlags
             }
         }
     };
 
-    if (process.env.TRAVIS) {
-        configuration.browsers = ['Chrome_travis_ci'];
+    if (ci) {
+        configuration.browsers = ['Chrome_ci'];
     }
 
     config.set(configuration);
