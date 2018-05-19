@@ -6,10 +6,28 @@ layout: default
 
   <p>Adds a simple timeline to your <strong>wavesurfer.js</strong> instances.</p>
 
+  <script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.5/wavesurfer.min.js" type="text/javascript"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.5/plugin/wavesurfer.timeline.min.js" type="text/javascript"></script>
+  <script src="timeline.js"></script>
+
   <h2>Quick start</h2>
 
-  <p data-height="268" data-theme-id="0" data-slug-hash="RrvORw" data-default-tab="result" data-user="katspaugh" class='codepen'>See the Pen <a href='http://codepen.io/katspaugh/pen/RrvORw/'>wavesurfer.js timeline</a> by katspaugh (<a href='http://codepen.io/katspaugh'>@katspaugh</a>) on <a href='http://codepen.io'>CodePen</a>.</p>
-  <script async src="//assets.codepen.io/assets/embed/ei.js"></script>
+  <div id="demo">
+        <div id="waveform">
+            <!-- Here be waveform -->
+        </div>
+        <div id="wave-timeline"></div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="wavesurfer.playPause()">
+                <i class="glyphicon glyphicon-play"></i>
+                Play
+                /
+                <i class="glyphicon glyphicon-pause"></i>
+                Pause
+            </button>
+        </div>
+  </div>
 
   <p>
     <ol>
