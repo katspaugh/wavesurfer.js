@@ -6,10 +6,18 @@ layout: default
 
   <p>Adds a minimap to the main waveform.</p>
 
+  <script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.5/wavesurfer.min.js" type="text/javascript"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.5/plugin/wavesurfer.minimap.min.js" type="text/javascript"></script>
+  <script src="minimap.js"></script>
+
   <h2>Quick start</h2>
 
-<p data-height="400" data-theme-id="0" data-slug-hash="ggeGyG" data-default-tab="result" data-user="entonbiba" data-embed-version="2" data-pen-title="WaveSurfer.js - waveform minimap" class="codepen">See the Pen <a href="http://codepen.io/entonbiba/pen/ggeGyG/">WaveSurfer.js - waveform minimap</a> by Enton Biba (<a href="http://codepen.io/entonbiba">@entonbiba</a>) on <a href="http://codepen.io">CodePen</a>.</p>
-<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+  <div id="waveform"></div>
+  <div id="minimap"></div>
+  <button class="btn btn-primary" onclick="wavesurfer.playPause()">
+    <i class="glyphicon glyphicon-play"></i>
+    Play/Pause
+  </button>
 
   <p>
     <ol>

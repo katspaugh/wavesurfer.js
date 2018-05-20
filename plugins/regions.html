@@ -10,8 +10,22 @@ layout: default
 
   <h2>Quick start</h2>
 
-  <p data-height="260" data-theme-id="0" data-slug-hash="obmOXV" data-default-tab="result" data-user="katspaugh" class='codepen'>See the Pen <a href='http://codepen.io/katspaugh/pen/obmOXV/'>wavesurfer.js regions</a> by katspaugh (<a href='http://codepen.io/katspaugh'>@katspaugh</a>) on <a href='http://codepen.io'>CodePen</a>.</p>
-  <script async src="//assets.codepen.io/assets/embed/ei.js"></script>
+  <!-- main wavesurfer.js lib -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.5/wavesurfer.min.js"></script>
+
+  <!-- wavesurfer.js regions -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.5/plugin/wavesurfer.regions.min.js"></script>
+
+  <script src="regions.js"></script>
+
+  <div id="waveform"></div>
+
+  <p align="center">
+      <button class="btn btn-primary" onclick="wavesurfer.playPause()">
+          <i class="glyphicon glyphicon-play"></i>
+          Play
+      </button>
+  </p>
 
   <h2>Methods added to the <code>WaveSurfer</code> object</h2>
 
@@ -128,7 +142,7 @@ layout: default
   </ul>
 
   <h3>WaveSurfer events</h3>
-  <p>In addition, the `WaveSurfer` instance also fires a set of matching events (passing a region object):</p>
+  <p>In addition, the <code>WaveSurfer</code> instance also fires a set of matching events (passing a region object):</p>
   <ul>
     <li><code>region-created</code></li>
     <li><code>region-updated</code></li>
