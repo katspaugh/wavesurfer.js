@@ -64,11 +64,12 @@ module.exports = function(config) {
             'karma-jasmine',
             'karma-jasmine-matchers',
             'karma-chrome-launcher',
+            'karma-firefox-launcher',
             'karma-coverage',
             'karma-coveralls',
             'karma-verbose-reporter'
         ],
-        browsers: ['Chrome_dev'],
+        browsers: ['Chrome_dev', 'FirefoxHeadless'],
         captureConsole: true,
         colors: true,
         reporters: ['verbose', 'progress', 'coverage'],
@@ -85,6 +86,9 @@ module.exports = function(config) {
             Chrome_ci: {
                 base: 'ChromeHeadless',
                 flags: chromeFlags
+            },
+            Firefox_dev: {
+                base: 'FirefoxHeadless'
             }
         }
     };

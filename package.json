@@ -65,6 +65,7 @@
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "^1.1.2",
     "karma-coveralls": "^1.2.1",
+    "karma-firefox-launcher": "^1.1.0",
     "karma-jasmine": "1.1.2",
     "karma-jasmine-matchers": "3.7.0",
     "karma-verbose-reporter": "0.0.6",

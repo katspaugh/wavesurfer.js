@@ -3,6 +3,7 @@ environment:
     - nodejs_version: '9'
 install:
   - choco install -y googlechrome --ignore-checksums
+  - choco install -y firefox --ignore-checksums
   - ps: Install-Product node $env:nodejs_version
   - set CI=true
   - npm install --global npm@latest
