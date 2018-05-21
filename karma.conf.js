@@ -65,6 +65,7 @@ module.exports = function(config) {
             'karma-jasmine-matchers',
             'karma-chrome-launcher',
             'karma-coverage',
+            'karma-coveralls',
             'karma-verbose-reporter'
         ],
         browsers: ['Chrome_dev'],
@@ -90,6 +91,13 @@ module.exports = function(config) {
 
     if (ci) {
         configuration.browsers = ['Chrome_ci'];
+
+        if (process.env.TRAVIS) {
+            // enable coveralls
+            configuration.reporters.push('coveralls');
+            // lcov or lcovonly are required for generating lcov.info files
+            configuration.coverageReporter.type = 'lcov';
+        }
     }
 
     config.set(configuration);
