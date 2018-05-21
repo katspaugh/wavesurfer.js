@@ -42,10 +42,16 @@ module.exports = function(config) {
             },
 
             // specs
-            'spec/**/*.spec.js'
+            'spec/plugin-api.spec.js',
+            'spec/util.spec.js',
+            'spec/wavesurfer.spec.js',
+            'spec/peakcache.spec.js'
         ],
         preprocessors: {
-            'spec/**/*.spec.js': ['webpack'],
+            'spec/plugin-api.spec.js': ['webpack'],
+            'spec/util.spec.js': ['webpack'],
+            'spec/wavesurfer.spec.js': ['webpack'],
+            'spec/peakcache.spec.js': ['webpack'],
 
             // source files, that you want to generate coverage for
             // do not include tests or libraries
