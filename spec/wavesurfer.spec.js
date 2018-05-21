@@ -277,15 +277,25 @@ describe('WaveSurfer/playback:', function() {
 
         expect(list).toEqual([]);
     });
+
+    /** @test {WaveSurfer#exportImage} */
+    it('should export image data', function() {
+        var imgData = wavesurfer.exportImage();
+        expect(imgData).toBeNonEmptyString();
+    });
 });
 
 /** @test {WaveSurfer} */
 describe('WaveSurfer/errors:', function() {
-    var wavesurfer;
+    var element;
 
-    /*afterEach(function() {
-        wavesurfer.destroy();
-    });*/
+    beforeEach(function() {
+        element = TestHelpers.createElement('test');
+    });
+
+    afterEach(function() {
+        TestHelpers.removeElement(element);
+    });
 
     /**
      * @test {WaveSurfer}
@@ -302,14 +312,42 @@ describe('WaveSurfer/errors:', function() {
      * @test {WaveSurfer}
      */
     it('should throw when media container element not found', function() {
-        var element = TestHelpers.createElement('test');
         expect(function() {
             TestHelpers.createWaveform({
                 container: '#test',
                 mediaContainer: '#foo'
             });
         }).toThrow(new Error('Media Container element not found'));
+    });
 
-        TestHelpers.removeElement(element);
+    /**
+     * @test {WaveSurfer}
+     */
+    it('should throw for invalid maxCanvasWidth param', function() {
+        expect(function() {
+            TestHelpers.createWaveform({
+                container: '#test',
+                maxCanvasWidth: 0.5
+            });
+        }).toThrow(new Error('maxCanvasWidth must be greater than 1'));
+
+        expect(function() {
+            TestHelpers.createWaveform({
+                container: '#test',
+                maxCanvasWidth: 3
+            });
+        }).toThrow(new Error('maxCanvasWidth must be an even number'));
+    });
+
+    /**
+     * @test {WaveSurfer}
+     */
+    it('should throw for invalid renderer', function() {
+        expect(function() {
+            TestHelpers.createWaveform({
+                container: '#test',
+                renderer: 'foo'
+            });
+        }).toThrow(new Error('Renderer parameter is invalid'));
     });
 });
