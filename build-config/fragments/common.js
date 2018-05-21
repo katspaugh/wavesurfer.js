@@ -4,16 +4,22 @@ const path = require('path');
 const webpack = require('webpack');
 
 const time = new Date();
-const pckg = require(path.join(__dirname, '..', '..', 'package.json'));
+var rootDir = path.resolve(__dirname, '..', '..');
+const pckg = require(path.join(rootDir, 'package.json'));
+
+// add JS banner with copyright and version info
 // prettier-ignore
-const bannerPlugin = new webpack.BannerPlugin(
-`${pckg.name} ${pckg.version} (${time})
+const jsBanner = `${pckg.name} ${pckg.version} (${time})
 ${pckg.homepage}
-@license ${pckg.license}`
-);
+@license ${pckg.license}`;
+const jsBannerPlugin = new webpack.BannerPlugin({
+    banner: jsBanner,
+    test: /\.js$/
+});
 
 module.exports = {
-    context: path.resolve(__dirname, '../', '../'),
+    context: rootDir,
+    mode: 'development',
     output: {
         libraryTarget: 'umd',
         umdNamedDefine: true
@@ -44,5 +50,5 @@ module.exports = {
             }
         ]
     },
-    plugins: [bannerPlugin]
+    plugins: [jsBannerPlugin]
 };

@@ -139,6 +139,7 @@ For a list of  projects using wavesurfer.js, check out
 [![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
 [![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg)]()
 [![Build Status](https://travis-ci.org/katspaugh/wavesurfer.js.svg?branch=master)](https://travis-ci.org/katspaugh/wavesurfer.js)
+[![Coverage Status](https://coveralls.io/repos/github/katspaugh/wavesurfer.js/badge.svg)](https://coveralls.io/github/katspaugh/wavesurfer.js)
 
 Install development dependencies:
 
