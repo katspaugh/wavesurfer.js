@@ -19,6 +19,7 @@ const jsBannerPlugin = new webpack.BannerPlugin({
 
 module.exports = {
     context: rootDir,
+    mode: 'development',
     output: {
         libraryTarget: 'umd',
         umdNamedDefine: true
