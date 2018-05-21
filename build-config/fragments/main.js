@@ -1,19 +1,14 @@
 /* eslint-env node */
 
 const path = require('path');
+const rootDir = path.resolve(__dirname, '..', '..');
 
 module.exports = {
     entry: {
-        wavesurfer: path.resolve(
-            __dirname,
-            '../',
-            '../',
-            'src',
-            'wavesurfer.js'
-        )
+        wavesurfer: path.join(rootDir, 'src', 'wavesurfer.js')
     },
     output: {
-        path: path.resolve(__dirname, '../', '../', 'dist'),
+        path: path.join(rootDir, 'dist'),
         filename: '[name].js',
         library: 'WaveSurfer'
     }
