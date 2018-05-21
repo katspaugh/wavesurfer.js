@@ -26,7 +26,7 @@ describe('WaveSurfer/playback:', function() {
         });
     }
 
-    beforeAll(function(done) {
+    beforeEach(function(done) {
         wavesurfer = __createWaveform();
         wavesurfer.load(EXAMPLE_FILE_PATH);
 
@@ -35,11 +35,7 @@ describe('WaveSurfer/playback:', function() {
         });
     });
 
-    beforeEach(function() {
-        wavesurfer.seekTo(0);
-    });
-
-    afterAll(function() {
+    afterEach(function() {
         wavesurfer.destroy();
     });
 
@@ -49,10 +45,6 @@ describe('WaveSurfer/playback:', function() {
     it('should be ready', function() {
         wavesurfer.play();
         expect(wavesurfer.isReady).toBeFalse();
-
-        wavesurfer.on('ready', function() {
-            expect(wavesurfer.isReady()).toBeTrue();
-        });
     });
 
     /**
@@ -165,11 +157,13 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#setVolume}  */
-    it('should set volume', function() {
+    it('should set volume', function(done) {
         let targetVolume = 0.5;
 
         wavesurfer.once('volume', function(result) {
             expect(result).toEqual(targetVolume);
+
+            done();
         });
 
         wavesurfer.setVolume(targetVolume);
