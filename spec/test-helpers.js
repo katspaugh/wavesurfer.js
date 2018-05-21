@@ -1,5 +1,3 @@
-import document from 'global/document';
-
 import WaveSurfer from '../src/wavesurfer.js';
 
 const TestHelpers = {
