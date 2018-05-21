@@ -2,9 +2,11 @@
 
 import WaveSurfer from '../src/wavesurfer.js';
 
+import TestHelpers from './test-helpers.js';
+
 /** @test {util.ajax} */
 describe('util.ajax:', function() {
-    var defaultUrl = '/base/spec/support/demo.wav';
+    var defaultUrl = TestHelpers.EXAMPLE_FILE_PATH;
 
     it('can load an arraybuffer', function(done) {
         var options = {

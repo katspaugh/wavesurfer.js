@@ -1,34 +1,16 @@
 /* eslint-env jasmine */
-import WaveSurfer from '../src/wavesurfer.js';
+
+import TestHelpers from './test-helpers.js';
 
 /** @test {WaveSurfer} */
 describe('WaveSurfer/playback:', function() {
     var wavesurfer;
 
-    const EXAMPLE_FILE_PATH = '/base/spec/support/demo.wav';
-    const EXAMPLE_FILE_DURATION = 21;
-
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
-    /*
-     * Handle creating wavesurfer ui requirements
-     */
-    function __createWaveform() {
-        var waveformDiv = document.createElement('div');
-        waveformDiv.id = 'waveform';
-        document.getElementsByTagName('body')[0].appendChild(waveformDiv);
-
-        return WaveSurfer.create({
-            container: '#waveform',
-            waveColor: '#90F09B',
-            progressColor: 'purple',
-            cursorColor: 'white'
-        });
-    }
-
     beforeEach(function(done) {
-        wavesurfer = __createWaveform();
-        wavesurfer.load(EXAMPLE_FILE_PATH);
+        wavesurfer = TestHelpers.createWaveform();
+        wavesurfer.load(TestHelpers.EXAMPLE_FILE_PATH);
 
         wavesurfer.on('ready', function() {
             done();
@@ -85,7 +67,7 @@ describe('WaveSurfer/playback:', function() {
     /** @test {WaveSurfer#getDuration}  */
     it('should get duration', function() {
         let duration = parseInt(wavesurfer.getDuration(), 10);
-        expect(duration).toEqual(EXAMPLE_FILE_DURATION);
+        expect(duration).toEqual(TestHelpers.EXAMPLE_FILE_DURATION);
     });
 
     /** @test {WaveSurfer#getCurrentTime}  */
@@ -116,7 +98,7 @@ describe('WaveSurfer/playback:', function() {
         time = wavesurfer.getCurrentTime();
         // sets it to end of track
         time = parseInt(wavesurfer.getCurrentTime(), 10);
-        expect(time).toEqual(EXAMPLE_FILE_DURATION);
+        expect(time).toEqual(TestHelpers.EXAMPLE_FILE_DURATION);
     });
 
     /** @test {WaveSurfer#skipBackward}  */
@@ -148,6 +130,20 @@ describe('WaveSurfer/playback:', function() {
         wavesurfer.skipForward();
         time = wavesurfer.getCurrentTime();
         expect(time).toEqual(expectedTime + 2);
+    });
+
+    /** @test {WaveSurfer#getPlaybackRate}  */
+    it('should get playback rate', function() {
+        let rate = wavesurfer.getPlaybackRate();
+        expect(rate).toEqual(1);
+    });
+
+    /** @test {WaveSurfer#setPlaybackRate}  */
+    it('should set playback rate', function() {
+        let rate = 0.5;
+        wavesurfer.setPlaybackRate(rate);
+
+        expect(wavesurfer.getPlaybackRate()).toEqual(rate);
     });
 
     /** @test {WaveSurfer#getVolume}  */
@@ -194,20 +190,6 @@ describe('WaveSurfer/playback:', function() {
 
         wavesurfer.setMute(false);
         expect(wavesurfer.getMute()).toBeFalse();
-    });
-
-    /** @test {WaveSurfer#getPlaybackRate}  */
-    it('should get playback rate', function() {
-        let rate = wavesurfer.getPlaybackRate();
-        expect(rate).toEqual(1);
-    });
-
-    /** @test {WaveSurfer#setPlaybackRate}  */
-    it('should set playback rate', function() {
-        let rate = 0.5;
-        wavesurfer.setPlaybackRate(rate);
-
-        expect(wavesurfer.getPlaybackRate()).toEqual(rate);
     });
 
     /** @test {WaveSurfer#zoom}  */
@@ -294,5 +276,78 @@ describe('WaveSurfer/playback:', function() {
         var list = wavesurfer.getFilters();
 
         expect(list).toEqual([]);
+    });
+
+    /** @test {WaveSurfer#exportImage} */
+    it('should export image data', function() {
+        var imgData = wavesurfer.exportImage();
+        expect(imgData).toBeNonEmptyString();
+    });
+});
+
+/** @test {WaveSurfer} */
+describe('WaveSurfer/errors:', function() {
+    var element;
+
+    beforeEach(function() {
+        element = TestHelpers.createElement('test');
+    });
+
+    afterEach(function() {
+        TestHelpers.removeElement(element);
+    });
+
+    /**
+     * @test {WaveSurfer}
+     */
+    it('should throw when container element not found', function() {
+        expect(function() {
+            TestHelpers.createWaveform({
+                container: '#foo'
+            });
+        }).toThrow(new Error('Container element not found'));
+    });
+
+    /**
+     * @test {WaveSurfer}
+     */
+    it('should throw when media container element not found', function() {
+        expect(function() {
+            TestHelpers.createWaveform({
+                container: '#test',
+                mediaContainer: '#foo'
+            });
+        }).toThrow(new Error('Media Container element not found'));
+    });
+
+    /**
+     * @test {WaveSurfer}
+     */
+    it('should throw for invalid maxCanvasWidth param', function() {
+        expect(function() {
+            TestHelpers.createWaveform({
+                container: '#test',
+                maxCanvasWidth: 0.5
+            });
+        }).toThrow(new Error('maxCanvasWidth must be greater than 1'));
+
+        expect(function() {
+            TestHelpers.createWaveform({
+                container: '#test',
+                maxCanvasWidth: 3
+            });
+        }).toThrow(new Error('maxCanvasWidth must be an even number'));
+    });
+
+    /**
+     * @test {WaveSurfer}
+     */
+    it('should throw for invalid renderer', function() {
+        expect(function() {
+            TestHelpers.createWaveform({
+                container: '#test',
+                renderer: 'foo'
+            });
+        }).toThrow(new Error('Renderer parameter is invalid'));
     });
 });

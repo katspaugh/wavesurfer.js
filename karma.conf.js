@@ -52,6 +52,7 @@ module.exports = function(config) {
             'spec/util.spec.js': ['webpack'],
             'spec/wavesurfer.spec.js': ['webpack'],
             'spec/peakcache.spec.js': ['webpack'],
+
             // source files, that you want to generate coverage for
             // do not include tests or libraries
             'src/**/*.js': ['coverage']
