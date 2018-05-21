@@ -1,6 +1,9 @@
+
 _site
 .sass-cache
 .jekyll-metadata
+.chrome
+.project
 
 *.swp
 coverage/
