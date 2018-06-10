@@ -98,8 +98,8 @@ export default class Drawer extends util.Observer {
 
         if (!this.params.fillParent && nominalWidth < parentWidth) {
             progress =
-                (clientX - bbox.left) * this.params.pixelRatio / nominalWidth ||
-                0;
+                (clientX - bbox.left) *
+                    (this.params.pixelRatio / nominalWidth) || 0;
 
             if (progress > 1) {
                 progress = 1;
