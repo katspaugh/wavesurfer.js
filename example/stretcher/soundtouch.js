@@ -664,7 +664,7 @@
             var newOvl;
 
             // TODO assert(overlapInMsec >= 0);
-            newOvl = this.sampleRate * overlapInMsec / 1000;
+            newOvl = (this.sampleRate * overlapInMsec) / 1000;
             if (newOvl < 16) newOvl = 16;
 
             // must be divisible by 8
@@ -700,10 +700,10 @@
 
             // Update seek window lengths
             this.seekWindowLength = Math.floor(
-                this.sampleRate * this.sequenceMs / 1000
+                (this.sampleRate * this.sequenceMs) / 1000
             );
             this.seekLength = Math.floor(
-                this.sampleRate * this.seekWindowMs / 1000
+                (this.sampleRate * this.seekWindowMs) / 1000
             );
         },
 

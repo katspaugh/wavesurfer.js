@@ -5,6 +5,7 @@ wavesurfer.js changelog
 ------------------
 
 - Build library using webpack 4 (#1376)
+- Add `audioScriptProcessor` option to use custom script processor node (#1389)
 - Added `mute` and `volume` events (#1345)
 
 2.0.5 (26.02.2018)
