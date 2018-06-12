@@ -22,6 +22,8 @@ import PeakCache from './peakcache';
  * initialized AudioContext or leave blank.
  * @property {number} audioRate=1 Speed at which to play audio. Lower number is
  * slower.
+ * @property {ScriptProcessorNode} audioScriptProcessor=null Use your own previously
+ * initialized ScriptProcessorNode or leave blank.
  * @property {boolean} autoCenter=true If a scrollbar is present, center the
  * waveform around the progress
  * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'` In most cases

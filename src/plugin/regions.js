@@ -19,7 +19,7 @@ class Region {
             params.end == null
                 ? // small marker-like region
                   this.start +
-                  4 / this.wrapper.scrollWidth * this.wavesurfer.getDuration()
+                  (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration()
                 : Number(params.end);
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
@@ -200,8 +200,8 @@ class Region {
         if (this.element != null) {
             // Calculate the left and width values of the region such that
             // no gaps appear between regions.
-            const left = Math.round(this.start / dur * width);
-            const regionWidth = Math.round(this.end / dur * width) - left;
+            const left = Math.round((this.start / dur) * width);
+            const regionWidth = Math.round((this.end / dur) * width) - left;
 
             this.style(this.element, {
                 left: left + 'px',
