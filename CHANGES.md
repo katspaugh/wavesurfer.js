@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-2.0.6 (unreleased)
+2.0.6 (14.06.2018)
 ------------------
 
 - Build library using webpack 4 (#1376)
