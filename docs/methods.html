@@ -14,9 +14,12 @@ layout: default
     <li><code>getPlaybackRate()</code> – Returns the playback speed of an audio clip.</li>
     <li><code>getVolume()</code> – Returns the volume of the current audio clip.</li>
     <li><code>getMute()</code> – Returns the current mute status.</li>
-    <li><code>getFilters()</code> – Returns an array of the current set filters.</li>
+    <li><code>getReady()</code> – Returns the current ready status.</li>
+    <li><code>getReady()</code> – Returns the current ready status.</li>
+    <li><code>getWaveColor()</code> – Returns the fill color of the waveform after the cursor.</li>
     <li><code>exportPCM(length, accuracy, noWindow, start)</code> – Exports PCM data into a JSON array. Optional parameters <code>length</code> <code>[number] - default: 1024</code>, <code>accuracy</code> <code>[number] - default: 10000</code>, <code>noWindow</code> <code>[true|false] - default: false</code>, <code>start</code> <code>[number] - default: 0</code></li>
-    <li><code>isPlaying()</code> – Returns true if currently playing, false otherwise.</li>
+    <li><code>exportImage(format, quality)</code> – Return waveform image as data URI.</li>
+    <li><code>isPlaying()</code> – Returns <code>true</code> if currently playing, false otherwise.</li>
     <li><code>load(url, peaks, preload)</code> – Loads audio from <code>URL</code> via XHR. Optional array of <code>peaks</code>. Optional <code>preload</code> parameter <code>[none|metadata|auto]</code>, parsed to the <a href="https://developer.mozilla.org/en/docs/Web/HTML/Element/audio">Audio element</a> if using backend MediaElement.</li> 
     <li><code>loadBlob(url)</code> – Loads audio from a <code>Blob</code> or <code>File</code> object.</li>
     <li><code>on(eventName, callback)</code> – Subscribes to an event.  See <a href="/docs/events.html">WaveSurfer Events</a> for the list of all events.</li>
@@ -27,13 +30,16 @@ layout: default
     <li><code>playPause()</code> – Plays if paused, pauses if playing.</li>
     <li><code>seekAndCenter(progress)</code> – Seeks to a progress and centers view <code>[0..1]</code> (0 = beginning, 1 = end).</li>
     <li><code>seekTo(progress)</code> – Seeks to a progress <code>[0..1]</code> (0 = beginning, 1 = end).</li>
+    <li><code>setHeight(height)</code> – Sets the height of the waveform.</li>
     <li><code>setFilter(filters)</code> - For inserting your own WebAudio nodes into the graph.  See <a href="#connecting-filters">Connecting Filters</a> below.</li>
     <li><code>setPlaybackRate(rate)</code> – Sets the speed of playback (<code>0.5</code> is half speed, <code>1</code> is normal speed, <code>2</code> is double speed and so on).</li>
     <li><code>setVolume(newVolume)</code> – Sets the playback volume to a new value <code>[0..1]</code> (0 = silent, 1 = maximum).</li>
     <li><code>setMute(mute)</code> – Mute the current sound. Can be a boolean value of <code>true</code> to mute sound or <code>false</code> to unmute</li>
+    <li><code>setWaveColor(color)</code> – Sets the fill color of the waveform after the cursor.</li>
     <li><code>skip(offset)</code> – Skip a number of seconds from the current position (use a negative value to go backwards).</li>
     <li><code>skipBackward()</code> - Rewind <code>skipLength</code> seconds.</li>
     <li><code>skipForward()</code> - Skip ahead <code>skipLength</code> seconds.</li>
+    <li><code>setSinkId(deviceId)</code> - Set the sink id to change audio output device.</li>
     <li><code>stop()</code> – Stops and goes to the beginning.</li>
     <li><code>toggleMute()</code> – Toggles the volume on and off.</li>
     <li><code>toggleInteraction()</code> – Toggle mouse interaction.</li>
