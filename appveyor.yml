@@ -1,1 +1,5 @@
+# Disable automatic builds
+build: off
+
+# Do not build on gh tags
 skip_tags: true
