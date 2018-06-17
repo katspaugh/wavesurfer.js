@@ -17,22 +17,40 @@ layout: default
     </thead>
     <tbody>
       <tr>
-        <td><code>audioContext</code></td>
-        <td>object</td>
-        <td><em>none</em></td>
-        <td>Use your own previously initialized <code>AudioContext</code> or leave blank.</td>
-      </tr>
-      <tr>
         <td><code>audioRate</code></td>
         <td>float</td>
         <td><code>1</code></td>
         <td>Speed at which to play audio.  Lower number is slower.</td>
       </tr>
       <tr>
+        <td><code>audioContext</code></td>
+        <td>object</td>
+        <td><em>none</em></td>
+        <td>Use your own previously initialized <code>AudioContext</code> or leave blank.</td>
+      </tr>
+      <tr>
+        <td><code>audioScriptProcessor</code></td>
+        <td>object</td>
+        <td><em>none</em></td>
+        <td>Use your own previously initialized <code>ScriptProcessorNode</code> or leave blank.</td>
+      </tr>
+      <tr>
+        <td><code>autoCenter</code></td>
+        <td>boolean</td>
+        <td><code>true</code></td>
+        <td>If a scrollbar is present, center the waveform around the progress.</td>
+      </tr>
+      <tr>
         <td><code>backend</code></td>
         <td>string</td>
         <td><code>WebAudio</code></td>
         <td><code>WebAudio</code> or <code>MediaElement</code>. In most cases you don't have to set this manually. <code>MediaElement</code> is a fallback for unsupported browsers.</td>
+      </tr>
+      <tr>
+        <td><code>barGap</code></td>
+        <td>number</td>
+        <td><em>none</em></td>
+        <td>The optional spacing between bars of the wave, if not provided will be calculated in legacy format.</td>
       </tr>
       <tr>
         <td><code>barHeight</code></td>
@@ -45,6 +63,12 @@ layout: default
         <td>number</td>
         <td><em>none</em></td>
         <td>If specified, the waveform will be drawn like this: ▁ ▂ ▇ ▃ ▅ ▂</td>
+      </tr>
+      <tr>
+        <td><code>closeAudioContext</code></td>
+        <td>boolean</td>
+        <td><code>false</code></td>
+        <td>Close and nullify all audio contexts when the destroy method is called.</td>
       </tr>
       <tr>
         <td><code>container</code></td>
@@ -71,6 +95,12 @@ layout: default
         <td>Whether to fill the entire container or draw only according to <code>minPxPerSec</code>.</td>
       </tr>
       <tr>
+        <td><code>forceDecode</code></td>
+        <td>boolean</td>
+        <td><code>false</code></td>
+        <td>Force decoding of audio using web audio when zooming to get a more detailed waveform.</td>
+      </tr>
+      <tr>
         <td><code>height</code></td>
         <td>integer</td>
         <td><code>128</code></td>
@@ -89,16 +119,28 @@ layout: default
         <td>Whether the mouse interaction will be enabled at initialization.  You can switch this parameter at any time later on.</td>
       </tr>
       <tr>
+        <td><code>loopSelection</code></td>
+        <td>boolean</td>
+        <td><code>true</code></td>
+        <td>(Use with regions plugin) Enable looping of selected regions.</td>
+      </tr>
+      <tr>
         <td><code>maxCanvasWidth</code></td>
         <td>integer</td>
         <td><code>4000</code></td>
         <td>Maximum width of a single canvas in pixels, excluding a small overlap (<code>2 * pixelRatio</code>, rounded up to the next even integer). If the waveform is longer than this value, additional canvases will be used to render the waveform, which is useful for very large waveforms that may be too wide for browsers to draw on a single canvas. This parameter is only applicable to the <code>MultiCanvas</code> renderer.</td>
       </tr>
       <tr>
+        <td><code>mediaControls</code></td>
+        <td>boolean</td>
+        <td><code>false</code></td>
+        <td>(Use with backend <code>MediaElement</code>) this enables the native controls for the media element.</td>
+      </tr>
+      <tr>
         <td><code>mediaType</code></td>
         <td>string</td>
         <td><code>audio</code></td>
-        <td><code>'audio'</code> or <code>'video'</code>. Only used with <code>backend: 'MediaElement'</code>.</td>
+        <td><code>'audio'</code> or <code>'video'</code>. Only used with backend <code>MediaElement</code>.</td>
       </tr>
       <tr>
         <td><code>minPxPerSec</code></td>
@@ -113,10 +155,22 @@ layout: default
         <td>If <code>true</code>, normalize by the maximum peak instead of 1.0.</td>
       </tr>
       <tr>
+        <td><code>partialRender</code></td>
+        <td>boolean</td>
+        <td><code>false</code></td>
+        <td>Use the PeakCache to improve rendering speed of large waveforms.</td>
+      </tr>
+      <tr>
         <td><code>pixelRatio</code></td>
         <td>integer</td>
         <td><code>window.devicePixelRatio</code></td>
         <td>Can be set to <code>1</code> for faster rendering.</td>
+      </tr>
+      <tr>
+        <td><code>plugins</code></td>
+        <td>array</td>
+        <td><code>[]</code></td>
+        <td>An array of plugin definitions to register during instantiation. They will be directly initialised unless they are added with the <code>deferInit</code> property set to <code>true</code>.</td>
       </tr>
       <tr>
         <td><code>progressColor</code></td>
@@ -125,10 +179,16 @@ layout: default
         <td>The fill color of the part of the waveform behind the cursor.</td>
       </tr>
       <tr>
+        <td><code>removeMediaElementOnDestroy</code></td>
+        <td>boolean</td>
+        <td><code>true</code></td>
+        <td>Set to <code>false</code> to keep the media element in the DOM when the player is destroyed. This is useful when reusing an existing media element via the <code>loadMediaElement</code> method.</td>
+      </tr>
+      <tr>
         <td><code>renderer</code></td>
-        <td>string</td>
-        <td><code>Canvas</code></td>
-        <td>The renderer object used to draw the waveform. The <code>MultiCanvas</code> renderer can be used to render waveforms that cannot fit on a single canvas due to browser limitations.</td>
+        <td>Object</td>
+        <td><code>MultiCanvas</code></td>
+        <td>Can be used to inject a custom renderer.</td>
       </tr>
       <tr>
         <td><code>responsive</code></td>
@@ -149,16 +209,22 @@ layout: default
         <td>Number of seconds to skip with the <code>skipForward()</code> and <code>skipBackward()</code> <a href="/docs/methods.html">methods</a>.</td>
       </tr>
       <tr>
+        <td><code>splitChannels</code></td>
+        <td>boolean</td>
+        <td><code>false</code></td>
+        <td>Render with seperate waveforms for the channels of the audio.</td>
+      </tr>
+      <tr>
         <td><code>waveColor</code></td>
         <td>string</td>
         <td><code>#999</code></td>
         <td>The fill color of the waveform after the cursor.</td>
       </tr>
       <tr>
-        <td><code>autoCenter</code></td>
-        <td>boolean</td>
-        <td>true</td>
-        <td>If a scrollbar is present, center the waveform around the progress</td>
+        <td><code>xhr</code></td>
+        <td>Object</td>
+        <td><code>{}</code></td>
+        <td>XHR options.</td>
       </tr>
   </tbody></table>
 </section>
