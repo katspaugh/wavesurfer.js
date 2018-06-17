@@ -1449,6 +1449,7 @@ export default class WaveSurfer extends util.Observer {
             this.stop();
             this.backend.disconnectSource();
         }
+        this.isReady = false;
         this.cancelAjax();
         this.clearTmpEvents();
         this.drawer.progress(0);
