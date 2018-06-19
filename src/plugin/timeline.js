@@ -134,8 +134,8 @@ export default class TimelinePlugin {
                 fontFamily: 'Arial',
                 fontSize: 10,
                 zoomDebounce: false,
-                startSeconds : 0,
-                formatTime : 'MM:SS',
+                startSeconds: 0,
+                formatTime: 'MM:SS',
                 formatTimeCallback(seconds, format) {
                     if (seconds / 60 > 1) {
                         // calculate minutes and seconds from seconds count
