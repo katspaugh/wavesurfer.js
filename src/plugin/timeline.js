@@ -139,7 +139,7 @@ export default class TimelinePlugin {
                 formatTimeCallback(seconds, format) {
                     if (seconds / 60 > 1) {
                         // calculate minutes and seconds from seconds count
-                        minutes = parseInt(seconds / 60, 10);
+                        var minutes = parseInt(seconds / 60, 10);
                         seconds = parseInt(seconds % 60, 10);
                         // fill up seconds with zeroes
                         seconds = seconds < 10 ? '0' + seconds : seconds;
