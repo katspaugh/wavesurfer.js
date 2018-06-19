@@ -16,7 +16,9 @@
  * performance for large files
  * @property {string} fontFamily='Arial'
  * @property {number} fontSize=10 Font size of labels in pixels
- * @property {function} formatTimeCallback=→00:00
+ * @property {number} startSeconds=0 Start time in second for begining timeline rule
+ * @property {string} formatTime='MM:SS' default time format for timeline rule, can be change to'HH:MM:SS'
+ * @property {function} formatTimeCallback=→00:00 (or 00:00:00 depend of formatTime property)
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('timeline')`
  */
@@ -132,14 +134,26 @@ export default class TimelinePlugin {
                 fontFamily: 'Arial',
                 fontSize: 10,
                 zoomDebounce: false,
-                formatTimeCallback(seconds) {
+                startSeconds : 0,
+                formatTime : 'MM:SS',
+                formatTimeCallback(seconds, format) {
                     if (seconds / 60 > 1) {
                         // calculate minutes and seconds from seconds count
-                        const minutes = parseInt(seconds / 60, 10);
+                        minutes = parseInt(seconds / 60, 10);
                         seconds = parseInt(seconds % 60, 10);
                         // fill up seconds with zeroes
                         seconds = seconds < 10 ? '0' + seconds : seconds;
-                        return `${minutes}:${seconds}`;
+                        if (format === 'HH:MM:SS') {
+                            // calculate hours from minutes
+                            var hours = parseInt(minutes / 60, 10);
+                            minutes = parseInt(minutes % 60, 10);
+                            // fill up minutes and hours with zeroes
+                            minutes = minutes < 10 ? '0' + minutes : minutes;
+                            hours = hours < 10 ? '0' + hours : hours;
+                            return `${hours}:${minutes}:${seconds}`;
+                        } else {
+                            return `${minutes}:${seconds}`;
+                        }
                     }
                     return Math.round(seconds * 1000) / 1000;
                 },
@@ -382,7 +396,7 @@ export default class TimelinePlugin {
         );
 
         let curPixel = 0;
-        let curSeconds = 0;
+        let curSeconds = this.params.startSeconds;
         let i;
         // build an array of position data with index, second and pixel data,
         // this is then used multiple times below
@@ -408,7 +422,7 @@ export default class TimelinePlugin {
             if (i % primaryLabelInterval === 0) {
                 this.fillRect(curPixel, 0, 1, height1);
                 this.fillText(
-                    formatTime(curSeconds),
+                    formatTime(curSeconds, this.params.formatTime),
                     curPixel + this.params.labelPadding * this.pixelRatio,
                     height1
                 );
@@ -423,7 +437,7 @@ export default class TimelinePlugin {
             if (i % secondaryLabelInterval === 0) {
                 this.fillRect(curPixel, 0, 1, height1);
                 this.fillText(
-                    formatTime(curSeconds),
+                    formatTime(curSeconds, this.params.formatTime),
                     curPixel + this.params.labelPadding * this.pixelRatio,
                     height1
                 );
