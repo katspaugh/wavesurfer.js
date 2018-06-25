@@ -1479,6 +1479,7 @@ export default class WaveSurfer extends util.Observer {
         this.backend.destroy();
         this.drawer.destroy();
         this.isDestroyed = true;
+        this.isReady = false;
         this.arraybuffer = null;
     }
 }
