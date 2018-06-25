@@ -16,9 +16,9 @@
  * performance for large files
  * @property {string} fontFamily='Arial'
  * @property {number} fontSize=10 Font size of labels in pixels
- * @property {number} startSeconds=0 Start time in second for begining timeline rule
- * @property {string} formatTime='MM:SS' default time format for timeline rule, can be change to'HH:MM:SS'
- * @property {function} formatTimeCallback=→00:00 (or 00:00:00 depend of formatTime property)
+ * @property {number} startSeconds=0 Start time in seconds for beginning timeline rule
+ * @property {string} formatTime='MM:SS' default time format for timeline rule, can be changed to 'HH:MM:SS'
+ * @property {function} formatTimeCallback=00:00 (or 00:00:00 depend of formatTime property)
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('timeline')`
  */
