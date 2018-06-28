@@ -5,6 +5,7 @@ import TestHelpers from './test-helpers.js';
 /** @test {WaveSurfer} */
 describe('WaveSurfer/playback:', function() {
     var wavesurfer;
+    var manualDestroy = false;
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
@@ -18,7 +19,9 @@ describe('WaveSurfer/playback:', function() {
     });
 
     afterEach(function() {
-        wavesurfer.destroy();
+        if (!manualDestroy) {
+            wavesurfer.destroy();
+        }
     });
 
     /**
@@ -282,6 +285,22 @@ describe('WaveSurfer/playback:', function() {
     it('should export image data', function() {
         var imgData = wavesurfer.exportImage();
         expect(imgData).toBeNonEmptyString();
+    });
+
+    /** @test {WaveSurfer#destroy} */
+    it('should destroy', function(done) {
+        wavesurfer.once('destroy', function() {
+            setTimeout(1000, function() {
+                expect(wavesurfer.isDestroyed).toBeTrue();
+                expect(wavesurfer.isReady).toBeFalse();
+                expect(wavesurfer.arraybuffer).toBeNull();
+
+                done();
+            });
+        });
+
+        manualDestroy = true;
+        wavesurfer.destroy();
     });
 });
 
