@@ -18,7 +18,7 @@
  * @property {number} fontSize=10 Font size of labels in pixels
  * @property {number} startSeconds=0 Start time in seconds for beginning timeline rule
  * @property {string} formatTime='MM:SS' default time format for timeline rule, can be changed to 'HH:MM:SS'
- * @property {function} formatTimeCallback=00:00 (or 00:00:00 depend of formatTime property)
+ * @property {function} formatTimeCallback=00:00 (or 00:00:00 depending on formatTime property)
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('timeline')`
  */
