@@ -25,9 +25,9 @@ header {
     padding-left: .9375rem;
 }
 
-header h1 {
-    font-family: 'Knewave', cursive;
-    font-size: 30px;
+header .logo {
+    width: 100%;
+    max-width: 300px;
 }
 
 .overview {
