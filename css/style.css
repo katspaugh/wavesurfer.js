@@ -26,8 +26,13 @@ header {
 }
 
 header .logo {
-    width: 100%;
     max-width: 300px;
+    margin: 5px;
+    width: 100%;
+}
+header .overview .logo {
+    max-width: 70%;
+    width: 100%;
 }
 
 .overview {
@@ -43,6 +48,7 @@ header .logo {
     padding-top: 50px;
     padding-left: 0;
     padding-right: 0;
+    text-align: center;
 }
 
 .overview h1 {
@@ -116,6 +122,9 @@ section {
     section {
         padding-left: 0;
         padding-right: 0;
+    }
+    header .overview .logo {
+        max-width: 100%;
     }
 }
 
