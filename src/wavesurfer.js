@@ -1234,7 +1234,6 @@ export default class WaveSurfer extends util.Observer {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
         }
-        
         return load();
     }
 
