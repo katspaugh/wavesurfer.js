@@ -286,7 +286,7 @@ export default class WebAudio extends util.Observer {
     setSinkId(deviceId) {
         if (deviceId) {
             /**
-             * The webaudio api doesn't currently support setting the device
+             * The webaudio API doesn't currently support setting the device
              * output. Here we create an HTMLAudioElement, connect the
              * webaudio stream to that element and setSinkId there.
              */
@@ -300,7 +300,7 @@ export default class WebAudio extends util.Observer {
             var dest = this.ac.createMediaStreamDestination();
             this.gainNode.disconnect();
             this.gainNode.connect(dest);
-            audio.src = URL.createObjectURL(dest.stream);
+            audio.srcObject = dest.stream;
 
             return audio.setSinkId(deviceId);
         } else {
