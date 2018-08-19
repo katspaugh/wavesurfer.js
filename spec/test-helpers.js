@@ -9,12 +9,12 @@ const TestHelpers = {
 
     createElement(id, type) {
         if (id == undefined) {
-            id = 'waveform';
+            id = 'waveform_' + WaveSurfer.util.getId();
         }
         if (type == undefined) {
             type = 'div';
         }
-        var element = document.createElement(type);
+        let element = document.createElement(type);
         element.id = id;
         document.getElementsByTagName('body')[0].appendChild(element);
 
@@ -31,15 +31,15 @@ const TestHelpers = {
      * @param  {Object} options
      */
     createWaveform(options) {
-        this.createElement('waveform');
+        let element = this.createElement();
 
         options = options || {
-            container: '#waveform',
+            container: element,
             waveColor: '#90F09B',
             progressColor: 'purple',
             cursorColor: 'white'
         };
-        return WaveSurfer.create(options);
+        return [WaveSurfer.create(options), element];
     }
 };
 
