@@ -8,7 +8,8 @@ module.exports = {
         Uint32Array: true,
         Promise: true,
         Uint8Array: true,
-        ArrayBuffer: true
+        ArrayBuffer: true,
+        __VERSION__: true
     },
     env: {
         browser: true,
