@@ -5,20 +5,25 @@ import TestHelpers from './test-helpers.js';
 /** @test {WaveSurfer} */
 describe('WaveSurfer/playback:', function() {
     var wavesurfer;
+    var element;
+    var manualDestroy = false;
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
     beforeEach(function(done) {
-        wavesurfer = TestHelpers.createWaveform();
+        var wave = TestHelpers.createWaveform();
+        wavesurfer = wave[0];
+        element = wave[1];
         wavesurfer.load(TestHelpers.EXAMPLE_FILE_PATH);
 
-        wavesurfer.on('ready', function() {
-            done();
-        });
+        wavesurfer.on('ready', done);
     });
 
     afterEach(function() {
-        wavesurfer.destroy();
+        if (!manualDestroy) {
+            wavesurfer.destroy();
+            TestHelpers.removeElement(element);
+        }
     });
 
     /**
@@ -282,6 +287,17 @@ describe('WaveSurfer/playback:', function() {
     it('should export image data', function() {
         var imgData = wavesurfer.exportImage();
         expect(imgData).toBeNonEmptyString();
+    });
+
+    /** @test {WaveSurfer#destroy} */
+    it('should destroy', function(done) {
+        manualDestroy = true;
+
+        wavesurfer.once('destroy', function() {
+            TestHelpers.removeElement(element);
+            done();
+        });
+        wavesurfer.destroy();
     });
 });
 
