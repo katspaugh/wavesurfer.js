@@ -1,5 +1,3 @@
-@import url(https://fonts.googleapis.com/css?family=Knewave);
-
 html {
     height: 100%;
 }
@@ -25,9 +23,14 @@ header {
     padding-left: .9375rem;
 }
 
-header h1 {
-    font-family: 'Knewave', cursive;
-    font-size: 30px;
+header .logo {
+    max-width: 300px;
+    margin: 5px;
+    width: 100%;
+}
+header .overview .logo {
+    max-width: 40%;
+    width: 100%;
 }
 
 .overview {
@@ -43,6 +46,7 @@ header h1 {
     padding-top: 50px;
     padding-left: 0;
     padding-right: 0;
+    text-align: left;
 }
 
 .overview h1 {
@@ -116,6 +120,9 @@ section {
     section {
         padding-left: 0;
         padding-right: 0;
+    }
+    header .overview .logo {
+        max-width: 100%;
     }
 }
 
