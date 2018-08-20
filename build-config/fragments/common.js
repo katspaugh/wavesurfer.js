@@ -17,6 +17,11 @@ const jsBannerPlugin = new webpack.BannerPlugin({
     test: /\.js$/
 });
 
+// inject JS version number
+const jsVersionPlugin = new webpack.DefinePlugin({
+    __VERSION__: JSON.stringify(pckg.version)
+});
+
 module.exports = {
     context: rootDir,
     mode: 'development',
@@ -50,5 +55,5 @@ module.exports = {
             }
         ]
     },
-    plugins: [jsBannerPlugin]
+    plugins: [jsBannerPlugin, jsVersionPlugin]
 };
