@@ -1,6 +1,7 @@
 /* eslint-env jasmine */
 
 import TestHelpers from './test-helpers.js';
+import WaveSurfer from '../src/wavesurfer.js';
 
 /** @test {WaveSurfer} */
 describe('WaveSurfer/playback:', function() {
@@ -32,6 +33,14 @@ describe('WaveSurfer/playback:', function() {
     it('should be ready', function() {
         wavesurfer.play();
         expect(wavesurfer.isReady).toBeFalse();
+    });
+
+    /**
+     * @test {WaveSurfer#VERSION}
+     */
+    it('should have version number', function() {
+        let version = require('../package.json').version;
+        expect(WaveSurfer.VERSION).toEqual(version);
     });
 
     /**
