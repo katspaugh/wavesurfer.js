@@ -187,6 +187,7 @@ export default class WaveSurfer extends util.Observer {
         cursorColor: '#333',
         cursorWidth: 1,
         dragSelection: true,
+        explicitDuration: null,
         fillParent: true,
         forceDecode: false,
         height: 128,

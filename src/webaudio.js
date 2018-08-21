@@ -143,7 +143,7 @@ export default class WebAudio extends util.Observer {
         /** @private */
         this.state = null;
         /** @private */
-        this.explicitDuration = null;
+        this.explicitDuration = params.explicitDuration;
     }
 
     /**
@@ -347,7 +347,9 @@ export default class WebAudio extends util.Observer {
      * @param {?number} duration
      */
     setPeaks(peaks, duration) {
-        this.explicitDuration = duration;
+        if (duration != null) {
+            this.explicitDuration = duration;
+        }
         this.peaks = peaks;
     }
 
@@ -551,10 +553,10 @@ export default class WebAudio extends util.Observer {
      * @return {number}
      */
     getDuration() {
+        if (this.explicitDuration) {
+            return this.explicitDuration;
+        }
         if (!this.buffer) {
-            if (this.explicitDuration) {
-                return this.explicitDuration;
-            }
             return 0;
         }
         return this.buffer.duration;

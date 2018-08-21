@@ -629,15 +629,18 @@ export default class RegionsPlugin {
         });
         this.wavesurfer.Region = Region;
 
-        // Id-based hash of regions.
-        this.list = {};
-        this._onReady = () => {
+        this._onBackendCreated = () => {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             if (this.params.regions) {
                 this.params.regions.forEach(region => {
                     this.add(region);
                 });
             }
+        };
+
+        // Id-based hash of regions.
+        this.list = {};
+        this._onReady = () => {
             if (this.params.dragSelection) {
                 this.enableDragSelection(this.params);
             }
@@ -647,9 +650,11 @@ export default class RegionsPlugin {
     init() {
         // Check if ws is ready
         if (this.wavesurfer.isReady) {
+            this._onBackendCreated();
             this._onReady();
         }
         this.wavesurfer.on('ready', this._onReady);
+        this.wavesurfer.on('backend-created', this._onBackendCreated);
     }
 
     destroy() {
