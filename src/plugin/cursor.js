@@ -112,8 +112,8 @@ export default class CursorPlugin {
      * Initialise the plugin (used by the Plugin API)
      */
     init() {
-        const wrapper = this.wavesurfer.container;
-        this.cursor = wrapper.appendChild(
+        this.wrapper = this.wavesurfer.container;
+        this.cursor = this.wrapper.appendChild(
             this.style(
                 document.createElement('cursor'),
                 this.wavesurfer.util.extend(
@@ -136,10 +136,10 @@ export default class CursorPlugin {
             )
         );
 
-        wrapper.addEventListener('mousemove', this._onMousemove);
+        this.wrapper.addEventListener('mousemove', this._onMousemove);
         if (this.params.hideOnBlur) {
-            wrapper.addEventListener('mouseenter', this._onMouseenter);
-            wrapper.addEventListener('mouseleave', this._onMouseleave);
+            this.wrapper.addEventListener('mouseenter', this._onMouseenter);
+            this.wrapper.addEventListener('mouseleave', this._onMouseleave);
         }
     }
 
