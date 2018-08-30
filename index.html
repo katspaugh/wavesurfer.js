@@ -83,7 +83,7 @@ layout: default
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4) {
       var wsVersion = JSON.parse(xhr.responseText);
-      document.getElementById('wsVersion').innerHTML = '&lt;script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/'+wsVersion.value.replace('v','')+'/wavesurfer.min.js"&gt;&lt;/script&gt;'; 
+      document.getElementById('wsVersion').innerHTML = '&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/'+wsVersion.value.replace('v','')+'/wavesurfer.min.js"&gt;&lt;/script&gt;';
     }
   };
   xhr.open('GET', 'https://img.shields.io/cdnjs/v/wavesurfer.js.json?maxAge=2592000');
