@@ -12,7 +12,6 @@ cache:
 install:
   - npm prune
   - npm install
-  - npm update
 script:
   - npm run build
   - npm run test
