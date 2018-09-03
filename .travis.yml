@@ -7,8 +7,8 @@ language: node_js
 node_js:
   - "node"
 cache:
-  directories:
-  - node_modules
+  #directories:
+  #- node_modules
 install:
   - npm prune
   - npm install
