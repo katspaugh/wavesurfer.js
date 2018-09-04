@@ -7,9 +7,9 @@
     "example": "example"
   },
   "scripts": {
-    "start": "npm run build:plugins && npm run build:htmlinit && webpack-dev-server --config ./build-config/webpack.dev.main.js",
-    "start:htmlinit": "npm run build:main && npm run build:plugins && webpack-dev-server --config ./build-config/webpack.dev.htmlinit.js",
-    "start:plugins": "npm run build:main && npm run build:htmlinit && webpack-dev-server --config ./build-config/webpack.dev.plugins.js",
+    "start": "npm run build:plugins && npm run build:htmlinit && webpack-dev-server --watch --config ./build-config/webpack.dev.main.js",
+    "start:htmlinit": "npm run build:main && npm run build:plugins && webpack-dev-server --watch --config ./build-config/webpack.dev.htmlinit.js",
+    "start:plugins": "npm run build:main && npm run build:htmlinit && webpack-dev-server --watch --config ./build-config/webpack.dev.plugins.js",
     "build": "npm run build:normal && npm run build:minified",
     "build:main": "webpack --config ./build-config/webpack.prod.main.js",
     "build:main:min": "webpack --config ./build-config/webpack.prod.main.min.js",
