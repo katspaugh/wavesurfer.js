@@ -216,7 +216,6 @@ class Region {
                     'data-region-' + attrname,
                     this.attributes[attrname]
                 );
-                this.element.setAttribute('class', 'regionArea');
             }
 
             this.element.title = this.formatTime(this.start, this.end);

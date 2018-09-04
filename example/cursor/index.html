@@ -58,21 +58,12 @@
                 <p>Shows a cursor on the waveform.</p>
 
                 <p>
-<pre><code>wavesurfer = WaveSurfer.create({
-        container: document.querySelector('#waveform'),
-        plugins: [
-            WaveSurfer.cursor.create({
-                showTime: true,
-                opacity: 1,
-                customShowTimeStyle: {
-                    'background-color': '#000',
-                    color: '#fff',
-                    padding: '2px',
-                    'font-size': '10px'
-                }
-            })
-        ]
-    });
+<pre><code>var wavesurfer = WaveSurfer.create({
+    container: document.querySelector('#waveform'),
+    plugins: [
+        WaveSurfer.cursor.create()
+    ]
+});
 </code></pre>
                 </p>
             </div>

@@ -73,9 +73,7 @@ export default class CursorPlugin {
         opacity: '0.25',
         style: 'solid',
         zIndex: 4,
-        customStyle: {},
-        customShowTimeStyle: {},
-        showTime: false
+        customStyle: {}
     };
 
     /** @private */
@@ -106,8 +104,6 @@ export default class CursorPlugin {
          * @type {?HTMLElement}
          */
         this.cursor = null;
-        this.showTime = null;
-        this.displayTime = null;
         /** @private */
         this.params = ws.util.extend({}, this.defaultParams, params);
     }
@@ -128,7 +124,7 @@ export default class CursorPlugin {
                         top: 0,
                         bottom: 0,
                         width: '0',
-                        display: 'flex',
+                        display: 'block',
                         borderRightStyle: this.params.style,
                         borderRightWidth: this.params.width,
                         borderRightColor: this.params.color,
@@ -139,41 +135,6 @@ export default class CursorPlugin {
                 )
             )
         );
-        if (this.params.showTime) {
-            this.showTime = this.wrapper.appendChild(
-                this.style(
-                    document.createElement('showTitle'),
-                    this.wavesurfer.util.extend(
-                        {
-                            position: 'absolute',
-                            zIndex: this.params.zIndex,
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: 'auto',
-                            display: 'flex',
-                            opacity: this.params.opacity,
-                            pointerEvents: 'none',
-                            height: '100%'
-                        },
-                        this.params.customStyle
-                    )
-                )
-            );
-            this.displayTime = this.showTime.appendChild(
-                this.style(
-                    document.createElement('div'),
-                    this.wavesurfer.util.extend(
-                        {
-                            display: 'inline',
-                            pointerEvents: 'none',
-                            margin: 'auto'
-                        },
-                        this.params.customShowTimeStyle
-                    )
-                )
-            );
-        }
 
         this.wrapper.addEventListener('mousemove', this._onMousemove);
         if (this.params.hideOnBlur) {
@@ -186,9 +147,6 @@ export default class CursorPlugin {
      * Destroy the plugin (used by the Plugin API)
      */
     destroy() {
-        if (this.params.showTime) {
-            this.cursor.parentNode.removeChild(this.showTime);
-        }
         this.cursor.parentNode.removeChild(this.cursor);
         this.wrapper.removeEventListener('mousemove', this._onMousemove);
         if (this.params.hideOnBlur) {
@@ -206,15 +164,6 @@ export default class CursorPlugin {
         this.style(this.cursor, {
             left: `${pos}px`
         });
-        if (this.params.showTime) {
-            const duration = this.wavesurfer.getDuration();
-            const timeValue = (pos / this.wavesurfer.drawer.width) * duration;
-            const formatValue = this.formatTime(timeValue);
-            this.style(this.showTime, {
-                left: `${pos}px`
-            });
-            this.displayTime.innerHTML = `${formatValue}`;
-        }
     }
 
     /**
@@ -222,13 +171,8 @@ export default class CursorPlugin {
      */
     showCursor() {
         this.style(this.cursor, {
-            display: 'flex'
+            display: 'block'
         });
-        if (this.params.showTime) {
-            this.style(this.showTime, {
-                display: 'flex'
-            });
-        }
     }
 
     /**
@@ -238,21 +182,5 @@ export default class CursorPlugin {
         this.style(this.cursor, {
             display: 'none'
         });
-        if (this.params.showTime) {
-            this.style(this.showTime, {
-                display: 'none'
-            });
-        }
-    }
-
-    /** timestamp time calculation */
-    formatTime(cursorTime) {
-        return [cursorTime].map(time =>
-            [
-                Math.floor((time % 3600) / 60), // minutes
-                ('00' + Math.floor(time % 60)).slice(-2), // seconds
-                ('000' + Math.floor((time % 1) * 1000)).slice(-3) // miliseconds
-            ].join(':')
-        );
     }
 }
