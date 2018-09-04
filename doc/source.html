@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="">
+  <title data-ice="title">Source | wavesurfer.js</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Interactive navigable audio visualization using Web Audio and Canvas"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="wavesurfer.js"><meta property="twitter:description" content="Interactive navigable audio visualization using Web Audio and Canvas"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html">WaveSurfer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html">WebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-InitParams">InitParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-WavesurferParams">WavesurferParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/de/docs/Web/API/AudioNode">AudioNode</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D">CanvasRenderingContext2D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints">MediaStreamConstraints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext">OfflineAudioContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin">plugin</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html">CursorPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/elan.js~ElanPlugin.html">ElanPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/mediasession.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/timeline.js~TimelinePlugin.html">TimelinePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ElanPluginParams">ElanPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MediaSessionPluginParams">MediaSessionPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SpectrogramPluginParams">SpectrogramPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TimelinePluginParams">TimelinePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1>Source <img data-ice="coverageBadge" src="./badge.svg"><span data-ice="totalCoverageCount" class="total-coverage-count">335/494</span></h1>
+
+<table class="files-summary" data-ice="files" data-use-coverage="true">
+  <thead>
+    <tr>
+      <td>File</td>
+      <td>Identifier</td>
+      <td class="coverage">Document</td>
+      <td style="display: none;">Size</td>
+      <td style="display: none;">Lines</td>
+      <td style="display: none;">Updated</td>
+    </tr>
+  </thead>
+  <tbody>
+    
+  <tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/drawer.js.html">src/drawer.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">28/28</span></td>
+      <td style="display: none;" data-ice="size">11270 byte</td>
+      <td style="display: none;" data-ice="lines">390</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/drawer.multicanvas.js.html">src/drawer.multicanvas.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">27/27</span></td>
+      <td style="display: none;" data-ice="size">20692 byte</td>
+      <td style="display: none;" data-ice="lines">622</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/html-init.js.html">src/html-init.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/html-init.js~Init.html">Init</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">8/8</span></td>
+      <td style="display: none;" data-ice="size">9133 byte</td>
+      <td style="display: none;" data-ice="lines">240</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/mediaelement.js.html#errorLines=280">src/mediaelement.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></td>
+      <td class="coverage"><span data-ice="coverage">96 %</span><span data-ice="coverageCount" class="coverage-count">32/33</span></td>
+      <td style="display: none;" data-ice="size">10089 byte</td>
+      <td style="display: none;" data-ice="lines">369</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/peakcache.js.html">src/peakcache.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">7/7</span></td>
+      <td style="display: none;" data-ice="size">4305 byte</td>
+      <td style="display: none;" data-ice="lines">127</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/plugin/cursor.js.html#errorLines=115">src/plugin/cursor.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html">CursorPlugin</a></span></td>
+      <td class="coverage"><span data-ice="coverage">94 %</span><span data-ice="coverageCount" class="coverage-count">16/17</span></td>
+      <td style="display: none;" data-ice="size">5596 byte</td>
+      <td style="display: none;" data-ice="lines">186</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/plugin/elan.js.html#errorLines=105,192,218,279,280,292,304,56,61,62,63,64,74,82,87,95">src/plugin/elan.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/plugin/elan.js~ElanPlugin.html">ElanPlugin</a></span></td>
+      <td class="coverage"><span data-ice="coverage">11 %</span><span data-ice="coverageCount" class="coverage-count">2/18</span></td>
+      <td style="display: none;" data-ice="size">10381 byte</td>
+      <td style="display: none;" data-ice="lines">307</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/plugin/mediasession.js.html#errorLines=56,57,58,62,86,88,90">src/plugin/mediasession.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/plugin/mediasession.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></td>
+      <td class="coverage"><span data-ice="coverage">22 %</span><span data-ice="coverageCount" class="coverage-count">2/9</span></td>
+      <td style="display: none;" data-ice="size">2977 byte</td>
+      <td style="display: none;" data-ice="lines">96</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/plugin/microphone.js.html#errorLines=109,113,114,115,117,119,123,243,247,289,59,60,61,63,64,65">src/plugin/microphone.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html">MicrophonePlugin</a></span></td>
+      <td class="coverage"><span data-ice="coverage">50 %</span><span data-ice="coverageCount" class="coverage-count">16/32</span></td>
+      <td style="display: none;" data-ice="size">11872 byte</td>
+      <td style="display: none;" data-ice="lines">380</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/plugin/minimap.js.html#errorLines=102,103,104,115,122,141,146,150,155,157,161,172,179,195,214,245,271,285,344,353,354,355,356,357,366,62,63">src/plugin/minimap.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/plugin/minimap.js~MinimapPlugin.html">MinimapPlugin</a></span></td>
+      <td class="coverage"><span data-ice="coverage">10 %</span><span data-ice="coverageCount" class="coverage-count">3/30</span></td>
+      <td style="display: none;" data-ice="size">13634 byte</td>
+      <td style="display: none;" data-ice="lines">380</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/plugin/regions.js.html#errorLines=10,105,11,111,12,13,14,16,163,17,175,18,180,226,227,228,24,26,265,27,28,29,30,32,33,34,36,37,38,48,489,501,601,619,620,621,622,634,635,636,648,656,662,675,681,826,834,86,89,98">src/plugin/regions.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/plugin/regions.js~RegionsPlugin.html">RegionsPlugin</a></span></td>
+      <td class="coverage"><span data-ice="coverage">5 %</span><span data-ice="coverageCount" class="coverage-count">3/53</span></td>
+      <td style="display: none;" data-ice="size">29193 byte</td>
+      <td style="display: none;" data-ice="lines">848</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:23:58 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/plugin/spectrogram.js.html#errorLines=286,287,288,289,291,292,295,298,307,308,309,311,312,313,314,325,334,343,347,403,408,416,426,433,463,510,523,527,531,597,603">src/plugin/spectrogram.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/plugin/spectrogram.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></td>
+      <td class="coverage"><span data-ice="coverage">8 %</span><span data-ice="coverageCount" class="coverage-count">3/34</span></td>
+      <td style="display: none;" data-ice="size">21998 byte</td>
+      <td style="display: none;" data-ice="lines">657</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/plugin/timeline.js.html#errorLines=80,81,82,83">src/plugin/timeline.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/plugin/timeline.js~TimelinePlugin.html">TimelinePlugin</a></span></td>
+      <td class="coverage"><span data-ice="coverage">86 %</span><span data-ice="coverageCount" class="coverage-count">25/29</span></td>
+      <td style="display: none;" data-ice="size">17916 byte</td>
+      <td style="display: none;" data-ice="lines">532</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/util/ajax.js.html">src/util/ajax.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-ajax">ajax</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">1/1</span></td>
+      <td style="display: none;" data-ice="size">1529 byte</td>
+      <td style="display: none;" data-ice="lines">51</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/util/extend.js.html">src/util/extend.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-extend">extend</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">1/1</span></td>
+      <td style="display: none;" data-ice="size">414 byte</td>
+      <td style="display: none;" data-ice="lines">16</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/util/frame.js.html">src/util/frame.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-frame">frame</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">1/1</span></td>
+      <td style="display: none;" data-ice="size">393 byte</td>
+      <td style="display: none;" data-ice="lines">13</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/util/get-id.js.html">src/util/get-id.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-getId">getId</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">1/1</span></td>
+      <td style="display: none;" data-ice="size">237 byte</td>
+      <td style="display: none;" data-ice="lines">13</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/util/index.js.html">src/util/index.js</a></span></td>
+      <td data-ice="identifier" class="identifiers">-</td>
+      <td class="coverage"><span data-ice="coverage">-</span></td>
+      <td style="display: none;" data-ice="size">547 byte</td>
+      <td style="display: none;" data-ice="lines">11</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/util/max.js.html">src/util/max.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-max">max</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">1/1</span></td>
+      <td style="display: none;" data-ice="size">351 byte</td>
+      <td style="display: none;" data-ice="lines">15</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/util/min.js.html">src/util/min.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-min">min</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">1/1</span></td>
+      <td style="display: none;" data-ice="size">370 byte</td>
+      <td style="display: none;" data-ice="lines">15</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/util/observer.js.html">src/util/observer.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">8/8</span></td>
+      <td style="display: none;" data-ice="size">3156 byte</td>
+      <td style="display: none;" data-ice="lines">119</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/util/prevent-click.js.html#errorLines=1,6">src/util/prevent-click.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></td>
+      <td class="coverage"><span data-ice="coverage">0 %</span><span data-ice="coverageCount" class="coverage-count">0/2</span></td>
+      <td style="display: none;" data-ice="size">266 byte</td>
+      <td style="display: none;" data-ice="lines">8</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/util/request-animation-frame.js.html">src/util/request-animation-frame.js</a></span></td>
+      <td data-ice="identifier" class="identifiers">-</td>
+      <td class="coverage"><span data-ice="coverage">-</span></td>
+      <td style="display: none;" data-ice="size">442 byte</td>
+      <td style="display: none;" data-ice="lines">14</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/util/style.js.html">src/util/style.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="function/index.html#static-function-style">style</a></span></td>
+      <td class="coverage"><span data-ice="coverage">100 %</span><span data-ice="coverageCount" class="coverage-count">1/1</span></td>
+      <td style="display: none;" data-ice="size">460 byte</td>
+      <td style="display: none;" data-ice="lines">16</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/wavesurfer.js.html#errorLines=375">src/wavesurfer.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span>
+<span><a href="class/src/wavesurfer.js~WaveSurfer.html">WaveSurfer</a></span></td>
+      <td class="coverage"><span data-ice="coverage">98 %</span><span data-ice="coverageCount" class="coverage-count">89/90</span></td>
+      <td style="display: none;" data-ice="size">47368 byte</td>
+      <td style="display: none;" data-ice="lines">1495</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+<tr data-ice="file">
+      <td data-ice="filePath"><span><a href="file/src/webaudio.js.html#errorLines=4,5,6">src/webaudio.js</a></span></td>
+      <td data-ice="identifier" class="identifiers"><span><a href="class/src/webaudio.js~WebAudio.html">WebAudio</a></span></td>
+      <td class="coverage"><span data-ice="coverage">95 %</span><span data-ice="coverageCount" class="coverage-count">59/62</span></td>
+      <td style="display: none;" data-ice="size">19672 byte</td>
+      <td style="display: none;" data-ice="lines">690</td>
+      <td style="display: none;" data-ice="updated">2018-08-03 07:08:22 (UTC)</td>
+    </tr>
+</tbody>
+</table>
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
