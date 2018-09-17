@@ -239,6 +239,13 @@ export default class MicrophonePlugin {
      */
     connect() {
         if (this.stream !== undefined) {
+            // Create a local buffer for data
+            this.localAudioBuffer = this.micContext.createBuffer(
+                this.numberOfInputChannels,
+                this.bufferSize,
+                this.micContext.sampleRate
+            );
+
             // Create an AudioNode from the stream.
             this.mediaStreamSource = this.micContext.createMediaStreamSource(
                 this.stream
@@ -268,6 +275,10 @@ export default class MicrophonePlugin {
             this.levelChecker.disconnect();
             this.levelChecker.onaudioprocess = undefined;
         }
+
+        if (this.localAudioBuffer !== undefined) {
+            this.localAudioBuffer = undefined;
+        }
     }
 
     /**
@@ -276,7 +287,24 @@ export default class MicrophonePlugin {
     reloadBuffer(event) {
         if (!this.paused) {
             this.wavesurfer.empty();
-            this.wavesurfer.loadDecodedBuffer(event.inputBuffer);
+
+            // copy audio buffer from onaudioprocess to a local buffer,
+            // function from audio-buffer-utils library
+            for (
+                var channel = 0,
+                    l = Math.min(
+                        this.localAudioBuffer.numberOfChannels,
+                        event.inputBuffer.numberOfChannels
+                    );
+                channel < l;
+                channel++
+            ) {
+                this.localAudioBuffer
+                    .getChannelData(channel)
+                    .set(event.inputBuffer.getChannelData(channel));
+            }
+
+            this.wavesurfer.loadDecodedBuffer(this.localAudioBuffer);
         }
     }
 
