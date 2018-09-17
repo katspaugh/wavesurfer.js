@@ -286,9 +286,11 @@ export default class MicrophonePlugin {
      */
     reloadBuffer(event) {
         if (!this.paused) {
-            // copy audio data to a local audio buffer
+            // copy audio data to a local audio buffer,
+            // from https://github.com/audiojs/audio-buffer-utils
+            let channel, l;
             for (
-                var channel = 0,
+                channel = 0,
                     l = Math.min(
                         this.localAudioBuffer.numberOfChannels,
                         event.inputBuffer.numberOfChannels
