@@ -239,7 +239,7 @@ export default class MicrophonePlugin {
      */
     connect() {
         if (this.stream !== undefined) {
-            // Create a local buffer for data
+            // Create a local buffer for data to be copied to the Wavesurfer buffer
             this.localAudioBuffer = this.micContext.createBuffer(
                 this.numberOfInputChannels,
                 this.bufferSize,
@@ -286,10 +286,7 @@ export default class MicrophonePlugin {
      */
     reloadBuffer(event) {
         if (!this.paused) {
-            this.wavesurfer.empty();
-
-            // copy audio buffer from onaudioprocess to a local buffer,
-            // function from audio-buffer-utils library
+            // copy audio data to a local audio buffer
             for (
                 var channel = 0,
                     l = Math.min(
@@ -304,6 +301,7 @@ export default class MicrophonePlugin {
                     .set(event.inputBuffer.getChannelData(channel));
             }
 
+            this.wavesurfer.empty();
             this.wavesurfer.loadDecodedBuffer(this.localAudioBuffer);
         }
     }
