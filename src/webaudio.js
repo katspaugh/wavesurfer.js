@@ -392,6 +392,9 @@ export default class WebAudio extends util.Observer {
         if (this.peaks) {
             return this.peaks;
         }
+        if (!this.buffer) {
+            return [];
+        }
 
         first = first || 0;
         last = last || length - 1;
