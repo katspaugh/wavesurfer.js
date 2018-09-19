@@ -168,7 +168,7 @@ export default class MinimapPlugin {
             }
         });
         this._onZoom = e => {
-          this.render();
+            this.render();
         };
         this.wavesurfer.on('zoom', this._onZoom);
     }
@@ -368,10 +368,14 @@ export default class MinimapPlugin {
     moveOverviewRegion(pixels) {
         if (pixels < 0) {
             this.overviewPosition = 0;
-        } else if (pixels + this.overviewWidth < this.drawer.container.offsetWidth) {
+        } else if (
+            pixels + this.overviewWidth <
+            this.drawer.container.offsetWidth
+        ) {
             this.overviewPosition = pixels;
         } else {
-            this.overviewPosition = this.drawer.container.offsetWidth - this.overviewWidth;
+            this.overviewPosition =
+                this.drawer.container.offsetWidth - this.overviewWidth;
         }
         this.overviewRegion.style.left = this.overviewPosition + 'px';
         if (this.draggingOverview) {
