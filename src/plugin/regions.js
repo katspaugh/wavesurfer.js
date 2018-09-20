@@ -177,31 +177,34 @@ class Region {
 
     /* Update element's position, width, color. */
     updateRender() {
+        // Duration varies during loading process, so don't overwrite important data
         const dur = this.wavesurfer.getDuration();
         const width = this.getWidth();
 
-        if (this.start < 0) {
-            this.start = 0;
-            this.end = this.end - this.start;
+        var start_limited = this.start;
+        var end_limited = this.end;
+        if (start_limited < 0) {
+            start_limited = 0;
+            end_limited = end_limited - start_limited;
         }
-        if (this.end > dur) {
-            this.end = dur;
-            this.start = dur - (this.end - this.start);
+        if (end_limited > dur) {
+            end_limited = dur;
+            start_limited = dur - (end_limited - start_limited);
         }
 
         if (this.minLength != null) {
-            this.end = Math.max(this.start + this.minLength, this.end);
+            end_limited = Math.max(start_limited + this.minLength, end_limited);
         }
 
         if (this.maxLength != null) {
-            this.end = Math.min(this.start + this.maxLength, this.end);
+            end_limited = Math.min(start_limited + this.maxLength, end_limited);
         }
 
         if (this.element != null) {
             // Calculate the left and width values of the region such that
             // no gaps appear between regions.
-            const left = Math.round((this.start / dur) * width);
-            const regionWidth = Math.round((this.end / dur) * width) - left;
+            const left = Math.round((start_limited / dur) * width);
+            const regionWidth = Math.round((end_limited / dur) * width) - left;
 
             this.style(this.element, {
                 left: left + 'px',
@@ -644,6 +647,9 @@ export default class RegionsPlugin {
             if (this.params.dragSelection) {
                 this.enableDragSelection(this.params);
             }
+            Object.keys(this.list).forEach(id => {
+                this.list[id].updateRender();
+            });
         };
     }
 
