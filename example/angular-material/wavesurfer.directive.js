@@ -7,37 +7,37 @@
     'use strict';
 
     /**
-   * Main module, your application should depend on this
-   * @module {mdWavesurfer}
-   */
+     * Main module, your application should depend on this
+     * @module {mdWavesurfer}
+     */
     var app = angular.module('mdWavesurfer', ['ngMaterial']);
 
     /**
-   * @ngdoc service
-   * @name $mdWavesurferUtils
-   *
-   * @description
-   *
-   * Utility service for this directive, exposes method:
-   *  - getLength(url), which returns a promise for the length of the audio specified by URL
-   *
-   * ```js
-   * app.directive('myFancyDirective', function(mdWavesurferUtils) {
-   *   return {
-   *     restrict: 'e',
-   *     link: function(scope, el, attrs) {
-   *       mdWavesurferUtils(attrs.url)
-   *       .then(function(l){
-   *        scope.length = l;
-   *       }, function(){
-   *          someErrorhandler()
-   *       })
-   *       ;
-   *     }
-   *   };
-   * });
-   * ```
-   */
+     * @ngdoc service
+     * @name $mdWavesurferUtils
+     *
+     * @description
+     *
+     * Utility service for this directive, exposes method:
+     *  - getLength(url), which returns a promise for the length of the audio specified by URL
+     *
+     * ```js
+     * app.directive('myFancyDirective', function(mdWavesurferUtils) {
+     *   return {
+     *     restrict: 'e',
+     *     link: function(scope, el, attrs) {
+     *       mdWavesurferUtils(attrs.url)
+     *       .then(function(l){
+     *        scope.length = l;
+     *       }, function(){
+     *          someErrorhandler()
+     *       })
+     *       ;
+     *     }
+     *   };
+     * });
+     * ```
+     */
     app.factory('mdWavesurferUtils', [
         '$q',
         '$document',
@@ -87,13 +87,13 @@
     ]);
 
     /**
-   * @ngdoc filter
-   * @name mdWavesurferTimeFormat
-   *
-   * Simple filter to convert value in seconds to MM:SS format
-   *
-   * @param Number duration in seconds
-   */
+     * @ngdoc filter
+     * @name mdWavesurferTimeFormat
+     *
+     * Simple filter to convert value in seconds to MM:SS format
+     *
+     * @param Number duration in seconds
+     */
     app.filter('mdWavesurferTimeFormat', function() {
         return function(input) {
             if (!input) {
@@ -101,7 +101,7 @@
             }
 
             var minutes = Math.floor(input / 60);
-            var seconds = Math.ceil(input) % 60;
+            var seconds = Math.floor(input) % 60;
 
             return (
                 (minutes < 10 ? '0' : '') +
@@ -206,31 +206,31 @@
     ]);
 
     /**
-   * @ngdoc directive
-   * @name md-wavesurfer-audio
-   *
-   * Directive for playing a set of audio files. This directive is analogous to `<audio>` HTML tag.
-   * The audio files, should be specified using the  `md-wavesurfer-source`
-   *
-   * WaveSurfer properties can be passed in using the prefix : player-* for attributes, e.g. `player-wave-color` is
-   * equivalent to WaveSurfer's waveColor option.
-   *
-   * Must be used as an element.
-   *
-   * @usage
-   * ```html
-   * <md-wavesurfer-audio player-wave-color="gray" player-progress-color="black" player-backend="MediaElement">
-   *   <md-wavesurfer-source src="source1" title="Title-1"></md-wavesurfer-source>
-   *   <md-wavesurfer-source src="source2" title="Title-2"></md-wavesurfer-source>
-   *   <md-wavesurfer-source src="source3" title="Title-3"></md-wavesurfer-source>
-   *   ...
-   *   <md-wavesurfer-source src="sourceN" title="Рассказы о сновидениях"></md-wavesurfer-source>
-   * </md-wavesurfer-audio>
-   * ```
-   *
-   * @param string player-* specifies WaveSurfer properties.
-   *
-   */
+     * @ngdoc directive
+     * @name md-wavesurfer-audio
+     *
+     * Directive for playing a set of audio files. This directive is analogous to `<audio>` HTML tag.
+     * The audio files, should be specified using the  `md-wavesurfer-source`
+     *
+     * WaveSurfer properties can be passed in using the prefix : player-* for attributes, e.g. `player-wave-color` is
+     * equivalent to WaveSurfer's waveColor option.
+     *
+     * Must be used as an element.
+     *
+     * @usage
+     * ```html
+     * <md-wavesurfer-audio player-wave-color="gray" player-progress-color="black" player-backend="MediaElement">
+     *   <md-wavesurfer-source src="source1" title="Title-1"></md-wavesurfer-source>
+     *   <md-wavesurfer-source src="source2" title="Title-2"></md-wavesurfer-source>
+     *   <md-wavesurfer-source src="source3" title="Title-3"></md-wavesurfer-source>
+     *   ...
+     *   <md-wavesurfer-source src="sourceN" title="Рассказы о сновидениях"></md-wavesurfer-source>
+     * </md-wavesurfer-audio>
+     * ```
+     *
+     * @param string player-* specifies WaveSurfer properties.
+     *
+     */
     app.directive('mdWavesurferAudio', [
         function() {
             return {
@@ -244,26 +244,26 @@
     ]);
 
     /**
-   * @ngdoc directive
-   *
-   * @name md-wavesurfer-source
-   *
-   * This directive is used within the `md-wavesurfer-audio` directive to specify an audio file source, it is
-   * synonymous to `<source>` tag in HTML
-   *
-   * The directive cannot be used as standalone.
-   *
-   * @usage
-   *
-   * ```html
-   *   <md-wavesurfer-source src="source3" title="Title-3" album-art="Album-Art-Url" duration=""></md-wavesurfer-source>
-   * ```
-   * @param String src the URL to the audio file, this is required.
-   * @param String title track title
-   * @param String album-art the album art URL
-   * @param Number duration the length of the audio file in seconds, will be auto-detected if not specified.
-   *
-   */
+     * @ngdoc directive
+     *
+     * @name md-wavesurfer-source
+     *
+     * This directive is used within the `md-wavesurfer-audio` directive to specify an audio file source, it is
+     * synonymous to `<source>` tag in HTML
+     *
+     * The directive cannot be used as standalone.
+     *
+     * @usage
+     *
+     * ```html
+     *   <md-wavesurfer-source src="source3" title="Title-3" album-art="Album-Art-Url" duration=""></md-wavesurfer-source>
+     * ```
+     * @param String src the URL to the audio file, this is required.
+     * @param String title track title
+     * @param String album-art the album art URL
+     * @param Number duration the length of the audio file in seconds, will be auto-detected if not specified.
+     *
+     */
     app.directive('mdWavesurferSource', [
         'mdWavesurferUtils',
         function(mdWavesurferUtils) {
@@ -413,36 +413,36 @@
     ]);
 
     /**
-   * @ngdoc directive
-   *
-   * @name md-wavesurfer-player
-   *
-   * @usage
-   * This directive can be used as a stand-alone directive to display Audio WaveSurfer with a few controls, by default
-   * this will only display play/pause, fast-forward, rewind and mute toggle buttons, however, you can add extra
-   * buttons using the `extra-buttons` parameters.
-   *
-   * ```html
-   *  <md-wavesurfer-player url="trackUrl" title="Track Title"
-   *         extra-buttons="extraButtons" properties="properties">
-   *  </md-wavesurfer-player>
-   * ```
-   *
-   * @param {string} url the URL of the audio file
-   * @param {string} title title of the audio track
-   * @param {object} properties an object specifying init options for WaveSurfer
-   * @param {boolean} auto-play specifies if the player should start as soon as it's loaded.
-   * @param {object[]} extra-buttons a list of extra buttons to add to the control panel
-   *    each button should be an object with the following properties:
-   *    {
-   *      title: "button title"
-   *      action: "call back to call when button is clicked, executed in parent scope",
-   *      icon: "md-font-icon parameter for the button"
-   *      class: "extra classes to add to the button."
-   *    }
-   *
-   * Every other attribute passed to this directive is assumed to a WaveSurver init parameter.
-   */
+     * @ngdoc directive
+     *
+     * @name md-wavesurfer-player
+     *
+     * @usage
+     * This directive can be used as a stand-alone directive to display Audio WaveSurfer with a few controls, by default
+     * this will only display play/pause, fast-forward, rewind and mute toggle buttons, however, you can add extra
+     * buttons using the `extra-buttons` parameters.
+     *
+     * ```html
+     *  <md-wavesurfer-player url="trackUrl" title="Track Title"
+     *         extra-buttons="extraButtons" properties="properties">
+     *  </md-wavesurfer-player>
+     * ```
+     *
+     * @param {string} url the URL of the audio file
+     * @param {string} title title of the audio track
+     * @param {object} properties an object specifying init options for WaveSurfer
+     * @param {boolean} auto-play specifies if the player should start as soon as it's loaded.
+     * @param {object[]} extra-buttons a list of extra buttons to add to the control panel
+     *    each button should be an object with the following properties:
+     *    {
+     *      title: "button title"
+     *      action: "call back to call when button is clicked, executed in parent scope",
+     *      icon: "md-font-icon parameter for the button"
+     *      class: "extra classes to add to the button."
+     *    }
+     *
+     * Every other attribute passed to this directive is assumed to a WaveSurver init parameter.
+     */
     app.directive('mdWavesurferPlayer', function() {
         return {
             restrict: 'E',

@@ -7,7 +7,9 @@ module.exports = {
         Float32Array: true,
         Uint32Array: true,
         Promise: true,
-        Uint8Array: true
+        Uint8Array: true,
+        ArrayBuffer: true,
+        __VERSION__: true
     },
     env: {
         browser: true,

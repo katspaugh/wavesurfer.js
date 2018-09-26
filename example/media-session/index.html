@@ -7,7 +7,7 @@
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
         <!-- Bootstrap -->
-        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 
         <link rel="stylesheet" href="../css/style.css" />
         <link rel="stylesheet" href="../css/ribbon.css" />
@@ -16,7 +16,7 @@
         <script src="../../dist/wavesurfer.min.js"></script>
 
         <!-- media session plugin -->
-        <script src="../../dist/plugin/wavesurfer.mediasession.min.js"></script>
+        <script src="../../dist/plugin/wavesurfer.mediasession.js"></script>
 
         <!-- App -->
         <script src="app.js"></script>
@@ -41,18 +41,18 @@
                     </button>
                 </div>
 
-                <audio src='../media/demo.wav' controls />
+                <audio src="../media/demo.wav" controls />
             </div>
 
             <div class="row marketing">
                 <div class="col-lg-4">
                     <h4>wavesurfer.js Media Session Plugin</h4>
 
-                    <p itemprop="about">The <a href='https://wicg.github.io/mediasession/' target='blank'>Media Session API</a> plugin for <strong>wavesurfer.js</strong> allows you to customize media notifications
+                    <p itemprop="about">The <a href="https://wicg.github.io/mediasession/" target="blank">Media Session API</a> plugin for <strong>wavesurfer.js</strong> allows you to customize media notifications
                     by providing metadata for the media your web app is playing. It also allows you to handle media related events such as
                     seeking or playback which may come from notifications or media keys.</p>
 
-                    <p><strong>Note</strong>: this plugin only works in Chrome 57 and newer (Firefox is <a href='https://bugzilla.mozilla.org/show_bug.cgi?id=1112032' target='blank'>working on it</a>).</p>
+                    <p><strong>Note</strong>: this plugin only works in Chrome 57 and newer (Firefox is <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1112032" target="blank">working on it</a>).</p>
 
                     <h4>Installation</h4>
 
@@ -65,7 +65,7 @@
                       </ol>
                     </p>
                     <p>
-                        <a class="btn btn-large btn-success" href="../../plugin/wavesurfer.mediasession.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (1.2 KB)</a>
+                        <a class="btn btn-large btn-success" href="../../dist/plugin/wavesurfer.mediasession.js" itemprop="downloadUrl">Download <strong>the plugin</strong></a>
                     </p>
                 </div>
 
@@ -73,31 +73,27 @@
                     <h4>Quick Start</h4>
 
                     <noindex><p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
+<pre><code>
+var wavesurfer = WaveSurfer.create({
   container     : '#waveform',
   waveColor     : 'black',
-  backend       : 'MediaElement'
-});
-
-var msPlugin = Object.create(WaveSurfer.MediaSession);
-
-msPlugin.init({
-    wavesurfer: wavesurfer,
-    metadata: {
-        title: 'Wavesurfer.js Example',
-        artist: 'The Wavesurfer.js Project',
-        album: 'Media Session Example',
-        artwork: [
-          {src: 'https://dummyimage.com/96x96',   sizes: '96x96',   type: 'image/png'},
-          {src: 'https://dummyimage.com/128x128', sizes: '128x128', type: 'image/png'},
-          {src: 'https://dummyimage.com/192x192', sizes: '192x192', type: 'image/png'},
-          {src: 'https://dummyimage.com/256x256', sizes: '256x256', type: 'image/png'},
-          {src: 'https://dummyimage.com/384x384', sizes: '384x384', type: 'image/png'},
-          {src: 'https://dummyimage.com/512x512', sizes: '512x512', type: 'image/png'},
-        ]
-    }
+  plugins: [
+    WaveSurfer.mediasession.create({
+        metadata: {
+            title: 'Wavesurfer.js Example',
+            artist: 'The Wavesurfer.js Project',
+            album: 'Media Session Example',
+            artwork: [
+              {src: 'https://dummyimage.com/96x96',   sizes: '96x96',   type: 'image/png'},
+              {src: 'https://dummyimage.com/128x128', sizes: '128x128', type: 'image/png'},
+              {src: 'https://dummyimage.com/192x192', sizes: '192x192', type: 'image/png'},
+              {src: 'https://dummyimage.com/256x256', sizes: '256x256', type: 'image/png'},
+              {src: 'https://dummyimage.com/384x384', sizes: '384x384', type: 'image/png'},
+              {src: 'https://dummyimage.com/512x512', sizes: '512x512', type: 'image/png'},
+            ]
+        }
+    })
+  ]
 });
 
 // load audio from existing media element
@@ -130,7 +126,7 @@ wavesurfer.load(mediaElt);
                           <td><code>metadata</code></td>
                           <td>yes</td>
                           <td></td>
-                          <td>A <a href='https://wicg.github.io/mediasession/#mediametadata' target='blank'>MediaMetadata</a> object: a representation of the metadata associated with a MediaSession that can be used by
+                          <td>A <a href="https://wicg.github.io/mediasession/#mediametadata" target="blank">MediaMetadata</a> object: a representation of the metadata associated with a MediaSession that can be used by
                           user agents to provide customized user interface.</td>
                         </tr>
                       </tbody>

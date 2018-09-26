@@ -22,12 +22,16 @@ import PeakCache from './peakcache';
  * initialized AudioContext or leave blank.
  * @property {number} audioRate=1 Speed at which to play audio. Lower number is
  * slower.
+ * @property {ScriptProcessorNode} audioScriptProcessor=null Use your own previously
+ * initialized ScriptProcessorNode or leave blank.
  * @property {boolean} autoCenter=true If a scrollbar is present, center the
  * waveform around the progress
  * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'` In most cases
  * you don't have to set this manually. MediaElement is a fallback for
  * unsupported browsers.
  * @property {number} barHeight=1 The height of the wave
+ * @property {number} barGap=null The optional spacing between bars of the wave,
+ * if not provided will be calculated in legacy format.
  * @property {boolean} closeAudioContext=false Close and nullify all audio
  * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
@@ -87,6 +91,7 @@ import PeakCache from './peakcache';
  * the channels of the audio
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
+ * @property {object} xhr={} XHR options.
  */
 
 /**
@@ -177,6 +182,7 @@ export default class WaveSurfer extends util.Observer {
         autoCenter: true,
         backend: 'WebAudio',
         barHeight: 1,
+        barGap: null,
         container: null,
         cursorColor: '#333',
         cursorWidth: 1,
@@ -204,7 +210,8 @@ export default class WaveSurfer extends util.Observer {
         scrollParent: false,
         skipLength: 2,
         splitChannels: false,
-        waveColor: '#999'
+        waveColor: '#999',
+        xhr: {}
     };
 
     /** @private */
@@ -224,6 +231,16 @@ export default class WaveSurfer extends util.Observer {
         const wavesurfer = new WaveSurfer(params);
         return wavesurfer.init();
     }
+
+    /**
+     * The library version number is available as a static property of the
+     * WaveSurfer class
+     *
+     * @type {String}
+     * @example
+     * console.log('Using wavesurfer.js ' + WaveSurfer.VERSION);
+     */
+    static VERSION = __VERSION__;
 
     /**
      * Functions in the `util` property are available as a prototype property to
@@ -630,7 +647,7 @@ export default class WaveSurfer extends util.Observer {
      * seconds, 60 means 1 minute
      */
     setCurrentTime(seconds) {
-        if (this.getDuration() >= seconds) {
+        if (seconds >= this.getDuration()) {
             this.seekTo(1);
         } else {
             this.seekTo(seconds / this.getDuration());
@@ -644,31 +661,36 @@ export default class WaveSurfer extends util.Observer {
      * @param {?number} start Position to start at
      * @param {?number} end Position to end at
      * @emits WaveSurfer#interaction
+     * @return {Promise}
      * @example
      * // play from second 1 to 5
      * wavesurfer.play(1, 5);
      */
     play(start, end) {
         this.fireEvent('interaction', () => this.play(start, end));
-        this.backend.play(start, end);
+        return this.backend.play(start, end);
     }
 
     /**
      * Stops playback
      *
      * @example wavesurfer.pause();
+     * @return {Promise}
      */
     pause() {
-        this.backend.isPaused() || this.backend.pause();
+        if (!this.backend.isPaused()) {
+            return this.backend.pause();
+        }
     }
 
     /**
      * Toggle playback
      *
      * @example wavesurfer.playPause();
+     * @return {Promise}
      */
     playPause() {
-        this.backend.isPaused() ? this.play() : this.pause();
+        return this.backend.isPaused() ? this.play() : this.pause();
     }
 
     /**
@@ -788,11 +810,22 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Set the playback volume.
      *
+     * @param {string} deviceId String value representing underlying output device
+     */
+    setSinkId(deviceId) {
+        return this.backend.setSinkId(deviceId);
+    }
+
+    /**
+     * Set the playback volume.
+     *
      * @param {number} newVolume A value between 0 and 1, 0 being no
      * volume and 1 being full volume.
+     * @emits WaveSurfer#volume
      */
     setVolume(newVolume) {
         this.backend.setVolume(newVolume);
+        this.fireEvent('volume', newVolume);
     }
 
     /**
@@ -841,6 +874,8 @@ export default class WaveSurfer extends util.Observer {
      * Enable or disable muted audio
      *
      * @param {boolean} mute
+     * @emits WaveSurfer#volume
+     * @emits WaveSurfer#mute
      * @example
      * // unmute
      * wavesurfer.setMute(false);
@@ -848,6 +883,7 @@ export default class WaveSurfer extends util.Observer {
     setMute(mute) {
         // ignore all muting requests if the audio is already in that state
         if (mute === this.isMuted) {
+            this.fireEvent('mute', this.isMuted);
             return;
         }
 
@@ -857,12 +893,15 @@ export default class WaveSurfer extends util.Observer {
             this.savedVolume = this.backend.getVolume();
             this.backend.setVolume(0);
             this.isMuted = true;
+            this.fireEvent('volume', 0);
         } else {
             // If currently muted then restore to the saved volume
             // and update the mute properties
             this.backend.setVolume(this.savedVolume);
             this.isMuted = false;
+            this.fireEvent('volume', this.savedVolume);
         }
+        this.fireEvent('mute', this.isMuted);
     }
 
     /**
@@ -873,6 +912,16 @@ export default class WaveSurfer extends util.Observer {
      */
     getMute() {
         return this.isMuted;
+    }
+
+    /**
+     * Get the current ready status.
+     *
+     * @example const isReady = wavesurfer.isReady();
+     * @return {boolean}
+     */
+    isReady() {
+        return this.isReady;
     }
 
     /**
@@ -1142,7 +1191,6 @@ export default class WaveSurfer extends util.Observer {
      */
     load(url, peaks, preload, duration) {
         this.empty();
-        this.isMuted = false;
 
         if (preload) {
             // check whether the preload attribute will be usable and if not log
@@ -1292,7 +1340,8 @@ export default class WaveSurfer extends util.Observer {
     getArrayBuffer(url, callback) {
         const ajax = util.ajax({
             url: url,
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
+            xhr: this.params.xhr
         });
 
         this.currentAjax = ajax;
@@ -1342,7 +1391,7 @@ export default class WaveSurfer extends util.Observer {
      * window with the JSON
      * @param {number} start
      * @todo Update exportPCM to work with new getPeaks signature
-     * @return {JSON} JSON of peaks
+     * @return {string} JSON of peaks
      */
     exportPCM(length, accuracy, noWindow, start) {
         length = length || 1024;
@@ -1410,6 +1459,7 @@ export default class WaveSurfer extends util.Observer {
             this.stop();
             this.backend.disconnectSource();
         }
+        this.isReady = false;
         this.cancelAjax();
         this.clearTmpEvents();
         this.drawer.progress(0);
@@ -1439,6 +1489,7 @@ export default class WaveSurfer extends util.Observer {
         this.backend.destroy();
         this.drawer.destroy();
         this.isDestroyed = true;
+        this.isReady = false;
         this.arraybuffer = null;
     }
 }

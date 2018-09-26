@@ -23,7 +23,8 @@ export default class MediaElement extends WebAudio {
             paused: true,
             playbackRate: 1,
             play() {},
-            pause() {}
+            pause() {},
+            volume: 0
         };
 
         /** @private */
@@ -34,6 +35,8 @@ export default class MediaElement extends WebAudio {
         this.peaks = null;
         /** @private */
         this.playbackRate = 1;
+        /** @private */
+        this.volume = 1;
         /** @private */
         this.buffer = null;
         /** @private */
@@ -68,6 +71,11 @@ export default class MediaElement extends WebAudio {
         };
 
         this.on('play', onAudioProcess);
+
+        // Update the progress one more time to prevent it from being stuck in case of lower framerates
+        this.on('pause', () => {
+            this.fireEvent('audioprocess', this.getCurrentTime());
+        });
     }
 
     /**
@@ -154,6 +162,7 @@ export default class MediaElement extends WebAudio {
         this.onPlayEnd = null;
         this.buffer = null;
         this.setPlaybackRate(this.playbackRate);
+        this.setVolume(this.volume);
     }
 
     /**
@@ -183,11 +192,11 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
-    * Returns the current time in seconds relative to the audioclip's
-    * duration.
-    *
-    * @return {number}
-    */
+     * Returns the current time in seconds relative to the audioclip's
+     * duration.
+     *
+     * @return {number}
+     */
     getCurrentTime() {
         return this.media && this.media.currentTime;
     }
@@ -237,23 +246,33 @@ export default class MediaElement extends WebAudio {
      *
      * @param {number} start Start offset in seconds, relative to the beginning
      * of a clip.
-     * @param {number} end When to stop relative to the beginning of a clip.
+     * @param {number} end When to stop, relative to the beginning of a clip.
      * @emits MediaElement#play
+     * @return {Promise}
      */
     play(start, end) {
         this.seekTo(start);
-        this.media.play();
+        const promise = this.media.play();
         end && this.setPlayEnd(end);
+
+        return promise;
     }
 
     /**
      * Pauses the loaded audio.
      *
      * @emits MediaElement#pause
+     * @return {Promise}
      */
     pause() {
-        this.media && this.media.pause();
+        let promise;
+
+        if (this.media) {
+            promise = this.media.pause();
+        }
         this.clearPlayEnd();
+
+        return promise;
     }
 
     /** @private */
@@ -293,12 +312,30 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
+     * Set the sink id for the media player
+     *
+     * @param {string} deviceId String value representing audio device id.
+     */
+    setSinkId(deviceId) {
+        if (deviceId) {
+            if (!this.media.setSinkId) {
+                return Promise.reject(
+                    new Error('setSinkId is not supported in your browser')
+                );
+            }
+            return this.media.setSinkId(deviceId);
+        }
+
+        return Promise.reject(new Error('Invalid deviceId: ' + deviceId));
+    }
+
+    /**
      * Get the current volume
      *
      * @return {number} value A floating point value between 0 and 1.
      */
     getVolume() {
-        return this.media.volume;
+        return this.volume || this.media.volume;
     }
 
     /**
@@ -307,7 +344,8 @@ export default class MediaElement extends WebAudio {
      * @param {number} value A floating point value between 0 and 1.
      */
     setVolume(value) {
-        this.media.volume = value;
+        this.volume = value;
+        this.media.volume = this.volume;
     }
 
     /**

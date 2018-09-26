@@ -98,8 +98,8 @@ export default class Drawer extends util.Observer {
 
         if (!this.params.fillParent && nominalWidth < parentWidth) {
             progress =
-                (clientX - bbox.left) * this.params.pixelRatio / nominalWidth ||
-                0;
+                (clientX - bbox.left) *
+                    (this.params.pixelRatio / nominalWidth) || 0;
 
             if (progress > 1) {
                 progress = 1;
@@ -220,7 +220,23 @@ export default class Drawer extends util.Observer {
      * @return {number}
      */
     getScrollX() {
-        return Math.round(this.wrapper.scrollLeft * this.params.pixelRatio);
+        const pixelRatio = this.params.pixelRatio;
+        let x = Math.round(this.wrapper.scrollLeft * pixelRatio);
+
+        // In cases of elastic scroll (safari with mouse wheel) you can
+        // scroll beyond the limits of the container
+        // Calculate and floor the scrollable extent to make sure an out
+        // of bounds value is not returned
+        // Ticket #1312
+        if (this.params.scrollParent) {
+            const maxScroll = ~~(
+                this.wrapper.scrollWidth * pixelRatio -
+                this.getWidth()
+            );
+            x = Math.min(maxScroll, Math.max(0, x));
+        }
+
+        return x;
     }
 
     /**
