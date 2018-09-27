@@ -62,6 +62,7 @@ export default class MicrophonePlugin {
 
         this.active = false;
         this.paused = false;
+        this.browser = this.detectBrowser().browser;
         this.reloadBufferFunction = e => this.reloadBuffer(e);
 
         // cross-browser getUserMedia
@@ -286,25 +287,30 @@ export default class MicrophonePlugin {
      */
     reloadBuffer(event) {
         if (!this.paused) {
-            // copy audio data to a local audio buffer,
-            // from https://github.com/audiojs/audio-buffer-utils
-            let channel, l;
-            for (
-                channel = 0,
-                    l = Math.min(
-                        this.localAudioBuffer.numberOfChannels,
-                        event.inputBuffer.numberOfChannels
-                    );
-                channel < l;
-                channel++
-            ) {
-                this.localAudioBuffer
-                    .getChannelData(channel)
-                    .set(event.inputBuffer.getChannelData(channel));
-            }
-
             this.wavesurfer.empty();
-            this.wavesurfer.loadDecodedBuffer(this.localAudioBuffer);
+
+            if (this.browser === 'edge') {
+                // copy audio data to a local audio buffer,
+                // from https://github.com/audiojs/audio-buffer-utils
+                let channel, l;
+                for (
+                    channel = 0,
+                        l = Math.min(
+                            this.localAudioBuffer.numberOfChannels,
+                            event.inputBuffer.numberOfChannels
+                        );
+                    channel < l;
+                    channel++
+                ) {
+                    this.localAudioBuffer
+                        .getChannelData(channel)
+                        .set(event.inputBuffer.getChannelData(channel));
+                }
+
+                this.wavesurfer.loadDecodedBuffer(this.localAudioBuffer);
+            } else {
+                this.wavesurfer.loadDecodedBuffer(event.inputBuffer);
+            }
         }
     }
 
