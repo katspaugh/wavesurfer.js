@@ -240,12 +240,14 @@ export default class MicrophonePlugin {
      */
     connect() {
         if (this.stream !== undefined) {
-            // Create a local buffer for data to be copied to the Wavesurfer buffer
-            this.localAudioBuffer = this.micContext.createBuffer(
-                this.numberOfInputChannels,
-                this.bufferSize,
-                this.micContext.sampleRate
-            );
+            // Create a local buffer for data to be copied to the Wavesurfer buffer for Edge
+            if (this.browser === 'edge') {
+                this.localAudioBuffer = this.micContext.createBuffer(
+                    this.numberOfInputChannels,
+                    this.bufferSize,
+                    this.micContext.sampleRate
+                );
+            }
 
             // Create an AudioNode from the stream.
             this.mediaStreamSource = this.micContext.createMediaStreamSource(
