@@ -4,6 +4,7 @@ wavesurfer.js changelog
 2.0.7 (unreleased)
 ------------------
 
+- Timeline plugin: display more tick marks as user zooms in closely (#1455)
 - Add wavesurfer.js logo, created by @entonbiba (#1409)
 - Library version number is now available as `WaveSurfer.VERSION` (#1430)
 - Fix `setSinkId` that used deprecated API (#1428)
