@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-2.0.7 (unreleased)
+2.0.7 (03.09.2018)
 ------------------
 
 - Fix microphone plugin on MS Edge browser (#627)
