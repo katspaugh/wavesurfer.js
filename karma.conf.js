@@ -3,7 +3,7 @@
 process.env.BABEL_ENV = 'test';
 process.traceDeprecation = true;
 
-require('babel-register');
+require('@babel/register');
 var webpackConfig = require('./build-config/webpack.prod.main.js');
 var ci = process.env.TRAVIS || process.env.APPVEYOR;
 
