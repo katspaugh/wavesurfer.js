@@ -330,7 +330,7 @@ export default class WebAudio extends util.Observer {
     decodeArrayBuffer(arraybuffer, callback, errback) {
         if (!this.offlineAc) {
             this.offlineAc = this.getOfflineAudioContext(
-                this.ac ? this.ac.sampleRate : 44100
+                this.ac && this.ac.sampleRate ? this.ac.sampleRate : 44100
             );
         }
         this.offlineAc.decodeAudioData(
