@@ -5,7 +5,6 @@ process.traceDeprecation = true;
 
 require('babel-register');
 var webpackConfig = require('./build-config/webpack.prod.main.js');
-webpackConfig.devtool = 'none';
 var ci = process.env.TRAVIS || process.env.APPVEYOR;
 
 // Chrome CLI options
