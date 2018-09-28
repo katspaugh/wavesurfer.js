@@ -221,7 +221,7 @@ export default class MicrophonePlugin {
             if (
                 (this.browser.browser === 'chrome' && this.browser.version >= 45) ||
                 (this.browser.browser === 'firefox' && this.browser.version >= 44) ||
-                 this.browser.browser === 'edge'
+                this.browser.browser === 'edge'
             ) {
                 if (this.stream.getTracks) {
                     // note that this should not be a call
