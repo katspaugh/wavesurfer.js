@@ -219,8 +219,10 @@ export default class MicrophonePlugin {
             // - Firefox 44 (https://www.fxsitecompat.com/en-US/docs/2015/mediastream-stop-has-been-deprecated/)
             // - Chrome 45 (https://developers.google.com/web/updates/2015/07/mediastream-deprecations)
             if (
-                (this.browser.browser === 'chrome' && this.browser.version >= 45) ||
-                (this.browser.browser === 'firefox' && this.browser.version >= 44) ||
+                (this.browser.browser === 'chrome' &&
+                    this.browser.version >= 45) ||
+                (this.browser.browser === 'firefox' &&
+                    this.browser.version >= 44) ||
                 this.browser.browser === 'edge'
             ) {
                 if (this.stream.getTracks) {
