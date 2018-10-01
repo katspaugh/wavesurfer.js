@@ -133,10 +133,10 @@ class PluginClass {
     /**
      * Construct the plugin
      *
-     * @param {Object} ws The wavesurfer instance
      * @param {Object} params={} The plugin params (specific to the plugin)
+     * @param {Object} ws The wavesurfer instance
      */
-    constructor(ws, params) {}
+    constructor(params, ws) {}
     /**
      * Initialise the plugin
      *
