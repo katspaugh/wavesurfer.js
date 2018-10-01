@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-2.1.0 (2018/09/29)
+2.1.0 (29.09.2018)
 ------------------
 
 - Add wavesurfer.js logo, created by @entonbiba (#1409)
