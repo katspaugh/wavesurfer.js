@@ -167,6 +167,10 @@ export default class MinimapPlugin {
                 );
             }
         });
+        this._onZoom = e => {
+            this.render();
+        };
+        this.wavesurfer.on('zoom', this._onZoom);
     }
 
     init() {
@@ -187,6 +191,7 @@ export default class MinimapPlugin {
         this.wavesurfer.un('seek', this._onSeek);
         this.wavesurfer.un('scroll', this._onScroll);
         this.wavesurfer.un('audioprocess', this._onAudioprocess);
+        this.wavesurfer.un('zoom', this._onZoom);
         this.drawer.destroy();
         this.overviewRegion = null;
         this.unAll();
@@ -248,10 +253,8 @@ export default class MinimapPlugin {
             this.overviewRegion = this.util.style(
                 document.createElement('overview'),
                 {
-                    height:
-                        this.drawer.wrapper.offsetHeight -
-                        this.params.overviewBorderSize * 2 +
-                        'px',
+                    top: 0,
+                    bottom: 0,
                     width: '0px',
                     display: 'block',
                     position: 'absolute',
@@ -353,23 +356,26 @@ export default class MinimapPlugin {
             this.ratio = this.wavesurfer.drawer.width / this.drawer.width;
             this.waveShowedWidth = this.wavesurfer.drawer.width / this.ratio;
             this.waveWidth = this.wavesurfer.drawer.width;
-            this.overviewWidth = this.drawer.width / this.ratio;
+            this.overviewWidth = this.drawer.container.offsetWidth / this.ratio;
             this.overviewPosition = 0;
             this.moveOverviewRegion(
                 this.wavesurfer.drawer.wrapper.scrollLeft / this.ratio
             );
-            this.overviewRegion.style.width =
-                this.overviewWidth - this.params.overviewBorderSize * 2 + 'px';
+            this.overviewRegion.style.width = this.overviewWidth + 'px';
         }
     }
 
     moveOverviewRegion(pixels) {
         if (pixels < 0) {
             this.overviewPosition = 0;
-        } else if (pixels + this.overviewWidth < this.drawer.width) {
+        } else if (
+            pixels + this.overviewWidth <
+            this.drawer.container.offsetWidth
+        ) {
             this.overviewPosition = pixels;
         } else {
-            this.overviewPosition = this.drawer.width - this.overviewWidth;
+            this.overviewPosition =
+                this.drawer.container.offsetWidth - this.overviewWidth;
         }
         this.overviewRegion.style.left = this.overviewPosition + 'px';
         if (this.draggingOverview) {
