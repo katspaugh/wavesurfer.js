@@ -2,7 +2,8 @@
     "presets": [
         ["@babel/preset-env", {
           "targets": "last 3 version",
-          "debug": false
+          "debug": false,
+          "modules": "commonjs"
         }]
     ],
     "plugins": ["transform-class-properties", "add-module-exports"],
