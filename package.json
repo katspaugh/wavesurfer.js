@@ -37,6 +37,9 @@
   "bugs": {
     "url": "https://github.com/katspaugh/wavesurfer.js/issues"
   },
+  "keywords": [
+    "waveform", "audio", "music", "player", "webaudio", "microphone", "visualization"
+  ],
   "devDependencies": {
     "@babel/core": "^7.1.0",
     "@babel/preset-env": "^7.1.0",
