@@ -26,6 +26,7 @@
  * labels in secondary color
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('timeline')`
+ * @property {number} duration Length of the track in seconds
  */
 
 /**
@@ -321,7 +322,7 @@ export default class TimelinePlugin {
      * @private
      */
     renderCanvases() {
-        const duration = this.wavesurfer.backend.getDuration();
+        const duration = (this.wavesurfer.timeline.params && this.wavesurfer.timeline.params.duration) ? this.wavesurfer.timeline.params.duration : this.wavesurfer.backend.getDuration();
         if (duration <= 0) {
             return;
         }
