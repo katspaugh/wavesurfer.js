@@ -55,6 +55,7 @@
     "babel-plugin-add-module-exports": "^1.0.0",
     "babel-plugin-istanbul": "^5.0.1",
     "babel-plugin-transform-class-properties": "^6.24.1",
+    "date-fns": "^1.29.0",
     "debounce": "^1.2.0",
     "esdoc": "^1.1.0",
     "esdoc-accessor-plugin": "^1.0.0",

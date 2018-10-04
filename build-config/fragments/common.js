@@ -2,14 +2,15 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const datefns = require('date-fns');
 
-const time = new Date();
-var rootDir = path.resolve(__dirname, '..', '..');
+const rootDir = path.resolve(__dirname, '..', '..');
 const pckg = require(path.join(rootDir, 'package.json'));
+const date = datefns.format(new Date(), 'YYYY-MM-DD');
 
 // add JS banner with copyright and version info
 // prettier-ignore
-const jsBanner = `${pckg.name} ${pckg.version} (${time})
+const jsBanner = `${pckg.name} ${pckg.version} (${date})
 ${pckg.homepage}
 @license ${pckg.license}`;
 const jsBannerPlugin = new webpack.BannerPlugin({
