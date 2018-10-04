@@ -79,17 +79,5 @@ layout: default
 
 
 <script>
- var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      var wsVersion = JSON.parse(xhr.responseText);
-      document.getElementById('wsVersion').innerHTML = '&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/'+wsVersion.value.replace('v','')+'/wavesurfer.min.js"&gt;&lt;/script&gt;';
-    }
-  };
-  xhr.open('GET', 'https://img.shields.io/cdnjs/v/wavesurfer.js.json?maxAge=2592000');
-
-  function sendAJAX() {
-    xhr.send( );
-  }
-  sendAJAX();
+document.getElementById('wsVersion').innerHTML = '&lt;script src="https://unpkg.com/wavesurfer.js"&gt;&lt;/script&gt;';
 </script>
