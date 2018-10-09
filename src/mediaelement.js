@@ -72,7 +72,8 @@ export default class MediaElement extends WebAudio {
 
         this.on('play', onAudioProcess);
 
-        // Update the progress one more time to prevent it from being stuck in case of lower framerates
+        // Update the progress one more time to prevent it from being stuck in
+        // case of lower framerates
         this.on('pause', () => {
             this.fireEvent('audioprocess', this.getCurrentTime());
         });
@@ -192,7 +193,7 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
-     * Returns the current time in seconds relative to the audioclip's
+     * Returns the current time in seconds relative to the audio-clip's
      * duration.
      *
      * @return {number}

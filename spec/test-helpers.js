@@ -26,7 +26,7 @@ const TestHelpers = {
     },
 
     /**
-     * Handle creating wavesurfer ui requirements
+     * Handle creating wavesurfer UI requirements
      *
      * @param  {Object} options
      */

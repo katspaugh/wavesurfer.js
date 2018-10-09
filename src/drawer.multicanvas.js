@@ -38,8 +38,8 @@ export default class MultiCanvas extends Drawer {
         );
 
         /**
-         * Whether or not the progress wave is renderered. If the `waveColor`
-         * and `progressColor` are the same colour it is not.
+         * Whether or not the progress wave is rendered. If the `waveColor`
+         * and `progressColor` are the same color it is not.
          * @type {boolean}
          */
         this.hasProgressCanvas = params.waveColor != params.progressColor;
@@ -58,7 +58,7 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
-     * Initialise the drawer
+     * Initialize the drawer
      */
     init() {
         this.createWrapper();
@@ -119,7 +119,8 @@ export default class MultiCanvas extends Drawer {
         }
 
         this.canvases.forEach((entry, i) => {
-            // Add some overlap to prevent vertical white stripes, keep the width even for simplicity.
+            // Add some overlap to prevent vertical white stripes, keep the
+            // width even for simplicity
             let canvasWidth =
                 this.maxCanvasWidth + 2 * Math.ceil(this.params.pixelRatio / 2);
 
@@ -197,7 +198,8 @@ export default class MultiCanvas extends Drawer {
         const elementWidth = Math.round(width / this.params.pixelRatio);
         const totalWidth = Math.round(this.width / this.params.pixelRatio);
 
-        // Where the canvas starts and ends in the waveform, represented as a decimal between 0 and 1.
+        // Where the canvas starts and ends in the waveform, represented as a
+        // decimal between 0 and 1.
         entry.start = entry.waveCtx.canvas.offsetLeft / totalWidth || 0;
         entry.end = entry.start + elementWidth / totalWidth;
 

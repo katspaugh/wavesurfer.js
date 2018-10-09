@@ -514,7 +514,7 @@ class Region {
 
 /**
  * @typedef {Object} RegionsPluginParams
- * @property {?boolean} dragSelection Enable creating regions by dragging wih
+ * @property {?boolean} dragSelection Enable creating regions by dragging with
  * the mouse
  * @property {?RegionParams[]} regions Regions that should be added upon
  * initialisation
@@ -531,8 +531,8 @@ class Region {
  * @property {number} start=0 The start position of the region (in seconds).
  * @property {number} end=0 The end position of the region (in seconds).
  * @property {?boolean} loop Whether to loop the region when played back.
- * @property {boolean} drag=true Allow/dissallow dragging the region.
- * @property {boolean} resize=true Allow/dissallow resizing the region.
+ * @property {boolean} drag=true Allow/disallow dragging the region.
+ * @property {boolean} resize=true Allow/disallow resizing the region.
  * @property {string} [color='rgba(0, 0, 0, 0.1)'] HTML color code.
  */
 

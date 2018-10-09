@@ -99,7 +99,7 @@ export default class CursorPlugin {
         /** @private */
         this.style = ws.util.style;
         /**
-         * The cursor html element
+         * The cursor HTML element
          *
          * @type {?HTMLElement}
          */

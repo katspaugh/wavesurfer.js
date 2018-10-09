@@ -2,7 +2,7 @@
  * @typedef {Object} MinimapPluginParams
  * @desc Extends the `WavesurferParams` wavesurfer was initialised with
  * @property {?string|HTMLElement} container CSS selector or HTML element where
- * the ELAN information should be renderer. By default it is simply appended
+ * the map should be rendered. By default it is simply appended
  * after the waveform.
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('minimap')`

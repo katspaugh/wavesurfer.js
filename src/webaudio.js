@@ -1,6 +1,6 @@
 import * as util from './util';
 
-// using consts to prevent someone writing the string wrong
+// using constants to prevent someone writing the string wrong
 const PLAYING = 'playing';
 const PAUSED = 'paused';
 const FINISHED = 'finished';
@@ -654,7 +654,7 @@ export default class WebAudio extends util.Observer {
     }
 
     /**
-     * Returns the current time in seconds relative to the audioclip's
+     * Returns the current time in seconds relative to the audio-clip's
      * duration.
      *
      * @return {number}

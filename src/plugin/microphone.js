@@ -13,7 +13,7 @@
  */
 
 /**
- * Visualise microphone input in a wavesurfer instance.
+ * Visualize microphone input in a wavesurfer instance.
  *
  * @implements {PluginClass}
  * @extends {Observer}
@@ -71,7 +71,7 @@ export default class MicrophonePlugin {
             successCallback,
             errorCallback
         ) => {
-            // get ahold of getUserMedia, if present
+            // get a hold of getUserMedia, if present
             const getUserMedia =
                 navigator.getUserMedia ||
                 navigator.webkitGetUserMedia ||
@@ -141,7 +141,7 @@ export default class MicrophonePlugin {
     }
 
     /**
-     * Allow user to select audio input device, eg. microphone, and
+     * Allow user to select audio input device, e.g. microphone, and
      * start the visualization.
      */
     start() {

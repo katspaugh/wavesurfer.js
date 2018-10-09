@@ -221,7 +221,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
  * @property {string|HTMLElement} container Selector of element or element in
  * which to render
  * @property {number} fftSamples=512 number of samples to fetch to FFT. Must be
- * a pwer of 2.
+ * a power of 2.
  * @property {number} noverlap Size of the overlapping window. Must be <
  * fftSamples. Auto deduced from canvas size by default.
  * @property {string} windowFunc='hann' The window function to be used. One of
