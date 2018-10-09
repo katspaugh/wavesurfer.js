@@ -87,7 +87,7 @@ import PeakCache from './peakcache';
  * (see fillParent).
  * @property {number} skipLength=2 Number of seconds to skip with the
  * skipForward() and skipBackward() methods.
- * @property {boolean} splitChannels=false Render with seperate waveforms for
+ * @property {boolean} splitChannels=false Render with separate waveforms for
  * the channels of the audio
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
@@ -327,7 +327,7 @@ export default class WaveSurfer extends util.Observer {
 
         /**
          * @private Will hold a list of event descriptors that need to be
-         * cancelled on subsequent loads of audio
+         * canceled on subsequent loads of audio
          * @type {Object[]}
          */
         this.tmpEvents = [];
@@ -859,7 +859,7 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Toggle the volume on and off. It not currenly muted it will save the
+     * Toggle the volume on and off. If not currently muted it will save the
      * current volume value and turn the volume off. If currently muted then it
      * will restore the volume to the saved value, and then rest the saved
      * value.
@@ -1038,7 +1038,7 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Get the correct peaks for current wave viewport and render wave
+     * Get the correct peaks for current wave view-port and render wave
      *
      * @private
      * @emits WaveSurfer#redraw

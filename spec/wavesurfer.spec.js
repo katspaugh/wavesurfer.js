@@ -86,7 +86,7 @@ describe('WaveSurfer/playback:', function() {
 
     /** @test {WaveSurfer#getCurrentTime}  */
     it('should get currentTime', function() {
-        // initally zero
+        // initially zero
         let time = wavesurfer.getCurrentTime();
         expect(time).toEqual(0);
 
@@ -98,7 +98,7 @@ describe('WaveSurfer/playback:', function() {
 
     /** @test {WaveSurfer#setCurrentTime}  */
     it('should set currentTime', function() {
-        // initally zero
+        // initially zero
         let time = wavesurfer.getCurrentTime();
         expect(time).toEqual(0);
 

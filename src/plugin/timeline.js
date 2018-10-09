@@ -292,7 +292,7 @@ export default class TimelinePlugin {
      * @private
      */
     updateCanvasesPositioning() {
-        // cache length for perf
+        // cache length for performance
         const canvasesLength = this.canvases.length;
         this.canvases.forEach((canvas, i) => {
             // canvas width is the max element width, or if it is the last the
