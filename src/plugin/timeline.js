@@ -321,7 +321,9 @@ export default class TimelinePlugin {
      * @private
      */
     renderCanvases() {
-        const duration = this.wavesurfer.backend.getDuration();
+        const duration = this.wavesurfer.backend.getDuration()
+            ? this.wavesurfer.backend.getDuration()
+            : this.wavesurfer.timeline.params.duration;
         if (duration <= 0) {
             return;
         }
