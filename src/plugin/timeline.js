@@ -18,6 +18,7 @@
  * performance for large files
  * @property {string} fontFamily='Arial'
  * @property {number} fontSize=10 Font size of labels in pixels
+ * @property {number} duration Length of the track in seconds
  * @property {function} formatTimeCallback (sec, pxPerSec) -> label
  * @property {function} timeInterval (pxPerSec) -> seconds between notches
  * @property {function} primaryLabelInterval (pxPerSec) -> cadence between
