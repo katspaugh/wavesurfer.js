@@ -141,6 +141,7 @@ export default class TimelinePlugin {
                 secondaryFontColor: '#000',
                 fontFamily: 'Arial',
                 fontSize: 10,
+                duration: null,
                 zoomDebounce: false,
                 formatTimeCallback: this.defaultFormatTimeCallback,
                 timeInterval: this.defaultTimeInterval,
@@ -323,9 +324,10 @@ export default class TimelinePlugin {
      * @private
      */
     renderCanvases() {
-        const duration = this.wavesurfer.backend.getDuration()
-            ? this.wavesurfer.backend.getDuration()
-            : this.wavesurfer.timeline.params.duration;
+        const duration =
+            this.wavesurfer.timeline.params.duration ||
+            this.wavesurfer.backend.getDuration();
+
         if (duration <= 0) {
             return;
         }
