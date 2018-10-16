@@ -18,6 +18,8 @@
  * performance for large files
  * @property {string} fontFamily='Arial'
  * @property {number} fontSize=10 Font size of labels in pixels
+ * @property {?number} duration Length of the track in seconds. Overrides
+ * getDuration() for setting length of timeline
  * @property {function} formatTimeCallback (sec, pxPerSec) -> label
  * @property {function} timeInterval (pxPerSec) -> seconds between notches
  * @property {function} primaryLabelInterval (pxPerSec) -> cadence between
@@ -139,6 +141,7 @@ export default class TimelinePlugin {
                 secondaryFontColor: '#000',
                 fontFamily: 'Arial',
                 fontSize: 10,
+                duration: null,
                 zoomDebounce: false,
                 formatTimeCallback: this.defaultFormatTimeCallback,
                 timeInterval: this.defaultTimeInterval,
@@ -321,7 +324,10 @@ export default class TimelinePlugin {
      * @private
      */
     renderCanvases() {
-        const duration = this.wavesurfer.backend.getDuration();
+        const duration =
+            this.wavesurfer.timeline.params.duration ||
+            this.wavesurfer.backend.getDuration();
+
         if (duration <= 0) {
             return;
         }
