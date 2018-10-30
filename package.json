@@ -30,12 +30,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/katspaugh/wavesurfer.js.git"
+    "url": "git://github.com/tai-fe/wavesurfer.js.git"
   },
   "author": "",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/katspaugh/wavesurfer.js/issues"
+    "url": "https://github.com/tai-fe/wavesurfer.js/issues"
   },
   "keywords": [
     "waveform",
@@ -90,7 +90,7 @@
     "webpack-dev-server": "^3.1.9",
     "webpack-merge": "^4.1.4"
   },
-  "homepage": "https://github.com/katspaugh/wavesurfer.js",
+  "homepage": "https://github.com/tai-fe/wavesurfer.js",
   "pre-commit": "lint-and-format-staged",
   "lint-staged": {
     "*.js": [
