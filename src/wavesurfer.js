@@ -599,7 +599,10 @@ export default class WaveSurfer extends util.Observer {
         this.backend.init();
         this.fireEvent('backend-created', this.backend);
 
-        this.backend.on('finish', () => this.fireEvent('finish'));
+        this.backend.on('finish', () => {
+            this.drawer.progress(this.backend.getPlayedPercents());
+            this.fireEvent('finish');
+        });
         this.backend.on('play', () => this.fireEvent('play'));
         this.backend.on('pause', () => this.fireEvent('pause'));
 
