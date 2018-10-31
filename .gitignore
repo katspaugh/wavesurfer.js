@@ -2,6 +2,7 @@ dist/wavesurfer.dev.js
 dist/plugin/*.js
 !/dist/plugin/*.min.js
 dist/**/*.map
+dist
 
 /node_modules
 /bower_components
