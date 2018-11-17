@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+2.1.1 (unreleased)
+------------------
+
+- Fix microphone plugin example for Safari (#1377)
+
 2.1.0 (29.09.2018)
 ------------------
 
