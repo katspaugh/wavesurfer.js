@@ -94,8 +94,8 @@
   "pre-commit": "lint-and-format-staged",
   "lint-staged": {
     "*.js": [
-      "eslint",
-      "prettier"
+      "prettier",
+      "eslint"
     ],
     "*.html": [
       "htmlhint"
