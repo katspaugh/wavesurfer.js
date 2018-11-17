@@ -178,6 +178,7 @@ export default class WaveSurfer extends util.Observer {
     /** @private */
     defaultParams = {
         audioContext: null,
+        audioScriptProcessor: null,
         audioRate: 1,
         autoCenter: true,
         backend: 'WebAudio',
@@ -372,15 +373,20 @@ export default class WaveSurfer extends util.Observer {
         // set, this is never called. Use 100ms or this.params.responsive as
         // timeout for the debounce function.
         let prevWidth = 0;
-        this._onResize = util.debounce(() => {
-            if (
-                prevWidth != this.drawer.wrapper.clientWidth &&
-                !this.params.scrollParent
-            ) {
-                prevWidth = this.drawer.wrapper.clientWidth;
-                this.drawer.fireEvent('redraw');
-            }
-        }, typeof this.params.responsive === 'number' ? this.params.responsive : 100);
+        this._onResize = util.debounce(
+            () => {
+                if (
+                    prevWidth != this.drawer.wrapper.clientWidth &&
+                    !this.params.scrollParent
+                ) {
+                    prevWidth = this.drawer.wrapper.clientWidth;
+                    this.drawer.fireEvent('redraw');
+                }
+            },
+            typeof this.params.responsive === 'number'
+                ? this.params.responsive
+                : 100
+        );
 
         return this;
     }
