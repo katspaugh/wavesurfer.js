@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">src/plugin/spectrogram.js | wavesurfer.js</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Interactive navigable audio visualization using Web Audio and Canvas"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="wavesurfer.js"><meta property="twitter:description" content="Interactive navigable audio visualization using Web Audio and Canvas"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html">WaveSurfer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html">WebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-InitParams">InitParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-WavesurferParams">WavesurferParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/de/docs/Web/API/AudioNode">AudioNode</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D">CanvasRenderingContext2D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints">MediaStreamConstraints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext">OfflineAudioContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin">plugin</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html">CursorPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/elan.js~ElanPlugin.html">ElanPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/mediasession.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/timeline.js~TimelinePlugin.html">TimelinePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ElanPluginParams">ElanPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MediaSessionPluginParams">MediaSessionPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SpectrogramPluginParams">SpectrogramPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TimelinePluginParams">TimelinePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/plugin/spectrogram.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+ * Calculate FFT - Based on https://github.com/corbanbrook/dsp.js
+ */
+/* eslint-disable complexity, no-redeclare, no-var, one-var */
+const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
+    this.bufferSize = bufferSize;
+    this.sampleRate = sampleRate;
+    this.bandwidth = (2 / bufferSize) * (sampleRate / 2);
+
+    this.sinTable = new Float32Array(bufferSize);
+    this.cosTable = new Float32Array(bufferSize);
+    this.windowValues = new Float32Array(bufferSize);
+    this.reverseTable = new Uint32Array(bufferSize);
+
+    this.peakBand = 0;
+    this.peak = 0;
+
+    switch (windowFunc) {
+        case &apos;bartlett&apos;:
+            for (var i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    (2 / (bufferSize - 1)) *
+                    ((bufferSize - 1) / 2 - Math.abs(i - (bufferSize - 1) / 2));
+            }
+            break;
+        case &apos;bartlettHann&apos;:
+            for (var i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    0.62 -
+                    0.48 * Math.abs(i / (bufferSize - 1) - 0.5) -
+                    0.38 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1));
+            }
+            break;
+        case &apos;blackman&apos;:
+            alpha = alpha || 0.16;
+            for (var i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    (1 - alpha) / 2 -
+                    0.5 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1)) +
+                    (alpha / 2) *
+                        Math.cos((4 * Math.PI * i) / (bufferSize - 1));
+            }
+            break;
+        case &apos;cosine&apos;:
+            for (var i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] = Math.cos(
+                    (Math.PI * i) / (bufferSize - 1) - Math.PI / 2
+                );
+            }
+            break;
+        case &apos;gauss&apos;:
+            alpha = alpha || 0.25;
+            for (var i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] = Math.pow(
+                    Math.E,
+                    -0.5 *
+                        Math.pow(
+                            (i - (bufferSize - 1) / 2) /
+                                ((alpha * (bufferSize - 1)) / 2),
+                            2
+                        )
+                );
+            }
+            break;
+        case &apos;hamming&apos;:
+            for (var i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    (0.54 - 0.46) *
+                    Math.cos((Math.PI * 2 * i) / (bufferSize - 1));
+            }
+            break;
+        case &apos;hann&apos;:
+        case undefined:
+            for (var i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    0.5 * (1 - Math.cos((Math.PI * 2 * i) / (bufferSize - 1)));
+            }
+            break;
+        case &apos;lanczoz&apos;:
+            for (var i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    Math.sin(Math.PI * ((2 * i) / (bufferSize - 1) - 1)) /
+                    (Math.PI * ((2 * i) / (bufferSize - 1) - 1));
+            }
+            break;
+        case &apos;rectangular&apos;:
+            for (var i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] = 1;
+            }
+            break;
+        case &apos;triangular&apos;:
+            for (var i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    (2 / bufferSize) *
+                    (bufferSize / 2 - Math.abs(i - (bufferSize - 1) / 2));
+            }
+            break;
+        default:
+            throw Error(&quot;No such window function &apos;&quot; + windowFunc + &quot;&apos;&quot;);
+    }
+
+    var limit = 1;
+    var bit = bufferSize &gt;&gt; 1;
+
+    var i;
+
+    while (limit &lt; bufferSize) {
+        for (i = 0; i &lt; limit; i++) {
+            this.reverseTable[i + limit] = this.reverseTable[i] + bit;
+        }
+
+        limit = limit &lt;&lt; 1;
+        bit = bit &gt;&gt; 1;
+    }
+
+    for (i = 0; i &lt; bufferSize; i++) {
+        this.sinTable[i] = Math.sin(-Math.PI / i);
+        this.cosTable[i] = Math.cos(-Math.PI / i);
+    }
+
+    this.calculateSpectrum = function(buffer) {
+        // Locally scope variables for speed up
+        var bufferSize = this.bufferSize,
+            cosTable = this.cosTable,
+            sinTable = this.sinTable,
+            reverseTable = this.reverseTable,
+            real = new Float32Array(bufferSize),
+            imag = new Float32Array(bufferSize),
+            bSi = 2 / this.bufferSize,
+            sqrt = Math.sqrt,
+            rval,
+            ival,
+            mag,
+            spectrum = new Float32Array(bufferSize / 2);
+
+        var k = Math.floor(Math.log(bufferSize) / Math.LN2);
+
+        if (Math.pow(2, k) !== bufferSize) {
+            throw &apos;Invalid buffer size, must be a power of 2.&apos;;
+        }
+        if (bufferSize !== buffer.length) {
+            throw &apos;Supplied buffer is not the same size as defined FFT. FFT Size: &apos; +
+                bufferSize +
+                &apos; Buffer Size: &apos; +
+                buffer.length;
+        }
+
+        var halfSize = 1,
+            phaseShiftStepReal,
+            phaseShiftStepImag,
+            currentPhaseShiftReal,
+            currentPhaseShiftImag,
+            off,
+            tr,
+            ti,
+            tmpReal;
+
+        for (var i = 0; i &lt; bufferSize; i++) {
+            real[i] =
+                buffer[reverseTable[i]] * this.windowValues[reverseTable[i]];
+            imag[i] = 0;
+        }
+
+        while (halfSize &lt; bufferSize) {
+            phaseShiftStepReal = cosTable[halfSize];
+            phaseShiftStepImag = sinTable[halfSize];
+
+            currentPhaseShiftReal = 1;
+            currentPhaseShiftImag = 0;
+
+            for (var fftStep = 0; fftStep &lt; halfSize; fftStep++) {
+                var i = fftStep;
+
+                while (i &lt; bufferSize) {
+                    off = i + halfSize;
+                    tr =
+                        currentPhaseShiftReal * real[off] -
+                        currentPhaseShiftImag * imag[off];
+                    ti =
+                        currentPhaseShiftReal * imag[off] +
+                        currentPhaseShiftImag * real[off];
+
+                    real[off] = real[i] - tr;
+                    imag[off] = imag[i] - ti;
+                    real[i] += tr;
+                    imag[i] += ti;
+
+                    i += halfSize &lt;&lt; 1;
+                }
+
+                tmpReal = currentPhaseShiftReal;
+                currentPhaseShiftReal =
+                    tmpReal * phaseShiftStepReal -
+                    currentPhaseShiftImag * phaseShiftStepImag;
+                currentPhaseShiftImag =
+                    tmpReal * phaseShiftStepImag +
+                    currentPhaseShiftImag * phaseShiftStepReal;
+            }
+
+            halfSize = halfSize &lt;&lt; 1;
+        }
+
+        for (var i = 0, N = bufferSize / 2; i &lt; N; i++) {
+            rval = real[i];
+            ival = imag[i];
+            mag = bSi * sqrt(rval * rval + ival * ival);
+
+            if (mag &gt; this.peak) {
+                this.peakBand = i;
+                this.peak = mag;
+            }
+            spectrum[i] = mag;
+        }
+        return spectrum;
+    };
+};
+/* eslint-enable complexity, no-redeclare, no-var, one-var */
+
+/**
+ * @typedef {Object} SpectrogramPluginParams
+ * @property {string|HTMLElement} container Selector of element or element in
+ * which to render
+ * @property {number} fftSamples=512 number of samples to fetch to FFT. Must be
+ * a pwer of 2.
+ * @property {number} noverlap Size of the overlapping window. Must be &lt;
+ * fftSamples. Auto deduced from canvas size by default.
+ * @property {string} windowFunc=&apos;hann&apos; The window function to be used. One of
+ * these: `&apos;bartlett&apos;`, `&apos;bartlettHann&apos;`, `&apos;blackman&apos;`, `&apos;cosine&apos;`, `&apos;gauss&apos;`,
+ * `&apos;hamming&apos;`, `&apos;hann&apos;`, `&apos;lanczoz&apos;`, `&apos;rectangular&apos;`, `&apos;triangular&apos;`
+ * @property {?number} alpha Some window functions have this extra value.
+ * (Between 0 and 1)
+ * @property {number} pixelRatio=wavesurfer.params.pixelRatio to control the
+ * size of the spectrogram in relation with its canvas. 1 = Draw on the whole
+ * canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)
+ * @property {?boolean} deferInit Set to true to manually call
+ * `initPlugin(&apos;spectrogram&apos;)`
+ */
+
+/**
+ * Render a spectrogram visualisation of the audio.
+ *
+ * @implements {PluginClass}
+ * @extends {Observer}
+ * @example
+ * // es6
+ * import SpectrogramPlugin from &apos;wavesurfer.spectrogram.js&apos;;
+ *
+ * // commonjs
+ * var SpectrogramPlugin = require(&apos;wavesurfer.spectrogram.js&apos;);
+ *
+ * // if you are using &lt;script&gt; tags
+ * var SpectrogramPlugin = window.WaveSurfer.spectrogram;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     SpectrogramPlugin.create({
+ *       // plugin options ...
+ *     })
+ *   ]
+ * });
+ */
+export default class SpectrogramPlugin {
+    /**
+     * Spectrogram plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {SpectrogramPluginParams} params parameters use to initialise the plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: &apos;spectrogram&apos;,
+            deferInit: params &amp;&amp; params.deferInit ? params.deferInit : false,
+            params: params,
+            staticProps: {
+                FFT: FFT
+            },
+            instance: SpectrogramPlugin
+        };
+    }
+
+    constructor(params, ws) {
+        this.params = params;
+        this.wavesurfer = ws;
+        this.util = ws.util;
+
+        this.frequenciesDataUrl = params.frequenciesDataUrl;
+        this._onScroll = e =&gt; {
+            this.updateScroll(e);
+        };
+        this._onReady = () =&gt; {
+            const drawer = (this.drawer = ws.drawer);
+
+            this.container =
+                &apos;string&apos; == typeof params.container
+                    ? document.querySelector(params.container)
+                    : params.container;
+
+            if (!this.container) {
+                throw Error(&apos;No container for WaveSurfer spectrogram&apos;);
+            }
+
+            this.width = drawer.width;
+            this.pixelRatio = this.params.pixelRatio || ws.params.pixelRatio;
+            this.fftSamples =
+                this.params.fftSamples || ws.params.fftSamples || 512;
+            this.height = this.fftSamples / 2;
+            this.noverlap = params.noverlap;
+            this.windowFunc = params.windowFunc;
+            this.alpha = params.alpha;
+
+            this.createWrapper();
+            this.createCanvas();
+            this.render();
+
+            drawer.wrapper.addEventListener(&apos;scroll&apos;, this._onScroll);
+            ws.on(&apos;redraw&apos;, () =&gt; this.render());
+        };
+    }
+
+    init() {
+        // Check if ws is ready
+        if (this.wavesurfer.isReady) {
+            this._onReady();
+        }
+
+        this.wavesurfer.on(&apos;ready&apos;, this._onReady);
+    }
+
+    destroy() {
+        this.unAll();
+        this.wavesurfer.un(&apos;ready&apos;, this._onReady);
+        this.drawer.wrapper.removeEventListener(&apos;scroll&apos;, this._onScroll);
+        this.wavesurfer = null;
+        this.util = null;
+        this.params = null;
+        if (this.wrapper) {
+            this.wrapper.parentNode.removeChild(this.wrapper);
+            this.wrapper = null;
+        }
+    }
+
+    createWrapper() {
+        const prevSpectrogram = this.container.querySelector(&apos;spectrogram&apos;);
+        if (prevSpectrogram) {
+            this.container.removeChild(prevSpectrogram);
+        }
+        const wsParams = this.wavesurfer.params;
+        this.wrapper = document.createElement(&apos;spectrogram&apos;);
+        // if labels are active
+        if (this.params.labels) {
+            const labelsEl = (this.labelsEl = document.createElement(&apos;canvas&apos;));
+            labelsEl.classList.add(&apos;spec-labels&apos;);
+            this.drawer.style(labelsEl, {
+                left: 0,
+                position: &apos;absolute&apos;,
+                zIndex: 9,
+                height: `${this.height / this.pixelRatio}px`,
+                width: `${55 / this.pixelRatio}px`
+            });
+            this.wrapper.appendChild(labelsEl);
+            // can be customized in next version
+            this.loadLabels(
+                &apos;rgba(68,68,68,0.5)&apos;,
+                &apos;12px&apos;,
+                &apos;10px&apos;,
+                &apos;&apos;,
+                &apos;#fff&apos;,
+                &apos;#f7f7f7&apos;,
+                &apos;center&apos;,
+                &apos;#specLabels&apos;
+            );
+        }
+
+        this.drawer.style(this.wrapper, {
+            display: &apos;block&apos;,
+            position: &apos;relative&apos;,
+            userSelect: &apos;none&apos;,
+            webkitUserSelect: &apos;none&apos;,
+            height: `${this.height / this.pixelRatio}px`
+        });
+
+        if (wsParams.fillParent || wsParams.scrollParent) {
+            this.drawer.style(this.wrapper, {
+                width: &apos;100%&apos;,
+                overflowX: &apos;hidden&apos;,
+                overflowY: &apos;hidden&apos;
+            });
+        }
+        this.container.appendChild(this.wrapper);
+
+        this.wrapper.addEventListener(&apos;click&apos;, e =&gt; {
+            e.preventDefault();
+            const relX = &apos;offsetX&apos; in e ? e.offsetX : e.layerX;
+            this.fireEvent(&apos;click&apos;, relX / this.scrollWidth || 0);
+        });
+    }
+
+    createCanvas() {
+        const canvas = (this.canvas = this.wrapper.appendChild(
+            document.createElement(&apos;canvas&apos;)
+        ));
+
+        this.spectrCc = canvas.getContext(&apos;2d&apos;);
+
+        this.util.style(canvas, {
+            position: &apos;absolute&apos;,
+            zIndex: 4
+        });
+    }
+
+    render() {
+        this.updateCanvasStyle();
+
+        if (this.frequenciesDataUrl) {
+            this.loadFrequenciesData(this.frequenciesDataUrl);
+        } else {
+            this.getFrequencies(this.drawSpectrogram);
+        }
+    }
+
+    updateCanvasStyle() {
+        const width = Math.round(this.width / this.pixelRatio) + &apos;px&apos;;
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        this.canvas.style.width = width;
+    }
+
+    drawSpectrogram(frequenciesData, my) {
+        const spectrCc = my.spectrCc;
+        const length = my.wavesurfer.backend.getDuration();
+        const height = my.height;
+        const pixels = my.resample(frequenciesData);
+        const heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
+        let i;
+        let j;
+
+        for (i = 0; i &lt; pixels.length; i++) {
+            for (j = 0; j &lt; pixels[i].length; j++) {
+                const colorValue = 255 - pixels[i][j];
+                my.spectrCc.fillStyle =
+                    &apos;rgb(&apos; +
+                    colorValue +
+                    &apos;, &apos; +
+                    colorValue +
+                    &apos;, &apos; +
+                    colorValue +
+                    &apos;)&apos;;
+                my.spectrCc.fillRect(
+                    i,
+                    height - j * heightFactor,
+                    1,
+                    heightFactor
+                );
+            }
+        }
+    }
+
+    getFrequencies(callback) {
+        const fftSamples = this.fftSamples;
+        const buffer = (this.buffer = this.wavesurfer.backend.buffer);
+        const channelOne = buffer.getChannelData(0);
+        const bufferLength = buffer.length;
+        const sampleRate = buffer.sampleRate;
+        const frequencies = [];
+
+        if (!buffer) {
+            this.fireEvent(&apos;error&apos;, &apos;Web Audio buffer is not available&apos;);
+            return;
+        }
+
+        let noverlap = this.noverlap;
+        if (!noverlap) {
+            const uniqueSamplesPerPx = buffer.length / this.canvas.width;
+            noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
+        }
+
+        const fft = new FFT(
+            fftSamples,
+            sampleRate,
+            this.windowFunc,
+            this.alpha
+        );
+        const maxSlicesCount = Math.floor(
+            bufferLength / (fftSamples - noverlap)
+        );
+        let currentOffset = 0;
+
+        while (currentOffset + fftSamples &lt; channelOne.length) {
+            const segment = channelOne.slice(
+                currentOffset,
+                currentOffset + fftSamples
+            );
+            const spectrum = fft.calculateSpectrum(segment);
+            const array = new Uint8Array(fftSamples / 2);
+            let j;
+            for (j = 0; j &lt; fftSamples / 2; j++) {
+                array[j] = Math.max(-255, Math.log10(spectrum[j]) * 45);
+            }
+            frequencies.push(array);
+            currentOffset += fftSamples - noverlap;
+        }
+        callback(frequencies, this);
+    }
+
+    loadFrequenciesData(url) {
+        const ajax = this.util.ajax({ url: url });
+
+        ajax.on(&apos;success&apos;, data =&gt;
+            this.drawSpectrogram(JSON.parse(data), this)
+        );
+        ajax.on(&apos;error&apos;, e =&gt;
+            this.fireEvent(&apos;error&apos;, &apos;XHR error: &apos; + e.target.statusText)
+        );
+
+        return ajax;
+    }
+
+    freqType(freq) {
+        return freq &gt;= 1000 ? (freq / 1000).toFixed(1) : Math.round(freq);
+    }
+
+    unitType(freq) {
+        return freq &gt;= 1000 ? &apos;KHz&apos; : &apos;Hz&apos;;
+    }
+
+    loadLabels(
+        bgFill,
+        fontSizeFreq,
+        fontSizeUnit,
+        fontType,
+        textColorFreq,
+        textColorUnit,
+        textAlign,
+        container
+    ) {
+        const frequenciesHeight = this.height;
+        bgFill = bgFill || &apos;rgba(68,68,68,0)&apos;;
+        fontSizeFreq = fontSizeFreq || &apos;12px&apos;;
+        fontSizeUnit = fontSizeUnit || &apos;10px&apos;;
+        fontType = fontType || &apos;Helvetica&apos;;
+        textColorFreq = textColorFreq || &apos;#fff&apos;;
+        textColorUnit = textColorUnit || &apos;#fff&apos;;
+        textAlign = textAlign || &apos;center&apos;;
+        container = container || &apos;#specLabels&apos;;
+        const getMaxY = frequenciesHeight || 512;
+        const labelIndex = 5 * (getMaxY / 256);
+        const freqStart = 0;
+        const step =
+            (this.wavesurfer.backend.ac.sampleRate / 2 - freqStart) /
+            labelIndex;
+
+        const ctx = this.labelsEl.getContext(&apos;2d&apos;);
+        this.labelsEl.height = this.height;
+        this.labelsEl.width = 55;
+
+        ctx.fillStyle = bgFill;
+        ctx.fillRect(0, 0, 55, getMaxY);
+        ctx.fill();
+        let i;
+
+        for (i = 0; i &lt;= labelIndex; i++) {
+            ctx.textAlign = textAlign;
+            ctx.textBaseline = &apos;middle&apos;;
+
+            const freq = freqStart + step * i;
+            const index = Math.round(
+                (freq / (this.sampleRate / 2)) * this.fftSamples
+            );
+            const label = this.freqType(freq);
+            const units = this.unitType(freq);
+            const x = 16;
+            const yLabelOffset = 2;
+
+            if (i == 0) {
+                ctx.fillStyle = textColorUnit;
+                ctx.font = fontSizeUnit + &apos; &apos; + fontType;
+                ctx.fillText(units, x + 24, getMaxY + i - 10);
+                ctx.fillStyle = textColorFreq;
+                ctx.font = fontSizeFreq + &apos; &apos; + fontType;
+                ctx.fillText(label, x, getMaxY + i - 10);
+            } else {
+                ctx.fillStyle = textColorUnit;
+                ctx.font = fontSizeUnit + &apos; &apos; + fontType;
+                ctx.fillText(units, x + 24, getMaxY - i * 50 + yLabelOffset);
+                ctx.fillStyle = textColorFreq;
+                ctx.font = fontSizeFreq + &apos; &apos; + fontType;
+                ctx.fillText(label, x, getMaxY - i * 50 + yLabelOffset);
+            }
+        }
+    }
+
+    updateScroll(e) {
+        if (this.wrapper) {
+            this.wrapper.scrollLeft = e.target.scrollLeft;
+        }
+    }
+
+    resample(oldMatrix) {
+        const columnsNumber = this.width;
+        const newMatrix = [];
+
+        const oldPiece = 1 / oldMatrix.length;
+        const newPiece = 1 / columnsNumber;
+        let i;
+
+        for (i = 0; i &lt; columnsNumber; i++) {
+            const column = new Array(oldMatrix[0].length);
+            let j;
+
+            for (j = 0; j &lt; oldMatrix.length; j++) {
+                const oldStart = j * oldPiece;
+                const oldEnd = oldStart + oldPiece;
+                const newStart = i * newPiece;
+                const newEnd = newStart + newPiece;
+
+                const overlap =
+                    oldEnd &lt;= newStart || newEnd &lt;= oldStart
+                        ? 0
+                        : Math.min(
+                              Math.max(oldEnd, newStart),
+                              Math.max(newEnd, oldStart)
+                          ) -
+                          Math.max(
+                              Math.min(oldEnd, newStart),
+                              Math.min(newEnd, oldStart)
+                          );
+                let k;
+                /* eslint-disable max-depth */
+                if (overlap &gt; 0) {
+                    for (k = 0; k &lt; oldMatrix[0].length; k++) {
+                        if (column[k] == null) {
+                            column[k] = 0;
+                        }
+                        column[k] += (overlap / newPiece) * oldMatrix[j][k];
+                    }
+                }
+                /* eslint-enable max-depth */
+            }
+
+            const intColumn = new Uint8Array(oldMatrix[0].length);
+            let m;
+
+            for (m = 0; m &lt; oldMatrix[0].length; m++) {
+                intColumn[m] = column[m];
+            }
+
+            newMatrix.push(intColumn);
+        }
+
+        return newMatrix;
+    }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
