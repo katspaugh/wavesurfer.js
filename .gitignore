@@ -9,6 +9,7 @@ dist/**/*.map
 /.grunt
 /coverage
 /_SpecRunner.html
+/doc
 
 .DS_Store
 .idea
