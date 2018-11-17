@@ -79,7 +79,7 @@
     "karma-jasmine": "2.0.1",
     "karma-jasmine-matchers": "3.8.3",
     "karma-verbose-reporter": "0.0.6",
-    "karma-webpack": "^3.0.5",
+    "karma-webpack": "^4.0.0-rc.2",
     "lint-staged": "^8.0.4",
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
