@@ -169,7 +169,7 @@ class Region {
                     ('000' + Math.floor((time % 1) * 1000)).slice(-3) // miliseconds
                 ].join(':')
             )
-            .join(' - ');
+            .join('-');
     }
 
     getWidth() {
