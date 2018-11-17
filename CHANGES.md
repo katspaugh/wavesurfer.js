@@ -4,7 +4,11 @@ wavesurfer.js changelog
 2.1.1 (unreleased)
 ------------------
 
+- Fix order of arguments for PluginClass.constructor (#1472)
 - Fix microphone plugin example for Safari (#1377)
+- Minimap plugin: fix styling issues and add support for zooming (#1464)
+- Timeline plugin: add duration parameter handling (#1491)
+- Fix: progress bar did not reach 100% when audio file is small (#1502)
 
 2.1.0 (29.09.2018)
 ------------------
