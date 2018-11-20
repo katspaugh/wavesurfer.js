@@ -1,11 +1,11 @@
 wavesurfer.js changelog
 =======================
 
-2.1.1 (unreleased)
+2.1.1 (18.11.2018)
 ------------------
 
 - Fix order of arguments for PluginClass.constructor (#1472)
-- Fix microphone plugin example for Safari (#1377)
+- Microphone plugin: Safari support (#1377)
 - Minimap plugin: fix styling issues and add support for zooming (#1464)
 - Timeline plugin: add duration parameter handling (#1491)
 - Cursor plugin: add showTime option (#1143)
