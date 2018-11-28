@@ -10,6 +10,9 @@
  * @property {number} zIndex=3 The z-index of the cursor element
  * @property {object} customStyle An object with custom styles which are applied
  * to the cursor element
+ * @property {boolean} showTime=false Show the time on the cursor.
+ * @property {object} customShowTimeStyle An object with custom styles which are
+ * applied to the cursor time element.
  */
 
 /**
