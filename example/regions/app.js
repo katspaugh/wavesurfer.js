@@ -1,38 +1,42 @@
 'use strict';
 
 // Create an instance
-var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.on('ready', function () {
-    wavesurfer.addRegion({
-        start: 10,
-        end: 15,
-        color: 'hsla(400, 100%, 30%, 0.1)'
-    });
-
-    wavesurfer.addRegion({
-        start: 5,
-        end: 7,
-        color: 'hsla(200, 50%, 70%, 0.1)'
-    });
-});
+var wavesurfer;
 
 // Init & load audio file
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     // Init
-    wavesurfer.init({
+    wavesurfer = WaveSurfer.create({
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
-        backend: 'MediaElement'
+        backend: 'MediaElement',
+        plugins: [
+            WaveSurfer.regions.create({
+                regions: [
+                    {
+                        start: 1,
+                        end: 3,
+                        color: 'hsla(400, 100%, 30%, 0.5)'
+                    },
+                    {
+                        start: 5,
+                        end: 7,
+                        color: 'hsla(200, 50%, 70%, 0.4)'
+                    }
+                ],
+                dragSelection: {
+                    slop: 5
+                }
+            })
+        ]
     });
 
     // Load audio from URL
     wavesurfer.load('../media/demo.wav');
 
-    document.querySelector(
-        '[data-action="play"]'
-    ).addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
-
-    wavesurfer.enableDragSelection({ slop: 5 });
+    // this is already being done in /examples/trivia.js
+    // document.querySelector(
+    //     '[data-action="play"]'
+    // ).addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
 });

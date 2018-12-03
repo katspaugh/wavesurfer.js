@@ -1,0 +1,37 @@
+{
+    "source": "./node_modules/wavesurfer.js/src",
+    "destination": "./api",
+    "package": "./node_modules/wavesurfer.js/package.json",
+    "index": "./node_modules/wavesurfer.js/README.md",
+    "plugins": [
+        {
+            "name": "esdoc-standard-plugin",
+            "option": {
+                "brand": {
+                    "title": "wavesurfer.js",
+                    "repository": "https://github.com/katspaugh/wavesurfer.js",
+                    "site": "https://wavesurfer-js.org",
+                    "image": "https://wavesurfer-js.org/css/wavesurfer-white.png"
+                }
+            }
+        },
+        {
+            "name": "esdoc-brand-plugin"
+        },
+        {
+            "name": "esdoc-accessor-plugin",
+            "option": {
+                "access": ["public", "protected"],
+                "autoPrivate": true
+            }
+        },
+        {
+            "name": "esdoc-ecmascript-proposal-plugin",
+            "option": {
+                "classProperties": true,
+                "objectRestSpread": true,
+                "exportExtensions": true
+            }
+        }
+    ]
+}

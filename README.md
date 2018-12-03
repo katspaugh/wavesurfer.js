@@ -1,5 +1,24 @@
 # wavesurfer-js.org
 
+## Update examples
+
+After a new release, run:
+
+```
+npm update
+npm install
+```
+
+to update to latest wavesurfer.js.
+
+Now update the examples and API docs with:
+
+```
+npm run update
+```
+
+This will generate the API docs, inject the CDN url, regenerate the examples index page, and sync the `example` directory.
+
 ## How to launch locally
 
 Install Jekyll:
