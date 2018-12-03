@@ -1,0 +1,14 @@
+{
+    "opts": {
+        "template": "node_modules/tui-jsdoc-template",
+        "encoding": "utf8",
+        "destination": "./api",
+        "recurse": true,
+        "package": "node_modules/wavesurfer.js/package.json"
+    },
+    "templates": {
+        "name": "wavesurfer.js"
+    },
+    "plugins": ["plugins/markdown"]
+}
+

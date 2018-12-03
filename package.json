@@ -1,0 +1,46 @@
+{
+  "name": "wavesurfer-pages",
+  "private": true,
+  "version": "1.0.0",
+  "description": "wavesurfer github pages",
+  "homepage": "https://wavesurfer-js.org",
+  "author": "",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/katspaugh/wavesurfer.js/issues"
+  },
+  "keywords": [
+    "waveform",
+    "audio",
+    "music",
+    "player",
+    "webaudio",
+    "microphone",
+    "visualization"
+  ],
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {
+    "wavesurfer.js": "^2.1.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "copy-dir": "^0.4.0",
+    "download-tarball": "^2.0.0",
+    "htmlhint": "^0.10.1",
+    "jsdoc": "^3.5.5",
+    "npm-run-all": "^4.1.5",
+    "tui-jsdoc-template": "^1.2.2"
+  },
+  "scripts": {
+    "lint": "npm-run-all lint:*",
+    "lint:html": "htmlhint examples example index.html",
+    "update": "npm-run-all -s update:*",
+    "update:examples": "node scripts/update-examples.js",
+    "update:docs": "jsdoc node_modules/wavesurfer.js/src -c ./.jsdoc.json",
+    "test": "echo No tests yet!"
+  }
+}
