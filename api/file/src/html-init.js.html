@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/html-init.js | wavesurfer.js</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Interactive navigable audio visualization using Web Audio and Canvas"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="wavesurfer.js"><meta property="twitter:description" content="Interactive navigable audio visualization using Web Audio and Canvas"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html">WaveSurfer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html">WebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-InitParams">InitParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-WavesurferParams">WavesurferParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/de/docs/Web/API/AudioNode">AudioNode</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D">CanvasRenderingContext2D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints">MediaStreamConstraints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext">OfflineAudioContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin">plugin</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html">CursorPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/elan.js~ElanPlugin.html">ElanPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/mediasession.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/timeline.js~TimelinePlugin.html">TimelinePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ElanPluginParams">ElanPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MediaSessionPluginParams">MediaSessionPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SpectrogramPluginParams">SpectrogramPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TimelinePluginParams">TimelinePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/html-init.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import loadScript from &apos;load-script&apos;;
+
+/**
+ * @typedef {Object} InitParams
+ * @property {WavesurferParams} [defaults={backend: &apos;MediaElement,
+ * mediaControls: true}] The default wavesurfer initialisation parameters
+ * @property {string|NodeList} containers=&apos;wavesurfer&apos; Selector or NodeList of
+ * elements to attach instances to
+ * @property {string}
+ * pluginCdnTemplate=&apos;//localhost:8080/dist/plugin/wavesurfer.[name].js&apos; URL
+ * template for the dynamic loading of plugins
+ * @property {function} loadPlugin If set overwrites the default ajax function,
+ * can be used to inject plugins differently.
+ */
+/**
+ * The HTML initialisation API is not part of the main library bundle file and
+ * must be additionally included.
+ *
+ * The API attaches wavesurfer instances to all `&lt;wavesurfer&gt;` (can be
+ * customised), parsing their `data-` attributes to construct an options object
+ * for initialisation. Among other things it can dynamically load plugin code.
+ *
+ * The automatic initialisation can be prevented by setting the
+ * `window.WS_StopAutoInit` flag to true. The `html-init[.min].js` file exports
+ * the `Init` class, which can be called manually.
+ *
+ * Site-wide defaults can be added by setting `window.WS_InitOptions`.
+ *
+ * @example
+ * &lt;!-- with minimap and timeline plugin --&gt;
+ * &lt;wavesurfer
+ *   data-url=&quot;../media/demo.wav&quot;
+ *   data-plugins=&quot;minimap,timeline&quot;
+ *   data-minimap-height=&quot;30&quot;
+ *   data-minimap-wave-color=&quot;#ddd&quot;
+ *   data-minimap-progress-color=&quot;#999&quot;
+ *   data-timeline-font-size=&quot;13px&quot;
+ *   data-timeline-container=&quot;#timeline&quot;
+ * &gt;
+ * &lt;/wavesurfer&gt;
+ * &lt;div id=&quot;timeline&quot;&gt;&lt;/div&gt;
+ *
+ * &lt;!-- with regions plugin --&gt;
+ * &lt;wavesurfer
+ *   data-url=&quot;../media/demo.wav&quot;
+ *   data-plugins=&quot;regions&quot;
+ *   data-regions-regions=&apos;[{&quot;start&quot;: 1,&quot;end&quot;: 3,&quot;color&quot;: &quot;hsla(400, 100%, 30%, 0.5)&quot;}]&apos;
+ * &gt;
+ * &lt;/wavesurfer&gt;
+ */
+class Init {
+    /**
+     * Instantiate Init class and initialize elements
+     *
+     * This is done automatically if `window` is defined and
+     * `window.WS_StopAutoInit` is not set to true
+     *
+     * @param {WaveSurfer} WaveSurfer The WaveSurfer library object
+     * @param {InitParams} params initialisation options
+     */
+    constructor(WaveSurfer, params = {}) {
+        if (!WaveSurfer) {
+            throw new Error(&apos;WaveSurfer is not available!&apos;);
+        }
+
+        /**
+         * cache WaveSurfer
+         * @private
+         */
+        this.WaveSurfer = WaveSurfer;
+
+        /**
+         * build parameters, cache them in _params so minified builds are smaller
+         * @private
+         */
+        const _params = (this.params = WaveSurfer.util.extend(
+            {},
+            {
+                // wavesurfer parameter defaults so by default the audio player is
+                // usable with native media element controls
+                defaults: {
+                    backend: &apos;MediaElement&apos;,
+                    mediaControls: true
+                },
+                // containers to instantiate on, can be selector string or NodeList
+                containers: &apos;wavesurfer&apos;,
+                // @TODO insert plugin CDN URIs
+                pluginCdnTemplate:
+                    &apos;//localhost:8080/dist/plugin/wavesurfer.[name].js&apos;,
+                // loadPlugin function can be overridden to inject plugin definition
+                // objects, this default function uses load-script to load a plugin
+                // and pass it to a callback
+                loadPlugin(name, cb) {
+                    const src = _params.pluginCdnTemplate.replace(
+                        &apos;[name]&apos;,
+                        name
+                    );
+                    loadScript(src, { async: false }, (err, plugin) =&gt; {
+                        if (err) {
+                            return console.error(
+                                `WaveSurfer plugin ${name} not found at ${src}`
+                            );
+                        }
+                        cb(window.WaveSurfer[name]);
+                    });
+                }
+            },
+            params
+        ));
+        /**
+         * The nodes that should have instances attached to them
+         * @type {NodeList}
+         */
+        this.containers =
+            typeof _params.containers == &apos;string&apos;
+                ? document.querySelectorAll(_params.containers)
+                : _params.containers;
+        /** @private */
+        this.pluginCache = {};
+        /**
+         * An array of wavesurfer instances
+         * @type {Object[]}
+         */
+        this.instances = [];
+
+        this.initAllEls();
+    }
+
+    /**
+     * Initialize all container elements
+     */
+    initAllEls() {
+        // iterate over all the container elements
+        Array.prototype.forEach.call(this.containers, el =&gt; {
+            // load the plugins as an array of plugin names
+            const plugins = el.dataset.plugins
+                ? el.dataset.plugins.split(&apos;,&apos;)
+                : [];
+
+            // no plugins to be loaded, just render
+            if (!plugins.length) {
+                return this.initEl(el);
+            }
+            // &#x2026; or: iterate over all the plugins
+            plugins.forEach((name, i) =&gt; {
+                // plugin is not cached already, load it
+                if (!this.pluginCache[name]) {
+                    this.params.loadPlugin(name, lib =&gt; {
+                        this.pluginCache[name] = lib;
+                        // plugins were all loaded, render the element
+                        if (i + 1 === plugins.length) {
+                            this.initEl(el, plugins);
+                        }
+                    });
+                } else if (i === plugins.length) {
+                    // plugin was cached and this plugin was the last
+                    this.initEl(el, plugins);
+                }
+            });
+        });
+    }
+
+    /**
+     * Initialize a single container element and add to `this.instances`
+     *
+     * @param  {HTMLElement} el The container to instantiate wavesurfer to
+     * @param  {PluginDefinition[]} plugins An Array of plugin names to initialize with
+     * @return {Object} Wavesurfer instance
+     */
+    initEl(el, plugins = []) {
+        const jsonRegex = /^[[|{]/;
+        // initialize plugins with the correct options
+        const initialisedPlugins = plugins.map(plugin =&gt; {
+            const options = {};
+            // the regex to find this plugin attributes
+            const attrNameRegex = new RegExp(&apos;^&apos; + plugin);
+            let attrName;
+            // iterate over all the data attributes and find ones for this
+            // plugin
+            for (attrName in el.dataset) {
+                const regexResult = attrNameRegex.exec(attrName);
+                if (regexResult) {
+                    const attr = el.dataset[attrName];
+                    // if the string begins with a [ or a { parse it as JSON
+                    const prop = jsonRegex.test(attr) ? JSON.parse(attr) : attr;
+                    // this removes the plugin prefix and changes the first letter
+                    // of the resulting string to lower case to follow the naming
+                    // convention of ws params
+                    const unprefixedOptionName =
+                        attrName
+                            .slice(plugin.length, plugin.length + 1)
+                            .toLowerCase() + attrName.slice(plugin.length + 1);
+                    options[unprefixedOptionName] = prop;
+                }
+            }
+            return this.pluginCache[plugin].create(options);
+        });
+        // build parameter object for this container
+        const params = this.WaveSurfer.util.extend(
+            { container: el },
+            this.params.defaults,
+            el.dataset,
+            { plugins: initialisedPlugins }
+        );
+
+        // @TODO make nicer
+        el.style.display = &apos;block&apos;;
+
+        // initialize wavesurfer, load audio (with peaks if provided)
+        const instance = this.WaveSurfer.create(params);
+        const peaks = params.peaks ? JSON.parse(params.peaks) : undefined;
+        instance.load(params.url, peaks);
+
+        // push this instance into the instances cache
+        this.instances.push(instance);
+        return instance;
+    }
+}
+
+// if window object exists and window.WS_StopAutoInit is not true
+if (typeof window === &apos;object&apos; &amp;&amp; !window.WS_StopAutoInit) {
+    // call init when document is ready, apply any custom default settings
+    // in window.WS_InitOptions
+    if (document.readyState === &apos;complete&apos;) {
+        window.WaveSurferInit = new Init(
+            window.WaveSurfer,
+            window.WS_InitOptions
+        );
+    } else {
+        window.addEventListener(&apos;load&apos;, () =&gt; {
+            window.WaveSurferInit = new Init(
+                window.WaveSurfer,
+                window.WS_InitOptions
+            );
+        });
+    }
+}
+
+// export init for manual usage
+export default Init;
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
