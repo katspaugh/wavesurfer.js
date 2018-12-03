@@ -1,0 +1,14 @@
+<% if (examples.length) { %>---
+layout: default
+---
+<section>
+  <h1>Examples</h1>
+
+  <ul class="list-group">
+    <% examples.forEach(function(example) { %>
+      <li class="list-group-item"><a href="/example/<%= example.fname %>/index.html"><%= example.title %></a></li>
+    <% }) %>
+  </ul>
+
+</section>
+<% } %>

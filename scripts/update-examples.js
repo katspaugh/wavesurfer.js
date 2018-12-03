@@ -4,7 +4,9 @@
  */
 
 const fs = require('fs');
+const ejs = require('ejs');
 const path = require('path');
+const walk = require('walkdir');
 const copydir = require('copy-dir');
 const download = require('download-tarball');
 const replaceInFiles = require('replace-in-files');
@@ -18,6 +20,13 @@ const targetDir = '/tmp';
 const dirNameWithVersion = dirName + '-' + version;
 const targetDirUnpacked = path.join(targetDir, dirNameWithVersion);
 const CDN_URL = 'https://unpkg.com/wavesurfer.js/dist/';
+const examplesIndex = path.join('examples', 'index.html');
+
+const camelCaseToWords = function(str) {
+    return str.match(/[A-Za-z][a-z]*/g).map(function(x){
+        return x[0].toUpperCase() + x.substr(1).toLowerCase();
+    }).join(' ');
+};
 
 console.log('--------------------------------------');
 console.log('Updating site with', pjson.name, version);
@@ -35,7 +44,7 @@ download(dl_options).then(() => {
     console.log('File downloaded and extracted at', targetDirUnpacked);
     console.log();
 
-    // copy dist
+    // copy updated example directory
     copydir(path.join(targetDirUnpacked, 'example'), path.join('.', 'example'), (err) => {
         if (err) {
             console.log(err);
@@ -55,6 +64,33 @@ download(dl_options).then(() => {
             };
             replaceInFiles(options).then(data => {
                 console.log('Updated CDN link in:', data.countOfMatchesByPaths);
+                console.log('');
+
+                // find examples
+                const examples = [];
+                walk.sync('example', function(fpath, stat) {
+                  if (fpath.endsWith(path.sep + 'index.html')) {
+                    let parts = fpath.split(path.sep);
+                    let exampleName = parts[parts.length - 2];
+                    let title = camelCaseToWords(exampleName);
+                    console.log('found example: ', title);
+                    examples.push({fname: exampleName, title: title});
+                  }
+                });
+
+                console.log('');
+
+                // update and generate examples index
+                ejs.renderFile('examples-index.ejs', {examples: examples}, (err, str) => {
+                    // write to a new file
+                    fs.writeFile(examplesIndex, str, (err) => {  
+                        // throws an error, you could also catch it here
+                        if (err) throw err;
+
+                        // success case, the file was saved
+                        console.log('Updated', examplesIndex);
+                    });
+                });
             }).catch(error => {
                 console.error('Replacement error occurred:', error);
             });
