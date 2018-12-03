@@ -1,49 +1,48 @@
 'use strict';
 
 // Create an instance
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer;
 
 // Init & load audio file
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     // Init
-    wavesurfer.init({
+    wavesurfer = WaveSurfer.create({
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
-        backend: 'MediaElement'
+        backend: 'MediaElement',
+        plugins: [
+            WaveSurfer.regions.create({
+                regions: [
+                    {
+                        start: 0,
+                        end: 5,
+                        color: 'hsla(400, 100%, 30%, 0.1)'
+                    },
+                    {
+                        start: 10,
+                        end: 100,
+                        color: 'hsla(200, 50%, 70%, 0.1)'
+                    }
+                ]
+            }),
+            WaveSurfer.timeline.create({
+                container: '#timeline'
+            })
+        ]
     });
 
-
     // Load audio from URL
-    wavesurfer.load('../panner/media.wav')
-
-    wavesurfer.enableDragSelection({ slop: 5 });
+    wavesurfer.load('../media/demo.wav');
 
     // Zoom slider
     var slider = document.querySelector('[data-action="zoom"]');
 
-    slider.addEventListener('input', function () {
+    slider.value = wavesurfer.params.minPxPerSec;
+    slider.min = wavesurfer.params.minPxPerSec;
+
+    slider.addEventListener('input', function() {
         wavesurfer.zoom(Number(this.value));
-    });
-
-    wavesurfer.on('ready', function () {
-        wavesurfer.addRegion({
-            start: 0,
-            end: 5,
-            color: 'hsla(400, 100%, 30%, 0.1)'
-        });
-
-        wavesurfer.addRegion({
-            start: 10,
-            end: 100,
-            color: 'hsla(200, 50%, 70%, 0.1)'
-        });
-
-      // Init Timeline plugin
-      var timeline = Object.create(WaveSurfer.Timeline);
-      timeline.init({ wavesurfer: wavesurfer, container: '#timeline' });
-
-      slider.value = wavesurfer.params.minPxPerSec;
     });
 
     // Play button

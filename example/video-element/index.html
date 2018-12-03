@@ -14,9 +14,9 @@
         <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
-        <script src="../../dist/wavesurfer.min.js"></script>
+        <script src="../../dist/wavesurfer.js"></script>
 
-        <script src="../../plugin/wavesurfer.regions.js"></script>
+        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
 
         <!-- Demo -->
         <script src="main.js"></script>
@@ -64,20 +64,17 @@
                 </p>
 
                 <p>
-                <pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
-    container: document.querySelector('#waveform'),
-    waveColor: '#A8DBA8',
-    progressColor: '#3B8686',
-    backend: 'MediaElement'
+                <pre><code>var wavesurfer = WaveSurfer.create({
+  container: document.querySelector('#waveform'),
+  waveColor: '#A8DBA8',
+  progressColor: '#3B8686',
+  backend: 'MediaElement'
 });
 
 // Load audio from existing media element
 var mediaElt = document.querySelector('video');
-wavesurfer.load(mediaElt);
 
-                </code></pre>
+wavesurfer.load(mediaElt);</code></pre>
                 </p>
 
                 <h3>Pre-rendered Peaks</h3>
@@ -112,11 +109,11 @@ wavesurfer.load(mediaElt, [0.0218, 0.0183, 0.0165, 0.0198, 0.2137]);
 
             <div class="footer row">
                 <div class="col-sm-12">
-                    <a rel="license" href="https://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+                    <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
                 </div>
 
                 <div class="col-sm-7">
-                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/katspaugh/wavesurfer.js" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
                 </div>
 
                 <div class="col-sm-5">

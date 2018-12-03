@@ -14,7 +14,9 @@
         <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
-        <script src="//cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.5/wavesurfer.min.js" type="text/javascript"></script>
+        <script src="../../dist/wavesurfer.js"></script>
+
+        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
 
         <!-- Demo -->
         <script src="main.js"></script>
@@ -74,7 +76,7 @@
                     you can pass them into the <code>load</code>
                     function. This is optional–if you don't provide
                     any peaks,
-                    <strong>waserver.js</strong> will first draw a
+                    <strong>wavesurfer.js</strong> will first draw a
                     thin line instead of a waveform, then attempt to
                     download the audio file via Ajax and decode it
                     with Web Audio if available.
@@ -129,4 +131,3 @@
         </script>
     </body>
 </html>
-
