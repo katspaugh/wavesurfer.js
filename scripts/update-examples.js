@@ -17,10 +17,11 @@ const url = 'https://github.com/katspaugh/' + dirName + '/archive/' + version + 
 const targetDir = '/tmp';
 const dirNameWithVersion = dirName + '-' + version;
 const targetDirUnpacked = path.join(targetDir, dirNameWithVersion);
+const CDN_URL = 'https://unpkg.com/wavesurfer.js/dist/';
 
-console.log('-------------------------------------------');
+console.log('-------------------------------------');
 console.log('Updating docs for', pjson.name, version);
-console.log('-------------------------------------------');
+console.log('-------------------------------------');
 console.log();
 
 // download
@@ -43,16 +44,17 @@ download(dl_options).then(() => {
             console.log();
 
             // use CDN url
+            console.log('Using CDN:', CDN_URL);
+            console.log('');
             const options = {
               files: [
                 'example/**/*.html'
               ],
               from: /..\/..\/dist\//gm,
-              to: 'https://unpkg.com/wavesurfer.js/dist/'
+              to: CDN_URL
             };
             replaceInFiles(options).then(data => {
-                console.log('Modified files:', data.changedFiles);
-                console.log('Count of matches by paths:', data.countOfMatchesByPaths);
+                console.log('Updated CDN link in:', data.countOfMatchesByPaths);
             }).catch(error => {
                 console.error('Replacement error occurred:', error);
             });
