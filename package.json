@@ -30,8 +30,12 @@
     "babel-preset-env": "^1.7.0",
     "copy-dir": "^0.4.0",
     "download-tarball": "^2.0.0",
+    "esdoc": "^1.1.0",
+    "esdoc-accessor-plugin": "^1.0.0",
+    "esdoc-brand-plugin": "^1.0.1",
+    "esdoc-ecmascript-proposal-plugin": "^1.0.0",
+    "esdoc-standard-plugin": "^1.0.0",
     "htmlhint": "^0.10.1",
-    "jsdoc": "^3.5.5",
     "npm-run-all": "^4.1.5",
     "tui-jsdoc-template": "^1.2.2"
   },
@@ -40,7 +44,7 @@
     "lint:html": "htmlhint examples example index.html",
     "update": "npm-run-all -s update:*",
     "update:examples": "node scripts/update-examples.js",
-    "update:docs": "jsdoc node_modules/wavesurfer.js/src -c ./.jsdoc.json",
+    "update:docs": "esdoc",
     "test": "echo No tests yet!"
   }
 }

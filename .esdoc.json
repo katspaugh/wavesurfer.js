@@ -1,0 +1,27 @@
+{
+    "source": "./node_modules/wavesurfer.js/src",
+    "destination": "./api",
+    "plugins": [
+        {
+            "name": "esdoc-standard-plugin"
+        },
+        {
+            "name": "esdoc-brand-plugin"
+        },
+        {
+            "name": "esdoc-accessor-plugin",
+            "option": {
+                "access": ["public", "protected"],
+                "autoPrivate": true
+            }
+        },
+        {
+            "name": "esdoc-ecmascript-proposal-plugin",
+            "option": {
+                "classProperties": true,
+                "objectRestSpread": true,
+                "exportExtensions": true
+            }
+        }
+    ]
+}
