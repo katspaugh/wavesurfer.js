@@ -17,12 +17,17 @@
         <!-- wavesurfer.js -->
         <script src="../../dist/wavesurfer.js"></script>
 
-        <!-- timeline format renderer -->
+        <!-- timeline plugin -->
         <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
 
         <!-- App -->
         <script src="app.js"></script>
         <script src="../trivia.js"></script>
+        
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
@@ -83,7 +88,7 @@
   ]
 });
 
-wavesurfer.load('example/media/demo.mp3');</code></pre>
+wavesurfer.load('example/media/demo.wav');</code></pre>
                     </p></noindex>
 
                     <br />
