@@ -41,6 +41,8 @@ navigation:
         url: /docs/methods.html
       - title: Events
         url: /docs/events.html
+      - title: API
+        url: /api/index.html
   - title: Examples
     url: /examples/
   - title: FAQ
