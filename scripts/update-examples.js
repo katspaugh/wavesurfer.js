@@ -19,9 +19,9 @@ const dirNameWithVersion = dirName + '-' + version;
 const targetDirUnpacked = path.join(targetDir, dirNameWithVersion);
 const CDN_URL = 'https://unpkg.com/wavesurfer.js/dist/';
 
-console.log('-------------------------------------');
-console.log('Updating docs for', pjson.name, version);
-console.log('-------------------------------------');
+console.log('--------------------------------------');
+console.log('Updating site with', pjson.name, version);
+console.log('--------------------------------------');
 console.log();
 
 // download
