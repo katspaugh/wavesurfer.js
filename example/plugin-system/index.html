@@ -29,6 +29,11 @@
         <script src="app.js"></script>
         <script src="../trivia.js"></script>
 
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+
         <!-- Styling information for the elan plugin -->
         <style type="text/css">
         #annotations {
@@ -121,7 +126,7 @@
                         <p>The <code>plugins</code> option is an array of plugin definitions. Calling a plugin with the parameter <code>deferInit: true</code> will stop it from automatically initialising – you can do that at a later time with <code>wavesurfer.initPlugin('mypluginname')</code>.</p>
                         <noindex><p>
 <pre><code>var wavesurfer = WaveSurfer.create({
-        container: '#waveform',
+    container: '#waveform',
     waveColor: 'violet',
     // ... other wavesurfer options
     plugins: [
@@ -132,7 +137,7 @@
     ]
 });
 
-wavesurfer.load('example/media/demo.mp3');</code></pre>
+wavesurfer.load('example/media/demo.wav');</code></pre>
                         </p></noindex>
                     </div>
                     <div class="marketing">
@@ -151,7 +156,7 @@ wavesurfer.addPlugin(WaveSurfer.timeline.create{
     // ... other timeline options
 })).initPlugin('timeline')
 
-wavesurfer.load('example/media/demo.mp3');</code></pre>
+wavesurfer.load('example/media/demo.wav');</code></pre>
                         </p></noindex>
                     </div>
                 </div>
