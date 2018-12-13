@@ -391,14 +391,16 @@ export default class WebAudio extends util.Observer {
             return this.peaks;
         }
 
-        if (!this.buffer) {
-            return [];
-        }
-
         first = first || 0;
         last = last || length - 1;
 
         this.setLength(length);
+
+        if (!this.buffer) {
+            return this.params.splitChannels
+                ? this.splitPeaks
+                : this.mergedPeaks;
+        }
 
         /**
          * The following snippet fixes a buffering data issue on the Safari
