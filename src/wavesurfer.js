@@ -313,6 +313,10 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('maxCanvasWidth must be an even number');
         }
 
+        if (this.params.rtl) {
+            util.style(this.container, { transform: 'rotateY(180deg)' });
+        }
+
         /**
          * @private Used to save the current volume when muting so we can
          * restore once unmuted
