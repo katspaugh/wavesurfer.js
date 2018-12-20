@@ -96,10 +96,9 @@ export default class Drawer extends util.Observer {
         const parentWidth = this.getWidth();
 
         let progress;
-
         if (!this.params.fillParent && nominalWidth < parentWidth) {
             progress =
-                (clientX - bbox.left) *
+                (this.params.rtl ? bbox.right - clientX : clientX - bbox.left) *
                     (this.params.pixelRatio / nominalWidth) || 0;
 
             if (progress > 1) {
@@ -107,7 +106,10 @@ export default class Drawer extends util.Observer {
             }
         } else {
             progress =
-                (clientX - bbox.left + this.wrapper.scrollLeft) /
+                ((this.params.rtl
+                    ? bbox.right - clientX
+                    : clientX - bbox.left) +
+                    this.wrapper.scrollLeft) /
                     this.wrapper.scrollWidth || 0;
         }
 
