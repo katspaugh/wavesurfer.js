@@ -1,5 +1,5 @@
 {
-  "name": "wavesurfer.js",
+  "name": "@baladshow/wavesurfer",
   "version": "2.1.1",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.min.js",
