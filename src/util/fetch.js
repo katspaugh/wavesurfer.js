@@ -12,14 +12,7 @@ import Observer from './observer';
  */
 export default function dofetch(options) {
     if (self.fetch) {
-        const instance = function(message){
-            console.log(message);
-        };
-        instance.fireEvent = function(message,type,output){
-            console.log(message);
-            console.log(type);
-            console.log(output);
-        };
+        const instance = new Observer();
         const fetchRequest = new Request(options.url);
         let fetchHeaders = new Headers();
 
