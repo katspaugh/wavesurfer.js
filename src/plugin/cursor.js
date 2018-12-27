@@ -221,8 +221,8 @@ export default class CursorPlugin {
         });
         if (this.params.showTime) {
             const duration = this.wavesurfer.getDuration();
-            const realWidth = (this.wavesurfer.drawer.getWidth() / this.wavesurfer.params.pixelRatio);
-            const timeValue = Math.max(0, (pos / realWidth) * duration);
+            const elementWidth = (this.wavesurfer.drawer.getWidth() / this.wavesurfer.params.pixelRatio);
+            const timeValue = Math.max(0, (pos / elementWidth) * duration);
             const formatValue = this.formatTime(timeValue);
             this.style(this.showTime, {
                 left: `${pos}px`
