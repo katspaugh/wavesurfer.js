@@ -375,4 +375,17 @@ describe('WaveSurfer/errors:', function() {
             });
         }).toThrow(new Error('Renderer parameter is invalid'));
     });
+
+    /**
+     * @test {WaveSurfer}
+     */
+    it('should not throw when rendered and media is not loaded', function() {
+        expect(function() {
+            var wave = TestHelpers.createWaveform({
+                container: '#test'
+            });
+
+            wave[0].setWaveColor('#000000');
+        }).not.toThrow();
+    });
 });

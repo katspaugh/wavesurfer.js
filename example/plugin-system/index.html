@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Timeline plugin</title>
+        <title>wavesurfer.js | Plugin system</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -17,7 +17,7 @@
         <!-- wavesurfer.js -->
         <script src="../../dist/wavesurfer.js"></script>
 
-        <!-- timeline format renderer -->
+        <!-- plugins -->
         <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
 		<script src="../../dist/plugin/wavesurfer.minimap.js"></script>
 		<script src="../../dist/plugin/wavesurfer.cursor.js"></script>
@@ -28,6 +28,11 @@
         <!-- App -->
         <script src="app.js"></script>
         <script src="../trivia.js"></script>
+
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
 
         <!-- Styling information for the elan plugin -->
         <style type="text/css">
@@ -121,7 +126,7 @@
                         <p>The <code>plugins</code> option is an array of plugin definitions. Calling a plugin with the parameter <code>deferInit: true</code> will stop it from automatically initialising – you can do that at a later time with <code>wavesurfer.initPlugin('mypluginname')</code>.</p>
                         <noindex><p>
 <pre><code>var wavesurfer = WaveSurfer.create({
-        container: '#waveform',
+    container: '#waveform',
     waveColor: 'violet',
     // ... other wavesurfer options
     plugins: [
@@ -132,7 +137,7 @@
     ]
 });
 
-wavesurfer.load('example/media/demo.mp3');</code></pre>
+wavesurfer.load('example/media/demo.wav');</code></pre>
                         </p></noindex>
                     </div>
                     <div class="marketing">
@@ -151,7 +156,7 @@ wavesurfer.addPlugin(WaveSurfer.timeline.create({
     // ... other timeline options
 })).initPlugin('timeline')
 
-wavesurfer.load('example/media/demo.mp3');</code></pre>
+wavesurfer.load('example/media/demo.wav');</code></pre>
                         </p></noindex>
                     </div>
                 </div>
@@ -159,13 +164,14 @@ wavesurfer.load('example/media/demo.mp3');</code></pre>
 
             <div class="footer row">
                 <div class="col-sm-12">
-                    <a rel="license" href="https://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+                    <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
                 </div>
 
                 <div class="col-sm-12">
-                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/katspaugh/wavesurfer.js" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
                 </div>
             </div>
+
         </div>
 
         <div class="github-fork-ribbon-wrapper right">
