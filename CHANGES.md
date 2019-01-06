@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-2.1.2 (29.12.2018)
+2.1.2 (06.01.2019)
 ------------------
 
 - Fix computing peaks when buffer is not set (#1530)
