@@ -136,8 +136,8 @@ section h2, section h3 {
 }
 
 section h1 {
-    margin-top: 30px;
-    margin-bottom: 50px;
+    margin-bottom: 80px;
+    max-width: 61%;
 }
 
 .overview section {
@@ -173,10 +173,6 @@ aside li.active>a:hover {
     color: #0275d8;
 }
 
-aside #carbonads {
-    margin-top: 30px;
-}
-
 #waveform {
     position: relative;
 }
@@ -188,8 +184,23 @@ aside #carbonads {
     transform: translateY(-50%);
 }
 
+._carbon-container + .container-fluid {
+    margin-top: 30px;
+}
+
 #carbonads {
     max-width: 400px;
+    margin-left: 80px;
+    margin-right: 30px;
+    margin-top: 20px;
+    position: absolute;
+    z-index: 20;
+}
+
+@media (max-width: 767px) {
+    #carbonads {
+        position: static;
+    }
 }
 
 .carbon-wrap {
@@ -248,5 +259,5 @@ aside #carbonads {
 
 .hero {
     font-size: 1.8em;
-    padding: 50px 5% 0;
+    padding: 0 5%;
 }

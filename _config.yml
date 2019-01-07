@@ -66,22 +66,3 @@ navigation:
         url: /plugins/spectrogram.html
   - title: Projects
     url: /projects/
-  - title: Blog
-    url: /blog/
-    subnav:
-      - title: 19 Feb 2016
-        url: /blog/kindle-flashcards.html
-      - title: 17 Feb 2016
-        url: /blog/netflix-subs.html
-      - title: 09 May 2015
-        url: /blog/emacs-beginning-of-function.html
-      - title: 01 May 2015
-        url: /blog/js-in-webstorm-vs-emacs.html
-      - title: 07 Mar 2015
-        url: /blog/javascript-static-analysers.html
-      - title: 14 Apr 2014
-        url: /blog/restoring-nodejs-project-after-git-reset.html
-      - title: 06 Mar 2014
-        url: /blog/ido-at-point.html
-      - title: 12 Jun 2013
-        url: /blog/emacs-javascript.html
