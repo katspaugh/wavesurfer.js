@@ -1,6 +1,14 @@
 wavesurfer.js changelog
 =======================
 
+2.1.2 (06.01.2019)
+------------------
+
+- Fix computing peaks when buffer is not set (#1530)
+- Cursor plugin: fix displayed time (#1543)
+- Cursor plugin: document new params (#1516)
+- Add syntax highlighting in examples (#1522)
+
 2.1.1 (18.11.2018)
 ------------------
 
