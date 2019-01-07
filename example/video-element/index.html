@@ -15,11 +15,15 @@
 
         <!-- wavesurfer.js -->
         <script src="https://unpkg.com/wavesurfer.js/dist/wavesurfer.js"></script>
-
         <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.js"></script>
 
         <!-- Demo -->
         <script src="main.js"></script>
+        
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
@@ -57,7 +61,7 @@
 
                 <p>
                     You can choose to use an existing
-                    html5 audio or video element manually. Simply set the <code>backend</code>
+                    HTML5 audio or video element manually. Simply set the <code>backend</code>
                     option to <code>"MediaElement"</code> and pass the media element as the first
                     argument to wavesurfer.load(). Include an array of peaks as the second
                     argument, the Web Audio API will not be used to render the peaks.

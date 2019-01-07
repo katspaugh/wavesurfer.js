@@ -78,7 +78,7 @@
 </div>
 </nav>
 
-<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="-a-href--https---wavesurfer-js-org--wavesurfer-js--a-"><a href="https://wavesurfer-js.org">wavesurfer.js</a></h1><h1 id="read-below-how-to-update-to-version-2-">Read below how to update to version 2!</h1><p><a href="https://www.npmjs.com/package/wavesurfer.js"><img src="https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat" alt="npm version"></a>
+<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="-a-href--https---wavesurfer-js-org--wavesurfer-js--a-"><a href="https://wavesurfer-js.org">wavesurfer.js</a></h1><p><a href="https://www.npmjs.com/package/wavesurfer.js"><img src="https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat" alt="npm version"></a>
 <img src="https://img.shields.io/npm/dm/wavesurfer.js.svg" alt="npm"> <a href="https://gitter.im/katspaugh/wavesurfer.js?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/katspaugh/wavesurfer.js.svg" alt="Join the chat at https://gitter.im/katspaugh/wavesurfer.js"></a></p>
 <p>Interactive navigable audio visualization using Web Audio and Canvas.</p>
 <p><a href="https://wavesurfer-js.org"><img src="https://raw.githubusercontent.com/katspaugh/wavesurfer.js/gh-pages/example/screenshot.png" alt="Screenshot" title="Screenshot"></a></p>
@@ -106,55 +106,7 @@
 <pre><code class="lang-javascript"><code class="source-code prettyprint">wavesurfer.load(&apos;example/media/demo.wav&apos;);</code>
 </code></pre>
 <h2 id="documentation">Documentation</h2><p>See the documentation on all available <a href="https://wavesurfer-js.org/docs/methods.html">methods</a>, <a href="https://wavesurfer-js.org/docs/options.html">options</a> and <a href="https://wavesurfer-js.org/docs/events.html">events</a> on the <a href="https://wavesurfer-js.org/docs/">homepage</a>.</p>
-<p><strong>Note on version 2</strong>: The wavesurfer.js core library and the plugins were refactored to be modular so it can be used with a module bundler. (You can still use wavesurfer without, e.g. with <code>&lt;script&gt;</code> tags) The code was also updated to ES6/ES7 syntax and is transpiled with babel and webpack. Read below how to update your code.</p>
-<h2 id="upgrading-to-version-2">Upgrading to version 2</h2><p>The API has mostly stayed the same but there are some changes to consider:</p>
-<ol>
-<li><p><strong>MultiCanvas renderer is now the default:</strong> It provides all functionality of the Canvas renderer. &#x2013; Most likely you can simply remove the renderer option &#x2013; The Canvas renderer has been removed. (The <code>renderer</code> option still exists but wavesurfer expects it to be a renderer object, not merely a string.)</p>
-</li>
-<li><p><strong>Constructor functions instead of object constructors</strong></p>
-</li>
-</ol>
-<pre><code class="lang-javascript"><code class="source-code prettyprint">// Old:
-var wavesurfer = Object.create(WaveSurfer);
-Wavesurfer.init(options);
-
-// New:
-var wavesurfer = WaveSurfer.create(options);
-// ... or
-var wavesurfer = new WaveSurfer(options);
-wavesurfer.init();</code>
-</code></pre>
-<ol start="3">
-<li><strong>New plugin API:</strong> Previously all plugins had their own initialisation API. The new API replaces all these different ways to do the same thing with one plugin API built into the core library. Plugins are now added as a property of the wavesurfer configuration object during creation. You don&apos;t need to initialise the plugins yourself anymore. Below is an example of initialising wavesurfer with plugins (Note the different ways to import the library at the top):</li>
-</ol>
-<pre><code class="lang-javascript"><code class="source-code prettyprint">// EITHER - accessing modules with &lt;script&gt; tags
-var WaveSurfer = window.WaveSurfer;
-var TimelinePlugin = window.WaveSurfer.timeline;
-var MinimapPlugin = window.WaveSurfer.minimap;
-
-// OR - importing as es6 module
-import WaveSurfer from &apos;wavesurfer.js&apos;;
-import TimelinePlugin from &apos;wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js&apos;;
-import MinimapPlugin from &apos;wavesurfer.js/dist/plugin/wavesurfer.minimap.min.js&apos;;
-
-// OR - importing as require.js/commonjs modules
-var WaveSurfer = require(&apos;wavesurfer.js&apos;);
-var TimelinePlugin = require(&apos;wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js&apos;);
-var MinimapPlugin = require(&apos;wavesurfer.js/dist/plugin/wavesurfer.minimap.min.js&apos;);
-
-// ... initialising waveform with plugins
-var wavesurfer = WaveSurfer.create({
-    container: &apos;#waveform&apos;,
-    waveColor: &apos;violet&apos;,
-    plugins: [
-        TimelinePlugin.create({
-            container: &apos;#wave-timeline&apos;
-        }),
-        MinimapPlugin.create()
-    ]
-});</code>
-</code></pre>
-<p><strong>Note:</strong> Read more about the plugin API in the documentation.</p>
+<h2 id="upgrade">Upgrade</h2><p>See the <a href="https://github.com/katspaugh/wavesurfer.js/blob/master/UPGRADE.md">upgrade</a> document if you&apos;re upgrading from a previous version of wavesurfer.js.</p>
 <h2 id="using-with-a-module-bundler">Using with a module bundler</h2><p>Wavesurfer can be used with a module system like this:</p>
 <pre><code class="lang-javascript"><code class="source-code prettyprint">// import
 import WaveSurfer from &apos;wavesurfer.js&apos;;

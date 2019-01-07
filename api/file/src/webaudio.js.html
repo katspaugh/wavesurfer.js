@@ -477,6 +477,12 @@ export default class WebAudio extends util.Observer {
 
         this.setLength(length);
 
+        if (!this.buffer) {
+            return this.params.splitChannels
+                ? this.splitPeaks
+                : this.mergedPeaks;
+        }
+
         /**
          * The following snippet fixes a buffering data issue on the Safari
          * browser which returned undefined It creates the missing buffer based

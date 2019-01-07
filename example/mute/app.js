@@ -13,9 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Init wavesurfer
     wavesurfer = WaveSurfer.create({
         container: '#waveform',
-        waveColor: 'black',
-        interact: false,
-        cursorWidth: 0
+        waveColor: 'black'
     });
 
     wavesurfer.load('../media/demo.wav');
