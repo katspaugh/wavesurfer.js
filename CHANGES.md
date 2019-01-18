@@ -1,10 +1,10 @@
 wavesurfer.js changelog
 =======================
 
-2.1.3 (unreleased)
+2.1.3 (18.01.2019)
 ------------------
 
-- fix removeOnAudioProcess for Safari (#1215, #1367, #1398)
+- Fix removeOnAudioProcess for Safari (#1215, #1367, #1398)
 
 2.1.2 (06.01.2019)
 ------------------
