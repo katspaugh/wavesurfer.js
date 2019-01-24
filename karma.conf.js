@@ -20,7 +20,9 @@ var chromeFlags = [
     '--disable-extensions',
     '--disable-infobars',
     '--ignore-certificate-errors',
-    '--allow-insecure-localhost'
+    '--allow-insecure-localhost',
+    // see https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
+    '--disable-features=AutoplayIgnoreWebAudio'
 ];
 
 module.exports = function(config) {
