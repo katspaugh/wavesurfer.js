@@ -1,5 +1,5 @@
 /*!
- * wavesurfer.js 2.1.1 (2018-12-20)
+ * wavesurfer.js 2.1.3 (2019-02-09)
  * https://github.com/katspaugh/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -4305,7 +4305,7 @@ function (_util$Observer) {
 }(util.Observer);
 
 exports.default = WaveSurfer;
-WaveSurfer.VERSION = "2.1.1";
+WaveSurfer.VERSION = "2.1.3";
 WaveSurfer.util = util;
 module.exports = exports.default;
 
@@ -4652,7 +4652,7 @@ function (_util$Observer) {
   }, {
     key: "removeOnAudioProcess",
     value: function removeOnAudioProcess() {
-      this.scriptNode.onaudioprocess = null;
+      this.scriptNode.onaudioprocess = function () {};
     }
     /** @private */
 
