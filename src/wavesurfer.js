@@ -84,7 +84,6 @@ import PeakCache from './peakcache';
  * timeout by default. If this parameter is a number it represents that timeout.
  * @property {boolean} rtl=false If set to `true`, renders waveform from
  * right-to-left.
- * timeout by default. If this parameter is a number it represents that timeout.
  * @property {boolean} scrollParent=false Whether to scroll the container with a
  * lengthy waveform. Otherwise the waveform is shrunk to the container width
  * (see fillParent).
