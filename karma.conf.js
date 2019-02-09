@@ -14,7 +14,6 @@ var chromeFlags = [
     '--no-first-run',
     '--noerrdialogs',
     '--no-default-browser-check',
-    '--autoplay-policy=no-user-gesture-required',
     '--user-data-dir=.chrome',
     '--disable-translate',
     '--disable-extensions',
