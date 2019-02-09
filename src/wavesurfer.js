@@ -82,6 +82,8 @@ import PeakCache from './peakcache';
  * @property {boolean|number} responsive=false If set to `true` resize the
  * waveform, when the window is resized. This is debounced with a `100ms`
  * timeout by default. If this parameter is a number it represents that timeout.
+ * @property {boolean} rtl=false If set to `true`, renders waveform from
+ * right-to-left.
  * @property {boolean} scrollParent=false Whether to scroll the container with a
  * lengthy waveform. Otherwise the waveform is shrunk to the container width
  * (see fillParent).
@@ -208,6 +210,7 @@ export default class WaveSurfer extends util.Observer {
         removeMediaElementOnDestroy: true,
         renderer: MultiCanvas,
         responsive: false,
+        rtl: false,
         scrollParent: false,
         skipLength: 2,
         splitChannels: false,
@@ -311,6 +314,10 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('maxCanvasWidth must be greater than 1');
         } else if (this.params.maxCanvasWidth % 2 == 1) {
             throw new Error('maxCanvasWidth must be an even number');
+        }
+
+        if (this.params.rtl === true) {
+            util.style(this.container, { transform: 'rotateY(180deg)' });
         }
 
         /**
