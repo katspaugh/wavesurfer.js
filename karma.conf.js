@@ -22,7 +22,7 @@ var chromeFlags = [
     '--ignore-certificate-errors',
     '--allow-insecure-localhost',
     // see https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
-    '--disable-features=AutoplayIgnoreWebAudio'
+    '--disable-features=PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies'
 ];
 
 module.exports = function(config) {
