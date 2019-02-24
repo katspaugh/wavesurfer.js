@@ -15,6 +15,7 @@ dist/**/*.map
 .idea
 .project
 .chrome
+.build_cache
 
 package-lock.json
 .package.json.swp

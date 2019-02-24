@@ -1,13 +1,20 @@
 /* eslint-env node */
 
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
     mode: 'production',
     optimization: {
         minimizer: [
-            new UglifyJSPlugin({
-                sourceMap: true
+            new TerserPlugin({
+                sourceMap: true,
+                parallel: true,
+                cache: './.build_cache/terser',
+                terserOptions: {
+                    output: {
+                        comments: false
+                    }
+                }
             })
         ]
     }
