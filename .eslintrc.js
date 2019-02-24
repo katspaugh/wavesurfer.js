@@ -22,7 +22,8 @@ module.exports = {
             {
                 singleQuote: true,
                 tabWidth: 4,
-                trailingComma: 'none'
+                trailingComma: 'none',
+                "endOfLine": "auto"
             }
         ],
         eqeqeq: 'off',
