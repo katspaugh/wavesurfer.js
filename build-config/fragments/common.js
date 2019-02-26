@@ -2,9 +2,19 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const datefns = require('date-fns');
+
+const rootDir = path.resolve(__dirname, '..', '..');
+const pckg = require(path.join(rootDir, 'package.json'));
+
+// inject JS version number
+const jsVersionPlugin = new webpack.DefinePlugin({
+    __VERSION__: JSON.stringify(pckg.version)
+});
 
 module.exports = {
-    context: path.resolve(__dirname, '../', '../'),
+    context: rootDir,
+    mode: 'development',
     output: {
         libraryTarget: 'umd',
         umdNamedDefine: true
@@ -34,5 +44,6 @@ module.exports = {
                 ]
             }
         ]
-    }
+    },
+    plugins: [jsVersionPlugin]
 };

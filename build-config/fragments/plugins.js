@@ -1,6 +1,8 @@
 /* eslint-env node */
-
 const path = require('path');
+const banner = require('./banner');
+
+const rootDir = path.resolve(__dirname, '..', '..');
 
 /**
  * buildPluginEntry - Description
@@ -12,15 +14,7 @@ const path = require('path');
 function buildPluginEntry(plugins) {
     const result = {};
     plugins.forEach(
-        plugin =>
-            (result[plugin] = path.resolve(
-                __dirname,
-                '../',
-                '../',
-                'src',
-                'plugin',
-                plugin
-            ))
+        plugin => (result[plugin] = path.join(rootDir, 'src', 'plugin', plugin))
     );
     return result;
 }
@@ -37,12 +31,13 @@ module.exports = {
         'elan'
     ]),
     output: {
-        path: path.resolve(__dirname, '../', '../', 'dist', 'plugin'),
+        path: path.join(rootDir, 'dist', 'plugin'),
         filename: 'wavesurfer.[name].js',
         library: ['WaveSurfer', '[name]'],
         publicPath: 'localhost:8080/dist/plugin/'
     },
     devServer: {
         publicPath: 'localhost:8080/dist/plugin/'
-    }
+    },
+    plugins: [banner.pluginBanner]
 };

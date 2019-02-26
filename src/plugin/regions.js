@@ -10,7 +10,8 @@ class Region {
     constructor(params, ws) {
         this.wavesurfer = ws;
         this.wrapper = ws.drawer.wrapper;
-        this.style = ws.util.style;
+        this.util = ws.util;
+        this.style = this.util.style;
 
         this.id = params.id == null ? ws.util.getId() : params.id;
         this.start = Number(params.start) || 0;
@@ -18,7 +19,7 @@ class Region {
             params.end == null
                 ? // small marker-like region
                   this.start +
-                  4 / this.wrapper.scrollWidth * this.wavesurfer.getDuration()
+                  (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration()
                 : Number(params.end);
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
@@ -199,8 +200,8 @@ class Region {
         if (this.element != null) {
             // Calculate the left and width values of the region such that
             // no gaps appear between regions.
-            const left = Math.round(this.start / dur * width);
-            const regionWidth = Math.round(this.end / dur * width) - left;
+            const left = Math.round((this.start / dur) * width);
+            const regionWidth = Math.round((this.end / dur) * width) - left;
 
             this.style(this.element, {
                 left: left + 'px',
@@ -296,6 +297,7 @@ class Region {
                 let drag;
                 let maxScroll;
                 let resize;
+                let updated = false;
                 let scrollDirection;
                 let wrapperRect;
 
@@ -369,7 +371,11 @@ class Region {
                         drag = false;
                         scrollDirection = null;
                         resize = false;
+                    }
 
+                    if (updated) {
+                        updated = false;
+                        this.util.preventClick();
                         this.fireEvent('update-end', e);
                         this.wavesurfer.fireEvent('region-update-end', this, e);
                     }
@@ -394,11 +400,13 @@ class Region {
 
                         // Drag
                         if (this.drag && drag) {
+                            updated = updated || !!delta;
                             this.onDrag(delta);
                         }
 
                         // Resize
                         if (this.resize && resize) {
+                            updated = updated || !!delta;
                             this.onResize(delta, resize);
                         }
 
@@ -506,7 +514,7 @@ class Region {
 
 /**
  * @typedef {Object} RegionsPluginParams
- * @property {?boolean} dragSelection Enable creating regions by dragging wih
+ * @property {?boolean} dragSelection Enable creating regions by dragging with
  * the mouse
  * @property {?RegionParams[]} regions Regions that should be added upon
  * initialisation
@@ -523,8 +531,8 @@ class Region {
  * @property {number} start=0 The start position of the region (in seconds).
  * @property {number} end=0 The end position of the region (in seconds).
  * @property {?boolean} loop Whether to loop the region when played back.
- * @property {boolean} drag=true Allow/dissallow dragging the region.
- * @property {boolean} resize=true Allow/dissallow resizing the region.
+ * @property {boolean} drag=true Allow/disallow dragging the region.
+ * @property {boolean} resize=true Allow/disallow resizing the region.
  * @property {string} [color='rgba(0, 0, 0, 0.1)'] HTML color code.
  */
 
@@ -748,6 +756,7 @@ export default class RegionsPlugin {
             scrollDirection = null;
 
             if (region) {
+                this.util.preventClick();
                 region.fireEvent('update-end', e);
                 this.wavesurfer.fireEvent('region-update-end', region, e);
             }
@@ -756,7 +765,12 @@ export default class RegionsPlugin {
         };
         this.wrapper.addEventListener('mouseup', eventUp);
         this.wrapper.addEventListener('touchend', eventUp);
+
+        document.body.addEventListener('mouseup', eventUp);
+        document.body.addEventListener('touchend', eventUp);
         this.on('disable-drag-selection', () => {
+            document.body.removeEventListener('mouseup', eventUp);
+            document.body.removeEventListener('touchend', eventUp);
             this.wrapper.removeEventListener('touchend', eventUp);
             this.wrapper.removeEventListener('mouseup', eventUp);
         });

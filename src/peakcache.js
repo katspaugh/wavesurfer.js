@@ -1,5 +1,5 @@
 /**
- * Caches the decoded peaks data to improve rendering speed for lage audio
+ * Caches the decoded peaks data to improve rendering speed for large audio
  *
  * Is used if the option parameter `partialRender` is set to `true`
  */

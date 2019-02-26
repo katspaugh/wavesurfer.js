@@ -22,6 +22,8 @@ import PeakCache from './peakcache';
  * initialized AudioContext or leave blank.
  * @property {number} audioRate=1 Speed at which to play audio. Lower number is
  * slower.
+ * @property {ScriptProcessorNode} audioScriptProcessor=null Use your own previously
+ * initialized ScriptProcessorNode or leave blank.
  * @property {boolean} autoCenter=true If a scrollbar is present, center the
  * waveform around the progress
  * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'` In most cases
@@ -80,12 +82,14 @@ import PeakCache from './peakcache';
  * @property {boolean|number} responsive=false If set to `true` resize the
  * waveform, when the window is resized. This is debounced with a `100ms`
  * timeout by default. If this parameter is a number it represents that timeout.
+ * @property {boolean} rtl=false If set to `true`, renders waveform from
+ * right-to-left.
  * @property {boolean} scrollParent=false Whether to scroll the container with a
  * lengthy waveform. Otherwise the waveform is shrunk to the container width
  * (see fillParent).
  * @property {number} skipLength=2 Number of seconds to skip with the
  * skipForward() and skipBackward() methods.
- * @property {boolean} splitChannels=false Render with seperate waveforms for
+ * @property {boolean} splitChannels=false Render with separate waveforms for
  * the channels of the audio
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
@@ -131,10 +135,10 @@ class PluginClass {
     /**
      * Construct the plugin
      *
-     * @param {Object} ws The wavesurfer instance
      * @param {Object} params={} The plugin params (specific to the plugin)
+     * @param {Object} ws The wavesurfer instance
      */
-    constructor(ws, params) {}
+    constructor(params, ws) {}
     /**
      * Initialise the plugin
      *
@@ -176,6 +180,7 @@ export default class WaveSurfer extends util.Observer {
     /** @private */
     defaultParams = {
         audioContext: null,
+        audioScriptProcessor: null,
         audioRate: 1,
         autoCenter: true,
         backend: 'WebAudio',
@@ -205,6 +210,7 @@ export default class WaveSurfer extends util.Observer {
         removeMediaElementOnDestroy: true,
         renderer: MultiCanvas,
         responsive: false,
+        rtl: false,
         scrollParent: false,
         skipLength: 2,
         splitChannels: false,
@@ -229,6 +235,16 @@ export default class WaveSurfer extends util.Observer {
         const wavesurfer = new WaveSurfer(params);
         return wavesurfer.init();
     }
+
+    /**
+     * The library version number is available as a static property of the
+     * WaveSurfer class
+     *
+     * @type {String}
+     * @example
+     * console.log('Using wavesurfer.js ' + WaveSurfer.VERSION);
+     */
+    static VERSION = __VERSION__;
 
     /**
      * Functions in the `util` property are available as a prototype property to
@@ -300,6 +316,10 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('maxCanvasWidth must be an even number');
         }
 
+        if (this.params.rtl === true) {
+            util.style(this.container, { transform: 'rotateY(180deg)' });
+        }
+
         /**
          * @private Used to save the current volume when muting so we can
          * restore once unmuted
@@ -315,7 +335,7 @@ export default class WaveSurfer extends util.Observer {
 
         /**
          * @private Will hold a list of event descriptors that need to be
-         * cancelled on subsequent loads of audio
+         * canceled on subsequent loads of audio
          * @type {Object[]}
          */
         this.tmpEvents = [];
@@ -360,15 +380,20 @@ export default class WaveSurfer extends util.Observer {
         // set, this is never called. Use 100ms or this.params.responsive as
         // timeout for the debounce function.
         let prevWidth = 0;
-        this._onResize = util.debounce(() => {
-            if (
-                prevWidth != this.drawer.wrapper.clientWidth &&
-                !this.params.scrollParent
-            ) {
-                prevWidth = this.drawer.wrapper.clientWidth;
-                this.drawer.fireEvent('redraw');
-            }
-        }, typeof this.params.responsive === 'number' ? this.params.responsive : 100);
+        this._onResize = util.debounce(
+            () => {
+                if (
+                    prevWidth != this.drawer.wrapper.clientWidth &&
+                    !this.params.scrollParent
+                ) {
+                    prevWidth = this.drawer.wrapper.clientWidth;
+                    this.drawer.fireEvent('redraw');
+                }
+            },
+            typeof this.params.responsive === 'number'
+                ? this.params.responsive
+                : 100
+        );
 
         return this;
     }
@@ -587,7 +612,10 @@ export default class WaveSurfer extends util.Observer {
         this.backend.init();
         this.fireEvent('backend-created', this.backend);
 
-        this.backend.on('finish', () => this.fireEvent('finish'));
+        this.backend.on('finish', () => {
+            this.drawer.progress(this.backend.getPlayedPercents());
+            this.fireEvent('finish');
+        });
         this.backend.on('play', () => this.fireEvent('play'));
         this.backend.on('pause', () => this.fireEvent('pause'));
 
@@ -809,9 +837,11 @@ export default class WaveSurfer extends util.Observer {
      *
      * @param {number} newVolume A value between 0 and 1, 0 being no
      * volume and 1 being full volume.
+     * @emits WaveSurfer#volume
      */
     setVolume(newVolume) {
         this.backend.setVolume(newVolume);
+        this.fireEvent('volume', newVolume);
     }
 
     /**
@@ -845,7 +875,7 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Toggle the volume on and off. It not currenly muted it will save the
+     * Toggle the volume on and off. If not currently muted it will save the
      * current volume value and turn the volume off. If currently muted then it
      * will restore the volume to the saved value, and then rest the saved
      * value.
@@ -860,6 +890,8 @@ export default class WaveSurfer extends util.Observer {
      * Enable or disable muted audio
      *
      * @param {boolean} mute
+     * @emits WaveSurfer#volume
+     * @emits WaveSurfer#mute
      * @example
      * // unmute
      * wavesurfer.setMute(false);
@@ -867,6 +899,7 @@ export default class WaveSurfer extends util.Observer {
     setMute(mute) {
         // ignore all muting requests if the audio is already in that state
         if (mute === this.isMuted) {
+            this.fireEvent('mute', this.isMuted);
             return;
         }
 
@@ -876,12 +909,15 @@ export default class WaveSurfer extends util.Observer {
             this.savedVolume = this.backend.getVolume();
             this.backend.setVolume(0);
             this.isMuted = true;
+            this.fireEvent('volume', 0);
         } else {
             // If currently muted then restore to the saved volume
             // and update the mute properties
             this.backend.setVolume(this.savedVolume);
             this.isMuted = false;
+            this.fireEvent('volume', this.savedVolume);
         }
+        this.fireEvent('mute', this.isMuted);
     }
 
     /**
@@ -892,6 +928,16 @@ export default class WaveSurfer extends util.Observer {
      */
     getMute() {
         return this.isMuted;
+    }
+
+    /**
+     * Get the current ready status.
+     *
+     * @example const isReady = wavesurfer.isReady();
+     * @return {boolean}
+     */
+    isReady() {
+        return this.isReady;
     }
 
     /**
@@ -1008,7 +1054,7 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Get the correct peaks for current wave viewport and render wave
+     * Get the correct peaks for current wave view-port and render wave
      *
      * @private
      * @emits WaveSurfer#redraw
@@ -1362,7 +1408,7 @@ export default class WaveSurfer extends util.Observer {
      * window with the JSON
      * @param {number} start
      * @todo Update exportPCM to work with new getPeaks signature
-     * @return {JSON} JSON of peaks
+     * @return {string} JSON of peaks
      */
     exportPCM(length, accuracy, noWindow, start) {
         length = length || 1024;
@@ -1430,6 +1476,7 @@ export default class WaveSurfer extends util.Observer {
             this.stop();
             this.backend.disconnectSource();
         }
+        this.isReady = false;
         this.cancelAjax();
         this.clearTmpEvents();
         this.drawer.progress(0);
@@ -1459,6 +1506,7 @@ export default class WaveSurfer extends util.Observer {
         this.backend.destroy();
         this.drawer.destroy();
         this.isDestroyed = true;
+        this.isReady = false;
         this.arraybuffer = null;
     }
 }

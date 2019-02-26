@@ -1,6 +1,6 @@
 import * as util from './util';
 
-// using consts to prevent someone writing the string wrong
+// using constants to prevent someone writing the string wrong
 const PLAYING = 'playing';
 const PAUSED = 'paused';
 const FINISHED = 'finished';
@@ -219,16 +219,19 @@ export default class WebAudio extends util.Observer {
 
     /** @private */
     createScriptNode() {
-        if (this.ac.createScriptProcessor) {
-            this.scriptNode = this.ac.createScriptProcessor(
-                WebAudio.scriptBufferSize
-            );
+        if (this.params.audioScriptProcessor) {
+            this.scriptNode = this.params.audioScriptProcessor;
         } else {
-            this.scriptNode = this.ac.createJavaScriptNode(
-                WebAudio.scriptBufferSize
-            );
+            if (this.ac.createScriptProcessor) {
+                this.scriptNode = this.ac.createScriptProcessor(
+                    WebAudio.scriptBufferSize
+                );
+            } else {
+                this.scriptNode = this.ac.createJavaScriptNode(
+                    WebAudio.scriptBufferSize
+                );
+            }
         }
-
         this.scriptNode.connect(this.ac.destination);
     }
 
@@ -250,7 +253,7 @@ export default class WebAudio extends util.Observer {
 
     /** @private */
     removeOnAudioProcess() {
-        this.scriptNode.onaudioprocess = null;
+        this.scriptNode.onaudioprocess = () => {};
     }
 
     /** @private */
@@ -283,7 +286,7 @@ export default class WebAudio extends util.Observer {
     setSinkId(deviceId) {
         if (deviceId) {
             /**
-             * The webaudio api doesn't currently support setting the device
+             * The webaudio API doesn't currently support setting the device
              * output. Here we create an HTMLAudioElement, connect the
              * webaudio stream to that element and setSinkId there.
              */
@@ -297,7 +300,7 @@ export default class WebAudio extends util.Observer {
             var dest = this.ac.createMediaStreamDestination();
             this.gainNode.disconnect();
             this.gainNode.connect(dest);
-            audio.src = URL.createObjectURL(dest.stream);
+            audio.srcObject = dest.stream;
 
             return audio.setSinkId(deviceId);
         } else {
@@ -327,7 +330,7 @@ export default class WebAudio extends util.Observer {
     decodeArrayBuffer(arraybuffer, callback, errback) {
         if (!this.offlineAc) {
             this.offlineAc = this.getOfflineAudioContext(
-                this.ac ? this.ac.sampleRate : 44100
+                this.ac && this.ac.sampleRate ? this.ac.sampleRate : 44100
             );
         }
         this.offlineAc.decodeAudioData(
@@ -392,6 +395,12 @@ export default class WebAudio extends util.Observer {
         last = last || length - 1;
 
         this.setLength(length);
+
+        if (!this.buffer) {
+            return this.params.splitChannels
+                ? this.splitPeaks
+                : this.mergedPeaks;
+        }
 
         /**
          * The following snippet fixes a buffering data issue on the Safari
@@ -651,7 +660,7 @@ export default class WebAudio extends util.Observer {
     }
 
     /**
-     * Returns the current time in seconds relative to the audioclip's
+     * Returns the current time in seconds relative to the audio-clip's
      * duration.
      *
      * @return {number}

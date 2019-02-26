@@ -1,4 +1,5 @@
 import * as util from './util';
+
 /**
  * Parent class for renderers
  *
@@ -95,18 +96,20 @@ export default class Drawer extends util.Observer {
         const parentWidth = this.getWidth();
 
         let progress;
-
         if (!this.params.fillParent && nominalWidth < parentWidth) {
             progress =
-                (clientX - bbox.left) * this.params.pixelRatio / nominalWidth ||
-                0;
+                (this.params.rtl ? bbox.right - clientX : clientX - bbox.left) *
+                    (this.params.pixelRatio / nominalWidth) || 0;
 
             if (progress > 1) {
                 progress = 1;
             }
         } else {
             progress =
-                (clientX - bbox.left + this.wrapper.scrollLeft) /
+                ((this.params.rtl
+                    ? bbox.right - clientX
+                    : clientX - bbox.left) +
+                    this.wrapper.scrollLeft) /
                     this.wrapper.scrollWidth || 0;
         }
 
@@ -170,7 +173,7 @@ export default class Drawer extends util.Observer {
     }
 
     /**
-     * Recenter the viewport at a certain percent of the waveform
+     * Recenter the view-port at a certain percent of the waveform
      *
      * @param {number} percent Value from 0 to 1 on the waveform
      */
@@ -180,7 +183,7 @@ export default class Drawer extends util.Observer {
     }
 
     /**
-     * Recenter the viewport on a position, either scroll there immediately or
+     * Recenter the view-port on a position, either scroll there immediately or
      * in steps of 5 pixels
      *
      * @param {number} position X-offset in pixels
@@ -294,7 +297,7 @@ export default class Drawer extends util.Observer {
     }
 
     /**
-     * Called by wavesurfer when progress should be renderered
+     * Called by wavesurfer when progress should be rendered
      *
      * @param {number} progress From 0 to 1
      */

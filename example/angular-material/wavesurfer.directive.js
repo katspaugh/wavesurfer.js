@@ -101,7 +101,7 @@
             }
 
             var minutes = Math.floor(input / 60);
-            var seconds = Math.ceil(input) % 60;
+            var seconds = Math.floor(input) % 60;
 
             return (
                 (minutes < 10 ? '0' : '') +

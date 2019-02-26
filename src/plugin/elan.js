@@ -1,7 +1,7 @@
 /**
  * @typedef {Object} ElanPluginParams
  * @property {string|HTMLElement} container CSS selector or HTML element where
- * the ELAN information should be renderer.
+ * the ELAN information should be rendered.
  * @property {string} url The location of ELAN XML data
  * @property {?boolean} deferInit Set to true to manually call
  * @property {?Object} tiers If set only shows the data tiers with the `TIER_ID`

@@ -4,6 +4,8 @@
  * @property {!string|HTMLElement} container CSS selector or HTML element where
  * the timeline should be drawn. This is the only required parameter.
  * @property {number} notchPercentHeight=90 Height of notches in percent
+ * @property {string} unlabeledNotchColor='#c0c0c0' The colour of the notches
+ * that do not have labels
  * @property {string} primaryColor='#000' The colour of the main notches
  * @property {string} secondaryColor='#c0c0c0' The colour of the secondary
  * notches
@@ -16,7 +18,14 @@
  * performance for large files
  * @property {string} fontFamily='Arial'
  * @property {number} fontSize=10 Font size of labels in pixels
- * @property {function} formatTimeCallback=→00:00
+ * @property {?number} duration Length of the track in seconds. Overrides
+ * getDuration() for setting length of timeline
+ * @property {function} formatTimeCallback (sec, pxPerSec) -> label
+ * @property {function} timeInterval (pxPerSec) -> seconds between notches
+ * @property {function} primaryLabelInterval (pxPerSec) -> cadence between
+ * labels in primary color
+ * @property {function} secondaryLabelInterval (pxPerSec) -> cadence between
+ * labels in secondary color
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('timeline')`
  */
@@ -125,54 +134,19 @@ export default class TimelinePlugin {
                 height: 20,
                 notchPercentHeight: 90,
                 labelPadding: 5,
+                unlabeledNotchColor: '#c0c0c0',
                 primaryColor: '#000',
                 secondaryColor: '#c0c0c0',
                 primaryFontColor: '#000',
                 secondaryFontColor: '#000',
                 fontFamily: 'Arial',
                 fontSize: 10,
+                duration: null,
                 zoomDebounce: false,
-                formatTimeCallback(seconds) {
-                    if (seconds / 60 > 1) {
-                        // calculate minutes and seconds from seconds count
-                        const minutes = parseInt(seconds / 60, 10);
-                        seconds = parseInt(seconds % 60, 10);
-                        // fill up seconds with zeroes
-                        seconds = seconds < 10 ? '0' + seconds : seconds;
-                        return `${minutes}:${seconds}`;
-                    }
-                    return Math.round(seconds * 1000) / 1000;
-                },
-                timeInterval(pxPerSec) {
-                    if (pxPerSec >= 25) {
-                        return 1;
-                    } else if (pxPerSec * 5 >= 25) {
-                        return 5;
-                    } else if (pxPerSec * 15 >= 25) {
-                        return 15;
-                    }
-                    return Math.ceil(0.5 / pxPerSec) * 60;
-                },
-                primaryLabelInterval(pxPerSec) {
-                    if (pxPerSec >= 25) {
-                        return 10;
-                    } else if (pxPerSec * 5 >= 25) {
-                        return 6;
-                    } else if (pxPerSec * 15 >= 25) {
-                        return 4;
-                    }
-                    return 4;
-                },
-                secondaryLabelInterval(pxPerSec) {
-                    if (pxPerSec >= 25) {
-                        return 5;
-                    } else if (pxPerSec * 5 >= 25) {
-                        return 2;
-                    } else if (pxPerSec * 15 >= 25) {
-                        return 2;
-                    }
-                    return 2;
-                }
+                formatTimeCallback: this.defaultFormatTimeCallback,
+                timeInterval: this.defaultTimeInterval,
+                primaryLabelInterval: this.defaultPrimaryLabelInterval,
+                secondaryLabelInterval: this.defaultSecondaryLabelInterval
             },
             params
         );
@@ -321,7 +295,7 @@ export default class TimelinePlugin {
      * @private
      */
     updateCanvasesPositioning() {
-        // cache length for perf
+        // cache length for performance
         const canvasesLength = this.canvases.length;
         this.canvases.forEach((canvas, i) => {
             // canvas width is the max element width, or if it is the last the
@@ -350,7 +324,10 @@ export default class TimelinePlugin {
      * @private
      */
     renderCanvases() {
-        const duration = this.wavesurfer.backend.getDuration();
+        const duration =
+            this.wavesurfer.timeline.params.duration ||
+            this.wavesurfer.backend.getDuration();
+
         if (duration <= 0) {
             return;
         }
@@ -408,7 +385,7 @@ export default class TimelinePlugin {
             if (i % primaryLabelInterval === 0) {
                 this.fillRect(curPixel, 0, 1, height1);
                 this.fillText(
-                    formatTime(curSeconds),
+                    formatTime(curSeconds, pixelsPerSecond),
                     curPixel + this.params.labelPadding * this.pixelRatio,
                     height1
                 );
@@ -423,7 +400,7 @@ export default class TimelinePlugin {
             if (i % secondaryLabelInterval === 0) {
                 this.fillRect(curPixel, 0, 1, height1);
                 this.fillText(
-                    formatTime(curSeconds),
+                    formatTime(curSeconds, pixelsPerSecond),
                     curPixel + this.params.labelPadding * this.pixelRatio,
                     height1
                 );
@@ -431,7 +408,7 @@ export default class TimelinePlugin {
         });
 
         // render the actual notches (when no labels are used)
-        this.setFillStyles(this.params.secondaryColor);
+        this.setFillStyles(this.params.unlabeledNotchColor);
         renderPositions((i, curSeconds, curPixel) => {
             if (
                 i % secondaryLabelInterval !== 0 &&
@@ -528,5 +505,71 @@ export default class TimelinePlugin {
 
             xOffset += canvasWidth;
         });
+    }
+
+    /**
+     * Turn the time into a suitable label for the time.
+     *
+     * @param {number} seconds
+     * @param {number} pxPerSec
+     */
+    defaultFormatTimeCallback(seconds, pxPerSec) {
+        if (seconds / 60 > 1) {
+            // calculate minutes and seconds from seconds count
+            const minutes = parseInt(seconds / 60, 10);
+            seconds = parseInt(seconds % 60, 10);
+            // fill up seconds with zeroes
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            return `${minutes}:${seconds}`;
+        }
+        return Math.round(seconds * 1000) / 1000;
+    }
+
+    /**
+     * Return how many seconds should be between each notch
+     *
+     * @param pxPerSec
+     */
+    defaultTimeInterval(pxPerSec) {
+        if (pxPerSec >= 25) {
+            return 1;
+        } else if (pxPerSec * 5 >= 25) {
+            return 5;
+        } else if (pxPerSec * 15 >= 25) {
+            return 15;
+        }
+        return Math.ceil(0.5 / pxPerSec) * 60;
+    }
+
+    /**
+     * Return the cadence of notches that get labels in the primary color.
+     *
+     * @param pxPerSec
+     */
+    defaultPrimaryLabelInterval(pxPerSec) {
+        if (pxPerSec >= 25) {
+            return 10;
+        } else if (pxPerSec * 5 >= 25) {
+            return 6;
+        } else if (pxPerSec * 15 >= 25) {
+            return 4;
+        }
+        return 4;
+    }
+
+    /**
+     * Return the cadence of notches that get labels in the secondary color.
+     *
+     * @param pxPerSec
+     */
+    defaultSecondaryLabelInterval(pxPerSec) {
+        if (pxPerSec >= 25) {
+            return 5;
+        } else if (pxPerSec * 5 >= 25) {
+            return 2;
+        } else if (pxPerSec * 15 >= 25) {
+            return 2;
+        }
+        return 2;
     }
 }

@@ -13,7 +13,7 @@
  */
 
 /**
- * Visualise microphone input in a wavesurfer instance.
+ * Visualize microphone input in a wavesurfer instance.
  *
  * @implements {PluginClass}
  * @extends {Observer}
@@ -62,6 +62,7 @@ export default class MicrophonePlugin {
 
         this.active = false;
         this.paused = false;
+        this.browser = this.detectBrowser();
         this.reloadBufferFunction = e => this.reloadBuffer(e);
 
         // cross-browser getUserMedia
@@ -70,7 +71,7 @@ export default class MicrophonePlugin {
             successCallback,
             errorCallback
         ) => {
-            // get ahold of getUserMedia, if present
+            // get a hold of getUserMedia, if present
             const getUserMedia =
                 navigator.getUserMedia ||
                 navigator.webkitGetUserMedia ||
@@ -140,7 +141,7 @@ export default class MicrophonePlugin {
     }
 
     /**
-     * Allow user to select audio input device, eg. microphone, and
+     * Allow user to select audio input device, e.g. microphone, and
      * start the visualization.
      */
     start() {
@@ -214,14 +215,16 @@ export default class MicrophonePlugin {
 
         // stop stream from device
         if (this.stream) {
-            const result = this.detectBrowser();
             // MediaStream.stop is deprecated since:
             // - Firefox 44 (https://www.fxsitecompat.com/en-US/docs/2015/mediastream-stop-has-been-deprecated/)
             // - Chrome 45 (https://developers.google.com/web/updates/2015/07/mediastream-deprecations)
             if (
-                (result.browser === 'chrome' && result.version >= 45) ||
-                (result.browser === 'firefox' && result.version >= 44) ||
-                result.browser === 'edge'
+                (this.browser.browser === 'chrome' &&
+                    this.browser.version >= 45) ||
+                (this.browser.browser === 'firefox' &&
+                    this.browser.version >= 44) ||
+                this.browser.browser === 'edge' ||
+                this.browser.browser === 'safari'
             ) {
                 if (this.stream.getTracks) {
                     // note that this should not be a call
@@ -239,6 +242,15 @@ export default class MicrophonePlugin {
      */
     connect() {
         if (this.stream !== undefined) {
+            // Create a local buffer for data to be copied to the Wavesurfer buffer for Edge
+            if (this.browser.browser === 'edge') {
+                this.localAudioBuffer = this.micContext.createBuffer(
+                    this.numberOfInputChannels,
+                    this.bufferSize,
+                    this.micContext.sampleRate
+                );
+            }
+
             // Create an AudioNode from the stream.
             this.mediaStreamSource = this.micContext.createMediaStreamSource(
                 this.stream
@@ -268,6 +280,10 @@ export default class MicrophonePlugin {
             this.levelChecker.disconnect();
             this.levelChecker.onaudioprocess = undefined;
         }
+
+        if (this.localAudioBuffer !== undefined) {
+            this.localAudioBuffer = undefined;
+        }
     }
 
     /**
@@ -276,7 +292,29 @@ export default class MicrophonePlugin {
     reloadBuffer(event) {
         if (!this.paused) {
             this.wavesurfer.empty();
-            this.wavesurfer.loadDecodedBuffer(event.inputBuffer);
+
+            if (this.browser.browser === 'edge') {
+                // copy audio data to a local audio buffer,
+                // from https://github.com/audiojs/audio-buffer-utils
+                let channel, l;
+                for (
+                    channel = 0,
+                        l = Math.min(
+                            this.localAudioBuffer.numberOfChannels,
+                            event.inputBuffer.numberOfChannels
+                        );
+                    channel < l;
+                    channel++
+                ) {
+                    this.localAudioBuffer
+                        .getChannelData(channel)
+                        .set(event.inputBuffer.getChannelData(channel));
+                }
+
+                this.wavesurfer.loadDecodedBuffer(this.localAudioBuffer);
+            } else {
+                this.wavesurfer.loadDecodedBuffer(event.inputBuffer);
+            }
         }
     }
 
@@ -334,35 +372,31 @@ export default class MicrophonePlugin {
             return result;
         }
 
-        // Firefox.
         if (navigator.mozGetUserMedia) {
+            // Firefox
             result.browser = 'firefox';
             result.version = this.extractVersion(
                 navigator.userAgent,
-                /Firefox\/([0-9]+)\./,
+                /Firefox\/(\d+)\./,
                 1
             );
             result.minVersion = 31;
             return result;
-        }
-
-        // Chrome/Chromium/Webview.
-        if (navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) {
+        } else if (navigator.webkitGetUserMedia) {
+            // Chrome/Chromium/Webview/Opera
             result.browser = 'chrome';
             result.version = this.extractVersion(
                 navigator.userAgent,
-                /Chrom(e|ium)\/([0-9]+)\./,
+                /Chrom(e|ium)\/(\d+)\./,
                 2
             );
             result.minVersion = 38;
             return result;
-        }
-
-        // Edge.
-        if (
+        } else if (
             navigator.mediaDevices &&
             navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)
         ) {
+            // Edge
             result.browser = 'edge';
             result.version = this.extractVersion(
                 navigator.userAgent,
@@ -370,6 +404,19 @@ export default class MicrophonePlugin {
                 2
             );
             result.minVersion = 10547;
+            return result;
+        } else if (
+            window.RTCPeerConnection &&
+            navigator.userAgent.match(/AppleWebKit\/(\d+)\./)
+        ) {
+            // Safari
+            result.browser = 'safari';
+            result.minVersion = 11;
+            result.version = this.extractVersion(
+                navigator.userAgent,
+                /AppleWebKit\/(\d+)\./,
+                1
+            );
             return result;
         }
 

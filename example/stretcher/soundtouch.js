@@ -1,22 +1,22 @@
 /*
-* SoundTouch JS audio processing library
-* Copyright (c) Olli Parviainen
-* Copyright (c) Ryan Berdeen
-*
-* This library is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Lesser General Public
-* License as published by the Free Software Foundation; either
-* version 2.1 of the License, or (at your option) any later version.
-*
-* This library is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-* Lesser General License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this library; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+ * SoundTouch JS audio processing library
+ * Copyright (c) Olli Parviainen
+ * Copyright (c) Ryan Berdeen
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
 (function(window) {
     /**
@@ -664,7 +664,7 @@
             var newOvl;
 
             // TODO assert(overlapInMsec >= 0);
-            newOvl = this.sampleRate * overlapInMsec / 1000;
+            newOvl = (this.sampleRate * overlapInMsec) / 1000;
             if (newOvl < 16) newOvl = 16;
 
             // must be divisible by 8
@@ -700,10 +700,10 @@
 
             // Update seek window lengths
             this.seekWindowLength = Math.floor(
-                this.sampleRate * this.sequenceMs / 1000
+                (this.sampleRate * this.sequenceMs) / 1000
             );
             this.seekLength = Math.floor(
-                this.sampleRate * this.seekWindowMs / 1000
+                (this.sampleRate * this.seekWindowMs) / 1000
             );
         },
 
