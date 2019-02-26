@@ -428,12 +428,10 @@ export default class MultiCanvas extends Drawer {
         // optimization
         const halfOffset = halfH + offsetY;
         const absmaxHalf = absmax / halfH;
-        
+
         ctx.beginPath();
-        ctx.moveTo(
-            (canvasStart - first) * scale,
-            halfOffset
-        );
+        ctx.moveTo((canvasStart - first) * scale, halfOffset);
+
         ctx.lineTo(
             (canvasStart - first) * scale,
             halfOffset - Math.round((peaks[2 * canvasStart] || 0) / absmaxHalf)
@@ -442,10 +440,7 @@ export default class MultiCanvas extends Drawer {
         for (i = canvasStart; i < canvasEnd; i++) {
             const peak = peaks[2 * i] || 0;
             const h = Math.round(peak / absmaxHalf);
-            ctx.lineTo(
-                (i - first) * scale + this.halfPixel,
-                halfOffset - h
-            );
+            ctx.lineTo((i - first) * scale + this.halfPixel, halfOffset - h);
         }
 
         // Draw the bottom edge going backwards, to make a single
@@ -453,15 +448,11 @@ export default class MultiCanvas extends Drawer {
         for (j = canvasEnd - 1; j >= canvasStart; j--) {
             const peak = peaks[2 * j + 1] || 0;
             const h = Math.round(peak / absmaxHalf);
-            ctx.lineTo(
-                (j - first) * scale + this.halfPixel,
-                halfOffset - h
-            );
+            ctx.lineTo((j - first) * scale + this.halfPixel, halfOffset - h);
         }
 
         ctx.lineTo(
-            (canvasStart - first) * scale,
-            halfOffset - Math.round((peaks[2 * canvasStart + 1] || 0) / absmaxHalf)
+            (canvasStart - first) * scale, halfOffset - Math.round((peaks[2 * canvasStart + 1] || 0) / absmaxHalf)
         );
 
         ctx.closePath();
