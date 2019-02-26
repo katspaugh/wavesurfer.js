@@ -454,7 +454,7 @@ export default class MultiCanvas extends Drawer {
         ctx.lineTo(
             (canvasStart - first) * scale,
             halfOffset -
-            Math.round((peaks[2 * canvasStart + 1] || 0) / absmaxHalf)
+                Math.round((peaks[2 * canvasStart + 1] || 0) / absmaxHalf)
         );
 
         ctx.closePath();
