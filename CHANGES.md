@@ -5,6 +5,7 @@ wavesurfer.js changelog
 ------------------
 
 - Add `rtl` option (#1296)
+- Spectrogram plugin: fix event listener removal (#1571)
 
 2.1.3 (21.01.2019)
 ------------------
