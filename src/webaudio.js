@@ -143,7 +143,7 @@ export default class WebAudio extends util.Observer {
         /** @private */
         this.state = null;
         /** @private */
-        this.explicitDuration = params.explicitDuration;
+        this.explicitDuration = params.duration;
     }
 
     /**
