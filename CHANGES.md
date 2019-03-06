@@ -5,7 +5,9 @@ wavesurfer.js changelog
 ------------------
 
 - Add `rtl` option (#1296)
+- Fix peaks rendering issue on zooming and scrolling multicanvas (#1570)
 - Spectrogram plugin: fix event listener removal (#1571)
+- Build: switch to webpack-terser-plugin for minifying
 
 2.1.3 (21.01.2019)
 ------------------
