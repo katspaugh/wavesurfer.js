@@ -177,31 +177,34 @@ class Region {
 
     /* Update element's position, width, color. */
     updateRender() {
+        // duration varies during loading process, so don't overwrite important data
         const dur = this.wavesurfer.getDuration();
         const width = this.getWidth();
 
-        if (this.start < 0) {
-            this.start = 0;
-            this.end = this.end - this.start;
+        var startLimited = this.start;
+        var endLimited = this.end;
+        if (startLimited < 0) {
+            startLimited = 0;
+            endLimited = endLimited - startLimited;
         }
-        if (this.end > dur) {
-            this.end = dur;
-            this.start = dur - (this.end - this.start);
+        if (endLimited > dur) {
+            endLimited = dur;
+            startLimited = dur - (endLimited - startLimited);
         }
 
         if (this.minLength != null) {
-            this.end = Math.max(this.start + this.minLength, this.end);
+            endLimited = Math.max(startLimited + this.minLength, endLimited);
         }
 
         if (this.maxLength != null) {
-            this.end = Math.min(this.start + this.maxLength, this.end);
+            endLimited = Math.min(startLimited + this.maxLength, endLimited);
         }
 
         if (this.element != null) {
             // Calculate the left and width values of the region such that
             // no gaps appear between regions.
-            const left = Math.round((this.start / dur) * width);
-            const regionWidth = Math.round((this.end / dur) * width) - left;
+            const left = Math.round((startLimited / dur) * width);
+            const regionWidth = Math.round((endLimited / dur) * width) - left;
 
             this.style(this.element, {
                 left: left + 'px',
@@ -629,31 +632,40 @@ export default class RegionsPlugin {
         });
         this.wavesurfer.Region = Region;
 
-        // Id-based hash of regions.
-        this.list = {};
-        this._onReady = () => {
+        this._onBackendCreated = () => {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             if (this.params.regions) {
                 this.params.regions.forEach(region => {
                     this.add(region);
                 });
             }
+        };
+
+        // Id-based hash of regions.
+        this.list = {};
+        this._onReady = () => {
             if (this.params.dragSelection) {
                 this.enableDragSelection(this.params);
             }
+            Object.keys(this.list).forEach(id => {
+                this.list[id].updateRender();
+            });
         };
     }
 
     init() {
         // Check if ws is ready
         if (this.wavesurfer.isReady) {
+            this._onBackendCreated();
             this._onReady();
         }
         this.wavesurfer.on('ready', this._onReady);
+        this.wavesurfer.on('backend-created', this._onBackendCreated);
     }
 
     destroy() {
         this.wavesurfer.un('ready', this._onReady);
+        this.wavesurfer.un('backend-created', this._onBackendCreated);
         this.disableDragSelection();
         this.clear();
     }

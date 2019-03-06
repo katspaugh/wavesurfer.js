@@ -39,6 +39,8 @@ import PeakCache from './peakcache';
  * @property {string} cursorColor='#333' The fill color of the cursor indicating
  * the playhead position.
  * @property {number} cursorWidth=1 Measured in pixels.
+ * @property {number} duration=null Optional audio length so pre-rendered peaks
+ * can be display immediately for example.
  * @property {boolean} fillParent=true Whether to fill the entire container or
  * draw only according to `minPxPerSec`.
  * @property {boolean} forceDecode=false Force decoding of audio using web audio
@@ -190,6 +192,7 @@ export default class WaveSurfer extends util.Observer {
         cursorColor: '#333',
         cursorWidth: 1,
         dragSelection: true,
+        duration: null,
         fillParent: true,
         forceDecode: false,
         height: 128,
