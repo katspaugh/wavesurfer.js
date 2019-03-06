@@ -177,34 +177,34 @@ class Region {
 
     /* Update element's position, width, color. */
     updateRender() {
-        // Duration varies during loading process, so don't overwrite important data
+        // duration varies during loading process, so don't overwrite important data
         const dur = this.wavesurfer.getDuration();
         const width = this.getWidth();
 
-        var start_limited = this.start;
-        var end_limited = this.end;
-        if (start_limited < 0) {
-            start_limited = 0;
-            end_limited = end_limited - start_limited;
+        var startLimited = this.start;
+        var endLimited = this.end;
+        if (startLimited < 0) {
+            startLimited = 0;
+            endLimited = endLimited - startLimited;
         }
-        if (end_limited > dur) {
-            end_limited = dur;
-            start_limited = dur - (end_limited - start_limited);
+        if (endLimited > dur) {
+            endLimited = dur;
+            startLimited = dur - (endLimited - startLimited);
         }
 
         if (this.minLength != null) {
-            end_limited = Math.max(start_limited + this.minLength, end_limited);
+            endLimited = Math.max(startLimited + this.minLength, endLimited);
         }
 
         if (this.maxLength != null) {
-            end_limited = Math.min(start_limited + this.maxLength, end_limited);
+            endLimited = Math.min(startLimited + this.maxLength, endLimited);
         }
 
         if (this.element != null) {
             // Calculate the left and width values of the region such that
             // no gaps appear between regions.
-            const left = Math.round((start_limited / dur) * width);
-            const regionWidth = Math.round((end_limited / dur) * width) - left;
+            const left = Math.round((startLimited / dur) * width);
+            const regionWidth = Math.round((endLimited / dur) * width) - left;
 
             this.style(this.element, {
                 left: left + 'px',
