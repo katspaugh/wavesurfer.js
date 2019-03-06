@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
         cursorColor: 'navy',
         plugins: [
             WaveSurfer.spectrogram.create({
-                container: '#wave-spectrogram'
+                container: '#wave-spectrogram',
+                labels: true
             })
         ]
     };
