@@ -1067,7 +1067,8 @@ export default class WaveSurfer extends util.Observer {
         );
         const parentWidth = this.drawer.getWidth();
         let width = nominalWidth;
-        let start = this.drawer.getScrollX();
+        // always start at 0 after zooming for scrolling : issue redraw left part
+        let start = 0;
         let end = Math.max(start + parentWidth, width);
         // Fill container
         if (
