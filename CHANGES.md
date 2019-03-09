@@ -1,12 +1,15 @@
 wavesurfer.js changelog
 =======================
 
-2.1.4 (unreleased)
+2.2.0 (07.03.2019)
 ------------------
 
 - Add `rtl` option (#1296)
 - Fix peaks rendering issue on zooming and scrolling multicanvas (#1570)
+- Add `duration` option to specify an explicit audio length (#1441)
 - Spectrogram plugin: fix event listener removal (#1571)
+- Regions plugin: display regions before file load using `duration`
+  option (#1441)
 - Build: switch to terser-webpack-plugin for minifying
 
 2.1.3 (21.01.2019)
