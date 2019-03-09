@@ -187,8 +187,9 @@ export default class MultiCanvas extends Drawer {
      */
     updateSize() {
         const totalWidth = Math.round(this.width / this.params.pixelRatio);
+        // No need more canvas if it&apos;s only for 2 peaks (there the same for overlaps !)
         const requiredCanvases = Math.ceil(
-            totalWidth / this.maxCanvasElementWidth
+            totalWidth / (this.maxCanvasElementWidth + 2)
         );
 
         while (this.canvases.length &lt; requiredCanvases) {
@@ -493,48 +494,49 @@ export default class MultiCanvas extends Drawer {
         }
 
         const length = peaks.length / 2;
-        const scale =
-            this.params.fillParent &amp;&amp; this.width != length
-                ? this.width / length
-                : 1;
 
         const first = Math.round(length * entry.start);
         // Use one more peak value to make sure we join peaks at ends -- unless,
         // of course, this is the last canvas.
         const last = Math.round(length * entry.end) + 1;
-        if (first &gt; end || last &lt; start) {
-            return;
-        }
-        const canvasStart = Math.min(first, start);
-        const canvasEnd = Math.max(last, end);
+
+        const canvasStart = first;
+        const canvasEnd = last;
         let i;
         let j;
 
+        const scale = entry.progress.width / (canvasEnd - canvasStart - 1);
+        // optimization
+        const halfOffset = halfH + offsetY;
+        const absmaxHalf = absmax / halfH;
+
         ctx.beginPath();
-        ctx.moveTo(
-            (canvasStart - first) * scale + this.halfPixel,
-            halfH + offsetY
+        ctx.moveTo((canvasStart - first) * scale, halfOffset);
+
+        ctx.lineTo(
+            (canvasStart - first) * scale,
+            halfOffset - Math.round((peaks[2 * canvasStart] || 0) / absmaxHalf)
         );
 
         for (i = canvasStart; i &lt; canvasEnd; i++) {
             const peak = peaks[2 * i] || 0;
-            const h = Math.round((peak / absmax) * halfH);
-            ctx.lineTo(
-                (i - first) * scale + this.halfPixel,
-                halfH - h + offsetY
-            );
+            const h = Math.round(peak / absmaxHalf);
+            ctx.lineTo((i - first) * scale + this.halfPixel, halfOffset - h);
         }
 
         // Draw the bottom edge going backwards, to make a single
         // closed hull to fill.
         for (j = canvasEnd - 1; j &gt;= canvasStart; j--) {
             const peak = peaks[2 * j + 1] || 0;
-            const h = Math.round((peak / absmax) * halfH);
-            ctx.lineTo(
-                (j - first) * scale + this.halfPixel,
-                halfH - h + offsetY
-            );
+            const h = Math.round(peak / absmaxHalf);
+            ctx.lineTo((j - first) * scale + this.halfPixel, halfOffset - h);
         }
+
+        ctx.lineTo(
+            (canvasStart - first) * scale,
+            halfOffset -
+                Math.round((peaks[2 * canvasStart + 1] || 0) / absmaxHalf)
+        );
 
         ctx.closePath();
         ctx.fill();

@@ -1392,8 +1392,15 @@ which to render</p>
       <td data-ice="name" class="code" data-depth="0">fftSamples</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"><ul><li>default: 512</li></ul></td>
-      <td data-ice="description"><p>number of samples to fetch to FFT. Must be
+      <td data-ice="description"><p>Number of samples to fetch to FFT. Must be
 a power of 2.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">labels</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>Set to true to display frequency labels.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
@@ -1761,6 +1768,14 @@ the playhead position.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">duration</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>default: null</li></ul></td>
+      <td data-ice="description"><p>Optional audio length so pre-rendered peaks
+can be display immediately for example.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">fillParent</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
       <td data-ice="appendix"><ul><li>default: true</li></ul></td>
@@ -1909,6 +1924,14 @@ renderer.</p>
       <td data-ice="description"><p>If set to <code>true</code> resize the
 waveform, when the window is resized. This is debounced with a <code>100ms</code>
 timeout by default. If this parameter is a number it represents that timeout.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">rtl</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
+      <td data-ice="appendix"><ul><li>default: false</li></ul></td>
+      <td data-ice="description"><p>If set to <code>true</code>, renders waveform from
+right-to-left.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
