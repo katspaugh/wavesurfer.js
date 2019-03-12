@@ -400,7 +400,7 @@ export default class TiledRenderer extends Drawer {
                 for (i = first; i < last; i += step) {
                     const peak =
                         peaks[Math.floor(i * scale * peakIndexScale)] || 0;
-                    const h = Math.round(peak / absmax * halfH);
+                    const h = Math.round((peak / absmax) * halfH);
                     this.fillRect(
                         i - first + this.halfPixel,
                         halfH - h + offsetY,
@@ -558,7 +558,7 @@ export default class TiledRenderer extends Drawer {
 
         for (i = canvasStart; i < canvasEnd; i++) {
             const peak = peaks[2 * i] || 0;
-            const h = Math.round(peak / absmax * halfH);
+            const h = Math.round((peak / absmax) * halfH);
             ctx.lineTo(
                 (i - first) * scale + this.halfPixel,
                 halfH - h + offsetY
@@ -569,7 +569,7 @@ export default class TiledRenderer extends Drawer {
         // closed hull to fill.
         for (j = canvasEnd - 1; j >= canvasStart; j--) {
             const peak = peaks[2 * j + 1] || 0;
-            const h = Math.round(peak / absmax * halfH);
+            const h = Math.round((peak / absmax) * halfH);
             ctx.lineTo(
                 (j - first) * scale + this.halfPixel,
                 halfH - h + offsetY
@@ -727,7 +727,7 @@ export default class TiledRenderer extends Drawer {
      */
     calcCanvasInfo(surfer, xNorm) {
         const durScale = surfer.getDuration() * this.params.minPxPerSec;
-        let xc = xNorm * durScale / this.params.pixelRatio;
+        let xc = (xNorm * durScale) / this.params.pixelRatio;
         let canNum = Math.floor(xc / this.maxCanvasElementWidth);
 
         let lhs = canNum * this.maxCanvasElementWidth; // lhs in css coordinates
