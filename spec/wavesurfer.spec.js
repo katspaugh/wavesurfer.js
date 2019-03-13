@@ -264,6 +264,20 @@ describe('WaveSurfer/playback:', function() {
         expect(cursorColor).toEqual('black');
     });
 
+    /** @test {WaveSurfer#getBackgroundColor} */
+    it('should allow getting backgroundColor', function() {
+        var bgColor = wavesurfer.getBackgroundColor();
+        expect(bgColor).toEqual(null);
+    });
+
+    /** @test {WaveSurfer#setBackgroundColor} */
+    it('should allow setting backgroundColor', function() {
+        wavesurfer.setCursorColor('#FFFF00');
+        var bgColor = wavesurfer.getBackgroundColor();
+
+        expect(bgColor).toEqual('#FFFF00');
+    });
+
     /** @test {WaveSurfer#getHeight} */
     it('should allow getting height', function() {
         var height = wavesurfer.getHeight();

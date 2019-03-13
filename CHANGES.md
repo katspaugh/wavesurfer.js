@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+2.2.1 (unreleased)
+------------------
+
+- Add `backgroundColor` option (#1118)
+
 2.2.0 (07.03.2019)
 ------------------
 
