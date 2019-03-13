@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>wavesurfer.js | TiledRenderer example</title>
+
+        <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- wavesurfer.js -->
+        <script src="js/wavesurfer.js"></script>
+        
+        <!-- tiledrenderer plugin -->
+        <script src="js/wavesurfer.tiledrenderer.js"></script>
+
+        <script src="js/tiled.js"></script>
+        
+    </head>
+
+    <body itemscope itemtype="http://schema.org/WebApplication">
+        <div class="container">
+            <div class="header">
+                <h1 itemprop="name">TiledRenderer Example</h1>
+            </div>
+
+            <div id="demo">
+                <div id="waveform">
+                    <div class="progress progress-striped active" id="progress-bar">
+                        <div class="progress-bar progress-bar-info"></div>
+                    </div>
+
+                    <!-- Here be the waveform -->
+                </div>
+
+                <div class="controls">
+	                <div class="row">
+	                    <div class="col-sm-7">
+		                    <button class="btn btn-primary" data-action="play">
+		                        <i class="glyphicon glyphicon-play"></i>
+		                        Play
+		                        /
+		                        <i class="glyphicon glyphicon-pause"></i>
+		                        Pause
+		                    </button>
+	                    </div>
+	                    <div class="col-sm-1">
+	                        <i class="glyphicon glyphicon-zoom-in"></i>
+	                    </div>
+	
+	                    <div class="col-sm-3">
+	                      <input data-action="zoom" type="range" min="1" max="200" value="0" style="width: 100%" />
+	                    </div>
+	
+	                    <div class="col-sm-1">
+	                        <i class="glyphicon glyphicon-zoom-out"></i>
+	                    </div>
+	                </div>
+	           </div>
+            </div>
+
+        </div>
+    </body>
+</html>
