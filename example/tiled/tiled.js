@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Load media from URL
-    wavesurfer.load('media/The Grim Adventures Of Billy & Mandy S05 E20_200x.mp4');
+    wavesurfer.load('../media/demo.wav');
 
     // Zoom slider
     var slider = document.querySelector('[data-action="zoom"]');
