@@ -29,6 +29,8 @@ import PeakCache from './peakcache';
  * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'` In most cases
  * you don't have to set this manually. MediaElement is a fallback for
  * unsupported browsers.
+ * @property {string} backgroundColor=null Change background color of the
+ * waveform container.
  * @property {number} barHeight=1 The height of the wave
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
@@ -186,6 +188,7 @@ export default class WaveSurfer extends util.Observer {
         audioRate: 1,
         autoCenter: true,
         backend: 'WebAudio',
+        backgroundColor: null,
         barHeight: 1,
         barGap: null,
         container: null,
@@ -321,6 +324,10 @@ export default class WaveSurfer extends util.Observer {
 
         if (this.params.rtl === true) {
             util.style(this.container, { transform: 'rotateY(180deg)' });
+        }
+
+        if (this.params.backgroundColor) {
+            this.setBackgroundColor(this.params.backgroundColor);
         }
 
         /**
@@ -1011,6 +1018,26 @@ export default class WaveSurfer extends util.Observer {
     setProgressColor(color) {
         this.params.progressColor = color;
         this.drawBuffer();
+    }
+
+    /**
+     * Get the background color of the waveform container.
+     *
+     * @return {string} A CSS color string.
+     */
+    getBackgroundColor() {
+        return this.params.backgroundColor;
+    }
+
+    /**
+     * Set the background color of the waveform container.
+     *
+     * @param {string} color A CSS color string.
+     * @example wavesurfer.setBackgroundColor('#FF00FF');
+     */
+    setBackgroundColor(color) {
+        this.params.backgroundColor = color;
+        util.style(this.container, { background: this.params.backgroundColor });
     }
 
     /**
