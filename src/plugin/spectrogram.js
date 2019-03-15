@@ -398,7 +398,10 @@ export default class SpectrogramPlugin {
         }
         this.container.appendChild(this.wrapper);
 
-        this.wrapper.addEventListener('click', this._wrapperClickHandler);
+        this.wrapper.addEventListener(
+            'click',
+            this._wrapperClickHandler.bind(this)
+        );
     }
 
     _wrapperClickHandler(event) {
