@@ -319,7 +319,7 @@ export default class SpectrogramPlugin {
             this.render();
 
             drawer.wrapper.addEventListener('scroll', this._onScroll);
-            ws.on('redraw', this.render);
+            ws.on('redraw', this.render.bind(this));
         };
     }
 
