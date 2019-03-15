@@ -5,6 +5,8 @@ wavesurfer.js changelog
 ------------------
 
 - Add `backgroundColor` option (#1118)
+- Spectrogram plugin: fix click handler (#1585)
+- Cursor plugin: fix `displayTime` (#1589)
 
 2.2.0 (07.03.2019)
 ------------------
