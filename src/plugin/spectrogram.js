@@ -293,6 +293,15 @@ export default class SpectrogramPlugin {
         this._onScroll = e => {
             this.updateScroll(e);
         };
+        this.render = () => {
+            this.updateCanvasStyle();
+
+            if (this.frequenciesDataUrl) {
+                this.loadFrequenciesData(this.frequenciesDataUrl);
+            } else {
+                this.getFrequencies(this.drawSpectrogram);
+            }
+        };
         this._onReady = () => {
             const drawer = (this.drawer = ws.drawer);
 
@@ -419,16 +428,6 @@ export default class SpectrogramPlugin {
             position: 'absolute',
             zIndex: 4
         });
-    }
-
-    render() {
-        this.updateCanvasStyle();
-
-        if (this.frequenciesDataUrl) {
-            this.loadFrequenciesData(this.frequenciesDataUrl);
-        } else {
-            this.getFrequencies(this.drawSpectrogram);
-        }
     }
 
     updateCanvasStyle() {
