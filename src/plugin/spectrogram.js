@@ -319,7 +319,7 @@ export default class SpectrogramPlugin {
             this.render();
 
             drawer.wrapper.addEventListener('scroll', this._onScroll);
-            ws.on('redraw', this.render);
+            ws.on('redraw', this.render.bind(this));
         };
     }
 
@@ -398,7 +398,10 @@ export default class SpectrogramPlugin {
         }
         this.container.appendChild(this.wrapper);
 
-        this.wrapper.addEventListener('click', this._wrapperClickHandler);
+        this.wrapper.addEventListener(
+            'click',
+            this._wrapperClickHandler.bind(this)
+        );
     }
 
     _wrapperClickHandler(event) {
