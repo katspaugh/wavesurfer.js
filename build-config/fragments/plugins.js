@@ -1,6 +1,7 @@
 /* eslint-env node */
-
 const path = require('path');
+const banner = require('./banner');
+
 const rootDir = path.resolve(__dirname, '..', '..');
 
 /**
@@ -37,5 +38,6 @@ module.exports = {
     },
     devServer: {
         publicPath: 'localhost:8080/dist/plugin/'
-    }
+    },
+    plugins: [banner.pluginBanner]
 };

@@ -123,13 +123,12 @@ describe('WaveSurfer/playback:', function() {
         // skip 4 seconds backward
         wavesurfer.skipBackward(4);
         let time = wavesurfer.getCurrentTime();
-        let expectedTime = 6.886938775510204;
-        expect(time).toEqual(expectedTime);
+        expect(time).toBeWithinRange(6.88, 6.89);
 
         // skip backward with params.skipLength (default: 2 seconds)
         wavesurfer.skipBackward();
         time = wavesurfer.getCurrentTime();
-        expect(time).toEqual(expectedTime - 2);
+        expect(time).toBeWithinRange(4.88, 4.89);
     });
 
     /** @test {WaveSurfer#skipForward}  */
@@ -263,6 +262,20 @@ describe('WaveSurfer/playback:', function() {
         var cursorColor = wavesurfer.getCursorColor();
 
         expect(cursorColor).toEqual('black');
+    });
+
+    /** @test {WaveSurfer#getBackgroundColor} */
+    it('should allow getting backgroundColor', function() {
+        var bgColor = wavesurfer.getBackgroundColor();
+        expect(bgColor).toEqual(null);
+    });
+
+    /** @test {WaveSurfer#setBackgroundColor} */
+    it('should allow setting backgroundColor', function() {
+        wavesurfer.setBackgroundColor('#FFFF00');
+        var bgColor = wavesurfer.getBackgroundColor();
+
+        expect(bgColor).toEqual('#FFFF00');
     });
 
     /** @test {WaveSurfer#getHeight} */

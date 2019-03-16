@@ -96,10 +96,9 @@ export default class Drawer extends util.Observer {
         const parentWidth = this.getWidth();
 
         let progress;
-
         if (!this.params.fillParent && nominalWidth < parentWidth) {
             progress =
-                (clientX - bbox.left) *
+                (this.params.rtl ? bbox.right - clientX : clientX - bbox.left) *
                     (this.params.pixelRatio / nominalWidth) || 0;
 
             if (progress > 1) {
@@ -107,7 +106,10 @@ export default class Drawer extends util.Observer {
             }
         } else {
             progress =
-                (clientX - bbox.left + this.wrapper.scrollLeft) /
+                ((this.params.rtl
+                    ? bbox.right - clientX
+                    : clientX - bbox.left) +
+                    this.wrapper.scrollLeft) /
                     this.wrapper.scrollWidth || 0;
         }
 
@@ -221,22 +223,24 @@ export default class Drawer extends util.Observer {
      * @return {number}
      */
     getScrollX() {
-        const pixelRatio = this.params.pixelRatio;
-        let x = Math.round(this.wrapper.scrollLeft * pixelRatio);
+        let x = 0;
+        if (this.wrapper) {
+            const pixelRatio = this.params.pixelRatio;
+            x = Math.round(this.wrapper.scrollLeft * pixelRatio);
 
-        // In cases of elastic scroll (safari with mouse wheel) you can
-        // scroll beyond the limits of the container
-        // Calculate and floor the scrollable extent to make sure an out
-        // of bounds value is not returned
-        // Ticket #1312
-        if (this.params.scrollParent) {
-            const maxScroll = ~~(
-                this.wrapper.scrollWidth * pixelRatio -
-                this.getWidth()
-            );
-            x = Math.min(maxScroll, Math.max(0, x));
+            // In cases of elastic scroll (safari with mouse wheel) you can
+            // scroll beyond the limits of the container
+            // Calculate and floor the scrollable extent to make sure an out
+            // of bounds value is not returned
+            // Ticket #1312
+            if (this.params.scrollParent) {
+                const maxScroll = ~~(
+                    this.wrapper.scrollWidth * pixelRatio -
+                    this.getWidth()
+                );
+                x = Math.min(maxScroll, Math.max(0, x));
+            }
         }
-
         return x;
     }
 

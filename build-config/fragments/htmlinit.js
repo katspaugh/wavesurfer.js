@@ -1,6 +1,8 @@
 /* eslint-env node */
 
 const path = require('path');
+const banner = require('./banner');
+
 const rootDir = path.resolve(__dirname, '..', '..');
 
 module.exports = {
@@ -11,5 +13,6 @@ module.exports = {
         path: path.join(rootDir, 'dist'),
         filename: 'wavesurfer-[name].js',
         library: ['WaveSurfer', '[name]']
-    }
+    },
+    plugins: [banner.libBanner]
 };
