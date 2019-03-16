@@ -161,7 +161,7 @@ class Region {
     }
 
     formatTime(start, end) {
-        return (start == end ? [start] : [start, end])
+        return (start === end ? [start] : [start, end])
             .map(time =>
                 [
                     Math.floor((time % 3600) / 60), // minutes

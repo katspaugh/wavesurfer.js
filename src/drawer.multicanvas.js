@@ -619,6 +619,8 @@ export default class MultiCanvas extends Drawer {
      * @param {number} position X-Offset of progress position in pixels
      */
     updateProgress(position) {
+        // NOTE wave has box-sizing: border-content -> position left false by width of border right
+        position += this.params.cursorWidth;
         this.style(this.progressWave, { width: position + 'px' });
     }
 }

@@ -185,7 +185,7 @@ export default class Drawer extends util.Observer {
      * in steps of 5 pixels
      *
      * @param {number} position X-offset in pixels
-     * @param {boolean} immediate Set to true to immediately scroll somewhere
+     * @param {boolean?} immediate=false Set to true to immediately scroll somewhere
      */
     recenterOnPosition(position, immediate) {
         const scrollLeft = this.wrapper.scrollLeft;
