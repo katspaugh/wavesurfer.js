@@ -64,7 +64,7 @@
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-integrate-test-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^5.15.1",
+    "eslint": "^5.15.2",
     "eslint-config-prettier": "^4.1.0",
     "eslint-loader": "^2.1.2",
     "eslint-plugin-prettier": "^3.0.1",
@@ -86,7 +86,7 @@
     "prettier": "^1.16.4",
     "terser-webpack-plugin": "^1.2.3",
     "webpack": "^4.29.6",
-    "webpack-cli": "^3.2.3",
+    "webpack-cli": "^3.3.0",
     "webpack-dev-server": "^3.2.1",
     "webpack-merge": "^4.2.1"
   },
