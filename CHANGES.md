@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+2.2.2 (unreleased)
+------------------
+
+- Cursor plugin: add `formatTimeCallback` option
+
 2.2.1 (18.03.2019)
 ------------------
 
