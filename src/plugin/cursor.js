@@ -13,6 +13,7 @@
  * @property {boolean} showTime=false Show the time on the cursor.
  * @property {object} customShowTimeStyle An object with custom styles which are
  * applied to the cursor time element.
+ * @property {function} formatTimeCallback Formats the timestamp on the cursor.
  */
 
 /**
@@ -78,7 +79,8 @@ export default class CursorPlugin {
         zIndex: 4,
         customStyle: {},
         customShowTimeStyle: {},
-        showTime: false
+        showTime: false,
+        formatTimeCallback: null
     };
 
     /** @private */
@@ -267,8 +269,15 @@ export default class CursorPlugin {
         }
     }
 
-    /** timestamp time calculation */
+    /**
+     * Format the timestamp for `cursorTime`.
+     *
+     * @param {number} cursorTime Time in seconds
+     */
     formatTime(cursorTime) {
+        if (this.params.formatTimeCallback) {
+            return this.params.formatTimeCallback(cursorTime);
+        }
         return [cursorTime].map(time =>
             [
                 Math.floor((time % 3600) / 60), // minutes

@@ -16,6 +16,7 @@ dist/**/*.map
 .project
 .chrome
 .build_cache
+.pydevproject
 
 package-lock.json
 .package.json.swp
