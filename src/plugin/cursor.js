@@ -275,6 +275,8 @@ export default class CursorPlugin {
      * @param {number} cursorTime Time in seconds
      */
     formatTime(cursorTime) {
+        cursorTime = isNaN(cursorTime) ? 0 : cursorTime;
+
         if (this.params.formatTimeCallback) {
             return this.params.formatTimeCallback(cursorTime);
         }
