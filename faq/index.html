@@ -8,7 +8,6 @@ layout: default
 
   <p>Yes, if you use the <code>backend: 'MediaElement'</code> option. See here: <a href="https://wavesurfer-js.org/example/audio-element/">http://wavesurfer-js.org/example/audio-element/</a>. The audio will start playing as you press play. A thin line will be displayed until the whole audio file is downloaded and decoded to draw the waveform.</p>
 
-
   <h2>Can drawing be done as file loads?</h2>
 
   <p>No. Web Audio needs the whole file to decode it in the browser. You can however load pre-decoded waveform data to draw the waveform immediately. <a href="/example/audio-element/">See here</a> (the "Pre-recoded Peaks" section).</p>
@@ -20,8 +19,58 @@ layout: default
   <h2>How to generate waveform data on the server?</h2>
   
   <p>
-    You can use the <a href="https://github.com/bbcrd/audiowaveform">audiowaveform</a> program. For example:
-    
-<pre><code>audiowaveform -i some-file.mp3 --pixels-per-second 10 -b 8 -o some-file.json</code></pre>
+    You can use the <a href="https://github.com/bbcrd/audiowaveform">audiowaveform</a> program. For example, let's generate peaks for a MP3 file called 'long_clip.mp3'.
+  <p>First generate the <code>long_clip.dat</code> file:</p>
+<pre><code>audiowaveform -i long_clip.mp3 -o long_clip.dat --pixels-per-second 20 --bits 8</code></pre>
+  <p>Next, generate the <code>long_clip.json</code> file:</p>
+  <pre><code>audiowaveform -i long_clip.dat -o long_clip.json</code></pre>
+  <p>And finally, normalize the peak data so the values stay between 0 and 1 using the Python script below:</p>
+  <pre><code>python scale-json.py long_clip.json</code></pre>
+  <pre><code>
+import json
+import sys
+
+if len(sys.argv) < 2:
+    print("Usage: python scale-json.py file.json")
+    exit()
+
+filename = sys.argv[1]
+
+with open(filename, "r") as f:
+    file_content = f.read()
+
+json_content = json.loads(file_content)
+data = json_content["data"]
+
+max_val = float(max(data))
+new_data = []
+for x in data:
+    new_data.append(x/max_val)
+
+json_content["data"] = new_data
+file_content = json.dumps(json_content)
+
+with open(filename, "w") as f:
+    f.write(file_content)
+</code></pre>
+<p>You can now load the <code>long_clip.json</code> file with the peaks data and pass it to wavesurfer.js:</p>
+<pre><code>
+fetch('../long_clip.json')
+.then(response => {
+    if (!response.ok) {
+        throw new Error("HTTP error " + response.status);
+    }
+    return response.json();
+})
+.then(peaks => {
+    console.log('loaded peaks! sample_rate: ' + peaks.sample_rate);
+
+    // load peaks into wavesurfer.js
+    wavesurfer.load(mediaElt, peaks.data);
+})
+.catch((e) => {
+    console.error('error', e);
+});
+</code></pre>
   </p>
 </section>
