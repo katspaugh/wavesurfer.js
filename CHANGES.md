@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-2.2.2 (unreleased)
+2.3.0 (unreleased)
 ------------------
 
 - Add `wavesurfer.getActivePlugins()`: return map of plugins
