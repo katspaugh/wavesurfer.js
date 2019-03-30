@@ -383,7 +383,13 @@ export default class WaveSurfer extends util.Observer {
         this.initialisedPluginList = {};
         /** @private */
         this.isDestroyed = false;
-        /** @private */
+
+        /**
+         * Get the current ready status.
+         *
+         * @example const isReady = wavesurfer.isReady;
+         * @return {boolean}
+         */
         this.isReady = false;
 
         // responsive debounced event listener. If this.params.responsive is not
@@ -948,16 +954,6 @@ export default class WaveSurfer extends util.Observer {
      */
     getMute() {
         return this.isMuted;
-    }
-
-    /**
-     * Get the current ready status.
-     *
-     * @example const isReady = wavesurfer.isReady();
-     * @return {boolean}
-     */
-    isReady() {
-        return this.isReady;
     }
 
     /**
