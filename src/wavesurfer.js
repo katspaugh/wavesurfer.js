@@ -449,6 +449,16 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Get a map of plugin names that are currently initialised
+     *
+     * @example wavesurfer.getPlugins();
+     * @return {Object} Object with plugin names
+     */
+    getActivePlugins() {
+        return this.initialisedPluginList;
+    }
+
+    /**
      * Add a plugin object to wavesurfer
      *
      * @param {PluginDefinition} plugin A plugin definition
@@ -1230,10 +1240,11 @@ export default class WaveSurfer extends util.Observer {
      * wavesurfer.load('http://example.com/demo.wav');
      *
      * // setting preload attribute with media element backend and supplying
-     * peaks wavesurfer.load(
+     * // peaks
+     * wavesurfer.load(
      *   'http://example.com/demo.wav',
      *   [0.0218, 0.0183, 0.0165, 0.0198, 0.2137, 0.2888],
-     *   true,
+     *   true
      * );
      */
     load(url, peaks, preload, duration) {
