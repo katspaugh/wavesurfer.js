@@ -4,6 +4,8 @@ wavesurfer.js changelog
 2.2.2 (unreleased)
 ------------------
 
+- Add `wavesurfer.getActivePlugins()`: return map of plugins
+  that are currently initialised
 - Cursor plugin: add `formatTimeCallback` option
 
 2.2.1 (18.03.2019)
