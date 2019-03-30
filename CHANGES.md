@@ -6,6 +6,8 @@ wavesurfer.js changelog
 
 - Add `wavesurfer.getActivePlugins()`: return map of plugins
   that are currently initialised
+- Fix `wavesurfer.isReady`: make it a public boolean, the
+  broken `isReady` method is removed (#1597)
 - Cursor plugin: add `formatTimeCallback` option
 
 2.2.1 (18.03.2019)
