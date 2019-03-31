@@ -8,7 +8,9 @@ wavesurfer.js changelog
   that are currently initialised
 - Fix `wavesurfer.isReady`: make it a public boolean, the
   broken `isReady` method is removed (#1597)
-- Cursor plugin: add `formatTimeCallback` option
+- Cursor plugin:
+  - add `formatTimeCallback` option
+  - add `showTimeYPosition` option
 
 2.2.1 (18.03.2019)
 ------------------
