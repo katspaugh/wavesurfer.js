@@ -10,7 +10,7 @@ wavesurfer.js changelog
   broken `isReady` method is removed (#1597)
 - Cursor plugin:
   - add `formatTimeCallback` option
-  - add `showTimeYPosition` option
+  - add `followCursorY` option
 
 2.2.1 (18.03.2019)
 ------------------

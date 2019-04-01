@@ -13,8 +13,8 @@
  * @property {boolean} showTime=false Show the time on the cursor.
  * @property {object} customShowTimeStyle An object with custom styles which are
  * applied to the cursor time element.
- * @property {string} showTimeYPosition='fixed' Use 'relative' to make the time on
- * the cursor follow the x and the y-position of the mouse. Use 'fixed' to make the
+ * @property {string} followCursorY=false Use `true` to make the time on
+ * the cursor follow the x and the y-position of the mouse. Use `false` to make the
  * it only follow the x-position of the mouse.
  * @property {function} formatTimeCallback Formats the timestamp on the cursor.
  */
@@ -83,7 +83,7 @@ export default class CursorPlugin {
         customStyle: {},
         customShowTimeStyle: {},
         showTime: false,
-        showTimeYPosition: 'fixed',
+        followCursorY: false,
         formatTimeCallback: null
     };
 
@@ -93,13 +93,9 @@ export default class CursorPlugin {
         let y = 0;
         let x = e.clientX - bbox.left;
 
-        if (this.params.showTime) {
-            switch (this.params.showTimeYPosition) {
-                case 'relative':
-                    // follow y-position of the mouse
-                    y = e.clientY - (bbox.top + bbox.height / 2);
-                    break;
-            }
+        if (this.params.showTime && this.params.followCursorY) {
+            // follow y-position of the mouse
+            y = e.clientY - (bbox.top + bbox.height / 2);
         }
 
         this.updateCursorPosition(x, y);
