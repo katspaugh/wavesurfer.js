@@ -12,6 +12,8 @@ wavesurfer.js changelog
 - Cursor plugin:
   - add `formatTimeCallback` option
   - add `followCursorY` option
+- Spectrogram plugin: fix `ready` listener when loading multiple
+  audio files (#1572)
 
 2.2.1 (18.03.2019)
 ------------------
