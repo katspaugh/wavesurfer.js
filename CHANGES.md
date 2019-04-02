@@ -6,6 +6,7 @@ wavesurfer.js changelog
 
 - Add `wavesurfer.getActivePlugins()`: return map of plugins
   that are currently initialised
+- Update progress when seeking with HTML media controls (#1535)
 - Fix `wavesurfer.isReady`: make it a public boolean, the
   broken `isReady` method is removed (#1597)
 - Cursor plugin:
