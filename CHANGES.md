@@ -14,6 +14,8 @@ wavesurfer.js changelog
   - add `followCursorY` option
 - Spectrogram plugin: fix `ready` listener when loading multiple
   audio files (#1572)
+- Regions plugin: fix `ready` listener when loading multiple
+  audio files (#1602)
 
 2.2.1 (18.03.2019)
 ------------------
