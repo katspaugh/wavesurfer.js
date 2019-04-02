@@ -32,13 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
         ]
     });
 
-    function loadFile() {
-        wavesurfer.load('../media/demo.wav');
-    }
-
-    var loadbtn = document.querySelector('#loadBtn');
-    loadbtn.onclick = loadFile;
-
     // Load audio from URL
     wavesurfer.load('../media/demo.wav');
 
