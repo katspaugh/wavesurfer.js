@@ -136,6 +136,9 @@ export default class WebAudio extends util.Observer {
         /** analyser: provides audio analysis information */
         this.analyser = null;
         /** scriptNode: allows processing audio */
+        /** @private */
+        this.postAnalyser = null;
+        /** @private */
         this.scriptNode = null;
         /** @private */
         this.source = null;
@@ -173,6 +176,7 @@ export default class WebAudio extends util.Observer {
             this.filters = null;
             // Reconnect direct path
             this.analyser.connect(this.gainNode);
+            this.gainNode.connect(this.postAnalyser);
         }
     }
 
@@ -215,6 +219,7 @@ export default class WebAudio extends util.Observer {
 
             // Disconnect direct path before inserting filters
             this.analyser.disconnect();
+            this.postAnalyser.disconnect();
 
             // Connect each filter in turn
             filters
@@ -222,7 +227,8 @@ export default class WebAudio extends util.Observer {
                     prev.connect(curr);
                     return curr;
                 }, this.analyser)
-                .connect(this.gainNode);
+                .connect(this.gainNode)
+                .connect(this.postAnalyser);
         }
     }
     /** Create ScriptProcessorNode to process audio */
@@ -261,12 +267,15 @@ export default class WebAudio extends util.Observer {
 
     /** @private */
     removeOnAudioProcess() {
-        this.scriptNode.onaudioprocess = null;
+        this.scriptNode.onaudioprocess = () => { };
     }
     /** Create analyser node to perform audio analysis */
     createAnalyserNode() {
         this.analyser = this.ac.createAnalyser();
         this.analyser.connect(this.gainNode);
+
+        this.postAnalyser = this.ac.createAnalyser();
+        this.gainNode.connect(this.postAnalyser);
     }
 
     /**
@@ -519,6 +528,7 @@ export default class WebAudio extends util.Observer {
         this.gainNode.disconnect();
         this.scriptNode.disconnect();
         this.analyser.disconnect();
+        this.postAnalyser.disconnect();
 
         // close the audioContext if closeAudioContext option is set to true
         if (this.params.closeAudioContext) {
