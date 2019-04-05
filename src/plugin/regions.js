@@ -2,7 +2,7 @@
  * (Single) Region plugin class
  *
  * Must be turned into an observer before instantiating. This is done in
- * RegionsPlugin (main plugin class)
+ * `RegionsPlugin` (main plugin class).
  *
  * @extends {Observer}
  */
@@ -641,7 +641,7 @@ export default class RegionsPlugin {
             }
         };
 
-        // Id-based hash of regions.
+        // Id-based hash of regions
         this.list = {};
         this._onReady = () => {
             if (this.params.dragSelection) {
@@ -658,9 +658,10 @@ export default class RegionsPlugin {
         if (this.wavesurfer.isReady) {
             this._onBackendCreated();
             this._onReady();
+        } else {
+            this.wavesurfer.once('ready', this._onReady);
+            this.wavesurfer.once('backend-created', this._onBackendCreated);
         }
-        this.wavesurfer.on('ready', this._onReady);
-        this.wavesurfer.on('backend-created', this._onBackendCreated);
     }
 
     destroy() {
@@ -669,7 +670,13 @@ export default class RegionsPlugin {
         this.disableDragSelection();
         this.clear();
     }
-    /* Add a region. */
+
+    /**
+     * Add a region
+     *
+     * @param {object} params
+     * @return {Region} The created region
+     */
     add(params) {
         const region = new this.wavesurfer.Region(params, this.wavesurfer);
 
@@ -682,7 +689,9 @@ export default class RegionsPlugin {
         return region;
     }
 
-    /* Remove all regions. */
+    /**
+     * Remove all regions
+     */
     clear() {
         Object.keys(this.list).forEach(id => {
             this.list[id].remove();
@@ -838,10 +847,12 @@ export default class RegionsPlugin {
         this.fireEvent('disable-drag-selection');
     }
 
-    /* Get current region
-     *  The smallest region that contains the current time.
-     *  If several such regions exist, we take the first.
-     *  Return null if none exist. */
+    /**
+     * Get current region
+     *
+     * The smallest region that contains the current time. If several such
+     * regions exist, take the first. Return `null` if none exist.
+     */
     getCurrentRegion() {
         const time = this.wavesurfer.getCurrentTime();
         let min = null;
