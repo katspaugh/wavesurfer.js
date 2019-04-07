@@ -311,7 +311,7 @@ describe('WaveSurfer/playback:', function() {
         expect(imgData).toBeNonEmptyString();
 
         wavesurfer.exportImage('image/png', 1, 'blob').then(blobs => {
-            expect(blobs).toBeArrayOfObjects();
+            expect(blobs).toBeArrayOfSize(1);
             expect(blobs[0] instanceof Blob).toBeTruthy();
         });
     });
