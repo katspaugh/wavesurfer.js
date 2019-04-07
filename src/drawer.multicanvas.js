@@ -602,17 +602,34 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
-     * Return image data of the waveform
+     * Return image data of the multi-canvas
      *
-     * @param {string} type='image/png' An optional value of a format type.
+     * When using a `type` of `'blob'`, this will return a `Promise`.
+     *
+     * @param {string} format='image/png' An optional value of a format type.
      * @param {number} quality=0.92 An optional value between 0 and 1.
-     * @return {string|string[]} images A data URL or an array of data URLs
+     * @param {string} type='dataURL' Either 'dataURL' or 'blob'.
+     * @return {string|string[]|Promise} When using the default `'dataURL'`
+     *`type` this returns a single data URL or an array of data URLs,
+     * one for each canvas. When using the `'blob'` `type` this returns a
+     * `Promise` that resolves with a array of `Blob` instances, one for each
+     * canvas.
      */
-    getImage(type, quality) {
-        const images = this.canvases.map(entry =>
-            entry.wave.toDataURL(type, quality)
-        );
-        return images.length > 1 ? images : images[0];
+    getImage(format, quality, type) {
+        if (type === 'blob') {
+            return Promise.all(
+                this.canvases.map(entry => {
+                    return new Promise(resolve => {
+                        entry.wave.toBlob(resolve, format, quality);
+                    });
+                })
+            );
+        } else if (type === 'dataURL') {
+            let images = this.canvases.map(entry =>
+                entry.wave.toDataURL(format, quality)
+            );
+            return images.length > 1 ? images : images[0];
+        }
     }
 
     /**
