@@ -9,9 +9,10 @@ wavesurfer.js changelog
 - Update progress when seeking with HTML media controls (#1535)
 - Fix `wavesurfer.isReady`: make it a public boolean, the
   broken `isReady` method is removed (#1597)
+- Add support for `Blob` output type in `wavesurfer.exportImage` (#1610)
 - Cursor plugin:
   - add `formatTimeCallback` option
-  - add `followCursorY` option
+  - add `followCursorY` option (#1605)
 - Spectrogram plugin: fix `ready` listener when loading multiple
   audio files (#1572)
 - Regions plugin: fix `ready` listener when loading multiple
