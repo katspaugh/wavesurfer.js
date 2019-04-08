@@ -309,6 +309,11 @@ describe('WaveSurfer/playback:', function() {
     it('should export image data', function() {
         var imgData = wavesurfer.exportImage();
         expect(imgData).toBeNonEmptyString();
+
+        wavesurfer.exportImage('image/png', 1, 'blob').then(blobs => {
+            expect(blobs).toBeArrayOfSize(1);
+            expect(blobs[0] instanceof Blob).toBeTruthy();
+        });
     });
 
     /** @test {WaveSurfer#destroy} */
