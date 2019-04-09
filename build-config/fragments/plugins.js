@@ -22,7 +22,11 @@ fs.readdirSync(pluginSrcDir).forEach(plugin => {
 function buildPluginEntry(plugins) {
     const result = {};
     plugins.forEach(
-        plugin => (result[plugin] = path.join(pluginSrcDir, plugin))
+        plugin =>
+            (result[path.basename(plugin, '.js')] = path.join(
+                pluginSrcDir,
+                plugin
+            ))
     );
     return result;
 }
