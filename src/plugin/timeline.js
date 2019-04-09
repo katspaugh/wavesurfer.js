@@ -81,8 +81,10 @@ export default class TimelinePlugin {
             this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
         }
     };
+
     /** @private */
     _onRedraw = () => this.render();
+
     /** @private */
     _onReady = () => {
         const ws = this.wavesurfer;
@@ -93,11 +95,14 @@ export default class TimelinePlugin {
             ws.drawer.maxCanvasElementWidth ||
             Math.round(this.maxCanvasWidth / this.pixelRatio);
 
+        // add listeners
         ws.drawer.wrapper.addEventListener('scroll', this._onScroll);
         ws.on('redraw', this._onRedraw);
         ws.on('zoom', this._onZoom);
+
         this.render();
     };
+
     /** @private */
     _onWrapperClick = e => {
         e.preventDefault();
@@ -184,10 +189,11 @@ export default class TimelinePlugin {
      * Initialisation function used by the plugin API
      */
     init() {
-        this.wavesurfer.on('ready', this._onReady);
         // Check if ws is ready
         if (this.wavesurfer.isReady) {
             this._onReady();
+        } else {
+            this.wavesurfer.once('ready', this._onReady);
         }
     }
 
@@ -255,37 +261,49 @@ export default class TimelinePlugin {
     }
 
     /**
+     * Add new timeline canvas
+     *
+     * @private
+     */
+    addCanvas() {
+        const canvas = this.wrapper.appendChild(
+            document.createElement('canvas')
+        );
+        this.canvases.push(canvas);
+        this.util.style(canvas, {
+            position: 'absolute',
+            zIndex: 4
+        });
+    }
+
+    /**
+     * Remove timeline canvas
+     *
+     * @private
+     */
+    removeCanvas() {
+        const canvas = this.canvases.pop();
+        canvas.parentElement.removeChild(canvas);
+    }
+
+    /**
      * Make sure the correct of timeline canvas elements exist and are cached in
      * this.canvases
      *
      * @private
      */
     updateCanvases() {
-        const addCanvas = () => {
-            const canvas = this.wrapper.appendChild(
-                document.createElement('canvas')
-            );
-            this.canvases.push(canvas);
-            this.util.style(canvas, {
-                position: 'absolute',
-                zIndex: 4
-            });
-        };
-        const removeCanvas = () => {
-            const canvas = this.canvases.pop();
-            canvas.parentElement.removeChild(canvas);
-        };
-
         const totalWidth = Math.round(this.drawer.wrapper.scrollWidth);
         const requiredCanvases = Math.ceil(
             totalWidth / this.maxCanvasElementWidth
         );
+
         while (this.canvases.length < requiredCanvases) {
-            addCanvas();
+            this.addCanvas();
         }
 
         while (this.canvases.length > requiredCanvases) {
-            removeCanvas();
+            this.removeCanvas();
         }
     }
 
