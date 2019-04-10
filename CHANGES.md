@@ -10,6 +10,7 @@ wavesurfer.js changelog
 - Fix `wavesurfer.isReady`: make it a public boolean, the
   broken `isReady` method is removed (#1597)
 - Add support for `Blob` output type in `wavesurfer.exportImage` (#1610)
+- Fix fallback to Audio Element in browsers that don't support Web Audio (#1614)
 - Cursor plugin:
   - add `formatTimeCallback` option
   - add `followCursorY` option (#1605)

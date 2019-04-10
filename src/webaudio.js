@@ -103,7 +103,9 @@ export default class WebAudio extends util.Observer {
         /** @private */
         this.params = params;
         /** @private */
-        this.ac = params.audioContext || this.getAudioContext();
+        this.ac =
+            params.audioContext ||
+            (this.supportsWebAudio() ? this.getAudioContext() : {});
         /**@private */
         this.lastPlay = this.ac.currentTime;
         /** @private */
