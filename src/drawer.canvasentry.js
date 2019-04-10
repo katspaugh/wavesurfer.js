@@ -6,8 +6,8 @@ import style from './util/style';
 import getId from './util/get-id';
 
 /**
- * The CanvasEntry class represents an element consisting of a wave canvas and a
- * (optional) progress wave canvas.
+ * The CanvasEntry class represents an element consisting of a wave `canvas`
+ * and an (optional) progress wave `canvas`.
  *
  * The MultiCanvas renderer uses one or more CanvasEntry instances to render
  * a waveform, depending on the zoom level.
@@ -17,29 +17,25 @@ export default class CanvasEntry {
         /**
          * The wave node
          *
-         * @type {HTMLElement}
-         * @private
+         * @type {HTMLCanvasElement}
          */
         this.wave = null;
         /**
          * The wave canvas rendering context
          *
          * @type {CanvasRenderingContext2D}
-         * @private
          */
         this.waveCtx = null;
         /**
          * The (optional) progress wave node
          *
-         * @type {HTMLElement}
-         * @private
+         * @type {HTMLCanvasElement}
          */
         this.progress = null;
         /**
-         * The progress wave canvas rendering context
+         * The (optional) progress wave canvas rendering context
          *
          * @type {CanvasRenderingContext2D}
-         * @private
          */
         this.progressCtx = null;
         /**
@@ -60,23 +56,27 @@ export default class CanvasEntry {
          * Unique identifier for this entry.
          *
          * @type {string}
-         * @private
          */
         this.id = getId();
     }
 
     /**
-     * Create the wave canvas and 2D rendering context
+     * Store the wave canvas element and create the 2D rendering context
+     *
+     * @param {HTMLCanvasElement} element The wave `canvas` element.
      */
-    createWave(element) {
+    initWave(element) {
         this.wave = element;
         this.waveCtx = this.wave.getContext('2d');
     }
 
     /**
-     * Create the progress canvas and 2D rendering context
+     * Store the progress wave canvas element and create the 2D rendering
+     * context
+     *
+     * @param {HTMLCanvasElement} element The progress wave `canvas` element.
      */
-    createProgress(element) {
+    initProgress(element) {
         this.progress = element;
         this.progressCtx = this.progress.getContext('2d');
     }
@@ -161,7 +161,7 @@ export default class CanvasEntry {
     }
 
     /**
-     * Draw the actual rectangle on a canvas
+     * Draw the actual rectangle on a `canvas` element
      *
      * @private
      * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
@@ -211,7 +211,7 @@ export default class CanvasEntry {
     }
 
     /**
-     * Render the actual waveform line on a canvas
+     * Render the actual waveform line on a `canvas` element
      *
      * @private
      * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
@@ -238,8 +238,8 @@ export default class CanvasEntry {
 
         let canvasStart = first;
         let canvasEnd = last;
-
         let scale = this.progress.width / (canvasEnd - canvasStart - 1);
+
         // optimization
         let halfOffset = halfH + offsetY;
         let absmaxHalf = absmax / halfH;
@@ -259,8 +259,8 @@ export default class CanvasEntry {
             ctx.lineTo((i - first) * scale + this.halfPixel, halfOffset - h);
         }
 
-        // Draw the bottom edge going backwards, to make a single
-        // closed hull to fill.
+        // draw the bottom edge going backwards, to make a single
+        // closed hull to fill
         let j;
         for (j = canvasEnd - 1; j >= canvasStart; j--) {
             peak = peaks[2 * j + 1] || 0;
@@ -290,7 +290,7 @@ export default class CanvasEntry {
     }
 
     /**
-     * Return image data of the wave canvas
+     * Return image data of the wave `canvas` element
      *
      * When using a `type` of `'blob'`, this will return a `Promise`.
      *

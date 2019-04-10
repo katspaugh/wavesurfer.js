@@ -145,7 +145,7 @@ export default class MultiCanvas extends Drawer {
         const leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
         // wave
-        entry.createWave(
+        entry.initWave(
             this.wrapper.appendChild(
                 this.style(document.createElement('canvas'), {
                     position: 'absolute',
@@ -161,7 +161,7 @@ export default class MultiCanvas extends Drawer {
 
         // progress
         if (this.hasProgressCanvas) {
-            entry.createProgress(
+            entry.initProgress(
                 this.progressWave.appendChild(
                     this.style(document.createElement('canvas'), {
                         position: 'absolute',
