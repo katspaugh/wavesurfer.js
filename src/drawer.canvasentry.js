@@ -6,11 +6,11 @@ import style from './util/style';
 import getId from './util/get-id';
 
 /**
- * The CanvasEntry class represents an element consisting of a wave `canvas`
+ * The `CanvasEntry` class represents an element consisting of a wave `canvas`
  * and an (optional) progress wave `canvas`.
  *
- * The MultiCanvas renderer uses one or more CanvasEntry instances to render
- * a waveform, depending on the zoom level.
+ * The `MultiCanvas` renderer uses one or more `CanvasEntry` instances to
+ * render a waveform, depending on the zoom level.
  */
 export default class CanvasEntry {
     constructor() {
@@ -90,8 +90,8 @@ export default class CanvasEntry {
      * @param {number} height The new height of the element
      */
     updateDimensions(elementWidth, totalWidth, width, height) {
-        // Where the canvas starts and ends in the waveform, represented as a
-        // decimal between 0 and 1.
+        // where the canvas starts and ends in the waveform, represented as a
+        // decimal between 0 and 1
         this.start = this.wave.offsetLeft / totalWidth || 0;
         this.end = this.start + elementWidth / totalWidth;
 
@@ -232,8 +232,8 @@ export default class CanvasEntry {
         let length = peaks.length / 2;
         let first = Math.round(length * this.start);
 
-        // Use one more peak value to make sure we join peaks at ends -- unless,
-        // of course, this is the last canvas.
+        // use one more peak value to make sure we join peaks at ends -- unless,
+        // of course, this is the last canvas
         let last = Math.round(length * this.end) + 1;
 
         let canvasStart = first;
@@ -297,11 +297,9 @@ export default class CanvasEntry {
      * @param {string} format='image/png' An optional value of a format type.
      * @param {number} quality=0.92 An optional value between 0 and 1.
      * @param {string} type='dataURL' Either 'dataURL' or 'blob'.
-     * @return {string|string[]|Promise} When using the default `'dataURL'`
-     * `type` this returns a single data URL or an array of data URLs,
-     * one for each canvas. When using the `'blob'` `type` this returns a
-     * `Promise` that resolves with an array of `Blob` instances, one for each
-     * canvas.
+     * @return {string|Promise} When using the default `'dataURL'` `type` this
+     * returns a data URL. When using the `'blob'` `type` this returns a
+     * `Promise` that resolves with a `Blob` instance.
      */
     getImage(format, quality, type) {
         if (type === 'blob') {

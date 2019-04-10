@@ -5,6 +5,9 @@ import CanvasEntry from './drawer.canvasentry';
 /**
  * MultiCanvas renderer for wavesurfer. Is currently the default and sole
  * builtin renderer.
+ *
+ * A `MultiCanvas` consists of one or more `CanvasEntry` instances, depending
+ * on the zoom level.
  */
 export default class MultiCanvas extends Drawer {
     /**
