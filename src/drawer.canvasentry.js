@@ -281,4 +281,28 @@ export default class CanvasEntry {
         this.progressCtx = null;
         this.progress = null;
     }
+
+    /**
+     * Return image data of the wave canvas
+     *
+     * When using a `type` of `'blob'`, this will return a `Promise`.
+     *
+     * @param {string} format='image/png' An optional value of a format type.
+     * @param {number} quality=0.92 An optional value between 0 and 1.
+     * @param {string} type='dataURL' Either 'dataURL' or 'blob'.
+     * @return {string|string[]|Promise} When using the default `'dataURL'`
+     * `type` this returns a single data URL or an array of data URLs,
+     * one for each canvas. When using the `'blob'` `type` this returns a
+     * `Promise` that resolves with an array of `Blob` instances, one for each
+     * canvas.
+     */
+    getImage(format, quality, type) {
+        if (type === 'blob') {
+            return new Promise(resolve => {
+                this.wave.toBlob(resolve, format, quality);
+            });
+        } else if (type === 'dataURL') {
+            return this.wave.toDataURL(format, quality);
+        }
+    }
 }

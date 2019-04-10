@@ -481,14 +481,12 @@ export default class MultiCanvas extends Drawer {
         if (type === 'blob') {
             return Promise.all(
                 this.canvases.map(entry => {
-                    return new Promise(resolve => {
-                        entry.wave.toBlob(resolve, format, quality);
-                    });
+                    return entry.getImage(format, quality, type);
                 })
             );
         } else if (type === 'dataURL') {
             let images = this.canvases.map(entry =>
-                entry.wave.toDataURL(format, quality)
+                entry.getImage(format, quality, type)
             );
             return images.length > 1 ? images : images[0];
         }
