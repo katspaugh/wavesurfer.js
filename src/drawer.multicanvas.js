@@ -139,7 +139,7 @@ export default class MultiCanvas extends Drawer {
         }
 
         let canvasWidth = this.maxCanvasWidth + this.overlap;
-        let lastCanvas = this.canvases.length - 1;
+        const lastCanvas = this.canvases.length - 1;
         this.canvases.forEach((entry, i) => {
             if (i == lastCanvas) {
                 canvasWidth = this.width - this.maxCanvasWidth * lastCanvas;
@@ -284,9 +284,9 @@ export default class MultiCanvas extends Drawer {
                 const scale = length / this.width;
                 const first = start;
                 const last = end;
-                let i;
+                let i = first;
 
-                for (i = first; i < last; i += step) {
+                for (i; i < last; i += step) {
                     const peak =
                         peaks[Math.floor(i * scale * peakIndexScale)] || 0;
                     const h = Math.round((peak / absmax) * halfH);
@@ -323,8 +323,8 @@ export default class MultiCanvas extends Drawer {
                 if (!hasMinVals) {
                     const reflectedPeaks = [];
                     const len = peaks.length;
-                    let i;
-                    for (i = 0; i < len; i++) {
+                    let i = 0;
+                    for (i; i < len; i++) {
                         reflectedPeaks[2 * i] = peaks[i];
                         reflectedPeaks[2 * i + 1] = -peaks[i];
                     }
@@ -382,8 +382,8 @@ export default class MultiCanvas extends Drawer {
             Math.ceil((x + width) / this.maxCanvasWidth) + 1,
             this.canvases.length
         );
-        let i;
-        for (i = startCanvas; i < endCanvas; i++) {
+        let i = startCanvas;
+        for (i; i < endCanvas; i++) {
             const entry = this.canvases[i];
             const leftOffset = i * this.maxCanvasWidth;
 

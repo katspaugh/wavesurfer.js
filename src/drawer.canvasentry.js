@@ -229,20 +229,20 @@ export default class CanvasEntry {
             return;
         }
 
-        let length = peaks.length / 2;
-        let first = Math.round(length * this.start);
+        const length = peaks.length / 2;
+        const first = Math.round(length * this.start);
 
         // use one more peak value to make sure we join peaks at ends -- unless,
         // of course, this is the last canvas
-        let last = Math.round(length * this.end) + 1;
+        const last = Math.round(length * this.end) + 1;
 
-        let canvasStart = first;
-        let canvasEnd = last;
-        let scale = this.progress.width / (canvasEnd - canvasStart - 1);
+        const canvasStart = first;
+        const canvasEnd = last;
+        const scale = this.progress.width / (canvasEnd - canvasStart - 1);
 
         // optimization
-        let halfOffset = halfH + offsetY;
-        let absmaxHalf = absmax / halfH;
+        const halfOffset = halfH + offsetY;
+        const absmaxHalf = absmax / halfH;
 
         ctx.beginPath();
         ctx.moveTo((canvasStart - first) * scale, halfOffset);
@@ -261,8 +261,8 @@ export default class CanvasEntry {
 
         // draw the bottom edge going backwards, to make a single
         // closed hull to fill
-        let j;
-        for (j = canvasEnd - 1; j >= canvasStart; j--) {
+        let j = canvasEnd - 1;
+        for (j; j >= canvasStart; j--) {
             peak = peaks[2 * j + 1] || 0;
             h = Math.round(peak / absmaxHalf);
             ctx.lineTo((j - first) * scale + this.halfPixel, halfOffset - h);
@@ -292,7 +292,8 @@ export default class CanvasEntry {
     /**
      * Return image data of the wave `canvas` element
      *
-     * When using a `type` of `'blob'`, this will return a `Promise`.
+     * When using a `type` of `'blob'`, this will return a `Promise` that
+     * resolves with a `Blob` instance.
      *
      * @param {string} format='image/png' An optional value of a format type.
      * @param {number} quality=0.92 An optional value between 0 and 1.
