@@ -5,6 +5,13 @@
 import style from './util/style';
 import getId from './util/get-id';
 
+/**
+ * The CanvasEntry class represents an element consisting of a wave canvas and a
+ * (optional) progress wave canvas.
+ *
+ * The MultiCanvas renderer uses one or more CanvasEntry instances to render
+ * a waveform, depending on the zoom level.
+ */
 export default class CanvasEntry {
     constructor() {
         /**
