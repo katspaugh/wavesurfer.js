@@ -16,11 +16,13 @@ export default class MultiCanvas extends Drawer {
      */
     constructor(container, params) {
         super(container, params);
+
         /**
          * @type {number}
          * @private
          */
         this.maxCanvasWidth = params.maxCanvasWidth;
+
         /**
          * @private
          * @type {number}
@@ -28,33 +30,49 @@ export default class MultiCanvas extends Drawer {
         this.maxCanvasElementWidth = Math.round(
             params.maxCanvasWidth / params.pixelRatio
         );
+
         /**
          * Whether or not the progress wave is rendered. If the `waveColor`
          * and `progressColor` are the same color it is not.
+         *
          * @type {boolean}
          */
         this.hasProgressCanvas = params.waveColor != params.progressColor;
+
         /**
          * @private
          * @type {number}
          */
         this.halfPixel = 0.5 / params.pixelRatio;
+
         /**
          * List of `CanvasEntry` instances.
+         *
          * @private
          * @type {Array}
          */
         this.canvases = [];
+
         /**
          * @private
          * @type {HTMLElement}
          */
         this.progressWave = null;
+
         /**
+         * Class used to generate entries.
+         *
          * @private
          * @type {function}
          */
         this.EntryClass = CanvasEntry;
+
+        /**
+         * Overlap added to prevent vertical white stripes.
+         *
+         * @type {number}
+         */
+        this.overlap = 2 * Math.ceil(params.pixelRatio / 2);
     }
 
     /**
@@ -106,12 +124,8 @@ export default class MultiCanvas extends Drawer {
      */
     updateSize() {
         const totalWidth = Math.round(this.width / this.params.pixelRatio);
-
-        // add some overlap to prevent vertical white stripes
-        const OVERLAP = 2 * Math.ceil(this.params.pixelRatio / 2);
-
         const requiredCanvases = Math.ceil(
-            totalWidth / (this.maxCanvasElementWidth + OVERLAP)
+            totalWidth / (this.maxCanvasElementWidth + this.overlap)
         );
 
         // add required canvases
@@ -124,7 +138,7 @@ export default class MultiCanvas extends Drawer {
             this.removeCanvas();
         }
 
-        let canvasWidth = this.maxCanvasWidth + OVERLAP;
+        let canvasWidth = this.maxCanvasWidth + this.overlap;
         let lastCanvas = this.canvases.length - 1;
         this.canvases.forEach((entry, i) => {
             if (i == lastCanvas) {
