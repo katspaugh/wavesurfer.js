@@ -123,6 +123,29 @@ Build documentation with esdoc (generated files are placed in the `doc` director
 npm run doc
 ```
 
+If you want to use [the VS Code - Debugger for Chrome](https://github.com/Microsoft/vscode-chrome-debug), you would need to config the [sourcemaps](https://github.com/Microsoft/vscode-chrome-debug#sourcemaps). Here is the launch.json with a properly configured ``sourceMapPathOverrides``:
+
+```
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Chrome against localhost",
+            "url": "http://localhost:8080",
+            "webRoot": "${workspaceFolder}",
+            "breakOnLoad": true,
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack://WaveSurfer.[name]/./*": "${webRoot}/*",
+                "webpack://WaveSurfer/./*": "${webRoot}/*",
+            }
+        }
+    ]
+}
+```
+
 ## Editing documentation
 The homepage and documentation files are maintained in the [`gh-pages` branch](https://github.com/katspaugh/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
 
