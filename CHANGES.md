@@ -22,6 +22,8 @@ wavesurfer.js changelog
 - Timeline plugin: fix `ready` listener when loading multiple
   audio files
 - `util.getId()` now accepts a `prefix` argument (#1619)
+- Fix: the `progressWave` should not be rendered when specifying the same
+  value for the `progressColor` and `waveColor` options (#1299)
 
 2.2.1 (18.03.2019)
 ------------------
