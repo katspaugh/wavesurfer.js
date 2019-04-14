@@ -1,5 +1,5 @@
 /**
- * @since 2.3.0
+ * @since 3.0.0
  */
 
 import style from './util/style';
@@ -53,11 +53,11 @@ export default class CanvasEntry {
          */
         this.end = 1;
         /**
-         * Unique identifier for this entry.
+         * Unique identifier for this entry
          *
          * @type {string}
          */
-        this.id = getId();
+        this.id = getId(this.constructor.name.toLowerCase() + '_');
     }
 
     /**
