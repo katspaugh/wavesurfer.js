@@ -21,7 +21,7 @@ wavesurfer.js changelog
   audio files (#1602)
 - Timeline plugin: fix `ready` listener when loading multiple
   audio files
-- `util.getId()` now accepts a `prefix` argument (#1250)
+- `util.getId()` now accepts a `prefix` argument (#1619)
 
 2.2.1 (18.03.2019)
 ------------------
