@@ -98,15 +98,14 @@ export default class CanvasEntry {
         // set wave canvas dimensions
         this.wave.width = width;
         this.wave.height = height;
-        style(this.wave, { width: elementWidth + 'px' });
+        let elementSize = { width: elementWidth + 'px' };
+        style(this.wave, elementSize);
 
         if (this.hasProgressCanvas) {
             // set progress canvas dimensions
             this.progress.width = width;
             this.progress.height = height;
-            style(this.progress, {
-                width: elementWidth + 'px'
-            });
+            style(this.progress, elementSize);
         }
     }
 
@@ -157,7 +156,10 @@ export default class CanvasEntry {
      */
     fillRects(x, y, width, height) {
         this.fillRectToContext(this.waveCtx);
-        this.fillRectToContext(this.progressCtx);
+
+        if (this.hasProgressCanvas) {
+            this.fillRectToContext(this.progressCtx);
+        }
     }
 
     /**
@@ -199,15 +201,18 @@ export default class CanvasEntry {
             start,
             end
         );
-        this.drawLineToContext(
-            this.progressCtx,
-            peaks,
-            absmax,
-            halfH,
-            offsetY,
-            start,
-            end
-        );
+
+        if (this.hasProgressCanvas) {
+            this.drawLineToContext(
+                this.progressCtx,
+                peaks,
+                absmax,
+                halfH,
+                offsetY,
+                start,
+                end
+            );
+        }
     }
 
     /**
@@ -238,7 +243,7 @@ export default class CanvasEntry {
 
         const canvasStart = first;
         const canvasEnd = last;
-        const scale = this.progress.width / (canvasEnd - canvasStart - 1);
+        const scale = this.wave.width / (canvasEnd - canvasStart - 1);
 
         // optimization
         const halfOffset = halfH + offsetY;

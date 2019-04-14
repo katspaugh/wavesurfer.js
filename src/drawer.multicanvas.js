@@ -68,7 +68,8 @@ export default class MultiCanvas extends Drawer {
         this.EntryClass = CanvasEntry;
 
         /**
-         * Overlap added to prevent vertical white stripes.
+         * Overlap added between entries to prevent vertical white stripes
+         * between `canvas` elements.
          *
          * @type {number}
          */
@@ -200,8 +201,9 @@ export default class MultiCanvas extends Drawer {
      * @private
      */
     removeCanvas() {
-        // wave
         let lastEntry = this.canvases[this.canvases.length - 1];
+
+        // wave
         lastEntry.wave.parentElement.removeChild(lastEntry.wave);
 
         // progress
@@ -209,7 +211,7 @@ export default class MultiCanvas extends Drawer {
             lastEntry.progress.parentElement.removeChild(lastEntry.progress);
         }
 
-        // entry
+        // cleanup
         if (lastEntry) {
             lastEntry.destroy();
             lastEntry = null;
@@ -337,7 +339,7 @@ export default class MultiCanvas extends Drawer {
                     this.drawLine(peaks, absmax, halfH, offsetY, start, end);
                 }
 
-                // Always draw a median line
+                // always draw a median line
                 this.fillRect(
                     0,
                     halfH + offsetY - this.halfPixel,

@@ -77,7 +77,8 @@ import PeakCache from './peakcache';
  * register during instantiation, they will be directly initialised unless they
  * are added with the `deferInit` property set to true.
  * @property {string} progressColor='#555' The fill color of the part of the
- * waveform behind the cursor.
+ * waveform behind the cursor. When `progressColor` and `waveColor` are the same
+ * the progress wave is not rendered at all.
  * @property {boolean} removeMediaElementOnDestroy=true Set to false to keep the
  * media element in the DOM when the player is destroyed. This is useful when
  * reusing an existing media element via the `loadMediaElement` method.
