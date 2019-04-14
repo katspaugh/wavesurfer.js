@@ -108,8 +108,15 @@ describe('util:', function() {
     });
 
     /** @test {getId} */
-    it('getId returns a random string', function() {
-        expect(WaveSurfer.util.getId()).toStartWith('wavesurfer_');
+    it('getId returns a random string with a default prefix', function() {
+        const prefix = 'wavesurfer_';
+        expect(WaveSurfer.util.getId()).toStartWith(prefix);
+    });
+
+    /** @test {getId} */
+    it('getId returns a random string with a custom prefix', function() {
+        const prefix = 'test-';
+        expect(WaveSurfer.util.getId(prefix)).toStartWith(prefix);
     });
 
     /** @test {min} */
