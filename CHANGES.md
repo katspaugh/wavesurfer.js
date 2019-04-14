@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-2.3.0 (unreleased)
+3.0.0 (unreleased)
 ------------------
 
 - Add `wavesurfer.getActivePlugins()`: return map of plugins
@@ -21,6 +21,7 @@ wavesurfer.js changelog
   audio files (#1602)
 - Timeline plugin: fix `ready` listener when loading multiple
   audio files
+- `util.getId()` now accepts a `prefix` argument (#1619)
 
 2.2.1 (18.03.2019)
 ------------------
