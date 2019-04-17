@@ -58,6 +58,32 @@ export default class CanvasEntry {
          * @type {string}
          */
         this.id = getId(this.constructor.name.toLowerCase() + '_');
+        /**
+         * Whether or not the render process completed for this entry.
+         *
+         * @type {boolean}
+         */
+        this.renderComplete = false;
+        /**
+         * Cached coordinates that can be used to redraw this entry at a later
+         * time.
+         *
+         * @type {object}
+         */
+        this.cachedCoordinates = null;
+        /**
+         * Whether or not this entry is currently intersecting in the
+         * view-port.
+         *
+         * @type {boolean}
+         */
+        this.intersecting = false;
+        /**
+         * Whether or not the intersection observer API is enabled.
+         *
+         * @type {boolean}
+         */
+        this.usesIntersectionObserver = false;
     }
 
     /**
@@ -180,18 +206,56 @@ export default class CanvasEntry {
     }
 
     /**
+     * Draw using cached coordinates.
+     */
+    redraw() {
+        // render once
+        if (!this.renderComplete && this.cachedCoordinates) {
+            this.drawLines(
+                this.cachedCoordinates.peaks,
+                this.cachedCoordinates.absmax,
+                this.cachedCoordinates.halfH,
+                this.cachedCoordinates.offsetY,
+                this.cachedCoordinates.start,
+                this.cachedCoordinates.end
+            );
+        }
+    }
+
+    /**
      * Render the actual wave and progress lines
      *
      * @param {number[]} peaks Array with peaks data
      * @param {number} absmax Maximum peak value (absolute)
      * @param {number} halfH Half the height of the waveform
      * @param {number} offsetY Offset to the top
-     * @param {number} start The x-offset of the beginning of the area that
-     * should be rendered
+     * @param {number} start The x-offset of the beginning of the area
+     * that should be rendered
      * @param {number} end The x-offset of the end of the area that
      * should be rendered
      */
     drawLines(peaks, absmax, halfH, offsetY, start, end) {
+        if (this.usesIntersectionObserver) {
+            // do not draw unconditionally, only draw when this entry is
+            // visible in the wrapper's viewport. save coordinates until
+            // that happens so it can be redrawn later.
+            if (this.cachedCoordinates === null) {
+                this.cachedCoordinates = {
+                    peaks: peaks,
+                    absmax: absmax,
+                    halfH: halfH,
+                    offsetY: offsetY,
+                    start: start,
+                    end: end
+                };
+            }
+            if (!this.intersecting) {
+                // not visible yet
+                return;
+            }
+        }
+
+        // wave
         this.drawLineToContext(
             this.waveCtx,
             peaks,
@@ -201,7 +265,7 @@ export default class CanvasEntry {
             start,
             end
         );
-
+        // progress
         if (this.hasProgressCanvas) {
             this.drawLineToContext(
                 this.progressCtx,
@@ -213,6 +277,8 @@ export default class CanvasEntry {
                 end
             );
         }
+
+        this.renderComplete = true;
     }
 
     /**
@@ -292,6 +358,10 @@ export default class CanvasEntry {
 
         this.progressCtx = null;
         this.progress = null;
+
+        this.renderComplete = false;
+        this.intersecting = false;
+        this.cachedCoordinates = null;
     }
 
     /**
