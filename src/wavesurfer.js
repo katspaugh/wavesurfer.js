@@ -1351,6 +1351,7 @@ export default class WaveSurfer extends util.Observer {
             this.backend.supportsWebAudio()
         ) {
             this.getArrayBuffer(url, arraybuffer => {
+                this.fireEvent('waveform-before-ready');
                 this.decodeArrayBuffer(arraybuffer, buffer => {
                     this.backend.buffer = buffer;
                     this.backend.setPeaks(null);
