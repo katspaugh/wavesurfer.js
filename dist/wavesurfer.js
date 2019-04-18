@@ -1,5 +1,5 @@
 /*!
- * @tai-fe/wavesurfer.js 2.2.1-patch.1 (2019-04-18)
+ * @tai-fe/wavesurfer.js 2.2.1-patch.2 (2019-04-18)
  * https://github.com/tai-fe/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -1816,11 +1816,6 @@ function (_WebAudio) {
       });
       media.addEventListener('pause', function () {
         _this3.fireEvent('pause');
-      });
-      media.addEventListener('seeking', function (event) {
-        if (event.timeStamp) {
-          _this3.fireEvent('audioprocess', event.timeStamp);
-        }
       });
       this.media = media;
       this.peaks = peaks;
@@ -4649,7 +4644,7 @@ function (_util$Observer) {
 }(util.Observer);
 
 exports.default = WaveSurfer;
-WaveSurfer.VERSION = "2.2.1-patch.1";
+WaveSurfer.VERSION = "2.2.1-patch.2";
 WaveSurfer.util = util;
 module.exports = exports.default;
 
