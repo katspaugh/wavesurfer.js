@@ -1,5 +1,4 @@
-sudo: false
-dist: trusty
+dist: xenial
 addons:
   chrome: stable
   firefox: latest

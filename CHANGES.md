@@ -1,6 +1,71 @@
 wavesurfer.js changelog
 =======================
 
+3.0.0 (unreleased)
+------------------
+
+- Add `wavesurfer.getActivePlugins()`: return map of plugins
+  that are currently initialised
+- Update progress when seeking with HTML media controls (#1535)
+- Refactor `MultiCanvas` and add `CanvasEntry` class (#1617)
+- Fix `wavesurfer.isReady`: make it a public boolean, the
+  broken `isReady` method is removed (#1597)
+- Add support for `Blob` output type in `wavesurfer.exportImage` (#1610)
+- Fix fallback to Audio Element in browsers that don't support Web Audio (#1614)
+- Cursor plugin:
+  - add `formatTimeCallback` option
+  - add `followCursorY` option (#1605)
+- Spectrogram plugin: fix `ready` listener when loading multiple
+  audio files (#1572)
+- Regions plugin: fix `ready` listener when loading multiple
+  audio files (#1602)
+- Timeline plugin: fix `ready` listener when loading multiple
+  audio files
+- `util.getId()` now accepts a `prefix` argument (#1619)
+- Fix: the `progressWave` should not be rendered when specifying the same
+  value for the `progressColor` and `waveColor` options (#1620)
+
+2.2.1 (18.03.2019)
+------------------
+
+- Add `backgroundColor` option (#1118)
+- Spectrogram plugin: fix click handler (#1585)
+- Cursor plugin: fix `displayTime` (#1589)
+
+2.2.0 (07.03.2019)
+------------------
+
+- Add `rtl` option (#1296)
+- Fix peaks rendering issue on zooming and scrolling multicanvas (#1570)
+- Add `duration` option to specify an explicit audio length (#1441)
+- Spectrogram plugin: fix event listener removal (#1571)
+- Regions plugin: display regions before file load using `duration`
+  option (#1441)
+- Build: switch to terser-webpack-plugin for minifying
+
+2.1.3 (21.01.2019)
+------------------
+
+- Fix removeOnAudioProcess for Safari (#1215, #1367, #1398)
+
+2.1.2 (06.01.2019)
+------------------
+
+- Fix computing peaks when buffer is not set (#1530)
+- Cursor plugin: fix displayed time (#1543)
+- Cursor plugin: document new params (#1516)
+- Add syntax highlighting in examples (#1522)
+
+2.1.1 (18.11.2018)
+------------------
+
+- Fix order of arguments for PluginClass.constructor (#1472)
+- Microphone plugin: Safari support (#1377)
+- Minimap plugin: fix styling issues and add support for zooming (#1464)
+- Timeline plugin: add duration parameter handling (#1491)
+- Cursor plugin: add showTime option (#1143)
+- Fix: progress bar did not reach 100% when audio file is small (#1502)
+
 2.1.0 (29.09.2018)
 ------------------
 

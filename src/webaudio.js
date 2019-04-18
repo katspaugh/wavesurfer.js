@@ -103,7 +103,9 @@ export default class WebAudio extends util.Observer {
         /** @private */
         this.params = params;
         /** @private */
-        this.ac = params.audioContext || this.getAudioContext();
+        this.ac =
+            params.audioContext ||
+            (this.supportsWebAudio() ? this.getAudioContext() : {});
         /**@private */
         this.lastPlay = this.ac.currentTime;
         /** @private */
@@ -143,7 +145,7 @@ export default class WebAudio extends util.Observer {
         /** @private */
         this.state = null;
         /** @private */
-        this.explicitDuration = null;
+        this.explicitDuration = params.duration;
     }
 
     /**
@@ -253,7 +255,7 @@ export default class WebAudio extends util.Observer {
 
     /** @private */
     removeOnAudioProcess() {
-        this.scriptNode.onaudioprocess = null;
+        this.scriptNode.onaudioprocess = () => {};
     }
 
     /** @private */
@@ -347,7 +349,9 @@ export default class WebAudio extends util.Observer {
      * @param {?number} duration
      */
     setPeaks(peaks, duration) {
-        this.explicitDuration = duration;
+        if (duration != null) {
+            this.explicitDuration = duration;
+        }
         this.peaks = peaks;
     }
 
@@ -390,11 +394,20 @@ export default class WebAudio extends util.Observer {
         if (this.peaks) {
             return this.peaks;
         }
+        if (!this.buffer) {
+            return [];
+        }
 
         first = first || 0;
         last = last || length - 1;
 
         this.setLength(length);
+
+        if (!this.buffer) {
+            return this.params.splitChannels
+                ? this.splitPeaks
+                : this.mergedPeaks;
+        }
 
         /**
          * The following snippet fixes a buffering data issue on the Safari
@@ -551,10 +564,10 @@ export default class WebAudio extends util.Observer {
      * @return {number}
      */
     getDuration() {
+        if (this.explicitDuration) {
+            return this.explicitDuration;
+        }
         if (!this.buffer) {
-            if (this.explicitDuration) {
-                return this.explicitDuration;
-            }
             return 0;
         }
         return this.buffer.duration;

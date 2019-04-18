@@ -10,6 +10,13 @@
  * @property {number} zIndex=3 The z-index of the cursor element
  * @property {object} customStyle An object with custom styles which are applied
  * to the cursor element
+ * @property {boolean} showTime=false Show the time on the cursor.
+ * @property {object} customShowTimeStyle An object with custom styles which are
+ * applied to the cursor time element.
+ * @property {string} followCursorY=false Use `true` to make the time on
+ * the cursor follow the x and the y-position of the mouse. Use `false` to make the
+ * it only follow the x-position of the mouse.
+ * @property {function} formatTimeCallback Formats the timestamp on the cursor.
  */
 
 /**
@@ -73,13 +80,25 @@ export default class CursorPlugin {
         opacity: '0.25',
         style: 'solid',
         zIndex: 4,
-        customStyle: {}
+        customStyle: {},
+        customShowTimeStyle: {},
+        showTime: false,
+        followCursorY: false,
+        formatTimeCallback: null
     };
 
     /** @private */
     _onMousemove = e => {
         const bbox = this.wavesurfer.container.getBoundingClientRect();
-        this.updateCursorPosition(e.clientX - bbox.left);
+        let y = 0;
+        let x = e.clientX - bbox.left;
+
+        if (this.params.showTime && this.params.followCursorY) {
+            // follow y-position of the mouse
+            y = e.clientY - (bbox.top + bbox.height / 2);
+        }
+
+        this.updateCursorPosition(x, y);
     };
     /** @private */
     _onMouseenter = () => this.showCursor();
@@ -104,6 +123,18 @@ export default class CursorPlugin {
          * @type {?HTMLElement}
          */
         this.cursor = null;
+        /**
+         * displays the time next to the cursor
+         *
+         * @type {Boolean}
+         */
+        this.showTime = null;
+        /**
+         * The html container that will display the time
+         *
+         * @type {?HTMLElement}
+         */
+        this.displayTime = null;
         /** @private */
         this.params = ws.util.extend({}, this.defaultParams, params);
     }
@@ -124,7 +155,7 @@ export default class CursorPlugin {
                         top: 0,
                         bottom: 0,
                         width: '0',
-                        display: 'block',
+                        display: 'flex',
                         borderRightStyle: this.params.style,
                         borderRightWidth: this.params.width,
                         borderRightColor: this.params.color,
@@ -135,6 +166,41 @@ export default class CursorPlugin {
                 )
             )
         );
+        if (this.params.showTime) {
+            this.showTime = this.wrapper.appendChild(
+                this.style(
+                    document.createElement('showTitle'),
+                    this.wavesurfer.util.extend(
+                        {
+                            position: 'absolute',
+                            zIndex: this.params.zIndex,
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            width: 'auto',
+                            display: 'flex',
+                            opacity: this.params.opacity,
+                            pointerEvents: 'none',
+                            height: '100%'
+                        },
+                        this.params.customStyle
+                    )
+                )
+            );
+            this.displayTime = this.showTime.appendChild(
+                this.style(
+                    document.createElement('div'),
+                    this.wavesurfer.util.extend(
+                        {
+                            display: 'inline',
+                            pointerEvents: 'none',
+                            margin: 'auto'
+                        },
+                        this.params.customShowTimeStyle
+                    )
+                )
+            );
+        }
 
         this.wrapper.addEventListener('mousemove', this._onMousemove);
         if (this.params.hideOnBlur) {
@@ -147,6 +213,9 @@ export default class CursorPlugin {
      * Destroy the plugin (used by the Plugin API)
      */
     destroy() {
+        if (this.params.showTime) {
+            this.cursor.parentNode.removeChild(this.showTime);
+        }
         this.cursor.parentNode.removeChild(this.cursor);
         this.wrapper.removeEventListener('mousemove', this._onMousemove);
         if (this.params.hideOnBlur) {
@@ -158,12 +227,32 @@ export default class CursorPlugin {
     /**
      * Update the cursor position
      *
-     * @param {number} pos The x offset of the cursor in pixels
+     * @param {number} xpos The x offset of the cursor in pixels
+     * @param {number} ypos The y offset of the cursor in pixels
      */
-    updateCursorPosition(pos) {
+    updateCursorPosition(xpos, ypos) {
         this.style(this.cursor, {
-            left: `${pos}px`
+            left: `${xpos}px`
         });
+        if (this.params.showTime) {
+            const duration = this.wavesurfer.getDuration();
+            const elementWidth =
+                this.wavesurfer.drawer.width /
+                this.wavesurfer.params.pixelRatio;
+            const scrollWidth = this.wavesurfer.drawer.getScrollX();
+
+            const scrollTime =
+                (duration / this.wavesurfer.drawer.width) * scrollWidth;
+
+            const timeValue =
+                Math.max(0, (xpos / elementWidth) * duration) + scrollTime;
+            const formatValue = this.formatTime(timeValue);
+            this.style(this.showTime, {
+                left: `${xpos}px`,
+                top: `${ypos}px`
+            });
+            this.displayTime.innerHTML = `${formatValue}`;
+        }
     }
 
     /**
@@ -171,8 +260,13 @@ export default class CursorPlugin {
      */
     showCursor() {
         this.style(this.cursor, {
-            display: 'block'
+            display: 'flex'
         });
+        if (this.params.showTime) {
+            this.style(this.showTime, {
+                display: 'flex'
+            });
+        }
     }
 
     /**
@@ -182,5 +276,30 @@ export default class CursorPlugin {
         this.style(this.cursor, {
             display: 'none'
         });
+        if (this.params.showTime) {
+            this.style(this.showTime, {
+                display: 'none'
+            });
+        }
+    }
+
+    /**
+     * Format the timestamp for `cursorTime`.
+     *
+     * @param {number} cursorTime Time in seconds
+     */
+    formatTime(cursorTime) {
+        cursorTime = isNaN(cursorTime) ? 0 : cursorTime;
+
+        if (this.params.formatTimeCallback) {
+            return this.params.formatTimeCallback(cursorTime);
+        }
+        return [cursorTime].map(time =>
+            [
+                Math.floor((time % 3600) / 60), // minutes
+                ('00' + Math.floor(time % 60)).slice(-2), // seconds
+                ('000' + Math.floor((time % 1) * 1000)).slice(-3) // miliseconds
+            ].join(':')
+        );
     }
 }

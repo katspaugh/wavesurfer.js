@@ -10,11 +10,14 @@ dist
 /.grunt
 /coverage
 /_SpecRunner.html
+/doc
 
 .DS_Store
 .idea
 .project
 .chrome
+.build_cache
+.pydevproject
 
 package-lock.json
 .package.json.swp

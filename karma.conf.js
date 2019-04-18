@@ -14,13 +14,14 @@ var chromeFlags = [
     '--no-first-run',
     '--noerrdialogs',
     '--no-default-browser-check',
-    '--autoplay-policy=no-user-gesture-required',
     '--user-data-dir=.chrome',
     '--disable-translate',
     '--disable-extensions',
     '--disable-infobars',
     '--ignore-certificate-errors',
-    '--allow-insecure-localhost'
+    '--allow-insecure-localhost',
+    // see https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
+    '--disable-features=PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies'
 ];
 
 module.exports = function(config) {

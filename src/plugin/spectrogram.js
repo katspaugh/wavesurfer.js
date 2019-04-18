@@ -15,16 +15,17 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
     this.peakBand = 0;
     this.peak = 0;
 
+    var i;
     switch (windowFunc) {
         case 'bartlett':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     (2 / (bufferSize - 1)) *
                     ((bufferSize - 1) / 2 - Math.abs(i - (bufferSize - 1) / 2));
             }
             break;
         case 'bartlettHann':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     0.62 -
                     0.48 * Math.abs(i / (bufferSize - 1) - 0.5) -
@@ -33,7 +34,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
             break;
         case 'blackman':
             alpha = alpha || 0.16;
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     (1 - alpha) / 2 -
                     0.5 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1)) +
@@ -42,7 +43,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
             }
             break;
         case 'cosine':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] = Math.cos(
                     (Math.PI * i) / (bufferSize - 1) - Math.PI / 2
                 );
@@ -50,7 +51,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
             break;
         case 'gauss':
             alpha = alpha || 0.25;
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] = Math.pow(
                     Math.E,
                     -0.5 *
@@ -63,7 +64,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
             }
             break;
         case 'hamming':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     (0.54 - 0.46) *
                     Math.cos((Math.PI * 2 * i) / (bufferSize - 1));
@@ -71,25 +72,25 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
             break;
         case 'hann':
         case undefined:
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     0.5 * (1 - Math.cos((Math.PI * 2 * i) / (bufferSize - 1)));
             }
             break;
         case 'lanczoz':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     Math.sin(Math.PI * ((2 * i) / (bufferSize - 1) - 1)) /
                     (Math.PI * ((2 * i) / (bufferSize - 1) - 1));
             }
             break;
         case 'rectangular':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] = 1;
             }
             break;
         case 'triangular':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     (2 / bufferSize) *
                     (bufferSize / 2 - Math.abs(i - (bufferSize - 1) / 2));
@@ -101,7 +102,6 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
 
     var limit = 1;
     var bit = bufferSize >> 1;
-
     var i;
 
     while (limit < bufferSize) {
@@ -220,8 +220,9 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
  * @typedef {Object} SpectrogramPluginParams
  * @property {string|HTMLElement} container Selector of element or element in
  * which to render
- * @property {number} fftSamples=512 number of samples to fetch to FFT. Must be
+ * @property {number} fftSamples=512 Number of samples to fetch to FFT. Must be
  * a power of 2.
+ * @property {boolean} labels Set to true to display frequency labels.
  * @property {number} noverlap Size of the overlapping window. Must be <
  * fftSamples. Auto deduced from canvas size by default.
  * @property {string} windowFunc='hann' The window function to be used. One of
@@ -268,8 +269,8 @@ export default class SpectrogramPlugin {
      * This function must be used to create a plugin definition which can be
      * used by wavesurfer to correctly instantiate the plugin.
      *
-     * @param  {SpectrogramPluginParams} params parameters use to initialise the plugin
-     * @return {PluginDefinition} an object representing the plugin
+     * @param  {SpectrogramPluginParams} params Parameters used to initialise the plugin
+     * @return {PluginDefinition} An object representing the plugin.
      */
     static create(params) {
         return {
@@ -291,6 +292,12 @@ export default class SpectrogramPlugin {
         this.frequenciesDataUrl = params.frequenciesDataUrl;
         this._onScroll = e => {
             this.updateScroll(e);
+        };
+        this._onRender = () => {
+            this.render();
+        };
+        this._onWrapperClick = e => {
+            this._wrapperClickHandler(e);
         };
         this._onReady = () => {
             const drawer = (this.drawer = ws.drawer);
@@ -318,27 +325,29 @@ export default class SpectrogramPlugin {
             this.render();
 
             drawer.wrapper.addEventListener('scroll', this._onScroll);
-            ws.on('redraw', () => this.render());
+            ws.on('redraw', this._onRender);
         };
     }
 
     init() {
-        // Check if ws is ready
+        // Check if wavesurfer is ready
         if (this.wavesurfer.isReady) {
             this._onReady();
+        } else {
+            this.wavesurfer.once('ready', this._onReady);
         }
-
-        this.wavesurfer.on('ready', this._onReady);
     }
 
     destroy() {
         this.unAll();
         this.wavesurfer.un('ready', this._onReady);
+        this.wavesurfer.un('redraw', this._onRender);
         this.drawer.wrapper.removeEventListener('scroll', this._onScroll);
         this.wavesurfer = null;
         this.util = null;
         this.params = null;
         if (this.wrapper) {
+            this.wrapper.removeEventListener('click', this._onWrapperClick);
             this.wrapper.parentNode.removeChild(this.wrapper);
             this.wrapper = null;
         }
@@ -363,7 +372,6 @@ export default class SpectrogramPlugin {
                 width: `${55 / this.pixelRatio}px`
             });
             this.wrapper.appendChild(labelsEl);
-            // can be customized in next version
             this.loadLabels(
                 'rgba(68,68,68,0.5)',
                 '12px',
@@ -393,11 +401,14 @@ export default class SpectrogramPlugin {
         }
         this.container.appendChild(this.wrapper);
 
-        this.wrapper.addEventListener('click', e => {
-            e.preventDefault();
-            const relX = 'offsetX' in e ? e.offsetX : e.layerX;
-            this.fireEvent('click', relX / this.scrollWidth || 0);
-        });
+        this.wrapper.addEventListener('click', this._onWrapperClick);
+    }
+
+    _wrapperClickHandler(event) {
+        event.preventDefault();
+
+        const relX = 'offsetX' in event ? event.offsetX : event.layerX;
+        this.fireEvent('click', relX / this.scrollWidth || 0);
     }
 
     createCanvas() {
