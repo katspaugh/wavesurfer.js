@@ -155,12 +155,6 @@ export default class MediaElement extends WebAudio {
             this.fireEvent('pause');
         });
 
-        media.addEventListener('seeking', event => {
-            if (event.timeStamp) {
-                this.fireEvent('audioprocess', event.timeStamp);
-            }
-        });
-
         this.media = media;
         this.peaks = peaks;
         this.onPlayEnd = null;
