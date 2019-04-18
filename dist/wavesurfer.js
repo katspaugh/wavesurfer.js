@@ -1,6 +1,6 @@
 /*!
- * wavesurfer.js 2.2.1 (2019-04-18)
- * https://github.com/katspaugh/wavesurfer.js
+ * @tai-fe/wavesurfer.js 2.2.1-patch.1 (2019-04-18)
+ * https://github.com/tai-fe/wavesurfer.js
  * @license BSD-3-Clause
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -4649,7 +4649,7 @@ function (_util$Observer) {
 }(util.Observer);
 
 exports.default = WaveSurfer;
-WaveSurfer.VERSION = "2.2.1";
+WaveSurfer.VERSION = "2.2.1-patch.1";
 WaveSurfer.util = util;
 module.exports = exports.default;
 
