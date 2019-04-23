@@ -26,6 +26,8 @@
  * labels in primary color
  * @property {function} secondaryLabelInterval (pxPerSec) -> cadence between
  * labels in secondary color
+ * @property {?number} offset Offset for the timeline start in seconds. May also be
+ * negative.
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('timeline')`
  */
@@ -151,7 +153,8 @@ export default class TimelinePlugin {
                 formatTimeCallback: this.defaultFormatTimeCallback,
                 timeInterval: this.defaultTimeInterval,
                 primaryLabelInterval: this.defaultPrimaryLabelInterval,
-                secondaryLabelInterval: this.defaultSecondaryLabelInterval
+                secondaryLabelInterval: this.defaultSecondaryLabelInterval,
+                offset: 0
             },
             params
         );
