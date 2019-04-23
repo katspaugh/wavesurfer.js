@@ -10,7 +10,7 @@
  */
 
 /**
- * Visualise MediaSession information for a wavesurfer instance.
+ * Visualize MediaSession information for a wavesurfer instance.
  *
  * @implements {PluginClass}
  * @extends {Observer}

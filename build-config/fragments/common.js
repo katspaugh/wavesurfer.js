@@ -2,18 +2,19 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const datefns = require('date-fns');
 
-const time = new Date();
-const pckg = require(path.join(__dirname, '..', '..', 'package.json'));
-// prettier-ignore
-const bannerPlugin = new webpack.BannerPlugin(
-`${pckg.name} ${pckg.version} (${time})
-${pckg.homepage}
-@license ${pckg.license}`
-);
+const rootDir = path.resolve(__dirname, '..', '..');
+const pckg = require(path.join(rootDir, 'package.json'));
+
+// inject JS version number
+const jsVersionPlugin = new webpack.DefinePlugin({
+    __VERSION__: JSON.stringify(pckg.version)
+});
 
 module.exports = {
-    context: path.resolve(__dirname, '../', '../'),
+    context: rootDir,
+    mode: 'development',
     output: {
         libraryTarget: 'umd',
         umdNamedDefine: true
@@ -25,16 +26,6 @@ module.exports = {
         rules: [
             {
                 test: /\.js$/,
-                enforce: 'pre',
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'eslint-loader'
-                    }
-                ]
-            },
-            {
-                test: /\.js$/,
                 exclude: /node_modules/,
                 use: [
                     {
@@ -44,5 +35,5 @@ module.exports = {
             }
         ]
     },
-    plugins: [bannerPlugin]
+    plugins: [jsVersionPlugin]
 };

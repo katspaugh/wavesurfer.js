@@ -1,11 +1,96 @@
 wavesurfer.js changelog
 =======================
 
-2.0.5 (unreleased)
+3.0.0 (unreleased)
 ------------------
 
-- Add version information to minified files (#1330)
+- Add `wavesurfer.getActivePlugins()`: return map of plugins
+  that are currently initialised
+- Update progress when seeking with HTML media controls (#1535)
+- Refactor `MultiCanvas` and add `CanvasEntry` class (#1617)
+- Fix `wavesurfer.isReady`: make it a public boolean, the
+  broken `isReady` method is removed (#1597)
+- Add support for `Blob` output type in `wavesurfer.exportImage` (#1610)
+- Fix fallback to Audio Element in browsers that don't support Web Audio (#1614)
+- Cursor plugin:
+  - add `formatTimeCallback` option
+  - add `followCursorY` option (#1605)
+- Spectrogram plugin: fix `ready` listener when loading multiple
+  audio files (#1572)
+- Regions plugin: fix `ready` listener when loading multiple
+  audio files (#1602)
+- Timeline plugin: fix `ready` listener when loading multiple
+  audio files
+- `util.getId()` now accepts a `prefix` argument (#1619)
+- Fix: the `progressWave` should not be rendered when specifying the same
+  value for the `progressColor` and `waveColor` options (#1620)
 
+2.2.1 (18.03.2019)
+------------------
+
+- Add `backgroundColor` option (#1118)
+- Spectrogram plugin: fix click handler (#1585)
+- Cursor plugin: fix `displayTime` (#1589)
+
+2.2.0 (07.03.2019)
+------------------
+
+- Add `rtl` option (#1296)
+- Fix peaks rendering issue on zooming and scrolling multicanvas (#1570)
+- Add `duration` option to specify an explicit audio length (#1441)
+- Spectrogram plugin: fix event listener removal (#1571)
+- Regions plugin: display regions before file load using `duration`
+  option (#1441)
+- Build: switch to terser-webpack-plugin for minifying
+
+2.1.3 (21.01.2019)
+------------------
+
+- Fix removeOnAudioProcess for Safari (#1215, #1367, #1398)
+
+2.1.2 (06.01.2019)
+------------------
+
+- Fix computing peaks when buffer is not set (#1530)
+- Cursor plugin: fix displayed time (#1543)
+- Cursor plugin: document new params (#1516)
+- Add syntax highlighting in examples (#1522)
+
+2.1.1 (18.11.2018)
+------------------
+
+- Fix order of arguments for PluginClass.constructor (#1472)
+- Microphone plugin: Safari support (#1377)
+- Minimap plugin: fix styling issues and add support for zooming (#1464)
+- Timeline plugin: add duration parameter handling (#1491)
+- Cursor plugin: add showTime option (#1143)
+- Fix: progress bar did not reach 100% when audio file is small (#1502)
+
+2.1.0 (29.09.2018)
+------------------
+
+- Add wavesurfer.js logo, created by @entonbiba (#1409)
+- Library version number is now available as `WaveSurfer.VERSION` (#1430)
+- Fix `setSinkId` that used deprecated API (#1428)
+- Set `isReady` attribute to false when emptying wavesufer (#1396, #1403)
+- Microphone plugin: make it work in MS Edge browser (#627)
+- Timeline plugin: display more tick marks as user zooms in closely (#1455)
+- Cursor plugin: fix `destroy` (#1435)
+
+2.0.6 (14.06.2018)
+------------------
+
+- Build library using webpack 4 (#1376)
+- Add `audioScriptProcessor` option to use custom script processor node (#1389)
+- Added `mute` and `volume` events (#1345)
+
+2.0.5 (26.02.2018)
+------------------
+
+- Fix `util.ajax` on iterating `requestHeaders` (#1329)
+- Add version information to distributed files (#1330)
+- Regions plugin: prevent click when creating / updating region (#1295)
+- Add `wavesurfer.isReady` method (#1333)
 
 2.0.4 (14.02.2018)
 ------------------

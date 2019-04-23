@@ -1,11 +1,122 @@
 /* eslint-env jasmine */
+
 import WaveSurfer from '../src/wavesurfer.js';
+
+import TestHelpers from './test-helpers.js';
+
+/** @test {util.ajax} */
+describe('util.ajax:', function() {
+    var defaultUrl = TestHelpers.EXAMPLE_FILE_PATH;
+
+    it('can load an arraybuffer', function(done) {
+        var options = {
+            url: defaultUrl,
+            responseType: 'arraybuffer'
+        };
+        var instance = WaveSurfer.util.ajax(options);
+        instance.on('success', (data, e) => {
+            // url
+            expect(e.target.responseURL).toContain(options.url);
+
+            // responseType
+            expect(instance.xhr.responseType).toBe(options.responseType);
+
+            // returned data is an arraybuffer
+            expect(data).toEqual(jasmine.any(ArrayBuffer));
+
+            done();
+        });
+    });
+
+    it('fires the error event when the file is not found', function(done) {
+        var options = {
+            url: '/foo/bar'
+        };
+        var instance = WaveSurfer.util.ajax(options);
+        instance.on('error', e => {
+            // url
+            expect(e.target.responseURL).toContain(options.url);
+
+            // error message
+            expect(e.target.statusText).toBe('Not Found');
+            expect(e.target.status).toBe(404);
+
+            done();
+        });
+    });
+
+    it('fires the progress event during loading', function(done) {
+        var options = {
+            url: defaultUrl,
+            responseType: 'arraybuffer'
+        };
+        var instance = WaveSurfer.util.ajax(options);
+        instance.on('progress', e => {
+            // url
+            expect(e.target.responseURL).toContain(options.url);
+
+            // progress message
+            expect(e.target.statusText).toBe('OK');
+            expect(e.target.status).toBe(200);
+
+            done();
+        });
+    });
+
+    it('accepts custom request headers and credentials', function(done) {
+        var options = {
+            url: defaultUrl,
+            responseType: 'arraybuffer',
+            xhr: {
+                withCredentials: true,
+                requestHeaders: [
+                    {
+                        key: 'Authorization',
+                        value: 'my-token'
+                    }
+                ]
+            }
+        };
+        var instance = WaveSurfer.util.ajax(options);
+        instance.on('success', (data, e) => {
+            // with credentials
+            expect(e.target.withCredentials).toBeTrue();
+
+            // XXX: find a way to retrieve request headers
+            done();
+        });
+    });
+});
 
 /** @test {util} */
 describe('util:', function() {
+    /** @test {extend} */
+    it('extend extends an object shallowly with others', function() {
+        var obj = {
+            style: {}
+        };
+        var sources = {
+            prop1: 'red',
+            prop2: 123
+        };
+        var result = {
+            style: {},
+            prop1: 'red',
+            prop2: 123
+        };
+        expect(WaveSurfer.util.extend(obj, sources)).toEqual(result);
+    });
+
     /** @test {getId} */
-    it('getId returns a random string', function() {
-        expect(WaveSurfer.util.getId()).toStartWith('wavesurfer_');
+    it('getId returns a random string with a default prefix', function() {
+        const prefix = 'wavesurfer_';
+        expect(WaveSurfer.util.getId()).toStartWith(prefix);
+    });
+
+    /** @test {getId} */
+    it('getId returns a random string with a custom prefix', function() {
+        const prefix = 'test-';
+        expect(WaveSurfer.util.getId(prefix)).toStartWith(prefix);
     });
 
     /** @test {min} */
@@ -26,5 +137,20 @@ describe('util:', function() {
     /** @test {max} */
     it('max returns -Infinity for an empty array', function() {
         expect(WaveSurfer.util.max([])).toEqual(-Infinity);
+    });
+
+    /** @test {style} */
+    it('style applies a map of styles to an element', function() {
+        var el = {
+            style: {}
+        };
+        var styles = {
+            backgroundcolor: 'red',
+            'background-color': 'blue'
+        };
+        var result = {
+            style: styles
+        };
+        expect(WaveSurfer.util.style(el, styles)).toEqual(result);
     });
 });

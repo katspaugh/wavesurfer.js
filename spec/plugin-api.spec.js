@@ -1,6 +1,8 @@
 /* eslint-env jasmine */
 import WaveSurfer from '../src/wavesurfer.js';
 
+import TestHelpers from './test-helpers.js';
+
 /** @test {WaveSurfer} */
 describe('WaveSurfer/plugin API:', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -11,8 +13,10 @@ describe('WaveSurfer/plugin API:', () => {
 
     // clean up after each test
     afterEach(done => {
-        wavesurfer.destroy();
-        waveformDiv.parentNode.removeChild(waveformDiv);
+        if (wavesurfer !== undefined) {
+            wavesurfer.destroy();
+            waveformDiv.parentNode.removeChild(waveformDiv);
+        }
         done();
     });
 
@@ -54,7 +58,7 @@ describe('WaveSurfer/plugin API:', () => {
                 options
             )
         );
-        wavesurfer.load('/base/spec/support/demo.wav');
+        wavesurfer.load(TestHelpers.EXAMPLE_FILE_PATH);
     }
 
     // plugin methods
@@ -71,6 +75,16 @@ describe('WaveSurfer/plugin API:', () => {
         expect(typeof Object.getPrototypeOf(wavesurfer.dummy).on).toEqual(
             'function'
         );
+
+        dummyPlugin = {};
+        expect(function() {
+            wavesurfer.addPlugin(dummyPlugin);
+        }).toThrow(new Error('Plugin does not have a name!'));
+
+        dummyPlugin.name = 'foo';
+        expect(function() {
+            wavesurfer.addPlugin(dummyPlugin);
+        }).toThrow(new Error('Plugin foo does not have an instance property!'));
     });
 
     /** @test {WaveSurfer#initPlugin} */
@@ -83,6 +97,10 @@ describe('WaveSurfer/plugin API:', () => {
 
         expect(wavesurfer.dummy.init).toHaveBeenCalled();
         expect(wavesurfer.initialisedPluginList.dummy).toBeTrue();
+
+        expect(function() {
+            wavesurfer.initPlugin('foo');
+        }).toThrow(new Error('Plugin foo has not been added yet!'));
     });
 
     /** @test {WaveSurfer#destroyPlugin} */
@@ -96,6 +114,14 @@ describe('WaveSurfer/plugin API:', () => {
 
         expect(wavesurfer.dummy.destroy).toHaveBeenCalled();
         expect(wavesurfer.initialisedPluginList.dummy).toBeUndefined();
+
+        expect(function() {
+            wavesurfer.destroyPlugin('foo');
+        }).toThrow(
+            new Error(
+                'Plugin foo has not been added yet and cannot be destroyed!'
+            )
+        );
     });
 
     // auto-adding and initialising of plugins (registerPlugins)
@@ -123,5 +149,19 @@ describe('WaveSurfer/plugin API:', () => {
         );
         expect(wavesurfer.dummy.ws).toEqual(wavesurfer);
         expect(wavesurfer.dummy.isInitialised).toBeTrue();
+    });
+
+    /** @test {WaveSurfer#getActivePlugins} */
+    it('getActivePlugins returns map of plugin names that are currently initialised', () => {
+        dummyPlugin = mockPlugin('dummy');
+        __createWaveform({
+            plugins: [dummyPlugin]
+        });
+        expect(wavesurfer.getActivePlugins()).toEqual({
+            dummy: true
+        });
+        expect(wavesurfer.getActivePlugins()).toEqual(
+            wavesurfer.initialisedPluginList
+        );
     });
 });

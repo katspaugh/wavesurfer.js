@@ -2,7 +2,7 @@
  * (Single) Region plugin class
  *
  * Must be turned into an observer before instantiating. This is done in
- * RegionsPlugin (main plugin class)
+ * `RegionsPlugin` (main plugin class).
  *
  * @extends {Observer}
  */
@@ -19,7 +19,7 @@ class Region {
             params.end == null
                 ? // small marker-like region
                   this.start +
-                  4 / this.wrapper.scrollWidth * this.wavesurfer.getDuration()
+                  (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration()
                 : Number(params.end);
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
@@ -177,31 +177,34 @@ class Region {
 
     /* Update element's position, width, color. */
     updateRender() {
+        // duration varies during loading process, so don't overwrite important data
         const dur = this.wavesurfer.getDuration();
         const width = this.getWidth();
 
-        if (this.start < 0) {
-            this.start = 0;
-            this.end = this.end - this.start;
+        var startLimited = this.start;
+        var endLimited = this.end;
+        if (startLimited < 0) {
+            startLimited = 0;
+            endLimited = endLimited - startLimited;
         }
-        if (this.end > dur) {
-            this.end = dur;
-            this.start = dur - (this.end - this.start);
+        if (endLimited > dur) {
+            endLimited = dur;
+            startLimited = dur - (endLimited - startLimited);
         }
 
         if (this.minLength != null) {
-            this.end = Math.max(this.start + this.minLength, this.end);
+            endLimited = Math.max(startLimited + this.minLength, endLimited);
         }
 
         if (this.maxLength != null) {
-            this.end = Math.min(this.start + this.maxLength, this.end);
+            endLimited = Math.min(startLimited + this.maxLength, endLimited);
         }
 
         if (this.element != null) {
             // Calculate the left and width values of the region such that
             // no gaps appear between regions.
-            const left = Math.round(this.start / dur * width);
-            const regionWidth = Math.round(this.end / dur * width) - left;
+            const left = Math.round((startLimited / dur) * width);
+            const regionWidth = Math.round((endLimited / dur) * width) - left;
 
             this.style(this.element, {
                 left: left + 'px',
@@ -514,7 +517,7 @@ class Region {
 
 /**
  * @typedef {Object} RegionsPluginParams
- * @property {?boolean} dragSelection Enable creating regions by dragging wih
+ * @property {?boolean} dragSelection Enable creating regions by dragging with
  * the mouse
  * @property {?RegionParams[]} regions Regions that should be added upon
  * initialisation
@@ -531,8 +534,8 @@ class Region {
  * @property {number} start=0 The start position of the region (in seconds).
  * @property {number} end=0 The end position of the region (in seconds).
  * @property {?boolean} loop Whether to loop the region when played back.
- * @property {boolean} drag=true Allow/dissallow dragging the region.
- * @property {boolean} resize=true Allow/dissallow resizing the region.
+ * @property {boolean} drag=true Allow/disallow dragging the region.
+ * @property {boolean} resize=true Allow/disallow resizing the region.
  * @property {string} [color='rgba(0, 0, 0, 0.1)'] HTML color code.
  */
 
@@ -629,35 +632,51 @@ export default class RegionsPlugin {
         });
         this.wavesurfer.Region = Region;
 
-        // Id-based hash of regions.
-        this.list = {};
-        this._onReady = () => {
+        this._onBackendCreated = () => {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             if (this.params.regions) {
                 this.params.regions.forEach(region => {
                     this.add(region);
                 });
             }
+        };
+
+        // Id-based hash of regions
+        this.list = {};
+        this._onReady = () => {
             if (this.params.dragSelection) {
                 this.enableDragSelection(this.params);
             }
+            Object.keys(this.list).forEach(id => {
+                this.list[id].updateRender();
+            });
         };
     }
 
     init() {
         // Check if ws is ready
         if (this.wavesurfer.isReady) {
+            this._onBackendCreated();
             this._onReady();
+        } else {
+            this.wavesurfer.once('ready', this._onReady);
+            this.wavesurfer.once('backend-created', this._onBackendCreated);
         }
-        this.wavesurfer.on('ready', this._onReady);
     }
 
     destroy() {
         this.wavesurfer.un('ready', this._onReady);
+        this.wavesurfer.un('backend-created', this._onBackendCreated);
         this.disableDragSelection();
         this.clear();
     }
-    /* Add a region. */
+
+    /**
+     * Add a region
+     *
+     * @param {object} params
+     * @return {Region} The created region
+     */
     add(params) {
         const region = new this.wavesurfer.Region(params, this.wavesurfer);
 
@@ -670,7 +689,9 @@ export default class RegionsPlugin {
         return region;
     }
 
-    /* Remove all regions. */
+    /**
+     * Remove all regions
+     */
     clear() {
         Object.keys(this.list).forEach(id => {
             this.list[id].remove();
@@ -826,10 +847,12 @@ export default class RegionsPlugin {
         this.fireEvent('disable-drag-selection');
     }
 
-    /* Get current region
-     *  The smallest region that contains the current time.
-     *  If several such regions exist, we take the first.
-     *  Return null if none exist. */
+    /**
+     * Get current region
+     *
+     * The smallest region that contains the current time. If several such
+     * regions exist, take the first. Return `null` if none exist.
+     */
     getCurrentRegion() {
         const time = this.wavesurfer.getCurrentTime();
         let min = null;
