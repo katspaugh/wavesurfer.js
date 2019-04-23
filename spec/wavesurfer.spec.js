@@ -12,12 +12,14 @@ describe('WaveSurfer/playback:', function() {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
     beforeEach(function(done) {
+        manualDestroy = false;
+
         var wave = TestHelpers.createWaveform();
         wavesurfer = wave[0];
         element = wave[1];
         wavesurfer.load(TestHelpers.EXAMPLE_FILE_PATH);
 
-        wavesurfer.on('ready', done);
+        wavesurfer.once('ready', done);
     });
 
     afterEach(function() {
