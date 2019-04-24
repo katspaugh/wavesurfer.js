@@ -379,8 +379,7 @@ export default class TimelinePlugin {
             this.params.secondaryLabelInterval
         );
 
-        let curPixel =
-            pixelsPerSecond * (this.wavesurfer.timeline.params.offset || 0);
+        let curPixel = pixelsPerSecond * this.params.offset;
         let curSeconds = 0;
         let i;
         // build an array of position data with index, second and pixel data,
