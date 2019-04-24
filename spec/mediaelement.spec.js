@@ -206,4 +206,30 @@ describe('WaveSurfer/MediaElement:', function() {
         });
         loadElement();
     });
+
+    /** @test {WaveSurfer#getVolume}  */
+    it('should get volume', function(done) {
+        wavesurfer.once('ready', function() {
+            let volume = wavesurfer.getVolume();
+            expect(volume).toEqual(1);
+            done();
+        });
+        loadElement();
+    });
+
+    /** @test {WaveSurfer#setVolume}  */
+    it('should set volume', function(done) {
+        let targetVolume = 0.5;
+
+        wavesurfer.once('volume', function(result) {
+            expect(result).toEqual(targetVolume);
+
+            done();
+        });
+
+        wavesurfer.once('ready', function() {
+            wavesurfer.setVolume(targetVolume);
+        });
+        loadElement();
+    });
 });
