@@ -20,6 +20,7 @@ var chromeFlags = [
     '--disable-infobars',
     '--ignore-certificate-errors',
     '--allow-insecure-localhost',
+    '--autoplay-policy=no-user-gesture-required',
     // see https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
     '--disable-features=PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies'
 ];
@@ -73,7 +74,7 @@ module.exports = function(config) {
             'karma-coveralls',
             'karma-verbose-reporter'
         ],
-        browsers: ['Chrome_dev', 'FirefoxHeadless'],
+        browsers: ['Chrome_ci', 'FirefoxHeadless'],
         captureConsole: true,
         colors: true,
         reporters: ['verbose', 'progress', 'coverage'],
