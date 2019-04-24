@@ -74,7 +74,7 @@ module.exports = function(config) {
             'karma-coveralls',
             'karma-verbose-reporter'
         ],
-        browsers: ['Chrome_ci', 'FirefoxHeadless'],
+        browsers: ['Chrome_dev', 'FirefoxHeadless'],
         captureConsole: true,
         colors: true,
         reporters: ['verbose', 'progress', 'coverage'],

@@ -143,4 +143,68 @@ describe('WaveSurfer/MediaElement:', function() {
         });
         loadElement();
     });
+
+    /** @test {WaveSurfer#skipBackward}  */
+    it('should skip backward', function(done) {
+        wavesurfer.once('ready', function() {
+            // seek to 50%
+            wavesurfer.seekTo(0.5);
+
+            // skip 4 seconds backward
+            wavesurfer.skipBackward(4);
+            let time = wavesurfer.getCurrentTime();
+            expect(time).toBeWithinRange(6.88, 6.89);
+
+            // skip backward with params.skipLength (default: 2 seconds)
+            wavesurfer.skipBackward();
+            time = wavesurfer.getCurrentTime();
+            expect(time).toBeWithinRange(4.88, 4.89);
+
+            done();
+        });
+        loadElement();
+    });
+
+    /** @test {WaveSurfer#skipForward}  */
+    it('should skip forward', function(done) {
+        wavesurfer.once('ready', function() {
+            // skip 4 seconds forward
+            wavesurfer.skipForward(4);
+            let time = wavesurfer.getCurrentTime();
+            let expectedTime = 3.9999999999999996;
+            expect(time).toEqual(expectedTime);
+
+            // skip forward with params.skipLength (default: 2 seconds)
+            wavesurfer.skipForward();
+            time = wavesurfer.getCurrentTime();
+            expect(time).toEqual(expectedTime + 2);
+
+            done();
+        });
+        loadElement();
+    });
+
+    /** @test {WaveSurfer#getPlaybackRate}  */
+    it('should get playback rate', function(done) {
+        wavesurfer.once('ready', function() {
+            let rate = wavesurfer.getPlaybackRate();
+            expect(rate).toEqual(1);
+
+            done();
+        });
+        loadElement();
+    });
+
+    /** @test {WaveSurfer#setPlaybackRate}  */
+    it('should set playback rate', function(done) {
+        wavesurfer.once('ready', function() {
+            let rate = 0.5;
+            wavesurfer.setPlaybackRate(rate);
+
+            expect(wavesurfer.getPlaybackRate()).toEqual(rate);
+
+            done();
+        });
+        loadElement();
+    });
 });
