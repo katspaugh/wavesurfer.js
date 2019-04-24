@@ -94,7 +94,7 @@ export default class MultiCanvas extends Drawer {
     init() {
         if (this.supportsIntersectionObserver) {
             // observe canvas entry intersections
-            let intersectionOptions = {
+            const intersectionOptions = {
                 root: this.wrapper,
                 rootMargin: '0px',
                 threshold: 0.001
