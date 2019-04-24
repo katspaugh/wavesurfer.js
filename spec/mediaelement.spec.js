@@ -171,13 +171,12 @@ describe('WaveSurfer/MediaElement:', function() {
             // skip 4 seconds forward
             wavesurfer.skipForward(4);
             let time = wavesurfer.getCurrentTime();
-            let expectedTime = 3.9999999999999996;
-            expect(time).toEqual(expectedTime);
+            expect(time).toBeWithinRange(3.99, 4);
 
             // skip forward with params.skipLength (default: 2 seconds)
             wavesurfer.skipForward();
             time = wavesurfer.getCurrentTime();
-            expect(time).toEqual(expectedTime + 2);
+            expect(time).toBeWithinRange(5.99, 6);
 
             done();
         });
