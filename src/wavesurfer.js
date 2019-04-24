@@ -650,6 +650,9 @@ export default class WaveSurfer extends util.Observer {
             this.drawer.progress(this.backend.getPlayedPercents());
             this.fireEvent('audioprocess', time);
         });
+        this.backend.on('seek', () => {
+            this.drawer.progress(this.backend.getPlayedPercents());
+        });
     }
 
     /**

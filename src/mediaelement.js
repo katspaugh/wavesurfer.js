@@ -156,7 +156,7 @@ export default class MediaElement extends WebAudio {
         });
 
         media.addEventListener('seeked', event => {
-            this.fireEvent('audioprocess', this.getCurrentTime());
+            this.fireEvent('seek');
         });
 
         this.media = media;
