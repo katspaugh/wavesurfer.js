@@ -1,5 +1,5 @@
 /*!
- * @tai-fe/wavesurfer.js 2.2.1 (2019-04-25)
+ * @tai-fe/wavesurfer.js 2.2.1-patch.2 (2019-04-18)
  * https://github.com/tai-fe/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -112,8 +112,8 @@ return /******/ (function(modules) { // webpackBootstrap
  * Returns a function, that, as long as it continues to be invoked, will not
  * be triggered. The function will be called after it stops being called for
  * N milliseconds. If `immediate` is passed, trigger the function on the
- * leading edge, instead of the trailing. The function also has a property 'clear' 
- * that is a function which will clear the timer to prevent previously scheduled executions. 
+ * leading edge, instead of the trailing. The function also has a property 'clear'
+ * that is a function which will clear the timer to prevent previously scheduled executions.
  *
  * @source underscore.js
  * @see http://unscriptable.com/2009/03/20/debouncing-javascript-methods/
@@ -160,12 +160,12 @@ function debounce(func, wait, immediate){
       timeout = null;
     }
   };
-  
+
   debounced.flush = function() {
     if (timeout) {
       result = func.apply(context, args);
       context = args = null;
-      
+
       clearTimeout(timeout);
       timeout = null;
     }
@@ -4689,7 +4689,7 @@ function (_util$Observer) {
 }(util.Observer);
 
 exports.default = WaveSurfer;
-WaveSurfer.VERSION = "2.2.1";
+WaveSurfer.VERSION = "2.2.1-patch.2";
 WaveSurfer.util = util;
 module.exports = exports.default;
 
