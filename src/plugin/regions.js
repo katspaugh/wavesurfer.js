@@ -831,7 +831,6 @@ export default class RegionsPlugin {
             const endUpdate = this.wavesurfer.regions.util.getRegionSnapToGridValue(
                 end * duration
             );
-            console.log(startUpdate);
             region.update({
                 start: Math.min(endUpdate, startUpdate),
                 end: Math.max(endUpdate, startUpdate)
@@ -887,8 +886,8 @@ export default class RegionsPlugin {
     /**
      * Get the snapped to grid value.
      *
-     * @param {*} value the value to snap to the grid, if needed
-     * @param {*} params the regions plugin params
+     * @param {number} value the value to snap to the grid, if needed
+     * @param {Object} params the regions plugin params
      */
     getRegionSnapToGridValue(value, params) {
         if (params.snapToGridInterval) {
