@@ -1559,4 +1559,49 @@ export default class WaveSurfer extends util.Observer {
         this.isReady = false;
         this.arraybuffer = null;
     }
+
+    loadPeaks(peaks) {
+        this.backend.buffer = null;
+        this.backend.setPeaks(peaks);
+        this.drawBuffer();
+        this.fireEvent('waveform-ready');
+        this.isReady = true;
+    }
+
+    getPeaks(arraybuffer, callback) {
+        this.backend.decodeArrayBuffer(
+            arraybuffer,
+            buffer => {
+                if (!this.isDestroyed) {
+                    this.backend.buffer = buffer;
+                    this.backend.setPeaks(null);
+                    const nominalWidth = Math.round(
+                        this.getDuration() *
+                            this.params.minPxPerSec *
+                            this.params.pixelRatio
+                    );
+                    const parentWidth = this.drawer.getWidth();
+                    let width = nominalWidth; // always start at 0 after zooming for scrolling : issue redraw left part
+                    let start = 0;
+                    let end = Math.max(start + parentWidth, width); // Fill container
+
+                    if (
+                        this.params.fillParent &&
+                        (!this.params.scrollParent ||
+                            nominalWidth < parentWidth)
+                    ) {
+                        width = parentWidth;
+                        start = 0;
+                        end = width;
+                    }
+
+                    const peaks = this.backend.getPeaks(width, start, end);
+                    callback(peaks);
+                    this.arraybuffer = null;
+                    this.backend.buffer = null;
+                }
+            },
+            () => this.fireEvent('error', 'Error decoding audiobuffer')
+        );
+    }
 }

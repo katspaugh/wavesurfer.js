@@ -112,8 +112,8 @@ return /******/ (function(modules) { // webpackBootstrap
  * Returns a function, that, as long as it continues to be invoked, will not
  * be triggered. The function will be called after it stops being called for
  * N milliseconds. If `immediate` is passed, trigger the function on the
- * leading edge, instead of the trailing. The function also has a property 'clear' 
- * that is a function which will clear the timer to prevent previously scheduled executions. 
+ * leading edge, instead of the trailing. The function also has a property 'clear'
+ * that is a function which will clear the timer to prevent previously scheduled executions.
  *
  * @source underscore.js
  * @see http://unscriptable.com/2009/03/20/debouncing-javascript-methods/
@@ -160,12 +160,12 @@ function debounce(func, wait, immediate){
       timeout = null;
     }
   };
-  
+
   debounced.flush = function() {
     if (timeout) {
       result = func.apply(context, args);
       context = args = null;
-      
+
       clearTimeout(timeout);
       timeout = null;
     }
@@ -4637,6 +4637,51 @@ function (_util$Observer) {
       this.isDestroyed = true;
       this.isReady = false;
       this.arraybuffer = null;
+    }
+  }, {
+    key: "loadPeaks",
+    value: function loadPeaks(peaks) {
+      this.backend.buffer = null;
+      this.backend.setPeaks(peaks);
+      this.drawBuffer();
+      this.fireEvent('waveform-ready');
+      this.isReady = true;
+    }
+  }, {
+    key: "getPeaks",
+    value: function getPeaks(arraybuffer, callback) {
+      var _this15 = this;
+
+      this.backend.decodeArrayBuffer(arraybuffer, function (buffer) {
+        if (!_this15.isDestroyed) {
+          _this15.backend.buffer = buffer;
+
+          _this15.backend.setPeaks(null);
+
+          var nominalWidth = Math.round(_this15.getDuration() * _this15.params.minPxPerSec * _this15.params.pixelRatio);
+
+          var parentWidth = _this15.drawer.getWidth();
+
+          var width = nominalWidth; // always start at 0 after zooming for scrolling : issue redraw left part
+
+          var start = 0;
+          var end = Math.max(start + parentWidth, width); // Fill container
+
+          if (_this15.params.fillParent && (!_this15.params.scrollParent || nominalWidth < parentWidth)) {
+            width = parentWidth;
+            start = 0;
+            end = width;
+          }
+
+          var peaks = _this15.backend.getPeaks(width, start, end);
+
+          callback(peaks);
+          _this15.arraybuffer = null;
+          _this15.backend.buffer = null;
+        }
+      }, function () {
+        return _this15.fireEvent('error', 'Error decoding audiobuffer');
+      });
     }
   }]);
 
