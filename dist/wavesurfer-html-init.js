@@ -1,5 +1,5 @@
 /*!
- * @tai-fe/wavesurfer.js 2.2.1-patch.2 (2019-04-18)
+ * @tai-fe/wavesurfer.js 2.2.1-patch.3 (2019-04-26)
  * https://github.com/tai-fe/wavesurfer.js
  * @license BSD-3-Clause
  */
