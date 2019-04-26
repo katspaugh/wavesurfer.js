@@ -318,7 +318,7 @@ class Region {
                         Math.max(0, scrollLeft)
                     );
 
-                    // Update time
+                    // Get the currently selected time according to the mouse position
                     const time = this.wavesurfer.regions.util.getRegionSnapToGridValue(
                         this.wavesurfer.drawer.handleEvent(e) * duration
                     );
@@ -343,6 +343,8 @@ class Region {
                         : null;
 
                     e.stopPropagation();
+
+                    // Store the selected startTime we begun dragging or resizing
                     startTime = this.wavesurfer.regions.util.getRegionSnapToGridValue(
                         this.wavesurfer.drawer.handleEvent(e, true) * duration
                     );
@@ -884,7 +886,11 @@ export default class RegionsPlugin {
     }
 
     /**
-     * Get the snapped to grid value.
+     * Match the value to the grid, if required
+     *
+     * If the regions plugin params have a snapToGridInterval set, return the
+     * value matching the nearest grid interval. If no snapToGridInterval is set,
+     * the passed value will be returned without modification.
      *
      * @param {number} value the value to snap to the grid, if needed
      * @param {Object} params the regions plugin params
