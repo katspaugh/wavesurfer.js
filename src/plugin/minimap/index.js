@@ -166,6 +166,7 @@ export default class MinimapPlugin {
             this.render();
         };
         this.wavesurfer.on('zoom', this._onZoom);
+        this.wavesurfer.on('redraw', this._onZoom);
     }
 
     init() {
@@ -187,6 +188,7 @@ export default class MinimapPlugin {
         this.wavesurfer.un('scroll', this._onScroll);
         this.wavesurfer.un('audioprocess', this._onAudioprocess);
         this.wavesurfer.un('zoom', this._onZoom);
+        this.wavesurfer.un('redraw', this._onZoom);
         this.drawer.destroy();
         this.overviewRegion = null;
         this.unAll();
