@@ -159,6 +159,14 @@ export default class MediaElement extends WebAudio {
             this.fireEvent('seek');
         });
 
+        media.addEventListener('volumechange', event => {
+            if (media.muted) {
+                this.volume = 0;
+            } else {
+                this.volume = media.volume;
+            }
+        });
+
         this.media = media;
         this.peaks = peaks;
         this.onPlayEnd = null;
