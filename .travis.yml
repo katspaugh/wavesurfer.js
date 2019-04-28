@@ -5,6 +5,8 @@ addons:
 language: node_js
 node_js:
   - "node"
+services:
+  - xvfb
 cache:
   directories:
   - node_modules
@@ -13,7 +15,7 @@ install:
   - npm install
   - npm update
 script:
-  - npm run lint
-  - npm run build
+  - npm run lint || travis_terminate 1
+  - npm run build || travis_terminate 1
   - npm run test
   - npm run doc
