@@ -17,8 +17,10 @@ wavesurfer.js changelog
   - add `followCursorY` option (#1605)
 - Spectrogram plugin: fix `ready` listener when loading multiple
   audio files (#1572)
-- Regions plugin: fix `ready` listener when loading multiple
-  audio files (#1602)
+- Regions plugin:
+  - fix `ready` listener when loading multiple audio files (#1602)
+  - allow drawing regions over existing regions, if the underlying ones are not
+    draggable or resizable (#1633)
 - Timeline plugin: fix `ready` listener when loading multiple
   audio files
 - `util.getId()` now accepts a `prefix` argument (#1619)
