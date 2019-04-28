@@ -341,7 +341,11 @@ class Region {
                         ? e.targetTouches[0].identifier
                         : null;
 
-                    e.stopPropagation();
+                    // stop the event propagation, if this region is resizable or draggable
+                    // and the event is therefore handled here.
+                    if (this.drag || this.resize) {
+                        e.stopPropagation();
+                    }
                     startTime =
                         this.wavesurfer.drawer.handleEvent(e, true) * duration;
 
