@@ -20,6 +20,8 @@ wavesurfer.js changelog
 - Regions plugin:
   - fix `ready` listener when loading multiple audio files (#1602)
   - add `snapToGridInterval` and `snapToGridOffset` options (#1632)
+  - allow drawing regions over existing regions, if the underlying ones are not
+    draggable or resizable (#1633)
 - Timeline plugin: fix `ready` listener when loading multiple
   audio files
 - `util.getId()` now accepts a `prefix` argument (#1619)

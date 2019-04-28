@@ -342,7 +342,11 @@ class Region {
                         ? e.targetTouches[0].identifier
                         : null;
 
-                    e.stopPropagation();
+                    // stop the event propagation, if this region is resizable or draggable
+                    // and the event is therefore handled here.
+                    if (this.drag || this.resize) {
+                        e.stopPropagation();
+                    }
 
                     // Store the selected startTime we begun dragging or resizing
                     startTime = this.wavesurfer.regions.util.getRegionSnapToGridValue(
