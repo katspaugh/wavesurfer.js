@@ -212,6 +212,7 @@ describe('WaveSurfer/MediaElement:', function() {
         wavesurfer.once('ready', function() {
             let volume = wavesurfer.getVolume();
             expect(volume).toEqual(1);
+
             done();
         });
         loadElement();
@@ -219,10 +220,12 @@ describe('WaveSurfer/MediaElement:', function() {
 
     /** @test {WaveSurfer#setVolume}  */
     it('should set volume', function(done) {
-        let targetVolume = 0.5;
+        let targetVolume = 0;
 
         wavesurfer.once('volume', function(result) {
             expect(result).toEqual(targetVolume);
+            expect(wavesurfer.getVolume()).toEqual(targetVolume);
+            expect(wavesurfer.getMute()).toBeTrue();
 
             done();
         });

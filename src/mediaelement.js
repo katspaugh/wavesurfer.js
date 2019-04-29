@@ -165,6 +165,7 @@ export default class MediaElement extends WebAudio {
             } else {
                 this.volume = media.volume;
             }
+            this.fireEvent('volume');
         });
 
         this.media = media;
@@ -345,7 +346,7 @@ export default class MediaElement extends WebAudio {
      * @return {number} value A floating point value between 0 and 1.
      */
     getVolume() {
-        return this.volume || this.media.volume;
+        return this.volume;
     }
 
     /**
@@ -355,7 +356,10 @@ export default class MediaElement extends WebAudio {
      */
     setVolume(value) {
         this.volume = value;
-        this.media.volume = this.volume;
+        // no need to change when it's already at that volume
+        if (this.media.volume !== this.volume) {
+            this.media.volume = this.volume;
+        }
     }
 
     /**
