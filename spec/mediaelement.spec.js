@@ -220,12 +220,11 @@ describe('WaveSurfer/MediaElement:', function() {
 
     /** @test {WaveSurfer#setVolume}  */
     it('should set volume', function(done) {
-        let targetVolume = 0;
+        let targetVolume = 0.5;
 
         wavesurfer.once('volume', function(result) {
             expect(result).toEqual(targetVolume);
             expect(wavesurfer.getVolume()).toEqual(targetVolume);
-            expect(wavesurfer.getMute()).toBeTrue();
 
             done();
         });
