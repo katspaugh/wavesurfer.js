@@ -2,7 +2,7 @@
  * (Single) Region plugin class
  *
  * Must be turned into an observer before instantiating. This is done in
- * RegionsPlugin (main plugin class)
+ * `RegionsPlugin` (main plugin class).
  *
  * @extends {Observer}
  */
@@ -318,9 +318,10 @@ class Region {
                         Math.max(0, scrollLeft)
                     );
 
-                    // Update time
-                    const time =
-                        this.wavesurfer.drawer.handleEvent(e) * duration;
+                    // Get the currently selected time according to the mouse position
+                    const time = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+                        this.wavesurfer.drawer.handleEvent(e) * duration
+                    );
                     const delta = time - startTime;
                     startTime = time;
 
@@ -341,9 +342,16 @@ class Region {
                         ? e.targetTouches[0].identifier
                         : null;
 
-                    e.stopPropagation();
-                    startTime =
-                        this.wavesurfer.drawer.handleEvent(e, true) * duration;
+                    // stop the event propagation, if this region is resizable or draggable
+                    // and the event is therefore handled here.
+                    if (this.drag || this.resize) {
+                        e.stopPropagation();
+                    }
+
+                    // Store the selected startTime we begun dragging or resizing
+                    startTime = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+                        this.wavesurfer.drawer.handleEvent(e, true) * duration
+                    );
 
                     // Store for scroll calculations
                     maxScroll =
@@ -396,8 +404,10 @@ class Region {
 
                     if (drag || resize) {
                         const oldTime = startTime;
-                        const time =
-                            this.wavesurfer.drawer.handleEvent(e) * duration;
+                        const time = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+                            this.wavesurfer.drawer.handleEvent(e) * duration
+                        );
+
                         const delta = time - startTime;
                         startTime = time;
 
@@ -522,6 +532,8 @@ class Region {
  * @property {?RegionParams[]} regions Regions that should be added upon
  * initialisation
  * @property {number} slop=2 The sensitivity of the mouse dragging
+ * @property {?number} snapToGridInterval Snap the regions to a grid of the specified multiples in seconds
+ * @property {?number} snapToGridOffset Shift the snap-to-grid by the specified seconds. May also be negative.
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('regions')`
  */
@@ -622,6 +634,9 @@ export default class RegionsPlugin {
         this.params = params;
         this.wavesurfer = ws;
         this.util = ws.util;
+        this.util.getRegionSnapToGridValue = value => {
+            return this.getRegionSnapToGridValue(value, params);
+        };
 
         // turn the plugin instance into an observer
         const observerPrototypeKeys = Object.getOwnPropertyNames(
@@ -641,7 +656,7 @@ export default class RegionsPlugin {
             }
         };
 
-        // Id-based hash of regions.
+        // Id-based hash of regions
         this.list = {};
         this._onReady = () => {
             if (this.params.dragSelection) {
@@ -658,9 +673,10 @@ export default class RegionsPlugin {
         if (this.wavesurfer.isReady) {
             this._onBackendCreated();
             this._onReady();
+        } else {
+            this.wavesurfer.once('ready', this._onReady);
+            this.wavesurfer.once('backend-created', this._onBackendCreated);
         }
-        this.wavesurfer.on('ready', this._onReady);
-        this.wavesurfer.on('backend-created', this._onBackendCreated);
     }
 
     destroy() {
@@ -669,7 +685,13 @@ export default class RegionsPlugin {
         this.disableDragSelection();
         this.clear();
     }
-    /* Add a region. */
+
+    /**
+     * Add a region
+     *
+     * @param {object} params
+     * @return {Region} The created region
+     */
     add(params) {
         const region = new this.wavesurfer.Region(params, this.wavesurfer);
 
@@ -682,7 +704,9 @@ export default class RegionsPlugin {
         return region;
     }
 
-    /* Remove all regions. */
+    /**
+     * Remove all regions
+     */
     clear() {
         Object.keys(this.list).forEach(id => {
             this.list[id].remove();
@@ -807,9 +831,15 @@ export default class RegionsPlugin {
             }
 
             const end = this.wavesurfer.drawer.handleEvent(e);
+            const startUpdate = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+                start * duration
+            );
+            const endUpdate = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+                end * duration
+            );
             region.update({
-                start: Math.min(end * duration, start * duration),
-                end: Math.max(end * duration, start * duration)
+                start: Math.min(endUpdate, startUpdate),
+                end: Math.max(endUpdate, startUpdate)
             });
 
             // If scrolling is enabled
@@ -838,10 +868,12 @@ export default class RegionsPlugin {
         this.fireEvent('disable-drag-selection');
     }
 
-    /* Get current region
-     *  The smallest region that contains the current time.
-     *  If several such regions exist, we take the first.
-     *  Return null if none exist. */
+    /**
+     * Get current region
+     *
+     * The smallest region that contains the current time. If several such
+     * regions exist, take the first. Return `null` if none exist.
+     */
     getCurrentRegion() {
         const time = this.wavesurfer.getCurrentTime();
         let min = null;
@@ -855,5 +887,30 @@ export default class RegionsPlugin {
         });
 
         return min;
+    }
+
+    /**
+     * Match the value to the grid, if required
+     *
+     * If the regions plugin params have a snapToGridInterval set, return the
+     * value matching the nearest grid interval. If no snapToGridInterval is set,
+     * the passed value will be returned without modification.
+     *
+     * @param {number} value the value to snap to the grid, if needed
+     * @param {Object} params the regions plugin params
+     */
+    getRegionSnapToGridValue(value, params) {
+        if (params.snapToGridInterval) {
+            // the regions should snap to a grid
+            const offset = params.snapToGridOffset || 0;
+            return (
+                Math.round((value - offset) / params.snapToGridInterval) *
+                    params.snapToGridInterval +
+                offset
+            );
+        }
+
+        // no snap-to-grid
+        return value;
     }
 }

@@ -13,6 +13,10 @@
  * @property {boolean} showTime=false Show the time on the cursor.
  * @property {object} customShowTimeStyle An object with custom styles which are
  * applied to the cursor time element.
+ * @property {string} followCursorY=false Use `true` to make the time on
+ * the cursor follow the x and the y-position of the mouse. Use `false` to make the
+ * it only follow the x-position of the mouse.
+ * @property {function} formatTimeCallback Formats the timestamp on the cursor.
  */
 
 /**
@@ -78,13 +82,23 @@ export default class CursorPlugin {
         zIndex: 4,
         customStyle: {},
         customShowTimeStyle: {},
-        showTime: false
+        showTime: false,
+        followCursorY: false,
+        formatTimeCallback: null
     };
 
     /** @private */
     _onMousemove = e => {
         const bbox = this.wavesurfer.container.getBoundingClientRect();
-        this.updateCursorPosition(e.clientX - bbox.left);
+        let y = 0;
+        let x = e.clientX - bbox.left;
+
+        if (this.params.showTime && this.params.followCursorY) {
+            // follow y-position of the mouse
+            y = e.clientY - (bbox.top + bbox.height / 2);
+        }
+
+        this.updateCursorPosition(x, y);
     };
     /** @private */
     _onMouseenter = () => this.showCursor();
@@ -213,11 +227,12 @@ export default class CursorPlugin {
     /**
      * Update the cursor position
      *
-     * @param {number} pos The x offset of the cursor in pixels
+     * @param {number} xpos The x offset of the cursor in pixels
+     * @param {number} ypos The y offset of the cursor in pixels
      */
-    updateCursorPosition(pos) {
+    updateCursorPosition(xpos, ypos) {
         this.style(this.cursor, {
-            left: `${pos}px`
+            left: `${xpos}px`
         });
         if (this.params.showTime) {
             const duration = this.wavesurfer.getDuration();
@@ -230,10 +245,11 @@ export default class CursorPlugin {
                 (duration / this.wavesurfer.drawer.width) * scrollWidth;
 
             const timeValue =
-                Math.max(0, (pos / elementWidth) * duration) + scrollTime;
+                Math.max(0, (xpos / elementWidth) * duration) + scrollTime;
             const formatValue = this.formatTime(timeValue);
             this.style(this.showTime, {
-                left: `${pos}px`
+                left: `${xpos}px`,
+                top: `${ypos}px`
             });
             this.displayTime.innerHTML = `${formatValue}`;
         }
@@ -267,8 +283,17 @@ export default class CursorPlugin {
         }
     }
 
-    /** timestamp time calculation */
+    /**
+     * Format the timestamp for `cursorTime`.
+     *
+     * @param {number} cursorTime Time in seconds
+     */
     formatTime(cursorTime) {
+        cursorTime = isNaN(cursorTime) ? 0 : cursorTime;
+
+        if (this.params.formatTimeCallback) {
+            return this.params.formatTimeCallback(cursorTime);
+        }
         return [cursorTime].map(time =>
             [
                 Math.floor((time % 3600) / 60), // minutes

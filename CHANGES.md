@@ -1,6 +1,33 @@
 wavesurfer.js changelog
 =======================
 
+3.0.0 (unreleased)
+------------------
+
+- Add `wavesurfer.getActivePlugins()`: return map of plugins
+  that are currently initialised
+- Update progress when seeking with HTML media controls (#1535)
+- Refactor `MultiCanvas` and add `CanvasEntry` class (#1617)
+- Fix `wavesurfer.isReady`: make it a public boolean, the
+  broken `isReady` method is removed (#1597)
+- Add support for `Blob` output type in `wavesurfer.exportImage` (#1610)
+- Fix fallback to Audio Element in browsers that don't support Web Audio (#1614)
+- Cursor plugin:
+  - add `formatTimeCallback` option
+  - add `followCursorY` option (#1605)
+- Spectrogram plugin: fix `ready` listener when loading multiple
+  audio files (#1572)
+- Regions plugin:
+  - fix `ready` listener when loading multiple audio files (#1602)
+  - add `snapToGridInterval` and `snapToGridOffset` options (#1632)
+  - allow drawing regions over existing regions, if the underlying ones are not
+    draggable or resizable (#1633)
+- Timeline plugin: fix `ready` listener when loading multiple
+  audio files
+- `util.getId()` now accepts a `prefix` argument (#1619)
+- Fix: the `progressWave` should not be rendered when specifying the same
+  value for the `progressColor` and `waveColor` options (#1620)
+
 2.2.1 (18.03.2019)
 ------------------
 

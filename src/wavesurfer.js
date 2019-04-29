@@ -77,7 +77,8 @@ import PeakCache from './peakcache';
  * register during instantiation, they will be directly initialised unless they
  * are added with the `deferInit` property set to true.
  * @property {string} progressColor='#555' The fill color of the part of the
- * waveform behind the cursor.
+ * waveform behind the cursor. When `progressColor` and `waveColor` are the same
+ * the progress wave is not rendered at all.
  * @property {boolean} removeMediaElementOnDestroy=true Set to false to keep the
  * media element in the DOM when the player is destroyed. This is useful when
  * reusing an existing media element via the `loadMediaElement` method.
@@ -383,7 +384,13 @@ export default class WaveSurfer extends util.Observer {
         this.initialisedPluginList = {};
         /** @private */
         this.isDestroyed = false;
-        /** @private */
+
+        /**
+         * Get the current ready status.
+         *
+         * @example const isReady = wavesurfer.isReady;
+         * @return {boolean}
+         */
         this.isReady = false;
 
         // responsive debounced event listener. If this.params.responsive is not
@@ -446,6 +453,16 @@ export default class WaveSurfer extends util.Observer {
         });
         this.fireEvent('plugins-registered', plugins);
         return this;
+    }
+
+    /**
+     * Get a map of plugin names that are currently initialised
+     *
+     * @example wavesurfer.getPlugins();
+     * @return {Object} Object with plugin names
+     */
+    getActivePlugins() {
+        return this.initialisedPluginList;
     }
 
     /**
@@ -632,6 +649,9 @@ export default class WaveSurfer extends util.Observer {
         this.backend.on('audioprocess', time => {
             this.drawer.progress(this.backend.getPlayedPercents());
             this.fireEvent('audioprocess', time);
+        });
+        this.backend.on('seek', () => {
+            this.drawer.progress(this.backend.getPlayedPercents());
         });
     }
 
@@ -941,16 +961,6 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Get the current ready status.
-     *
-     * @example const isReady = wavesurfer.isReady();
-     * @return {boolean}
-     */
-    isReady() {
-        return this.isReady;
-    }
-
-    /**
      * Get the list of current set filters as an array.
      *
      * Filters must be set with setFilters method first
@@ -1230,10 +1240,11 @@ export default class WaveSurfer extends util.Observer {
      * wavesurfer.load('http://example.com/demo.wav');
      *
      * // setting preload attribute with media element backend and supplying
-     * peaks wavesurfer.load(
+     * // peaks
+     * wavesurfer.load(
      *   'http://example.com/demo.wav',
      *   [0.0218, 0.0183, 0.0165, 0.0198, 0.2137, 0.2888],
-     *   true,
+     *   true
      * );
      */
     load(url, peaks, preload, duration) {
@@ -1463,22 +1474,33 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Save waveform image as data URI.
      *
-     * The default format is `image/png`. Other supported types are
-     * `image/jpeg` and `image/webp`.
+     * The default format is `'image/png'`. Other supported types are
+     * `'image/jpeg'` and `'image/webp'`.
      *
-     * @param {string} format='image/png'
-     * @param {number} quality=1
-     * @return {string} data URI of image
+     * @param {string} format='image/png' A string indicating the image format.
+     * The default format type is `'image/png'`.
+     * @param {number} quality=1 A number between 0 and 1 indicating the image
+     * quality to use for image formats that use lossy compression such as
+     * `'image/jpeg'`` and `'image/webp'`.
+     * @param {string} type Image data type to return. Either 'dataURL' (default)
+     * or 'blob'.
+     * @return {string|string[]|Promise} When using `'dataURL'` type this returns
+     * a single data URL or an array of data URLs, one for each canvas. When using
+     * `'blob'` type this returns a `Promise` resolving with an array of `Blob`
+     * instances, one for each canvas.
      */
-    exportImage(format, quality) {
+    exportImage(format, quality, type) {
         if (!format) {
             format = 'image/png';
         }
         if (!quality) {
             quality = 1;
         }
+        if (!type) {
+            type = 'dataURL';
+        }
 
-        return this.drawer.getImage(format, quality);
+        return this.drawer.getImage(format, quality, type);
     }
 
     /**

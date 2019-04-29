@@ -12,12 +12,14 @@ describe('WaveSurfer/playback:', function() {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
     beforeEach(function(done) {
+        manualDestroy = false;
+
         var wave = TestHelpers.createWaveform();
         wavesurfer = wave[0];
         element = wave[1];
         wavesurfer.load(TestHelpers.EXAMPLE_FILE_PATH);
 
-        wavesurfer.on('ready', done);
+        wavesurfer.once('ready', done);
     });
 
     afterEach(function() {
@@ -309,6 +311,11 @@ describe('WaveSurfer/playback:', function() {
     it('should export image data', function() {
         var imgData = wavesurfer.exportImage();
         expect(imgData).toBeNonEmptyString();
+
+        wavesurfer.exportImage('image/png', 1, 'blob').then(blobs => {
+            expect(blobs).toBeArrayOfSize(1);
+            expect(blobs[0] instanceof Blob).toBeTruthy();
+        });
     });
 
     /** @test {WaveSurfer#destroy} */

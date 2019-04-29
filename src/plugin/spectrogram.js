@@ -333,9 +333,9 @@ export default class SpectrogramPlugin {
         // Check if wavesurfer is ready
         if (this.wavesurfer.isReady) {
             this._onReady();
+        } else {
+            this.wavesurfer.once('ready', this._onReady);
         }
-
-        this.wavesurfer.on('ready', this._onReady);
     }
 
     destroy() {

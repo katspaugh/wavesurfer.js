@@ -3,6 +3,7 @@
  *
  * @param   {Array} values Array of numbers
  * @returns {Number} Largest number found
+ * @example console.log(max([1, 2, 3])); // logs 3
  */
 export default function max(values) {
     let largest = -Infinity;
