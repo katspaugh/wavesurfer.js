@@ -235,4 +235,46 @@ describe('WaveSurfer/MediaElement:', function() {
         });
         loadElement();
     });
+
+    /** @test {WaveSurfer#toggleMute}  */
+    it('should toggle mute', function(done) {
+        wavesurfer.once('ready', function() {
+            wavesurfer.toggleMute();
+            expect(wavesurfer.isMuted).toBeTrue();
+
+            wavesurfer.toggleMute();
+            expect(wavesurfer.isMuted).toBeFalse();
+
+            done();
+        });
+        loadElement();
+    });
+
+    /** @test {WaveSurfer#setMute}  */
+    it('should set mute', function(done) {
+        wavesurfer.once('ready', function() {
+            wavesurfer.setMute(true);
+            expect(wavesurfer.isMuted).toBeTrue();
+
+            wavesurfer.setMute(false);
+            expect(wavesurfer.isMuted).toBeFalse();
+
+            done();
+        });
+        loadElement();
+    });
+
+    /** @test {WaveSurfer#getMute}  */
+    it('should get mute', function(done) {
+        wavesurfer.once('ready', function() {
+            wavesurfer.setMute(true);
+            expect(wavesurfer.getMute()).toBeTrue();
+
+            wavesurfer.setMute(false);
+            expect(wavesurfer.getMute()).toBeFalse();
+
+            done();
+        });
+        loadElement();
+    });
 });
