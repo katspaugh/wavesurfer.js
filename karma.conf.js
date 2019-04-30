@@ -29,7 +29,7 @@ var firefoxFlags = {
     'media.autoplay.default': 0,
     'media.autoplay.ask-permission': false,
     'media.autoplay.enabled.user-gestures-needed': false,
-    'media.autoplay.block-webaudio ': false
+    'media.autoplay.block-webaudio': false
 };
 
 module.exports = function(config) {
