@@ -9,7 +9,7 @@ const TestHelpers = {
 
     createElement(id, type) {
         if (id == undefined) {
-            id = 'waveform_' + WaveSurfer.util.getId();
+            id = WaveSurfer.util.getId('waveform_');
         }
         if (type == undefined) {
             type = 'div';
@@ -31,7 +31,12 @@ const TestHelpers = {
      * @param  {Object} options
      */
     createWaveform(options) {
-        let element = this.createElement();
+        let element;
+        if (options === undefined) {
+            element = this.createElement();
+        } else {
+            element = options.container;
+        }
 
         options = options || {
             container: element,
