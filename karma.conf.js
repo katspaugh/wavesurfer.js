@@ -24,6 +24,13 @@ var chromeFlags = [
     // see https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
     '--disable-features=PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies'
 ];
+var firefoxFlags = {
+    // disable autoplay blocking, see https://www.ghacks.net/2018/09/21/firefox-improved-autoplay-blocking/
+    'media.autoplay.default': 0,
+    'media.autoplay.ask-permission': false,
+    'media.autoplay.enabled.user-gestures-needed': false,
+    'media.autoplay.block-webaudio': false
+};
 
 module.exports = function(config) {
     var configuration = {
@@ -74,7 +81,7 @@ module.exports = function(config) {
             'karma-coveralls',
             'karma-verbose-reporter'
         ],
-        browsers: ['Chrome_ci', 'FirefoxHeadless'],
+        browsers: ['Chrome_ci', 'Firefox_dev'],
         captureConsole: true,
         colors: true,
         reporters: ['verbose', 'progress', 'coverage'],
@@ -93,13 +100,18 @@ module.exports = function(config) {
                 flags: chromeFlags
             },
             Firefox_dev: {
-                base: 'FirefoxHeadless'
+                base: 'Firefox',
+                prefs: firefoxFlags
+            },
+            Firefox_ci: {
+                base: 'FirefoxHeadless',
+                prefs: firefoxFlags
             }
         }
     };
 
     if (ci) {
-        configuration.browsers = ['Chrome_ci', 'Firefox_dev'];
+        configuration.browsers = ['Chrome_ci', 'Firefox_ci'];
 
         if (process.env.TRAVIS) {
             // enable coveralls
