@@ -155,10 +155,10 @@ export default class CanvasEntry {
      * @param {number} height Height of the rectangle
      */
     fillRects(x, y, width, height) {
-        this.fillRectToContext(this.waveCtx);
+        this.fillRectToContext(this.waveCtx, x, y, width, height);
 
         if (this.hasProgressCanvas) {
-            this.fillRectToContext(this.progressCtx);
+            this.fillRectToContext(this.progressCtx, x, y, width, height);
         }
     }
 
