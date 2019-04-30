@@ -209,9 +209,10 @@ describe('WaveSurfer/MediaElement:', function() {
 
     /** @test {WaveSurfer#getVolume}  */
     it('should get volume', function(done) {
+        audioElement.volume = 0.3;
         wavesurfer.once('ready', function() {
             let volume = wavesurfer.getVolume();
-            expect(volume).toEqual(1);
+            expect(volume).toEqual(audioElement.volume);
 
             done();
         });
