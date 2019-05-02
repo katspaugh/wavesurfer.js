@@ -406,6 +406,7 @@ export default class MultiCanvas extends Drawer {
     drawLine(peaks, absmax, halfH, offsetY, start, end) {
         this.canvases.forEach(entry => {
             this.setFillStyles(entry);
+
             entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
         });
     }
@@ -536,7 +537,7 @@ export default class MultiCanvas extends Drawer {
             // entry is visible in view-port
             if (entry.isIntersecting === true) {
                 // render content
-                canvasEntry.redraw();
+                canvasEntry.drawLinesFromCache();
             }
         });
     }

@@ -206,23 +206,6 @@ export default class CanvasEntry {
     }
 
     /**
-     * Draw using cached coordinates.
-     */
-    redraw() {
-        // render once
-        if (!this.renderComplete && this.cachedCoordinates) {
-            this.drawLines(
-                this.cachedCoordinates.peaks,
-                this.cachedCoordinates.absmax,
-                this.cachedCoordinates.halfH,
-                this.cachedCoordinates.offsetY,
-                this.cachedCoordinates.start,
-                this.cachedCoordinates.end
-            );
-        }
-    }
-
-    /**
      * Render the actual wave and progress lines
      *
      * @param {number[]} peaks Array with peaks data
@@ -347,6 +330,23 @@ export default class CanvasEntry {
 
         ctx.closePath();
         ctx.fill();
+    }
+
+    /**
+     * Draw lines using cached coordinates.
+     */
+    drawLinesFromCache() {
+        // render once
+        if (!this.renderComplete && this.cachedCoordinates) {
+            this.drawLines(
+                this.cachedCoordinates.peaks,
+                this.cachedCoordinates.absmax,
+                this.cachedCoordinates.halfH,
+                this.cachedCoordinates.offsetY,
+                this.cachedCoordinates.start,
+                this.cachedCoordinates.end
+            );
+        }
     }
 
     /**
