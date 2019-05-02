@@ -247,7 +247,7 @@ var WaveSurfer = {
      * @param {Number} seconds A positive number in seconds. E.g. 10 means 10 seconds, 60 means 1 minute
      */
     setCurrentTime: function (seconds) {
-        if(this.getDuration() >= seconds) {
+        if(seconds >= this.getDuration()) {
             this.seekTo(1);
         } else {
             this.seekTo(seconds/this.getDuration());
