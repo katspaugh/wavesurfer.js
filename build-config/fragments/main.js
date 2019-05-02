@@ -1,5 +1,6 @@
 /* eslint-env node */
 
+require('dotenv').config();
 const path = require('path');
 const banner = require('./banner');
 
@@ -10,7 +11,7 @@ module.exports = {
         wavesurfer: path.join(rootDir, 'src', 'wavesurfer.js')
     },
     output: {
-        path: path.join(rootDir, 'dist'),
+        path: path.join(rootDir, process.env.OUTPUT_DIR),
         filename: '[name].js',
         library: 'WaveSurfer'
     },

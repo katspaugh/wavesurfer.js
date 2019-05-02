@@ -22,6 +22,7 @@
     "build:htmlinit": "webpack --config ./build-config/webpack.prod.htmlinit.js",
     "build:htmlinit:min": "webpack --config ./build-config/webpack.prod.htmlinit.min.js",
     "build:normal": "npm run build:main && npm run build:plugins && npm run build:htmlinit",
+    "build:main:plugins": "npm run build:main && npm run build:plugins",
     "build:minified": "npm run build:main:min && npm run build:plugins:min && npm run build:htmlinit:min",
     "format": "prettier 'src/**/*.js*' 'example/**/*.js*' 'spec/**/*.js*' 'website/**/*.js*' 'build-config/**/*.js' karma.conf.js --write",
     "lint": "npm run lint:js && npm run lint:html",
@@ -31,7 +32,13 @@
     "doc": "esdoc",
     "test": "karma start karma.conf.js",
     "prepublishOnly": "not-in-install && npm run build || in-install",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "watch": "watch 'npm run build' ./src",
+    "watch:main": "watch 'npm run build:main' ./src",
+    "watch:plugins": "watch 'npm run build:plugins' ./src",
+    "watch:htmlinit": "watch 'npm run build:htmlinit' ./src",
+    "watch:main:plugins": "watch 'npm run build:main:plugins' ./src",
+    "watch:normal": "watch 'npm run build:normal' ./src"
   },
   "repository": {
     "type": "git",
@@ -104,5 +111,9 @@
     "*.html": [
       "htmlhint"
     ]
+  },
+  "dependencies": {
+    "dotenv": "^7.0.0",
+    "watch": "^1.0.2"
   }
 }

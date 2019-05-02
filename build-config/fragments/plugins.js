@@ -1,4 +1,5 @@
 /* eslint-env node */
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const banner = require('./banner');
@@ -34,7 +35,7 @@ function buildPluginEntry(plugins) {
 module.exports = {
     entry: buildPluginEntry(PLUGINS),
     output: {
-        path: path.join(rootDir, 'dist', 'plugin'),
+        path: path.join(rootDir, process.env.OUTPUT_DIR, 'plugin'),
         filename: 'wavesurfer.[name].js',
         library: ['WaveSurfer', '[name]'],
         publicPath: 'localhost:8080/dist/plugin/'
