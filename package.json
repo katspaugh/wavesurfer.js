@@ -69,6 +69,7 @@
     "babel-plugin-transform-class-properties": "^6.24.1",
     "date-fns": "^1.30.1",
     "debounce": "^1.2.0",
+    "dotenv": "^7.0.0",
     "esdoc": "^1.1.0",
     "esdoc-accessor-plugin": "^1.0.0",
     "esdoc-brand-plugin": "^1.0.1",
@@ -96,6 +97,7 @@
     "pre-commit": "^1.2.2",
     "prettier": "^1.17.0",
     "terser-webpack-plugin": "^1.2.3",
+    "watch": "^1.0.2",
     "webpack": "^4.30.0",
     "webpack-cli": "^3.3.1",
     "webpack-dev-server": "^3.3.1",
@@ -111,9 +113,5 @@
     "*.html": [
       "htmlhint"
     ]
-  },
-  "dependencies": {
-    "dotenv": "^7.0.0",
-    "watch": "^1.0.2"
   }
 }
