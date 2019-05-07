@@ -1,6 +1,6 @@
 {
   "name": "@tai-fe/wavesurfer.js",
-  "version": "2.2.1-patch.3",
+  "version": "2.2.1-patch.5",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.min.js",
   "directories": {

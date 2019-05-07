@@ -1,5 +1,5 @@
 /*!
- * @tai-fe/wavesurfer.js 2.2.1-patch.3 (2019-05-07)
+ * @tai-fe/wavesurfer.js 2.2.1-patch.5 (2019-05-07)
  * https://github.com/tai-fe/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -4689,7 +4689,7 @@ function (_util$Observer) {
 }(util.Observer);
 
 exports.default = WaveSurfer;
-WaveSurfer.VERSION = "2.2.1-patch.3";
+WaveSurfer.VERSION = "2.2.1-patch.5";
 WaveSurfer.util = util;
 module.exports = exports.default;
 
