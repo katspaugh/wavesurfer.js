@@ -391,6 +391,9 @@ export default class WebAudio extends util.Observer {
      * peaks consisting of (max, min) values for each subrange.
      */
     getPeaks(length, first, last) {
+        if (length < last) {
+            last = length;
+        }
         if (this.peaks) {
             return this.peaks;
         }
