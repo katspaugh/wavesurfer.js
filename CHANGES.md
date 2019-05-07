@@ -13,17 +13,20 @@ wavesurfer.js changelog
 - Add support for `Blob` output type in `wavesurfer.exportImage` (#1610)
 - Fix fallback to Audio Element in browsers that don't support Web Audio (#1614)
 - Cursor plugin:
-  - add `formatTimeCallback` option
-  - add `followCursorY` option (#1605)
+  - Add `formatTimeCallback` option
+  - Add `followCursorY` option (#1605)
+  - Remove deprecated `enableCursor` method (#1646)
 - Spectrogram plugin: fix `ready` listener when loading multiple
   audio files (#1572)
 - Regions plugin:
-  - fix `ready` listener when loading multiple audio files (#1602)
-  - add `snapToGridInterval` and `snapToGridOffset` options (#1632)
-  - allow drawing regions over existing regions, if the underlying ones are not
+  - Fix `ready` listener when loading multiple audio files (#1602)
+  - Add `snapToGridInterval` and `snapToGridOffset` options (#1632)
+  - Allow drawing regions over existing regions, if the underlying ones are not
     draggable or resizable (#1633)
+  - Remove deprecated `initRegions` method (#1646)
 - Timeline plugin: fix `ready` listener when loading multiple
   audio files
+- Minimap plugin: remove deprecated `initMinimap` method (#1646)
 - `util.getId()` now accepts a `prefix` argument (#1619)
 - Fix: the `progressWave` should not be rendered when specifying the same
   value for the `progressColor` and `waveColor` options (#1620)
