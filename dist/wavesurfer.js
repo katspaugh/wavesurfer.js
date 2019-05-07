@@ -1,5 +1,5 @@
 /*!
- * @tai-fe/wavesurfer.js 2.2.1-patch.3 (2019-04-26)
+ * @tai-fe/wavesurfer.js 2.2.1-patch.3 (2019-05-07)
  * https://github.com/tai-fe/wavesurfer.js
  * @license BSD-3-Clause
  */
@@ -5190,6 +5190,10 @@ function (_util$Observer) {
   }, {
     key: "getPeaks",
     value: function getPeaks(length, first, last) {
+      if (length < last) {
+        last = length;
+      }
+
       if (this.peaks) {
         return this.peaks;
       }
