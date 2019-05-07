@@ -288,6 +288,8 @@ export default class MicrophonePlugin {
 
     /**
      * Redraw the waveform.
+     *
+     * @param {object} event Audioprocess event
      */
     reloadBuffer(event) {
         if (!this.paused) {
@@ -336,6 +338,8 @@ export default class MicrophonePlugin {
 
     /**
      * Device error callback.
+     *
+     * @param {string} code Error message
      */
     deviceError(code) {
         // notify listeners

@@ -84,7 +84,10 @@ export default class TimelinePlugin {
         }
     };
 
-    /** @private */
+    /**
+     * @private
+     * @returns {void}
+     */
     _onRedraw = () => this.render();
 
     /** @private */
@@ -105,7 +108,10 @@ export default class TimelinePlugin {
         this.render();
     };
 
-    /** @private */
+    /**
+     * @private
+     * @param {object} e Click event
+     */
     _onWrapperClick = e => {
         e.preventDefault();
         const relX = 'offsetX' in e ? e.offsetX : e.layerX;
@@ -176,9 +182,10 @@ export default class TimelinePlugin {
          * relies on the debounce function which is only available after
          * instantiation
          *
-         * Use a debounced function if zoomDebounce is defined
+         * Use a debounced function if `params.zoomDebounce` is defined
          *
          * @private
+         * @returns {void}
          */
         this._onZoom = this.params.zoomDebounce
             ? this.wavesurfer.util.debounce(
@@ -443,7 +450,8 @@ export default class TimelinePlugin {
     /**
      * Set the canvas fill style
      *
-     * @param {DOMString|CanvasGradient|CanvasPattern} fillStyle
+     * @param {DOMString|CanvasGradient|CanvasPattern} fillStyle Fill style to
+     * use
      * @private
      */
     setFillStyles(fillStyle) {
@@ -455,7 +463,7 @@ export default class TimelinePlugin {
     /**
      * Set the canvas font
      *
-     * @param {DOMString} font
+     * @param {DOMString} font Font to use
      * @private
      */
     setFonts(font) {
@@ -469,10 +477,10 @@ export default class TimelinePlugin {
      *
      * (it figures out the offset for each canvas)
      *
-     * @param {number} x
-     * @param {number} y
-     * @param {number} width
-     * @param {number} height
+     * @param {number} x X-position
+     * @param {number} y Y-position
+     * @param {number} width Width
+     * @param {number} height Height
      * @private
      */
     fillRect(x, y, width, height) {
@@ -502,9 +510,9 @@ export default class TimelinePlugin {
     /**
      * Fill a given text on the canvases
      *
-     * @param {string} text
-     * @param {number} x
-     * @param {number} y
+     * @param {string} text Text to render
+     * @param {number} x X-position
+     * @param {number} y Y-position
      * @private
      */
     fillText(text, x, y) {
@@ -531,8 +539,9 @@ export default class TimelinePlugin {
     /**
      * Turn the time into a suitable label for the time.
      *
-     * @param {number} seconds
-     * @param {number} pxPerSec
+     * @param {number} seconds Seconds to format
+     * @param {number} pxPerSec Pixels per second
+     * @returns {number} Time
      */
     defaultFormatTimeCallback(seconds, pxPerSec) {
         if (seconds / 60 > 1) {
@@ -549,7 +558,8 @@ export default class TimelinePlugin {
     /**
      * Return how many seconds should be between each notch
      *
-     * @param pxPerSec
+     * @param {number} pxPerSec Pixels per second
+     * @returns {number} Time
      */
     defaultTimeInterval(pxPerSec) {
         if (pxPerSec >= 25) {
@@ -565,7 +575,8 @@ export default class TimelinePlugin {
     /**
      * Return the cadence of notches that get labels in the primary color.
      *
-     * @param pxPerSec
+     * @param {number} pxPerSec Pixels per second
+     * @returns {number} Cadence
      */
     defaultPrimaryLabelInterval(pxPerSec) {
         if (pxPerSec >= 25) {
@@ -581,7 +592,8 @@ export default class TimelinePlugin {
     /**
      * Return the cadence of notches that get labels in the secondary color.
      *
-     * @param pxPerSec
+     * @param {number} pxPerSec Pixels per second
+     * @returns {number} Cadence
      */
     defaultSecondaryLabelInterval(pxPerSec) {
         if (pxPerSec >= 25) {
