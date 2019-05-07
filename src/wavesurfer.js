@@ -818,6 +818,7 @@ export default class WaveSurfer extends util.Observer {
             progress < 0 ||
             progress > 1
         ) {
+            // eslint-disable-next-line no-console
             return console.error(
                 'Error calling wavesurfer.seekTo, parameter must be a number between 0 and 1!'
             );
@@ -1265,6 +1266,7 @@ export default class WaveSurfer extends util.Observer {
                 reason => preloadIgnoreReasons[reason]
             );
             if (activeReasons.length) {
+                // eslint-disable-next-line no-console
                 console.warn(
                     'Preload parameter of wavesurfer.load will be ignored because:\n\t- ' +
                         activeReasons.join('\n\t- ')

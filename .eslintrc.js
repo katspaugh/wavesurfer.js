@@ -23,11 +23,19 @@ module.exports = {
                 singleQuote: true,
                 tabWidth: 4,
                 trailingComma: 'none',
-                "endOfLine": "auto"
+                'endOfLine': 'auto'
             }
         ],
         eqeqeq: 'off',
-        'no-console': 'off',
-        'no-unused-vars': 'off'
-    }
+        'no-console': 1,
+        'no-unused-vars': 'off',
+        'no-unreachable': 2
+    },
+    'overrides': [
+    {
+        'files': ['example/**/*.js'],
+        'rules': {
+            'no-console': 'off'
+        }
+    }]
 };
