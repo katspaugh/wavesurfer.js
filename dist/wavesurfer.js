@@ -4665,7 +4665,7 @@ function (_util$Observer) {
           var width = nominalWidth; // always start at 0 after zooming for scrolling : issue redraw left part
 
           var start = 0;
-          var end = Math.max(start + parentWidth, width); // Fill container
+          var end = width;
 
           if (_this15.params.fillParent && (!_this15.params.scrollParent || nominalWidth < parentWidth)) {
             width = parentWidth;
@@ -5190,10 +5190,6 @@ function (_util$Observer) {
   }, {
     key: "getPeaks",
     value: function getPeaks(length, first, last) {
-      if (length < last) {
-        last = length;
-      }
-
       if (this.peaks) {
         return this.peaks;
       }
