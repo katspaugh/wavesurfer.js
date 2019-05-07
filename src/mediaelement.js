@@ -38,6 +38,8 @@ export default class MediaElement extends WebAudio {
         /** @private */
         this.volume = 1;
         /** @private */
+        this.isMuted = false;
+        /** @private */
         this.buffer = null;
         /** @private */
         this.onPlayEnd = null;
@@ -160,7 +162,8 @@ export default class MediaElement extends WebAudio {
         });
 
         media.addEventListener('volumechange', event => {
-            if (media.muted) {
+            this.isMuted = media.muted;
+            if (this.isMuted) {
                 this.volume = 0;
             } else {
                 this.volume = media.volume;
@@ -172,6 +175,7 @@ export default class MediaElement extends WebAudio {
         this.peaks = peaks;
         this.onPlayEnd = null;
         this.buffer = null;
+        this.isMuted = media.muted;
         this.setPlaybackRate(this.playbackRate);
         this.setVolume(this.volume);
     }

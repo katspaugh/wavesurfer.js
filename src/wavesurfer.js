@@ -658,10 +658,12 @@ export default class WaveSurfer extends util.Observer {
             });
 
             this.backend.on('volume', () => {
-                if (this.getVolume() === 0) {
-                    this.isMuted = true;
-                } else {
-                    this.isMuted = false;
+                let newVolume = this.getVolume();
+                this.fireEvent('volume', newVolume);
+
+                if (this.backend.isMuted !== this.isMuted) {
+                    this.isMuted = this.backend.isMuted;
+                    this.fireEvent('mute', this.isMuted);
                 }
             });
         }
