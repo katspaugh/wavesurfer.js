@@ -7,7 +7,7 @@ wavesurfer.js changelog
 - Add `wavesurfer.getActivePlugins()`: return map of plugins
   that are currently initialised
 - Update progress when seeking with HTML media controls (#1535)
-- Update volume when using HTML media controls (#1615)
+- Make sure mute/volume is updated when using `MediaElement` backend (#1615)
 - Refactor `MultiCanvas` and add `CanvasEntry` class (#1617)
 - Fix `wavesurfer.isReady`: make it a public boolean, the
   broken `isReady` method is removed (#1597)
