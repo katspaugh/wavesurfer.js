@@ -597,13 +597,6 @@ export default class RegionsPlugin {
             deferInit: params && params.deferInit ? params.deferInit : false,
             params: params,
             staticProps: {
-                initRegions() {
-                    console.warn(
-                        'Deprecated initRegions! Use wavesurfer.initPlugins("regions") instead!'
-                    );
-                    this.initPlugin('regions');
-                },
-
                 addRegion(options) {
                     if (!this.initialisedPluginList.regions) {
                         this.initPlugin('regions');

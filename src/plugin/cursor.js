@@ -60,12 +60,7 @@ export default class CursorPlugin {
             name: 'cursor',
             deferInit: params && params.deferInit ? params.deferInit : false,
             params: params,
-            staticProps: {
-                enableCursor() {
-                    console.warn('Deprecated enableCursor!');
-                    this.initPlugins('cursor');
-                }
-            },
+            staticProps: {},
             instance: CursorPlugin
         };
     }
