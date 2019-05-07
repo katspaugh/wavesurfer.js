@@ -97,6 +97,7 @@ class Init {
                     );
                     loadScript(src, { async: false }, (err, plugin) => {
                         if (err) {
+                            // eslint-disable-next-line no-console
                             return console.error(
                                 `WaveSurfer plugin ${name} not found at ${src}`
                             );
