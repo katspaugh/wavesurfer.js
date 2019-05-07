@@ -82,7 +82,10 @@ export default class CursorPlugin {
         formatTimeCallback: null
     };
 
-    /** @private */
+    /**
+     * @private
+     * @param {object} e Mouse move event
+     */
     _onMousemove = e => {
         const bbox = this.wavesurfer.container.getBoundingClientRect();
         let y = 0;
@@ -95,17 +98,25 @@ export default class CursorPlugin {
 
         this.updateCursorPosition(x, y);
     };
-    /** @private */
+
+    /**
+     * @private
+     * @returns {void}
+     */
     _onMouseenter = () => this.showCursor();
-    /** @private */
+
+    /**
+     * @private
+     * @returns {void}
+     */
     _onMouseleave = () => this.hideCursor();
 
     /**
-     * Construct the plugin class. You probably want to use CursorPlugin.create
+     * Construct the plugin class. You probably want to use `CursorPlugin.create`
      * instead.
      *
-     * @param {CursorPluginParams} params
-     * @param {object} ws
+     * @param {CursorPluginParams} params Plugin parameters
+     * @param {object} ws Wavesurfer instance
      */
     constructor(params, ws) {
         /** @private */
@@ -282,6 +293,7 @@ export default class CursorPlugin {
      * Format the timestamp for `cursorTime`.
      *
      * @param {number} cursorTime Time in seconds
+     * @returns {string} Formatted timestamp
      */
     formatTime(cursorTime) {
         cursorTime = isNaN(cursorTime) ? 0 : cursorTime;
