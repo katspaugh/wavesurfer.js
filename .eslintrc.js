@@ -29,13 +29,20 @@ module.exports = {
         eqeqeq: 'off',
         'no-console': 1,
         'no-unused-vars': 'off',
-        'no-unreachable': 2
+        'no-unreachable': 2,
+        'valid-jsdoc': [2, {
+            'requireReturn': false,
+            'requireReturnType': false
+        }],
+        'require-jsdoc': 2
     },
     'overrides': [
     {
-        'files': ['example/**/*.js'],
+        'files': ['example/**/*.js', 'spec/**/*.js'],
         'rules': {
-            'no-console': 'off'
+            'no-console': 'off',
+            'require-jsdoc': 0,
+            'valid-jsdoc': 0
         }
     }]
 };

@@ -1,7 +1,7 @@
 /**
  * Get a random prefixed ID
  *
- * @param (string) prefix Prefix to use. Default is `'wavesurfer_'`.
+ * @param {String} prefix Prefix to use. Default is `'wavesurfer_'`.
  * @returns {String} Random prefixed ID
  * @example
  * console.log(getId()); // logs 'wavesurfer_b5pors4ru6g'
