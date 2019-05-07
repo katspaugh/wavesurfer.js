@@ -1,3 +1,4 @@
+/*eslint no-console: ["error", { allow: ["warn"] }] */
 /**
  * @typedef {Object} MinimapPluginParams
  * @desc Extends the `WavesurferParams` wavesurfer was initialised with
@@ -48,13 +49,7 @@ export default class MinimapPlugin {
             name: 'minimap',
             deferInit: params && params.deferInit ? params.deferInit : false,
             params: params,
-            staticProps: {
-                initMinimap(customConfig) {
-                    console.warn('Deprecated initMinimap!');
-                    params = customConfig;
-                    this.initPlugins('minimap');
-                }
-            },
+            staticProps: {},
             instance: MinimapPlugin
         };
     }
