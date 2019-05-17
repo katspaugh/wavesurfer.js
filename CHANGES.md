@@ -7,11 +7,15 @@ wavesurfer.js changelog
 - Add `wavesurfer.getActivePlugins()`: return map of plugins
   that are currently initialised
 - Update progress when seeking with HTML media controls (#1535)
+- Make sure mute/volume is updated when using `MediaElement` backend (#1615)
 - Refactor `MultiCanvas` and add `CanvasEntry` class (#1617)
 - Fix `wavesurfer.isReady`: make it a public boolean, the
   broken `isReady` method is removed (#1597)
 - Add support for `Blob` output type in `wavesurfer.exportImage` (#1610)
 - Fix fallback to Audio Element in browsers that don't support Web Audio (#1614)
+- `util.getId()` now accepts a `prefix` argument (#1619)
+- Fix: the `progressWave` should not be rendered when specifying the same
+  value for the `progressColor` and `waveColor` options (#1620)
 - Cursor plugin:
   - Add `formatTimeCallback` option
   - Add `followCursorY` option (#1605)
@@ -27,9 +31,6 @@ wavesurfer.js changelog
 - Timeline plugin: fix `ready` listener when loading multiple
   audio files
 - Minimap plugin: remove deprecated `initMinimap` method (#1646)
-- `util.getId()` now accepts a `prefix` argument (#1619)
-- Fix: the `progressWave` should not be rendered when specifying the same
-  value for the `progressColor` and `waveColor` options (#1620)
 
 2.2.1 (18.03.2019)
 ------------------

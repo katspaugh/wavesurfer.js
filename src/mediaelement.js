@@ -38,6 +38,8 @@ export default class MediaElement extends WebAudio {
         /** @private */
         this.volume = 1;
         /** @private */
+        this.isMuted = false;
+        /** @private */
         this.buffer = null;
         /** @private */
         this.onPlayEnd = null;
@@ -159,10 +161,21 @@ export default class MediaElement extends WebAudio {
             this.fireEvent('seek');
         });
 
+        media.addEventListener('volumechange', event => {
+            this.isMuted = media.muted;
+            if (this.isMuted) {
+                this.volume = 0;
+            } else {
+                this.volume = media.volume;
+            }
+            this.fireEvent('volume');
+        });
+
         this.media = media;
         this.peaks = peaks;
         this.onPlayEnd = null;
         this.buffer = null;
+        this.isMuted = media.muted;
         this.setPlaybackRate(this.playbackRate);
         this.setVolume(this.volume);
     }
@@ -344,7 +357,7 @@ export default class MediaElement extends WebAudio {
      * @return {number} value A floating point value between 0 and 1.
      */
     getVolume() {
-        return this.volume || this.media.volume;
+        return this.volume;
     }
 
     /**
@@ -354,7 +367,10 @@ export default class MediaElement extends WebAudio {
      */
     setVolume(value) {
         this.volume = value;
-        this.media.volume = this.volume;
+        // no need to change when it's already at that volume
+        if (this.media.volume !== this.volume) {
+            this.media.volume = this.volume;
+        }
     }
 
     /**
