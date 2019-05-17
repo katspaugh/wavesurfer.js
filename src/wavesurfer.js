@@ -651,9 +651,23 @@ export default class WaveSurfer extends util.Observer {
             this.drawer.progress(this.backend.getPlayedPercents());
             this.fireEvent('audioprocess', time);
         });
-        this.backend.on('seek', () => {
-            this.drawer.progress(this.backend.getPlayedPercents());
-        });
+
+        // only needed for MediaElement backend
+        if (this.params.backend === 'MediaElement') {
+            this.backend.on('seek', () => {
+                this.drawer.progress(this.backend.getPlayedPercents());
+            });
+
+            this.backend.on('volume', () => {
+                let newVolume = this.getVolume();
+                this.fireEvent('volume', newVolume);
+
+                if (this.backend.isMuted !== this.isMuted) {
+                    this.isMuted = this.backend.isMuted;
+                    this.fireEvent('mute', this.isMuted);
+                }
+            });
+        }
     }
 
     /**
@@ -929,6 +943,7 @@ export default class WaveSurfer extends util.Observer {
      * @example
      * // unmute
      * wavesurfer.setMute(false);
+     * console.log(wavesurfer.getMute()) // logs false
      */
     setMute(mute) {
         // ignore all muting requests if the audio is already in that state
