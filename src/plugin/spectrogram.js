@@ -235,6 +235,9 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
  * canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('spectrogram')`
+ * @property {?number[][]} colorMap A 256 long array of 4-element arrays.
+ * Each entry should contain a float between 0 and 1 and specify
+ * r, g, b, and alpha.
  */
 
 /**
@@ -324,8 +327,8 @@ export default class SpectrogramPlugin {
             } else {
                 this.colorMap = [];
                 for (let i = 0; i < 256; i++) {
-                    const val = 255 - i;
-                    this.colorMap.push([val, val, val, 255]);
+                    const val = (255 - i) / 256;
+                    this.colorMap.push([val, val, val, 1]);
                 }
             }
             this.width = drawer.width;
@@ -472,13 +475,13 @@ export default class SpectrogramPlugin {
                 const colorMap = my.colorMap[pixels[i][j]];
                 my.spectrCc.fillStyle =
                     'rgba(' +
-                    colorMap[0] +
+                    colorMap[0] * 256 +
                     ', ' +
-                    colorMap[1] +
+                    colorMap[1] * 256 +
                     ', ' +
-                    colorMap[2] +
+                    colorMap[2] * 256 +
                     ',' +
-                    colorMap[3] / 255 +
+                    colorMap[3] +
                     ')';
                 my.spectrCc.fillRect(
                     i,
