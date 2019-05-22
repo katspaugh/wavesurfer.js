@@ -310,7 +310,24 @@ export default class SpectrogramPlugin {
             if (!this.container) {
                 throw Error('No container for WaveSurfer spectrogram');
             }
-
+            if (params.colorMap) {
+                if (params.colorMap.length < 256) {
+                    throw Error('Colormap must contain 256 elements.');
+                }
+                for (let i = 0; i < params.colorMap.length; i++) {
+                    const cmEntry = params.colorMap[i];
+                    if (cmEntry.length !== 4) {
+                        throw Error('ColorMap entries must contain 4 values.');
+                    }
+                }
+                this.colorMap = params.colorMap;
+            } else {
+                this.colorMap = [];
+                for (let i = 0; i < 256; i++) {
+                    const val = 255 - i;
+                    this.colorMap.push([val, val, val, 255]);
+                }
+            }
             this.width = drawer.width;
             this.pixelRatio = this.params.pixelRatio || ws.params.pixelRatio;
             this.fftSamples =
@@ -452,14 +469,16 @@ export default class SpectrogramPlugin {
 
         for (i = 0; i < pixels.length; i++) {
             for (j = 0; j < pixels[i].length; j++) {
-                const colorValue = 255 - pixels[i][j];
+                const colorMap = my.colorMap[pixels[i][j]];
                 my.spectrCc.fillStyle =
-                    'rgb(' +
-                    colorValue +
+                    'rgba(' +
+                    colorMap[0] +
                     ', ' +
-                    colorValue +
+                    colorMap[1] +
                     ', ' +
-                    colorValue +
+                    colorMap[2] +
+                    ',' +
+                    colorMap[3] / 255 +
                     ')';
                 my.spectrCc.fillRect(
                     i,
