@@ -107,13 +107,13 @@ wavesurfer.load('../media/demo.wav');</code></pre>
                      client before initializing the spectrogram.
                     
                     <noindex><p>
-<pre><code>colormap = require('colormap');
-colors = colormap({
+<pre><code>const colormap = require('colormap');
+const colors = colormap({
     colormap: 'hot',
     nshades: 256,
     format: 'float'
 });
-fs = require('fs');
+const fs = require('fs');
 fs.writeFile('hot-colormap.json', JSON.stringify(colors));                        
 </code></pre>
                     </p></noindex>
