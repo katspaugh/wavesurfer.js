@@ -7,9 +7,7 @@ node_js:
   - "node"
 services:
   - xvfb
-cache:
-  directories:
-  - node_modules
+cache: npm
 install:
   - npm prune
   - npm install
