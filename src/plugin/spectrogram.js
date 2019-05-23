@@ -235,6 +235,9 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
  * canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('spectrogram')`
+ * @property {?number[][]} colorMap A 256 long array of 4-element arrays.
+ * Each entry should contain a float between 0 and 1 and specify
+ * r, g, b, and alpha.
  */
 
 /**
@@ -310,7 +313,26 @@ export default class SpectrogramPlugin {
             if (!this.container) {
                 throw Error('No container for WaveSurfer spectrogram');
             }
-
+            if (params.colorMap) {
+                if (params.colorMap.length < 256) {
+                    throw new Error('Colormap must contain 256 elements');
+                }
+                for (let i = 0; i < params.colorMap.length; i++) {
+                    const cmEntry = params.colorMap[i];
+                    if (cmEntry.length !== 4) {
+                        throw new Error(
+                            'ColorMap entries must contain 4 values'
+                        );
+                    }
+                }
+                this.colorMap = params.colorMap;
+            } else {
+                this.colorMap = [];
+                for (let i = 0; i < 256; i++) {
+                    const val = (255 - i) / 256;
+                    this.colorMap.push([val, val, val, 1]);
+                }
+            }
             this.width = drawer.width;
             this.pixelRatio = this.params.pixelRatio || ws.params.pixelRatio;
             this.fftSamples =
@@ -452,14 +474,16 @@ export default class SpectrogramPlugin {
 
         for (i = 0; i < pixels.length; i++) {
             for (j = 0; j < pixels[i].length; j++) {
-                const colorValue = 255 - pixels[i][j];
+                const colorMap = my.colorMap[pixels[i][j]];
                 my.spectrCc.fillStyle =
-                    'rgb(' +
-                    colorValue +
+                    'rgba(' +
+                    colorMap[0] * 256 +
                     ', ' +
-                    colorValue +
+                    colorMap[1] * 256 +
                     ', ' +
-                    colorValue +
+                    colorMap[2] * 256 +
+                    ',' +
+                    colorMap[3] +
                     ')';
                 my.spectrCc.fillRect(
                     i,

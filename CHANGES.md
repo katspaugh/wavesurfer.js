@@ -20,8 +20,9 @@ wavesurfer.js changelog
   - Add `formatTimeCallback` option
   - Add `followCursorY` option (#1605)
   - Remove deprecated `enableCursor` method (#1646)
-- Spectrogram plugin: fix `ready` listener when loading multiple
-  audio files (#1572)
+- Spectrogram plugin:
+  - Fix `ready` listener when loading multiple audio files (#1572)
+  - Allow user to specify a colorMap (#1436)
 - Regions plugin:
   - Fix `ready` listener when loading multiple audio files (#1602)
   - Add `snapToGridInterval` and `snapToGridOffset` options (#1632)
