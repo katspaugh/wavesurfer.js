@@ -98,7 +98,26 @@ wavesurfer.load('../media/demo.wav');</code></pre>
                       <li><code>fftSamples</code> - number of FFT samples (<code>512</code> by default). Number of spectral lines and height of the spectrogram will be a half of this parameter.</li>
                       <li><code>frequenciesDataUrl</code> - URL to load spectral data from.</li>
                       <li><code>labels</code> - Whether or not to display frequency labels.</li>
+                      <li><code>colorMap</code> - Specifies the colormap to be used when rendering the spectrogram.</li>
                     </ul>
+                    
+                    <h4>Generating a colorMap</h4>
+                    The colormap npm can be used to generate a colormap. 
+                    <code>npm install colormap</code>
+                    If the colormap is generated on the client, the 2d array can be passed in directly. Alternatively,
+                    the colormap can be saved as a json file and retrieved by the client.
+                    
+                    <noindex><p>
+<pre><code>colormap = require('colormap');
+colors = colormap({
+    colormap: 'hot',
+    nshades: 256,
+    format: 'float'
+});
+fs = require('fs');
+fs.writeFile('hot-colormap.json', JSON.stringify(colors));                        
+</code></pre>
+                    </p></noindex>
                 </div>
             </div>
 

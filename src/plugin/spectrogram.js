@@ -315,12 +315,14 @@ export default class SpectrogramPlugin {
             }
             if (params.colorMap) {
                 if (params.colorMap.length < 256) {
-                    throw Error('Colormap must contain 256 elements.');
+                    throw new Error('Colormap must contain 256 elements');
                 }
                 for (let i = 0; i < params.colorMap.length; i++) {
                     const cmEntry = params.colorMap[i];
                     if (cmEntry.length !== 4) {
-                        throw Error('ColorMap entries must contain 4 values.');
+                        throw new Error(
+                            'ColorMap entries must contain 4 values'
+                        );
                     }
                 }
                 this.colorMap = params.colorMap;
