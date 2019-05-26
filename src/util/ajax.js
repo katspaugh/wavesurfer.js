@@ -3,9 +3,33 @@ import Observer from './observer';
 /**
  * Perform an ajax request
  *
- * @param {Options} options Description
+ * @param {Object} options AJAX options to use. See example below for options.
+ * @returns {Observer} Observer instance
  *
- * @returns {Object} Observer instance
+ * @example
+ * // default options
+ * let options = {
+ *     method: 'GET',
+ *     url: undefined,
+ *     responseType: 'json',
+ *     xhr: {}
+ * };
+ *
+ * // override default options
+ * options.url = '../media/demo.wav';
+ * options.responseType = 'arraybuffer';
+ *
+ * // make ajax call
+ * let ajaxCall = util.ajax(options);
+ * ajaxCall.on('progress', e => {
+ *     console.log('progress', e);
+ * });
+ * ajaxCall.on('success', (data, e) => {
+ *     console.log('success!', data);
+ * });
+ * ajaxCall.on('error', e => {
+ *     console.warn('ajax error: ' + e.target.statusText);
+ * });
  */
 export default function ajax(options) {
     const instance = new Observer();
