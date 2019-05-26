@@ -3,7 +3,7 @@ import Observer from './observer';
 /**
  * Perform an ajax request using `XMLHttpRequest`.
  *
- * @deprecated Use `util.fetch` instead.
+ * @deprecated Use `util.fetchFile` instead.
  *
  * @param {Object} options AJAX options to use. See example below for options.
  * @returns {Observer} Observer instance

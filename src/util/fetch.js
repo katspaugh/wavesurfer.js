@@ -5,16 +5,36 @@
 import Observer from './observer';
 
 /**
- * Perform a request using fetch.
+ * Load a file using `fetch`.
  *
- * @param {Options} options Description
- * dofetch({
- *   url: "../media/demo.wav"
- * })
- *
+ * @param {Options} options Request options to use. See example below.
  * @returns {Observer} Observer instance
+ * @example
+ * // default options
+ * let options = {
+ *     method: 'GET',
+ *     mode: 'cors',
+ *     credentials: 'same-origin',
+ *     url: undefined,
+ *     cache: 'default'
+ * };
+ *
+ * // override default options
+ * options.url = '../media/demo.wav';
+ *
+ * // make fetch call
+ * let request = util.fetchFile(options);
+ * request.on('progress', e => {
+ *     console.log('progress', e);
+ * });
+ * request.on('success', (data, e) => {
+ *     console.log('success!', data);
+ * });
+ * request.on('error', e => {
+ *     console.warn('fetchFile error: ' + e.target.statusText);
+ * });
  */
-export default function dofetch(options) {
+export default function fetchFile(options) {
     const instance = new Observer();
     if (self.fetch) {
         const fetchRequest = new Request(options.url);

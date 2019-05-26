@@ -1265,7 +1265,7 @@ export default class WaveSurfer extends util.Observer {
      * the audio.
      * @returns {void}
      * @example
-     * // using ajax or media element to load (depending on backend)
+     * // uses fetch or media element to load file (depending on backend)
      * wavesurfer.load('http://example.com/demo.wav');
      *
      * // setting preload attribute with media element backend and supplying
@@ -1420,37 +1420,37 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Load an array buffer using ajax and pass the result to a callback
+     * Load an array buffer using fetch and pass the result to a callback
      *
      * @param {string} url The URL of the file object
      * @param {function} callback The function to call on complete
-     * @returns {util.ajax} Ajax call
+     * @returns {util.fetchFile} fetch call
      * @private
      */
     getArrayBuffer(url, callback) {
-        const ajax = util.ajax({
+        const request = util.fetchFile({
             url: url,
             responseType: 'arraybuffer',
             xhr: this.params.xhr
         });
 
-        this.currentAjax = ajax;
+        this.currentRequest = request;
 
         this.tmpEvents.push(
-            ajax.on('progress', e => {
+            request.on('progress', e => {
                 this.onProgress(e);
             }),
-            ajax.on('success', (data, e) => {
+            request.on('success', (data, e) => {
                 callback(data);
-                this.currentAjax = null;
+                this.currentRequest = null;
             }),
-            ajax.on('error', e => {
-                this.fireEvent('error', 'XHR error: ' + e.target.statusText);
-                this.currentAjax = null;
+            request.on('error', e => {
+                this.fireEvent('error', 'fetch error: ' + e.target.statusText);
+                this.currentRequest = null;
             })
         );
 
-        return ajax;
+        return request;
     }
 
     /**
