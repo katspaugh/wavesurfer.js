@@ -58,6 +58,14 @@ export default class CanvasEntry {
          * @type {string}
          */
         this.id = getId(this.constructor.name.toLowerCase() + '_');
+        /**
+         * Canvas 2d context attributes
+         *
+         * @type {object}
+         */
+        this.canvasContextAttributes = {
+            desynchronized: true
+        };
     }
 
     /**
@@ -67,7 +75,7 @@ export default class CanvasEntry {
      */
     initWave(element) {
         this.wave = element;
-        this.waveCtx = this.wave.getContext('2d');
+        this.waveCtx = this.wave.getContext('2d', this.canvasContextAttributes);
     }
 
     /**
@@ -78,7 +86,10 @@ export default class CanvasEntry {
      */
     initProgress(element) {
         this.progress = element;
-        this.progressCtx = this.progress.getContext('2d');
+        this.progressCtx = this.progress.getContext(
+            '2d',
+            this.canvasContextAttributes
+        );
     }
 
     /**
