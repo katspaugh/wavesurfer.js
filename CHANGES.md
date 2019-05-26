@@ -14,6 +14,7 @@ wavesurfer.js changelog
 - Add support for `Blob` output type in `wavesurfer.exportImage` (#1610)
 - Fix fallback to Audio Element in browsers that don't support Web Audio (#1614)
 - `util.getId()` now accepts a `prefix` argument (#1619)
+- Improve documentation for `util.ajax` and `xhr` option (#1656)
 - Fix: the `progressWave` should not be rendered when specifying the same
   value for the `progressColor` and `waveColor` options (#1620)
 - Cursor plugin:
