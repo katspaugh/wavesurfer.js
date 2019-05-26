@@ -98,7 +98,16 @@ import PeakCache from './peakcache';
  * the channels of the audio
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
- * @property {object} xhr={} XHR options.
+ * @property {object} xhr={} XHR options. For example:
+ * `var xhr = {
+ *     requestHeaders: [
+ *         {
+ *             key: 'Authorization',
+ *             value: 'my-token'
+ *         }
+ *     ],
+ *     withCredentials: true
+ * };`
  */
 
 /**
