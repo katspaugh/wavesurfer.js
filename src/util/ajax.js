@@ -18,6 +18,15 @@ import Observer from './observer';
  * // override default options
  * options.url = '../media/demo.wav';
  * options.responseType = 'arraybuffer';
+ * options.xhr = {
+ *     requestHeaders: [
+ *         {
+ *             key: 'Authorization',
+ *             value: 'my-token'
+ *         }
+ *     ],
+ *     withCredentials: true
+ * };
  *
  * // make ajax call
  * let ajaxCall = util.ajax(options);
