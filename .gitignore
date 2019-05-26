@@ -1,22 +1,19 @@
-dist/wavesurfer.dev.js
-dist/plugin/*.js
-!/dist/plugin/*.min.js
-dist/**/*.map
+/dist
 
 /node_modules
 /bower_components
 /npm-debug.log
-/.grunt
 /coverage
 /_SpecRunner.html
 /doc
+/_site
 
 .DS_Store
 .idea
 .project
 .chrome
+.build_cache
+.pydevproject
 
 package-lock.json
 .package.json.swp
-
-_site

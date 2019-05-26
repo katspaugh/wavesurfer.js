@@ -12,12 +12,14 @@ describe('WaveSurfer/playback:', function() {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
     beforeEach(function(done) {
+        manualDestroy = false;
+
         var wave = TestHelpers.createWaveform();
         wavesurfer = wave[0];
         element = wave[1];
         wavesurfer.load(TestHelpers.EXAMPLE_FILE_PATH);
 
-        wavesurfer.on('ready', done);
+        wavesurfer.once('ready', done);
     });
 
     afterEach(function() {
@@ -123,13 +125,12 @@ describe('WaveSurfer/playback:', function() {
         // skip 4 seconds backward
         wavesurfer.skipBackward(4);
         let time = wavesurfer.getCurrentTime();
-        let expectedTime = 6.886938775510204;
-        expect(time).toEqual(expectedTime);
+        expect(time).toBeWithinRange(6.88, 6.89);
 
         // skip backward with params.skipLength (default: 2 seconds)
         wavesurfer.skipBackward();
         time = wavesurfer.getCurrentTime();
-        expect(time).toEqual(expectedTime - 2);
+        expect(time).toBeWithinRange(4.88, 4.89);
     });
 
     /** @test {WaveSurfer#skipForward}  */
@@ -265,6 +266,20 @@ describe('WaveSurfer/playback:', function() {
         expect(cursorColor).toEqual('black');
     });
 
+    /** @test {WaveSurfer#getBackgroundColor} */
+    it('should allow getting backgroundColor', function() {
+        var bgColor = wavesurfer.getBackgroundColor();
+        expect(bgColor).toEqual(null);
+    });
+
+    /** @test {WaveSurfer#setBackgroundColor} */
+    it('should allow setting backgroundColor', function() {
+        wavesurfer.setBackgroundColor('#FFFF00');
+        var bgColor = wavesurfer.getBackgroundColor();
+
+        expect(bgColor).toEqual('#FFFF00');
+    });
+
     /** @test {WaveSurfer#getHeight} */
     it('should allow getting height', function() {
         var height = wavesurfer.getHeight();
@@ -296,6 +311,11 @@ describe('WaveSurfer/playback:', function() {
     it('should export image data', function() {
         var imgData = wavesurfer.exportImage();
         expect(imgData).toBeNonEmptyString();
+
+        wavesurfer.exportImage('image/png', 1, 'blob').then(blobs => {
+            expect(blobs).toBeArrayOfSize(1);
+            expect(blobs[0] instanceof Blob).toBeTruthy();
+        });
     });
 
     /** @test {WaveSurfer#destroy} */

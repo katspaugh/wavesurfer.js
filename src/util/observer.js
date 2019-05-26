@@ -25,7 +25,7 @@ export default class Observer {
      *
      * @param {string} event Name of the event to listen to
      * @param {function} fn The callback to trigger when the event is fired
-     * @return {ListenerDescriptor}
+     * @return {ListenerDescriptor} The event descriptor
      */
     on(event, fn) {
         if (!this.handlers) {
@@ -86,7 +86,7 @@ export default class Observer {
      *
      * @param {string} event The event to listen to
      * @param {function} handler The callback that is only to be called once
-     * @return {ListenerDescriptor}
+     * @return {ListenerDescriptor} The event descriptor
      */
     once(event, handler) {
         const fn = (...args) => {

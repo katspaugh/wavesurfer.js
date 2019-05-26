@@ -14,7 +14,7 @@
 ### Wavesurfer.js version(s):
 
 
-### Browser version(s):
+### Browser and operating system version(s):
 
 
 ### Code needed to reproduce the issue:

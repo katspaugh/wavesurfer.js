@@ -96,10 +96,9 @@ export default class Drawer extends util.Observer {
         const parentWidth = this.getWidth();
 
         let progress;
-
         if (!this.params.fillParent && nominalWidth < parentWidth) {
             progress =
-                (clientX - bbox.left) *
+                (this.params.rtl ? bbox.right - clientX : clientX - bbox.left) *
                     (this.params.pixelRatio / nominalWidth) || 0;
 
             if (progress > 1) {
@@ -107,7 +106,10 @@ export default class Drawer extends util.Observer {
             }
         } else {
             progress =
-                (clientX - bbox.left + this.wrapper.scrollLeft) /
+                ((this.params.rtl
+                    ? bbox.right - clientX
+                    : clientX - bbox.left) +
+                    this.wrapper.scrollLeft) /
                     this.wrapper.scrollWidth || 0;
         }
 
@@ -143,8 +145,8 @@ export default class Drawer extends util.Observer {
     /**
      * Draw peaks on the canvas
      *
-     * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
-     * rendering
+     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays
+     * for split channel rendering
      * @param {number} length The width of the area that should be drawn
      * @param {number} start The x-offset of the beginning of the area that
      * should be rendered
@@ -218,32 +220,34 @@ export default class Drawer extends util.Observer {
     /**
      * Get the current scroll position in pixels
      *
-     * @return {number}
+     * @return {number} Horizontal scroll position in pixels
      */
     getScrollX() {
-        const pixelRatio = this.params.pixelRatio;
-        let x = Math.round(this.wrapper.scrollLeft * pixelRatio);
+        let x = 0;
+        if (this.wrapper) {
+            const pixelRatio = this.params.pixelRatio;
+            x = Math.round(this.wrapper.scrollLeft * pixelRatio);
 
-        // In cases of elastic scroll (safari with mouse wheel) you can
-        // scroll beyond the limits of the container
-        // Calculate and floor the scrollable extent to make sure an out
-        // of bounds value is not returned
-        // Ticket #1312
-        if (this.params.scrollParent) {
-            const maxScroll = ~~(
-                this.wrapper.scrollWidth * pixelRatio -
-                this.getWidth()
-            );
-            x = Math.min(maxScroll, Math.max(0, x));
+            // In cases of elastic scroll (safari with mouse wheel) you can
+            // scroll beyond the limits of the container
+            // Calculate and floor the scrollable extent to make sure an out
+            // of bounds value is not returned
+            // Ticket #1312
+            if (this.params.scrollParent) {
+                const maxScroll = ~~(
+                    this.wrapper.scrollWidth * pixelRatio -
+                    this.getWidth()
+                );
+                x = Math.min(maxScroll, Math.max(0, x));
+            }
         }
-
         return x;
     }
 
     /**
      * Get the width of the container
      *
-     * @return {number}
+     * @return {number} The width of the container
      */
     getWidth() {
         return Math.round(this.container.clientWidth * this.params.pixelRatio);
@@ -252,7 +256,8 @@ export default class Drawer extends util.Observer {
     /**
      * Set the width of the container
      *
-     * @param {number} width
+     * @param {number} width The new width of the container
+     * @return {boolean} Whether the width of the container was updated or not
      */
     setWidth(width) {
         if (this.width == width) {
@@ -278,7 +283,8 @@ export default class Drawer extends util.Observer {
     /**
      * Set the height of the container
      *
-     * @param {number} height
+     * @param {number} height The new height of the container.
+     * @return {boolean} Whether the height of the container was updated or not
      */
     setHeight(height) {
         if (height == this.height) {
@@ -348,7 +354,7 @@ export default class Drawer extends util.Observer {
      * Draw a waveform with bars
      *
      * @abstract
-     * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
+     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for split channel
      * rendering
      * @param {number} channelIndex The index of the current channel. Normally
      * should be 0
@@ -363,7 +369,7 @@ export default class Drawer extends util.Observer {
      * Draw a waveform
      *
      * @abstract
-     * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
+     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for split channel
      * rendering
      * @param {number} channelIndex The index of the current channel. Normally
      * should be 0

@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Equalizer Example</title>
+        <title>wavesurfer.js | RTL </title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -15,9 +15,15 @@
 
         <!-- wavesurfer.js -->
         <script src="../../dist/wavesurfer.js"></script>
+        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
 
         <!-- Demo -->
         <script src="main.js"></script>
+        
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
@@ -27,15 +33,11 @@
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">Equalizer Example</h1>
+                <h1 itemprop="name">RTL (right-to-left)</h1>
             </div>
 
             <div id="demo">
                 <div id="waveform">
-                    <div class="progress progress-striped active" id="progress-bar">
-                        <div class="progress-bar progress-bar-info"></div>
-                    </div>
-
                     <!-- Here be the waveform -->
                 </div>
 
@@ -47,11 +49,28 @@
                         <i class="glyphicon glyphicon-pause"></i>
                         Pause
                     </button>
-
-                    <div id="equalizer">
-                        <!-- Here be equalizer sliders -->
-                    </div>
                 </div>
+            </div>
+
+            <div class="row marketing">
+                <h3>How to enable right-to-left</h3>
+
+                <hr />
+
+                <p>
+                    Simply set the <code>rtl</code>
+                    option to <code>true</code>.
+                </p>
+
+                <p>
+<pre><code>var wavesurfer = WaveSurfer.create({
+    container: document.querySelector('#wave'),
+    rtl: true
+});
+</code></pre>
+                </p>
+
+
             </div>
 
             <div class="footer row">
@@ -66,7 +85,7 @@
                 <div class="col-sm-5">
                     <div class="pull-right">
                         <noindex>
-                        Demo music track is <a href="http://www.jamendo.com/en/track/661578/trou" rel="nofollow"><b>Trou</b> <span class="muted">by</span>&nbsp;<b>czskamaarù</b></a>. Thanks!
+                            The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.
                         </noindex>
                     </div>
                 </div>

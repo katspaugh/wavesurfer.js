@@ -3,7 +3,7 @@
 var wavesurfer;
 
 // Init & load
-document.addEventListener('DOMContentLoaded', function() {
+function initAndLoadSpectrogram(colorMap) {
     // Create an instance
     var options = {
         container: '#waveform',
@@ -13,7 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
         cursorColor: 'navy',
         plugins: [
             WaveSurfer.spectrogram.create({
-                container: '#wave-spectrogram'
+                container: '#wave-spectrogram',
+                labels: true,
+                colorMap: colorMap
             })
         ]
     };
@@ -50,4 +52,13 @@ document.addEventListener('DOMContentLoaded', function() {
     })();
 
     wavesurfer.load('../media/demo.wav');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Load a colormap json file to be passed to the spectrogram.create method.
+    WaveSurfer.util
+        .ajax({ url: 'hot-colormap.json' })
+        .on('success', (colorMap, e) => {
+            initAndLoadSpectrogram(colorMap);
+        });
 });
