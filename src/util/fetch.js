@@ -9,10 +9,10 @@ import Observer from './observer';
  *
  * @param {Options} options Description
  * dofetch({
- *   url: "https://www.waveform.al/sample.json"
+ *   url: "../media/demo.wav"
  * })
  *
- * @returns {Object} Observer instance
+ * @returns {Observer} Observer instance
  */
 export default function dofetch(options) {
     const instance = new Observer();

@@ -5,7 +5,7 @@ import Observer from './observer';
  *
  * @param {Options} options Description
  *
- * @returns {Object} Observer instance
+ * @returns {Observer} Observer instance
  */
 export default function ajax(options) {
     const instance = new Observer();
