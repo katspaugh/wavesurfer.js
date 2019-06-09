@@ -161,7 +161,7 @@ export default class CursorPlugin {
                         top: 0,
                         bottom: 0,
                         width: '0',
-                        display: 'none',
+                        display: 'flex',
                         borderRightStyle: this.params.style,
                         borderRightWidth: this.params.width,
                         borderRightColor: this.params.color,
@@ -184,7 +184,7 @@ export default class CursorPlugin {
                             top: 0,
                             bottom: 0,
                             width: 'auto',
-                            display: 'none',
+                            display: 'flex',
                             opacity: this.params.opacity,
                             pointerEvents: 'none',
                             height: '100%'
@@ -210,6 +210,8 @@ export default class CursorPlugin {
 
         this.wrapper.addEventListener('mousemove', this._onMousemove);
         if (this.params.hideOnBlur) {
+            // ensure elements are hidden initially
+            this.hideCursor();
             this.wrapper.addEventListener('mouseenter', this._onMouseenter);
             this.wrapper.addEventListener('mouseleave', this._onMouseleave);
         }
