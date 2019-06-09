@@ -161,7 +161,7 @@ export default class CursorPlugin {
                         top: 0,
                         bottom: 0,
                         width: '0',
-                        display: 'flex',
+                        display: 'none',
                         borderRightStyle: this.params.style,
                         borderRightWidth: this.params.width,
                         borderRightColor: this.params.color,
