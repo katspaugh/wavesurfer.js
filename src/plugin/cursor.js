@@ -184,7 +184,7 @@ export default class CursorPlugin {
                             top: 0,
                             bottom: 0,
                             width: 'auto',
-                            display: 'flex',
+                            display: 'none',
                             opacity: this.params.opacity,
                             pointerEvents: 'none',
                             height: '100%'
