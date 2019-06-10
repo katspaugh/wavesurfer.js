@@ -210,6 +210,8 @@ export default class CursorPlugin {
 
         this.wrapper.addEventListener('mousemove', this._onMousemove);
         if (this.params.hideOnBlur) {
+            // ensure elements are hidden initially
+            this.hideCursor();
             this.wrapper.addEventListener('mouseenter', this._onMouseenter);
             this.wrapper.addEventListener('mouseleave', this._onMouseleave);
         }
