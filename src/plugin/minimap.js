@@ -78,9 +78,7 @@ export default class MinimapPlugin {
             const el = document.querySelector(params.container);
             if (!el) {
                 console.warn(
-                    `Wavesurfer minimap container ${
-                        params.container
-                    } was not found! The minimap will be automatically appended below the waveform.`
+                    `Wavesurfer minimap container ${params.container} was not found! The minimap will be automatically appended below the waveform.`
                 );
             }
             this.params.container = el;
