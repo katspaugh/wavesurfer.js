@@ -21,6 +21,7 @@ wavesurfer.js changelog
   - Add `formatTimeCallback` option
   - Add `followCursorY` option (#1605)
   - Remove deprecated `enableCursor` method (#1646)
+  - Hide the cursor elements before first mouseover if `hideOnBlur` is set (#1663)
 - Spectrogram plugin:
   - Fix `ready` listener when loading multiple audio files (#1572)
   - Allow user to specify a colorMap (#1436)
