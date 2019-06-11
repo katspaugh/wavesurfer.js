@@ -20,7 +20,6 @@
 
         <!-- App -->
         <script src="app.js"></script>
-        <script src="../trivia.js"></script>
 
         <!-- highlight.js for syntax highlighting in this example -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
@@ -31,22 +30,11 @@
     <body itemscope itemtype="http://schema.org/WebApplication">
         <div class="container">
             <div class="header">
-                <noindex>
-                <ul class="nav nav-pills pull-right">
-                    <li><a href="?fill">Fill</a></li>
-                    <li><a href="?scroll">Scroll</a></li>
-                </ul>
-                </noindex>
-
                 <h1 itemprop="name"><a href="http://wavesurfer-js.org">wavesurfer.js</a><noindex> + Minimap</noindex></h1>
             </div>
 
             <div id="demo">
                 <div id="waveform">
-                    <div class="progress progress-striped active" id="progress-bar">
-                        <div class="progress-bar progress-bar-info"></div>
-                    </div>
-
                     <!-- Here be waveform -->
                 </div>
                 <div id="wave-minimap"></div>
