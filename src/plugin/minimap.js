@@ -96,9 +96,9 @@ export default class MinimapPlugin {
         this.wavesurfer = ws;
         this.util = ws.util;
         /**
-         * Minimap needs to register to ready and waveform-ready events to
-         * work with MediaElement, the time when ready is called is different
-         * (peaks can not be got)
+         * Minimap needs to listen for the `ready` and `waveform-ready` events
+         * to work with the `MediaElement` backend. The moment the `ready` event
+         * is called is different (and peaks would not load).
          *
          * @type {string}
          * @see https://github.com/katspaugh/wavesurfer.js/issues/736
