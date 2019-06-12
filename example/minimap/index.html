@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | RTL </title>
+        <title>wavesurfer.js | Minimap plugin</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -11,15 +11,16 @@
 
         <link rel="stylesheet" href="../css/style.css" />
         <link rel="stylesheet" href="../css/ribbon.css" />
-        <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
         <script src="../../dist/wavesurfer.js"></script>
-        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
 
-        <!-- Demo -->
-        <script src="main.js"></script>
-        
+        <!-- minimap plugin -->
+        <script src="../../dist/plugin/wavesurfer.minimap.js"></script>
+
+        <!-- App -->
+        <script src="app.js"></script>
+
         <!-- highlight.js for syntax highlighting in this example -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
         <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
@@ -29,17 +30,14 @@
     <body itemscope itemtype="http://schema.org/WebApplication">
         <div class="container">
             <div class="header">
-                <ul class="nav nav-pills pull-right">
-                    <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
-                </ul>
-
-                <h1 itemprop="name">RTL (right-to-left)</h1>
+                <h1 itemprop="name"><a href="http://wavesurfer-js.org">wavesurfer.js</a><noindex> + Minimap</noindex></h1>
             </div>
 
             <div id="demo">
                 <div id="waveform">
-                    <!-- Here be the waveform -->
+                    <!-- Here be waveform -->
                 </div>
+                <div id="wave-minimap"></div>
 
                 <div class="controls">
                     <button class="btn btn-primary" data-action="play">
@@ -53,24 +51,33 @@
             </div>
 
             <div class="row marketing">
-                <h3>How to enable right-to-left</h3>
+                <div class="col-lg-4">
+                    <h4>wavesurfer.js Minimap Plugin</h4>
 
-                <hr />
+                    <p itemprop="about">Adds a simple minimap to your <strong>wavesurfer.js</strong> instances.</p>
 
-                <p>
-                    Simply set the <code>rtl</code>
-                    option to <code>true</code>.
-                </p>
+                </div>
 
-                <p>
+                <div class="col-lg-8">
+                    <h4>Quick Start</h4>
+
+                    <noindex><p>
 <pre><code>var wavesurfer = WaveSurfer.create({
-    container: document.querySelector('#wave'),
-    rtl: true
+    // your options here
+    plugins: [
+        WaveSurfer.minimap.create({
+            container: '#wave-minimap',
+            waveColor: '#777',
+            progressColor: '#222',
+            height: 50
+        })
+    ]
 });
-</code></pre>
-                </p>
 
+wavesurfer.load('../media/demo.wav');</code></pre>
+                    </p></noindex>
 
+                </div>
             </div>
 
             <div class="footer row">
@@ -78,16 +85,8 @@
                     <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
                 </div>
 
-                <div class="col-sm-7">
-                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
-                </div>
-
-                <div class="col-sm-5">
-                    <div class="pull-right">
-                        <noindex>
-                            The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.
-                        </noindex>
-                    </div>
+                <div class="col-sm-12">
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
                 </div>
             </div>
         </div>

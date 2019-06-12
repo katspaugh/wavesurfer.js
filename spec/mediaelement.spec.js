@@ -209,9 +209,11 @@ describe('WaveSurfer/MediaElement:', function() {
 
     /** @test {WaveSurfer#getVolume}  */
     it('should get volume', function(done) {
+        audioElement.volume = 0.3;
         wavesurfer.once('ready', function() {
             let volume = wavesurfer.getVolume();
-            expect(volume).toEqual(1);
+            expect(volume).toEqual(audioElement.volume);
+
             done();
         });
         loadElement();
@@ -223,12 +225,55 @@ describe('WaveSurfer/MediaElement:', function() {
 
         wavesurfer.once('volume', function(result) {
             expect(result).toEqual(targetVolume);
+            expect(wavesurfer.getVolume()).toEqual(targetVolume);
 
             done();
         });
 
         wavesurfer.once('ready', function() {
             wavesurfer.setVolume(targetVolume);
+        });
+        loadElement();
+    });
+
+    /** @test {WaveSurfer#toggleMute}  */
+    it('should toggle mute', function(done) {
+        wavesurfer.once('ready', function() {
+            wavesurfer.toggleMute();
+            expect(wavesurfer.isMuted).toBeTrue();
+
+            wavesurfer.toggleMute();
+            expect(wavesurfer.isMuted).toBeFalse();
+
+            done();
+        });
+        loadElement();
+    });
+
+    /** @test {WaveSurfer#setMute}  */
+    it('should set mute', function(done) {
+        wavesurfer.once('ready', function() {
+            wavesurfer.setMute(true);
+            expect(wavesurfer.isMuted).toBeTrue();
+
+            wavesurfer.setMute(false);
+            expect(wavesurfer.isMuted).toBeFalse();
+
+            done();
+        });
+        loadElement();
+    });
+
+    /** @test {WaveSurfer#getMute}  */
+    it('should get mute', function(done) {
+        wavesurfer.once('ready', function() {
+            wavesurfer.setMute(true);
+            expect(wavesurfer.getMute()).toBeTrue();
+
+            wavesurfer.setMute(false);
+            expect(wavesurfer.getMute()).toBeFalse();
+
+            done();
         });
         loadElement();
     });
