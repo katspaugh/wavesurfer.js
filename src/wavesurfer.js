@@ -1404,7 +1404,6 @@ export default class WaveSurfer extends util.Observer {
      */
     decodeArrayBuffer(arraybuffer, callback) {
         this.arraybuffer = arraybuffer;
-
         this.backend.decodeArrayBuffer(
             arraybuffer,
             data => {
@@ -1440,12 +1439,12 @@ export default class WaveSurfer extends util.Observer {
             request.on('progress', e => {
                 this.onProgress(e);
             }),
-            request.on('success', (data, e) => {
+            request.on('success', data => {
                 callback(data);
                 this.currentRequest = null;
             }),
             request.on('error', e => {
-                this.fireEvent('error', 'fetch error: ' + e.target.statusText);
+                this.fireEvent('error', 'fetch error: ' + e.message);
                 this.currentRequest = null;
             })
         );

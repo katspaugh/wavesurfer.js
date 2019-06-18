@@ -36,51 +36,53 @@ import Observer from './observer';
  */
 export default function fetchFile(options) {
     const instance = new Observer();
-    if (self.fetch) {
-        const fetchRequest = new Request(options.url);
-        let fetchHeaders = new Headers();
+    const fetchRequest = new Request(options.url);
+    let fetchHeaders = new Headers();
 
-        // check if headers and credentials are added
-        if (options) {
-            if (options.requestHeaders) {
-                // add custom request headers
-                options.requestHeaders.forEach(header => {
-                    fetchHeaders.append(header.key, header.value);
-                });
-            }
-        }
-
-        // set default fetch options
-        const fetchOptions = {
-            method: options.method || 'GET',
-            headers: fetchHeaders,
-            mode: options.mode || 'cors',
-            credentials: options.credentials || 'same-origin',
-            cache: options.cache || 'default'
-        };
-
-        // do the fetch
-        fetch(fetchRequest, fetchOptions)
-            .then(response => {
-                if (response.ok) {
-                    return response.blob();
-                } else {
-                    instance.fireEvent('HTTP error status ', response.status);
-                }
-            })
-            .then(blobResponse => {
-                var objectURL = URL.createObjectURL(blobResponse);
-                instance.fireEvent('load', objectURL);
-                instance.fireEvent('success', fetchRequest.response, objectURL);
-            })
-            .catch(error => {
-                instance.fireEvent('error', error.message);
+    // check if headers and credentials are added
+    if (options) {
+        if (options.requestHeaders) {
+            // add custom request headers
+            options.requestHeaders.forEach(header => {
+                fetchHeaders.append(header.key, header.value);
             });
-
-        // return the fetch
-        instance.fetchRequest = fetchRequest;
-    } else {
-        instance.fireEvent('error', 'fetch api not supported');
+        }
     }
+
+    // set default fetch options
+    const fetchOptions = {
+        method: options.method || 'GET',
+        headers: fetchHeaders,
+        mode: options.mode || 'cors',
+        credentials: options.credentials || 'same-origin',
+        cache: options.cache || 'default',
+        responseType: 'arraybuffer'
+    };
+    const responseType = options.responseType || 'arraybuffer';
+
+    // do the fetch
+    fetch(fetchRequest, fetchOptions)
+        .then(response => {
+            if (response.ok) {
+                if (responseType === 'arraybuffer') {
+                    return response.arrayBuffer();
+                } else if (responseType === 'json') {
+                    return response.json();
+                }
+            } else {
+                instance.fireEvent('HTTP error status ', response.status);
+            }
+        })
+        .then(response => {
+            //var objectURL = URL.createObjectURL(blobResponse);
+            instance.fireEvent('load', response);
+            instance.fireEvent('success', response);
+        })
+        .catch(error => {
+            instance.fireEvent('error', error);
+        });
+
+    // return the fetch
+    instance.fetchRequest = fetchRequest;
     return instance;
 }
