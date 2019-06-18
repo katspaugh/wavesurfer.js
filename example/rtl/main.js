@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
         rtl: true
     });
 
+    wavesurfer.on('error', function(e) {
+        console.warn(e);
+    });
+
     // Load audio from URL
     wavesurfer.load('../media/demo.wav');
 

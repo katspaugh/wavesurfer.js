@@ -23,6 +23,10 @@ function init() {
     // create an instance
     wavesurfer = WaveSurfer.create(options);
 
+    wavesurfer.on('error', function(e) {
+        console.warn(e);
+    });
+
     document
         .querySelector('[data-action="play"]')
         .addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
