@@ -14,7 +14,7 @@ describe('util.ajax:', function() {
             responseType: 'arraybuffer'
         };
         var instance = WaveSurfer.util.ajax(options);
-        instance.on('success', (data, e) => {
+        instance.once('success', (data, e) => {
             // url
             expect(e.target.responseURL).toContain(options.url);
 
@@ -33,7 +33,7 @@ describe('util.ajax:', function() {
             url: '/foo/bar'
         };
         var instance = WaveSurfer.util.ajax(options);
-        instance.on('error', e => {
+        instance.once('error', e => {
             // url
             expect(e.target.responseURL).toContain(options.url);
 
@@ -51,7 +51,7 @@ describe('util.ajax:', function() {
             responseType: 'arraybuffer'
         };
         var instance = WaveSurfer.util.ajax(options);
-        instance.on('progress', e => {
+        instance.once('progress', e => {
             // url
             expect(e.target.responseURL).toContain(options.url);
 
@@ -78,7 +78,7 @@ describe('util.ajax:', function() {
             }
         };
         var instance = WaveSurfer.util.ajax(options);
-        instance.on('success', (data, e) => {
+        instance.once('success', (data, e) => {
             // with credentials
             expect(e.target.withCredentials).toBeTrue();
 
@@ -98,8 +98,11 @@ describe('util.fetchFile:', function() {
             responseType: 'arraybuffer'
         };
         let instance = WaveSurfer.util.fetchFile(options);
-        instance.on('success', data => {
+        instance.once('success', data => {
             expect(instance.response.status).toEqual(200);
+            expect(instance.response.headers.get('content-type')).toEqual(
+                'audio/wav'
+            );
 
             // options
             expect(instance.fetchRequest.url).toEndWith(options.url);
@@ -121,8 +124,11 @@ describe('util.fetchFile:', function() {
             responseType: 'blob'
         };
         let instance = WaveSurfer.util.fetchFile(options);
-        instance.on('success', data => {
+        instance.once('success', data => {
             expect(instance.response.status).toEqual(200);
+            expect(instance.response.headers.get('content-type')).toEqual(
+                'audio/wav'
+            );
 
             // returned data is a Blob
             expect(data).toEqual(jasmine.any(Blob));
@@ -137,8 +143,11 @@ describe('util.fetchFile:', function() {
             responseType: 'json'
         };
         let instance = WaveSurfer.util.fetchFile(options);
-        instance.on('success', data => {
+        instance.once('success', data => {
             expect(instance.response.status).toEqual(200);
+            expect(instance.response.headers.get('content-type')).toEqual(
+                'application/json'
+            );
 
             // returned data is an array
             expect(data).toEqual([[0, 1, 2, 3]]);
@@ -153,8 +162,11 @@ describe('util.fetchFile:', function() {
             responseType: 'text'
         };
         let instance = WaveSurfer.util.fetchFile(options);
-        instance.on('success', data => {
+        instance.once('success', data => {
             expect(instance.response.status).toEqual(200);
+            expect(instance.response.headers.get('content-type')).toEqual(
+                'text/plain'
+            );
 
             // returned data is a string
             expect(data).toEqual('hello world');
@@ -163,19 +175,46 @@ describe('util.fetchFile:', function() {
         });
     });
 
-    it('load unknown reponse type', function(done) {
+    it('load unknown response type', function(done) {
         let options = {
             url: audioExampleUrl,
             responseType: 'fooBar'
         };
         let instance = WaveSurfer.util.fetchFile(options);
-        instance.on('error', error => {
+        instance.once('error', error => {
             expect(error).toEqual(
-                'Unknown responseType: ' + options.responseType
+                new Error('Unknown responseType: ' + options.responseType)
             );
 
             done();
         });
+    });
+
+    it('throws error when URL contains credentials', function() {
+        let options = {
+            url: 'http://user:password@example.com'
+        };
+        try {
+            WaveSurfer.util.fetchFile(options);
+        } catch (err) {
+            expect(err).toEqual(jasmine.any(TypeError));
+        }
+    });
+
+    it('throws error when URL is missing', function() {
+        try {
+            WaveSurfer.util.fetchFile({});
+        } catch (err) {
+            expect(err).toEqual(new Error('fetch url missing'));
+        }
+    });
+
+    it('throws error when options are missing', function() {
+        try {
+            WaveSurfer.util.fetchFile();
+        } catch (err) {
+            expect(err).toEqual(new Error('fetch options missing'));
+        }
     });
 
     it('fires error event when the file is not found', function(done) {
@@ -183,14 +222,32 @@ describe('util.fetchFile:', function() {
             url: '/foo/bar'
         };
         let instance = WaveSurfer.util.fetchFile(options);
-        instance.on('error', error => {
+        instance.once('error', error => {
             expect(instance.response.status).toEqual(404);
-            expect(error).toEqual('HTTP error status: 404');
+            expect(error).toEqual(new Error('HTTP error status: 404'));
 
             done();
         });
     });
+    /*
+    it('fires the progress event during loading', function(done) {
+        let options = {
+            url: audioExampleUrl,
+            responseType: 'arraybuffer'
+        };
+        let instance = WaveSurfer.util.fetchFile(options);
+        instance.on('progress', e => {
+            // url
+            expect(e.target.responseURL).toContain(options.url);
 
+            // progress message
+            expect(e.target.statusText).toBe('OK');
+            expect(e.target.status).toBe(200);
+
+            done();
+        });
+    });
+    */
     it('accepts custom request headers', function(done) {
         let options = {
             url: '/base/spec/support/test.txt',
@@ -203,7 +260,7 @@ describe('util.fetchFile:', function() {
             ]
         };
         let instance = WaveSurfer.util.fetchFile(options);
-        instance.on('success', data => {
+        instance.once('success', data => {
             expect(instance.response.headers.has('Content-Type')).toBeTrue();
             expect(instance.response.headers.get('Content-Type')).toEqual(
                 'text/plain'

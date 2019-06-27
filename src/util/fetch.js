@@ -18,7 +18,9 @@ import Observer from './observer';
  *     url: undefined,
  *     cache: 'default',
  *     responseType: 'json',
- *     requestHeaders: []
+ *     requestHeaders: [],
+ *     redirect: 'follow',
+ *     referrer: 'client'
  * };
  *
  * // override default options
@@ -38,9 +40,15 @@ import Observer from './observer';
  * });
  */
 export default function fetchFile(options) {
+    if (!options) {
+        throw new Error('fetch options missing');
+    }
+    if (!options.url) {
+        throw new Error('fetch url missing');
+    }
     const instance = new Observer();
-    const fetchRequest = new Request(options.url);
     let fetchHeaders = new Headers();
+    let fetchRequest = new Request(options.url);
 
     // check if headers are added
     if (options && options.requestHeaders) {
@@ -50,22 +58,23 @@ export default function fetchFile(options) {
         });
     }
 
-    // set default fetch options
+    // parse fetch options
+    const responseType = options.responseType || 'json';
     const fetchOptions = {
         method: options.method || 'GET',
         headers: fetchHeaders,
         mode: options.mode || 'cors',
         credentials: options.credentials || 'same-origin',
         cache: options.cache || 'default',
-        responseType: 'json'
+        redirect: options.redirect || 'follow',
+        referrer: options.referrer || 'client'
     };
-    const responseType = options.responseType || 'json';
 
-    // do the fetch
     fetch(fetchRequest, fetchOptions)
         .then(response => {
             instance.response = response;
 
+            let errMsg;
             if (response.ok) {
                 switch (responseType) {
                     case 'arraybuffer':
@@ -81,18 +90,16 @@ export default function fetchFile(options) {
                         return response.text();
 
                     default:
-                        instance.fireEvent(
-                            'error',
-                            'Unknown responseType: ' + responseType
-                        );
+                        errMsg = 'Unknown responseType: ' + responseType;
                         break;
                 }
-            } else {
-                instance.fireEvent(
-                    'error',
-                    'HTTP error status: ' + response.status
-                );
             }
+
+            if (!errMsg) {
+                errMsg = 'HTTP error status: ' + response.status;
+            }
+
+            throw new Error(errMsg);
         })
         .then(response => {
             instance.fireEvent('load', response);
