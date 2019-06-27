@@ -88,6 +88,132 @@ describe('util.ajax:', function() {
     });
 });
 
+/** @test {util.fetchFile} */
+describe('util.fetchFile:', function() {
+    const audioExampleUrl = TestHelpers.EXAMPLE_FILE_PATH;
+
+    it('load ArrayBuffer response', function(done) {
+        let options = {
+            url: audioExampleUrl,
+            responseType: 'arraybuffer'
+        };
+        let instance = WaveSurfer.util.fetchFile(options);
+        instance.on('success', data => {
+            expect(instance.response.status).toEqual(200);
+
+            // options
+            expect(instance.fetchRequest.url).toEndWith(options.url);
+            expect(instance.fetchRequest.cache).toEqual('default');
+            expect(instance.fetchRequest.credentials).toEqual('same-origin');
+            expect(instance.fetchRequest.method).toEqual('GET');
+            expect(instance.fetchRequest.mode).toEqual('cors');
+
+            // returned data is an arraybuffer
+            expect(data).toEqual(jasmine.any(ArrayBuffer));
+
+            done();
+        });
+    });
+
+    it('load Blob response', function(done) {
+        let options = {
+            url: audioExampleUrl,
+            responseType: 'blob'
+        };
+        let instance = WaveSurfer.util.fetchFile(options);
+        instance.on('success', data => {
+            expect(instance.response.status).toEqual(200);
+
+            // returned data is a Blob
+            expect(data).toEqual(jasmine.any(Blob));
+
+            done();
+        });
+    });
+
+    it('load JSON response', function(done) {
+        let options = {
+            url: '/base/spec/support/test.json',
+            responseType: 'json'
+        };
+        let instance = WaveSurfer.util.fetchFile(options);
+        instance.on('success', data => {
+            expect(instance.response.status).toEqual(200);
+
+            // returned data is an array
+            expect(data).toEqual([[0, 1, 2, 3]]);
+
+            done();
+        });
+    });
+
+    it('load text response', function(done) {
+        let options = {
+            url: '/base/spec/support/test.txt',
+            responseType: 'text'
+        };
+        let instance = WaveSurfer.util.fetchFile(options);
+        instance.on('success', data => {
+            expect(instance.response.status).toEqual(200);
+
+            // returned data is a string
+            expect(data).toEqual('hello world');
+
+            done();
+        });
+    });
+
+    it('load unknown reponse type', function(done) {
+        let options = {
+            url: audioExampleUrl,
+            responseType: 'fooBar'
+        };
+        let instance = WaveSurfer.util.fetchFile(options);
+        instance.on('error', error => {
+            expect(error).toEqual(
+                'Unknown responseType: ' + options.responseType
+            );
+
+            done();
+        });
+    });
+
+    it('fires error event when the file is not found', function(done) {
+        let options = {
+            url: '/foo/bar'
+        };
+        let instance = WaveSurfer.util.fetchFile(options);
+        instance.on('error', error => {
+            expect(instance.response.status).toEqual(404);
+            expect(error).toEqual('HTTP error status: 404');
+
+            done();
+        });
+    });
+
+    it('accepts custom request headers', function(done) {
+        let options = {
+            url: '/base/spec/support/test.txt',
+            responseType: 'text',
+            requestHeaders: [
+                {
+                    key: 'Content-Type',
+                    value: 'text/plain'
+                }
+            ]
+        };
+        let instance = WaveSurfer.util.fetchFile(options);
+        instance.on('success', data => {
+            expect(instance.response.headers.has('Content-Type')).toBeTrue();
+            expect(instance.response.headers.get('Content-Type')).toEqual(
+                'text/plain'
+            );
+
+            done();
+        });
+    });
+});
+
 /** @test {util} */
 describe('util:', function() {
     /** @test {extend} */

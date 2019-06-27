@@ -16,10 +16,13 @@ import Observer from './observer';
  *     mode: 'cors',
  *     credentials: 'same-origin',
  *     url: undefined,
- *     cache: 'default'
+ *     cache: 'default',
+ *     responseType: 'json',
+ *     requestHeaders: []
  * };
  *
  * // override default options
+ * options.responseType = 'arraybuffer';
  * options.url = '../media/demo.wav';
  *
  * // make fetch call
@@ -27,11 +30,11 @@ import Observer from './observer';
  * request.on('progress', e => {
  *     console.log('progress', e);
  * });
- * request.on('success', (data, e) => {
+ * request.on('success', data => {
  *     console.log('success!', data);
  * });
  * request.on('error', e => {
- *     console.warn('fetchFile error: ' + e.target.statusText);
+ *     console.warn('fetchFile error: ', e);
  * });
  */
 export default function fetchFile(options) {
@@ -39,14 +42,12 @@ export default function fetchFile(options) {
     const fetchRequest = new Request(options.url);
     let fetchHeaders = new Headers();
 
-    // check if headers and credentials are added
-    if (options) {
-        if (options.requestHeaders) {
-            // add custom request headers
-            options.requestHeaders.forEach(header => {
-                fetchHeaders.append(header.key, header.value);
-            });
-        }
+    // check if headers are added
+    if (options && options.requestHeaders) {
+        // add custom request headers
+        options.requestHeaders.forEach(header => {
+            fetchHeaders.append(header.key, header.value);
+        });
     }
 
     // set default fetch options
@@ -56,25 +57,44 @@ export default function fetchFile(options) {
         mode: options.mode || 'cors',
         credentials: options.credentials || 'same-origin',
         cache: options.cache || 'default',
-        responseType: 'arraybuffer'
+        responseType: 'json'
     };
-    const responseType = options.responseType || 'arraybuffer';
+    const responseType = options.responseType || 'json';
 
     // do the fetch
     fetch(fetchRequest, fetchOptions)
         .then(response => {
+            instance.response = response;
+
             if (response.ok) {
-                if (responseType === 'arraybuffer') {
-                    return response.arrayBuffer();
-                } else if (responseType === 'json') {
-                    return response.json();
+                switch (responseType) {
+                    case 'arraybuffer':
+                        return response.arrayBuffer();
+
+                    case 'json':
+                        return response.json();
+
+                    case 'blob':
+                        return response.blob();
+
+                    case 'text':
+                        return response.text();
+
+                    default:
+                        instance.fireEvent(
+                            'error',
+                            'Unknown responseType: ' + responseType
+                        );
+                        break;
                 }
             } else {
-                instance.fireEvent('HTTP error status ', response.status);
+                instance.fireEvent(
+                    'error',
+                    'HTTP error status: ' + response.status
+                );
             }
         })
         .then(response => {
-            //var objectURL = URL.createObjectURL(blobResponse);
             instance.fireEvent('load', response);
             instance.fireEvent('success', response);
         })
@@ -82,7 +102,7 @@ export default function fetchFile(options) {
             instance.fireEvent('error', error);
         });
 
-    // return the fetch
+    // return the fetch request
     instance.fetchRequest = fetchRequest;
     return instance;
 }

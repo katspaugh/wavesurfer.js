@@ -330,7 +330,7 @@ describe('WaveSurfer/playback:', function() {
         expect(imgData).toBeNonEmptyString();
 
         wavesurfer.exportImage('image/png', 1, 'blob').then(blobs => {
-            expect(blobs).toBeArrayOfSize(1);
+            expect(blobs.length).toEqual(1);
             expect(blobs[0] instanceof Blob).toBeTruthy();
         });
     });
