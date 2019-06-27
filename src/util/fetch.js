@@ -7,15 +7,15 @@ import Observer from './observer';
 /**
  * Load a file using `fetch`.
  *
- * @param {Options} options Request options to use. See example below.
+ * @param {object} options Request options to use. See example below.
  * @returns {Observer} Observer instance
  * @example
  * // default options
  * let options = {
+ *     url: undefined,
  *     method: 'GET',
  *     mode: 'cors',
  *     credentials: 'same-origin',
- *     url: undefined,
  *     cache: 'default',
  *     responseType: 'json',
  *     requestHeaders: [],
@@ -23,18 +23,22 @@ import Observer from './observer';
  *     referrer: 'client'
  * };
  *
- * // override default options
- * options.responseType = 'arraybuffer';
+ * // override some options
  * options.url = '../media/demo.wav';
+ * options.responseType = 'arraybuffer';
  *
  * // make fetch call
  * let request = util.fetchFile(options);
+ *
+ * // listen for events
  * request.on('progress', e => {
  *     console.log('progress', e);
  * });
+ *
  * request.on('success', data => {
  *     console.log('success!', data);
  * });
+ *
  * request.on('error', e => {
  *     console.warn('fetchFile error: ', e);
  * });
@@ -50,7 +54,10 @@ export default function fetchFile(options) {
     let fetchHeaders = new Headers();
     let fetchRequest = new Request(options.url);
 
-    // check if headers are added
+    // add ability to abort
+    instance.controller = new AbortController();
+
+    // check if headers have to be added
     if (options && options.requestHeaders) {
         // add custom request headers
         options.requestHeaders.forEach(header => {
@@ -67,7 +74,8 @@ export default function fetchFile(options) {
         credentials: options.credentials || 'same-origin',
         cache: options.cache || 'default',
         redirect: options.redirect || 'follow',
-        referrer: options.referrer || 'client'
+        referrer: options.referrer || 'client',
+        signal: instance.controller.signal
     };
 
     fetch(fetchRequest, fetchOptions)

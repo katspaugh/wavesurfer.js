@@ -99,14 +99,19 @@ import PeakCache from './peakcache';
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options. For example:
- * `var xhr = {
- *     requestHeaders: [
+ * `let xhr = {
+ *     cache: 'default',
+ *     mode: 'cors',
+ *     method: 'GET',
+ *     credentials: 'same-origin',
+ *     redirect: 'follow',
+ *     referrer: 'client',
+ *     headers: [
  *         {
  *             key: 'Authorization',
  *             value: 'my-token'
  *         }
- *     ],
- *     withCredentials: true
+ *     ]
  * };`
  */
 
@@ -1427,11 +1432,14 @@ export default class WaveSurfer extends util.Observer {
      * @private
      */
     getArrayBuffer(url, callback) {
-        const request = util.fetchFile({
-            url: url,
-            responseType: 'arraybuffer',
-            xhr: this.params.xhr
-        });
+        let options = util.extend(
+            {
+                url: url,
+                responseType: 'arraybuffer'
+            },
+            this.params.xhr
+        );
+        const request = util.fetchFile(options);
 
         this.currentRequest = request;
 
@@ -1535,11 +1543,11 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Cancel any ajax request currently in progress
+     * Cancel any fetch request currently in progress
      */
     cancelAjax() {
-        if (this.currentAjax) {
-            this.currentAjax.xhr.abort();
+        if (this.currentAjax && this.currentAjax.controller) {
+            this.currentAjax.controller.abort();
             this.currentAjax = null;
         }
     }
