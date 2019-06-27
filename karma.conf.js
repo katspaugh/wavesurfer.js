@@ -42,9 +42,9 @@ module.exports = function(config) {
         singleRun: true,
         autoWatch: false,
         files: [
-            // demo audio file
+            // demo files
             {
-                pattern: 'spec/support/demo.wav',
+                pattern: 'spec/support/**',
                 included: false,
                 watched: false,
                 served: true
