@@ -229,25 +229,7 @@ describe('util.fetchFile:', function() {
             done();
         });
     });
-    /*
-    it('fires the progress event during loading', function(done) {
-        let options = {
-            url: audioExampleUrl,
-            responseType: 'arraybuffer'
-        };
-        let instance = WaveSurfer.util.fetchFile(options);
-        instance.on('progress', e => {
-            // url
-            expect(e.target.responseURL).toContain(options.url);
 
-            // progress message
-            expect(e.target.statusText).toBe('OK');
-            expect(e.target.status).toBe(200);
-
-            done();
-        });
-    });
-    */
     it('accepts custom request headers', function(done) {
         let options = {
             url: '/base/spec/support/test.txt',

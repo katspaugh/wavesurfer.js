@@ -90,14 +90,6 @@ export default function fetchFile(options) {
                 progressAvailable = false;
             }
 
-            // this occurs if cancel() was called before server responded (before fetch() Promise resolved)
-            if (this._cancelRequested) {
-                response.body.getReader().cancel();
-                return Promise.reject(
-                    'cancel requested before server responded.'
-                );
-            }
-
             // Server must send CORS header "Access-Control-Expose-Headers: content-length"
             const contentLength = response.headers.get('content-length');
             if (contentLength === null) {
@@ -113,23 +105,16 @@ export default function fetchFile(options) {
             }
 
             const total = parseInt(contentLength, 10);
-            this._reader = response.body.getReader();
+            instance._reader = response.body.getReader();
             let loaded = 0;
-            const me = this;
 
-            this.onProgress = e => {
+            instance.onProgress = e => {
                 instance.fireEvent('progress', e);
             };
 
             return new Response(
                 new ReadableStream({
                     start(controller) {
-                        if (me.cancelRequested) {
-                            // console.log('canceling read')
-                            controller.close();
-                            return;
-                        }
-
                         read();
 
                         /**
@@ -137,15 +122,16 @@ export default function fetchFile(options) {
                          * @private
                          */
                         function read() {
-                            me._reader
+                            instance._reader
                                 .read()
                                 .then(({ done, value }) => {
                                     if (done) {
                                         // ensure onProgress called when content-length=0
                                         if (total === 0) {
-                                            me.onProgress.call(me, {
-                                                loaded,
-                                                total
+                                            instance.onProgress.call(instance, {
+                                                loaded: loaded,
+                                                total: total,
+                                                lengthComputable: false
                                             });
                                         }
 
@@ -154,7 +140,11 @@ export default function fetchFile(options) {
                                     }
 
                                     loaded += value.byteLength;
-                                    me.onProgress.call(me, { loaded, total });
+                                    instance.onProgress.call(instance, {
+                                        loaded: loaded,
+                                        total: total,
+                                        lengthComputable: !(total === 0)
+                                    });
                                     controller.enqueue(value);
                                     read();
                                 })
@@ -194,7 +184,6 @@ export default function fetchFile(options) {
             throw new Error(errMsg);
         })
         .then(response => {
-            instance.fireEvent('load', response);
             instance.fireEvent('success', response);
         })
         .catch(error => {
