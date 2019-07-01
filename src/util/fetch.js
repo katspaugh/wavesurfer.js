@@ -80,8 +80,94 @@ export default function fetchFile(options) {
 
     fetch(fetchRequest, fetchOptions)
         .then(response => {
+            // store response reference
             instance.response = response;
 
+            let progressAvailable = true;
+            if (!response.body) {
+                // ReadableStream is not yet supported in this browser
+                // see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream
+                progressAvailable = false;
+            }
+
+            // this occurs if cancel() was called before server responded (before fetch() Promise resolved)
+            if (this._cancelRequested) {
+                response.body.getReader().cancel();
+                return Promise.reject(
+                    'cancel requested before server responded.'
+                );
+            }
+
+            // Server must send CORS header "Access-Control-Expose-Headers: content-length"
+            const contentLength = response.headers.get('content-length');
+            if (contentLength === null) {
+                // Content-Length server response header missing.
+                // Don't evaluate download progress if we can't compare against a total size
+                // see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Access-Control-Expose-Headers
+                progressAvailable = false;
+            }
+
+            // not able to check download progress
+            if (!progressAvailable) {
+                return response;
+            }
+
+            const total = parseInt(contentLength, 10);
+            this._reader = response.body.getReader();
+            let loaded = 0;
+            const me = this;
+
+            this.onProgress = e => {
+                instance.fireEvent('progress', e);
+            };
+
+            return new Response(
+                new ReadableStream({
+                    start(controller) {
+                        if (me.cancelRequested) {
+                            // console.log('canceling read')
+                            controller.close();
+                            return;
+                        }
+
+                        read();
+
+                        /**
+                         * start reading
+                         * @private
+                         */
+                        function read() {
+                            me._reader
+                                .read()
+                                .then(({ done, value }) => {
+                                    if (done) {
+                                        // ensure onProgress called when content-length=0
+                                        if (total === 0) {
+                                            me.onProgress.call(me, {
+                                                loaded,
+                                                total
+                                            });
+                                        }
+
+                                        controller.close();
+                                        return;
+                                    }
+
+                                    loaded += value.byteLength;
+                                    me.onProgress.call(me, { loaded, total });
+                                    controller.enqueue(value);
+                                    read();
+                                })
+                                .catch(error => {
+                                    controller.error(error);
+                                });
+                        }
+                    }
+                }),
+                fetchOptions
+            );
+        })
+        .then(response => {
             let errMsg;
             if (response.ok) {
                 switch (responseType) {
@@ -102,11 +188,9 @@ export default function fetchFile(options) {
                         break;
                 }
             }
-
             if (!errMsg) {
                 errMsg = 'HTTP error status: ' + response.status;
             }
-
             throw new Error(errMsg);
         })
         .then(response => {
