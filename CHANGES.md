@@ -31,6 +31,8 @@ wavesurfer.js changelog
   - Add `snapToGridInterval` and `snapToGridOffset` options (#1632)
   - Allow drawing regions over existing regions, if the underlying ones are not
     draggable or resizable (#1633)
+  - Calculate the duration at event time to allow predefined regions to be
+    dragged and resized (#1673)
   - Remove deprecated `initRegions` method (#1646)
 - Timeline plugin: fix `ready` listener when loading multiple
   audio files
