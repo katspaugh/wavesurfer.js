@@ -6,14 +6,14 @@ import TestHelpers from './test-helpers.js';
 
 /** @test {util.ajax} */
 describe('util.ajax:', function() {
-    var defaultUrl = TestHelpers.EXAMPLE_FILE_PATH;
+    const defaultUrl = TestHelpers.EXAMPLE_FILE_PATH;
 
     it('can load an arraybuffer', function(done) {
-        var options = {
+        const options = {
             url: defaultUrl,
             responseType: 'arraybuffer'
         };
-        var instance = WaveSurfer.util.ajax(options);
+        const instance = WaveSurfer.util.ajax(options);
         instance.once('success', (data, e) => {
             // url
             expect(e.target.responseURL).toContain(options.url);
@@ -29,10 +29,10 @@ describe('util.ajax:', function() {
     });
 
     it('fires the error event when the file is not found', function(done) {
-        var options = {
+        const options = {
             url: '/foo/bar'
         };
-        var instance = WaveSurfer.util.ajax(options);
+        const instance = WaveSurfer.util.ajax(options);
         instance.once('error', e => {
             // url
             expect(e.target.responseURL).toContain(options.url);
@@ -46,11 +46,11 @@ describe('util.ajax:', function() {
     });
 
     it('fires the progress event during loading', function(done) {
-        var options = {
+        const options = {
             url: defaultUrl,
             responseType: 'arraybuffer'
         };
-        var instance = WaveSurfer.util.ajax(options);
+        const instance = WaveSurfer.util.ajax(options);
         instance.once('progress', e => {
             // url
             expect(e.target.responseURL).toContain(options.url);
@@ -64,7 +64,7 @@ describe('util.ajax:', function() {
     });
 
     it('accepts custom request headers and credentials', function(done) {
-        var options = {
+        const options = {
             url: defaultUrl,
             responseType: 'arraybuffer',
             xhr: {
@@ -77,7 +77,7 @@ describe('util.ajax:', function() {
                 ]
             }
         };
-        var instance = WaveSurfer.util.ajax(options);
+        const instance = WaveSurfer.util.ajax(options);
         instance.once('success', (data, e) => {
             // with credentials
             expect(e.target.withCredentials).toBeTrue();
@@ -93,11 +93,11 @@ describe('util.fetchFile:', function() {
     const audioExampleUrl = TestHelpers.EXAMPLE_FILE_PATH;
 
     it('load ArrayBuffer response', function(done) {
-        let options = {
+        const options = {
             url: audioExampleUrl,
             responseType: 'arraybuffer'
         };
-        let instance = WaveSurfer.util.fetchFile(options);
+        const instance = WaveSurfer.util.fetchFile(options);
         instance.once('success', data => {
             expect(instance.response.status).toEqual(200);
             expect(instance.response.headers.get('content-type')).toEqual(
@@ -119,11 +119,11 @@ describe('util.fetchFile:', function() {
     });
 
     it('load Blob response', function(done) {
-        let options = {
+        const options = {
             url: audioExampleUrl,
             responseType: 'blob'
         };
-        let instance = WaveSurfer.util.fetchFile(options);
+        const instance = WaveSurfer.util.fetchFile(options);
         instance.once('success', data => {
             expect(instance.response.status).toEqual(200);
             expect(instance.response.headers.get('content-type')).toEqual(
@@ -138,11 +138,11 @@ describe('util.fetchFile:', function() {
     });
 
     it('load JSON response', function(done) {
-        let options = {
+        const options = {
             url: '/base/spec/support/test.json',
             responseType: 'json'
         };
-        let instance = WaveSurfer.util.fetchFile(options);
+        const instance = WaveSurfer.util.fetchFile(options);
         instance.once('success', data => {
             expect(instance.response.status).toEqual(200);
             expect(instance.response.headers.get('content-type')).toEqual(
@@ -157,11 +157,11 @@ describe('util.fetchFile:', function() {
     });
 
     it('load text response', function(done) {
-        let options = {
+        const options = {
             url: '/base/spec/support/test.txt',
             responseType: 'text'
         };
-        let instance = WaveSurfer.util.fetchFile(options);
+        const instance = WaveSurfer.util.fetchFile(options);
         instance.once('success', data => {
             expect(instance.response.status).toEqual(200);
             expect(instance.response.headers.get('content-type')).toEqual(
@@ -176,11 +176,11 @@ describe('util.fetchFile:', function() {
     });
 
     it('load unknown response type', function(done) {
-        let options = {
+        const options = {
             url: audioExampleUrl,
             responseType: 'fooBar'
         };
-        let instance = WaveSurfer.util.fetchFile(options);
+        const instance = WaveSurfer.util.fetchFile(options);
         instance.once('error', error => {
             expect(error).toEqual(
                 new Error('Unknown responseType: ' + options.responseType)
@@ -191,7 +191,7 @@ describe('util.fetchFile:', function() {
     });
 
     it('throws error when URL contains credentials', function() {
-        let options = {
+        const options = {
             url: 'http://user:password@example.com'
         };
         try {
@@ -218,10 +218,10 @@ describe('util.fetchFile:', function() {
     });
 
     it('fires error event when the file is not found', function(done) {
-        let options = {
+        const options = {
             url: '/foo/bar'
         };
-        let instance = WaveSurfer.util.fetchFile(options);
+        const instance = WaveSurfer.util.fetchFile(options);
         instance.once('error', error => {
             expect(instance.response.status).toEqual(404);
             expect(error).toEqual(new Error('HTTP error status: 404'));
@@ -231,7 +231,7 @@ describe('util.fetchFile:', function() {
     });
 
     it('accepts custom request headers', function(done) {
-        let options = {
+        const options = {
             url: '/base/spec/support/test.txt',
             responseType: 'text',
             requestHeaders: [
@@ -241,7 +241,7 @@ describe('util.fetchFile:', function() {
                 }
             ]
         };
-        let instance = WaveSurfer.util.fetchFile(options);
+        const instance = WaveSurfer.util.fetchFile(options);
         instance.once('success', data => {
             expect(instance.response.headers.has('Content-Type')).toBeTrue();
             expect(instance.response.headers.get('Content-Type')).toEqual(

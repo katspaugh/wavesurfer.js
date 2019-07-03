@@ -46,13 +46,12 @@ import Observer from './observer';
 export default function fetchFile(options) {
     if (!options) {
         throw new Error('fetch options missing');
-    }
-    if (!options.url) {
+    } else if (!options.url) {
         throw new Error('fetch url missing');
     }
     const instance = new Observer();
-    let fetchHeaders = new Headers();
-    let fetchRequest = new Request(options.url);
+    const fetchHeaders = new Headers();
+    const fetchRequest = new Request(options.url);
 
     // add ability to abort
     instance.controller = new AbortController();

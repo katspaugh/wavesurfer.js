@@ -6,12 +6,12 @@ process.env.BABEL_ENV = 'test';
 process.traceDeprecation = true;
 
 require('@babel/register');
-let webpackConfig = require('./build-config/webpack.prod.main.js');
+const webpackConfig = require('./build-config/webpack.prod.main.js');
 const ci = process.env.TRAVIS || process.env.APPVEYOR;
 
 // Chrome CLI options
 // http://peter.sh/experiments/chromium-command-line-switches/
-var chromeFlags = [
+const chromeFlags = [
     '--no-sandbox',
     '--no-first-run',
     '--noerrdialogs',
@@ -26,7 +26,7 @@ var chromeFlags = [
     // see https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
     '--disable-features=PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies'
 ];
-var firefoxFlags = {
+const firefoxFlags = {
     // disable autoplay blocking, see https://www.ghacks.net/2018/09/21/firefox-improved-autoplay-blocking/
     'media.autoplay.default': 0,
     'media.autoplay.ask-permission': false,
