@@ -126,7 +126,7 @@ export default class CursorPlugin {
         /**
          * displays the time next to the cursor
          *
-         * @type {Boolean}
+         * @type {?HTMLElement}
          */
         this.showTime = null;
         /**
