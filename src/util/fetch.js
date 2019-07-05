@@ -4,6 +4,72 @@
 
 import Observer from './observer';
 
+class ProgressHandler {
+    /**
+     * Instantiate ProgressHandler
+     *
+     * @param {Observer} instance The `fetchFile` observer instance.
+     * @param {Number} contentLength Content length.
+     * @param {Response} response Response object.
+     */
+    constructor(instance, contentLength, response) {
+        this.instance = instance;
+        this.instance._reader = response.body.getReader();
+
+        this.total = parseInt(contentLength, 10);
+        this.loaded = 0;
+    }
+
+    /**
+     * A method that is called once, immediately after the `ReadableStream``
+     * is constructed.
+     *
+     * @param {ReadableStreamDefaultController} controller Controller instance
+     *     used to control the stream.
+     */
+    start(controller) {
+        const read = () => {
+            // instance._reader.read() returns a promise that resolves
+            // when a value has been received
+            this.instance._reader
+                .read()
+                .then(({ done, value }) => {
+                    // result objects contain two properties:
+                    // done  - true if the stream has already given you all its data.
+                    // value - some data. Always undefined when done is true.
+                    if (done) {
+                        // ensure onProgress called when content-length=0
+                        if (this.total === 0) {
+                            this.instance.onProgress.call(this.instance, {
+                                loaded: this.loaded,
+                                total: this.total,
+                                lengthComputable: false
+                            });
+                        }
+                        // no more data needs to be consumed, close the stream
+                        controller.close();
+                        return;
+                    }
+
+                    this.loaded += value.byteLength;
+                    this.instance.onProgress.call(this.instance, {
+                        loaded: this.loaded,
+                        total: this.total,
+                        lengthComputable: !(this.total === 0)
+                    });
+                    // enqueue the next data chunk into our target stream
+                    controller.enqueue(value);
+                    read();
+                })
+                .catch(error => {
+                    controller.error(error);
+                });
+        };
+
+        read();
+    }
+}
+
 /**
  * Load a file using `fetch`.
  *
@@ -25,6 +91,8 @@ import Observer from './observer';
  *
  * // override some options
  * options.url = '../media/demo.wav';
+
+ * // available types: 'arraybuffer', 'blob', 'json' or 'text'
  * options.responseType = 'arraybuffer';
  *
  * // make fetch call
@@ -98,61 +166,20 @@ export default function fetchFile(options) {
                 progressAvailable = false;
             }
 
-            // not able to check download progress
             if (!progressAvailable) {
+                // not able to check download progress so skip it
                 return response;
             }
 
-            const total = parseInt(contentLength, 10);
-            instance._reader = response.body.getReader();
-            let loaded = 0;
-
+            // fire progress event when during load
             instance.onProgress = e => {
                 instance.fireEvent('progress', e);
             };
 
             return new Response(
-                new ReadableStream({
-                    start(controller) {
-                        read();
-
-                        /**
-                         * start reading
-                         * @private
-                         */
-                        function read() {
-                            instance._reader
-                                .read()
-                                .then(({ done, value }) => {
-                                    if (done) {
-                                        // ensure onProgress called when content-length=0
-                                        if (total === 0) {
-                                            instance.onProgress.call(instance, {
-                                                loaded: loaded,
-                                                total: total,
-                                                lengthComputable: false
-                                            });
-                                        }
-
-                                        controller.close();
-                                        return;
-                                    }
-
-                                    loaded += value.byteLength;
-                                    instance.onProgress.call(instance, {
-                                        loaded: loaded,
-                                        total: total,
-                                        lengthComputable: !(total === 0)
-                                    });
-                                    controller.enqueue(value);
-                                    read();
-                                })
-                                .catch(error => {
-                                    controller.error(error);
-                                });
-                        }
-                    }
-                }),
+                new ReadableStream(
+                    new ProgressHandler(instance, contentLength, response)
+                ),
                 fetchOptions
             );
         })
