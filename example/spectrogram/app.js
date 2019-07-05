@@ -57,8 +57,8 @@ function initAndLoadSpectrogram(colorMap) {
 document.addEventListener('DOMContentLoaded', function() {
     // Load a colormap json file to be passed to the spectrogram.create method.
     WaveSurfer.util
-        .ajax({ url: 'hot-colormap.json' })
-        .on('success', (colorMap, e) => {
+        .fetchFile({ url: 'hot-colormap.json', responseType: 'json' })
+        .on('success', colorMap => {
             initAndLoadSpectrogram(colorMap);
         });
 });

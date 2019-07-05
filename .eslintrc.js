@@ -27,6 +27,7 @@ module.exports = {
             }
         ],
         eqeqeq: 'off',
+        'semi': 2,
         'no-console': 1,
         'no-unused-vars': 'off',
         'no-unreachable': 2,

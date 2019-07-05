@@ -4,7 +4,10 @@ const TestHelpers = {
     /** Example audio clip */
     EXAMPLE_FILE_PATH: '/base/spec/support/demo.wav',
 
-    /** Length of example audio clip */
+    /** Filesize of example audio clip (in bytes) */
+    EXAMPLE_FILE_SIZE: 480158,
+
+    /** Length of example audio clip (in seconds) */
     EXAMPLE_FILE_DURATION: 21,
 
     createElement(id, type) {

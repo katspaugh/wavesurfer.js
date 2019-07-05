@@ -6,6 +6,7 @@ wavesurfer.js changelog
 
 - Add `wavesurfer.getActivePlugins()`: return map of plugins
   that are currently initialised
+- Replace usage of `util.ajax` with `util.fetchFile` (#1365)
 - Update progress when seeking with HTML media controls (#1535)
 - Make sure mute/volume is updated when using `MediaElement` backend (#1615)
 - Refactor `MultiCanvas` and add `CanvasEntry` class (#1617)
