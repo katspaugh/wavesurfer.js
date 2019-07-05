@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', function() {
             wavesurfer.microphone.on('deviceError', function(code) {
                 console.warn('Device error: ' + code);
             });
+            wavesurfer.on('error', function(e) {
+                console.warn(e);
+            });
             wavesurfer.microphone.start();
         } else {
             // start/stop mic on button click
