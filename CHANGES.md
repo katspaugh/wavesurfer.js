@@ -38,6 +38,8 @@ wavesurfer.js changelog
   audio files
 - Minimap plugin: remove deprecated `initMinimap` method (#1646)
 
+Check `UPGRADE.md` for backward incompatible changes since v2.x.
+
 2.2.1 (18.03.2019)
 ------------------
 
