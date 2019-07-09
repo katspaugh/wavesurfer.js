@@ -81,6 +81,14 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /**
+     * @test {WaveSurfer#cancelAjax}
+     */
+    it('cancelAjax', function() {
+        wavesurfer.cancelAjax();
+        expect(wavesurfer.currentRequest).toBeNull();
+    });
+
+    /**
      * @test {WaveSurfer#loadBlob}
      */
     it('loadBlob', function(done) {
