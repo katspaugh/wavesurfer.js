@@ -176,7 +176,7 @@ layout: default
         <td><code>progressColor</code></td>
         <td>string</td>
         <td><code>#555</code></td>
-        <td>The fill color of the part of the waveform behind the cursor.</td>
+        <td>The fill color of the part of the waveform behind the cursor. When <code>progressColor</code> and <code>waveColor</code> are the same the progress wave is not rendered at all.</td>
       </tr>
       <tr>
         <td><code>removeMediaElementOnDestroy</code></td>
@@ -224,7 +224,20 @@ layout: default
         <td><code>xhr</code></td>
         <td>Object</td>
         <td><code>{}</code></td>
-        <td>XHR options.</td>
+        <td>XHR options. For example:
+<code>let xhr = {
+    cache: 'default',
+    mode: 'cors',
+    method: 'GET',
+    credentials: 'same-origin',
+    redirect: 'follow',
+    referrer: 'client',
+    headers: [
+        {
+            key: 'Authorization',
+            value: 'my-token'
+        }
+    ]};</code></td>
       </tr>
   </tbody></table>
 </section>
