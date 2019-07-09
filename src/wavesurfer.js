@@ -370,7 +370,7 @@ export default class WaveSurfer extends util.Observer {
          * @private Holds any running audio downloads
          * @type {Observer}
          */
-        this.currentAjax = null;
+        this.currentRequest = null;
         /** @private */
         this.arraybuffer = null;
         /** @private */
@@ -1546,9 +1546,9 @@ export default class WaveSurfer extends util.Observer {
      * Cancel any fetch request currently in progress
      */
     cancelAjax() {
-        if (this.currentAjax && this.currentAjax.controller) {
-            this.currentAjax.controller.abort();
-            this.currentAjax = null;
+        if (this.currentRequest && this.currentRequest.controller) {
+            this.currentRequest.controller.abort();
+            this.currentRequest = null;
         }
     }
 
