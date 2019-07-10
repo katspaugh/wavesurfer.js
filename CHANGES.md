@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-3.0.0 (unreleased)
+3.0.0 (11.07.2019)
 ------------------
 
 - Add `wavesurfer.getActivePlugins()`: return map of plugins
