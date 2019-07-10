@@ -580,6 +580,7 @@ export default class SpectrogramPlugin {
         textColorUnit = textColorUnit || '#fff';
         textAlign = textAlign || 'center';
         container = container || '#specLabels';
+        const bgWidth = 55;
         const getMaxY = frequenciesHeight || 512;
         const labelIndex = 5 * (getMaxY / 256);
         const freqStart = 0;
@@ -587,15 +588,18 @@ export default class SpectrogramPlugin {
             (this.wavesurfer.backend.ac.sampleRate / 2 - freqStart) /
             labelIndex;
 
+        // prepare canvas element for labels
         const ctx = this.labelsEl.getContext('2d');
         this.labelsEl.height = this.height;
-        this.labelsEl.width = 55;
+        this.labelsEl.width = bgWidth;
 
+        // fill background
         ctx.fillStyle = bgFill;
-        ctx.fillRect(0, 0, 55, getMaxY);
+        ctx.fillRect(0, 0, bgWidth, getMaxY);
         ctx.fill();
         let i;
 
+        // render labels
         for (i = 0; i <= labelIndex; i++) {
             ctx.textAlign = textAlign;
             ctx.textBaseline = 'middle';
@@ -606,23 +610,30 @@ export default class SpectrogramPlugin {
             );
             const label = this.freqType(freq);
             const units = this.unitType(freq);
-            const x = 16;
             const yLabelOffset = 2;
+            const x = 16;
+            let y;
 
             if (i == 0) {
+                y = getMaxY + i - 10;
+                // unit label
                 ctx.fillStyle = textColorUnit;
                 ctx.font = fontSizeUnit + ' ' + fontType;
-                ctx.fillText(units, x + 24, getMaxY + i - 10);
+                ctx.fillText(units, x + 24, y);
+                // freq label
                 ctx.fillStyle = textColorFreq;
                 ctx.font = fontSizeFreq + ' ' + fontType;
-                ctx.fillText(label, x, getMaxY + i - 10);
+                ctx.fillText(label, x, y);
             } else {
+                y = getMaxY - i * 50 + yLabelOffset;
+                // unit label
                 ctx.fillStyle = textColorUnit;
                 ctx.font = fontSizeUnit + ' ' + fontType;
-                ctx.fillText(units, x + 24, getMaxY - i * 50 + yLabelOffset);
+                ctx.fillText(units, x + 24, y);
+                // freq label
                 ctx.fillStyle = textColorFreq;
                 ctx.font = fontSizeFreq + ' ' + fontType;
-                ctx.fillText(label, x, getMaxY - i * 50 + yLabelOffset);
+                ctx.fillText(label, x, y);
             }
         }
     }
