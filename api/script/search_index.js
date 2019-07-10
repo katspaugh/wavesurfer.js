@@ -2076,6 +2076,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/wavesurfer.js~wavesurfer#getbackgroundcolor",
+    "class/src/wavesurfer.js~WaveSurfer.html#instance-method-getBackgroundColor",
+    "src/wavesurfer.js~WaveSurfer#getBackgroundColor",
+    "method"
+  ],
+  [
     "src/wavesurfer.js~wavesurfer#getcurrenttime",
     "class/src/wavesurfer.js~WaveSurfer.html#instance-method-getCurrentTime",
     "src/wavesurfer.js~WaveSurfer#getCurrentTime",
@@ -2205,6 +2211,12 @@ window.esdocSearchIndex = [
     "src/wavesurfer.js~wavesurfer#seekto",
     "class/src/wavesurfer.js~WaveSurfer.html#instance-method-seekTo",
     "src/wavesurfer.js~WaveSurfer#seekTo",
+    "method"
+  ],
+  [
+    "src/wavesurfer.js~wavesurfer#setbackgroundcolor",
+    "class/src/wavesurfer.js~WaveSurfer.html#instance-method-setBackgroundColor",
+    "src/wavesurfer.js~WaveSurfer#setBackgroundColor",
     "method"
   ],
   [

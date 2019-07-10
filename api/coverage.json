@@ -1,7 +1,7 @@
 {
-  "coverage": "67.58%",
-  "expectCount": 506,
-  "actualCount": 342,
+  "coverage": "67.45%",
+  "expectCount": 510,
+  "actualCount": 344,
   "files": {
     "src/drawer.js": {
       "expectCount": 28,
@@ -188,7 +188,7 @@
       ]
     },
     "src/plugin/spectrogram.js": {
-      "expectCount": 35,
+      "expectCount": 37,
       "actualCount": 3,
       "undocumentLines": [
         287,
@@ -199,30 +199,32 @@
         293,
         296,
         299,
-        308,
-        309,
-        310,
-        312,
-        313,
+        302,
+        305,
         314,
         315,
-        326,
-        335,
-        349,
-        353,
-        404,
-        411,
-        416,
-        424,
-        434,
-        441,
-        471,
-        518,
-        531,
-        535,
-        539,
-        605,
-        611
+        316,
+        318,
+        319,
+        320,
+        321,
+        332,
+        341,
+        352,
+        356,
+        407,
+        414,
+        419,
+        427,
+        437,
+        444,
+        474,
+        521,
+        534,
+        538,
+        542,
+        608,
+        614
       ]
     },
     "src/plugin/timeline.js": {
@@ -284,10 +286,10 @@
       "undocumentLines": []
     },
     "src/wavesurfer.js": {
-      "expectCount": 90,
-      "actualCount": 89,
+      "expectCount": 92,
+      "actualCount": 91,
       "undocumentLines": [
-        386
+        393
       ]
     },
     "src/webaudio.js": {
