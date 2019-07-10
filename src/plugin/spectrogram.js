@@ -543,16 +543,14 @@ export default class SpectrogramPlugin {
     }
 
     loadFrequenciesData(url) {
-        const ajax = this.util.ajax({ url: url });
+        const request = this.util.fetchFile({ url: url });
 
-        ajax.on('success', data =>
+        request.on('success', data =>
             this.drawSpectrogram(JSON.parse(data), this)
         );
-        ajax.on('error', e =>
-            this.fireEvent('error', 'XHR error: ' + e.target.statusText)
-        );
+        request.on('error', e => this.fireEvent('error', e));
 
-        return ajax;
+        return request;
     }
 
     freqType(freq) {
