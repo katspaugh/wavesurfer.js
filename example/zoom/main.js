@@ -49,6 +49,9 @@ document.addEventListener('DOMContentLoaded', function() {
         wavesurfer.zoom(Number(this.value));
     });
 
+    // set initial zoom to match slider value
+    wavesurfer.zoom(slider.value);
+
     // Play button
     var button = document.querySelector('[data-action="play"]');
 
