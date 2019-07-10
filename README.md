@@ -19,6 +19,8 @@ npm run update
 
 This will generate the API docs, inject the CDN url, regenerate the examples index page, and sync the `example` directory.
 
+Don't forget to commit and push these changes in order to update the website.
+
 ## How to launch locally
 
 Install Jekyll:
