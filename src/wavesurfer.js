@@ -31,9 +31,10 @@ import PeakCache from './peakcache';
  * unsupported browsers.
  * @property {string} backgroundColor=null Change background color of the
  * waveform container.
- * @property {number} barHeight=1 The height of the wave
+ * @property {number} barHeight=1 The height of the wave bars.
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
+ * @property {number} barWidth=null Draw the waveform using bars.
  * @property {boolean} closeAudioContext=false Close and nullify all audio
  * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
