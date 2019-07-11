@@ -4,7 +4,7 @@
 
 After a new release of wavesurfer.js is available on `npm`, the website needs to updated as well.
 
-To update the website dependencies (inc. wavesurfer.js), first run:
+To update the library dependencies (inc. wavesurfer.js), first run:
 
 ```console
 npm update
@@ -12,7 +12,7 @@ npm install
 ```
 This makes sure the website uses the latest version of the wavesurfer.js library.
 
-Next, update the website with this command:
+Next, update the website content with this command:
 
 ```console
 npm run update
