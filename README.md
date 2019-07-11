@@ -2,7 +2,7 @@
 
 ## Update website
 
-After a new release of wavesurfer.js is available on `npm`, the website needs to updated as well.
+After a new release of wavesurfer.js is available on `npm`, the website needs to be updated as well.
 
 To update the library dependencies (inc. wavesurfer.js), first run:
 
