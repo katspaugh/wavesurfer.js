@@ -28,13 +28,18 @@ npm run update
 
 This command:
 
-- downloads and unzips the latest wavesurfer.js library to a temporary directory
+- downloads and unzips the latest wavesurfer.js release to a temporary directory
 - generates the latest API docs
 - copies and syncs the files in this repository
 - injects the unpkg CDN url in the `example` directory
 - regenerates the `example` index page
 
 Finally: don't forget to commit and push these changes in order to update the website.
+
+```console
+git commit -am "update for wavesurfer.js x.x.x"
+git push
+```
 
 ## How to launch locally
 
