@@ -10,21 +10,20 @@ To update the website, first run:
 npm update
 npm install
 ```
+This makes sure the website uses the latest version of the wavesurfer.js library.
 
-to update the website and make it use the latest wavesurfer.js.
+Next, update the website with this command:
 
-Next, update the examples and API docs with this command:
-
-```
+```console
 npm run update
 ```
 
 This command:
 
 - generates the latest API docs
+- copies and syncs the files in the `example` directory
 - injects the unpkg CDN url
 - regenerates the examples index page
-- syncs the `example` directory
 
 Finally: don't forget to commit and push these changes in order to update the website.
 
@@ -32,13 +31,13 @@ Finally: don't forget to commit and push these changes in order to update the we
 
 Install Jekyll:
 
-```
+```console
 gem install jekyll
 ```
 
 Build & launch a dev server:
 
-```
+```console
 jekyll serve
 ```
 
@@ -46,7 +45,7 @@ Go to http://127.0.0.1:4000/
 
 Update generated documentation and commit automatically (Note: make sure no changes are staged before running the script):
 
-```
+```console
 # Make sure the script is executable
 chmod +x update-docs.sh
 
