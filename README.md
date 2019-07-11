@@ -6,13 +6,19 @@ This branch contains the content of the website at https://wavesurfer-js.org.
 
 After a new release of wavesurfer.js is available on `npm`, the website needs to be updated as well.
 
-To update the library dependencies (inc. wavesurfer.js), first run:
+Checkout the `gh-pages` branch:
+
+
+```console
+git checkout gh-pages
+```
+
+And update the website dependencies (inc. the wavesurfer.js library):
 
 ```console
 npm update
 npm install
 ```
-This makes sure the website uses the latest version of the wavesurfer.js library.
 
 Next, update the website content with this command:
 
