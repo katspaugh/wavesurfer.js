@@ -303,9 +303,15 @@ export default class CursorPlugin {
         if (this.params.showTime) {
             const duration = this.wavesurfer.getDuration();
             const elementWidth =
-                this.wavesurfer.drawer.getWidth() /
+                this.wavesurfer.drawer.width /
                 this.wavesurfer.params.pixelRatio;
-            const timeValue = Math.max(0, (pos / elementWidth) * duration);
+            const scrollWidth = this.wavesurfer.drawer.getScrollX();
+
+            const scrollTime =
+                (duration / this.wavesurfer.drawer.width) * scrollWidth;
+
+            const timeValue =
+                Math.max(0, (pos / elementWidth) * duration) + scrollTime;
             const formatValue = this.formatTime(timeValue);
             this.style(this.showTime, {
                 left: `${pos}px`

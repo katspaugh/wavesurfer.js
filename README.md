@@ -1,35 +1,57 @@
 # wavesurfer-js.org
 
-## Update examples
+This branch contains the content of the website at https://wavesurfer-js.org.
 
-After a new release, run:
+## Update website
 
+After a new release of wavesurfer.js is available on `npm`, the website needs to be updated as well.
+
+Make sure you're on the `gh-pages` branch of the repository:
+
+
+```console
+git checkout gh-pages
 ```
+
+And update the npm dependencies (inc. the wavesurfer.js library):
+
+```console
 npm update
 npm install
 ```
 
-to update to latest wavesurfer.js.
+Next, update the website content with this command:
 
-Now update the examples and API docs with:
-
-```
+```console
 npm run update
 ```
 
-This will generate the API docs, inject the CDN url, regenerate the examples index page, and sync the `example` directory.
+This command:
+
+- downloads and unzips the latest wavesurfer.js release to a temporary directory
+- generates the latest API docs
+- copies and syncs the files in this repository
+- injects the unpkg CDN url in the `example` directory
+- regenerates the `example` index page
+
+Finally: don't forget to commit and push these changes in order to update the website.
+
+```console
+git commit -am "update for wavesurfer.js x.x.x"
+git push
+```
 
 ## How to launch locally
 
 Install Jekyll:
 
-```
+```console
 gem install jekyll
 ```
 
 Build & launch a dev server:
 
-```
+```console
 jekyll serve
 ```
 
@@ -37,7 +59,7 @@ Go to http://127.0.0.1:4000/
 
 Update generated documentation and commit automatically (Note: make sure no changes are staged before running the script):
 
-```
+```console
 # Make sure the script is executable
 chmod +x update-docs.sh
 

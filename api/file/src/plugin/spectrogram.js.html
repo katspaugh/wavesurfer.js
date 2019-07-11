@@ -374,6 +374,12 @@ export default class SpectrogramPlugin {
         this._onScroll = e =&gt; {
             this.updateScroll(e);
         };
+        this._onRender = () =&gt; {
+            this.render();
+        };
+        this._onWrapperClick = e =&gt; {
+            this._wrapperClickHandler(e);
+        };
         this._onReady = () =&gt; {
             const drawer = (this.drawer = ws.drawer);
 
@@ -400,7 +406,7 @@ export default class SpectrogramPlugin {
             this.render();
 
             drawer.wrapper.addEventListener(&apos;scroll&apos;, this._onScroll);
-            ws.on(&apos;redraw&apos;, this.render);
+            ws.on(&apos;redraw&apos;, this._onRender);
         };
     }
 
@@ -416,16 +422,13 @@ export default class SpectrogramPlugin {
     destroy() {
         this.unAll();
         this.wavesurfer.un(&apos;ready&apos;, this._onReady);
-        this.wavesurfer.un(&apos;redraw&apos;, this.render);
+        this.wavesurfer.un(&apos;redraw&apos;, this._onRender);
         this.drawer.wrapper.removeEventListener(&apos;scroll&apos;, this._onScroll);
         this.wavesurfer = null;
         this.util = null;
         this.params = null;
         if (this.wrapper) {
-            this.wrapper.removeEventListener(
-                &apos;click&apos;,
-                this._wrapperClickHandler
-            );
+            this.wrapper.removeEventListener(&apos;click&apos;, this._onWrapperClick);
             this.wrapper.parentNode.removeChild(this.wrapper);
             this.wrapper = null;
         }
@@ -479,7 +482,7 @@ export default class SpectrogramPlugin {
         }
         this.container.appendChild(this.wrapper);
 
-        this.wrapper.addEventListener(&apos;click&apos;, this._wrapperClickHandler);
+        this.wrapper.addEventListener(&apos;click&apos;, this._onWrapperClick);
     }
 
     _wrapperClickHandler(event) {
