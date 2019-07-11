@@ -1,5 +1,7 @@
 # wavesurfer-js.org
 
+This branch contains the content of the website at https://wavesurfer-js.org.
+
 ## Update website
 
 After a new release of wavesurfer.js is available on `npm`, the website needs to be updated as well.
