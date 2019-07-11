@@ -6,14 +6,14 @@ This branch contains the content of the website at https://wavesurfer-js.org.
 
 After a new release of wavesurfer.js is available on `npm`, the website needs to be updated as well.
 
-Checkout the `gh-pages` branch:
+Make sure you're on the `gh-pages` branch of the repository:
 
 
 ```console
 git checkout gh-pages
 ```
 
-And update the website dependencies (inc. the wavesurfer.js library):
+And update the npm dependencies (inc. the wavesurfer.js library):
 
 ```console
 npm update
@@ -30,7 +30,7 @@ This command:
 
 - downloads and unzips the latest wavesurfer.js library to a temporary directory
 - generates the latest API docs
-- copies and syncs the files in the `example` directory
+- copies and syncs the files in this repository
 - injects the unpkg CDN url in the `example` directory
 - regenerates the `example` index page
 
