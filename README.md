@@ -22,10 +22,11 @@ npm run update
 
 This command:
 
+- downloads and unzips the latest wavesurfer.js library to a temporary directory
 - generates the latest API docs
 - copies and syncs the files in the `example` directory
-- injects the unpkg CDN url
-- regenerates the examples index page
+- injects the unpkg CDN url in the `example` directory
+- regenerates the `example` index page
 
 Finally: don't forget to commit and push these changes in order to update the website.
 
