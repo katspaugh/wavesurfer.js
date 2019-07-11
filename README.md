@@ -1,25 +1,32 @@
 # wavesurfer-js.org
 
-## Update examples
+## Update website
 
-After a new release, run:
+After a new release of wavesurfer.js is available on `npm`, the website needs to updated as well.
 
-```
+To update the website, first run:
+
+```console
 npm update
 npm install
 ```
 
-to update to latest wavesurfer.js.
+to update the website and make it use the latest wavesurfer.js.
 
-Now update the examples and API docs with:
+Next, update the examples and API docs with this command:
 
 ```
 npm run update
 ```
 
-This will generate the API docs, inject the CDN url, regenerate the examples index page, and sync the `example` directory.
+This command:
 
-Don't forget to commit and push these changes in order to update the website.
+- generates the latest API docs
+- injects the unpkg CDN url
+- regenerates the examples index page
+- syncs the `example` directory
+
+Finally: don't forget to commit and push these changes in order to update the website.
 
 ## How to launch locally
 
