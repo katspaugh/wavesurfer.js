@@ -29,7 +29,8 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
@@ -67,6 +68,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
@@ -85,7 +87,7 @@
   
   
   
-  <span data-ice="source">| <span><a href="file/src/wavesurfer.js.html#lineNumber128">source</a></span></span>
+  <span data-ice="source">| <span><a href="file/src/wavesurfer.js.html#lineNumber144">source</a></span></span>
 </div>
 
 <div class="self-detail detail">
@@ -177,7 +179,7 @@ that this only turns into an observer after being passed through
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html#instance-method-create">create</a></span></span><span class="code" data-ice="signature">(params: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>): <span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html#instance-method-create">create</a></span></span><span class="code" data-ice="signature">(params: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>)</span>
         </p>
       </div>
       <div>
@@ -423,7 +425,7 @@ that this only turns into an observer after being passed through
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber145">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber162">source</a></span></span>
     </span>
   </h3>
 
@@ -491,11 +493,11 @@ that this only turns into an observer after being passed through
     
     
     
-    <span class="code" data-ice="name">create</span><span class="code" data-ice="signature">(params: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>): <span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span>
+    <span class="code" data-ice="name">create</span><span class="code" data-ice="signature">(params: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>)</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber138">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber155">source</a></span></span>
     </span>
   </h3>
 
@@ -505,6 +507,7 @@ that this only turns into an observer after being passed through
   <div data-ice="description"><p>Plugin definition factory</p>
 <p>This function must be used to create a plugin definition which can be
 used by wavesurfer to correctly instantiate the plugin.</p>
+<p>It returns a <code>PluginDefinition</code> object representing the plugin.</p>
 </div>
 
   
@@ -529,20 +532,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
 </div>
 </div>
 
-  <div class="return-params" data-ice="returnParams">
-    <h4>Return:</h4>
-    <table>
-      <tbody>
-        <tr>
-          <td class="return-type code" data-ice="returnType"><span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></td>
-          <td class="return-desc" data-ice="returnDescription"><p>an object representing the plugin</p>
-</td>
-        </tr>
-      </tbody>
-    </table>
-    <div data-ice="returnProperties">
-</div>
-  </div>
+  
 
   
 
@@ -571,7 +561,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber159">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber176">source</a></span></span>
     </span>
   </h3>
 
@@ -617,7 +607,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber152">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber169">source</a></span></span>
     </span>
   </h3>
 

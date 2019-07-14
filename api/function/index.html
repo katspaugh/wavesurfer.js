@@ -29,7 +29,8 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
@@ -67,6 +68,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
@@ -97,13 +99,13 @@
           
           
           
-          <span class="code" data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span><span class="code" data-ice="signature">(options: <span>Options</span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></span>
+          <span class="code" data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span><span class="code" data-ice="signature">(options: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>): <span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span>
         </p>
       </div>
       <div>
+        <div class="deprecated" data-ice="deprecated">this function was deprecated. Use `util.fetchFile` instead.</div>
         
-        
-        <div data-ice="description"><p>Perform an ajax request</p>
+        <div data-ice="description"><p>Perform an ajax request using <code>XMLHttpRequest</code>.</p>
 </div>
       </div>
     </td>
@@ -133,6 +135,35 @@
         
         
         <div data-ice="description"><p>Extend an object shallowly with others</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span><span class="code" data-ice="signature">(options: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span>): <span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Load a file using <code>fetch</code>.</p>
 </div>
       </div>
     </td>
@@ -185,7 +216,7 @@ cycle</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></span></span>
+          <span class="code" data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span><span class="code" data-ice="signature">(prefix: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></span></span>
         </p>
       </div>
       <div>
@@ -272,13 +303,14 @@ cycle</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span><span class="code" data-ice="signature">(values: <span>*</span>)</span>
+          <span class="code" data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span><span class="code" data-ice="signature">(values: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span>)</span>
         </p>
       </div>
       <div>
         
         
-        
+        <div data-ice="description"><p>Starts listening for click event and prevent propagation</p>
+</div>
       </div>
     </td>
     <td>
@@ -328,18 +360,18 @@ cycle</p>
     
     
     
-    <span class="code" data-ice="name">ajax</span><span class="code" data-ice="signature">(options: <span>Options</span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></span>
+    <span class="code" data-ice="name">ajax</span><span class="code" data-ice="signature">(options: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>): <span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/util/ajax.js.html#lineNumber10">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/util/ajax.js.html#lineNumber44">source</a></span></span>
     </span>
   </h3>
 
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import ajax from &apos;<span><a href="file/src/util/ajax.js.html#lineNumber10">wavesurfer.js/src/util/ajax.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import ajax from &apos;<span><a href="file/src/util/ajax.js.html#lineNumber44">wavesurfer.js/src/util/ajax.js</a></span>&apos;</code></pre></div>
+  <div class="deprecated" data-ice="deprecated">this function was deprecated. Use `util.fetchFile` instead.</div>
   
-  
-  <div data-ice="description"><p>Perform an ajax request</p>
+  <div data-ice="description"><p>Perform an ajax request using <code>XMLHttpRequest</code>.</p>
 </div>
 
   
@@ -354,9 +386,9 @@ cycle</p>
     
     <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">options</td>
-      <td data-ice="type" class="code"><span>Options</span></td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>Description</p>
+      <td data-ice="description"><p>AJAX options to use. See example below for options.</p>
 </td>
     </tr>
 </tbody>
@@ -369,7 +401,7 @@ cycle</p>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></td>
+          <td class="return-type code" data-ice="returnType"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></td>
           <td class="return-desc" data-ice="returnDescription"><p>Observer instance</p>
 </td>
         </tr>
@@ -387,7 +419,45 @@ cycle</p>
 
   
 
-  
+  <div data-ice="example">
+    <h4>Example:</h4>
+    
+  <div class="example-doc" data-ice="exampleDoc">
+      
+      <pre class="prettyprint source-code"><code data-ice="exampleCode">// default options
+let options = {
+    method: &apos;GET&apos;,
+    url: undefined,
+    responseType: &apos;json&apos;,
+    xhr: {}
+};
+
+// override default options
+options.url = &apos;../media/demo.wav&apos;;
+options.responseType = &apos;arraybuffer&apos;;
+options.xhr = {
+    requestHeaders: [
+        {
+            key: &apos;Authorization&apos;,
+            value: &apos;my-token&apos;
+        }
+    ],
+    withCredentials: true
+};
+
+// make ajax call
+let ajaxCall = util.ajax(options);
+ajaxCall.on(&apos;progress&apos;, e =&gt; {
+    console.log(&apos;progress&apos;, e);
+});
+ajaxCall.on(&apos;success&apos;, (data, e) =&gt; {
+    console.log(&apos;success!&apos;, data);
+});
+ajaxCall.on(&apos;error&apos;, e =&gt; {
+    console.warn(&apos;ajax error: &apos; + e.target.statusText);
+});</code></pre>
+    </div>
+</div>
 
   
 
@@ -469,6 +539,120 @@ cycle</p>
   
 
   
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="static-function-fetchFile">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">fetchFile</span><span class="code" data-ice="signature">(options: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span>): <span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/util/fetch.js.html#lineNumber114">source</a></span></span>
+    </span>
+  </h3>
+
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import fetchFile from &apos;<span><a href="file/src/util/fetch.js.html#lineNumber114">wavesurfer.js/src/util/fetch.js</a></span>&apos;</code></pre></div>
+  
+  
+  <div data-ice="description"><p>Load a file using <code>fetch</code>.</p>
+</div>
+
+  
+
+  <div data-ice="properties"><div data-ice="properties">
+  <h4 data-ice="title">Params:</h4>
+  <table class="params">
+    <thead>
+    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+    
+    <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">options</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>Request options to use. See example below.</p>
+</td>
+    </tr>
+</tbody>
+  </table>
+</div>
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>Observer instance</p>
+</td>
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  <div data-ice="example">
+    <h4>Example:</h4>
+    
+  <div class="example-doc" data-ice="exampleDoc">
+      
+      <pre class="prettyprint source-code"><code data-ice="exampleCode">// default options
+let options = {
+    url: undefined,
+    method: &apos;GET&apos;,
+    mode: &apos;cors&apos;,
+    credentials: &apos;same-origin&apos;,
+    cache: &apos;default&apos;,
+    responseType: &apos;json&apos;,
+    requestHeaders: [],
+    redirect: &apos;follow&apos;,
+    referrer: &apos;client&apos;
+};
+
+// override some options
+options.url = &apos;../media/demo.wav&apos;;
+
+// available types: &apos;arraybuffer&apos;, &apos;blob&apos;, &apos;json&apos; or &apos;text&apos;
+options.responseType = &apos;arraybuffer&apos;;
+
+// make fetch call
+let request = util.fetchFile(options);
+
+// listen for events
+request.on(&apos;progress&apos;, e =&gt; {
+    console.log(&apos;progress&apos;, e);
+});
+
+request.on(&apos;success&apos;, data =&gt; {
+    console.log(&apos;success!&apos;, data);
+});
+
+request.on(&apos;error&apos;, e =&gt; {
+    console.warn(&apos;fetchFile error: &apos;, e);
+});</code></pre>
+    </div>
+</div>
 
   
 
@@ -558,15 +742,15 @@ cycle</p>
     
     
     
-    <span class="code" data-ice="name">getId</span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></span></span>
+    <span class="code" data-ice="name">getId</span><span class="code" data-ice="signature">(prefix: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/util/get-id.js.html#lineNumber6">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/util/get-id.js.html#lineNumber12">source</a></span></span>
     </span>
   </h3>
 
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import getId from &apos;<span><a href="file/src/util/get-id.js.html#lineNumber6">wavesurfer.js/src/util/get-id.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import getId from &apos;<span><a href="file/src/util/get-id.js.html#lineNumber12">wavesurfer.js/src/util/get-id.js</a></span>&apos;</code></pre></div>
   
   
   <div data-ice="description"><p>Get a random prefixed ID</p>
@@ -574,7 +758,24 @@ cycle</p>
 
   
 
-  <div data-ice="properties">
+  <div data-ice="properties"><div data-ice="properties">
+  <h4 data-ice="title">Params:</h4>
+  <table class="params">
+    <thead>
+    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+    
+    <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">prefix</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>Prefix to use. Default is <code>&apos;wavesurfer_&apos;</code>.</p>
+</td>
+    </tr>
+</tbody>
+  </table>
+</div>
 </div>
 
   <div class="return-params" data-ice="returnParams">
@@ -583,7 +784,7 @@ cycle</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></span></td>
-          <td class="return-desc" data-ice="returnDescription"><p>Random ID</p>
+          <td class="return-desc" data-ice="returnDescription"><p>Random prefixed ID</p>
 </td>
         </tr>
       </tbody>
@@ -600,7 +801,17 @@ cycle</p>
 
   
 
-  
+  <div data-ice="example">
+    <h4>Example:</h4>
+    
+  <div class="example-doc" data-ice="exampleDoc">
+      
+      <pre class="prettyprint source-code"><code data-ice="exampleCode">console.log(getId()); // logs &apos;wavesurfer_b5pors4ru6g&apos;
+
+let prefix = &apos;foo-&apos;;
+console.log(getId(prefix)); // logs &apos;foo-b5pors4ru6g&apos;</code></pre>
+    </div>
+</div>
 
   
 
@@ -619,11 +830,11 @@ cycle</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/util/max.js.html#lineNumber7">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/util/max.js.html#lineNumber8">source</a></span></span>
     </span>
   </h3>
 
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import max from &apos;<span><a href="file/src/util/max.js.html#lineNumber7">wavesurfer.js/src/util/max.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import max from &apos;<span><a href="file/src/util/max.js.html#lineNumber8">wavesurfer.js/src/util/max.js</a></span>&apos;</code></pre></div>
   
   
   <div data-ice="description"><p>Get the largest value</p>
@@ -674,7 +885,14 @@ cycle</p>
 
   
 
-  
+  <div data-ice="example">
+    <h4>Example:</h4>
+    
+  <div class="example-doc" data-ice="exampleDoc">
+      
+      <pre class="prettyprint source-code"><code data-ice="exampleCode">console.log(max([1, 2, 3])); // logs 3</code></pre>
+    </div>
+</div>
 
   
 
@@ -693,11 +911,11 @@ cycle</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/util/min.js.html#lineNumber7">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/util/min.js.html#lineNumber8">source</a></span></span>
     </span>
   </h3>
 
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import min from &apos;<span><a href="file/src/util/min.js.html#lineNumber7">wavesurfer.js/src/util/min.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import min from &apos;<span><a href="file/src/util/min.js.html#lineNumber8">wavesurfer.js/src/util/min.js</a></span>&apos;</code></pre></div>
   
   
   <div data-ice="description"><p>Get the smallest value</p>
@@ -748,7 +966,14 @@ cycle</p>
 
   
 
-  
+  <div data-ice="example">
+    <h4>Example:</h4>
+    
+  <div class="example-doc" data-ice="exampleDoc">
+      
+      <pre class="prettyprint source-code"><code data-ice="exampleCode">console.log(min([1, 2, 3])); // logs 1</code></pre>
+    </div>
+</div>
 
   
 
@@ -763,18 +988,19 @@ cycle</p>
     
     
     
-    <span class="code" data-ice="name">preventClick</span><span class="code" data-ice="signature">(values: <span>*</span>)</span>
+    <span class="code" data-ice="name">preventClick</span><span class="code" data-ice="signature">(values: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span>)</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/util/prevent-click.js.html#lineNumber6">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/util/prevent-click.js.html#lineNumber17">source</a></span></span>
     </span>
   </h3>
 
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import preventClick from &apos;<span><a href="file/src/util/prevent-click.js.html#lineNumber6">wavesurfer.js/src/util/prevent-click.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import preventClick from &apos;<span><a href="file/src/util/prevent-click.js.html#lineNumber17">wavesurfer.js/src/util/prevent-click.js</a></span>&apos;</code></pre></div>
   
   
-  
+  <div data-ice="description"><p>Starts listening for click event and prevent propagation</p>
+</div>
 
   
 
@@ -788,9 +1014,10 @@ cycle</p>
     
     <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">values</td>
-      <td data-ice="type" class="code"><span>*</span></td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Values</p>
+</td>
     </tr>
 </tbody>
   </table>

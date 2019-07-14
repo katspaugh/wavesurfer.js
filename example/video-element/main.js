@@ -16,6 +16,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load audio from existing media element
     var mediaElt = document.querySelector('video');
 
+    wavesurfer.on('error', function(e) {
+        console.warn(e);
+    });
+
     wavesurfer.load(mediaElt);
 
     document

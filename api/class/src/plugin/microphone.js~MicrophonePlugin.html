@@ -29,7 +29,8 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
@@ -67,6 +68,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
@@ -746,7 +748,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-deviceError">deviceError</a></span></span><span class="code" data-ice="signature">(code: <span>*</span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-deviceError">deviceError</a></span></span><span class="code" data-ice="signature">(code: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>)</span>
         </p>
       </div>
       <div>
@@ -948,7 +950,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-reloadBuffer">reloadBuffer</a></span></span><span class="code" data-ice="signature">(event: <span>*</span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-reloadBuffer">reloadBuffer</a></span></span><span class="code" data-ice="signature">(event: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span>)</span>
         </p>
       </div>
       <div>
@@ -1937,7 +1939,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber327">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber329">source</a></span></span>
     </span>
   </h3>
 
@@ -2114,7 +2116,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber362">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber366">source</a></span></span>
     </span>
   </h3>
 
@@ -2168,11 +2170,11 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     
     
     
-    <span class="code" data-ice="name">deviceError</span><span class="code" data-ice="signature">(code: <span>*</span>)</span>
+    <span class="code" data-ice="name">deviceError</span><span class="code" data-ice="signature">(code: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>)</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber340">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber344">source</a></span></span>
     </span>
   </h3>
 
@@ -2194,9 +2196,10 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     
     <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">code</td>
-      <td data-ice="type" class="code"><span>*</span></td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Error message</p>
+</td>
     </tr>
 </tbody>
   </table>
@@ -2276,7 +2279,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber352">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber356">source</a></span></span>
     </span>
   </h3>
 
@@ -2364,7 +2367,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber326">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber328">source</a></span></span>
     </span>
   </h3>
 
@@ -2552,11 +2555,11 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     
     
     
-    <span class="code" data-ice="name">reloadBuffer</span><span class="code" data-ice="signature">(event: <span>*</span>)</span>
+    <span class="code" data-ice="name">reloadBuffer</span><span class="code" data-ice="signature">(event: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span>)</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber292">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/microphone.js.html#lineNumber294">source</a></span></span>
     </span>
   </h3>
 
@@ -2578,9 +2581,10 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     
     <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">event</td>
-      <td data-ice="type" class="code"><span>*</span></td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Audioprocess event</p>
+</td>
     </tr>
 </tbody>
   </table>

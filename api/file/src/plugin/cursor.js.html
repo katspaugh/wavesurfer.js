@@ -29,7 +29,8 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
@@ -67,6 +68,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
@@ -94,6 +96,10 @@
  * @property {boolean} showTime=false Show the time on the cursor.
  * @property {object} customShowTimeStyle An object with custom styles which are
  * applied to the cursor time element.
+ * @property {string} followCursorY=false Use `true` to make the time on
+ * the cursor follow the x and the y-position of the mouse. Use `false` to make the
+ * it only follow the x-position of the mouse.
+ * @property {function} formatTimeCallback Formats the timestamp on the cursor.
  */
 
 /**
@@ -137,12 +143,7 @@ export default class CursorPlugin {
             name: &apos;cursor&apos;,
             deferInit: params &amp;&amp; params.deferInit ? params.deferInit : false,
             params: params,
-            staticProps: {
-                enableCursor() {
-                    console.warn(&apos;Deprecated enableCursor!&apos;);
-                    this.initPlugins(&apos;cursor&apos;);
-                }
-            },
+            staticProps: {},
             instance: CursorPlugin
         };
     }
@@ -159,25 +160,46 @@ export default class CursorPlugin {
         zIndex: 4,
         customStyle: {},
         customShowTimeStyle: {},
-        showTime: false
+        showTime: false,
+        followCursorY: false,
+        formatTimeCallback: null
     };
 
-    /** @private */
+    /**
+     * @private
+     * @param {object} e Mouse move event
+     */
     _onMousemove = e =&gt; {
         const bbox = this.wavesurfer.container.getBoundingClientRect();
-        this.updateCursorPosition(e.clientX - bbox.left);
+        let y = 0;
+        let x = e.clientX - bbox.left;
+
+        if (this.params.showTime &amp;&amp; this.params.followCursorY) {
+            // follow y-position of the mouse
+            y = e.clientY - (bbox.top + bbox.height / 2);
+        }
+
+        this.updateCursorPosition(x, y);
     };
-    /** @private */
+
+    /**
+     * @private
+     * @returns {void}
+     */
     _onMouseenter = () =&gt; this.showCursor();
-    /** @private */
+
+    /**
+     * @private
+     * @returns {void}
+     */
     _onMouseleave = () =&gt; this.hideCursor();
 
     /**
-     * Construct the plugin class. You probably want to use CursorPlugin.create
+     * Construct the plugin class. You probably want to use `CursorPlugin.create`
      * instead.
      *
-     * @param {CursorPluginParams} params
-     * @param {object} ws
+     * @param {CursorPluginParams} params Plugin parameters
+     * @param {object} ws Wavesurfer instance
      */
     constructor(params, ws) {
         /** @private */
@@ -193,7 +215,7 @@ export default class CursorPlugin {
         /**
          * displays the time next to the cursor
          *
-         * @type {Boolean}
+         * @type {?HTMLElement}
          */
         this.showTime = null;
         /**
@@ -271,6 +293,8 @@ export default class CursorPlugin {
 
         this.wrapper.addEventListener(&apos;mousemove&apos;, this._onMousemove);
         if (this.params.hideOnBlur) {
+            // ensure elements are hidden initially
+            this.hideCursor();
             this.wrapper.addEventListener(&apos;mouseenter&apos;, this._onMouseenter);
             this.wrapper.addEventListener(&apos;mouseleave&apos;, this._onMouseleave);
         }
@@ -294,11 +318,12 @@ export default class CursorPlugin {
     /**
      * Update the cursor position
      *
-     * @param {number} pos The x offset of the cursor in pixels
+     * @param {number} xpos The x offset of the cursor in pixels
+     * @param {number} ypos The y offset of the cursor in pixels
      */
-    updateCursorPosition(pos) {
+    updateCursorPosition(xpos, ypos) {
         this.style(this.cursor, {
-            left: `${pos}px`
+            left: `${xpos}px`
         });
         if (this.params.showTime) {
             const duration = this.wavesurfer.getDuration();
@@ -311,10 +336,11 @@ export default class CursorPlugin {
                 (duration / this.wavesurfer.drawer.width) * scrollWidth;
 
             const timeValue =
-                Math.max(0, (pos / elementWidth) * duration) + scrollTime;
+                Math.max(0, (xpos / elementWidth) * duration) + scrollTime;
             const formatValue = this.formatTime(timeValue);
             this.style(this.showTime, {
-                left: `${pos}px`
+                left: `${xpos}px`,
+                top: `${ypos}px`
             });
             this.displayTime.innerHTML = `${formatValue}`;
         }
@@ -348,13 +374,23 @@ export default class CursorPlugin {
         }
     }
 
-    /** timestamp time calculation */
+    /**
+     * Format the timestamp for `cursorTime`.
+     *
+     * @param {number} cursorTime Time in seconds
+     * @returns {string} Formatted timestamp
+     */
     formatTime(cursorTime) {
+        cursorTime = isNaN(cursorTime) ? 0 : cursorTime;
+
+        if (this.params.formatTimeCallback) {
+            return this.params.formatTimeCallback(cursorTime);
+        }
         return [cursorTime].map(time =&gt;
             [
                 Math.floor((time % 3600) / 60), // minutes
                 (&apos;00&apos; + Math.floor(time % 60)).slice(-2), // seconds
-                (&apos;000&apos; + Math.floor((time % 1) * 1000)).slice(-3) // miliseconds
+                (&apos;000&apos; + Math.floor((time % 1) * 1000)).slice(-3) // milliseconds
             ].join(&apos;:&apos;)
         );
     }

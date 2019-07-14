@@ -1,5 +1,11 @@
 window.esdocSearchIndex = [
   [
+    "wavesurfer.js/src/drawer.canvasentry.js~canvasentry",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html",
+    "<span>CanvasEntry</span> <span class=\"search-result-import-path\">wavesurfer.js/src/drawer.canvasentry.js</span>",
+    "class"
+  ],
+  [
     "wavesurfer.js/src/plugin/cursor.js~cursorplugin",
     "class/src/plugin/cursor.js~CursorPlugin.html",
     "<span>CursorPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/cursor.js</span>",
@@ -111,6 +117,12 @@ window.esdocSearchIndex = [
     "wavesurfer.js/src/util/extend.js~extend",
     "function/index.html#static-function-extend",
     "<span>extend</span> <span class=\"search-result-import-path\">wavesurfer.js/src/util/extend.js</span>",
+    "function"
+  ],
+  [
+    "wavesurfer.js/src/util/fetch.js~fetchfile",
+    "function/index.html#static-function-fetchFile",
+    "<span>fetchFile</span> <span class=\"search-result-import-path\">wavesurfer.js/src/util/fetch.js</span>",
     "function"
   ],
   [
@@ -432,6 +444,102 @@ window.esdocSearchIndex = [
     "external"
   ],
   [
+    "src/drawer.canvasentry.js",
+    "file/src/drawer.canvasentry.js.html",
+    "src/drawer.canvasentry.js",
+    "file"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#clearwave",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-clearWave",
+    "src/drawer.canvasentry.js~CanvasEntry#clearWave",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#constructor",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-constructor-constructor",
+    "src/drawer.canvasentry.js~CanvasEntry#constructor",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#destroy",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-destroy",
+    "src/drawer.canvasentry.js~CanvasEntry#destroy",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#drawlines",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-drawLines",
+    "src/drawer.canvasentry.js~CanvasEntry#drawLines",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#fillrects",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-fillRects",
+    "src/drawer.canvasentry.js~CanvasEntry#fillRects",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#getimage",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-getImage",
+    "src/drawer.canvasentry.js~CanvasEntry#getImage",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#id",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-member-id",
+    "src/drawer.canvasentry.js~CanvasEntry#id",
+    "member"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#initprogress",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-initProgress",
+    "src/drawer.canvasentry.js~CanvasEntry#initProgress",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#initwave",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-initWave",
+    "src/drawer.canvasentry.js~CanvasEntry#initWave",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#progress",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-member-progress",
+    "src/drawer.canvasentry.js~CanvasEntry#progress",
+    "member"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#progressctx",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-member-progressCtx",
+    "src/drawer.canvasentry.js~CanvasEntry#progressCtx",
+    "member"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#setfillstyles",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-setFillStyles",
+    "src/drawer.canvasentry.js~CanvasEntry#setFillStyles",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#updatedimensions",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-updateDimensions",
+    "src/drawer.canvasentry.js~CanvasEntry#updateDimensions",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#wave",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-member-wave",
+    "src/drawer.canvasentry.js~CanvasEntry#wave",
+    "member"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#wavectx",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-member-waveCtx",
+    "src/drawer.canvasentry.js~CanvasEntry#waveCtx",
+    "member"
+  ],
+  [
     "src/drawer.js",
     "file/src/drawer.js.html",
     "src/drawer.js",
@@ -628,6 +736,12 @@ window.esdocSearchIndex = [
     "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-init",
     "src/drawer.multicanvas.js~MultiCanvas#init",
     "method"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#overlap",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-overlap",
+    "src/drawer.multicanvas.js~MultiCanvas#overlap",
+    "member"
   ],
   [
     "src/drawer.multicanvas.js~multicanvas#updatecursor",
@@ -1500,6 +1614,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/plugin/regions.js~regionsplugin#getregionsnaptogridvalue",
+    "class/src/plugin/regions.js~RegionsPlugin.html#instance-method-getRegionSnapToGridValue",
+    "src/plugin/regions.js~RegionsPlugin#getRegionSnapToGridValue",
+    "method"
+  ],
+  [
     "src/plugin/regions.js~regionsplugin#init",
     "class/src/plugin/regions.js~RegionsPlugin.html#instance-method-init",
     "src/plugin/regions.js~RegionsPlugin#init",
@@ -1563,6 +1683,12 @@ window.esdocSearchIndex = [
     "src/plugin/spectrogram.js~spectrogramplugin#alpha",
     "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-alpha",
     "src/plugin/spectrogram.js~SpectrogramPlugin#alpha",
+    "member"
+  ],
+  [
+    "src/plugin/spectrogram.js~spectrogramplugin#colormap",
+    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-colorMap",
+    "src/plugin/spectrogram.js~SpectrogramPlugin#colorMap",
     "member"
   ],
   [
@@ -1842,6 +1968,12 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "src/util/fetch.js",
+    "file/src/util/fetch.js.html",
+    "src/util/fetch.js",
+    "file"
+  ],
+  [
     "src/util/frame.js",
     "file/src/util/frame.js.html",
     "src/util/frame.js",
@@ -2076,6 +2208,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/wavesurfer.js~wavesurfer#getactiveplugins",
+    "class/src/wavesurfer.js~WaveSurfer.html#instance-method-getActivePlugins",
+    "src/wavesurfer.js~WaveSurfer#getActivePlugins",
+    "method"
+  ],
+  [
     "src/wavesurfer.js~wavesurfer#getbackgroundcolor",
     "class/src/wavesurfer.js~WaveSurfer.html#instance-method-getBackgroundColor",
     "src/wavesurfer.js~WaveSurfer#getBackgroundColor",
@@ -2161,9 +2299,9 @@ window.esdocSearchIndex = [
   ],
   [
     "src/wavesurfer.js~wavesurfer#isready",
-    "class/src/wavesurfer.js~WaveSurfer.html#instance-method-isReady",
+    "class/src/wavesurfer.js~WaveSurfer.html#instance-member-isReady",
     "src/wavesurfer.js~WaveSurfer#isReady",
-    "method"
+    "member"
   ],
   [
     "src/wavesurfer.js~wavesurfer#load",

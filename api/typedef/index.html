@@ -29,7 +29,8 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
@@ -67,6 +68,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
@@ -560,6 +562,22 @@ to the cursor element</p>
 applied to the cursor time element.</p>
 </td>
     </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">followCursorY</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
+      <td data-ice="appendix"><ul><li>default: false</li></ul></td>
+      <td data-ice="description"><p>Use <code>true</code> to make the time on
+the cursor follow the x and the y-position of the mouse. Use <code>false</code> to make the
+it only follow the x-position of the mouse.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">formatTimeCallback</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>Formats the timestamp on the cursor.</p>
+</td>
+    </tr>
 </tbody>
   </table>
 </div>
@@ -725,7 +743,7 @@ template for the dynamic loading of plugins</p>
       <td data-ice="name" class="code" data-depth="0">loadPlugin</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>If set overwrites the default ajax function,
+      <td data-ice="description"><p>If set overwrites the default request function,
 can be used to inject plugins differently.</p>
 </td>
     </tr>
@@ -1320,6 +1338,20 @@ initialisation</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">snapToGridInterval</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
+      <td data-ice="description"><p>Snap the regions to a grid of the specified multiples in seconds</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">snapToGridOffset</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
+      <td data-ice="description"><p>Shift the snap-to-grid by the specified seconds. May also be negative.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">deferInit</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
       <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
@@ -1443,6 +1475,15 @@ canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)</p>
       <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
       <td data-ice="description"><p>Set to true to manually call
 <code>initPlugin(&apos;spectrogram&apos;)</code></p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">colorMap</td>
+      <td data-ice="type" class="code"><span><span>number[]</span><span>[]</span></span></td>
+      <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
+      <td data-ice="description"><p>A 256 long array of 4-element arrays.
+Each entry should contain a float between 0 and 1 and specify
+r, g, b, and alpha.</p>
 </td>
     </tr>
 </tbody>
@@ -1620,6 +1661,14 @@ labels in secondary color</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">offset</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
+      <td data-ice="description"><p>Offset for the timeline start in seconds. May also be
+negative.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">deferInit</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
       <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
@@ -1733,7 +1782,7 @@ waveform container.</p>
       <td data-ice="name" class="code" data-depth="0">barHeight</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"><ul><li>default: 1</li></ul></td>
-      <td data-ice="description"><p>The height of the wave</p>
+      <td data-ice="description"><p>The height of the wave bars.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
@@ -1742,6 +1791,13 @@ waveform container.</p>
       <td data-ice="appendix"><ul><li>default: null</li></ul></td>
       <td data-ice="description"><p>The optional spacing between bars of the wave,
 if not provided will be calculated in legacy format.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">barWidth</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>default: null</li></ul></td>
+      <td data-ice="description"><p>Draw the waveform using bars.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
@@ -1905,7 +1961,8 @@ are added with the <code>deferInit</code> property set to true.</p>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
       <td data-ice="appendix"><ul><li>default: &apos;#555&apos;</li></ul></td>
       <td data-ice="description"><p>The fill color of the part of the
-waveform behind the cursor.</p>
+waveform behind the cursor. When <code>progressColor</code> and <code>waveColor</code> are the same
+the progress wave is not rendered at all.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
@@ -1979,7 +2036,21 @@ cursor.</p>
       <td data-ice="name" class="code" data-depth="0">xhr</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span></td>
       <td data-ice="appendix"><ul><li>default: {}</li></ul></td>
-      <td data-ice="description"><p>XHR options.</p>
+      <td data-ice="description"><p>XHR options. For example:
+<code>let xhr = {
+    cache: &apos;default&apos;,
+    mode: &apos;cors&apos;,
+    method: &apos;GET&apos;,
+    credentials: &apos;same-origin&apos;,
+    redirect: &apos;follow&apos;,
+    referrer: &apos;client&apos;,
+    headers: [
+        {
+            key: &apos;Authorization&apos;,
+            value: &apos;my-token&apos;
+        }
+    ]
+};</code></p>
 </td>
     </tr>
 </tbody>

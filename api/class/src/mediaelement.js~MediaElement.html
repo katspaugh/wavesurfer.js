@@ -29,7 +29,8 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
@@ -67,6 +68,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
@@ -263,7 +265,7 @@ duration.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-getPeaks">getPeaks</a></span></span><span class="code" data-ice="signature">(length: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, first: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, last: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-getPeaks">getPeaks</a></span></span><span class="code" data-ice="signature">(length: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, first: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, last: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;</span>
         </p>
       </div>
       <div>
@@ -438,7 +440,7 @@ duration.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-load">load</a></span></span><span class="code" data-ice="signature">(url: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, container: <span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, preload: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-load">load</a></span></span><span class="code" data-ice="signature">(url: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, container: <span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, preload: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>)</span>
         </p>
       </div>
       <div>
@@ -468,7 +470,7 @@ and append to container element.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-loadElt">loadElt</a></span></span><span class="code" data-ice="signature">(elt: <span>HTMLMediaElement</span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-loadElt">loadElt</a></span></span><span class="code" data-ice="signature">(elt: <span>HTMLMediaElement</span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;)</span>
         </p>
       </div>
       <div>
@@ -613,7 +615,7 @@ and append to container element.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-setSinkId">setSinkId</a></span></span><span class="code" data-ice="signature">(deviceId: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-setSinkId">setSinkId</a></span></span><span class="code" data-ice="signature">(deviceId: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></span>
         </p>
       </div>
       <div>
@@ -977,7 +979,7 @@ duration.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-method-getPeaks">getPeaks</a></span></span><span class="code" data-ice="signature">(length: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, first: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, last: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-method-getPeaks">getPeaks</a></span></span><span class="code" data-ice="signature">(length: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, first: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, last: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;</span>
         </p>
       </div>
       <div>
@@ -1360,7 +1362,7 @@ duration.</p>
       <div>
         
         
-        <div data-ice="description"><p>Set the rendered length (different from the length of the audio).</p>
+        <div data-ice="description"><p>Set the rendered length (different from the length of the audio)</p>
 </div>
       </div>
     </td>
@@ -1383,7 +1385,7 @@ duration.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-method-setPeaks">setPeaks</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, duration: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-method-setPeaks">setPeaks</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, duration: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
         </p>
       </div>
       <div>
@@ -1441,7 +1443,7 @@ duration.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-method-setSinkId">setSinkId</a></span></span><span class="code" data-ice="signature">(deviceId: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-method-setSinkId">setSinkId</a></span></span><span class="code" data-ice="signature">(deviceId: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></span>
         </p>
       </div>
       <div>
@@ -1558,7 +1560,8 @@ duration.</p>
       <td data-ice="name" class="code" data-depth="0">params</td>
       <td data-ice="type" class="code"><span><a href="typedef/index.html#static-typedef-WavesurferParams">WavesurferParams</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Wavesurfer parameters</p>
+</td>
     </tr>
 </tbody>
   </table>
@@ -1598,7 +1601,7 @@ duration.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber356">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber380">source</a></span></span>
     </span>
   </h3>
 
@@ -1642,7 +1645,7 @@ duration.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber201">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber215">source</a></span></span>
     </span>
   </h3>
 
@@ -1664,7 +1667,8 @@ duration.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Current time</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -1699,7 +1703,7 @@ duration.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber183">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber197">source</a></span></span>
     </span>
   </h3>
 
@@ -1720,7 +1724,8 @@ duration.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Duration</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -1751,11 +1756,11 @@ duration.</p>
     
     
     
-    <span class="code" data-ice="name">getPeaks</span><span class="code" data-ice="signature">(length: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, first: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, last: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span></span>
+    <span class="code" data-ice="name">getPeaks</span><span class="code" data-ice="signature">(length: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, first: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, last: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber308">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber327">source</a></span></span>
     </span>
   </h3>
 
@@ -1807,7 +1812,7 @@ duration.</p>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span></td>
+          <td class="return-type code" data-ice="returnType"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;</td>
           <td class="return-desc" data-ice="returnDescription"><p>Array of 2*&lt;length&gt; peaks or array of
 arrays of peaks consisting of (max, min) values for each subrange.</p>
 </td>
@@ -1845,7 +1850,7 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber219">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber233">source</a></span></span>
     </span>
   </h3>
 
@@ -1866,7 +1871,8 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Playback rate</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -1901,7 +1907,7 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber210">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber224">source</a></span></span>
     </span>
   </h3>
 
@@ -1922,7 +1928,8 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Current position</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -1957,7 +1964,7 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber338">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber359">source</a></span></span>
     </span>
   </h3>
 
@@ -2014,7 +2021,7 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber49">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber51">source</a></span></span>
     </span>
   </h3>
 
@@ -2058,7 +2065,7 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber174">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber188">source</a></span></span>
     </span>
   </h3>
 
@@ -2079,7 +2086,8 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Media paused or not</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -2110,11 +2118,11 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     
     
     
-    <span class="code" data-ice="name">load</span><span class="code" data-ice="signature">(url: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, container: <span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, preload: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>)</span>
+    <span class="code" data-ice="name">load</span><span class="code" data-ice="signature">(url: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, container: <span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, preload: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>)</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber91">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber90">source</a></span></span>
     </span>
   </h3>
 
@@ -2151,7 +2159,7 @@ and append to container element.</p>
     </tr>
 <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">peaks</td>
-      <td data-ice="type" class="code"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span></td>
+      <td data-ice="type" class="code"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;</td>
       <td data-ice="appendix"></td>
       <td data-ice="description"><p>Array of peak data</p>
 </td>
@@ -2193,11 +2201,11 @@ and append to container element.</p>
     
     
     
-    <span class="code" data-ice="name">loadElt</span><span class="code" data-ice="signature">(elt: <span>HTMLMediaElement</span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>)</span>
+    <span class="code" data-ice="name">loadElt</span><span class="code" data-ice="signature">(elt: <span>HTMLMediaElement</span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;)</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber114">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber113">source</a></span></span>
     </span>
   </h3>
 
@@ -2226,7 +2234,7 @@ and append to container element.</p>
     </tr>
 <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">peaks</td>
-      <td data-ice="type" class="code"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span></td>
+      <td data-ice="type" class="code"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;</td>
       <td data-ice="appendix"></td>
       <td data-ice="description"><p>Array of peak data</p>
 </td>
@@ -2265,7 +2273,7 @@ and append to container element.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber268">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber282">source</a></span></span>
     </span>
   </h3>
 
@@ -2286,7 +2294,8 @@ and append to container element.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Result</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -2333,7 +2342,7 @@ and append to container element.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber254">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber268">source</a></span></span>
     </span>
   </h3>
 
@@ -2379,7 +2388,8 @@ of a clip.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Result</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -2426,7 +2436,7 @@ of a clip.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber238">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber252">source</a></span></span>
     </span>
   </h3>
 
@@ -2487,7 +2497,7 @@ of a clip.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber228">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber242">source</a></span></span>
     </span>
   </h3>
 
@@ -2511,7 +2521,8 @@ of a clip.</p>
       <td data-ice="name" class="code" data-depth="0">value</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Playback rate</p>
+</td>
     </tr>
 </tbody>
   </table>
@@ -2543,11 +2554,11 @@ of a clip.</p>
     
     
     
-    <span class="code" data-ice="name">setSinkId</span><span class="code" data-ice="signature">(deviceId: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span>*</span></span>
+    <span class="code" data-ice="name">setSinkId</span><span class="code" data-ice="signature">(deviceId: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber320">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber341">source</a></span></span>
     </span>
   </h3>
 
@@ -2584,8 +2595,10 @@ of a clip.</p>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span>*</span></td>
-          
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>A Promise that resolves to <code>undefined</code> when there
+are no errors.</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -2620,7 +2633,7 @@ of a clip.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber347">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber368">source</a></span></span>
     </span>
   </h3>
 

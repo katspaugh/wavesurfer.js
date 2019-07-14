@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     wavesurfer.util
-        .ajax({
+        .fetchFile({
             responseType: 'json',
             url: 'rashomon.json'
         })

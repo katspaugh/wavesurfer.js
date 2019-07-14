@@ -1,16 +1,23 @@
 {
-  "coverage": "67.45%",
-  "expectCount": 510,
-  "actualCount": 344,
+  "coverage": "69.18%",
+  "expectCount": 542,
+  "actualCount": 375,
   "files": {
+    "src/drawer.canvasentry.js": {
+      "expectCount": 20,
+      "actualCount": 19,
+      "undocumentLines": [
+        16
+      ]
+    },
     "src/drawer.js": {
       "expectCount": 28,
       "actualCount": 28,
       "undocumentLines": []
     },
     "src/drawer.multicanvas.js": {
-      "expectCount": 27,
-      "actualCount": 27,
+      "expectCount": 26,
+      "actualCount": 26,
       "undocumentLines": []
     },
     "src/html-init.js": {
@@ -19,10 +26,10 @@
       "undocumentLines": []
     },
     "src/mediaelement.js": {
-      "expectCount": 33,
-      "actualCount": 32,
+      "expectCount": 34,
+      "actualCount": 33,
       "undocumentLines": [
-        281
+        300
       ]
     },
     "src/peakcache.js": {
@@ -34,7 +41,7 @@
       "expectCount": 20,
       "actualCount": 19,
       "undocumentLines": [
-        132
+        152
       ]
     },
     "src/plugin/elan.js": {
@@ -93,46 +100,46 @@
         247,
         255,
         259,
-        327
+        329
       ]
     },
     "src/plugin/minimap.js": {
       "expectCount": 31,
       "actualCount": 3,
       "undocumentLines": [
-        62,
-        63,
-        102,
-        103,
-        104,
+        57,
+        58,
+        95,
+        96,
+        97,
+        108,
         115,
-        122,
-        141,
-        146,
+        134,
+        139,
+        143,
+        148,
         150,
-        155,
-        157,
-        161,
-        170,
+        154,
+        163,
+        169,
         176,
-        183,
-        200,
-        219,
-        250,
-        274,
-        288,
-        347,
-        356,
-        357,
-        358,
-        359,
-        360,
-        368
+        193,
+        212,
+        243,
+        267,
+        281,
+        340,
+        349,
+        350,
+        351,
+        352,
+        353,
+        361
       ]
     },
     "src/plugin/regions.js": {
-      "expectCount": 54,
-      "actualCount": 3,
+      "expectCount": 55,
+      "actualCount": 7,
       "undocumentLines": [
         10,
         11,
@@ -167,74 +174,72 @@
         229,
         230,
         267,
-        491,
-        503,
-        603,
-        621,
-        622,
-        623,
-        624,
-        635,
-        636,
-        645,
+        504,
+        516,
+        611,
+        629,
+        630,
+        631,
+        632,
         646,
+        647,
         656,
-        666,
-        673,
-        686,
-        692,
-        837,
-        845
+        657,
+        667,
+        678,
+        712,
+        863
       ]
     },
     "src/plugin/spectrogram.js": {
-      "expectCount": 37,
+      "expectCount": 38,
       "actualCount": 3,
       "undocumentLines": [
-        287,
-        288,
-        289,
         290,
+        291,
         292,
         293,
+        295,
         296,
         299,
         302,
         305,
-        314,
-        315,
-        316,
-        318,
-        319,
-        320,
-        321,
-        332,
+        308,
+        328,
+        336,
+        337,
+        338,
+        340,
         341,
-        352,
-        356,
-        407,
-        414,
-        419,
-        427,
-        437,
-        444,
-        474,
-        521,
-        534,
-        538,
-        542,
-        608,
-        614
+        342,
+        343,
+        354,
+        363,
+        374,
+        378,
+        429,
+        436,
+        441,
+        449,
+        459,
+        466,
+        498,
+        545,
+        556,
+        560,
+        564,
+        641,
+        647
       ]
     },
     "src/plugin/timeline.js": {
-      "expectCount": 33,
-      "actualCount": 29,
+      "expectCount": 35,
+      "actualCount": 31,
       "undocumentLines": [
-        89,
-        90,
-        91,
-        92
+        96,
+        97,
+        98,
+        99
       ]
     },
     "src/util/ajax.js": {
@@ -246,6 +251,16 @@
       "expectCount": 1,
       "actualCount": 1,
       "undocumentLines": []
+    },
+    "src/util/fetch.js": {
+      "expectCount": 7,
+      "actualCount": 3,
+      "undocumentLines": [
+        7,
+        16,
+        19,
+        20
+      ]
     },
     "src/util/frame.js": {
       "expectCount": 1,
@@ -274,11 +289,8 @@
     },
     "src/util/prevent-click.js": {
       "expectCount": 2,
-      "actualCount": 0,
-      "undocumentLines": [
-        1,
-        6
-      ]
+      "actualCount": 2,
+      "undocumentLines": []
     },
     "src/util/style.js": {
       "expectCount": 1,
@@ -286,10 +298,10 @@
       "undocumentLines": []
     },
     "src/wavesurfer.js": {
-      "expectCount": 92,
-      "actualCount": 91,
+      "expectCount": 93,
+      "actualCount": 92,
       "undocumentLines": [
-        393
+        416
       ]
     },
     "src/webaudio.js": {

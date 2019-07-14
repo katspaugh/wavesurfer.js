@@ -29,7 +29,8 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
@@ -67,6 +68,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
@@ -79,7 +81,8 @@
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">src/plugin/minimap.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/*eslint no-console: [&quot;error&quot;, { allow: [&quot;warn&quot;] }] */
+/**
  * @typedef {Object} MinimapPluginParams
  * @desc Extends the `WavesurferParams` wavesurfer was initialised with
  * @property {?string|HTMLElement} container CSS selector or HTML element where
@@ -129,13 +132,7 @@ export default class MinimapPlugin {
             name: &apos;minimap&apos;,
             deferInit: params &amp;&amp; params.deferInit ? params.deferInit : false,
             params: params,
-            staticProps: {
-                initMinimap(customConfig) {
-                    console.warn(&apos;Deprecated initMinimap!&apos;);
-                    params = customConfig;
-                    this.initPlugins(&apos;minimap&apos;);
-                }
-            },
+            staticProps: {},
             instance: MinimapPlugin
         };
     }
@@ -164,9 +161,7 @@ export default class MinimapPlugin {
             const el = document.querySelector(params.container);
             if (!el) {
                 console.warn(
-                    `Wavesurfer minimap container ${
-                        params.container
-                    } was not found! The minimap will be automatically appended below the waveform.`
+                    `Wavesurfer minimap container ${params.container} was not found! The minimap will be automatically appended below the waveform.`
                 );
             }
             this.params.container = el;
@@ -184,9 +179,9 @@ export default class MinimapPlugin {
         this.wavesurfer = ws;
         this.util = ws.util;
         /**
-         * Minimap needs to register to ready and waveform-ready events to
-         * work with MediaElement, the time when ready is called is different
-         * (peaks can not be got)
+         * Minimap needs to listen for the `ready` and `waveform-ready` events
+         * to work with the `MediaElement` backend. The moment the `ready` event
+         * is called is different (and peaks would not load).
          *
          * @type {string}
          * @see https://github.com/katspaugh/wavesurfer.js/issues/736

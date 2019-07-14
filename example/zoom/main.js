@@ -32,6 +32,10 @@ document.addEventListener('DOMContentLoaded', function() {
         ]
     });
 
+    wavesurfer.on('error', function(e) {
+        console.warn(e);
+    });
+
     // Load audio from URL
     wavesurfer.load('../media/demo.wav');
 
@@ -44,6 +48,9 @@ document.addEventListener('DOMContentLoaded', function() {
     slider.addEventListener('input', function() {
         wavesurfer.zoom(Number(this.value));
     });
+
+    // set initial zoom to match slider value
+    wavesurfer.zoom(slider.value);
 
     // Play button
     var button = document.querySelector('[data-action="play"]');

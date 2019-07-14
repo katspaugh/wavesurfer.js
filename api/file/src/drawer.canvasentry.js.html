@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/drawer.canvasentry.js | wavesurfer.js</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Interactive navigable audio visualization using Web Audio and Canvas"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="wavesurfer.js"><meta property="twitter:description" content="Interactive navigable audio visualization using Web Audio and Canvas"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html">WaveSurfer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html">WebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-InitParams">InitParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-WavesurferParams">WavesurferParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/de/docs/Web/API/AudioNode">AudioNode</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D">CanvasRenderingContext2D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints">MediaStreamConstraints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext">OfflineAudioContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin">plugin</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html">CursorPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/elan.js~ElanPlugin.html">ElanPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/mediasession.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/timeline.js~TimelinePlugin.html">TimelinePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ElanPluginParams">ElanPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MediaSessionPluginParams">MediaSessionPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SpectrogramPluginParams">SpectrogramPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TimelinePluginParams">TimelinePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/drawer.canvasentry.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+ * @since 3.0.0
+ */
+
+import style from &apos;./util/style&apos;;
+import getId from &apos;./util/get-id&apos;;
+
+/**
+ * The `CanvasEntry` class represents an element consisting of a wave `canvas`
+ * and an (optional) progress wave `canvas`.
+ *
+ * The `MultiCanvas` renderer uses one or more `CanvasEntry` instances to
+ * render a waveform, depending on the zoom level.
+ */
+export default class CanvasEntry {
+    constructor() {
+        /**
+         * The wave node
+         *
+         * @type {HTMLCanvasElement}
+         */
+        this.wave = null;
+        /**
+         * The wave canvas rendering context
+         *
+         * @type {CanvasRenderingContext2D}
+         */
+        this.waveCtx = null;
+        /**
+         * The (optional) progress wave node
+         *
+         * @type {HTMLCanvasElement}
+         */
+        this.progress = null;
+        /**
+         * The (optional) progress wave canvas rendering context
+         *
+         * @type {CanvasRenderingContext2D}
+         */
+        this.progressCtx = null;
+        /**
+         * Start of the area the canvas should render, between 0 and 1
+         *
+         * @type {number}
+         * @private
+         */
+        this.start = 0;
+        /**
+         * End of the area the canvas should render, between 0 and 1
+         *
+         * @type {number}
+         * @private
+         */
+        this.end = 1;
+        /**
+         * Unique identifier for this entry
+         *
+         * @type {string}
+         */
+        this.id = getId(this.constructor.name.toLowerCase() + &apos;_&apos;);
+    }
+
+    /**
+     * Store the wave canvas element and create the 2D rendering context
+     *
+     * @param {HTMLCanvasElement} element The wave `canvas` element.
+     */
+    initWave(element) {
+        this.wave = element;
+        this.waveCtx = this.wave.getContext(&apos;2d&apos;);
+    }
+
+    /**
+     * Store the progress wave canvas element and create the 2D rendering
+     * context
+     *
+     * @param {HTMLCanvasElement} element The progress wave `canvas` element.
+     */
+    initProgress(element) {
+        this.progress = element;
+        this.progressCtx = this.progress.getContext(&apos;2d&apos;);
+    }
+
+    /**
+     * Update the dimensions
+     *
+     * @param {number} elementWidth Width of the entry
+     * @param {number} totalWidth Total width of the multi canvas renderer
+     * @param {number} width The new width of the element
+     * @param {number} height The new height of the element
+     */
+    updateDimensions(elementWidth, totalWidth, width, height) {
+        // where the canvas starts and ends in the waveform, represented as a
+        // decimal between 0 and 1
+        this.start = this.wave.offsetLeft / totalWidth || 0;
+        this.end = this.start + elementWidth / totalWidth;
+
+        // set wave canvas dimensions
+        this.wave.width = width;
+        this.wave.height = height;
+        let elementSize = { width: elementWidth + &apos;px&apos; };
+        style(this.wave, elementSize);
+
+        if (this.hasProgressCanvas) {
+            // set progress canvas dimensions
+            this.progress.width = width;
+            this.progress.height = height;
+            style(this.progress, elementSize);
+        }
+    }
+
+    /**
+     * Clear the wave and progress rendering contexts
+     */
+    clearWave() {
+        // wave
+        this.waveCtx.clearRect(
+            0,
+            0,
+            this.waveCtx.canvas.width,
+            this.waveCtx.canvas.height
+        );
+
+        // progress
+        if (this.hasProgressCanvas) {
+            this.progressCtx.clearRect(
+                0,
+                0,
+                this.progressCtx.canvas.width,
+                this.progressCtx.canvas.height
+            );
+        }
+    }
+
+    /**
+     * Set the fill styles for wave and progress
+     *
+     * @param {string} waveColor Fill color for the wave canvas
+     * @param {?string} progressColor Fill color for the progress canvas
+     */
+    setFillStyles(waveColor, progressColor) {
+        this.waveCtx.fillStyle = waveColor;
+
+        if (this.hasProgressCanvas) {
+            this.progressCtx.fillStyle = progressColor;
+        }
+    }
+
+    /**
+     * Draw a rectangle for wave and progress
+     *
+     * @param {number} x X start position
+     * @param {number} y Y start position
+     * @param {number} width Width of the rectangle
+     * @param {number} height Height of the rectangle
+     */
+    fillRects(x, y, width, height) {
+        this.fillRectToContext(this.waveCtx, x, y, width, height);
+
+        if (this.hasProgressCanvas) {
+            this.fillRectToContext(this.progressCtx, x, y, width, height);
+        }
+    }
+
+    /**
+     * Draw the actual rectangle on a `canvas` element
+     *
+     * @private
+     * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
+     * @param {number} x X start position
+     * @param {number} y Y start position
+     * @param {number} width Width of the rectangle
+     * @param {number} height Height of the rectangle
+     */
+    fillRectToContext(ctx, x, y, width, height) {
+        if (!ctx) {
+            return;
+        }
+        ctx.fillRect(x, y, width, height);
+    }
+
+    /**
+     * Render the actual wave and progress lines
+     *
+     * @param {number[]} peaks Array with peaks data
+     * @param {number} absmax Maximum peak value (absolute)
+     * @param {number} halfH Half the height of the waveform
+     * @param {number} offsetY Offset to the top
+     * @param {number} start The x-offset of the beginning of the area that
+     * should be rendered
+     * @param {number} end The x-offset of the end of the area that
+     * should be rendered
+     */
+    drawLines(peaks, absmax, halfH, offsetY, start, end) {
+        this.drawLineToContext(
+            this.waveCtx,
+            peaks,
+            absmax,
+            halfH,
+            offsetY,
+            start,
+            end
+        );
+
+        if (this.hasProgressCanvas) {
+            this.drawLineToContext(
+                this.progressCtx,
+                peaks,
+                absmax,
+                halfH,
+                offsetY,
+                start,
+                end
+            );
+        }
+    }
+
+    /**
+     * Render the actual waveform line on a `canvas` element
+     *
+     * @private
+     * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
+     * @param {number[]} peaks Array with peaks data
+     * @param {number} absmax Maximum peak value (absolute)
+     * @param {number} halfH Half the height of the waveform
+     * @param {number} offsetY Offset to the top
+     * @param {number} start The x-offset of the beginning of the area that
+     * should be rendered
+     * @param {number} end The x-offset of the end of the area that
+     * should be rendered
+     */
+    drawLineToContext(ctx, peaks, absmax, halfH, offsetY, start, end) {
+        if (!ctx) {
+            return;
+        }
+
+        const length = peaks.length / 2;
+        const first = Math.round(length * this.start);
+
+        // use one more peak value to make sure we join peaks at ends -- unless,
+        // of course, this is the last canvas
+        const last = Math.round(length * this.end) + 1;
+
+        const canvasStart = first;
+        const canvasEnd = last;
+        const scale = this.wave.width / (canvasEnd - canvasStart - 1);
+
+        // optimization
+        const halfOffset = halfH + offsetY;
+        const absmaxHalf = absmax / halfH;
+
+        ctx.beginPath();
+        ctx.moveTo((canvasStart - first) * scale, halfOffset);
+
+        ctx.lineTo(
+            (canvasStart - first) * scale,
+            halfOffset - Math.round((peaks[2 * canvasStart] || 0) / absmaxHalf)
+        );
+
+        let i, peak, h;
+        for (i = canvasStart; i &lt; canvasEnd; i++) {
+            peak = peaks[2 * i] || 0;
+            h = Math.round(peak / absmaxHalf);
+            ctx.lineTo((i - first) * scale + this.halfPixel, halfOffset - h);
+        }
+
+        // draw the bottom edge going backwards, to make a single
+        // closed hull to fill
+        let j = canvasEnd - 1;
+        for (j; j &gt;= canvasStart; j--) {
+            peak = peaks[2 * j + 1] || 0;
+            h = Math.round(peak / absmaxHalf);
+            ctx.lineTo((j - first) * scale + this.halfPixel, halfOffset - h);
+        }
+
+        ctx.lineTo(
+            (canvasStart - first) * scale,
+            halfOffset -
+                Math.round((peaks[2 * canvasStart + 1] || 0) / absmaxHalf)
+        );
+
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    /**
+     * Destroys this entry
+     */
+    destroy() {
+        this.waveCtx = null;
+        this.wave = null;
+
+        this.progressCtx = null;
+        this.progress = null;
+    }
+
+    /**
+     * Return image data of the wave `canvas` element
+     *
+     * When using a `type` of `&apos;blob&apos;`, this will return a `Promise` that
+     * resolves with a `Blob` instance.
+     *
+     * @param {string} format=&apos;image/png&apos; An optional value of a format type.
+     * @param {number} quality=0.92 An optional value between 0 and 1.
+     * @param {string} type=&apos;dataURL&apos; Either &apos;dataURL&apos; or &apos;blob&apos;.
+     * @return {string|Promise} When using the default `&apos;dataURL&apos;` `type` this
+     * returns a data URL. When using the `&apos;blob&apos;` `type` this returns a
+     * `Promise` that resolves with a `Blob` instance.
+     */
+    getImage(format, quality, type) {
+        if (type === &apos;blob&apos;) {
+            return new Promise(resolve =&gt; {
+                this.wave.toBlob(resolve, format, quality);
+            });
+        } else if (type === &apos;dataURL&apos;) {
+            return this.wave.toDataURL(format, quality);
+        }
+    }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
