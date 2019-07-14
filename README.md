@@ -13,7 +13,7 @@ Make sure you're on the `gh-pages` branch of the repository:
 git checkout gh-pages
 ```
 
-And update the wavesurfer.js:
+And update the wavesurfer.js library:
 
 ```console
 npm install wavesurfer.js@latest
