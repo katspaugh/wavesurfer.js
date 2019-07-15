@@ -7,18 +7,9 @@ var wavesurfer = {};
 document.addEventListener('DOMContentLoaded', function() {
     wavesurfer = WaveSurfer.create({
         container: document.querySelector('#waveform'),
-        plugins: [
-            WaveSurfer.cursor.create({
-                showTime: true,
-                opacity: 1,
-                customShowTimeStyle: {
-                    'background-color': '#000',
-                    color: '#fff',
-                    padding: '2px',
-                    'font-size': '10px'
-                }
-            })
-        ]
+        barWidth: 2,
+        barHeight: 1,
+        barGap: null
     });
 
     wavesurfer.on('error', function(e) {

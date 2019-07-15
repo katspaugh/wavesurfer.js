@@ -31,9 +31,10 @@ import PeakCache from './peakcache';
  * unsupported browsers.
  * @property {string} backgroundColor=null Change background color of the
  * waveform container.
- * @property {number} barHeight=1 The height of the wave
+ * @property {number} barHeight=1 The height of the wave bars.
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
+ * @property {number} barWidth=null Draw the waveform using bars.
  * @property {boolean} closeAudioContext=false Close and nullify all audio
  * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
@@ -99,14 +100,19 @@ import PeakCache from './peakcache';
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options. For example:
- * `var xhr = {
- *     requestHeaders: [
+ * `let xhr = {
+ *     cache: 'default',
+ *     mode: 'cors',
+ *     method: 'GET',
+ *     credentials: 'same-origin',
+ *     redirect: 'follow',
+ *     referrer: 'client',
+ *     headers: [
  *         {
  *             key: 'Authorization',
  *             value: 'my-token'
  *         }
- *     ],
- *     withCredentials: true
+ *     ]
  * };`
  */
 
@@ -365,7 +371,7 @@ export default class WaveSurfer extends util.Observer {
          * @private Holds any running audio downloads
          * @type {Observer}
          */
-        this.currentAjax = null;
+        this.currentRequest = null;
         /** @private */
         this.arraybuffer = null;
         /** @private */
@@ -1265,7 +1271,7 @@ export default class WaveSurfer extends util.Observer {
      * the audio.
      * @returns {void}
      * @example
-     * // using ajax or media element to load (depending on backend)
+     * // uses fetch or media element to load file (depending on backend)
      * wavesurfer.load('http://example.com/demo.wav');
      *
      * // setting preload attribute with media element backend and supplying
@@ -1404,7 +1410,6 @@ export default class WaveSurfer extends util.Observer {
      */
     decodeArrayBuffer(arraybuffer, callback) {
         this.arraybuffer = arraybuffer;
-
         this.backend.decodeArrayBuffer(
             arraybuffer,
             data => {
@@ -1420,37 +1425,40 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Load an array buffer using ajax and pass the result to a callback
+     * Load an array buffer using fetch and pass the result to a callback
      *
      * @param {string} url The URL of the file object
      * @param {function} callback The function to call on complete
-     * @returns {util.ajax} Ajax call
+     * @returns {util.fetchFile} fetch call
      * @private
      */
     getArrayBuffer(url, callback) {
-        const ajax = util.ajax({
-            url: url,
-            responseType: 'arraybuffer',
-            xhr: this.params.xhr
-        });
+        let options = util.extend(
+            {
+                url: url,
+                responseType: 'arraybuffer'
+            },
+            this.params.xhr
+        );
+        const request = util.fetchFile(options);
 
-        this.currentAjax = ajax;
+        this.currentRequest = request;
 
         this.tmpEvents.push(
-            ajax.on('progress', e => {
+            request.on('progress', e => {
                 this.onProgress(e);
             }),
-            ajax.on('success', (data, e) => {
+            request.on('success', data => {
                 callback(data);
-                this.currentAjax = null;
+                this.currentRequest = null;
             }),
-            ajax.on('error', e => {
-                this.fireEvent('error', 'XHR error: ' + e.target.statusText);
-                this.currentAjax = null;
+            request.on('error', e => {
+                this.fireEvent('error', 'fetch error: ' + e.message);
+                this.currentRequest = null;
             })
         );
 
-        return ajax;
+        return request;
     }
 
     /**
@@ -1536,12 +1544,12 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Cancel any ajax request currently in progress
+     * Cancel any fetch request currently in progress
      */
     cancelAjax() {
-        if (this.currentAjax) {
-            this.currentAjax.xhr.abort();
-            this.currentAjax = null;
+        if (this.currentRequest && this.currentRequest.controller) {
+            this.currentRequest.controller.abort();
+            this.currentRequest = null;
         }
     }
 
