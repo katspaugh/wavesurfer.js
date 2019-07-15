@@ -164,6 +164,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load audio from URL
     wavesurfer.load('../media/demo.wav');
 
+    wavesurfer.on('error', function(e) {
+        console.warn(e);
+    });
+
     // Zoom slider
     var slider = document.querySelector('[data-action="zoom"]');
 

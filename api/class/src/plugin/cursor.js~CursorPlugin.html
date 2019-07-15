@@ -29,7 +29,8 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
@@ -67,6 +68,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
@@ -79,13 +81,13 @@
 </nav>
 
 <div class="content" data-ice="content"><div class="header-notice">
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import CursorPlugin from &apos;<span><a href="file/src/plugin/cursor.js.html#lineNumber43">wavesurfer.js/src/plugin/cursor.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import CursorPlugin from &apos;<span><a href="file/src/plugin/cursor.js.html#lineNumber47">wavesurfer.js/src/plugin/cursor.js</a></span>&apos;</code></pre></div>
   <span data-ice="access">public</span>
   <span data-ice="kind">class</span>
   
   
   
-  <span data-ice="source">| <span><a href="file/src/plugin/cursor.js.html#lineNumber43">source</a></span></span>
+  <span data-ice="source">| <span><a href="file/src/plugin/cursor.js.html#lineNumber47">source</a></span></span>
 </div>
 
 <div class="self-detail detail">
@@ -319,7 +321,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html#instance-member-showTime">showTime</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html#instance-member-showTime">showTime</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span></span>
         </p>
       </div>
       <div>
@@ -412,13 +414,13 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html#instance-method-formatTime">formatTime</a></span></span><span class="code" data-ice="signature">(cursorTime: <span>*</span>): <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html#instance-method-formatTime">formatTime</a></span></span><span class="code" data-ice="signature">(cursorTime: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>timestamp time calculation</p>
+        <div data-ice="description"><p>Format the timestamp for <code>cursorTime</code>.</p>
 </div>
       </div>
     </td>
@@ -528,7 +530,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html#instance-method-updateCursorPosition">updateCursorPosition</a></span></span><span class="code" data-ice="signature">(pos: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html#instance-method-updateCursorPosition">updateCursorPosition</a></span></span><span class="code" data-ice="signature">(xpos: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, ypos: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
         </p>
       </div>
       <div>
@@ -715,7 +717,7 @@ var wavesurfer = WaveSurfer.create({
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber54">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber58">source</a></span></span>
     </span>
   </h3>
 
@@ -795,14 +797,14 @@ plugin</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber101">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber121">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Construct the plugin class. You probably want to use CursorPlugin.create
+  <div data-ice="description"><p>Construct the plugin class. You probably want to use <code>CursorPlugin.create</code>
 instead.</p>
 </div>
 
@@ -820,13 +822,15 @@ instead.</p>
       <td data-ice="name" class="code" data-depth="0">params</td>
       <td data-ice="type" class="code"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Plugin parameters</p>
+</td>
     </tr>
 <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">ws</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Wavesurfer instance</p>
+</td>
     </tr>
 </tbody>
   </table>
@@ -865,7 +869,7 @@ instead.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber111">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber131">source</a></span></span>
     </span>
   </h3>
 
@@ -909,7 +913,7 @@ instead.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber72">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber71">source</a></span></span>
     </span>
   </h3>
 
@@ -952,7 +956,7 @@ instead.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber123">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber143">source</a></span></span>
     </span>
   </h3>
 
@@ -992,11 +996,11 @@ instead.</p>
     
     
     
-    <span class="code" data-ice="name">showTime</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></span></span>
+    <span class="code" data-ice="name">showTime</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber117">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber137">source</a></span></span>
     </span>
   </h3>
 
@@ -1040,7 +1044,7 @@ instead.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber132">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber152">source</a></span></span>
     </span>
   </h3>
 
@@ -1086,7 +1090,7 @@ instead.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber201">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber223">source</a></span></span>
     </span>
   </h3>
 
@@ -1126,18 +1130,18 @@ instead.</p>
     
     
     
-    <span class="code" data-ice="name">formatTime</span><span class="code" data-ice="signature">(cursorTime: <span>*</span>): <span>*</span></span>
+    <span class="code" data-ice="name">formatTime</span><span class="code" data-ice="signature">(cursorTime: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber271">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber300">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>timestamp time calculation</p>
+  <div data-ice="description"><p>Format the timestamp for <code>cursorTime</code>.</p>
 </div>
 
   
@@ -1152,9 +1156,10 @@ instead.</p>
     
     <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">cursorTime</td>
-      <td data-ice="type" class="code"><span>*</span></td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Time in seconds</p>
+</td>
     </tr>
 </tbody>
   </table>
@@ -1166,8 +1171,9 @@ instead.</p>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span>*</span></td>
-          
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>Formatted timestamp</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -1202,7 +1208,7 @@ instead.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber259">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber283">source</a></span></span>
     </span>
   </h3>
 
@@ -1246,7 +1252,7 @@ instead.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber131">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber151">source</a></span></span>
     </span>
   </h3>
 
@@ -1290,7 +1296,7 @@ instead.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber245">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber269">source</a></span></span>
     </span>
   </h3>
 
@@ -1330,11 +1336,11 @@ instead.</p>
     
     
     
-    <span class="code" data-ice="name">updateCursorPosition</span><span class="code" data-ice="signature">(pos: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
+    <span class="code" data-ice="name">updateCursorPosition</span><span class="code" data-ice="signature">(xpos: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, ypos: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber218">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/cursor.js.html#lineNumber241">source</a></span></span>
     </span>
   </h3>
 
@@ -1355,10 +1361,17 @@ instead.</p>
     <tbody>
     
     <tr data-ice="property" data-depth="0">
-      <td data-ice="name" class="code" data-depth="0">pos</td>
+      <td data-ice="name" class="code" data-depth="0">xpos</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
       <td data-ice="description"><p>The x offset of the cursor in pixels</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">ypos</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>The y offset of the cursor in pixels</p>
 </td>
     </tr>
 </tbody>

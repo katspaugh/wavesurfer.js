@@ -29,7 +29,8 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
@@ -67,6 +68,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
@@ -79,13 +81,13 @@
 </nav>
 
 <div class="content" data-ice="content"><div class="header-notice">
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import WaveSurfer from &apos;<span><a href="file/src/wavesurfer.js.html#lineNumber183">wavesurfer.js/src/wavesurfer.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import WaveSurfer from &apos;<span><a href="file/src/wavesurfer.js.html#lineNumber200">wavesurfer.js/src/wavesurfer.js</a></span>&apos;</code></pre></div>
   <span data-ice="access">public</span>
   <span data-ice="kind">class</span>
   
   
   
-  <span data-ice="source">| <span><a href="file/src/wavesurfer.js.html#lineNumber183">source</a></span></span>
+  <span data-ice="source">| <span><a href="file/src/wavesurfer.js.html#lineNumber200">source</a></span></span>
 </div>
 
 <div class="self-detail detail">
@@ -356,6 +358,35 @@ staticProps properties of the WaveSurfer instance</p>
           
           
           
+          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-member-isReady">isReady</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Get the current ready status.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
           <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-member-util">util</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></span>
         </p>
       </div>
@@ -428,7 +459,7 @@ all instances</p>
       <div>
         
         
-        <div data-ice="description"><p>Cancel any ajax request currently in progress</p>
+        <div data-ice="description"><p>Cancel any fetch request currently in progress</p>
 </div>
       </div>
     </td>
@@ -538,7 +569,7 @@ all instances</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-method-exportImage">exportImage</a></span></span><span class="code" data-ice="signature">(format: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, quality: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-method-exportImage">exportImage</a></span></span><span class="code" data-ice="signature">(format: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, quality: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, type: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></span>
         </p>
       </div>
       <div>
@@ -574,6 +605,35 @@ all instances</p>
         
         
         <div data-ice="description"><p>Exports PCM data into a JSON array and opens in a new window.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-method-getActivePlugins">getActivePlugins</a></span></span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Get a map of plugin names that are currently initialised</p>
 </div>
       </div>
     </td>
@@ -1003,36 +1063,7 @@ position.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-method-isReady">isReady</a></span></span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Get the current ready status.</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-method-load">load</a></span></span><span class="code" data-ice="signature">(url: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span>HTMLMediaElement</span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, preload: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, duration: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-method-load">load</a></span></span><span class="code" data-ice="signature">(url: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span>HTMLMediaElement</span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, preload: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, duration: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>void</span></span>
         </p>
       </div>
       <div>
@@ -1096,7 +1127,7 @@ position.</p>
       <div>
         
         
-        <div data-ice="description"><p>Stops playback</p>
+        <div data-ice="description"><p>Stops and pauses playback</p>
 </div>
       </div>
     </td>
@@ -1236,7 +1267,7 @@ this function is called in the init function of wavesurfer</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-method-seekTo">seekTo</a></span></span><span class="code" data-ice="signature">(progress: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-method-seekTo">seekTo</a></span></span><span class="code" data-ice="signature">(progress: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
         </p>
       </div>
       <div>
@@ -1469,13 +1500,13 @@ position.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-method-setSinkId">setSinkId</a></span></span><span class="code" data-ice="signature">(deviceId: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html#instance-method-setSinkId">setSinkId</a></span></span><span class="code" data-ice="signature">(deviceId: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>Set the playback volume.</p>
+        <div data-ice="description"><p>Sets the ID of the audio device to use for output and returns a Promise.</p>
 </div>
       </div>
     </td>
@@ -1946,7 +1977,7 @@ to go backwards).</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber253">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber270">source</a></span></span>
     </span>
   </h3>
 
@@ -1998,7 +2029,7 @@ WaveSurfer class</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber274">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber291">source</a></span></span>
     </span>
   </h3>
 
@@ -2053,7 +2084,7 @@ WaveSurfer class</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber240">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber257">source</a></span></span>
     </span>
   </h3>
 
@@ -2077,7 +2108,8 @@ WaveSurfer class</p>
       <td data-ice="name" class="code" data-depth="0">params</td>
       <td data-ice="type" class="code"><span><a href="typedef/index.html#static-typedef-WavesurferParams">WavesurferParams</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>The wavesurfer parameters</p>
+</td>
     </tr>
 </tbody>
   </table>
@@ -2136,7 +2168,7 @@ WaveSurfer class</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber284">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber301">source</a></span></span>
     </span>
   </h3>
 
@@ -2174,7 +2206,8 @@ WaveSurfer class</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span>this</span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Wavesurfer instance</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -2219,7 +2252,7 @@ WaveSurfer class</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber495">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber528">source</a></span></span>
     </span>
   </h3>
 
@@ -2264,7 +2297,7 @@ instance</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber476">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber509">source</a></span></span>
     </span>
   </h3>
 
@@ -2298,6 +2331,69 @@ staticProps properties of the WaveSurfer instance</p>
   
 </div>
 <div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-member-isReady">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">isReady</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber410">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Get the current ready status.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
+          
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  <div data-ice="example">
+    <h4>Example:</h4>
+    
+  <div class="example-doc" data-ice="exampleDoc">
+      
+      <pre class="prettyprint source-code"><code data-ice="exampleCode">const isReady = wavesurfer.isReady;</code></pre>
+    </div>
+</div>
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-member-util">
     <span class="access" data-ice="access">public</span>
     
@@ -2309,7 +2405,7 @@ staticProps properties of the WaveSurfer instance</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber264">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber281">source</a></span></span>
     </span>
   </h3>
 
@@ -2365,7 +2461,7 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber459">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber492">source</a></span></span>
     </span>
   </h3>
 
@@ -2403,7 +2499,8 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span>this</span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>The wavesurfer instance</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -2457,14 +2554,14 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1487">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1549">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Cancel any ajax request currently in progress</p>
+  <div data-ice="description"><p>Cancel any fetch request currently in progress</p>
 </div>
 
   
@@ -2501,7 +2598,7 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1522">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1584">source</a></span></span>
     </span>
   </h3>
 
@@ -2557,7 +2654,7 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber530">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber563">source</a></span></span>
     </span>
   </h3>
 
@@ -2595,7 +2692,8 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span>this</span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>The wavesurfer instance</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -2649,7 +2747,7 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1504">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1566">source</a></span></span>
     </span>
   </h3>
 
@@ -2689,11 +2787,11 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     
     
     
-    <span class="code" data-ice="name">exportImage</span><span class="code" data-ice="signature">(format: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, quality: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></span>
+    <span class="code" data-ice="name">exportImage</span><span class="code" data-ice="signature">(format: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, quality: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, type: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1473">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1532">source</a></span></span>
     </span>
   </h3>
 
@@ -2701,8 +2799,8 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
   
   
   <div data-ice="description"><p>Save waveform image as data URI.</p>
-<p>The default format is <code>image/png</code>. Other supported types are
-<code>image/jpeg</code> and <code>image/webp</code>.</p>
+<p>The default format is <code>&apos;image/png&apos;</code>. Other supported types are
+<code>&apos;image/jpeg&apos;</code> and <code>&apos;image/webp&apos;</code>.</p>
 </div>
 
   
@@ -2719,13 +2817,26 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
       <td data-ice="name" class="code" data-depth="0">format</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
       <td data-ice="appendix"><ul><li>default: &apos;image/png&apos;</li></ul></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>A string indicating the image format.
+The default format type is <code>&apos;image/png&apos;</code>.</p>
+</td>
     </tr>
 <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">quality</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"><ul><li>default: 1</li></ul></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>A number between 0 and 1 indicating the image
+quality to use for image formats that use lossy compression such as
+<code>&apos;image/jpeg&apos;`` and</code>&apos;image/webp&apos;`.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">type</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>Image data type to return. Either &apos;dataURL&apos; (default)
+or &apos;blob&apos;.</p>
+</td>
     </tr>
 </tbody>
   </table>
@@ -2737,8 +2848,11 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
-          <td class="return-desc" data-ice="returnDescription"><p>data URI of image</p>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>When using <code>&apos;dataURL&apos;</code> type this returns
+a single data URL or an array of data URLs, one for each canvas. When using
+<code>&apos;blob&apos;</code> type this returns a <code>Promise</code> resolving with an array of <code>Blob</code>
+instances, one for each canvas.</p>
 </td>
         </tr>
       </tbody>
@@ -2774,7 +2888,7 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1443">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1494">source</a></span></span>
     </span>
   </h3>
 
@@ -2820,7 +2934,8 @@ window with the JSON</p>
       <td data-ice="name" class="code" data-depth="0">start</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Start index</p>
+</td>
     </tr>
 </tbody>
   </table>
@@ -2858,6 +2973,70 @@ window with the JSON</p>
   <div data-ice="todo"><h4>TODO:</h4><ul><li><span>Update exportPCM to work with new getPeaks signature</span></li></ul></div>
 </div>
 <div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-getActivePlugins">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">getActivePlugins</span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber480">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Get a map of plugin names that are currently initialised</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>Object with plugin names</p>
+</td>
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  <div data-ice="example">
+    <h4>Example:</h4>
+    
+  <div class="example-doc" data-ice="exampleDoc">
+      
+      <pre class="prettyprint source-code"><code data-ice="exampleCode">wavesurfer.getPlugins();</code></pre>
+    </div>
+</div>
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-method-getBackgroundColor">
     <span class="access" data-ice="access">public</span>
     
@@ -2869,7 +3048,7 @@ window with the JSON</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1028">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1072">source</a></span></span>
     </span>
   </h3>
 
@@ -2926,7 +3105,7 @@ window with the JSON</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber665">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber715">source</a></span></span>
     </span>
   </h3>
 
@@ -2990,7 +3169,7 @@ window with the JSON</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1049">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1093">source</a></span></span>
     </span>
   </h3>
 
@@ -3048,7 +3227,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber655">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber705">source</a></span></span>
     </span>
   </h3>
 
@@ -3112,7 +3291,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber960">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1004">source</a></span></span>
     </span>
   </h3>
 
@@ -3134,7 +3313,8 @@ position.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span>array</span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>List of enabled filters</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -3169,7 +3349,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1070">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1114">source</a></span></span>
     </span>
   </h3>
 
@@ -3226,7 +3406,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber939">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber993">source</a></span></span>
     </span>
   </h3>
 
@@ -3247,7 +3427,8 @@ position.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Current mute status</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -3289,7 +3470,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber883">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber936">source</a></span></span>
     </span>
   </h3>
 
@@ -3310,7 +3491,8 @@ position.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>The current playback rate.</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -3345,7 +3527,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1008">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1052">source</a></span></span>
     </span>
   </h3>
 
@@ -3402,7 +3584,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber863">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber916">source</a></span></span>
     </span>
   </h3>
 
@@ -3460,7 +3642,7 @@ volume and 1 being full volume.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber988">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1032">source</a></span></span>
     </span>
   </h3>
 
@@ -3517,7 +3699,7 @@ volume and 1 being full volume.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber419">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber442">source</a></span></span>
     </span>
   </h3>
 
@@ -3538,7 +3720,8 @@ volume and 1 being full volume.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span>this</span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>The wavesurfer instance</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -3581,7 +3764,7 @@ wavesurfer.init();</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber508">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber541">source</a></span></span>
     </span>
   </h3>
 
@@ -3619,7 +3802,8 @@ wavesurfer.init();</code></pre>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span>this</span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>The wavesurfer instance</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -3673,7 +3857,7 @@ wavesurfer.init();</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber728">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber778">source</a></span></span>
     </span>
   </h3>
 
@@ -3726,69 +3910,6 @@ wavesurfer.init();</code></pre>
   
 </div>
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-method-isReady">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">isReady</span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber949">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Get the current ready status.</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  <div class="return-params" data-ice="returnParams">
-    <h4>Return:</h4>
-    <table>
-      <tbody>
-        <tr>
-          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
-          
-        </tr>
-      </tbody>
-    </table>
-    <div data-ice="returnProperties">
-</div>
-  </div>
-
-  
-
-  
-
-  
-
-  
-
-  <div data-ice="example">
-    <h4>Example:</h4>
-    
-  <div class="example-doc" data-ice="exampleDoc">
-      
-      <pre class="prettyprint source-code"><code data-ice="exampleCode">const isReady = wavesurfer.isReady();</code></pre>
-    </div>
-</div>
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-method-load">
     <span class="access" data-ice="access">public</span>
     
@@ -3796,11 +3917,11 @@ wavesurfer.init();</code></pre>
     
     
     
-    <span class="code" data-ice="name">load</span><span class="code" data-ice="signature">(url: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span>HTMLMediaElement</span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, preload: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, duration: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+    <span class="code" data-ice="name">load</span><span class="code" data-ice="signature">(url: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span>HTMLMediaElement</span>, peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, preload: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, duration: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>void</span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1239">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1285">source</a></span></span>
     </span>
   </h3>
 
@@ -3830,8 +3951,8 @@ audio element with the audio</p>
     </tr>
 <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">peaks</td>
-      <td data-ice="type" class="code"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span></td>
-      <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
+      <td data-ice="type" class="code"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;</td>
+      <td data-ice="appendix"></td>
       <td data-ice="description"><p>Wavesurfer does not have to decode
 the audio to render the waveform if this is specified</p>
 </td>
@@ -3850,7 +3971,7 @@ the audio to render the waveform if this is specified</p>
       <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
       <td data-ice="description"><p>The duration of the audio. This is used to
 render the peaks data in the correct size for the audio duration (as
-befits the current minPxPerSec and zoom value) without having to decode
+befits the current <code>minPxPerSec</code> and zoom value) without having to decode
 the audio.</p>
 </td>
     </tr>
@@ -3864,7 +3985,7 @@ the audio.</p>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span>*</span></td>
+          <td class="return-type code" data-ice="returnType"><span>void</span></td>
           
         </tr>
       </tbody>
@@ -3886,14 +4007,15 @@ the audio.</p>
     
   <div class="example-doc" data-ice="exampleDoc">
       
-      <pre class="prettyprint source-code"><code data-ice="exampleCode">// using ajax or media element to load (depending on backend)
+      <pre class="prettyprint source-code"><code data-ice="exampleCode">// uses fetch or media element to load file (depending on backend)
 wavesurfer.load(&apos;http://example.com/demo.wav&apos;);
 
 // setting preload attribute with media element backend and supplying
-peaks wavesurfer.load(
+// peaks
+wavesurfer.load(
   &apos;http://example.com/demo.wav&apos;,
   [0.0218, 0.0183, 0.0165, 0.0198, 0.2137, 0.2888],
-  true,
+  true
 );</code></pre>
     </div>
 </div>
@@ -3915,7 +4037,7 @@ peaks wavesurfer.load(
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1201">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1245">source</a></span></span>
     </span>
   </h3>
 
@@ -3983,14 +4105,14 @@ peaks wavesurfer.load(
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber706">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber756">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Stops playback</p>
+  <div data-ice="description"><p>Stops and pauses playback</p>
 </div>
 
   
@@ -4004,7 +4126,8 @@ peaks wavesurfer.load(
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Result of the backend pause method</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -4046,7 +4169,7 @@ peaks wavesurfer.load(
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber695">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber745">source</a></span></span>
     </span>
   </h3>
 
@@ -4092,7 +4215,8 @@ measured in seconds can be used to set the range of audio to play.</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Result of the backend play method</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -4147,7 +4271,7 @@ wavesurfer.play(1, 5);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber718">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber768">source</a></span></span>
     </span>
   </h3>
 
@@ -4168,7 +4292,8 @@ wavesurfer.play(1, 5);</code></pre>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>Result of the backend play or pause method</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -4210,7 +4335,7 @@ wavesurfer.play(1, 5);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber435">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber458">source</a></span></span>
     </span>
   </h3>
 
@@ -4249,7 +4374,8 @@ this function is called in the init function of wavesurfer</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span>this</span></td>
-          
+          <td class="return-desc" data-ice="returnDescription"><p>The wavesurfer instance</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -4296,7 +4422,7 @@ this function is called in the init function of wavesurfer</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber778">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber828">source</a></span></span>
     </span>
   </h3>
 
@@ -4361,11 +4487,11 @@ wavesurfer.seekTo(0.5);</code></pre>
     
     
     
-    <span class="code" data-ice="name">seekTo</span><span class="code" data-ice="signature">(progress: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+    <span class="code" data-ice="name">seekTo</span><span class="code" data-ice="signature">(progress: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber793">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber843">source</a></span></span>
     </span>
   </h3>
 
@@ -4397,19 +4523,7 @@ wavesurfer.seekTo(0.5);</code></pre>
 </div>
 </div>
 
-  <div class="return-params" data-ice="returnParams">
-    <h4>Return:</h4>
-    <table>
-      <tbody>
-        <tr>
-          <td class="return-type code" data-ice="returnType"><span>*</span></td>
-          
-        </tr>
-      </tbody>
-    </table>
-    <div data-ice="returnProperties">
-</div>
-  </div>
+  
 
   <div data-ice="emitWrap">
     <h4>Emit:</h4>
@@ -4463,7 +4577,7 @@ wavesurfer.seekTo(0.5);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1038">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1082">source</a></span></span>
     </span>
   </h3>
 
@@ -4531,7 +4645,7 @@ wavesurfer.seekTo(0.5);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber675">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber725">source</a></span></span>
     </span>
   </h3>
 
@@ -4593,7 +4707,7 @@ seconds, 60 means 1 minute</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1060">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1104">source</a></span></span>
     </span>
   </h3>
 
@@ -4662,7 +4776,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1080">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1124">source</a></span></span>
     </span>
   </h3>
 
@@ -4730,7 +4844,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber909">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber963">source</a></span></span>
     </span>
   </h3>
 
@@ -4754,7 +4868,8 @@ position.</p>
       <td data-ice="name" class="code" data-depth="0">mute</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Specify <code>true</code> to mute audio.</p>
+</td>
     </tr>
 </tbody>
   </table>
@@ -4794,7 +4909,8 @@ position.</p>
   <div class="example-doc" data-ice="exampleDoc">
       
       <pre class="prettyprint source-code"><code data-ice="exampleCode">// unmute
-wavesurfer.setMute(false);</code></pre>
+wavesurfer.setMute(false);
+console.log(wavesurfer.getMute()) // logs false</code></pre>
     </div>
 </div>
 
@@ -4815,7 +4931,7 @@ wavesurfer.setMute(false);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber874">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber927">source</a></span></span>
     </span>
   </h3>
 
@@ -4884,7 +5000,7 @@ speed, 2 means double speed and so on.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1018">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1062">source</a></span></span>
     </span>
   </h3>
 
@@ -4948,18 +5064,18 @@ speed, 2 means double speed and so on.</p>
     
     
     
-    <span class="code" data-ice="name">setSinkId</span><span class="code" data-ice="signature">(deviceId: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span>*</span></span>
+    <span class="code" data-ice="name">setSinkId</span><span class="code" data-ice="signature">(deviceId: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber841">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber894">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Set the playback volume.</p>
+  <div data-ice="description"><p>Sets the ID of the audio device to use for output and returns a Promise.</p>
 </div>
 
   
@@ -4976,7 +5092,8 @@ speed, 2 means double speed and so on.</p>
       <td data-ice="name" class="code" data-depth="0">deviceId</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>String value representing underlying output device</p>
+      <td data-ice="description"><p>String value representing underlying output
+device</p>
 </td>
     </tr>
 </tbody>
@@ -4989,8 +5106,10 @@ speed, 2 means double speed and so on.</p>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span>*</span></td>
-          
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p><code>Promise</code> that resolves to <code>undefined</code> when there are
+no errors detected.</p>
+</td>
         </tr>
       </tbody>
     </table>
@@ -5025,7 +5144,7 @@ speed, 2 means double speed and so on.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber852">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber905">source</a></span></span>
     </span>
   </h3>
 
@@ -5099,7 +5218,7 @@ volume and 1 being full volume.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber998">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1042">source</a></span></span>
     </span>
   </h3>
 
@@ -5167,7 +5286,7 @@ volume and 1 being full volume.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber763">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber813">source</a></span></span>
     </span>
   </h3>
 
@@ -5237,7 +5356,7 @@ wavesurfer.skip(-2);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber739">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber789">source</a></span></span>
     </span>
   </h3>
 
@@ -5306,7 +5425,7 @@ is used</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber750">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber800">source</a></span></span>
     </span>
   </h3>
 
@@ -5375,7 +5494,7 @@ is used</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber830">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber880">source</a></span></span>
     </span>
   </h3>
 
@@ -5426,7 +5545,7 @@ is used</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber979">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1023">source</a></span></span>
     </span>
   </h3>
 
@@ -5477,7 +5596,7 @@ is used</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber895">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber948">source</a></span></span>
     </span>
   </h3>
 
@@ -5531,7 +5650,7 @@ value.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber969">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1013">source</a></span></span>
     </span>
   </h3>
 
@@ -5582,7 +5701,7 @@ value.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1151">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1195">source</a></span></span>
     </span>
   </h3>
 

@@ -29,7 +29,8 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
@@ -67,6 +68,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
@@ -117,8 +119,7 @@ var WaveSurfer = require(&apos;wavesurfer.js&apos;);
 // amd
 define([&apos;WaveSurfer&apos;], function(WaveSurfer) {
   // ... code
-});
-</code>
+});</code>
 </code></pre>
 <h2 id="related-projects">Related projects</h2><p>For a list of  projects using wavesurfer.js, check out
 <a href="https://wavesurfer-js.org/projects/">the projects page</a>.</p>
@@ -138,7 +139,8 @@ define([&apos;WaveSurfer&apos;], function(WaveSurfer) {
 <pre><code><code class="source-code prettyprint">npm run test</code>
 </code></pre><p>Build documentation with esdoc (generated files are placed in the <code>doc</code> directory.)</p>
 <pre><code><code class="source-code prettyprint">npm run doc</code>
-</code></pre><h2 id="editing-documentation">Editing documentation</h2><p>The homepage and documentation files are maintained in the <a href="https://github.com/katspaugh/wavesurfer.js/tree/gh-pages"><code>gh-pages</code> branch</a>. Contributions to the documentation are especially welcome.</p>
+</code></pre><p>If you want to use <a href="https://github.com/Microsoft/vscode-chrome-debug">the VS Code - Debugger for Chrome</a>, there is already a <a href=".vscode/launch.json">launch.json</a> with a properly configured <code>sourceMapPathOverrides</code> for you.</p>
+<h2 id="editing-documentation">Editing documentation</h2><p>The homepage and documentation files are maintained in the <a href="https://github.com/katspaugh/wavesurfer.js/tree/gh-pages"><code>gh-pages</code> branch</a>. Contributions to the documentation are especially welcome.</p>
 <h2 id="credits">Credits</h2><p>Initial idea by <a href="https://github.com/xoxulin">Alex Khokhulin</a>. Many
 thanks to
 <a href="https://github.com/katspaugh/wavesurfer.js/contributors">the awesome contributors</a>!</p>

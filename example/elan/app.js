@@ -107,4 +107,8 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     wavesurfer.on('audioprocess', onProgress);
+
+    wavesurfer.on('error', function(e) {
+        console.warn(e);
+    });
 });

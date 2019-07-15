@@ -29,7 +29,8 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
@@ -67,6 +68,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
@@ -79,13 +81,13 @@
 </nav>
 
 <div class="content" data-ice="content"><div class="header-notice">
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import MultiCanvas from &apos;<span><a href="file/src/drawer.multicanvas.js.html#lineNumber20">wavesurfer.js/src/drawer.multicanvas.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import MultiCanvas from &apos;<span><a href="file/src/drawer.multicanvas.js.html#lineNumber12">wavesurfer.js/src/drawer.multicanvas.js</a></span>&apos;</code></pre></div>
   <span data-ice="access">public</span>
   <span data-ice="kind">class</span>
   
   
   
-  <span data-ice="source">| <span><a href="file/src/drawer.multicanvas.js.html#lineNumber20">source</a></span></span>
+  <span data-ice="source">| <span><a href="file/src/drawer.multicanvas.js.html#lineNumber12">source</a></span></span>
 </div>
 
 <div class="self-detail detail">
@@ -105,8 +107,10 @@
 
   
   
-  <div class="description" data-ice="description"><p>MultiCanvas renderer for wavesurfer. Is currently the default and sole built
-in renderer.</p>
+  <div class="description" data-ice="description"><p>MultiCanvas renderer for wavesurfer. Is currently the default and sole
+builtin renderer.</p>
+<p>A <code>MultiCanvas</code> consists of one or more <code>CanvasEntry</code> instances, depending
+on the zoom level.</p>
 </div>
   
 
@@ -189,6 +193,36 @@ in renderer.</p>
       
     </td>
   </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-overlap">overlap</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Overlap added between entries to prevent vertical white stripes
+between <code>canvas</code> elements.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -216,7 +250,7 @@ in renderer.</p>
       <div>
         
         
-        <div data-ice="description"><p>Clear the whole waveform</p>
+        <div data-ice="description"><p>Clear the whole multi-canvas</p>
 </div>
       </div>
     </td>
@@ -239,7 +273,7 @@ in renderer.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-drawBars">drawBars</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-drawBars">drawBars</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>void</span></span>
         </p>
       </div>
       <div>
@@ -268,7 +302,7 @@ in renderer.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-drawWave">drawWave</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-drawWave">drawWave</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>void</span></span>
         </p>
       </div>
       <div>
@@ -303,7 +337,7 @@ in renderer.</p>
       <div>
         
         
-        <div data-ice="description"><p>Draw a rectangle on the waveform</p>
+        <div data-ice="description"><p>Draw a rectangle on the multi-canvas</p>
 </div>
       </div>
     </td>
@@ -326,13 +360,13 @@ in renderer.</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-getImage">getImage</a></span></span><span class="code" data-ice="signature">(type: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, quality: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-getImage">getImage</a></span></span><span class="code" data-ice="signature">(format: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, quality: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, type: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>Return image data of the waveform</p>
+        <div data-ice="description"><p>Return image data of the multi-canvas</p>
 </div>
       </div>
     </td>
@@ -390,7 +424,7 @@ in renderer.</p>
       <div>
         
         
-        <div data-ice="description"><p>Update cursor style from params.</p>
+        <div data-ice="description"><p>Update cursor style</p>
 </div>
       </div>
     </td>
@@ -806,7 +840,7 @@ interaction</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/drawer.js~Drawer.html#instance-method-drawBars">drawBars</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/drawer.js~Drawer.html#instance-method-drawBars">drawBars</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
         </p>
       </div>
       <div>
@@ -835,7 +869,7 @@ interaction</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/drawer.js~Drawer.html#instance-method-drawPeaks">drawPeaks</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, length: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/drawer.js~Drawer.html#instance-method-drawPeaks">drawPeaks</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, length: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
         </p>
       </div>
       <div>
@@ -864,7 +898,7 @@ interaction</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/drawer.js~Drawer.html#instance-method-drawWave">drawWave</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/drawer.js~Drawer.html#instance-method-drawWave">drawWave</a></span></span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
         </p>
       </div>
       <div>
@@ -1277,7 +1311,7 @@ in steps of 5 pixels</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber25">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber17">source</a></span></span>
     </span>
   </h3>
 
@@ -1348,7 +1382,7 @@ in steps of 5 pixels</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber45">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber40">source</a></span></span>
     </span>
   </h3>
 
@@ -1357,6 +1391,51 @@ in steps of 5 pixels</p>
   
   <div data-ice="description"><p>Whether or not the progress wave is rendered. If the <code>waveColor</code>
 and <code>progressColor</code> are the same color it is not.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-member-overlap">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">overlap</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber76">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Overlap added between entries to prevent vertical white stripes
+between <code>canvas</code> elements.</p>
 </div>
 
   
@@ -1396,14 +1475,14 @@ and <code>progressColor</code> are the same color it is not.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber225">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber245">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Clear the whole waveform</p>
+  <div data-ice="description"><p>Clear the whole multi-canvas</p>
 </div>
 
   <div data-ice="override"><h4>Override:</h4><span><a href="class/src/drawer.js~Drawer.html#instance-method-clearWave">Drawer#clearWave</a></span></div>
@@ -1436,11 +1515,11 @@ and <code>progressColor</code> are the same color it is not.</p>
     
     
     
-    <span class="code" data-ice="name">drawBars</span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+    <span class="code" data-ice="name">drawBars</span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>void</span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber264">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber262">source</a></span></span>
     </span>
   </h3>
 
@@ -1462,10 +1541,10 @@ and <code>progressColor</code> are the same color it is not.</p>
     
     <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">peaks</td>
-      <td data-ice="type" class="code"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span></td>
+      <td data-ice="type" class="code"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;</td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>Can also be an array of arrays for split channel
-rendering</p>
+      <td data-ice="description"><p>Can also be an array of arrays
+for split channel rendering</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
@@ -1502,7 +1581,7 @@ rendered</p>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span>*</span></td>
+          <td class="return-type code" data-ice="returnType"><span>void</span></td>
           
         </tr>
       </tbody>
@@ -1534,11 +1613,11 @@ rendered</p>
     
     
     
-    <span class="code" data-ice="name">drawWave</span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span>, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>*</span></span>
+    <span class="code" data-ice="name">drawWave</span><span class="code" data-ice="signature">(peaks: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;, channelIndex: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, start: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span>void</span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber321">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber320">source</a></span></span>
     </span>
   </h3>
 
@@ -1560,10 +1639,10 @@ rendered</p>
     
     <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">peaks</td>
-      <td data-ice="type" class="code"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><span>number[]</span><span>[]</span></span></td>
+      <td data-ice="type" class="code"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></span>&lt;<span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></span><span>[]</span></span>&gt;</td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>Can also be an array of arrays for split channel
-rendering</p>
+      <td data-ice="description"><p>Can also be an array of arrays
+for split channel rendering</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
@@ -1600,7 +1679,7 @@ rendered</p>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span>*</span></td>
+          <td class="return-type code" data-ice="returnType"><span>void</span></td>
           
         </tr>
       </tbody>
@@ -1636,14 +1715,14 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber472">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber383">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Draw a rectangle on the waveform</p>
+  <div data-ice="description"><p>Draw a rectangle on the multi-canvas</p>
 </div>
 
   
@@ -1660,25 +1739,29 @@ rendered</p>
       <td data-ice="name" class="code" data-depth="0">x</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>X-position of the rectangle</p>
+</td>
     </tr>
 <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">y</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Y-position of the rectangle</p>
+</td>
     </tr>
 <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">width</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Width of the rectangle</p>
+</td>
     </tr>
 <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">height</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
+      <td data-ice="description"><p>Height of the rectangle</p>
+</td>
     </tr>
 </tbody>
   </table>
@@ -1710,18 +1793,19 @@ rendered</p>
     
     
     
-    <span class="code" data-ice="name">getImage</span><span class="code" data-ice="signature">(type: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, quality: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span></span>
+    <span class="code" data-ice="name">getImage</span><span class="code" data-ice="signature">(format: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, quality: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, type: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber611">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber502">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Return image data of the waveform</p>
+  <div data-ice="description"><p>Return image data of the multi-canvas</p>
+<p>When using a <code>type</code> of <code>&apos;blob&apos;</code>, this will return a <code>Promise</code>.</p>
 </div>
 
   
@@ -1735,7 +1819,7 @@ rendered</p>
     <tbody>
     
     <tr data-ice="property" data-depth="0">
-      <td data-ice="name" class="code" data-depth="0">type</td>
+      <td data-ice="name" class="code" data-depth="0">format</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
       <td data-ice="appendix"><ul><li>default: &apos;image/png&apos;</li></ul></td>
       <td data-ice="description"><p>An optional value of a format type.</p>
@@ -1748,6 +1832,13 @@ rendered</p>
       <td data-ice="description"><p>An optional value between 0 and 1.</p>
 </td>
     </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">type</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
+      <td data-ice="appendix"><ul><li>default: &apos;dataURL&apos;</li></ul></td>
+      <td data-ice="description"><p>Either &apos;dataURL&apos; or &apos;blob&apos;.</p>
+</td>
+    </tr>
 </tbody>
   </table>
 </div>
@@ -1758,8 +1849,12 @@ rendered</p>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span></td>
-          <td class="return-desc" data-ice="returnDescription"><p>images A data URL or an array of data URLs</p>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span> | <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span> | <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>When using the default <code>&apos;dataURL&apos;</code>
+<code>type</code> this returns a single data URL or an array of data URLs,
+one for each canvas. When using the <code>&apos;blob&apos;</code> <code>type</code> this returns a
+<code>Promise</code> that resolves with an array of <code>Blob</code> instances, one for each
+canvas.</p>
 </td>
         </tr>
       </tbody>
@@ -1795,7 +1890,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber63">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber82">source</a></span></span>
     </span>
   </h3>
 
@@ -1839,14 +1934,14 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber97">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber116">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Update cursor style from params.</p>
+  <div data-ice="description"><p>Update cursor style</p>
 </div>
 
   <div data-ice="override"><h4>Override:</h4><span><a href="class/src/drawer.js~Drawer.html#instance-method-updateCursor">Drawer#updateCursor</a></span></div>
@@ -1883,7 +1978,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber623">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber522">source</a></span></span>
     </span>
   </h3>
 
@@ -1907,7 +2002,7 @@ rendered</p>
       <td data-ice="name" class="code" data-depth="0">position</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>X-Offset of progress position in pixels</p>
+      <td data-ice="description"><p>X-offset of progress position in pixels</p>
 </td>
     </tr>
 </tbody>
@@ -1944,7 +2039,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber107">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber126">source</a></span></span>
     </span>
   </h3>
 

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">src/util/fetch.js | wavesurfer.js</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Interactive navigable audio visualization using Web Audio and Canvas"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="wavesurfer.js"><meta property="twitter:description" content="Interactive navigable audio visualization using Web Audio and Canvas"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html">WaveSurfer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html">WebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-InitParams">InitParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-WavesurferParams">WavesurferParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/de/docs/Web/API/AudioNode">AudioNode</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D">CanvasRenderingContext2D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints">MediaStreamConstraints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext">OfflineAudioContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin">plugin</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/cursor.js~CursorPlugin.html">CursorPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/elan.js~ElanPlugin.html">ElanPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/mediasession.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/timeline.js~TimelinePlugin.html">TimelinePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ElanPluginParams">ElanPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MediaSessionPluginParams">MediaSessionPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SpectrogramPluginParams">SpectrogramPluginParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TimelinePluginParams">TimelinePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/util/fetch.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+ * @since 3.0.0
+ */
+
+import Observer from &apos;./observer&apos;;
+
+class ProgressHandler {
+    /**
+     * Instantiate ProgressHandler
+     *
+     * @param {Observer} instance The `fetchFile` observer instance.
+     * @param {Number} contentLength Content length.
+     * @param {Response} response Response object.
+     */
+    constructor(instance, contentLength, response) {
+        this.instance = instance;
+        this.instance._reader = response.body.getReader();
+
+        this.total = parseInt(contentLength, 10);
+        this.loaded = 0;
+    }
+
+    /**
+     * A method that is called once, immediately after the `ReadableStream``
+     * is constructed.
+     *
+     * @param {ReadableStreamDefaultController} controller Controller instance
+     *     used to control the stream.
+     */
+    start(controller) {
+        const read = () =&gt; {
+            // instance._reader.read() returns a promise that resolves
+            // when a value has been received
+            this.instance._reader
+                .read()
+                .then(({ done, value }) =&gt; {
+                    // result objects contain two properties:
+                    // done  - true if the stream has already given you all its data.
+                    // value - some data. Always undefined when done is true.
+                    if (done) {
+                        // ensure onProgress called when content-length=0
+                        if (this.total === 0) {
+                            this.instance.onProgress.call(this.instance, {
+                                loaded: this.loaded,
+                                total: this.total,
+                                lengthComputable: false
+                            });
+                        }
+                        // no more data needs to be consumed, close the stream
+                        controller.close();
+                        return;
+                    }
+
+                    this.loaded += value.byteLength;
+                    this.instance.onProgress.call(this.instance, {
+                        loaded: this.loaded,
+                        total: this.total,
+                        lengthComputable: !(this.total === 0)
+                    });
+                    // enqueue the next data chunk into our target stream
+                    controller.enqueue(value);
+                    read();
+                })
+                .catch(error =&gt; {
+                    controller.error(error);
+                });
+        };
+
+        read();
+    }
+}
+
+/**
+ * Load a file using `fetch`.
+ *
+ * @param {object} options Request options to use. See example below.
+ * @returns {Observer} Observer instance
+ * @example
+ * // default options
+ * let options = {
+ *     url: undefined,
+ *     method: &apos;GET&apos;,
+ *     mode: &apos;cors&apos;,
+ *     credentials: &apos;same-origin&apos;,
+ *     cache: &apos;default&apos;,
+ *     responseType: &apos;json&apos;,
+ *     requestHeaders: [],
+ *     redirect: &apos;follow&apos;,
+ *     referrer: &apos;client&apos;
+ * };
+ *
+ * // override some options
+ * options.url = &apos;../media/demo.wav&apos;;
+
+ * // available types: &apos;arraybuffer&apos;, &apos;blob&apos;, &apos;json&apos; or &apos;text&apos;
+ * options.responseType = &apos;arraybuffer&apos;;
+ *
+ * // make fetch call
+ * let request = util.fetchFile(options);
+ *
+ * // listen for events
+ * request.on(&apos;progress&apos;, e =&gt; {
+ *     console.log(&apos;progress&apos;, e);
+ * });
+ *
+ * request.on(&apos;success&apos;, data =&gt; {
+ *     console.log(&apos;success!&apos;, data);
+ * });
+ *
+ * request.on(&apos;error&apos;, e =&gt; {
+ *     console.warn(&apos;fetchFile error: &apos;, e);
+ * });
+ */
+export default function fetchFile(options) {
+    if (!options) {
+        throw new Error(&apos;fetch options missing&apos;);
+    } else if (!options.url) {
+        throw new Error(&apos;fetch url missing&apos;);
+    }
+    const instance = new Observer();
+    const fetchHeaders = new Headers();
+    const fetchRequest = new Request(options.url);
+
+    // add ability to abort
+    instance.controller = new AbortController();
+
+    // check if headers have to be added
+    if (options &amp;&amp; options.requestHeaders) {
+        // add custom request headers
+        options.requestHeaders.forEach(header =&gt; {
+            fetchHeaders.append(header.key, header.value);
+        });
+    }
+
+    // parse fetch options
+    const responseType = options.responseType || &apos;json&apos;;
+    const fetchOptions = {
+        method: options.method || &apos;GET&apos;,
+        headers: fetchHeaders,
+        mode: options.mode || &apos;cors&apos;,
+        credentials: options.credentials || &apos;same-origin&apos;,
+        cache: options.cache || &apos;default&apos;,
+        redirect: options.redirect || &apos;follow&apos;,
+        referrer: options.referrer || &apos;client&apos;,
+        signal: instance.controller.signal
+    };
+
+    fetch(fetchRequest, fetchOptions)
+        .then(response =&gt; {
+            // store response reference
+            instance.response = response;
+
+            let progressAvailable = true;
+            if (!response.body) {
+                // ReadableStream is not yet supported in this browser
+                // see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream
+                progressAvailable = false;
+            }
+
+            // Server must send CORS header &quot;Access-Control-Expose-Headers: content-length&quot;
+            const contentLength = response.headers.get(&apos;content-length&apos;);
+            if (contentLength === null) {
+                // Content-Length server response header missing.
+                // Don&apos;t evaluate download progress if we can&apos;t compare against a total size
+                // see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Access-Control-Expose-Headers
+                progressAvailable = false;
+            }
+
+            if (!progressAvailable) {
+                // not able to check download progress so skip it
+                return response;
+            }
+
+            // fire progress event when during load
+            instance.onProgress = e =&gt; {
+                instance.fireEvent(&apos;progress&apos;, e);
+            };
+
+            return new Response(
+                new ReadableStream(
+                    new ProgressHandler(instance, contentLength, response)
+                ),
+                fetchOptions
+            );
+        })
+        .then(response =&gt; {
+            let errMsg;
+            if (response.ok) {
+                switch (responseType) {
+                    case &apos;arraybuffer&apos;:
+                        return response.arrayBuffer();
+
+                    case &apos;json&apos;:
+                        return response.json();
+
+                    case &apos;blob&apos;:
+                        return response.blob();
+
+                    case &apos;text&apos;:
+                        return response.text();
+
+                    default:
+                        errMsg = &apos;Unknown responseType: &apos; + responseType;
+                        break;
+                }
+            }
+            if (!errMsg) {
+                errMsg = &apos;HTTP error status: &apos; + response.status;
+            }
+            throw new Error(errMsg);
+        })
+        .then(response =&gt; {
+            instance.fireEvent(&apos;success&apos;, response);
+        })
+        .catch(error =&gt; {
+            instance.fireEvent(&apos;error&apos;, error);
+        });
+
+    // return the fetch request
+    instance.fetchRequest = fetchRequest;
+    return instance;
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
