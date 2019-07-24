@@ -26,6 +26,7 @@ class Region {
         this.drag = params.drag === undefined ? true : Boolean(params.drag);
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
+        this.border = params.border || '2px solid #FFFF00';
         this.data = params.data || {};
         this.attributes = params.attributes || {};
 
@@ -57,6 +58,9 @@ class Region {
         }
         if (null != params.color) {
             this.color = params.color;
+        }
+        if (null != params.border) {
+            this.border = params.border;
         }
         if (null != params.data) {
             this.data = params.data;
@@ -210,6 +214,7 @@ class Region {
                 left: left + 'px',
                 width: regionWidth + 'px',
                 backgroundColor: this.color,
+                border: this.border,
                 cursor: this.drag ? 'move' : 'default'
             });
 
@@ -537,6 +542,7 @@ class Region {
  * @property {boolean} drag=true Allow/disallow dragging the region.
  * @property {boolean} resize=true Allow/disallow resizing the region.
  * @property {string} [color='rgba(0, 0, 0, 0.1)'] HTML color code.
+ * @property {string} [border='2px solid #FFFF00'] HTML border code.
  */
 
 /**
