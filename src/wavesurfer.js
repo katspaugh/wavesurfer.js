@@ -26,6 +26,10 @@ import PeakCache from './peakcache';
  * initialized ScriptProcessorNode or leave blank.
  * @property {boolean} autoCenter=true If a scrollbar is present, center the
  * waveform around the progress
+ * @property {number} autoCenteringRate=5 If autoCenter is active, rate at which the
+ * waveform is centered
+ * @property {boolean} autoCenterImmediately=false If autoCenter is active, immediately
+ * center waveform around progress
  * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'` In most cases
  * you don't have to set this manually. MediaElement is a fallback for
  * unsupported browsers.
@@ -204,6 +208,8 @@ export default class WaveSurfer extends util.Observer {
         audioScriptProcessor: null,
         audioRate: 1,
         autoCenter: true,
+        autoCenteringRate: 5,
+        autoCenterImmediately: false,
         backend: 'WebAudio',
         backgroundColor: null,
         barHeight: 1,
