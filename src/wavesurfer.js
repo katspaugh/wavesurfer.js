@@ -25,11 +25,11 @@ import PeakCache from './peakcache';
  * @property {ScriptProcessorNode} audioScriptProcessor=null Use your own previously
  * initialized ScriptProcessorNode or leave blank.
  * @property {boolean} autoCenter=true If a scrollbar is present, center the
- * waveform around the progress
- * @property {number} autoCenteringRate=5 If autoCenter is active, rate at which the
+ * waveform on current progress
+ * @property {number} autoCenterRate=5 If autoCenter is active, rate at which the
  * waveform is centered
  * @property {boolean} autoCenterImmediately=false If autoCenter is active, immediately
- * center waveform around progress
+ * center waveform on current progress
  * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'` In most cases
  * you don't have to set this manually. MediaElement is a fallback for
  * unsupported browsers.
