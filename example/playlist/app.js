@@ -54,6 +54,10 @@ document.addEventListener('DOMContentLoaded', function() {
         wavesurfer.play();
     });
 
+    wavesurfer.on('error', function(e) {
+        console.warn(e);
+    });
+
     // Go to the next track on finish
     wavesurfer.on('finish', function() {
         setCurrentSong((currentTrack + 1) % links.length);

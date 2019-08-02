@@ -1,16 +1,18 @@
 /* eslint-env node */
 
+const fs = require('fs');
+
 process.env.BABEL_ENV = 'test';
 process.traceDeprecation = true;
 
 require('@babel/register');
-var webpackConfig = require('./build-config/webpack.prod.main.js');
+const webpackConfig = require('./build-config/webpack.prod.main.js');
 webpackConfig.devtool = 'none';
-var ci = process.env.TRAVIS || process.env.APPVEYOR;
+const ci = process.env.TRAVIS || process.env.APPVEYOR;
 
 // Chrome CLI options
 // http://peter.sh/experiments/chromium-command-line-switches/
-var chromeFlags = [
+const chromeFlags = [
     '--no-sandbox',
     '--no-first-run',
     '--noerrdialogs',
@@ -25,7 +27,7 @@ var chromeFlags = [
     // see https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
     '--disable-features=PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies'
 ];
-var firefoxFlags = {
+const firefoxFlags = {
     // disable autoplay blocking, see https://www.ghacks.net/2018/09/21/firefox-improved-autoplay-blocking/
     'media.autoplay.default': 0,
     'media.autoplay.ask-permission': false,
@@ -43,12 +45,13 @@ module.exports = function(config) {
         singleRun: true,
         autoWatch: false,
         files: [
-            // demo audio file
+            // demo files
             {
-                pattern: 'spec/support/demo.wav',
+                pattern: 'spec/support/**',
                 included: false,
                 watched: false,
-                served: true
+                served: true,
+                nocache: true
             },
 
             // specs
@@ -57,6 +60,13 @@ module.exports = function(config) {
             'spec/wavesurfer.spec.js',
             'spec/peakcache.spec.js',
             'spec/mediaelement.spec.js'
+        ],
+        customHeaders: [
+            {
+                match: 'demo.wav',
+                name: 'Content-Length',
+                value: fs.statSync('./spec/support/demo.wav')['size']
+            }
         ],
         preprocessors: {
             'spec/plugin-api.spec.js': ['webpack'],

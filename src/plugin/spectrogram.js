@@ -235,6 +235,9 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
  * canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('spectrogram')`
+ * @property {?number[][]} colorMap A 256 long array of 4-element arrays.
+ * Each entry should contain a float between 0 and 1 and specify
+ * r, g, b, and alpha.
  */
 
 /**
@@ -310,7 +313,26 @@ export default class SpectrogramPlugin {
             if (!this.container) {
                 throw Error('No container for WaveSurfer spectrogram');
             }
-
+            if (params.colorMap) {
+                if (params.colorMap.length < 256) {
+                    throw new Error('Colormap must contain 256 elements');
+                }
+                for (let i = 0; i < params.colorMap.length; i++) {
+                    const cmEntry = params.colorMap[i];
+                    if (cmEntry.length !== 4) {
+                        throw new Error(
+                            'ColorMap entries must contain 4 values'
+                        );
+                    }
+                }
+                this.colorMap = params.colorMap;
+            } else {
+                this.colorMap = [];
+                for (let i = 0; i < 256; i++) {
+                    const val = (255 - i) / 256;
+                    this.colorMap.push([val, val, val, 1]);
+                }
+            }
             this.width = drawer.width;
             this.pixelRatio = this.params.pixelRatio || ws.params.pixelRatio;
             this.fftSamples =
@@ -452,14 +474,16 @@ export default class SpectrogramPlugin {
 
         for (i = 0; i < pixels.length; i++) {
             for (j = 0; j < pixels[i].length; j++) {
-                const colorValue = 255 - pixels[i][j];
+                const colorMap = my.colorMap[pixels[i][j]];
                 my.spectrCc.fillStyle =
-                    'rgb(' +
-                    colorValue +
+                    'rgba(' +
+                    colorMap[0] * 256 +
                     ', ' +
-                    colorValue +
+                    colorMap[1] * 256 +
                     ', ' +
-                    colorValue +
+                    colorMap[2] * 256 +
+                    ',' +
+                    colorMap[3] +
                     ')';
                 my.spectrCc.fillRect(
                     i,
@@ -519,16 +543,14 @@ export default class SpectrogramPlugin {
     }
 
     loadFrequenciesData(url) {
-        const ajax = this.util.ajax({ url: url });
+        const request = this.util.fetchFile({ url: url });
 
-        ajax.on('success', data =>
+        request.on('success', data =>
             this.drawSpectrogram(JSON.parse(data), this)
         );
-        ajax.on('error', e =>
-            this.fireEvent('error', 'XHR error: ' + e.target.statusText)
-        );
+        request.on('error', e => this.fireEvent('error', e));
 
-        return ajax;
+        return request;
     }
 
     freqType(freq) {
@@ -558,6 +580,7 @@ export default class SpectrogramPlugin {
         textColorUnit = textColorUnit || '#fff';
         textAlign = textAlign || 'center';
         container = container || '#specLabels';
+        const bgWidth = 55;
         const getMaxY = frequenciesHeight || 512;
         const labelIndex = 5 * (getMaxY / 256);
         const freqStart = 0;
@@ -565,15 +588,18 @@ export default class SpectrogramPlugin {
             (this.wavesurfer.backend.ac.sampleRate / 2 - freqStart) /
             labelIndex;
 
+        // prepare canvas element for labels
         const ctx = this.labelsEl.getContext('2d');
         this.labelsEl.height = this.height;
-        this.labelsEl.width = 55;
+        this.labelsEl.width = bgWidth;
 
+        // fill background
         ctx.fillStyle = bgFill;
-        ctx.fillRect(0, 0, 55, getMaxY);
+        ctx.fillRect(0, 0, bgWidth, getMaxY);
         ctx.fill();
         let i;
 
+        // render labels
         for (i = 0; i <= labelIndex; i++) {
             ctx.textAlign = textAlign;
             ctx.textBaseline = 'middle';
@@ -584,23 +610,30 @@ export default class SpectrogramPlugin {
             );
             const label = this.freqType(freq);
             const units = this.unitType(freq);
-            const x = 16;
             const yLabelOffset = 2;
+            const x = 16;
+            let y;
 
             if (i == 0) {
+                y = getMaxY + i - 10;
+                // unit label
                 ctx.fillStyle = textColorUnit;
                 ctx.font = fontSizeUnit + ' ' + fontType;
-                ctx.fillText(units, x + 24, getMaxY + i - 10);
+                ctx.fillText(units, x + 24, y);
+                // freq label
                 ctx.fillStyle = textColorFreq;
                 ctx.font = fontSizeFreq + ' ' + fontType;
-                ctx.fillText(label, x, getMaxY + i - 10);
+                ctx.fillText(label, x, y);
             } else {
+                y = getMaxY - i * 50 + yLabelOffset;
+                // unit label
                 ctx.fillStyle = textColorUnit;
                 ctx.font = fontSizeUnit + ' ' + fontType;
-                ctx.fillText(units, x + 24, getMaxY - i * 50 + yLabelOffset);
+                ctx.fillText(units, x + 24, y);
+                // freq label
                 ctx.fillStyle = textColorFreq;
                 ctx.font = fontSizeFreq + ' ' + fontType;
-                ctx.fillText(label, x, getMaxY - i * 50 + yLabelOffset);
+                ctx.fillText(label, x, y);
             }
         }
     }

@@ -249,14 +249,15 @@ export default class MultiCanvas extends Drawer {
     /**
      * Draw a waveform with bars
      *
-     * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
-     * rendering
+     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays
+     * for split channel rendering
      * @param {number} channelIndex The index of the current channel. Normally
      * should be 0. Must be an integer.
      * @param {number} start The x-offset of the beginning of the area that
      * should be rendered
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
+     * @returns {void}
      */
     drawBars(peaks, channelIndex, start, end) {
         return this.prepareDraw(
@@ -306,14 +307,15 @@ export default class MultiCanvas extends Drawer {
     /**
      * Draw a waveform
      *
-     * @param {number[]|number[][]} peaks Can also be an array of arrays for split channel
-     * rendering
+     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays
+     * for split channel rendering
      * @param {number} channelIndex The index of the current channel. Normally
      * should be 0
      * @param {number?} start The x-offset of the beginning of the area that
      * should be rendered (If this isn't set only a flat line is rendered)
      * @param {number?} end The x-offset of the end of the area that should be
      * rendered
+     * @returns {void}
      */
     drawWave(peaks, channelIndex, start, end) {
         return this.prepareDraw(
@@ -354,7 +356,7 @@ export default class MultiCanvas extends Drawer {
      * Tell the canvas entries to render their portion of the waveform
      *
      * @private
-     * @param {number[]} peaks Peak data
+     * @param {number[]} peaks Peaks data
      * @param {number} absmax Maximum peak value (absolute)
      * @param {number} halfH Half the height of the waveform
      * @param {number} offsetY Offset to the top
@@ -373,10 +375,10 @@ export default class MultiCanvas extends Drawer {
     /**
      * Draw a rectangle on the multi-canvas
      *
-     * @param {number} x
-     * @param {number} y
-     * @param {number} width
-     * @param {number} height
+     * @param {number} x X-position of the rectangle
+     * @param {number} y Y-position of the rectangle
+     * @param {number} width Width of the rectangle
+     * @param {number} height Height of the rectangle
      */
     fillRect(x, y, width, height) {
         const startCanvas = Math.floor(x / this.maxCanvasWidth);
@@ -417,7 +419,7 @@ export default class MultiCanvas extends Drawer {
      * and `drawWave`
      *
      * @private
-     * @param {number[]|number[][]} peaks Can also be an array of arrays for
+     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for
      * split channel rendering
      * @param {number} channelIndex The index of the current channel. Normally
      * should be 0
@@ -426,6 +428,7 @@ export default class MultiCanvas extends Drawer {
      * @param {number?} end The x-offset of the end of the area that should be
      * rendered
      * @param {function} fn The render function to call, e.g. `drawWave`
+     * @returns {void}
      */
     prepareDraw(peaks, channelIndex, start, end, fn) {
         return util.frame(() => {
