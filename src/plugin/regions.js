@@ -23,8 +23,9 @@ class Region {
                 : Number(params.end);
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
-        this.isResizing = false;
         this.drag = params.drag === undefined ? true : Boolean(params.drag);
+        // reflect resize and drag state of region for region-updated listener
+        this.isResizing = false;
         this.isDragging = false;
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
