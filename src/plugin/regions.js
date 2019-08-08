@@ -24,6 +24,9 @@ class Region {
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
         this.drag = params.drag === undefined ? true : Boolean(params.drag);
+        // reflect resize and drag state of region for region-updated listener
+        this.isResizing = false;
+        this.isDragging = false;
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
         this.data = params.data || {};
@@ -121,7 +124,6 @@ class Region {
             );
         }
 
-        const width = this.wrapper.scrollWidth;
         this.style(regionEl, {
             position: 'absolute',
             zIndex: 2,
@@ -359,7 +361,10 @@ class Region {
                         this.wrapper.scrollWidth - this.wrapper.clientWidth;
                     wrapperRect = this.wrapper.getBoundingClientRect();
 
-                    if (e.target.tagName.toLowerCase() == 'handle') {
+                    this.isResizing = false;
+                    this.isDragging = false;
+                    if (e.target.tagName.toLowerCase() === 'handle') {
+                        this.isResizing = true;
                         if (
                             e.target.classList.contains(
                                 'wavesurfer-handle-start'
@@ -370,6 +375,7 @@ class Region {
                             resize = 'end';
                         }
                     } else {
+                        this.isDragging = true;
                         drag = true;
                         resize = false;
                     }
@@ -380,6 +386,8 @@ class Region {
                     }
 
                     if (drag || resize) {
+                        this.isDragging = false;
+                        this.isResizing = false;
                         drag = false;
                         scrollDirection = null;
                         resize = false;
@@ -514,7 +522,7 @@ class Region {
     }
 
     onResize(delta, direction) {
-        if (direction == 'start') {
+        if (direction === 'start') {
             this.update({
                 start: Math.min(this.start + delta, this.end),
                 end: Math.max(this.start + delta, this.end)
