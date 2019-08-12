@@ -204,7 +204,7 @@ export default class Drawer extends util.Observer {
         // if the cursor is currently visible...
         if (!immediate && -half <= offset && offset < half) {
             // set rate at which waveform is centered
-            let rate = this.params.autoCenteringRate;
+            let rate = this.params.autoCenterRate;
 
             // make rate depend on on width of viewwidth and length of waveform
             rate /= half;

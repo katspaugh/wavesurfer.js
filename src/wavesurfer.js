@@ -208,7 +208,7 @@ export default class WaveSurfer extends util.Observer {
         audioScriptProcessor: null,
         audioRate: 1,
         autoCenter: true,
-        autoCenteringRate: 5,
+        autoCenterRate: 5,
         autoCenterImmediately: false,
         backend: 'WebAudio',
         backgroundColor: null,
