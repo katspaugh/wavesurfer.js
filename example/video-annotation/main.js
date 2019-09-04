@@ -1,5 +1,3 @@
-// 'use strict';
-
 // Create an instance
 var wavesurfer;
 
@@ -21,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 height: 30,
                 waveColor: '#ddd',
                 progressColor: '#999'
-                // cursorColor: '#999'
             }),
             WaveSurfer.timeline.create({
                 container: '#wave-timeline'
@@ -54,11 +51,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 saveRegions();
             });
     });
-    // wavesurfer.on('region-click', function(region, e) {
-    //     e.stopPropagation();
-    //     // Play on click, loop on shift click
-    //     e.shiftKey ? region.playLoop() : region.play();
-    // });
+    wavesurfer.on('region-click', function(region, e) {
+        e.stopPropagation();
+        // Play on click, loop on shift click
+        e.shiftKey ? region.playLoop() : region.play();
+    });
     wavesurfer.on('region-click', editAnnotation);
     wavesurfer.on('region-update-end', saveRegions);
     wavesurfer.on('region-updated', saveRegions);
@@ -72,19 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
             wavesurfer.pause();
         });
     });
-
-    // // Zoom slider
-    // var slider = document.querySelector('[data-action="zoom"]');
-
-    // slider.value = wavesurfer.params.minPxPerSec;
-    // slider.min = wavesurfer.params.minPxPerSec;
-
-    // slider.addEventListener('input', function() {
-    //     wavesurfer.zoom(Number(this.value));
-    // });
-
-    // // set initial zoom to match slider value
-    // wavesurfer.zoom(slider.value);
 
     /* Toggle play/pause buttons. */
     var playButton = document.querySelector('#play');
