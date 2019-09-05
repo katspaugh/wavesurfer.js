@@ -230,13 +230,13 @@ class Region {
     bindInOut() {
         this.firedIn = false;
         this.firedOut = false;
-
+        const approx = (a, b) =>  (Math.abs(a -b) < 1e-1);
         const onProcess = time => {
             if (
                 !this.firedOut &&
                 this.firedIn &&
                 (this.start >= Math.round(time * 100) / 100 ||
-                    this.end <= Math.round(time * 100) / 100)
+                    approx(this.end, time))
             ) {
                 this.firedOut = true;
                 this.firedIn = false;
