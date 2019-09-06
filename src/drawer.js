@@ -203,8 +203,13 @@ export default class Drawer extends util.Observer {
 
         // if the cursor is currently visible...
         if (!immediate && -half <= offset && offset < half) {
-            // we'll limit the "re-center" rate.
-            const rate = 5;
+            // set rate at which waveform is centered
+            let rate = this.params.autoCenterRate;
+
+            // make rate depend on width of view and length of waveform
+            rate /= half;
+            rate *= maxScroll;
+
             offset = Math.max(-rate, Math.min(rate, offset));
             target = scrollLeft + offset;
         }
@@ -314,7 +319,10 @@ export default class Drawer extends util.Observer {
 
             if (this.params.scrollParent && this.params.autoCenter) {
                 const newPos = ~~(this.wrapper.scrollWidth * progress);
-                this.recenterOnPosition(newPos);
+                this.recenterOnPosition(
+                    newPos,
+                    this.params.autoCenterImmediately
+                );
             }
 
             this.updateProgress(pos);
