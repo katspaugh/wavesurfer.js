@@ -206,7 +206,7 @@ export default class Drawer extends util.Observer {
             // set rate at which waveform is centered
             let rate = this.params.autoCenterRate;
 
-            // make rate depend on on width of viewwidth and length of waveform
+            // make rate depend on width of view and length of waveform
             rate /= half;
             rate *= maxScroll;
 
