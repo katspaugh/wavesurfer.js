@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         wavesurfer.util
-            .ajax({
+            .fetchFile({
                 responseType: 'json',
                 url: '../media/nasa.json'
             })
@@ -75,10 +75,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var pauseButton = document.querySelector('#pause');
     wavesurfer.on('play', function() {
         playButton.style.display = 'none';
-        pauseButton.style.display = '';
+        pauseButton.style.display = 'block';
     });
     wavesurfer.on('pause', function() {
-        playButton.style.display = '';
+        playButton.style.display = 'block';
         pauseButton.style.display = 'none';
     });
 });
