@@ -219,10 +219,10 @@ export default class MinimapPlugin {
         Object.keys(this.regions).forEach(id => {
             const region = this.regions[id];
             const width =
-                this.drawer.width *
+                this.getWidth() *
                 ((region.end - region.start) / this.wavesurfer.getDuration());
             const left =
-                this.drawer.width *
+                this.getWidth() *
                 (region.start / this.wavesurfer.getDuration());
             const regionElement = this.util.style(
                 document.createElement('region'),
@@ -375,5 +375,9 @@ export default class MinimapPlugin {
             this.wavesurfer.drawer.wrapper.scrollLeft =
                 this.overviewPosition * this.ratio;
         }
+    }
+
+    getWidth() {
+        return this.wavesurfer.drawer.width / this.wavesurfer.params.pixelRatio;
     }
 }
