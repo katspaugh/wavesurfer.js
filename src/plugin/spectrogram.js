@@ -428,9 +428,8 @@ export default class SpectrogramPlugin {
 
     _wrapperClickHandler(event) {
         event.preventDefault();
-
         const relX = 'offsetX' in event ? event.offsetX : event.layerX;
-        this.fireEvent('click', relX / this.scrollWidth || 0);
+        this.fireEvent('click', relX / this.width || 0);
     }
 
     createCanvas() {
