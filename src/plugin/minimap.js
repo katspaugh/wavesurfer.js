@@ -378,6 +378,6 @@ export default class MinimapPlugin {
     }
 
     getWidth() {
-        return this.wavesurfer.drawer.width / this.wavesurfer.params.pixelRatio;
+        return this.drawer.width / this.params.pixelRatio;
     }
 }
