@@ -5,7 +5,7 @@ const webpack = require('webpack');
 const datefns = require('date-fns');
 
 const rootDir = path.resolve(__dirname, '..', '..');
-const date = datefns.format(new Date(), 'YYYY-MM-DD');
+const date = datefns.format(new Date(), 'yyyy-MM-dd');
 const pckg = require(path.join(rootDir, 'package.json'));
 
 // library JS banner with copyright and version info
