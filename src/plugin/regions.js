@@ -227,18 +227,21 @@ class Region {
         this.firedOut = false;
 
         const onProcess = time => {
+            let start = Math.round(this.start * 10) / 10;
+            let end = Math.round(this.end * 10) / 10;
+            time = Math.round(time * 10) / 10;
+
             if (
                 !this.firedOut &&
                 this.firedIn &&
-                (this.start >= Math.round(time * 100) / 100 ||
-                    this.end <= Math.round(time * 100) / 100)
+                (start >= time || end <= time)
             ) {
                 this.firedOut = true;
                 this.firedIn = false;
                 this.fireEvent('out');
                 this.wavesurfer.fireEvent('region-out', this);
             }
-            if (!this.firedIn && this.start <= time && this.end > time) {
+            if (!this.firedIn && start <= time && end > time) {
                 this.firedIn = true;
                 this.firedOut = false;
                 this.fireEvent('in');
