@@ -398,6 +398,17 @@ export default class WaveSurfer extends util.Observer {
         /**
          * @private The uninitialised Backend class
          */
+        // Back compat
+        if (this.params.backend == 'AudioElement') {
+            this.params.backend = 'MediaElement';
+        }
+
+        if (
+            this.params.backend == 'WebAudio' &&
+            !WebAudio.prototype.supportsWebAudio.call(null)
+        ) {
+            this.params.backend = 'MediaElement';
+        }
         this.Backend = this.backends[this.params.backend];
 
         /**
@@ -643,18 +654,6 @@ export default class WaveSurfer extends util.Observer {
     createBackend() {
         if (this.backend) {
             this.backend.destroy();
-        }
-
-        // Back compat
-        if (this.params.backend == 'AudioElement') {
-            this.params.backend = 'MediaElement';
-        }
-
-        if (
-            this.params.backend == 'WebAudio' &&
-            !this.Backend.prototype.supportsWebAudio.call(null)
-        ) {
-            this.params.backend = 'MediaElement';
         }
 
         this.backend = new this.Backend(this.params);
