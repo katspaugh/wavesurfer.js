@@ -1,3 +1,4 @@
+/*eslint no-console: ["error", { allow: ["warn"] }] */
 /**
  * @typedef {Object} MinimapPluginParams
  * @desc Extends the `WavesurferParams` wavesurfer was initialised with
@@ -48,13 +49,7 @@ export default class MinimapPlugin {
             name: 'minimap',
             deferInit: params && params.deferInit ? params.deferInit : false,
             params: params,
-            staticProps: {
-                initMinimap(customConfig) {
-                    console.warn('Deprecated initMinimap!');
-                    params = customConfig;
-                    this.initPlugins('minimap');
-                }
-            },
+            staticProps: {},
             instance: MinimapPlugin
         };
     }
@@ -83,9 +78,7 @@ export default class MinimapPlugin {
             const el = document.querySelector(params.container);
             if (!el) {
                 console.warn(
-                    `Wavesurfer minimap container ${
-                        params.container
-                    } was not found! The minimap will be automatically appended below the waveform.`
+                    `Wavesurfer minimap container ${params.container} was not found! The minimap will be automatically appended below the waveform.`
                 );
             }
             this.params.container = el;
@@ -103,9 +96,9 @@ export default class MinimapPlugin {
         this.wavesurfer = ws;
         this.util = ws.util;
         /**
-         * Minimap needs to register to ready and waveform-ready events to
-         * work with MediaElement, the time when ready is called is different
-         * (peaks can not be got)
+         * Minimap needs to listen for the `ready` and `waveform-ready` events
+         * to work with the `MediaElement` backend. The moment the `ready` event
+         * is called is different (and peaks would not load).
          *
          * @type {string}
          * @see https://github.com/katspaugh/wavesurfer.js/issues/736
@@ -226,10 +219,10 @@ export default class MinimapPlugin {
         Object.keys(this.regions).forEach(id => {
             const region = this.regions[id];
             const width =
-                this.drawer.width *
+                this.getWidth() *
                 ((region.end - region.start) / this.wavesurfer.getDuration());
             const left =
-                this.drawer.width *
+                this.getWidth() *
                 (region.start / this.wavesurfer.getDuration());
             const regionElement = this.util.style(
                 document.createElement('region'),
@@ -382,5 +375,9 @@ export default class MinimapPlugin {
             this.wavesurfer.drawer.wrapper.scrollLeft =
                 this.overviewPosition * this.ratio;
         }
+    }
+
+    getWidth() {
+        return this.drawer.width / this.params.pixelRatio;
     }
 }

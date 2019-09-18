@@ -15,16 +15,17 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
     this.peakBand = 0;
     this.peak = 0;
 
+    var i;
     switch (windowFunc) {
         case 'bartlett':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     (2 / (bufferSize - 1)) *
                     ((bufferSize - 1) / 2 - Math.abs(i - (bufferSize - 1) / 2));
             }
             break;
         case 'bartlettHann':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     0.62 -
                     0.48 * Math.abs(i / (bufferSize - 1) - 0.5) -
@@ -33,7 +34,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
             break;
         case 'blackman':
             alpha = alpha || 0.16;
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     (1 - alpha) / 2 -
                     0.5 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1)) +
@@ -42,7 +43,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
             }
             break;
         case 'cosine':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] = Math.cos(
                     (Math.PI * i) / (bufferSize - 1) - Math.PI / 2
                 );
@@ -50,7 +51,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
             break;
         case 'gauss':
             alpha = alpha || 0.25;
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] = Math.pow(
                     Math.E,
                     -0.5 *
@@ -63,7 +64,7 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
             }
             break;
         case 'hamming':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     (0.54 - 0.46) *
                     Math.cos((Math.PI * 2 * i) / (bufferSize - 1));
@@ -71,25 +72,25 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
             break;
         case 'hann':
         case undefined:
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     0.5 * (1 - Math.cos((Math.PI * 2 * i) / (bufferSize - 1)));
             }
             break;
         case 'lanczoz':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     Math.sin(Math.PI * ((2 * i) / (bufferSize - 1) - 1)) /
                     (Math.PI * ((2 * i) / (bufferSize - 1) - 1));
             }
             break;
         case 'rectangular':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] = 1;
             }
             break;
         case 'triangular':
-            for (var i = 0; i < bufferSize; i++) {
+            for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
                     (2 / bufferSize) *
                     (bufferSize / 2 - Math.abs(i - (bufferSize - 1) / 2));
@@ -101,7 +102,6 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
 
     var limit = 1;
     var bit = bufferSize >> 1;
-
     var i;
 
     while (limit < bufferSize) {
@@ -220,8 +220,9 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
  * @typedef {Object} SpectrogramPluginParams
  * @property {string|HTMLElement} container Selector of element or element in
  * which to render
- * @property {number} fftSamples=512 number of samples to fetch to FFT. Must be
+ * @property {number} fftSamples=512 Number of samples to fetch to FFT. Must be
  * a power of 2.
+ * @property {boolean} labels Set to true to display frequency labels.
  * @property {number} noverlap Size of the overlapping window. Must be <
  * fftSamples. Auto deduced from canvas size by default.
  * @property {string} windowFunc='hann' The window function to be used. One of
@@ -234,6 +235,9 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
  * canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('spectrogram')`
+ * @property {?number[][]} colorMap A 256 long array of 4-element arrays.
+ * Each entry should contain a float between 0 and 1 and specify
+ * r, g, b, and alpha.
  */
 
 /**
@@ -268,8 +272,8 @@ export default class SpectrogramPlugin {
      * This function must be used to create a plugin definition which can be
      * used by wavesurfer to correctly instantiate the plugin.
      *
-     * @param  {SpectrogramPluginParams} params parameters use to initialise the plugin
-     * @return {PluginDefinition} an object representing the plugin
+     * @param  {SpectrogramPluginParams} params Parameters used to initialise the plugin
+     * @return {PluginDefinition} An object representing the plugin.
      */
     static create(params) {
         return {
@@ -292,6 +296,12 @@ export default class SpectrogramPlugin {
         this._onScroll = e => {
             this.updateScroll(e);
         };
+        this._onRender = () => {
+            this.render();
+        };
+        this._onWrapperClick = e => {
+            this._wrapperClickHandler(e);
+        };
         this._onReady = () => {
             const drawer = (this.drawer = ws.drawer);
 
@@ -303,7 +313,26 @@ export default class SpectrogramPlugin {
             if (!this.container) {
                 throw Error('No container for WaveSurfer spectrogram');
             }
-
+            if (params.colorMap) {
+                if (params.colorMap.length < 256) {
+                    throw new Error('Colormap must contain 256 elements');
+                }
+                for (let i = 0; i < params.colorMap.length; i++) {
+                    const cmEntry = params.colorMap[i];
+                    if (cmEntry.length !== 4) {
+                        throw new Error(
+                            'ColorMap entries must contain 4 values'
+                        );
+                    }
+                }
+                this.colorMap = params.colorMap;
+            } else {
+                this.colorMap = [];
+                for (let i = 0; i < 256; i++) {
+                    const val = (255 - i) / 256;
+                    this.colorMap.push([val, val, val, 1]);
+                }
+            }
             this.width = drawer.width;
             this.pixelRatio = this.params.pixelRatio || ws.params.pixelRatio;
             this.fftSamples =
@@ -318,27 +347,29 @@ export default class SpectrogramPlugin {
             this.render();
 
             drawer.wrapper.addEventListener('scroll', this._onScroll);
-            ws.on('redraw', () => this.render());
+            ws.on('redraw', this._onRender);
         };
     }
 
     init() {
-        // Check if ws is ready
+        // Check if wavesurfer is ready
         if (this.wavesurfer.isReady) {
             this._onReady();
+        } else {
+            this.wavesurfer.once('ready', this._onReady);
         }
-
-        this.wavesurfer.on('ready', this._onReady);
     }
 
     destroy() {
         this.unAll();
         this.wavesurfer.un('ready', this._onReady);
+        this.wavesurfer.un('redraw', this._onRender);
         this.drawer.wrapper.removeEventListener('scroll', this._onScroll);
         this.wavesurfer = null;
         this.util = null;
         this.params = null;
         if (this.wrapper) {
+            this.wrapper.removeEventListener('click', this._onWrapperClick);
             this.wrapper.parentNode.removeChild(this.wrapper);
             this.wrapper = null;
         }
@@ -363,7 +394,6 @@ export default class SpectrogramPlugin {
                 width: `${55 / this.pixelRatio}px`
             });
             this.wrapper.appendChild(labelsEl);
-            // can be customized in next version
             this.loadLabels(
                 'rgba(68,68,68,0.5)',
                 '12px',
@@ -393,11 +423,13 @@ export default class SpectrogramPlugin {
         }
         this.container.appendChild(this.wrapper);
 
-        this.wrapper.addEventListener('click', e => {
-            e.preventDefault();
-            const relX = 'offsetX' in e ? e.offsetX : e.layerX;
-            this.fireEvent('click', relX / this.scrollWidth || 0);
-        });
+        this.wrapper.addEventListener('click', this._onWrapperClick);
+    }
+
+    _wrapperClickHandler(event) {
+        event.preventDefault();
+        const relX = 'offsetX' in event ? event.offsetX : event.layerX;
+        this.fireEvent('click', relX / this.width || 0);
     }
 
     createCanvas() {
@@ -441,14 +473,16 @@ export default class SpectrogramPlugin {
 
         for (i = 0; i < pixels.length; i++) {
             for (j = 0; j < pixels[i].length; j++) {
-                const colorValue = 255 - pixels[i][j];
+                const colorMap = my.colorMap[pixels[i][j]];
                 my.spectrCc.fillStyle =
-                    'rgb(' +
-                    colorValue +
+                    'rgba(' +
+                    colorMap[0] * 256 +
                     ', ' +
-                    colorValue +
+                    colorMap[1] * 256 +
                     ', ' +
-                    colorValue +
+                    colorMap[2] * 256 +
+                    ',' +
+                    colorMap[3] +
                     ')';
                 my.spectrCc.fillRect(
                     i,
@@ -508,16 +542,14 @@ export default class SpectrogramPlugin {
     }
 
     loadFrequenciesData(url) {
-        const ajax = this.util.ajax({ url: url });
+        const request = this.util.fetchFile({ url: url });
 
-        ajax.on('success', data =>
+        request.on('success', data =>
             this.drawSpectrogram(JSON.parse(data), this)
         );
-        ajax.on('error', e =>
-            this.fireEvent('error', 'XHR error: ' + e.target.statusText)
-        );
+        request.on('error', e => this.fireEvent('error', e));
 
-        return ajax;
+        return request;
     }
 
     freqType(freq) {
@@ -547,6 +579,7 @@ export default class SpectrogramPlugin {
         textColorUnit = textColorUnit || '#fff';
         textAlign = textAlign || 'center';
         container = container || '#specLabels';
+        const bgWidth = 55;
         const getMaxY = frequenciesHeight || 512;
         const labelIndex = 5 * (getMaxY / 256);
         const freqStart = 0;
@@ -554,15 +587,18 @@ export default class SpectrogramPlugin {
             (this.wavesurfer.backend.ac.sampleRate / 2 - freqStart) /
             labelIndex;
 
+        // prepare canvas element for labels
         const ctx = this.labelsEl.getContext('2d');
         this.labelsEl.height = this.height;
-        this.labelsEl.width = 55;
+        this.labelsEl.width = bgWidth;
 
+        // fill background
         ctx.fillStyle = bgFill;
-        ctx.fillRect(0, 0, 55, getMaxY);
+        ctx.fillRect(0, 0, bgWidth, getMaxY);
         ctx.fill();
         let i;
 
+        // render labels
         for (i = 0; i <= labelIndex; i++) {
             ctx.textAlign = textAlign;
             ctx.textBaseline = 'middle';
@@ -573,23 +609,30 @@ export default class SpectrogramPlugin {
             );
             const label = this.freqType(freq);
             const units = this.unitType(freq);
-            const x = 16;
             const yLabelOffset = 2;
+            const x = 16;
+            let y;
 
             if (i == 0) {
+                y = getMaxY + i - 10;
+                // unit label
                 ctx.fillStyle = textColorUnit;
                 ctx.font = fontSizeUnit + ' ' + fontType;
-                ctx.fillText(units, x + 24, getMaxY + i - 10);
+                ctx.fillText(units, x + 24, y);
+                // freq label
                 ctx.fillStyle = textColorFreq;
                 ctx.font = fontSizeFreq + ' ' + fontType;
-                ctx.fillText(label, x, getMaxY + i - 10);
+                ctx.fillText(label, x, y);
             } else {
+                y = getMaxY - i * 50 + yLabelOffset;
+                // unit label
                 ctx.fillStyle = textColorUnit;
                 ctx.font = fontSizeUnit + ' ' + fontType;
-                ctx.fillText(units, x + 24, getMaxY - i * 50 + yLabelOffset);
+                ctx.fillText(units, x + 24, y);
+                // freq label
                 ctx.fillStyle = textColorFreq;
                 ctx.font = fontSizeFreq + ' ' + fontType;
-                ctx.fillText(label, x, getMaxY - i * 50 + yLabelOffset);
+                ctx.fillText(label, x, y);
             }
         }
     }

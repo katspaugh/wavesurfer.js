@@ -1,10 +1,74 @@
 wavesurfer.js changelog
 =======================
 
-2.1.4 (unreleased)
+3.1.0 (unreleased)
+------------------
+
+- Add `autoCenter` and `autoCenterRate` options (#1699)
+- Use `MediaElement` backend for browsers that don't support WebAudio (#1739)
+- Regions plugin: use `isResizing` and `isDragging` to filter events in
+  region-updated listener (#1716)
+- Spectrogram plugin: fix variable name in click handler (#1742)
+- Minimap plugin: fix left/width calculations for regions on retina/4k
+  screens (#1743)
+- New example: video-annotation (#1726)
+
+3.0.0 (11.07.2019)
+------------------
+
+- Add `wavesurfer.getActivePlugins()`: return map of plugins
+  that are currently initialised
+- Replace usage of `util.ajax` with `util.fetchFile` (#1365)
+- Update progress when seeking with HTML media controls (#1535)
+- Make sure mute/volume is updated when using `MediaElement` backend (#1615)
+- Refactor `MultiCanvas` and add `CanvasEntry` class (#1617)
+- Fix `wavesurfer.isReady`: make it a public boolean, the
+  broken `isReady` method is removed (#1597)
+- Add support for `Blob` output type in `wavesurfer.exportImage` (#1610)
+- Fix fallback to Audio Element in browsers that don't support Web Audio (#1614)
+- `util.getId()` now accepts a `prefix` argument (#1619)
+- Improve documentation for `xhr` option (#1656)
+- Fix: the `progressWave` should not be rendered when specifying the same
+  value for the `progressColor` and `waveColor` options (#1620)
+- Cursor plugin:
+  - Add `formatTimeCallback` option
+  - Add `followCursorY` option (#1605)
+  - Remove deprecated `enableCursor` method (#1646)
+  - Hide the cursor elements before first mouseover if `hideOnBlur` is set (#1663)
+- Spectrogram plugin:
+  - Fix `ready` listener when loading multiple audio files (#1572)
+  - Allow user to specify a colorMap (#1436)
+- Regions plugin:
+  - Fix `ready` listener when loading multiple audio files (#1602)
+  - Add `snapToGridInterval` and `snapToGridOffset` options (#1632)
+  - Allow drawing regions over existing regions, if the underlying ones are not
+    draggable or resizable (#1633)
+  - Calculate the duration at event time to allow predefined regions to be
+    dragged and resized (#1673)
+  - Remove deprecated `initRegions` method (#1646)
+- Timeline plugin: fix `ready` listener when loading multiple
+  audio files
+- Minimap plugin: remove deprecated `initMinimap` method (#1646)
+
+Check `UPGRADE.md` for backward incompatible changes since v2.x.
+
+2.2.1 (18.03.2019)
+------------------
+
+- Add `backgroundColor` option (#1118)
+- Spectrogram plugin: fix click handler (#1585)
+- Cursor plugin: fix `displayTime` (#1589)
+
+2.2.0 (07.03.2019)
 ------------------
 
 - Add `rtl` option (#1296)
+- Fix peaks rendering issue on zooming and scrolling multicanvas (#1570)
+- Add `duration` option to specify an explicit audio length (#1441)
+- Spectrogram plugin: fix event listener removal (#1571)
+- Regions plugin: display regions before file load using `duration`
+  option (#1441)
+- Build: switch to terser-webpack-plugin for minifying
 
 2.1.3 (21.01.2019)
 ------------------

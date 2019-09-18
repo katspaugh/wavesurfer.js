@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Video Annotation System</title>
+
+        <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="../css/ribbon.css" />
+        <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+
+        <!-- wavesurfer.js -->
+        <script src="../../dist/wavesurfer.js"></script>
+
+        <!-- plugins -->
+        <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
+        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
+        <script src="../../dist/plugin/wavesurfer.minimap.js"></script>
+        <script src="../../dist/plugin/wavesurfer.cursor.js"></script>
+
+        <!-- Demo -->
+        <script src="../trivia.js"></script>
+        <script src="main.js"></script>
+        
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+    </head>
+
+    <body itemscope itemtype="http://schema.org/WebApplication">
+        <div class="container">
+            <div class="header">
+                <h1 itemprop="name">Video Annotation System</h1>
+            </div>
+
+            <div id="demo">
+                <!-- This video comes from NASA Video Gallery https://www.youtube.com/watch?v=Zg7i4q_EX9E -->
+                <video style="display:block; margin: 0 auto;" src="../media/nasa.mp4" type="video/mpeg" width="800">
+                    <!-- Here be the video -->
+                </video>
+
+                <p id="subtitle" class="text-center text-info">&nbsp;</p>
+
+                <div id="wave-timeline"></div>
+                
+                <div id="waveform">
+                    <!-- Here be the waveform -->
+                </div>
+
+                <div class="row" style="margin: 30px 0">
+                    <div class="col-sm-3">
+                        <p>
+                            Click on a region to enter an annotation.<br />
+                        </p>
+                    </div>
+
+                    <div class="col-sm-3">
+                        <button class="btn btn-primary btn-block" data-action="play">
+                            <span id="play">
+                                <i class="glyphicon glyphicon-play"></i>
+                                Play
+                            </span>
+    
+                            <span id="pause" style="display: none">
+                                <i class="glyphicon glyphicon-pause"></i>
+                                Pause
+                            </span>
+                        </button>
+                    </div>
+    
+                    <div class="col-sm-3">
+                        <button class="btn btn-info btn-block" data-action="export" title="Export annotations to JSON">
+                            <i class="glyphicon glyphicon-file"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <form role="form" name="edit" style="opacity: 0; transition: opacity 300ms linear; margin: 30px 0px;">
+                <div class="col-sm-3 form-group">
+                    <label for="start">Begin</label>
+                    <input class="form-control" id="start" name="start" />
+                    <label for="end">End</label>
+                    <input class="form-control" id="end" name="end" />
+                </div>
+    
+                <div class="col-sm-6 form-group">
+                    <label for="note">Note</label>
+                    <textarea id="note" class="form-control" rows="3" name="note"></textarea>
+                </div>
+    
+                <div class="col-sm-3">
+                    <center><b>Region edit</b></center>
+                    <button type="submit" class="btn btn-success btn-block">Save region</button>
+                    <center><b>or</b></center>
+                    <button type="button" class="btn btn-danger btn-block" data-action="delete-region">Delete region</button>
+                </div>
+            </form>
+        </div>
+    </body>
+</html>

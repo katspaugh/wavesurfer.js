@@ -36,7 +36,7 @@ export default class PeakCache {
      * @param {number} length The length of the range
      * @param {number} start The x offset of the start of the range
      * @param {number} end The x offset of the end of the range
-     * @return {number[][]}
+     * @return {Number.<Array[]>} Array with arrays of numbers
      */
     addRangeToPeakCache(length, start, end) {
         if (length != this.peakCacheLength) {
@@ -111,7 +111,7 @@ export default class PeakCache {
     /**
      * For testing
      *
-     * @return {number[][]}
+     * @return {Number.<Array[]>} Array with arrays of numbers
      */
     getCacheRanges() {
         const peakCacheRangePairs = [];

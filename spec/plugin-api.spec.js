@@ -150,4 +150,18 @@ describe('WaveSurfer/plugin API:', () => {
         expect(wavesurfer.dummy.ws).toEqual(wavesurfer);
         expect(wavesurfer.dummy.isInitialised).toBeTrue();
     });
+
+    /** @test {WaveSurfer#getActivePlugins} */
+    it('getActivePlugins returns map of plugin names that are currently initialised', () => {
+        dummyPlugin = mockPlugin('dummy');
+        __createWaveform({
+            plugins: [dummyPlugin]
+        });
+        expect(wavesurfer.getActivePlugins()).toEqual({
+            dummy: true
+        });
+        expect(wavesurfer.getActivePlugins()).toEqual(
+            wavesurfer.initialisedPluginList
+        );
+    });
 });

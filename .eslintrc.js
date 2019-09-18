@@ -1,6 +1,6 @@
 module.exports = {
     extends: ['eslint:recommended'], // extending recommended config and config derived from eslint-config-prettier
-    plugins: ['prettier'], // activating esling-plugin-prettier (--fix stuff)
+    plugins: ['prettier'], // activating eslint-plugin-prettier (--fix stuff)
     parser: 'babel-eslint',
     globals: {
         WaveSurfer: true,
@@ -23,11 +23,27 @@ module.exports = {
                 singleQuote: true,
                 tabWidth: 4,
                 trailingComma: 'none',
-                "endOfLine": "auto"
+                'endOfLine': 'auto'
             }
         ],
         eqeqeq: 'off',
-        'no-console': 'off',
-        'no-unused-vars': 'off'
-    }
+        'semi': 2,
+        'no-console': 1,
+        'no-unused-vars': 'off',
+        'no-unreachable': 2,
+        'valid-jsdoc': [2, {
+            'requireReturn': false,
+            'requireReturnType': false
+        }],
+        'require-jsdoc': 2
+    },
+    'overrides': [
+    {
+        'files': ['example/**/*.js', 'spec/**/*.js'],
+        'rules': {
+            'no-console': 'off',
+            'require-jsdoc': 0,
+            'valid-jsdoc': 0
+        }
+    }]
 };

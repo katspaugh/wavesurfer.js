@@ -12,12 +12,14 @@ describe('WaveSurfer/playback:', function() {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
     beforeEach(function(done) {
+        manualDestroy = false;
+
         var wave = TestHelpers.createWaveform();
         wavesurfer = wave[0];
         element = wave[1];
         wavesurfer.load(TestHelpers.EXAMPLE_FILE_PATH);
 
-        wavesurfer.on('ready', done);
+        wavesurfer.once('ready', done);
     });
 
     afterEach(function() {
@@ -30,7 +32,7 @@ describe('WaveSurfer/playback:', function() {
     /**
      * @test {WaveSurfer#isReady}
      */
-    it('should be ready', function() {
+    it('be ready', function() {
         wavesurfer.play();
         expect(wavesurfer.isReady).toBeFalse();
     });
@@ -38,7 +40,7 @@ describe('WaveSurfer/playback:', function() {
     /**
      * @test {WaveSurfer#VERSION}
      */
-    it('should have version number', function() {
+    it('have version number', function() {
         let version = require('../package.json').version;
         expect(WaveSurfer.VERSION).toEqual(version);
     });
@@ -47,7 +49,7 @@ describe('WaveSurfer/playback:', function() {
      * @test {WaveSurfer#play}
      * @test {WaveSurfer#isPlaying}
      */
-    it('should play', function() {
+    it('play', function() {
         wavesurfer.play();
 
         expect(wavesurfer.isPlaying()).toBeTrue();
@@ -58,7 +60,7 @@ describe('WaveSurfer/playback:', function() {
      * @test {WaveSurfer#isPlaying}
      * @test {WaveSurfer#pause}
      */
-    it('should pause', function() {
+    it('pause', function() {
         wavesurfer.play();
         expect(wavesurfer.isPlaying()).toBeTrue();
 
@@ -70,7 +72,7 @@ describe('WaveSurfer/playback:', function() {
      * @test {WaveSurfer#playPause}
      * @test {WaveSurfer#isPlaying}
      */
-    it('should play or pause', function() {
+    it('play or pause', function() {
         wavesurfer.playPause();
         expect(wavesurfer.isPlaying()).toBeTrue();
 
@@ -78,14 +80,39 @@ describe('WaveSurfer/playback:', function() {
         expect(wavesurfer.isPlaying()).toBeFalse();
     });
 
+    /**
+     * @test {WaveSurfer#cancelAjax}
+     */
+    it('cancelAjax', function() {
+        wavesurfer.cancelAjax();
+        expect(wavesurfer.currentRequest).toBeNull();
+    });
+
+    /**
+     * @test {WaveSurfer#loadBlob}
+     */
+    it('loadBlob', function(done) {
+        fetch(TestHelpers.EXAMPLE_FILE_PATH)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error ' + response.status);
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                wavesurfer.once('ready', done);
+                wavesurfer.loadBlob(blob);
+            });
+    });
+
     /** @test {WaveSurfer#getDuration}  */
-    it('should get duration', function() {
+    it('get duration', function() {
         let duration = parseInt(wavesurfer.getDuration(), 10);
         expect(duration).toEqual(TestHelpers.EXAMPLE_FILE_DURATION);
     });
 
     /** @test {WaveSurfer#getCurrentTime}  */
-    it('should get currentTime', function() {
+    it('get currentTime', function() {
         // initially zero
         let time = wavesurfer.getCurrentTime();
         expect(time).toEqual(0);
@@ -97,7 +124,7 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#setCurrentTime}  */
-    it('should set currentTime', function() {
+    it('set currentTime', function() {
         // initially zero
         let time = wavesurfer.getCurrentTime();
         expect(time).toEqual(0);
@@ -132,7 +159,7 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#skipForward}  */
-    it('should skip forward', function() {
+    it('skip forward', function() {
         // skip 4 seconds forward
         wavesurfer.skipForward(4);
         let time = wavesurfer.getCurrentTime();
@@ -146,13 +173,13 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#getPlaybackRate}  */
-    it('should get playback rate', function() {
+    it('get playback rate', function() {
         let rate = wavesurfer.getPlaybackRate();
         expect(rate).toEqual(1);
     });
 
     /** @test {WaveSurfer#setPlaybackRate}  */
-    it('should set playback rate', function() {
+    it('set playback rate', function() {
         let rate = 0.5;
         wavesurfer.setPlaybackRate(rate);
 
@@ -160,13 +187,13 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#getVolume}  */
-    it('should get volume', function() {
+    it('get volume', function() {
         let volume = wavesurfer.getVolume();
         expect(volume).toEqual(1);
     });
 
     /** @test {WaveSurfer#setVolume}  */
-    it('should set volume', function(done) {
+    it('set volume', function(done) {
         let targetVolume = 0.5;
 
         wavesurfer.once('volume', function(result) {
@@ -179,7 +206,7 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#toggleMute}  */
-    it('should toggle mute', function() {
+    it('toggle mute', function() {
         wavesurfer.toggleMute();
         expect(wavesurfer.isMuted).toBeTrue();
 
@@ -188,7 +215,7 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#setMute}  */
-    it('should set mute', function() {
+    it('set mute', function() {
         wavesurfer.setMute(true);
         expect(wavesurfer.isMuted).toBeTrue();
 
@@ -197,7 +224,7 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#getMute}  */
-    it('should get mute', function() {
+    it('get mute', function() {
         wavesurfer.setMute(true);
         expect(wavesurfer.getMute()).toBeTrue();
 
@@ -206,14 +233,14 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#zoom}  */
-    it('should set zoom parameters', function() {
+    it('set zoom parameters', function() {
         wavesurfer.zoom(20);
         expect(wavesurfer.params.minPxPerSec).toEqual(20);
         expect(wavesurfer.params.scrollParent).toBe(true);
     });
 
     /** @test {WaveSurfer#zoom}  */
-    it('should set unzoom parameters', function() {
+    it('set unzoom parameters', function() {
         wavesurfer.zoom(false);
         expect(wavesurfer.params.minPxPerSec).toEqual(
             wavesurfer.defaultParams.minPxPerSec
@@ -222,13 +249,13 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#getWaveColor} */
-    it('should allow getting waveColor', function() {
+    it('allow getting waveColor', function() {
         var waveColor = wavesurfer.getWaveColor();
         expect(waveColor).toEqual('#90F09B');
     });
 
     /** @test {WaveSurfer#setWaveColor} */
-    it('should allow setting waveColor', function() {
+    it('allow setting waveColor', function() {
         let color = 'blue';
         wavesurfer.setWaveColor(color);
         var waveColor = wavesurfer.getWaveColor();
@@ -237,13 +264,13 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#getProgressColor} */
-    it('should allow getting progressColor', function() {
+    it('allow getting progressColor', function() {
         var progressColor = wavesurfer.getProgressColor();
         expect(progressColor).toEqual('purple');
     });
 
     /** @test {WaveSurfer#setProgressColor} */
-    it('should allow setting progressColor', function() {
+    it('allow setting progressColor', function() {
         wavesurfer.setProgressColor('green');
         var progressColor = wavesurfer.getProgressColor();
 
@@ -251,27 +278,41 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#getCursorColor} */
-    it('should allow getting cursorColor', function() {
+    it('allow getting cursorColor', function() {
         var cursorColor = wavesurfer.getCursorColor();
         expect(cursorColor).toEqual('white');
     });
 
     /** @test {WaveSurfer#setCursorColor} */
-    it('should allow setting cursorColor', function() {
+    it('allow setting cursorColor', function() {
         wavesurfer.setCursorColor('black');
         var cursorColor = wavesurfer.getCursorColor();
 
         expect(cursorColor).toEqual('black');
     });
 
+    /** @test {WaveSurfer#getBackgroundColor} */
+    it('allow getting backgroundColor', function() {
+        var bgColor = wavesurfer.getBackgroundColor();
+        expect(bgColor).toEqual(null);
+    });
+
+    /** @test {WaveSurfer#setBackgroundColor} */
+    it('allow setting backgroundColor', function() {
+        wavesurfer.setBackgroundColor('#FFFF00');
+        var bgColor = wavesurfer.getBackgroundColor();
+
+        expect(bgColor).toEqual('#FFFF00');
+    });
+
     /** @test {WaveSurfer#getHeight} */
-    it('should allow getting height', function() {
+    it('allow getting height', function() {
         var height = wavesurfer.getHeight();
         expect(height).toEqual(128);
     });
 
     /** @test {WaveSurfer#setHeight} */
-    it('should allow setting height', function() {
+    it('allow setting height', function() {
         wavesurfer.setHeight(150);
         var height = wavesurfer.getHeight();
 
@@ -279,26 +320,31 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#exportPCM} */
-    it('should return PCM data formatted using JSON.stringify', function() {
+    it('return PCM data formatted using JSON.stringify', function() {
         var pcmData = wavesurfer.exportPCM();
         expect(pcmData).toBeNonEmptyString();
     });
 
     /** @test {WaveSurfer#getFilters} */
-    it('should return the list of current set filters as an array', function() {
+    it('return the list of current set filters as an array', function() {
         var list = wavesurfer.getFilters();
 
         expect(list).toEqual([]);
     });
 
     /** @test {WaveSurfer#exportImage} */
-    it('should export image data', function() {
+    it('export image data', function() {
         var imgData = wavesurfer.exportImage();
         expect(imgData).toBeNonEmptyString();
+
+        wavesurfer.exportImage('image/png', 1, 'blob').then(blobs => {
+            expect(blobs.length).toEqual(1);
+            expect(blobs[0] instanceof Blob).toBeTruthy();
+        });
     });
 
     /** @test {WaveSurfer#destroy} */
-    it('should destroy', function(done) {
+    it('destroy', function(done) {
         manualDestroy = true;
 
         wavesurfer.once('destroy', function() {
@@ -324,7 +370,7 @@ describe('WaveSurfer/errors:', function() {
     /**
      * @test {WaveSurfer}
      */
-    it('should throw when container element not found', function() {
+    it('throw when container element not found', function() {
         expect(function() {
             TestHelpers.createWaveform({
                 container: '#foo'
@@ -335,7 +381,7 @@ describe('WaveSurfer/errors:', function() {
     /**
      * @test {WaveSurfer}
      */
-    it('should throw when media container element not found', function() {
+    it('throw when media container element not found', function() {
         expect(function() {
             TestHelpers.createWaveform({
                 container: '#test',
@@ -347,7 +393,7 @@ describe('WaveSurfer/errors:', function() {
     /**
      * @test {WaveSurfer}
      */
-    it('should throw for invalid maxCanvasWidth param', function() {
+    it('throw for invalid maxCanvasWidth param', function() {
         expect(function() {
             TestHelpers.createWaveform({
                 container: '#test',
@@ -366,7 +412,7 @@ describe('WaveSurfer/errors:', function() {
     /**
      * @test {WaveSurfer}
      */
-    it('should throw for invalid renderer', function() {
+    it('throw for invalid renderer', function() {
         expect(function() {
             TestHelpers.createWaveform({
                 container: '#test',
@@ -378,7 +424,7 @@ describe('WaveSurfer/errors:', function() {
     /**
      * @test {WaveSurfer}
      */
-    it('should not throw when rendered and media is not loaded', function() {
+    it('not throw when rendered and media is not loaded', function() {
         expect(function() {
             var wave = TestHelpers.createWaveform({
                 container: '#test'

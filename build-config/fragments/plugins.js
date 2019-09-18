@@ -1,8 +1,16 @@
 /* eslint-env node */
+const fs = require('fs');
 const path = require('path');
 const banner = require('./banner');
 
 const rootDir = path.resolve(__dirname, '..', '..');
+const pluginSrcDir = path.join(rootDir, 'src', 'plugin');
+
+// find plugins
+const PLUGINS = [];
+fs.readdirSync(pluginSrcDir).forEach(plugin => {
+    PLUGINS.push(plugin);
+});
 
 /**
  * buildPluginEntry - Description
@@ -14,22 +22,17 @@ const rootDir = path.resolve(__dirname, '..', '..');
 function buildPluginEntry(plugins) {
     const result = {};
     plugins.forEach(
-        plugin => (result[plugin] = path.join(rootDir, 'src', 'plugin', plugin))
+        plugin =>
+            (result[path.basename(plugin, '.js')] = path.join(
+                pluginSrcDir,
+                plugin
+            ))
     );
     return result;
 }
 
 module.exports = {
-    entry: buildPluginEntry([
-        'timeline',
-        'minimap',
-        'regions',
-        'spectrogram',
-        'cursor',
-        'microphone',
-        'mediasession',
-        'elan'
-    ]),
+    entry: buildPluginEntry(PLUGINS),
     output: {
         path: path.join(rootDir, 'dist', 'plugin'),
         filename: 'wavesurfer.[name].js',

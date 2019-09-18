@@ -7,7 +7,7 @@
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
         <!-- Bootstrap -->
-        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
 
         <link rel="stylesheet" href="../css/style.css" />
         <link rel="stylesheet" href="../css/ribbon.css" />
@@ -68,19 +68,6 @@
 
                     <p itemprop="about">Adds a simple spectrogram to your <strong>wavesurfer.js</strong> instances.</p>
 
-                    <h4>Installation</h4>
-
-                    <p>
-                      <ol>
-                        <li>add the Spectrogram plugin script tag</li>
-                        <li>create a <code>WaveSurfer</code> instance</li>
-                        <li>add a container HTML element for the spectrogram</li>
-                        <li>create a Spectrogram instance in the <code>WaveSurfer</code>'s <code>"ready"</code> event callback</li>
-                      </ol>
-                    </p>
-                    <p>
-                        <a class="btn btn-large btn-success" href="../../plugin/wavesurfer.spectrogram.js" itemprop="downloadUrl" download>Download <strong>the plugin</strong> (5 KB)</a>
-                    </p>
                 </div>
 
                 <div class="col-lg-8">
@@ -92,12 +79,13 @@
     plugins: [
         WaveSurfer.spectrogram.create{
             wavesurfer: wavesurfer,
-            container: "#wave-spectrogram"
+            container: "#wave-spectrogram",
+            labels: true
         })
     ]
 });
 
-wavesurfer.load('example/media/demo.wav');</code></pre>
+wavesurfer.load('../media/demo.wav');</code></pre>
                     </p></noindex>
 
                     <br />
@@ -109,7 +97,26 @@ wavesurfer.load('example/media/demo.wav');</code></pre>
                       <li><code>container</code> - <em>required</em> - the element in which to place the spectrogram, or a CSS selector to find it.</li>
                       <li><code>fftSamples</code> - number of FFT samples (<code>512</code> by default). Number of spectral lines and height of the spectrogram will be a half of this parameter.</li>
                       <li><code>frequenciesDataUrl</code> - URL to load spectral data from.</li>
+                      <li><code>labels</code> - Whether or not to display frequency labels.</li>
+                      <li><code>colorMap</code> - Specifies the colormap to be used when rendering the spectrogram.</li>
                     </ul>
+                    
+                    <h4>Generating a colorMap</h4>
+                    The <a href="https://www.npmjs.com/package/colormap">colormap npm</a> can be used to generate a
+                     colormap. In this example, the colormap has been saved to a json file and is retrieved by the
+                     client before initializing the spectrogram.
+                    
+                    <noindex><p>
+<pre><code>const colormap = require('colormap');
+const colors = colormap({
+    colormap: 'hot',
+    nshades: 256,
+    format: 'float'
+});
+const fs = require('fs');
+fs.writeFile('hot-colormap.json', JSON.stringify(colors));                        
+</code></pre>
+                    </p></noindex>
                 </div>
             </div>
 

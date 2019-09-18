@@ -9,7 +9,7 @@ import loadScript from 'load-script';
  * @property {string}
  * pluginCdnTemplate='//localhost:8080/dist/plugin/wavesurfer.[name].js' URL
  * template for the dynamic loading of plugins
- * @property {function} loadPlugin If set overwrites the default ajax function,
+ * @property {function} loadPlugin If set overwrites the default request function,
  * can be used to inject plugins differently.
  */
 /**
@@ -97,6 +97,7 @@ class Init {
                     );
                     loadScript(src, { async: false }, (err, plugin) => {
                         if (err) {
+                            // eslint-disable-next-line no-console
                             return console.error(
                                 `WaveSurfer plugin ${name} not found at ${src}`
                             );

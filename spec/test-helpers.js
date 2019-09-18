@@ -4,12 +4,15 @@ const TestHelpers = {
     /** Example audio clip */
     EXAMPLE_FILE_PATH: '/base/spec/support/demo.wav',
 
-    /** Length of example audio clip */
+    /** Filesize of example audio clip (in bytes) */
+    EXAMPLE_FILE_SIZE: 480158,
+
+    /** Length of example audio clip (in seconds) */
     EXAMPLE_FILE_DURATION: 21,
 
     createElement(id, type) {
         if (id == undefined) {
-            id = 'waveform_' + WaveSurfer.util.getId();
+            id = WaveSurfer.util.getId('waveform_');
         }
         if (type == undefined) {
             type = 'div';
@@ -31,7 +34,12 @@ const TestHelpers = {
      * @param  {Object} options
      */
     createWaveform(options) {
-        let element = this.createElement();
+        let element;
+        if (options === undefined) {
+            element = this.createElement();
+        } else {
+            element = options.container;
+        }
 
         options = options || {
             container: element,

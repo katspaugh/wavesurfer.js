@@ -16,9 +16,11 @@ document.addEventListener('DOMContentLoaded', function() {
         waveColor: 'black'
     });
 
-    wavesurfer.load('../media/demo.wav');
+    wavesurfer.on('error', function(e) {
+        console.warn(e);
+    });
 
-    wavesurfer.on('ready', function() {
+    wavesurfer.once('ready', function() {
         playButton.onclick = function() {
             wavesurfer.playPause();
         };
@@ -35,4 +37,6 @@ document.addEventListener('DOMContentLoaded', function() {
             wavesurfer.setMute(false);
         };
     });
+
+    wavesurfer.load('../media/demo.wav');
 });

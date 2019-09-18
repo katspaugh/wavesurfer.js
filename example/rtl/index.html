@@ -7,7 +7,7 @@
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
         <!-- Bootstrap -->
-        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
 
         <link rel="stylesheet" href="../css/style.css" />
         <link rel="stylesheet" href="../css/ribbon.css" />
@@ -33,7 +33,7 @@
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">RTL</h1>
+                <h1 itemprop="name">RTL (right-to-left)</h1>
             </div>
 
             <div id="demo">
@@ -53,22 +53,18 @@
             </div>
 
             <div class="row marketing">
-                <h3>How to Enable the Fallback</h3>
+                <h3>How to enable right-to-left</h3>
 
                 <hr />
 
                 <p>
-                    <strong>wavesurfer.js</strong> will automatically
-                    fallback to HTML5 Media if Web Audio is not
-                    supported. However, you can choose to use audio
-                    element manually. Simply set the <code>backend</code>
-                    option to <code>"MediaElement"</code>.
+                    Simply set the <code>rtl</code>
+                    option to <code>true</code>.
                 </p>
 
                 <p>
 <pre><code>var wavesurfer = WaveSurfer.create({
     container: document.querySelector('#wave'),
-    backend: 'MediaElement',
     rtl: true
 });
 </code></pre>

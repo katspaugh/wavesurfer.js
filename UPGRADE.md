@@ -1,13 +1,23 @@
-
 # Upgrade
 
-**Note on version 2**: The wavesurfer.js core library and the plugins were refactored to be modular so it can be used with a module bundler. (You can still use wavesurfer without, e.g. with `<script>` tags) The code was also updated to ES6/ES7 syntax and is transpiled with babel and webpack. Read below how to update your code.
+## Upgrading to version 3 from version 2
 
-## Upgrading to version 2
+- `util.ajax` was deprecated; use `util.fetchFile instead.
+- The `xhr` wavesurfer option has changed to work with `util.fetchFile`.
+- The `MultiCanvas` renderer was refactored and a new `CanvasEntry` class was added to represent
+  a canvas instance in a `MultiCanvas`.
+
+## Upgrading to version 2 from version 1
+
+The wavesurfer.js core library and the plugins were refactored to be modular so it can be used with a module bundler.
+You can still use wavesurfer without, e.g. with `<script>` tags. The code was also updated to ES6/ES7 syntax and
+is transpiled with Babel and Webpack. Read below how to update your code.
 
 The API has mostly stayed the same but there are some changes to consider:
 
-1. **MultiCanvas renderer is now the default:** It provides all functionality of the Canvas renderer. – Most likely you can simply remove the renderer option – The Canvas renderer has been removed. (The `renderer` option still exists but wavesurfer expects it to be a renderer object, not merely a string.)
+1. **MultiCanvas renderer is now the default:** It provides all functionality of the Canvas renderer. – Most likely you
+can simply remove the renderer option – The Canvas renderer has been removed. (The `renderer` option still exists but
+wavesurfer expects it to be a renderer object, not merely a string.)
 
 2. **Constructor functions instead of object constructors**
 
@@ -23,7 +33,11 @@ var wavesurfer = new WaveSurfer(options);
 wavesurfer.init();
 ```
 
-3. **New plugin API:** Previously all plugins had their own initialisation API. The new API replaces all these different ways to do the same thing with one plugin API built into the core library. Plugins are now added as a property of the wavesurfer configuration object during creation. You don't need to initialise the plugins yourself anymore. Below is an example of initialising wavesurfer with plugins (Note the different ways to import the library at the top):
+3. **New plugin API:** Previously all plugins had their own initialisation API. The new API replaces all
+these different ways to do the same thing with one plugin API built into the core library. Plugins are now
+added as a property of the wavesurfer configuration object during creation. You don't need to initialise the
+plugins yourself anymore. Below is an example of initialising wavesurfer with plugins (Note the different ways
+to import the library at the top):
 
 ```javascript
 // EITHER - accessing modules with <script> tags
@@ -53,5 +67,3 @@ var wavesurfer = WaveSurfer.create({
     ]
 });
 ```
-
-**Note:** Read more about the plugin API in the documentation.
