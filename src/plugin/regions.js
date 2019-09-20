@@ -239,7 +239,7 @@ class Region {
             if (
                 !this.firedOut &&
                 this.firedIn &&
-                (start >= time || end <= time)
+                (start > time || end <= time)
             ) {
                 this.firedOut = true;
                 this.firedIn = false;
@@ -666,6 +666,7 @@ export default class RegionsPlugin {
         // Id-based hash of regions
         this.list = {};
         this._onReady = () => {
+            this.wrapper = this.wavesurfer.drawer.wrapper;
             if (this.params.dragSelection) {
                 this.enableDragSelection(this.params);
             }

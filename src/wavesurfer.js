@@ -1237,8 +1237,8 @@ export default class WaveSurfer extends util.Observer {
     loadDecodedBuffer(buffer) {
         this.backend.load(buffer);
         this.drawBuffer();
-        this.fireEvent('ready');
         this.isReady = true;
+        this.fireEvent('ready');
     }
 
     /**
@@ -1378,8 +1378,8 @@ export default class WaveSurfer extends util.Observer {
         this.tmpEvents.push(
             this.backend.once('canplay', () => {
                 this.drawBuffer();
-                this.fireEvent('ready');
                 this.isReady = true;
+                this.fireEvent('ready');
             }),
             this.backend.once('error', err => this.fireEvent('error', err))
         );
