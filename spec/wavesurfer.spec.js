@@ -34,6 +34,7 @@ describe('WaveSurfer/playback:', function() {
      */
     it('be ready', function() {
         wavesurfer.play();
+
         expect(wavesurfer.isReady).toBeTrue();
     });
 
