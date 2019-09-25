@@ -5,6 +5,7 @@ wavesurfer.js changelog
 ------------------
 
 - Add `autoCenter` and `autoCenterRate` options (#1699)
+- Improve fetch error messages (#1748)
 - Use `MediaElement` backend for browsers that don't support WebAudio (#1739)
 - Regions plugin: use `isResizing` and `isDragging` to filter events in
   region-updated listener (#1716)
