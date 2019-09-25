@@ -33,8 +33,10 @@ describe('WaveSurfer/playback:', function() {
      * @test {WaveSurfer#isReady}
      */
     it('be ready', function() {
-        wavesurfer.play();
         expect(wavesurfer.isReady).toBeFalse();
+        wavesurfer.play();
+
+        expect(wavesurfer.isReady).toBeTrue();
     });
 
     /**
