@@ -1458,7 +1458,7 @@ export default class WaveSurfer extends util.Observer {
                 this.currentRequest = null;
             }),
             request.on('error', e => {
-                this.fireEvent('error', 'fetch error: ' + e.message);
+                this.fireEvent('error', e);
                 this.currentRequest = null;
             })
         );
