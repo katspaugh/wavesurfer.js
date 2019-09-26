@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-3.1.0 (unreleased)
+3.1.0 (26.09.2019)
 ------------------
 
 - Add `autoCenter` and `autoCenterRate` options (#1699)
