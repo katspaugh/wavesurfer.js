@@ -511,9 +511,8 @@ export default class SpectrogramPlugin {
 
     _wrapperClickHandler(event) {
         event.preventDefault();
-
         const relX = &apos;offsetX&apos; in event ? event.offsetX : event.layerX;
-        this.fireEvent(&apos;click&apos;, relX / this.scrollWidth || 0);
+        this.fireEvent(&apos;click&apos;, relX / this.width || 0);
     }
 
     createCanvas() {

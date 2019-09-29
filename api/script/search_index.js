@@ -1458,6 +1458,12 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/plugin/minimap.js~minimapplugin#getwidth",
+    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-getWidth",
+    "src/plugin/minimap.js~MinimapPlugin#getWidth",
+    "method"
+  ],
+  [
     "src/plugin/minimap.js~minimapplugin#init",
     "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-init",
     "src/plugin/minimap.js~MinimapPlugin#init",
@@ -2146,6 +2152,12 @@ window.esdocSearchIndex = [
     "typedef/index.html#static-typedef-PluginDefinition",
     "src/wavesurfer.js~PluginDefinition",
     "typedef"
+  ],
+  [
+    "src/wavesurfer.js~wavesurfer#backend",
+    "class/src/wavesurfer.js~WaveSurfer.html#instance-member-Backend",
+    "src/wavesurfer.js~WaveSurfer#Backend",
+    "member"
   ],
   [
     "src/wavesurfer.js~wavesurfer#[plugin.name]",
