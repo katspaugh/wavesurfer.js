@@ -15,20 +15,25 @@
         <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
-        <script src="../../dist/wavesurfer.min.js"></script>
+        <script src="../../dist/wavesurfer.js"></script>
 
         <!-- regions plugin -->
-        <script src="../../dist/plugin/wavesurfer.regions.min.js"></script>
+        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
 
         <!-- ELAN format renderer -->
-        <script src="../../dist/plugin/wavesurfer.elan.min.js"></script>
+        <script src="../../dist/plugin/wavesurfer.elan.js"></script>
 
         <!-- ELAN wave segment renderer -->
-        <script src="../../plugin/wavesurfer.elan-wave-segment.js"></script>
+        <script src="../../dist/plugin/wavesurfer.elan-wave-segment.js"></script>
 
         <!-- App -->
         <script src="app.js"></script>
         <script src="../trivia.js"></script>
+
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
@@ -73,20 +78,7 @@
 
             <h2>How to Enable Elan Wave Segment</h2>
 
-            <h3>Javascript Dependencies</h3>
-            <ul>
-                <li>Wavesufer <code></code></li>
-                <li>Region Plugin <code></code></li>
-                <li>ElAN Plugin <code></code></li>
-                <li>ELAN Wave Segment</li>
-                <pre><code>&lt;script src="[path_to]/wavesurfer.min.js"&gt;&lt;/script&gt;
-&lt;script src="[path_to]/plugin/wavesurfer.region.min.js"&gt;&lt;/script&gt;
-&lt;script src="[path_to]/plugin/wavesurfer.elan.min.js"&gt;&lt;/script&gt;
-&lt;script src="[path_to]/plugin/wavesurfer.elan-wave-segment.min.js"&gt;&lt;/script&gt; </code></pre>
-
-            </ul>
-
-            <h2>Javascript Initialization</h2>
+            <h2>Initialization</h2>
             <pre><code>// Create the wave surfer instance
 var wavesurfer = Object.create(WaveSurfer);
 
@@ -98,7 +90,7 @@ var elanWaveSegment = Object.create(WaveSurfer.ELANWaveSegment);
 
 document.addEventListener('DOMContentLoaded', function () {
     var options = {
-        container     : '#waveform',
+        container: '#waveform',
     };
 
     //################## set up some listeners ####################
@@ -112,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     elan.on('select', function (start, end) {
         wavesurfer.backend.play(start, end);
     });
-    //############################## initialize wavesurfer and related plugins###############
+    //############################## initialize wavesurfer and related plugins ###############
 
     // Init wavesurfer
     wavesurfer.init(options);
@@ -145,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <h2>Options</h2>
             <ul>
                 <li><code>ELAN:</code>                       required - The ELAN instance used to parse the elan data</li>
-                <li><code>wafesurver:</code>                 required - The wavesurfer instance used to draw the original waveform</li>
+                <li><code>wavesurfer:</code>                 required - The wavesurfer instance used to draw the original waveform</li>
                 <li><code>waveSegmentWidth:</code>           optional - The width of each wave segment (defaults to 200)</li>
                 <li><code>waveSegmentPeaksPerSegment:</code> optional - The number of peaks that should be drawn (defaults to 400)</li>
                 <li><code>waveSegmentHeight:</code>          optional - The height of each wave segment (defaults to 30)</li>

@@ -1,0 +1,54 @@
+#annotations {
+    max-height: 300px;
+    overflow: auto;
+}
+
+.wavesurfer-annotations tr.wavesurfer-active td {
+    background-color: yellow;
+}
+
+.wavesurfer-time {
+    width: 100px;
+    color: #555;
+}
+
+.wavesurfer-tier-Text {
+    width: 300px;
+}
+
+td.wavesurfer-tier-Comments {
+    color: #999;
+}
+
+.wavesurfer-handle {
+    background-color: #c9e2b3;
+}
+
+span.elan-word-finished {
+    color: navy;
+}
+
+span.elan-word-pending {
+    color: grey;
+}
+
+span.elan-word-current {
+    color: red;
+}
+div.elan-wavesegment-container {
+    border: 1px solid black;
+}
+
+
+tbody.elan-stanza:nth-of-type(even) /*td.wavesurfer-elan-line*/
+{
+    background-color: white;
+}
+
+table.wavesurfer-annotations
+{
+    border-collapse: collapse;
+}
+tr.elan-wavesurfer-stanza-row {
+    height: 30px;
+}
