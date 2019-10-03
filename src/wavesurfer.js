@@ -36,6 +36,7 @@ import PeakCache from './peakcache';
  * @property {string} backgroundColor=null Change background color of the
  * waveform container.
  * @property {number} barHeight=1 The height of the wave bars.
+ * @property {number} barRadius=0 The radius of the wave bars. Makes bars rounded
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
  * @property {number} barWidth=null Draw the waveform using bars.
@@ -213,6 +214,7 @@ export default class WaveSurfer extends util.Observer {
         backend: 'WebAudio',
         backgroundColor: null,
         barHeight: 1,
+        barRadius: 0,
         barGap: null,
         container: null,
         cursorColor: '#333',
