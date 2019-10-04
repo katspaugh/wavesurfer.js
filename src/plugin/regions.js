@@ -153,7 +153,7 @@ class Region {
             this.style(handleLeft, css);
             this.style(handleRight, css);
             this.style(handleRight, {
-                left: '100%'
+                right: '0px'
             });
         }
 
