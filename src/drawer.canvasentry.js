@@ -205,7 +205,7 @@ export default class CanvasEntry {
      * @param {number} radius Radius of the rectangle
      *
      * @return {void}
-     * @example drawRoundedRect(ctx, 50, 50, 5, 10, 20)
+     * @example drawRoundedRect(ctx, 50, 50, 5, 10, 3)
      */
     drawRoundedRect(ctx, x, y, width, height, radius) {
         if (height === 0) {
