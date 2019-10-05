@@ -123,7 +123,7 @@ export default class Drawer extends util.Observer {
         this.wrapper.addEventListener('click', e => {
             const scrollbarHeight =
                 this.wrapper.offsetHeight - this.wrapper.clientHeight;
-            if (scrollbarHeight != 0) {
+            if (scrollbarHeight !== 0) {
                 // scrollbar is visible.  Check if click was on it
                 const bbox = this.wrapper.getBoundingClientRect();
                 if (e.clientY >= bbox.bottom - scrollbarHeight) {
@@ -134,6 +134,12 @@ export default class Drawer extends util.Observer {
 
             if (this.params.interact) {
                 this.fireEvent('click', e, this.handleEvent(e));
+            }
+        });
+
+        this.wrapper.addEventListener('dblclick', e => {
+            if (this.params.interact) {
+                this.fireEvent('dblclick', e);
             }
         });
 
