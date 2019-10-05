@@ -187,7 +187,7 @@ export default class CanvasEntry {
         }
 
         if (radius) {
-            this.drawRoundedRectangle(ctx, x, y, width, height, radius);
+            this.drawRoundedRect(ctx, x, y, width, height, radius);
         } else {
             ctx.fillRect(x, y, width, height);
         }
@@ -205,9 +205,9 @@ export default class CanvasEntry {
      * @param {number} radius Radius of the rectangle
      *
      * @return {void}
-     * @example drawRoundedRectangle(ctx, 50, 50, 5, 10, 20)
+     * @example drawRoundedRect(ctx, 50, 50, 5, 10, 20)
      */
-    drawRoundedRectangle(ctx, x, y, width, height, radius) {
+    drawRoundedRect(ctx, x, y, width, height, radius) {
         if (height === 0) {
             return;
         }
