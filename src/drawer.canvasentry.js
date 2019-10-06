@@ -211,6 +211,8 @@ export default class CanvasEntry {
         if (height === 0) {
             return;
         }
+        // peaks are float values from -1 to 1. Use absolute height values in
+        // order to correctly calculate rounded rectangle coordinates 
         if (height < 0) {
             height *= -1;
             y -= height;
