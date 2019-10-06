@@ -74,6 +74,14 @@ export default class MultiCanvas extends Drawer {
          * @type {number}
          */
         this.overlap = 2 * Math.ceil(params.pixelRatio / 2);
+
+        /**
+         * The radius of the wave bars. Makes bars rounded
+         *
+         * @private
+         * @type {number}
+         */
+        this.barRadius = params.barRadius || 0;
     }
 
     /**
@@ -297,7 +305,8 @@ export default class MultiCanvas extends Drawer {
                         i + this.halfPixel,
                         halfH - h + offsetY,
                         bar + this.halfPixel,
-                        h * 2
+                        h * 2,
+                        this.barRadius
                     );
                 }
             }
@@ -346,7 +355,8 @@ export default class MultiCanvas extends Drawer {
                     0,
                     halfH + offsetY - this.halfPixel,
                     this.width,
-                    this.halfPixel
+                    this.halfPixel,
+                    this.barRadius
                 );
             }
         );
@@ -379,8 +389,9 @@ export default class MultiCanvas extends Drawer {
      * @param {number} y Y-position of the rectangle
      * @param {number} width Width of the rectangle
      * @param {number} height Height of the rectangle
+     * @param {number} radius Radius of the rectangle
      */
-    fillRect(x, y, width, height) {
+    fillRect(x, y, width, height, radius) {
         const startCanvas = Math.floor(x / this.maxCanvasWidth);
         const endCanvas = Math.min(
             Math.ceil((x + width) / this.maxCanvasWidth) + 1,
@@ -408,7 +419,8 @@ export default class MultiCanvas extends Drawer {
                     intersection.x1 - leftOffset,
                     intersection.y1,
                     intersection.x2 - intersection.x1,
-                    intersection.y2 - intersection.y1
+                    intersection.y2 - intersection.y1,
+                    radius
                 );
             }
         }

@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+3.2.0 (unreleased)
+------------------
+
+- New `barRadius` option to create waveforms with rounded bars (#953)
+
 3.1.0 (26.09.2019)
 ------------------
 
