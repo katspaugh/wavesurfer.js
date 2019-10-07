@@ -3,6 +3,7 @@ import MultiCanvas from './drawer.multicanvas';
 import WebAudio from './webaudio';
 import MediaElement from './mediaelement';
 import PeakCache from './peakcache';
+import WebAudioMedia from './webaudio-mediasource';
 
 /*
  * This work is licensed under a BSD-3-Clause License.
@@ -252,7 +253,8 @@ export default class WaveSurfer extends util.Observer {
     /** @private */
     backends = {
         MediaElement,
-        WebAudio
+        WebAudio,
+        WebAudioMedia
     };
 
     /**
@@ -406,7 +408,8 @@ export default class WaveSurfer extends util.Observer {
         }
 
         if (
-            this.params.backend == 'WebAudio' &&
+            (this.params.backend == 'WebAudio' ||
+                this.params.backend === 'WebAudioMedia') &&
             !WebAudio.prototype.supportsWebAudio.call(null)
         ) {
             this.params.backend = 'MediaElement';
@@ -675,7 +678,10 @@ export default class WaveSurfer extends util.Observer {
         });
 
         // only needed for MediaElement backend
-        if (this.params.backend === 'MediaElement') {
+        if (
+            this.params.backend === 'MediaElement' ||
+            this.params.backend === 'WebAudioMedia'
+        ) {
             this.backend.on('seek', () => {
                 this.drawer.progress(this.backend.getPlayedPercents());
             });
@@ -753,7 +759,6 @@ export default class WaveSurfer extends util.Observer {
         this.fireEvent('interaction', () => this.play(start, end));
         return this.backend.play(start, end);
     }
-
     /**
      * Stops and pauses playback
      *
@@ -1300,7 +1305,8 @@ export default class WaveSurfer extends util.Observer {
                     ['auto', 'metadata', 'none'].indexOf(preload) === -1,
                 'Peaks are not provided': !peaks,
                 'Backend is not of type MediaElement':
-                    this.params.backend !== 'MediaElement',
+                    this.params.backend !== 'MediaElement' ||
+                    this.params.backend !== 'WebAudioMedia',
                 'Url is not of type string': typeof url !== 'string'
             };
             const activeReasons = Object.keys(preloadIgnoreReasons).filter(
@@ -1321,6 +1327,8 @@ export default class WaveSurfer extends util.Observer {
             case 'WebAudio':
                 return this.loadBuffer(url, peaks, duration);
             case 'MediaElement':
+                return this.loadMediaElement(url, peaks, preload, duration);
+            case 'WebAudioMedia':
                 return this.loadMediaElement(url, peaks, preload, duration);
         }
     }
@@ -1407,7 +1415,6 @@ export default class WaveSurfer extends util.Observer {
             });
         }
     }
-
     /**
      * Decode an array buffer and pass data to a callback
      *
