@@ -43,8 +43,6 @@ export default class MediaElement extends WebAudio {
         this.buffer = null;
         /** @private */
         this.onPlayEnd = null;
-        /** @private */
-        this.sourceMediaElement = null;
     }
 
     /**
@@ -53,17 +51,11 @@ export default class MediaElement extends WebAudio {
     init() {
         this.setPlaybackRate(this.params.audioRate);
         this.createTimer();
-        if (this.params.mediaElementWebAudio) {
-            this.createVolumeNode();
-            this.createScriptNode();
-            this.createAnalyserNode();
-        }
     }
 
     /**
      * Create a timer to provide a more precise `audioprocess` event.
      *
-     * @private
      */
     createTimer() {
         const onAudioProcess = () => {
@@ -125,12 +117,11 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
-     * Private method called by both `load` (from url)
+     * Method called by both `load` (from url)
      * and `loadElt` (existing media element) methods.
      *
      * @param {HTMLMediaElement} media HTML5 Audio or Video element
      * @param {number[]|Number.<Array[]>} peaks Array of peak data
-     * @private
      */
     _load(media, peaks) {
         // load must be called manually on iOS, otherwise peaks won't draw
@@ -185,15 +176,6 @@ export default class MediaElement extends WebAudio {
         this.isMuted = media.muted;
         this.setPlaybackRate(this.playbackRate);
         this.setVolume(this.volume);
-        if (this.params.mediaElementWebAudio) {
-            this.createMediaElementSource(media);
-        }
-    }
-    createMediaElementSource(mediaElement) {
-        this.sourceMediaElement = this.ac.createMediaElementSource(
-            mediaElement
-        );
-        this.sourceMediaElement.connect(this.analyser);
     }
 
     /**

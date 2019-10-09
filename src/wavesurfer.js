@@ -3,6 +3,7 @@ import MultiCanvas from './drawer.multicanvas';
 import WebAudio from './webaudio';
 import MediaElement from './mediaelement';
 import PeakCache from './peakcache';
+import WebAudioMedia from './webaudio-media';
 
 /*
  * This work is licensed under a BSD-3-Clause License.
@@ -69,8 +70,6 @@ import PeakCache from './peakcache';
  * that may be too wide for browsers to draw on a single canvas.
  * @property {boolean} mediaControls=false (Use with backend `MediaElement`)
  * this enables the native controls for the media element
- * @property {boolean} mediaElementWebAudio=false (Use with backend `MediaElement`)
- * this enables the control of the media element with API Web Audio.
  * @property {string} mediaType='audio' (Use with backend `MediaElement`)
  * `'audio'|'video'`
  * @property {number} minPxPerSec=20 Minimum number of pixels per second of
@@ -214,7 +213,6 @@ export default class WaveSurfer extends util.Observer {
         autoCenterRate: 5,
         autoCenterImmediately: false,
         backend: 'WebAudio',
-        mediaElementWebAudio: false,
         backgroundColor: null,
         barHeight: 1,
         barRadius: 0,
@@ -255,7 +253,8 @@ export default class WaveSurfer extends util.Observer {
     /** @private */
     backends = {
         MediaElement,
-        WebAudio
+        WebAudio,
+        WebAudioMedia
     };
 
     /**
@@ -409,7 +408,8 @@ export default class WaveSurfer extends util.Observer {
         }
 
         if (
-            this.params.backend == 'WebAudio' &&
+            (this.params.backend == 'WebAudio' ||
+                this.params.backend === 'WebAudioMedia') &&
             !WebAudio.prototype.supportsWebAudio.call(null)
         ) {
             this.params.backend = 'MediaElement';
@@ -677,8 +677,11 @@ export default class WaveSurfer extends util.Observer {
             this.fireEvent('audioprocess', time);
         });
 
-        // only needed for MediaElement backend
-        if (this.params.backend === 'MediaElement') {
+        // only needed for MediaElement and WebAudioMedia backend
+        if (
+            this.params.backend === 'MediaElement' ||
+            this.params.backend === 'WebAudioMedia'
+        ) {
             this.backend.on('seek', () => {
                 this.drawer.progress(this.backend.getPlayedPercents());
             });
@@ -1273,7 +1276,7 @@ export default class WaveSurfer extends util.Observer {
      * audio element with the audio
      * @param {number[]|Number.<Array[]>} peaks Wavesurfer does not have to decode
      * the audio to render the waveform if this is specified
-     * @param {?string} preload (Use with backend `MediaElement`)
+     * @param {?string} preload (Use with backend `MediaElement` and `WebAudioMedia`)
      * `'none'|'metadata'|'auto'` Preload attribute for the media element
      * @param {?number} duration The duration of the audio. This is used to
      * render the peaks data in the correct size for the audio duration (as
@@ -1302,8 +1305,9 @@ export default class WaveSurfer extends util.Observer {
                 "Preload is not 'auto', 'none' or 'metadata'":
                     ['auto', 'metadata', 'none'].indexOf(preload) === -1,
                 'Peaks are not provided': !peaks,
-                'Backend is not of type MediaElement':
-                    this.params.backend !== 'MediaElement',
+                'Backend is not of type MediaElement or WebAudioMedia':
+                    this.params.backend !== 'MediaElement' ||
+                    this.params.backend !== 'WebAudioMedia',
                 'Url is not of type string': typeof url !== 'string'
             };
             const activeReasons = Object.keys(preloadIgnoreReasons).filter(
@@ -1324,6 +1328,8 @@ export default class WaveSurfer extends util.Observer {
             case 'WebAudio':
                 return this.loadBuffer(url, peaks, duration);
             case 'MediaElement':
+                return this.loadMediaElement(url, peaks, preload, duration);
+            case 'WebAudioMedia':
                 return this.loadMediaElement(url, peaks, preload, duration);
         }
     }
