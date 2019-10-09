@@ -3,7 +3,6 @@ import MultiCanvas from './drawer.multicanvas';
 import WebAudio from './webaudio';
 import MediaElement from './mediaelement';
 import PeakCache from './peakcache';
-import WebAudioMedia from './webaudio-mediasource';
 
 /*
  * This work is licensed under a BSD-3-Clause License.
@@ -70,6 +69,8 @@ import WebAudioMedia from './webaudio-mediasource';
  * that may be too wide for browsers to draw on a single canvas.
  * @property {boolean} mediaControls=false (Use with backend `MediaElement`)
  * this enables the native controls for the media element
+ * @property {boolean} mediaElementWebAudio=false (Use with backend `MediaElement`)
+ * this enables the control of the media element with API Web Audio.
  * @property {string} mediaType='audio' (Use with backend `MediaElement`)
  * `'audio'|'video'`
  * @property {number} minPxPerSec=20 Minimum number of pixels per second of
@@ -213,6 +214,7 @@ export default class WaveSurfer extends util.Observer {
         autoCenterRate: 5,
         autoCenterImmediately: false,
         backend: 'WebAudio',
+        mediaElementWebAudio: false,
         backgroundColor: null,
         barHeight: 1,
         barRadius: 0,
@@ -253,8 +255,7 @@ export default class WaveSurfer extends util.Observer {
     /** @private */
     backends = {
         MediaElement,
-        WebAudio,
-        WebAudioMedia
+        WebAudio
     };
 
     /**
@@ -408,8 +409,7 @@ export default class WaveSurfer extends util.Observer {
         }
 
         if (
-            (this.params.backend == 'WebAudio' ||
-                this.params.backend === 'WebAudioMedia') &&
+            this.params.backend == 'WebAudio' &&
             !WebAudio.prototype.supportsWebAudio.call(null)
         ) {
             this.params.backend = 'MediaElement';
@@ -678,10 +678,7 @@ export default class WaveSurfer extends util.Observer {
         });
 
         // only needed for MediaElement backend
-        if (
-            this.params.backend === 'MediaElement' ||
-            this.params.backend === 'WebAudioMedia'
-        ) {
+        if (this.params.backend === 'MediaElement') {
             this.backend.on('seek', () => {
                 this.drawer.progress(this.backend.getPlayedPercents());
             });
@@ -1305,8 +1302,7 @@ export default class WaveSurfer extends util.Observer {
                     ['auto', 'metadata', 'none'].indexOf(preload) === -1,
                 'Peaks are not provided': !peaks,
                 'Backend is not of type MediaElement':
-                    this.params.backend !== 'MediaElement' ||
-                    this.params.backend !== 'WebAudioMedia',
+                    this.params.backend !== 'MediaElement',
                 'Url is not of type string': typeof url !== 'string'
             };
             const activeReasons = Object.keys(preloadIgnoreReasons).filter(
@@ -1327,8 +1323,6 @@ export default class WaveSurfer extends util.Observer {
             case 'WebAudio':
                 return this.loadBuffer(url, peaks, duration);
             case 'MediaElement':
-                return this.loadMediaElement(url, peaks, preload, duration);
-            case 'WebAudioMedia':
                 return this.loadMediaElement(url, peaks, preload, duration);
         }
     }

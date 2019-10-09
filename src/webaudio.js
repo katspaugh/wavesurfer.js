@@ -11,11 +11,8 @@ const FINISHED = 'finished';
  * @extends {Observer}
  */
 export default class WebAudio extends util.Observer {
-    /** @private */
     static scriptBufferSize = 256;
-    /** @private */
     audioContext = null;
-    /** @private */
     offlineAudioContext = null;
     /** @private */
     stateBehaviors = {
@@ -103,7 +100,6 @@ export default class WebAudio extends util.Observer {
         super();
         /** @private */
         this.params = params;
-        /** @private */
         this.ac =
             params.audioContext ||
             (this.supportsWebAudio() ? this.getAudioContext() : {});
@@ -120,12 +116,9 @@ export default class WebAudio extends util.Observer {
             [FINISHED]: Object.create(this.stateBehaviors[FINISHED])
         };
         /** @private */
-        this.analyser = null;
-        /** @private */
         this.buffer = null;
         /** @private */
         this.filters = [];
-        /** @private */
         this.gainNode = null;
         /** @private */
         this.mergedPeaks = null;
@@ -135,9 +128,7 @@ export default class WebAudio extends util.Observer {
         this.peaks = null;
         /** @private */
         this.playbackRate = 1;
-        /** @private */
         this.analyser = null;
-        /** @private */
         this.scriptNode = null;
         /** @private */
         this.source = null;
@@ -223,8 +214,6 @@ export default class WebAudio extends util.Observer {
                 .connect(this.gainNode);
         }
     }
-
-    /** @private */
     createScriptNode() {
         if (this.params.audioScriptProcessor) {
             this.scriptNode = this.params.audioScriptProcessor;
@@ -262,8 +251,6 @@ export default class WebAudio extends util.Observer {
     removeOnAudioProcess() {
         this.scriptNode.onaudioprocess = () => {};
     }
-
-    /** @private */
     createAnalyserNode() {
         this.analyser = this.ac.createAnalyser();
         this.analyser.connect(this.gainNode);
@@ -272,7 +259,6 @@ export default class WebAudio extends util.Observer {
     /**
      * Create the gain node needed to control the playback volume.
      *
-     * @private
      */
     createVolumeNode() {
         // Create gain node using the AudioContext
