@@ -14,6 +14,7 @@ export default class MediaElement extends WebAudio {
         super(params);
         /** @private */
         this.params = params;
+
         // Dummy media to catch errors
         /** @private */
         this.media = {

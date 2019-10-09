@@ -11,8 +11,11 @@ const FINISHED = 'finished';
  * @extends {Observer}
  */
 export default class WebAudio extends util.Observer {
+    /** scriptBufferSize: size of the processing buffer */
     static scriptBufferSize = 256;
+    /** audioContext: allows to process audio with API Web Audio */
     audioContext = null;
+    /** @private */
     offlineAudioContext = null;
     /** @private */
     stateBehaviors = {
@@ -100,6 +103,7 @@ export default class WebAudio extends util.Observer {
         super();
         /** @private */
         this.params = params;
+        /** ac: Audio Context instance */
         this.ac =
             params.audioContext ||
             (this.supportsWebAudio() ? this.getAudioContext() : {});
@@ -119,6 +123,7 @@ export default class WebAudio extends util.Observer {
         this.buffer = null;
         /** @private */
         this.filters = [];
+        /** gainNode: allows to control audio volume */
         this.gainNode = null;
         /** @private */
         this.mergedPeaks = null;
@@ -128,7 +133,9 @@ export default class WebAudio extends util.Observer {
         this.peaks = null;
         /** @private */
         this.playbackRate = 1;
+        /** analyser: provides audio analysis information */
         this.analyser = null;
+        /** scriptNode: allows processing audio */
         this.scriptNode = null;
         /** @private */
         this.source = null;
@@ -214,6 +221,7 @@ export default class WebAudio extends util.Observer {
                 .connect(this.gainNode);
         }
     }
+    /** Create ScriptProcessorNode to process audio */
     createScriptNode() {
         if (this.params.audioScriptProcessor) {
             this.scriptNode = this.params.audioScriptProcessor;
@@ -251,6 +259,7 @@ export default class WebAudio extends util.Observer {
     removeOnAudioProcess() {
         this.scriptNode.onaudioprocess = () => {};
     }
+    /** Create analyser node to perform audio analysis */
     createAnalyserNode() {
         this.analyser = this.ac.createAnalyser();
         this.analyser.connect(this.gainNode);
