@@ -756,6 +756,7 @@ export default class WaveSurfer extends util.Observer {
         this.fireEvent('interaction', () => this.play(start, end));
         return this.backend.play(start, end);
     }
+
     /**
      * Stops and pauses playback
      *
@@ -1409,6 +1410,7 @@ export default class WaveSurfer extends util.Observer {
             });
         }
     }
+
     /**
      * Decode an array buffer and pass data to a callback
      *
