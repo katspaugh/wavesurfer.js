@@ -5,6 +5,8 @@ wavesurfer.js changelog
 ------------------
 
 - New `barRadius` option to create waveforms with rounded bars (#953)
+- Throw error when the url parameter supplied to `wavesurfer.load()`
+  is empty (#1773)
 
 3.1.0 (26.09.2019)
 ------------------
