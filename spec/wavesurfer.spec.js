@@ -371,7 +371,7 @@ describe('WaveSurfer/errors:', function() {
     /**
      * @test {WaveSurfer}
      */
-    it('throw when container element not found', function() {
+    it('throw when container element is not found', function() {
         expect(function() {
             TestHelpers.createWaveform({
                 container: '#foo'
@@ -382,7 +382,7 @@ describe('WaveSurfer/errors:', function() {
     /**
      * @test {WaveSurfer}
      */
-    it('throw when media container element not found', function() {
+    it('throw when media container element is not found', function() {
         expect(function() {
             TestHelpers.createWaveform({
                 container: '#test',
@@ -438,12 +438,25 @@ describe('WaveSurfer/errors:', function() {
     /**
      * @test {WaveSurfer#load}
      */
-    it('throw when url parameter for load is missing', function() {
+    it('throw when url parameter for load is empty', function() {
         var wave = TestHelpers.createWaveform({
             container: '#test'
         });
+        var expectedError = new Error('url parameter cannot be empty');
+
+        // undefined url
         expect(function() {
             wave[0].load();
-        }).toThrow(new Error('url parameter is invalid'));
+        }).toThrow(expectedError);
+
+        // empty string
+        expect(function() {
+            wave[0].load('');
+        }).toThrow(expectedError);
+
+        // null
+        expect(function() {
+            wave[0].load(null);
+        }).toThrow(expectedError);
     });
 });
