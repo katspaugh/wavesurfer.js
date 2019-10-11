@@ -86,6 +86,8 @@ export default class MediaElement extends WebAudio {
      * @param {HTMLElement} container HTML element
      * @param {number[]|Number.<Array[]>} peaks Array of peak data
      * @param {string} preload HTML 5 preload attribute value
+     * @throws Will throw an error if the `url` argument is not a valid media
+     * element.
      */
     load(url, container, peaks, preload) {
         const media = document.createElement(this.mediaType);
@@ -123,6 +125,8 @@ export default class MediaElement extends WebAudio {
      *
      * @param {HTMLMediaElement} media HTML5 Audio or Video element
      * @param {number[]|Number.<Array[]>} peaks Array of peak data
+     * @throws Will throw an error if the `media` argument is not a valid media
+     * element.
      * @private
      */
     _load(media, peaks) {
@@ -133,6 +137,14 @@ export default class MediaElement extends WebAudio {
             // pending events are discarded. How much media data is fetched is
             // still affected by the preload attribute.
             media.load();
+        }
+
+        // verify media element
+        if (
+            !(media instanceof HTMLMediaElement) ||
+            media.addEventListener === undefined
+        ) {
+            throw new Error('media parameter is not a valid media element');
         }
 
         media.addEventListener('error', () => {
