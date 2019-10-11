@@ -1290,6 +1290,9 @@ export default class WaveSurfer extends util.Observer {
      * );
      */
     load(url, peaks, preload, duration) {
+        if (url === undefined) {
+            throw new Error('url parameter is invalid');
+        }
         this.empty();
 
         if (preload) {
@@ -1578,6 +1581,8 @@ export default class WaveSurfer extends util.Observer {
         this.isReady = false;
         this.cancelAjax();
         this.clearTmpEvents();
+
+        // empty drawer
         this.drawer.progress(0);
         this.drawer.setWidth(0);
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
