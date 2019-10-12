@@ -1328,7 +1328,6 @@ export default class WaveSurfer extends util.Observer {
             case 'WebAudio':
                 return this.loadBuffer(url, peaks, duration);
             case 'MediaElement':
-                return this.loadMediaElement(url, peaks, preload, duration);
             case 'WebAudioMedia':
                 return this.loadMediaElement(url, peaks, preload, duration);
         }
