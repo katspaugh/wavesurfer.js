@@ -48,7 +48,7 @@ export default class WebAudioMedia extends MediaElement {
     /**
      * Create MediaElementSource node
      *
-     * @since Version 3.1.0
+     * @since Version 3.2.0
      * @param {HTMLMediaElement} mediaElement HTML5 Audio to load
      */
     createMediaElementSource(mediaElement) {

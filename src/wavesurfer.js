@@ -31,12 +31,12 @@ import WebAudioMedia from './webaudio-media';
  * waveform is centered
  * @property {boolean} autoCenterImmediately=false If autoCenter is active, immediately
  * center waveform on current progress
- * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'` In most cases
+ * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'|'WebAudioMedia'` In most cases
  * you don't have to set this manually. MediaElement is a fallback for
- * unsupported browsers.
+ * unsupported browsers. WebAudioMedia is to use API Web Audio also with big audio files.
  * @property {string} backgroundColor=null Change background color of the
  * waveform container.
- * @property {number} barHeight=1 The height of the wave bars.
+ * @property {number} barHeight=1 The height of the wave bars.F
  * @property {number} barRadius=0 The radius of the wave bars. Makes bars rounded
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
@@ -68,10 +68,10 @@ import WebAudioMedia from './webaudio-media';
  * even integer). If the waveform is longer than this value, additional canvases
  * will be used to render the waveform, which is useful for very large waveforms
  * that may be too wide for browsers to draw on a single canvas.
- * @property {boolean} mediaControls=false (Use with backend `MediaElement`)
+ * @property {boolean} mediaControls=false (Use with backend `MediaElement` or `WebAudioMedia`)
  * this enables the native controls for the media element
- * @property {string} mediaType='audio' (Use with backend `MediaElement`)
- * `'audio'|'video'`
+ * @property {string} mediaType='audio' (Use with backend `MediaElement` or `WebAudioMedia`)
+ * `'audio'|'video'` ('video' only for MediaElement)
  * @property {number} minPxPerSec=20 Minimum number of pixels per second of
  * audio.
  * @property {boolean} normalize=false If true, normalize by the maximum peak
