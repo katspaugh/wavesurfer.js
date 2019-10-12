@@ -7,6 +7,9 @@ wavesurfer.js changelog
 - New `barRadius` option to create waveforms with rounded bars (#953)
 - Throw error when the url parameter supplied to `wavesurfer.load()`
   is empty (#1773, #1775)
+- Specify non-minified wavesurfer.js in `main` entry of `package.json` (#1759)
+- Add `dblclick` event listener to wavesurfer wrapper (#1764)
+- Regions plugin: change region end handler position (#1762)
 
 3.1.0 (26.09.2019)
 ------------------
