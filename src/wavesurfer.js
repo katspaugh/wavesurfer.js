@@ -1290,6 +1290,7 @@ export default class WaveSurfer extends util.Observer {
      * befits the current `minPxPerSec` and zoom value) without having to decode
      * the audio.
      * @returns {void}
+     * @throws Will throw an error if the url argument is empty.
      * @example
      * // uses fetch or media element to load file (depending on backend)
      * wavesurfer.load('http://example.com/demo.wav');
@@ -1303,6 +1304,9 @@ export default class WaveSurfer extends util.Observer {
      * );
      */
     load(url, peaks, preload, duration) {
+        if (!url) {
+            throw new Error('url parameter cannot be empty');
+        }
         this.empty();
 
         if (preload) {
@@ -1593,6 +1597,8 @@ export default class WaveSurfer extends util.Observer {
         this.isReady = false;
         this.cancelAjax();
         this.clearTmpEvents();
+
+        // empty drawer
         this.drawer.progress(0);
         this.drawer.setWidth(0);
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
@@ -1617,8 +1623,12 @@ export default class WaveSurfer extends util.Observer {
                 true
             );
         }
-        this.backend.destroy();
-        this.drawer.destroy();
+        if (this.backend) {
+            this.backend.destroy();
+        }
+        if (this.drawer) {
+            this.drawer.destroy();
+        }
         this.isDestroyed = true;
         this.isReady = false;
         this.arraybuffer = null;
