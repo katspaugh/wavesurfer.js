@@ -32,8 +32,15 @@ import WebAudioMedia from './webaudio-media';
  * @property {boolean} autoCenterImmediately=false If autoCenter is active, immediately
  * center waveform on current progress
  * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'|'WebAudioMedia'` In most cases
- * you don't have to set this manually. MediaElement is a fallback for
- * unsupported browsers. WebAudioMedia is to use API Web Audio also with big audio files.
+ * you don't have to set this manually. MediaElement is a fallback for unsupported browsers.
+ * WebAudioMedia allows to use API Web Audio also with big audio files, loading audio like with
+ * MediaElement backend (HTML5 audio tag). You have to use the same methods of MediaElement backend for loading and
+ * playback, giving also peaks, so the audio data are not decoded. In this way you can use WebAudio features, like filters,
+ * also with audio with big duration.For example:
+ * ` wavesurfer.load(url, peaks, preload, duration);
+ *   wavesurfer.play();
+ *   wavesurfer.setFilter(customFilter);
+ * `
  * @property {string} backgroundColor=null Change background color of the
  * waveform container.
  * @property {number} barHeight=1 The height of the wave bars.F

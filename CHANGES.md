@@ -5,6 +5,16 @@ wavesurfer.js changelog
 ------------------
 
 - New `barRadius` option to create waveforms with rounded bars (#953)
+- New `WebAudioMedia` backend (#1767):
+  - It allows to use API Web Audio also with big audio files, loading audio like with MediaElement backend (HTML5 audio tag), 
+    so you have to use the same methods of MediaElement backend for loading and playback. In this way, the audio
+    resource is not loaded entirely from server, but in ranges, allowing you to use WebAudio features, like filters, 
+    also with audio with big duration. You have to give also peaks, so the audio data are not decoded.
+    For example:
+    ` wavesurfer.load(url, peaks, preload, duration);
+      wavesurfer.play();
+      wavesurfer.setFilter(customFilter);
+    `
 
 3.1.0 (26.09.2019)
 ------------------
