@@ -133,7 +133,7 @@ export default class MediaElement extends WebAudio {
         // verify media element is valid
         if (
             !(media instanceof HTMLMediaElement) ||
-            typeof media.addEventListener === "undefined"
+            typeof media.addEventListener === 'undefined'
         ) {
             throw new Error('media parameter is not a valid media element');
         }
