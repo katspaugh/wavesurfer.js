@@ -3,7 +3,7 @@ import MultiCanvas from './drawer.multicanvas';
 import WebAudio from './webaudio';
 import MediaElement from './mediaelement';
 import PeakCache from './peakcache';
-import WebAudioMedia from './webaudio-media';
+import MediaElementWebAudio from './mediaelement-webaudio';
 
 /*
  * This work is licensed under a BSD-3-Clause License.
@@ -31,9 +31,9 @@ import WebAudioMedia from './webaudio-media';
  * waveform is centered
  * @property {boolean} autoCenterImmediately=false If autoCenter is active, immediately
  * center waveform on current progress
- * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'|'WebAudioMedia'` In most cases
+ * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'|'MediaElementWebAudio'` In most cases
  * you don't have to set this manually. MediaElement is a fallback for unsupported browsers.
- * WebAudioMedia allows to use API Web Audio also with big audio files, loading audio like with
+ * MediaElementWebAudio allows to use API Web Audio also with big audio files, loading audio like with
  * MediaElement backend (HTML5 audio tag). You have to use the same methods of MediaElement backend for loading and
  * playback, giving also peaks, so the audio data are not decoded. In this way you can use WebAudio features, like filters,
  * also with audio with big duration.For example:
@@ -75,9 +75,9 @@ import WebAudioMedia from './webaudio-media';
  * even integer). If the waveform is longer than this value, additional canvases
  * will be used to render the waveform, which is useful for very large waveforms
  * that may be too wide for browsers to draw on a single canvas.
- * @property {boolean} mediaControls=false (Use with backend `MediaElement` or `WebAudioMedia`)
+ * @property {boolean} mediaControls=false (Use with backend `MediaElement` or `MediaElementWebAudio`)
  * this enables the native controls for the media element
- * @property {string} mediaType='audio' (Use with backend `MediaElement` or `WebAudioMedia`)
+ * @property {string} mediaType='audio' (Use with backend `MediaElement` or `MediaElementWebAudio`)
  * `'audio'|'video'` ('video' only for MediaElement)
  * @property {number} minPxPerSec=20 Minimum number of pixels per second of
  * audio.
@@ -261,7 +261,7 @@ export default class WaveSurfer extends util.Observer {
     backends = {
         MediaElement,
         WebAudio,
-        WebAudioMedia
+        MediaElementWebAudio
     };
 
     /**
@@ -416,7 +416,7 @@ export default class WaveSurfer extends util.Observer {
 
         if (
             (this.params.backend == 'WebAudio' ||
-                this.params.backend === 'WebAudioMedia') &&
+                this.params.backend === 'MediaElementWebAudio') &&
             !WebAudio.prototype.supportsWebAudio.call(null)
         ) {
             this.params.backend = 'MediaElement';
@@ -684,10 +684,10 @@ export default class WaveSurfer extends util.Observer {
             this.fireEvent('audioprocess', time);
         });
 
-        // only needed for MediaElement and WebAudioMedia backend
+        // only needed for MediaElement and MediaElementWebAudio backend
         if (
             this.params.backend === 'MediaElement' ||
-            this.params.backend === 'WebAudioMedia'
+            this.params.backend === 'MediaElementWebAudio'
         ) {
             this.backend.on('seek', () => {
                 this.drawer.progress(this.backend.getPlayedPercents());
@@ -1283,7 +1283,7 @@ export default class WaveSurfer extends util.Observer {
      * audio element with the audio
      * @param {number[]|Number.<Array[]>} peaks Wavesurfer does not have to decode
      * the audio to render the waveform if this is specified
-     * @param {?string} preload (Use with backend `MediaElement` and `WebAudioMedia`)
+     * @param {?string} preload (Use with backend `MediaElement` and `MediaElementWebAudio`)
      * `'none'|'metadata'|'auto'` Preload attribute for the media element
      * @param {?number} duration The duration of the audio. This is used to
      * render the peaks data in the correct size for the audio duration (as
@@ -1316,9 +1316,9 @@ export default class WaveSurfer extends util.Observer {
                 "Preload is not 'auto', 'none' or 'metadata'":
                     ['auto', 'metadata', 'none'].indexOf(preload) === -1,
                 'Peaks are not provided': !peaks,
-                'Backend is not of type MediaElement or WebAudioMedia':
+                'Backend is not of type MediaElement or MediaElementWebAudio':
                     this.params.backend !== 'MediaElement' ||
-                    this.params.backend !== 'WebAudioMedia',
+                    this.params.backend !== 'MediaElementWebAudio',
                 'Url is not of type string': typeof url !== 'string'
             };
             const activeReasons = Object.keys(preloadIgnoreReasons).filter(
@@ -1339,7 +1339,7 @@ export default class WaveSurfer extends util.Observer {
             case 'WebAudio':
                 return this.loadBuffer(url, peaks, duration);
             case 'MediaElement':
-            case 'WebAudioMedia':
+            case 'MediaElementWebAudio':
                 return this.loadMediaElement(url, peaks, preload, duration);
         }
     }

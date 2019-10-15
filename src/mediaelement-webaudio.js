@@ -1,8 +1,8 @@
 import MediaElement from './mediaelement';
 
 /**
- * WebAudioMedia backend: allows to load audio as HTML5 audio tag and use it with API Web Audio.
- * Setting the WebAudioMedia backend, there is the possibility to load audio of big dimensions, using the API Web Audio features.
+ * MediaElementWebAudio backend: allows to load audio as HTML5 audio tag and use it with API Web Audio.
+ * Setting the MediaElementWebAudio backend, there is the possibility to load audio of big dimensions, using the API Web Audio features.
  * The audio to load is an HTML5 audio tag, so you have to use the same methods of MediaElement backend for loading and playback.
  * In this way, the audio resource is not loaded entirely from server, but in ranges, since you load an HTML5 audio tag.
  * In this way, filters and other functionalities can be performed like with WebAudio backend, but without decoding
@@ -10,7 +10,7 @@ import MediaElement from './mediaelement';
  *
  * @since 3.2.0
  */
-export default class WebAudioMedia extends MediaElement {
+export default class MediaElementWebAudio extends MediaElement {
     /**
      * Construct the backend
      *
