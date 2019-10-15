@@ -85,6 +85,8 @@ export default class MediaElement extends WebAudio {
      * @param {HTMLElement} container HTML element
      * @param {number[]|Number.<Array[]>} peaks Array of peak data
      * @param {string} preload HTML 5 preload attribute value
+     * @throws Will throw an error if the `url` argument is not a valid media
+     * element.
      */
     load(url, container, peaks, preload) {
         const media = document.createElement(this.mediaType);
@@ -122,8 +124,19 @@ export default class MediaElement extends WebAudio {
      *
      * @param {HTMLMediaElement} media HTML5 Audio or Video element
      * @param {number[]|Number.<Array[]>} peaks Array of peak data
+     * @throws Will throw an error if the `media` argument is not a valid media
+     * element.
+     * @private
      */
     _load(media, peaks) {
+        // verify media element is valid
+        if (
+            !(media instanceof HTMLMediaElement) ||
+            typeof media.addEventListener === 'undefined'
+        ) {
+            throw new Error('media parameter is not a valid media element');
+        }
+
         // load must be called manually on iOS, otherwise peaks won't draw
         // until a user interaction triggers load --> 'ready' event
         if (typeof media.load == 'function') {
