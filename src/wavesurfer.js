@@ -1277,7 +1277,7 @@ export default class WaveSurfer extends util.Observer {
      * befits the current `minPxPerSec` and zoom value) without having to decode
      * the audio.
      * @returns {void}
-     * @throws Will throw an error if the url argument is empty.
+     * @throws Will throw an error if the `url` argument is empty.
      * @example
      * // uses fetch or media element to load file (depending on backend)
      * wavesurfer.load('http://example.com/demo.wav');
