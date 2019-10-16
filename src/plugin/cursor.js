@@ -90,13 +90,14 @@ export default class CursorPlugin {
         const bbox = this.wavesurfer.container.getBoundingClientRect();
         let y = 0;
         let x = e.clientX - bbox.left;
+        let flip = bbox.right < e.clientX + this.outerWidth(this.displayTime);
 
         if (this.params.showTime && this.params.followCursorY) {
             // follow y-position of the mouse
             y = e.clientY - (bbox.top + bbox.height / 2);
         }
 
-        this.updateCursorPosition(x, y);
+        this.updateCursorPosition(x, y, flip);
     };
 
     /**
@@ -200,12 +201,15 @@ export default class CursorPlugin {
                         {
                             display: 'inline',
                             pointerEvents: 'none',
-                            margin: 'auto'
+                            margin: 'auto',
+                            visibility: 'hidden' //initial value will be hidden just for measuring purpose
                         },
                         this.params.customShowTimeStyle
                     )
                 )
             );
+            //initial value to measure display width
+            this.displayTime.innerHTML = '0:00:000';
         }
 
         this.wrapper.addEventListener('mousemove', this._onMousemove);
@@ -238,7 +242,7 @@ export default class CursorPlugin {
      * @param {number} xpos The x offset of the cursor in pixels
      * @param {number} ypos The y offset of the cursor in pixels
      */
-    updateCursorPosition(xpos, ypos) {
+    updateCursorPosition(xpos, ypos, flip = false) {
         this.style(this.cursor, {
             left: `${xpos}px`
         });
@@ -255,9 +259,14 @@ export default class CursorPlugin {
             const timeValue =
                 Math.max(0, (xpos / elementWidth) * duration) + scrollTime;
             const formatValue = this.formatTime(timeValue);
+            if (flip) {
+                const textOffset = this.outerWidth(this.displayTime);
+                xpos -= textOffset;
+            }
             this.style(this.showTime, {
                 left: `${xpos}px`,
-                top: `${ypos}px`
+                top: `${ypos}px`,
+                visibility: 'visible'
             });
             this.displayTime.innerHTML = `${formatValue}`;
         }
@@ -310,5 +319,21 @@ export default class CursorPlugin {
                 ('000' + Math.floor((time % 1) * 1000)).slice(-3) // milliseconds
             ].join(':')
         );
+    }
+
+    /**
+     * Get outer width of given element.
+     *
+     * @param {e} DOM Element
+     * @returns {number} outer width
+     */
+    outerWidth(e) {
+        if (!e) return 0;
+
+        var width = e.offsetWidth;
+        var style = getComputedStyle(e);
+
+        width += parseInt(style.marginLeft + style.marginRight);
+        return width;
     }
 }
