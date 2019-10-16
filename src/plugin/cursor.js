@@ -241,6 +241,7 @@ export default class CursorPlugin {
      *
      * @param {number} xpos The x offset of the cursor in pixels
      * @param {number} ypos The y offset of the cursor in pixels
+     * @param {boolean} flip Flag to flip duration text from right to left
      */
     updateCursorPosition(xpos, ypos, flip = false) {
         this.style(this.cursor, {
@@ -324,7 +325,7 @@ export default class CursorPlugin {
     /**
      * Get outer width of given element.
      *
-     * @param {e} DOM Element
+     * @param {DOM} e DOM Element
      * @returns {number} outer width
      */
     outerWidth(e) {
