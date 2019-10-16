@@ -31,7 +31,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     WaveSurfer.microphone.create({
                         bufferSize: 4096,
                         numberOfInputChannels: 1,
-                        numberOfOutputChannels: 1
+                        numberOfOutputChannels: 1,
+                        constraints: {
+                            video: false,
+                            audio: true
+                        }
                     })
                 ]
             });
