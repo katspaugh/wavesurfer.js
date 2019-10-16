@@ -268,6 +268,33 @@ export function sharedTests(backend) {
         loadElement();
     });
 }
+
+export function sharedErrorTests(backend) {
+    let element;
+
+    beforeEach(function() {
+        element = TestHelpers.createElement('test');
+    });
+
+    afterEach(function() {
+        TestHelpers.removeElement(element);
+    });
+
+    /**
+     * @test {WaveSurfer}
+     */
+    it('throw when load is called with invalid HTMLMediaElement', function() {
+        var wave = TestHelpers.createWaveform({
+            container: '#test',
+            backend: backend
+        });
+        expect(function() {
+            wave[0].load({
+                foo: 'bar'
+            });
+        }).toThrow(new Error('media parameter is not a valid media element'));
+    });
+}
 function loadElement() {
     // set src
     audioElement.src = TestHelpers.EXAMPLE_FILE_PATH;
