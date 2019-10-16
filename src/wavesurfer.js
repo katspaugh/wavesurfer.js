@@ -33,17 +33,17 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * center waveform on current progress
  * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'|'MediaElementWebAudio'` In most cases
  * you don't have to set this manually. MediaElement is a fallback for unsupported browsers.
- * MediaElementWebAudio allows to use API Web Audio also with big audio files, loading audio like with
+ * MediaElementWebAudio allows to use WebAudio API also with big audio files, loading audio like with
  * MediaElement backend (HTML5 audio tag). You have to use the same methods of MediaElement backend for loading and
  * playback, giving also peaks, so the audio data are not decoded. In this way you can use WebAudio features, like filters,
- * also with audio with big duration.For example:
+ * also with audio with big duration. For example:
  * ` wavesurfer.load(url, peaks, preload, duration);
  *   wavesurfer.play();
  *   wavesurfer.setFilter(customFilter);
  * `
  * @property {string} backgroundColor=null Change background color of the
  * waveform container.
- * @property {number} barHeight=1 The height of the wave bars.F
+ * @property {number} barHeight=1 The height of the wave bars.
  * @property {number} barRadius=0 The radius of the wave bars. Makes bars rounded
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
@@ -78,7 +78,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {boolean} mediaControls=false (Use with backend `MediaElement` or `MediaElementWebAudio`)
  * this enables the native controls for the media element
  * @property {string} mediaType='audio' (Use with backend `MediaElement` or `MediaElementWebAudio`)
- * `'audio'|'video'` ('video' only for MediaElement)
+ * `'audio'|'video'` ('video' only for `MediaElement`)
  * @property {number} minPxPerSec=20 Minimum number of pixels per second of
  * audio.
  * @property {boolean} normalize=false If true, normalize by the maximum peak

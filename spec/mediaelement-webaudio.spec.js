@@ -1,6 +1,6 @@
 /* eslint-env jasmine */
 
-import { sharedTests } from './mediaelement-mediaelement_webaudio-shared';
+import { sharedTests } from './mediaelement-shared';
 
 /** @test {WaveSurfer} */
 describe('WaveSurfer/MediaElementWebAudio:', function() {
