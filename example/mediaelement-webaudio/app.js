@@ -21,11 +21,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // get audio peaks
-    fetch('peaks.json')
+    fetch('stereo-peaks.json')
         .then(response => {
             return response.json();
         })
         .then(peaks => {
+            // normalize audio peaks to be in range [-1, +1]: get the maximum value of data, then divide all data by max
             let max = peaks.data.reduce((max, el) => (el > max ? el : max));
 
             return peaks.data.map(el => {
@@ -34,11 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(normalizedPeaks => {
             // Load audio from URL
-            wavesurfer.load('stereo.mp3', normalizedPeaks, 51);
+            wavesurfer.load('../media/stereo.mp3', normalizedPeaks, 51);
         });
 
-    // Panner
-
+    // StereoPanner Node
     wavesurfer.panner = wavesurfer.backend.ac.createStereoPanner();
 
     let sliderPanner = document.querySelector('[data-action="pan"]');
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
         wavesurfer.panner.pan.value = Number(sliderPanner.value);
     });
 
-    //Channel Volumes
+    //Control volume of both channels
     const channelSplitterNode = wavesurfer.backend.ac.createChannelSplitter(2);
     const channelMergerNode = wavesurfer.backend.ac.createChannelMerger(2);
     const leftGainNode = wavesurfer.backend.ac.createGain();
