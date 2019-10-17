@@ -202,14 +202,14 @@ export default class CursorPlugin {
                             display: 'inline',
                             pointerEvents: 'none',
                             margin: 'auto',
-                            visibility: 'hidden' //initial value will be hidden just for measuring purpose
+                            visibility: 'hidden' // initial value will be hidden just for measuring purpose
                         },
                         this.params.customShowTimeStyle
                     )
                 )
             );
-            //initial value to measure display width
-            this.displayTime.innerHTML = '0:00:000';
+            // initial value to measure display width
+            this.displayTime.innerHTML = this.formatTime(0);
         }
 
         this.wrapper.addEventListener('mousemove', this._onMousemove);
@@ -325,14 +325,14 @@ export default class CursorPlugin {
     /**
      * Get outer width of given element.
      *
-     * @param {DOM} e DOM Element
+     * @param {DOM} element DOM Element
      * @returns {number} outer width
      */
-    outerWidth(e) {
-        if (!e) return 0;
+    outerWidth(element) {
+        if (!element) return 0;
 
-        var width = e.offsetWidth;
-        var style = getComputedStyle(e);
+        let width = element.offsetWidth;
+        let style = getComputedStyle(element);
 
         width += parseInt(style.marginLeft + style.marginRight);
         return width;
