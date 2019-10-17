@@ -8,6 +8,8 @@
  * `512`, `1024`, `2048`, `4096`, `8192`, `16384`
  * @property {number} numberOfInputChannels=1 Integer specifying the number of
  * channels for this node's input. Values of up to 32 are supported.
+ * @property {number} numberOfOutputChannels=1 Integer specifying the number of
+ * channels for this node's output.
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('microphone')`
  */
