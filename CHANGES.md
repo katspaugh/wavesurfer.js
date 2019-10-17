@@ -4,11 +4,13 @@ wavesurfer.js changelog
 3.2.0 (unreleased)
 ------------------
 
-- New `barRadius` option to create waveforms with rounded bars (#953)
+- Add `barRadius` option to create waveforms with rounded bars (#953)
 - Throw error when the url parameter supplied to `wavesurfer.load()`
   is empty (#1773, #1775)
 - Specify non-minified wavesurfer.js in `main` entry of `package.json` (#1759)
 - Add `dblclick` event listener to wavesurfer wrapper (#1764)
+- Cursor plugin: flip position of time text to left of the cursor where needed
+  to improve readability (#1776)
 - Regions plugin: change region end handler position (#1762)
 
 3.1.0 (26.09.2019)
