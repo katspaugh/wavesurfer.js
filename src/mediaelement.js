@@ -56,7 +56,6 @@ export default class MediaElement extends WebAudio {
     /**
      * Create a timer to provide a more precise `audioprocess` event.
      *
-     * @private
      */
     createTimer() {
         const onAudioProcess = () => {
@@ -120,7 +119,7 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
-     * Private method called by both `load` (from url)
+     * Method called by both `load` (from url)
      * and `loadElt` (existing media element) methods.
      *
      * @param {HTMLMediaElement} media HTML5 Audio or Video element
