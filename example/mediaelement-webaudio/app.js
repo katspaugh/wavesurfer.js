@@ -34,8 +34,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         })
         .then(normalizedPeaks => {
-            // Load audio from URL
-            wavesurfer.load('../media/stereo.mp3', normalizedPeaks, 51);
+            // You can load audio from HTML5 tag, or passing an url (from same domain or from another server, if it supports CORS headers)
+            let audio = document.createElement('audio');
+            audio.src = '../media/stereo.mp3';
+            // Set crossOrigin to anonymous to avoid CORS restrictions
+            audio.crossOrigin = 'anonymous';
+            wavesurfer.load(audio, normalizedPeaks, 51);
         });
 
     // StereoPanner Node

@@ -37,7 +37,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * MediaElement backend (HTML5 audio tag). You have to use the same methods of MediaElement backend for loading and
  * playback, giving also peaks, so the audio data are not decoded. In this way you can use WebAudio features, like filters,
  * also with audio with big duration. For example:
- * ` wavesurfer.load(url, peaks, preload, duration);
+ * ` wavesurfer.load(url | HTMLMediaElement, peaks, preload, duration);
  *   wavesurfer.play();
  *   wavesurfer.setFilter(customFilter);
  * `

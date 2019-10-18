@@ -14,7 +14,7 @@ wavesurfer.js changelog
     a long duration. You can also supply peaks data, so the entire audio file
     does not have to be decoded.
     For example:
-    ` wavesurfer.load(url, peaks, preload, duration);
+    ` wavesurfer.load(url | HTMLMediaElement, peaks, preload, duration);
       wavesurfer.play();
       wavesurfer.setFilter(customFilter);
     `
