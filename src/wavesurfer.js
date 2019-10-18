@@ -1308,7 +1308,6 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('url parameter cannot be empty');
         }
         this.empty();
-
         if (preload) {
             // check whether the preload attribute will be usable and if not log
             // a warning listing the reasons why not and nullify the variable
@@ -1316,9 +1315,10 @@ export default class WaveSurfer extends util.Observer {
                 "Preload is not 'auto', 'none' or 'metadata'":
                     ['auto', 'metadata', 'none'].indexOf(preload) === -1,
                 'Peaks are not provided': !peaks,
-                'Backend is not of type MediaElement or MediaElementWebAudio':
-                    this.params.backend !== 'MediaElement' ||
-                    this.params.backend !== 'MediaElementWebAudio',
+                "Backend is not of type 'MediaElement' or 'MediaElementWebAudio'":
+                    ['MediaElement', 'MediaElementWebAudio'].indexOf(
+                        this.params.backend
+                    ) === -1,
                 'Url is not of type string': typeof url !== 'string'
             };
             const activeReasons = Object.keys(preloadIgnoreReasons).filter(
