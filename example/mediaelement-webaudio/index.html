@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>wavesurfer.js | MediaElementWebAudio backend Example</title>
+
+    <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+    <!-- Bootstrap -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/ribbon.css" />
+    <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+
+    <!-- wavesurfer.js -->
+    <script src="../../dist/wavesurfer.js"></script>
+    <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
+    <script src="../../dist/plugin/wavesurfer.regions.js"></script>
+
+    <!-- Demo -->
+    <script src="app.js"></script>
+
+    <!-- highlight.js for syntax highlighting in this example -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebApplication">
+<div class="container">
+    <div class="header">
+        <ul class="nav nav-pills pull-right">
+            <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
+        </ul>
+
+        <h1 itemprop="name">MediaElementWebAudio Backend Example</h1>
+    </div>
+
+    <div id="demo">
+        <div id="waveform">
+            <!-- Here be the waveform -->
+        </div>
+
+        <div id="timeline"></div>
+
+        <div class="controls">
+            <div class="row">
+                <div class="col-sm-7">
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <p style="text-align: left">StereoPanner</p>
+                    </div>
+                    <div class="col-sm-3">
+                        &larr; left
+                    </div>
+                    <div class="col-sm-4">
+                        <!-- Panner -->
+                        <input data-action="pan" type="range" min="-1" max="1" value="0" step="0.2" style="width: 100%" />
+                    </div>
+                    <div class="col-sm-3">
+                        right &rarr;
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col-sm-3" style="margin-right: 0">
+                        <p style="text-align: left">Left Channel Volume</p>
+                    </div>
+                    <div class="col-sm-3">
+                        <input data-action="leftVolume" type="range" min="0" max="1" value="0.8" step="0.2" style="width: 100%" />
+                    </div>
+                    <div class="col-sm-3">
+                        <p style="text-align: right">Right Channel Volume</p>
+                    </div>
+                    <div class="col-sm-3">
+                        <input data-action="rightVolume" type="range" min="0" max="1" value="0.8" step="0.2" style="width: 100%" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row marketing">
+        <h3>Why use MediaElementWebAudio backend</h3>
+        <p style="text-align: justify">With this backend you can load a big audio file and use it with WebAudio API. In this example it was added a StereoPannerNode and
+            nodes to control independently the volume of both right and left channels, realised with SplitterNode and MergerNode to split and then merge channels with GainNode to control their volume.
+        </p>
+
+        <hr />
+
+        <p>
+        <pre><code>
+        var wavesurfer = WaveSurfer.create({
+            container: document.querySelector('#wave'),
+            backend: 'MediaElementWebAudio'
+        });
+        // You have to use the same methods of MediaElement backend to load the audio file, passing peaks
+        wavesurfer.load('big_audio.mp3', normalizedPeaks, 11625);
+
+        // Example for StereoPanner node
+        wavesurfer.panner = wavesurfer.backend.ac.createStereoPanner();
+        let sliderPanner = document.querySelector('[data-action="pan"]');
+        sliderPanner.addEventListener('input', () => {
+            wavesurfer.panner.pan.value = Number(sliderPanner.value);
+        });
+        wavesurfer.backend.setFilter(wavesurfer.panner)
+
+</code></pre>
+        </p>
+    </div>
+
+    <div class="footer row">
+        <div class="col-sm-12">
+            <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
+        </div>
+
+        <div class="col-sm-7">
+            <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
+        </div>
+
+    </div>
+</div>
+
+<div class="github-fork-ribbon-wrapper right">
+    <div class="github-fork-ribbon">
+        <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+    </div>
+</div>
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+    ga('send', 'pageview');
+</script>
+</body>
+</html>
