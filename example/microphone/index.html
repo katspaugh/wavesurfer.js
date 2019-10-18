@@ -136,6 +136,12 @@ wavesurfer.microphone.start();
                           <td>The buffer size in units of sample-frames. If specified, the <code>bufferSize</code> must be one of the following values: 256, 512, 1024, 2048, 4096, 8192, 16384.</td>
                         </tr>
                         <tr>
+                          <td><code>constraints</code></td>
+                          <td>no</td>
+                          <td><code>{audio: true, video: false}</code></td>
+                          <td>The constraints parameter is a MediaStreamConstaints object with at least two members: video and audio, describing the media types requested. Either or both must be specified.</td>
+                        </tr>
+                        <tr>
                           <td><code>numberOfInputChannels</code></td>
                           <td>no</td>
                           <td>1</td>
