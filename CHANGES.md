@@ -23,7 +23,7 @@ wavesurfer.js changelog
   is empty (#1773, #1775)
 - Specify non-minified wavesurfer.js in `main` entry of `package.json` (#1759)
 - Add `dblclick` event listener to wavesurfer wrapper (#1764)
-- Fix `destroy()` in `MediaElement` backend
+- Fix `destroy()` in `MediaElement` backend (#1778)
 - Cursor plugin: flip position of time text to left of the cursor where needed
   to improve readability (#1776)
 - Regions plugin: change region end handler position (#1762)
