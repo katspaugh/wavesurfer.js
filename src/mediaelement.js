@@ -48,7 +48,9 @@ export default class MediaElement extends WebAudio {
         this.onPlayEnd = null;
         /** @private */
         this.mediaListeners = {};
-        /** @private */
+        /**
+         * Boolean indicating if this backend was destroyed.
+         */
         this.destroyed = false;
     }
 
