@@ -34,7 +34,8 @@ describe('WaveSurfer/playback:', function() {
      */
     it('be ready', function() {
         wavesurfer.play();
-        expect(wavesurfer.isReady).toBeFalse();
+
+        expect(wavesurfer.isReady).toBeTrue();
     });
 
     /**
@@ -160,16 +161,16 @@ describe('WaveSurfer/playback:', function() {
 
     /** @test {WaveSurfer#skipForward}  */
     it('skip forward', function() {
-        // skip 4 seconds forward
-        wavesurfer.skipForward(4);
+        // skip x seconds forward
+        let expectedTime = 4;
+        wavesurfer.skipForward(expectedTime);
         let time = wavesurfer.getCurrentTime();
-        let expectedTime = 3.9999999999999996;
-        expect(time).toEqual(expectedTime);
+        expect(time).toBeNear(expectedTime, 0.0001);
 
         // skip forward with params.skipLength (default: 2 seconds)
         wavesurfer.skipForward();
         time = wavesurfer.getCurrentTime();
-        expect(time).toEqual(expectedTime + 2);
+        expect(time).toBeNear(expectedTime + 2, 0.0001);
     });
 
     /** @test {WaveSurfer#getPlaybackRate}  */
@@ -370,7 +371,7 @@ describe('WaveSurfer/errors:', function() {
     /**
      * @test {WaveSurfer}
      */
-    it('throw when container element not found', function() {
+    it('throw when container element is not found', function() {
         expect(function() {
             TestHelpers.createWaveform({
                 container: '#foo'
@@ -381,7 +382,7 @@ describe('WaveSurfer/errors:', function() {
     /**
      * @test {WaveSurfer}
      */
-    it('throw when media container element not found', function() {
+    it('throw when media container element is not found', function() {
         expect(function() {
             TestHelpers.createWaveform({
                 container: '#test',
@@ -432,5 +433,30 @@ describe('WaveSurfer/errors:', function() {
 
             wave[0].setWaveColor('#000000');
         }).not.toThrow();
+    });
+
+    /**
+     * @test {WaveSurfer#load}
+     */
+    it('throw when url parameter for load is empty', function() {
+        var wave = TestHelpers.createWaveform({
+            container: '#test'
+        });
+        var expectedError = new Error('url parameter cannot be empty');
+
+        // undefined url
+        expect(function() {
+            wave[0].load();
+        }).toThrow(expectedError);
+
+        // empty string
+        expect(function() {
+            wave[0].load('');
+        }).toThrow(expectedError);
+
+        // null
+        expect(function() {
+            wave[0].load(null);
+        }).toThrow(expectedError);
     });
 });
