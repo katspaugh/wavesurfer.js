@@ -1,10 +1,4 @@
-var wavesurfer;
-
-// Create elan instance
-//var elan = Object.create(WaveSurfer.ELAN);
-
-// Create Elan Wave Segment instance
-//var elanWaveSegment = Object.create(WaveSurfer.ELANWaveSegment);
+var wavesurfer, elanWaveSegment;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function() {
@@ -17,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selectionColor: '#d0e9c6',
         loopSelection: false,
         renderer: 'Canvas',
-        waveSegmentRenderer: 'Canvas',
+        waveSegmentRenderer: 'MultiCanvas',
         waveSegmentHeight: 50,
         height: 100
     };
@@ -47,22 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     })();
 
-    elan.on('select', function(start, end) {
-        wavesurfer.backend.play(start, end);
-    });
-
-    //set up listener for when elan is done
-    elan.on('ready', function(data) {
-        //go load the wave form
-        wavesurfer.load('../elan/transcripts/001z.mp3');
-
-        //add some styling to elan table
-        var classList = elan.container.querySelector('table').classList;
-        ['table', 'table-striped', 'table-hover'].forEach(function(cl) {
-            classList.add(cl);
-        });
-    });
-
     //############################## initialize wavesurfer and related plugins ###############
 
     wavesurfer = WaveSurfer.create({
@@ -79,24 +57,43 @@ document.addEventListener('DOMContentLoaded', function() {
         ]
     });
 
-    wavesurfer.on('loading', showProgress);
-    wavesurfer.on('ready', hideProgress);
-    wavesurfer.on('destroy', hideProgress);
-    wavesurfer.on('error', hideProgress);
+    wavesurfer.elan.on('select', function(start, end) {
+        wavesurfer.backend.play(start, end);
+    });
+
+    // set up listener for when elan is done
+    wavesurfer.elan.on('ready', function(data) {
+        // go load the wave form
+        wavesurfer.load('../elan/transcripts/001z.mp3');
+
+        // add some styling to elan table
+        var classList = wavesurfer.elan.container.querySelector('table')
+            .classList;
+        ['table', 'table-striped', 'table-hover'].forEach(function(cl) {
+            classList.add(cl);
+        });
+    });
 
     // init elanWaveSegment when wavesurfer is done loading the sound file
     wavesurfer.on('ready', function() {
+        // add some styling to elan table
+        var classList = wavesurfer.elan.container.querySelector('table')
+            .classList;
+        ['table', 'table-striped', 'table-hover'].forEach(function(cl) {
+            classList.add(cl);
+        });
+
         options.plotTimeEnd = wavesurfer.backend.getDuration();
         options.wavesurfer = wavesurfer;
-        options.ELAN = elan;
+        options.ELAN = wavesurfer.elan;
         options.scrollParent = false;
-        elanWaveSegment.init(options);
+        elanWaveSegment = WaveSurfer.ELANWaveSegment.create(options);
     });
 
     var prevAnnotation, prevRow, region;
     var onProgress = function(time) {
         elanWaveSegment.onProgress(time);
-        var annotation = elan.getRenderedAnnotation(time);
+        var annotation = wavesurfer.elan.getRenderedAnnotation(time);
 
         if (prevAnnotation != annotation) {
             prevAnnotation = annotation;
@@ -106,13 +103,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (annotation) {
                 // highlight annotation table row
-                var row = elan.getAnnotationNode(annotation);
+                var row = wavesurfer.elan.getAnnotationNode(annotation);
                 prevRow && prevRow.classList.remove('success');
                 prevRow = row;
                 row.classList.add('success');
                 var before = row.previousSibling;
                 if (before) {
-                    elan.container.scrollTop = before.offsetTop;
+                    wavesurfer.elan.container.scrollTop = before.offsetTop;
                 }
 
                 // Region
