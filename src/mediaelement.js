@@ -15,8 +15,11 @@ export default class MediaElement extends WebAudio {
         /** @private */
         this.params = params;
 
-        // Dummy media to catch errors
-        /** @private */
+        /**
+         * Initially a dummy media element to catch errors. Once `_load` is
+         * called, this will contain the actual `HTMLMediaElement`.
+         * @private
+         */
         this.media = {
             currentTime: 0,
             duration: 0,
@@ -43,6 +46,10 @@ export default class MediaElement extends WebAudio {
         this.buffer = null;
         /** @private */
         this.onPlayEnd = null;
+        /** @private */
+        this.mediaListeners = {};
+        /** @private */
+        this.destroyed = false;
     }
 
     /**
@@ -54,8 +61,48 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
+     * Attach event listeners to media element.
+     */
+    _setupMediaListeners() {
+        this.mediaListeners.error = () => {
+            this.fireEvent('error', 'Error loading media element');
+        };
+        this.mediaListeners.canplay = () => {
+            this.fireEvent('canplay');
+        };
+        this.mediaListeners.ended = () => {
+            this.fireEvent('finish');
+        };
+        // listen to and relay play, pause and seeked events to enable
+        // playback control from the external media element
+        this.mediaListeners.play = () => {
+            this.fireEvent('play');
+        };
+        this.mediaListeners.pause = () => {
+            this.fireEvent('pause');
+        };
+        this.mediaListeners.seeked = event => {
+            this.fireEvent('seek');
+        };
+        this.mediaListeners.volumechange = event => {
+            this.isMuted = this.media.muted;
+            if (this.isMuted) {
+                this.volume = 0;
+            } else {
+                this.volume = this.media.volume;
+            }
+            this.fireEvent('volume');
+        };
+
+        // reset event listeners
+        Object.keys(this.mediaListeners).forEach(id => {
+            this.media.removeEventListener(id, this.mediaListeners[id]);
+            this.media.addEventListener(id, this.mediaListeners[id]);
+        });
+    }
+
+    /**
      * Create a timer to provide a more precise `audioprocess` event.
-     *
      */
     createTimer() {
         const onAudioProcess = () => {
@@ -146,43 +193,8 @@ export default class MediaElement extends WebAudio {
             media.load();
         }
 
-        media.addEventListener('error', () => {
-            this.fireEvent('error', 'Error loading media element');
-        });
-
-        media.addEventListener('canplay', () => {
-            this.fireEvent('canplay');
-        });
-
-        media.addEventListener('ended', () => {
-            this.fireEvent('finish');
-        });
-
-        // Listen to and relay play, pause and seeked events to enable
-        // playback control from the external media element
-        media.addEventListener('play', () => {
-            this.fireEvent('play');
-        });
-
-        media.addEventListener('pause', () => {
-            this.fireEvent('pause');
-        });
-
-        media.addEventListener('seeked', event => {
-            this.fireEvent('seek');
-        });
-
-        media.addEventListener('volumechange', event => {
-            this.isMuted = media.muted;
-            if (this.isMuted) {
-                this.volume = 0;
-            } else {
-                this.volume = media.volume;
-            }
-            this.fireEvent('volume');
-        });
-
         this.media = media;
+        this._setupMediaListeners();
         this.peaks = peaks;
         this.onPlayEnd = null;
         this.buffer = null;
@@ -391,6 +403,13 @@ export default class MediaElement extends WebAudio {
     destroy() {
         this.pause();
         this.unAll();
+        this.destroyed = true;
+        // cleanup media event listeners
+        Object.keys(this.mediaListeners).forEach(id => {
+            if (this.media) {
+                this.media.removeEventListener(id, this.mediaListeners[id]);
+            }
+        });
 
         if (
             this.params.removeMediaElementOnDestroy &&
