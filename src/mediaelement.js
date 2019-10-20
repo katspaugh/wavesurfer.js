@@ -48,10 +48,6 @@ export default class MediaElement extends WebAudio {
         this.onPlayEnd = null;
         /** @private */
         this.mediaListeners = {};
-        /**
-         * Boolean indicating if this backend was destroyed.
-         */
-        this.destroyed = false;
     }
 
     /**
@@ -406,6 +402,7 @@ export default class MediaElement extends WebAudio {
         this.pause();
         this.unAll();
         this.destroyed = true;
+
         // cleanup media event listeners
         Object.keys(this.mediaListeners).forEach(id => {
             if (this.media) {
