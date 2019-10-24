@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-3.2.0 (24/10/2019)
+3.2.0 (24.10.2019)
 ------------------
 
 - New `MediaElementWebAudio` backend (#1767):
