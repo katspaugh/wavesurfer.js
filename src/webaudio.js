@@ -145,6 +145,10 @@ export default class WebAudio extends util.Observer {
         this.state = null;
         /** @private */
         this.explicitDuration = params.duration;
+        /**
+         * Boolean indicating if the backend was destroyed.
+         */
+        this.destroyed = false;
     }
 
     /**
@@ -500,6 +504,7 @@ export default class WebAudio extends util.Observer {
         }
         this.unAll();
         this.buffer = null;
+        this.destroyed = true;
         this.disconnectFilters();
         this.disconnectSource();
         this.gainNode.disconnect();
