@@ -26,7 +26,7 @@ wavesurfer.js changelog
 - Fix `destroy()` in `MediaElement` backend (#1778)
 - Cursor plugin: flip position of time text to left of the cursor where needed
   to improve readability (#1776)
-- Regions plugin: change region end handler position (#1762)
+- Regions plugin: change region end handler position (#1762, #1781)
 
 3.1.0 (26.09.2019)
 ------------------
