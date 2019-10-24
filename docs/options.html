@@ -44,7 +44,13 @@ layout: default
         <td><code>backend</code></td>
         <td>string</td>
         <td><code>WebAudio</code></td>
-        <td><code>WebAudio</code> or <code>MediaElement</code>. In most cases you don't have to set this manually. <code>MediaElement</code> is a fallback for unsupported browsers.</td>
+        <td><code>WebAudio</code>, <code>MediaElement</code> or <code>MediaElementWebAudio</code>. <code>MediaElement</code> is a fallback for unsupported browsers.</td>
+      </tr>
+      <tr>
+        <td><code>backgroundColor</code></td>
+        <td>string</td>
+        <td><em>none</em></td>
+        <td>Change background color of the waveform container.</td>
       </tr>
       <tr>
         <td><code>barGap</code></td>
@@ -57,6 +63,12 @@ layout: default
         <td>number</td>
         <td><em>1</em></td>
         <td>Height of the waveform bars. Higher number than 1 will increase the waveform bar heights.</td>
+      </tr>
+      <tr>
+        <td><code>barRadius</code></td>
+        <td>number</td>
+        <td><em>0</em></td>
+        <td>The radius that makes bars rounded.</td>
       </tr>
       <tr>
         <td><code>barWidth</code></td>

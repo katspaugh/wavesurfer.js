@@ -28,9 +28,9 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
-    "copy-dir": "^1.1.0",
+    "copy-dir": "^1.2.0",
     "download-tarball": "^2.0.0",
-    "ejs": "^2.6.2",
+    "ejs": "^2.7.1",
     "esdoc": "^1.1.0",
     "esdoc-accessor-plugin": "^1.0.0",
     "esdoc-brand-plugin": "^1.0.1",
@@ -38,10 +38,10 @@
     "esdoc-standard-plugin": "^1.0.0",
     "htmlhint": "^0.11.0",
     "npm-run-all": "^4.1.5",
-    "replace-in-files": "^1.1.4",
-    "rimraf": "^2.6.3",
+    "replace-in-files": "^2.0.3",
+    "rimraf": "^3.0.0",
     "tui-jsdoc-template": "^1.2.2",
-    "walkdir": "0.4.0"
+    "walkdir": "0.4.1"
   },
   "scripts": {
     "lint": "npm-run-all lint:*",
