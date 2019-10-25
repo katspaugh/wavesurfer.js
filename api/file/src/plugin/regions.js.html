@@ -33,6 +33,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html">MediaElementWebAudio</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
@@ -227,16 +228,18 @@ class Region {
             const css = {
                 cursor: &apos;col-resize&apos;,
                 position: &apos;absolute&apos;,
-                left: &apos;0px&apos;,
                 top: &apos;0px&apos;,
                 width: &apos;1%&apos;,
                 maxWidth: &apos;4px&apos;,
                 height: &apos;100%&apos;
             };
             this.style(handleLeft, css);
+            this.style(handleLeft, {
+                left: &apos;0px&apos;
+            });
             this.style(handleRight, css);
             this.style(handleRight, {
-                left: &apos;100%&apos;
+                right: &apos;0px&apos;
             });
         }
 

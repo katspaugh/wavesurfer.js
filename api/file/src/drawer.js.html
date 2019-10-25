@@ -33,6 +33,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html">MediaElementWebAudio</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
@@ -206,7 +207,7 @@ export default class Drawer extends util.Observer {
         this.wrapper.addEventListener(&apos;click&apos;, e =&gt; {
             const scrollbarHeight =
                 this.wrapper.offsetHeight - this.wrapper.clientHeight;
-            if (scrollbarHeight != 0) {
+            if (scrollbarHeight !== 0) {
                 // scrollbar is visible.  Check if click was on it
                 const bbox = this.wrapper.getBoundingClientRect();
                 if (e.clientY &gt;= bbox.bottom - scrollbarHeight) {
@@ -217,6 +218,12 @@ export default class Drawer extends util.Observer {
 
             if (this.params.interact) {
                 this.fireEvent(&apos;click&apos;, e, this.handleEvent(e));
+            }
+        });
+
+        this.wrapper.addEventListener(&apos;dblclick&apos;, e =&gt; {
+            if (this.params.interact) {
+                this.fireEvent(&apos;dblclick&apos;, e);
             }
         });
 

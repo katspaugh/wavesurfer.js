@@ -1,11 +1,11 @@
 {
-  "coverage": "68.62%",
-  "expectCount": 545,
-  "actualCount": 374,
+  "coverage": "69.23%",
+  "expectCount": 559,
+  "actualCount": 387,
   "files": {
     "src/drawer.canvasentry.js": {
-      "expectCount": 20,
-      "actualCount": 19,
+      "expectCount": 21,
+      "actualCount": 20,
       "undocumentLines": [
         16
       ]
@@ -16,8 +16,8 @@
       "undocumentLines": []
     },
     "src/drawer.multicanvas.js": {
-      "expectCount": 26,
-      "actualCount": 26,
+      "expectCount": 27,
+      "actualCount": 27,
       "undocumentLines": []
     },
     "src/html-init.js": {
@@ -25,11 +25,17 @@
       "actualCount": 8,
       "undocumentLines": []
     },
+    "src/mediaelement-webaudio.js": {
+      "expectCount": 7,
+      "actualCount": 7,
+      "undocumentLines": []
+    },
     "src/mediaelement.js": {
-      "expectCount": 34,
-      "actualCount": 33,
+      "expectCount": 37,
+      "actualCount": 35,
       "undocumentLines": [
-        300
+        321,
+        404
       ]
     },
     "src/peakcache.js": {
@@ -38,10 +44,10 @@
       "undocumentLines": []
     },
     "src/plugin/cursor.js": {
-      "expectCount": 20,
-      "actualCount": 19,
+      "expectCount": 21,
+      "actualCount": 20,
       "undocumentLines": [
-        152
+        153
       ]
     },
     "src/plugin/elan.js": {
@@ -83,24 +89,24 @@
       "expectCount": 34,
       "actualCount": 16,
       "undocumentLines": [
-        59,
-        60,
         61,
+        62,
         63,
-        64,
         65,
         66,
-        110,
-        114,
-        115,
+        67,
+        68,
+        112,
         116,
+        117,
         118,
         120,
-        124,
-        247,
-        255,
-        259,
-        329
+        122,
+        126,
+        249,
+        257,
+        261,
+        331
       ]
     },
     "src/plugin/minimap.js": {
@@ -170,28 +176,28 @@
         101,
         108,
         114,
-        165,
-        176,
-        181,
-        230,
-        231,
+        167,
+        178,
+        183,
         232,
-        272,
-        515,
-        527,
-        622,
-        640,
-        641,
+        233,
+        234,
+        274,
+        517,
+        529,
+        624,
         642,
         643,
-        657,
-        658,
-        667,
-        668,
-        679,
-        690,
-        724,
-        875
+        644,
+        645,
+        659,
+        660,
+        669,
+        670,
+        681,
+        692,
+        726,
+        877
       ]
     },
     "src/plugin/spectrogram.js": {
@@ -304,13 +310,13 @@
       "expectCount": 93,
       "actualCount": 91,
       "undocumentLines": [
-        412,
-        433
+        424,
+        445
       ]
     },
     "src/webaudio.js": {
-      "expectCount": 62,
-      "actualCount": 59,
+      "expectCount": 63,
+      "actualCount": 60,
       "undocumentLines": [
         4,
         5,
