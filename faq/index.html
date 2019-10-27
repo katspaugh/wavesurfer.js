@@ -41,11 +41,13 @@ with open(filename, "r") as f:
 
 json_content = json.loads(file_content)
 data = json_content["data"]
+# number of decimals to use when rounding the peak value
+digits = 2
 
 max_val = float(max(data))
 new_data = []
 for x in data:
-    new_data.append(x/max_val)
+    new_data.append(round(x / max_val, digits))
 
 json_content["data"] = new_data
 file_content = json.dumps(json_content)
