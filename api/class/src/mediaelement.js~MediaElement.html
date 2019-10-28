@@ -33,6 +33,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html">MediaElementWebAudio</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
@@ -98,7 +99,7 @@
   
   
   <div class="flat-list" data-ice="extendsChain"><h4>Extends:</h4><div><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span> &#x2192; <span><a href="class/src/webaudio.js~WebAudio.html">WebAudio</a></span> &#x2192; MediaElement</div></div>
-  
+  <div class="flat-list" data-ice="directSubclass"><h4>Direct Subclass:</h4><div><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html">MediaElementWebAudio</a></span></div></div>
   
   
   
@@ -158,12 +159,75 @@
 </tbody>
 </table>
 </div>
-
+<div data-ice="memberSummary"><h2>Member Summary</h2><table class="summary" data-ice="summary">
+  <thead><tr><td data-ice="title" colspan="3">Public Members</td></tr></thead>
+  <tbody>
+  
+  <tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-member-destroyed">destroyed</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+</tbody>
+</table>
+</div>
 <div data-ice="methodSummary"><h2>Method Summary</h2><table class="summary" data-ice="summary">
   <thead><tr><td data-ice="title" colspan="3">Public Methods</td></tr></thead>
   <tbody>
   
   <tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-createTimer">createTimer</a></span></span><span class="code" data-ice="signature">()</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Create a timer to provide a more precise <code>audioprocess</code> event.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
     <td>
       <span class="access" data-ice="access">public</span>
       
@@ -820,6 +884,296 @@ and append to container element.</p>
   <tbody>
   
   <tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      <span data-ice="static">static</span>
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#static-member-scriptBufferSize">scriptBufferSize</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>scriptBufferSize: size of the processing buffer</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-member-ac">ac</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>ac: Audio Context instance</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-member-analyser">analyser</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>analyser: provides audio analysis information</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-member-audioContext">audioContext</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>audioContext: allows to process audio with WebAudio API</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-member-destroyed">destroyed</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Boolean indicating if the backend was destroyed.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-member-gainNode">gainNode</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>gainNode: allows to control audio volume</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-member-scriptNode">scriptNode</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>scriptNode: allows processing audio</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-method-createAnalyserNode">createAnalyserNode</a></span></span><span class="code" data-ice="signature">()</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Create analyser node to perform audio analysis</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-method-createScriptNode">createScriptNode</a></span></span><span class="code" data-ice="signature">()</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Create ScriptProcessorNode to process audio</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-method-createVolumeNode">createVolumeNode</a></span></span><span class="code" data-ice="signature">()</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Create the gain node needed to control the playback volume.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
     <td>
       <span class="access" data-ice="access">public</span>
       
@@ -1586,9 +1940,99 @@ duration.</p>
   
 </div>
 </div>
+<div data-ice="memberDetails"><h2 data-ice="title">Public Members</h2>
 
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-member-destroyed">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">destroyed</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber404">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Boolean indicating if the backend was destroyed.</p>
+</div>
+
+  <div data-ice="override"><h4>Override:</h4><span><a href="class/src/webaudio.js~WebAudio.html#instance-member-destroyed">WebAudio#destroyed</a></span></div>
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+</div>
 <div data-ice="methodDetails"><h2 data-ice="title">Public Methods</h2>
 
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-createTimer">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">createTimer</span><span class="code" data-ice="signature">()</span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber105">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Create a timer to provide a more precise <code>audioprocess</code> event.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
 <div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-method-destroy">
     <span class="access" data-ice="access">public</span>
@@ -1601,7 +2045,7 @@ duration.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber380">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber401">source</a></span></span>
     </span>
   </h3>
 
@@ -1645,7 +2089,7 @@ duration.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber215">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber236">source</a></span></span>
     </span>
   </h3>
 
@@ -1703,7 +2147,7 @@ duration.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber197">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber218">source</a></span></span>
     </span>
   </h3>
 
@@ -1760,7 +2204,7 @@ duration.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber327">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber348">source</a></span></span>
     </span>
   </h3>
 
@@ -1850,7 +2294,7 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber233">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber254">source</a></span></span>
     </span>
   </h3>
 
@@ -1907,7 +2351,7 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber224">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber245">source</a></span></span>
     </span>
   </h3>
 
@@ -1964,7 +2408,7 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber359">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber380">source</a></span></span>
     </span>
   </h3>
 
@@ -2021,7 +2465,7 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber51">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber56">source</a></span></span>
     </span>
   </h3>
 
@@ -2065,7 +2509,7 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber188">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber209">source</a></span></span>
     </span>
   </h3>
 
@@ -2122,7 +2566,7 @@ arrays of peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber90">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber136">source</a></span></span>
     </span>
   </h3>
 
@@ -2182,7 +2626,20 @@ and append to container element.</p>
 
   
 
-  
+  <div data-ice="throwWrap">
+    <h4>Throw:</h4>
+    <table>
+      <tbody>
+      
+      <tr class="throw" data-ice="throw">
+        <td><p data-ice="throwName"><span>*</span></p></td>
+        <td data-ice="throwDesc"><p>Will throw an error if the <code>url</code> argument is not a valid media
+element.</p>
+</td>
+      </tr>
+</tbody>
+    </table>
+  </div>
 
   
 
@@ -2205,7 +2662,7 @@ and append to container element.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber113">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber159">source</a></span></span>
     </span>
   </h3>
 
@@ -2273,7 +2730,7 @@ and append to container element.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber282">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber303">source</a></span></span>
     </span>
   </h3>
 
@@ -2342,7 +2799,7 @@ and append to container element.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber268">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber289">source</a></span></span>
     </span>
   </h3>
 
@@ -2436,7 +2893,7 @@ of a clip.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber252">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber273">source</a></span></span>
     </span>
   </h3>
 
@@ -2497,7 +2954,7 @@ of a clip.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber242">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber263">source</a></span></span>
     </span>
   </h3>
 
@@ -2558,7 +3015,7 @@ of a clip.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber341">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber362">source</a></span></span>
     </span>
   </h3>
 
@@ -2633,7 +3090,7 @@ are no errors.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber368">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement.js.html#lineNumber389">source</a></span></span>
     </span>
   </h3>
 

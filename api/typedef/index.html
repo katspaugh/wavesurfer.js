@@ -33,6 +33,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html">MediaElementWebAudio</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
@@ -971,6 +972,14 @@ channels for this node&apos;s input. Values of up to 32 are supported.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">numberOfOutputChannels</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>default: 1</li></ul></td>
+      <td data-ice="description"><p>Integer specifying the number of
+channels for this node&apos;s output.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">deferInit</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
       <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
@@ -1781,9 +1790,15 @@ center waveform on current progress</p>
       <td data-ice="name" class="code" data-depth="0">backend</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
       <td data-ice="appendix"><ul><li>default: &apos;WebAudio&apos;</li></ul></td>
-      <td data-ice="description"><p><code>&apos;WebAudio&apos;|&apos;MediaElement&apos;</code> In most cases
-you don&apos;t have to set this manually. MediaElement is a fallback for
-unsupported browsers.</p>
+      <td data-ice="description"><p><code>&apos;WebAudio&apos;|&apos;MediaElement&apos;|&apos;MediaElementWebAudio&apos;</code> In most cases
+you don&apos;t have to set this manually. MediaElement is a fallback for unsupported browsers.
+MediaElementWebAudio allows to use WebAudio API also with big audio files, loading audio like with
+MediaElement backend (HTML5 audio tag). You have to use the same methods of MediaElement backend for loading and
+playback, giving also peaks, so the audio data are not decoded. In this way you can use WebAudio features, like filters,
+also with audio with big duration. For example:
+<code>wavesurfer.load(url | HTMLMediaElement, peaks, preload, duration);
+  wavesurfer.play();
+  wavesurfer.setFilter(customFilter);</code></p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
@@ -1799,6 +1814,13 @@ waveform container.</p>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"><ul><li>default: 1</li></ul></td>
       <td data-ice="description"><p>The height of the wave bars.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">barRadius</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>default: 0</li></ul></td>
+      <td data-ice="description"><p>The radius of the wave bars. Makes bars rounded</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
@@ -1919,7 +1941,7 @@ that may be too wide for browsers to draw on a single canvas.</p>
       <td data-ice="name" class="code" data-depth="0">mediaControls</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
       <td data-ice="appendix"><ul><li>default: false</li></ul></td>
-      <td data-ice="description"><p>(Use with backend <code>MediaElement</code>)
+      <td data-ice="description"><p>(Use with backend <code>MediaElement</code> or <code>MediaElementWebAudio</code>)
 this enables the native controls for the media element</p>
 </td>
     </tr>
@@ -1927,8 +1949,8 @@ this enables the native controls for the media element</p>
       <td data-ice="name" class="code" data-depth="0">mediaType</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></td>
       <td data-ice="appendix"><ul><li>default: &apos;audio&apos;</li></ul></td>
-      <td data-ice="description"><p>(Use with backend <code>MediaElement</code>)
-<code>&apos;audio&apos;|&apos;video&apos;</code></p>
+      <td data-ice="description"><p>(Use with backend <code>MediaElement</code> or <code>MediaElementWebAudio</code>)
+<code>&apos;audio&apos;|&apos;video&apos;</code> (&apos;video&apos; only for <code>MediaElement</code>)</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">

@@ -33,6 +33,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html">MediaElementWebAudio</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
@@ -86,6 +87,7 @@ import MultiCanvas from &apos;./drawer.multicanvas&apos;;
 import WebAudio from &apos;./webaudio&apos;;
 import MediaElement from &apos;./mediaelement&apos;;
 import PeakCache from &apos;./peakcache&apos;;
+import MediaElementWebAudio from &apos;./mediaelement-webaudio&apos;;
 
 /*
  * This work is licensed under a BSD-3-Clause License.
@@ -113,12 +115,20 @@ import PeakCache from &apos;./peakcache&apos;;
  * waveform is centered
  * @property {boolean} autoCenterImmediately=false If autoCenter is active, immediately
  * center waveform on current progress
- * @property {string} backend=&apos;WebAudio&apos; `&apos;WebAudio&apos;|&apos;MediaElement&apos;` In most cases
- * you don&apos;t have to set this manually. MediaElement is a fallback for
- * unsupported browsers.
+ * @property {string} backend=&apos;WebAudio&apos; `&apos;WebAudio&apos;|&apos;MediaElement&apos;|&apos;MediaElementWebAudio&apos;` In most cases
+ * you don&apos;t have to set this manually. MediaElement is a fallback for unsupported browsers.
+ * MediaElementWebAudio allows to use WebAudio API also with big audio files, loading audio like with
+ * MediaElement backend (HTML5 audio tag). You have to use the same methods of MediaElement backend for loading and
+ * playback, giving also peaks, so the audio data are not decoded. In this way you can use WebAudio features, like filters,
+ * also with audio with big duration. For example:
+ * ` wavesurfer.load(url | HTMLMediaElement, peaks, preload, duration);
+ *   wavesurfer.play();
+ *   wavesurfer.setFilter(customFilter);
+ * `
  * @property {string} backgroundColor=null Change background color of the
  * waveform container.
  * @property {number} barHeight=1 The height of the wave bars.
+ * @property {number} barRadius=0 The radius of the wave bars. Makes bars rounded
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
  * @property {number} barWidth=null Draw the waveform using bars.
@@ -149,10 +159,10 @@ import PeakCache from &apos;./peakcache&apos;;
  * even integer). If the waveform is longer than this value, additional canvases
  * will be used to render the waveform, which is useful for very large waveforms
  * that may be too wide for browsers to draw on a single canvas.
- * @property {boolean} mediaControls=false (Use with backend `MediaElement`)
+ * @property {boolean} mediaControls=false (Use with backend `MediaElement` or `MediaElementWebAudio`)
  * this enables the native controls for the media element
- * @property {string} mediaType=&apos;audio&apos; (Use with backend `MediaElement`)
- * `&apos;audio&apos;|&apos;video&apos;`
+ * @property {string} mediaType=&apos;audio&apos; (Use with backend `MediaElement` or `MediaElementWebAudio`)
+ * `&apos;audio&apos;|&apos;video&apos;` (&apos;video&apos; only for `MediaElement`)
  * @property {number} minPxPerSec=20 Minimum number of pixels per second of
  * audio.
  * @property {boolean} normalize=false If true, normalize by the maximum peak
@@ -296,6 +306,7 @@ export default class WaveSurfer extends util.Observer {
         backend: &apos;WebAudio&apos;,
         backgroundColor: null,
         barHeight: 1,
+        barRadius: 0,
         barGap: null,
         container: null,
         cursorColor: &apos;#333&apos;,
@@ -333,7 +344,8 @@ export default class WaveSurfer extends util.Observer {
     /** @private */
     backends = {
         MediaElement,
-        WebAudio
+        WebAudio,
+        MediaElementWebAudio
     };
 
     /**
@@ -487,7 +499,8 @@ export default class WaveSurfer extends util.Observer {
         }
 
         if (
-            this.params.backend == &apos;WebAudio&apos; &amp;&amp;
+            (this.params.backend == &apos;WebAudio&apos; ||
+                this.params.backend === &apos;MediaElementWebAudio&apos;) &amp;&amp;
             !WebAudio.prototype.supportsWebAudio.call(null)
         ) {
             this.params.backend = &apos;MediaElement&apos;;
@@ -755,8 +768,11 @@ export default class WaveSurfer extends util.Observer {
             this.fireEvent(&apos;audioprocess&apos;, time);
         });
 
-        // only needed for MediaElement backend
-        if (this.params.backend === &apos;MediaElement&apos;) {
+        // only needed for MediaElement and MediaElementWebAudio backend
+        if (
+            this.params.backend === &apos;MediaElement&apos; ||
+            this.params.backend === &apos;MediaElementWebAudio&apos;
+        ) {
             this.backend.on(&apos;seek&apos;, () =&gt; {
                 this.drawer.progress(this.backend.getPlayedPercents());
             });
@@ -1351,13 +1367,14 @@ export default class WaveSurfer extends util.Observer {
      * audio element with the audio
      * @param {number[]|Number.&lt;Array[]&gt;} peaks Wavesurfer does not have to decode
      * the audio to render the waveform if this is specified
-     * @param {?string} preload (Use with backend `MediaElement`)
+     * @param {?string} preload (Use with backend `MediaElement` and `MediaElementWebAudio`)
      * `&apos;none&apos;|&apos;metadata&apos;|&apos;auto&apos;` Preload attribute for the media element
      * @param {?number} duration The duration of the audio. This is used to
      * render the peaks data in the correct size for the audio duration (as
      * befits the current `minPxPerSec` and zoom value) without having to decode
      * the audio.
      * @returns {void}
+     * @throws Will throw an error if the `url` argument is empty.
      * @example
      * // uses fetch or media element to load file (depending on backend)
      * wavesurfer.load(&apos;http://example.com/demo.wav&apos;);
@@ -1371,8 +1388,10 @@ export default class WaveSurfer extends util.Observer {
      * );
      */
     load(url, peaks, preload, duration) {
+        if (!url) {
+            throw new Error(&apos;url parameter cannot be empty&apos;);
+        }
         this.empty();
-
         if (preload) {
             // check whether the preload attribute will be usable and if not log
             // a warning listing the reasons why not and nullify the variable
@@ -1380,8 +1399,10 @@ export default class WaveSurfer extends util.Observer {
                 &quot;Preload is not &apos;auto&apos;, &apos;none&apos; or &apos;metadata&apos;&quot;:
                     [&apos;auto&apos;, &apos;metadata&apos;, &apos;none&apos;].indexOf(preload) === -1,
                 &apos;Peaks are not provided&apos;: !peaks,
-                &apos;Backend is not of type MediaElement&apos;:
-                    this.params.backend !== &apos;MediaElement&apos;,
+                &quot;Backend is not of type &apos;MediaElement&apos; or &apos;MediaElementWebAudio&apos;&quot;:
+                    [&apos;MediaElement&apos;, &apos;MediaElementWebAudio&apos;].indexOf(
+                        this.params.backend
+                    ) === -1,
                 &apos;Url is not of type string&apos;: typeof url !== &apos;string&apos;
             };
             const activeReasons = Object.keys(preloadIgnoreReasons).filter(
@@ -1402,6 +1423,7 @@ export default class WaveSurfer extends util.Observer {
             case &apos;WebAudio&apos;:
                 return this.loadBuffer(url, peaks, duration);
             case &apos;MediaElement&apos;:
+            case &apos;MediaElementWebAudio&apos;:
                 return this.loadMediaElement(url, peaks, preload, duration);
         }
     }
@@ -1460,9 +1482,12 @@ export default class WaveSurfer extends util.Observer {
 
         this.tmpEvents.push(
             this.backend.once(&apos;canplay&apos;, () =&gt; {
-                this.drawBuffer();
-                this.isReady = true;
-                this.fireEvent(&apos;ready&apos;);
+                // ignore when backend was already destroyed
+                if (!this.backend.destroyed) {
+                    this.drawBuffer();
+                    this.isReady = true;
+                    this.fireEvent(&apos;ready&apos;);
+                }
             }),
             this.backend.once(&apos;error&apos;, err =&gt; this.fireEvent(&apos;error&apos;, err))
         );
@@ -1659,6 +1684,8 @@ export default class WaveSurfer extends util.Observer {
         this.isReady = false;
         this.cancelAjax();
         this.clearTmpEvents();
+
+        // empty drawer
         this.drawer.progress(0);
         this.drawer.setWidth(0);
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
@@ -1683,8 +1710,12 @@ export default class WaveSurfer extends util.Observer {
                 true
             );
         }
-        this.backend.destroy();
-        this.drawer.destroy();
+        if (this.backend) {
+            this.backend.destroy();
+        }
+        if (this.drawer) {
+            this.drawer.destroy();
+        }
         this.isDestroyed = true;
         this.isReady = false;
         this.arraybuffer = null;

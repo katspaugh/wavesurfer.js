@@ -36,6 +36,12 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
+    "wavesurfer.js/src/mediaelement-webaudio.js~mediaelementwebaudio",
+    "class/src/mediaelement-webaudio.js~MediaElementWebAudio.html",
+    "<span>MediaElementWebAudio</span> <span class=\"search-result-import-path\">wavesurfer.js/src/mediaelement-webaudio.js</span>",
+    "class"
+  ],
+  [
     "wavesurfer.js/src/plugin/mediasession.js~mediasessionplugin",
     "class/src/plugin/mediasession.js~MediaSessionPlugin.html",
     "<span>MediaSessionPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/mediasession.js</span>",
@@ -804,6 +810,30 @@ window.esdocSearchIndex = [
     "typedef"
   ],
   [
+    "src/mediaelement-webaudio.js",
+    "file/src/mediaelement-webaudio.js.html",
+    "src/mediaelement-webaudio.js",
+    "file"
+  ],
+  [
+    "src/mediaelement-webaudio.js~mediaelementwebaudio#constructor",
+    "class/src/mediaelement-webaudio.js~MediaElementWebAudio.html#instance-constructor-constructor",
+    "src/mediaelement-webaudio.js~MediaElementWebAudio#constructor",
+    "method"
+  ],
+  [
+    "src/mediaelement-webaudio.js~mediaelementwebaudio#createmediaelementsource",
+    "class/src/mediaelement-webaudio.js~MediaElementWebAudio.html#instance-method-createMediaElementSource",
+    "src/mediaelement-webaudio.js~MediaElementWebAudio#createMediaElementSource",
+    "method"
+  ],
+  [
+    "src/mediaelement-webaudio.js~mediaelementwebaudio#init",
+    "class/src/mediaelement-webaudio.js~MediaElementWebAudio.html#instance-method-init",
+    "src/mediaelement-webaudio.js~MediaElementWebAudio#init",
+    "method"
+  ],
+  [
     "src/mediaelement.js",
     "file/src/mediaelement.js.html",
     "src/mediaelement.js",
@@ -816,10 +846,22 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/mediaelement.js~mediaelement#createtimer",
+    "class/src/mediaelement.js~MediaElement.html#instance-method-createTimer",
+    "src/mediaelement.js~MediaElement#createTimer",
+    "method"
+  ],
+  [
     "src/mediaelement.js~mediaelement#destroy",
     "class/src/mediaelement.js~MediaElement.html#instance-method-destroy",
     "src/mediaelement.js~MediaElement#destroy",
     "method"
+  ],
+  [
+    "src/mediaelement.js~mediaelement#destroyed",
+    "class/src/mediaelement.js~MediaElement.html#instance-member-destroyed",
+    "src/mediaelement.js~MediaElement#destroyed",
+    "member"
   ],
   [
     "src/mediaelement.js~mediaelement#getcurrenttime",
@@ -999,6 +1041,12 @@ window.esdocSearchIndex = [
     "src/plugin/cursor.js~cursorplugin#init",
     "class/src/plugin/cursor.js~CursorPlugin.html#instance-method-init",
     "src/plugin/cursor.js~CursorPlugin#init",
+    "method"
+  ],
+  [
+    "src/plugin/cursor.js~cursorplugin#outerwidth",
+    "class/src/plugin/cursor.js~CursorPlugin.html#instance-method-outerWidth",
+    "src/plugin/cursor.js~CursorPlugin#outerWidth",
     "method"
   ],
   [
@@ -2508,9 +2556,45 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "src/webaudio.js~webaudio#ac",
+    "class/src/webaudio.js~WebAudio.html#instance-member-ac",
+    "src/webaudio.js~WebAudio#ac",
+    "member"
+  ],
+  [
+    "src/webaudio.js~webaudio#analyser",
+    "class/src/webaudio.js~WebAudio.html#instance-member-analyser",
+    "src/webaudio.js~WebAudio#analyser",
+    "member"
+  ],
+  [
+    "src/webaudio.js~webaudio#audiocontext",
+    "class/src/webaudio.js~WebAudio.html#instance-member-audioContext",
+    "src/webaudio.js~WebAudio#audioContext",
+    "member"
+  ],
+  [
     "src/webaudio.js~webaudio#constructor",
     "class/src/webaudio.js~WebAudio.html#instance-constructor-constructor",
     "src/webaudio.js~WebAudio#constructor",
+    "method"
+  ],
+  [
+    "src/webaudio.js~webaudio#createanalysernode",
+    "class/src/webaudio.js~WebAudio.html#instance-method-createAnalyserNode",
+    "src/webaudio.js~WebAudio#createAnalyserNode",
+    "method"
+  ],
+  [
+    "src/webaudio.js~webaudio#createscriptnode",
+    "class/src/webaudio.js~WebAudio.html#instance-method-createScriptNode",
+    "src/webaudio.js~WebAudio#createScriptNode",
+    "method"
+  ],
+  [
+    "src/webaudio.js~webaudio#createvolumenode",
+    "class/src/webaudio.js~WebAudio.html#instance-method-createVolumeNode",
+    "src/webaudio.js~WebAudio#createVolumeNode",
     "method"
   ],
   [
@@ -2518,6 +2602,18 @@ window.esdocSearchIndex = [
     "class/src/webaudio.js~WebAudio.html#instance-method-destroy",
     "src/webaudio.js~WebAudio#destroy",
     "method"
+  ],
+  [
+    "src/webaudio.js~webaudio#destroyed",
+    "class/src/webaudio.js~WebAudio.html#instance-member-destroyed",
+    "src/webaudio.js~WebAudio#destroyed",
+    "member"
+  ],
+  [
+    "src/webaudio.js~webaudio#gainnode",
+    "class/src/webaudio.js~WebAudio.html#instance-member-gainNode",
+    "src/webaudio.js~WebAudio#gainNode",
+    "member"
   ],
   [
     "src/webaudio.js~webaudio#getaudiocontext",
@@ -2604,6 +2700,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/webaudio.js~webaudio#scriptnode",
+    "class/src/webaudio.js~WebAudio.html#instance-member-scriptNode",
+    "src/webaudio.js~WebAudio#scriptNode",
+    "member"
+  ],
+  [
     "src/webaudio.js~webaudio#seekto",
     "class/src/webaudio.js~WebAudio.html#instance-method-seekTo",
     "src/webaudio.js~WebAudio#seekTo",
@@ -2656,5 +2758,11 @@ window.esdocSearchIndex = [
     "class/src/webaudio.js~WebAudio.html#instance-method-supportsWebAudio",
     "src/webaudio.js~WebAudio#supportsWebAudio",
     "method"
+  ],
+  [
+    "src/webaudio.js~webaudio.scriptbuffersize",
+    "class/src/webaudio.js~WebAudio.html#static-member-scriptBufferSize",
+    "src/webaudio.js~WebAudio.scriptBufferSize",
+    "member"
   ]
 ]
