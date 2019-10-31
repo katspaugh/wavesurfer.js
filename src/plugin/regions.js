@@ -98,15 +98,16 @@ class Region {
     }
 
     /* Play the audio region. */
-    play() {
-        this.wavesurfer.play(this.start, this.end);
+    play(start) {
+        const s = start || this.start;
+        this.wavesurfer.play(s, this.end);
         this.fireEvent('play');
         this.wavesurfer.fireEvent('region-play', this);
     }
 
     /* Play the region in loop. */
-    playLoop() {
-        this.play();
+    playLoop(start) {
+        this.play(start);
         this.once('out', () => this.playLoop());
     }
 
