@@ -643,6 +643,7 @@ export default class RegionsPlugin {
         this.params = params;
         this.wavesurfer = ws;
         this.util = ws.util;
+        this.maxRegions = params.maxRegions;
         this.util.getRegionSnapToGridValue = value => {
             return this.getRegionSnapToGridValue(value, params);
         };
@@ -836,7 +837,11 @@ export default class RegionsPlugin {
                 return;
             }
 
+
             if (!region) {
+                if (this.maxRegions && Object.keys(this.list).length >= this.maxRegions)
+                    return;
+
                 region = this.add(params || {});
             }
 
