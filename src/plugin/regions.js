@@ -551,6 +551,7 @@ class Region {
  * @property {?number} snapToGridInterval Snap the regions to a grid of the specified multiples in seconds
  * @property {?number} snapToGridOffset Shift the snap-to-grid by the specified seconds. May also be negative.
  * @property {?boolean} deferInit Set to true to manually call
+ * @property {number[]} maxRegions Maximum number of regions that may be created by the user at one time.
  * `initPlugin('regions')`
  */
 
@@ -837,9 +838,12 @@ export default class RegionsPlugin {
                 return;
             }
 
-
+            // auto-create a region during mouse drag, unless region-count would exceed "maxRegions"
             if (!region) {
-                if (this.maxRegions && Object.keys(this.list).length >= this.maxRegions)
+                if (
+                    this.maxRegions &&
+                    Object.keys(this.list).length >= this.maxRegions
+                )
                     return;
 
                 region = this.add(params || {});
