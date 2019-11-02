@@ -97,16 +97,23 @@ class Region {
         }
     }
 
-    /* Play the audio region. */
-    play() {
-        this.wavesurfer.play(this.start, this.end);
+    /**
+     * Play the audio region.
+     * @param {number} start Optional offset to start playing at
+     */
+    play(start) {
+        const s = start || this.start;
+        this.wavesurfer.play(s, this.end);
         this.fireEvent('play');
         this.wavesurfer.fireEvent('region-play', this);
     }
 
-    /* Play the region in loop. */
-    playLoop() {
-        this.play();
+    /**
+     * Play the audio region in a loop.
+     * @param {number} start Optional offset to start playing at
+     * */
+    playLoop(start) {
+        this.play(start);
         this.once('out', () => this.playLoop());
     }
 
