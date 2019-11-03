@@ -111,7 +111,7 @@ export default class WebAudio extends util.Observer {
         this.lastPlay = this.ac.currentTime;
         /** @private */
         this.startPosition = 0;
-        /** @private  */
+        /** @private */
         this.scheduledPause = null;
         /** @private */
         this.states = {
@@ -656,7 +656,7 @@ export default class WebAudio extends util.Observer {
 
         this.scheduledPause = end;
 
-        this.source.start(0, start, end - start);
+        this.source.start(0, start);
 
         if (this.ac.state == 'suspended') {
             this.ac.resume && this.ac.resume();
@@ -714,5 +714,14 @@ export default class WebAudio extends util.Observer {
             this.playbackRate = value;
             this.play();
         }
+    }
+
+    /**
+     * Set a point in seconds for playback to stop at.
+     *
+     * @param {number} end Position to end at
+     */
+    setPlayEnd(end) {
+        this.scheduledPause = end;
     }
 }
