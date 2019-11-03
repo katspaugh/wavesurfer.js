@@ -699,12 +699,25 @@ export default class RegionsPlugin {
     }
 
     /**
+     * check to see if adding a new region would exceed maxRegions
+     * @return {boolean} whether we should proceed and create a region
+     * @private
+     */
+    wouldExceedMaxRegions() {
+        return (
+            this.maxRegions && Object.keys(this.list).length >= this.maxRegions
+        );
+    }
+
+    /**
      * Add a region
      *
      * @param {object} params Region parameters
      * @return {Region} The created region
      */
     add(params) {
+        if (this.wouldExceedMaxRegions()) return null;
+
         const region = new this.wavesurfer.Region(params, this.wavesurfer);
 
         this.list[region.id] = region;
@@ -840,13 +853,8 @@ export default class RegionsPlugin {
 
             // auto-create a region during mouse drag, unless region-count would exceed "maxRegions"
             if (!region) {
-                if (
-                    this.maxRegions &&
-                    Object.keys(this.list).length >= this.maxRegions
-                )
-                    return;
-
                 region = this.add(params || {});
+                if (!region) return;
             }
 
             const end = this.wavesurfer.drawer.handleEvent(e);
