@@ -558,6 +558,7 @@ class Region {
  * @property {?number} snapToGridInterval Snap the regions to a grid of the specified multiples in seconds
  * @property {?number} snapToGridOffset Shift the snap-to-grid by the specified seconds. May also be negative.
  * @property {?boolean} deferInit Set to true to manually call
+ * @property {number[]} maxRegions Maximum number of regions that may be created by the user at one time.
  * `initPlugin('regions')`
  */
 
@@ -650,6 +651,7 @@ export default class RegionsPlugin {
         this.params = params;
         this.wavesurfer = ws;
         this.util = ws.util;
+        this.maxRegions = params.maxRegions;
         this.util.getRegionSnapToGridValue = value => {
             return this.getRegionSnapToGridValue(value, params);
         };
@@ -704,12 +706,25 @@ export default class RegionsPlugin {
     }
 
     /**
+     * check to see if adding a new region would exceed maxRegions
+     * @return {boolean} whether we should proceed and create a region
+     * @private
+     */
+    wouldExceedMaxRegions() {
+        return (
+            this.maxRegions && Object.keys(this.list).length >= this.maxRegions
+        );
+    }
+
+    /**
      * Add a region
      *
      * @param {object} params Region parameters
      * @return {Region} The created region
      */
     add(params) {
+        if (this.wouldExceedMaxRegions()) return null;
+
         const region = new this.wavesurfer.Region(params, this.wavesurfer);
 
         this.list[region.id] = region;
@@ -843,8 +858,10 @@ export default class RegionsPlugin {
                 return;
             }
 
+            // auto-create a region during mouse drag, unless region-count would exceed "maxRegions"
             if (!region) {
                 region = this.add(params || {});
+                if (!region) return;
             }
 
             const end = this.wavesurfer.drawer.handleEvent(e);
