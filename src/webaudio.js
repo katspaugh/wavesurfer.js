@@ -720,6 +720,7 @@ export default class WebAudio extends util.Observer {
      * Set a point in seconds for playback to stop at.
      *
      * @param {number} end Position to end at
+     * @version 3.3.0
      */
     setPlayEnd(end) {
         this.scheduledPause = end;

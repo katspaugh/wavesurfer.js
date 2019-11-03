@@ -771,6 +771,7 @@ export default class WaveSurfer extends util.Observer {
      * Set a point in seconds for playback to stop at.
      *
      * @param {number} position Position (in seconds) to stop at
+     * @version 3.3.0
      */
     setPlayEnd(position) {
         this.backend.setPlayEnd(position);
