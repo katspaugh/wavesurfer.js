@@ -29,6 +29,7 @@ class Region {
         this.isDragging = false;
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
+        this.handleColor = params.handleColor || 'rgba(0, 0, 0, 1)';
         this.data = params.data || {};
         this.attributes = params.attributes || {};
 
@@ -60,6 +61,9 @@ class Region {
         }
         if (null != params.color) {
             this.color = params.color;
+        }
+        if (null != params.handleColor) {
+            this.handleColor = params.handleColor;
         }
         if (null != params.data) {
             this.data = params.data;
@@ -120,6 +124,13 @@ class Region {
     /* Render a region as a DOM element. */
     render() {
         const regionEl = document.createElement('region');
+        const handleLeft = regionEl.appendChild(
+            document.createElement('handle')
+        );
+        const handleRight = regionEl.appendChild(
+            document.createElement('handle')
+        );
+        
         regionEl.className = 'wavesurfer-region';
         regionEl.title = this.formatTime(this.start, this.end);
         regionEl.setAttribute('data-id', this.id);
@@ -137,15 +148,13 @@ class Region {
             height: '100%',
             top: '0px'
         });
+        
+        /* Allows the user to set the handlecolor dynamically */
+        handleLeft.style.backgroundColor = this.handleColor;
+        handleRight.style.backgroundColor = this.handleColor;
 
         /* Resize handles */
         if (this.resize) {
-            const handleLeft = regionEl.appendChild(
-                document.createElement('handle')
-            );
-            const handleRight = regionEl.appendChild(
-                document.createElement('handle')
-            );
             handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
             handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
             const css = {
