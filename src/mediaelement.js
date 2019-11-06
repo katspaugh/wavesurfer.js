@@ -314,10 +314,11 @@ export default class MediaElement extends WebAudio {
     /**
      * Set the play end
      *
-     * @private
      * @param {number} end Where to end
      */
     setPlayEnd(end) {
+        this.clearPlayEnd();
+
         this._onPlayEnd = time => {
             if (time >= end) {
                 this.pause();
