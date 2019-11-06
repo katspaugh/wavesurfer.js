@@ -1,6 +1,14 @@
 wavesurfer.js changelog
 =======================
 
+3.3.0 (unreleased)
+------------------
+
+- Expose progress to the `dblclick` event (#1790)
+- Regions plugin:
+  - Add `start` argument to `play` and `playLoop` methods (#1794)
+  - Add `maxRegions` option to limit max numbers of created regions (#1793)
+
 3.2.0 (24.10.2019)
 ------------------
 
