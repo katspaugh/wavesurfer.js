@@ -488,8 +488,8 @@ export default class MultiCanvas extends Drawer {
                     if (!this.params.splitChannelsOptions.overlay) {
                         this.setHeight(
                             Math.max(filteredChannels.length, 1) *
-                                this.params.height *
-                                this.params.pixelRatio
+                            this.params.height *
+                            this.params.pixelRatio
                         );
                     }
 
@@ -603,7 +603,7 @@ export default class MultiCanvas extends Drawer {
     updateProgress(position) {
         this.style(this.progressWave, {
             //width: position + 'px'
-            transform: `translate3d(${position}px, 0px, 0px)`
+            transform: `translateX(${position}px)`
         });
     }
 }
