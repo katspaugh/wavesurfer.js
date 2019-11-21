@@ -224,6 +224,7 @@ export default class WaveSurfer extends util.Observer {
         barHeight: 1,
         barRadius: 0,
         barGap: null,
+        barMinHeight: null,
         container: null,
         cursorColor: '#333',
         cursorWidth: 1,
