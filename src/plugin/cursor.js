@@ -266,7 +266,9 @@ export default class CursorPlugin {
             }
             this.style(this.showTime, {
                 left: `${xpos}px`,
-                top: `${ypos}px`,
+                top: `${ypos}px`
+            });
+            this.style(this.displayTime, {
                 visibility: 'visible'
             });
             this.displayTime.innerHTML = `${formatValue}`;
