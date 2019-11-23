@@ -48,6 +48,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
  * @property {number} barWidth=null Draw the waveform using bars.
+ * @property {number} barMinHeight=null If specified, draw at least a bar of this height,
+ * eliminating waveform gaps
  * @property {boolean} closeAudioContext=false Close and nullify all audio
  * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
@@ -224,6 +226,7 @@ export default class WaveSurfer extends util.Observer {
         barHeight: 1,
         barRadius: 0,
         barGap: null,
+        barMinHeight: null,
         container: null,
         cursorColor: '#333',
         cursorWidth: 1,

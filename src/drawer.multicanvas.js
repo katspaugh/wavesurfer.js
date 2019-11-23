@@ -300,7 +300,13 @@ export default class MultiCanvas extends Drawer {
                 for (i; i < last; i += step) {
                     const peak =
                         peaks[Math.floor(i * scale * peakIndexScale)] || 0;
-                    const h = Math.round((peak / absmax) * halfH);
+                    let h = Math.round((peak / absmax) * halfH);
+
+                    /* in case of silences, allow the user to specify that we
+                     * always draw *something* (normally a 1px high bar) */
+                    if (h == 0 && this.params.barMinHeight)
+                        h = this.params.barMinHeight;
+
                     this.fillRect(
                         i + this.halfPixel,
                         halfH - h + offsetY,
