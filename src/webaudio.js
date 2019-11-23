@@ -170,6 +170,7 @@ export default class WebAudio extends util.Observer {
     /** @private */
     disconnectFilters() {
         if (this.filters) {
+            this.analyser.disconnect(this.filters[0]);
             this.filters.forEach(filter => {
                 filter && filter.disconnect();
             });
