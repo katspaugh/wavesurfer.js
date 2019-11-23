@@ -4,10 +4,14 @@ wavesurfer.js changelog
 3.3.0 (unreleased)
 ------------------
 
+- Add `wavesurfer.setPlayEnd(position)` to set a point in seconds for
+  playback to stop at (#1795)
+- Add `barMinHeight` option (#1693)
 - Expose progress to the `dblclick` event (#1790)
 - Regions plugin:
   - Add `start` argument to `play` and `playLoop` methods (#1794)
   - Add `maxRegions` option to limit max numbers of created regions (#1793)
+- Cursor plugin: fix time visibility (#1802)
 
 3.2.0 (24.10.2019)
 ------------------
