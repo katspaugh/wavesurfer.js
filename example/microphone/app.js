@@ -27,7 +27,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 cursorWidth: 0,
                 audioContext: context || null,
                 audioScriptProcessor: processor || null,
-                plugins: [WaveSurfer.microphone.create()]
+                plugins: [
+                    WaveSurfer.microphone.create({
+                        bufferSize: 4096,
+                        numberOfInputChannels: 1,
+                        numberOfOutputChannels: 1,
+                        constraints: {
+                            video: false,
+                            audio: true
+                        }
+                    })
+                ]
             });
 
             wavesurfer.microphone.on('deviceReady', function() {
@@ -35,6 +45,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             wavesurfer.microphone.on('deviceError', function(code) {
                 console.warn('Device error: ' + code);
+            });
+            wavesurfer.on('error', function(e) {
+                console.warn(e);
             });
             wavesurfer.microphone.start();
         } else {

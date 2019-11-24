@@ -3,6 +3,7 @@ import MultiCanvas from './drawer.multicanvas';
 import WebAudio from './webaudio';
 import MediaElement from './mediaelement';
 import PeakCache from './peakcache';
+import MediaElementWebAudio from './mediaelement-webaudio';
 
 /*
  * This work is licensed under a BSD-3-Clause License.
@@ -25,17 +26,30 @@ import PeakCache from './peakcache';
  * @property {ScriptProcessorNode} audioScriptProcessor=null Use your own previously
  * initialized ScriptProcessorNode or leave blank.
  * @property {boolean} autoCenter=true If a scrollbar is present, center the
- * waveform around the progress
- * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'` In most cases
- * you don't have to set this manually. MediaElement is a fallback for
- * unsupported browsers.
+ * waveform on current progress
+ * @property {number} autoCenterRate=5 If autoCenter is active, rate at which the
+ * waveform is centered
+ * @property {boolean} autoCenterImmediately=false If autoCenter is active, immediately
+ * center waveform on current progress
+ * @property {string} backend='WebAudio' `'WebAudio'|'MediaElement'|'MediaElementWebAudio'` In most cases
+ * you don't have to set this manually. MediaElement is a fallback for unsupported browsers.
+ * MediaElementWebAudio allows to use WebAudio API also with big audio files, loading audio like with
+ * MediaElement backend (HTML5 audio tag). You have to use the same methods of MediaElement backend for loading and
+ * playback, giving also peaks, so the audio data are not decoded. In this way you can use WebAudio features, like filters,
+ * also with audio with big duration. For example:
+ * ` wavesurfer.load(url | HTMLMediaElement, peaks, preload, duration);
+ *   wavesurfer.play();
+ *   wavesurfer.setFilter(customFilter);
+ * `
  * @property {string} backgroundColor=null Change background color of the
  * waveform container.
- * @property {number} barHeight=1 The height of the wave
+ * @property {number} barHeight=1 The height of the wave bars.
+ * @property {number} barRadius=0 The radius of the wave bars. Makes bars rounded
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
- * @property {object} drawingContextAttributes={desynchronized: true} Drawing context
- * attributes.
+ * @property {number} barWidth=null Draw the waveform using bars.
+ * @property {number} barMinHeight=null If specified, draw at least a bar of this height,
+ * eliminating waveform gaps
  * @property {boolean} closeAudioContext=false Close and nullify all audio
  * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
@@ -43,6 +57,8 @@ import PeakCache from './peakcache';
  * @property {string} cursorColor='#333' The fill color of the cursor indicating
  * the playhead position.
  * @property {number} cursorWidth=1 Measured in pixels.
+ * @property {object} drawingContextAttributes={desynchronized: true} Drawing context
+ * attributes.
  * @property {number} duration=null Optional audio length so pre-rendered peaks
  * can be display immediately for example.
  * @property {boolean} fillParent=true Whether to fill the entire container or
@@ -63,10 +79,10 @@ import PeakCache from './peakcache';
  * even integer). If the waveform is longer than this value, additional canvases
  * will be used to render the waveform, which is useful for very large waveforms
  * that may be too wide for browsers to draw on a single canvas.
- * @property {boolean} mediaControls=false (Use with backend `MediaElement`)
+ * @property {boolean} mediaControls=false (Use with backend `MediaElement` or `MediaElementWebAudio`)
  * this enables the native controls for the media element
- * @property {string} mediaType='audio' (Use with backend `MediaElement`)
- * `'audio'|'video'`
+ * @property {string} mediaType='audio' (Use with backend `MediaElement` or `MediaElementWebAudio`)
+ * `'audio'|'video'` ('video' only for `MediaElement`)
  * @property {number} minPxPerSec=20 Minimum number of pixels per second of
  * audio.
  * @property {boolean} normalize=false If true, normalize by the maximum peak
@@ -100,7 +116,21 @@ import PeakCache from './peakcache';
  * the channels of the audio
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
- * @property {object} xhr={} XHR options.
+ * @property {object} xhr={} XHR options. For example:
+ * `let xhr = {
+ *     cache: 'default',
+ *     mode: 'cors',
+ *     method: 'GET',
+ *     credentials: 'same-origin',
+ *     redirect: 'follow',
+ *     referrer: 'client',
+ *     headers: [
+ *         {
+ *             key: 'Authorization',
+ *             value: 'my-token'
+ *         }
+ *     ]
+ * };`
  */
 
 /**
@@ -191,10 +221,14 @@ export default class WaveSurfer extends util.Observer {
         audioScriptProcessor: null,
         audioRate: 1,
         autoCenter: true,
+        autoCenterRate: 5,
+        autoCenterImmediately: false,
         backend: 'WebAudio',
         backgroundColor: null,
         barHeight: 1,
+        barRadius: 0,
         barGap: null,
+        barMinHeight: null,
         container: null,
         cursorColor: '#333',
         cursorWidth: 1,
@@ -234,7 +268,8 @@ export default class WaveSurfer extends util.Observer {
     /** @private */
     backends = {
         MediaElement,
-        WebAudio
+        WebAudio,
+        MediaElementWebAudio
     };
 
     /**
@@ -361,7 +396,7 @@ export default class WaveSurfer extends util.Observer {
          * @private Holds any running audio downloads
          * @type {Observer}
          */
-        this.currentAjax = null;
+        this.currentRequest = null;
         /** @private */
         this.arraybuffer = null;
         /** @private */
@@ -382,6 +417,18 @@ export default class WaveSurfer extends util.Observer {
         /**
          * @private The uninitialised Backend class
          */
+        // Back compat
+        if (this.params.backend == 'AudioElement') {
+            this.params.backend = 'MediaElement';
+        }
+
+        if (
+            (this.params.backend == 'WebAudio' ||
+                this.params.backend === 'MediaElementWebAudio') &&
+            !WebAudio.prototype.supportsWebAudio.call(null)
+        ) {
+            this.params.backend = 'MediaElement';
+        }
         this.Backend = this.backends[this.params.backend];
 
         /**
@@ -629,18 +676,6 @@ export default class WaveSurfer extends util.Observer {
             this.backend.destroy();
         }
 
-        // Back compat
-        if (this.params.backend == 'AudioElement') {
-            this.params.backend = 'MediaElement';
-        }
-
-        if (
-            this.params.backend == 'WebAudio' &&
-            !this.Backend.prototype.supportsWebAudio.call(null)
-        ) {
-            this.params.backend = 'MediaElement';
-        }
-
         this.backend = new this.Backend(this.params);
         this.backend.init();
         this.fireEvent('backend-created', this.backend);
@@ -657,8 +692,11 @@ export default class WaveSurfer extends util.Observer {
             this.fireEvent('audioprocess', time);
         });
 
-        // only needed for MediaElement backend
-        if (this.params.backend === 'MediaElement') {
+        // only needed for MediaElement and MediaElementWebAudio backend
+        if (
+            this.params.backend === 'MediaElement' ||
+            this.params.backend === 'MediaElementWebAudio'
+        ) {
             this.backend.on('seek', () => {
                 this.drawer.progress(this.backend.getPlayedPercents());
             });
@@ -735,6 +773,16 @@ export default class WaveSurfer extends util.Observer {
     play(start, end) {
         this.fireEvent('interaction', () => this.play(start, end));
         return this.backend.play(start, end);
+    }
+
+    /**
+     * Set a point in seconds for playback to stop at.
+     *
+     * @param {number} position Position (in seconds) to stop at
+     * @version 3.3.0
+     */
+    setPlayEnd(position) {
+        this.backend.setPlayEnd(position);
     }
 
     /**
@@ -1222,8 +1270,8 @@ export default class WaveSurfer extends util.Observer {
     loadDecodedBuffer(buffer) {
         this.backend.load(buffer);
         this.drawBuffer();
-        this.fireEvent('ready');
         this.isReady = true;
+        this.fireEvent('ready');
     }
 
     /**
@@ -1253,15 +1301,16 @@ export default class WaveSurfer extends util.Observer {
      * audio element with the audio
      * @param {number[]|Number.<Array[]>} peaks Wavesurfer does not have to decode
      * the audio to render the waveform if this is specified
-     * @param {?string} preload (Use with backend `MediaElement`)
+     * @param {?string} preload (Use with backend `MediaElement` and `MediaElementWebAudio`)
      * `'none'|'metadata'|'auto'` Preload attribute for the media element
      * @param {?number} duration The duration of the audio. This is used to
      * render the peaks data in the correct size for the audio duration (as
      * befits the current `minPxPerSec` and zoom value) without having to decode
      * the audio.
      * @returns {void}
+     * @throws Will throw an error if the `url` argument is empty.
      * @example
-     * // using ajax or media element to load (depending on backend)
+     * // uses fetch or media element to load file (depending on backend)
      * wavesurfer.load('http://example.com/demo.wav');
      *
      * // setting preload attribute with media element backend and supplying
@@ -1273,8 +1322,10 @@ export default class WaveSurfer extends util.Observer {
      * );
      */
     load(url, peaks, preload, duration) {
+        if (!url) {
+            throw new Error('url parameter cannot be empty');
+        }
         this.empty();
-
         if (preload) {
             // check whether the preload attribute will be usable and if not log
             // a warning listing the reasons why not and nullify the variable
@@ -1282,8 +1333,10 @@ export default class WaveSurfer extends util.Observer {
                 "Preload is not 'auto', 'none' or 'metadata'":
                     ['auto', 'metadata', 'none'].indexOf(preload) === -1,
                 'Peaks are not provided': !peaks,
-                'Backend is not of type MediaElement':
-                    this.params.backend !== 'MediaElement',
+                "Backend is not of type 'MediaElement' or 'MediaElementWebAudio'":
+                    ['MediaElement', 'MediaElementWebAudio'].indexOf(
+                        this.params.backend
+                    ) === -1,
                 'Url is not of type string': typeof url !== 'string'
             };
             const activeReasons = Object.keys(preloadIgnoreReasons).filter(
@@ -1304,6 +1357,7 @@ export default class WaveSurfer extends util.Observer {
             case 'WebAudio':
                 return this.loadBuffer(url, peaks, duration);
             case 'MediaElement':
+            case 'MediaElementWebAudio':
                 return this.loadMediaElement(url, peaks, preload, duration);
         }
     }
@@ -1362,9 +1416,12 @@ export default class WaveSurfer extends util.Observer {
 
         this.tmpEvents.push(
             this.backend.once('canplay', () => {
-                this.drawBuffer();
-                this.fireEvent('ready');
-                this.isReady = true;
+                // ignore when backend was already destroyed
+                if (!this.backend.destroyed) {
+                    this.drawBuffer();
+                    this.isReady = true;
+                    this.fireEvent('ready');
+                }
             }),
             this.backend.once('error', err => this.fireEvent('error', err))
         );
@@ -1400,7 +1457,6 @@ export default class WaveSurfer extends util.Observer {
      */
     decodeArrayBuffer(arraybuffer, callback) {
         this.arraybuffer = arraybuffer;
-
         this.backend.decodeArrayBuffer(
             arraybuffer,
             data => {
@@ -1416,37 +1472,40 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Load an array buffer using ajax and pass the result to a callback
+     * Load an array buffer using fetch and pass the result to a callback
      *
      * @param {string} url The URL of the file object
      * @param {function} callback The function to call on complete
-     * @returns {util.ajax} Ajax call
+     * @returns {util.fetchFile} fetch call
      * @private
      */
     getArrayBuffer(url, callback) {
-        const ajax = util.ajax({
-            url: url,
-            responseType: 'arraybuffer',
-            xhr: this.params.xhr
-        });
+        let options = util.extend(
+            {
+                url: url,
+                responseType: 'arraybuffer'
+            },
+            this.params.xhr
+        );
+        const request = util.fetchFile(options);
 
-        this.currentAjax = ajax;
+        this.currentRequest = request;
 
         this.tmpEvents.push(
-            ajax.on('progress', e => {
+            request.on('progress', e => {
                 this.onProgress(e);
             }),
-            ajax.on('success', (data, e) => {
+            request.on('success', data => {
                 callback(data);
-                this.currentAjax = null;
+                this.currentRequest = null;
             }),
-            ajax.on('error', e => {
-                this.fireEvent('error', 'XHR error: ' + e.target.statusText);
-                this.currentAjax = null;
+            request.on('error', e => {
+                this.fireEvent('error', e);
+                this.currentRequest = null;
             })
         );
 
-        return ajax;
+        return request;
     }
 
     /**
@@ -1532,12 +1591,12 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Cancel any ajax request currently in progress
+     * Cancel any fetch request currently in progress
      */
     cancelAjax() {
-        if (this.currentAjax) {
-            this.currentAjax.xhr.abort();
-            this.currentAjax = null;
+        if (this.currentRequest && this.currentRequest.controller) {
+            this.currentRequest.controller.abort();
+            this.currentRequest = null;
         }
     }
 
@@ -1559,6 +1618,8 @@ export default class WaveSurfer extends util.Observer {
         this.isReady = false;
         this.cancelAjax();
         this.clearTmpEvents();
+
+        // empty drawer
         this.drawer.progress(0);
         this.drawer.setWidth(0);
         this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
@@ -1583,8 +1644,12 @@ export default class WaveSurfer extends util.Observer {
                 true
             );
         }
-        this.backend.destroy();
-        this.drawer.destroy();
+        if (this.backend) {
+            this.backend.destroy();
+        }
+        if (this.drawer) {
+            this.drawer.destroy();
+        }
         this.isDestroyed = true;
         this.isReady = false;
         this.arraybuffer = null;

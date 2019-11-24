@@ -1,6 +1,13 @@
 # Upgrade
 
-## Upgrading to version 2
+## Upgrading to version 3 from version 2
+
+- `util.ajax` was deprecated; use `util.fetchFile instead.
+- The `xhr` wavesurfer option has changed to work with `util.fetchFile`.
+- The `MultiCanvas` renderer was refactored and a new `CanvasEntry` class was added to represent
+  a canvas instance in a `MultiCanvas`.
+
+## Upgrading to version 2 from version 1
 
 The wavesurfer.js core library and the plugins were refactored to be modular so it can be used with a module bundler.
 You can still use wavesurfer without, e.g. with `<script>` tags. The code was also updated to ES6/ES7 syntax and

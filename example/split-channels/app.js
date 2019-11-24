@@ -7,8 +7,12 @@ window.onload = function() {
         splitChannels: true
     });
 
+    wavesurfer.on('error', function(e) {
+        console.warn(e);
+    });
+
     // Load audio from URL
-    wavesurfer.load('stereo.mp3');
+    wavesurfer.load('../media/stereo.mp3');
 
     // Play/pause on button press
     document

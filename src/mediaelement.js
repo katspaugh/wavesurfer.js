@@ -15,8 +15,11 @@ export default class MediaElement extends WebAudio {
         /** @private */
         this.params = params;
 
-        // Dummy media to catch errors
-        /** @private */
+        /**
+         * Initially a dummy media element to catch errors. Once `_load` is
+         * called, this will contain the actual `HTMLMediaElement`.
+         * @private
+         */
         this.media = {
             currentTime: 0,
             duration: 0,
@@ -43,6 +46,8 @@ export default class MediaElement extends WebAudio {
         this.buffer = null;
         /** @private */
         this.onPlayEnd = null;
+        /** @private */
+        this.mediaListeners = {};
     }
 
     /**
@@ -54,9 +59,48 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
+     * Attach event listeners to media element.
+     */
+    _setupMediaListeners() {
+        this.mediaListeners.error = () => {
+            this.fireEvent('error', 'Error loading media element');
+        };
+        this.mediaListeners.canplay = () => {
+            this.fireEvent('canplay');
+        };
+        this.mediaListeners.ended = () => {
+            this.fireEvent('finish');
+        };
+        // listen to and relay play, pause and seeked events to enable
+        // playback control from the external media element
+        this.mediaListeners.play = () => {
+            this.fireEvent('play');
+        };
+        this.mediaListeners.pause = () => {
+            this.fireEvent('pause');
+        };
+        this.mediaListeners.seeked = event => {
+            this.fireEvent('seek');
+        };
+        this.mediaListeners.volumechange = event => {
+            this.isMuted = this.media.muted;
+            if (this.isMuted) {
+                this.volume = 0;
+            } else {
+                this.volume = this.media.volume;
+            }
+            this.fireEvent('volume');
+        };
+
+        // reset event listeners
+        Object.keys(this.mediaListeners).forEach(id => {
+            this.media.removeEventListener(id, this.mediaListeners[id]);
+            this.media.addEventListener(id, this.mediaListeners[id]);
+        });
+    }
+
+    /**
      * Create a timer to provide a more precise `audioprocess` event.
-     *
-     * @private
      */
     createTimer() {
         const onAudioProcess = () => {
@@ -86,6 +130,8 @@ export default class MediaElement extends WebAudio {
      * @param {HTMLElement} container HTML element
      * @param {number[]|Number.<Array[]>} peaks Array of peak data
      * @param {string} preload HTML 5 preload attribute value
+     * @throws Will throw an error if the `url` argument is not a valid media
+     * element.
      */
     load(url, container, peaks, preload) {
         const media = document.createElement(this.mediaType);
@@ -118,14 +164,24 @@ export default class MediaElement extends WebAudio {
     }
 
     /**
-     * Private method called by both `load` (from url)
+     * Method called by both `load` (from url)
      * and `loadElt` (existing media element) methods.
      *
      * @param {HTMLMediaElement} media HTML5 Audio or Video element
      * @param {number[]|Number.<Array[]>} peaks Array of peak data
+     * @throws Will throw an error if the `media` argument is not a valid media
+     * element.
      * @private
      */
     _load(media, peaks) {
+        // verify media element is valid
+        if (
+            !(media instanceof HTMLMediaElement) ||
+            typeof media.addEventListener === 'undefined'
+        ) {
+            throw new Error('media parameter is not a valid media element');
+        }
+
         // load must be called manually on iOS, otherwise peaks won't draw
         // until a user interaction triggers load --> 'ready' event
         if (typeof media.load == 'function') {
@@ -135,43 +191,8 @@ export default class MediaElement extends WebAudio {
             media.load();
         }
 
-        media.addEventListener('error', () => {
-            this.fireEvent('error', 'Error loading media element');
-        });
-
-        media.addEventListener('canplay', () => {
-            this.fireEvent('canplay');
-        });
-
-        media.addEventListener('ended', () => {
-            this.fireEvent('finish');
-        });
-
-        // Listen to and relay play, pause and seeked events to enable
-        // playback control from the external media element
-        media.addEventListener('play', () => {
-            this.fireEvent('play');
-        });
-
-        media.addEventListener('pause', () => {
-            this.fireEvent('pause');
-        });
-
-        media.addEventListener('seeked', event => {
-            this.fireEvent('seek');
-        });
-
-        media.addEventListener('volumechange', event => {
-            this.isMuted = media.muted;
-            if (this.isMuted) {
-                this.volume = 0;
-            } else {
-                this.volume = media.volume;
-            }
-            this.fireEvent('volume');
-        });
-
         this.media = media;
+        this._setupMediaListeners();
         this.peaks = peaks;
         this.onPlayEnd = null;
         this.buffer = null;
@@ -293,10 +314,11 @@ export default class MediaElement extends WebAudio {
     /**
      * Set the play end
      *
-     * @private
      * @param {number} end Where to end
      */
     setPlayEnd(end) {
+        this.clearPlayEnd();
+
         this._onPlayEnd = time => {
             if (time >= end) {
                 this.pause();
@@ -380,6 +402,14 @@ export default class MediaElement extends WebAudio {
     destroy() {
         this.pause();
         this.unAll();
+        this.destroyed = true;
+
+        // cleanup media event listeners
+        Object.keys(this.mediaListeners).forEach(id => {
+            if (this.media) {
+                this.media.removeEventListener(id, this.mediaListeners[id]);
+            }
+        });
 
         if (
             this.params.removeMediaElementOnDestroy &&
