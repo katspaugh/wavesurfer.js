@@ -68,6 +68,14 @@ export default class MultiCanvas extends Drawer {
         this.EntryClass = CanvasEntry;
 
         /**
+         * Canvas 2d context attributes.
+         *
+         * @private
+         * @type {object}
+         */
+        this.canvasContextAttributes = params.drawingContextAttributes;
+
+        /**
          * Overlap added between entries to prevent vertical white stripes
          * between `canvas` elements.
          *
@@ -166,6 +174,7 @@ export default class MultiCanvas extends Drawer {
      */
     addCanvas() {
         const entry = new this.EntryClass();
+        entry.canvasContextAttributes = this.canvasContextAttributes;
         entry.hasProgressCanvas = this.hasProgressCanvas;
         entry.halfPixel = this.halfPixel;
         const leftOffset = this.maxCanvasElementWidth * this.canvases.length;

@@ -6,6 +6,8 @@ wavesurfer.js changelog
 
 - Add `wavesurfer.setPlayEnd(position)` to set a point in seconds for
   playback to stop at (#1795)
+- Add `drawingContextAttributes` option and enable canvas `desynchronized`
+  hint (#1642)
 - Add `barMinHeight` option (#1693)
 - Expose progress to the `dblclick` event (#1790)
 - Regions plugin:
