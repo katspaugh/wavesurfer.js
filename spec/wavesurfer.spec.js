@@ -322,7 +322,6 @@ describe('WaveSurfer/playback:', function() {
 
     /** @test {WaveSurfer#exportPCM} */
     it('return Promise with PCM data formatted using JSON.stringify', function(done) {
-        manualDestroy = true;
         wavesurfer.exportPCM().then(pcmData => {
             expect(pcmData).toBeNonEmptyString();
 
