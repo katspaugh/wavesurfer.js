@@ -1525,13 +1525,13 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Exports PCM data into a JSON array and opens in a new window.
      *
-     * @param {number} length=1024 The scale in which to export the peaks. (Integer)
-     * @param {number} accuracy=10000 (Integer)
+     * @param {number} length=1024 The scale in which to export the peaks
+     * @param {number} accuracy=10000
      * @param {?boolean} noWindow Set to true to disable opening a new
      * window with the JSON
      * @param {number} start Start index
      * @param {number} end End index
-     * @return {string} JSON of peaks
+     * @return {Promise} Promise that resolves with array of peaks
      */
     exportPCM(length, accuracy, noWindow, start, end) {
         length = length || 1024;
@@ -1543,14 +1543,17 @@ export default class WaveSurfer extends util.Observer {
             peaks,
             val => Math.round(val * accuracy) / accuracy
         );
-        const json = JSON.stringify(arr);
-        if (!noWindow) {
-            window.open(
-                'data:application/json;charset=utf-8,' +
-                    encodeURIComponent(json)
-            );
-        }
-        return json;
+        return new Promise((resolve, reject) => {
+            const json = JSON.stringify(arr);
+
+            if (!noWindow) {
+                window.open(
+                    'data:application/json;charset=utf-8,' +
+                        encodeURIComponent(json)
+                );
+            }
+            resolve(json);
+        });
     }
 
     /**

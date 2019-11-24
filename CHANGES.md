@@ -4,6 +4,8 @@ wavesurfer.js changelog
 3.3.0 (unreleased)
 ------------------
 
+- `wavesurfer.exportPCM` now accepts an optional `end` argument and returns
+  a Promise (#1728)
 - Add `wavesurfer.setPlayEnd(position)` to set a point in seconds for
   playback to stop at (#1795)
 - Add `barMinHeight` option (#1693)
