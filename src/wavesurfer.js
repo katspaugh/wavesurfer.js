@@ -34,6 +34,8 @@ import PeakCache from './peakcache';
  * @property {number} barHeight=1 The height of the wave
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
+ * @property {object} drawingContextAttributes={desynchronized: true} Drawing context
+ * attributes.
  * @property {boolean} closeAudioContext=false Close and nullify all audio
  * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
@@ -197,6 +199,9 @@ export default class WaveSurfer extends util.Observer {
         cursorColor: '#333',
         cursorWidth: 1,
         dragSelection: true,
+        drawingContextAttributes: {
+            desynchronized: true
+        },
         duration: null,
         fillParent: true,
         forceDecode: false,

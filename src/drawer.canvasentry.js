@@ -64,6 +64,9 @@ export default class CanvasEntry {
          * @type {object}
          */
         this.canvasContextAttributes = {
+            // Boolean that hints the user agent to reduce the latency
+            // by desynchronizing the canvas paint cycle from the event
+            // loop
             desynchronized: true
         };
     }
