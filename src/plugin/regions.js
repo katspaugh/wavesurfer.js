@@ -29,7 +29,14 @@ class Region {
         this.isDragging = false;
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
-        this.handleColor = params.handleColor || 'rgba(0, 0, 0, 1)';
+        this.handleStyle = params.handleStyle || {
+            left: {
+                backgroundColor: 'rgba(0, 0, 0, 1)'
+            },
+            right: {
+                backgroundColor: 'rgba(0, 0, 0, 1)'
+            }
+        };
         this.data = params.data || {};
         this.attributes = params.attributes || {};
 
@@ -62,8 +69,8 @@ class Region {
         if (null != params.color) {
             this.color = params.color;
         }
-        if (null != params.handleColor) {
-            this.handleColor = params.handleColor;
+        if (null != params.handleStyle) {
+            this.handleStyle = params.handleStyle;
         }
         if (null != params.data) {
             this.data = params.data;
@@ -149,9 +156,18 @@ class Region {
             top: '0px'
         });
         
-        /* Allows the user to set the handlecolor dynamically */
-        handleLeft.style.backgroundColor = this.handleColor;
-        handleRight.style.backgroundColor = this.handleColor;
+        /* Allows the user to set the handlecolor dynamically, both handle colors must be set */
+        if(!this.handleStyle.left) {
+            handleLeft.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+        } else {
+            handleLeft.style.backgroundColor = this.handleStyle.left.backgroundColor;
+        }
+
+        if(!this.handleStyle.right) {
+            handleRight.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+        } else {
+            handleRight.style.backgroundColor = this.handleStyle.right.backgroundColor;
+        }
 
         /* Resize handles */
         if (this.resize) {
