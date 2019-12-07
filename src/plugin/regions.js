@@ -650,11 +650,13 @@ export default class RegionsPlugin {
     constructor(params, ws) {
         this.params = params;
         this.wavesurfer = ws;
-        this.util = ws.util;
-        this.maxRegions = params.maxRegions;
-        this.util.getRegionSnapToGridValue = value => {
-            return this.getRegionSnapToGridValue(value, params);
+        this.util = {
+            ...ws.util,
+            getRegionSnapToGridValue: value => {
+                return this.getRegionSnapToGridValue(value, params);
+            }
         };
+        this.maxRegions = params.maxRegions;
 
         // turn the plugin instance into an observer
         const observerPrototypeKeys = Object.getOwnPropertyNames(
