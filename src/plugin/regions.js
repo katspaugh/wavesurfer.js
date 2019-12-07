@@ -29,6 +29,14 @@ class Region {
         this.isDragging = false;
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
+        this.handleStyle = params.handleStyle || {
+            left: {
+                backgroundColor: 'rgba(0, 0, 0, 1)'
+            },
+            right: {
+                backgroundColor: 'rgba(0, 0, 0, 1)'
+            }
+        };
         this.data = params.data || {};
         this.attributes = params.attributes || {};
 
@@ -60,6 +68,9 @@ class Region {
         }
         if (null != params.color) {
             this.color = params.color;
+        }
+        if (null != params.handleStyle) {
+            this.handleStyle = params.handleStyle;
         }
         if (null != params.data) {
             this.data = params.data;
@@ -120,6 +131,13 @@ class Region {
     /* Render a region as a DOM element. */
     render() {
         const regionEl = document.createElement('region');
+        const handleLeft = regionEl.appendChild(
+            document.createElement('handle')
+        );
+        const handleRight = regionEl.appendChild(
+            document.createElement('handle')
+        );
+
         regionEl.className = 'wavesurfer-region';
         regionEl.title = this.formatTime(this.start, this.end);
         regionEl.setAttribute('data-id', this.id);
@@ -138,14 +156,21 @@ class Region {
             top: '0px'
         });
 
+        /* Allows the user to set the handlecolor dynamically, both handle colors must be set */
+        if (!this.handleStyle.left) {
+            handleLeft.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+        } else {
+            handleLeft.style.backgroundColor = this.handleStyle.left.backgroundColor;
+        }
+
+        if (!this.handleStyle.right) {
+            handleRight.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+        } else {
+            handleRight.style.backgroundColor = this.handleStyle.right.backgroundColor;
+        }
+
         /* Resize handles */
         if (this.resize) {
-            const handleLeft = regionEl.appendChild(
-                document.createElement('handle')
-            );
-            const handleRight = regionEl.appendChild(
-                document.createElement('handle')
-            );
             handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
             handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
             const css = {
