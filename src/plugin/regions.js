@@ -137,7 +137,7 @@ class Region {
         const handleRight = regionEl.appendChild(
             document.createElement('handle')
         );
-        
+
         regionEl.className = 'wavesurfer-region';
         regionEl.title = this.formatTime(this.start, this.end);
         regionEl.setAttribute('data-id', this.id);
@@ -155,15 +155,15 @@ class Region {
             height: '100%',
             top: '0px'
         });
-        
+
         /* Allows the user to set the handlecolor dynamically, both handle colors must be set */
-        if(!this.handleStyle.left) {
+        if (!this.handleStyle.left) {
             handleLeft.style.backgroundColor = 'rgba(0, 0, 0, 1)';
         } else {
             handleLeft.style.backgroundColor = this.handleStyle.left.backgroundColor;
         }
 
-        if(!this.handleStyle.right) {
+        if (!this.handleStyle.right) {
             handleRight.style.backgroundColor = 'rgba(0, 0, 0, 1)';
         } else {
             handleRight.style.backgroundColor = this.handleStyle.right.backgroundColor;
