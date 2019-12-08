@@ -24,7 +24,7 @@ layout: default
     <li><code>exportPCM(length, accuracy, noWindow, start)</code> – Exports PCM data into a JSON array. Optional parameters <code>length</code> <code>[number] - default: 1024</code>, <code>accuracy</code> <code>[number] - default: 10000</code>, <code>noWindow</code> <code>[true|false] - default: false</code>, <code>start</code> <code>[number] - default: 0</code></li>
     <li><code>exportImage(format, quality, type)</code> – Return waveform image as data URI or Blob.</li>
     <li><code>isPlaying()</code> – Returns <code>true</code> if currently playing, false otherwise.</li>
-    <li><code>load(url, peaks, preload)</code> – Loads audio from <code>URL</code> via XHR. Optional array of <code>peaks</code>. Optional <code>preload</code> parameter <code>[none|metadata|auto]</code>, parsed to the <a href="https://developer.mozilla.org/en/docs/Web/HTML/Element/audio">Audio element</a> if using backend MediaElement.</li> 
+    <li><code>load(url, peaks, preload)</code> – Loads audio from <code>URL</code> via XHR. Optional array of <code>peaks</code>. Optional <code>preload</code> parameter <code>[none|metadata|auto]</code>, passed to the <a href="https://developer.mozilla.org/en/docs/Web/HTML/Element/audio">Audio element</a> if using backend MediaElement.</li> 
     <li><code>loadBlob(url)</code> – Loads audio from a <code>Blob</code> or <code>File</code> object.</li>
     <li><code>on(eventName, callback)</code> – Subscribes to an event.  See <a href="/docs/events.html">WaveSurfer Events</a> for the list of all events.</li>
     <li><code>un(eventName, callback)</code> – Unsubscribes from an event.</li>
