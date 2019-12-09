@@ -73,7 +73,7 @@ class Init {
          * build parameters, cache them in _params so minified builds are smaller
          * @private
          */
-        const _params = (this.params = WaveSurfer.util.extend(
+        const _params = (this.params = Object.assign(
             {},
             {
                 // wavesurfer parameter defaults so by default the audio player is
@@ -197,7 +197,7 @@ class Init {
             return this.pluginCache[plugin].create(options);
         });
         // build parameter object for this container
-        const params = this.WaveSurfer.util.extend(
+        const params = Object.assign(
             { container: el },
             this.params.defaults,
             el.dataset,
