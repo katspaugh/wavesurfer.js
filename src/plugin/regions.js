@@ -746,6 +746,8 @@ export default class RegionsPlugin {
     }
 
     enableDragSelection(params) {
+        this.disableDragSelection();
+
         const slop = params.slop || 2;
         const container = this.wavesurfer.drawer.container;
         const scroll =
