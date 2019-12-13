@@ -48,6 +48,17 @@ class Region {
         this.scrollSpeed = params.scrollSpeed || 1;
         this.scrollThreshold = params.scrollThreshold || 10;
 
+        // select channel ID to set region
+        let channelIdx =
+            params.channelIdx == null ? -1 : parseInt(params.channelIdx);
+        this.regionHeight = '100%';
+        this.marginTop = '0px';
+        let channelCount = this.wavesurfer.backend.ac.destination.channelCount;
+        if (channelIdx >= 0 && channelIdx < channelCount) {
+            this.regionHeight = Math.floor((1 / channelCount) * 100) + '%';
+            this.marginTop = this.wavesurfer.getHeight() * channelIdx + 'px';
+        }
+
         this.bindInOut();
         this.render();
         this.wavesurfer.on('zoom', this._onRedraw);
@@ -152,8 +163,8 @@ class Region {
         this.style(regionEl, {
             position: 'absolute',
             zIndex: 2,
-            height: '100%',
-            top: '0px'
+            height: this.regionHeight,
+            top: this.marginTop
         });
 
         /* Allows the user to set the handlecolor dynamically, both handle colors must be set */
@@ -176,10 +187,10 @@ class Region {
             const css = {
                 cursor: 'col-resize',
                 position: 'absolute',
-                top: '0px',
+                top: this.marginTop,
                 width: '1%',
                 maxWidth: '4px',
-                height: '100%'
+                height: this.regionHeight
             };
             this.style(handleLeft, css);
             this.style(handleLeft, {
