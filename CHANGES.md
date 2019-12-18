@@ -17,6 +17,8 @@ wavesurfer.js changelog
   - Add `maxRegions` option to limit max numbers of created regions (#1793)
   - Don't assign to module object (#1823)
   - Allow setting the `handleColor` inside `addRegion` (#1798)
+  - Disable drag selection before enabling it (#1698)
+  - Add `channelIdx` option to select specific channel to draw on (#1829)
 - Cursor plugin: fix time visibility (#1802)
 
 3.2.0 (24.10.2019)
