@@ -53,7 +53,7 @@
   ],
   "devDependencies": {
     "@babel/core": "^7.7.5",
-    "@babel/preset-env": "^7.7.5",
+    "@babel/preset-env": "^7.7.6",
     "@babel/register": "^7.7.4",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.6",
@@ -71,7 +71,7 @@
     "esdoc-standard-plugin": "^1.0.0",
     "eslint": "^6.7.2",
     "eslint-config-prettier": "^6.7.0",
-    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-prettier": "^3.1.2",
     "htmlhint": "^0.11.0",
     "in-publish": "^2.0.0",
     "jasmine-core": "^3.5.0",
@@ -88,8 +88,8 @@
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
     "prettier": "^1.19.1",
-    "terser-webpack-plugin": "^2.2.2",
-    "webpack": "^4.41.2",
+    "terser-webpack-plugin": "^2.3.1",
+    "webpack": "^4.41.3",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.9.0",
     "webpack-merge": "^4.2.2"
