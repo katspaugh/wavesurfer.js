@@ -8,5 +8,10 @@
  */
 export default function extend(dest, ...sources) {
     console.warn('util.extend is deprecated; use Object.assign');
-    return Object.assign(dest, ...sources);
+    sources.forEach(source => {
+        Object.keys(source).forEach(key => {
+            dest[key] = source[key];
+        });
+    });
+    return dest;
 }
