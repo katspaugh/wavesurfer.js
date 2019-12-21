@@ -52,9 +52,9 @@
     "visualization"
   ],
   "devDependencies": {
-    "@babel/core": "^7.7.5",
-    "@babel/preset-env": "^7.7.6",
-    "@babel/register": "^7.7.4",
+    "@babel/core": "^7.7.7",
+    "@babel/preset-env": "^7.7.7",
+    "@babel/register": "^7.7.7",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.6",
     "babel-plugin-add-module-exports": "^1.0.2",
@@ -69,7 +69,7 @@
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-integrate-test-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^6.7.2",
+    "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.7.0",
     "eslint-plugin-prettier": "^3.1.2",
     "htmlhint": "^0.11.0",
@@ -89,9 +89,9 @@
     "pre-commit": "^1.2.2",
     "prettier": "^1.19.1",
     "terser-webpack-plugin": "^2.3.1",
-    "webpack": "^4.41.3",
+    "webpack": "^4.41.4",
     "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.9.0",
+    "webpack-dev-server": "^3.10.1",
     "webpack-merge": "^4.2.2"
   },
   "homepage": "https://github.com/katspaugh/wavesurfer.js",
