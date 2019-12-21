@@ -332,7 +332,7 @@ export default class WaveSurfer extends util.Observer {
          * Extract relevant parameters (or defaults)
          * @private
          */
-        this.params = util.extend({}, this.defaultParams, params);
+        this.params = Object.assign({}, this.defaultParams, params);
 
         /** @private */
         this.container =
@@ -1483,7 +1483,7 @@ export default class WaveSurfer extends util.Observer {
      * @private
      */
     getArrayBuffer(url, callback) {
-        let options = util.extend(
+        let options = Object.assign(
             {
                 url: url,
                 responseType: 'arraybuffer'
