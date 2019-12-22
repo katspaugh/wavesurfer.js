@@ -110,7 +110,7 @@ export default class MediaElement extends WebAudio {
             this.fireEvent('audioprocess', this.getCurrentTime());
 
             // Call again in the next frame
-            util.frame(onAudioProcess)();
+            window.requestAnimationFrame(onAudioProcess);
         };
 
         this.on('play', onAudioProcess);

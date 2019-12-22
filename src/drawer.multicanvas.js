@@ -458,7 +458,7 @@ export default class MultiCanvas extends Drawer {
      * @returns {void}
      */
     prepareDraw(peaks, channelIndex, start, end, fn) {
-        return util.frame(() => {
+        return window.requestAnimationFrame(() => {
             // Split channels and call this function with the channelIndex set
             if (peaks[0] instanceof Array) {
                 const channels = peaks;
@@ -499,7 +499,7 @@ export default class MultiCanvas extends Drawer {
                 halfH: halfH,
                 peaks: peaks
             });
-        })();
+        });
     }
 
     /**

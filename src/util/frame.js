@@ -1,5 +1,3 @@
-import reqAnimationFrame from './request-animation-frame';
-
 /**
  * Create a function which will be called at the next requestAnimationFrame
  * cycle
@@ -9,5 +7,8 @@ import reqAnimationFrame from './request-animation-frame';
  * @return {func} The function wrapped within a requestAnimationFrame
  */
 export default function frame(func) {
-    return (...args) => reqAnimationFrame(() => func(...args));
+    console.warn(
+        'util.frame is deprecated; use window.requestAnimationFrame instead'
+    );
+    return (...args) => window.requestAnimationFrame(() => func(...args));
 }
