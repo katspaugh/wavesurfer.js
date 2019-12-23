@@ -20,6 +20,7 @@ wavesurfer.js changelog
   - Disable drag selection before enabling it (#1698)
   - Add `channelIdx` option to select specific channel to draw on (#1829)
 - Cursor plugin: fix time visibility (#1802)
+- Deprecate `util.frame` (i.e. rAF shim) (#1833)
 
 3.2.0 (24.10.2019)
 ------------------
