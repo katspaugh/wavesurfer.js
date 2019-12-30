@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-3.3.0 (unreleased)
+3.3.0 (29.12.2019)
 ------------------
 
 - `wavesurfer.exportPCM` now accepts an optional `end` argument and returns
@@ -12,6 +12,7 @@ wavesurfer.js changelog
   hint (#1642)
 - Add `barMinHeight` option (#1693)
 - Expose progress to the `dblclick` event (#1790)
+- Deprecate `util.extend` and replace usage with `Object.assign` (#1825)
 - Regions plugin:
   - Add `start` argument to `play` and `playLoop` methods (#1794)
   - Add `maxRegions` option to limit max numbers of created regions (#1793)
@@ -19,6 +20,7 @@ wavesurfer.js changelog
   - Allow setting the `handleColor` inside `addRegion` (#1798)
   - Disable drag selection before enabling it (#1698)
   - Add `channelIdx` option to select specific channel to draw on (#1829)
+  - Refactor for improved readability (#1826)
 - Cursor plugin: fix time visibility (#1802)
 
 3.2.0 (24.10.2019)
