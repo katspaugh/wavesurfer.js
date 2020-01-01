@@ -456,6 +456,12 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "src/drawer.canvasentry.js~canvasentry#canvascontextattributes",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-member-canvasContextAttributes",
+    "src/drawer.canvasentry.js~CanvasEntry#canvasContextAttributes",
+    "member"
+  ],
+  [
     "src/drawer.canvasentry.js~canvasentry#clearwave",
     "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-clearWave",
     "src/drawer.canvasentry.js~CanvasEntry#clearWave",
@@ -939,6 +945,12 @@ window.esdocSearchIndex = [
     "src/mediaelement.js~mediaelement#seekto",
     "class/src/mediaelement.js~MediaElement.html#instance-method-seekTo",
     "src/mediaelement.js~MediaElement#seekTo",
+    "method"
+  ],
+  [
+    "src/mediaelement.js~mediaelement#setplayend",
+    "class/src/mediaelement.js~MediaElement.html#instance-method-setPlayEnd",
+    "src/mediaelement.js~MediaElement#setPlayEnd",
     "method"
   ],
   [
@@ -1683,6 +1695,12 @@ window.esdocSearchIndex = [
     "src/plugin/regions.js~regionsplugin#list",
     "class/src/plugin/regions.js~RegionsPlugin.html#instance-member-list",
     "src/plugin/regions.js~RegionsPlugin#list",
+    "member"
+  ],
+  [
+    "src/plugin/regions.js~regionsplugin#maxregions",
+    "class/src/plugin/regions.js~RegionsPlugin.html#instance-member-maxRegions",
+    "src/plugin/regions.js~RegionsPlugin#maxRegions",
     "member"
   ],
   [
@@ -2442,6 +2460,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/wavesurfer.js~wavesurfer#setplayend",
+    "class/src/wavesurfer.js~WaveSurfer.html#instance-method-setPlayEnd",
+    "src/wavesurfer.js~WaveSurfer#setPlayEnd",
+    "method"
+  ],
+  [
     "src/wavesurfer.js~wavesurfer#setplaybackrate",
     "class/src/wavesurfer.js~WaveSurfer.html#instance-method-setPlaybackRate",
     "src/wavesurfer.js~WaveSurfer#setPlaybackRate",
@@ -2733,6 +2757,12 @@ window.esdocSearchIndex = [
     "src/webaudio.js~webaudio#setpeaks",
     "class/src/webaudio.js~WebAudio.html#instance-method-setPeaks",
     "src/webaudio.js~WebAudio#setPeaks",
+    "method"
+  ],
+  [
+    "src/webaudio.js~webaudio#setplayend",
+    "class/src/webaudio.js~WebAudio.html#instance-method-setPlayEnd",
+    "src/webaudio.js~WebAudio#setPlayEnd",
     "method"
   ],
   [

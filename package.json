@@ -23,14 +23,14 @@
     "example": "examples"
   },
   "dependencies": {
-    "wavesurfer.js": "^3.2.0"
+    "wavesurfer.js": "^3.3.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "copy-dir": "^1.2.0",
     "download-tarball": "^2.0.0",
-    "ejs": "^2.7.1",
+    "ejs": "^3.0.1",
     "esdoc": "^1.1.0",
     "esdoc-accessor-plugin": "^1.0.0",
     "esdoc-brand-plugin": "^1.0.1",
