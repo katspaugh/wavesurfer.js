@@ -30,12 +30,8 @@ class Region {
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
         this.handleStyle = params.handleStyle || {
-            left: {
-                backgroundColor: 'rgba(0, 0, 0, 1)'
-            },
-            right: {
-                backgroundColor: 'rgba(0, 0, 0, 1)'
-            }
+            left: {},
+            right: {}
         };
         this.data = params.data || {};
         this.attributes = params.attributes || {};
@@ -142,12 +138,6 @@ class Region {
     /* Render a region as a DOM element. */
     render() {
         const regionEl = document.createElement('region');
-        const handleLeft = regionEl.appendChild(
-            document.createElement('handle')
-        );
-        const handleRight = regionEl.appendChild(
-            document.createElement('handle')
-        );
 
         regionEl.className = 'wavesurfer-region';
         regionEl.title = this.formatTime(this.start, this.end);
@@ -167,21 +157,15 @@ class Region {
             top: this.marginTop
         });
 
-        /* Allows the user to set the handlecolor dynamically, both handle colors must be set */
-        if (!this.handleStyle.left) {
-            handleLeft.style.backgroundColor = 'rgba(0, 0, 0, 1)';
-        } else {
-            handleLeft.style.backgroundColor = this.handleStyle.left.backgroundColor;
-        }
-
-        if (!this.handleStyle.right) {
-            handleRight.style.backgroundColor = 'rgba(0, 0, 0, 1)';
-        } else {
-            handleRight.style.backgroundColor = this.handleStyle.right.backgroundColor;
-        }
-
         /* Resize handles */
         if (this.resize) {
+            const handleLeft = regionEl.appendChild(
+                document.createElement('handle')
+            );
+            const handleRight = regionEl.appendChild(
+                document.createElement('handle')
+            );
+
             handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
             handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
             const css = {
@@ -190,16 +174,29 @@ class Region {
                 top: this.marginTop,
                 width: '1%',
                 maxWidth: '4px',
-                height: this.regionHeight
+                height: this.regionHeight,
+                backgroundColor: 'rgba(0, 0, 0, 1)'
             };
-            this.style(handleLeft, css);
-            this.style(handleLeft, {
-                left: '0px'
-            });
-            this.style(handleRight, css);
-            this.style(handleRight, {
-                right: '0px'
-            });
+            const handleLeftCss =
+                this.handleStyle.left !== 'none'
+                    ? Object.assign({ left: '0px' }, css, this.handleStyle.left)
+                    : null;
+            const handleRightCss =
+                this.handleStyle.right !== 'none'
+                    ? Object.assign(
+                          { right: '0px' },
+                          css,
+                          this.handleStyle.right
+                      )
+                    : null;
+
+            if (handleLeftCss) {
+                this.style(handleLeft, handleLeftCss);
+            }
+
+            if (handleRightCss) {
+                this.style(handleRight, handleRightCss);
+            }
         }
 
         this.element = this.wrapper.appendChild(regionEl);
