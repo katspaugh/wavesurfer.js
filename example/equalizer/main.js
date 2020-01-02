@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var container = document.querySelector('#equalizer');
         filters.forEach(function(filter) {
             var input = document.createElement('input');
-            wavesurfer.util.extend(input, {
+            Object.assign(input, {
                 type: 'range',
                 min: -40,
                 max: 40,

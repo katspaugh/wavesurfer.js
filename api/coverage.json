@@ -1,11 +1,11 @@
 {
-  "coverage": "69.23%",
-  "expectCount": 559,
-  "actualCount": 387,
+  "coverage": "69.24%",
+  "expectCount": 569,
+  "actualCount": 394,
   "files": {
     "src/drawer.canvasentry.js": {
-      "expectCount": 21,
-      "actualCount": 20,
+      "expectCount": 22,
+      "actualCount": 21,
       "undocumentLines": [
         16
       ]
@@ -16,8 +16,8 @@
       "undocumentLines": []
     },
     "src/drawer.multicanvas.js": {
-      "expectCount": 27,
-      "actualCount": 27,
+      "expectCount": 28,
+      "actualCount": 28,
       "undocumentLines": []
     },
     "src/html-init.js": {
@@ -34,8 +34,8 @@
       "expectCount": 37,
       "actualCount": 35,
       "undocumentLines": [
-        321,
-        404
+        322,
+        405
       ]
     },
     "src/peakcache.js": {
@@ -145,8 +145,8 @@
       ]
     },
     "src/plugin/regions.js": {
-      "expectCount": 57,
-      "actualCount": 7,
+      "expectCount": 63,
+      "actualCount": 10,
       "undocumentLines": [
         10,
         11,
@@ -163,41 +163,44 @@
         30,
         31,
         32,
-        33,
-        35,
-        36,
-        37,
-        39,
         40,
         41,
-        51,
-        89,
-        92,
-        101,
-        108,
+        43,
+        44,
+        45,
+        47,
+        48,
+        49,
+        54,
+        55,
+        70,
+        111,
         114,
-        167,
-        178,
-        183,
-        232,
-        233,
-        234,
-        274,
-        517,
-        529,
-        624,
-        642,
-        643,
-        644,
-        645,
+        143,
+        210,
+        221,
+        226,
+        275,
+        276,
+        277,
+        317,
+        347,
+        550,
+        562,
         659,
-        660,
-        669,
-        670,
-        681,
-        692,
-        726,
-        877
+        677,
+        678,
+        679,
+        680,
+        686,
+        697,
+        698,
+        707,
+        708,
+        719,
+        730,
+        777,
+        932
       ]
     },
     "src/plugin/spectrogram.js": {
@@ -307,16 +310,16 @@
       "undocumentLines": []
     },
     "src/wavesurfer.js": {
-      "expectCount": 93,
-      "actualCount": 91,
+      "expectCount": 94,
+      "actualCount": 92,
       "undocumentLines": [
-        424,
-        445
+        435,
+        456
       ]
     },
     "src/webaudio.js": {
-      "expectCount": 63,
-      "actualCount": 60,
+      "expectCount": 64,
+      "actualCount": 61,
       "undocumentLines": [
         4,
         5,

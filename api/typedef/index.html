@@ -1263,6 +1263,13 @@ the dependency specified in extends. Returns the plugin class.</p>
       <td data-ice="description"><p>HTML color code.</p>
 </td>
     </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">channelIdx</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
+      <td data-ice="description"><p>Select channel to draw the region on (if there are multiple channel waveforms).</p>
+</td>
+    </tr>
 </tbody>
   </table>
 </div>
@@ -1364,7 +1371,14 @@ initialisation</p>
       <td data-ice="name" class="code" data-depth="0">deferInit</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
       <td data-ice="appendix"><ul><li>nullable: true</li></ul></td>
-      <td data-ice="description"><p>Set to true to manually call
+      <td data-ice="description"><p>Set to true to manually call</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">maxRegions</td>
+      <td data-ice="type" class="code"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span><span>[]</span></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>Maximum number of regions that may be created by the user at one time.
 <code>initPlugin(&apos;regions&apos;)</code></p>
 </td>
     </tr>
@@ -1839,6 +1853,14 @@ if not provided will be calculated in legacy format.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">barMinHeight</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>default: null</li></ul></td>
+      <td data-ice="description"><p>If specified, draw at least a bar of this height,
+eliminating waveform gaps</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">closeAudioContext</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
       <td data-ice="appendix"><ul><li>default: false</li></ul></td>
@@ -1867,6 +1889,14 @@ the playhead position.</p>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
       <td data-ice="appendix"><ul><li>default: 1</li></ul></td>
       <td data-ice="description"><p>Measured in pixels.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">drawingContextAttributes</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span></td>
+      <td data-ice="appendix"><ul><li>default: {desynchronized:</li></ul></td>
+      <td data-ice="description"><p>true} Drawing context
+attributes.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">

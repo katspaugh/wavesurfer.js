@@ -132,6 +132,8 @@ import MediaElementWebAudio from &apos;./mediaelement-webaudio&apos;;
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
  * @property {number} barWidth=null Draw the waveform using bars.
+ * @property {number} barMinHeight=null If specified, draw at least a bar of this height,
+ * eliminating waveform gaps
  * @property {boolean} closeAudioContext=false Close and nullify all audio
  * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
@@ -139,6 +141,8 @@ import MediaElementWebAudio from &apos;./mediaelement-webaudio&apos;;
  * @property {string} cursorColor=&apos;#333&apos; The fill color of the cursor indicating
  * the playhead position.
  * @property {number} cursorWidth=1 Measured in pixels.
+ * @property {object} drawingContextAttributes={desynchronized: true} Drawing context
+ * attributes.
  * @property {number} duration=null Optional audio length so pre-rendered peaks
  * can be display immediately for example.
  * @property {boolean} fillParent=true Whether to fill the entire container or
@@ -308,10 +312,17 @@ export default class WaveSurfer extends util.Observer {
         barHeight: 1,
         barRadius: 0,
         barGap: null,
+        barMinHeight: null,
         container: null,
         cursorColor: &apos;#333&apos;,
         cursorWidth: 1,
         dragSelection: true,
+        drawingContextAttributes: {
+            // Boolean that hints the user agent to reduce the latency
+            // by desynchronizing the canvas paint cycle from the event
+            // loop
+            desynchronized: true
+        },
         duration: null,
         fillParent: true,
         forceDecode: false,
@@ -405,7 +416,7 @@ export default class WaveSurfer extends util.Observer {
          * Extract relevant parameters (or defaults)
          * @private
          */
-        this.params = util.extend({}, this.defaultParams, params);
+        this.params = Object.assign({}, this.defaultParams, params);
 
         /** @private */
         this.container =
@@ -849,6 +860,16 @@ export default class WaveSurfer extends util.Observer {
     play(start, end) {
         this.fireEvent(&apos;interaction&apos;, () =&gt; this.play(start, end));
         return this.backend.play(start, end);
+    }
+
+    /**
+     * Set a point in seconds for playback to stop at.
+     *
+     * @param {number} position Position (in seconds) to stop at
+     * @version 3.3.0
+     */
+    setPlayEnd(position) {
+        this.backend.setPlayEnd(position);
     }
 
     /**
@@ -1546,7 +1567,7 @@ export default class WaveSurfer extends util.Observer {
      * @private
      */
     getArrayBuffer(url, callback) {
-        let options = util.extend(
+        let options = Object.assign(
             {
                 url: url,
                 responseType: &apos;arraybuffer&apos;
@@ -1596,32 +1617,35 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Exports PCM data into a JSON array and opens in a new window.
      *
-     * @param {number} length=1024 The scale in which to export the peaks. (Integer)
-     * @param {number} accuracy=10000 (Integer)
+     * @param {number} length=1024 The scale in which to export the peaks
+     * @param {number} accuracy=10000
      * @param {?boolean} noWindow Set to true to disable opening a new
      * window with the JSON
      * @param {number} start Start index
-     * @todo Update exportPCM to work with new getPeaks signature
-     * @return {string} JSON of peaks
+     * @param {number} end End index
+     * @return {Promise} Promise that resolves with array of peaks
      */
-    exportPCM(length, accuracy, noWindow, start) {
+    exportPCM(length, accuracy, noWindow, start, end) {
         length = length || 1024;
         start = start || 0;
         accuracy = accuracy || 10000;
         noWindow = noWindow || false;
-        const peaks = this.backend.getPeaks(length, start);
+        const peaks = this.backend.getPeaks(length, start, end);
         const arr = [].map.call(
             peaks,
             val =&gt; Math.round(val * accuracy) / accuracy
         );
-        const json = JSON.stringify(arr);
-        if (!noWindow) {
-            window.open(
-                &apos;data:application/json;charset=utf-8,&apos; +
-                    encodeURIComponent(json)
-            );
-        }
-        return json;
+        return new Promise((resolve, reject) =&gt; {
+            const json = JSON.stringify(arr);
+
+            if (!noWindow) {
+                window.open(
+                    &apos;data:application/json;charset=utf-8,&apos; +
+                        encodeURIComponent(json)
+                );
+            }
+            resolve(json);
+        });
     }
 
     /**
