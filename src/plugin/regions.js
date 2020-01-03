@@ -29,6 +29,8 @@ class Region {
         this.isDragging = false;
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
+        // The left and right handleStyle properties can be set to 'none' for
+        // no styling or can be assigned an object containing CSS properties.
         this.handleStyle = params.handleStyle || {
             left: {},
             right: {}
@@ -168,6 +170,8 @@ class Region {
 
             handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
             handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
+
+            // Default CSS properties for both handles.
             const css = {
                 cursor: 'col-resize',
                 position: 'absolute',
@@ -177,6 +181,8 @@ class Region {
                 height: this.regionHeight,
                 backgroundColor: 'rgba(0, 0, 0, 1)'
             };
+
+            // Merge CSS properties per handle.
             const handleLeftCss =
                 this.handleStyle.left !== 'none'
                     ? Object.assign({ left: '0px' }, css, this.handleStyle.left)
