@@ -45,6 +45,11 @@ class Region {
         this.scroll = params.scroll !== false && ws.params.scrollParent;
         this.scrollSpeed = params.scrollSpeed || 1;
         this.scrollThreshold = params.scrollThreshold || 10;
+        // Determines whether the context menu is prevented from being opened.
+        this.preventContextMenu =
+            params.preventContextMenu === undefined
+                ? false
+                : Boolean(params.preventContextMenu);
 
         // select channel ID to set region
         let channelIdx =
@@ -318,6 +323,8 @@ class Region {
 
     /* Bind DOM events. */
     bindEvents() {
+        const preventContextMenu = this.preventContextMenu;
+
         this.element.addEventListener('mouseenter', e => {
             this.fireEvent('mouseenter', e);
             this.wavesurfer.fireEvent('region-mouseenter', this, e);
@@ -339,6 +346,14 @@ class Region {
             e.preventDefault();
             this.fireEvent('dblclick', e);
             this.wavesurfer.fireEvent('region-dblclick', this, e);
+        });
+
+        this.element.addEventListener('contextmenu', e => {
+            if (preventContextMenu) {
+                e.preventDefault();
+            }
+            this.fireEvent('contextmenu', e);
+            this.wavesurfer.fireEvent('region-contextmenu', this, e);
         });
 
         /* Drag or resize on mousemove. */
