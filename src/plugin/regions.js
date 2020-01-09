@@ -618,6 +618,8 @@ class Region {
  * @property {boolean} resize=true Allow/disallow resizing the region.
  * @property {string} [color='rgba(0, 0, 0, 0.1)'] HTML color code.
  * @property {?number} channelIdx Select channel to draw the region on (if there are multiple channel waveforms).
+ * @property {?object} handleStyle A set of CSS properties used to style the left and right handle.
+ * @property {?boolean} preventContextMenu=false Determines whether the context menu is prevented from being opened.
  */
 
 /**
