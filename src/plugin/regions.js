@@ -180,10 +180,10 @@ class Region {
             const css = {
                 cursor: 'col-resize',
                 position: 'absolute',
-                top: this.marginTop,
+                top: '0px',
                 width: '1%',
                 maxWidth: '4px',
-                height: this.regionHeight,
+                height: '100%',
                 backgroundColor: 'rgba(0, 0, 0, 1)'
             };
 
