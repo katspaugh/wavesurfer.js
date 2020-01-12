@@ -1,7 +1,15 @@
-dist: xenial
+dist: bionic
 addons:
   chrome: stable
   firefox: latest
+  apt:
+    packages:
+      - ubuntu-restricted-addons
+      - chromium-codecs-ffmpeg-extra
+      - gstreamer1.0-fluendo-mp3
+      - gstreamer1.0-libav
+      - gstreamer1.0-plugins-ugly
+      - gstreamer1.0-vaapi
 language: node_js
 node_js:
   - "node"
