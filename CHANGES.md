@@ -1,6 +1,14 @@
 wavesurfer.js changelog
 =======================
 
+3.3.1 (13.01.2020)
+------------------
+
+- Regions plugin:
+  - Improve handles style support (#1839)
+  - Add support for a context menu event on a region (#1844)
+  - Fix for handle position when using `channelIdx` param (#1845)
+
 3.3.0 (29.12.2019)
 ------------------
 
