@@ -66,8 +66,8 @@ const FFT = function(bufferSize, sampleRate, windowFunc, alpha) {
         case 'hamming':
             for (i = 0; i < bufferSize; i++) {
                 this.windowValues[i] =
-                    (0.54 - 0.46) *
-                    Math.cos((Math.PI * 2 * i) / (bufferSize - 1));
+                    0.54 -
+                    0.46 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1));
             }
             break;
         case 'hann':
