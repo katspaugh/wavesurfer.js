@@ -1,3 +1,4 @@
+/* eslint no-console: ["error", { allow: ["warn"] }] */
 /**
  * Extend an object shallowly with others
  *
