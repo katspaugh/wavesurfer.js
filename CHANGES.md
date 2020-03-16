@@ -162,7 +162,7 @@ Check `UPGRADE.md` for backward incompatible changes since v2.x.
 - Fix `setSinkId` that used deprecated API (#1428)
 - Set `isReady` attribute to false when emptying wavesufer (#1396, #1403)
 - Microphone plugin: make it work in MS Edge browser (#627)
-- Timeline plugin: display more tick marks as user zooms in closely (#1455)
+- Timeline plugin: display more tick marks as the user zooms in closely (#1455)
 - Cursor plugin: fix `destroy` (#1435)
 
 2.0.6 (14.06.2018)
@@ -212,7 +212,7 @@ Check `UPGRADE.md` for backward incompatible changes since v2.x.
 - New plugin API
 - `MultiCanvas` renderer is now the default
 - Added getters and setters for height and color options (#1145)
-- Introduce option to prevent removing media element on destroy (#1163)
+- Introduce an option to prevent removing media element on destroy (#1163)
 - Added duration parameter for the load function (#1239)
 - New soundtouch.js filter to preserve pitch when changing tempo (#149)
 - Add `getPlaybackRate` method (#1022) 
@@ -234,7 +234,7 @@ Check `UPGRADE.md` for backward incompatible changes since v2.x.
 1.2.2 (31.10.2016)
 ------------------
 
-- Determistic way to mute and unmute a track (#841)
+- Deterministic way to mute and unmute a track (#841)
 - Replace jasmine with karma / jasmine test suite (#849)
 - Regions plugin: fix a bug when clicking on scroll-bar in Firefox (#851)
 
