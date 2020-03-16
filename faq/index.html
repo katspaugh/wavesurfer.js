@@ -20,11 +20,9 @@ layout: default
   
   <p>
     You can use the <a href="https://github.com/bbcrd/audiowaveform">audiowaveform</a> program. For example, let's generate peaks for a MP3 file called 'long_clip.mp3'.
-  <p>First generate the <code>long_clip.dat</code> file:</p>
-<pre><code>audiowaveform -i long_clip.mp3 -o long_clip.dat --pixels-per-second 20 --bits 8</code></pre>
-  <p>Next, generate the <code>long_clip.json</code> file:</p>
-  <pre><code>audiowaveform -i long_clip.dat -o long_clip.json</code></pre>
-  <p>And finally, normalize the peak data so the values stay between 0 and 1 using the Python script below:</p>
+  <p>Generate JSON-formatted peaks data from the file <code>long_clip.mp3</code>:</p>
+  <pre><code>audiowaveform -i long_clip.mp3 -o long_clip.json --pixels-per-second 20 --bits 8</code></pre>
+  <p>Then normalize the peak data so the values stay between 0 and 1 using the Python script below:</p>
   <pre><code>python scale-json.py long_clip.json</code></pre>
   <pre><code>
 import json
@@ -50,7 +48,7 @@ for x in data:
     new_data.append(round(x / max_val, digits))
 
 json_content["data"] = new_data
-file_content = json.dumps(json_content)
+file_content = json.dumps(json_content, separators=(',', ':'))
 
 with open(filename, "w") as f:
     f.write(file_content)
