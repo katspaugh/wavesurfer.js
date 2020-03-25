@@ -188,10 +188,12 @@ export default class MultiCanvas extends Drawer {
                     left: leftOffset + 'px',
                     top: 0,
                     bottom: 0,
-                    height: '100%',
-                    pointerEvents: 'none'
+                    height: this.params.splitChannels ? '50%' : '100%',
+                    pointerEvents: 'none',
+                    id: 'channel-1'
                 })
-            )
+            ),
+            this.params
         );
 
         // progress
@@ -203,10 +205,42 @@ export default class MultiCanvas extends Drawer {
                         left: leftOffset + 'px',
                         top: 0,
                         bottom: 0,
-                        height: '100%'
+                        height: this.params.splitChannels ? '50%' : '100%'
                     })
                 )
             );
+        }
+
+        if (this.params.splitChannels) {
+            entry.initWave2(
+                this.wrapper.appendChild(
+                    this.style(document.createElement('canvas'), {
+                        position: 'absolute',
+                        zIndex: 2,
+                        left: leftOffset + 'px',
+                        top: '50%',
+                        bottom: 0,
+                        height: '50%',
+                        pointerEvents: 'none',
+                        id: 'channel-2'
+                    })
+                )
+            );
+
+            // progress
+            if (this.hasProgressCanvas) {
+                entry.initProgress2(
+                    this.progressWave.appendChild(
+                        this.style(document.createElement('canvas'), {
+                            position: 'absolute',
+                            left: leftOffset + 'px',
+                            top: '50%',
+                            bottom: 0,
+                            height: '50%'
+                        })
+                    )
+                );
+            }
         }
 
         this.canvases.push(entry);
@@ -221,11 +255,11 @@ export default class MultiCanvas extends Drawer {
         let lastEntry = this.canvases[this.canvases.length - 1];
 
         // wave
-        lastEntry.wave.parentElement.removeChild(lastEntry.wave);
+        lastEntry.channel1.parentElement.removeChild(lastEntry.channel1);
 
         // progress
         if (this.hasProgressCanvas) {
-            lastEntry.progress.parentElement.removeChild(lastEntry.progress);
+            lastEntry.progress1.parentElement.removeChild(lastEntry.progress1);
         }
 
         // cleanup
@@ -422,7 +456,7 @@ export default class MultiCanvas extends Drawer {
                 y1: y,
                 x2: Math.min(
                     x + width,
-                    i * this.maxCanvasWidth + entry.wave.width
+                    i * this.maxCanvasWidth + entry.channel1.width
                 ),
                 y2: y + height
             };
@@ -509,7 +543,12 @@ export default class MultiCanvas extends Drawer {
      * @param {CanvasEntry} entry Target entry
      */
     setFillStyles(entry) {
-        entry.setFillStyles(this.params.waveColor, this.params.progressColor);
+        entry.setFillStyles(
+            this.params.waveColor,
+            this.params.progressColor,
+            this.params.waveColor2,
+            this.params.progressColor2
+        );
     }
 
     /**
