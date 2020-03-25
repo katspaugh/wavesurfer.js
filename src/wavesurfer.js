@@ -97,6 +97,9 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {string} progressColor='#555' The fill color of the part of the
  * waveform behind the cursor. When `progressColor` and `waveColor` are the same
  * the progress wave is not rendered at all.
+ * @property {?string} progressColor2='#777' The fill color of the part of the
+ * waveform behind the cursor for the second channel. When `progressColor2` and
+ * `waveColor2` are the same the progress wave is not rendered at all.
  * @property {boolean} removeMediaElementOnDestroy=true Set to false to keep the
  * media element in the DOM when the player is destroyed. This is useful when
  * reusing an existing media element via the `loadMediaElement` method.
@@ -116,6 +119,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * the channels of the audio
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
+ * @property {?string} waveColor2='#BBB' The fill color of the waveform after the
+ * cursor for the second channel.
  * @property {object} xhr={} XHR options. For example:
  * `let xhr = {
  *     cache: 'default',
@@ -257,6 +262,7 @@ export default class WaveSurfer extends util.Observer {
             window.devicePixelRatio || screen.deviceXDPI / screen.logicalXDPI,
         plugins: [],
         progressColor: '#555',
+        progressColor2: '#777',
         removeMediaElementOnDestroy: true,
         renderer: MultiCanvas,
         responsive: false,
@@ -265,6 +271,7 @@ export default class WaveSurfer extends util.Observer {
         skipLength: 2,
         splitChannels: false,
         waveColor: '#999',
+        waveColor2: '#BBB',
         xhr: {}
     };
 
