@@ -19,7 +19,7 @@
 
         <!-- Demo -->
         <script src="app.js"></script>
-        
+
         <!-- highlight.js for syntax highlighting in this example -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
         <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
@@ -70,6 +70,35 @@
     container: document.querySelector('#wave'),
     splitChannels: true
 });
+</code></pre>
+                </p>
+                <h3>How to use different colors per channel with Split Channels</h3>
+                <p>
+                    With the <code>splitChannels</code> option set to <code>true</code>, you can specify different colors for the second channel if desired.
+                </p>
+                <p>
+                    If you only want the wave (or bar) color to be different, set <code>waveColor2</code> to a different color.
+                </p>
+                <p>
+<pre><code>
+    const wavesurfer = WaveSurfer.create({
+        container: document.querySelector('#wave'),
+        splitChannels: true,
+        waveColor2: 'red'
+    });
+</code></pre>
+                </p>
+                <p>
+                    If you want the wave (or bar) color to be different and the progress color to be different, set <code>waveColor2</code> to a different color and <code>progressColor2</code> to a different color.
+                </p>
+                <p>
+<pre><code>
+    const wavesurfer = WaveSurfer.create({
+        container: document.querySelector('#wave'),
+        splitChannels: true,
+        waveColor2: 'red',
+        progressColor2: 'blue',
+    });
 </code></pre>
                 </p>
 
