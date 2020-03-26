@@ -213,15 +213,15 @@ export default class CanvasEntry {
                 this.channel2Ctx.canvas.width,
                 this.channel2Ctx.canvas.height
             );
-        }
 
-        if (this.hasProgressCanvas) {
-            this.progress2Ctx.clearRect(
-                0,
-                0,
-                this.progress2Ctx.canvas.width,
-                this.progress2Ctx.canvas.height
-            );
+            if (this.hasProgressCanvas) {
+                this.progress2Ctx.clearRect(
+                    0,
+                    0,
+                    this.progress2Ctx.canvas.width,
+                    this.progress2Ctx.canvas.height
+                );
+            }
         }
     }
 
