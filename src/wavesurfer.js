@@ -1093,6 +1093,26 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Get the fill color of the waveform after the cursor.
+     *
+     * @return {string} A CSS color string.
+     */
+    getWaveColor2() {
+        return this.params.waveColor2;
+    }
+
+    /**
+     * Set the fill color of the waveform after the cursor.
+     *
+     * @param {string} color A CSS color string.
+     * @example wavesurfer.setWaveColor('#ddd');
+     */
+    setWaveColor2(color) {
+        this.params.waveColor2 = color;
+        this.drawBuffer();
+    }
+
+    /**
      * Get the fill color of the waveform behind the cursor.
      *
      * @return {string} A CSS color string.
@@ -1109,6 +1129,26 @@ export default class WaveSurfer extends util.Observer {
      */
     setProgressColor(color) {
         this.params.progressColor = color;
+        this.drawBuffer();
+    }
+
+    /**
+     * Get the fill color of the waveform behind the cursor.
+     *
+     * @return {string} A CSS color string.
+     */
+    getProgressColor2() {
+        return this.params.progressColor2;
+    }
+
+    /**
+     * Set the fill color of the waveform behind the cursor.
+     *
+     * @param {string} color A CSS color string.
+     * @example wavesurfer.setProgressColor('#400');
+     */
+    setProgressColor2(color) {
+        this.params.progressColor2 = color;
         this.drawBuffer();
     }
 
