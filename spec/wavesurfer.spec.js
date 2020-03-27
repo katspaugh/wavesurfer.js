@@ -264,21 +264,6 @@ describe('WaveSurfer/playback:', function() {
         expect(waveColor).toEqual(color);
     });
 
-    /** @test {WaveSurfer#getWaveColor2} */
-    it('allow getting waveColor2', function() {
-        var waveColor = wavesurfer.getWaveColor2();
-        expect(waveColor).toEqual('#F0F');
-    });
-
-    /** @test {WaveSurfer#setWaveColor2} */
-    it('allow setting waveColor2', function() {
-        let color = 'blue';
-        wavesurfer.setWaveColor2(color);
-        var waveColor2 = wavesurfer.getWaveColor2();
-
-        expect(waveColor2).toEqual(color);
-    });
-
     /** @test {WaveSurfer#getProgressColor} */
     it('allow getting progressColor', function() {
         var progressColor = wavesurfer.getProgressColor();
@@ -291,20 +276,6 @@ describe('WaveSurfer/playback:', function() {
         var progressColor = wavesurfer.getProgressColor();
 
         expect(progressColor).toEqual('green');
-    });
-
-    /** @test {WaveSurfer#getProgressColor2} */
-    it('allow getting progressColor2', function() {
-        var progressColor2 = wavesurfer.getProgressColor2();
-        expect(progressColor2).toEqual('red');
-    });
-
-    /** @test {WaveSurfer#setProgressColor2} */
-    it('allow setting progressColor2', function() {
-        wavesurfer.setProgressColor2('blue');
-        var progressColor2 = wavesurfer.getProgressColor2();
-
-        expect(progressColor2).toEqual('blue');
     });
 
     /** @test {WaveSurfer#getCursorColor} */

@@ -50,6 +50,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {number} barWidth=null Draw the waveform using bars.
  * @property {number} barMinHeight=null If specified, draw at least a bar of this height,
  * eliminating waveform gaps
+ * @property {{ waveColors: [], progressColors []}} channelColors=null If specified and splitChannels
+ * is set to true, these colors will be used to color the channels instead of waveColor and progressColor
  * @property {boolean} closeAudioContext=false Close and nullify all audio
  * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
@@ -97,9 +99,6 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {string} progressColor='#555' The fill color of the part of the
  * waveform behind the cursor. When `progressColor` and `waveColor` are the same
  * the progress wave is not rendered at all.
- * @property {?string} progressColor2='#777' The fill color of the part of the
- * waveform behind the cursor for the second channel. When `progressColor2` and
- * `waveColor2` are the same the progress wave is not rendered at all.
  * @property {boolean} removeMediaElementOnDestroy=true Set to false to keep the
  * media element in the DOM when the player is destroyed. This is useful when
  * reusing an existing media element via the `loadMediaElement` method.
@@ -119,8 +118,6 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * the channels of the audio
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
- * @property {?string} waveColor2='#BBB' The fill color of the waveform after the
- * cursor for the second channel.
  * @property {object} xhr={} XHR options. For example:
  * `let xhr = {
  *     cache: 'default',
@@ -234,6 +231,10 @@ export default class WaveSurfer extends util.Observer {
         barRadius: 0,
         barGap: null,
         barMinHeight: null,
+        channelColors: {
+            waveColors: ['#999', '#BBB'],
+            progressColors: ['#555', '#777']
+        },
         container: null,
         cursorColor: '#333',
         cursorWidth: 1,
@@ -262,7 +263,6 @@ export default class WaveSurfer extends util.Observer {
             window.devicePixelRatio || screen.deviceXDPI / screen.logicalXDPI,
         plugins: [],
         progressColor: '#555',
-        progressColor2: '#777',
         removeMediaElementOnDestroy: true,
         renderer: MultiCanvas,
         responsive: false,
@@ -271,7 +271,6 @@ export default class WaveSurfer extends util.Observer {
         skipLength: 2,
         splitChannels: false,
         waveColor: '#999',
-        waveColor2: '#BBB',
         xhr: {}
     };
 
@@ -1093,26 +1092,6 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Get the fill color of the waveform after the cursor.
-     *
-     * @return {string} A CSS color string.
-     */
-    getWaveColor2() {
-        return this.params.waveColor2;
-    }
-
-    /**
-     * Set the fill color of the waveform after the cursor.
-     *
-     * @param {string} color A CSS color string.
-     * @example wavesurfer.setWaveColor('#ddd');
-     */
-    setWaveColor2(color) {
-        this.params.waveColor2 = color;
-        this.drawBuffer();
-    }
-
-    /**
      * Get the fill color of the waveform behind the cursor.
      *
      * @return {string} A CSS color string.
@@ -1129,26 +1108,6 @@ export default class WaveSurfer extends util.Observer {
      */
     setProgressColor(color) {
         this.params.progressColor = color;
-        this.drawBuffer();
-    }
-
-    /**
-     * Get the fill color of the waveform behind the cursor.
-     *
-     * @return {string} A CSS color string.
-     */
-    getProgressColor2() {
-        return this.params.progressColor2;
-    }
-
-    /**
-     * Set the fill color of the waveform behind the cursor.
-     *
-     * @param {string} color A CSS color string.
-     * @example wavesurfer.setProgressColor('#400');
-     */
-    setProgressColor2(color) {
-        this.params.progressColor2 = color;
         this.drawBuffer();
     }
 

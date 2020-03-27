@@ -46,8 +46,10 @@ const TestHelpers = {
             waveColor: '#90F09B',
             progressColor: 'purple',
             cursorColor: 'white',
-            waveColor2: '#F0F',
-            progressColor2: 'red'
+            channelColors: {
+                waveColors: ['#90F09B', '#F0F'],
+                progressColors: ['purple', 'red']
+            }
         };
         return [WaveSurfer.create(options), element];
     }

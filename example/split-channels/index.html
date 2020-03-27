@@ -77,27 +77,17 @@
                     With the <code>splitChannels</code> option set to <code>true</code>, you can specify different colors for the second channel if desired.
                 </p>
                 <p>
-                    If you only want the wave (or bar) color to be different, set <code>waveColor2</code> to a different color.
+                    To set these colors, use the <code>channelColors</code> property defined with <code>waveColors</code> and <code>progressColors</code>.
                 </p>
                 <p>
 <pre><code>
     const wavesurfer = WaveSurfer.create({
         container: document.querySelector('#wave'),
         splitChannels: true,
-        waveColor2: 'red'
-    });
-</code></pre>
-                </p>
-                <p>
-                    If you want the wave (or bar) color to be different and the progress color to be different, set <code>waveColor2</code> to a different color and <code>progressColor2</code> to a different color.
-                </p>
-                <p>
-<pre><code>
-    const wavesurfer = WaveSurfer.create({
-        container: document.querySelector('#wave'),
-        splitChannels: true,
-        waveColor2: 'red',
-        progressColor2: 'blue',
+        channelColors: {
+            waveColors: ['red', 'green'],
+            progressColors: ['blue', 'orange']
+        }
     });
 </code></pre>
                 </p>

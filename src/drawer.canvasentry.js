@@ -158,7 +158,7 @@ export default class CanvasEntry {
         // set wave canvas dimensions
         this.channel1.width = width;
         this.channel1.height = this.params.splitChannels ? height / 2 : height;
-        let elementSize = { width: elementWidth + 'px' };
+        let elementSize = { width: `${elementWidth}px` };
         style(this.channel1, elementSize);
 
         if (this.hasProgressCanvas) {
@@ -230,22 +230,20 @@ export default class CanvasEntry {
      *
      * @param {string} waveColor Fill color for the wave canvas
      * @param {?string} progressColor Fill color for the progress canvas
-     * @param {?string} waveColor2 Fill color for the wave canvas
-     * @param {?string} progressColor2 Fill color for the progress canvas
+     * @param {?object} channelColors All fill colors in an object
      */
-    setFillStyles(waveColor, progressColor, waveColor2, progressColor2) {
+    setFillStyles(waveColor, progressColor, channelColors) {
         this.channel1Ctx.fillStyle = waveColor;
-
-        if (this.params.splitChannels && waveColor2 !== waveColor) {
-            this.channel2Ctx.fillStyle = waveColor2;
-        }
 
         if (this.hasProgressCanvas) {
             this.progress1Ctx.fillStyle = progressColor;
+        }
 
-            if (this.params.splitChannels && progressColor2 !== progressColor) {
-                this.progress2Ctx.fillStyle = progressColor2;
-            }
+        if (this.params.splitChannels && channelColors) {
+            this.channel1Ctx.fillStyle = channelColors.waveColors[0];
+            this.channel2Ctx.fillStyle = channelColors.waveColors[1];
+            this.progress1Ctx.fillStyle = channelColors.progressColors[0];
+            this.progress2Ctx.fillStyle = channelColors.progressColors[1];
         }
     }
 
@@ -370,44 +368,68 @@ export default class CanvasEntry {
      * should be rendered
      * @param {number} end The x-offset of the end of the area that
      * should be rendered
+     * @param {number} channelIndex The index of the channel being drawn
      */
-    drawLines(peaks, absmax, halfH, offsetY, start, end) {
-        this.drawLineToContext(
-            this.channel1Ctx,
-            peaks,
-            absmax,
-            halfH,
-            offsetY,
-            start,
-            end
-        );
-
+    drawLines(peaks, absmax, halfH, offsetY, start, end, channelIndex) {
         if (this.params.splitChannels) {
-            this.drawLineToContext(
-                this.channel2Ctx,
-                peaks,
-                absmax,
-                halfH,
-                offsetY,
-                start,
-                end
-            );
-        }
-
-        if (this.hasProgressCanvas) {
-            this.drawLineToContext(
-                this.progress1Ctx,
-                peaks,
-                absmax,
-                halfH,
-                offsetY,
-                start,
-                end
-            );
-
-            if (this.params.splitChannels) {
+            if (channelIndex === 0) {
                 this.drawLineToContext(
-                    this.progress2Ctx,
+                    this.channel1Ctx,
+                    peaks,
+                    absmax,
+                    halfH,
+                    offsetY,
+                    start,
+                    end
+                );
+                if (this.hasProgressCanvas) {
+                    this.drawLineToContext(
+                        this.progress1Ctx,
+                        peaks,
+                        absmax,
+                        halfH,
+                        offsetY,
+                        start,
+                        end
+                    );
+                }
+            }
+            if (channelIndex === 1) {
+                this.drawLineToContext(
+                    this.channel2Ctx,
+                    peaks,
+                    absmax,
+                    halfH,
+                    0,
+                    start,
+                    end
+                );
+
+                if (this.hasProgressCanvas) {
+                    this.drawLineToContext(
+                        this.progress2Ctx,
+                        peaks,
+                        absmax,
+                        halfH,
+                        0,
+                        start,
+                        end
+                    );
+                }
+            }
+        } else {
+            this.drawLineToContext(
+                this.channel1Ctx,
+                peaks,
+                absmax,
+                halfH,
+                offsetY,
+                start,
+                end
+            );
+            if (this.hasProgressCanvas) {
+                this.drawLineToContext(
+                    this.progress1Ctx,
                     peaks,
                     absmax,
                     halfH,

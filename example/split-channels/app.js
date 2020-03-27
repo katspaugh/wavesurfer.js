@@ -5,10 +5,10 @@ window.onload = function() {
     wavesurfer = WaveSurfer.create({
         container: document.querySelector('#waveform'),
         splitChannels: true,
-        waveColor: 'red',
-        progressColor: 'blue',
-        waveColor2: 'green',
-        progressColor2: 'orange'
+        channelColors: {
+            waveColors: ['red', 'green'],
+            progressColors: ['blue', 'orange']
+        }
     });
 
     wavesurfer.on('error', function(e) {
