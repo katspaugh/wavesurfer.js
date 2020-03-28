@@ -100,6 +100,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {boolean} removeMediaElementOnDestroy=true Set to false to keep the
  * media element in the DOM when the player is destroyed. This is useful when
  * reusing an existing media element via the `loadMediaElement` method.
+ * @property {boolean} reloadMediaElement=true Set to false to skip the empty() and
+ * load() operations. Avoid duplication when MediaElement is in the canplay state
  * @property {Object} renderer=MultiCanvas Can be used to inject a custom
  * renderer.
  * @property {boolean|number} responsive=false If set to `true` resize the
@@ -258,6 +260,7 @@ export default class WaveSurfer extends util.Observer {
         plugins: [],
         progressColor: '#555',
         removeMediaElementOnDestroy: true,
+        reloadMediaElement: true,
         renderer: MultiCanvas,
         responsive: false,
         rtl: false,
@@ -1328,7 +1331,9 @@ export default class WaveSurfer extends util.Observer {
         if (!url) {
             throw new Error('url parameter cannot be empty');
         }
-        this.empty();
+        if (this.params.reloadMediaElement) {
+            this.empty();
+        }
         if (preload) {
             // check whether the preload attribute will be usable and if not log
             // a warning listing the reasons why not and nullify the variable
