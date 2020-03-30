@@ -216,7 +216,7 @@ export default class MultiCanvas extends Drawer {
                     left: leftOffset + 'px',
                     top: 0,
                     bottom: 0,
-                    height: this.params.splitChannels ? '50%' : '100%',
+                    height: '100%',
                     pointerEvents: 'none'
                 })
             ),
@@ -232,7 +232,7 @@ export default class MultiCanvas extends Drawer {
                         left: leftOffset + 'px',
                         top: 0,
                         bottom: 0,
-                        height: this.params.splitChannels ? '50%' : '100%'
+                        height: '100%'
                     })
                 )
             );
@@ -537,7 +537,7 @@ export default class MultiCanvas extends Drawer {
             // Split channels and call this function with the channelIndex set
             if (peaks[0] instanceof Array) {
                 const channels = peaks;
-                if (this.params.splitChannels) {
+                if (this.isMultichannel) {
                     this.setHeight(
                         channels.length *
                             this.params.height *
