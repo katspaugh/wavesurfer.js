@@ -6,38 +6,38 @@ import style from './util/style';
 import getId from './util/get-id';
 
 /**
- * The `CanvasEntry` class represents an element consisting of a wave `canvas`
- * and an (optional) progress wave `canvas`.
+ * The `SplitEntry` class represents an element consisting of an array of wave `canvas`
+ * and an (optional) array of  progress wave `canvas`.
  *
  * The `MultiCanvas` renderer uses one or more `CanvasEntry` instances to
  * render a waveform, depending on the zoom level.
  */
-export default class CanvasEntry {
+export default class SplitEntry {
     constructor() {
         /**
-         * The wave node
+         * The wave nodes
          *
-         * @type {HTMLCanvasElement | HTMLCanvasElement[]}
+         * @type {HTMLCanvasElement[]}
          */
-        this.wave = null;
+        this.waves = [];
         /**
-         * The wave canvas rendering context
+         * The wave canvas rendering contexts
          *
-         * @type {CanvasRenderingContext2D | CanvasRenderingContext2D[]}
+         * @type {CanvasRenderingContext2D[]}
          */
-        this.waveCtx = null;
+        this.waveCtxs = [];
         /**
-         * The (optional) progress wave node
+         * The (optional) progress wave nodes
          *
-         * @type {HTMLCanvasElement | HTMLCanvasElement[]}
+         * @type {HTMLCanvasElement[]}
          */
-        this.progress = null;
+        this.progresses = [];
         /**
          * The (optional) progress wave canvas rendering context
          *
-         * @type {CanvasRenderingContext2D | CanvasRenderingContext2D[]}
+         * @type {CanvasRenderingContext2D[]}
          */
-        this.progressCtx = null;
+        this.progressCtxs = [];
         /**
          * Start of the area the canvas should render, between 0 and 1
          *
@@ -64,31 +64,69 @@ export default class CanvasEntry {
          * @type {object}
          */
         this.canvasContextAttributes = {};
+        /**
+         * Basic channel array
+         *
+         * @type {number[]}
+         */
+        this.channels = [0, 1];
     }
 
     /**
      * Store the wave canvas element and create the 2D rendering context
      *
-     * @param {HTMLCanvasElement} element The wave `canvas` element.
-     * @param {object} params Parent parameters
+     * @param {HTMLCanvasElement} wrapper The wave `canvas` element.
+     * @param {number} leftOffset calculated offset
      */
-    initWave(element) {
-        this.wave = element;
-        this.waveCtx = this.wave.getContext('2d', this.canvasContextAttributes);
+    initWaves(wrapper, leftOffset) {
+        this.channels.forEach(idx => {
+            const newElement = wrapper.appendChild(
+                style(document.createElement('canvas'), {
+                    position: 'absolute',
+                    zIndex: 2,
+                    left: leftOffset + 'px',
+                    top: idx === 0 ? 0 : '50%',
+                    bottom: 0,
+                    height: '50%',
+                    pointerEvents: 'none'
+                })
+            );
+            newElement.id = `wave-${idx}`;
+            this.waves[idx] = newElement;
+            this.waveCtxs[idx] = this.waves[idx].getContext(
+                '2d',
+                this.canvasContextAttributes
+            );
+        });
     }
 
     /**
      * Store the progress wave canvas element and create the 2D rendering
      * context
      *
-     * @param {HTMLCanvasElement} element The progress wave `canvas` element.
+     * @param {HTMLCanvasElement} wrapper The wave `canvas` element.
+     * @param {number} leftOffset calculated offset
      */
-    initProgress(element) {
-        this.progress = element;
-        this.progressCtx = this.progress.getContext(
-            '2d',
-            this.canvasContextAttributes
-        );
+    initProgresses(wrapper, leftOffset) {
+        this.channels.forEach(idx => {
+            const newElement = wrapper.appendChild(
+                style(document.createElement('canvas'), {
+                    position: 'absolute',
+                    zIndex: 2,
+                    left: leftOffset + 'px',
+                    top: idx === 0 ? 0 : '50%',
+                    bottom: 0,
+                    height: '50%',
+                    pointerEvents: 'none'
+                })
+            );
+            newElement.id = `progress-${idx}`;
+            this.progresses[idx] = newElement;
+            this.progressCtxs[idx] = this.progresses[idx].getContext(
+                '2d',
+                this.canvasContextAttributes
+            );
+        });
     }
 
     /**
@@ -102,20 +140,25 @@ export default class CanvasEntry {
     updateDimensions(elementWidth, totalWidth, width, height) {
         // where the canvas starts and ends in the waveform, represented as a
         // decimal between 0 and 1
-        this.start = this.wave.offsetLeft / totalWidth || 0;
-        this.end = this.start + elementWidth / totalWidth;
+
         const elementSize = { width: `${elementWidth}px` };
 
         // set wave canvas dimensions
-        this.wave.width = width;
-        this.wave.height = height;
-        style(this.wave, elementSize);
+        this.waves.forEach(wave => {
+            this.start = wave.offsetLeft / totalWidth || 0;
+            this.end = this.start + elementWidth / totalWidth;
+            wave.width = width;
+            wave.height = height / this.waves.length;
+            style(wave, elementSize);
+        });
 
         if (this.hasProgressCanvas) {
             // set progress canvas dimensions
-            this.progress.width = width;
-            this.progress.height = height;
-            style(this.progress, elementSize);
+            this.progresses.forEach(progress => {
+                progress.width = width;
+                progress.height = height / this.progresses.length;
+                style(progress, elementSize);
+            });
         }
     }
 
@@ -124,37 +167,40 @@ export default class CanvasEntry {
      */
     clearWave() {
         // wave
-        this.waveCtx.clearRect(
-            0,
-            0,
-            this.waveCtx.canvas.width,
-            this.waveCtx.canvas.height
-        );
+        this.waveCtxs.forEach(waveCtx => {
+            waveCtx.clearRect(
+                0,
+                0,
+                waveCtx.canvas.width,
+                waveCtx.canvas.height
+            );
+        });
 
         // progress
         if (this.hasProgressCanvas) {
-            this.progressCtx.clearRect(
-                0,
-                0,
-                this.progressCtx.canvas.width,
-                this.progressCtx.canvas.height
-            );
+            this.progressCtxs.forEach(progressCtx => {
+                progressCtx.clearRect(
+                    0,
+                    0,
+                    progressCtx.canvas.width,
+                    progressCtx.canvas.height
+                );
+            });
         }
     }
 
     /**
      * Set the fill styles for wave and progress
      *
-     * @param {string} waveColor Fill color for the wave canvas
-     * @param {?string} progressColor Fill color for the progress canvas
      * @param {?object} channelColors All fill colors in an object
      */
-    setFillStyles(waveColor, progressColor) {
-        this.waveCtx.fillStyle = waveColor;
-
-        if (this.hasProgressCanvas) {
-            this.progressCtx.fillStyle = progressColor;
-        }
+    setFillStyles(channelColors) {
+        this.waveCtxs.forEach((waveCtx, idx) => {
+            waveCtx.fillStyle = channelColors.waveColors[idx];
+        });
+        this.progressCtxs.forEach((progressCtx, idx) => {
+            progressCtx.fillStyle = channelColors.progressColors[idx];
+        });
     }
 
     /**
@@ -167,17 +213,21 @@ export default class CanvasEntry {
      * @param {number} radius Radius of the rectangle
      */
     fillRects(x, y, width, height, radius) {
-        this.fillRectToContext(this.waveCtx, x, y, width, height, radius);
+        this.waveCtxs.forEach(waveCtx => {
+            this.fillRectToContext(waveCtx, x, y, width, height, radius);
+        });
 
         if (this.hasProgressCanvas) {
-            this.fillRectToContext(
-                this.progressCtx,
-                x,
-                y,
-                width,
-                height,
-                radius
-            );
+            this.progressCtxs.forEach(progressCtx => {
+                this.fillRectToContext(
+                    progressCtx,
+                    x,
+                    y,
+                    width,
+                    height,
+                    radius
+                );
+            });
         }
     }
 
@@ -258,27 +308,39 @@ export default class CanvasEntry {
      * should be rendered
      * @param {number} end The x-offset of the end of the area that
      * should be rendered
+     * @param {number} channelIndex The index of the channel being drawn
      */
-    drawLines(peaks, absmax, halfH, offsetY, start, end) {
-        this.drawLineToContext(
-            this.waveCtx,
-            peaks,
-            absmax,
-            halfH,
-            offsetY,
-            start,
-            end
-        );
+    drawLines(peaks, absmax, halfH, offsetY, start, end, channelIndex) {
+        this.waves.forEach((wave, idx) => {
+            if (channelIndex === idx) {
+                this.drawLineToContext(
+                    this.waveCtxs[idx],
+                    peaks,
+                    absmax,
+                    halfH,
+                    0,
+                    start,
+                    end,
+                    wave
+                );
+            }
+        });
+
         if (this.hasProgressCanvas) {
-            this.drawLineToContext(
-                this.progressCtx,
-                peaks,
-                absmax,
-                halfH,
-                offsetY,
-                start,
-                end
-            );
+            this.progresses.forEach((progress, idx) => {
+                if (channelIndex === idx) {
+                    this.drawLineToContext(
+                        this.progressCtxs[idx],
+                        peaks,
+                        absmax,
+                        halfH,
+                        0,
+                        start,
+                        end,
+                        progress
+                    );
+                }
+            });
         }
     }
 
@@ -294,9 +356,10 @@ export default class CanvasEntry {
      * @param {number} start The x-offset of the beginning of the area that
      * should be rendered
      * @param {number} end The x-offset of the end of the area that
+     * @param {HTMLCanvasElement} wave The wave element that is being measured
      * should be rendered
      */
-    drawLineToContext(ctx, peaks, absmax, halfH, offsetY, start, end) {
+    drawLineToContext(ctx, peaks, absmax, halfH, offsetY, start, end, wave) {
         if (!ctx) {
             return;
         }
@@ -310,7 +373,7 @@ export default class CanvasEntry {
 
         const canvasStart = first;
         const canvasEnd = last;
-        const scale = this.wave.width / (canvasEnd - canvasStart - 1);
+        const scale = wave.width / (canvasEnd - canvasStart - 1);
 
         // optimization
         const halfOffset = halfH + offsetY;
@@ -354,11 +417,18 @@ export default class CanvasEntry {
      * Destroys this entry
      */
     destroy() {
-        this.waveCtx = null;
-        this.wave = null;
-
-        this.progressCtx = null;
-        this.progress = null;
+        this.waves.forEach(wave => {
+            wave = null;
+        });
+        this.waveCtxs.forEach(waveCtx => {
+            waveCtx = null;
+        });
+        this.progresses.forEach(progress => {
+            progress = null;
+        });
+        this.progressCtxs.forEach(progressCtx => {
+            progressCtx = null;
+        });
     }
 
     /**
@@ -377,10 +447,14 @@ export default class CanvasEntry {
     getImage(format, quality, type) {
         if (type === 'blob') {
             return new Promise(resolve => {
-                this.wave.toBlob(resolve, format, quality);
+                this.waves.map(wave => {
+                    return wave.toBlob(resolve, format, quality);
+                });
             });
         } else if (type === 'dataURL') {
-            return this.wave.toDataURL(format, quality);
+            return this.waves.map(wave => {
+                return wave.toDataURL(format, quality);
+            });
         }
     }
 }
