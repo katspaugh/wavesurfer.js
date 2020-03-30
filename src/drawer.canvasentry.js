@@ -57,7 +57,11 @@ export default class CanvasEntry {
          *
          * @type {string}
          */
-        this.id = getId(this.constructor.name.toLowerCase() + '_');
+        this.id = getId(
+            typeof this.constructor.name !== 'undefined'
+                ? this.constructor.name.toLowerCase() + '_'
+                : 'canvasentry_'
+        );
         /**
          * Canvas 2d context attributes
          *
