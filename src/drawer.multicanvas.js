@@ -101,19 +101,12 @@ export default class MultiCanvas extends Drawer {
         this.barRadius = params.barRadius || 0;
 
         /**
-         * Is this in a multichannel state?
+         * A helper to determine whether this uses split channels
          *
          * @private
          * @type {boolean}
          */
         this.isMultichannel = params.splitChannels;
-
-        /**
-         * If multichannel, we'll store an array of CanvasEntries
-         *
-         * @type {function[]}
-         */
-        this.entries = [];
     }
 
     /**
