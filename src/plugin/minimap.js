@@ -55,7 +55,7 @@ export default class MinimapPlugin {
     }
 
     constructor(params, ws) {
-        this.params = ws.util.extend(
+        this.params = Object.assign(
             {},
             ws.params,
             {

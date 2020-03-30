@@ -68,6 +68,14 @@ export default class MultiCanvas extends Drawer {
         this.EntryClass = CanvasEntry;
 
         /**
+         * Canvas 2d context attributes.
+         *
+         * @private
+         * @type {object}
+         */
+        this.canvasContextAttributes = params.drawingContextAttributes;
+
+        /**
          * Overlap added between entries to prevent vertical white stripes
          * between `canvas` elements.
          *
@@ -196,6 +204,7 @@ export default class MultiCanvas extends Drawer {
     addCanvas() {
         const leftOffset = this.maxCanvasElementWidth * this.canvases.length;
         const entry = new this.EntryClass();
+        entry.canvasContextAttributes = this.canvasContextAttributes;
         entry.hasProgressCanvas = this.hasProgressCanvas;
         entry.halfPixel = this.halfPixel;
         entry.usesIntersectionObserver = this.supportsIntersectionObserver;
@@ -291,7 +300,9 @@ export default class MultiCanvas extends Drawer {
      * Clear the whole multi-canvas
      */
     clearWave() {
-        this.canvases.forEach(entry => entry.clearWave());
+        util.frame(() => {
+            this.canvases.forEach(entry => entry.clearWave());
+        })();
     }
 
     /**
@@ -340,7 +351,13 @@ export default class MultiCanvas extends Drawer {
                 for (i; i < last; i += step) {
                     const peak =
                         peaks[Math.floor(i * scale * peakIndexScale)] || 0;
-                    const h = Math.round((peak / absmax) * halfH);
+                    let h = Math.round((peak / absmax) * halfH);
+
+                    /* in case of silences, allow the user to specify that we
+                     * always draw *something* (normally a 1px high bar) */
+                    if (h == 0 && this.params.barMinHeight)
+                        h = this.params.barMinHeight;
+
                     this.fillRect(
                         i + this.halfPixel,
                         halfH - h + offsetY,

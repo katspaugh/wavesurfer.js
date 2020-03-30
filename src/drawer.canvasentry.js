@@ -57,7 +57,11 @@ export default class CanvasEntry {
          *
          * @type {string}
          */
-        this.id = getId(this.constructor.name.toLowerCase() + '_');
+        this.id = getId(
+            typeof this.constructor.name !== 'undefined'
+                ? this.constructor.name.toLowerCase() + '_'
+                : 'canvasentry_'
+        );
         /**
          * Whether or not the render process completed for this entry.
          *
@@ -84,6 +88,12 @@ export default class CanvasEntry {
          * @type {boolean}
          */
         this.usesIntersectionObserver = false;
+        /**
+         * Canvas 2d context attributes
+         *
+         * @type {object}
+         */
+        this.canvasContextAttributes = {};
     }
 
     /**
@@ -93,7 +103,7 @@ export default class CanvasEntry {
      */
     initWave(element) {
         this.wave = element;
-        this.waveCtx = this.wave.getContext('2d');
+        this.waveCtx = this.wave.getContext('2d', this.canvasContextAttributes);
     }
 
     /**
@@ -104,7 +114,10 @@ export default class CanvasEntry {
      */
     initProgress(element) {
         this.progress = element;
-        this.progressCtx = this.progress.getContext('2d');
+        this.progressCtx = this.progress.getContext(
+            '2d',
+            this.canvasContextAttributes
+        );
     }
 
     /**

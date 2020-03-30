@@ -321,9 +321,12 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#exportPCM} */
-    it('return PCM data formatted using JSON.stringify', function() {
-        var pcmData = wavesurfer.exportPCM();
-        expect(pcmData).toBeNonEmptyString();
+    it('return Promise with PCM data formatted using JSON.stringify', function(done) {
+        wavesurfer.exportPCM().then(pcmData => {
+            expect(pcmData).toBeNonEmptyString();
+
+            done();
+        });
     });
 
     /** @test {WaveSurfer#getFilters} */
