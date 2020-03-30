@@ -17,25 +17,25 @@ export default class CanvasEntry {
         /**
          * The wave node
          *
-         * @type {HTMLCanvasElement | HTMLCanvasElement[]}
+         * @type {HTMLCanvasElement}
          */
         this.wave = null;
         /**
          * The wave canvas rendering context
          *
-         * @type {CanvasRenderingContext2D | CanvasRenderingContext2D[]}
+         * @type {CanvasRenderingContext2D}
          */
         this.waveCtx = null;
         /**
          * The (optional) progress wave node
          *
-         * @type {HTMLCanvasElement | HTMLCanvasElement[]}
+         * @type {HTMLCanvasElement}
          */
         this.progress = null;
         /**
          * The (optional) progress wave canvas rendering context
          *
-         * @type {CanvasRenderingContext2D | CanvasRenderingContext2D[]}
+         * @type {CanvasRenderingContext2D}
          */
         this.progressCtx = null;
         /**
@@ -70,7 +70,6 @@ export default class CanvasEntry {
      * Store the wave canvas element and create the 2D rendering context
      *
      * @param {HTMLCanvasElement} element The wave `canvas` element.
-     * @param {object} params Parent parameters
      */
     initWave(element) {
         this.wave = element;
@@ -147,7 +146,6 @@ export default class CanvasEntry {
      *
      * @param {string} waveColor Fill color for the wave canvas
      * @param {?string} progressColor Fill color for the progress canvas
-     * @param {?object} channelColors All fill colors in an object
      */
     setFillStyles(waveColor, progressColor) {
         this.waveCtx.fillStyle = waveColor;
