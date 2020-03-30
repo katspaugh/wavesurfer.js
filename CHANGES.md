@@ -1,9 +1,13 @@
 wavesurfer.js changelog
 =======================
 
-3.3.2 (unreleased)
+3.4.0 (unreleased)
+------------------
 
-- Use requestAnimationFrame for clearWave (#1884)
+- Use `requestAnimationFrame` for clearWave (#1884)
+- Fix `Unable to get property 'toLowerCase' of undefined or null reference`
+  in IE11 (#1771)
+- Spectrogram plugin: correct the hamming windfunc formula (#1850)
 
 3.3.1 (13.01.2020)
 ------------------
