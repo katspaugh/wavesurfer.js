@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-3.4.0 (unreleased)
+3.3.2 (07.04.2020)
 ------------------
 
 - Use `requestAnimationFrame` for clearWave (#1884)
