@@ -344,7 +344,9 @@ export default class MultiCanvas extends Drawer {
      * Clear the whole multi-canvas
      */
     clearWave() {
-        this.canvases.forEach(entry =&gt; entry.clearWave());
+        util.frame(() =&gt; {
+            this.canvases.forEach(entry =&gt; entry.clearWave());
+        })();
     }
 
     /**

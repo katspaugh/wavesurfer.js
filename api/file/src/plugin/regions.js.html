@@ -113,13 +113,11 @@ class Region {
         this.isDragging = false;
         this.loop = Boolean(params.loop);
         this.color = params.color || &apos;rgba(0, 0, 0, 0.1)&apos;;
+        // The left and right handleStyle properties can be set to &apos;none&apos; for
+        // no styling or can be assigned an object containing CSS properties.
         this.handleStyle = params.handleStyle || {
-            left: {
-                backgroundColor: &apos;rgba(0, 0, 0, 1)&apos;
-            },
-            right: {
-                backgroundColor: &apos;rgba(0, 0, 0, 1)&apos;
-            }
+            left: {},
+            right: {}
         };
         this.data = params.data || {};
         this.attributes = params.attributes || {};
@@ -131,6 +129,11 @@ class Region {
         this.scroll = params.scroll !== false &amp;&amp; ws.params.scrollParent;
         this.scrollSpeed = params.scrollSpeed || 1;
         this.scrollThreshold = params.scrollThreshold || 10;
+        // Determines whether the context menu is prevented from being opened.
+        this.preventContextMenu =
+            params.preventContextMenu === undefined
+                ? false
+                : Boolean(params.preventContextMenu);
 
         // select channel ID to set region
         let channelIdx =
@@ -226,12 +229,6 @@ class Region {
     /* Render a region as a DOM element. */
     render() {
         const regionEl = document.createElement(&apos;region&apos;);
-        const handleLeft = regionEl.appendChild(
-            document.createElement(&apos;handle&apos;)
-        );
-        const handleRight = regionEl.appendChild(
-            document.createElement(&apos;handle&apos;)
-        );
 
         regionEl.className = &apos;wavesurfer-region&apos;;
         regionEl.title = this.formatTime(this.start, this.end);
@@ -251,39 +248,50 @@ class Region {
             top: this.marginTop
         });
 
-        /* Allows the user to set the handlecolor dynamically, both handle colors must be set */
-        if (!this.handleStyle.left) {
-            handleLeft.style.backgroundColor = &apos;rgba(0, 0, 0, 1)&apos;;
-        } else {
-            handleLeft.style.backgroundColor = this.handleStyle.left.backgroundColor;
-        }
-
-        if (!this.handleStyle.right) {
-            handleRight.style.backgroundColor = &apos;rgba(0, 0, 0, 1)&apos;;
-        } else {
-            handleRight.style.backgroundColor = this.handleStyle.right.backgroundColor;
-        }
-
         /* Resize handles */
         if (this.resize) {
+            const handleLeft = regionEl.appendChild(
+                document.createElement(&apos;handle&apos;)
+            );
+            const handleRight = regionEl.appendChild(
+                document.createElement(&apos;handle&apos;)
+            );
+
             handleLeft.className = &apos;wavesurfer-handle wavesurfer-handle-start&apos;;
             handleRight.className = &apos;wavesurfer-handle wavesurfer-handle-end&apos;;
+
+            // Default CSS properties for both handles.
             const css = {
                 cursor: &apos;col-resize&apos;,
                 position: &apos;absolute&apos;,
-                top: this.marginTop,
+                top: &apos;0px&apos;,
                 width: &apos;1%&apos;,
                 maxWidth: &apos;4px&apos;,
-                height: this.regionHeight
+                height: &apos;100%&apos;,
+                backgroundColor: &apos;rgba(0, 0, 0, 1)&apos;
             };
-            this.style(handleLeft, css);
-            this.style(handleLeft, {
-                left: &apos;0px&apos;
-            });
-            this.style(handleRight, css);
-            this.style(handleRight, {
-                right: &apos;0px&apos;
-            });
+
+            // Merge CSS properties per handle.
+            const handleLeftCss =
+                this.handleStyle.left !== &apos;none&apos;
+                    ? Object.assign({ left: &apos;0px&apos; }, css, this.handleStyle.left)
+                    : null;
+            const handleRightCss =
+                this.handleStyle.right !== &apos;none&apos;
+                    ? Object.assign(
+                          { right: &apos;0px&apos; },
+                          css,
+                          this.handleStyle.right
+                      )
+                    : null;
+
+            if (handleLeftCss) {
+                this.style(handleLeft, handleLeftCss);
+            }
+
+            if (handleRightCss) {
+                this.style(handleRight, handleRightCss);
+            }
         }
 
         this.element = this.wrapper.appendChild(regionEl);
@@ -399,6 +407,8 @@ class Region {
 
     /* Bind DOM events. */
     bindEvents() {
+        const preventContextMenu = this.preventContextMenu;
+
         this.element.addEventListener(&apos;mouseenter&apos;, e =&gt; {
             this.fireEvent(&apos;mouseenter&apos;, e);
             this.wavesurfer.fireEvent(&apos;region-mouseenter&apos;, this, e);
@@ -420,6 +430,14 @@ class Region {
             e.preventDefault();
             this.fireEvent(&apos;dblclick&apos;, e);
             this.wavesurfer.fireEvent(&apos;region-dblclick&apos;, this, e);
+        });
+
+        this.element.addEventListener(&apos;contextmenu&apos;, e =&gt; {
+            if (preventContextMenu) {
+                e.preventDefault();
+            }
+            this.fireEvent(&apos;contextmenu&apos;, e);
+            this.wavesurfer.fireEvent(&apos;region-contextmenu&apos;, this, e);
         });
 
         /* Drag or resize on mousemove. */
@@ -684,6 +702,8 @@ class Region {
  * @property {boolean} resize=true Allow/disallow resizing the region.
  * @property {string} [color=&apos;rgba(0, 0, 0, 0.1)&apos;] HTML color code.
  * @property {?number} channelIdx Select channel to draw the region on (if there are multiple channel waveforms).
+ * @property {?object} handleStyle A set of CSS properties used to style the left and right handle.
+ * @property {?boolean} preventContextMenu=false Determines whether the context menu is prevented from being opened.
  */
 
 /**

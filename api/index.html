@@ -110,7 +110,12 @@
 </code></pre>
 <h2 id="documentation">Documentation</h2><p>See the documentation on all available <a href="https://wavesurfer-js.org/docs/methods.html">methods</a>, <a href="https://wavesurfer-js.org/docs/options.html">options</a> and <a href="https://wavesurfer-js.org/docs/events.html">events</a> on the <a href="https://wavesurfer-js.org/docs/">homepage</a>.</p>
 <h2 id="upgrade">Upgrade</h2><p>See the <a href="https://github.com/katspaugh/wavesurfer.js/blob/master/UPGRADE.md">upgrade</a> document if you&apos;re upgrading from a previous version of wavesurfer.js.</p>
-<h2 id="using-with-a-module-bundler">Using with a module bundler</h2><p>Wavesurfer can be used with a module system like this:</p>
+<h2 id="using-with-a-module-bundler">Using with a module bundler</h2><p>Install Wavesurfer:</p>
+<pre><code class="lang-bash"><code class="source-code prettyprint">npm install wavesurfer.js --save
+# or
+yarn add wavesurfer.js</code>
+</code></pre>
+<p>Use it with a module system like this:</p>
 <pre><code class="lang-javascript"><code class="source-code prettyprint">// import
 import WaveSurfer from &apos;wavesurfer.js&apos;;
 
@@ -120,7 +125,8 @@ var WaveSurfer = require(&apos;wavesurfer.js&apos;);
 // amd
 define([&apos;WaveSurfer&apos;], function(WaveSurfer) {
   // ... code
-});</code>
+});
+</code>
 </code></pre>
 <h2 id="related-projects">Related projects</h2><p>For a list of  projects using wavesurfer.js, check out
 <a href="https://wavesurfer-js.org/projects/">the projects page</a>.</p>
