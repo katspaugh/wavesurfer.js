@@ -57,7 +57,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {string} cursorColor='#333' The fill color of the cursor indicating
  * the playhead position.
  * @property {number} cursorWidth=1 Measured in pixels.
- * @property {object} drawingContextAttributes={desynchronized: true} Drawing context
+ * @property {object} drawingContextAttributes={desynchronized: false} Drawing context
  * attributes.
  * @property {number} duration=null Optional audio length so pre-rendered peaks
  * can be display immediately for example.
@@ -237,7 +237,7 @@ export default class WaveSurfer extends util.Observer {
             // Boolean that hints the user agent to reduce the latency
             // by desynchronizing the canvas paint cycle from the event
             // loop
-            desynchronized: true
+            desynchronized: false
         },
         duration: null,
         fillParent: true,

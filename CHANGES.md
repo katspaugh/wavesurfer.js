@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+3.3.3 (unreleased)
+------------------
+
+- Change default `desynchronized` drawing context attribute to `false` (#1908)
+
 3.3.2 (07.04.2020)
 ------------------
 
