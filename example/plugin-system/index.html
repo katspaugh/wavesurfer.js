@@ -26,7 +26,7 @@
         <script src="../../dist/plugin/wavesurfer.spectrogram.js"></script>
 
         <!-- App -->
-        <script src="app.js"></script>
+        <script type="module" src="app.js"></script>
         <script src="../trivia.js"></script>
 
         <!-- highlight.js for syntax highlighting in this example -->
@@ -105,9 +105,9 @@
 						<div class="checkbox">
   							<label><input type="checkbox" value="" data-activate-plugin="timeline">Timeline</label>
 						</div>
-						<div class="checkbox">
-  							<label><input type="checkbox" value="" data-activate-plugin="cursor">Cursor</label>
-						</div>
+                        <div class="checkbox">
+                            <label><input type="checkbox" value="" data-activate-plugin="cursorCustom">CursorCustom</label>
+                        </div>
 						<div class="checkbox">
   							<label><input type="checkbox" value="" data-activate-plugin="spectrogram">Spectrogram</label>
 						</div>
@@ -158,6 +158,23 @@ wavesurfer.addPlugin(WaveSurfer.timeline.create{
 
 wavesurfer.load('example/media/demo.wav');</code></pre>
                         </p></noindex>
+                    </div>
+                    <div class="marketing">
+                        <h4>Create a plugin that extends an existing plugin</h4>
+                        <hr />
+                        <p>The <code>CursorCustomPlugin</code> is a plugin that extends the basic <code>CursorPlugin</code>,
+                            so you can override some methods with your custom features, maintaining the existing functionalities
+                            and the library support. </p>
+                        <noindex><p>
+                            <pre><code>var wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: 'violet',
+    // ... other wavesurfer options,
+     plugins: [
+        CursorCustomPlugin.create({// ... plugin options})
+     ]
+});</code></pre>
+                            </p></noindex>
                     </div>
                 </div>
             </div>

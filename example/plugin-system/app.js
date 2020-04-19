@@ -1,5 +1,7 @@
 'use strict';
 
+import CursorCustomPlugin from './custom-plugin/CursorCustomPlugin.js';
+
 var wavesurfer;
 
 // Init & load
@@ -16,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         spectrogram: {
             container: '#wave-spectrogram'
         },
-        cursor: {},
+        cursorCustom: {},
         regions: {
             regions: [
                 {
@@ -83,8 +85,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 var pluginName = e.currentTarget.dataset.activatePlugin;
                 var activate = e.target.checked;
                 var options = pluginOptions[pluginName] || {};
-                var plugin = WaveSurfer[pluginName].create(options);
-
+                var plugin;
+                if (pluginName === 'cursorCustom') {
+                    plugin = CursorCustomPlugin.create(options);
+                } else {
+                    plugin = WaveSurfer[pluginName].create(options);
+                }
                 if (activate) {
                     wavesurfer.addPlugin(plugin).initPlugin(pluginName);
                 } else {
