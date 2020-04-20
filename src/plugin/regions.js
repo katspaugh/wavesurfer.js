@@ -58,7 +58,10 @@ class Region {
         this.marginTop = '0px';
 
         if (channelIdx !== -1) {
-            let channelCount = this.wavesurfer.backend.buffer != null ? this.wavesurfer.backend.buffer.numberOfChannels : -1;
+            let channelCount = 
+                this.wavesurfer.backend.buffer != null
+                ? this.wavesurfer.backend.buffer.numberOfChannels
+                : -1;
             if (channelCount >= 0 && channelIdx < channelCount) {
                 this.regionHeight = Math.floor((1 / channelCount) * 100) + '%';
                 this.marginTop = this.wavesurfer.getHeight() * channelIdx + 'px';
