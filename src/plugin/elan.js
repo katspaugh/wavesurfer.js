@@ -237,7 +237,6 @@ export default class ElanPlugin {
             const th = document.createElement('th');
             th.className = 'wavesurfer-tier-' + tier.id;
             th.textContent = tier.id;
-            th.style.width = true;
             headRow.appendChild(th);
         });
 
