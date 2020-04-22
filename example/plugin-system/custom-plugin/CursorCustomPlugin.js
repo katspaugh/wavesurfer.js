@@ -12,7 +12,7 @@ export default class CursorCustomPlugin extends CursorPlugin {
      *
      * This function overrides the create static method of the CursorPlugin, so you can assign it a name
      *
-     * @param  {CursorPluginParams} params parameters use to initialise the
+     * @param  {CursorPluginParams} params parameters used to initialise the
      * plugin
      * @return {PluginDefinition} an object representing the plugin
      */
@@ -57,7 +57,7 @@ export default class CursorCustomPlugin extends CursorPlugin {
     _onMouseleave = () => this.hideCursor();
 
     /**
-     * Construct the plugin class. You probably want to use `CursorPlugin.create`
+     * Construct the plugin class. You probably want to use `CursorCustomPlugin.create`
      * instead.
      *
      * @param {CursorPluginParams} params Plugin parameters
