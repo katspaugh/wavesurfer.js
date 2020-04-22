@@ -48,6 +48,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {number} barGap=null The optional spacing between bars of the wave,
  * if not provided will be calculated in legacy format.
  * @property {number} barWidth=null Draw the waveform using bars.
+ * @property {number} barMinHeight=null If specified, draw at least a bar of this height,
+ * eliminating waveform gaps
  * @property {boolean} closeAudioContext=false Close and nullify all audio
  * contexts when the destroy method is called.
  * @property {!string|HTMLElement} container CSS selector or HTML element where
@@ -55,6 +57,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {string} cursorColor='#333' The fill color of the cursor indicating
  * the playhead position.
  * @property {number} cursorWidth=1 Measured in pixels.
+ * @property {object} drawingContextAttributes={desynchronized: false} Drawing context
+ * attributes.
  * @property {number} duration=null Optional audio length so pre-rendered peaks
  * can be display immediately for example.
  * @property {boolean} fillParent=true Whether to fill the entire container or
@@ -224,10 +228,17 @@ export default class WaveSurfer extends util.Observer {
         barHeight: 1,
         barRadius: 0,
         barGap: null,
+        barMinHeight: null,
         container: null,
         cursorColor: '#333',
         cursorWidth: 1,
         dragSelection: true,
+        drawingContextAttributes: {
+            // Boolean that hints the user agent to reduce the latency
+            // by desynchronizing the canvas paint cycle from the event
+            // loop
+            desynchronized: false
+        },
         duration: null,
         fillParent: true,
         forceDecode: false,
@@ -321,7 +332,7 @@ export default class WaveSurfer extends util.Observer {
          * Extract relevant parameters (or defaults)
          * @private
          */
-        this.params = util.extend({}, this.defaultParams, params);
+        this.params = Object.assign({}, this.defaultParams, params);
 
         /** @private */
         this.container =
@@ -765,6 +776,16 @@ export default class WaveSurfer extends util.Observer {
     play(start, end) {
         this.fireEvent('interaction', () => this.play(start, end));
         return this.backend.play(start, end);
+    }
+
+    /**
+     * Set a point in seconds for playback to stop at.
+     *
+     * @param {number} position Position (in seconds) to stop at
+     * @version 3.3.0
+     */
+    setPlayEnd(position) {
+        this.backend.setPlayEnd(position);
     }
 
     /**
@@ -1308,7 +1329,6 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('url parameter cannot be empty');
         }
         this.empty();
-
         if (preload) {
             // check whether the preload attribute will be usable and if not log
             // a warning listing the reasons why not and nullify the variable
@@ -1316,9 +1336,10 @@ export default class WaveSurfer extends util.Observer {
                 "Preload is not 'auto', 'none' or 'metadata'":
                     ['auto', 'metadata', 'none'].indexOf(preload) === -1,
                 'Peaks are not provided': !peaks,
-                'Backend is not of type MediaElement or MediaElementWebAudio':
-                    this.params.backend !== 'MediaElement' ||
-                    this.params.backend !== 'MediaElementWebAudio',
+                "Backend is not of type 'MediaElement' or 'MediaElementWebAudio'":
+                    ['MediaElement', 'MediaElementWebAudio'].indexOf(
+                        this.params.backend
+                    ) === -1,
                 'Url is not of type string': typeof url !== 'string'
             };
             const activeReasons = Object.keys(preloadIgnoreReasons).filter(
@@ -1398,9 +1419,12 @@ export default class WaveSurfer extends util.Observer {
 
         this.tmpEvents.push(
             this.backend.once('canplay', () => {
-                this.drawBuffer();
-                this.isReady = true;
-                this.fireEvent('ready');
+                // ignore when backend was already destroyed
+                if (!this.backend.destroyed) {
+                    this.drawBuffer();
+                    this.isReady = true;
+                    this.fireEvent('ready');
+                }
             }),
             this.backend.once('error', err => this.fireEvent('error', err))
         );
@@ -1459,7 +1483,7 @@ export default class WaveSurfer extends util.Observer {
      * @private
      */
     getArrayBuffer(url, callback) {
-        let options = util.extend(
+        let options = Object.assign(
             {
                 url: url,
                 responseType: 'arraybuffer'
@@ -1509,32 +1533,35 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Exports PCM data into a JSON array and opens in a new window.
      *
-     * @param {number} length=1024 The scale in which to export the peaks. (Integer)
-     * @param {number} accuracy=10000 (Integer)
+     * @param {number} length=1024 The scale in which to export the peaks
+     * @param {number} accuracy=10000
      * @param {?boolean} noWindow Set to true to disable opening a new
      * window with the JSON
      * @param {number} start Start index
-     * @todo Update exportPCM to work with new getPeaks signature
-     * @return {string} JSON of peaks
+     * @param {number} end End index
+     * @return {Promise} Promise that resolves with array of peaks
      */
-    exportPCM(length, accuracy, noWindow, start) {
+    exportPCM(length, accuracy, noWindow, start, end) {
         length = length || 1024;
         start = start || 0;
         accuracy = accuracy || 10000;
         noWindow = noWindow || false;
-        const peaks = this.backend.getPeaks(length, start);
+        const peaks = this.backend.getPeaks(length, start, end);
         const arr = [].map.call(
             peaks,
             val => Math.round(val * accuracy) / accuracy
         );
-        const json = JSON.stringify(arr);
-        if (!noWindow) {
-            window.open(
-                'data:application/json;charset=utf-8,' +
-                    encodeURIComponent(json)
-            );
-        }
-        return json;
+        return new Promise((resolve, reject) => {
+            const json = JSON.stringify(arr);
+
+            if (!noWindow) {
+                window.open(
+                    'data:application/json;charset=utf-8,' +
+                        encodeURIComponent(json)
+                );
+            }
+            resolve(json);
+        });
     }
 
     /**

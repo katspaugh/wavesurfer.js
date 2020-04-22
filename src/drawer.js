@@ -139,7 +139,7 @@ export default class Drawer extends util.Observer {
 
         this.wrapper.addEventListener('dblclick', e => {
             if (this.params.interact) {
-                this.fireEvent('dblclick', e);
+                this.fireEvent('dblclick', e, this.handleEvent(e));
             }
         });
 

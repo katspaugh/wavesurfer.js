@@ -141,7 +141,7 @@ export default class TimelinePlugin {
         /** @private */
         this.util = ws.util;
         /** @private */
-        this.params = this.util.extend(
+        this.params = Object.assign(
             {},
             {
                 height: 20,

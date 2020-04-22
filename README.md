@@ -61,7 +61,14 @@ See the [upgrade](https://github.com/katspaugh/wavesurfer.js/blob/master/UPGRADE
 
 ## Using with a module bundler
 
-Wavesurfer can be used with a module system like this:
+Install Wavesurfer:
+```bash
+npm install wavesurfer.js --save
+# or
+yarn add wavesurfer.js
+```
+
+Use it with a module system like this:
 ```javascript
 // import
 import WaveSurfer from 'wavesurfer.js';

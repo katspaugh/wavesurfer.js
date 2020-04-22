@@ -143,7 +143,7 @@ export default class CursorPlugin {
          */
         this.displayTime = null;
         /** @private */
-        this.params = ws.util.extend({}, this.defaultParams, params);
+        this.params = Object.assign({}, this.defaultParams, params);
     }
 
     /**
@@ -154,7 +154,7 @@ export default class CursorPlugin {
         this.cursor = this.wrapper.appendChild(
             this.style(
                 document.createElement('cursor'),
-                this.wavesurfer.util.extend(
+                Object.assign(
                     {
                         position: 'absolute',
                         zIndex: this.params.zIndex,
@@ -177,7 +177,7 @@ export default class CursorPlugin {
             this.showTime = this.wrapper.appendChild(
                 this.style(
                     document.createElement('showTitle'),
-                    this.wavesurfer.util.extend(
+                    Object.assign(
                         {
                             position: 'absolute',
                             zIndex: this.params.zIndex,
@@ -197,7 +197,7 @@ export default class CursorPlugin {
             this.displayTime = this.showTime.appendChild(
                 this.style(
                     document.createElement('div'),
-                    this.wavesurfer.util.extend(
+                    Object.assign(
                         {
                             display: 'inline',
                             pointerEvents: 'none',
@@ -266,7 +266,9 @@ export default class CursorPlugin {
             }
             this.style(this.showTime, {
                 left: `${xpos}px`,
-                top: `${ypos}px`,
+                top: `${ypos}px`
+            });
+            this.style(this.displayTime, {
                 visibility: 'visible'
             });
             this.displayTime.innerHTML = `${formatValue}`;
