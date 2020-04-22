@@ -1,11 +1,16 @@
 import CursorPlugin from '../../../src/plugin/cursor.js';
 
+/**
+ * CursorCustom plugin is a custom class which extends the CursorPlugin basic class. Doing this, gives the possibility
+ * to add your own changes to the defaults methods overriding them. In this way you will have not to download locally
+ * the library to modify the basic plugin class methods. This is positive thing if you want to maintain the constant
+ * support of the library.
+ */
 export default class CursorCustomPlugin extends CursorPlugin {
     /**
      * Cursor plugin definition factory
      *
-     * This function must be used to create a plugin definition which can be
-     * used by wavesurfer to correctly instantiate the plugin.
+     * This function overrides the create static method of the CursorPlugin, so you can assign it a name
      *
      * @param  {CursorPluginParams} params parameters use to initialise the
      * plugin

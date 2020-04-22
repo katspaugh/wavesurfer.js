@@ -26,6 +26,7 @@
         <script src="../../dist/plugin/wavesurfer.spectrogram.js"></script>
 
         <!-- App -->
+        <!-- Defining app.js as a module allows you to use 'import' statement, to import CursorPlugin -->
         <script type="module" src="app.js"></script>
         <script src="../trivia.js"></script>
 
@@ -165,6 +166,25 @@ wavesurfer.load('example/media/demo.wav');</code></pre>
                         <p>The <code>CursorCustomPlugin</code> is a plugin that extends the basic <code>CursorPlugin</code>,
                             so you can override some methods with your custom features, maintaining the existing functionalities
                             and the library support. </p>
+                        <p>Adding <code>type=module</code> on the script element of your <code>js</code> script, allows the browser to treat
+                            the script as an ECMAScript module, so you can use import statements to import the CursorPlugin.
+<pre>
+  &lt;script type="module" src="app.js"&gt;&lt;/script&gt;
+</pre>
+                            If you are using a framework instead, you should modify your <code>babel</code> configs, adding this configuration
+                            <pre><code>
+presets: [
+      [
+         '@babel/preset-env',
+         {
+            "targets": {
+               "esmodules": true
+            }
+          }
+       ]
+    ],
+                            </code></pre>
+                        </p>
                         <noindex><p>
                             <pre><code>var wavesurfer = WaveSurfer.create({
     container: '#waveform',
