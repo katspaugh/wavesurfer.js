@@ -494,17 +494,10 @@ export default class WebAudio extends util.Observer {
             this.source.disconnect();
         }
     }
-
     /**
-     * This is called when wavesurfer is destroyed
+     * Destroy all references with WebAudio, disconnecting audio nodes and closing Audio Context
      */
-    destroy() {
-        if (!this.isPaused()) {
-            this.pause();
-        }
-        this.unAll();
-        this.buffer = null;
-        this.destroyed = true;
+    destroyWebAudio() {
         this.disconnectFilters();
         this.disconnectSource();
         this.gainNode.disconnect();
@@ -532,6 +525,19 @@ export default class WebAudio extends util.Observer {
             // clear the offlineAudioContext
             window.WaveSurferOfflineAudioContext = null;
         }
+    }
+    /**
+     * This is called when wavesurfer is destroyed
+     */
+    destroy() {
+        if (!this.isPaused()) {
+            this.pause();
+        }
+        this.unAll();
+        this.buffer = null;
+        this.destroyed = true;
+
+        this.destroyWebAudio();
     }
 
     /**
