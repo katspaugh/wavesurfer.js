@@ -59,14 +59,4 @@ export default class MediaElementWebAudio extends MediaElement {
         );
         this.sourceMediaElement.connect(this.analyser);
     }
-
-    /**
-     * This is called when wavesurfer is destroyed
-     *
-     */
-    destroy() {
-        super.destroy();
-
-        this.destroyWebAudio();
-    }
 }
