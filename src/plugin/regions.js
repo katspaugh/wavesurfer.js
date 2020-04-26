@@ -6,12 +6,13 @@
  *
  * @extends {Observer}
  */
-class Region {
-    constructor(params, ws) {
+export class Region {
+    constructor(params, regionsUtils, ws) {
         this.wavesurfer = ws;
         this.wrapper = ws.drawer.wrapper;
         this.util = ws.util;
         this.style = this.util.style;
+        this.regionsUtil = regionsUtils;
 
         this.id = params.id == null ? ws.util.getId() : params.id;
         this.start = Number(params.start) || 0;
@@ -58,7 +59,7 @@ class Region {
         this.marginTop = '0px';
 
         if (channelIdx !== -1) {
-            let channelCount = 
+            let channelCount =
                 this.wavesurfer.backend.buffer != null
                 ? this.wavesurfer.backend.buffer.numberOfChannels
                 : -1;
@@ -398,7 +399,7 @@ class Region {
             );
 
             // Get the currently selected time according to the mouse position
-            const time = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+            const time = this.regionsUtil.getRegionSnapToGridValue(
                 this.wavesurfer.drawer.handleEvent(e) * duration
             );
             const delta = time - startTime;
@@ -427,7 +428,7 @@ class Region {
             }
 
             // Store the selected startTime we begun dragging or resizing
-            startTime = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+            startTime = this.regionsUtil.getRegionSnapToGridValue(
                 this.wavesurfer.drawer.handleEvent(e, true) * duration
             );
 
@@ -482,7 +483,7 @@ class Region {
             }
 
             const oldTime = startTime;
-            const time = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+            const time = this.regionsUtil.getRegionSnapToGridValue(
                 this.wavesurfer.drawer.handleEvent(e) * duration
             );
 
@@ -764,7 +765,6 @@ export default class RegionsPlugin {
     /**
      * check to see if adding a new region would exceed maxRegions
      * @return {boolean} whether we should proceed and create a region
-     * @private
      */
     wouldExceedMaxRegions() {
         return (
@@ -781,7 +781,7 @@ export default class RegionsPlugin {
     add(params) {
         if (this.wouldExceedMaxRegions()) return null;
 
-        const region = new this.wavesurfer.Region(params, this.wavesurfer);
+        const region = new this.wavesurfer.Region(params, this.util, this.wavesurfer);
 
         this.list[region.id] = region;
 
@@ -923,10 +923,10 @@ export default class RegionsPlugin {
             }
 
             const end = this.wavesurfer.drawer.handleEvent(e);
-            const startUpdate = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+            const startUpdate = this.util.getRegionSnapToGridValue(
                 start * duration
             );
-            const endUpdate = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+            const endUpdate = this.util.getRegionSnapToGridValue(
                 end * duration
             );
             region.update({
