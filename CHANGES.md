@@ -1,6 +1,6 @@
 wavesurfer.js changelog
 =======================
-3.3.4 (not released yet)
+3.3.4 (unreleased)
 ------------------
 
 - Fixed the `destroy` method of the `MediaElementWebAudio` backend, so  instead of destroying only the media element,
