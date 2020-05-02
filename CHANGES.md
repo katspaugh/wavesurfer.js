@@ -1,5 +1,11 @@
 wavesurfer.js changelog
 =======================
+3.3.4 (not released yet)
+------------------
+
+- Fixed the `destroy` method of the `MediaElementWebAudio` backend, so  instead of destroying only the media element,
+  the audio nodes are disconnected and the audio context is closed. This was done splitting the `destroy` method of the
+  `WebAudio`, so it calls the new `destroyWebAudio` method to cancel all stuffs related to WebAudio (#1927)
 
 3.3.3 (16.04.2020)
 ------------------
@@ -228,10 +234,10 @@ Check `UPGRADE.md` for backward incompatible changes since v2.x.
 - Introduce an option to prevent removing media element on destroy (#1163)
 - Added duration parameter for the load function (#1239)
 - New soundtouch.js filter to preserve pitch when changing tempo (#149)
-- Add `getPlaybackRate` method (#1022) 
+- Add `getPlaybackRate` method (#1022)
 - Switched to BSD license (#1060)
 - Added `setCurrentTime` method
-- Added `util.debounce` (#993) 
+- Added `util.debounce` (#993)
 
 1.2.4 (11.11.2016)
 ------------------
