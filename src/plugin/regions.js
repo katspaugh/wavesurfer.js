@@ -144,8 +144,14 @@ class Region {
      * @param {number} start Optional offset to start playing at
      * */
     playLoop(start) {
-        this.play(start);
-        this.once('out', () => this.playLoop());
+        const s = start || this.start;
+        this.wavesurfer.play(s);
+        this.once('out', () => {
+            const realTime = this.wavesurfer.getCurrentTime();
+            if (realTime >= this.start && realTime <= this.end) {
+                return this.playLoop();
+            }
+        });
     }
 
     /* Render a region as a DOM element. */
