@@ -9,8 +9,28 @@ const pluginSrcDir = path.join(rootDir, 'src', 'plugin');
 // find plugins
 const PLUGINS = [];
 fs.readdirSync(pluginSrcDir).forEach(plugin => {
-    PLUGINS.push(plugin);
+   findInDirectory(plugin, pluginSrcDir);
 });
+
+/**
+ * findInDirectory - Description: search recursively plugins and push them in PLUGINS Array
+ *
+ * @param {String} plugin Name of plugin
+ *
+ * @param {String} directory Path of plugin directory
+ */
+function findInDirectory(plugin, directory) {
+    const pluginPath = path.join(directory, plugin);
+    if (fs.statSync(pluginPath).isDirectory()) {
+        fs.readdirSync(pluginPath).forEach(pluginInDir => {
+            findInDirectory(pluginInDir, pluginPath);
+        });
+    }
+    else {
+        const relativePluginPath = path.relative(pluginSrcDir, pluginPath);
+        PLUGINS.push(relativePluginPath);
+    }
+}
 
 /**
  * buildPluginEntry - Description
