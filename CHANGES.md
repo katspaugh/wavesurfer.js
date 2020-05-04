@@ -6,6 +6,8 @@ wavesurfer.js changelog
 - Fixed the `destroy` method of the `MediaElementWebAudio` backend, so  instead of destroying only the media element,
   the audio nodes are disconnected and the audio context is closed. This was done splitting the `destroy` method of the
   `WebAudio`, so it calls the new `destroyWebAudio` method to cancel all stuffs related to WebAudio (#1927)
+- Removed private methods of plugins and generalized plugins' access, so they can be extended creating Custom
+  Plugins (#1928)
 
 3.3.3 (16.04.2020)
 ------------------

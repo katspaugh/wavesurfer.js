@@ -124,7 +124,7 @@ export default class MinimapPlugin {
             if (!document.body.contains(this.params.container)) {
                 ws.container.insertBefore(this.params.container, null);
             }
-
+            // how solve this dependency??
             if (this.wavesurfer.regions && this.params.showRegions) {
                 this.regions();
             }
