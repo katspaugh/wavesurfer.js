@@ -1,13 +1,20 @@
 wavesurfer.js changelog
 =======================
-3.3.4 (unreleased)
+
+3.4.0 (unreleased)
 ------------------
 
 - Fixed the `destroy` method of the `MediaElementWebAudio` backend, so  instead of destroying only the media element,
-  the audio nodes are disconnected and the audio context is closed. This was done splitting the `destroy` method of the
+  the audio nodes are disconnected and the audio context is closed. This was done by splitting the `destroy` method of the
   `WebAudio`, so it calls the new `destroyWebAudio` method to cancel all stuffs related to WebAudio (#1927)
 - Removed private methods of plugins and generalized plugins' access, so they can be extended creating Custom
   Plugins (#1928)
+- Regions plugin fixes:
+  - channelCount assignment (#1858) 
+  - click propagation issue (#1926)
+  - switch loop region (#1929)
+- Elan plugin: optional params.tiers (#1910)
+- Added plugin inheritance example (#1921)
 
 3.3.3 (16.04.2020)
 ------------------
