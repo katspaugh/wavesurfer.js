@@ -9,11 +9,12 @@
  * @extends {Observer}
  */
 export class Region {
-    constructor(params, ws) {
+    constructor(params, regionsUtils, ws) {
         this.wavesurfer = ws;
         this.wrapper = ws.drawer.wrapper;
         this.util = ws.util;
         this.style = this.util.style;
+        this.regionsUtil = regionsUtils;
 
         this.id = params.id == null ? ws.util.getId() : params.id;
         this.start = Number(params.start) || 0;
@@ -209,10 +210,10 @@ export class Region {
             const handleRightCss =
                 this.handleStyle.right !== 'none'
                     ? Object.assign(
-                    { right: '0px' },
-                    css,
-                    this.handleStyle.right
-                    )
+                          { right: '0px' },
+                          css,
+                          this.handleStyle.right
+                      )
                     : null;
 
             if (handleLeftCss) {
@@ -406,7 +407,7 @@ export class Region {
             );
 
             // Get the currently selected time according to the mouse position
-            const time = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+            const time = this.regionsUtil.getRegionSnapToGridValue(
                 this.wavesurfer.drawer.handleEvent(e) * duration
             );
             const delta = time - startTime;
@@ -435,7 +436,7 @@ export class Region {
             }
 
             // Store the selected startTime we begun dragging or resizing
-            startTime = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+            startTime = this.regionsUtil.getRegionSnapToGridValue(
                 this.wavesurfer.drawer.handleEvent(e, true) * duration
             );
 
@@ -490,7 +491,7 @@ export class Region {
             }
 
             const oldTime = startTime;
-            const time = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+            const time = this.regionsUtil.getRegionSnapToGridValue(
                 this.wavesurfer.drawer.handleEvent(e) * duration
             );
 

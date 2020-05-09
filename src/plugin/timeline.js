@@ -77,7 +77,6 @@ export default class TimelinePlugin {
     }
 
     // event handlers
-    /** @private */
     _onScroll = () => {
         if (this.wrapper && this.drawer.wrapper) {
             this.wrapper.scrollLeft = this.drawer.wrapper.scrollLeft;
@@ -85,12 +84,10 @@ export default class TimelinePlugin {
     };
 
     /**
-     * @private
      * @returns {void}
      */
     _onRedraw = () => this.render();
 
-    /** @private */
     _onReady = () => {
         const ws = this.wavesurfer;
         this.drawer = ws.drawer;
@@ -109,7 +106,6 @@ export default class TimelinePlugin {
     };
 
     /**
-     * @private
      * @param {object} e Click event
      */
     _onWrapperClick = e => {
@@ -127,7 +123,6 @@ export default class TimelinePlugin {
      * @param {object} ws Wavesurfer instance
      */
     constructor(params, ws) {
-        /** @private */
         this.container =
             'string' == typeof params.container
                 ? document.querySelector(params.container)
@@ -136,11 +131,9 @@ export default class TimelinePlugin {
         if (!this.container) {
             throw new Error('No container for wavesurfer timeline');
         }
-        /** @private */
+
         this.wavesurfer = ws;
-        /** @private */
         this.util = ws.util;
-        /** @private */
         this.params = Object.assign(
             {},
             {
@@ -165,17 +158,11 @@ export default class TimelinePlugin {
             params
         );
 
-        /** @private */
         this.canvases = [];
-        /** @private */
         this.wrapper = null;
-        /** @private */
         this.drawer = null;
-        /** @private */
         this.pixelRatio = null;
-        /** @private */
         this.maxCanvasWidth = null;
-        /** @private */
         this.maxCanvasElementWidth = null;
         /**
          * This event handler has to be in the constructor function because it
@@ -184,7 +171,6 @@ export default class TimelinePlugin {
          *
          * Use a debounced function if `params.zoomDebounce` is defined
          *
-         * @private
          * @returns {void}
          */
         this._onZoom = this.params.zoomDebounce
@@ -229,7 +215,6 @@ export default class TimelinePlugin {
     /**
      * Create a timeline element to wrap the canvases drawn by this plugin
      *
-     * @private
      */
     createWrapper() {
         const wsParams = this.wavesurfer.params;
@@ -259,7 +244,6 @@ export default class TimelinePlugin {
     /**
      * Render the timeline (also updates the already rendered timeline)
      *
-     * @private
      */
     render() {
         if (!this.wrapper) {
@@ -273,7 +257,6 @@ export default class TimelinePlugin {
     /**
      * Add new timeline canvas
      *
-     * @private
      */
     addCanvas() {
         const canvas = this.wrapper.appendChild(
@@ -289,7 +272,6 @@ export default class TimelinePlugin {
     /**
      * Remove timeline canvas
      *
-     * @private
      */
     removeCanvas() {
         const canvas = this.canvases.pop();
@@ -300,7 +282,6 @@ export default class TimelinePlugin {
      * Make sure the correct of timeline canvas elements exist and are cached in
      * this.canvases
      *
-     * @private
      */
     updateCanvases() {
         const totalWidth = Math.round(this.drawer.wrapper.scrollWidth);
@@ -320,7 +301,6 @@ export default class TimelinePlugin {
     /**
      * Update the dimensions and positioning style for all the timeline canvases
      *
-     * @private
      */
     updateCanvasesPositioning() {
         // cache length for performance
@@ -349,11 +329,10 @@ export default class TimelinePlugin {
     /**
      * Render the timeline labels and notches
      *
-     * @private
      */
     renderCanvases() {
         const duration =
-            this.wavesurfer.timeline.params.duration ||
+            this.params.duration ||
             this.wavesurfer.backend.getDuration();
 
         if (duration <= 0) {
@@ -452,7 +431,6 @@ export default class TimelinePlugin {
      *
      * @param {DOMString|CanvasGradient|CanvasPattern} fillStyle Fill style to
      * use
-     * @private
      */
     setFillStyles(fillStyle) {
         this.canvases.forEach(canvas => {
@@ -464,7 +442,6 @@ export default class TimelinePlugin {
      * Set the canvas font
      *
      * @param {DOMString} font Font to use
-     * @private
      */
     setFonts(font) {
         this.canvases.forEach(canvas => {
@@ -481,7 +458,6 @@ export default class TimelinePlugin {
      * @param {number} y Y-position
      * @param {number} width Width
      * @param {number} height Height
-     * @private
      */
     fillRect(x, y, width, height) {
         this.canvases.forEach((canvas, i) => {
@@ -513,7 +489,6 @@ export default class TimelinePlugin {
      * @param {string} text Text to render
      * @param {number} x X-position
      * @param {number} y Y-position
-     * @private
      */
     fillText(text, x, y) {
         let textWidth;
