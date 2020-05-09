@@ -1,4 +1,6 @@
 /**
+ *  @since 3.4.0 this class was splitted and moved to 'plugin/regions' directory
+ *
  * @typedef {Object} RegionsPluginParams
  * @property {?boolean} dragSelection Enable creating regions by dragging with
  * the mouse

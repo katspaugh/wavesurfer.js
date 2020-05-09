@@ -1,5 +1,14 @@
 wavesurfer.js changelog
 =======================
+
+3.4.0 (unreleased)
+------------------
+
+- Splitted  `regions.js` file in  `region.js` containing the `Region` class, and `region.js` containing the `RegionsPlugin`
+  class, both moved into `src/plugin/regions` directory. In this way creating both classes can be extended to create
+  Custom Plugins.
+
+
 3.3.4 (unreleased)
 ------------------
 

@@ -1,4 +1,6 @@
 /**
+ *  @since 3.4.0
+ *
  * (Single) Region plugin class
  *
  * Must be turned into an observer before instantiating. This is done in
