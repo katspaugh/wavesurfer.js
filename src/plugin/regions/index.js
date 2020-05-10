@@ -184,7 +184,7 @@ export default class RegionsPlugin {
     add(params) {
         if (this.wouldExceedMaxRegions()) return null;
 
-        const region = new this.wavesurfer.Region(params, this.wavesurfer);
+        const region = new this.wavesurfer.Region(params, this.util, this.wavesurfer);
 
         this.list[region.id] = region;
 
