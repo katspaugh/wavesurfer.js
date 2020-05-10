@@ -447,8 +447,8 @@ export default class WebAudio extends util.Observer {
             for (i = first; i <= last; i++) {
                 const start = ~~(i * sampleSize);
                 const end = ~~(start + sampleSize);
-                let min = 0;
-                let max = 0;
+                let min = chan[start];
+                let max = min;
                 let j;
 
                 for (j = start; j < end; j += sampleStep) {
