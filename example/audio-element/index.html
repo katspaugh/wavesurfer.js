@@ -7,19 +7,23 @@
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
         <!-- Bootstrap -->
-        <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
 
         <link rel="stylesheet" href="../css/style.css" />
         <link rel="stylesheet" href="../css/ribbon.css" />
-        <link rel="screenshot" itemprop="screenshot" href="http://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+        <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
-        <script src="../../dist/wavesurfer.min.js"></script>
-
-        <script src="../../plugin/wavesurfer.regions.js"></script>
+        <script src="../../dist/wavesurfer.js"></script>
+        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
 
         <!-- Demo -->
         <script src="main.js"></script>
+        
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
@@ -62,9 +66,7 @@
                 </p>
 
                 <p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
+<pre><code>var wavesurfer = WaveSurfer.create({
     container: document.querySelector('#wave'),
     backend: 'MediaElement'
 });
@@ -78,12 +80,14 @@ wavesurfer.init({
                     you can pass them into the <code>load</code>
                     function. This is optional–if you don't provide
                     any peaks,
-                    <strong>waserver.js</strong> will first draw a
+                    <strong>wavesurfer.js</strong> will first draw a
                     thin line instead of a waveform, then attempt to
                     download the audio file via Ajax and decode it
                     with Web Audio if available.
                 </p>
-
+                <p>
+                    Check the <a href="https://wavesurfer-js.org/faq/">FAQ</a> for instructions on how to generate peaks.
+                </p>
                 <p>
 <pre><code>wavesurfer.load('example/media/demo.mp3');</code></pre>
                 </p>
@@ -99,11 +103,11 @@ wavesurfer.init({
 
             <div class="footer row">
                 <div class="col-sm-12">
-                    <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+                    <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
                 </div>
 
                 <div class="col-sm-7">
-                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/katspaugh/wavesurfer.js" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
                 </div>
 
                 <div class="col-sm-5">

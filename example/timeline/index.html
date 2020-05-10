@@ -7,22 +7,27 @@
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
         <!-- Bootstrap -->
-        <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
 
         <link rel="stylesheet" href="../css/style.css" />
         <link rel="stylesheet" href="../css/ribbon.css" />
 
-        <link rel="screenshot" itemprop="screenshot" href="http://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+        <link rel="screenshot" itemprop="screenshot" href="//katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
 
         <!-- wavesurfer.js -->
-        <script src="../../dist/wavesurfer.min.js"></script>
+        <script src="../../dist/wavesurfer.js"></script>
 
-        <!-- timeline format renderer -->
-        <script src="../../plugin/wavesurfer.timeline.js"></script>
+        <!-- timeline plugin -->
+        <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
 
         <!-- App -->
         <script src="app.js"></script>
         <script src="../trivia.js"></script>
+        
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
@@ -35,7 +40,7 @@
                 </ul>
                 </noindex>
 
-                <h1 itemprop="name"><a href="http://wavesurfer.fm">wavesurfer.js</a><noindex> + Timeline</noindex></h1>
+                <h1 itemprop="name"><a href="http://wavesurfer-js.org">wavesurfer.js</a><noindex> + Timeline</noindex></h1>
             </div>
 
             <div id="demo">
@@ -65,18 +70,8 @@
 
                     <p itemprop="about">Adds a simple timeline to your <strong>wavesurfer.js</strong> instances.</p>
 
-                    <h4>Installation</h4>
-
                     <p>
-                      <ol>
-                        <li>add the Timeline plugin script tag</li>
-                        <li>create a <code>WaveSurfer</code> instance</li>
-                        <li>add a container HTML element for the timeline</li>
-                        <li>create a Timeline instance in the <code>WaveSurfer</code>'s <code>"ready"</code> event callback</li>
-                      </ol>
-                    </p>
-                    <p>
-                        <a class="btn btn-large btn-success" href="/plugin/wavesurfer.timeline.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (5 KB)</a>
+                        <a class="btn btn-large btn-success" href="../../plugin/wavesurfer.timeline.js" itemprop="downloadUrl" download>Download the plugin</a>
                     </p>
                 </div>
 
@@ -84,22 +79,16 @@
                     <h4>Quick Start</h4>
 
                     <noindex><p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
+<pre><code>var wavesurfer = WaveSurfer.create({
   // your options here
-});
-
-wavesurfer.on('ready', function () {
-    var timeline = Object.create(WaveSurfer.Timeline);
-
-    timeline.init({
-        wavesurfer: wavesurfer,
+  plugins: [
+    WaveSurfer.timeline.create({
         container: "#wave-timeline"
-    });
+    })
+  ]
 });
 
-wavesurfer.load('example/media/demo.mp3');</code></pre>
+wavesurfer.load('example/media/demo.wav');</code></pre>
                     </p></noindex>
 
                     <br />
@@ -107,27 +96,29 @@ wavesurfer.load('example/media/demo.mp3');</code></pre>
                     <h4>Options</h4>
 
                     <ul class="markdown-body">
-                      <li><code>wavesurfer</code> - <em>required</em> - a WaveSurfer instance</li>
                       <li><code>container</code> - <em>required</em> - the element in which to place the timeline, or a CSS selector to find it</li>
                       <li><code>height</code> - the height (in pixels) of the timeline. The default is 20.</li>
                       <li><code>notchPercentHeight</code> - the height (in percent) of the minor notch lines in the timeline. The default is 90.</li>
                       <li><code>primaryColor</code> - the color of the modulo-ten notch lines (e.g. 10sec, 20sec). The default is '#000'.</li>
                       <li><code>secondaryColor</code> - the color of the non-modulo-ten notch lines. The default is '#c0c0c0'.</li>
-                      <li><code>primaryFontColor</code> - the color of the non-modulo-ten time labels (e.g. 10sec, 20sec). The default is '#000'.</li>
-                      <li><code>primaryFontColor</code> - the color of the non-modulo-ten time labels (e.g. 5sec, 15sec). The default is '#c0c0c0'.</li>
-                      <li><code>fontFamily</code> - the font family for the time labels. The default is 'Arial'.</li>
-                      <li><code>fontSize</code> - the font size for the time labels. The default is 10.</li>
+                      <li><code>primaryFontColor</code> - the colour of the labels next to the main notches (e.g. 10sec, 20sec). The default is '#000'.</li>
+                      <li><code>secondaryFontColor</code> - the colour of the labels next to the secondary notches (e.g. 5sec, 15sec). The default is '#c0c0c0'.</li>
+                      <li><code>timeInterval</code> - number of intervals that records consists of. Usually it is equal to the duration in minutes. (Integer or function which receives pxPerSec value and reurns value)</li>
+                      <li><code>primaryLabelInterval</code> - number of primary time labels. (Integer or function which receives pxPerSec value and reurns value)</li>
+                      <li><code>secondaryLabelInterval</code> - number of secondary time labels (Time labels between primary labels, integer or function which receives pxPerSec value and reurns value).</li>
+                      <li><code>formatTimeCallback</code> - custom time format callback. (Function which receives number of seconds and returns formatted string)</li>
+                      <li><code>offset</code> - offset (in seconds) for the start of the timeline. The value may also be negative and the default is 0.</li>
                     </ul>
                 </div>
             </div>
 
             <div class="footer row">
                 <div class="col-sm-12">
-                    <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+                    <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
                 </div>
 
                 <div class="col-sm-12">
-                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/katspaugh/wavesurfer.js" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
                 </div>
             </div>
         </div>

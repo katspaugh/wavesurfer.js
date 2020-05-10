@@ -1,22 +1,43 @@
 'use strict';
 
 // Create an instance
-var wavesurfer = Object.create(WaveSurfer);
+var wavesurfer;
 
 // Init & load audio file
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     // Init
-    wavesurfer.init({
+    wavesurfer = WaveSurfer.create({
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
-        backend: 'AudioElement'
+        backend: 'MediaElement',
+        plugins: [
+            WaveSurfer.regions.create({
+                regions: [
+                    {
+                        start: 0,
+                        end: 5,
+                        color: 'hsla(400, 100%, 30%, 0.1)'
+                    },
+                    {
+                        start: 10,
+                        end: 100,
+                        color: 'hsla(200, 50%, 70%, 0.1)'
+                    }
+                ]
+            }),
+            WaveSurfer.timeline.create({
+                container: '#timeline'
+            })
+        ]
     });
 
+    wavesurfer.on('error', function(e) {
+        console.warn(e);
+    });
 
     // Load audio from URL
     wavesurfer.load('../media/demo.wav');
-
 
     // Zoom slider
     var slider = document.querySelector('[data-action="zoom"]');
@@ -24,10 +45,12 @@ document.addEventListener('DOMContentLoaded', function () {
     slider.value = wavesurfer.params.minPxPerSec;
     slider.min = wavesurfer.params.minPxPerSec;
 
-    slider.addEventListener('input', function () {
+    slider.addEventListener('input', function() {
         wavesurfer.zoom(Number(this.value));
     });
 
+    // set initial zoom to match slider value
+    wavesurfer.zoom(slider.value);
 
     // Play button
     var button = document.querySelector('[data-action="play"]');

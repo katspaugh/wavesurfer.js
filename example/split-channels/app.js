@@ -1,32 +1,36 @@
 // Create an instance
 var wavesurfer;
 
-window.onload = function () {
+window.onload = function() {
     wavesurfer = WaveSurfer.create({
         container: document.querySelector('#waveform'),
         splitChannels: true
     });
 
+    wavesurfer.on('error', function(e) {
+        console.warn(e);
+    });
+
     // Load audio from URL
-    wavesurfer.load('stereo.mp3');
+    wavesurfer.load('../media/stereo.mp3');
 
     // Play/pause on button press
-    document.querySelector('[data-action="play"]').addEventListener(
-        'click', wavesurfer.playPause.bind(wavesurfer)
-    );
-
+    document
+        .querySelector('[data-action="play"]')
+        .addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
 
     // Drag'n'drop
-    var toggleActive = function (e, toggle) {
+    var toggleActive = function(e, toggle) {
         e.stopPropagation();
         e.preventDefault();
-        toggle ? e.target.classList.add('wavesurfer-dragover') :
-            e.target.classList.remove('wavesurfer-dragover');
+        toggle
+            ? e.target.classList.add('wavesurfer-dragover')
+            : e.target.classList.remove('wavesurfer-dragover');
     };
 
     var handlers = {
         // Drop event
-        drop: function (e) {
+        drop: function(e) {
             toggleActive(e, false);
 
             // Load the file into wavesurfer
@@ -38,18 +42,18 @@ window.onload = function () {
         },
 
         // Drag-over event
-        dragover: function (e) {
+        dragover: function(e) {
             toggleActive(e, true);
         },
 
         // Drag-leave event
-        dragleave: function (e) {
+        dragleave: function(e) {
             toggleActive(e, false);
         }
     };
 
     var dropTarget = document.querySelector('#drop');
-    Object.keys(handlers).forEach(function (event) {
+    Object.keys(handlers).forEach(function(event) {
         dropTarget.addEventListener(event, handlers[event]);
     });
 };

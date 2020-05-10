@@ -1,0 +1,51 @@
+{
+    "source": "./src",
+    "destination": "./doc",
+    "plugins": [
+        {
+            "name": "esdoc-standard-plugin"
+        },
+        {
+            "name": "esdoc-brand-plugin"
+        },
+        {
+            "name": "esdoc-accessor-plugin",
+            "option": {
+                "access": ["public", "protected"],
+                "autoPrivate": true
+            }
+        },
+        {
+            "name": "esdoc-ecmascript-proposal-plugin",
+            "option": {
+                "classProperties": true,
+                "objectRestSpread": true,
+                "exportExtensions": true
+            }
+        },
+        {
+            "name": "esdoc-coverage-plugin",
+            "option": {
+                "enable": true,
+                "kind": [
+                    "class",
+                    "method",
+                    "member",
+                    "get",
+                    "set",
+                    "constructor",
+                    "function",
+                    "variable"
+                ]
+            }
+        },
+        {
+            "name": "esdoc-integrate-test-plugin",
+            "option": {
+                "source": "./spec/",
+                "interfaces": ["describe", "it", "context", "suite", "test"],
+                "includes": ["(spec|Spec|test|Test)\\.js$"]
+            }
+        }
+    ]
+}

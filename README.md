@@ -1,39 +1,43 @@
-# wavesurfer.js
+# [wavesurfer.js](https://wavesurfer-js.org)
 
-Interactive navigable audio visualization using
-[Web Audio](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
-and Canvas.
+[![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
+![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg) [![Join the chat at https://gitter.im/katspaugh/wavesurfer.js](https://badges.gitter.im/katspaugh/wavesurfer.js.svg)](https://gitter.im/katspaugh/wavesurfer.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-![Screenshot](example/screenshot.png?raw=true "Screenshot")
+Interactive navigable audio visualization using Web Audio and Canvas.
 
-### Browser support
-wavesurfer.js works only in modern browsers supporting Web Audio
-(Chrome, Firefox, Safari, Opera etc).
+[![Screenshot](https://raw.githubusercontent.com/katspaugh/wavesurfer.js/gh-pages/example/screenshot.png "Screenshot")](https://wavesurfer-js.org)
 
-It will fallback to Audio Element in other browsers (without
-graphics).  You can also try
-[wavesurfer.swf](https://github.com/laurentvd/wavesurfer.swf) which is
-a Flash-based fallback with graphics.
+See a [tutorial](https://wavesurfer-js.org/docs) and [examples](https://wavesurfer-js.org/examples) on [wavesurfer-js.org](https://wavesurfer-js.org).
 
-### API in examples
+## Browser support
+wavesurfer.js works only in [modern browsers supporting Web Audio](http://caniuse.com/audio-api).
 
-Create an instance:
+It will fallback to Audio Element in other browsers (without graphics). You can also try [wavesurfer.swf](https://github.com/laurentvd/wavesurfer.swf) which is a Flash-based fallback.
 
-```javascript
-var wavesurfer = Object.create(WaveSurfer);
+## FAQ
+### Can the audio start playing before the waveform is drawn?
+Yes, if you use the `backend: 'MediaElement'` option. See here: https://wavesurfer-js.org/example/audio-element/. The audio will start playing as you press play. A thin line will be displayed until the whole audio file is downloaded and decoded to draw the waveform.
+
+### Can drawing be done as file loads?
+No. Web Audio needs the whole file to decode it in the browser. You can however load pre-decoded waveform data to draw the waveform immediately. See here: https://wavesurfer-js.org/example/audio-element/ (the "Pre-recoded Peaks" section).
+
+## API in examples
+
+Choose a container:
+```html
+<div id="waveform"></div>
 ```
-
-Initialize it with a container element (plus some options):
+Create an instance, passing the container selector and [options](https://wavesurfer-js.org/docs/options.html):
 
 ```javascript
-wavesurfer.init({
-    container: '#wave',
+var wavesurfer = WaveSurfer.create({
+    container: '#waveform',
     waveColor: 'violet',
     progressColor: 'purple'
 });
 ```
 
-Subscribe to some events:
+Subscribe to some [events](https://wavesurfer-js.org/docs/events.html):
 
 ```javascript
 wavesurfer.on('ready', function () {
@@ -47,211 +51,99 @@ Load an audio file from a URL:
 wavesurfer.load('example/media/demo.wav');
 ```
 
-See the example code [here](/example/main.js).
+## Documentation
 
-For a list of other projects using wavesurfer.js, check out
-[the wiki](https://github.com/katspaugh/wavesurfer.js/wiki/Projects)
-where you can also add your own project.
+See the documentation on all available [methods](https://wavesurfer-js.org/docs/methods.html), [options](https://wavesurfer-js.org/docs/options.html) and [events](https://wavesurfer-js.org/docs/events.html) on the [homepage](https://wavesurfer-js.org/docs/).
 
-### WaveSurfer Options
+## Upgrade
 
-| option | type | default | description |
-| --- | --- | --- | --- |
-| `audioContext` | string | `null` | Use your own previously initialized `AudioContext` or leave blank. |
-| `audioRate` | float | `1` | Speed at which to play audio.  Lower number is slower. |
-| `backend` | string | `WebAudio` | `WebAudio` or `MediaElement`. In most cases you don't have to set this manually. `MediaElement` is a fallback for unsupported browsers. |
-| `container` | mixed | _none_ | CSS-selector or HTML-element where the waveform should be drawn. This is the only required parameter. |
-| `cursorColor` | string | `#333` | The fill color of the cursor indicating the playhead position. |
-| `cursorWidth` | integer | `1` | Measured in pixels. |
-| `fillParent` | boolean | `true` | Whether to fill the entire container or draw only according to `minPxPerSec`. |
-| `height` | integer | `128` | The height of the waveform.  Measured in pixels. |
-| `hideScrollbar` | boolean | `false` | Whether to hide the horizontal scrollbar when one would normally be shown. |
-| `interact` | boolean | `true` | Whether the mouse interaction will be enabled at initialization.  You can switch this parameter at any time later on. |
-| `minPxPerSec` | integer | `50` | Minimum number of pixels per second of audio. |
-| `normalize` | boolean | `false` | If `true`, normalize by the maximum peak instead of 1.0. |
-| `pixelRatio` | integer | `window.devicePixelRatio` | Can be set to `1` for faster rendering. |
-| `progressColor` | string | `#555` | The fill color of the part of the waveform behind the cursor. |
-| `scrollParent` | boolean | `false` | Whether to scroll the container with a lengthy waveform. Otherwise the waveform is shrunk to the container width (see `fillParent`). |
-| `skipLength` | float | `2` | Number of seconds to skip with the `skipForward()` and `skipBackward()` methods. |
-| `waveColor` | string | `#999` | The fill color of the waveform after the cursor. |
+See the [upgrade](https://github.com/katspaugh/wavesurfer.js/blob/master/UPGRADE.md) document if you're upgrading from a previous version of wavesurfer.js.
 
-### WaveSurfer Methods
+## Using with a module bundler
 
-All methods are intentionally public, but the most readily available are the following:
+Install Wavesurfer:
+```bash
+npm install wavesurfer.js --save
+# or
+yarn add wavesurfer.js
+```
 
- * `init(options)` – Initializes with the options listed above.
- * `destroy()` – Removes events, elements and disconnects Web Audio nodes.
- * `empty()` – Clears the waveform as if a zero-length audio is loaded.
- * `getCurrentTime()` – Returns current progress in seconds.
- * `getDuration()` – Returns the duration of an audio clip in seconds.
- * `isPlaying()` – Returns true if currently playing, false otherwise.
- * `load(url)` – Loads audio from URL via XHR. Returns XHR object.
- * `loadBlob(url)` – Loads audio from a `Blob` or `File` object.
- * `on(eventName, callback)` – Subscribes to an event.  See [WaveSurfer Events](#wavesurfer-events) section below for a list.
- * `un(eventName, callback)` – Unsubscribes from an event.
- * `unAll()` – Unsubscribes from all events.
- * `pause()` – Stops playback.
- * `play([start[, end]])` – Starts playback from the current position.  Optional `start` and `end` measured in seconds can be used to set the range of audio to play.
- * `playPause()` – Plays if paused, pauses if playing.
- * `seekAndCenter(progress)` – Seeks to a progress and centers view `[0..1]` (0 = beginning, 1 = end).
- * `seekTo(progress)` – Seeks to a progress `[0..1]` (0=beginning, 1=end).
- * `setFilter(filters)` - For inserting your own WebAudio nodes into the graph.  See [Connecting Filters](#connecting-filters) below.
- * `setPlaybackRate(rate)` – Sets the speed of playback (`0.5` is half speed, `1` is normal speed, `2` is double speed and so on).
- * `setVolume(newVolume)` – Sets the playback volume to a new value `[0..1]` (0 = silent, 1 = maximum).
- * `skip(offset)` – Skip a number of seconds from the current position (use a negative value to go backwards).
- * `skipBackward()` - Rewind `skipLength` seconds.
- * `skipForward()` - Skip ahead `skipLength` seconds.
- * `stop()` – Stops and goes to the beginning.
- * `toggleMute()` – Toggles the volume on and off.
- * `toggleInteraction()` – Toggle mouse interaction.
- * `toggleScroll()` – Toggles `scrollParent`.
- * `zoom(pxPerSec)` – Horiontally zooms the waveform in and out. The
-   parameter is a number of horizontal pixels per second of audio. It
-   also changes the parameter `minPxPerSec` and enables the
-   `scrollParent` option.
-
-##### Connecting Filters
-
-You can insert your own Web Audio nodes into the graph using the method `setFilter()`. Example:
-
+Use it with a module system like this:
 ```javascript
-var lowpass = wavesurfer.backend.ac.createBiquadFilter();
-wavesurfer.backend.setFilter(lowpass);
+// import
+import WaveSurfer from 'wavesurfer.js';
+
+// commonjs/requirejs
+var WaveSurfer = require('wavesurfer.js');
+
+// amd
+define(['WaveSurfer'], function(WaveSurfer) {
+  // ... code
+});
+
 ```
 
-### WaveSurfer Events
+## Related projects
 
-General events:
+For a list of  projects using wavesurfer.js, check out
+[the projects page](https://wavesurfer-js.org/projects/).
 
- * `error` – Occurs on error.  Callback will receive (string) error message.
- * `finish` – When it finishes playing.
- * `loading` – Fires continuously when loading via XHR or drag'n'drop. Callback will receive (integer) loading progress in percents [0..100] and (object) event target.
- * `mouseup` - When a mouse button goes up.  Callback will receive `MouseEvent` object.
- * `pause` – When audio is paused.
- * `play` – When play starts.
- * `ready` – When audio is loaded, decoded and the waveform drawn.
- * `scroll` - When the scrollbar is moved.  Callback will receive a `ScrollEvent` object.
- * `seek` – On seeking.  Callback will receive (float) progress [0..1].
+## Development
 
-Region events (exposed by the Regions plugin):
-
- * `region-in` – When playback enters a region. Callback will receive the `Region` object.
- * `region-out`– When playback leaves a region. Callback will receive the `Region` object.
- * `region-mouseenter` - When the mouse moves over a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
- * `region-mouseleave` - When the mouse leaves a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
- * `region-click` - When the mouse clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
- * `region-dblclick` - When the mouse double-clicks on a region.  Callback will receive the `Region` object, and a `MouseEvent` object.
- * `region-created` – When a region is created. Callback will receive the `Region` object.
- * `region-updated` – When a region is updated. Callback will receive the `Region` object.
- * `region-update-end` – When dragging or resizing is finished. Callback will receive the `Region` object.
- * `region-removed` – When a region is removed. Callback will receive the `Region` object.
-
-
-## Regions Plugin
-
-Regions are visual overlays on waveform that can be used to play and
-loop portions of audio. Regions can be dragged and resized.
-
-Visual customization is possible via CSS (using the selectors
-`.wavesurfer-region` and `.wavesurfer-handle`).
-
-To enable the plugin, add the script `plugin/wavesurfer.regions.js` to
-your page.
-
-After doing that, use `wavesurfer.addRegion()` to create Region objects.
-
-#### Exposed Methods
-
- * `addRegion(options)` – Creates a region on the waveform. Returns a `Region` object.  See [Region Options](#region-options), [Region Methods](#region-methods) and [Region Events](#region-events) below.
- * `clearRegions()` – Removes all regions.
- * `enableDragSelection(options)` – Lets you create regions by selecting.
-   areas of the waveform with mouse. `options` are Region objects' params (see [below](#region-options)).
-
-### Region Options
-
-| option | type | default | description |
-| --- | --- | --- | --- |
-| `id` | string | random | The id of the region. |
-| `start` | float | `0` | The start position of the region (in seconds). |
-| `end` | float | `0` | The end position of the region (in seconds). |
-| `loop` | boolean | `false` | Whether to loop the region when played back. |
-| `drag` | boolean | `true` | Allow/dissallow dragging the region. |
-| `resize` | boolean | `true` | Allow/dissallow resizing the region. |
-| `color` | string | `"rgba(0, 0, 0, 0.1)"` | HTML color code. |
-
-### Region Methods
-
- * `remove()` - Remove the region object.
- * `update(options)` - Modify the settings of the region.
- * `play()` - Play the audio region from the start to end position.
-
-### Region Events
-
-General events:
-
- * `in` - When playback enters the region.
- * `out` - When playback leaves the region.
- * `remove` - Happens just before the region is removed.
- * `update` - When the region's options are updated.
-
- Mouse events:
-
- * `click` - When the mouse clicks on the region.  Callback will receive a `MouseEvent`.
- * `dblclick` - When the mouse double-clicks on the region.  Callback will receive a `MouseEvent`.
- * `over` - When mouse moves over the region.  Callback will receive a `MouseEvent`.
- * `leave` - When mouse leaves the region.  Callback will receive a `MouseEvent`.
-
-# Development
-
-[![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
-[![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg)]()
 [![Build Status](https://travis-ci.org/katspaugh/wavesurfer.js.svg?branch=master)](https://travis-ci.org/katspaugh/wavesurfer.js)
-[![Coverage Status](https://coveralls.io/repos/katspaugh/wavesurfer.js/badge.svg)](https://coveralls.io/r/katspaugh/wavesurfer.js)
-
-Install `grunt-cli` using npm:
-
-```
-npm install -g grunt-cli
-```
+[![Coverage Status](https://coveralls.io/repos/github/katspaugh/wavesurfer.js/badge.svg)](https://coveralls.io/github/katspaugh/wavesurfer.js)
+![Size](https://img.shields.io/bundlephobia/minzip/wavesurfer.js.svg?style=flat)
 
 Install development dependencies:
 
 ```
 npm install
 ```
+Development tasks automatically rebuild certain parts of the library when files are changed (`start` – wavesurfer, `start:plugins` – plugins). Start a dev task and go to `localhost:8080/example/` to test the current build.
 
-Build a minified version of the library and plugins. This command also checks
-for code-style mistakes and runs the tests:
+Start development server for core library:
 
 ```
-grunt
+npm run start
 ```
 
-Generated files are placed in the `dist` directory.
+Start development server for plugins:
+
+```
+npm run start:plugins
+```
+
+Build all the files. (generated files are placed in the `dist` directory.)
+
+```
+npm run build
+```
 
 Running tests only:
 
 ```
-grunt test
+npm run test
 ```
 
-Creating a coverage report:
-
+Build documentation with esdoc (generated files are placed in the `doc` directory.)
 ```
-grunt coverage
+npm run doc
 ```
 
-The HTML report can be found in `coverage/html/index.html`.
+If you want to use [the VS Code - Debugger for Chrome](https://github.com/Microsoft/vscode-chrome-debug), there is already a [launch.json](.vscode/launch.json) with a properly configured ``sourceMapPathOverrides`` for you.
 
-# Credits
+## Editing documentation
+The homepage and documentation files are maintained in the [`gh-pages` branch](https://github.com/katspaugh/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
+
+## Credits
 
 Initial idea by [Alex Khokhulin](https://github.com/xoxulin). Many
 thanks to
 [the awesome contributors](https://github.com/katspaugh/wavesurfer.js/contributors)!
 
-# License
+## License
 
-![cc-by](http://i.creativecommons.org/l/by/3.0/88x31.png)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 This work is licensed under a
-[Creative Commons Attribution 3.0 Unported License](http://creativecommons.org/licenses/by/3.0/deed.en_US).
+[BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause).

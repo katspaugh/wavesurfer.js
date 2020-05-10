@@ -1,0 +1,35 @@
+.text-center {
+    text-align: center !important;
+}
+
+.text-left {
+    text-align: left !important;;
+}
+
+.text-right {
+    text-align: right !important;;
+}
+
+.text-justify {
+    text-align: justify !important;;
+}
+
+md-icon[md-font-icon] {
+    font-size: 24px;
+}
+
+md-toolbar.md-toolbar-sm .md-toolbar-tools {
+    max-height: 32px;
+    padding: 6px;
+    font-size: 16px;
+}
+
+md-toolbar.md-toolbar-sm {
+    min-height: 24px;
+}
+.md-player-controls .md-button {
+    min-width: 44px;
+}
+
+
+

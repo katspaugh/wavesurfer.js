@@ -7,20 +7,25 @@
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
         <!-- Bootstrap -->
-        <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
 
         <link rel="stylesheet" href="../css/style.css" />
         <link rel="stylesheet" href="../css/ribbon.css" />
 
         <!-- wavesurfer.js -->
-        <script src="../../dist/wavesurfer.min.js"></script>
+        <script src="../../dist/wavesurfer.js"></script>
 
         <!-- spectrogram format renderer -->
-        <script src="../../plugin/wavesurfer.spectrogram.js"></script>
+        <script src="../../dist/plugin/wavesurfer.spectrogram.js"></script>
 
         <!-- App -->
         <script src="app.js"></script>
         <script src="../trivia.js"></script>
+        
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
@@ -33,7 +38,7 @@
                 </ul>
                 </noindex>
 
-                <h1 itemprop="name"><a href="http://wavesurfer.fm">wavesurfer.js</a><noindex> + Spectrogram</noindex></h1>
+                <h1 itemprop="name"><a href="http://wavesurfer-js.org">wavesurfer.js</a><noindex> + Spectrogram</noindex></h1>
             </div>
 
             <div id="demo">
@@ -63,41 +68,24 @@
 
                     <p itemprop="about">Adds a simple spectrogram to your <strong>wavesurfer.js</strong> instances.</p>
 
-                    <h4>Installation</h4>
-
-                    <p>
-                      <ol>
-                        <li>add the Spectrogram plugin script tag</li>
-                        <li>create a <code>WaveSurfer</code> instance</li>
-                        <li>add a container HTML element for the spectrogram</li>
-                        <li>create a Spectrogram instance in the <code>WaveSurfer</code>'s <code>"ready"</code> event callback</li>
-                      </ol>
-                    </p>
-                    <p>
-                        <a class="btn btn-large btn-success" href="/plugin/wavesurfer.spectrogram.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (5 KB)</a>
-                    </p>
                 </div>
 
                 <div class="col-lg-8">
                     <h4>Quick Start</h4>
 
                     <noindex><p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
-  // your options here
+<pre><code>var wavesurfer = WaveSurfer.create({
+    // your options here
+    plugins: [
+        WaveSurfer.spectrogram.create({
+            wavesurfer: wavesurfer,
+            container: "#wave-spectrogram",
+            labels: true
+        })
+    ]
 });
 
-wavesurfer.on('ready', function () {
-    var spectrogram = Object.create(WaveSurfer.Spectrogram);
-
-    spectrogram.init({
-        wavesurfer: wavesurfer,
-        container: "#wave-spectrogram"
-    });
-});
-
-wavesurfer.load('example/media/demo.wav');</code></pre>
+wavesurfer.load('../media/demo.wav');</code></pre>
                     </p></noindex>
 
                     <br />
@@ -109,17 +97,36 @@ wavesurfer.load('example/media/demo.wav');</code></pre>
                       <li><code>container</code> - <em>required</em> - the element in which to place the spectrogram, or a CSS selector to find it.</li>
                       <li><code>fftSamples</code> - number of FFT samples (<code>512</code> by default). Number of spectral lines and height of the spectrogram will be a half of this parameter.</li>
                       <li><code>frequenciesDataUrl</code> - URL to load spectral data from.</li>
+                      <li><code>labels</code> - Whether or not to display frequency labels.</li>
+                      <li><code>colorMap</code> - Specifies the colormap to be used when rendering the spectrogram.</li>
                     </ul>
+                    
+                    <h4>Generating a colorMap</h4>
+                    The <a href="https://www.npmjs.com/package/colormap">colormap npm</a> can be used to generate a
+                     colormap. In this example, the colormap has been saved to a json file and is retrieved by the
+                     client before initializing the spectrogram.
+                    
+                    <noindex><p>
+<pre><code>const colormap = require('colormap');
+const colors = colormap({
+    colormap: 'hot',
+    nshades: 256,
+    format: 'float'
+});
+const fs = require('fs');
+fs.writeFile('hot-colormap.json', JSON.stringify(colors));                        
+</code></pre>
+                    </p></noindex>
                 </div>
             </div>
 
             <div class="footer row">
                 <div class="col-sm-12">
-                    <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+                    <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
                 </div>
 
                 <div class="col-sm-12">
-                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/katspaugh/wavesurfer.js" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
                 </div>
             </div>
         </div>

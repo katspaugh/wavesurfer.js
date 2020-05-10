@@ -7,25 +7,30 @@
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
         <!-- Bootstrap -->
-        <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
 
         <link rel="stylesheet" href="../css/style.css" />
         <link rel="stylesheet" href="../css/ribbon.css" />
 
         <!-- wavesurfer.js -->
-        <script src="../../dist/wavesurfer.min.js"></script>
+        <script src="../../dist/wavesurfer.js"></script>
 
-        <!-- microphone renderer -->
-        <script src="../../plugin/wavesurfer.microphone.js"></script>
+        <!-- microphone plugin -->
+        <script src="../../dist/plugin/wavesurfer.microphone.js"></script>
 
         <!-- App -->
         <script src="app.js"></script>
+
+        <!-- highlight.js for syntax highlighting in this example -->
+	    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+	    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+	    <script>hljs.initHighlightingOnLoad();</script>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
         <div class="container">
             <div class="header">
-                <h1 itemprop="name"><a href="http://wavesurfer.fm">wavesurfer.js</a><noindex> + Microphone</noindex></h1>
+                <h1 itemprop="name"><a href="http://wavesurfer-js.org">wavesurfer.js</a><noindex> + Microphone</noindex></h1>
             </div>
 
             <div id="demo">
@@ -53,14 +58,13 @@
 
                     <p>
                       <ol>
-                        <li>add the Microphone plugin script tag</li>
-                        <li>create a <code>WaveSurfer</code> instance</li>
-                        <li>create a <code>Microphone</code> instance</li>
-                        <li>control the Microphone using the <code>start</code>, <code>stop</code> and <code>togglePlay</code> methods</li>
+                        <li>add the Microphone plugin to the plugins property of the wavesurfer options</li>
+                        <li>create a new instance of wavesurfer by using the create function</li>
+                        <li>control the Microphone using the <code>start</code>, <code>stopDevice</code>, <code>play</code>, <code>pause</code>, <code>stop</code> and <code>togglePlay</code> methods</li>
                       </ol>
                     </p>
                     <p>
-                        <a class="btn btn-large btn-success" href="/plugin/wavesurfer.microphone.js" itemprop="downloadUrl">Download <strong>the plugin</strong> (3.2 KB)</a>
+                        <a class="btn btn-large btn-success" href="../../dist/plugin/wavesurfer.microphone.min.js" itemprop="downloadUrl" download>Download the plugin</a>
                     </p>
                 </div>
 
@@ -68,36 +72,40 @@
                     <h4>Quick Start</h4>
 
                     <noindex><p>
-<pre><code>var wavesurfer = Object.create(WaveSurfer);
-
-wavesurfer.init({
+<pre><code>var wavesurfer = WaveSurfer.create({
   container     : '#waveform',
   waveColor     : 'black',
   interact      : false,
-  cursorWidth   : 0
+  cursorWidth   : 0,
+  plugins: [
+    WaveSurfer.microphone.create()
+  ]
 });
 
-var microphone = Object.create(WaveSurfer.Microphone);
-
-microphone.init({
-    wavesurfer: wavesurfer
-});
-
-microphone.on('deviceReady', function(stream) {
+wavesurfer.microphone.on('deviceReady', function(stream) {
     console.log('Device ready!', stream);
 });
-microphone.on('deviceError', function(code) {
+wavesurfer.microphone.on('deviceError', function(code) {
     console.warn('Device error: ' + code);
 });
 
 // start the microphone
-microphone.start();
+wavesurfer.microphone.start();
 
 // pause rendering
-//microphone.togglePlay();
+//wavesurfer.microphone.pause();
 
-// stop and disconnect microphone
-//microphone.stop();
+// resume rendering
+//wavesurfer.microphone.play();
+
+// stop visualization and disconnect microphone
+//wavesurfer.microphone.stopDevice();
+
+// same as stopDevice() but also clears the wavesurfer canvas
+//wavesurfer.microphone.stop();
+
+// destroy the plugin
+//wavesurfer.microphone.destroy();
 </code></pre>
                     </p></noindex>
 
@@ -126,6 +134,12 @@ microphone.start();
                           <td>no</td>
                           <td>4096</td>
                           <td>The buffer size in units of sample-frames. If specified, the <code>bufferSize</code> must be one of the following values: 256, 512, 1024, 2048, 4096, 8192, 16384.</td>
+                        </tr>
+                        <tr>
+                          <td><code>constraints</code></td>
+                          <td>no</td>
+                          <td><code>{audio: true, video: false}</code></td>
+                          <td>The constraints parameter is a MediaStreamConstaints object with at least two members: video and audio, describing the media types requested. Either or both must be specified.</td>
                         </tr>
                         <tr>
                           <td><code>numberOfInputChannels</code></td>
@@ -158,7 +172,7 @@ microphone.start();
                         </tr>
                         <tr>
                           <td><code>deviceError</code></td>
-                          <td>Invoked when the user doesn't allow the browser to access the microphone. Callback will receive a (string) <a href='https://developer.mozilla.org/en-US/docs/NavigatorUserMedia.getUserMedia#errorCallback'>error code</a>.</td>
+                          <td>Invoked when the user doesn't allow the browser to access the microphone. Callback will receive a (string) <a href="https://developer.mozilla.org/en-US/docs/NavigatorUserMedia.getUserMedia#errorCallback">error code</a>.</td>
                         </tr>
                       </tbody>
                     </table>
@@ -167,11 +181,11 @@ microphone.start();
 
             <div class="footer row">
                 <div class="col-sm-12">
-                    <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+                    <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
                 </div>
 
                 <div class="col-sm-12">
-                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/katspaugh/wavesurfer.js" property="cc:attributionName" rel="cc:attributionURL">katspaugh</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0 Unported License</a>.
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
                 </div>
             </div>
         </div>
@@ -181,7 +195,7 @@ microphone.start();
                 <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
             </div>
         </div>
-        
+
         <script>
             (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
             (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

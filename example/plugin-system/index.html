@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>wavesurfer.js | Plugin system</title>
+
+        <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="../css/ribbon.css" />
+
+        <link rel="screenshot" itemprop="screenshot" href="//katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+
+        <!-- wavesurfer.js -->
+        <script src="../../dist/wavesurfer.js"></script>
+
+        <!-- plugins -->
+        <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
+		<script src="../../dist/plugin/wavesurfer.minimap.js"></script>
+		<script src="../../dist/plugin/wavesurfer.cursor.js"></script>
+		<script src="../../dist/plugin/wavesurfer.elan.js"></script>
+        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
+        <script src="../../dist/plugin/wavesurfer.spectrogram.js"></script>
+
+        <!-- App -->
+        <!-- Defining app.js as a module allows you to use 'import' statement, to import CursorCustomPlugin -->
+        <script type="module" src="app.js"></script>
+        <script src="../trivia.js"></script>
+
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+
+        <!-- Styling information for the elan plugin -->
+        <style type="text/css">
+        #annotations {
+            max-height: 300px;
+            overflow: auto;
+        }
+
+        .wavesurfer-annotations tr.wavesurfer-active td {
+            background-color: yellow;
+        }
+
+        .wavesurfer-time {
+            width: 100px;
+            color: #555;
+        }
+
+        .wavesurfer-tier-Text {
+            width: 500px;
+        }
+
+        td.wavesurfer-tier-Comments {
+            color: #999;
+        }
+
+        .wavesurfer-handle {
+            background-color: #c9e2b3;
+        }
+        </style>
+    </head>
+
+    <body itemscope itemtype="http://schema.org/WebApplication">
+        <div class="container">
+            <div class="header">
+                <noindex>
+                <ul class="nav nav-pills pull-right">
+                    <li><a href="?fill">Fill</a></li>
+                    <li><a href="?scroll">Scroll</a></li>
+                </ul>
+                </noindex>
+
+                <h1 itemprop="name"><a href="http://wavesurfer-js.org">wavesurfer.js</a><noindex> Plugin system</noindex></h1>
+            </div>
+
+            <div id="demo">
+                <div id="waveform">
+                    <div class="progress progress-striped active" id="progress-bar">
+                        <div class="progress-bar progress-bar-info"></div>
+                    </div>
+
+                    <!-- Here be waveform -->
+                </div>
+                <div id="wave-timeline"></div>
+				<div id="wave-spectrogram"></div>
+                <div id="annotations"></div>
+
+                <div class="controls">
+
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4">
+					<div class="form-group marketing">
+                        <h4>Disable and enable plugins on the fly:</h4>
+                        <hr />
+						<div class="checkbox">
+  							<label><input type="checkbox" value="" data-activate-plugin="minimap">Minimap</label>
+						</div>
+						<div class="checkbox">
+  							<label><input type="checkbox" value="" data-activate-plugin="timeline">Timeline</label>
+						</div>
+                        <div class="checkbox">
+                            <label><input type="checkbox" value="" data-activate-plugin="cursorCustom">CursorCustom</label>
+                        </div>
+						<div class="checkbox">
+  							<label><input type="checkbox" value="" data-activate-plugin="spectrogram">Spectrogram</label>
+						</div>
+						<div class="checkbox">
+  							<label><input type="checkbox" value="" data-activate-plugin="regions">Regions</label>
+						</div>
+						<div class="checkbox">
+  							<label><input type="checkbox" value="" data-activate-plugin="elan">Elan</label>
+						</div>
+					</div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="marketing">
+                        <h4>Initialising wavesurfer with plugins</h4>
+                        <hr />
+                        <p>The <code>plugins</code> option is an array of plugin definitions. Calling a plugin with the parameter <code>deferInit: true</code> will stop it from automatically initialising – you can do that at a later time with <code>wavesurfer.initPlugin('mypluginname')</code>.</p>
+                        <noindex><p>
+<pre><code>var wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: 'violet',
+    // ... other wavesurfer options
+    plugins: [
+        WaveSurfer.timeline.create{
+            container: '#wave-timeline',
+            // ... other timeline options
+        })
+    ]
+});
+
+wavesurfer.load('example/media/demo.wav');</code></pre>
+                        </p></noindex>
+                    </div>
+                    <div class="marketing">
+                        <h4>Dynamically adding and initialising a plugin</h4>
+                        <hr />
+                        <noindex><p>
+<pre><code>var wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: 'violet',
+    // ... other wavesurfer options
+});
+
+// adding and initialising a plugin after initialisation
+wavesurfer.addPlugin(WaveSurfer.timeline.create{
+    container: '#wave-timeline',
+    // ... other timeline options
+})).initPlugin('timeline')
+
+wavesurfer.load('example/media/demo.wav');</code></pre>
+                        </p></noindex>
+                    </div>
+                    <div class="marketing">
+                        <h4>Create a plugin that extends an existing plugin</h4>
+                        <hr />
+                        <p>The <code>CursorCustomPlugin</code> is a plugin that extends the basic <code>CursorPlugin</code>,
+                            so you can override some methods with your custom features, maintaining the existing functionalities
+                            and the library support. </p>
+                        <p>Adding <code>type=module</code> on the script element of your <code>js</code> script, allows the browser to treat
+                            the script as an ECMAScript module, so you can use import statements to import the CursorCustomPlugin.
+<pre>
+  &lt;script type="module" src="app.js"&gt;&lt;/script&gt;
+</pre>
+                            If you are using a framework instead, you should modify your <code>babel</code> configs, adding this configuration
+                            <pre><code>
+presets: [
+      [
+         '@babel/preset-env',
+         {
+            "targets": {
+               "esmodules": true
+            }
+          }
+       ]
+    ],
+                            </code></pre>
+                        </p>
+                        <noindex><p>
+                            <pre><code>var wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: 'violet',
+    // ... other wavesurfer options,
+     plugins: [
+        CursorCustomPlugin.create({// ... plugin options})
+     ]
+});</code></pre>
+                            </p></noindex>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer row">
+                <div class="col-sm-12">
+                    <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
+                </div>
+
+                <div class="col-sm-12">
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
+                </div>
+            </div>
+
+        </div>
+
+        <div class="github-fork-ribbon-wrapper right">
+            <div class="github-fork-ribbon">
+                <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+            </div>
+        </div>
+
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+            ga('send', 'pageview');
+        </script>
+    </body>
+</html>
