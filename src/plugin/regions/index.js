@@ -1,5 +1,5 @@
 /**
- *  @since 3.4.0 this class was splitted and moved to 'plugin/regions' directory
+ *  @since 4.0.0 This class has been split
  *
  * @typedef {Object} RegionsPluginParams
  * @property {?boolean} dragSelection Enable creating regions by dragging with

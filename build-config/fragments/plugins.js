@@ -13,7 +13,8 @@ fs.readdirSync(pluginSrcDir).forEach(plugin => {
 });
 
 /**
- * findInDirectory - Description: search recursively plugins and push them in PLUGINS Array
+ * findInDirectory - Description: search plugins and push them in PLUGINS Array: if finds a directory, take the plugin
+ *                   called index.js
  *
  * @param {String} plugin Name of plugin
  *
@@ -21,19 +22,26 @@ fs.readdirSync(pluginSrcDir).forEach(plugin => {
  */
 function findInDirectory(plugin, directory) {
     const pluginPath = path.join(directory, plugin);
+    let relativePluginPath = null;
+
     if (fs.statSync(pluginPath).isDirectory()) {
         fs.readdirSync(pluginPath).forEach(pluginInDir => {
-            findInDirectory(pluginInDir, pluginPath);
+            if (pluginInDir === 'index.js') {
+                const pathInDirectory = path.join(pluginPath, pluginInDir);
+                relativePluginPath = path.relative(pluginSrcDir, pathInDirectory);
+                PLUGINS.push(relativePluginPath);
+            }
         });
     }
     else {
-        const relativePluginPath = path.relative(pluginSrcDir, pluginPath);
+        relativePluginPath = path.relative(pluginSrcDir, pluginPath);
         PLUGINS.push(relativePluginPath);
     }
 }
 
 /**
- * buildPluginEntry - Description
+ * buildPluginEntry - Description: build the plugin entry based on PLUGINS array: if plugin name is index.js, it is
+ *                    it is renamed with his parent directory name
  *
  * @param {Array} plugins Name of plugins in src/plugin
  *
@@ -42,11 +50,16 @@ function findInDirectory(plugin, directory) {
 function buildPluginEntry(plugins) {
     const result = {};
     plugins.forEach(
-        plugin =>
-            (result[path.basename(plugin, '.js')] = path.join(
+        plugin => {
+            let basename = path.basename(plugin, '.js');
+            if (basename === 'index') {
+                basename = path.basename(path.dirname(plugin));
+            }
+            return (result[path.basename(basename, '.js')] = path.join(
                 pluginSrcDir,
                 plugin
-            ))
+            ));
+        }
     );
     return result;
 }
