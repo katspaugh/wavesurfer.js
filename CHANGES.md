@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-3.4.0 (unreleased)
+4.0.0 (unreleased)
 ------------------
 
 - Fixed the `destroy` method of the `MediaElementWebAudio` backend, so  instead of destroying only the media element,
@@ -9,8 +9,11 @@ wavesurfer.js changelog
   `WebAudio`, so it calls the new `destroyWebAudio` method to cancel all stuffs related to WebAudio (#1927)
 - Removed private methods of plugins and generalized plugins' access, so they can be extended creating Custom
   Plugins (#1928)
+- Splitted `regions.js` file in `region.js` containing the `Region` class, and `index.js` containing the `RegionsPlugin`
+  class, both moved into `src/plugin/regions` directory. In this way creating both classes can be extended to create
+  Custom Plugins (#1934)
 - Regions plugin fixes:
-  - channelCount assignment (#1858) 
+  - channelCount assignment (#1858)
   - click propagation issue (#1926)
   - switch loop region (#1929)
 - Elan plugin: optional params.tiers (#1910)
