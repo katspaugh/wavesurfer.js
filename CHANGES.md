@@ -18,6 +18,7 @@ wavesurfer.js changelog
   - switch loop region (#1929)
 - Elan plugin: optional params.tiers (#1910)
 - Added plugin inheritance example (#1921)
+- Added compatibility for Gatsby and other static site generators (#1938)
 - Added the ability to use a customized regions plugin in the `minimap` plugin through a new parameter
   `regionsPluginName` (#1943)
 
