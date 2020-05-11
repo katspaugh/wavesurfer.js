@@ -19,7 +19,7 @@ wavesurfer.js changelog
 - Elan plugin: optional params.tiers (#1910)
 - Added plugin inheritance example (#1921)
 - Added the ability to use a customized regions plugin in the `minimap` plugin through a new parameter
-  `regionsPluginName`
+  `regionsPluginName` (#1943)
 
 3.3.3 (16.04.2020)
 ------------------
