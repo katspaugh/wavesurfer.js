@@ -18,6 +18,8 @@ wavesurfer.js changelog
   - switch loop region (#1929)
 - Elan plugin: optional params.tiers (#1910)
 - Added plugin inheritance example (#1921)
+- Added the ability to use a customized regions plugin in the `minimap` plugin through a new parameter
+  `regionsPluginName`
 
 3.3.3 (16.04.2020)
 ------------------

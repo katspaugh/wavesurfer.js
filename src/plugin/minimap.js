@@ -60,6 +60,7 @@ export default class MinimapPlugin {
             ws.params,
             {
                 showRegions: false,
+                regionsPluginName: params.regionsPluginName || 'regions',
                 showOverview: false,
                 overviewBorderColor: 'green',
                 overviewBorderSize: 2,
@@ -106,6 +107,7 @@ export default class MinimapPlugin {
         this.renderEvent =
             ws.params.backend === 'MediaElement' ? 'waveform-ready' : 'ready';
         this.overviewRegion = null;
+        this.regionsPlugin = this.wavesurfer[this.params.regionsPluginName];
 
         this.drawer.createWrapper();
         this.createElements();
@@ -125,7 +127,7 @@ export default class MinimapPlugin {
                 ws.container.insertBefore(this.params.container, null);
             }
 
-            if (this.wavesurfer.regions && this.params.showRegions) {
+            if (this.regionsPlugin && this.params.showRegions) {
                 this.regions();
             }
             this.render();
