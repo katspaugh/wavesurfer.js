@@ -21,6 +21,7 @@ wavesurfer.js changelog
 - Added compatibility for Gatsby and other static site generators (#1938)
 - Added the ability to use a customized regions plugin in the `minimap` plugin through a new parameter
   `regionsPluginName` (#1943)
+- Fixed waveform display to not always connect to the sample=0 point (#1942)
 
 3.3.3 (16.04.2020)
 ------------------
