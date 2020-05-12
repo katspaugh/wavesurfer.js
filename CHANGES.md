@@ -4,10 +4,14 @@ wavesurfer.js changelog
 4.0.0 (unreleased)
 ------------------
 
-- Fixed the `destroy` method of the `MediaElementWebAudio` backend, so instead of destroying only the media element, the audio nodes are disconnected and the audio context is closed. This was done by splitting the `destroy` method of the `WebAudio`, so it calls the new `destroyWebAudio` method to cancel all stuffs related to WebAudio (#1927)
+- Fixed the `destroy` method of the `MediaElementWebAudio` backend, so  instead of destroying only the media element,
+  the audio nodes are disconnected and the audio context is closed. This was done by splitting the `destroy` method of the
+  `WebAudio`, so it calls the new `destroyWebAudio` method to cancel all stuffs related to WebAudio (#1927)
 - Removed private methods of plugins and generalized plugins' access, so they can be extended creating Custom
   Plugins (#1928)
-- Splitted `regions.js` file in `region.js` containing the `Region` class, and `index.js` containing the `RegionsPlugin` class, both moved into `src/plugin/regions` directory. In this way creating both classes can be extended to create Custom Plugins (#1934)
+- Splitted `regions.js` file in `region.js` containing the `Region` class, and `index.js` containing the `RegionsPlugin`
+  class, both moved into `src/plugin/regions` directory. In this way creating both classes can be extended to create
+  Custom Plugins (#1934)
 - Regions plugin fixes:
   - channelCount assignment (#1858)
   - click propagation issue (#1926)
@@ -15,6 +19,8 @@ wavesurfer.js changelog
 - Elan plugin: optional params.tiers (#1910)
 - Added plugin inheritance example (#1921)
 - Added compatibility for Gatsby and other static site generators (#1938)
+- Added the ability to use a customized regions plugin in the `minimap` plugin through a new parameter
+  `regionsPluginName` (#1943)
 
 3.3.3 (16.04.2020)
 ------------------
