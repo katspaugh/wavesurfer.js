@@ -1,5 +1,6 @@
 // Create an instance
 var wavesurfer;
+var wavesurferWithOptions;
 
 window.onload = function() {
     wavesurfer = WaveSurfer.create({
@@ -56,4 +57,36 @@ window.onload = function() {
     Object.keys(handlers).forEach(function(event) {
         dropTarget.addEventListener(event, handlers[event]);
     });
+
+    // WaveSurfer with options example
+    wavesurferWithOptions = WaveSurfer.create({
+        container: document.querySelector('#waveform-with-options'),
+        splitChannels: true,
+        splitChannelsOptions: {
+            overlay: false,
+            channelColors: {
+                0: {
+                    progressColor: 'green',
+                    waveColor: 'pink'
+                },
+                1: {
+                    progressColor: 'orange',
+                    waveColor: 'purple'
+                }
+            }
+        }
+    });
+
+    wavesurferWithOptions.on('error', function(e) {
+        console.warn(e);
+    });
+
+    // Load audio from URL
+    wavesurferWithOptions.load('../media/stereo.mp3');
+
+    // Play/pause on button press
+    document
+        .getElementById('play-button')
+        .addEventListener('click', wavesurferWithOptions.playPause.bind(wavesurferWithOptions));
+
 };
