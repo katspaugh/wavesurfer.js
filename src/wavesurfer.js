@@ -266,7 +266,8 @@ export default class WaveSurfer extends util.Observer {
         splitChannels: false,
         splitChannelsOptions: {
             overlay: false,
-            channelColors: {}
+            channelColors: {},
+            filterChannels: [],
         },
         waveColor: '#999',
         xhr: {}

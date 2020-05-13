@@ -73,7 +73,8 @@ window.onload = function() {
                     progressColor: 'orange',
                     waveColor: 'purple'
                 }
-            }
+            },
+            filterChannels: [],
         }
     });
 

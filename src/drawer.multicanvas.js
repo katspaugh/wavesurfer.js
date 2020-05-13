@@ -446,6 +446,17 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
+     * Returns whether to hide the channel from being drawn based on params.
+     *
+     * @private
+     * @param {number} channelIndex The index of the current channel.
+     * @returns {bool} True to hide the channel, false to draw.
+     */
+    hideChannel(channelIndex) {
+        return this.params.splitChannels && this.params.splitChannelsOptions.filterChannels.includes(channelIndex);
+    }
+
+    /**
      * Performs preparation tasks and calculations which are shared by `drawBars`
      * and `drawWave`
      *
@@ -459,31 +470,35 @@ export default class MultiCanvas extends Drawer {
      * @param {number?} end The x-offset of the end of the area that should be
      * rendered
      * @param {function} fn The render function to call, e.g. `drawWave`
+     * @param {number} drawIndex The index of the current channel after filtering.
      * @returns {void}
      */
-    prepareDraw(peaks, channelIndex, start, end, fn) {
+    prepareDraw(peaks, channelIndex, start, end, fn, drawIndex) {
         return util.frame(() => {
             // Split channels and call this function with the channelIndex set
             if (peaks[0] instanceof Array) {
                 const channels = peaks;
 
-                if (this.params.splitChannels && this.params.splitChannelsOptions.overlay) {
-                    return channels.forEach((channelPeaks, i) =>
-                        this.prepareDraw(channelPeaks, i, start, end, fn)
-                    );                    
-                }
-                else if (this.params.splitChannels) {
-                    this.setHeight(
-                        channels.length *
-                            this.params.height *
-                            this.params.pixelRatio
-                    );
+                if (this.params.splitChannels) {
+                    const filteredChannels =  channels.filter((c, i) => !this.hideChannel(i));
+                    if (!this.params.splitChannelsOptions.overlay) {
+                        this.setHeight(
+                            filteredChannels.length *
+                                this.params.height *
+                                this.params.pixelRatio
+                        );
+                    } 
                     return channels.forEach((channelPeaks, i) => 
-                        this.prepareDraw(channelPeaks, i, start, end, fn)
-                    );
+                        this.prepareDraw(channelPeaks, i, start, end, fn, filteredChannels.indexOf(channelPeaks))
+                    );                    
                 }
                 peaks = channels[0];
             }
+
+            if (this.hideChannel(channelIndex)) {
+                return;
+            }
+
             // calculate maximum modulation value, either from the barHeight
             // parameter or if normalize=true from the largest value in the peak
             // set
@@ -498,7 +513,7 @@ export default class MultiCanvas extends Drawer {
             // so we don't need negative values
             const hasMinVals = [].some.call(peaks, val => val < 0);
             const height = this.params.height * this.params.pixelRatio;
-            const offsetY = height * channelIndex || 0;
+            const offsetY = height * drawIndex || 0;
             const halfH = height / 2;
 
             return fn({
