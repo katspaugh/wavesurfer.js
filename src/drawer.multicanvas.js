@@ -349,7 +349,7 @@ export default class MultiCanvas extends Drawer {
             channelIndex,
             start,
             end,
-            ({ absmax, hasMinVals, height, offsetY, halfH, peaks }) => {
+            ({ absmax, hasMinVals, height, offsetY, halfH, peaks, channelIndex }) => {
                 if (!hasMinVals) {
                     const reflectedPeaks = [];
                     const len = peaks.length;
@@ -364,7 +364,7 @@ export default class MultiCanvas extends Drawer {
                 // if drawWave was called within ws.empty we don't pass a start and
                 // end and simply want a flat line
                 if (start !== undefined) {
-                    this.drawLine(peaks, absmax, halfH, offsetY, start, end);
+                    this.drawLine(peaks, absmax, halfH, offsetY, start, end, channelIndex);
                 }
 
                 // always draw a median line
@@ -390,11 +390,13 @@ export default class MultiCanvas extends Drawer {
      * @param {number} start The x-offset of the beginning of the area that
      * should be rendered
      * @param {number} end The x-offset of the end of the area that
+     * @param {channelIndex} channelIndex The channel index of the line drawn
      * should be rendered
      */
-    drawLine(peaks, absmax, halfH, offsetY, start, end) {
-        this.canvases.forEach(entry => {
-            this.setFillStyles(entry);
+    drawLine(peaks, absmax, halfH, offsetY, start, end, channelIndex) {
+       const { waveColor, progressColor } = this.params.splitChannelsOptions.channelColors[channelIndex] || {};
+        this.canvases.forEach((entry, i) => {
+            this.setFillStyles(entry, waveColor, progressColor);
             entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
         });
     }
@@ -464,13 +466,19 @@ export default class MultiCanvas extends Drawer {
             // Split channels and call this function with the channelIndex set
             if (peaks[0] instanceof Array) {
                 const channels = peaks;
-                if (this.params.splitChannels) {
+
+                if (this.params.splitChannels && this.params.splitChannelsOptions.overlay) {
+                    return channels.forEach((channelPeaks, i) =>
+                        this.prepareDraw(channelPeaks, i, start, end, fn)
+                    );                    
+                }
+                else if (this.params.splitChannels) {
                     this.setHeight(
                         channels.length *
                             this.params.height *
                             this.params.pixelRatio
                     );
-                    return channels.forEach((channelPeaks, i) =>
+                    return channels.forEach((channelPeaks, i) => 
                         this.prepareDraw(channelPeaks, i, start, end, fn)
                     );
                 }
@@ -499,7 +507,8 @@ export default class MultiCanvas extends Drawer {
                 height: height,
                 offsetY: offsetY,
                 halfH: halfH,
-                peaks: peaks
+                peaks: peaks,
+                channelIndex: channelIndex,
             });
         })();
     }
@@ -509,9 +518,11 @@ export default class MultiCanvas extends Drawer {
      *
      * @private
      * @param {CanvasEntry} entry Target entry
+     * @param {string} waveColor Wave color to draw this entry
+     * @param {string} progressColor Progress color to draw this entry
      */
-    setFillStyles(entry) {
-        entry.setFillStyles(this.params.waveColor, this.params.progressColor);
+    setFillStyles(entry, waveColor = this.params.waveColor, progressColor = this.params.progressColor) {
+        entry.setFillStyles(waveColor, progressColor);
     }
 
     /**
