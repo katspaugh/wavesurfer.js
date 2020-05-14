@@ -483,11 +483,12 @@ export default class MultiCanvas extends Drawer {
                     const filteredChannels =  channels.filter((c, i) => !this.hideChannel(i));
                     if (!this.params.splitChannelsOptions.overlay) {
                         this.setHeight(
-                            filteredChannels.length *
+                            Math.max(filteredChannels.length, 1) *
                                 this.params.height *
                                 this.params.pixelRatio
                         );
                     } 
+
                     return channels.forEach((channelPeaks, i) => 
                         this.prepareDraw(channelPeaks, i, start, end, fn, filteredChannels.indexOf(channelPeaks))
                     );                    
