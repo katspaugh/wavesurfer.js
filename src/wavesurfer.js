@@ -1174,6 +1174,16 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * When splitChannels is true, hides channels from being drawn on the waveform.
+     *
+     * @param {array} channelIndices Channels to be filtered out from drawing.
+     */
+    setFilteredChannels(channelIndices) {
+        this.params.splitChannelsOptions.filterChannels = channelIndices;
+        this.drawBuffer();
+    }
+
+    /**
      * Get the correct peaks for current wave view-port and render wave
      *
      * @private
