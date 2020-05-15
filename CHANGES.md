@@ -4,25 +4,27 @@ wavesurfer.js changelog
 4.0.0 (unreleased)
 ------------------
 
-- Fixed the `destroy` method of the `MediaElementWebAudio` backend, so  instead of destroying only the media element,
-  the audio nodes are disconnected and the audio context is closed. This was done by splitting the `destroy` method of the
-  `WebAudio`, so it calls the new `destroyWebAudio` method to cancel all stuffs related to WebAudio (#1927)
-- Removed private methods of plugins and generalized plugins' access, so they can be extended creating Custom
-  Plugins (#1928)
-- Splitted `regions.js` file in `region.js` containing the `Region` class, and `index.js` containing the `RegionsPlugin`
-  class, both moved into `src/plugin/regions` directory. In this way creating both classes can be extended to create
-  Custom Plugins (#1934)
-- Regions plugin fixes:
-  - channelCount assignment (#1858)
-  - click propagation issue (#1926)
-  - switch loop region (#1929)
-- Elan plugin: optional params.tiers (#1910)
+- Fixed the `destroy` method of the `MediaElementWebAudio` backend. Instead of
+  destroying only the media element, the audio nodes are disconnected and the
+  audio context is closed. This was done by splitting the `destroy` method of the
+  `WebAudio` backend, so it calls the new `destroyWebAudio` method to cancel
+  everything related to WebAudio (#1927)
+- Removed private methods of plugins and generalized plugins' access, so they can be extended creating custom
+  plugins (#1928)
 - Added plugin inheritance example (#1921)
 - Added compatibility for Gatsby and other static site generators (#1938)
-- Added the ability to use a customized regions plugin in the `minimap` plugin through a new parameter
+- Minimap plugin: added the ability to use a customized regions plugin using a new parameter
   `regionsPluginName` (#1943)
 - Fixed waveform display to not always connect to the sample=0 point (#1942)
-- Added ability to specify time format for Regions tooltip using timeformatCallback (#1948)
+- Elan plugin: optional params.tiers (#1910)
+- Regions plugin:
+  - Split `regions.js` into `region.js` (containing `Region` class) and `index.js`.
+    Both files moved into the `src/plugin/regions` directory. This makes it easier
+    to extend these classes and use them in custom plugins (#1934)
+  - Fixed channelCount assignment (#1858)
+  - Fixed click propagation issue (#1926)
+  - Fixed switch loop region (#1929)
+  - Added ability to specify time format for Regions tooltip using timeformatCallback (#1948)
 
 3.3.3 (16.04.2020)
 ------------------
