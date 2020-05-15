@@ -22,6 +22,7 @@ wavesurfer.js changelog
 - Added the ability to use a customized regions plugin in the `minimap` plugin through a new parameter
   `regionsPluginName` (#1943)
 - Fixed waveform display to not always connect to the sample=0 point (#1942)
+- Added ability to specify time format for Regions tooltip using timeformatCallback (#1948)
 
 3.3.3 (16.04.2020)
 ------------------
