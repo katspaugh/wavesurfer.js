@@ -1174,7 +1174,14 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * When splitChannels is true, hides channels from being drawn on the waveform.
+     * Hide channels from being drawn on the waveform if splitting channels.
+     * 
+     * For example, if we want to draw only the peaks for the right stereo channel:
+     *
+     * const wavesurfer = new WaveSurfer.create({...splitChannels: true});
+     * wavesurfer.load('stereo_audio.mp3');
+     * 
+     * wavesurfer.setFilteredChannel([0]); <-- hide left channel peaks.
      *
      * @param {array} channelIndices Channels to be filtered out from drawing.
      */

@@ -389,9 +389,9 @@ export default class MultiCanvas extends Drawer {
      * @param {number} offsetY Offset to the top
      * @param {number} start The x-offset of the beginning of the area that
      * should be rendered
-     * @param {number} end The x-offset of the end of the area that
-     * @param {channelIndex} channelIndex The channel index of the line drawn
+     * @param {number} end The x-offset of the end of the area that 
      * should be rendered
+     * @param {channelIndex} channelIndex The channel index of the line drawn
      */
     drawLine(peaks, absmax, halfH, offsetY, start, end, channelIndex) {
        const { waveColor, progressColor } = this.params.splitChannelsOptions.channelColors[channelIndex] || {};
@@ -496,6 +496,7 @@ export default class MultiCanvas extends Drawer {
                 peaks = channels[0];
             }
 
+            // Return and do not draw channel peaks if hidden.
             if (this.hideChannel(channelIndex)) {
                 return;
             }
