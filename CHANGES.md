@@ -22,6 +22,7 @@ wavesurfer.js changelog
 - Added the ability to use a customized regions plugin in the `minimap` plugin through a new parameter
   `regionsPluginName` (#1943)
 - Fixed waveform display to not always connect to the sample=0 point (#1942)
+- Add `splitChannelsOptions` param and `setFilteredChannels` method to configure how channels are drawn (#1947)
 
 3.3.3 (16.04.2020)
 ------------------

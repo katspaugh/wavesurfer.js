@@ -1184,6 +1184,7 @@ export default class WaveSurfer extends util.Observer {
      * wavesurfer.setFilteredChannel([0]); <-- hide left channel peaks.
      *
      * @param {array} channelIndices Channels to be filtered out from drawing.
+     * @version 4.0.0
      */
     setFilteredChannels(channelIndices) {
         this.params.splitChannelsOptions.filterChannels = channelIndices;
