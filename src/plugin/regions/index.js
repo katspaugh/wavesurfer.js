@@ -12,6 +12,7 @@
  * @property {?boolean} deferInit Set to true to manually call
  * @property {number[]} maxRegions Maximum number of regions that may be created by the user at one time.
  * `initPlugin('regions')`
+ * @property {function} formatTimeCallback Allows custom formating for region tooltip.
  */
 
 /**

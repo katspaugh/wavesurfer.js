@@ -70,6 +70,8 @@ export class Region {
                 this.marginTop = this.wavesurfer.getHeight() * channelIdx + 'px';
             }
         }
+        
+        this.formatTimeCallback = params.formatTimeCallback;
 
         this.bindInOut();
         this.render();
@@ -231,6 +233,9 @@ export class Region {
     }
 
     formatTime(start, end) {
+        if (this.formatTimeCallback) {
+            return this.formatTimeCallback(start, end);
+        }
         return (start == end ? [start] : [start, end])
             .map(time =>
                 [
