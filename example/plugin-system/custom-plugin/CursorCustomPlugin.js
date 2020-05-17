@@ -44,17 +44,6 @@ export default class CursorCustomPlugin extends CursorPlugin {
         this.updateCursorPosition(x, y, flip);
     };
 
-    /**
-     * @private
-     * @returns {void}
-     */
-    _onMouseenter = () => this.showCursor();
-
-    /**
-     * @private
-     * @returns {void}
-     */
-    _onMouseleave = () => this.hideCursor();
 
     /**
      * Construct the plugin class. You probably want to use `CursorCustomPlugin.create`
@@ -65,12 +54,6 @@ export default class CursorCustomPlugin extends CursorPlugin {
      */
     constructor(params, ws) {
         super(params, ws);
-        /** @private */
-        this.wavesurfer = ws;
-        /** @private */
-        this.style = ws.util.style;
-        /** @private */
-        this.params = ws.util.extend({}, this.defaultParams, params);
     }
 
     /** Override methods to add custom features */
