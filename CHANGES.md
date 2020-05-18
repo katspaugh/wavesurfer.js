@@ -25,6 +25,7 @@ wavesurfer.js changelog
   - Fixed click propagation issue (#1926)
   - Fixed switch loop region (#1929)
   - Added ability to specify time format for Regions tooltip using timeformatCallback (#1948)
+- Add `splitChannelsOptions` param and `setFilteredChannels` method to configure how channels are drawn (#1947)
 
 3.3.3 (16.04.2020)
 ------------------
