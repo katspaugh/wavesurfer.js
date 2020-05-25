@@ -197,17 +197,17 @@ export default class MinimapPlugin {
 
         this.wavesurfer.on('region-created', region => {
             this.regions[region.id] = region;
-            this.renderRegions();
+            this.drawer.wrapper && this.renderRegions();
         });
 
         this.wavesurfer.on('region-updated', region => {
             this.regions[region.id] = region;
-            this.renderRegions();
+            this.drawer.wrapper && this.renderRegions();
         });
 
         this.wavesurfer.on('region-removed', region => {
             delete this.regions[region.id];
-            this.renderRegions();
+            this.drawer.wrapper && this.renderRegions();
         });
     }
 
