@@ -364,7 +364,7 @@ export default class SpectrogramPlugin {
         this.unAll();
         this.wavesurfer.un('ready', this._onReady);
         this.wavesurfer.un('redraw', this._onRender);
-        this.drawer ? this.drawer.wrapper.removeEventListener('scroll', this._onScroll);
+        this.drawer && this.drawer.wrapper.removeEventListener('scroll', this._onScroll);
         this.wavesurfer = null;
         this.util = null;
         this.params = null;
