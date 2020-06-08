@@ -357,6 +357,46 @@ describe('WaveSurfer/playback:', function() {
         });
         wavesurfer.destroy();
     });
+
+    describe('seekTo: event emission', () => {
+        let interactionEventSpy;
+        let seekEventSpy;
+
+        beforeEach(function() {
+            interactionEventSpy = jasmine.createSpy();
+            seekEventSpy = jasmine.createSpy();
+
+            wavesurfer.on('interaction', () => {
+                interactionEventSpy();
+            });
+            wavesurfer.on('seek', () => {
+                seekEventSpy();
+            });
+        });
+
+        describe('when emitEvents is not passed', () => {
+            it('defaults to emitting events', () => {
+                wavesurfer.seekTo(0.5);
+
+                expect(interactionEventSpy).toHaveBeenCalled();
+                expect(seekEventSpy).toHaveBeenCalled();
+            });
+        });
+
+        describe('when emitEvents is false', () => {
+            it('should not emit an interaction event', () => {
+                wavesurfer.seekTo(0.5, false);
+
+                expect(interactionEventSpy).not.toHaveBeenCalled();
+            });
+
+            it('should not emit a seek event', () => {
+                wavesurfer.seekTo(0.5, false);
+
+                expect(seekEventSpy).not.toHaveBeenCalled();
+            });
+        });
+    });
 });
 
 /** @test {WaveSurfer} */

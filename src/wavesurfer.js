@@ -880,13 +880,14 @@ export default class WaveSurfer extends util.Observer {
      * Seeks to a position
      *
      * @param {number} progress Between 0 (=beginning) and 1 (=end)
+     * @param {boolean} emitEvents Whether or not to emit events for this invocation
      * @emits WaveSurfer#interaction
      * @emits WaveSurfer#seek
      * @example
      * // seek to the middle of the audio
      * wavesurfer.seekTo(0.5);
      */
-    seekTo(progress) {
+    seekTo(progress, emitEvents = true) {
         // return an error if progress is not a number between 0 and 1
         if (
             typeof progress !== 'number' ||
@@ -898,7 +899,7 @@ export default class WaveSurfer extends util.Observer {
                 'Error calling wavesurfer.seekTo, parameter must be a number between 0 and 1!'
             );
         }
-        this.fireEvent('interaction', () => this.seekTo(progress));
+        if (emitEvents) { this.fireEvent('interaction', () => this.seekTo(progress)); }
 
         const paused = this.backend.isPaused();
         // avoid draw wrong position while playing backward seeking
@@ -915,7 +916,7 @@ export default class WaveSurfer extends util.Observer {
             this.backend.play();
         }
         this.params.scrollParent = oldScrollParent;
-        this.fireEvent('seek', progress);
+        if (emitEvents) { this.fireEvent('seek', progress); }
     }
 
     /**
