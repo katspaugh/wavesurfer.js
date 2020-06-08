@@ -325,7 +325,7 @@ export default class MicrophonePlugin {
     /**
      * Audio input device is ready.
      *
-     * @param {LocalMediaStream} stream The microphone's media stream.
+     * @param {MediaStream} stream The microphone's media stream.
      */
     gotStream(stream) {
         this.stream = stream;
