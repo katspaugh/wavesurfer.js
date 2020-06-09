@@ -358,24 +358,24 @@ describe('WaveSurfer/playback:', function() {
         wavesurfer.destroy();
     });
 
-    describe('seekTo: event emission', () => {
-        let interactionEventSpy;
-        let seekEventSpy;
+    fdescribe('seekTo: event emission', function() {
+        var interactionEventSpy;
+        var seekEventSpy;
 
         beforeEach(function() {
             interactionEventSpy = jasmine.createSpy();
             seekEventSpy = jasmine.createSpy();
 
-            wavesurfer.on('interaction', () => {
+            wavesurfer.on('interaction', function() {
                 interactionEventSpy();
             });
-            wavesurfer.on('seek', () => {
+            wavesurfer.on('seek', function() {
                 seekEventSpy();
             });
         });
 
-        describe('when emitEvents is not passed', () => {
-            it('defaults to emitting events', () => {
+        describe('when emitEvents is not passed', function() {
+            it('defaults to emitting events', function() {
                 wavesurfer.seekTo(0.5);
 
                 expect(interactionEventSpy).toHaveBeenCalled();
@@ -383,14 +383,14 @@ describe('WaveSurfer/playback:', function() {
             });
         });
 
-        describe('when emitEvents is false', () => {
-            it('should not emit an interaction event', () => {
+        describe('when emitEvents is false', function() {
+            it('should not emit an interaction event', function() {
                 wavesurfer.seekTo(0.5, false);
 
                 expect(interactionEventSpy).not.toHaveBeenCalled();
             });
 
-            it('should not emit a seek event', () => {
+            it('should not emit a seek event', function() {
                 wavesurfer.seekTo(0.5, false);
 
                 expect(seekEventSpy).not.toHaveBeenCalled();
