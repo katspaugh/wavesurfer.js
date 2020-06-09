@@ -18,6 +18,7 @@ export default class Observer {
          * @todo Initialise the handlers here already and remove the conditional
          * assignment in `on()`
          */
+        this._disabledEventEmissions = [];
         this.handlers = null;
     }
     /**
@@ -101,15 +102,26 @@ export default class Observer {
     }
 
     /**
+     * Disable firing a list of events by name. When specified, event handlers for any event type
+     * passed in here will not be called.
+     *
+     * @param {string[]} eventNames an array of event names to disable emissions for
+     */
+    setDisabledEventEmissions(eventNames) {
+        this._disabledEventEmissions = eventNames;
+    }
+
+    /**
      * Manually fire an event
      *
      * @param {string} event The event to fire manually
      * @param {...any} args The arguments with which to call the listeners
      */
     fireEvent(event, ...args) {
-        if (!this.handlers) {
+        if (!this.handlers || this._disabledEventEmissions.includes(event)) {
             return;
         }
+
         const handlers = this.handlers[event];
         handlers &&
             handlers.forEach(fn => {

@@ -358,42 +358,48 @@ describe('WaveSurfer/playback:', function() {
         wavesurfer.destroy();
     });
 
-    fdescribe('seekTo: event emission', function() {
-        var interactionEventSpy;
+    describe('seek event emission', function() {
         var seekEventSpy;
+        var interactionEventSpy;
 
         beforeEach(function() {
-            interactionEventSpy = jasmine.createSpy();
             seekEventSpy = jasmine.createSpy();
+            interactionEventSpy = jasmine.createSpy();
 
-            wavesurfer.on('interaction', function() {
-                interactionEventSpy();
-            });
             wavesurfer.on('seek', function() {
                 seekEventSpy();
             });
+            wavesurfer.on('interaction', function() {
+                interactionEventSpy();
+            });
         });
 
-        describe('when emitEvents is not passed', function() {
-            it('defaults to emitting events', function() {
+        afterEach(function() {
+            wavesurfer.unAll();
+            wavesurfer.setDisabledEventEmissions([]);
+        });
+
+        describe('when event emissions are not disabled', function() {
+            it('all event handlers should be called', function() {
                 wavesurfer.seekTo(0.5);
+                wavesurfer.setCurrentTime(1.45);
 
-                expect(interactionEventSpy).toHaveBeenCalled();
                 expect(seekEventSpy).toHaveBeenCalled();
+                expect(interactionEventSpy).toHaveBeenCalled();
             });
         });
 
-        describe('when emitEvents is false', function() {
-            it('should not emit an interaction event', function() {
-                wavesurfer.seekTo(0.5, false);
-
-                expect(interactionEventSpy).not.toHaveBeenCalled();
+        describe('when seek and interaction events are disabled', function() {
+            beforeEach(function() {
+                wavesurfer.setDisabledEventEmissions(['seek', 'interaction']);
             });
 
-            it('should not emit a seek event', function() {
-                wavesurfer.seekTo(0.5, false);
+            it('should not call event handlers for either "seek" or "interaction"', function() {
+                wavesurfer.seekTo(0.5);
+                wavesurfer.setCurrentTime(1.45);
 
                 expect(seekEventSpy).not.toHaveBeenCalled();
+                expect(interactionEventSpy).not.toHaveBeenCalled();
             });
         });
     });
