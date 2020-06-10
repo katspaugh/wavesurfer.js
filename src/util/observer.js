@@ -105,6 +105,7 @@ export default class Observer {
      * Disable firing a list of events by name. When specified, event handlers for any event type
      * passed in here will not be called.
      *
+     * @since 4.0.0
      * @param {string[]} eventNames an array of event names to disable emissions for
      */
     setDisabledEventEmissions(eventNames) {
