@@ -107,6 +107,9 @@ export default class Observer {
      *
      * @since 4.0.0
      * @param {string[]} eventNames an array of event names to disable emissions for
+     * @example
+     * // disable seek and interaction events
+     * wavesurfer.setDisabledEventEmissions(['seek', 'interaction']);
      */
     setDisabledEventEmissions(eventNames) {
         this._disabledEventEmissions = eventNames;
