@@ -357,6 +357,52 @@ describe('WaveSurfer/playback:', function() {
         });
         wavesurfer.destroy();
     });
+
+    describe('seek event emission', function() {
+        var seekEventSpy;
+        var interactionEventSpy;
+
+        beforeEach(function() {
+            seekEventSpy = jasmine.createSpy();
+            interactionEventSpy = jasmine.createSpy();
+
+            wavesurfer.on('seek', function() {
+                seekEventSpy();
+            });
+            wavesurfer.on('interaction', function() {
+                interactionEventSpy();
+            });
+        });
+
+        afterEach(function() {
+            wavesurfer.unAll();
+            wavesurfer.setDisabledEventEmissions([]);
+        });
+
+        describe('when event emissions are not disabled', function() {
+            it('all event handlers should be called', function() {
+                wavesurfer.seekTo(0.5);
+                wavesurfer.setCurrentTime(1.45);
+
+                expect(seekEventSpy).toHaveBeenCalled();
+                expect(interactionEventSpy).toHaveBeenCalled();
+            });
+        });
+
+        describe('when seek and interaction events are disabled', function() {
+            beforeEach(function() {
+                wavesurfer.setDisabledEventEmissions(['seek', 'interaction']);
+            });
+
+            it('should not call event handlers for either "seek" or "interaction"', function() {
+                wavesurfer.seekTo(0.5);
+                wavesurfer.setCurrentTime(1.45);
+
+                expect(seekEventSpy).not.toHaveBeenCalled();
+                expect(interactionEventSpy).not.toHaveBeenCalled();
+            });
+        });
+    });
 });
 
 /** @test {WaveSurfer} */
