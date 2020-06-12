@@ -19,12 +19,10 @@ export default class MultiCanvas extends Drawer {
 
         /**
          * @type {number}
-         * @private
          */
         this.maxCanvasWidth = params.maxCanvasWidth;
 
         /**
-         * @private
          * @type {number}
          */
         this.maxCanvasElementWidth = Math.round(
@@ -40,7 +38,6 @@ export default class MultiCanvas extends Drawer {
         this.hasProgressCanvas = params.waveColor != params.progressColor;
 
         /**
-         * @private
          * @type {number}
          */
         this.halfPixel = 0.5 / params.pixelRatio;
@@ -48,13 +45,11 @@ export default class MultiCanvas extends Drawer {
         /**
          * List of `CanvasEntry` instances.
          *
-         * @private
          * @type {Array}
          */
         this.canvases = [];
 
         /**
-         * @private
          * @type {HTMLElement}
          */
         this.progressWave = null;
@@ -62,7 +57,6 @@ export default class MultiCanvas extends Drawer {
         /**
          * Class used to generate entries.
          *
-         * @private
          * @type {function}
          */
         this.EntryClass = CanvasEntry;
@@ -70,7 +64,6 @@ export default class MultiCanvas extends Drawer {
         /**
          * Canvas 2d context attributes.
          *
-         * @private
          * @type {object}
          */
         this.canvasContextAttributes = params.drawingContextAttributes;
@@ -86,7 +79,6 @@ export default class MultiCanvas extends Drawer {
         /**
          * The radius of the wave bars. Makes bars rounded
          *
-         * @private
          * @type {number}
          */
         this.barRadius = params.barRadius || 0;
@@ -103,7 +95,6 @@ export default class MultiCanvas extends Drawer {
     /**
      * Create the canvas elements and style them
      *
-     * @private
      */
     createElements() {
         this.progressWave = this.wrapper.appendChild(
@@ -170,7 +161,6 @@ export default class MultiCanvas extends Drawer {
     /**
      * Add a canvas to the canvas list
      *
-     * @private
      */
     addCanvas() {
         const entry = new this.EntryClass();
@@ -215,7 +205,6 @@ export default class MultiCanvas extends Drawer {
     /**
      * Pop single canvas from the list
      *
-     * @private
      */
     removeCanvas() {
         let lastEntry = this.canvases[this.canvases.length - 1];
@@ -240,7 +229,6 @@ export default class MultiCanvas extends Drawer {
     /**
      * Update the dimensions of a canvas element
      *
-     * @private
      * @param {CanvasEntry} entry Target entry
      * @param {number} width The new width of the element
      * @param {number} height The new height of the element
@@ -382,14 +370,13 @@ export default class MultiCanvas extends Drawer {
     /**
      * Tell the canvas entries to render their portion of the waveform
      *
-     * @private
      * @param {number[]} peaks Peaks data
      * @param {number} absmax Maximum peak value (absolute)
      * @param {number} halfH Half the height of the waveform
      * @param {number} offsetY Offset to the top
      * @param {number} start The x-offset of the beginning of the area that
      * should be rendered
-     * @param {number} end The x-offset of the end of the area that 
+     * @param {number} end The x-offset of the end of the area that
      * should be rendered
      * @param {channelIndex} channelIndex The channel index of the line drawn
      */
@@ -448,7 +435,6 @@ export default class MultiCanvas extends Drawer {
     /**
      * Returns whether to hide the channel from being drawn based on params.
      *
-     * @private
      * @param {number} channelIndex The index of the current channel.
      * @returns {bool} True to hide the channel, false to draw.
      */
@@ -460,7 +446,6 @@ export default class MultiCanvas extends Drawer {
      * Performs preparation tasks and calculations which are shared by `drawBars`
      * and `drawWave`
      *
-     * @private
      * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for
      * split channel rendering
      * @param {number} channelIndex The index of the current channel. Normally
@@ -487,11 +472,11 @@ export default class MultiCanvas extends Drawer {
                                 this.params.height *
                                 this.params.pixelRatio
                         );
-                    } 
+                    }
 
-                    return channels.forEach((channelPeaks, i) => 
+                    return channels.forEach((channelPeaks, i) =>
                         this.prepareDraw(channelPeaks, i, start, end, fn, filteredChannels.indexOf(channelPeaks))
-                    );                    
+                    );
                 }
                 peaks = channels[0];
             }
@@ -533,7 +518,6 @@ export default class MultiCanvas extends Drawer {
     /**
      * Set the fill styles for a certain entry (wave and progress)
      *
-     * @private
      * @param {CanvasEntry} entry Target entry
      * @param {string} waveColor Wave color to draw this entry
      * @param {string} progressColor Progress color to draw this entry
