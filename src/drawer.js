@@ -12,11 +12,10 @@ export default class Drawer extends util.Observer {
      */
     constructor(container, params) {
         super();
-        /** @private */
+
         this.container = container;
         /**
          * @type {WavesurferParams}
-         * @private
          */
         this.params = params;
         /**
@@ -29,7 +28,7 @@ export default class Drawer extends util.Observer {
          * @type {number}
          */
         this.height = params.height * this.params.pixelRatio;
-        /** @private */
+
         this.lastPos = 0;
         /**
          * The `<wave>` element which is added to the container
@@ -116,9 +115,6 @@ export default class Drawer extends util.Observer {
         return progress;
     }
 
-    /**
-     * @private
-     */
     setupWrapperEvents() {
         this.wrapper.addEventListener('click', e => {
             const scrollbarHeight =

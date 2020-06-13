@@ -42,14 +42,12 @@ export default class CanvasEntry {
          * Start of the area the canvas should render, between 0 and 1
          *
          * @type {number}
-         * @private
          */
         this.start = 0;
         /**
          * End of the area the canvas should render, between 0 and 1
          *
          * @type {number}
-         * @private
          */
         this.end = 1;
         /**
@@ -186,7 +184,6 @@ export default class CanvasEntry {
     /**
      * Draw the actual rectangle on a `canvas` element
      *
-     * @private
      * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
      * @param {number} x X start position
      * @param {number} y Y start position
@@ -209,7 +206,6 @@ export default class CanvasEntry {
     /**
      * Draw a rounded rectangle on Canvas
      *
-     * @private
      * @param {CanvasRenderingContext2D} ctx Canvas context
      * @param {number} x X-position of the rectangle
      * @param {number} y Y-position of the rectangle
@@ -288,7 +284,6 @@ export default class CanvasEntry {
     /**
      * Render the actual waveform line on a `canvas` element
      *
-     * @private
      * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
      * @param {number[]} peaks Array with peaks data
      * @param {number} absmax Maximum peak value (absolute)
