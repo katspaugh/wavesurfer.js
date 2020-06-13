@@ -59,6 +59,13 @@ export default class MediaElementWebAudio extends MediaElement {
         this.sourceMediaElement.connect(this.analyser);
     }
 
+    play(start, end) {
+        if (this.ac.state == 'suspended') {
+            this.ac.resume && this.ac.resume();
+        }
+        return super.play(start, end);
+    }
+
     /**
      * This is called when wavesurfer is destroyed
      *
