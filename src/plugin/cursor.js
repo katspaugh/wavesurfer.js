@@ -83,7 +83,6 @@ export default class CursorPlugin {
     };
 
     /**
-     * @private
      * @param {object} e Mouse move event
      */
     _onMousemove = e => {
@@ -101,13 +100,11 @@ export default class CursorPlugin {
     };
 
     /**
-     * @private
      * @returns {void}
      */
     _onMouseenter = () => this.showCursor();
 
     /**
-     * @private
      * @returns {void}
      */
     _onMouseleave = () => this.hideCursor();
@@ -120,9 +117,7 @@ export default class CursorPlugin {
      * @param {object} ws Wavesurfer instance
      */
     constructor(params, ws) {
-        /** @private */
         this.wavesurfer = ws;
-        /** @private */
         this.style = ws.util.style;
         /**
          * The cursor HTML element
@@ -142,7 +137,7 @@ export default class CursorPlugin {
          * @type {?HTMLElement}
          */
         this.displayTime = null;
-        /** @private */
+
         this.params = Object.assign({}, this.defaultParams, params);
     }
 

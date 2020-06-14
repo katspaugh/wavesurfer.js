@@ -447,8 +447,14 @@ export default class WebAudio extends util.Observer {
             for (i = first; i <= last; i++) {
                 const start = ~~(i * sampleSize);
                 const end = ~~(start + sampleSize);
-                let min = 0;
-                let max = 0;
+                /**
+                 * Initialize the max and min to the first sample of this
+                 * subrange, so that even if the samples are entirely
+                 * on one side of zero, we still return the true max and
+                 * min values in the subrange.
+                 */
+                let min = chan[start];
+                let max = min;
                 let j;
 
                 for (j = start; j < end; j += sampleStep) {
@@ -494,17 +500,10 @@ export default class WebAudio extends util.Observer {
             this.source.disconnect();
         }
     }
-
     /**
-     * This is called when wavesurfer is destroyed
+     * Destroy all references with WebAudio, disconnecting audio nodes and closing Audio Context
      */
-    destroy() {
-        if (!this.isPaused()) {
-            this.pause();
-        }
-        this.unAll();
-        this.buffer = null;
-        this.destroyed = true;
+    destroyWebAudio() {
         this.disconnectFilters();
         this.disconnectSource();
         this.gainNode.disconnect();
@@ -532,6 +531,19 @@ export default class WebAudio extends util.Observer {
             // clear the offlineAudioContext
             window.WaveSurferOfflineAudioContext = null;
         }
+    }
+    /**
+     * This is called when wavesurfer is destroyed
+     */
+    destroy() {
+        if (!this.isPaused()) {
+            this.pause();
+        }
+        this.unAll();
+        this.buffer = null;
+        this.destroyed = true;
+
+        this.destroyWebAudio();
     }
 
     /**

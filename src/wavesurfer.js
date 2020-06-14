@@ -57,7 +57,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {string} cursorColor='#333' The fill color of the cursor indicating
  * the playhead position.
  * @property {number} cursorWidth=1 Measured in pixels.
- * @property {object} drawingContextAttributes={desynchronized: true} Drawing context
+ * @property {object} drawingContextAttributes={desynchronized: false} Drawing context
  * attributes.
  * @property {number} duration=null Optional audio length so pre-rendered peaks
  * can be display immediately for example.
@@ -237,7 +237,7 @@ export default class WaveSurfer extends util.Observer {
             // Boolean that hints the user agent to reduce the latency
             // by desynchronizing the canvas paint cycle from the event
             // loop
-            desynchronized: true
+            desynchronized: false
         },
         duration: null,
         fillParent: true,
@@ -264,6 +264,11 @@ export default class WaveSurfer extends util.Observer {
         scrollParent: false,
         skipLength: 2,
         splitChannels: false,
+        splitChannelsOptions: {
+            overlay: false,
+            channelColors: {},
+            filterChannels: [],
+        },
         waveColor: '#999',
         xhr: {}
     };
@@ -1165,6 +1170,24 @@ export default class WaveSurfer extends util.Observer {
     setHeight(height) {
         this.params.height = height;
         this.drawer.setHeight(height * this.params.pixelRatio);
+        this.drawBuffer();
+    }
+
+    /**
+     * Hide channels from being drawn on the waveform if splitting channels.
+     * 
+     * For example, if we want to draw only the peaks for the right stereo channel:
+     *
+     * const wavesurfer = new WaveSurfer.create({...splitChannels: true});
+     * wavesurfer.load('stereo_audio.mp3');
+     * 
+     * wavesurfer.setFilteredChannel([0]); <-- hide left channel peaks.
+     *
+     * @param {array} channelIndices Channels to be filtered out from drawing.
+     * @version 4.0.0
+     */
+    setFilteredChannels(channelIndices) {
+        this.params.splitChannelsOptions.filterChannels = channelIndices;
         this.drawBuffer();
     }
 

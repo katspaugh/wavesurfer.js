@@ -44,6 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     slider.value = wavesurfer.params.minPxPerSec;
     slider.min = wavesurfer.params.minPxPerSec;
+    // Allow extreme zoom-in, to see individual samples
+    slider.max = 1000;
 
     slider.addEventListener('input', function() {
         wavesurfer.zoom(Number(this.value));

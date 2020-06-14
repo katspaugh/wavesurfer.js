@@ -75,6 +75,60 @@
 
             </div>
 
+            <div class="row marketing">
+                <h3>Split Channel Options</h3>
+
+                <p>
+                    The split channel view can be modified with the <code>splitChannelsOptions</code>. The waveforms can be stacked on top of each other. And colors can be added to each channel.
+                </p>
+                <div id="demo-with-options">
+                    <div id="waveform-with-options">
+                        <!-- Here be the waveform -->
+                    </div>
+
+                    <div class="controls">
+                        <button id="play-button" class="btn btn-primary">
+                            <i class="glyphicon glyphicon-play"></i>
+                            Play
+                            /
+                            <i class="glyphicon glyphicon-pause"></i>
+                            Pause
+                        </button>
+                    </div>
+                </div>
+                <p>
+<pre><code>var wavesurfer = WaveSurfer.create({
+    container: document.querySelector('#wave'),
+    splitChannels: true,
+    splitChannelsOptions: {
+        overlay: false,
+        channelColors: {
+            0: {
+                progressColor: 'green',
+                waveColor: 'pink'
+            },
+            1: {
+                progressColor: 'orange',
+                waveColor: 'purple'
+            }
+        }
+    }
+});
+</code></pre>
+            </p>
+            </div>
+            <h4>splitChannelOptions</h4>
+            <p>
+                <code>overlay</code> - boolean - This determines whether channels are drawn on top of each  other.
+            </p>
+            <p>
+                <code>channelColors</code> - object - Pass this to set colors for each channel. If the channel index is not found on the object, colors will default to the top level color params.
+            </p>          
+            <p>
+                <code>filterChannels</code> - array - Array of channel numbers. Channels included in the array will not be drawn.
+            </p>
+
+
             <div class="footer row">
                 <div class="col-sm-12">
                     <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>

@@ -1,7 +1,41 @@
 wavesurfer.js changelog
 =======================
 
-3.4.0 (unreleased)
+4.0.0 (unreleased)
+------------------
+
+- Fixed the `destroy` method of the `MediaElementWebAudio` backend. Instead of
+  destroying only the media element, the audio nodes are disconnected and the
+  audio context is closed. This was done by splitting the `destroy` method of the
+  `WebAudio` backend, so it calls the new `destroyWebAudio` method to cancel
+  everything related to WebAudio (#1927)
+- Removed private methods of plugins and generalized plugins' access, so they can be extended creating custom
+  plugins (#1928)
+- Added plugin inheritance example (#1921)
+- Added compatibility for Gatsby and other static site generators (#1938)
+- Minimap plugin: added the ability to use a customized regions plugin using a new parameter
+  `regionsPluginName` (#1943)
+- Fixed waveform display to not always connect to the sample=0 point (#1942)
+- Elan plugin: optional params.tiers (#1910)
+- Regions plugin:
+  - Split `regions.js` into `region.js` (containing `Region` class) and `index.js`.
+    Both files moved into the `src/plugin/regions` directory. This makes it easier
+    to extend these classes and use them in custom plugins (#1934)
+  - Fixed channelCount assignment (#1858)
+  - Fixed click propagation issue (#1926)
+  - Fixed switch loop region (#1929)
+  - Added ability to specify time format for Regions tooltip using timeformatCallback (#1948)
+- Add `splitChannelsOptions` param and `setFilteredChannels` method to configure how channels are drawn (#1947)
+- Added checks in `minimap` plugin for `drawer` presence (#1953)
+- Add `setDisabledEventEmissions` method to optionally disable calls to event handlers for specific events (#1960)
+- Drawer: removed private methods to allow overriding them (#1962)
+
+3.3.3 (16.04.2020)
+------------------
+
+- Change default `desynchronized` drawing context attribute to `false` (#1908)
+
+3.3.2 (07.04.2020)
 ------------------
 
 - Use `requestAnimationFrame` for clearWave (#1884)
@@ -224,10 +258,10 @@ Check `UPGRADE.md` for backward incompatible changes since v2.x.
 - Introduce an option to prevent removing media element on destroy (#1163)
 - Added duration parameter for the load function (#1239)
 - New soundtouch.js filter to preserve pitch when changing tempo (#149)
-- Add `getPlaybackRate` method (#1022) 
+- Add `getPlaybackRate` method (#1022)
 - Switched to BSD license (#1060)
 - Added `setCurrentTime` method
-- Added `util.debounce` (#993) 
+- Added `util.debounce` (#993)
 
 1.2.4 (11.11.2016)
 ------------------
