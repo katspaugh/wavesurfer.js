@@ -212,10 +212,10 @@ export class Region {
             const handleRightCss =
                 this.handleStyle.right !== 'none'
                     ? Object.assign(
-                          { right: '0px' },
-                          css,
-                          this.handleStyle.right
-                      )
+                        { right: '0px' },
+                        css,
+                        this.handleStyle.right
+                    )
                     : null;
 
             if (handleLeftCss) {

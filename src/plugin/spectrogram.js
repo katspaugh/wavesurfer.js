@@ -665,13 +665,13 @@ export default class SpectrogramPlugin {
                     oldEnd <= newStart || newEnd <= oldStart
                         ? 0
                         : Math.min(
-                              Math.max(oldEnd, newStart),
-                              Math.max(newEnd, oldStart)
-                          ) -
-                          Math.max(
-                              Math.min(oldEnd, newStart),
-                              Math.min(newEnd, oldStart)
-                          );
+                            Math.max(oldEnd, newStart),
+                            Math.max(newEnd, oldStart)
+                        ) -
+                        Math.max(
+                            Math.min(oldEnd, newStart),
+                            Math.min(newEnd, oldStart)
+                        );
                 let k;
                 /* eslint-disable max-depth */
                 if (overlap > 0) {

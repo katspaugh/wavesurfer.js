@@ -286,9 +286,9 @@ export default class MultiCanvas extends Drawer {
                     this.params.barGap === null
                         ? Math.max(this.params.pixelRatio, ~~(bar / 2))
                         : Math.max(
-                              this.params.pixelRatio,
-                              this.params.barGap * this.params.pixelRatio
-                          );
+                            this.params.pixelRatio,
+                            this.params.barGap * this.params.pixelRatio
+                        );
                 const step = bar + gap;
 
                 const scale = length / this.width;
@@ -381,7 +381,7 @@ export default class MultiCanvas extends Drawer {
      * @param {channelIndex} channelIndex The channel index of the line drawn
      */
     drawLine(peaks, absmax, halfH, offsetY, start, end, channelIndex) {
-       const { waveColor, progressColor } = this.params.splitChannelsOptions.channelColors[channelIndex] || {};
+        const { waveColor, progressColor } = this.params.splitChannelsOptions.channelColors[channelIndex] || {};
         this.canvases.forEach((entry, i) => {
             this.setFillStyles(entry, waveColor, progressColor);
             entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
