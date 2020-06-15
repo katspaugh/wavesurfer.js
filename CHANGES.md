@@ -4,6 +4,7 @@ wavesurfer.js changelog
 4.0.0 (unreleased)
 ------------------
 
+- Fixed mediaelement-webaudio playback under Safari (#1964)
 - Fixed the `destroy` method of the `MediaElementWebAudio` backend. Instead of
   destroying only the media element, the audio nodes are disconnected and the
   audio context is closed. This was done by splitting the `destroy` method of the

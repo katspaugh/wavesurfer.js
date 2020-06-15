@@ -1,12 +1,11 @@
 import MediaElement from './mediaelement';
 
 /**
- * MediaElementWebAudio backend: allows to load audio as HTML5 audio tag and use it with WebAudio API.
- * Setting the MediaElementWebAudio backend, there is the possibility to load audio of big dimensions, using the WebAudio API features.
- * The audio to load is an HTML5 audio tag, so you have to use the same methods of MediaElement backend for loading and playback.
- * In this way, the audio resource is not loaded entirely from server, but in ranges, since you load an HTML5 audio tag.
- * In this way, filters and other functionalities can be performed like with WebAudio backend, but without decoding
- * internally audio data, that caused crashing of the browser. You have to give also peaks, so the audio data are not decoded.
+ * MediaElementWebAudio backend: load audio via an HTML5 audio tag, but playback with the WebAudio API.
+ * The advantage here is that the html5 <audio> tag can perform range requests on the server and not
+ * buffer the entire file in one request, and you still get the filtering and scripting functionality
+ * of the webaudio API.
+ * Note that in order to use range requests and prevent buffering, you must provide peak data.
  *
  * @since 3.2.0
  */
@@ -58,6 +57,11 @@ export default class MediaElementWebAudio extends MediaElement {
             mediaElement
         );
         this.sourceMediaElement.connect(this.analyser);
+    }
+
+    play(start, end) {
+        this.resumeAudioContext();
+        return super.play(start, end);
     }
 
     /**
