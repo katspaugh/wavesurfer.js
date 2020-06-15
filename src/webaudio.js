@@ -578,7 +578,7 @@ export default class WebAudio extends util.Observer {
     /**
      * @private
      *
-     * Safari requires an explicit call to #resume before it will play back audio
+     * some browsers require an explicit call to #resume before they will play back audio
      */
     resumeAudioContext() {
         if (this.ac.state == 'suspended') {
