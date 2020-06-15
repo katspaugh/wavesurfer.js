@@ -1014,25 +1014,25 @@ export default class WaveSurfer extends util.Observer {
         }
 
         if (this.backend.setMute) {
-          // Backends such as the MediaElement backend have their own handling
-          // of mute, let them handle it.
-          this.backend.setMute(mute);
-          this.isMuted = true;
+            // Backends such as the MediaElement backend have their own handling
+            // of mute, let them handle it.
+            this.backend.setMute(mute);
+            this.isMuted = true;
         } else {
-          if (mute) {
-              // If currently not muted then save current volume,
-              // turn off the volume and update the mute properties
-              this.savedVolume = this.backend.getVolume();
-              this.backend.setVolume(0);
-              this.isMuted = true;
-              this.fireEvent('volume', 0);
-          } else {
-              // If currently muted then restore to the saved volume
-              // and update the mute properties
-              this.backend.setVolume(this.savedVolume);
-              this.isMuted = false;
-              this.fireEvent('volume', this.savedVolume);
-          }
+            if (mute) {
+                // If currently not muted then save current volume,
+                // turn off the volume and update the mute properties
+                this.savedVolume = this.backend.getVolume();
+                this.backend.setVolume(0);
+                this.isMuted = true;
+                this.fireEvent('volume', 0);
+            } else {
+                // If currently muted then restore to the saved volume
+                // and update the mute properties
+                this.backend.setVolume(this.savedVolume);
+                this.isMuted = false;
+                this.fireEvent('volume', this.savedVolume);
+            }
         }
         this.fireEvent('mute', this.isMuted);
     }
@@ -1182,12 +1182,12 @@ export default class WaveSurfer extends util.Observer {
 
     /**
      * Hide channels from being drawn on the waveform if splitting channels.
-     * 
+     *
      * For example, if we want to draw only the peaks for the right stereo channel:
      *
      * const wavesurfer = new WaveSurfer.create({...splitChannels: true});
      * wavesurfer.load('stereo_audio.mp3');
-     * 
+     *
      * wavesurfer.setFilteredChannel([0]); <-- hide left channel peaks.
      *
      * @param {array} channelIndices Channels to be filtered out from drawing.
