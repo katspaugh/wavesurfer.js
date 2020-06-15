@@ -29,6 +29,7 @@ wavesurfer.js changelog
 - Added checks in `minimap` plugin for `drawer` presence (#1953)
 - Add `setDisabledEventEmissions` method to optionally disable calls to event handlers for specific events (#1960)
 - Drawer: removed private methods to allow overriding them (#1962)
+- Add optional `setMute` method to backends to fix muting behavior with the `MediaElement` backend (#1966)
 
 3.3.3 (16.04.2020)
 ------------------

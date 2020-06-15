@@ -398,6 +398,7 @@ export default class MediaElement extends WebAudio {
     /**
      * Enable or disable muted audio
      *
+     * @since 4.0.0
      * @param {boolean} mute Specify `true` to mute audio.
      */
     setMute(muted) {
