@@ -1013,19 +1013,26 @@ export default class WaveSurfer extends util.Observer {
             return;
         }
 
-        if (mute) {
-            // If currently not muted then save current volume,
-            // turn off the volume and update the mute properties
-            this.savedVolume = this.backend.getVolume();
-            this.backend.setVolume(0);
-            this.isMuted = true;
-            this.fireEvent('volume', 0);
+        if (this.backend.setMute) {
+          // Backends such as the MediaElement backend have their own handling
+          // of mute, let them handle it.
+          this.backend.setMute(mute);
+          this.isMuted = true;
         } else {
-            // If currently muted then restore to the saved volume
-            // and update the mute properties
-            this.backend.setVolume(this.savedVolume);
-            this.isMuted = false;
-            this.fireEvent('volume', this.savedVolume);
+          if (mute) {
+              // If currently not muted then save current volume,
+              // turn off the volume and update the mute properties
+              this.savedVolume = this.backend.getVolume();
+              this.backend.setVolume(0);
+              this.isMuted = true;
+              this.fireEvent('volume', 0);
+          } else {
+              // If currently muted then restore to the saved volume
+              // and update the mute properties
+              this.backend.setVolume(this.savedVolume);
+              this.isMuted = false;
+              this.fireEvent('volume', this.savedVolume);
+          }
         }
         this.fireEvent('mute', this.isMuted);
     }
