@@ -60,9 +60,7 @@ export default class MediaElementWebAudio extends MediaElement {
     }
 
     play(start, end) {
-        if (this.ac.state == 'suspended') {
-            this.ac.resume && this.ac.resume();
-        }
+        this.resumeAudioContext();
         return super.play(start, end);
     }
 

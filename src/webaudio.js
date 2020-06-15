@@ -576,6 +576,17 @@ export default class WebAudio extends util.Observer {
     }
 
     /**
+     * @private
+     *
+     * Safari requires an explicit call to #resume before it will play back audio
+     */
+    resumeAudioContext() {
+        if (this.ac.state == 'suspended') {
+            this.ac.resume && this.ac.resume();
+        }
+    }
+
+    /**
      * Used by `wavesurfer.isPlaying()` and `wavesurfer.playPause()`
      *
      * @return {boolean} Whether or not this backend is currently paused
@@ -670,9 +681,7 @@ export default class WebAudio extends util.Observer {
 
         this.source.start(0, start);
 
-        if (this.ac.state == 'suspended') {
-            this.ac.resume && this.ac.resume();
-        }
+        this.resumeAudioContext();
 
         this.setState(PLAYING);
 
