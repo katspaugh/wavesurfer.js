@@ -1017,7 +1017,7 @@ export default class WaveSurfer extends util.Observer {
             // Backends such as the MediaElement backend have their own handling
             // of mute, let them handle it.
             this.backend.setMute(mute);
-            this.isMuted = true;
+            this.isMuted = mute;
         } else {
             if (mute) {
                 // If currently not muted then save current volume,
