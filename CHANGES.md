@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-4.0.0 (unreleased)
+4.0.0 (21.06.2020)
 ------------------
 
 - Fixed mediaelement-webaudio playback under Safari (#1964)
