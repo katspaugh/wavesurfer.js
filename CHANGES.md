@@ -4,6 +4,8 @@ wavesurfer.js changelog
 4.0.0 (unreleased)
 ------------------
 
+- Don't call HTMLMediaElement#load when given peaks and preload == 'none'.
+  Prevents browsers from pre-fetching audio (#1969)
 - Fixed mediaelement-webaudio playback under Safari (#1964)
 - Fixed the `destroy` method of the `MediaElementWebAudio` backend. Instead of
   destroying only the media element, the audio nodes are disconnected and the
