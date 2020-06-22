@@ -123,6 +123,9 @@ export default class RegionsPlugin {
         observerPrototypeKeys.forEach(key => {
             Region.prototype[key] = this.util.Observer.prototype[key];
         });
+        this._disabledEventEmissions = [];
+        this.handlers = [];
+
         this.wavesurfer.Region = Region;
 
         this._onBackendCreated = () => {
