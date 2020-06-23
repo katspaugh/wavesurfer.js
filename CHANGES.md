@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-4.0.1 (unreleased)
+4.0.1 (23.06.2020)
 ------------------
 
 - Fixes for event handling with certain plugins (regions, microphone).
