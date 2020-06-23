@@ -84,9 +84,15 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "wavesurfer.js/src/plugin/regions.js~regionsplugin",
-    "class/src/plugin/regions.js~RegionsPlugin.html",
-    "<span>RegionsPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/regions.js</span>",
+    "wavesurfer.js/src/plugin/regions/region.js~region",
+    "class/src/plugin/regions/region.js~Region.html",
+    "<span>Region</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/regions/region.js</span>",
+    "class"
+  ],
+  [
+    "wavesurfer.js/src/plugin/regions/index.js~regionsplugin",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html",
+    "<span>RegionsPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/regions/index.js</span>",
     "class"
   ],
   [
@@ -480,9 +486,33 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/drawer.canvasentry.js~canvasentry#drawlinetocontext",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-drawLineToContext",
+    "src/drawer.canvasentry.js~CanvasEntry#drawLineToContext",
+    "method"
+  ],
+  [
     "src/drawer.canvasentry.js~canvasentry#drawlines",
     "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-drawLines",
     "src/drawer.canvasentry.js~CanvasEntry#drawLines",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#drawroundedrect",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-drawRoundedRect",
+    "src/drawer.canvasentry.js~CanvasEntry#drawRoundedRect",
+    "method"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#end",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-member-end",
+    "src/drawer.canvasentry.js~CanvasEntry#end",
+    "member"
+  ],
+  [
+    "src/drawer.canvasentry.js~canvasentry#fillrecttocontext",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-fillRectToContext",
+    "src/drawer.canvasentry.js~CanvasEntry#fillRectToContext",
     "method"
   ],
   [
@@ -534,6 +564,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/drawer.canvasentry.js~canvasentry#start",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-member-start",
+    "src/drawer.canvasentry.js~CanvasEntry#start",
+    "member"
+  ],
+  [
     "src/drawer.canvasentry.js~canvasentry#updatedimensions",
     "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-updateDimensions",
     "src/drawer.canvasentry.js~CanvasEntry#updateDimensions",
@@ -568,6 +604,12 @@ window.esdocSearchIndex = [
     "class/src/drawer.js~Drawer.html#instance-constructor-constructor",
     "src/drawer.js~Drawer#constructor",
     "method"
+  ],
+  [
+    "src/drawer.js~drawer#container",
+    "class/src/drawer.js~Drawer.html#instance-member-container",
+    "src/drawer.js~Drawer#container",
+    "member"
   ],
   [
     "src/drawer.js~drawer#createwrapper",
@@ -624,6 +666,18 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/drawer.js~drawer#lastpos",
+    "class/src/drawer.js~Drawer.html#instance-member-lastPos",
+    "src/drawer.js~Drawer#lastPos",
+    "member"
+  ],
+  [
+    "src/drawer.js~drawer#params",
+    "class/src/drawer.js~Drawer.html#instance-member-params",
+    "src/drawer.js~Drawer#params",
+    "member"
+  ],
+  [
     "src/drawer.js~drawer#progress",
     "class/src/drawer.js~Drawer.html#instance-method-progress",
     "src/drawer.js~Drawer#progress",
@@ -657,6 +711,12 @@ window.esdocSearchIndex = [
     "src/drawer.js~drawer#setwidth",
     "class/src/drawer.js~Drawer.html#instance-method-setWidth",
     "src/drawer.js~Drawer#setWidth",
+    "method"
+  ],
+  [
+    "src/drawer.js~drawer#setupwrapperevents",
+    "class/src/drawer.js~Drawer.html#instance-method-setupWrapperEvents",
+    "src/drawer.js~Drawer#setupWrapperEvents",
     "method"
   ],
   [
@@ -702,6 +762,36 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "src/drawer.multicanvas.js~multicanvas#entryclass",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-EntryClass",
+    "src/drawer.multicanvas.js~MultiCanvas#EntryClass",
+    "member"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#addcanvas",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-addCanvas",
+    "src/drawer.multicanvas.js~MultiCanvas#addCanvas",
+    "method"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#barradius",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-barRadius",
+    "src/drawer.multicanvas.js~MultiCanvas#barRadius",
+    "member"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#canvascontextattributes",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-canvasContextAttributes",
+    "src/drawer.multicanvas.js~MultiCanvas#canvasContextAttributes",
+    "member"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#canvases",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-canvases",
+    "src/drawer.multicanvas.js~MultiCanvas#canvases",
+    "member"
+  ],
+  [
     "src/drawer.multicanvas.js~multicanvas#clearwave",
     "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-clearWave",
     "src/drawer.multicanvas.js~MultiCanvas#clearWave",
@@ -714,9 +804,21 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/drawer.multicanvas.js~multicanvas#createelements",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-createElements",
+    "src/drawer.multicanvas.js~MultiCanvas#createElements",
+    "method"
+  ],
+  [
     "src/drawer.multicanvas.js~multicanvas#drawbars",
     "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-drawBars",
     "src/drawer.multicanvas.js~MultiCanvas#drawBars",
+    "method"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#drawline",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-drawLine",
+    "src/drawer.multicanvas.js~MultiCanvas#drawLine",
     "method"
   ],
   [
@@ -738,10 +840,22 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/drawer.multicanvas.js~multicanvas#halfpixel",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-halfPixel",
+    "src/drawer.multicanvas.js~MultiCanvas#halfPixel",
+    "member"
+  ],
+  [
     "src/drawer.multicanvas.js~multicanvas#hasprogresscanvas",
     "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-hasProgressCanvas",
     "src/drawer.multicanvas.js~MultiCanvas#hasProgressCanvas",
     "member"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#hidechannel",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-hideChannel",
+    "src/drawer.multicanvas.js~MultiCanvas#hideChannel",
+    "method"
   ],
   [
     "src/drawer.multicanvas.js~multicanvas#init",
@@ -750,15 +864,57 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/drawer.multicanvas.js~multicanvas#maxcanvaselementwidth",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-maxCanvasElementWidth",
+    "src/drawer.multicanvas.js~MultiCanvas#maxCanvasElementWidth",
+    "member"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#maxcanvaswidth",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-maxCanvasWidth",
+    "src/drawer.multicanvas.js~MultiCanvas#maxCanvasWidth",
+    "member"
+  ],
+  [
     "src/drawer.multicanvas.js~multicanvas#overlap",
     "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-overlap",
     "src/drawer.multicanvas.js~MultiCanvas#overlap",
     "member"
   ],
   [
+    "src/drawer.multicanvas.js~multicanvas#preparedraw",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-prepareDraw",
+    "src/drawer.multicanvas.js~MultiCanvas#prepareDraw",
+    "method"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#progresswave",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-progressWave",
+    "src/drawer.multicanvas.js~MultiCanvas#progressWave",
+    "member"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#removecanvas",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-removeCanvas",
+    "src/drawer.multicanvas.js~MultiCanvas#removeCanvas",
+    "method"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#setfillstyles",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-setFillStyles",
+    "src/drawer.multicanvas.js~MultiCanvas#setFillStyles",
+    "method"
+  ],
+  [
     "src/drawer.multicanvas.js~multicanvas#updatecursor",
     "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-updateCursor",
     "src/drawer.multicanvas.js~MultiCanvas#updateCursor",
+    "method"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#updatedimensions",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-updateDimensions",
+    "src/drawer.multicanvas.js~MultiCanvas#updateDimensions",
     "method"
   ],
   [
@@ -834,9 +990,21 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/mediaelement-webaudio.js~mediaelementwebaudio#destroy",
+    "class/src/mediaelement-webaudio.js~MediaElementWebAudio.html#instance-method-destroy",
+    "src/mediaelement-webaudio.js~MediaElementWebAudio#destroy",
+    "method"
+  ],
+  [
     "src/mediaelement-webaudio.js~mediaelementwebaudio#init",
     "class/src/mediaelement-webaudio.js~MediaElementWebAudio.html#instance-method-init",
     "src/mediaelement-webaudio.js~MediaElementWebAudio#init",
+    "method"
+  ],
+  [
+    "src/mediaelement-webaudio.js~mediaelementwebaudio#play",
+    "class/src/mediaelement-webaudio.js~MediaElementWebAudio.html#instance-method-play",
+    "src/mediaelement-webaudio.js~MediaElementWebAudio#play",
     "method"
   ],
   [
@@ -945,6 +1113,12 @@ window.esdocSearchIndex = [
     "src/mediaelement.js~mediaelement#seekto",
     "class/src/mediaelement.js~MediaElement.html#instance-method-seekTo",
     "src/mediaelement.js~MediaElement#seekTo",
+    "method"
+  ],
+  [
+    "src/mediaelement.js~mediaelement#setmute",
+    "class/src/mediaelement.js~MediaElement.html#instance-method-setMute",
+    "src/mediaelement.js~MediaElement#setMute",
     "method"
   ],
   [
@@ -1062,6 +1236,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/plugin/cursor.js~cursorplugin#params",
+    "class/src/plugin/cursor.js~CursorPlugin.html#instance-member-params",
+    "src/plugin/cursor.js~CursorPlugin#params",
+    "member"
+  ],
+  [
     "src/plugin/cursor.js~cursorplugin#showcursor",
     "class/src/plugin/cursor.js~CursorPlugin.html#instance-method-showCursor",
     "src/plugin/cursor.js~CursorPlugin#showCursor",
@@ -1074,10 +1254,22 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/plugin/cursor.js~cursorplugin#style",
+    "class/src/plugin/cursor.js~CursorPlugin.html#instance-member-style",
+    "src/plugin/cursor.js~CursorPlugin#style",
+    "member"
+  ],
+  [
     "src/plugin/cursor.js~cursorplugin#updatecursorposition",
     "class/src/plugin/cursor.js~CursorPlugin.html#instance-method-updateCursorPosition",
     "src/plugin/cursor.js~CursorPlugin#updateCursorPosition",
     "method"
+  ],
+  [
+    "src/plugin/cursor.js~cursorplugin#wavesurfer",
+    "class/src/plugin/cursor.js~CursorPlugin.html#instance-member-wavesurfer",
+    "src/plugin/cursor.js~CursorPlugin#wavesurfer",
+    "member"
   ],
   [
     "src/plugin/cursor.js~cursorplugin#wrapper",
@@ -1572,6 +1764,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/plugin/minimap.js~minimapplugin#regionsplugin",
+    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-regionsPlugin",
+    "src/plugin/minimap.js~MinimapPlugin#regionsPlugin",
+    "member"
+  ],
+  [
     "src/plugin/minimap.js~minimapplugin#render",
     "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-render",
     "src/plugin/minimap.js~MinimapPlugin#render",
@@ -1626,124 +1824,388 @@ window.esdocSearchIndex = [
     "typedef"
   ],
   [
-    "src/plugin/regions.js",
-    "file/src/plugin/regions.js.html",
-    "src/plugin/regions.js",
+    "src/plugin/regions/index.js",
+    "file/src/plugin/regions/index.js.html",
+    "src/plugin/regions/index.js",
     "file"
   ],
   [
-    "src/plugin/regions.js~regionparams",
+    "src/plugin/regions/index.js~regionparams",
     "typedef/index.html#static-typedef-RegionParams",
-    "src/plugin/regions.js~RegionParams",
+    "src/plugin/regions/index.js~RegionParams",
     "typedef"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#add",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-method-add",
-    "src/plugin/regions.js~RegionsPlugin#add",
+    "src/plugin/regions/index.js~regionsplugin#add",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-add",
+    "src/plugin/regions/index.js~RegionsPlugin#add",
     "method"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#clear",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-method-clear",
-    "src/plugin/regions.js~RegionsPlugin#clear",
+    "src/plugin/regions/index.js~regionsplugin#clear",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-clear",
+    "src/plugin/regions/index.js~RegionsPlugin#clear",
     "method"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#constructor",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-constructor-constructor",
-    "src/plugin/regions.js~RegionsPlugin#constructor",
+    "src/plugin/regions/index.js~regionsplugin#constructor",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-constructor-constructor",
+    "src/plugin/regions/index.js~RegionsPlugin#constructor",
     "method"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#destroy",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-method-destroy",
-    "src/plugin/regions.js~RegionsPlugin#destroy",
+    "src/plugin/regions/index.js~regionsplugin#destroy",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-destroy",
+    "src/plugin/regions/index.js~RegionsPlugin#destroy",
     "method"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#disabledragselection",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-method-disableDragSelection",
-    "src/plugin/regions.js~RegionsPlugin#disableDragSelection",
+    "src/plugin/regions/index.js~regionsplugin#disabledragselection",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-disableDragSelection",
+    "src/plugin/regions/index.js~RegionsPlugin#disableDragSelection",
     "method"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#enabledragselection",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-method-enableDragSelection",
-    "src/plugin/regions.js~RegionsPlugin#enableDragSelection",
+    "src/plugin/regions/index.js~regionsplugin#enabledragselection",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-enableDragSelection",
+    "src/plugin/regions/index.js~RegionsPlugin#enableDragSelection",
     "method"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#getcurrentregion",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-method-getCurrentRegion",
-    "src/plugin/regions.js~RegionsPlugin#getCurrentRegion",
+    "src/plugin/regions/index.js~regionsplugin#getcurrentregion",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-getCurrentRegion",
+    "src/plugin/regions/index.js~RegionsPlugin#getCurrentRegion",
     "method"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#getregionsnaptogridvalue",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-method-getRegionSnapToGridValue",
-    "src/plugin/regions.js~RegionsPlugin#getRegionSnapToGridValue",
+    "src/plugin/regions/index.js~regionsplugin#getregionsnaptogridvalue",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-getRegionSnapToGridValue",
+    "src/plugin/regions/index.js~RegionsPlugin#getRegionSnapToGridValue",
     "method"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#init",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-method-init",
-    "src/plugin/regions.js~RegionsPlugin#init",
+    "src/plugin/regions/index.js~regionsplugin#init",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-init",
+    "src/plugin/regions/index.js~RegionsPlugin#init",
     "method"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#list",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-member-list",
-    "src/plugin/regions.js~RegionsPlugin#list",
+    "src/plugin/regions/index.js~regionsplugin#list",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-list",
+    "src/plugin/regions/index.js~RegionsPlugin#list",
     "member"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#maxregions",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-member-maxRegions",
-    "src/plugin/regions.js~RegionsPlugin#maxRegions",
+    "src/plugin/regions/index.js~regionsplugin#maxregions",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-maxRegions",
+    "src/plugin/regions/index.js~RegionsPlugin#maxRegions",
     "member"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#params",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-member-params",
-    "src/plugin/regions.js~RegionsPlugin#params",
+    "src/plugin/regions/index.js~regionsplugin#params",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-params",
+    "src/plugin/regions/index.js~RegionsPlugin#params",
     "member"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#util",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-member-util",
-    "src/plugin/regions.js~RegionsPlugin#util",
+    "src/plugin/regions/index.js~regionsplugin#util",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-util",
+    "src/plugin/regions/index.js~RegionsPlugin#util",
     "member"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#wavesurfer",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-member-wavesurfer",
-    "src/plugin/regions.js~RegionsPlugin#wavesurfer",
+    "src/plugin/regions/index.js~regionsplugin#wavesurfer",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-wavesurfer",
+    "src/plugin/regions/index.js~RegionsPlugin#wavesurfer",
     "member"
   ],
   [
-    "src/plugin/regions.js~regionsplugin#wrapper",
-    "class/src/plugin/regions.js~RegionsPlugin.html#instance-member-wrapper",
-    "src/plugin/regions.js~RegionsPlugin#wrapper",
+    "src/plugin/regions/index.js~regionsplugin#wrapper",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-wrapper",
+    "src/plugin/regions/index.js~RegionsPlugin#wrapper",
     "member"
   ],
   [
-    "src/plugin/regions.js~regionsplugin.create",
-    "class/src/plugin/regions.js~RegionsPlugin.html#static-method-create",
-    "src/plugin/regions.js~RegionsPlugin.create",
+    "src/plugin/regions/index.js~regionsplugin.create",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#static-method-create",
+    "src/plugin/regions/index.js~RegionsPlugin.create",
     "method"
   ],
   [
-    "src/plugin/regions.js~regionsplugin.regions",
-    "class/src/plugin/regions.js~RegionsPlugin.html#static-member-regions",
-    "src/plugin/regions.js~RegionsPlugin.regions",
+    "src/plugin/regions/index.js~regionsplugin.regions",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#static-member-regions",
+    "src/plugin/regions/index.js~RegionsPlugin.regions",
     "member"
   ],
   [
-    "src/plugin/regions.js~regionspluginparams",
+    "src/plugin/regions/index.js~regionspluginparams",
     "typedef/index.html#static-typedef-RegionsPluginParams",
-    "src/plugin/regions.js~RegionsPluginParams",
+    "src/plugin/regions/index.js~RegionsPluginParams",
     "typedef"
+  ],
+  [
+    "src/plugin/regions/region.js",
+    "file/src/plugin/regions/region.js.html",
+    "src/plugin/regions/region.js",
+    "file"
+  ],
+  [
+    "src/plugin/regions/region.js~region#attributes",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-attributes",
+    "src/plugin/regions/region.js~Region#attributes",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#binddragevents",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-bindDragEvents",
+    "src/plugin/regions/region.js~Region#bindDragEvents",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#bindevents",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-bindEvents",
+    "src/plugin/regions/region.js~Region#bindEvents",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#bindinout",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-bindInOut",
+    "src/plugin/regions/region.js~Region#bindInOut",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#color",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-color",
+    "src/plugin/regions/region.js~Region#color",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#constructor",
+    "class/src/plugin/regions/region.js~Region.html#instance-constructor-constructor",
+    "src/plugin/regions/region.js~Region#constructor",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#data",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-data",
+    "src/plugin/regions/region.js~Region#data",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#drag",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-drag",
+    "src/plugin/regions/region.js~Region#drag",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#element",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-element",
+    "src/plugin/regions/region.js~Region#element",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#end",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-end",
+    "src/plugin/regions/region.js~Region#end",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#firedin",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-firedIn",
+    "src/plugin/regions/region.js~Region#firedIn",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#firedout",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-firedOut",
+    "src/plugin/regions/region.js~Region#firedOut",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#formattime",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-formatTime",
+    "src/plugin/regions/region.js~Region#formatTime",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#formattimecallback",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-formatTimeCallback",
+    "src/plugin/regions/region.js~Region#formatTimeCallback",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#getwidth",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-getWidth",
+    "src/plugin/regions/region.js~Region#getWidth",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#handlestyle",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-handleStyle",
+    "src/plugin/regions/region.js~Region#handleStyle",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#id",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-id",
+    "src/plugin/regions/region.js~Region#id",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#isdragging",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-isDragging",
+    "src/plugin/regions/region.js~Region#isDragging",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#isresizing",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-isResizing",
+    "src/plugin/regions/region.js~Region#isResizing",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#loop",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-loop",
+    "src/plugin/regions/region.js~Region#loop",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#margintop",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-marginTop",
+    "src/plugin/regions/region.js~Region#marginTop",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#maxlength",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-maxLength",
+    "src/plugin/regions/region.js~Region#maxLength",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#minlength",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-minLength",
+    "src/plugin/regions/region.js~Region#minLength",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#ondrag",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-onDrag",
+    "src/plugin/regions/region.js~Region#onDrag",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#onresize",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-onResize",
+    "src/plugin/regions/region.js~Region#onResize",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#play",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-play",
+    "src/plugin/regions/region.js~Region#play",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#playloop",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-playLoop",
+    "src/plugin/regions/region.js~Region#playLoop",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#preventcontextmenu",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-preventContextMenu",
+    "src/plugin/regions/region.js~Region#preventContextMenu",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#regionheight",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-regionHeight",
+    "src/plugin/regions/region.js~Region#regionHeight",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#regionsutil",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-regionsUtil",
+    "src/plugin/regions/region.js~Region#regionsUtil",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#remove",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-remove",
+    "src/plugin/regions/region.js~Region#remove",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#render",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-render",
+    "src/plugin/regions/region.js~Region#render",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#resize",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-resize",
+    "src/plugin/regions/region.js~Region#resize",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#scroll",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-scroll",
+    "src/plugin/regions/region.js~Region#scroll",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#scrollspeed",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-scrollSpeed",
+    "src/plugin/regions/region.js~Region#scrollSpeed",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#scrollthreshold",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-scrollThreshold",
+    "src/plugin/regions/region.js~Region#scrollThreshold",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#start",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-start",
+    "src/plugin/regions/region.js~Region#start",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#style",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-style",
+    "src/plugin/regions/region.js~Region#style",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#update",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-update",
+    "src/plugin/regions/region.js~Region#update",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#updaterender",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-updateRender",
+    "src/plugin/regions/region.js~Region#updateRender",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#util",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-util",
+    "src/plugin/regions/region.js~Region#util",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#wavesurfer",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-wavesurfer",
+    "src/plugin/regions/region.js~Region#wavesurfer",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#wrapper",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-wrapper",
+    "src/plugin/regions/region.js~Region#wrapper",
+    "member"
   ],
   [
     "src/plugin/spectrogram.js",
@@ -1798,6 +2260,12 @@ window.esdocSearchIndex = [
     "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-drawSpectrogram",
     "src/plugin/spectrogram.js~SpectrogramPlugin#drawSpectrogram",
     "method"
+  ],
+  [
+    "src/plugin/spectrogram.js~spectrogramplugin#drawer",
+    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-drawer",
+    "src/plugin/spectrogram.js~SpectrogramPlugin#drawer",
+    "member"
   ],
   [
     "src/plugin/spectrogram.js~spectrogramplugin#fftsamples",
@@ -1950,9 +2418,33 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "src/plugin/timeline.js~timelineplugin#addcanvas",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-addCanvas",
+    "src/plugin/timeline.js~TimelinePlugin#addCanvas",
+    "method"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#canvases",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-canvases",
+    "src/plugin/timeline.js~TimelinePlugin#canvases",
+    "member"
+  ],
+  [
     "src/plugin/timeline.js~timelineplugin#constructor",
     "class/src/plugin/timeline.js~TimelinePlugin.html#instance-constructor-constructor",
     "src/plugin/timeline.js~TimelinePlugin#constructor",
+    "method"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#container",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-container",
+    "src/plugin/timeline.js~TimelinePlugin#container",
+    "member"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#createwrapper",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-createWrapper",
+    "src/plugin/timeline.js~TimelinePlugin#createWrapper",
     "method"
   ],
   [
@@ -1992,6 +2484,18 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/plugin/timeline.js~timelineplugin#fillrect",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-fillRect",
+    "src/plugin/timeline.js~TimelinePlugin#fillRect",
+    "method"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#filltext",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-fillText",
+    "src/plugin/timeline.js~TimelinePlugin#fillText",
+    "method"
+  ],
+  [
     "src/plugin/timeline.js~timelineplugin#init",
     "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-init",
     "src/plugin/timeline.js~TimelinePlugin#init",
@@ -2010,9 +2514,75 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/plugin/timeline.js~timelineplugin#params",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-params",
+    "src/plugin/timeline.js~TimelinePlugin#params",
+    "member"
+  ],
+  [
     "src/plugin/timeline.js~timelineplugin#pixelratio",
     "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-pixelRatio",
     "src/plugin/timeline.js~TimelinePlugin#pixelRatio",
+    "member"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#removecanvas",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-removeCanvas",
+    "src/plugin/timeline.js~TimelinePlugin#removeCanvas",
+    "method"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#render",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-render",
+    "src/plugin/timeline.js~TimelinePlugin#render",
+    "method"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#rendercanvases",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-renderCanvases",
+    "src/plugin/timeline.js~TimelinePlugin#renderCanvases",
+    "method"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#setfillstyles",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-setFillStyles",
+    "src/plugin/timeline.js~TimelinePlugin#setFillStyles",
+    "method"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#setfonts",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-setFonts",
+    "src/plugin/timeline.js~TimelinePlugin#setFonts",
+    "method"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#updatecanvases",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-updateCanvases",
+    "src/plugin/timeline.js~TimelinePlugin#updateCanvases",
+    "method"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#updatecanvasespositioning",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-updateCanvasesPositioning",
+    "src/plugin/timeline.js~TimelinePlugin#updateCanvasesPositioning",
+    "method"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#util",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-util",
+    "src/plugin/timeline.js~TimelinePlugin#util",
+    "member"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#wavesurfer",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-wavesurfer",
+    "src/plugin/timeline.js~TimelinePlugin#wavesurfer",
+    "member"
+  ],
+  [
+    "src/plugin/timeline.js~timelineplugin#wrapper",
+    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-wrapper",
+    "src/plugin/timeline.js~TimelinePlugin#wrapper",
     "member"
   ],
   [
@@ -2100,6 +2670,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/util/observer.js~observer#handlers",
+    "class/src/util/observer.js~Observer.html#instance-member-handlers",
+    "src/util/observer.js~Observer#handlers",
+    "member"
+  ],
+  [
     "src/util/observer.js~observer#on",
     "class/src/util/observer.js~Observer.html#instance-method-on",
     "src/util/observer.js~Observer#on",
@@ -2109,6 +2685,12 @@ window.esdocSearchIndex = [
     "src/util/observer.js~observer#once",
     "class/src/util/observer.js~Observer.html#instance-method-once",
     "src/util/observer.js~Observer#once",
+    "method"
+  ],
+  [
+    "src/util/observer.js~observer#setdisabledeventemissions",
+    "class/src/util/observer.js~Observer.html#instance-method-setDisabledEventEmissions",
+    "src/util/observer.js~Observer#setDisabledEventEmissions",
     "method"
   ],
   [
@@ -2448,6 +3030,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/wavesurfer.js~wavesurfer#setfilteredchannels",
+    "class/src/wavesurfer.js~WaveSurfer.html#instance-method-setFilteredChannels",
+    "src/wavesurfer.js~WaveSurfer#setFilteredChannels",
+    "method"
+  ],
+  [
     "src/wavesurfer.js~wavesurfer#setheight",
     "class/src/wavesurfer.js~WaveSurfer.html#instance-method-setHeight",
     "src/wavesurfer.js~WaveSurfer#setHeight",
@@ -2625,6 +3213,12 @@ window.esdocSearchIndex = [
     "src/webaudio.js~webaudio#destroy",
     "class/src/webaudio.js~WebAudio.html#instance-method-destroy",
     "src/webaudio.js~WebAudio#destroy",
+    "method"
+  ],
+  [
+    "src/webaudio.js~webaudio#destroywebaudio",
+    "class/src/webaudio.js~WebAudio.html#instance-method-destroyWebAudio",
+    "src/webaudio.js~WebAudio#destroyWebAudio",
     "method"
   ],
   [

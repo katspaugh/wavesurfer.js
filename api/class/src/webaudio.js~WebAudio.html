@@ -54,7 +54,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/mediasession.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/timeline.js~TimelinePlugin.html">TimelinePlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
@@ -62,10 +61,12 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MediaSessionPluginParams">MediaSessionPluginParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SpectrogramPluginParams">SpectrogramPluginParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TimelinePluginParams">TimelinePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-regions">plugin/regions</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
@@ -487,6 +488,35 @@
         
         
         <div data-ice="description"><p>This is called when wavesurfer is destroyed</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-method-destroyWebAudio">destroyWebAudio</a></span></span><span class="code" data-ice="signature">()</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Destroy all references with WebAudio, disconnecting audio nodes and closing Audio Context</p>
 </div>
       </div>
     </td>
@@ -1214,6 +1244,34 @@ duration.</p>
           
           
           
+          <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-member-handlers">handlers</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
           <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-method-fireEvent">fireEvent</a></span></span><span class="code" data-ice="signature">(event: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, args: ...<span>any</span>)</span>
         </p>
       </div>
@@ -1285,6 +1343,35 @@ duration.</p>
     <td>
       
       
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-method-setDisabledEventEmissions">setDisabledEventEmissions</a></span></span><span class="code" data-ice="signature">(eventNames: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span>)</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Disable firing a list of events by name.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      <span class="since" data-ice="since">since 4.0.0</span>
     </td>
   </tr>
 <tr data-ice="target">
@@ -1874,7 +1961,7 @@ duration.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber501">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber538">source</a></span></span>
     </span>
   </h3>
 
@@ -1882,6 +1969,50 @@ duration.</p>
   
   
   <div data-ice="description"><p>This is called when wavesurfer is destroyed</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-destroyWebAudio">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">destroyWebAudio</span><span class="code" data-ice="signature">()</span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber506">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Destroy all references with WebAudio, disconnecting audio nodes and closing Audio Context</p>
 </div>
 
   
@@ -1975,7 +2106,7 @@ duration.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber690">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber711">source</a></span></span>
     </span>
   </h3>
 
@@ -2033,7 +2164,7 @@ duration.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber580">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber603">source</a></span></span>
     </span>
   </h3>
 
@@ -2254,7 +2385,7 @@ peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber699">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber720">source</a></span></span>
     </span>
   </h3>
 
@@ -2311,7 +2442,7 @@ peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber487">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber493">source</a></span></span>
     </span>
   </h3>
 
@@ -2368,7 +2499,7 @@ peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber633">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber656">source</a></span></span>
     </span>
   </h3>
 
@@ -2526,7 +2657,7 @@ peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber571">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber594">source</a></span></span>
     </span>
   </h3>
 
@@ -2583,7 +2714,7 @@ peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber542">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber554">source</a></span></span>
     </span>
   </h3>
 
@@ -2644,7 +2775,7 @@ peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber673">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber694">source</a></span></span>
     </span>
   </h3>
 
@@ -2688,7 +2819,7 @@ peaks consisting of (max, min) values for each subrange.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber644">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber667">source</a></span></span>
     </span>
   </h3>
 
@@ -2757,7 +2888,7 @@ of a clip.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber598">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber621">source</a></span></span>
     </span>
   </h3>
 
@@ -3098,7 +3229,7 @@ wavesurfer.backend.setFilter(lowpass);</code></pre>
     <span class="right-info">
       <span class="version" data-ice="version">version 3.3.0</span>
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber725">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber746">source</a></span></span>
     </span>
   </h3>
 
@@ -3159,7 +3290,7 @@ wavesurfer.backend.setFilter(lowpass);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber708">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/webaudio.js.html#lineNumber729">source</a></span></span>
     </span>
   </h3>
 
