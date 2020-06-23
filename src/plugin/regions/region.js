@@ -149,16 +149,18 @@ export class Region {
      * @param {number} start Optional offset to start playing at
      * */
     playLoop(start) {
-        const s = start || this.start;
-        this.wavesurfer.play(s);
-        this.once('out', () => {
-            const realTime = this.wavesurfer.getCurrentTime();
-            if (realTime >= this.start && realTime <= this.end) {
-                return this.playLoop();
-            }
-        });
+        this.loop = true;
+        this.play(start);
     }
 
+    /**
+     * Set looping on/off.
+     * @param {boolean} loop True if should play in loop
+     */
+    setLoop(loop) {
+        this.loop = loop;
+    }
+    
     /* Render a region as a DOM element. */
     render() {
         const regionEl = document.createElement('region');
