@@ -116,13 +116,22 @@ export default class Observer {
     }
 
     /**
+     * plugins borrow part of this class without calling the constructor,
+     * so we have to be careful about _disabledEventEmissions
+     */
+
+    _isDisabledEventEmission(event) {
+        return this._disabledEventEmissions && this._disabledEventEmissions.includes(event);
+    }
+
+    /**
      * Manually fire an event
      *
      * @param {string} event The event to fire manually
      * @param {...any} args The arguments with which to call the listeners
      */
     fireEvent(event, ...args) {
-        if (!this.handlers || this._disabledEventEmissions.includes(event)) {
+        if (!this.handlers || this._isDisabledEventEmission(event)) {
             return;
         }
 
