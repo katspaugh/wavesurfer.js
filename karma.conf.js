@@ -24,7 +24,9 @@ const chromeFlags = [
     '--allow-insecure-localhost',
     '--autoplay-policy=no-user-gesture-required',
     // see https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
-    '--disable-features=PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies'
+    '--disable-features=PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies',
+    '--disable-dev-shm-usage'
+
 ];
 const firefoxFlags = {
     // disable autoplay blocking, see https://www.ghacks.net/2018/09/21/firefox-improved-autoplay-blocking/
