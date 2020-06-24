@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+4.0.2 (In progress)
+-------------------
+
+- Improved and unified loop playback logic in regions plugin. (#1868)
+
 4.0.1 (23.06.2020)
 ------------------
 
