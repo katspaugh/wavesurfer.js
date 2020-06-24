@@ -1,12 +1,16 @@
 wavesurfer.js changelog
 =======================
 
-4.0.1 (In progress)
+4.0.2 (In progress)
+-------------------
+
+- Improved and unified loop playback logic in regions plugin. (#1868)
+
+4.0.1 (23.06.2020)
 ------------------
 
 - Fixes for event handling with certain plugins (regions, microphone).
-  The crash would have involved '_disabledEventEmissions'
-- Improved and unified loop playback logic in regions plugin. (#1868)
+  The crash would have involved '_disabledEventEmissions' (#1975)
 
 4.0.0 (21.06.2020)
 ------------------
