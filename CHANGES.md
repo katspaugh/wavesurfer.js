@@ -1,11 +1,15 @@
 wavesurfer.js changelog
 =======================
 
-4.0.0 (21.06.2020)
+4.1.0 (unreleased)
 ------------------
 
 - Don't call HTMLMediaElement#load when given peaks and preload == 'none'.
   Prevents browsers from pre-fetching audio (#1969)
+
+4.0.0 (21.06.2020)
+------------------
+
 - Fixes for event handling with certain plugins (regions, microphone).
   The crash would have involved '_disabledEventEmissions'
 - Fixed mediaelement-webaudio playback under Safari (#1964)
