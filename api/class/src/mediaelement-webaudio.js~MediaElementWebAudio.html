@@ -54,7 +54,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/mediasession.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/timeline.js~TimelinePlugin.html">TimelinePlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
@@ -62,10 +61,12 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MediaSessionPluginParams">MediaSessionPluginParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SpectrogramPluginParams">SpectrogramPluginParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TimelinePluginParams">TimelinePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-regions">plugin/regions</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ajax">ajax</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
@@ -82,13 +83,13 @@
 </nav>
 
 <div class="content" data-ice="content"><div class="header-notice">
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import MediaElementWebAudio from &apos;<span><a href="file/src/mediaelement-webaudio.js.html#lineNumber13">wavesurfer.js/src/mediaelement-webaudio.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import MediaElementWebAudio from &apos;<span><a href="file/src/mediaelement-webaudio.js.html#lineNumber12">wavesurfer.js/src/mediaelement-webaudio.js</a></span>&apos;</code></pre></div>
   <span data-ice="access">public</span>
   <span data-ice="kind">class</span>
   
   
   <span data-ice="since">| since 3.2.0</span>
-  <span data-ice="source">| <span><a href="file/src/mediaelement-webaudio.js.html#lineNumber13">source</a></span></span>
+  <span data-ice="source">| <span><a href="file/src/mediaelement-webaudio.js.html#lineNumber12">source</a></span></span>
 </div>
 
 <div class="self-detail detail">
@@ -108,12 +109,11 @@
 
   
   
-  <div class="description" data-ice="description"><p>MediaElementWebAudio backend: allows to load audio as HTML5 audio tag and use it with WebAudio API.
-Setting the MediaElementWebAudio backend, there is the possibility to load audio of big dimensions, using the WebAudio API features.
-The audio to load is an HTML5 audio tag, so you have to use the same methods of MediaElement backend for loading and playback.
-In this way, the audio resource is not loaded entirely from server, but in ranges, since you load an HTML5 audio tag.
-In this way, filters and other functionalities can be performed like with WebAudio backend, but without decoding
-internally audio data, that caused crashing of the browser. You have to give also peaks, so the audio data are not decoded.</p>
+  <div class="description" data-ice="description"><p>MediaElementWebAudio backend: load audio via an HTML5 audio tag, but playback with the WebAudio API.
+The advantage here is that the html5 &lt;audio&gt; tag can perform range requests on the server and not
+buffer the entire file in one request, and you still get the filtering and scripting functionality
+of the webaudio API.
+Note that in order to use range requests and prevent buffering, you must provide peak data.</p>
 </div>
   
 
@@ -212,6 +212,35 @@ internally audio data, that caused crashing of the browser. You have to give als
           
           
           
+          <span class="code" data-ice="name"><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html#instance-method-destroy">destroy</a></span></span><span class="code" data-ice="signature">()</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>This is called when wavesurfer is destroyed</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
           <span class="code" data-ice="name"><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html#instance-method-init">init</a></span></span><span class="code" data-ice="signature">()</span>
         </p>
       </div>
@@ -220,6 +249,34 @@ internally audio data, that caused crashing of the browser. You have to give als
         
         <div data-ice="description"><p>Initialise the backend, called in <code>wavesurfer.createBackend()</code></p>
 </div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html#instance-method-play">play</a></span></span><span class="code" data-ice="signature">(start: <span>*</span>, end: <span>*</span>): <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        
       </div>
     </td>
     <td>
@@ -236,6 +293,34 @@ internally audio data, that caused crashing of the browser. You have to give als
   <tbody>
   
   <tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-member-handlers">handlers</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
     <td>
       <span class="access" data-ice="access">public</span>
       
@@ -320,6 +405,35 @@ internally audio data, that caused crashing of the browser. You have to give als
     <td>
       
       
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-method-setDisabledEventEmissions">setDisabledEventEmissions</a></span></span><span class="code" data-ice="signature">(eventNames: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span>)</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Disable firing a list of events by name.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      <span class="since" data-ice="since">since 4.0.0</span>
     </td>
   </tr>
 <tr data-ice="target">
@@ -698,6 +812,35 @@ internally audio data, that caused crashing of the browser. You have to give als
         
         
         <div data-ice="description"><p>This is called when wavesurfer is destroyed</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html#instance-method-destroyWebAudio">destroyWebAudio</a></span></span><span class="code" data-ice="signature">()</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Destroy all references with WebAudio, disconnecting audio nodes and closing Audio Context</p>
 </div>
       </div>
     </td>
@@ -1890,6 +2033,35 @@ and append to container element.</p>
           
           
           
+          <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-setMute">setMute</a></span></span><span class="code" data-ice="signature">(muted: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>)</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Enable or disable muted audio</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      <span class="since" data-ice="since">since 4.0.0</span>
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
           <span class="code" data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-setPlayEnd">setPlayEnd</a></span></span><span class="code" data-ice="signature">(end: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
         </p>
       </div>
@@ -2012,7 +2184,7 @@ and append to container element.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement-webaudio.js.html#lineNumber19">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement-webaudio.js.html#lineNumber18">source</a></span></span>
     </span>
   </h3>
 
@@ -2077,7 +2249,7 @@ and append to container element.</p>
     <span class="right-info">
       
       <span class="since" data-ice="since">since 3.2.0</span>
-      <span data-ice="source"><span><a href="file/src/mediaelement-webaudio.js.html#lineNumber56">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement-webaudio.js.html#lineNumber55">source</a></span></span>
     </span>
   </h3>
 
@@ -2127,6 +2299,50 @@ and append to container element.</p>
   
 </div>
 <div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-destroy">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">destroy</span><span class="code" data-ice="signature">()</span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/mediaelement-webaudio.js.html#lineNumber71">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>This is called when wavesurfer is destroyed</p>
+</div>
+
+  <div data-ice="override"><h4>Override:</h4><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-destroy">MediaElement#destroy</a></span></div>
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-method-init">
     <span class="access" data-ice="access">public</span>
     
@@ -2138,7 +2354,7 @@ and append to container element.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/mediaelement-webaudio.js.html#lineNumber30">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/mediaelement-webaudio.js.html#lineNumber29">source</a></span></span>
     </span>
   </h3>
 
@@ -2154,6 +2370,84 @@ and append to container element.</p>
 </div>
 
   
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-play">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">play</span><span class="code" data-ice="signature">(start: <span>*</span>, end: <span>*</span>): <span>*</span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/mediaelement-webaudio.js.html#lineNumber62">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Plays the loaded audio region.</p>
+</div>
+
+  <div data-ice="override"><h4>Override:</h4><span><a href="class/src/mediaelement.js~MediaElement.html#instance-method-play">MediaElement#play</a></span></div>
+
+  <div data-ice="properties"><div data-ice="properties">
+  <h4 data-ice="title">Params:</h4>
+  <table class="params">
+    <thead>
+    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+    
+    <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">start</td>
+      <td data-ice="type" class="code"><span>*</span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"></td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">end</td>
+      <td data-ice="type" class="code"><span>*</span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"></td>
+    </tr>
+</tbody>
+  </table>
+</div>
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span>*</span></td>
+          
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
 
   
 
