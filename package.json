@@ -36,6 +36,7 @@
     "type": "git",
     "url": "git://github.com/katspaugh/wavesurfer.js.git"
   },
+  "publishConfig": { "registry": "https://registry.npmjs.org" },
   "author": "",
   "license": "BSD-3-Clause",
   "bugs": {
