@@ -1,11 +1,16 @@
 wavesurfer.js changelog
 =======================
 
-4.0.0 (21.06.2020)
+4.0.1 (In progress)
 ------------------
 
 - Fixes for event handling with certain plugins (regions, microphone).
   The crash would have involved '_disabledEventEmissions'
+- Improved and unified loop playback logic in regions plugin. (#1868)
+
+4.0.0 (21.06.2020)
+------------------
+
 - Fixed mediaelement-webaudio playback under Safari (#1964)
 - Fixed the `destroy` method of the `MediaElementWebAudio` backend. Instead of
   destroying only the media element, the audio nodes are disconnected and the
