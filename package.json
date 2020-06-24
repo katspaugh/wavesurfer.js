@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "directories": {
@@ -36,6 +36,7 @@
     "type": "git",
     "url": "git://github.com/katspaugh/wavesurfer.js.git"
   },
+  "publishConfig": { "registry": "https://registry.npmjs.org" },
   "author": "",
   "license": "BSD-3-Clause",
   "bugs": {
@@ -68,7 +69,7 @@
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-integrate-test-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^7.3.0",
+    "eslint": "^7.3.1",
     "htmlhint": "^0.14.0",
     "in-publish": "^2.0.1",
     "jasmine-core": "^3.5.0",
