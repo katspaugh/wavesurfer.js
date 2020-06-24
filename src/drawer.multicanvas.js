@@ -156,6 +156,9 @@ export default class MultiCanvas extends Drawer {
 
             entry.clearWave();
         });
+
+        this.style(this.progressWave, { width: totalWidth + "px" });
+        this.style(this.progressWave, { "clip-path": this.makeInset(totalWidth)});
     }
 
     /**
@@ -555,12 +558,18 @@ export default class MultiCanvas extends Drawer {
         }
     }
 
+    makeInset(rightInset) {
+        return "inset(0px " + rightInset + "px 0px 0px)";
+    }
+
     /**
      * Render the new progress
      *
      * @param {number} position X-offset of progress position in pixels
      */
     updateProgress(position) {
-        this.style(this.progressWave, { width: position + 'px' });
+        let actualWidth = this.width / this.params.pixelRatio;
+
+        this.style(this.progressWave, { "clip-path": this.makeInset(actualWidth - position)});
     }
 }
