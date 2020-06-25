@@ -558,8 +558,17 @@ export default class MultiCanvas extends Drawer {
         }
     }
 
+    /**
+     * build a css inset string for masking off portions of the progessWave
+     *
+     * In order to avoid browser layout passes, we leave our progress wave at full width
+     * but mask a portion of it off using the `clip-path` CSS property.
+     *
+     * @param {number} rightInset=number of pixels to clip off the right
+     * @return {string} css
+     */
     makeInset(rightInset) {
-        return "inset(0px " + rightInset + "px 0px 0px)";
+        return `inset(0px ${rightInset}px 0px 0px)`;
     }
 
     /**
@@ -570,6 +579,6 @@ export default class MultiCanvas extends Drawer {
     updateProgress(position) {
         let actualWidth = this.width / this.params.pixelRatio;
 
-        this.style(this.progressWave, { "clip-path": this.makeInset(actualWidth - position)});
+        this.style(this.progressWave, { 'clip-path': this.makeInset(actualWidth - position)});
     }
 }
