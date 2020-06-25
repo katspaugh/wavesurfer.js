@@ -1,6 +1,12 @@
 wavesurfer.js changelog
 =======================
 
+Next (unreleased)
+------------------
+
+- Use `clip-path` instead of `width` changes in the multicanvcas drawer
+  to avoid layout thrashing.
+
 4.0.1 (23.06.2020)
 ------------------
 
