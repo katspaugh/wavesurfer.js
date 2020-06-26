@@ -5,7 +5,7 @@ Next (unreleased)
 ------------------
 
 - Use `clip-path` instead of `width` changes in the multicanvcas drawer
-  to avoid layout thrashing.
+  to avoid layout thrashing. (#1983)
 - Improved and unified loop playback logic in regions plugin. (#1868)
 
 4.0.1 (23.06.2020)
