@@ -39,10 +39,11 @@ export default class MediaElementWebAudio extends MediaElement {
      *
      * @param {HTMLMediaElement} media HTML5 Audio or Video element
      * @param {number[]|Number.<Array[]>} peaks Array of peak data
+     * @param {string} preload HTML 5 preload attribute value
      * @private
      */
-    _load(media, peaks) {
-        super._load(media, peaks);
+    _load(media, peaks, preload) {
+        super._load(media, peaks, preload);
         this.createMediaElementSource(media);
     }
 

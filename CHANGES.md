@@ -1,10 +1,12 @@
 wavesurfer.js changelog
 =======================
 
-4.0.2 (In progress)
--------------------
+Next (unreleased)
+-----------------
 
 - Improved and unified loop playback logic in regions plugin. (#1868)
+- Don't call HTMLMediaElement#load when given peaks and preload == 'none'.
+  Prevents browsers from pre-fetching audio (#1969)
 
 4.0.1 (23.06.2020)
 ------------------
