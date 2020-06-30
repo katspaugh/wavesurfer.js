@@ -4,6 +4,8 @@ wavesurfer.js changelog
 Next (unreleased)
 -----------------
 
+- Use `clip-path` instead of `width` changes in the multicanvcas drawer
+  to avoid layout thrashing. (#1983)
 - Improved and unified loop playback logic in regions plugin. (#1868)
 - Don't call HTMLMediaElement#load when given peaks and preload == 'none'.
   Prevents browsers from pre-fetching audio (#1969)
