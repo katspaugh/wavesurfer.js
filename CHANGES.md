@@ -4,6 +4,8 @@ wavesurfer.js changelog
 Next (unreleased)
 -----------------
 
+- Always call drawBuffer when for media-elements when peaks are provided, fixes
+  a missed call uncovered by #1969
 - Use `clip-path` instead of `width` changes in the multicanvcas drawer
   to avoid layout thrashing. (#1983)
 - Improved and unified loop playback logic in regions plugin. (#1868)
