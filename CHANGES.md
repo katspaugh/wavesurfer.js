@@ -6,10 +6,11 @@ Next (unreleased)
 
 - Use `clip-path` instead of `width` changes in the multicanvcas drawer
   to avoid layout thrashing. (#1983)
-- Improved and unified loop playback logic in regions plugin. (#1868)
 - Don't call HTMLMediaElement#load when given peaks and preload == 'none'.
   Prevents browsers from pre-fetching audio (#1969)
-- Regions plugin: removed 'col-resize' cursor when resize is disabled (#1985)
+- Regions plugin:
+  - Removed 'col-resize' cursor when resize is disabled (#1985)
+  - Improved and unified loop playback logic (#1868)
 
 4.0.1 (23.06.2020)
 ------------------
