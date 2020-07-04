@@ -38,6 +38,8 @@ export class Region {
             left: {},
             right: {}
         };
+        this.handleLeftEl = null;
+        this.handleRightEl = null;
         this.data = params.data || {};
         this.attributes = params.attributes || {};
 
@@ -102,6 +104,7 @@ export class Region {
         }
         if (params.resize != null) {
             this.resize = Boolean(params.resize);
+            this.updateHandlesResize(this.resize);
         }
         if (params.drag != null) {
             this.drag = Boolean(params.drag);
@@ -185,15 +188,15 @@ export class Region {
 
         /* Resize handles */
         if (this.resize) {
-            const handleLeft = regionEl.appendChild(
+            this.handleLeftEl = regionEl.appendChild(
                 document.createElement('handle')
             );
-            const handleRight = regionEl.appendChild(
+            this.handleRightEl = regionEl.appendChild(
                 document.createElement('handle')
             );
 
-            handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
-            handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
+            this.handleLeftEl.className = 'wavesurfer-handle wavesurfer-handle-start';
+            this.handleRightEl.className = 'wavesurfer-handle wavesurfer-handle-end';
 
             // Default CSS properties for both handles.
             const css = {
@@ -221,11 +224,11 @@ export class Region {
                     : null;
 
             if (handleLeftCss) {
-                this.style(handleLeft, handleLeftCss);
+                this.style(this.handleLeftEl, handleLeftCss);
             }
 
             if (handleRightCss) {
-                this.style(handleRight, handleRightCss);
+                this.style(this.handleRightEl, handleRightCss);
             }
         }
 
@@ -615,5 +618,12 @@ export class Region {
                 end: Math.max(this.end + delta, this.start)
             });
         }
+    }
+
+    updateHandlesResize(resize) {
+        const cursorStyle = resize ? 'col-resize' : 'auto';
+
+        this.handleLeftEl && this.style(this.handleLeftEl, {'cursor': cursorStyle});
+        this.handleRightEl && this.style(this.handleRightEl, {'cursor': cursorStyle});
     }
 }
