@@ -5,7 +5,7 @@ Next (unreleased)
 -----------------
 
 - Don't call HTMLMediaElement#load when given peaks and preload == 'none'.
-  Prevents browsers from pre-fetching audio (#1969)
+  Prevents browsers from pre-fetching audio (#1969, #1990)
 - Regions plugin:
   - Removed 'col-resize' cursor when resize is disabled (#1985)
   - Improved and unified loop playback logic (#1868)

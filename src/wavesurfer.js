@@ -1459,13 +1459,14 @@ export default class WaveSurfer extends util.Observer {
             this.backend.once('error', err => this.fireEvent('error', err))
         );
 
-        // If no pre-decoded peaks provided or pre-decoded peaks are
-        // provided with forceDecode flag, attempt to download the
-        // audio file and decode it with Web Audio.
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
+            this.drawBuffer();
         }
 
+        // If no pre-decoded peaks are provided, or are provided with
+        // forceDecode flag, attempt to download the audio file and decode it
+        // with Web Audio.
         if (
             (!peaks || this.params.forceDecode) &&
             this.backend.supportsWebAudio()
