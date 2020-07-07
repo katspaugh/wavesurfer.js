@@ -255,23 +255,6 @@ describe('util.fetchFile:', function() {
 
 /** @test {util} */
 describe('util:', function() {
-    /** @test {extend} */
-    it('extend extends an object shallowly with others', function() {
-        var obj = {
-            style: {}
-        };
-        var sources = {
-            prop1: 'red',
-            prop2: 123
-        };
-        var result = {
-            style: {},
-            prop1: 'red',
-            prop2: 123
-        };
-        expect(WaveSurfer.util.extend(obj, sources)).toEqual(result);
-    });
-
     /** @test {getId} */
     it('getId returns a random string with a default prefix', function() {
         const prefix = 'wavesurfer_';
