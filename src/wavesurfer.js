@@ -264,6 +264,11 @@ export default class WaveSurfer extends util.Observer {
         scrollParent: false,
         skipLength: 2,
         splitChannels: false,
+        splitChannelsOptions: {
+            overlay: false,
+            channelColors: {},
+            filterChannels: [],
+        },
         waveColor: '#999',
         xhr: {}
     };
@@ -1008,19 +1013,26 @@ export default class WaveSurfer extends util.Observer {
             return;
         }
 
-        if (mute) {
-            // If currently not muted then save current volume,
-            // turn off the volume and update the mute properties
-            this.savedVolume = this.backend.getVolume();
-            this.backend.setVolume(0);
-            this.isMuted = true;
-            this.fireEvent('volume', 0);
+        if (this.backend.setMute) {
+            // Backends such as the MediaElement backend have their own handling
+            // of mute, let them handle it.
+            this.backend.setMute(mute);
+            this.isMuted = mute;
         } else {
-            // If currently muted then restore to the saved volume
-            // and update the mute properties
-            this.backend.setVolume(this.savedVolume);
-            this.isMuted = false;
-            this.fireEvent('volume', this.savedVolume);
+            if (mute) {
+                // If currently not muted then save current volume,
+                // turn off the volume and update the mute properties
+                this.savedVolume = this.backend.getVolume();
+                this.backend.setVolume(0);
+                this.isMuted = true;
+                this.fireEvent('volume', 0);
+            } else {
+                // If currently muted then restore to the saved volume
+                // and update the mute properties
+                this.backend.setVolume(this.savedVolume);
+                this.isMuted = false;
+                this.fireEvent('volume', this.savedVolume);
+            }
         }
         this.fireEvent('mute', this.isMuted);
     }
@@ -1165,6 +1177,24 @@ export default class WaveSurfer extends util.Observer {
     setHeight(height) {
         this.params.height = height;
         this.drawer.setHeight(height * this.params.pixelRatio);
+        this.drawBuffer();
+    }
+
+    /**
+     * Hide channels from being drawn on the waveform if splitting channels.
+     *
+     * For example, if we want to draw only the peaks for the right stereo channel:
+     *
+     * const wavesurfer = new WaveSurfer.create({...splitChannels: true});
+     * wavesurfer.load('stereo_audio.mp3');
+     *
+     * wavesurfer.setFilteredChannel([0]); <-- hide left channel peaks.
+     *
+     * @param {array} channelIndices Channels to be filtered out from drawing.
+     * @version 4.0.0
+     */
+    setFilteredChannels(channelIndices) {
+        this.params.splitChannelsOptions.filterChannels = channelIndices;
         this.drawBuffer();
     }
 
@@ -1429,13 +1459,14 @@ export default class WaveSurfer extends util.Observer {
             this.backend.once('error', err => this.fireEvent('error', err))
         );
 
-        // If no pre-decoded peaks provided or pre-decoded peaks are
-        // provided with forceDecode flag, attempt to download the
-        // audio file and decode it with Web Audio.
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
+            this.drawBuffer();
         }
 
+        // If no pre-decoded peaks are provided, or are provided with
+        // forceDecode flag, attempt to download the audio file and decode it
+        // with Web Audio.
         if (
             (!peaks || this.params.forceDecode) &&
             this.backend.supportsWebAudio()

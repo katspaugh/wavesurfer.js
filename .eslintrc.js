@@ -1,3 +1,4 @@
+/* eslint-disable */
 module.exports = {
     extends: ['eslint:recommended'], // extending recommended config and config derived from eslint-config-prettier
     parser: 'babel-eslint',
@@ -17,6 +18,10 @@ module.exports = {
     rules: {
         eqeqeq: 'off',
         'semi': 2,
+        "indent": ["error", 4, {
+            "ignoredNodes": ["TemplateLiteral"],
+            "SwitchCase": 1
+        }],
         'no-console': 1,
         'no-unused-vars': 'off',
         'no-unreachable': 2,

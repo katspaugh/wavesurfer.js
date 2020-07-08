@@ -18,6 +18,7 @@ export default class Observer {
          * @todo Initialise the handlers here already and remove the conditional
          * assignment in `on()`
          */
+        this._disabledEventEmissions = [];
         this.handlers = null;
     }
     /**
@@ -101,15 +102,39 @@ export default class Observer {
     }
 
     /**
+     * Disable firing a list of events by name. When specified, event handlers for any event type
+     * passed in here will not be called.
+     *
+     * @since 4.0.0
+     * @param {string[]} eventNames an array of event names to disable emissions for
+     * @example
+     * // disable seek and interaction events
+     * wavesurfer.setDisabledEventEmissions(['seek', 'interaction']);
+     */
+    setDisabledEventEmissions(eventNames) {
+        this._disabledEventEmissions = eventNames;
+    }
+
+    /**
+     * plugins borrow part of this class without calling the constructor,
+     * so we have to be careful about _disabledEventEmissions
+     */
+
+    _isDisabledEventEmission(event) {
+        return this._disabledEventEmissions && this._disabledEventEmissions.includes(event);
+    }
+
+    /**
      * Manually fire an event
      *
      * @param {string} event The event to fire manually
      * @param {...any} args The arguments with which to call the listeners
      */
     fireEvent(event, ...args) {
-        if (!this.handlers) {
+        if (!this.handlers || this._isDisabledEventEmission(event)) {
             return;
         }
+
         const handlers = this.handlers[event];
         handlers &&
             handlers.forEach(fn => {

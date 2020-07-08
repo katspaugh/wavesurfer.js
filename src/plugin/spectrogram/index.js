@@ -150,7 +150,7 @@ export default class SpectrogramPlugin {
         this.unAll();
         this.wavesurfer.un('ready', this._onReady);
         this.wavesurfer.un('redraw', this._onRender);
-        this.drawer.wrapper.removeEventListener('scroll', this._onScroll);
+        this.drawer && this.drawer.wrapper.removeEventListener('scroll', this._onScroll);
         this.wavesurfer = null;
         this.util = null;
         this.params = null;
@@ -451,13 +451,13 @@ export default class SpectrogramPlugin {
                     oldEnd <= newStart || newEnd <= oldStart
                         ? 0
                         : Math.min(
-                              Math.max(oldEnd, newStart),
-                              Math.max(newEnd, oldStart)
-                          ) -
-                          Math.max(
-                              Math.min(oldEnd, newStart),
-                              Math.min(newEnd, oldStart)
-                          );
+                            Math.max(oldEnd, newStart),
+                            Math.max(newEnd, oldStart)
+                        ) -
+                        Math.max(
+                            Math.min(oldEnd, newStart),
+                            Math.min(newEnd, oldStart)
+                        );
                 let k;
                 /* eslint-disable max-depth */
                 if (overlap > 0) {

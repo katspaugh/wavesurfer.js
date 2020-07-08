@@ -303,10 +303,10 @@ export default class MicrophonePlugin {
                 let channel, l;
                 for (
                     channel = 0,
-                        l = Math.min(
-                            this.localAudioBuffer.numberOfChannels,
-                            event.inputBuffer.numberOfChannels
-                        );
+                    l = Math.min(
+                        this.localAudioBuffer.numberOfChannels,
+                        event.inputBuffer.numberOfChannels
+                    );
                     channel < l;
                     channel++
                 ) {
@@ -325,7 +325,7 @@ export default class MicrophonePlugin {
     /**
      * Audio input device is ready.
      *
-     * @param {LocalMediaStream} stream The microphone's media stream.
+     * @param {MediaStream} stream The microphone's media stream.
      */
     gotStream(stream) {
         this.stream = stream;

@@ -38,6 +38,8 @@ export class Region {
             left: {},
             right: {}
         };
+        this.handleLeftEl = null;
+        this.handleRightEl = null;
         this.data = params.data || {};
         this.attributes = params.attributes || {};
 
@@ -70,7 +72,7 @@ export class Region {
                 this.marginTop = this.wavesurfer.getHeight() * channelIdx + 'px';
             }
         }
-        
+
         this.formatTimeCallback = params.formatTimeCallback;
 
         this.bindInOut();
@@ -102,6 +104,7 @@ export class Region {
         }
         if (params.resize != null) {
             this.resize = Boolean(params.resize);
+            this.updateHandlesResize(this.resize);
         }
         if (params.drag != null) {
             this.drag = Boolean(params.drag);
@@ -149,14 +152,16 @@ export class Region {
      * @param {number} start Optional offset to start playing at
      * */
     playLoop(start) {
-        const s = start || this.start;
-        this.wavesurfer.play(s);
-        this.once('out', () => {
-            const realTime = this.wavesurfer.getCurrentTime();
-            if (realTime >= this.start && realTime <= this.end) {
-                return this.playLoop();
-            }
-        });
+        this.loop = true;
+        this.play(start);
+    }
+
+    /**
+     * Set looping on/off.
+     * @param {boolean} loop True if should play in loop
+     */
+    setLoop(loop) {
+        this.loop = loop;
     }
 
     /* Render a region as a DOM element. */
@@ -183,15 +188,15 @@ export class Region {
 
         /* Resize handles */
         if (this.resize) {
-            const handleLeft = regionEl.appendChild(
+            this.handleLeftEl = regionEl.appendChild(
                 document.createElement('handle')
             );
-            const handleRight = regionEl.appendChild(
+            this.handleRightEl = regionEl.appendChild(
                 document.createElement('handle')
             );
 
-            handleLeft.className = 'wavesurfer-handle wavesurfer-handle-start';
-            handleRight.className = 'wavesurfer-handle wavesurfer-handle-end';
+            this.handleLeftEl.className = 'wavesurfer-handle wavesurfer-handle-start';
+            this.handleRightEl.className = 'wavesurfer-handle wavesurfer-handle-end';
 
             // Default CSS properties for both handles.
             const css = {
@@ -212,18 +217,18 @@ export class Region {
             const handleRightCss =
                 this.handleStyle.right !== 'none'
                     ? Object.assign(
-                          { right: '0px' },
-                          css,
-                          this.handleStyle.right
-                      )
+                        { right: '0px' },
+                        css,
+                        this.handleStyle.right
+                    )
                     : null;
 
             if (handleLeftCss) {
-                this.style(handleLeft, handleLeftCss);
+                this.style(this.handleLeftEl, handleLeftCss);
             }
 
             if (handleRightCss) {
-                this.style(handleRight, handleRightCss);
+                this.style(this.handleRightEl, handleRightCss);
             }
         }
 
@@ -336,7 +341,10 @@ export class Region {
         /* Loop playback. */
         this.on('out', () => {
             if (this.loop) {
-                this.wavesurfer.play(this.start);
+                const realTime = this.wavesurfer.getCurrentTime();
+                if (realTime >= this.start && realTime <= this.end) {
+                    this.wavesurfer.play(this.start);
+                }
             }
         });
     }
@@ -610,5 +618,12 @@ export class Region {
                 end: Math.max(this.end + delta, this.start)
             });
         }
+    }
+
+    updateHandlesResize(resize) {
+        const cursorStyle = resize ? 'col-resize' : 'auto';
+
+        this.handleLeftEl && this.style(this.handleLeftEl, {'cursor': cursorStyle});
+        this.handleRightEl && this.style(this.handleRightEl, {'cursor': cursorStyle});
     }
 }

@@ -1,9 +1,26 @@
 wavesurfer.js changelog
 =======================
 
-4.0.0 (unreleased)
+Next (unreleased)
+-----------------
+
+- Don't call HTMLMediaElement#load when given peaks and preload == 'none'.
+  Prevents browsers from pre-fetching audio (#1969, #1990)
+- Regions plugin:
+  - Removed 'col-resize' cursor when resize is disabled (#1985)
+  - Improved and unified loop playback logic (#1868)
+- Removed util.extend: deprecated since v3.3.0  (#1995)
+
+4.0.1 (23.06.2020)
 ------------------
 
+- Fixes for event handling with certain plugins (regions, microphone).
+  The crash would have involved '_disabledEventEmissions' (#1975)
+
+4.0.0 (21.06.2020)
+------------------
+
+- Fixed mediaelement-webaudio playback under Safari (#1964)
 - Fixed the `destroy` method of the `MediaElementWebAudio` backend. Instead of
   destroying only the media element, the audio nodes are disconnected and the
   audio context is closed. This was done by splitting the `destroy` method of the
@@ -25,6 +42,11 @@ wavesurfer.js changelog
   - Fixed click propagation issue (#1926)
   - Fixed switch loop region (#1929)
   - Added ability to specify time format for Regions tooltip using timeformatCallback (#1948)
+- Add `splitChannelsOptions` param and `setFilteredChannels` method to configure how channels are drawn (#1947)
+- Added checks in `minimap` plugin for `drawer` presence (#1953)
+- Add `setDisabledEventEmissions` method to optionally disable calls to event handlers for specific events (#1960)
+- Drawer: removed private methods to allow overriding them (#1962)
+- Add optional `setMute` method to backends to fix muting behavior with the `MediaElement` backend (#1966)
 
 3.3.3 (16.04.2020)
 ------------------
