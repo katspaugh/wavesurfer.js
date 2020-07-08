@@ -10,6 +10,7 @@ Next (unreleased)
 - Regions plugin:
   - Removed 'col-resize' cursor when resize is disabled (#1985)
   - Improved and unified loop playback logic (#1868)
+- Microphone plugin: move to separate directory (#1997)
 - Minimap plugin: move plugin to separate directory (#1999)
 - Cursor plugin: move plugin to separate directory (#1998)
 - Spectrogram plugin: move to separate directory (#1996)
