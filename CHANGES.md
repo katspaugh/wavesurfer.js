@@ -10,6 +10,7 @@ Next (unreleased)
   - Removed 'col-resize' cursor when resize is disabled (#1985)
   - Improved and unified loop playback logic (#1868)
 - Removed util.extend: deprecated since v3.3.0  (#1995)
+- Spectrogram plugin: move to separate directory (#1996)
 
 4.0.1 (23.06.2020)
 ------------------
