@@ -10,7 +10,7 @@ Next (unreleased)
   - Removed 'col-resize' cursor when resize is disabled (#1985)
   - Improved and unified loop playback logic (#1868)
 - Removed util.extend: deprecated since v3.3.0  (#1995)
-- Move microphone plugin to separate directory (#)
+- Move microphone plugin to separate directory (#1997)
 
 4.0.1 (23.06.2020)
 ------------------
