@@ -6,10 +6,11 @@ Next (unreleased)
 
 - Don't call HTMLMediaElement#load when given peaks and preload == 'none'.
   Prevents browsers from pre-fetching audio (#1969, #1990)
-- Removed util.extend: deprecated since v3.3.0 (#1995)
+- Remove `util.extend`: deprecated since v3.3.0 (#1995)
 - Regions plugin:
   - Removed 'col-resize' cursor when resize is disabled (#1985)
   - Improved and unified loop playback logic (#1868)
+- Minimap plugin: move plugin to separate directory (#1999)
 - Cursor plugin: move plugin to separate directory (#1998)
 - Spectrogram plugin: move to separate directory (#1996)
 
