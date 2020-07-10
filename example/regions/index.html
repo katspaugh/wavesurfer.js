@@ -29,6 +29,13 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
         <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script>
+
+        <!-- Fix strange default css that makes handles hard to grab when the region is small -->
+        <style>
+            .wavesurfer-region > handle {
+                width: 2px !important;
+            }
+        </style>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
