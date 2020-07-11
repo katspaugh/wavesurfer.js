@@ -617,7 +617,7 @@ export class Region {
         if (direction === 'start') {
             // Check if changing the start by the given delta would result in the region being smaller than minLength
             // Ignore cases where we are making the region wider rather than shrinking it
-            if (delta > 0 && Math.abs(this.end - (this.start + delta) < this.minLength)) {
+            if (delta > 0 && this.end - (this.start + delta) < this.minLength) {
                 return;
             }
 
@@ -628,7 +628,7 @@ export class Region {
         } else {
             // Check if changing the end by the given delta would result in the region being smaller than minLength
             // Ignore cases where we are making the region wider rather than shrinking it
-            if (delta < 0 && Math.abs((this.end + delta) - this.start) < this.minLength) {
+            if (delta < 0 && (this.end + delta) - this.start < this.minLength) {
                 return;
             }
 
