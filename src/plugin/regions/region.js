@@ -203,8 +203,7 @@ export class Region {
                 cursor: 'col-resize',
                 position: 'absolute',
                 top: '0px',
-                width: '1%',
-                maxWidth: '4px',
+                width: '2px',
                 height: '100%',
                 backgroundColor: 'rgba(0, 0, 0, 1)'
             };
