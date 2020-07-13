@@ -203,8 +203,7 @@ export class Region {
                 cursor: 'col-resize',
                 position: 'absolute',
                 top: '0px',
-                width: '1%',
-                maxWidth: '4px',
+                width: '2px',
                 height: '100%',
                 backgroundColor: 'rgba(0, 0, 0, 1)'
             };
@@ -606,13 +605,33 @@ export class Region {
         });
     }
 
+    /**
+     * @example
+     * onResize(-5, 'start') // Moves the start point 5 seconds back
+     * onResize(0.5, 'end') // Moves the end point 0.5 seconds forward
+     *
+     * @param {number} delta How much to add or subtract, given in seconds
+     * @param {string} direction 'start 'or 'end'
+     */
     onResize(delta, direction) {
         if (direction === 'start') {
+            // Check if changing the start by the given delta would result in the region being smaller than minLength
+            // Ignore cases where we are making the region wider rather than shrinking it
+            if (delta > 0 && this.end - (this.start + delta) < this.minLength) {
+                return;
+            }
+
             this.update({
                 start: Math.min(this.start + delta, this.end),
                 end: Math.max(this.start + delta, this.end)
             });
         } else {
+            // Check if changing the end by the given delta would result in the region being smaller than minLength
+            // Ignore cases where we are making the region wider rather than shrinking it
+            if (delta < 0 && (this.end + delta) - this.start < this.minLength) {
+                return;
+            }
+
             this.update({
                 start: Math.min(this.end + delta, this.start),
                 end: Math.max(this.end + delta, this.start)
