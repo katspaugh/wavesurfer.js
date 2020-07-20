@@ -529,10 +529,27 @@ export class Region {
             if (resize) {
                 // To maintain relative cursor start point while resizing
                 // we have to handle for minLength
-                if (resize === 'start' && time > this.end - this.minLength) {
-                    time = this.end - this.minLength;
-                } else if (resize === 'end' && time < this.start + this.minLength) {
-                    time = this.start + this.minLength;
+                let minLength = this.minLength;
+                if (!minLength) {
+                    minLength = 0;
+                }
+
+                if (resize === 'start') {
+                    if (time > this.end - minLength) {
+                        time = this.end - minLength;
+                    }
+
+                    if (time < 0) {
+                        time = 0;
+                    }
+                } else if (resize === 'end') {
+                    if (time < this.start + minLength) {
+                        time = this.start + minLength;
+                    }
+
+                    if (time > duration) {
+                        time = duration;
+                    }
                 }
             }
 
@@ -647,11 +664,16 @@ export class Region {
      * @param {string} direction 'start 'or 'end'
      */
     onResize(delta, direction) {
+        const duration = this.wavesurfer.getDuration();
         if (direction === 'start') {
             // Check if changing the start by the given delta would result in the region being smaller than minLength
             // Ignore cases where we are making the region wider rather than shrinking it
             if (delta > 0 && this.end - (this.start + delta) < this.minLength) {
                 delta = this.end - this.minLength - this.start;
+            }
+
+            if (delta < 0 && (this.start + delta) < 0) {
+                delta = this.start * -1;
             }
 
             this.update({
@@ -663,6 +685,10 @@ export class Region {
             // Ignore cases where we are making the region wider rather than shrinking it
             if (delta < 0 && this.end + delta - this.start < this.minLength) {
                 delta = this.start + this.minLength - this.end;
+            }
+
+            if (delta > 0 && (this.end + delta) > duration) {
+                delta = duration - this.end;
             }
 
             this.update({
