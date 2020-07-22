@@ -16,6 +16,7 @@ Next (unreleased)
 - Minimap plugin: move plugin to separate directory (#1999)
 - Cursor plugin: move plugin to separate directory (#1998)
 - Spectrogram plugin: move to separate directory (#1996)
+- Mediasession plugin: move to separate directory
 
 4.0.1 (23.06.2020)
 ------------------
