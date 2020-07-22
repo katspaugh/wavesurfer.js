@@ -36,7 +36,7 @@ export class Region {
         // no styling or can be assigned an object containing CSS properties.
         this.handleStyle = params.handleStyle || {
             left: {},
-            right: {},
+            right: {}
         };
         this.handleLeftEl = null;
         this.handleRightEl = null;
@@ -184,7 +184,7 @@ export class Region {
             position: 'absolute',
             zIndex: 2,
             height: this.regionHeight,
-            top: this.marginTop,
+            top: this.marginTop
         });
 
         /* Resize handles */
@@ -206,7 +206,7 @@ export class Region {
                 top: '0px',
                 width: '2px',
                 height: '100%',
-                backgroundColor: 'rgba(0, 0, 0, 1)',
+                backgroundColor: 'rgba(0, 0, 0, 1)'
             };
 
             // Merge CSS properties per handle.
@@ -245,7 +245,7 @@ export class Region {
             .map((time) =>
                 [
                     Math.floor((time % 3600) / 60), // minutes
-                    ('00' + Math.floor(time % 60)).slice(-2), // seconds
+                    ('00' + Math.floor(time % 60)).slice(-2) // seconds
                 ].join(':')
             )
             .join('-');
@@ -290,7 +290,7 @@ export class Region {
                 left: left + 'px',
                 width: regionWidth + 'px',
                 backgroundColor: this.color,
-                cursor: this.drag ? 'move' : 'default',
+                cursor: this.drag ? 'move' : 'default'
             });
 
             for (const attrname in this.attributes) {
@@ -651,7 +651,7 @@ export class Region {
 
         this.update({
             start: this.start + delta,
-            end: this.end + delta,
+            end: this.end + delta
         });
     }
 
@@ -678,7 +678,7 @@ export class Region {
 
             this.update({
                 start: Math.min(this.start + delta, this.end),
-                end: Math.max(this.start + delta, this.end),
+                end: Math.max(this.start + delta, this.end)
             });
         } else {
             // Check if changing the end by the given delta would result in the region being smaller than minLength
@@ -693,7 +693,7 @@ export class Region {
 
             this.update({
                 start: Math.min(this.end + delta, this.start),
-                end: Math.max(this.end + delta, this.start),
+                end: Math.max(this.end + delta, this.start)
             });
         }
     }
