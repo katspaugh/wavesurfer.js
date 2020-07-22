@@ -510,7 +510,7 @@ export default class MultiCanvas extends Drawer {
                 offsetY: offsetY,
                 halfH: halfH,
                 peaks: peaks,
-                channelIndex: channelIndex,
+                channelIndex: channelIndex
             });
         })();
     }

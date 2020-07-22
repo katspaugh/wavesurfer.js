@@ -22,6 +22,7 @@ module.exports = {
             "ignoredNodes": ["TemplateLiteral"],
             "SwitchCase": 1
         }],
+        'comma-dangle': ["error", "never"],
         'no-console': 1,
         'no-unused-vars': 'off',
         'no-unreachable': 2,
