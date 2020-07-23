@@ -17,6 +17,7 @@ Next (unreleased)
 - Cursor plugin: move plugin to separate directory (#1998)
 - Elan plugin: move plugin to separate directory (#2019)
 - Spectrogram plugin: move to separate directory (#1996)
+- Mediasession plugin: move to separate directory (#2020)
 - Timeline plugin: move to separate directory (#2018)
 
 4.0.1 (23.06.2020)
