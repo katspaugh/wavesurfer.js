@@ -15,6 +15,7 @@ Next (unreleased)
 - Microphone plugin: move to separate directory (#1997)
 - Minimap plugin: move plugin to separate directory (#1999)
 - Cursor plugin: move plugin to separate directory (#1998)
+- Elan plugin: move plugin to separate directory (#2019)
 - Spectrogram plugin: move to separate directory (#1996)
 - Timeline plugin: move to separate directory (#2018)
 
