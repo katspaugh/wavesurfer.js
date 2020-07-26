@@ -125,9 +125,9 @@ export default function fetchFile(options) {
     instance.controller = new AbortController();
 
     // check if headers have to be added
-    if (options && options.requestHeaders) {
+    if (options && options.headers) {
         // add custom request headers
-        options.requestHeaders.forEach(header => {
+        options.headers.forEach(header => {
             fetchHeaders.append(header.key, header.value);
         });
     }
