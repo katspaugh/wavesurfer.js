@@ -129,6 +129,7 @@ export default function fetchFile(options) {
         // add custom request headers
         options.requestHeaders.forEach(header => {
             fetchHeaders.append(header.key, header.value);
+            fetchRequest.headers.append(header.key, header.value);
         });
     }
 
