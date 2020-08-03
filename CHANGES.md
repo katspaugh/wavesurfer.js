@@ -19,6 +19,7 @@ Next (unreleased)
 - Spectrogram plugin: move to separate directory (#1996)
 - Mediasession plugin: move to separate directory (#2020)
 - Timeline plugin: move to separate directory (#2018)
+- Remove `util.ajax`: deprecated since v3.0.0 (#2033)
 
 4.0.1 (23.06.2020)
 ------------------
