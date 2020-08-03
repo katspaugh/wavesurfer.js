@@ -23,14 +23,21 @@ module.exports = {
             "SwitchCase": 1
         }],
         'comma-dangle': ["error", "never"],
+        'comma-spacing': ["error", { "before": false, "after": true }],
         'no-console': 1,
         'no-unused-vars': 'off',
         'no-unreachable': 2,
+        'no-extra-semi': "error",
+        'no-multi-spaces': "error",
+        'no-multiple-empty-lines': "error",
         'valid-jsdoc': [2, {
             'requireReturn': false,
             'requireReturnType': false
         }],
+        'no-trailing-spaces': "error",
+        'no-dupe-keys': "error",
         'require-jsdoc': 2,
+        'no-duplicate-imports': "error",
         'space-before-function-paren': ["error", "never"],
         'keyword-spacing': ["error", {"before": true}]
     },
