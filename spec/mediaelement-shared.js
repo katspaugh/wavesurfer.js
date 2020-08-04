@@ -33,6 +33,14 @@ export function sharedTests(backend) {
     });
 
     /**
+     * @test {WaveSurfer#waveformReady}
+     */
+    it('should be waveform ready', function(done) {
+        wavesurfer.once('waveform-ready', done);
+        loadAudioPeaks();
+    });
+
+    /**
      * @test {WaveSurfer#play}
      * @test {WaveSurfer#isPlaying}
      */
@@ -299,4 +307,12 @@ function loadElement() {
     // set src
     audioElement.src = TestHelpers.EXAMPLE_FILE_PATH;
     wavesurfer.load(audioElement);
+}
+
+function loadAudioPeaks() {
+    TestHelpers.getPeaks(TestHelpers.EXAMPLE_JSON_FILE_PATH, (peaks) => {
+        const src = TestHelpers.EXAMPLE_2_FILE_PATH;
+
+        wavesurfer.load(src, peaks, 'none', TestHelpers.EXAMPLE_2_FILE_DURATION);
+    });
 }
