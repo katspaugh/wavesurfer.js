@@ -75,7 +75,7 @@ export class Region {
         }
 
         this.formatTimeCallback = params.formatTimeCallback;
-
+        this.edgeScrollWidth = ws.params.edgeScrollWidth ?? this.wrapper.clientWidth * 0.05;
         this.bindInOut();
         this.render();
         this.wavesurfer.on('zoom', this._onRedraw);
@@ -637,14 +637,14 @@ export class Region {
                 this.scroll &&
                 container.clientWidth < this.wrapper.scrollWidth
             ) {
-                // Triggering edgescroll from within 30px of the edges
+                // Triggering edgescroll from within edgeScrollWidth
                 if (drag) {
                     let x = e.clientX;
 
                     // Check direction
-                    if (x < wrapperRect.left + 30) {
+                    if (x < wrapperRect.left + this.edgeScrollWidth) {
                         scrollDirection = -1;
-                    } else if (x > wrapperRect.right - 30) {
+                    } else if (x > wrapperRect.right - this.edgeScrollWidth) {
                         scrollDirection = 1;
                     } else {
                         scrollDirection = null;
@@ -653,9 +653,9 @@ export class Region {
                     let x = e.clientX;
 
                     // Check direction
-                    if (x < wrapperRect.left + 30) {
+                    if (x < wrapperRect.left + this.edgeScrollWidth) {
                         scrollDirection = -1;
-                    } else if (x > wrapperRect.right - 30) {
+                    } else if (x > wrapperRect.right - this.edgeScrollWidth) {
                         scrollDirection = 1;
                     } else {
                         scrollDirection = null;

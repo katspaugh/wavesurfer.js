@@ -61,6 +61,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * attributes.
  * @property {number} duration=null Optional audio length so pre-rendered peaks
  * can be display immediately for example.
+ * @property {number} edgeScrollWidth='5% from container edges' Optional width for edgeScroll to start
  * @property {boolean} fillParent=true Whether to fill the entire container or
  * draw only according to `minPxPerSec`.
  * @property {boolean} forceDecode=false Force decoding of audio using web audio
