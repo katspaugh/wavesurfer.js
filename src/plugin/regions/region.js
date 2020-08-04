@@ -364,7 +364,6 @@ export class Region {
         });
 
         this.element.addEventListener('click', (e) => {
-            e.stopPropagation();
             e.preventDefault();
             this.fireEvent('click', e);
             this.wavesurfer.fireEvent('region-click', this, e);
