@@ -11,13 +11,13 @@ const TestHelpers = {
     EXAMPLE_FILE_DURATION: 21,
 
     /** Example audio clip with waveform */
-    EXAMPLE_2_FILE_PATH: '/base/spec/support/stereo.mp3',
+    EXAMPLE_STEREO_FILE_PATH: '/base/spec/support/stereo.mp3',
 
     /** Length of example audio clip with waveform (in seconds) */
-    EXAMPLE_2_FILE_DURATION: 51,
+    EXAMPLE_STEREO_FILE_DURATION: 51,
 
     /** Example waveform peaks */
-    EXAMPLE_JSON_FILE_PATH: '/base/spec/support/stereo-peaks.json',
+    EXAMPLE_STEREO_FILE_JSON_PATH: '/base/spec/support/stereo-peaks.json',
 
     createElement(id, type) {
         if (id == undefined) {
