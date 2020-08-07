@@ -1462,6 +1462,8 @@ export default class WaveSurfer extends util.Observer {
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
+
+            this.fireEvent('waveform-ready');
         }
 
         // If no pre-decoded peaks are provided, or are provided with

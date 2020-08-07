@@ -33,6 +33,23 @@ export function sharedTests(backend) {
     });
 
     /**
+     * @test {WaveSurfer#waveformReady} When the waveform is drawn, the 'waveform-ready' event is triggered
+     */
+    it('should be waveform ready', function(done) {
+        const waveformReadySpy = jasmine.createSpy('waveform-ready-spy');
+
+        wavesurfer.once('waveform-ready', () => {
+            waveformReadySpy();
+
+            expect(waveformReadySpy).toHaveBeenCalledTimes(1);
+
+            done();
+        });
+
+        loadAudioPeaks();
+    });
+
+    /**
      * @test {WaveSurfer#play}
      * @test {WaveSurfer#isPlaying}
      */
@@ -299,4 +316,13 @@ function loadElement() {
     // set src
     audioElement.src = TestHelpers.EXAMPLE_FILE_PATH;
     wavesurfer.load(audioElement);
+}
+
+/** Retrieve normalized waveform peaks, then load an audio resource giving peaks and setting preload attribute to 'none' **/
+function loadAudioPeaks() {
+    TestHelpers.getPeaks(TestHelpers.EXAMPLE_STEREO_FILE_JSON_PATH, (peaks) => {
+        const src = TestHelpers.EXAMPLE_STEREO_FILE_PATH;
+
+        wavesurfer.load(src, peaks, 'none', TestHelpers.EXAMPLE_STEREO_FILE_DURATION);
+    });
 }
