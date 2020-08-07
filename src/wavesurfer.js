@@ -1415,6 +1415,7 @@ export default class WaveSurfer extends util.Observer {
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
+            this.fireEvent('waveform-ready');
             this.tmpEvents.push(this.once('interaction', load));
         } else {
             return load();
