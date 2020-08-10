@@ -13,6 +13,7 @@
  * @property {number[]} maxRegions Maximum number of regions that may be created by the user at one time.
  * `initPlugin('regions')`
  * @property {function} formatTimeCallback Allows custom formating for region tooltip.
+ * @property {?number} edgeScrollWidth='5% from container edges' Optional width for edgeScroll to start
  */
 
 /**
@@ -129,6 +130,7 @@ export default class RegionsPlugin {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             if (this.params.regions) {
                 this.params.regions.forEach(region => {
+                    region.edgeScrollWidth = this.params.edgeScrollWidth ?? this.wrapper.clientWidth * 0.05;
                     this.add(region);
                 });
             }

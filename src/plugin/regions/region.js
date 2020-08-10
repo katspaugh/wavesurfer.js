@@ -75,7 +75,7 @@ export class Region {
         }
 
         this.formatTimeCallback = params.formatTimeCallback;
-        this.edgeScrollWidth = ws.params.edgeScrollWidth ?? this.wrapper.clientWidth * 0.05;
+        this.edgeScrollWidth = params.edgeScrollWidth;
         this.bindInOut();
         this.render();
         this.wavesurfer.on('zoom', this._onRedraw);
