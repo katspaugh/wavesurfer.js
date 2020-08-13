@@ -130,7 +130,7 @@ export default class RegionsPlugin {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             if (this.params.regions) {
                 this.params.regions.forEach(region => {
-                    region.edgeScrollWidth = this.params.edgeScrollWidth ?? this.wrapper.clientWidth * 0.05;
+                    region.edgeScrollWidth = this.params.edgeScrollWidth || this.wrapper.clientWidth * 0.05;
                     this.add(region);
                 });
             }
