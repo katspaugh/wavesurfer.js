@@ -115,6 +115,7 @@ export default class RegionsPlugin {
             }
         };
         this.maxRegions = params.maxRegions;
+        this.regionsMinLength = params.regionsMinLength || null;
 
         // turn the plugin instance into an observer
         const observerPrototypeKeys = Object.getOwnPropertyNames(
@@ -184,6 +185,10 @@ export default class RegionsPlugin {
      */
     add(params) {
         if (this.wouldExceedMaxRegions()) return null;
+
+        if (!params.minLength && this.regionsMinLength) {
+            params = {...params, minLength: this.regionsMinLength};
+        }
 
         const region = new this.wavesurfer.Region(params, this.util, this.wavesurfer);
 
@@ -357,6 +362,12 @@ export default class RegionsPlugin {
         this.on('disable-drag-selection', () => {
             this.wrapper.removeEventListener('touchmove', eventMove);
             this.wrapper.removeEventListener('mousemove', eventMove);
+        });
+
+        this.wavesurfer.on('region-created', region => {
+            if (this.regionsMinLength) {
+                region.minLength = this.regionsMinLength;
+            }
         });
     }
 

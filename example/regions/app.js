@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         backend: 'MediaElement',
         plugins: [
             WaveSurfer.regions.create({
+                regionsMinLength: 2,
                 regions: [
                     {
                         start: 1,
