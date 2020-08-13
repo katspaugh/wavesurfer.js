@@ -72,7 +72,7 @@ export default class Observer {
      * Remove all event handlers.
      */
     unAll() {
-        this.handlers = null;
+        this.handlers = {};
     }
 
     /**
