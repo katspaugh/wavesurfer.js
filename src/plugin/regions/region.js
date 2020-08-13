@@ -44,6 +44,7 @@ export class Region {
         this.attributes = params.attributes || {};
 
         this.maxLength = params.maxLength;
+        // It assumes the minLength parameter value, or the regionsMinLength parameter value, if the first one not provided
         this.minLength = params.minLength;
         this._onRedraw = () => this.updateRender();
 
