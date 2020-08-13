@@ -14,15 +14,17 @@ export default class Observer {
      */
     constructor() {
         /**
+         * @type {string[]}
          * @private
          */
         this._disabledEventEmissions = [];
 
         /**
-         * @type {Object.<string, ListenerDescriptor[]>} Map of event name to array of handler functions
+         * @type {Object.<string, Function[]>} Map of event name to array of handler functions
          */
         this.handlers = {};
     }
+
     /**
      * Attach a handler function for an event.
      *
@@ -54,11 +56,10 @@ export default class Observer {
      */
     un(event, fn) {
         const handlers = this.handlers[event];
-        let i;
         if (handlers) {
             if (fn) {
-                for (i = handlers.length - 1; i >= 0; i--) {
-                    if (handlers[i] == fn) {
+                for (let i = handlers.length - 1; i >= 0; i--) {
+                    if (handlers[i] === fn) {
                         handlers.splice(i, 1);
                     }
                 }
@@ -88,9 +89,7 @@ export default class Observer {
             /*  eslint-disable no-invalid-this */
             handler.apply(this, args);
             /*  eslint-enable no-invalid-this */
-            setTimeout(() => {
-                this.un(event, fn);
-            }, 0);
+            setTimeout(() => this.un(event, fn), 0);
         };
         return this.on(event, fn);
     }
@@ -130,9 +129,6 @@ export default class Observer {
         }
 
         const handlers = this.handlers[event];
-        handlers &&
-            handlers.forEach(fn => {
-                fn(...args);
-            });
+        handlers && handlers.forEach(fn => fn(...args));
     }
 }
