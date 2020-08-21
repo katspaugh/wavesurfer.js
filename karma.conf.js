@@ -59,7 +59,8 @@ module.exports = function(config) {
             'spec/wavesurfer.spec.js',
             'spec/peakcache.spec.js',
             'spec/mediaelement.spec.js',
-            'spec/mediaelement-webaudio.spec.js'
+            'spec/mediaelement-webaudio.spec.js',
+            'spec/drawer.spec.js'
         ],
         customHeaders: [
             {
@@ -75,6 +76,7 @@ module.exports = function(config) {
             'spec/peakcache.spec.js': ['webpack'],
             'spec/mediaelement.spec.js': ['webpack'],
             'spec/mediaelement-webaudio.spec.js': ['webpack'],
+            'spec/drawer.spec.js': ['webpack'],
 
             // source files, that you want to generate coverage for
             // do not include tests or libraries

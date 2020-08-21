@@ -99,10 +99,6 @@ export default class Drawer extends util.Observer {
             progress =
                 (this.params.rtl ? bbox.right - clientX : clientX - bbox.left) *
                     (this.params.pixelRatio / nominalWidth) || 0;
-
-            if (progress > 1) {
-                progress = 1;
-            }
         } else {
             progress =
                 ((this.params.rtl
@@ -111,6 +107,8 @@ export default class Drawer extends util.Observer {
                     this.wrapper.scrollLeft) /
                     this.wrapper.scrollWidth || 0;
         }
+        if (progress < 0) progress = 0;
+        if (progress > 1) progress = 1;
 
         return progress;
     }
