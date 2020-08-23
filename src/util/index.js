@@ -8,3 +8,4 @@ export { default as frame } from './frame';
 export { default as debounce } from 'debounce';
 export { default as preventClick } from './prevent-click';
 export { default as fetchFile } from './fetch';
+export { default as clamp } from './clamp';
