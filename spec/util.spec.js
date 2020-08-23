@@ -218,3 +218,27 @@ describe('util:', function() {
         expect(WaveSurfer.util.style(el, styles)).toEqual(result);
     });
 });
+
+/** @test {util.clamp} */
+describe('util.clamp:', function() {
+    const min = 0;
+    const max = 2;
+
+    /** @test {clamp/min} */
+    it('clamp should return min if val is less than min', function() {
+        const val = min - 1;
+        expect(WaveSurfer.util.clamp(val, min, max)).toBe(min);
+    });
+
+    /** @test {clamp/val} */
+    it('clamp should return val if val is more than min and less than max', function() {
+        const val = 1;
+        expect(WaveSurfer.util.clamp(val, min, max)).toBe(val);
+    });
+
+    /** @test {clamp/max} */
+    it('clamp should return max if val is more than max', function() {
+        const val = max + 1;
+        expect(WaveSurfer.util.clamp(val, min, max)).toBe(max);
+    });
+});
