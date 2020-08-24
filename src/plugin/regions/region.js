@@ -40,7 +40,9 @@ export class Region {
         };
         this.data = params.data || {};
         this.attributes = params.attributes || {};
-
+        this.zIndex =
+            Math.floor(Number(param.zIndex)) > 2 ?
+                Math.floor(Number(param.zIndex)) || 2;
         this.maxLength = params.maxLength;
         this.minLength = params.minLength;
         this._onRedraw = () => this.updateRender();
@@ -178,7 +180,7 @@ export class Region {
 
         this.style(regionEl, {
             position: 'absolute',
-            zIndex: 2,
+            zIndex: this.zIndex,
             height: this.regionHeight,
             top: this.marginTop
         });
