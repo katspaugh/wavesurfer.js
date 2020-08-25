@@ -30,6 +30,7 @@ module.exports = {
         'no-extra-semi': "error",
         'no-multi-spaces': "error",
         'no-multiple-empty-lines': "error",
+        'space-infix-ops': "error",
         'valid-jsdoc': [2, {
             'requireReturn': false,
             'requireReturnType': false
