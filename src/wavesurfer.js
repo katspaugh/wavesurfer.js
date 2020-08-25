@@ -124,7 +124,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  *     credentials: 'same-origin',
  *     redirect: 'follow',
  *     referrer: 'client',
- *     headers: [
+ *     requestHeaders: [
  *         {
  *             key: 'Authorization',
  *             value: 'my-token'
