@@ -30,7 +30,6 @@ export default class MediaElementWebAudio extends MediaElement {
         this.setPlaybackRate(this.params.audioRate);
         this.createTimer();
         this.createVolumeNode();
-        this.createScriptNode();
         this.createAnalyserNode();
     }
     /**
