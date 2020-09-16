@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "directories": {
@@ -84,10 +84,10 @@
     "karma-jasmine-matchers": "4.0.2",
     "karma-verbose-reporter": "0.0.6",
     "karma-webpack": "^4.0.2",
-    "lint-staged": "^10.3.0",
+    "lint-staged": "^10.4.0",
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
-    "terser-webpack-plugin": "^4.2.0",
+    "terser-webpack-plugin": "^4.2.1",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0",

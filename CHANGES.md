@@ -1,19 +1,23 @@
 wavesurfer.js changelog
 =======================
 
-Next (unreleased)
------------------
+4.1.0 (16.09.2020)
+------------------
 
 - Don't call HTMLMediaElement#load when given peaks and preload == 'none'.
   Prevents browsers from pre-fetching audio (#1969, #1990)
+- `seekTo` bugfix inc. basic unit tests (#2047)
+- Fix unhandled `AbortError` thrown during `cancelAjax` (#2063)
 - Remove `util.extend`: deprecated since v3.3.0 (#1995)
+- Remove `util.ajax`: deprecated since v3.0.0 (#2033)
 - Regions plugin:
-  - Removed 'col-resize' cursor when resize is disabled (#1985)
+  - Removed `col-resize` cursor when resize is disabled (#1985)
   - Improved and unified loop playback logic (#1868)
   - Check `minLength` before resizing region (#2001)
   - Dragging and resizing will continue outside canvas (#2006)
-  - `regionsMinLength` parameter to assign a min length to those regions for which the `minLength` is not specified (#2009)
-  - Revert PR #1926 click propagation on regions. Use event parameter passed in `region-click` if you need stopPropagation. (#2024)
+  - `regionsMinLength` parameter to assign a min length to those regions for which the `minLength`  is not specified (#2009)
+  - Revert PR #1926 click propagation on regions. Use event parameter passed
+    in `region-click` if you need `stopPropagation`. (#2024)
   - Edgescroll works for both edges (#2011)
 - Microphone plugin: move to separate directory (#1997)
 - Minimap plugin: move plugin to separate directory (#1999)
@@ -22,9 +26,6 @@ Next (unreleased)
 - Spectrogram plugin: move to separate directory (#1996)
 - Mediasession plugin: move to separate directory (#2020)
 - Timeline plugin: move to separate directory (#2018)
-- Remove `util.ajax`: deprecated since v3.0.0 (#2033)
-- seekTo bugfix inc. basic unit tests (#2047)
-- Fix unhandled AbortError thrown during cancelAjax (#2063)
 
 4.0.1 (23.06.2020)
 ------------------
