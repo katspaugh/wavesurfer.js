@@ -93,7 +93,7 @@
     "webpack-dev-server": "^3.11.0",
     "webpack-merge": "^5.1.4"
   },
-  "homepage": "https://github.com/katspaugh/wavesurfer.js",
+  "homepage": "https://wavesurfer-js.org",
   "pre-commit": "lint-js-html",
   "lint-staged": {
     "*.js": [
