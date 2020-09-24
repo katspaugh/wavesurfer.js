@@ -14,17 +14,13 @@ export default class Observer {
      */
     constructor() {
         /**
-         * @type {string[]}
          * @private
+         * @todo Initialise the handlers here already and remove the conditional
+         * assignment in `on()`
          */
         this._disabledEventEmissions = [];
-
-        /**
-         * @type {Object.<string, Function[]>} Map of event name to array of handler functions
-         */
-        this.handlers = {};
+        this.handlers = null;
     }
-
     /**
      * Attach a handler function for an event.
      *
@@ -33,6 +29,10 @@ export default class Observer {
      * @return {ListenerDescriptor} The event descriptor
      */
     on(event, fn) {
+        if (!this.handlers) {
+            this.handlers = {};
+        }
+
         let handlers = this.handlers[event];
         if (!handlers) {
             handlers = this.handlers[event] = [];
@@ -55,11 +55,16 @@ export default class Observer {
      * @param {function} fn The callback that should be removed
      */
     un(event, fn) {
+        if (!this.handlers) {
+            return;
+        }
+
         const handlers = this.handlers[event];
+        let i;
         if (handlers) {
             if (fn) {
-                for (let i = handlers.length - 1; i >= 0; i--) {
-                    if (handlers[i] === fn) {
+                for (i = handlers.length - 1; i >= 0; i--) {
+                    if (handlers[i] == fn) {
                         handlers.splice(i, 1);
                     }
                 }
@@ -73,7 +78,7 @@ export default class Observer {
      * Remove all event handlers.
      */
     unAll() {
-        this.handlers = {};
+        this.handlers = null;
     }
 
     /**
@@ -89,7 +94,9 @@ export default class Observer {
             /*  eslint-disable no-invalid-this */
             handler.apply(this, args);
             /*  eslint-enable no-invalid-this */
-            setTimeout(() => this.un(event, fn), 0);
+            setTimeout(() => {
+                this.un(event, fn);
+            }, 0);
         };
         return this.on(event, fn);
     }
@@ -124,11 +131,14 @@ export default class Observer {
      * @param {...any} args The arguments with which to call the listeners
      */
     fireEvent(event, ...args) {
-        if (this._isDisabledEventEmission(event)) {
+        if (!this.handlers || this._isDisabledEventEmission(event)) {
             return;
         }
 
         const handlers = this.handlers[event];
-        handlers && handlers.forEach(fn => fn(...args));
+        handlers &&
+            handlers.forEach(fn => {
+                fn(...args);
+            });
     }
 }
