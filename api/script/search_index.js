@@ -6,9 +6,9 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "wavesurfer.js/src/plugin/cursor.js~cursorplugin",
-    "class/src/plugin/cursor.js~CursorPlugin.html",
-    "<span>CursorPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/cursor.js</span>",
+    "wavesurfer.js/src/plugin/cursor/index.js~cursorplugin",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html",
+    "<span>CursorPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/cursor/index.js</span>",
     "class"
   ],
   [
@@ -18,10 +18,16 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "wavesurfer.js/src/plugin/elan.js~elanplugin",
-    "class/src/plugin/elan.js~ElanPlugin.html",
-    "<span>ElanPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/elan.js</span>",
+    "wavesurfer.js/src/plugin/elan/index.js~elanplugin",
+    "class/src/plugin/elan/index.js~ElanPlugin.html",
+    "<span>ElanPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/elan/index.js</span>",
     "class"
+  ],
+  [
+    "wavesurfer.js/src/plugin/spectrogram/fft.js~fft",
+    "function/index.html#static-function-FFT",
+    "<span>FFT</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/spectrogram/fft.js</span>",
+    "function"
   ],
   [
     "wavesurfer.js/src/html-init.js~init",
@@ -42,21 +48,21 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "wavesurfer.js/src/plugin/mediasession.js~mediasessionplugin",
-    "class/src/plugin/mediasession.js~MediaSessionPlugin.html",
-    "<span>MediaSessionPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/mediasession.js</span>",
+    "wavesurfer.js/src/plugin/mediasession/index.js~mediasessionplugin",
+    "class/src/plugin/mediasession/index.js~MediaSessionPlugin.html",
+    "<span>MediaSessionPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/mediasession/index.js</span>",
     "class"
   ],
   [
-    "wavesurfer.js/src/plugin/microphone.js~microphoneplugin",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html",
-    "<span>MicrophonePlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/microphone.js</span>",
+    "wavesurfer.js/src/plugin/microphone/index.js~microphoneplugin",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html",
+    "<span>MicrophonePlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/microphone/index.js</span>",
     "class"
   ],
   [
-    "wavesurfer.js/src/plugin/minimap.js~minimapplugin",
-    "class/src/plugin/minimap.js~MinimapPlugin.html",
-    "<span>MinimapPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/minimap.js</span>",
+    "wavesurfer.js/src/plugin/minimap/index.js~minimapplugin",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html",
+    "<span>MinimapPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/minimap/index.js</span>",
     "class"
   ],
   [
@@ -96,15 +102,15 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "wavesurfer.js/src/plugin/spectrogram.js~spectrogramplugin",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html",
-    "<span>SpectrogramPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/spectrogram.js</span>",
+    "wavesurfer.js/src/plugin/spectrogram/index.js~spectrogramplugin",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html",
+    "<span>SpectrogramPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/spectrogram/index.js</span>",
     "class"
   ],
   [
-    "wavesurfer.js/src/plugin/timeline.js~timelineplugin",
-    "class/src/plugin/timeline.js~TimelinePlugin.html",
-    "<span>TimelinePlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/timeline.js</span>",
+    "wavesurfer.js/src/plugin/timeline/index.js~timelineplugin",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html",
+    "<span>TimelinePlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/timeline/index.js</span>",
     "class"
   ],
   [
@@ -120,15 +126,9 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "wavesurfer.js/src/util/ajax.js~ajax",
-    "function/index.html#static-function-ajax",
-    "<span>ajax</span> <span class=\"search-result-import-path\">wavesurfer.js/src/util/ajax.js</span>",
-    "function"
-  ],
-  [
-    "wavesurfer.js/src/util/extend.js~extend",
-    "function/index.html#static-function-extend",
-    "<span>extend</span> <span class=\"search-result-import-path\">wavesurfer.js/src/util/extend.js</span>",
+    "wavesurfer.js/src/util/clamp.js~clamp",
+    "function/index.html#static-function-clamp",
+    "<span>clamp</span> <span class=\"search-result-import-path\">wavesurfer.js/src/util/clamp.js</span>",
     "function"
   ],
   [
@@ -1176,651 +1176,651 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/plugin/cursor.js",
-    "file/src/plugin/cursor.js.html",
-    "src/plugin/cursor.js",
+    "src/plugin/cursor/index.js",
+    "file/src/plugin/cursor/index.js.html",
+    "src/plugin/cursor/index.js",
     "file"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#constructor",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-constructor-constructor",
-    "src/plugin/cursor.js~CursorPlugin#constructor",
+    "src/plugin/cursor/index.js~cursorplugin#constructor",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-constructor-constructor",
+    "src/plugin/cursor/index.js~CursorPlugin#constructor",
     "method"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#cursor",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-member-cursor",
-    "src/plugin/cursor.js~CursorPlugin#cursor",
+    "src/plugin/cursor/index.js~cursorplugin#cursor",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-cursor",
+    "src/plugin/cursor/index.js~CursorPlugin#cursor",
     "member"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#defaultparams",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-member-defaultParams",
-    "src/plugin/cursor.js~CursorPlugin#defaultParams",
+    "src/plugin/cursor/index.js~cursorplugin#defaultparams",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-defaultParams",
+    "src/plugin/cursor/index.js~CursorPlugin#defaultParams",
     "member"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#destroy",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-method-destroy",
-    "src/plugin/cursor.js~CursorPlugin#destroy",
+    "src/plugin/cursor/index.js~cursorplugin#destroy",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-method-destroy",
+    "src/plugin/cursor/index.js~CursorPlugin#destroy",
     "method"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#displaytime",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-member-displayTime",
-    "src/plugin/cursor.js~CursorPlugin#displayTime",
+    "src/plugin/cursor/index.js~cursorplugin#displaytime",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-displayTime",
+    "src/plugin/cursor/index.js~CursorPlugin#displayTime",
     "member"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#formattime",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-method-formatTime",
-    "src/plugin/cursor.js~CursorPlugin#formatTime",
+    "src/plugin/cursor/index.js~cursorplugin#formattime",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-method-formatTime",
+    "src/plugin/cursor/index.js~CursorPlugin#formatTime",
     "method"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#hidecursor",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-method-hideCursor",
-    "src/plugin/cursor.js~CursorPlugin#hideCursor",
+    "src/plugin/cursor/index.js~cursorplugin#hidecursor",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-method-hideCursor",
+    "src/plugin/cursor/index.js~CursorPlugin#hideCursor",
     "method"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#init",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-method-init",
-    "src/plugin/cursor.js~CursorPlugin#init",
+    "src/plugin/cursor/index.js~cursorplugin#init",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-method-init",
+    "src/plugin/cursor/index.js~CursorPlugin#init",
     "method"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#outerwidth",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-method-outerWidth",
-    "src/plugin/cursor.js~CursorPlugin#outerWidth",
+    "src/plugin/cursor/index.js~cursorplugin#outerwidth",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-method-outerWidth",
+    "src/plugin/cursor/index.js~CursorPlugin#outerWidth",
     "method"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#params",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-member-params",
-    "src/plugin/cursor.js~CursorPlugin#params",
+    "src/plugin/cursor/index.js~cursorplugin#params",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-params",
+    "src/plugin/cursor/index.js~CursorPlugin#params",
     "member"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#showcursor",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-method-showCursor",
-    "src/plugin/cursor.js~CursorPlugin#showCursor",
+    "src/plugin/cursor/index.js~cursorplugin#showcursor",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-method-showCursor",
+    "src/plugin/cursor/index.js~CursorPlugin#showCursor",
     "method"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#showtime",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-member-showTime",
-    "src/plugin/cursor.js~CursorPlugin#showTime",
+    "src/plugin/cursor/index.js~cursorplugin#showtime",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-showTime",
+    "src/plugin/cursor/index.js~CursorPlugin#showTime",
     "member"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#style",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-member-style",
-    "src/plugin/cursor.js~CursorPlugin#style",
+    "src/plugin/cursor/index.js~cursorplugin#style",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-style",
+    "src/plugin/cursor/index.js~CursorPlugin#style",
     "member"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#updatecursorposition",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-method-updateCursorPosition",
-    "src/plugin/cursor.js~CursorPlugin#updateCursorPosition",
+    "src/plugin/cursor/index.js~cursorplugin#updatecursorposition",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-method-updateCursorPosition",
+    "src/plugin/cursor/index.js~CursorPlugin#updateCursorPosition",
     "method"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#wavesurfer",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-member-wavesurfer",
-    "src/plugin/cursor.js~CursorPlugin#wavesurfer",
+    "src/plugin/cursor/index.js~cursorplugin#wavesurfer",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-wavesurfer",
+    "src/plugin/cursor/index.js~CursorPlugin#wavesurfer",
     "member"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin#wrapper",
-    "class/src/plugin/cursor.js~CursorPlugin.html#instance-member-wrapper",
-    "src/plugin/cursor.js~CursorPlugin#wrapper",
+    "src/plugin/cursor/index.js~cursorplugin#wrapper",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-wrapper",
+    "src/plugin/cursor/index.js~CursorPlugin#wrapper",
     "member"
   ],
   [
-    "src/plugin/cursor.js~cursorplugin.create",
-    "class/src/plugin/cursor.js~CursorPlugin.html#static-method-create",
-    "src/plugin/cursor.js~CursorPlugin.create",
+    "src/plugin/cursor/index.js~cursorplugin.create",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#static-method-create",
+    "src/plugin/cursor/index.js~CursorPlugin.create",
     "method"
   ],
   [
-    "src/plugin/cursor.js~cursorpluginparams",
+    "src/plugin/cursor/index.js~cursorpluginparams",
     "typedef/index.html#static-typedef-CursorPluginParams",
-    "src/plugin/cursor.js~CursorPluginParams",
+    "src/plugin/cursor/index.js~CursorPluginParams",
     "typedef"
   ],
   [
-    "src/plugin/elan.js",
-    "file/src/plugin/elan.js.html",
-    "src/plugin/elan.js",
+    "src/plugin/elan/index.js",
+    "file/src/plugin/elan/index.js.html",
+    "src/plugin/elan/index.js",
     "file"
   ],
   [
-    "src/plugin/elan.js~elanplugin#types",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-member-Types",
-    "src/plugin/elan.js~ElanPlugin#Types",
+    "src/plugin/elan/index.js~elanplugin#types",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-member-Types",
+    "src/plugin/elan/index.js~ElanPlugin#Types",
     "member"
   ],
   [
-    "src/plugin/elan.js~elanplugin#bindclick",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-method-bindClick",
-    "src/plugin/elan.js~ElanPlugin#bindClick",
+    "src/plugin/elan/index.js~elanplugin#bindclick",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-method-bindClick",
+    "src/plugin/elan/index.js~ElanPlugin#bindClick",
     "method"
   ],
   [
-    "src/plugin/elan.js~elanplugin#constructor",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-constructor-constructor",
-    "src/plugin/elan.js~ElanPlugin#constructor",
+    "src/plugin/elan/index.js~elanplugin#constructor",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-constructor-constructor",
+    "src/plugin/elan/index.js~ElanPlugin#constructor",
     "method"
   ],
   [
-    "src/plugin/elan.js~elanplugin#container",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-member-container",
-    "src/plugin/elan.js~ElanPlugin#container",
+    "src/plugin/elan/index.js~elanplugin#container",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-member-container",
+    "src/plugin/elan/index.js~ElanPlugin#container",
     "member"
   ],
   [
-    "src/plugin/elan.js~elanplugin#data",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-member-data",
-    "src/plugin/elan.js~ElanPlugin#data",
+    "src/plugin/elan/index.js~elanplugin#data",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-member-data",
+    "src/plugin/elan/index.js~ElanPlugin#data",
     "member"
   ],
   [
-    "src/plugin/elan.js~elanplugin#destroy",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-method-destroy",
-    "src/plugin/elan.js~ElanPlugin#destroy",
+    "src/plugin/elan/index.js~elanplugin#destroy",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-method-destroy",
+    "src/plugin/elan/index.js~ElanPlugin#destroy",
     "method"
   ],
   [
-    "src/plugin/elan.js~elanplugin#getannotationnode",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-method-getAnnotationNode",
-    "src/plugin/elan.js~ElanPlugin#getAnnotationNode",
+    "src/plugin/elan/index.js~elanplugin#getannotationnode",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-method-getAnnotationNode",
+    "src/plugin/elan/index.js~ElanPlugin#getAnnotationNode",
     "method"
   ],
   [
-    "src/plugin/elan.js~elanplugin#getrenderedannotation",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-method-getRenderedAnnotation",
-    "src/plugin/elan.js~ElanPlugin#getRenderedAnnotation",
+    "src/plugin/elan/index.js~elanplugin#getrenderedannotation",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-method-getRenderedAnnotation",
+    "src/plugin/elan/index.js~ElanPlugin#getRenderedAnnotation",
     "method"
   ],
   [
-    "src/plugin/elan.js~elanplugin#init",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-method-init",
-    "src/plugin/elan.js~ElanPlugin#init",
+    "src/plugin/elan/index.js~elanplugin#init",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-method-init",
+    "src/plugin/elan/index.js~ElanPlugin#init",
     "method"
   ],
   [
-    "src/plugin/elan.js~elanplugin#load",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-method-load",
-    "src/plugin/elan.js~ElanPlugin#load",
+    "src/plugin/elan/index.js~elanplugin#load",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-method-load",
+    "src/plugin/elan/index.js~ElanPlugin#load",
     "method"
   ],
   [
-    "src/plugin/elan.js~elanplugin#loadxml",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-method-loadXML",
-    "src/plugin/elan.js~ElanPlugin#loadXML",
+    "src/plugin/elan/index.js~elanplugin#loadxml",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-method-loadXML",
+    "src/plugin/elan/index.js~ElanPlugin#loadXML",
     "method"
   ],
   [
-    "src/plugin/elan.js~elanplugin#params",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-member-params",
-    "src/plugin/elan.js~ElanPlugin#params",
+    "src/plugin/elan/index.js~elanplugin#params",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-member-params",
+    "src/plugin/elan/index.js~ElanPlugin#params",
     "member"
   ],
   [
-    "src/plugin/elan.js~elanplugin#parseelan",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-method-parseElan",
-    "src/plugin/elan.js~ElanPlugin#parseElan",
+    "src/plugin/elan/index.js~elanplugin#parseelan",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-method-parseElan",
+    "src/plugin/elan/index.js~ElanPlugin#parseElan",
     "method"
   ],
   [
-    "src/plugin/elan.js~elanplugin#render",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-method-render",
-    "src/plugin/elan.js~ElanPlugin#render",
+    "src/plugin/elan/index.js~elanplugin#render",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-method-render",
+    "src/plugin/elan/index.js~ElanPlugin#render",
     "method"
   ],
   [
-    "src/plugin/elan.js~elanplugin#renderedalignable",
-    "class/src/plugin/elan.js~ElanPlugin.html#instance-member-renderedAlignable",
-    "src/plugin/elan.js~ElanPlugin#renderedAlignable",
+    "src/plugin/elan/index.js~elanplugin#renderedalignable",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#instance-member-renderedAlignable",
+    "src/plugin/elan/index.js~ElanPlugin#renderedAlignable",
     "member"
   ],
   [
-    "src/plugin/elan.js~elanplugin.create",
-    "class/src/plugin/elan.js~ElanPlugin.html#static-method-create",
-    "src/plugin/elan.js~ElanPlugin.create",
+    "src/plugin/elan/index.js~elanplugin.create",
+    "class/src/plugin/elan/index.js~ElanPlugin.html#static-method-create",
+    "src/plugin/elan/index.js~ElanPlugin.create",
     "method"
   ],
   [
-    "src/plugin/elan.js~elanpluginparams",
+    "src/plugin/elan/index.js~elanpluginparams",
     "typedef/index.html#static-typedef-ElanPluginParams",
-    "src/plugin/elan.js~ElanPluginParams",
+    "src/plugin/elan/index.js~ElanPluginParams",
     "typedef"
   ],
   [
-    "src/plugin/mediasession.js",
-    "file/src/plugin/mediasession.js.html",
-    "src/plugin/mediasession.js",
+    "src/plugin/mediasession/index.js",
+    "file/src/plugin/mediasession/index.js.html",
+    "src/plugin/mediasession/index.js",
     "file"
   ],
   [
-    "src/plugin/mediasession.js~mediasessionplugin#constructor",
-    "class/src/plugin/mediasession.js~MediaSessionPlugin.html#instance-constructor-constructor",
-    "src/plugin/mediasession.js~MediaSessionPlugin#constructor",
+    "src/plugin/mediasession/index.js~mediasessionplugin#constructor",
+    "class/src/plugin/mediasession/index.js~MediaSessionPlugin.html#instance-constructor-constructor",
+    "src/plugin/mediasession/index.js~MediaSessionPlugin#constructor",
     "method"
   ],
   [
-    "src/plugin/mediasession.js~mediasessionplugin#destroy",
-    "class/src/plugin/mediasession.js~MediaSessionPlugin.html#instance-method-destroy",
-    "src/plugin/mediasession.js~MediaSessionPlugin#destroy",
+    "src/plugin/mediasession/index.js~mediasessionplugin#destroy",
+    "class/src/plugin/mediasession/index.js~MediaSessionPlugin.html#instance-method-destroy",
+    "src/plugin/mediasession/index.js~MediaSessionPlugin#destroy",
     "method"
   ],
   [
-    "src/plugin/mediasession.js~mediasessionplugin#init",
-    "class/src/plugin/mediasession.js~MediaSessionPlugin.html#instance-method-init",
-    "src/plugin/mediasession.js~MediaSessionPlugin#init",
+    "src/plugin/mediasession/index.js~mediasessionplugin#init",
+    "class/src/plugin/mediasession/index.js~MediaSessionPlugin.html#instance-method-init",
+    "src/plugin/mediasession/index.js~MediaSessionPlugin#init",
     "method"
   ],
   [
-    "src/plugin/mediasession.js~mediasessionplugin#metadata",
-    "class/src/plugin/mediasession.js~MediaSessionPlugin.html#instance-member-metadata",
-    "src/plugin/mediasession.js~MediaSessionPlugin#metadata",
+    "src/plugin/mediasession/index.js~mediasessionplugin#metadata",
+    "class/src/plugin/mediasession/index.js~MediaSessionPlugin.html#instance-member-metadata",
+    "src/plugin/mediasession/index.js~MediaSessionPlugin#metadata",
     "member"
   ],
   [
-    "src/plugin/mediasession.js~mediasessionplugin#params",
-    "class/src/plugin/mediasession.js~MediaSessionPlugin.html#instance-member-params",
-    "src/plugin/mediasession.js~MediaSessionPlugin#params",
+    "src/plugin/mediasession/index.js~mediasessionplugin#params",
+    "class/src/plugin/mediasession/index.js~MediaSessionPlugin.html#instance-member-params",
+    "src/plugin/mediasession/index.js~MediaSessionPlugin#params",
     "member"
   ],
   [
-    "src/plugin/mediasession.js~mediasessionplugin#update",
-    "class/src/plugin/mediasession.js~MediaSessionPlugin.html#instance-method-update",
-    "src/plugin/mediasession.js~MediaSessionPlugin#update",
+    "src/plugin/mediasession/index.js~mediasessionplugin#update",
+    "class/src/plugin/mediasession/index.js~MediaSessionPlugin.html#instance-method-update",
+    "src/plugin/mediasession/index.js~MediaSessionPlugin#update",
     "method"
   ],
   [
-    "src/plugin/mediasession.js~mediasessionplugin#wavesurfer",
-    "class/src/plugin/mediasession.js~MediaSessionPlugin.html#instance-member-wavesurfer",
-    "src/plugin/mediasession.js~MediaSessionPlugin#wavesurfer",
+    "src/plugin/mediasession/index.js~mediasessionplugin#wavesurfer",
+    "class/src/plugin/mediasession/index.js~MediaSessionPlugin.html#instance-member-wavesurfer",
+    "src/plugin/mediasession/index.js~MediaSessionPlugin#wavesurfer",
     "member"
   ],
   [
-    "src/plugin/mediasession.js~mediasessionplugin.create",
-    "class/src/plugin/mediasession.js~MediaSessionPlugin.html#static-method-create",
-    "src/plugin/mediasession.js~MediaSessionPlugin.create",
+    "src/plugin/mediasession/index.js~mediasessionplugin.create",
+    "class/src/plugin/mediasession/index.js~MediaSessionPlugin.html#static-method-create",
+    "src/plugin/mediasession/index.js~MediaSessionPlugin.create",
     "method"
   ],
   [
-    "src/plugin/mediasession.js~mediasessionpluginparams",
+    "src/plugin/mediasession/index.js~mediasessionpluginparams",
     "typedef/index.html#static-typedef-MediaSessionPluginParams",
-    "src/plugin/mediasession.js~MediaSessionPluginParams",
+    "src/plugin/mediasession/index.js~MediaSessionPluginParams",
     "typedef"
   ],
   [
-    "src/plugin/microphone.js",
-    "file/src/plugin/microphone.js.html",
-    "src/plugin/microphone.js",
+    "src/plugin/microphone/index.js",
+    "file/src/plugin/microphone/index.js.html",
+    "src/plugin/microphone/index.js",
     "file"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#active",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-active",
-    "src/plugin/microphone.js~MicrophonePlugin#active",
+    "src/plugin/microphone/index.js~microphoneplugin#active",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-active",
+    "src/plugin/microphone/index.js~MicrophonePlugin#active",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#browser",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-browser",
-    "src/plugin/microphone.js~MicrophonePlugin#browser",
+    "src/plugin/microphone/index.js~microphoneplugin#browser",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-browser",
+    "src/plugin/microphone/index.js~MicrophonePlugin#browser",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#buffersize",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-bufferSize",
-    "src/plugin/microphone.js~MicrophonePlugin#bufferSize",
+    "src/plugin/microphone/index.js~microphoneplugin#buffersize",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-bufferSize",
+    "src/plugin/microphone/index.js~MicrophonePlugin#bufferSize",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#connect",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-connect",
-    "src/plugin/microphone.js~MicrophonePlugin#connect",
+    "src/plugin/microphone/index.js~microphoneplugin#connect",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-connect",
+    "src/plugin/microphone/index.js~MicrophonePlugin#connect",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#constraints",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-constraints",
-    "src/plugin/microphone.js~MicrophonePlugin#constraints",
+    "src/plugin/microphone/index.js~microphoneplugin#constraints",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-constraints",
+    "src/plugin/microphone/index.js~MicrophonePlugin#constraints",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#constructor",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-constructor-constructor",
-    "src/plugin/microphone.js~MicrophonePlugin#constructor",
+    "src/plugin/microphone/index.js~microphoneplugin#constructor",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-constructor-constructor",
+    "src/plugin/microphone/index.js~MicrophonePlugin#constructor",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#destroy",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-destroy",
-    "src/plugin/microphone.js~MicrophonePlugin#destroy",
+    "src/plugin/microphone/index.js~microphoneplugin#destroy",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-destroy",
+    "src/plugin/microphone/index.js~MicrophonePlugin#destroy",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#detectbrowser",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-detectBrowser",
-    "src/plugin/microphone.js~MicrophonePlugin#detectBrowser",
+    "src/plugin/microphone/index.js~microphoneplugin#detectbrowser",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-detectBrowser",
+    "src/plugin/microphone/index.js~MicrophonePlugin#detectBrowser",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#deviceerror",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-deviceError",
-    "src/plugin/microphone.js~MicrophonePlugin#deviceError",
+    "src/plugin/microphone/index.js~microphoneplugin#deviceerror",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-deviceError",
+    "src/plugin/microphone/index.js~MicrophonePlugin#deviceError",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#disconnect",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-disconnect",
-    "src/plugin/microphone.js~MicrophonePlugin#disconnect",
+    "src/plugin/microphone/index.js~microphoneplugin#disconnect",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-disconnect",
+    "src/plugin/microphone/index.js~MicrophonePlugin#disconnect",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#extractversion",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-extractVersion",
-    "src/plugin/microphone.js~MicrophonePlugin#extractVersion",
+    "src/plugin/microphone/index.js~microphoneplugin#extractversion",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-extractVersion",
+    "src/plugin/microphone/index.js~MicrophonePlugin#extractVersion",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#gotstream",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-gotStream",
-    "src/plugin/microphone.js~MicrophonePlugin#gotStream",
+    "src/plugin/microphone/index.js~microphoneplugin#gotstream",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-gotStream",
+    "src/plugin/microphone/index.js~MicrophonePlugin#gotStream",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#init",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-init",
-    "src/plugin/microphone.js~MicrophonePlugin#init",
+    "src/plugin/microphone/index.js~microphoneplugin#init",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-init",
+    "src/plugin/microphone/index.js~MicrophonePlugin#init",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#levelchecker",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-levelChecker",
-    "src/plugin/microphone.js~MicrophonePlugin#levelChecker",
+    "src/plugin/microphone/index.js~microphoneplugin#levelchecker",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-levelChecker",
+    "src/plugin/microphone/index.js~MicrophonePlugin#levelChecker",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#localaudiobuffer",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-localAudioBuffer",
-    "src/plugin/microphone.js~MicrophonePlugin#localAudioBuffer",
+    "src/plugin/microphone/index.js~microphoneplugin#localaudiobuffer",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-localAudioBuffer",
+    "src/plugin/microphone/index.js~MicrophonePlugin#localAudioBuffer",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#mediastreamsource",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-mediaStreamSource",
-    "src/plugin/microphone.js~MicrophonePlugin#mediaStreamSource",
+    "src/plugin/microphone/index.js~microphoneplugin#mediastreamsource",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-mediaStreamSource",
+    "src/plugin/microphone/index.js~MicrophonePlugin#mediaStreamSource",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#miccontext",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-micContext",
-    "src/plugin/microphone.js~MicrophonePlugin#micContext",
+    "src/plugin/microphone/index.js~microphoneplugin#miccontext",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-micContext",
+    "src/plugin/microphone/index.js~MicrophonePlugin#micContext",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#numberofinputchannels",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-numberOfInputChannels",
-    "src/plugin/microphone.js~MicrophonePlugin#numberOfInputChannels",
+    "src/plugin/microphone/index.js~microphoneplugin#numberofinputchannels",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-numberOfInputChannels",
+    "src/plugin/microphone/index.js~MicrophonePlugin#numberOfInputChannels",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#numberofoutputchannels",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-numberOfOutputChannels",
-    "src/plugin/microphone.js~MicrophonePlugin#numberOfOutputChannels",
+    "src/plugin/microphone/index.js~microphoneplugin#numberofoutputchannels",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-numberOfOutputChannels",
+    "src/plugin/microphone/index.js~MicrophonePlugin#numberOfOutputChannels",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#params",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-params",
-    "src/plugin/microphone.js~MicrophonePlugin#params",
+    "src/plugin/microphone/index.js~microphoneplugin#params",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-params",
+    "src/plugin/microphone/index.js~MicrophonePlugin#params",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#pause",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-pause",
-    "src/plugin/microphone.js~MicrophonePlugin#pause",
+    "src/plugin/microphone/index.js~microphoneplugin#pause",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-pause",
+    "src/plugin/microphone/index.js~MicrophonePlugin#pause",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#paused",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-paused",
-    "src/plugin/microphone.js~MicrophonePlugin#paused",
+    "src/plugin/microphone/index.js~microphoneplugin#paused",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-paused",
+    "src/plugin/microphone/index.js~MicrophonePlugin#paused",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#play",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-play",
-    "src/plugin/microphone.js~MicrophonePlugin#play",
+    "src/plugin/microphone/index.js~microphoneplugin#play",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-play",
+    "src/plugin/microphone/index.js~MicrophonePlugin#play",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#reloadbuffer",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-reloadBuffer",
-    "src/plugin/microphone.js~MicrophonePlugin#reloadBuffer",
+    "src/plugin/microphone/index.js~microphoneplugin#reloadbuffer",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-reloadBuffer",
+    "src/plugin/microphone/index.js~MicrophonePlugin#reloadBuffer",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#reloadbufferfunction",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-reloadBufferFunction",
-    "src/plugin/microphone.js~MicrophonePlugin#reloadBufferFunction",
+    "src/plugin/microphone/index.js~microphoneplugin#reloadbufferfunction",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-reloadBufferFunction",
+    "src/plugin/microphone/index.js~MicrophonePlugin#reloadBufferFunction",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#start",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-start",
-    "src/plugin/microphone.js~MicrophonePlugin#start",
+    "src/plugin/microphone/index.js~microphoneplugin#start",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-start",
+    "src/plugin/microphone/index.js~MicrophonePlugin#start",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#stop",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-stop",
-    "src/plugin/microphone.js~MicrophonePlugin#stop",
+    "src/plugin/microphone/index.js~microphoneplugin#stop",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-stop",
+    "src/plugin/microphone/index.js~MicrophonePlugin#stop",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#stopdevice",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-stopDevice",
-    "src/plugin/microphone.js~MicrophonePlugin#stopDevice",
+    "src/plugin/microphone/index.js~microphoneplugin#stopdevice",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-stopDevice",
+    "src/plugin/microphone/index.js~MicrophonePlugin#stopDevice",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#stream",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-stream",
-    "src/plugin/microphone.js~MicrophonePlugin#stream",
+    "src/plugin/microphone/index.js~microphoneplugin#stream",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-stream",
+    "src/plugin/microphone/index.js~MicrophonePlugin#stream",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#toggleplay",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-method-togglePlay",
-    "src/plugin/microphone.js~MicrophonePlugin#togglePlay",
+    "src/plugin/microphone/index.js~microphoneplugin#toggleplay",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-method-togglePlay",
+    "src/plugin/microphone/index.js~MicrophonePlugin#togglePlay",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin#wavesurfer",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#instance-member-wavesurfer",
-    "src/plugin/microphone.js~MicrophonePlugin#wavesurfer",
+    "src/plugin/microphone/index.js~microphoneplugin#wavesurfer",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#instance-member-wavesurfer",
+    "src/plugin/microphone/index.js~MicrophonePlugin#wavesurfer",
     "member"
   ],
   [
-    "src/plugin/microphone.js~microphoneplugin.create",
-    "class/src/plugin/microphone.js~MicrophonePlugin.html#static-method-create",
-    "src/plugin/microphone.js~MicrophonePlugin.create",
+    "src/plugin/microphone/index.js~microphoneplugin.create",
+    "class/src/plugin/microphone/index.js~MicrophonePlugin.html#static-method-create",
+    "src/plugin/microphone/index.js~MicrophonePlugin.create",
     "method"
   ],
   [
-    "src/plugin/microphone.js~microphonepluginparams",
+    "src/plugin/microphone/index.js~microphonepluginparams",
     "typedef/index.html#static-typedef-MicrophonePluginParams",
-    "src/plugin/microphone.js~MicrophonePluginParams",
+    "src/plugin/microphone/index.js~MicrophonePluginParams",
     "typedef"
   ],
   [
-    "src/plugin/minimap.js",
-    "file/src/plugin/minimap.js.html",
-    "src/plugin/minimap.js",
+    "src/plugin/minimap/index.js",
+    "file/src/plugin/minimap/index.js.html",
+    "src/plugin/minimap/index.js",
     "file"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#bindminimapevents",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-bindMinimapEvents",
-    "src/plugin/minimap.js~MinimapPlugin#bindMinimapEvents",
+    "src/plugin/minimap/index.js~minimapplugin#bindminimapevents",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-bindMinimapEvents",
+    "src/plugin/minimap/index.js~MinimapPlugin#bindMinimapEvents",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#bindwavesurferevents",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-bindWavesurferEvents",
-    "src/plugin/minimap.js~MinimapPlugin#bindWavesurferEvents",
+    "src/plugin/minimap/index.js~minimapplugin#bindwavesurferevents",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-bindWavesurferEvents",
+    "src/plugin/minimap/index.js~MinimapPlugin#bindWavesurferEvents",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#constructor",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-constructor-constructor",
-    "src/plugin/minimap.js~MinimapPlugin#constructor",
+    "src/plugin/minimap/index.js~minimapplugin#constructor",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-constructor-constructor",
+    "src/plugin/minimap/index.js~MinimapPlugin#constructor",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#createelements",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-createElements",
-    "src/plugin/minimap.js~MinimapPlugin#createElements",
+    "src/plugin/minimap/index.js~minimapplugin#createelements",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-createElements",
+    "src/plugin/minimap/index.js~MinimapPlugin#createElements",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#destroy",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-destroy",
-    "src/plugin/minimap.js~MinimapPlugin#destroy",
+    "src/plugin/minimap/index.js~minimapplugin#destroy",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-destroy",
+    "src/plugin/minimap/index.js~MinimapPlugin#destroy",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#draggingoverview",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-draggingOverview",
-    "src/plugin/minimap.js~MinimapPlugin#draggingOverview",
+    "src/plugin/minimap/index.js~minimapplugin#draggingoverview",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-draggingOverview",
+    "src/plugin/minimap/index.js~MinimapPlugin#draggingOverview",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#drawer",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-drawer",
-    "src/plugin/minimap.js~MinimapPlugin#drawer",
+    "src/plugin/minimap/index.js~minimapplugin#drawer",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-drawer",
+    "src/plugin/minimap/index.js~MinimapPlugin#drawer",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#getwidth",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-getWidth",
-    "src/plugin/minimap.js~MinimapPlugin#getWidth",
+    "src/plugin/minimap/index.js~minimapplugin#getwidth",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-getWidth",
+    "src/plugin/minimap/index.js~MinimapPlugin#getWidth",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#init",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-init",
-    "src/plugin/minimap.js~MinimapPlugin#init",
+    "src/plugin/minimap/index.js~minimapplugin#init",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-init",
+    "src/plugin/minimap/index.js~MinimapPlugin#init",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#moveoverviewregion",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-moveOverviewRegion",
-    "src/plugin/minimap.js~MinimapPlugin#moveOverviewRegion",
+    "src/plugin/minimap/index.js~minimapplugin#moveoverviewregion",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-moveOverviewRegion",
+    "src/plugin/minimap/index.js~MinimapPlugin#moveOverviewRegion",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#overviewposition",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-overviewPosition",
-    "src/plugin/minimap.js~MinimapPlugin#overviewPosition",
+    "src/plugin/minimap/index.js~minimapplugin#overviewposition",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-overviewPosition",
+    "src/plugin/minimap/index.js~MinimapPlugin#overviewPosition",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#overviewregion",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-overviewRegion",
-    "src/plugin/minimap.js~MinimapPlugin#overviewRegion",
+    "src/plugin/minimap/index.js~minimapplugin#overviewregion",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-overviewRegion",
+    "src/plugin/minimap/index.js~MinimapPlugin#overviewRegion",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#overviewwidth",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-overviewWidth",
-    "src/plugin/minimap.js~MinimapPlugin#overviewWidth",
+    "src/plugin/minimap/index.js~minimapplugin#overviewwidth",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-overviewWidth",
+    "src/plugin/minimap/index.js~MinimapPlugin#overviewWidth",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#params",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-params",
-    "src/plugin/minimap.js~MinimapPlugin#params",
+    "src/plugin/minimap/index.js~minimapplugin#params",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-params",
+    "src/plugin/minimap/index.js~MinimapPlugin#params",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#ratio",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-ratio",
-    "src/plugin/minimap.js~MinimapPlugin#ratio",
+    "src/plugin/minimap/index.js~minimapplugin#ratio",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-ratio",
+    "src/plugin/minimap/index.js~MinimapPlugin#ratio",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#regions",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-regions",
-    "src/plugin/minimap.js~MinimapPlugin#regions",
+    "src/plugin/minimap/index.js~minimapplugin#regions",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-regions",
+    "src/plugin/minimap/index.js~MinimapPlugin#regions",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#regionsplugin",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-regionsPlugin",
-    "src/plugin/minimap.js~MinimapPlugin#regionsPlugin",
+    "src/plugin/minimap/index.js~minimapplugin#regionsplugin",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-regionsPlugin",
+    "src/plugin/minimap/index.js~MinimapPlugin#regionsPlugin",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#render",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-render",
-    "src/plugin/minimap.js~MinimapPlugin#render",
+    "src/plugin/minimap/index.js~minimapplugin#render",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-render",
+    "src/plugin/minimap/index.js~MinimapPlugin#render",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#renderevent",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-renderEvent",
-    "src/plugin/minimap.js~MinimapPlugin#renderEvent",
+    "src/plugin/minimap/index.js~minimapplugin#renderevent",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-renderEvent",
+    "src/plugin/minimap/index.js~MinimapPlugin#renderEvent",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#renderregions",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-method-renderRegions",
-    "src/plugin/minimap.js~MinimapPlugin#renderRegions",
+    "src/plugin/minimap/index.js~minimapplugin#renderregions",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-renderRegions",
+    "src/plugin/minimap/index.js~MinimapPlugin#renderRegions",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#util",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-util",
-    "src/plugin/minimap.js~MinimapPlugin#util",
+    "src/plugin/minimap/index.js~minimapplugin#util",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-util",
+    "src/plugin/minimap/index.js~MinimapPlugin#util",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#waveshowedwidth",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-waveShowedWidth",
-    "src/plugin/minimap.js~MinimapPlugin#waveShowedWidth",
+    "src/plugin/minimap/index.js~minimapplugin#waveshowedwidth",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-waveShowedWidth",
+    "src/plugin/minimap/index.js~MinimapPlugin#waveShowedWidth",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#wavewidth",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-waveWidth",
-    "src/plugin/minimap.js~MinimapPlugin#waveWidth",
+    "src/plugin/minimap/index.js~minimapplugin#wavewidth",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-waveWidth",
+    "src/plugin/minimap/index.js~MinimapPlugin#waveWidth",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin#wavesurfer",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#instance-member-wavesurfer",
-    "src/plugin/minimap.js~MinimapPlugin#wavesurfer",
+    "src/plugin/minimap/index.js~minimapplugin#wavesurfer",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-wavesurfer",
+    "src/plugin/minimap/index.js~MinimapPlugin#wavesurfer",
     "member"
   ],
   [
-    "src/plugin/minimap.js~minimapplugin.create",
-    "class/src/plugin/minimap.js~MinimapPlugin.html#static-method-create",
-    "src/plugin/minimap.js~MinimapPlugin.create",
+    "src/plugin/minimap/index.js~minimapplugin.create",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#static-method-create",
+    "src/plugin/minimap/index.js~MinimapPlugin.create",
     "method"
   ],
   [
-    "src/plugin/minimap.js~minimappluginparams",
+    "src/plugin/minimap/index.js~minimappluginparams",
     "typedef/index.html#static-typedef-MinimapPluginParams",
-    "src/plugin/minimap.js~MinimapPluginParams",
+    "src/plugin/minimap/index.js~MinimapPluginParams",
     "typedef"
   ],
   [
@@ -1905,6 +1905,12 @@ window.esdocSearchIndex = [
     "src/plugin/regions/index.js~regionsplugin#params",
     "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-params",
     "src/plugin/regions/index.js~RegionsPlugin#params",
+    "member"
+  ],
+  [
+    "src/plugin/regions/index.js~regionsplugin#regionsminlength",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-regionsMinLength",
+    "src/plugin/regions/index.js~RegionsPlugin#regionsMinLength",
     "member"
   ],
   [
@@ -1998,6 +2004,12 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/plugin/regions/region.js~region#edgescrollwidth",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-edgeScrollWidth",
+    "src/plugin/regions/region.js~Region#edgeScrollWidth",
+    "member"
+  ],
+  [
     "src/plugin/regions/region.js~region#element",
     "class/src/plugin/regions/region.js~Region.html#instance-member-element",
     "src/plugin/regions/region.js~Region#element",
@@ -2038,6 +2050,18 @@ window.esdocSearchIndex = [
     "class/src/plugin/regions/region.js~Region.html#instance-method-getWidth",
     "src/plugin/regions/region.js~Region#getWidth",
     "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#handleleftel",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-handleLeftEl",
+    "src/plugin/regions/region.js~Region#handleLeftEl",
+    "member"
+  ],
+  [
+    "src/plugin/regions/region.js~region#handlerightel",
+    "class/src/plugin/regions/region.js~Region.html#instance-member-handleRightEl",
+    "src/plugin/regions/region.js~Region#handleRightEl",
+    "member"
   ],
   [
     "src/plugin/regions/region.js~region#handlestyle",
@@ -2166,6 +2190,12 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/plugin/regions/region.js~region#setloop",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-setLoop",
+    "src/plugin/regions/region.js~Region#setLoop",
+    "method"
+  ],
+  [
     "src/plugin/regions/region.js~region#start",
     "class/src/plugin/regions/region.js~Region.html#instance-member-start",
     "src/plugin/regions/region.js~Region#start",
@@ -2181,6 +2211,12 @@ window.esdocSearchIndex = [
     "src/plugin/regions/region.js~region#update",
     "class/src/plugin/regions/region.js~Region.html#instance-method-update",
     "src/plugin/regions/region.js~Region#update",
+    "method"
+  ],
+  [
+    "src/plugin/regions/region.js~region#updatehandlesresize",
+    "class/src/plugin/regions/region.js~Region.html#instance-method-updateHandlesResize",
+    "src/plugin/regions/region.js~Region#updateHandlesResize",
     "method"
   ],
   [
@@ -2208,405 +2244,405 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
-    "src/plugin/spectrogram.js",
-    "file/src/plugin/spectrogram.js.html",
-    "src/plugin/spectrogram.js",
+    "src/plugin/spectrogram/fft.js",
+    "file/src/plugin/spectrogram/fft.js.html",
+    "src/plugin/spectrogram/fft.js",
     "file"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#alpha",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-alpha",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#alpha",
+    "src/plugin/spectrogram/index.js",
+    "file/src/plugin/spectrogram/index.js.html",
+    "src/plugin/spectrogram/index.js",
+    "file"
+  ],
+  [
+    "src/plugin/spectrogram/index.js~spectrogramplugin#alpha",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-alpha",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#alpha",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#colormap",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-colorMap",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#colorMap",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#colormap",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-colorMap",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#colorMap",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#constructor",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-constructor-constructor",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#constructor",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#constructor",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-constructor-constructor",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#constructor",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#container",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-container",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#container",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#container",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-container",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#container",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#createcanvas",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-createCanvas",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#createCanvas",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#createcanvas",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-createCanvas",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#createCanvas",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#createwrapper",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-createWrapper",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#createWrapper",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#createwrapper",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-createWrapper",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#createWrapper",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#destroy",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-destroy",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#destroy",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#destroy",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-destroy",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#destroy",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#drawspectrogram",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-drawSpectrogram",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#drawSpectrogram",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#drawspectrogram",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-drawSpectrogram",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#drawSpectrogram",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#drawer",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-drawer",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#drawer",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#drawer",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-drawer",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#drawer",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#fftsamples",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-fftSamples",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#fftSamples",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#fftsamples",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-fftSamples",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#fftSamples",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#freqtype",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-freqType",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#freqType",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#freqtype",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-freqType",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#freqType",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#frequenciesdataurl",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-frequenciesDataUrl",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#frequenciesDataUrl",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#frequenciesdataurl",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-frequenciesDataUrl",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#frequenciesDataUrl",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#getfrequencies",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-getFrequencies",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#getFrequencies",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#getfrequencies",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-getFrequencies",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#getFrequencies",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#height",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-height",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#height",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#height",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-height",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#height",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#init",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-init",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#init",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#init",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-init",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#init",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#loadfrequenciesdata",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-loadFrequenciesData",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#loadFrequenciesData",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#loadfrequenciesdata",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-loadFrequenciesData",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#loadFrequenciesData",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#loadlabels",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-loadLabels",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#loadLabels",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#loadlabels",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-loadLabels",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#loadLabels",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#noverlap",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-noverlap",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#noverlap",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#noverlap",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-noverlap",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#noverlap",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#params",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-params",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#params",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#params",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-params",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#params",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#pixelratio",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-pixelRatio",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#pixelRatio",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#pixelratio",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-pixelRatio",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#pixelRatio",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#render",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-render",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#render",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#render",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-render",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#render",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#resample",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-resample",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#resample",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#resample",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-resample",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#resample",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#spectrcc",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-spectrCc",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#spectrCc",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#spectrcc",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-spectrCc",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#spectrCc",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#unittype",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-unitType",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#unitType",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#unittype",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-unitType",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#unitType",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#updatecanvasstyle",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-updateCanvasStyle",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#updateCanvasStyle",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#updatecanvasstyle",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-updateCanvasStyle",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#updateCanvasStyle",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#updatescroll",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-method-updateScroll",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#updateScroll",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#updatescroll",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-method-updateScroll",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#updateScroll",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#util",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-util",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#util",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#util",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-util",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#util",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#wavesurfer",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-wavesurfer",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#wavesurfer",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#wavesurfer",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-wavesurfer",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#wavesurfer",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#width",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-width",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#width",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#width",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-width",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#width",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#windowfunc",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-windowFunc",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#windowFunc",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#windowfunc",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-windowFunc",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#windowFunc",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin#wrapper",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#instance-member-wrapper",
-    "src/plugin/spectrogram.js~SpectrogramPlugin#wrapper",
+    "src/plugin/spectrogram/index.js~spectrogramplugin#wrapper",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-wrapper",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#wrapper",
     "member"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogramplugin.create",
-    "class/src/plugin/spectrogram.js~SpectrogramPlugin.html#static-method-create",
-    "src/plugin/spectrogram.js~SpectrogramPlugin.create",
+    "src/plugin/spectrogram/index.js~spectrogramplugin.create",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#static-method-create",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin.create",
     "method"
   ],
   [
-    "src/plugin/spectrogram.js~spectrogrampluginparams",
+    "src/plugin/spectrogram/index.js~spectrogrampluginparams",
     "typedef/index.html#static-typedef-SpectrogramPluginParams",
-    "src/plugin/spectrogram.js~SpectrogramPluginParams",
+    "src/plugin/spectrogram/index.js~SpectrogramPluginParams",
     "typedef"
   ],
   [
-    "src/plugin/timeline.js",
-    "file/src/plugin/timeline.js.html",
-    "src/plugin/timeline.js",
+    "src/plugin/timeline/index.js",
+    "file/src/plugin/timeline/index.js.html",
+    "src/plugin/timeline/index.js",
     "file"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#addcanvas",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-addCanvas",
-    "src/plugin/timeline.js~TimelinePlugin#addCanvas",
+    "src/plugin/timeline/index.js~timelineplugin#addcanvas",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-addCanvas",
+    "src/plugin/timeline/index.js~TimelinePlugin#addCanvas",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#canvases",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-canvases",
-    "src/plugin/timeline.js~TimelinePlugin#canvases",
+    "src/plugin/timeline/index.js~timelineplugin#canvases",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-member-canvases",
+    "src/plugin/timeline/index.js~TimelinePlugin#canvases",
     "member"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#constructor",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-constructor-constructor",
-    "src/plugin/timeline.js~TimelinePlugin#constructor",
+    "src/plugin/timeline/index.js~timelineplugin#constructor",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-constructor-constructor",
+    "src/plugin/timeline/index.js~TimelinePlugin#constructor",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#container",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-container",
-    "src/plugin/timeline.js~TimelinePlugin#container",
+    "src/plugin/timeline/index.js~timelineplugin#container",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-member-container",
+    "src/plugin/timeline/index.js~TimelinePlugin#container",
     "member"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#createwrapper",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-createWrapper",
-    "src/plugin/timeline.js~TimelinePlugin#createWrapper",
+    "src/plugin/timeline/index.js~timelineplugin#createwrapper",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-createWrapper",
+    "src/plugin/timeline/index.js~TimelinePlugin#createWrapper",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#defaultformattimecallback",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-defaultFormatTimeCallback",
-    "src/plugin/timeline.js~TimelinePlugin#defaultFormatTimeCallback",
+    "src/plugin/timeline/index.js~timelineplugin#defaultformattimecallback",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-defaultFormatTimeCallback",
+    "src/plugin/timeline/index.js~TimelinePlugin#defaultFormatTimeCallback",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#defaultprimarylabelinterval",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-defaultPrimaryLabelInterval",
-    "src/plugin/timeline.js~TimelinePlugin#defaultPrimaryLabelInterval",
+    "src/plugin/timeline/index.js~timelineplugin#defaultprimarylabelinterval",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-defaultPrimaryLabelInterval",
+    "src/plugin/timeline/index.js~TimelinePlugin#defaultPrimaryLabelInterval",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#defaultsecondarylabelinterval",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-defaultSecondaryLabelInterval",
-    "src/plugin/timeline.js~TimelinePlugin#defaultSecondaryLabelInterval",
+    "src/plugin/timeline/index.js~timelineplugin#defaultsecondarylabelinterval",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-defaultSecondaryLabelInterval",
+    "src/plugin/timeline/index.js~TimelinePlugin#defaultSecondaryLabelInterval",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#defaulttimeinterval",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-defaultTimeInterval",
-    "src/plugin/timeline.js~TimelinePlugin#defaultTimeInterval",
+    "src/plugin/timeline/index.js~timelineplugin#defaulttimeinterval",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-defaultTimeInterval",
+    "src/plugin/timeline/index.js~TimelinePlugin#defaultTimeInterval",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#destroy",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-destroy",
-    "src/plugin/timeline.js~TimelinePlugin#destroy",
+    "src/plugin/timeline/index.js~timelineplugin#destroy",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-destroy",
+    "src/plugin/timeline/index.js~TimelinePlugin#destroy",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#drawer",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-drawer",
-    "src/plugin/timeline.js~TimelinePlugin#drawer",
+    "src/plugin/timeline/index.js~timelineplugin#drawer",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-member-drawer",
+    "src/plugin/timeline/index.js~TimelinePlugin#drawer",
     "member"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#fillrect",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-fillRect",
-    "src/plugin/timeline.js~TimelinePlugin#fillRect",
+    "src/plugin/timeline/index.js~timelineplugin#fillrect",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-fillRect",
+    "src/plugin/timeline/index.js~TimelinePlugin#fillRect",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#filltext",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-fillText",
-    "src/plugin/timeline.js~TimelinePlugin#fillText",
+    "src/plugin/timeline/index.js~timelineplugin#filltext",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-fillText",
+    "src/plugin/timeline/index.js~TimelinePlugin#fillText",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#init",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-init",
-    "src/plugin/timeline.js~TimelinePlugin#init",
+    "src/plugin/timeline/index.js~timelineplugin#init",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-init",
+    "src/plugin/timeline/index.js~TimelinePlugin#init",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#maxcanvaselementwidth",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-maxCanvasElementWidth",
-    "src/plugin/timeline.js~TimelinePlugin#maxCanvasElementWidth",
+    "src/plugin/timeline/index.js~timelineplugin#maxcanvaselementwidth",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-member-maxCanvasElementWidth",
+    "src/plugin/timeline/index.js~TimelinePlugin#maxCanvasElementWidth",
     "member"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#maxcanvaswidth",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-maxCanvasWidth",
-    "src/plugin/timeline.js~TimelinePlugin#maxCanvasWidth",
+    "src/plugin/timeline/index.js~timelineplugin#maxcanvaswidth",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-member-maxCanvasWidth",
+    "src/plugin/timeline/index.js~TimelinePlugin#maxCanvasWidth",
     "member"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#params",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-params",
-    "src/plugin/timeline.js~TimelinePlugin#params",
+    "src/plugin/timeline/index.js~timelineplugin#params",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-member-params",
+    "src/plugin/timeline/index.js~TimelinePlugin#params",
     "member"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#pixelratio",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-pixelRatio",
-    "src/plugin/timeline.js~TimelinePlugin#pixelRatio",
+    "src/plugin/timeline/index.js~timelineplugin#pixelratio",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-member-pixelRatio",
+    "src/plugin/timeline/index.js~TimelinePlugin#pixelRatio",
     "member"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#removecanvas",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-removeCanvas",
-    "src/plugin/timeline.js~TimelinePlugin#removeCanvas",
+    "src/plugin/timeline/index.js~timelineplugin#removecanvas",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-removeCanvas",
+    "src/plugin/timeline/index.js~TimelinePlugin#removeCanvas",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#render",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-render",
-    "src/plugin/timeline.js~TimelinePlugin#render",
+    "src/plugin/timeline/index.js~timelineplugin#render",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-render",
+    "src/plugin/timeline/index.js~TimelinePlugin#render",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#rendercanvases",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-renderCanvases",
-    "src/plugin/timeline.js~TimelinePlugin#renderCanvases",
+    "src/plugin/timeline/index.js~timelineplugin#rendercanvases",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-renderCanvases",
+    "src/plugin/timeline/index.js~TimelinePlugin#renderCanvases",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#setfillstyles",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-setFillStyles",
-    "src/plugin/timeline.js~TimelinePlugin#setFillStyles",
+    "src/plugin/timeline/index.js~timelineplugin#setfillstyles",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-setFillStyles",
+    "src/plugin/timeline/index.js~TimelinePlugin#setFillStyles",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#setfonts",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-setFonts",
-    "src/plugin/timeline.js~TimelinePlugin#setFonts",
+    "src/plugin/timeline/index.js~timelineplugin#setfonts",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-setFonts",
+    "src/plugin/timeline/index.js~TimelinePlugin#setFonts",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#updatecanvases",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-updateCanvases",
-    "src/plugin/timeline.js~TimelinePlugin#updateCanvases",
+    "src/plugin/timeline/index.js~timelineplugin#updatecanvases",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-updateCanvases",
+    "src/plugin/timeline/index.js~TimelinePlugin#updateCanvases",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#updatecanvasespositioning",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-method-updateCanvasesPositioning",
-    "src/plugin/timeline.js~TimelinePlugin#updateCanvasesPositioning",
+    "src/plugin/timeline/index.js~timelineplugin#updatecanvasespositioning",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-method-updateCanvasesPositioning",
+    "src/plugin/timeline/index.js~TimelinePlugin#updateCanvasesPositioning",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#util",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-util",
-    "src/plugin/timeline.js~TimelinePlugin#util",
+    "src/plugin/timeline/index.js~timelineplugin#util",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-member-util",
+    "src/plugin/timeline/index.js~TimelinePlugin#util",
     "member"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#wavesurfer",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-wavesurfer",
-    "src/plugin/timeline.js~TimelinePlugin#wavesurfer",
+    "src/plugin/timeline/index.js~timelineplugin#wavesurfer",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-member-wavesurfer",
+    "src/plugin/timeline/index.js~TimelinePlugin#wavesurfer",
     "member"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin#wrapper",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#instance-member-wrapper",
-    "src/plugin/timeline.js~TimelinePlugin#wrapper",
+    "src/plugin/timeline/index.js~timelineplugin#wrapper",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#instance-member-wrapper",
+    "src/plugin/timeline/index.js~TimelinePlugin#wrapper",
     "member"
   ],
   [
-    "src/plugin/timeline.js~timelineplugin.create",
-    "class/src/plugin/timeline.js~TimelinePlugin.html#static-method-create",
-    "src/plugin/timeline.js~TimelinePlugin.create",
+    "src/plugin/timeline/index.js~timelineplugin.create",
+    "class/src/plugin/timeline/index.js~TimelinePlugin.html#static-method-create",
+    "src/plugin/timeline/index.js~TimelinePlugin.create",
     "method"
   ],
   [
-    "src/plugin/timeline.js~timelinepluginparams",
+    "src/plugin/timeline/index.js~timelinepluginparams",
     "typedef/index.html#static-typedef-TimelinePluginParams",
-    "src/plugin/timeline.js~TimelinePluginParams",
+    "src/plugin/timeline/index.js~TimelinePluginParams",
     "typedef"
   ],
   [
-    "src/util/ajax.js",
-    "file/src/util/ajax.js.html",
-    "src/util/ajax.js",
-    "file"
-  ],
-  [
-    "src/util/extend.js",
-    "file/src/util/extend.js.html",
-    "src/util/extend.js",
+    "src/util/clamp.js",
+    "file/src/util/clamp.js.html",
+    "src/util/clamp.js",
     "file"
   ],
   [

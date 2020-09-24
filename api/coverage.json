@@ -1,7 +1,7 @@
 {
-  "coverage": "66.38%",
-  "expectCount": 583,
-  "actualCount": 387,
+  "coverage": "66.21%",
+  "expectCount": 589,
+  "actualCount": 390,
   "files": {
     "src/drawer.canvasentry.js": {
       "expectCount": 22,
@@ -16,7 +16,7 @@
       "undocumentLines": [
         16,
         32,
-        118
+        114
       ]
     },
     "src/drawer.multicanvas.js": {
@@ -33,15 +33,15 @@
       "expectCount": 9,
       "actualCount": 8,
       "undocumentLines": [
-        62
+        63
       ]
     },
     "src/mediaelement.js": {
       "expectCount": 38,
       "actualCount": 36,
       "undocumentLines": [
-        322,
-        417
+        326,
+        421
       ]
     },
     "src/peakcache.js": {
@@ -49,7 +49,7 @@
       "actualCount": 7,
       "undocumentLines": []
     },
-    "src/plugin/cursor.js": {
+    "src/plugin/cursor/index.js": {
       "expectCount": 21,
       "actualCount": 17,
       "undocumentLines": [
@@ -59,7 +59,7 @@
         148
       ]
     },
-    "src/plugin/elan.js": {
+    "src/plugin/elan/index.js": {
       "expectCount": 18,
       "actualCount": 2,
       "undocumentLines": [
@@ -81,7 +81,7 @@
         304
       ]
     },
-    "src/plugin/mediasession.js": {
+    "src/plugin/mediasession/index.js": {
       "expectCount": 9,
       "actualCount": 2,
       "undocumentLines": [
@@ -94,7 +94,7 @@
         90
       ]
     },
-    "src/plugin/microphone.js": {
+    "src/plugin/microphone/index.js": {
       "expectCount": 34,
       "actualCount": 16,
       "undocumentLines": [
@@ -118,7 +118,7 @@
         331
       ]
     },
-    "src/plugin/minimap.js": {
+    "src/plugin/minimap/index.js": {
       "expectCount": 33,
       "actualCount": 3,
       "undocumentLines": [
@@ -155,28 +155,29 @@
       ]
     },
     "src/plugin/regions/index.js": {
-      "expectCount": 21,
+      "expectCount": 22,
       "actualCount": 7,
       "undocumentLines": [
-        90,
-        108,
+        91,
         109,
         110,
         111,
-        117,
-        128,
-        129,
-        138,
-        139,
-        150,
-        161,
-        208,
-        363
+        112,
+        118,
+        119,
+        130,
+        131,
+        141,
+        142,
+        153,
+        164,
+        215,
+        376
       ]
     },
     "src/plugin/regions/region.js": {
-      "expectCount": 45,
-      "actualCount": 3,
+      "expectCount": 50,
+      "actualCount": 5,
       "undocumentLines": [
         12,
         13,
@@ -196,75 +197,83 @@
         37,
         41,
         42,
+        43,
         44,
-        45,
         46,
         48,
         49,
-        50,
+        51,
         52,
-        60,
-        61,
-        74,
-        84,
-        125,
-        128,
-        163,
-        235,
-        249,
-        254,
-        303,
-        304,
-        305,
-        345,
-        386,
-        589,
-        601
-      ]
-    },
-    "src/plugin/spectrogram.js": {
-      "expectCount": 39,
-      "actualCount": 3,
-      "undocumentLines": [
-        290,
-        291,
-        292,
-        293,
-        295,
-        296,
-        299,
-        302,
-        305,
-        308,
-        328,
-        336,
-        337,
-        338,
-        340,
-        341,
-        342,
-        343,
+        53,
+        55,
+        63,
+        64,
+        78,
+        79,
+        88,
+        130,
+        133,
+        170,
+        241,
+        255,
+        260,
+        309,
+        310,
+        311,
         354,
-        363,
-        367,
-        374,
-        378,
-        429,
-        435,
-        440,
-        448,
-        458,
-        465,
-        497,
-        544,
-        555,
-        559,
-        563,
-        640,
-        646
+        394,
+        693,
+        752
       ]
     },
-    "src/plugin/timeline.js": {
+    "src/plugin/spectrogram/fft.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
+    "src/plugin/spectrogram/index.js": {
+      "expectCount": 38,
+      "actualCount": 2,
+      "undocumentLines": [
+        76,
+        77,
+        78,
+        79,
+        81,
+        82,
+        85,
+        88,
+        91,
+        94,
+        114,
+        122,
+        123,
+        124,
+        126,
+        127,
+        128,
+        129,
+        140,
+        149,
+        153,
+        160,
+        164,
+        215,
+        221,
+        226,
+        234,
+        244,
+        251,
+        283,
+        330,
+        341,
+        345,
+        349,
+        426,
+        432
+      ]
+    },
+    "src/plugin/timeline/index.js": {
       "expectCount": 35,
       "actualCount": 23,
       "undocumentLines": [
@@ -282,12 +291,7 @@
         162
       ]
     },
-    "src/util/ajax.js": {
-      "expectCount": 1,
-      "actualCount": 1,
-      "undocumentLines": []
-    },
-    "src/util/extend.js": {
+    "src/util/clamp.js": {
       "expectCount": 1,
       "actualCount": 1,
       "undocumentLines": []
@@ -323,11 +327,9 @@
       "undocumentLines": []
     },
     "src/util/observer.js": {
-      "expectCount": 10,
-      "actualCount": 9,
-      "undocumentLines": [
-        22
-      ]
+      "expectCount": 11,
+      "actualCount": 11,
+      "undocumentLines": []
     },
     "src/util/prevent-click.js": {
       "expectCount": 2,

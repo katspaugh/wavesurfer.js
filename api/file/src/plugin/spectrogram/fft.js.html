@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../../">
+  <title data-ice="title">src/plugin/spectrogram/fft.js | wavesurfer.js</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Interactive navigable audio visualization using Web Audio and Canvas"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="wavesurfer.js"><meta property="twitter:description" content="Interactive navigable audio visualization using Web Audio and Canvas"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html">MediaElementWebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html">WaveSurfer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html">WebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-InitParams">InitParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-WavesurferParams">WavesurferParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/de/docs/Web/API/AudioNode">AudioNode</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D">CanvasRenderingContext2D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints">MediaStreamConstraints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext">OfflineAudioContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-cursor">plugin/cursor</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/cursor/index.js~CursorPlugin.html">CursorPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-elan">plugin/elan</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/elan/index.js~ElanPlugin.html">ElanPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ElanPluginParams">ElanPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-mediasession">plugin/mediasession</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/mediasession/index.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MediaSessionPluginParams">MediaSessionPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-microphone">plugin/microphone</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone/index.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-minimap">plugin/minimap</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap/index.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-regions">plugin/regions</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-spectrogram">plugin/spectrogram</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-FFT">FFT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SpectrogramPluginParams">SpectrogramPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-timeline">plugin/timeline</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/timeline/index.js~TimelinePlugin.html">TimelinePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TimelinePluginParams">TimelinePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-clamp">clamp</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/plugin/spectrogram/fft.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/* eslint-disable complexity, no-redeclare, no-var, one-var */
+
+/**
+ * Calculate FFT - Based on https://github.com/corbanbrook/dsp.js
+ *
+ * @param {Number} bufferSize Buffer size
+ * @param {Number} sampleRate Sample rate
+ * @param {Function} windowFunc Window function
+ * @param {Number} alpha Alpha channel
+ */
+export default function FFT(bufferSize, sampleRate, windowFunc, alpha) {
+    this.bufferSize = bufferSize;
+    this.sampleRate = sampleRate;
+    this.bandwidth = (2 / bufferSize) * (sampleRate / 2);
+
+    this.sinTable = new Float32Array(bufferSize);
+    this.cosTable = new Float32Array(bufferSize);
+    this.windowValues = new Float32Array(bufferSize);
+    this.reverseTable = new Uint32Array(bufferSize);
+
+    this.peakBand = 0;
+    this.peak = 0;
+
+    var i;
+    switch (windowFunc) {
+        case &apos;bartlett&apos;:
+            for (i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    (2 / (bufferSize - 1)) *
+                    ((bufferSize - 1) / 2 - Math.abs(i - (bufferSize - 1) / 2));
+            }
+            break;
+        case &apos;bartlettHann&apos;:
+            for (i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    0.62 -
+                    0.48 * Math.abs(i / (bufferSize - 1) - 0.5) -
+                    0.38 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1));
+            }
+            break;
+        case &apos;blackman&apos;:
+            alpha = alpha || 0.16;
+            for (i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    (1 - alpha) / 2 -
+                    0.5 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1)) +
+                    (alpha / 2) *
+                        Math.cos((4 * Math.PI * i) / (bufferSize - 1));
+            }
+            break;
+        case &apos;cosine&apos;:
+            for (i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] = Math.cos(
+                    (Math.PI * i) / (bufferSize - 1) - Math.PI / 2
+                );
+            }
+            break;
+        case &apos;gauss&apos;:
+            alpha = alpha || 0.25;
+            for (i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] = Math.pow(
+                    Math.E,
+                    -0.5 *
+                        Math.pow(
+                            (i - (bufferSize - 1) / 2) /
+                                ((alpha * (bufferSize - 1)) / 2),
+                            2
+                        )
+                );
+            }
+            break;
+        case &apos;hamming&apos;:
+            for (i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    0.54 -
+                    0.46 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1));
+            }
+            break;
+        case &apos;hann&apos;:
+        case undefined:
+            for (i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    0.5 * (1 - Math.cos((Math.PI * 2 * i) / (bufferSize - 1)));
+            }
+            break;
+        case &apos;lanczoz&apos;:
+            for (i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    Math.sin(Math.PI * ((2 * i) / (bufferSize - 1) - 1)) /
+                    (Math.PI * ((2 * i) / (bufferSize - 1) - 1));
+            }
+            break;
+        case &apos;rectangular&apos;:
+            for (i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] = 1;
+            }
+            break;
+        case &apos;triangular&apos;:
+            for (i = 0; i &lt; bufferSize; i++) {
+                this.windowValues[i] =
+                    (2 / bufferSize) *
+                    (bufferSize / 2 - Math.abs(i - (bufferSize - 1) / 2));
+            }
+            break;
+        default:
+            throw Error(&quot;No such window function &apos;&quot; + windowFunc + &quot;&apos;&quot;);
+    }
+
+    var limit = 1;
+    var bit = bufferSize &gt;&gt; 1;
+    var i;
+
+    while (limit &lt; bufferSize) {
+        for (i = 0; i &lt; limit; i++) {
+            this.reverseTable[i + limit] = this.reverseTable[i] + bit;
+        }
+
+        limit = limit &lt;&lt; 1;
+        bit = bit &gt;&gt; 1;
+    }
+
+    for (i = 0; i &lt; bufferSize; i++) {
+        this.sinTable[i] = Math.sin(-Math.PI / i);
+        this.cosTable[i] = Math.cos(-Math.PI / i);
+    }
+
+    this.calculateSpectrum = function(buffer) {
+        // Locally scope variables for speed up
+        var bufferSize = this.bufferSize,
+            cosTable = this.cosTable,
+            sinTable = this.sinTable,
+            reverseTable = this.reverseTable,
+            real = new Float32Array(bufferSize),
+            imag = new Float32Array(bufferSize),
+            bSi = 2 / this.bufferSize,
+            sqrt = Math.sqrt,
+            rval,
+            ival,
+            mag,
+            spectrum = new Float32Array(bufferSize / 2);
+
+        var k = Math.floor(Math.log(bufferSize) / Math.LN2);
+
+        if (Math.pow(2, k) !== bufferSize) {
+            throw &apos;Invalid buffer size, must be a power of 2.&apos;;
+        }
+        if (bufferSize !== buffer.length) {
+            throw &apos;Supplied buffer is not the same size as defined FFT. FFT Size: &apos; +
+                bufferSize +
+                &apos; Buffer Size: &apos; +
+                buffer.length;
+        }
+
+        var halfSize = 1,
+            phaseShiftStepReal,
+            phaseShiftStepImag,
+            currentPhaseShiftReal,
+            currentPhaseShiftImag,
+            off,
+            tr,
+            ti,
+            tmpReal;
+
+        for (var i = 0; i &lt; bufferSize; i++) {
+            real[i] =
+                buffer[reverseTable[i]] * this.windowValues[reverseTable[i]];
+            imag[i] = 0;
+        }
+
+        while (halfSize &lt; bufferSize) {
+            phaseShiftStepReal = cosTable[halfSize];
+            phaseShiftStepImag = sinTable[halfSize];
+
+            currentPhaseShiftReal = 1;
+            currentPhaseShiftImag = 0;
+
+            for (var fftStep = 0; fftStep &lt; halfSize; fftStep++) {
+                var i = fftStep;
+
+                while (i &lt; bufferSize) {
+                    off = i + halfSize;
+                    tr =
+                        currentPhaseShiftReal * real[off] -
+                        currentPhaseShiftImag * imag[off];
+                    ti =
+                        currentPhaseShiftReal * imag[off] +
+                        currentPhaseShiftImag * real[off];
+
+                    real[off] = real[i] - tr;
+                    imag[off] = imag[i] - ti;
+                    real[i] += tr;
+                    imag[i] += ti;
+
+                    i += halfSize &lt;&lt; 1;
+                }
+
+                tmpReal = currentPhaseShiftReal;
+                currentPhaseShiftReal =
+                    tmpReal * phaseShiftStepReal -
+                    currentPhaseShiftImag * phaseShiftStepImag;
+                currentPhaseShiftImag =
+                    tmpReal * phaseShiftStepImag +
+                    currentPhaseShiftImag * phaseShiftStepReal;
+            }
+
+            halfSize = halfSize &lt;&lt; 1;
+        }
+
+        for (var i = 0, N = bufferSize / 2; i &lt; N; i++) {
+            rval = real[i];
+            ival = imag[i];
+            mag = bSi * sqrt(rval * rval + ival * ival);
+
+            if (mag &gt; this.peak) {
+                this.peakBand = i;
+                this.peak = mag;
+            }
+            spectrum[i] = mag;
+        }
+        return spectrum;
+    };
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

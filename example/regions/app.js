@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         backend: 'MediaElement',
         plugins: [
             WaveSurfer.regions.create({
+                regionsMinLength: 2,
                 regions: [
                     {
                         start: 1,
@@ -24,7 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         start: 5,
                         end: 7,
                         loop: false,
-                        color: 'hsla(200, 50%, 70%, 0.4)'
+                        color: 'hsla(200, 50%, 70%, 0.4)',
+                        minLength: 1
                     }
                 ],
                 dragSelection: {
@@ -41,8 +43,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load audio from URL
     wavesurfer.load('../media/demo.wav');
 
-    // this is already being done in /example/trivia.js
-    // document.querySelector(
-    //     '[data-action="play"]'
-    // ).addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
+
+    document.querySelector(
+        '[data-action="play-region-1"]'
+    ).addEventListener('click', function() {
+        let region = Object.values(wavesurfer.regions.list)[0];
+        region.play();
+    });
+
+    document.querySelector(
+        '[data-action="play-region-2"]'
+    ).addEventListener('click', function() {
+        let region = Object.values(wavesurfer.regions.list)[1];
+        region.playLoop();
+    });
+
+    document.querySelector(
+        '[data-action="pause"]'
+    ).addEventListener('click', function() {
+        wavesurfer.pause();
+    });
 });
