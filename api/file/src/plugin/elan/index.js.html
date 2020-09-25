@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../../">
+  <title data-ice="title">src/plugin/elan/index.js | wavesurfer.js</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Interactive navigable audio visualization using Web Audio and Canvas"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="wavesurfer.js"><meta property="twitter:description" content="Interactive navigable audio visualization using Web Audio and Canvas"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html">MediaElementWebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html">WaveSurfer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html">WebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-InitParams">InitParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-WavesurferParams">WavesurferParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/de/docs/Web/API/AudioNode">AudioNode</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D">CanvasRenderingContext2D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints">MediaStreamConstraints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext">OfflineAudioContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-cursor">plugin/cursor</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/cursor/index.js~CursorPlugin.html">CursorPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-elan">plugin/elan</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/elan/index.js~ElanPlugin.html">ElanPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ElanPluginParams">ElanPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-mediasession">plugin/mediasession</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/mediasession/index.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MediaSessionPluginParams">MediaSessionPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-microphone">plugin/microphone</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone/index.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-minimap">plugin/minimap</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap/index.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-regions">plugin/regions</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-spectrogram">plugin/spectrogram</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-FFT">FFT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SpectrogramPluginParams">SpectrogramPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-timeline">plugin/timeline</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/timeline/index.js~TimelinePlugin.html">TimelinePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TimelinePluginParams">TimelinePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-clamp">clamp</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/plugin/elan/index.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+ * @typedef {Object} ElanPluginParams
+ * @property {string|HTMLElement} container CSS selector or HTML element where
+ * the ELAN information should be rendered.
+ * @property {string} url The location of ELAN XML data
+ * @property {?boolean} deferInit Set to true to manually call
+ * @property {?Object} tiers If set only shows the data tiers with the `TIER_ID`
+ * in this map.
+ */
+
+/**
+ * Downloads and renders ELAN audio transcription documents alongside the
+ * waveform.
+ *
+ * @implements {PluginClass}
+ * @extends {Observer}
+ * @example
+ * // es6
+ * import ElanPlugin from &apos;wavesurfer.elan.js&apos;;
+ *
+ * // commonjs
+ * var ElanPlugin = require(&apos;wavesurfer.elan.js&apos;);
+ *
+ * // if you are using &lt;script&gt; tags
+ * var ElanPlugin = window.WaveSurfer.elan;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     ElanPlugin.create({
+ *       // plugin options ...
+ *     })
+ *   ]
+ * });
+ */
+export default class ElanPlugin {
+    /**
+     * Elan plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {ElanPluginParams} params parameters use to initialise the plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: &apos;elan&apos;,
+            deferInit: params &amp;&amp; params.deferInit ? params.deferInit : false,
+            params: params,
+            instance: ElanPlugin
+        };
+    }
+
+    Types = {
+        ALIGNABLE_ANNOTATION: &apos;ALIGNABLE_ANNOTATION&apos;,
+        REF_ANNOTATION: &apos;REF_ANNOTATION&apos;
+    };
+
+    constructor(params, ws) {
+        this.data = null;
+        this.params = params;
+        this.container =
+            &apos;string&apos; == typeof params.container
+                ? document.querySelector(params.container)
+                : params.container;
+
+        if (!this.container) {
+            throw Error(&apos;No container for ELAN&apos;);
+        }
+    }
+
+    init() {
+        this.bindClick();
+
+        if (this.params.url) {
+            this.load(this.params.url);
+        }
+    }
+
+    destroy() {
+        this.container.removeEventListener(&apos;click&apos;, this._onClick);
+        this.container.removeChild(this.table);
+    }
+
+    load(url) {
+        this.loadXML(url, xml =&gt; {
+            this.data = this.parseElan(xml);
+            this.render();
+            this.fireEvent(&apos;ready&apos;, this.data);
+        });
+    }
+
+    loadXML(url, callback) {
+        const xhr = new XMLHttpRequest();
+        xhr.open(&apos;GET&apos;, url, true);
+        xhr.responseType = &apos;document&apos;;
+        xhr.send();
+        xhr.addEventListener(&apos;load&apos;, e =&gt; {
+            callback &amp;&amp; callback(e.target.responseXML);
+        });
+    }
+
+    parseElan(xml) {
+        const _forEach = Array.prototype.forEach;
+        const _map = Array.prototype.map;
+
+        const data = {
+            media: {},
+            timeOrder: {},
+            tiers: [],
+            annotations: {},
+            alignableAnnotations: []
+        };
+
+        const header = xml.querySelector(&apos;HEADER&apos;);
+        const inMilliseconds =
+            header.getAttribute(&apos;TIME_UNITS&apos;) == &apos;milliseconds&apos;;
+        const media = header.querySelector(&apos;MEDIA_DESCRIPTOR&apos;);
+        data.media.url = media.getAttribute(&apos;MEDIA_URL&apos;);
+        data.media.type = media.getAttribute(&apos;MIME_TYPE&apos;);
+
+        const timeSlots = xml.querySelectorAll(&apos;TIME_ORDER TIME_SLOT&apos;);
+        const timeOrder = {};
+        _forEach.call(timeSlots, slot =&gt; {
+            let value = parseFloat(slot.getAttribute(&apos;TIME_VALUE&apos;));
+            // If in milliseconds, convert to seconds with rounding
+            if (inMilliseconds) {
+                value = Math.round(value * 1e2) / 1e5;
+            }
+            timeOrder[slot.getAttribute(&apos;TIME_SLOT_ID&apos;)] = value;
+        });
+
+        data.tiers = _map.call(xml.querySelectorAll(&apos;TIER&apos;), tier =&gt; ({
+            id: tier.getAttribute(&apos;TIER_ID&apos;),
+            linguisticTypeRef: tier.getAttribute(&apos;LINGUISTIC_TYPE_REF&apos;),
+            defaultLocale: tier.getAttribute(&apos;DEFAULT_LOCALE&apos;),
+            annotations: _map.call(
+                tier.querySelectorAll(&apos;REF_ANNOTATION, ALIGNABLE_ANNOTATION&apos;),
+                node =&gt; {
+                    const annot = {
+                        type: node.nodeName,
+                        id: node.getAttribute(&apos;ANNOTATION_ID&apos;),
+                        ref: node.getAttribute(&apos;ANNOTATION_REF&apos;),
+                        value: node
+                            .querySelector(&apos;ANNOTATION_VALUE&apos;)
+                            .textContent.trim()
+                    };
+
+                    if (this.Types.ALIGNABLE_ANNOTATION == annot.type) {
+                        // Add start &amp; end to alignable annotation
+                        annot.start =
+                            timeOrder[node.getAttribute(&apos;TIME_SLOT_REF1&apos;)];
+                        annot.end =
+                            timeOrder[node.getAttribute(&apos;TIME_SLOT_REF2&apos;)];
+                        // Add to the list of alignable annotations
+                        data.alignableAnnotations.push(annot);
+                    }
+
+                    // Additionally, put into the flat map of all annotations
+                    data.annotations[annot.id] = annot;
+
+                    return annot;
+                }
+            )
+        }));
+
+        // Create JavaScript references between annotations
+        data.tiers.forEach(tier =&gt; {
+            tier.annotations.forEach(annot =&gt; {
+                if (null != annot.ref) {
+                    annot.reference = data.annotations[annot.ref];
+                }
+            });
+        });
+
+        // Sort alignable annotations by start &amp; end
+        data.alignableAnnotations.sort((a, b) =&gt; {
+            let d = a.start - b.start;
+            if (d == 0) {
+                d = b.end - a.end;
+            }
+            return d;
+        });
+
+        data.length = data.alignableAnnotations.length;
+
+        return data;
+    }
+
+    render() {
+        // apply tiers filter
+        let tiers = this.data.tiers;
+        if (this.params.tiers) {
+            tiers = tiers.filter(tier =&gt; tier.id in this.params.tiers);
+        }
+
+        // denormalize references to alignable annotations
+        const backRefs = {};
+        let indeces = {};
+        tiers.forEach((tier, index) =&gt; {
+            tier.annotations.forEach(annot =&gt; {
+                if (
+                    annot.reference &amp;&amp;
+                    annot.reference.type == this.Types.ALIGNABLE_ANNOTATION
+                ) {
+                    if (!(annot.reference.id in backRefs)) {
+                        backRefs[annot.ref] = {};
+                    }
+                    backRefs[annot.ref][index] = annot;
+                    indeces[index] = true;
+                }
+            });
+        });
+        indeces = Object.keys(indeces).sort();
+
+        this.renderedAlignable = this.data.alignableAnnotations.filter(
+            alignable =&gt; backRefs[alignable.id]
+        );
+
+        // table
+        const table = (this.table = document.createElement(&apos;table&apos;));
+        table.className = &apos;wavesurfer-annotations&apos;;
+
+        // head
+        const thead = document.createElement(&apos;thead&apos;);
+        const headRow = document.createElement(&apos;tr&apos;);
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+        const th = document.createElement(&apos;th&apos;);
+        th.textContent = &apos;Time&apos;;
+        th.className = &apos;wavesurfer-time&apos;;
+        headRow.appendChild(th);
+        indeces.forEach(index =&gt; {
+            const tier = tiers[index];
+            const th = document.createElement(&apos;th&apos;);
+            th.className = &apos;wavesurfer-tier-&apos; + tier.id;
+            th.textContent = tier.id;
+            if (this.params.tiers) { th.style.width = this.params.tiers[tier.id]; }
+            headRow.appendChild(th);
+        });
+
+        // body
+        const tbody = document.createElement(&apos;tbody&apos;);
+        table.appendChild(tbody);
+        this.renderedAlignable.forEach(alignable =&gt; {
+            const row = document.createElement(&apos;tr&apos;);
+            row.id = &apos;wavesurfer-alignable-&apos; + alignable.id;
+            tbody.appendChild(row);
+
+            const td = document.createElement(&apos;td&apos;);
+            td.className = &apos;wavesurfer-time&apos;;
+            td.textContent =
+                alignable.start.toFixed(1) + &apos;&#x2013;&apos; + alignable.end.toFixed(1);
+            row.appendChild(td);
+
+            const backRef = backRefs[alignable.id];
+            indeces.forEach(index =&gt; {
+                const tier = tiers[index];
+                const td = document.createElement(&apos;td&apos;);
+                const annotation = backRef[index];
+                if (annotation) {
+                    td.id = &apos;wavesurfer-annotation-&apos; + annotation.id;
+                    td.dataset.ref = alignable.id;
+                    td.dataset.start = alignable.start;
+                    td.dataset.end = alignable.end;
+                    td.textContent = annotation.value;
+                }
+                td.className = &apos;wavesurfer-tier-&apos; + tier.id;
+                row.appendChild(td);
+            });
+        });
+
+        this.container.innerHTML = &apos;&apos;;
+        this.container.appendChild(table);
+    }
+
+    bindClick() {
+        this._onClick = e =&gt; {
+            const ref = e.target.dataset.ref;
+            if (null != ref) {
+                const annot = this.data.annotations[ref];
+                if (annot) {
+                    this.fireEvent(&apos;select&apos;, annot.start, annot.end);
+                }
+            }
+        };
+        this.container.addEventListener(&apos;click&apos;, this._onClick);
+    }
+
+    getRenderedAnnotation(time) {
+        let result;
+        this.renderedAlignable.some(annotation =&gt; {
+            if (annotation.start &lt;= time &amp;&amp; annotation.end &gt;= time) {
+                result = annotation;
+                return true;
+            }
+            return false;
+        });
+        return result;
+    }
+
+    getAnnotationNode(annotation) {
+        return document.getElementById(&apos;wavesurfer-alignable-&apos; + annotation.id);
+    }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

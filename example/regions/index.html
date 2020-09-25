@@ -24,7 +24,7 @@
         <!-- App -->
         <script src="../trivia.js"></script>
         <script src="app.js"></script>
-        
+
         <!-- highlight.js for syntax highlighting in this example -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
         <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
@@ -47,10 +47,17 @@
                 </div>
 
                 <div class="controls">
-                    <button class="btn btn-primary" data-action="play">
+                    <button class="btn btn-primary" data-action="play-region-1">
                         <i class="glyphicon glyphicon-play"></i>
-                        Play
-                        /
+                        Play Region 1
+                    </button>
+
+                    <button class="btn btn-primary" data-action="play-region-2">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Loop Region 2
+                    </button>
+
+                    <button class="btn btn-primary" data-action="pause">
                         <i class="glyphicon glyphicon-pause"></i>
                         Pause
                     </button>
@@ -66,6 +73,7 @@
     backend: 'MediaElement',
     plugins: [
         WaveSurfer.regions.create({
+            regionsMinLength: 2,
             regions: [
                 {
                     start: 1,
@@ -76,7 +84,8 @@
                     start: 5,
                     end: 7,
                     loop: false,
-                    color: 'hsla(200, 50%, 70%, 0.4)'
+                    color: 'hsla(200, 50%, 70%, 0.4)',
+                    minLength: 1,
                 }
             ],
             dragSelection: {

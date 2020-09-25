@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
         backend: 'MediaElement',
+        scrollParent: true,
         plugins: [
             WaveSurfer.regions.create({
                 regions: [
@@ -21,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     {
                         start: 10,
-                        end: 100,
+                        end: 20,
                         color: 'hsla(200, 50%, 70%, 0.1)'
                     }
                 ]
