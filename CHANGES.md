@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+Next (unreleased)
+-----------------
+
+- Fix performance issues with `seekTo` while audio is playing (#2045)
+
 4.1.1 (24.09.2020)
 ------------------
 - Revert Code cleanup for Observer class (#2069)
