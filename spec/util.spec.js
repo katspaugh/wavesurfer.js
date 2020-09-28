@@ -107,7 +107,7 @@ describe('util.fetchFile:', function() {
             // options
             expect(instance.fetchRequest.url).toEndWith(options.url);
             expect(instance.fetchRequest.cache).toEqual('default');
-            expect(instance.fetchRequest.credentials).toEqual('same-origin');
+            expect(instance.fetchRequest.credentials).toEqual('omit');
             expect(instance.fetchRequest.method).toEqual('GET');
             expect(instance.fetchRequest.mode).toEqual('cors');
 
