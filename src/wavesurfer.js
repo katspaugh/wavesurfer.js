@@ -1452,10 +1452,10 @@ export default class WaveSurfer extends util.Observer {
             this.backend.once('error', err => this.fireEvent('error', err))
         );
 
+        // If peaks are provided, render them and fire the `waveform-ready` event.
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
-
             this.fireEvent('waveform-ready');
         }
 
