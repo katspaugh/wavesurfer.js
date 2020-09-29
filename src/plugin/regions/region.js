@@ -22,7 +22,7 @@ export class Region {
             params.end == null
                 ? // small marker-like region
                 this.start +
-                  (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration()
+                (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration()
                 : Number(params.end);
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
@@ -44,6 +44,7 @@ export class Region {
         this.attributes = params.attributes || {};
 
         this.maxLength = params.maxLength;
+        // It assumes the minLength parameter value, or the regionsMinLength parameter value, if the first one not provided
         this.minLength = params.minLength;
         this._onRedraw = () => this.updateRender();
 
@@ -75,7 +76,7 @@ export class Region {
         }
 
         this.formatTimeCallback = params.formatTimeCallback;
-
+        this.edgeScrollWidth = params.edgeScrollWidth;
         this.bindInOut();
         this.render();
         this.wavesurfer.on('zoom', this._onRedraw);
@@ -412,18 +413,83 @@ export class Region {
                 return;
             }
 
-            // Update scroll position
-            let scrollLeft =
-                this.wrapper.scrollLeft + scrollSpeed * scrollDirection;
-            this.wrapper.scrollLeft = scrollLeft = Math.min(
-                maxScroll,
-                Math.max(0, scrollLeft)
-            );
+            const x = e.clientX;
+            let distanceBetweenCursorAndWrapperEdge = 0;
+            let regionHalfTimeWidth = 0;
+            let adjustment = 0;
 
             // Get the currently selected time according to the mouse position
-            const time = this.regionsUtil.getRegionSnapToGridValue(
+            let time = this.regionsUtil.getRegionSnapToGridValue(
                 this.wavesurfer.drawer.handleEvent(e) * duration
             );
+
+            if (drag) {
+                // Considering the point of contact with the region while edgescrolling
+                if (scrollDirection === -1) {
+                    regionHalfTimeWidth = regionLeftHalfTime * this.wavesurfer.params.minPxPerSec;
+                    distanceBetweenCursorAndWrapperEdge = x - wrapperRect.left;
+                } else {
+                    regionHalfTimeWidth = regionRightHalfTime * this.wavesurfer.params.minPxPerSec;
+                    distanceBetweenCursorAndWrapperEdge = wrapperRect.right - x;
+                }
+            } else {
+                // Considering minLength while edgescroll
+                let minLength = this.minLength;
+                if (!minLength) {
+                    minLength = 0;
+                }
+
+                if (resize === 'start') {
+                    if (time > this.end - minLength) {
+                        time = this.end - minLength;
+                        adjustment = scrollSpeed * scrollDirection;
+                    }
+
+                    if (time < 0) {
+                        time = 0;
+                    }
+                } else if (resize === 'end') {
+                    if (time < this.start + minLength) {
+                        time = this.start + minLength;
+                        adjustment = scrollSpeed * scrollDirection;
+                    }
+
+                    if (time > duration) {
+                        time = duration;
+                    }
+                }
+            }
+
+            // Don't edgescroll if region has reached min or max limit
+            if (scrollDirection === -1) {
+                if (Math.round(this.wrapper.scrollLeft) === 0) {
+                    return;
+                }
+
+                if (Math.round(this.wrapper.scrollLeft - regionHalfTimeWidth + distanceBetweenCursorAndWrapperEdge) <= 0) {
+                    return;
+                }
+            } else {
+                if (Math.round(this.wrapper.scrollLeft) === maxScroll) {
+                    return;
+                }
+
+                if (Math.round(this.wrapper.scrollLeft + regionHalfTimeWidth - distanceBetweenCursorAndWrapperEdge) >= maxScroll) {
+                    return;
+                }
+            }
+
+            // Update scroll position
+            let scrollLeft = this.wrapper.scrollLeft - adjustment + scrollSpeed * scrollDirection;
+
+            if (scrollDirection === -1) {
+                const calculatedLeft = Math.max(0 + regionHalfTimeWidth - distanceBetweenCursorAndWrapperEdge, scrollLeft);
+                this.wrapper.scrollLeft = scrollLeft = calculatedLeft;
+            } else {
+                const calculatedRight = Math.min(maxScroll - regionHalfTimeWidth + distanceBetweenCursorAndWrapperEdge, scrollLeft);
+                this.wrapper.scrollLeft = scrollLeft = calculatedRight;
+            }
+
             const delta = time - startTime;
             startTime = time;
 
@@ -571,39 +637,25 @@ export class Region {
                 this.scroll &&
                 container.clientWidth < this.wrapper.scrollWidth
             ) {
+                // Triggering edgescroll from within edgeScrollWidth
                 if (drag) {
-                    // The threshold is not between the mouse and the container edge
-                    // but is between the region and the container edge
-                    const regionRect = this.element.getBoundingClientRect();
-                    let x = regionRect.left - wrapperRect.left;
+                    let x = e.clientX;
 
                     // Check direction
-                    if (time < oldTime && x >= 0) {
+                    if (x < wrapperRect.left + this.edgeScrollWidth) {
                         scrollDirection = -1;
-                    } else if (
-                        time > oldTime &&
-                        x + regionRect.width <= wrapperRect.right
-                    ) {
+                    } else if (x > wrapperRect.right - this.edgeScrollWidth) {
                         scrollDirection = 1;
-                    }
-
-                    // Check that we are still beyond the threshold
-                    if (
-                        (scrollDirection === -1 && x > scrollThreshold) ||
-                        (scrollDirection === 1 &&
-                            x + regionRect.width <
-                                wrapperRect.right - scrollThreshold)
-                    ) {
+                    } else {
                         scrollDirection = null;
                     }
                 } else {
-                    // Mouse based threshold
-                    let x = e.clientX - wrapperRect.left;
+                    let x = e.clientX;
 
                     // Check direction
-                    if (x <= scrollThreshold) {
+                    if (x < wrapperRect.left + this.edgeScrollWidth) {
                         scrollDirection = -1;
-                    } else if (x >= wrapperRect.right - scrollThreshold) {
+                    } else if (x > wrapperRect.right - this.edgeScrollWidth) {
                         scrollDirection = 1;
                     } else {
                         scrollDirection = null;

@@ -13,6 +13,7 @@
  * @property {number[]} maxRegions Maximum number of regions that may be created by the user at one time.
  * `initPlugin('regions')`
  * @property {function} formatTimeCallback Allows custom formating for region tooltip.
+ * @property {?number} edgeScrollWidth='5% from container edges' Optional width for edgeScroll to start
  */
 
 /**
@@ -115,6 +116,7 @@ export default class RegionsPlugin {
             }
         };
         this.maxRegions = params.maxRegions;
+        this.regionsMinLength = params.regionsMinLength || null;
 
         // turn the plugin instance into an observer
         const observerPrototypeKeys = Object.getOwnPropertyNames(
@@ -129,6 +131,7 @@ export default class RegionsPlugin {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             if (this.params.regions) {
                 this.params.regions.forEach(region => {
+                    region.edgeScrollWidth = this.params.edgeScrollWidth || this.wrapper.clientWidth * 0.05;
                     this.add(region);
                 });
             }
@@ -184,6 +187,10 @@ export default class RegionsPlugin {
      */
     add(params) {
         if (this.wouldExceedMaxRegions()) return null;
+
+        if (!params.minLength && this.regionsMinLength) {
+            params = {...params, minLength: this.regionsMinLength};
+        }
 
         const region = new this.wavesurfer.Region(params, this.util, this.wavesurfer);
 
@@ -357,6 +364,12 @@ export default class RegionsPlugin {
         this.on('disable-drag-selection', () => {
             this.wrapper.removeEventListener('touchmove', eventMove);
             this.wrapper.removeEventListener('mousemove', eventMove);
+        });
+
+        this.wavesurfer.on('region-created', region => {
+            if (this.regionsMinLength) {
+                region.minLength = this.regionsMinLength;
+            }
         });
     }
 

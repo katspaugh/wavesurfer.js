@@ -124,7 +124,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  *     credentials: 'same-origin',
  *     redirect: 'follow',
  *     referrer: 'client',
- *     headers: [
+ *     requestHeaders: [
  *         {
  *             key: 'Authorization',
  *             value: 'my-token'
@@ -900,20 +900,12 @@ export default class WaveSurfer extends util.Observer {
         }
         this.fireEvent('interaction', () => this.seekTo(progress));
 
-        const paused = this.backend.isPaused();
-        // avoid draw wrong position while playing backward seeking
-        if (!paused) {
-            this.backend.pause();
-        }
         // avoid small scrolls while paused seeking
         const oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
         this.drawer.progress(progress);
 
-        if (!paused) {
-            this.backend.play();
-        }
         this.params.scrollParent = oldScrollParent;
         this.fireEvent('seek', progress);
     }
@@ -1635,6 +1627,14 @@ export default class WaveSurfer extends util.Observer {
      */
     cancelAjax() {
         if (this.currentRequest && this.currentRequest.controller) {
+            // If the current request has a ProgressHandler, then its ReadableStream might need to be cancelled too
+            // See: Wavesurfer issue #2042
+            // See Firefox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=1583815
+            if (this.currentRequest._reader) {
+                // Ignoring exceptions thrown by call to cancel()
+                this.currentRequest._reader.cancel().catch(err => {});
+            }
+
             this.currentRequest.controller.abort();
             this.currentRequest = null;
         }
