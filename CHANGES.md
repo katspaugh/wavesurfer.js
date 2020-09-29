@@ -5,6 +5,7 @@ Next (unreleased)
 -----------------
 
 - Fix performance issues with `seekTo` while audio is playing (#2045)
+- Trigger `waveform-ready` event when provided peaks are drawn (#2077)
 
 4.1.1 (24.09.2020)
 ------------------
@@ -35,7 +36,6 @@ Next (unreleased)
 - Spectrogram plugin: move to separate directory (#1996)
 - Mediasession plugin: move to separate directory (#2020)
 - Timeline plugin: move to separate directory (#2018)
-- Trigger `waveform-ready` event when provided peaks are drawn (#2034)
 
 4.0.1 (23.06.2020)
 ------------------
