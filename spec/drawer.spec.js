@@ -64,7 +64,7 @@ describe('Drawer', function() {
     it('handleEvent should return 1 if clicked on wrapper right position', function() {
         const {right} = drawer.wrapper.getBoundingClientRect();
 
-        expect(drawer.handleEvent({clientX: right}, true)).toBe(1);
+        expect(drawer.handleEvent({clientX: right}, true)).toBeCloseTo(1, 3);
     });
 
     /** @test {handleEvent/right+1} */
