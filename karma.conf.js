@@ -125,7 +125,7 @@ module.exports = function(config) {
     };
 
     if (ci) {
-        configuration.browsers = ['Chrome_ci', 'Firefox_ci'];
+        configuration.browsers = ['Firefox_ci'];
 
         if (process.env.TRAVIS) {
             // enable coveralls
