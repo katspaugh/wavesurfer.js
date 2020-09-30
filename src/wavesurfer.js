@@ -1391,7 +1391,7 @@ export default class WaveSurfer extends util.Observer {
      * Loads audio using Web Audio buffer backend.
      *
      * @private
-     * @emits WaveSurfer#waveform-ready
+     * @emits WaveSurfer#waveformReady
      * @param {string} url URL of audio file
      * @param {number[]|Number.<Array[]>} peaks Peaks data
      * @param {?number} duration Optional duration of audio file
@@ -1419,7 +1419,7 @@ export default class WaveSurfer extends util.Observer {
      * Either create a media element, or load an existing media element.
      *
      * @private
-     * @emits WaveSurfer#waveform-ready
+     * @emits WaveSurfer#waveformReady
      * @param {string|HTMLMediaElement} urlOrElt Either a path to a media file, or an
      * existing HTML5 Audio/Video Element
      * @param {number[]|Number.<Array[]>} peaks Array of peaks. Required to bypass web audio
