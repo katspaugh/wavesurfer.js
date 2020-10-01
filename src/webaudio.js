@@ -348,20 +348,20 @@ export default class WebAudio extends util.Observer {
                 this.ac && this.ac.sampleRate ? this.ac.sampleRate : 44100
             );
         }
-        this.offlineAc.decodeAudioData(arraybuffer).then(
-            (data) => callback(data)
-        ).catch(
-            (err) => errback(err)
-        );
-
-        // XXX: Safari-only: no support for Promise-based decodeAudioData yet
-        /*
-        this.offlineAc.decodeAudioData(
-            arraybuffer,
-            data => callback(data),
-            errback
-        );
-        */
+        if ('AudioContext' in window) {
+            this.offlineAc.decodeAudioData(arraybuffer).then(
+                (data) => callback(data)
+            ).catch(
+                (err) => errback(err)
+            );
+        } else {
+            // Safari: no support for Promise-based decodeAudioData yet
+            this.offlineAc.decodeAudioData(
+                arraybuffer,
+                data => callback(data),
+                errback
+            );
+        }
     }
 
     /**
