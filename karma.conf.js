@@ -95,7 +95,7 @@ module.exports = function(config) {
             'karma-coveralls',
             'karma-verbose-reporter'
         ],
-        browsers: ['Chrome_ci', 'Firefox_dev'],
+        browsers: ['Chrome_dev', 'Firefox_dev'],
         captureConsole: true,
         colors: true,
         reporters: ['verbose', 'progress', 'coverage'],
@@ -125,7 +125,7 @@ module.exports = function(config) {
     };
 
     if (ci) {
-        configuration.browsers = ['Chrome_ci', 'Firefox_ci'];
+        configuration.browsers = ['Firefox_ci'];
 
         if (process.env.TRAVIS) {
             // enable coveralls
