@@ -33,7 +33,7 @@ export function sharedTests(backend) {
     });
 
     /**
-     * @test {WaveSurfer#waveformReady} When the waveform is drawn, the 'waveform-ready' event is triggered
+     * @test {WaveSurfer#waveform-ready} When the waveform is drawn, the 'waveform-ready' event is triggered
      */
     it('should fire waveform-ready event when the waveform is drawn', function(done) {
         const waveformReadySpy = jasmine.createSpy('waveform-ready-spy');
