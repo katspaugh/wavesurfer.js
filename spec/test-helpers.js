@@ -1,4 +1,5 @@
 import WaveSurfer from '../src/wavesurfer.js';
+import fetchFile from '../src/util/fetch.js';
 
 const TestHelpers = {
     /** Example audio clip */
@@ -66,7 +67,10 @@ const TestHelpers = {
      * @param  {function} successHandler
      */
     getPeaks(jsonFilePath, successHandler) {
-        fetch(jsonFilePath)
+        fetchFile({
+            url: jsonFilePath,
+            responseType: 'json'
+        })
             .then(response => {
                 return response.json();
             })
