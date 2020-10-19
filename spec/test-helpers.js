@@ -70,21 +70,14 @@ const TestHelpers = {
         fetchFile({
             url: jsonFilePath,
             responseType: 'json'
-        })
-            .then(response => {
-                return response.json();
-            })
-            .then(peaks => {
-
+        }).on(
+            'success',
+            peaks => {
                 const max = peaks.data.reduce((max, el) => (el > max ? el : max));
-
-                return peaks.data.map(el => {
-                    return el / max;
-                });
-            })
-            .then(normalizedPeaks => {
+                const normalizedPeaks = peaks.data.map(el => el / max);
                 return successHandler(normalizedPeaks);
-            });
+            }
+        );
     }
 };
 
