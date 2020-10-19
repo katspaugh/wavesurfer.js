@@ -11,7 +11,7 @@ const TestHelpers = {
     /** Length of example audio clip (in seconds) */
     EXAMPLE_FILE_DURATION: 21,
 
-    /** Example audio clip with waveform */
+    /** Example stero audio clip with waveform */
     EXAMPLE_STEREO_FILE_PATH: '/base/spec/support/stereo.mp3',
 
     /** Length of example audio clip with waveform (in seconds) */
