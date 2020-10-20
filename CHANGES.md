@@ -1,10 +1,11 @@
 wavesurfer.js changelog
 =======================
 
-Next (unreleased)
------------------
+4.2.0 (20.10.2020)
+------------------
 
 - Fix performance issues with `seekTo` while audio is playing (#2045)
+- Trigger `waveform-ready` event when provided peaks are drawn (#2031)
 
 4.1.1 (24.09.2020)
 ------------------

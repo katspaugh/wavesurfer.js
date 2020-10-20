@@ -1391,6 +1391,7 @@ export default class WaveSurfer extends util.Observer {
      * Loads audio using Web Audio buffer backend.
      *
      * @private
+     * @emits WaveSurfer#waveform-ready
      * @param {string} url URL of audio file
      * @param {number[]|Number.<Array[]>} peaks Peaks data
      * @param {?number} duration Optional duration of audio file
@@ -1407,6 +1408,7 @@ export default class WaveSurfer extends util.Observer {
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
+            this.fireEvent('waveform-ready');
             this.tmpEvents.push(this.once('interaction', load));
         } else {
             return load();
@@ -1417,6 +1419,7 @@ export default class WaveSurfer extends util.Observer {
      * Either create a media element, or load an existing media element.
      *
      * @private
+     * @emits WaveSurfer#waveform-ready
      * @param {string|HTMLMediaElement} urlOrElt Either a path to a media file, or an
      * existing HTML5 Audio/Video Element
      * @param {number[]|Number.<Array[]>} peaks Array of peaks. Required to bypass web audio
@@ -1451,9 +1454,11 @@ export default class WaveSurfer extends util.Observer {
             this.backend.once('error', err => this.fireEvent('error', err))
         );
 
+        // If peaks are provided, render them and fire the `waveform-ready` event.
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
+            this.fireEvent('waveform-ready');
         }
 
         // If no pre-decoded peaks are provided, or are provided with
