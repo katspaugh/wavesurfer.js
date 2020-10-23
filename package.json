@@ -83,7 +83,7 @@
     "karma-jasmine": "4.0.1",
     "karma-jasmine-matchers": "4.0.2",
     "karma-verbose-reporter": "0.0.6",
-    "karma-webpack": "^4.0.2",
+    "karma-webpack": "github:appzuka/karma-webpack#next",
     "lint-staged": "^10.4.2",
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
