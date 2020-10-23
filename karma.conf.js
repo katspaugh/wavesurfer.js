@@ -38,7 +38,7 @@ const firefoxFlags = {
 module.exports = function(config) {
     var configuration = {
         basePath: '',
-        frameworks: ['jasmine', 'jasmine-matchers'],
+        frameworks: ['jasmine', 'jasmine-matchers', 'webpack'],
         hostname: 'localhost',
         port: 9876,
         logLevel: config.LOG_INFO,
