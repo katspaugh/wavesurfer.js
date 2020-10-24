@@ -17,7 +17,6 @@ services:
   - xvfb
 cache: npm
 install:
-  - npm prune
   - npm install
   - npm update
 script:
