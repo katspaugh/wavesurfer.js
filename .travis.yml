@@ -17,7 +17,7 @@ services:
   - xvfb
 cache: npm
 install:
-  - npm install
+  - npm install --legacy-peer-deps
 script:
   - npm run lint || travis_terminate 1
   - npm run build || travis_terminate 1
