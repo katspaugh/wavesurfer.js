@@ -1,6 +1,9 @@
 wavesurfer.js changelog
 =======================
 
+Next (unreleased)
+-----------------
+
 4.2.0 (20.10.2020)
 ------------------
 
@@ -9,6 +12,7 @@ wavesurfer.js changelog
 
 4.1.1 (24.09.2020)
 ------------------
+
 - Revert Code cleanup for Observer class (#2069)
 
 4.1.0 (16.09.2020)
