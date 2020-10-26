@@ -1,6 +1,7 @@
 /* eslint-env node */
 
 const fs = require('fs');
+const path = require('path');
 
 process.env.BABEL_ENV = 'test';
 process.traceDeprecation = true;
@@ -16,7 +17,7 @@ const chromeFlags = [
     '--no-first-run',
     '--noerrdialogs',
     '--no-default-browser-check',
-    '--user-data-dir=.chrome',
+    '--user-data-dir=' + path.resolve('.chrome'),
     '--disable-translate',
     '--disable-extensions',
     '--disable-infobars',
@@ -125,7 +126,7 @@ module.exports = function(config) {
     };
 
     if (ci) {
-        configuration.browsers = ['Firefox_ci'];
+        configuration.browsers = ['Firefox_ci', 'Chrome_ci'];
 
         if (process.env.TRAVIS) {
             // enable coveralls
