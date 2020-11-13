@@ -114,6 +114,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * skipForward() and skipBackward() methods.
  * @property {boolean} splitChannels=false Render with separate waveforms for
  * the channels of the audio
+ * @property {SplitChannelOptions} splitChannelsOptions={} Options for splitChannel rendering
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options. For example:
@@ -147,6 +148,25 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * passed to the plugin class constructor function
  * @property {PluginClass} instance The plugin instance factory, is called with
  * the dependency specified in extends. Returns the plugin class.
+ */
+
+/**
+ * @typedef {Object} SplitChannelOptions
+ * @desc parameters applied when splitChannels option is true
+ * @property {boolean} overlay=false determines whether channels are rendered on top of each other or on separate tracks
+ * @property {object} channelColors={} object describing color for each channel. Example:
+ * {
+ *     0: {
+ *         progressColor: 'green',
+ *         waveColor: 'pink'
+ *     },
+ *     1: {
+ *         progressColor: 'orange',
+ *         waveColor: 'purple'
+ *     }
+ * }
+ * @property {number[]} filterChannels=[] indexes of channels to be hidden from rendering
+ * @property {boolean} relativeNormalization=false determines whether normalization is done per channel or maintains proportionality between channels. Only applied when normalize and splitChannels are both true.
  */
 
 /**
@@ -267,7 +287,8 @@ export default class WaveSurfer extends util.Observer {
         splitChannelsOptions: {
             overlay: false,
             channelColors: {},
-            filterChannels: []
+            filterChannels: [],
+            relativeNormalization: false
         },
         waveColor: '#999',
         xhr: {}
