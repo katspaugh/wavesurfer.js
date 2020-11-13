@@ -359,7 +359,11 @@ export default class WaveSurfer extends util.Observer {
          * @private
          */
         this.params = Object.assign({}, this.defaultParams, params);
-
+        this.params.splitChannelsOptions = Object.assign(
+            {},
+            this.defaultParams.splitChannelsOptions,
+            params.splitChannelsOptions
+        );
         /** @private */
         this.container =
             'string' == typeof params.container
