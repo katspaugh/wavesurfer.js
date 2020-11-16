@@ -477,6 +477,7 @@ export default class MultiCanvas extends Drawer {
 
                     let overallAbsMax;
                     if (this.params.splitChannelsOptions && this.params.splitChannelsOptions.relativeNormalization) {
+                        // calculate maximum peak across channels to use for normalization
                         overallAbsMax = util.max(channels.map((channelPeaks => util.absMax(channelPeaks))));
                     }
 
