@@ -169,6 +169,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {boolean} relativeNormalization=false determines whether
  * normalization is done per channel or maintains proportionality between
  * channels. Only applied when normalize and splitChannels are both true.
+ * @version 4.2.0
  */
 
 /**
