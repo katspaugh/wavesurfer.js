@@ -166,7 +166,9 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  *     }
  * }
  * @property {number[]} filterChannels=[] indexes of channels to be hidden from rendering
- * @property {boolean} relativeNormalization=false determines whether normalization is done per channel or maintains proportionality between channels. Only applied when normalize and splitChannels are both true.
+ * @property {boolean} relativeNormalization=false determines whether
+ * normalization is done per channel or maintains proportionality between
+ * channels. Only applied when normalize and splitChannels are both true.
  */
 
 /**
