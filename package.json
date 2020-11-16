@@ -88,6 +88,8 @@
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
     "terser-webpack-plugin": "^4.2.2",
+    "ts-loader": "^8.0.11",
+    "typescript": "^4.0.5",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0",

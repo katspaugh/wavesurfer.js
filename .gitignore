@@ -17,3 +17,6 @@
 
 package-lock.json
 .package.json.swp
+
+# Typescript build directory
+/build
