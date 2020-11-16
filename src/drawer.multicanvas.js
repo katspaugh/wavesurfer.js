@@ -456,7 +456,7 @@ export default class MultiCanvas extends Drawer {
      * rendered
      * @param {function} fn The render function to call, e.g. `drawWave`
      * @param {number} drawIndex The index of the current channel after filtering.
-     * @param {number?} normalizedMax maximum modulation value accross channels for use with relativeNormalization. Ignored when undefined
+     * @param {number?} normalizedMax maximum modulation value across channels for use with relativeNormalization. Ignored when undefined
      * @returns {void}
      */
     prepareDraw(peaks, channelIndex, start, end, fn, drawIndex, normalizedMax) {
