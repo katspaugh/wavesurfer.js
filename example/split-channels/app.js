@@ -74,7 +74,8 @@ window.onload = function() {
                     waveColor: 'purple'
                 }
             },
-            filterChannels: []
+            filterChannels: [],
+            relativeNormalization: true
         }
     });
 

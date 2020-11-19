@@ -1,6 +1,7 @@
 export { default as getId } from './get-id';
 export { default as max } from './max';
 export { default as min } from './min';
+export { default as absMax } from './absMax';
 export { default as Observer } from './observer';
 export { default as style } from './style';
 export { default as requestAnimationFrame } from './request-animation-frame';

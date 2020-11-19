@@ -456,9 +456,10 @@ export default class MultiCanvas extends Drawer {
      * rendered
      * @param {function} fn The render function to call, e.g. `drawWave`
      * @param {number} drawIndex The index of the current channel after filtering.
+     * @param {number?} normalizedMax Maximum modulation value across channels for use with relativeNormalization. Ignored when undefined
      * @returns {void}
      */
-    prepareDraw(peaks, channelIndex, start, end, fn, drawIndex) {
+    prepareDraw(peaks, channelIndex, start, end, fn, drawIndex, normalizedMax) {
         return util.frame(() => {
             // Split channels and call this function with the channelIndex set
             if (peaks[0] instanceof Array) {
@@ -474,8 +475,15 @@ export default class MultiCanvas extends Drawer {
                         );
                     }
 
+                    let overallAbsMax;
+                    if (this.params.splitChannelsOptions && this.params.splitChannelsOptions.relativeNormalization) {
+                        // calculate maximum peak across channels to use for normalization
+                        overallAbsMax = util.max(channels.map((channelPeaks => util.absMax(channelPeaks))));
+                    }
+
+
                     return channels.forEach((channelPeaks, i) =>
-                        this.prepareDraw(channelPeaks, i, start, end, fn, filteredChannels.indexOf(channelPeaks))
+                        this.prepareDraw(channelPeaks, i, start, end, fn, filteredChannels.indexOf(channelPeaks), overallAbsMax)
                     );
                 }
                 peaks = channels[0];
@@ -491,9 +499,7 @@ export default class MultiCanvas extends Drawer {
             // set
             let absmax = 1 / this.params.barHeight;
             if (this.params.normalize) {
-                const max = util.max(peaks);
-                const min = util.min(peaks);
-                absmax = -min > max ? -min : max;
+                absmax = normalizedMax === undefined ? util.absMax(peaks) : normalizedMax;
             }
 
             // Bar wave draws the bottom only as a reflection of the top,
