@@ -1,5 +1,5 @@
 /**
- * Get the largest value
+ * Get the largest number in an array of numbers
  *
  * @param values Array of numbers
  * @returns Largest number found
