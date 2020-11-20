@@ -1,14 +1,28 @@
-/**
- * @typedef {Object} ListenerDescriptor
- * @property {string} name The name of the event
- * @property {function} callback The callback
- * @property {function} un The function to call to remove the listener
- */
+type ListenerDescriptor = {
+    /**
+     * The name of the event
+     */
+    name: string;
+
+    /**
+     * The callback
+     */
+    callback: Function;
+
+    /**
+     * The function to call to remove the listener
+     */
+    un: Function;
+}
 
 /**
  * Observer class
  */
 export default class Observer {
+    private _disabledEventEmissions: string[];
+
+    private handlers: any;
+
     /**
      * Instantiate Observer
      */
@@ -24,11 +38,11 @@ export default class Observer {
     /**
      * Attach a handler function for an event.
      *
-     * @param {string} event Name of the event to listen to
-     * @param {function} fn The callback to trigger when the event is fired
-     * @return {ListenerDescriptor} The event descriptor
+     * @param event Name of the event to listen to
+     * @param fn The callback to trigger when the event is fired
+     * @return The event descriptor
      */
-    on(event, fn) {
+    on(event: string, fn: Function): ListenerDescriptor {
         if (!this.handlers) {
             this.handlers = {};
         }
@@ -43,18 +57,18 @@ export default class Observer {
         return {
             name: event,
             callback: fn,
-            un: (e, fn) => this.un(e, fn)
+            un: (e: string, fn: Function) => this.un(e, fn)
         };
     }
 
     /**
      * Remove an event handler.
      *
-     * @param {string} event Name of the event the listener that should be
+     * @param event Name of the event the listener that should be
      * removed listens to
-     * @param {function} fn The callback that should be removed
+     * @param fn The callback that should be removed
      */
-    un(event, fn) {
+    un(event: string, fn: Function): void {
         if (!this.handlers) {
             return;
         }
@@ -77,7 +91,7 @@ export default class Observer {
     /**
      * Remove all event handlers.
      */
-    unAll() {
+    unAll(): void {
         this.handlers = null;
     }
 
@@ -89,8 +103,8 @@ export default class Observer {
      * @param {function} handler The callback that is only to be called once
      * @return {ListenerDescriptor} The event descriptor
      */
-    once(event, handler) {
-        const fn = (...args) => {
+    once(event: string, handler: Function): ListenerDescriptor {
+        const fn = (...args: any[]) => {
             /*  eslint-disable no-invalid-this */
             handler.apply(this, args);
             /*  eslint-enable no-invalid-this */
@@ -106,12 +120,12 @@ export default class Observer {
      * passed in here will not be called.
      *
      * @since 4.0.0
-     * @param {string[]} eventNames an array of event names to disable emissions for
+     * @param eventNames an array of event names to disable emissions for
      * @example
      * // disable seek and interaction events
      * wavesurfer.setDisabledEventEmissions(['seek', 'interaction']);
      */
-    setDisabledEventEmissions(eventNames) {
+    setDisabledEventEmissions(eventNames: string[]): void {
         this._disabledEventEmissions = eventNames;
     }
 
@@ -119,25 +133,24 @@ export default class Observer {
      * plugins borrow part of this class without calling the constructor,
      * so we have to be careful about _disabledEventEmissions
      */
-
-    _isDisabledEventEmission(event) {
+    _isDisabledEventEmission(event: string): boolean {
         return this._disabledEventEmissions && this._disabledEventEmissions.includes(event);
     }
 
     /**
      * Manually fire an event
      *
-     * @param {string} event The event to fire manually
-     * @param {...any} args The arguments with which to call the listeners
+     * @param event The event to fire manually
+     * @param args The arguments with which to call the listeners
      */
-    fireEvent(event, ...args) {
+    fireEvent(event: string, ...args: any[]): void {
         if (!this.handlers || this._isDisabledEventEmission(event)) {
             return;
         }
 
         const handlers = this.handlers[event];
         handlers &&
-            handlers.forEach(fn => {
+            handlers.forEach((fn: Function) => {
                 fn(...args);
             });
     }

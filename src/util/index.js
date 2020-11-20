@@ -1,7 +1,7 @@
 export { default as getId } from './get-id.ts';
 export { default as max } from './max.ts';
 export { default as min } from './min.ts';
-export { default as Observer } from './observer';
+export { default as Observer } from './observer.ts';
 export { default as style } from './style';
 export { default as requestAnimationFrame } from './request-animation-frame';
 export { default as frame } from './frame';
