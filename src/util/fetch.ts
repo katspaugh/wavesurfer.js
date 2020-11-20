@@ -4,30 +4,47 @@
 
 import Observer from './observer';
 
+// This code dynamically creates properties on the Observer instance
+type FetchObserver = Observer & {
+    _reader: ReadableStreamReader;
+    onProgress: (e: Partial<ProgressEvent>) => void;
+};
+
 class ProgressHandler {
+    public instance: FetchObserver;
+
+    public total: number;
+
+    public loaded: number = 0;
+
     /**
      * Instantiate ProgressHandler
      *
-     * @param {Observer} instance The `fetchFile` observer instance.
-     * @param {Number} contentLength Content length.
-     * @param {Response} response Response object.
+     * @param instance The `fetchFile` observer instance.
+     * @param contentLength Content length.
+     * @param response Response object.
      */
-    constructor(instance, contentLength, response) {
+    constructor(instance: FetchObserver, contentLength: number | string, response: Response) {
         this.instance = instance;
+
+        // TODO: body may be null
+        // @ts-ignore
         this.instance._reader = response.body.getReader();
 
-        this.total = parseInt(contentLength, 10);
-        this.loaded = 0;
+        if (typeof contentLength === 'string') {
+            this.total = parseInt(contentLength, 10);
+        } else {
+            this.total = contentLength;
+        }
     }
 
     /**
      * A method that is called once, immediately after the `ReadableStream``
      * is constructed.
      *
-     * @param {ReadableStreamDefaultController} controller Controller instance
-     *     used to control the stream.
+     * @param controller Controller instance used to control the stream.
      */
-    start(controller) {
+    start(controller: ReadableStreamDefaultController) {
         const read = () => {
             // instance._reader.read() returns a promise that resolves
             // when a value has been received
@@ -70,6 +87,12 @@ class ProgressHandler {
     }
 }
 
+type FetchOptions = RequestInit & {
+    url: Request | string,
+    requestHeaders: any,
+    responseType?: string,
+};
+
 /**
  * Load a file using `fetch`.
  *
@@ -111,13 +134,14 @@ class ProgressHandler {
  *     console.warn('fetchFile error: ', e);
  * });
  */
-export default function fetchFile(options) {
+export default function fetchFile(options?: Partial<FetchOptions>): Observer {
     if (!options) {
         throw new Error('fetch options missing');
     } else if (!options.url) {
         throw new Error('fetch url missing');
     }
-    const instance = new Observer();
+
+    const instance: any = new Observer();
     const fetchHeaders = new Headers();
     const fetchRequest = new Request(options.url);
 
@@ -127,14 +151,14 @@ export default function fetchFile(options) {
     // check if headers have to be added
     if (options && options.requestHeaders) {
         // add custom request headers
-        options.requestHeaders.forEach(header => {
+        options.requestHeaders.forEach((header: any) => {
             fetchHeaders.append(header.key, header.value);
         });
     }
 
     // parse fetch options
     const responseType = options.responseType || 'json';
-    const fetchOptions = {
+    const fetchOptions: RequestInit = {
         method: options.method || 'GET',
         headers: fetchHeaders,
         mode: options.mode || 'cors',
@@ -172,13 +196,13 @@ export default function fetchFile(options) {
             }
 
             // fire progress event when during load
-            instance.onProgress = e => {
+            instance.onProgress = (e: ProgressEvent) => {
                 instance.fireEvent('progress', e);
             };
 
             return new Response(
                 new ReadableStream(
-                    new ProgressHandler(instance, contentLength, response)
+                    new ProgressHandler(instance, contentLength!, response)
                 ),
                 fetchOptions
             );
