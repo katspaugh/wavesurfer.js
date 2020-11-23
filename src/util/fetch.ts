@@ -2,7 +2,7 @@
  * @since 3.0.0
  */
 
-import Observer from './observer.ts';
+import Observer from './observer';
 
 // This code dynamically creates properties on the Observer instance
 type FetchObserver = Observer & {

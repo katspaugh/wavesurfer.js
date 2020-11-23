@@ -3,7 +3,7 @@
  */
 
 import style from './util/style';
-import getId from './util/get-id.ts';
+import getId from './util/get-id';
 
 /**
  * The `CanvasEntry` class represents an element consisting of a wave `canvas`

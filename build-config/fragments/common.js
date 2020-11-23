@@ -35,10 +35,13 @@ module.exports = {
                 ]
             },
             {
-                test: /\.tsx?$/,
+                test: /\.ts$/,
                 loader: "ts-loader"
             }
         ]
     },
-    plugins: [jsVersionPlugin]
+    plugins: [jsVersionPlugin],
+    resolve: {
+        extensions: ['.js', '.ts']
+    }
 };
