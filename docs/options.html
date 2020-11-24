@@ -251,6 +251,46 @@ layout: default
         <td>Render with seperate waveforms for the channels of the audio.</td>
       </tr>
       <tr>
+        <td><code>splitChannelsOptions</code></td>
+        <td>object</td>
+        <td><code>{}</code></td>
+        <td>Split channel options. Only applied when <code>splitChannels=true</code>. See below for options</td>
+      </tr>
+      <tr>
+        <td><code>splitChannelsOptions.overlay</code></td>
+        <td>boolean</td>
+        <td><code>false</code></td>
+        <td>Overlay waveforms for channels instead of rendering them on separate rows</td>
+      </tr>
+      <tr>
+        <td><code>splitChannelsOptions.relativeNormalization</code></td>
+        <td>boolean</td>
+        <td><code>false</code></td>
+        <td>Normalization maintains proportionality between channels. Only applies when <code>normalize=true</code></td>
+      </tr>
+      <tr>
+        <td><code>splitChannelsOptions.filterChannels</code></td>
+        <td>array</td>
+        <td><code>[]</code></td>
+        <td>List of channel numbers to be excluded from rendered waveforms. Channels are 0-indexed</td>
+      </tr>
+      <tr>
+        <td><code>splitChannelsOptions.channelColors</code></td>
+        <td>object</td>
+        <td><code>{}</code></td>
+        <td>Overrides color per channel. Each key indicates a channel number and  the corresponding value is an object describing it's color porperties. For example:
+  <code>channelColors={
+    0: {
+      progressColor: 'green',
+      waveColor: 'pink'
+    },
+    1: {
+      progressColor: 'orange',
+      waveColor: 'purple'
+    }
+  }</code></td>
+      </tr>
+      <tr>
         <td><code>waveColor</code></td>
         <td>string</td>
         <td><code>#999</code></td>
