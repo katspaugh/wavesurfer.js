@@ -576,10 +576,7 @@ export default class WebAudio extends util.Observer {
         this.source.start = this.source.start || this.source.noteGrainOn;
         this.source.stop = this.source.stop || this.source.noteOff;
 
-        this.source.playbackRate.setValueAtTime(
-            this.playbackRate,
-            this.ac.currentTime
-        );
+        this.setPlaybackRate(this.playbackRate);
         this.source.buffer = this.buffer;
         this.source.connect(this.analyser);
     }
@@ -736,14 +733,11 @@ export default class WebAudio extends util.Observer {
      * @param {number} value The playback rate to use
      */
     setPlaybackRate(value) {
-        value = value || 1;
-        if (this.isPaused()) {
-            this.playbackRate = value;
-        } else {
-            this.pause();
-            this.playbackRate = value;
-            this.play();
-        }
+        this.playbackRate = value || 1;
+        this.source.playbackRate.setValueAtTime(
+            this.playbackRate,
+            this.ac.currentTime
+        );
     }
 
     /**
