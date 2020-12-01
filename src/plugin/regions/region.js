@@ -556,7 +556,8 @@ export class Region {
 
             if (updated) {
                 updated = false;
-                this.util.preventClick();
+                // ** CUSTOMIZATION **
+                this.util.preventClick(undefined, this.wavesurfer.params.doc);
                 this.fireEvent('update-end', e);
                 this.wavesurfer.fireEvent('region-update-end', this, e);
             }
@@ -671,22 +672,23 @@ export class Region {
         this.element.addEventListener('mousedown', onDown);
         this.element.addEventListener('touchstart', onDown);
 
-        document.body.addEventListener('mousemove', onMove);
-        document.body.addEventListener('touchmove', onMove);
+        // ** CUSTOMIZATION **
+        this.wavesurfer.params.doc.body.addEventListener('mousemove', onMove);
+        this.wavesurfer.params.doc.body.addEventListener('touchmove', onMove);
 
-        document.body.addEventListener('mouseup', onUp);
-        document.body.addEventListener('touchend', onUp);
+        this.wavesurfer.params.doc.body.addEventListener('mouseup', onUp);
+        this.wavesurfer.params.doc.body.addEventListener('touchend', onUp);
 
         this.on('remove', () => {
-            document.body.removeEventListener('mouseup', onUp);
-            document.body.removeEventListener('touchend', onUp);
-            document.body.removeEventListener('mousemove', onMove);
-            document.body.removeEventListener('touchmove', onMove);
+            this.wavesurfer.params.doc.body.removeEventListener('mouseup', onUp);
+            this.wavesurfer.params.doc.body.removeEventListener('touchend', onUp);
+            this.wavesurfer.params.doc.body.removeEventListener('mousemove', onMove);
+            this.wavesurfer.params.doc.body.removeEventListener('touchmove', onMove);
         });
 
         this.wavesurfer.on('destroy', () => {
-            document.body.removeEventListener('mouseup', onUp);
-            document.body.removeEventListener('touchend', onUp);
+            this.wavesurfer.params.doc.body.removeEventListener('mouseup', onUp);
+            this.wavesurfer.params.doc.body.removeEventListener('touchend', onUp);
         });
     }
 

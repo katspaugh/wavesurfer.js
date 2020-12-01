@@ -4,10 +4,18 @@
  * @private
  * @param {object} event The click event
  */
-function preventClickHandler(event) {
+function preventClickHandler(event, doc, handler) {
     event.stopPropagation();
-    document.body.removeEventListener('click', preventClickHandler, true);
+    doc.body.removeEventListener('click', handler, true);
 }
+
+// ** CUSTOMIZATION **
+const wrappedPreventClickHandler = function( doc ) {
+    const handler = function(event) {
+        preventClickHandler(event, doc, handler);
+    };
+    return handler;
+};
 
 /**
  * Starts listening for click event and prevent propagation
@@ -15,5 +23,5 @@ function preventClickHandler(event) {
  * @param {object} values Values
  */
 export default function preventClick(values) {
-    document.body.addEventListener('click', preventClickHandler, true);
+    document.body.addEventListener('click', wrappedPreventClickHandler, true);
 }

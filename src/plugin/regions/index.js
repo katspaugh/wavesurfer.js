@@ -293,7 +293,8 @@ export default class RegionsPlugin {
             scrollDirection = null;
 
             if (region) {
-                this.util.preventClick();
+                // ** CUSTOMIZATION **
+                this.util.preventClick(undefined, this.wavesurfer.params.doc);
                 region.fireEvent('update-end', e);
                 this.wavesurfer.fireEvent('region-update-end', region, e);
             }
@@ -303,11 +304,12 @@ export default class RegionsPlugin {
         this.wrapper.addEventListener('mouseup', eventUp);
         this.wrapper.addEventListener('touchend', eventUp);
 
-        document.body.addEventListener('mouseup', eventUp);
-        document.body.addEventListener('touchend', eventUp);
+        // ** CUSTOMIZATION **
+        this.wavesurfer.params.doc.body.addEventListener('mouseup', eventUp);
+        this.wavesurfer.params.doc.body.addEventListener('touchend', eventUp);
         this.on('disable-drag-selection', () => {
-            document.body.removeEventListener('mouseup', eventUp);
-            document.body.removeEventListener('touchend', eventUp);
+            this.wavesurfer.params.doc.body.removeEventListener('mouseup', eventUp);
+            this.wavesurfer.params.doc.body.removeEventListener('touchend', eventUp);
             this.wrapper.removeEventListener('touchend', eventUp);
             this.wrapper.removeEventListener('mouseup', eventUp);
         });
