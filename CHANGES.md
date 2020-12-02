@@ -1,10 +1,11 @@
 wavesurfer.js changelog
 =======================
 
-4.3.0 (unreleased)
+4.3.0 (02.12.2020)
 ------------------
 
-- Add `relativeNormalization` option to maintain proportionality between waveforms when `splitChannels` and `normalize` are `true` (#2108)
+- Add `relativeNormalization` option to maintain proportionality between
+  waveforms when `splitChannels` and `normalize` are `true` (#2108)
 
 4.2.0 (20.10.2020)
 ------------------
