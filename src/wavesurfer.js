@@ -1336,13 +1336,9 @@ export default class WaveSurfer extends util.Observer {
     loadBlob(blob) {
         // Create file reader
         const reader = new FileReader();
-        reader.addEventListener('progress', e => this.onProgress(e));
-        reader.addEventListener('load', e =>
-            this.loadArrayBuffer(e.target.result)
-        );
-        reader.addEventListener('error', () =>
-            this.fireEvent('error', 'Error reading file')
-        );
+        reader.onprogress = e => this.onProgress(e);
+        reader.onload = e => this.loadArrayBuffer(e.target.result);
+        reader.onerror = () => this.fireEvent('error', 'Error reading file');
         reader.readAsArrayBuffer(blob);
         this.empty();
     }
