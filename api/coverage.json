@@ -1,7 +1,7 @@
 {
-  "coverage": "66.21%",
+  "coverage": "66.04%",
   "expectCount": 589,
-  "actualCount": 390,
+  "actualCount": 389,
   "files": {
     "src/drawer.canvasentry.js": {
       "expectCount": 22,
@@ -328,8 +328,10 @@
     },
     "src/util/observer.js": {
       "expectCount": 11,
-      "actualCount": 11,
-      "undocumentLines": []
+      "actualCount": 10,
+      "undocumentLines": [
+        22
+      ]
     },
     "src/util/prevent-click.js": {
       "expectCount": 2,

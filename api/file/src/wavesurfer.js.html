@@ -985,20 +985,12 @@ export default class WaveSurfer extends util.Observer {
         }
         this.fireEvent(&apos;interaction&apos;, () =&gt; this.seekTo(progress));
 
-        const paused = this.backend.isPaused();
-        // avoid draw wrong position while playing backward seeking
-        if (!paused) {
-            this.backend.pause();
-        }
         // avoid small scrolls while paused seeking
         const oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
         this.drawer.progress(progress);
 
-        if (!paused) {
-            this.backend.play();
-        }
         this.params.scrollParent = oldScrollParent;
         this.fireEvent(&apos;seek&apos;, progress);
     }
@@ -1484,6 +1476,7 @@ export default class WaveSurfer extends util.Observer {
      * Loads audio using Web Audio buffer backend.
      *
      * @private
+     * @emits WaveSurfer#waveform-ready
      * @param {string} url URL of audio file
      * @param {number[]|Number.&lt;Array[]&gt;} peaks Peaks data
      * @param {?number} duration Optional duration of audio file
@@ -1500,6 +1493,7 @@ export default class WaveSurfer extends util.Observer {
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
+            this.fireEvent(&apos;waveform-ready&apos;);
             this.tmpEvents.push(this.once(&apos;interaction&apos;, load));
         } else {
             return load();
@@ -1510,6 +1504,7 @@ export default class WaveSurfer extends util.Observer {
      * Either create a media element, or load an existing media element.
      *
      * @private
+     * @emits WaveSurfer#waveform-ready
      * @param {string|HTMLMediaElement} urlOrElt Either a path to a media file, or an
      * existing HTML5 Audio/Video Element
      * @param {number[]|Number.&lt;Array[]&gt;} peaks Array of peaks. Required to bypass web audio
@@ -1544,9 +1539,11 @@ export default class WaveSurfer extends util.Observer {
             this.backend.once(&apos;error&apos;, err =&gt; this.fireEvent(&apos;error&apos;, err))
         );
 
+        // If peaks are provided, render them and fire the `waveform-ready` event.
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
+            this.fireEvent(&apos;waveform-ready&apos;);
         }
 
         // If no pre-decoded peaks are provided, or are provided with
