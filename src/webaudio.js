@@ -734,7 +734,7 @@ export default class WebAudio extends util.Observer {
      */
     setPlaybackRate(value) {
         this.playbackRate = value || 1;
-        this.source.playbackRate.setValueAtTime(
+        this.source && this.source.playbackRate.setValueAtTime(
             this.playbackRate,
             this.ac.currentTime
         );
