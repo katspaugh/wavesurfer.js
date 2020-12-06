@@ -1,5 +1,5 @@
 import WaveSurfer from '../src/wavesurfer.js';
-import fetchFile from '../src/util/fetch.js';
+import fetchFile from '../src/util/fetch';
 
 const TestHelpers = {
     /** Example audio clip */
