@@ -1,6 +1,6 @@
 {
   "name": "@pdftron/wavesurfer.js",
-  "version": "4.2.3",
+  "version": "4.2.4",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "directories": {
