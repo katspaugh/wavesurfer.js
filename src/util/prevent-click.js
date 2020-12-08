@@ -23,5 +23,5 @@ const wrappedPreventClickHandler = function( doc ) {
  * @param {object} values Values
  */
 export default function preventClick(values, doc) {
-    document.body.addEventListener('click', wrappedPreventClickHandler(doc), true);
+    doc.body.addEventListener('click', wrappedPreventClickHandler(doc), true);
 }
