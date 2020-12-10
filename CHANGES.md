@@ -5,6 +5,7 @@ wavesurfer.js changelog
 ------------------
 
 - Add `relativeNormalization` option to maintain proportionality between waveforms when `splitChannels` and `normalize` are `true` (#2108)
+- Spectrogram plugin: Use `ImageData` to draw pixel-by-pixel (#2127)
 
 4.2.0 (20.10.2020)
 ------------------
