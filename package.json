@@ -54,9 +54,9 @@
     "visualization"
   ],
   "devDependencies": {
-    "@babel/core": "^7.12.9",
-    "@babel/preset-env": "^7.12.7",
-    "@babel/register": "^7.12.1",
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.10",
+    "@babel/register": "^7.12.10",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
     "babel-plugin-add-module-exports": "^1.0.4",
@@ -71,7 +71,7 @@
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-integrate-test-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^7.14.0",
+    "eslint": "^7.15.0",
     "htmlhint": "^0.14.2",
     "in-publish": "^2.0.1",
     "jasmine-core": "^3.6.0",
@@ -84,14 +84,14 @@
     "karma-jasmine-matchers": "4.0.2",
     "karma-verbose-reporter": "0.0.6",
     "karma-webpack": "^4.0.2",
-    "lint-staged": "^10.5.2",
+    "lint-staged": "^10.5.3",
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
     "terser-webpack-plugin": "^4.2.2",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0",
-    "webpack-merge": "^5.4.0"
+    "webpack-merge": "^5.5.0"
   },
   "homepage": "https://wavesurfer-js.org",
   "pre-commit": "lint-js-html",
