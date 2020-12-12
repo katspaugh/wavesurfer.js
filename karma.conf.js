@@ -8,7 +8,7 @@ process.traceDeprecation = true;
 
 require('@babel/register');
 const webpackConfig = require('./build-config/webpack.prod.main.js');
-const ci = process.env.TRAVIS || process.env.APPVEYOR;
+const ci = process.env.CI || process.env.APPVEYOR;
 
 // Chrome CLI options
 // http://peter.sh/experiments/chromium-command-line-switches/
