@@ -41,6 +41,9 @@ jobs:
     - name: Build
       run: npm run build
     - name: Test
+      env:
+        COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"
+        COVERALLS_GIT_BRANCH: "${{ github.ref }}"
       run: npm run test
     - name: Documentation
       run: npm run doc
