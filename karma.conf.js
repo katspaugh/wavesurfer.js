@@ -93,7 +93,6 @@ module.exports = function(config) {
             'karma-chrome-launcher',
             'karma-firefox-launcher',
             'karma-coverage',
-            'karma-coveralls',
             'karma-verbose-reporter'
         ],
         browsers: ['Chrome_dev', 'Firefox_dev'],
@@ -129,8 +128,6 @@ module.exports = function(config) {
         configuration.browsers = ['Firefox_ci', 'Chrome_ci'];
 
         if (process.env.CI) {
-            // enable coveralls
-            configuration.reporters.push('coveralls');
             // lcov or lcovonly are required for generating lcov.info files
             configuration.coverageReporter.type = 'lcov';
         }
