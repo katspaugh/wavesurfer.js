@@ -100,8 +100,11 @@ module.exports = function(config) {
         colors: true,
         reporters: ['verbose', 'progress', 'coverage'],
         coverageReporter: {
-            type: 'html',
-            dir: 'coverage'
+            dir: 'coverage',
+            reporters: [
+                { type: 'html', subdir: 'html' },
+                { type: 'lcov', subdir: 'lcov' }
+            ]
         },
         webpack: webpackConfig,
         customLaunchers: {
@@ -126,12 +129,6 @@ module.exports = function(config) {
 
     if (ci) {
         configuration.browsers = ['Firefox_ci', 'Chrome_ci'];
-
-        if (process.env.CI) {
-            // lcov or lcovonly are required for generating lcov.info files
-            configuration.coverageReporter.type = 'lcov';
-        }
     }
-
     config.set(configuration);
 };

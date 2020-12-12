@@ -45,6 +45,7 @@ jobs:
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
+        path-to-lcov: ./coverage/lcov/lcov.info
         github-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Documentation
       run: npm run doc
