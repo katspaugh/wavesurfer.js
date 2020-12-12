@@ -128,7 +128,7 @@ module.exports = function(config) {
     if (ci) {
         configuration.browsers = ['Firefox_ci', 'Chrome_ci'];
 
-        if (process.env.TRAVIS) {
+        if (process.env.CI) {
             // enable coveralls
             configuration.reporters.push('coveralls');
             // lcov or lcovonly are required for generating lcov.info files
