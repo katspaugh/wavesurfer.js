@@ -90,7 +90,7 @@ For a list of  projects using wavesurfer.js, check out
 
 ## Development
 
-[![Build Status](https://travis-ci.org/katspaugh/wavesurfer.js.svg?branch=master)](https://travis-ci.org/katspaugh/wavesurfer.js)
+[![Build Status](https://github.com/katspaugh/wavesurfer.js/workflows/wavesurfer.js/badge.svg?branch=master)](https://github.com/katspaugh/wavesurfer.js/actions?workflow=wavesurfer.js)
 [![Coverage Status](https://coveralls.io/repos/github/katspaugh/wavesurfer.js/badge.svg)](https://coveralls.io/github/katspaugh/wavesurfer.js)
 ![Size](https://img.shields.io/bundlephobia/minzip/wavesurfer.js.svg?style=flat)
 
