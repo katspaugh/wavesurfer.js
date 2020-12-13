@@ -11,9 +11,9 @@
     "src/"
   ],
   "scripts": {
-    "start": "npm run build:plugins && npm run build:htmlinit && webpack-dev-server --config ./build-config/webpack.dev.main.js",
-    "start:htmlinit": "npm run build:main && npm run build:plugins && webpack-dev-server --config ./build-config/webpack.dev.htmlinit.js",
-    "start:plugins": "npm run build:main && npm run build:htmlinit && webpack-dev-server --config ./build-config/webpack.dev.plugins.js",
+    "start": "npm run build:plugins && npm run build:htmlinit && webpack serve --config ./build-config/webpack.dev.main.js",
+    "start:htmlinit": "npm run build:main && npm run build:plugins && webpack serve --config ./build-config/webpack.dev.htmlinit.js",
+    "start:plugins": "npm run build:main && npm run build:htmlinit && webpack serve --config ./build-config/webpack.dev.plugins.js",
     "build": "npm run build:normal && npm run build:minified",
     "build:main": "webpack --config ./build-config/webpack.prod.main.js",
     "build:main:min": "webpack --config ./build-config/webpack.prod.main.min.js",
@@ -88,7 +88,7 @@
     "pre-commit": "^1.2.2",
     "webpack": "^5.10.1",
     "webpack-cli": "^4.2.0",
-    "webpack-dev-server": "^3.11.0",
+    "webpack-dev-server": "^4.0.0-beta.0",
     "webpack-merge": "^5.7.0"
   },
   "homepage": "https://wavesurfer-js.org",
