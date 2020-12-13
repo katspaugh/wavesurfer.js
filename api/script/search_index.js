@@ -126,6 +126,12 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
+    "wavesurfer.js/src/util/absmax.js~absmax",
+    "function/index.html#static-function-absMax",
+    "<span>absMax</span> <span class=\"search-result-import-path\">wavesurfer.js/src/util/absMax.js</span>",
+    "function"
+  ],
+  [
     "wavesurfer.js/src/util/clamp.js~clamp",
     "function/index.html#static-function-clamp",
     "<span>clamp</span> <span class=\"search-result-import-path\">wavesurfer.js/src/util/clamp.js</span>",
@@ -2640,6 +2646,12 @@ window.esdocSearchIndex = [
     "typedef"
   ],
   [
+    "src/util/absmax.js",
+    "file/src/util/absMax.js.html",
+    "src/util/absMax.js",
+    "file"
+  ],
+  [
     "src/util/clamp.js",
     "file/src/util/clamp.js.html",
     "src/util/clamp.js",
@@ -2835,6 +2847,12 @@ window.esdocSearchIndex = [
     "src/wavesurfer.js~plugindefinition",
     "typedef/index.html#static-typedef-PluginDefinition",
     "src/wavesurfer.js~PluginDefinition",
+    "typedef"
+  ],
+  [
+    "src/wavesurfer.js~splitchanneloptions",
+    "typedef/index.html#static-typedef-SplitChannelOptions",
+    "src/wavesurfer.js~SplitChannelOptions",
     "typedef"
   ],
   [
