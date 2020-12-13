@@ -86,7 +86,6 @@
     "lint-staged": "^10.5.3",
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
-    "terser-webpack-plugin": "^5.0.3",
     "webpack": "^5.10.1",
     "webpack-cli": "^4.2.0",
     "webpack-dev-server": "^3.11.0",
