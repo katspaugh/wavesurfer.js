@@ -1,7 +1,7 @@
 {
-  "coverage": "66.04%",
-  "expectCount": 589,
-  "actualCount": 389,
+  "coverage": "66.1%",
+  "expectCount": 590,
+  "actualCount": 390,
   "files": {
     "src/drawer.canvasentry.js": {
       "expectCount": 22,
@@ -291,6 +291,11 @@
         162
       ]
     },
+    "src/util/absMax.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
     "src/util/clamp.js": {
       "expectCount": 1,
       "actualCount": 1,
@@ -347,8 +352,8 @@
       "expectCount": 95,
       "actualCount": 93,
       "undocumentLines": [
-        440,
-        461
+        468,
+        489
       ]
     },
     "src/webaudio.js": {
