@@ -8,7 +8,7 @@ process.traceDeprecation = true;
 
 require('@babel/register');
 const webpackConfig = require('./build-config/webpack.prod.main.js');
-const ci = process.env.TRAVIS || process.env.APPVEYOR;
+const ci = process.env.CI || process.env.APPVEYOR;
 
 // Chrome CLI options
 // http://peter.sh/experiments/chromium-command-line-switches/
@@ -93,7 +93,6 @@ module.exports = function(config) {
             'karma-chrome-launcher',
             'karma-firefox-launcher',
             'karma-coverage',
-            'karma-coveralls',
             'karma-verbose-reporter'
         ],
         browsers: ['Chrome_dev', 'Firefox_dev'],
@@ -101,8 +100,11 @@ module.exports = function(config) {
         colors: true,
         reporters: ['verbose', 'progress', 'coverage'],
         coverageReporter: {
-            type: 'html',
-            dir: 'coverage'
+            dir: 'coverage',
+            reporters: [
+                { type: 'html', subdir: 'html' },
+                { type: 'lcov', subdir: 'lcov' }
+            ]
         },
         webpack: webpackConfig,
         customLaunchers: {
@@ -127,14 +129,6 @@ module.exports = function(config) {
 
     if (ci) {
         configuration.browsers = ['Firefox_ci', 'Chrome_ci'];
-
-        if (process.env.TRAVIS) {
-            // enable coveralls
-            configuration.reporters.push('coveralls');
-            // lcov or lcovonly are required for generating lcov.info files
-            configuration.coverageReporter.type = 'lcov';
-        }
     }
-
     config.set(configuration);
 };
