@@ -175,9 +175,9 @@ export default class TimelinePlugin {
          */
         this._onZoom = this.params.zoomDebounce
             ? this.wavesurfer.util.debounce(
-                  () => this.render(),
-                  this.params.zoomDebounce
-              )
+                () => this.render(),
+                this.params.zoomDebounce
+            )
             : () => this.render();
     }
 

@@ -1,3 +1,4 @@
+/* eslint-disable */
 module.exports = {
     extends: ['eslint:recommended'], // extending recommended config and config derived from eslint-config-prettier
     parser: 'babel-eslint',
@@ -17,14 +18,27 @@ module.exports = {
     rules: {
         eqeqeq: 'off',
         'semi': 2,
+        "indent": ["error", 4, {
+            "ignoredNodes": ["TemplateLiteral"],
+            "SwitchCase": 1
+        }],
+        'comma-dangle': ["error", "never"],
+        'comma-spacing': ["error", { "before": false, "after": true }],
         'no-console': 1,
         'no-unused-vars': 'off',
         'no-unreachable': 2,
+        'no-extra-semi': "error",
+        'no-multi-spaces': "error",
+        'no-multiple-empty-lines': "error",
+        'space-infix-ops': "error",
         'valid-jsdoc': [2, {
             'requireReturn': false,
             'requireReturnType': false
         }],
+        'no-trailing-spaces': "error",
+        'no-dupe-keys': "error",
         'require-jsdoc': 2,
+        'no-duplicate-imports': "error",
         'space-before-function-paren': ["error", "never"],
         'keyword-spacing': ["error", {"before": true}]
     },

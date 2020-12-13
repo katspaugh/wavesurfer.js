@@ -1,0 +1,51 @@
+name: wavesurfer.js
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Update system
+      run: sudo apt-get update
+    - name: Install system dependencies
+      run: sudo apt-get install -y ubuntu-restricted-addons chromium-codecs-ffmpeg-extra gstreamer1.0-libav gstreamer1.0-plugins-ugly gstreamer1.0-vaapi
+    - name: Using Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Cache Node.js modules
+      uses: actions/cache@v2
+      with:
+        # npm cache files are stored in `~/.npm` on Linux/macOS
+        path: ~/.npm
+        key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.OS }}-node-
+          ${{ runner.OS }}-
+    - name: Install Node.js modules
+      run: npm install
+    - name: Lint
+      run: npm run lint
+    - name: Build
+      run: npm run build
+    - name: Test
+      run: npm run test
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        path-to-lcov: ./coverage/lcov/lcov.info
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Documentation
+      run: npm run doc

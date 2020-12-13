@@ -1,13 +1,14 @@
 /* eslint-env node */
 
 const fs = require('fs');
+const path = require('path');
 
 process.env.BABEL_ENV = 'test';
 process.traceDeprecation = true;
 
 require('@babel/register');
 const webpackConfig = require('./build-config/webpack.prod.main.js');
-const ci = process.env.TRAVIS || process.env.APPVEYOR;
+const ci = process.env.CI || process.env.APPVEYOR;
 
 // Chrome CLI options
 // http://peter.sh/experiments/chromium-command-line-switches/
@@ -16,7 +17,7 @@ const chromeFlags = [
     '--no-first-run',
     '--noerrdialogs',
     '--no-default-browser-check',
-    '--user-data-dir=.chrome',
+    '--user-data-dir=' + path.resolve('.chrome'),
     '--disable-translate',
     '--disable-extensions',
     '--disable-infobars',
@@ -37,7 +38,7 @@ const firefoxFlags = {
 module.exports = function(config) {
     var configuration = {
         basePath: '',
-        frameworks: ['jasmine', 'jasmine-matchers'],
+        frameworks: ['jasmine', 'jasmine-matchers', 'webpack'],
         hostname: 'localhost',
         port: 9876,
         logLevel: config.LOG_INFO,
@@ -59,7 +60,8 @@ module.exports = function(config) {
             'spec/wavesurfer.spec.js',
             'spec/peakcache.spec.js',
             'spec/mediaelement.spec.js',
-            'spec/mediaelement-webaudio.spec.js'
+            'spec/mediaelement-webaudio.spec.js',
+            'spec/drawer.spec.js'
         ],
         customHeaders: [
             {
@@ -75,6 +77,7 @@ module.exports = function(config) {
             'spec/peakcache.spec.js': ['webpack'],
             'spec/mediaelement.spec.js': ['webpack'],
             'spec/mediaelement-webaudio.spec.js': ['webpack'],
+            'spec/drawer.spec.js': ['webpack'],
 
             // source files, that you want to generate coverage for
             // do not include tests or libraries
@@ -90,16 +93,18 @@ module.exports = function(config) {
             'karma-chrome-launcher',
             'karma-firefox-launcher',
             'karma-coverage',
-            'karma-coveralls',
             'karma-verbose-reporter'
         ],
-        browsers: ['Chrome_ci', 'Firefox_dev'],
+        browsers: ['Chrome_dev', 'Firefox_dev'],
         captureConsole: true,
         colors: true,
         reporters: ['verbose', 'progress', 'coverage'],
         coverageReporter: {
-            type: 'html',
-            dir: 'coverage'
+            dir: 'coverage',
+            reporters: [
+                { type: 'html', subdir: 'html' },
+                { type: 'lcov', subdir: 'lcov' }
+            ]
         },
         webpack: webpackConfig,
         customLaunchers: {
@@ -123,15 +128,7 @@ module.exports = function(config) {
     };
 
     if (ci) {
-        configuration.browsers = ['Chrome_ci', 'Firefox_ci'];
-
-        if (process.env.TRAVIS) {
-            // enable coveralls
-            configuration.reporters.push('coveralls');
-            // lcov or lcovonly are required for generating lcov.info files
-            configuration.coverageReporter.type = 'lcov';
-        }
+        configuration.browsers = ['Firefox_ci', 'Chrome_ci'];
     }
-
     config.set(configuration);
 };

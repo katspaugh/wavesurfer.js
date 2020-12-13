@@ -9,18 +9,23 @@ module.exports = {
         publicPath: 'localhost:8080/dist/'
     },
     devServer: {
-        contentBase: [path.resolve(__dirname, '..', '..')],
-        publicPath: 'localhost:8080/dist/',
-        watchContentBase: true,
-        watchOptions: {
-            ignored: [
-                /.chrome/,
-                /node_modules/,
-                /bower_components/,
-                /coverage/,
-                /docs/,
-                /spec/
-            ]
-        }
+        static: [
+            {
+                directory: path.resolve(__dirname, '..', '..'),
+                staticOptions: {},
+                publicPath: '/dist/',
+                serveIndex: true,
+                watch: {
+                    ignored: [
+                        /.chrome/,
+                        /node_modules/,
+                        /bower_components/,
+                        /coverage/,
+                        /docs/,
+                        /spec/
+                    ]
+                }
+            }
+        ]
     }
 };

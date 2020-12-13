@@ -75,6 +75,7 @@ window.onload = function() {
                 }
             },
             filterChannels: [],
+            relativeNormalization: true
         }
     });
 

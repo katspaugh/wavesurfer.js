@@ -348,11 +348,20 @@ export default class WebAudio extends util.Observer {
                 this.ac && this.ac.sampleRate ? this.ac.sampleRate : 44100
             );
         }
-        this.offlineAc.decodeAudioData(
-            arraybuffer,
-            data => callback(data),
-            errback
-        );
+        if ('AudioContext' in window) {
+            this.offlineAc.decodeAudioData(arraybuffer).then(
+                (data) => callback(data)
+            ).catch(
+                (err) => errback(err)
+            );
+        } else {
+            // Safari: no support for Promise-based decodeAudioData yet
+            this.offlineAc.decodeAudioData(
+                arraybuffer,
+                data => callback(data),
+                errback
+            );
+        }
     }
 
     /**
@@ -567,12 +576,20 @@ export default class WebAudio extends util.Observer {
         this.source.start = this.source.start || this.source.noteGrainOn;
         this.source.stop = this.source.stop || this.source.noteOff;
 
-        this.source.playbackRate.setValueAtTime(
-            this.playbackRate,
-            this.ac.currentTime
-        );
+        this.setPlaybackRate(this.playbackRate);
         this.source.buffer = this.buffer;
         this.source.connect(this.analyser);
+    }
+
+    /**
+     * @private
+     *
+     * some browsers require an explicit call to #resume before they will play back audio
+     */
+    resumeAudioContext() {
+        if (this.ac.state == 'suspended') {
+            this.ac.resume && this.ac.resume();
+        }
     }
 
     /**
@@ -670,9 +687,7 @@ export default class WebAudio extends util.Observer {
 
         this.source.start(0, start);
 
-        if (this.ac.state == 'suspended') {
-            this.ac.resume && this.ac.resume();
-        }
+        this.resumeAudioContext();
 
         this.setState(PLAYING);
 
@@ -718,14 +733,11 @@ export default class WebAudio extends util.Observer {
      * @param {number} value The playback rate to use
      */
     setPlaybackRate(value) {
-        value = value || 1;
-        if (this.isPaused()) {
-            this.playbackRate = value;
-        } else {
-            this.pause();
-            this.playbackRate = value;
-            this.play();
-        }
+        this.playbackRate = value || 1;
+        this.source && this.source.playbackRate.setValueAtTime(
+            this.playbackRate,
+            this.ac.currentTime
+        );
     }
 
     /**

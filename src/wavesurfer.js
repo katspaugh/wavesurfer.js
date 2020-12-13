@@ -114,6 +114,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * skipForward() and skipBackward() methods.
  * @property {boolean} splitChannels=false Render with separate waveforms for
  * the channels of the audio
+ * @property {SplitChannelOptions} splitChannelsOptions={} Options for splitChannel rendering
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options. For example:
@@ -124,7 +125,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  *     credentials: 'same-origin',
  *     redirect: 'follow',
  *     referrer: 'client',
- *     headers: [
+ *     requestHeaders: [
  *         {
  *             key: 'Authorization',
  *             value: 'my-token'
@@ -147,6 +148,28 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * passed to the plugin class constructor function
  * @property {PluginClass} instance The plugin instance factory, is called with
  * the dependency specified in extends. Returns the plugin class.
+ */
+
+/**
+ * @typedef {Object} SplitChannelOptions
+ * @desc parameters applied when splitChannels option is true
+ * @property {boolean} overlay=false determines whether channels are rendered on top of each other or on separate tracks
+ * @property {object} channelColors={} object describing color for each channel. Example:
+ * {
+ *     0: {
+ *         progressColor: 'green',
+ *         waveColor: 'pink'
+ *     },
+ *     1: {
+ *         progressColor: 'orange',
+ *         waveColor: 'purple'
+ *     }
+ * }
+ * @property {number[]} filterChannels=[] indexes of channels to be hidden from rendering
+ * @property {boolean} relativeNormalization=false determines whether
+ * normalization is done per channel or maintains proportionality between
+ * channels. Only applied when normalize and splitChannels are both true.
+ * @since 4.3.0
  */
 
 /**
@@ -268,6 +291,7 @@ export default class WaveSurfer extends util.Observer {
             overlay: false,
             channelColors: {},
             filterChannels: [],
+            relativeNormalization: false
         },
         waveColor: '#999',
         xhr: {}
@@ -338,7 +362,11 @@ export default class WaveSurfer extends util.Observer {
          * @private
          */
         this.params = Object.assign({}, this.defaultParams, params);
-
+        this.params.splitChannelsOptions = Object.assign(
+            {},
+            this.defaultParams.splitChannelsOptions,
+            params.splitChannelsOptions
+        );
         /** @private */
         this.container =
             'string' == typeof params.container
@@ -900,20 +928,12 @@ export default class WaveSurfer extends util.Observer {
         }
         this.fireEvent('interaction', () => this.seekTo(progress));
 
-        const paused = this.backend.isPaused();
-        // avoid draw wrong position while playing backward seeking
-        if (!paused) {
-            this.backend.pause();
-        }
         // avoid small scrolls while paused seeking
         const oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
         this.drawer.progress(progress);
 
-        if (!paused) {
-            this.backend.play();
-        }
         this.params.scrollParent = oldScrollParent;
         this.fireEvent('seek', progress);
     }
@@ -1013,19 +1033,26 @@ export default class WaveSurfer extends util.Observer {
             return;
         }
 
-        if (mute) {
-            // If currently not muted then save current volume,
-            // turn off the volume and update the mute properties
-            this.savedVolume = this.backend.getVolume();
-            this.backend.setVolume(0);
-            this.isMuted = true;
-            this.fireEvent('volume', 0);
+        if (this.backend.setMute) {
+            // Backends such as the MediaElement backend have their own handling
+            // of mute, let them handle it.
+            this.backend.setMute(mute);
+            this.isMuted = mute;
         } else {
-            // If currently muted then restore to the saved volume
-            // and update the mute properties
-            this.backend.setVolume(this.savedVolume);
-            this.isMuted = false;
-            this.fireEvent('volume', this.savedVolume);
+            if (mute) {
+                // If currently not muted then save current volume,
+                // turn off the volume and update the mute properties
+                this.savedVolume = this.backend.getVolume();
+                this.backend.setVolume(0);
+                this.isMuted = true;
+                this.fireEvent('volume', 0);
+            } else {
+                // If currently muted then restore to the saved volume
+                // and update the mute properties
+                this.backend.setVolume(this.savedVolume);
+                this.isMuted = false;
+                this.fireEvent('volume', this.savedVolume);
+            }
         }
         this.fireEvent('mute', this.isMuted);
     }
@@ -1175,12 +1202,12 @@ export default class WaveSurfer extends util.Observer {
 
     /**
      * Hide channels from being drawn on the waveform if splitting channels.
-     * 
+     *
      * For example, if we want to draw only the peaks for the right stereo channel:
      *
      * const wavesurfer = new WaveSurfer.create({...splitChannels: true});
      * wavesurfer.load('stereo_audio.mp3');
-     * 
+     *
      * wavesurfer.setFilteredChannel([0]); <-- hide left channel peaks.
      *
      * @param {array} channelIndices Channels to be filtered out from drawing.
@@ -1392,6 +1419,7 @@ export default class WaveSurfer extends util.Observer {
      * Loads audio using Web Audio buffer backend.
      *
      * @private
+     * @emits WaveSurfer#waveform-ready
      * @param {string} url URL of audio file
      * @param {number[]|Number.<Array[]>} peaks Peaks data
      * @param {?number} duration Optional duration of audio file
@@ -1408,6 +1436,7 @@ export default class WaveSurfer extends util.Observer {
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
+            this.fireEvent('waveform-ready');
             this.tmpEvents.push(this.once('interaction', load));
         } else {
             return load();
@@ -1418,6 +1447,7 @@ export default class WaveSurfer extends util.Observer {
      * Either create a media element, or load an existing media element.
      *
      * @private
+     * @emits WaveSurfer#waveform-ready
      * @param {string|HTMLMediaElement} urlOrElt Either a path to a media file, or an
      * existing HTML5 Audio/Video Element
      * @param {number[]|Number.<Array[]>} peaks Array of peaks. Required to bypass web audio
@@ -1452,13 +1482,16 @@ export default class WaveSurfer extends util.Observer {
             this.backend.once('error', err => this.fireEvent('error', err))
         );
 
-        // If no pre-decoded peaks provided or pre-decoded peaks are
-        // provided with forceDecode flag, attempt to download the
-        // audio file and decode it with Web Audio.
+        // If peaks are provided, render them and fire the `waveform-ready` event.
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
+            this.drawBuffer();
+            this.fireEvent('waveform-ready');
         }
 
+        // If no pre-decoded peaks are provided, or are provided with
+        // forceDecode flag, attempt to download the audio file and decode it
+        // with Web Audio.
         if (
             (!peaks || this.params.forceDecode) &&
             this.backend.supportsWebAudio()
@@ -1624,6 +1657,14 @@ export default class WaveSurfer extends util.Observer {
      */
     cancelAjax() {
         if (this.currentRequest && this.currentRequest.controller) {
+            // If the current request has a ProgressHandler, then its ReadableStream might need to be cancelled too
+            // See: Wavesurfer issue #2042
+            // See Firefox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=1583815
+            if (this.currentRequest._reader) {
+                // Ignoring exceptions thrown by call to cancel()
+                this.currentRequest._reader.cancel().catch(err => {});
+            }
+
             this.currentRequest.controller.abort();
             this.currentRequest = null;
         }

@@ -200,7 +200,7 @@ function editAnnotation(region) {
     var form = document.forms.edit;
     form.style.opacity = 1;
     (form.elements.start.value = Math.round(region.start * 100) / 100),
-        (form.elements.end.value = Math.round(region.end * 100) / 100);
+    (form.elements.end.value = Math.round(region.end * 100) / 100);
     form.elements.note.value = region.data.note || '';
     form.onsubmit = function(e) {
         e.preventDefault();

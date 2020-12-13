@@ -303,10 +303,10 @@ export default class MicrophonePlugin {
                 let channel, l;
                 for (
                     channel = 0,
-                        l = Math.min(
-                            this.localAudioBuffer.numberOfChannels,
-                            event.inputBuffer.numberOfChannels
-                        );
+                    l = Math.min(
+                        this.localAudioBuffer.numberOfChannels,
+                        event.inputBuffer.numberOfChannels
+                    );
                     channel < l;
                     channel++
                 ) {
