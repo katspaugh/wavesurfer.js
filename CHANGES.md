@@ -1,8 +1,19 @@
 wavesurfer.js changelog
 =======================
 
-Next (unreleased)
------------------
+x.x.x (unreleased)
+------------------
+
+- Use Webpack 5 for build (#2093)
+
+4.3.0 (12.12.2020)
+------------------
+
+- Add `relativeNormalization` option to maintain proportionality between
+  waveforms when `splitChannels` and `normalize` are `true` (#2108)
+- WebAudio backend: set playback rate modifying directly the playback
+  property of the source node (#2118)
+- Spectrogram plugin: Use `ImageData` to draw pixel-by-pixel (#2127)
 
 4.2.0 (20.10.2020)
 ------------------

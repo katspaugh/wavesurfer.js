@@ -8,9 +8,7 @@ module.exports = {
         minimize: true,
         minimizer: [
             new TerserPlugin({
-                sourceMap: true,
                 parallel: true,
-                cache: './.build_cache/terser',
                 extractComments: false,
                 terserOptions: {
                     output: {
