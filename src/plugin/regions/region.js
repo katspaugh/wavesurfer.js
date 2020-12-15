@@ -262,8 +262,8 @@ export class Region {
         const dur = this.wavesurfer.getDuration();
         const width = this.getWidth();
 
-        var startLimited = this.start;
-        var endLimited = this.end;
+        let startLimited = this.start;
+        let endLimited = this.end;
         if (startLimited < 0) {
             startLimited = 0;
             endLimited = endLimited - startLimited;

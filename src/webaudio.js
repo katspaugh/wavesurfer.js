@@ -305,7 +305,7 @@ export default class WebAudio extends util.Observer {
                 );
             }
             audio.autoplay = true;
-            var dest = this.ac.createMediaStreamDestination();
+            let dest = this.ac.createMediaStreamDestination();
             this.gainNode.disconnect();
             this.gainNode.connect(dest);
             audio.srcObject = dest.stream;
