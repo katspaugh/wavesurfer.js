@@ -1,6 +1,6 @@
 /* global angular */
 
-var app = angular.module('ngWavesurfer', []);
+let app = angular.module('ngWavesurfer', []);
 
 app.directive('ngWavesurfer', function() {
     return {
@@ -9,8 +9,8 @@ app.directive('ngWavesurfer', function() {
         link: function($scope, $element, $attrs) {
             $element.css('display', 'block');
 
-            var options = angular.extend({ container: $element[0] }, $attrs);
-            var wavesurfer = WaveSurfer.create(options);
+            let options = angular.extend({ container: $element[0] }, $attrs);
+            let wavesurfer = WaveSurfer.create(options);
 
             if ($attrs.url) {
                 wavesurfer.load($attrs.url, $attrs.data || null);
@@ -22,7 +22,7 @@ app.directive('ngWavesurfer', function() {
 });
 
 app.controller('PlaylistController', function($scope) {
-    var activeUrl = null;
+    let activeUrl = null;
 
     $scope.paused = true;
 

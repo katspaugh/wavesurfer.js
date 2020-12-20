@@ -10,7 +10,7 @@
      * Main module, your application should depend on this
      * @module {mdWavesurfer}
      */
-    var app = angular.module('mdWavesurfer', ['ngMaterial']);
+    let app = angular.module('mdWavesurfer', ['ngMaterial']);
 
     /**
      * @ngdoc service
@@ -45,9 +45,9 @@
         function($q, $document, $timeout) {
             return {
                 getLength: function(object) {
-                    var deferred = $q.defer();
-                    var estimateLength = function(url) {
-                        var audio = $document[0].createElement('audio');
+                    let deferred = $q.defer();
+                    let estimateLength = function(url) {
+                        let audio = $document[0].createElement('audio');
                         audio.src = url;
                         audio.addEventListener(
                             'loadeddata',
@@ -100,8 +100,8 @@
                 return '00:00';
             }
 
-            var minutes = Math.floor(input / 60);
-            var seconds = Math.floor(input) % 60;
+            const minutes = Math.floor(input / 60);
+            const seconds = Math.floor(input) % 60;
 
             return (
                 (minutes < 10 ? '0' : '') +
@@ -117,7 +117,7 @@
         '$attrs',
         '$element',
         function(attributes, $element) {
-            var audio = this;
+            let audio = this;
 
             audio.tracks = [];
             audio.selectedIndex = audio.selectedIndex || 0;
@@ -136,15 +136,15 @@
 
             //remove audio track
             audio.removeTrack = function(trackScope) {
-                var idx = audio.tracks.indexOf(trackScope);
+                const idx = audio.tracks.indexOf(trackScope);
                 if (idx >= 0) {
                     audio.tracks.splice(idx, 1);
                 }
             };
 
             audio.playerProperties = {};
-            var nKey;
-            for (var attr in attributes) {
+            let nKey;
+            for (let attr in attributes) {
                 if (attr.match(/^player/)) {
                     nKey = attr.replace(/^player([A-Z])/, function(m, $1) {
                         return $1.toLowerCase();
@@ -153,13 +153,13 @@
                 }
             }
 
-            var getPlayer = function() {
+            let getPlayer = function() {
                 return $element
                     .find('md-wavesurfer-player')
                     .controller('mdWavesurferPlayer');
             };
-            var setAutoPlay = function(forcePlay) {
-                var controller = getPlayer();
+            let setAutoPlay = function(forcePlay) {
+                let controller = getPlayer();
                 if (
                     controller &&
                     (forcePlay || controller.surfer.isPlaying())
@@ -170,7 +170,7 @@
             audio.setTrack = function(idx, forcePlay) {
                 if (audio.tracks.length > idx) {
                     if (audio.selectedIndex === idx) {
-                        var ctrl = getPlayer();
+                        let ctrl = getPlayer();
                         ctrl.surfer.playPause();
                     } else {
                         setAutoPlay(forcePlay);
@@ -309,7 +309,7 @@
         '$interval',
         '$mdTheming',
         function($element, $scope, attributes, $interval, $mdTheme) {
-            var control = this,
+            let control = this,
                 timeInterval;
 
             control.themeClass = 'md-' + $mdTheme.defaultTheme() + '-theme';
@@ -323,11 +323,11 @@
                 }
             };
 
-            var initWaveSurfer = function() {
+            let initWaveSurfer = function() {
                 control.isReady = false;
                 control.currentTime = 0;
                 if (!control.surfer) {
-                    var options = {
+                    let options = {
                             container: $element[0].querySelector(
                                 '.waveSurferWave'
                             )
@@ -371,7 +371,7 @@
                 control.surfer.load(control.src);
             };
 
-            var startInterval = function() {
+            let startInterval = function() {
                     timeInterval = $interval(function() {
                         control.currentTime = control.isReady
                             ? control.surfer.getCurrentTime()
@@ -399,7 +399,7 @@
 
             $scope.$watch(
                 function() {
-                    var div = $element[0].querySelector('.audioPlayerWrapper');
+                    let div = $element[0].querySelector('.audioPlayerWrapper');
                     return div ? div.offsetWidth : 0;
                 },
                 function(width) {

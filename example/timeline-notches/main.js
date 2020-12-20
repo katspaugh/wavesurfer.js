@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-var wavesurfer;
+let wavesurfer;
 
 /**
  * Use formatTimeCallback to style the notch labels as you wish, such
@@ -19,11 +19,11 @@ var wavesurfer;
  */
 function formatTimeCallback(seconds, pxPerSec) {
     seconds = Number(seconds);
-    var minutes = Math.floor(seconds / 60);
+    let minutes = Math.floor(seconds / 60);
     seconds = seconds % 60;
 
     // fill up seconds with zeroes
-    var secondsStr = Math.round(seconds).toString();
+    let secondsStr = Math.round(seconds).toString();
     if (pxPerSec >= 25 * 10) {
         secondsStr = seconds.toFixed(2);
     } else if (pxPerSec >= 25 * 1) {
@@ -50,7 +50,7 @@ function formatTimeCallback(seconds, pxPerSec) {
  * @param: pxPerSec
  */
 function timeInterval(pxPerSec) {
-    var retval = 1;
+    let retval = 1;
     if (pxPerSec >= 25 * 100) {
         retval = 0.01;
     } else if (pxPerSec >= 25 * 40) {
@@ -83,7 +83,7 @@ function timeInterval(pxPerSec) {
  * @param pxPerSec
  */
 function primaryLabelInterval(pxPerSec) {
-    var retval = 1;
+    let retval = 1;
     if (pxPerSec >= 25 * 100) {
         retval = 10;
     } else if (pxPerSec >= 25 * 40) {
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Zoom slider
-    var slider = document.querySelector('[data-action="zoom"]');
+    let slider = document.querySelector('[data-action="zoom"]');
 
     slider.value = wavesurfer.params.minPxPerSec;
     slider.min = wavesurfer.params.minPxPerSec;
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Play button
-    var button = document.querySelector('[data-action="play"]');
+    let button = document.querySelector('[data-action="play"]');
 
     button.addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
 });
