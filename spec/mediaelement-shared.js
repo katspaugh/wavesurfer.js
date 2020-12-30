@@ -312,10 +312,18 @@ export function sharedErrorTests(backend) {
         }).toThrow(new Error('media parameter is not a valid media element'));
     });
 }
+
 function loadElement() {
     // set src
     audioElement.src = TestHelpers.EXAMPLE_FILE_PATH;
-    wavesurfer.load(audioElement);
+
+    // These tests should work with all backends?
+    // WebAudio requires the URL instead of the HTMLAudioElement to be passed in
+    if (wavesurfer.params.backend === 'WebAudio') {
+        wavesurfer.load(audioElement.src);
+    } else {
+        wavesurfer.load(audioElement);
+    }
 }
 
 /** Retrieve normalized waveform peaks, then load an audio resource giving peaks and setting preload attribute to 'none' **/
