@@ -1406,6 +1406,12 @@ export default class WaveSurfer extends util.Observer {
             }
         }
 
+        // loadBuffer(url, peaks, duration) requires that url is a string
+        // but users can pass in a HTMLMediaElement to WaveSurfer
+        if (this.params.backend === 'WebAudio' && url instanceof HTMLMediaElement) {
+            url = url.src;
+        }
+
         switch (this.params.backend) {
             case 'WebAudio':
                 return this.loadBuffer(url, peaks, duration);
