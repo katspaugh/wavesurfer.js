@@ -398,6 +398,7 @@ export default class MultiCanvas extends Drawer {
      * @param {number} width Width of the rectangle
      * @param {number} height Height of the rectangle
      * @param {number} radius Radius of the rectangle
+     * @param {channelIndex} channelIndex The channel index of the bar drawn
      */
     fillRect(x, y, width, height, radius, channelIndex) {
         const startCanvas = Math.floor(x / this.maxCanvasWidth);
