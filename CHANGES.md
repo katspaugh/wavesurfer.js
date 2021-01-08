@@ -5,6 +5,7 @@ x.x.x (unreleased)
 ------------------
 
 - Use Webpack 5 for build (#2093)
+- Fix seeking issues for `WebAudio` backend (#2149)
 
 4.3.0 (12.12.2020)
 ------------------
