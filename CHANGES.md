@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-x.x.x (unreleased)
+4.4.0 (13.01.2021)
 ------------------
 
 - Use Webpack 5 for build (#2093)
