@@ -1,13 +1,10 @@
 wavesurfer.js changelog
 =======================
 
-
-4.4.1 (17.01.2021)
+x.x.x (unreleased)
 ------------------
 
-- Regions plugin:
-  - Stop region dragging when mouse leaves canvas (#2158)
-
+- Regions plugin: Stop region dragging when mouse leaves canvas (#2158)
 
 4.4.0 (13.01.2021)
 ------------------
