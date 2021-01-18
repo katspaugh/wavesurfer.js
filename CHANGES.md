@@ -5,6 +5,7 @@ x.x.x (unreleased)
 ------------------
 
 - Regions plugin: Stop region dragging when mouse leaves canvas (#2158)
+- Fixed `WaveSurfer.load(url)` not working when passing a HTMLMediaElement as the url parameter, with the WebAudio backend. 
 
 4.4.0 (13.01.2021)
 ------------------
