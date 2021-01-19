@@ -11,6 +11,7 @@
 export class Region {
     constructor(params, regionsUtils, ws) {
         this.imported = params.imported || false;
+        this.toolMode = params.toolMode || '';
         this.wavesurfer = ws;
         this.wrapper = ws.drawer.wrapper;
         this.util = ws.util;
