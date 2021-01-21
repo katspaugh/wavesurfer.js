@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "4.3.0",
+  "version": "4.4.0",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "directories": {
@@ -55,7 +55,7 @@
   ],
   "devDependencies": {
     "@babel/core": "^7.12.10",
-    "@babel/preset-env": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
     "@babel/register": "^7.12.10",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
@@ -71,7 +71,7 @@
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-integrate-test-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^7.15.0",
+    "eslint": "^7.17.0",
     "htmlhint": "^0.14.2",
     "in-publish": "^2.0.1",
     "jasmine-core": "^3.6.0",
@@ -88,10 +88,10 @@
     "pre-commit": "^1.2.2",
     "ts-loader": "^8.0.11",
     "typescript": "^4.0.5",
-    "webpack": "^5.10.1",
-    "webpack-cli": "^4.2.0",
+    "webpack": "^5.13.0",
+    "webpack-cli": "^4.3.1",
     "webpack-dev-server": "^4.0.0-beta.0",
-    "webpack-merge": "^5.7.0"
+    "webpack-merge": "^5.7.3"
   },
   "homepage": "https://wavesurfer-js.org",
   "pre-commit": "lint-js-html",

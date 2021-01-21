@@ -219,14 +219,14 @@ describe('util:', function() {
 
     /** @test {style} */
     it('style applies a map of styles to an element', function() {
-        var el = {
+        let el = {
             style: {}
         };
-        var styles = {
+        let styles = {
             backgroundcolor: 'red',
             'background-color': 'blue'
         };
-        var result = {
+        let result = {
             style: styles
         };
         expect(WaveSurfer.util.style(el, styles)).toEqual(result);

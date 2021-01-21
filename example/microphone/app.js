@@ -1,11 +1,11 @@
 'use strict';
 
-var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-var wavesurfer, context, processor;
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+let wavesurfer, context, processor;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function() {
-    var micBtn = document.querySelector('#micBtn');
+    let micBtn = document.querySelector('#micBtn');
 
     micBtn.onclick = function() {
         if (wavesurfer === undefined) {
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Safari 11 or newer automatically suspends new AudioContext's that aren't
                 // created in response to a user-gesture, like a click or tap, so create one
                 // here (inc. the script processor)
-                var AudioContext =
+                let AudioContext =
                     window.AudioContext || window.webkitAudioContext;
                 context = new AudioContext();
                 processor = context.createScriptProcessor(1024, 1, 1);

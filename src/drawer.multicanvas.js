@@ -272,7 +272,7 @@ export default class MultiCanvas extends Drawer {
             channelIndex,
             start,
             end,
-            ({ absmax, hasMinVals, height, offsetY, halfH, peaks }) => {
+            ({ absmax, hasMinVals, height, offsetY, halfH, peaks, channelIndex: ch }) => {
                 // if drawBars was called within ws.empty we don't pass a start and
                 // don't want anything to happen
                 if (start === undefined) {
@@ -311,7 +311,8 @@ export default class MultiCanvas extends Drawer {
                         halfH - h + offsetY,
                         bar + this.halfPixel,
                         h * 2,
-                        this.barRadius
+                        this.barRadius,
+                        ch
                     );
                 }
             }
@@ -361,7 +362,8 @@ export default class MultiCanvas extends Drawer {
                     halfH + offsetY - this.halfPixel,
                     this.width,
                     this.halfPixel,
-                    this.barRadius
+                    this.barRadius,
+                    channelIndex
                 );
             }
         );
@@ -396,8 +398,9 @@ export default class MultiCanvas extends Drawer {
      * @param {number} width Width of the rectangle
      * @param {number} height Height of the rectangle
      * @param {number} radius Radius of the rectangle
+     * @param {channelIndex} channelIndex The channel index of the bar drawn
      */
-    fillRect(x, y, width, height, radius) {
+    fillRect(x, y, width, height, radius, channelIndex) {
         const startCanvas = Math.floor(x / this.maxCanvasWidth);
         const endCanvas = Math.min(
             Math.ceil((x + width) / this.maxCanvasWidth) + 1,
@@ -419,7 +422,8 @@ export default class MultiCanvas extends Drawer {
             };
 
             if (intersection.x1 < intersection.x2) {
-                this.setFillStyles(entry);
+                const { waveColor, progressColor } = this.params.splitChannelsOptions.channelColors[channelIndex] || {};
+                this.setFillStyles(entry, waveColor, progressColor);
 
                 entry.fillRects(
                     intersection.x1 - leftOffset,

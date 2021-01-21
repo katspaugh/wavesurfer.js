@@ -36,7 +36,7 @@ const firefoxFlags = {
 };
 
 module.exports = function(config) {
-    var configuration = {
+    let configuration = {
         basePath: '',
         frameworks: ['jasmine', 'jasmine-matchers', 'webpack'],
         hostname: 'localhost',
@@ -61,7 +61,8 @@ module.exports = function(config) {
             'spec/peakcache.spec.js',
             'spec/mediaelement.spec.js',
             'spec/mediaelement-webaudio.spec.js',
-            'spec/drawer.spec.js'
+            'spec/drawer.spec.js',
+            'spec/webaudio.spec.js'
         ],
         customHeaders: [
             {
@@ -78,6 +79,7 @@ module.exports = function(config) {
             'spec/mediaelement.spec.js': ['webpack'],
             'spec/mediaelement-webaudio.spec.js': ['webpack'],
             'spec/drawer.spec.js': ['webpack'],
+            'spec/webaudio.spec.js': ['webpack'],
 
             // source files, that you want to generate coverage for
             // do not include tests or libraries

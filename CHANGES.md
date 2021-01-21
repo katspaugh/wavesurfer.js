@@ -4,7 +4,15 @@ wavesurfer.js changelog
 x.x.x (unreleased)
 ------------------
 
+- Regions plugin: Stop region dragging when mouse leaves canvas (#2158)
+- Fixed `WaveSurfer.load(url)` not working when passing a HTMLMediaElement as the url parameter, with the WebAudio backend. 
+
+4.4.0 (13.01.2021)
+------------------
+
 - Use Webpack 5 for build (#2093)
+- Fix seeking issues for `WebAudio` backend (#2149)
+- Use `splitChannelsOptions` to color wave bars (#2150)
 
 4.3.0 (12.12.2020)
 ------------------

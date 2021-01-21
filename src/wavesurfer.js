@@ -928,11 +928,22 @@ export default class WaveSurfer extends util.Observer {
         }
         this.fireEvent('interaction', () => this.seekTo(progress));
 
+        const isWebAudioBackend = this.params.backend === 'WebAudio';
+        const paused = this.backend.isPaused();
+
+        if (isWebAudioBackend && !paused) {
+            this.backend.pause();
+        }
+
         // avoid small scrolls while paused seeking
         const oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
         this.drawer.progress(progress);
+
+        if (isWebAudioBackend && !paused) {
+            this.backend.play();
+        }
 
         this.params.scrollParent = oldScrollParent;
         this.fireEvent('seek', progress);
@@ -1404,6 +1415,12 @@ export default class WaveSurfer extends util.Observer {
                 // stop invalid values from being used
                 preload = null;
             }
+        }
+
+        // loadBuffer(url, peaks, duration) requires that url is a string
+        // but users can pass in a HTMLMediaElement to WaveSurfer
+        if (this.params.backend === 'WebAudio' && url instanceof HTMLMediaElement) {
+            url = url.src;
         }
 
         switch (this.params.backend) {
