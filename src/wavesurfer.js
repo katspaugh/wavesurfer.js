@@ -1732,6 +1732,7 @@ export default class WaveSurfer extends util.Observer {
             );
         }
         if (this.backend) {
+            this.backend.destroy();
             this.backend.buffer = null;
         }
         if (this.drawer) {
