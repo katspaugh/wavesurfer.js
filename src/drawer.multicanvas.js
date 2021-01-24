@@ -510,12 +510,13 @@ export default class MultiCanvas extends Drawer {
             // so we don't need negative values
             const hasMinVals = [].some.call(peaks, val => val < 0);
             const height = this.params.height * this.params.pixelRatio;
-            const offsetY = height * drawIndex || 0;
             const halfH = height / 2;
 
+            let offsetY = height * drawIndex || 0;
+
             // Override offsetY if overlay is true
-            if(_this7.params.splitChannelsOptions.overlay) {
-              offsetY = 0;
+            if (this.params.splitChannelsOptions.overlay) {
+                offsetY = 0;
             }
 
             return fn({
