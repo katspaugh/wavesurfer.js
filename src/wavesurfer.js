@@ -1733,7 +1733,10 @@ export default class WaveSurfer extends util.Observer {
         }
         if (this.backend) {
             this.backend.destroy();
-            this.backend = null;
+            // clears memory usage
+            if (this.backend !== null) {
+                this.backend = null;
+            }
         }
         if (this.drawer) {
             this.drawer.destroy();
