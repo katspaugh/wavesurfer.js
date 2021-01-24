@@ -515,7 +515,7 @@ export default class MultiCanvas extends Drawer {
             let offsetY = height * drawIndex || 0;
 
             // Override offsetY if overlay is true
-            if (this.params.splitChannelsOptions.overlay) {
+            if (this.params.splitChannelsOptions && this.params.splitChannelsOptions.overlay) {
                 offsetY = 0;
             }
 
