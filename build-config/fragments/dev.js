@@ -1,7 +1,6 @@
 /* eslint-env node */
 
 const path = require('path');
-const rootDir = path.resolve(__dirname, '..', '..');
 
 module.exports = {
     mode: 'development',
@@ -12,7 +11,7 @@ module.exports = {
     devServer: {
         static: [
             {
-                directory: path.join(rootDir, 'dist'),
+                directory: path.resolve(__dirname, '..', '..'),
                 staticOptions: {},
                 publicPath: '/dist/',
                 serveIndex: true,
