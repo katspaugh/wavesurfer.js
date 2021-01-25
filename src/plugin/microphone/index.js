@@ -216,11 +216,8 @@ export default class MicrophonePlugin {
         this.disconnect();
 
         // stop stream from device
-        if (this.stream) {
-            if (this.stream.getTracks) {
-                // note that this should not be a call
-                this.stream.getTracks().forEach(stream => stream.stop());
-            }
+        if (this.stream && this.stream.getTracks) {
+            this.stream.getTracks().forEach(stream => stream.stop());
         }
     }
 
