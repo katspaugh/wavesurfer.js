@@ -220,7 +220,6 @@ export default class MicrophonePlugin {
             if (this.stream.getTracks) {
                 // note that this should not be a call
                 this.stream.getTracks().forEach(stream => stream.stop());
-                return;
             }
         }
     }
