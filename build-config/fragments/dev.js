@@ -7,14 +7,13 @@ module.exports = {
     mode: 'development',
     devtool: 'eval-source-map',
     output: {
-        publicPath: 'localhost:8080/dist/'
+        publicPath: 'localhost:8080/'
     },
     devServer: {
         static: [
             {
-                directory: path.join(rootDir, 'dist'),
+                directory: rootDir,
                 staticOptions: {},
-                publicPath: '/dist/',
                 serveIndex: true,
                 watch: {
                     ignored: [
