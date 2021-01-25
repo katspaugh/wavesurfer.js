@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-var wavesurfer = {};
+let wavesurfer = {};
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function() {
@@ -17,18 +17,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Time stretcher
     wavesurfer.on('ready', function() {
-        var st = new window.soundtouch.SoundTouch(
+        let st = new window.soundtouch.SoundTouch(
             wavesurfer.backend.ac.sampleRate
         );
-        var buffer = wavesurfer.backend.buffer;
-        var channels = buffer.numberOfChannels;
-        var l = buffer.getChannelData(0);
-        var r = channels > 1 ? buffer.getChannelData(1) : l;
-        var length = buffer.length;
-        var seekingPos = null;
-        var seekingDiff = 0;
+        let buffer = wavesurfer.backend.buffer;
+        let channels = buffer.numberOfChannels;
+        let l = buffer.getChannelData(0);
+        let r = channels > 1 ? buffer.getChannelData(1) : l;
+        let length = buffer.length;
+        let seekingPos = null;
+        let seekingDiff = 0;
 
-        var source = {
+        let source = {
             extract: function(target, numFrames, position) {
                 if (seekingPos != null) {
                     seekingDiff = seekingPos - position;
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 position += seekingDiff;
 
-                for (var i = 0; i < numFrames; i++) {
+                for (let i = 0; i < numFrames; i++) {
                     target[i * 2] = l[i + position];
                     target[i * 2 + 1] = r[i + position];
                 }
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
 
-        var soundtouchNode;
+        let soundtouchNode;
 
         wavesurfer.on('play', function() {
             seekingPos = ~~(wavesurfer.backend.getPlayedPercents() * length);
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 wavesurfer.backend.disconnectFilters();
             } else {
                 if (!soundtouchNode) {
-                    var filter = new window.soundtouch.SimpleFilter(source, st);
+                    let filter = new window.soundtouch.SimpleFilter(source, st);
                     soundtouchNode = window.soundtouch.getWebAudioNode(
                         wavesurfer.backend.ac,
                         filter

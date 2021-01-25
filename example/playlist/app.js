@@ -1,5 +1,5 @@
 // Create a WaveSurfer instance
-var wavesurfer;
+let wavesurfer;
 
 // Init on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Bind controls
 document.addEventListener('DOMContentLoaded', function() {
-    var playPause = document.querySelector('#playPause');
+    let playPause = document.querySelector('#playPause');
     playPause.addEventListener('click', function() {
         wavesurfer.playPause();
     });
@@ -30,11 +30,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // The playlist links
-    var links = document.querySelectorAll('#playlist a');
-    var currentTrack = 0;
+    let links = document.querySelectorAll('#playlist a');
+    let currentTrack = 0;
 
     // Load a track by index and highlight the corresponding link
-    var setCurrentSong = function(index) {
+    let setCurrentSong = function(index) {
         links[currentTrack].classList.remove('active');
         currentTrack = index;
         links[currentTrack].classList.add('active');
