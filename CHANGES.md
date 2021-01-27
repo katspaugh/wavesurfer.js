@@ -4,6 +4,7 @@ wavesurfer.js changelog
 x.x.x (unreleased)
 ------------------
 
+- Fixed `exportPCM()` to return valid json on `noWindow` and create a valid json blob file on promise (#2175)
 - Fixed memory leak with `destroy()` in `WebAudio` backend (#1940)
 - Regions plugin: Stop region dragging when mouse leaves canvas (#2158)
 - Fixed `WaveSurfer.load(url)` not working when passing a HTMLMediaElement as the url parameter, with the WebAudio backend. 
