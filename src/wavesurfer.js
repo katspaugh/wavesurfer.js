@@ -812,10 +812,10 @@ export default class WaveSurfer extends util.Observer {
     play(start, end) {
         let emptyAudioBase64 = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6urq6v////////////////////////////////8AAAAATGF2YzU2LjQxAAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//MUZAAAAAGkAAAAAAAAA0gAAAAATEFN//MUZAMAAAGkAAAAAAAAA0gAAAAARTMu//MUZAYAAAGkAAAAAAAAA0gAAAAAOTku//MUZAkAAAGkAAAAAAAAA0gAAAAANVVV';
         let audioSilentMode = document.createElement('audio');
-            audioSilentMode.id = 'silent-mode-play';
-            audioSilentMode.src = emptyAudioBase64;
-            audioSilentMode.type = 'audio/mpeg';
-            audioSilentMode.play();
+        audioSilentMode.id = 'silent-mode-play';
+        audioSilentMode.src = emptyAudioBase64;
+        audioSilentMode.type = 'audio/mpeg';
+        audioSilentMode.play();
 
         this.fireEvent('interaction', () => this.play(start, end));
         return this.backend.play(start, end);
