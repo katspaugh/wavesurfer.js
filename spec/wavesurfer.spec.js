@@ -321,9 +321,18 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#exportPCM} */
-    it('return Promise with PCM data formatted using JSON.stringify', function(done) {
+    it('return Promise', function(done) {
         wavesurfer.exportPCM().then(pcmData => {
             expect(pcmData).toBeNonEmptyString();
+
+            done();
+        });
+    });
+
+    it('return Promise with PCM data in json', function(done) {
+        wavesurfer.exportPCM(1024,10000,true,0,1024).then(pcmData => {
+            const isJSON = JSON.parse(pcmData);
+            expect(isJSON).to.be.true();
 
             done();
         });
