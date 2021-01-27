@@ -356,6 +356,8 @@ describe('WaveSurfer/playback:', function() {
             done();
         });
         wavesurfer.destroy();
+
+        expect(wavesurfer.backend).toBeNull();
     });
 
     describe('seek event emission', function() {
