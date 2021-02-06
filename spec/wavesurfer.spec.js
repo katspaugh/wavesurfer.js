@@ -323,7 +323,7 @@ describe('WaveSurfer/playback:', function() {
     /** @test {WaveSurfer#exportPCM} */
     it('return Promise with PCM data', function(done) {
         wavesurfer.exportPCM().then(pcmData => {
-            expect(pcmData).toBeNonEmptyString();
+            pcmData.should.be.fulfilled;
 
             done();
         });
