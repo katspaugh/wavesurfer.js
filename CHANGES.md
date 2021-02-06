@@ -3,7 +3,7 @@ wavesurfer.js changelog
 
 x.x.x (unreleased)
 ------------------
-
+- Split Channels: `overlay` param now properly displays a single canvas (#2161)
 - Fixed memory leak with `destroy()` in `WebAudio` backend (#1940)
 - Regions plugin: Stop region dragging when mouse leaves canvas (#2158)
 - Fixed `WaveSurfer.load(url)` not working when passing a HTMLMediaElement as the url parameter, with the WebAudio backend. 
