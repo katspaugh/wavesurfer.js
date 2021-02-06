@@ -1,7 +1,7 @@
 /**
  * Create a WaveSurfer instance.
  */
-var wavesurfer;
+let wavesurfer;
 
 /**
  * Init & load.
@@ -87,8 +87,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     /* Toggle play/pause buttons. */
-    var playButton = document.querySelector('#play');
-    var pauseButton = document.querySelector('#pause');
+    let playButton = document.querySelector('#play');
+    let pauseButton = document.querySelector('#pause');
     wavesurfer.on('play', function() {
         playButton.style.display = 'none';
         pauseButton.style.display = '';
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function saveRegions() {
     localStorage.regions = JSON.stringify(
         Object.keys(wavesurfer.regions.list).map(function(id) {
-            var region = wavesurfer.regions.list[id];
+            let region = wavesurfer.regions.list[id];
             return {
                 start: region.start,
                 end: region.end,
@@ -131,15 +131,15 @@ function loadRegions(regions) {
  */
 function extractRegions(peaks, duration) {
     // Silence params
-    var minValue = 0.0015;
-    var minSeconds = 0.25;
+    const minValue = 0.0015;
+    const minSeconds = 0.25;
 
-    var length = peaks.length;
-    var coef = duration / length;
-    var minLen = minSeconds / coef;
+    let length = peaks.length;
+    let coef = duration / length;
+    let minLen = minSeconds / coef;
 
     // Gather silence indeces
-    var silences = [];
+    let silences = [];
     Array.prototype.forEach.call(peaks, function(val, index) {
         if (Math.abs(val) <= minValue) {
             silences.push(index);
@@ -147,7 +147,7 @@ function extractRegions(peaks, duration) {
     });
 
     // Cluster silence values
-    var clusters = [];
+    let clusters = [];
     silences.forEach(function(val, index) {
         if (clusters.length && val == silences[index - 1] + 1) {
             clusters[clusters.length - 1].push(val);
@@ -157,13 +157,13 @@ function extractRegions(peaks, duration) {
     });
 
     // Filter silence clusters by minimum length
-    var fClusters = clusters.filter(function(cluster) {
+    let fClusters = clusters.filter(function(cluster) {
         return cluster.length >= minLen;
     });
 
     // Create regions on the edges of silences
-    var regions = fClusters.map(function(cluster, index) {
-        var next = fClusters[index + 1];
+    let regions = fClusters.map(function(cluster, index) {
+        let next = fClusters[index + 1];
         return {
             start: cluster[cluster.length - 1],
             end: next ? next[0] : length - 1
@@ -171,7 +171,7 @@ function extractRegions(peaks, duration) {
     });
 
     // Add an initial region if the audio doesn't start with silence
-    var firstCluster = fClusters[0];
+    let firstCluster = fClusters[0];
     if (firstCluster && firstCluster[0] != 0) {
         regions.unshift({
             start: 0,
@@ -180,7 +180,7 @@ function extractRegions(peaks, duration) {
     }
 
     // Filter regions by minimum length
-    var fRegions = regions.filter(function(reg) {
+    let fRegions = regions.filter(function(reg) {
         return reg.end - reg.start >= minLen;
     });
 
@@ -213,7 +213,7 @@ function randomColor(alpha) {
  * Edit annotation for a region.
  */
 function editAnnotation(region) {
-    var form = document.forms.edit;
+    let form = document.forms.edit;
     form.style.opacity = 1;
     (form.elements.start.value = Math.round(region.start * 10) / 10),
     (form.elements.end.value = Math.round(region.end * 10) / 10);
@@ -250,8 +250,8 @@ function showNote(region) {
  * Bind controls.
  */
 window.GLOBAL_ACTIONS['delete-region'] = function() {
-    var form = document.forms.edit;
-    var regionId = form.dataset.region;
+    let form = document.forms.edit;
+    let regionId = form.dataset.region;
     if (regionId) {
         wavesurfer.regions.list[regionId].remove();
         form.reset();
