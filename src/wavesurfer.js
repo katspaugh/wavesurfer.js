@@ -816,6 +816,7 @@ export default class WaveSurfer extends util.Observer {
         audioSilentMode.src = emptyAudioBase64;
         audioSilentMode.type = 'audio/mpeg';
         audioSilentMode.play();
+        audioSilentMode.remove();
 
         this.fireEvent('interaction', () => this.play(start, end));
         return this.backend.play(start, end);
