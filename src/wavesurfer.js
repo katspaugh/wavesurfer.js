@@ -1626,20 +1626,13 @@ export default class WaveSurfer extends util.Observer {
         );
 
         return new Promise((resolve, reject) => {
-            const json = arr;
-            resolve(json);
-        }).then(response => {
-            if (!noWindow) {
-                let blobJSON = URL.createObjectURL(
-                    new Blob([JSON.stringify(response)], {
-                        type: 'application/json;charset=utf-8'
-                    })
-                );
-                window.open(blobJSON);
-                return blobJSON;
-            } else {
-                return response;
+            if(noWindow){
+                resolve(arr);
+                return;
             }
+            const blobJSON = URL.createObjectURL(new Blob([JSON.stringify(arr)],{type:'application/json;charset=utf-8'}));
+            window.open(blobJSON);
+            resolve(blobJSON);
         });
     }
 
