@@ -39,8 +39,15 @@ module.exports = {
                         loader: 'babel-loader'
                     }
                 ]
+            },
+            {
+                test: /\.ts$/,
+                loader: "ts-loader"
             }
         ]
     },
-    plugins: [jsVersionPlugin]
+    plugins: [jsVersionPlugin],
+    resolve: {
+        extensions: ['.js', '.ts']
+    }
 };
