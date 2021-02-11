@@ -321,9 +321,16 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#exportPCM} */
-    it('return Promise with PCM data', function(done) {
+    it('return Promise with PCM blob data', function(done) {
         wavesurfer.exportPCM().then(pcmData => {
-            expect(pcmData).to.be.a('promise');
+            expect(pcmData instanceof Blob).toBeTruthy();
+
+            done();
+        });
+    });
+    it('return Promise with PCM array data', function(done) {
+        wavesurfer.exportPCM().then(pcmData => {
+            expect(pcmData instanceof Array).toBeTruthy();
 
             done();
         });
