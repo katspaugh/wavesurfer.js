@@ -25,33 +25,52 @@ layout: default
   <p>Then normalize the peak data so the values stay between 0 and 1 using the Python script below:</p>
   <pre><code>python scale-json.py long_clip.json</code></pre>
   <pre><code>
-import json
 import sys
+import json
 
-if len(sys.argv) < 2:
-    print("Usage: python scale-json.py file.json")
-    exit()
 
-filename = sys.argv[1]
+def scale_json(filename):
+    with open(filename, "r") as f:
+        file_content = f.read()
 
-with open(filename, "r") as f:
-    file_content = f.read()
+    json_content = json.loads(file_content)
+    data = json_content["data"]
+    # number of decimals to use when rounding the peak value
+    digits = 2
 
-json_content = json.loads(file_content)
-data = json_content["data"]
-# number of decimals to use when rounding the peak value
-digits = 2
+    max_val = float(max(data))
+    new_data = []
+    for x in data:
+        new_data.append(round(x / max_val, digits))
 
-max_val = float(max(data))
-new_data = []
-for x in data:
-    new_data.append(round(x / max_val, digits))
+    deinterleaved_data = deinterleave(new_data, json_content["channels"])
+    json_content["data"] = deinterleaved_data
+    file_content = json.dumps(json_content, separators=(',', ':'))
 
-json_content["data"] = new_data
-file_content = json.dumps(json_content, separators=(',', ':'))
+    with open(filename, "w") as f:
+        f.write(file_content)
 
-with open(filename, "w") as f:
-    f.write(file_content)
+
+def deinterleave(data, channelCount):
+    deinterleaved = [data[idx::channelCount * 2] for idx in range(channelCount * 2)]
+    new_data = []
+    for ch in range(channelCount):
+        idx1 = 2 * ch
+        idx2 = 2 * ch + 1
+        ch_data = [None] * (len(deinterleaved[idx1]) + len(deinterleaved[idx2]))
+        ch_data[::2] = deinterleaved[idx1]
+        ch_data[1::2] = deinterleaved[idx2]
+        new_data.append(ch_data)
+    return new_data
+
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("Usage: python scale_json.py file.json")
+        exit()
+    filename = sys.argv[1]
+    scale_json(filename)
+
 </code></pre>
 <p>You can now load the <code>long_clip.json</code> file with the peaks data and pass it to wavesurfer.js:</p>
 <pre><code>
