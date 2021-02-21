@@ -296,6 +296,7 @@ export default class WaveSurfer extends util.Observer {
         },
         vertical: false,
         waveColor: '#999',
+        vertical: false,
         xhr: {}
     };
 
