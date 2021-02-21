@@ -13,7 +13,7 @@ import getId from './util/get-id';
  * render a waveform, depending on the zoom level.
  */
 export default class CanvasEntry {
-    constructor() {
+    constructor(orientation) {
         /**
          * The wave node
          *
@@ -66,6 +66,8 @@ export default class CanvasEntry {
          * @type {object}
          */
         this.canvasContextAttributes = {};
+
+        this.orientation = orientation;
     }
 
     /**
@@ -76,6 +78,7 @@ export default class CanvasEntry {
     initWave(element) {
         this.wave = element;
         this.waveCtx = this.wave.getContext('2d', this.canvasContextAttributes);
+        this.orientation.canvasTransform(this.waveCtx);
     }
 
     /**
@@ -90,33 +93,34 @@ export default class CanvasEntry {
             '2d',
             this.canvasContextAttributes
         );
+        this.orientation.canvasTransform(this.progressCtx);
     }
 
     /**
      * Update the dimensions
      *
-     * @param {number} elementWidth Width of the entry
-     * @param {number} totalWidth Total width of the multi canvas renderer
-     * @param {number} width The new width of the element
-     * @param {number} height The new height of the element
+     * @param {number} elementSize Size of the entry along the main axis
+     * @param {number} totalSize Total main-axis size of the multi canvas renderer
+     * @param {number} mainAxisSize The new main-axis size of the element
+     * @param {number} crossAxisSize The new cross-axis size of the element
      */
-    updateDimensions(elementWidth, totalWidth, width, height) {
+    updateDimensions(elementSize, totalSize, mainAxisSize, crossAxisSize) {
         // where the canvas starts and ends in the waveform, represented as a
         // decimal between 0 and 1
-        this.start = this.wave.offsetLeft / totalWidth || 0;
-        this.end = this.start + elementWidth / totalWidth;
+        this.start = this.wave[this.orientation.mainAxisOffsetLocationAttr] / totalSize || 0;
+        this.end = this.start + elementSize / totalSize;
 
         // set wave canvas dimensions
-        this.wave.width = width;
-        this.wave.height = height;
-        let elementSize = { width: elementWidth + 'px' };
-        style(this.wave, elementSize);
+        this.wave[this.orientation.mainAxisSizeAttr] = mainAxisSize;
+        this.wave[this.orientation.crossAxisSizeAttr] = crossAxisSize;
+        let elementSizeStyle = { [this.orientation.mainAxisSizeAttr]: elementSize + 'px' };
+        style(this.wave, elementSizeStyle);
 
         if (this.hasProgressCanvas) {
             // set progress canvas dimensions
-            this.progress.width = width;
-            this.progress.height = height;
-            style(this.progress, elementSize);
+            this.progress[this.orientation.mainAxisSizeAttr] = mainAxisSize;
+            this.progress[this.orientation.crossAxisSizeAttr] = crossAxisSize;
+            style(this.progress, elementSizeStyle);
         }
     }
 

@@ -42,6 +42,10 @@ function mapProp(prop, vertical) {
     } else {
         return prop;
     }
+
+    canvasTransform(ctx) {
+        super.canvasTransform(ctx);
+    }
 }
 
 const isProxy = Symbol("isProxy");
@@ -94,5 +98,17 @@ export default function withOrientation(target, vertical) {
                 }
             }
         );
+    }
+
+    canvasTransform(ctx) {
+        super.canvasTransform(ctx);
+        ctx.rotate(-Math.PI / 4);
+    }
+
+    toAbsolute(point) {
+        return {
+            x: point.crossAxis,
+            y: point.mainAxis
+        };
     }
 }
