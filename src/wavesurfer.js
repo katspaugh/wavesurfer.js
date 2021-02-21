@@ -401,10 +401,6 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('maxCanvasWidth must be an even number');
         }
 
-        if (this.params.rtl === true) {
-            util.style(this.container, { transform: 'rotateY(180deg)' });
-        }
-
         if (this.params.backgroundColor) {
             this.setBackgroundColor(this.params.backgroundColor);
         }
@@ -1710,7 +1706,7 @@ export default class WaveSurfer extends util.Observer {
         // empty drawer
         this.drawer.progress(0);
         this.drawer.setWidth(0);
-        this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
+        this.drawer.drawPeaks({ length: this.drawer.containerMainAxisSize() }, 0);
     }
 
     /**

@@ -21,9 +21,6 @@ export default function makeOrientation(mainAxisSize, crossAxisSize, el, rtl, ve
 }
 
 class OrientationBase {
-    static get mainAxisDimension() { throw new Error("Base class has no mainAxisDimension."); }
-    static get crossAxisDimension() { throw new Error("Base class has no crossAxisDimension."); }
-
     constructor(mainAxisSize, crossAxisSize, rtl, el) {
         if (this.constructor == OrientationBase) {
             throw new Error("Abstract class OrientationBase can't be instantiated. Use HorizontalOrientation or VerticalOrientation.");
@@ -37,6 +34,10 @@ class OrientationBase {
 
     nominalMainAxisSize() {
         return this.mainAxisSize;
+    }
+
+    nominalCrossAxisSize() {
+        return this.crossAxisSize;
     }
 
     mainAxisSize(el = this.el) {
@@ -73,6 +74,19 @@ class OrientationBase {
         return this.el.wrapper[this.crossAxisOffsetSizeAttr] -
             this.el.wrapper[this.clientCrossAxisSizeAttr];
     }
+
+    canvasTransform(ctx) {
+        if (this.rtl) {
+            ctx.scale(-1, 1);
+        }
+    }
+
+    toAbsolute(point) {
+        return {
+            x: point.mainAxis,
+            y: point.crossAxis
+        };
+    }
 }
 
 /**
@@ -97,7 +111,13 @@ export class HorizontalOrientation {
     static get scrollSizeAttr() { return 'scrollWidth'; }
     static get scrollAmountAttr() { return 'scrollLeft'; }
 
+    static get mainAxisOffsetLocationAttr() { return 'offsetLeft'; }
     static get crossAxisOffsetSizeAttr() { return 'offsetHeight'; }
+
+    static get mainAxisPositionStartAttr() { return 'left'; }
+    static get mainAxisPositionEndAttr() { return 'right'; }
+    static get crossAxisPositionStartAttr() { return 'top'; }
+    static get crossAxisPositionEndAttr() { return 'bottom'; }
 
     bboxDimensions(el = this.el) {
         let bbox = this.el.wrapper.getBoundingClientRect();
@@ -107,6 +127,10 @@ export class HorizontalOrientation {
             crossAxisBegin: bbox.top,
             crossAxisEnd: bbox.bottom
         };
+    }
+
+    canvasTransform(ctx) {
+        super.canvasTransform(ctx);
     }
 }
 
@@ -128,7 +152,14 @@ export class VerticalOrientation {
 
     static get scrollSizeAttr() { return 'scrollHeight'; }
     static get scrollAmountAttr() { return 'scrollTop'; }
+
+    static get mainAxisOffsetLocationAttr() { return 'offsetTop'; }
     static get crossAxisOffsetSizeAttr() { return 'offsetWidth'; }
+
+    static get mainAxisPositionStartAttr() { return 'top'; }
+    static get mainAxisPositionEndAttr() { return 'bottom'; }
+    static get crossAxisPositionStartAttr() { return 'left'; }
+    static get crossAxisPositionEndAttr() { return 'right'; }
 
     bboxDimensions(el = this.el) {
         let bbox = this.el.wrapper.getBoundingClientRect();
@@ -137,6 +168,18 @@ export class VerticalOrientation {
             mainAxisEnd: this.params.rtl ? bbox.top : bbox.bottom,
             crossAxisBegin: bbox.left,
             crossAxisEnd: bbox.right
+        };
+    }
+
+    canvasTransform(ctx) {
+        super.canvasTransform(ctx);
+        ctx.rotate(-Math.PI / 4);
+    }
+
+    toAbsolute(point) {
+        return {
+            x: point.crossAxis,
+            y: point.mainAxis
         };
     }
 }
