@@ -87,13 +87,25 @@ body {
     padding: 20px;
 }
 
+#demo.vertical {
+    justify-content: space-between;
+}
+
 #waveform {
     position: relative;
 }
 
-#waveform.vertical {
+.vertical {
     display: flex;
-    height: 800px;
+    margin-bottom: 20px;
+}
+
+.vertical #demo {
+    margin-right: 30px;
+}
+
+#waveform.vertical {
+    height: 400px;
 }
 
 #progress-bar {
