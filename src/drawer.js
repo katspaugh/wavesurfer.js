@@ -30,7 +30,6 @@ export default class Drawer extends util.Observer {
         this.height = params.height * this.params.pixelRatio;
 
         this.orientation = util.makeOrientation(
-            this,
             this.params.rtl,
             this.params.vertical
         );

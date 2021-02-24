@@ -15,6 +15,7 @@ export class Region {
         this.util = ws.util;
         this.style = this.util.style;
         this.regionsUtil = regionsUtils;
+        this.orientation = ws.drawer.orientation;
 
         this.id = params.id == null ? ws.util.getId() : params.id;
         this.start = Number(params.start) || 0;
@@ -22,7 +23,7 @@ export class Region {
             params.end == null
                 ? // small marker-like region
                 this.start +
-                (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration()
+                (4 / this.wrapper[this.orientation.attrFor('scrollWidth')]) * this.wavesurfer.getDuration()
                 : Number(params.end);
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
@@ -187,8 +188,8 @@ export class Region {
         this.style(regionEl, {
             position: 'absolute',
             zIndex: 2,
-            height: this.regionHeight,
-            top: this.marginTop
+            [this.orientation.attrFor('height')]: this.regionHeight,
+            [this.orientation.attrFor('top')]: this.marginTop
         });
 
         /* Resize handles */
@@ -205,25 +206,29 @@ export class Region {
 
             // Default CSS properties for both handles.
             const css = {
-                cursor: 'col-resize',
+                cursor: 'row-resize',
                 position: 'absolute',
-                top: '0px',
-                width: '2px',
-                height: '100%',
+                [this.orientation.attrFor('top')]: '0px',
+                [this.orientation.attrFor('width')]: '2px',
+                [this.orientation.attrFor('height')]: '100%',
                 backgroundColor: 'rgba(0, 0, 0, 1)'
             };
 
             // Merge CSS properties per handle.
             const handleLeftCss =
-                this.handleStyle.left !== 'none'
-                    ? Object.assign({ left: '0px' }, css, this.handleStyle.left)
+                this.handleStyle[this.orientation.attrFor('left')] !== 'none'
+                    ? Object.assign(
+                        { [this.orientation.attrFor('left')]: '0px' },
+                        css,
+                        this.handleStyle[this.orientation.attrFor('left')]
+                    )
                     : null;
             const handleRightCss =
-                this.handleStyle.right !== 'none'
+                this.handleStyle[this.orientation.attrFor('right')] !== 'none'
                     ? Object.assign(
-                        { right: '0px' },
+                        { [this.orientation.attrFor('right')]: '0px' },
                         css,
-                        this.handleStyle.right
+                        this.handleStyle[this.orientation.attrFor('right')]
                     )
                     : null;
 
@@ -291,8 +296,8 @@ export class Region {
             const regionWidth = Math.round((endLimited / dur) * width) - left;
 
             this.style(this.element, {
-                left: left + 'px',
-                width: regionWidth + 'px',
+                [this.orientation.attrFor('left')]: left + 'px',
+                [this.orientation.attrFor('width')]: regionWidth + 'px',
                 backgroundColor: this.color,
                 cursor: this.drag ? 'move' : 'default'
             });
@@ -418,7 +423,7 @@ export class Region {
                 return;
             }
 
-            const x = e.clientX;
+            const x = e[this.orientation.attrFor('clientX')];
             let distanceBetweenCursorAndWrapperEdge = 0;
             let regionHalfTimeWidth = 0;
             let adjustment = 0;
@@ -432,10 +437,10 @@ export class Region {
                 // Considering the point of contact with the region while edgescrolling
                 if (scrollDirection === -1) {
                     regionHalfTimeWidth = regionLeftHalfTime * this.wavesurfer.params.minPxPerSec;
-                    distanceBetweenCursorAndWrapperEdge = x - wrapperRect.left;
+                    distanceBetweenCursorAndWrapperEdge = x - wrapperRect[this.orientation.attrFor('left')];
                 } else {
                     regionHalfTimeWidth = regionRightHalfTime * this.wavesurfer.params.minPxPerSec;
-                    distanceBetweenCursorAndWrapperEdge = wrapperRect.right - x;
+                    distanceBetweenCursorAndWrapperEdge = wrapperRect[this.orientation.attrFor('right')] - x;
                 }
             } else {
                 // Considering minLength while edgescroll
@@ -466,33 +471,35 @@ export class Region {
             }
 
             // Don't edgescroll if region has reached min or max limit
+            const wrapperScrollLeft = this.wrapper[this.orientation.attrFor('scrollLeft')];
+
             if (scrollDirection === -1) {
-                if (Math.round(this.wrapper.scrollLeft) === 0) {
+                if (Math.round(wrapperScrollLeft) === 0) {
                     return;
                 }
 
-                if (Math.round(this.wrapper.scrollLeft - regionHalfTimeWidth + distanceBetweenCursorAndWrapperEdge) <= 0) {
+                if (Math.round(wrapperScrollLeft - regionHalfTimeWidth + distanceBetweenCursorAndWrapperEdge) <= 0) {
                     return;
                 }
             } else {
-                if (Math.round(this.wrapper.scrollLeft) === maxScroll) {
+                if (Math.round(wrapperScrollLeft) === maxScroll) {
                     return;
                 }
 
-                if (Math.round(this.wrapper.scrollLeft + regionHalfTimeWidth - distanceBetweenCursorAndWrapperEdge) >= maxScroll) {
+                if (Math.round(wrapperScrollLeft + regionHalfTimeWidth - distanceBetweenCursorAndWrapperEdge) >= maxScroll) {
                     return;
                 }
             }
 
             // Update scroll position
-            let scrollLeft = this.wrapper.scrollLeft - adjustment + scrollSpeed * scrollDirection;
+            let scrollLeft = wrapperScrollLeft - adjustment + scrollSpeed * scrollDirection;
 
             if (scrollDirection === -1) {
                 const calculatedLeft = Math.max(0 + regionHalfTimeWidth - distanceBetweenCursorAndWrapperEdge, scrollLeft);
-                this.wrapper.scrollLeft = scrollLeft = calculatedLeft;
+                this.wrapper[this.orientation.attrFor('scrollLeft')] = scrollLeft = calculatedLeft;
             } else {
                 const calculatedRight = Math.min(maxScroll - regionHalfTimeWidth + distanceBetweenCursorAndWrapperEdge, scrollLeft);
-                this.wrapper.scrollLeft = scrollLeft = calculatedRight;
+                this.wrapper[this.orientation.attrFor('scrollLeft')] = scrollLeft = calculatedRight;
             }
 
             const delta = time - startTime;
@@ -530,7 +537,8 @@ export class Region {
             regionRightHalfTime = this.end - startTime;
 
             // Store for scroll calculations
-            maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
+            maxScroll = this.wrapper[this.orientation.attrFor('scrollWidth')] -
+                this.wrapper[this.orientation.attrFor('clientWidth')];
             wrapperRect = this.wrapper.getBoundingClientRect();
 
             this.isResizing = false;
@@ -640,31 +648,19 @@ export class Region {
 
             if (
                 this.scroll &&
-                container.clientWidth < this.wrapper.scrollWidth
+                container[this.orientation.attrFor('clientWidth')] <
+                    this.wrapper[this.orientation.attrFor('scrollWidth')]
             ) {
                 // Triggering edgescroll from within edgeScrollWidth
-                if (drag) {
-                    let x = e.clientX;
+                let x = e[this.orientation.attrFor('clientX')];
 
-                    // Check direction
-                    if (x < wrapperRect.left + this.edgeScrollWidth) {
-                        scrollDirection = -1;
-                    } else if (x > wrapperRect.right - this.edgeScrollWidth) {
-                        scrollDirection = 1;
-                    } else {
-                        scrollDirection = null;
-                    }
+                // Check direction
+                if (x < wrapperRect[this.orientation.attrFor('left')] + this.edgeScrollWidth) {
+                    scrollDirection = -1;
+                } else if (x > wrapperRect[this.orientation.attrFor('right')] - this.edgeScrollWidth) {
+                    scrollDirection = 1;
                 } else {
-                    let x = e.clientX;
-
-                    // Check direction
-                    if (x < wrapperRect.left + this.edgeScrollWidth) {
-                        scrollDirection = -1;
-                    } else if (x > wrapperRect.right - this.edgeScrollWidth) {
-                        scrollDirection = 1;
-                    } else {
-                        scrollDirection = null;
-                    }
+                    scrollDirection = null;
                 }
 
                 if (scrollDirection) {
