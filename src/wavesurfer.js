@@ -294,7 +294,6 @@ export default class WaveSurfer extends util.Observer {
             relativeNormalization: false
         },
         waveColor: '#999',
-        vertical: false,
         xhr: {}
     };
 
@@ -314,6 +313,7 @@ export default class WaveSurfer extends util.Observer {
      */
     static create(params) {
         const wavesurfer = new WaveSurfer(params);
+        console.log("Hello from create");
         return wavesurfer.init();
     }
 
@@ -399,6 +399,10 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('maxCanvasWidth must be greater than 1');
         } else if (this.params.maxCanvasWidth % 2 == 1) {
             throw new Error('maxCanvasWidth must be an even number');
+        }
+
+        if (this.params.rtl === true) {
+            util.style(this.container, { transform: 'rotateY(180deg)' });
         }
 
         if (this.params.backgroundColor) {
@@ -1706,7 +1710,7 @@ export default class WaveSurfer extends util.Observer {
         // empty drawer
         this.drawer.progress(0);
         this.drawer.setWidth(0);
-        this.drawer.drawPeaks({ length: this.drawer.containerMainAxisSize() }, 0);
+        this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
     }
 
     /**

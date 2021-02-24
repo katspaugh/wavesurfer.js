@@ -29,6 +29,7 @@
     "lint-js-html": "lint-staged",
     "doc": "esdoc",
     "test": "karma start karma.conf.js",
+    "test:debug": "karma start karma.conf.js --browsers=Chrome --single-run=false",
     "prepublishOnly": "not-in-install && npm run build || in-install",
     "prepare": "npm run build"
   },

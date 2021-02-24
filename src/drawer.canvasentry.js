@@ -78,7 +78,6 @@ export default class CanvasEntry {
     initWave(element) {
         this.wave = element;
         this.waveCtx = this.wave.getContext('2d', this.canvasContextAttributes);
-        this.orientation.canvasTransform(this.waveCtx);
     }
 
     /**
@@ -93,34 +92,35 @@ export default class CanvasEntry {
             '2d',
             this.canvasContextAttributes
         );
-        this.orientation.canvasTransform(this.progressCtx);
     }
 
     /**
      * Update the dimensions
      *
-     * @param {number} elementSize Size of the entry along the main axis
-     * @param {number} totalSize Total main-axis size of the multi canvas renderer
-     * @param {number} mainAxisSize The new main-axis size of the element
-     * @param {number} crossAxisSize The new cross-axis size of the element
+     * @param {number} elementWidth Width of the entry
+     * @param {number} totalWidth Total width of the multi canvas renderer
+     * @param {number} width The new width of the element
+     * @param {number} height The new height of the element
      */
-    updateDimensions(elementSize, totalSize, mainAxisSize, crossAxisSize) {
+    updateDimensions(elementWidth, totalWidth, width, height) {
         // where the canvas starts and ends in the waveform, represented as a
         // decimal between 0 and 1
-        this.start = this.wave[this.orientation.mainAxisOffsetLocationAttr] / totalSize || 0;
-        this.end = this.start + elementSize / totalSize;
+        this.start = this.wave[this.orientation.attrFor('offsetLeft')] / totalWidth || 0;
+        this.end = this.start + elementWidth / totalWidth;
 
         // set wave canvas dimensions
-        this.wave[this.orientation.mainAxisSizeAttr] = mainAxisSize;
-        this.wave[this.orientation.crossAxisSizeAttr] = crossAxisSize;
-        let elementSizeStyle = { [this.orientation.mainAxisSizeAttr]: elementSize + 'px' };
-        style(this.wave, elementSizeStyle);
+        this.wave[this.orientation.attrFor('width')] = width;
+        this.wave[this.orientation.attrFor('height')] = height;
+        let elementSize = {
+            [this.orientation.attrFor('width')]: elementWidth + 'px'
+        };
+        style(this.wave, elementSize);
 
         if (this.hasProgressCanvas) {
             // set progress canvas dimensions
-            this.progress[this.orientation.mainAxisSizeAttr] = mainAxisSize;
-            this.progress[this.orientation.crossAxisSizeAttr] = crossAxisSize;
-            style(this.progress, elementSizeStyle);
+            this.progress[this.orientation.attrFor('width')] = width;
+            this.progress[this.orientation.attrFor('height')] = height;
+            style(this.progress, elementSize);
         }
     }
 
@@ -132,8 +132,8 @@ export default class CanvasEntry {
         this.waveCtx.clearRect(
             0,
             0,
-            this.waveCtx.canvas.width,
-            this.waveCtx.canvas.height
+            this.waveCtx.canvas[this.orientation.attrFor('width')],
+            this.waveCtx.canvas[this.orientation.attrFor('height')]
         );
 
         // progress
@@ -141,8 +141,8 @@ export default class CanvasEntry {
             this.progressCtx.clearRect(
                 0,
                 0,
-                this.progressCtx.canvas.width,
-                this.progressCtx.canvas.height
+                this.progressCtx.canvas[this.orientation.attrFor('width')],
+                this.progressCtx.canvas[this.orientation.attrFor('height')]
             );
         }
     }
@@ -171,9 +171,11 @@ export default class CanvasEntry {
      * @param {number} radius Radius of the rectangle
      */
     fillRects(x, y, width, height, radius) {
+        this.orientation.canvasTransform(this.waveCtx);
         this.fillRectToContext(this.waveCtx, x, y, width, height, radius);
 
         if (this.hasProgressCanvas) {
+            this.orientation.canvasTransform(this.progressCtx);
             this.fillRectToContext(
                 this.progressCtx,
                 x,
@@ -262,6 +264,7 @@ export default class CanvasEntry {
      * should be rendered
      */
     drawLines(peaks, absmax, halfH, offsetY, start, end) {
+        this.orientation.canvasTransform(this.waveCtx);
         this.drawLineToContext(
             this.waveCtx,
             peaks,
@@ -273,6 +276,7 @@ export default class CanvasEntry {
         );
 
         if (this.hasProgressCanvas) {
+            this.orientation.canvasTransform(this.progressCtx);
             this.drawLineToContext(
                 this.progressCtx,
                 peaks,
@@ -312,7 +316,7 @@ export default class CanvasEntry {
 
         const canvasStart = first;
         const canvasEnd = last;
-        const scale = this.wave.width / (canvasEnd - canvasStart - 1);
+        const scale = this.wave[this.orientation.attrFor('width')] / (canvasEnd - canvasStart - 1);
 
         // optimization
         const halfOffset = halfH + offsetY;

@@ -91,6 +91,11 @@ body {
     position: relative;
 }
 
+#waveform.vertical {
+    display: flex;
+    height: 800px;
+}
+
 #progress-bar {
     position: absolute;
     z-index: 10;
