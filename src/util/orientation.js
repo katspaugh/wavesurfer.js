@@ -46,6 +46,10 @@ function mapProp(prop, vertical) {
     canvasTransform(ctx) {
         super.canvasTransform(ctx);
     }
+
+    resizeCursor() {
+        return 'col-resize';
+    }
 }
 
 const isProxy = Symbol("isProxy");
@@ -104,5 +108,9 @@ export default function withOrientation(target, vertical) {
         // reflect across y = -x
         ctx.setTransform(0, 1, 1, 0, 0, 0);
         super.canvasTransform(ctx);
+    }
+
+    resizeCursor() {
+        return 'row-resize';
     }
 }
