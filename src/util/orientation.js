@@ -101,14 +101,8 @@ export default function withOrientation(target, vertical) {
     }
 
     canvasTransform(ctx) {
+        // reflect across y = -x
+        ctx.setTransform(0, 1, 1, 0, 0, 0);
         super.canvasTransform(ctx);
-        ctx.rotate(-Math.PI / 4);
-    }
-
-    toAbsolute(point) {
-        return {
-            x: point.crossAxis,
-            y: point.mainAxis
-        };
     }
 }
