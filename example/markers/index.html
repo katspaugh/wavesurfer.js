@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Zoom Example</title>
+        <title>wavesurfer.js | Markers</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -15,12 +15,15 @@
 
         <!-- wavesurfer.js -->
         <script src="../../dist/wavesurfer.js"></script>
-        <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
-        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
-        <script src="../../dist/plugin/wavesurfer.markers.js"></script>
 
-        <!-- Demo -->
-        <script src="main.js"></script>
+        <!-- plugins -->
+        <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
+        <script src="../../dist/plugin/wavesurfer.markers.js"></script>
+        <script src="../../dist/plugin/wavesurfer.minimap.js"></script>
+
+        <!-- App -->
+        <script src="../trivia.js"></script>
+        <script src="app.js"></script>
 
         <!-- highlight.js for syntax highlighting in this example -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
@@ -35,76 +38,66 @@
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">Zooming Feature Example</h1>
+                <h1 itemprop="name">wavesurfer.js Markers</h1>
             </div>
 
             <div id="demo">
                 <div id="waveform">
-                    <!-- Here be the waveform -->
+                    <!-- Here be waveform -->
                 </div>
 
-                <div id="timeline"></div>
-
                 <div class="controls">
-                    <div class="row">
-                        <div class="col-sm-7">
-                            <button class="btn btn-primary" data-action="play">
-                                <i class="glyphicon glyphicon-play"></i>
-                                Play
-                                /
-                                <i class="glyphicon glyphicon-pause"></i>
-                                Pause
-                            </button>
-                        </div>
-
-                        <div class="col-sm-1">
-                            <i class="glyphicon glyphicon-zoom-in"></i>
-                        </div>
-
-                        <div class="col-sm-3">
-                          <input data-action="zoom" type="range" min="1" max="200" value="0" style="width: 100%" />
-                        </div>
-
-                        <div class="col-sm-1">
-                            <i class="glyphicon glyphicon-zoom-out"></i>
-                        </div>
-                    </div>
+                    <button class="btn btn-primary" data-action="play">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
                 </div>
             </div>
 
             <div class="row marketing">
-                <h3>How to Zoom</h3>
-
-                <hr />
-
                 <p>
 <pre><code>var wavesurfer = WaveSurfer.create({
-    container: document.querySelector('#wave'),
-    backend: 'MediaElement'
+    container: document.querySelector('#waveform'),
+    plugins: [
+            WaveSurfer.markers.create({
+                markers: [
+                    {
+                        time: 5.5,
+                        label: "V1",
+                        color: '#ff990a'
+                    },
+                    {
+                        time: 10,
+                        label: "V2",
+                        color: '#00ffcc',
+                        position: 'top'
+                    }
+                ]
+            })
+    ]
 });
-
-document.querySelector('#slider').oninput = function () {
-    wavesurfer.zoom(Number(this.value));
-};
 </code></pre>
                 </p>
+
             </div>
+
 
             <div class="footer row">
                 <div class="col-sm-12">
                     <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
                 </div>
 
-                <div class="col-sm-7">
-                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
+                <div class="col-sm-8">
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
                 </div>
 
-                <div class="col-sm-5">
-                    <div class="pull-right">
-                        <noindex>
-                            The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.
-                        </noindex>
-                    </div>
+                <div class="col-sm-4">
+                    <p>
+                        The sound file is from <a href="https://librivox.org/librivox-multilingual-short-works-collection-001-by-various/">librivox.org</a>.
+                    </p>
                 </div>
             </div>
         </div>
