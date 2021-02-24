@@ -148,16 +148,19 @@ export default class CanvasEntry {
     }
 
     /**
-     * Set the fill styles for wave and progress
+     * Set the drawing context, including fill styles and transform,
+     * for wave and progress
      *
      * @param {string} waveColor Fill color for the wave canvas
      * @param {?string} progressColor Fill color for the progress canvas
      */
-    setFillStyles(waveColor, progressColor) {
+    setDrawingContext(waveColor, progressColor) {
         this.waveCtx.fillStyle = waveColor;
+        this.orientation.canvasTransform(this.waveCtx);
 
         if (this.hasProgressCanvas) {
             this.progressCtx.fillStyle = progressColor;
+            this.orientation.canvasTransform(this.progressCtx);
         }
     }
 
@@ -171,11 +174,9 @@ export default class CanvasEntry {
      * @param {number} radius Radius of the rectangle
      */
     fillRects(x, y, width, height, radius) {
-        this.orientation.canvasTransform(this.waveCtx);
         this.fillRectToContext(this.waveCtx, x, y, width, height, radius);
 
         if (this.hasProgressCanvas) {
-            this.orientation.canvasTransform(this.progressCtx);
             this.fillRectToContext(
                 this.progressCtx,
                 x,
@@ -264,7 +265,6 @@ export default class CanvasEntry {
      * should be rendered
      */
     drawLines(peaks, absmax, halfH, offsetY, start, end) {
-        this.orientation.canvasTransform(this.waveCtx);
         this.drawLineToContext(
             this.waveCtx,
             peaks,
@@ -276,7 +276,6 @@ export default class CanvasEntry {
         );
 
         if (this.hasProgressCanvas) {
-            this.orientation.canvasTransform(this.progressCtx);
             this.drawLineToContext(
                 this.progressCtx,
                 peaks,

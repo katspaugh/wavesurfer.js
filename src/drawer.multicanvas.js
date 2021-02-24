@@ -386,7 +386,7 @@ export default class MultiCanvas extends Drawer {
     drawLine(peaks, absmax, halfH, offsetY, start, end, channelIndex) {
         const { waveColor, progressColor } = this.params.splitChannelsOptions.channelColors[channelIndex] || {};
         this.canvases.forEach((entry, i) => {
-            this.setFillStyles(entry, waveColor, progressColor);
+            this.setDrawingContext(entry, waveColor, progressColor);
             entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
         });
     }
@@ -424,7 +424,7 @@ export default class MultiCanvas extends Drawer {
 
             if (intersection.x1 < intersection.x2) {
                 const { waveColor, progressColor } = this.params.splitChannelsOptions.channelColors[channelIndex] || {};
-                this.setFillStyles(entry, waveColor, progressColor);
+                this.setDrawingContext(entry, waveColor, progressColor);
 
                 entry.fillRects(
                     intersection.x1 - leftOffset,
@@ -533,14 +533,15 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
-     * Set the fill styles for a certain entry (wave and progress)
+     * Set the drawing context (fill styles and canvas transforms)
+     * for a certain entry (wave and progress)
      *
      * @param {CanvasEntry} entry Target entry
      * @param {string} waveColor Wave color to draw this entry
      * @param {string} progressColor Progress color to draw this entry
      */
-    setFillStyles(entry, waveColor = this.params.waveColor, progressColor = this.params.progressColor) {
-        entry.setFillStyles(waveColor, progressColor);
+    setDrawingContext(entry, waveColor = this.params.waveColor, progressColor = this.params.progressColor) {
+        entry.setDrawingContext(waveColor, progressColor);
     }
 
     /**
