@@ -36,10 +36,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load audio from URL
     wavesurfer.load('../media/demo.wav');
-
-    document.querySelector(
-        '[data-action="pause"]'
-    ).addEventListener('click', function() {
-        wavesurfer.pause();
-    });
 });
