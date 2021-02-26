@@ -78,14 +78,19 @@ export default class MarkersPlugin {
         this.markerWidth = 11;
         this.markerHeight = 22;
 
+
+        this._onResize = () => {
+            this._updateMarkerPositions();
+        };
+
         this._onBackendCreated = () => {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             if (this.params.markers) {
                 this.params.markers.forEach(marker => this.add(marker));
             }
-            window.addEventListener('resize', this._updateMarkerPositions.bind(this), true);
-            window.addEventListener('orientationchange', this._updateMarkerPositions.bind(this), true);
-            this.wavesurfer.on('zoom', this._updateMarkerPositions.bind(this));
+            window.addEventListener('resize', this._onResize, true);
+            window.addEventListener('orientationchange', this._onResize, true);
+            this.wavesurfer.on('zoom', this._onResize);
         };
 
         this.markers = [];
@@ -109,6 +114,12 @@ export default class MarkersPlugin {
     destroy() {
         this.wavesurfer.un('ready', this._onReady);
         this.wavesurfer.un('backend-created', this._onBackendCreated);
+
+        this.wavesurfer.un('zoom', this._onResize);
+
+        window.removeEventListener('resize', this._onResize, true);
+        window.removeEventListener('orientationchange', this._onResize, true);
+
         this.clear();
     }
 
