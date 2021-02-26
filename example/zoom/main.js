@@ -29,18 +29,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }),
             WaveSurfer.timeline.create({
                 container: '#timeline'
-            }),
-            WaveSurfer.markers.create({
-                markers: [
-                    {
-                        time: 3.4,
-                        label: "Verse"
-                    },
-                    {
-                        time: 5.2,
-                        label: "Chorus"
-                    }
-                ]
             })
         ]
     });
