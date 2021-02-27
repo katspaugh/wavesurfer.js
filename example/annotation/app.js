@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
             //         wavesurfer.getDuration()
             //     )
             // );
-            fetch('/example/annotation/annotations.json')
+            fetch('annotations.json')
                 .then(r => r.json())
                 .then(data => {
                     loadRegions(data);
