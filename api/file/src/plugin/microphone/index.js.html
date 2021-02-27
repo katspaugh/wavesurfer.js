@@ -303,26 +303,8 @@ export default class MicrophonePlugin {
         this.disconnect();
 
         // stop stream from device
-        if (this.stream) {
-            // MediaStream.stop is deprecated since:
-            // - Firefox 44 (https://www.fxsitecompat.com/en-US/docs/2015/mediastream-stop-has-been-deprecated/)
-            // - Chrome 45 (https://developers.google.com/web/updates/2015/07/mediastream-deprecations)
-            if (
-                (this.browser.browser === &apos;chrome&apos; &amp;&amp;
-                    this.browser.version &gt;= 45) ||
-                (this.browser.browser === &apos;firefox&apos; &amp;&amp;
-                    this.browser.version &gt;= 44) ||
-                this.browser.browser === &apos;edge&apos; ||
-                this.browser.browser === &apos;safari&apos;
-            ) {
-                if (this.stream.getTracks) {
-                    // note that this should not be a call
-                    this.stream.getTracks().forEach(stream =&gt; stream.stop());
-                    return;
-                }
-            }
-
-            this.stream.stop();
+        if (this.stream &amp;&amp; this.stream.getTracks) {
+            this.stream.getTracks().forEach(stream =&gt; stream.stop());
         }
     }
 

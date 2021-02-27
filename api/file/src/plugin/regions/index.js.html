@@ -387,6 +387,7 @@ export default class RegionsPlugin {
 
             region = null;
         };
+        this.wrapper.addEventListener(&apos;mouseleave&apos;, eventUp);
         this.wrapper.addEventListener(&apos;mouseup&apos;, eventUp);
         this.wrapper.addEventListener(&apos;touchend&apos;, eventUp);
 
@@ -397,6 +398,7 @@ export default class RegionsPlugin {
             document.body.removeEventListener(&apos;touchend&apos;, eventUp);
             this.wrapper.removeEventListener(&apos;touchend&apos;, eventUp);
             this.wrapper.removeEventListener(&apos;mouseup&apos;, eventUp);
+            this.wrapper.removeEventListener(&apos;mouseleave&apos;, eventUp);
         });
 
         const eventMove = e =&gt; {
