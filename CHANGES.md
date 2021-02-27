@@ -3,7 +3,7 @@ wavesurfer.js changelog
 
 x.x.x (unreleased)
 ------------------
-- Markers plugin: add new plugin that allows for timeline markers
+- Markers plugin: add new plugin that allows for timeline markers (#2196)
 
 4.5.0 (14.02.2021)
 ------------------
