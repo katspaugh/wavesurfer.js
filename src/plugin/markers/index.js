@@ -48,6 +48,7 @@ export default class MarkersPlugin {
      * used by wavesurfer to correctly instantiate the plugin.
      *
      * @param {MarkersPluginParams} params parameters use to initialise the plugin
+     * @since 4.6.0
      * @return {PluginDefinition} an object representing the plugin
      */
     static create(params) {
