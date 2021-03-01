@@ -13,7 +13,7 @@ import getId from './util/get-id';
  * render a waveform, depending on the zoom level.
  */
 export default class CanvasEntry {
-    constructor(orientation) {
+    constructor() {
         /**
          * The wave node
          *
@@ -66,8 +66,6 @@ export default class CanvasEntry {
          * @type {object}
          */
         this.canvasContextAttributes = {};
-
-        this.orientation = orientation;
     }
 
     /**
@@ -105,21 +103,21 @@ export default class CanvasEntry {
     updateDimensions(elementWidth, totalWidth, width, height) {
         // where the canvas starts and ends in the waveform, represented as a
         // decimal between 0 and 1
-        this.start = this.wave[this.orientation.attrFor('offsetLeft')] / totalWidth || 0;
+        this.start = this.wave.offsetLeft / totalWidth || 0;
         this.end = this.start + elementWidth / totalWidth;
 
         // set wave canvas dimensions
-        this.wave[this.orientation.attrFor('width')] = width;
-        this.wave[this.orientation.attrFor('height')] = height;
+        this.wave.width = width;
+        this.wave.height = height;
         let elementSize = {
-            [this.orientation.attrFor('width')]: elementWidth + 'px'
+            width: elementWidth + 'px'
         };
         style(this.wave, elementSize);
 
         if (this.hasProgressCanvas) {
             // set progress canvas dimensions
-            this.progress[this.orientation.attrFor('width')] = width;
-            this.progress[this.orientation.attrFor('height')] = height;
+            this.progress.width = width;
+            this.progress.height = height;
             style(this.progress, elementSize);
         }
     }
@@ -132,8 +130,8 @@ export default class CanvasEntry {
         this.waveCtx.clearRect(
             0,
             0,
-            this.waveCtx.canvas[this.orientation.attrFor('width')],
-            this.waveCtx.canvas[this.orientation.attrFor('height')]
+            this.waveCtx.canvas.width,
+            this.waveCtx.canvas.height
         );
 
         // progress
@@ -141,26 +139,38 @@ export default class CanvasEntry {
             this.progressCtx.clearRect(
                 0,
                 0,
-                this.progressCtx.canvas[this.orientation.attrFor('width')],
-                this.progressCtx.canvas[this.orientation.attrFor('height')]
+                this.progressCtx.canvas.width,
+                this.progressCtx.canvas.height
             );
         }
     }
 
     /**
-     * Set the drawing context, including fill styles and transform,
-     * for wave and progress
+     * Set the fill styles for wave and progress
      *
      * @param {string} waveColor Fill color for the wave canvas
      * @param {?string} progressColor Fill color for the progress canvas
      */
-    setDrawingContext(waveColor, progressColor) {
+    setFillStyles(waveColor, progressColor) {
         this.waveCtx.fillStyle = waveColor;
-        this.orientation.canvasTransform(this.waveCtx);
 
         if (this.hasProgressCanvas) {
             this.progressCtx.fillStyle = progressColor;
-            this.orientation.canvasTransform(this.progressCtx);
+        }
+    }
+
+    /**
+     * Set the canvas transforms for wave and progress
+     *
+     * @param {boolean} vertical Whether to render vertically
+     */
+    applyCanvasTransforms(vertical) {
+        if (vertical) {
+            this.waveCtx.setTransform(0, 1, 1, 0, 0, 0);
+
+            if (this.hasProgressCanvas) {
+                this.progressCtx.setTransform(0, 1, 1, 0, 0, 0);
+            }
         }
     }
 
@@ -315,7 +325,7 @@ export default class CanvasEntry {
 
         const canvasStart = first;
         const canvasEnd = last;
-        const scale = this.wave[this.orientation.attrFor('width')] / (canvasEnd - canvasStart - 1);
+        const scale = this.wave.width / (canvasEnd - canvasStart - 1);
 
         // optimization
         const halfOffset = halfH + offsetY;

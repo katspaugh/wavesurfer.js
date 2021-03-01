@@ -313,7 +313,6 @@ export default class WaveSurfer extends util.Observer {
      */
     static create(params) {
         const wavesurfer = new WaveSurfer(params);
-        console.log("Hello from create");
         return wavesurfer.init();
     }
 
@@ -402,7 +401,11 @@ export default class WaveSurfer extends util.Observer {
         }
 
         if (this.params.rtl === true) {
-            util.style(this.container, { transform: 'rotateY(180deg)' });
+            if (this.params.vertical === true) {
+                util.style(this.container, { transform: 'rotateX(180deg)' });
+            } else {
+                util.style(this.container, { transform: 'rotateY(180deg)' });
+            }
         }
 
         if (this.params.backgroundColor) {

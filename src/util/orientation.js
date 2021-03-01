@@ -1,106 +1,90 @@
 import utilCapitalize from './capitalize';
+import 'proxy-polyfill/proxy.min.js';
 
 /**
  * @property {function} makeOrientation Factory for an Orientation object
  */
 
+const verticalPropMap = {
+    width: 'height',
+    height: 'width',
+
+    overflowX: 'overflowY',
+    overflowY: 'overflowX',
+
+    clientWidth: 'clientHeight',
+    clientHeight: 'clientWidth',
+
+    clientX: 'clientY',
+    clientY: 'clientX',
+
+    scrollWidth: 'scrollHeight',
+    scrollLeft: 'scrollTop',
+
+    offsetLeft: 'offsetTop',
+    offsetHeight: 'offsetWidth',
+
+    left: 'top',
+    right: 'bottom',
+    top: 'left',
+    bottom: 'right',
+
+    borderRightStyle: 'borderBottomStyle',
+    borderRightWidth: 'borderBottomWidth',
+    borderRightColor: 'borderBottomColor'
+};
+
 /**
- * Returns an appropriate Orientation object based on vertical.
+ * Convert a horizontally-oriented property name to a vertical one.
  *
- * @param {bool} rtl Whether to reverse the direction of progress
+ * @param {string} prop A property name
  * @param {bool} vertical Whether the element is oriented vertically
- * @returns {OrientationBase} A HorizontalOrientation or VerticalOrientation object
+ * @returns {string} prop, converted appropriately
  */
-export default function makeOrientation(rtl, vertical) {
-    if (vertical) {
-        return new VerticalOrientation(rtl);
+function mapProp(prop, vertical) {
+    if (Object.prototype.hasOwnProperty.call(verticalPropMap, prop)) {
+        return vertical ? verticalPropMap[prop] : prop;
     } else {
-        return new HorizontalOrientation(rtl);
-    }
-}
-
-class OrientationBase {
-    constructor(rtl) {
-        if (this.constructor == OrientationBase) {
-            throw new Error("Abstract class OrientationBase can't be instantiated. Use HorizontalOrientation or VerticalOrientation.");
-        }
-
-        this.rtl = rtl;
-    }
-
-    attrFor(horizontallyOrientedAttr) {
-        return horizontallyOrientedAttr;
-    }
-
-    wrappedAttrFor(before, horizontallyOrientedAttr, after) {
-        return before +
-            utilCapitalize(this.attrFor(horizontallyOrientedAttr)) +
-            utilCapitalize(after);
-    }
-
-    progressPixels(wrapperBbox, clientPos) {
-        if (this.rtl) {
-            return wrapperBbox[this.attrFor('right')] - clientPos;
-        } else {
-            return clientPos - wrapperBbox[this.attrFor('left')];
-        }
-    }
-
-    canvasTransform(ctx) {
-        return;
-    }
-
-    resizeCursor() {
-        return 'col-resize';
+        return prop;
     }
 }
 
 /**
- * Orientation classes
+ * Returns an appropriately oriented object based on vertical.
+ *
+ * @param {object} target The object to be wrapped and oriented
+ * @param {bool} vertical Whether the element is oriented vertically
+ * @returns {Proxy} An oriented object with attr translation via verticalAttrMap
  */
-export class HorizontalOrientation extends OrientationBase {
+export default function withOrientation(target, vertical) {
+    return new Proxy(
+        target, {
+            get: function(obj, prop, receiver) {
+                if (prop === 'style') {
+                    return withOrientation(obj.style, vertical);
+                } else if (prop === 'canvas') {
+                    return withOrientation(obj.canvas, vertical);
+                } else if (prop === 'getBoundingClientRect') {
+                    return function(...args) {
+                        return withOrientation(obj.getBoundingClientRect(...args), vertical);
+                    };
+                } else if (prop === 'getContext') {
+                    return function(...args) {
+                        return withOrientation(obj.getContext(...args), vertical);
+                    };
+                } else {
+                    let value = obj[mapProp(prop, vertical)];
+                    return typeof value == 'function' ? value.bind(obj) : value;
+                }
+            },
+            set: function(obj, prop, value) {
+                obj[mapProp(prop, vertical)] = value;
+                return true;
+            }
+        }
+    );
 }
 
-export class VerticalOrientation extends OrientationBase {
-    /**
-     * Constants
-     */
-    static attrMapping = {
-        width: 'height',
-        height: 'width',
-
-        overflowX: 'overflowY',
-        overflowY: 'overflowX',
-
-        clientWidth: 'clientHeight',
-        clientHeight: 'clientWidth',
-
-        clientX: 'clientY',
-        clientY: 'clientX',
-
-        scrollWidth: 'scrollHeight',
-        scrollLeft: 'scrollTop',
-
-        offsetLeft: 'offsetTop',
-        offsetHeight: 'offsetWidth',
-
-        left: 'top',
-        right: 'bottom',
-        top: 'left',
-        bottom: 'right'
-    }
-
-    attrFor(horizontallyOrientedAttr) {
-        return this.constructor.attrMapping[horizontallyOrientedAttr];
-    }
-
-    canvasTransform(ctx) {
-        // reflect across y = -x
-        ctx.setTransform(0, 1, 1, 0, 0, 0);
-        super.canvasTransform(ctx);
-    }
-
-    resizeCursor() {
-        return 'row-resize';
-    }
-}
+// Cursors: used where?
+// return 'col-resize';
+// return 'row-resize';

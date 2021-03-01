@@ -13,7 +13,7 @@ export default class Drawer extends util.Observer {
     constructor(container, params) {
         super();
 
-        this.container = container;
+        this.container = util.withOrientation(container, params.vertical);
         /**
          * @type {WavesurferParams}
          */
@@ -28,11 +28,6 @@ export default class Drawer extends util.Observer {
          * @type {number}
          */
         this.height = params.height * this.params.pixelRatio;
-
-        this.orientation = util.makeOrientation(
-            this.params.rtl,
-            this.params.vertical
-        );
 
         this.lastPos = 0;
         /**
@@ -58,8 +53,9 @@ export default class Drawer extends util.Observer {
      * interaction
      */
     createWrapper() {
-        this.wrapper = this.container.appendChild(
-            document.createElement('wave')
+        this.wrapper = util.withOrientation(
+            this.container.appendChild(document.createElement('wave')),
+            this.params.vertical
         );
 
         this.style(this.wrapper, {
@@ -67,14 +63,14 @@ export default class Drawer extends util.Observer {
             position: 'relative',
             userSelect: 'none',
             webkitUserSelect: 'none',
-            [this.orientation.attrFor('height')]: this.params.height + 'px'
+            height: this.params.height + 'px'
         });
 
         if (this.params.fillParent || this.params.scrollParent) {
             this.style(this.wrapper, {
-                [this.orientation.attrFor('width')]: '100%',
-                [this.orientation.attrFor('overflowX')]: this.params.hideScrollbar ? 'hidden' : 'auto',
-                [this.orientation.attrFor('overflowY')]: 'hidden'
+                width: '100%',
+                overflowX: this.params.hideScrollbar ? 'hidden' : 'auto',
+                overflowY: 'hidden'
             });
         }
 
@@ -91,39 +87,46 @@ export default class Drawer extends util.Observer {
     handleEvent(e, noPrevent) {
         !noPrevent && e.preventDefault();
 
-        const clientX = e.targetTouches
-            ? e.targetTouches[0][this.orientation.attrFor('clientX')]
-            : e[this.orientation.attrFor('clientX')];
+        const clientX = util.withOrientation(
+            e.targetTouches ? e.targetTouches[0] : e,
+            this.params.vertical
+        ).clientX;
         const bbox = this.wrapper.getBoundingClientRect();
 
         const nominalWidth = this.width;
         const parentWidth = this.getWidth();
+        const progressPixels = this.getProgressPixels(bbox, clientX);
 
         let progress;
         if (!this.params.fillParent && nominalWidth < parentWidth) {
-            progress =
-                this.orientation.progressPixels(bbox, clientX) *
-                    (this.params.pixelRatio / nominalWidth) || 0;
+            progress = progressPixels *
+                (this.params.pixelRatio / nominalWidth) || 0;
         } else {
-            progress =
-                (this.orientation.progressPixels(bbox, clientX) +
-                    this.wrapper[this.orientation.attrFor('scrollLeft')]) /
-                    this.wrapper[this.orientation.attrFor('scrollWidth')] || 0;
+            progress = (progressPixels + this.wrapper.scrollLeft) /
+                this.wrapper.scrollWidth || 0;
         }
 
         return util.clamp(progress, 0, 1);
     }
 
+    getProgressPixels(wrapperBbox, clientX) {
+        if (this.params.rtl) {
+            return wrapperBbox.right - clientX;
+        } else {
+            return clientX - wrapperBbox.left;
+        }
+    }
+
     setupWrapperEvents() {
         this.wrapper.addEventListener('click', e => {
-            const scrollbarHeight =
-                this.wrapper[this.orientation.attrFor('offsetHeight')] -
-                  this.wrapper[this.orientation.attrFor('clientHeight')];
+            const orientedEvent = util.withOrientation(e, this.params.vertical);
+            const scrollbarHeight = this.wrapper.offsetHeight -
+                  this.wrapper.clientHeight;
 
             if (scrollbarHeight !== 0) {
                 // scrollbar is visible.  Check if click was on it
                 const bbox = this.wrapper.getBoundingClientRect();
-                if (e[this.orientation.attrFor('clientY')] >= bbox[this.orientation.attrFor('bottom')] - scrollbarHeight) {
+                if (orientedEvent.clientY >= bbox.bottom - scrollbarHeight) {
                     // ignore mousedown as it was on the scrollbar
                     return;
                 }
@@ -171,7 +174,7 @@ export default class Drawer extends util.Observer {
      */
     resetScroll() {
         if (this.wrapper !== null) {
-            this.wrapper[this.orientation.attrFor('scrollLeft')] = 0;
+            this.wrapper.scrollLeft = 0;
         }
     }
 
@@ -181,7 +184,7 @@ export default class Drawer extends util.Observer {
      * @param {number} percent Value from 0 to 1 on the waveform
      */
     recenter(percent) {
-        const position = this.wrapper[this.orientation.attrFor('scrollWidth')] * percent;
+        const position = this.wrapper.scrollWidth * percent;
         this.recenterOnPosition(position, true);
     }
 
@@ -193,9 +196,9 @@ export default class Drawer extends util.Observer {
      * @param {boolean} immediate Set to true to immediately scroll somewhere
      */
     recenterOnPosition(position, immediate) {
-        const scrollLeft = this.wrapper[this.orientation.attrFor('scrollLeft')];
-        const half = ~~(this.wrapper[this.orientation.attrFor('clientWidth')] / 2);
-        const maxScroll = this.wrapper[this.orientation.attrFor('scrollWidth')] - this.wrapper[this.orientation.attrFor('clientWidth')];
+        const scrollLeft = this.wrapper.scrollLeft;
+        const half = ~~(this.wrapper.clientWidth / 2);
+        const maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
         let target = position - half;
         let offset = target - scrollLeft;
 
@@ -221,7 +224,7 @@ export default class Drawer extends util.Observer {
         target = Math.max(0, Math.min(maxScroll, target));
         // no use attempting to scroll if we're not moving
         if (target != scrollLeft) {
-            this.wrapper[this.orientation.attrFor('scrollLeft')] = target;
+            this.wrapper.scrollLeft = target;
         }
     }
 
@@ -234,7 +237,7 @@ export default class Drawer extends util.Observer {
         let x = 0;
         if (this.wrapper) {
             const pixelRatio = this.params.pixelRatio;
-            x = Math.round(this.wrapper[this.orientation.attrFor('scrollLeft')] * pixelRatio);
+            x = Math.round(this.wrapper.scrollLeft * pixelRatio);
 
             // In cases of elastic scroll (safari with mouse wheel) you can
             // scroll beyond the limits of the container
@@ -243,7 +246,7 @@ export default class Drawer extends util.Observer {
             // Ticket #1312
             if (this.params.scrollParent) {
                 const maxScroll = ~~(
-                    this.wrapper[this.orientation.attrFor('scrollWidth')] * pixelRatio -
+                    this.wrapper.scrollWidth * pixelRatio -
                     this.getWidth()
                 );
                 x = Math.min(maxScroll, Math.max(0, x));
@@ -258,7 +261,7 @@ export default class Drawer extends util.Observer {
      * @return {number} The width of the container
      */
     getWidth() {
-        return Math.round(this.container[this.orientation.attrFor('clientWidth')] * this.params.pixelRatio);
+        return Math.round(this.container.clientWidth * this.params.pixelRatio);
     }
 
     /**
@@ -276,12 +279,12 @@ export default class Drawer extends util.Observer {
 
         if (this.params.fillParent || this.params.scrollParent) {
             this.style(this.wrapper, {
-                [this.orientation.attrFor('width')]: ''
+                width: ''
             });
         } else {
             const newWidth = ~~(this.width / this.params.pixelRatio) + 'px';
             this.style(this.wrapper, {
-                [this.orientation.attrFor('width')]: newWidth
+                width: newWidth
             });
         }
 
@@ -302,7 +305,7 @@ export default class Drawer extends util.Observer {
         this.height = height;
 
         this.style(this.wrapper, {
-            [this.orientation.attrFor('height')]: ~~(this.height / this.params.pixelRatio) + 'px'
+            height: ~~(this.height / this.params.pixelRatio) + 'px'
         });
 
         this.updateSize();
@@ -322,7 +325,7 @@ export default class Drawer extends util.Observer {
             this.lastPos = pos;
 
             if (this.params.scrollParent && this.params.autoCenter) {
-                const newPos = ~~(this.wrapper[this.orientation.attrFor('scrollWidth')] * progress);
+                const newPos = ~~(this.wrapper.scrollWidth * progress);
                 this.recenterOnPosition(
                     newPos,
                     this.params.autoCenterImmediately

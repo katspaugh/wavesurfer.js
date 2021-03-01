@@ -82,6 +82,13 @@ export default class MultiCanvas extends Drawer {
          * @type {number}
          */
         this.barRadius = params.barRadius || 0;
+
+        /**
+         * Whether to render the waveform vertically.
+         *
+         * @type {boolean}
+         */
+        this.vertical = params.vertical;
     }
 
     /**
@@ -97,21 +104,23 @@ export default class MultiCanvas extends Drawer {
      *
      */
     createElements() {
-        this.progressWave = this.wrapper.appendChild(
-            this.style(document.createElement('wave'), {
-                position: 'absolute',
-                zIndex: 3,
-                [this.orientation.attrFor('left')]: 0,
-                [this.orientation.attrFor('top')]: 0,
-                [this.orientation.attrFor('bottom')]: 0,
-                overflow: 'hidden',
-                [this.orientation.attrFor('width')]: '0',
-                display: 'none',
-                boxSizing: 'border-box',
-                [this.orientation.wrappedAttrFor('border', 'right', 'style')]: 'solid',
-                pointerEvents: 'none'
-            })
+        this.progressWave = util.withOrientation(
+            this.wrapper.appendChild(document.createElement('wave')),
+            this.params.vertical
         );
+        this.style(this.progressWave, {
+            position: 'absolute',
+            zIndex: 3,
+            left: 0,
+            top: 0,
+            bottom: 0,
+            overflow: 'hidden',
+            width: '0',
+            display: 'none',
+            boxSizing: 'border-box',
+            borderRightStyle: 'solid',
+            pointerEvents: 'none'
+        });
 
         this.addCanvas();
         this.updateCursor();
@@ -122,8 +131,8 @@ export default class MultiCanvas extends Drawer {
      */
     updateCursor() {
         this.style(this.progressWave, {
-            [this.orientation.wrappedAttrFor('border', 'right', 'width')]: this.params.cursorWidth + 'px',
-            [this.orientation.wrappedAttrFor('border', 'right', 'color')]: this.params.cursorColor
+            borderRightWidth: this.params.cursorWidth + 'px',
+            borderRightColor: this.params.cursorColor
         });
     }
 
@@ -163,40 +172,42 @@ export default class MultiCanvas extends Drawer {
      *
      */
     addCanvas() {
-        const entry = new this.EntryClass(this.orientation);
+        const entry = new this.EntryClass();
         entry.canvasContextAttributes = this.canvasContextAttributes;
         entry.hasProgressCanvas = this.hasProgressCanvas;
         entry.halfPixel = this.halfPixel;
         const leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
         // wave
-        entry.initWave(
-            this.wrapper.appendChild(
-                this.style(document.createElement('canvas'), {
-                    position: 'absolute',
-                    zIndex: 2,
-                    [this.orientation.attrFor('left')]: leftOffset + 'px',
-                    [this.orientation.attrFor('top')]: 0,
-                    [this.orientation.attrFor('bottom')]: 0,
-                    [this.orientation.attrFor('height')]: '100%',
-                    pointerEvents: 'none'
-                })
-            )
+        let wave = util.withOrientation(
+            this.wrapper.appendChild(document.createElement('canvas')),
+            this.params.vertical
         );
+        this.style(wave, {
+            position: 'absolute',
+            zIndex: 2,
+            left: leftOffset + 'px',
+            top: 0,
+            bottom: 0,
+            height: '100%',
+            pointerEvents: 'none'
+        });
+        entry.initWave(wave);
 
         // progress
         if (this.hasProgressCanvas) {
-            entry.initProgress(
-                this.progressWave.appendChild(
-                    this.style(document.createElement('canvas'), {
-                        position: 'absolute',
-                        [this.orientation.attrFor('left')]: leftOffset + 'px',
-                        [this.orientation.attrFor('top')]: 0,
-                        [this.orientation.attrFor('bottom')]: 0,
-                        [this.orientation.attrFor('height')]: '100%'
-                    })
-                )
+            let progress = util.withOrientation(
+                this.progressWave.appendChild(document.createElement('canvas')),
+                this.params.vertical
             );
+            this.style(progress, {
+                position: 'absolute',
+                left: leftOffset + 'px',
+                top: 0,
+                bottom: 0,
+                height: '100%'
+            });
+            entry.initProgress(progress);
         }
 
         this.canvases.push(entry);
@@ -386,7 +397,8 @@ export default class MultiCanvas extends Drawer {
     drawLine(peaks, absmax, halfH, offsetY, start, end, channelIndex) {
         const { waveColor, progressColor } = this.params.splitChannelsOptions.channelColors[channelIndex] || {};
         this.canvases.forEach((entry, i) => {
-            this.setDrawingContext(entry, waveColor, progressColor);
+            this.setFillStyles(entry, waveColor, progressColor);
+            this.applyCanvasTransforms(entry, this.params.vertical);
             entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
         });
     }
@@ -417,14 +429,15 @@ export default class MultiCanvas extends Drawer {
                 y1: y,
                 x2: Math.min(
                     x + width,
-                    i * this.maxCanvasWidth + entry.wave[this.orientation.attrFor('width')]
+                    i * this.maxCanvasWidth + entry.wave.width
                 ),
                 y2: y + height
             };
 
             if (intersection.x1 < intersection.x2) {
                 const { waveColor, progressColor } = this.params.splitChannelsOptions.channelColors[channelIndex] || {};
-                this.setDrawingContext(entry, waveColor, progressColor);
+                this.setFillStyles(entry, waveColor, progressColor);
+                this.applyCanvasTransforms(entry, this.params.vertical);
 
                 entry.fillRects(
                     intersection.x1 - leftOffset,
@@ -533,15 +546,24 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
-     * Set the drawing context (fill styles and canvas transforms)
-     * for a certain entry (wave and progress)
+     * Set the fill styles for a certain entry (wave and progress)
      *
      * @param {CanvasEntry} entry Target entry
      * @param {string} waveColor Wave color to draw this entry
      * @param {string} progressColor Progress color to draw this entry
      */
-    setDrawingContext(entry, waveColor = this.params.waveColor, progressColor = this.params.progressColor) {
-        entry.setDrawingContext(waveColor, progressColor);
+    setFillStyles(entry, waveColor = this.params.waveColor, progressColor = this.params.progressColor) {
+        entry.setFillStyles(waveColor, progressColor);
+    }
+
+    /**
+     * Set the canvas transforms for a certain entry (wave and progress)
+     *
+     * @param {CanvasEntry} entry Target entry
+     * @param {boolean} vertical Whether to render the waveform vertically
+     */
+    applyCanvasTransforms(entry, vertical = false) {
+        entry.applyCanvasTransforms(vertical);
     }
 
     /**
@@ -579,6 +601,6 @@ export default class MultiCanvas extends Drawer {
      * @param {number} position X-offset of progress position in pixels
      */
     updateProgress(position) {
-        this.style(this.progressWave, { [this.orientation.attrFor('width')]: position + 'px' });
+        this.style(this.progressWave, { width: position + 'px' });
     }
 }

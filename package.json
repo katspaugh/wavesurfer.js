@@ -88,6 +88,7 @@
     "lint-staged": "^10.5.4",
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
+    "proxy-polyfill": "^0.3.2",
     "webpack": "^5.24.3",
     "webpack-cli": "^4.5.0",
     "webpack-dev-server": "^4.0.0-beta.0",
