@@ -47,8 +47,18 @@ function mapProp(prop, vertical) {
         super.canvasTransform(ctx);
     }
 
-    resizeCursor() {
-        return 'col-resize';
+/**
+ * Convert a horizontally-oriented property name to a vertical one.
+ *
+ * @param {string} prop A property name
+ * @param {bool} vertical Whether the element is oriented vertically
+ * @returns {string} prop, converted appropriately
+ */
+function mapProp(prop, vertical) {
+    if (Object.prototype.hasOwnProperty.call(verticalPropMap, prop)) {
+        return vertical ? verticalPropMap[prop] : prop;
+    } else {
+        return prop;
     }
 }
 

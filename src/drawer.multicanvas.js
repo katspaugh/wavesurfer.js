@@ -131,8 +131,8 @@ export default class MultiCanvas extends Drawer {
      */
     updateCursor() {
         this.style(this.progressWave, {
-            [this.orientation.wrappedAttrFor('border', 'right', 'width')]: this.params.cursorWidth + 'px',
-            [this.orientation.wrappedAttrFor('border', 'right', 'color')]: this.params.cursorColor
+            borderRightWidth: this.params.cursorWidth + 'px',
+            borderRightColor: this.params.cursorColor
         });
     }
 
@@ -172,7 +172,7 @@ export default class MultiCanvas extends Drawer {
      *
      */
     addCanvas() {
-        const entry = new this.EntryClass(this.orientation);
+        const entry = new this.EntryClass();
         entry.canvasContextAttributes = this.canvasContextAttributes;
         entry.hasProgressCanvas = this.hasProgressCanvas;
         entry.halfPixel = this.halfPixel;
@@ -429,7 +429,7 @@ export default class MultiCanvas extends Drawer {
                 y1: y,
                 x2: Math.min(
                     x + width,
-                    i * this.maxCanvasWidth + entry.wave[this.orientation.attrFor('width')]
+                    i * this.maxCanvasWidth + entry.wave.width
                 ),
                 y2: y + height
             };
@@ -546,15 +546,24 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
-     * Set the drawing context (fill styles and canvas transforms)
-     * for a certain entry (wave and progress)
+     * Set the fill styles for a certain entry (wave and progress)
      *
      * @param {CanvasEntry} entry Target entry
      * @param {string} waveColor Wave color to draw this entry
      * @param {string} progressColor Progress color to draw this entry
      */
-    setDrawingContext(entry, waveColor = this.params.waveColor, progressColor = this.params.progressColor) {
-        entry.setDrawingContext(waveColor, progressColor);
+    setFillStyles(entry, waveColor = this.params.waveColor, progressColor = this.params.progressColor) {
+        entry.setFillStyles(waveColor, progressColor);
+    }
+
+    /**
+     * Set the canvas transforms for a certain entry (wave and progress)
+     *
+     * @param {CanvasEntry} entry Target entry
+     * @param {boolean} vertical Whether to render the waveform vertically
+     */
+    applyCanvasTransforms(entry, vertical = false) {
+        entry.applyCanvasTransforms(vertical);
     }
 
     /**
@@ -602,6 +611,6 @@ export default class MultiCanvas extends Drawer {
      * @param {number} position X-offset of progress position in pixels
      */
     updateProgress(position) {
-        this.style(this.progressWave, { [this.orientation.attrFor('width')]: position + 'px' });
+        this.style(this.progressWave, { width: position + 'px' });
     }
 }

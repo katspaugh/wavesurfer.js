@@ -315,7 +315,6 @@ export default class WaveSurfer extends util.Observer {
      */
     static create(params) {
         const wavesurfer = new WaveSurfer(params);
-        console.log("Hello from create");
         return wavesurfer.init();
     }
 
