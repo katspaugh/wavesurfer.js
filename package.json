@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "4.4.0",
+  "version": "4.5.0",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "directories": {
@@ -54,15 +54,15 @@
     "visualization"
   ],
   "devDependencies": {
-    "@babel/core": "^7.12.13",
-    "@babel/preset-env": "^7.12.13",
+    "@babel/core": "^7.12.16",
+    "@babel/preset-env": "^7.12.16",
     "@babel/register": "^7.12.13",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
     "babel-plugin-add-module-exports": "^1.0.4",
     "babel-plugin-istanbul": "^6.0.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
-    "date-fns": "^2.16.1",
+    "date-fns": "^2.17.0",
     "debounce": "^1.2.0",
     "esdoc": "^1.1.0",
     "esdoc-accessor-plugin": "^1.0.0",
@@ -71,7 +71,7 @@
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-integrate-test-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^7.19.0",
+    "eslint": "^7.20.0",
     "htmlhint": "^0.14.2",
     "in-publish": "^2.0.1",
     "jasmine-core": "^3.6.0",
@@ -83,10 +83,10 @@
     "karma-jasmine-matchers": "4.0.2",
     "karma-verbose-reporter": "0.0.6",
     "karma-webpack": "^5.0.0",
-    "lint-staged": "^10.5.3",
+    "lint-staged": "^10.5.4",
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
-    "webpack": "^5.20.1",
+    "webpack": "^5.21.2",
     "webpack-cli": "^4.5.0",
     "webpack-dev-server": "^4.0.0-beta.0",
     "webpack-merge": "^5.7.3"
