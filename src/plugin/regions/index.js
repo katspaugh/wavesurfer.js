@@ -128,13 +128,15 @@ export default class RegionsPlugin {
         });
         this.wavesurfer.Region = Region;
 
+        const scrollWidthProportion = 0.05;
         this._onBackendCreated = () => {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             this.orientation = this.wavesurfer.drawer.orientation;
             if (this.params.regions) {
                 this.params.regions.forEach(region => {
                     region.edgeScrollWidth = this.params.edgeScrollWidth ||
-                        this.wrapper[this.orientation.attrFor('clientWidth')] * 0.05;
+                        this.wrapper[this.orientation.attrFor('clientWidth')] *
+                        scrollWidthProportion;
                     this.add(region);
                 });
             }

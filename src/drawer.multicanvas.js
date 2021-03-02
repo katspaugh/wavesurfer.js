@@ -84,7 +84,7 @@ export default class MultiCanvas extends Drawer {
         this.barRadius = params.barRadius || 0;
 
         /**
-         * Whether to render the waveform vertically.
+         * Whether to render the waveform vertically. Defaults to false.
          *
          * @type {boolean}
          */
