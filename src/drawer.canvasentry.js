@@ -109,9 +109,7 @@ export default class CanvasEntry {
         // set wave canvas dimensions
         this.wave.width = width;
         this.wave.height = height;
-        let elementSize = {
-            width: elementWidth + 'px'
-        };
+        let elementSize = { width: elementWidth + 'px' };
         style(this.wave, elementSize);
 
         if (this.hasProgressCanvas) {
