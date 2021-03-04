@@ -1,8 +1,9 @@
 wavesurfer.js changelog
 =======================
 
-x.x.x (unreleased)
+4.6.0 (unreleased)
 ------------------
+- Webaudio: fix `decodeAudioData` handling in Safari (#2201)
 - Markers plugin: add new plugin that allows for timeline markers (#2196)
 
 4.5.0 (14.02.2021)
