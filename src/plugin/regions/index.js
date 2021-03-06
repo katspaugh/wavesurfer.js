@@ -128,6 +128,8 @@ export default class RegionsPlugin {
         });
         this.wavesurfer.Region = Region;
 
+        // By default, scroll the container if the user drags a region
+        // within 5% of its edge
         const scrollWidthProportion = 0.05;
         this._onBackendCreated = () => {
             this.wrapper = this.wavesurfer.drawer.wrapper;
