@@ -105,6 +105,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {boolean|number} responsive=false If set to `true` resize the
  * waveform, when the window is resized. This is debounced with a `100ms`
  * timeout by default. If this parameter is a number it represents that timeout.
+ * @property {boolean} returnToPlayhead=false If set to `true`, on pause
+ * return to the time at which play started (or was seeked to)
  * @property {boolean} rtl=false If set to `true`, renders waveform from
  * right-to-left.
  * @property {boolean} scrollParent=false Whether to scroll the container with a
@@ -283,6 +285,7 @@ export default class WaveSurfer extends util.Observer {
         removeMediaElementOnDestroy: true,
         renderer: MultiCanvas,
         responsive: false,
+        returnToPlayhead: false,
         rtl: false,
         scrollParent: false,
         skipLength: 2,
@@ -721,7 +724,12 @@ export default class WaveSurfer extends util.Observer {
             this.fireEvent('finish');
         });
         this.backend.on('play', () => this.fireEvent('play'));
-        this.backend.on('pause', () => this.fireEvent('pause'));
+        this.backend.on('pause', () => {
+            if ( this.params.returnToPlayhead ) {
+                this.setCurrentTime(this.playheadStart);
+            }
+            this.fireEvent('pause');
+        });
 
         this.backend.on('audioprocess', time => {
             this.drawer.progress(this.backend.getPlayedPercents());
@@ -808,6 +816,7 @@ export default class WaveSurfer extends util.Observer {
      */
     play(start, end) {
         this.fireEvent('interaction', () => this.play(start, end));
+        this.playheadStart = this.getCurrentTime();
         return this.backend.play(start, end);
     }
 
@@ -938,7 +947,11 @@ export default class WaveSurfer extends util.Observer {
         // avoid small scrolls while paused seeking
         const oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
-        this.backend.seekTo(progress * this.getDuration());
+
+        const seekTime = progress * this.getDuration();
+        this.backend.seekTo(seekTime);
+        this.playheadStart = seekTime;
+
         this.drawer.progress(progress);
 
         if (isWebAudioBackend && !paused) {

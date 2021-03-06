@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+4.6.1 (unreleased)
+------------------
+- Add `returnToPlayhead` parameter, emulating ProTools behavior
+
 4.6.0 (04.03.2021)
 ------------------
 - Webaudio: fix `decodeAudioData` handling in Safari (#2201)
