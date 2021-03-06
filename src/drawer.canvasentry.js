@@ -164,6 +164,7 @@ export default class CanvasEntry {
      */
     applyCanvasTransforms(vertical) {
         if (vertical) {
+            // Reflect the waveform across the line y = -x
             this.waveCtx.setTransform(0, 1, 1, 0, 0, 0);
 
             if (this.hasProgressCanvas) {
