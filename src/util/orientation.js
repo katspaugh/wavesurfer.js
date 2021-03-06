@@ -1,5 +1,4 @@
 import utilCapitalize from './capitalize';
-import 'proxy-polyfill/proxy.min.js';
 
 /**
  * @property {function} makeOrientation Factory for an Orientation object
@@ -57,32 +56,36 @@ function mapProp(prop, vertical) {
  * @returns {Proxy} An oriented object with attr translation via verticalAttrMap
  */
 export default function withOrientation(target, vertical) {
-    return new Proxy(
-        target, {
-            get: function(obj, prop, receiver) {
-                if (prop === 'style') {
-                    return withOrientation(obj.style, vertical);
-                } else if (prop === 'canvas') {
-                    return withOrientation(obj.canvas, vertical);
-                } else if (prop === 'getBoundingClientRect') {
-                    return function(...args) {
-                        return withOrientation(obj.getBoundingClientRect(...args), vertical);
-                    };
-                } else if (prop === 'getContext') {
-                    return function(...args) {
-                        return withOrientation(obj.getContext(...args), vertical);
-                    };
-                } else {
-                    let value = obj[mapProp(prop, vertical)];
-                    return typeof value == 'function' ? value.bind(obj) : value;
+    if (typeof(Proxy) === "undefined") {
+        return target;
+    } else {
+        return new Proxy(
+            target, {
+                get: function(obj, prop, receiver) {
+                    if (prop === 'style') {
+                        return withOrientation(obj.style, vertical);
+                    } else if (prop === 'canvas') {
+                        return withOrientation(obj.canvas, vertical);
+                    } else if (prop === 'getBoundingClientRect') {
+                        return function(...args) {
+                            return withOrientation(obj.getBoundingClientRect(...args), vertical);
+                        };
+                    } else if (prop === 'getContext') {
+                        return function(...args) {
+                            return withOrientation(obj.getContext(...args), vertical);
+                        };
+                    } else {
+                        let value = obj[mapProp(prop, vertical)];
+                        return typeof value == 'function' ? value.bind(obj) : value;
+                    }
+                },
+                set: function(obj, prop, value) {
+                    obj[mapProp(prop, vertical)] = value;
+                    return true;
                 }
-            },
-            set: function(obj, prop, value) {
-                obj[mapProp(prop, vertical)] = value;
-                return true;
             }
-        }
-    );
+        );
+    }
 }
 
 // Cursors: used where?
