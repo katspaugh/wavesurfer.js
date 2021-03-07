@@ -181,6 +181,7 @@ export default class MarkersPlugin {
         this.style(el, {
             width: this.markerWidth + "px",
             height: this.markerHeight + "px",
+            "min-width": this.markerWidth + "px",
             "margin-right": "5px",
             "z-index": 4
         });
@@ -198,6 +199,7 @@ export default class MarkersPlugin {
             position: "absolute",
             height: "100%",
             display: "flex",
+            overflow: "hidden",
             "flex-direction": (marker.position == "top" ? "column-reverse" : "column")
         });
 
@@ -250,9 +252,11 @@ export default class MarkersPlugin {
                 this.wavesurfer.drawer.width /
                 this.wavesurfer.params.pixelRatio;
 
-            const positionPct = marker.time / duration;
+            const positionPct = Math.min(marker.time / duration, 1);
+            const leftPx = ((elementWidth * positionPct) - (this.markerWidth / 2));
             this.style(marker.el, {
-                left: ((elementWidth * positionPct) - (this.markerWidth / 2)) + "px"
+                "left":  leftPx + "px",
+                "max-width": (elementWidth - leftPx) + "px"
             });
         }
     }
