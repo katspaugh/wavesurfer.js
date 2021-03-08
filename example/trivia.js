@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         let action = map[e.keyCode];
         if (action in GLOBAL_ACTIONS) {
-            if (document == e.target || document.body == e.target) {
+            if (document == e.target || document.body == e.target || e.target.attributes["data-action"]) {
                 e.preventDefault();
             }
             GLOBAL_ACTIONS[action](e);
