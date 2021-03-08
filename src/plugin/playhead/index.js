@@ -114,7 +114,9 @@ export default class PlayheadPlugin {
 
     wavesurferOn(ev, fn) {
         let ret = this.wavesurfer.on(ev, fn);
-        this.unFuns.push(ret.un);
+        this.unFuns.push(() => {
+            this.wavesurfer.un(ev, fn);
+        });
         return ret;
     }
 
@@ -133,6 +135,8 @@ export default class PlayheadPlugin {
     destroy() {
         this.unFuns.forEach(f => f());
         this.unFuns = [];
+
+        this.wrapper.removeChild(this.element);
 
         window.removeEventListener('resize', this._onResize, true);
         window.removeEventListener('orientationchange', this._onResize, true);
