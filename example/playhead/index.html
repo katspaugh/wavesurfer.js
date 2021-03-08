@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Markers</title>
+        <title>wavesurfer.js | Playhead</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -36,14 +36,16 @@
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">wavesurfer.js Markers</h1>
+                <h1 itemprop="name">wavesurfer.js Playhead plugin</h1>
             </div>
 
             <div id="demo">
+                <div style="margin-bottom: 30px;">
+                    This demos the playhead plugin, which allows "return to last played" functionality, mimicking certain DAWs.
+                </div>
                 <div id="waveform">
                     <!-- Here be waveform -->
                 </div>
-
                 <div class="controls">
                     <button class="btn btn-primary" data-action="play">
                         <i class="glyphicon glyphicon-play"></i>
@@ -58,25 +60,22 @@
             <div class="row marketing">
                 <p>
 <pre><code>var wavesurfer = WaveSurfer.create({
-    container: document.querySelector('#waveform'),
-    plugins: [
-            WaveSurfer.markers.create({
-                markers: [
-                    {
-                        time: 5.5,
-                        label: "V1",
-                        color: '#ff990a'
-                    },
-                    {
-                        time: 10,
-                        label: "V2",
-                        color: '#00ffcc',
-                        position: 'top'
-                    }
-                ]
+        container: document.querySelector('#waveform'),
+        waveColor: '#A8DBA8',
+        progressColor: '#3B8686',
+        backend: 'MediaElement',
+        plugins: [
+            WaveSurfer.playhead.create({
+                returnOnPause: true,
+                moveOnSeek: true,
+                draw: true
             })
-    ]
-});
+        ]
+    });
+
+    wavesurfer.on('ready', function(e) {
+        wavesurfer.playhead.setPlayheadTime(2.3);
+    });
 </code></pre>
                 </p>
 
