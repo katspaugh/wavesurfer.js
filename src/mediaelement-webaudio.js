@@ -88,4 +88,14 @@ export default class MediaElementWebAudio extends MediaElement {
     setVolume(value) {
         this.gainNode.gain.setValueAtTime(value, this.ac.currentTime);
     }
+
+    /**
+     * Get the current volume.
+     *
+     * @since 4.7.0 See {@link MediaElementWebAudio#setVolume}
+     * @return {number} value A floating point value between 0 and 1.
+     */
+    getVolume() {
+        return this.gainNode.gain.value;
+    }
 }
