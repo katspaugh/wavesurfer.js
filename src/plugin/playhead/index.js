@@ -1,7 +1,7 @@
 
 /**
  * The playhead plugin separates the notion of the currently playing position from
- * a "play-start" position.  Having a playhead enables a listening pattern
+ * a 'play-start' position.  Having a playhead enables a listening pattern
  * (commonly found in DAWs) that involves listening to a section of a track
  * repeatedly, rather than listening to an entire track in a linear fashion.
  *
@@ -26,7 +26,7 @@
  * });
  */
 
-const DEFAULT_FILL_COLOR = "#CF2F00";
+const DEFAULT_FILL_COLOR = '#CF2F00';
 
 export default class PlayheadPlugin {
     /**
@@ -73,48 +73,49 @@ export default class PlayheadPlugin {
         this.markerWidth = 21;
         this.markerHeight = 16;
         this.playheadTime = 0;
+        this.unFuns = [];
 
         this._onResize = () => {
             this._updatePlayheadPosition();
-        };
-
-        this.unFuns = [];
-        let r;
-
-        this._onBackendCreated = () => {
-            this.wrapper = this.wavesurfer.drawer.wrapper;
-
-            if (this.options.draw) {
-                this._createPlayheadElement();
-                window.addEventListener('resize', this._onResize, true);
-                window.addEventListener('orientationchange', this._onResize, true);
-
-                r = this.wavesurfer.on('zoom', this._onResize);
-                this.unFuns.push(r.un);
-            }
-
-            r = this.wavesurfer.on('pause', () => {
-                if ( this.options.returnOnPause ) {
-                    this.wavesurfer.setCurrentTime(this.playheadTime);
-                }
-            });
-            this.unFuns.push(r);
-
-            r = this.wavesurfer.on('seek', () => {
-                if ( this.options.moveOnSeek ) {
-                    this.playheadTime = this.wavesurfer.getCurrentTime();
-                    this._updatePlayheadPosition();
-                }
-            });
-            this.unFuns.push(r);
-
-            this.playheadTime = this.wavesurfer.getCurrentTime();
         };
 
         this._onReady = () => {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             this._updatePlayheadPosition();
         };
+    }
+
+    _onBackendCreated() {
+        this.wrapper = this.wavesurfer.drawer.wrapper;
+
+        if (this.options.draw) {
+            this._createPlayheadElement();
+            window.addEventListener('resize', this._onResize, true);
+            window.addEventListener('orientationchange', this._onResize, true);
+
+            this.wavesurferOn('zoom', this._onResize);
+        }
+
+        this.wavesurferOn('pause', () => {
+            if ( this.options.returnOnPause ) {
+                this.wavesurfer.setCurrentTime(this.playheadTime);
+            }
+        });
+
+        this.wavesurferOn('seek', () => {
+            if ( this.options.moveOnSeek ) {
+                this.playheadTime = this.wavesurfer.getCurrentTime();
+                this._updatePlayheadPosition();
+            }
+        });
+
+        this.playheadTime = this.wavesurfer.getCurrentTime();
+    }
+
+    wavesurferOn(ev, fn) {
+        let ret = this.wavesurfer.on(ev, fn);
+        this.unFuns.push(ret.un);
+        return ret;
     }
 
     init() {
@@ -124,11 +125,8 @@ export default class PlayheadPlugin {
         } else {
             let r;
 
-            r = this.wavesurfer.once('ready', this._onReady);
-            this.unFuns.push(r);
-
-            r = this.wavesurfer.once('backend-created', this._onBackendCreated);
-            this.unFuns.push(r);
+            this.wavesurfer.once('ready', () => this._onReady());
+            this.wavesurfer.once('backend-created', () => this._onBackendCreated());
         }
     }
 
@@ -150,54 +148,52 @@ export default class PlayheadPlugin {
     }
 
     _createPointerSVG() {
-        const svgNS = "http://www.w3.org/2000/svg";
+        const svgNS = 'http://www.w3.org/2000/svg';
 
-        const el = document.createElementNS(svgNS, "svg");
-        const path = document.createElementNS(svgNS, "path");
+        const el = document.createElementNS(svgNS, 'svg');
+        const path = document.createElementNS(svgNS, 'path');
 
-        el.setAttribute("viewBox", "0 0 33 30");
-        path.setAttribute("d", "M16.75,0 L31.705211,25.4338659 C32.570163,26.8470269 32.1257518,28.6938024 30.7125908,29.5587544 C30.2411619,29.8473013 29.6991813,30 29.1464566,30 L4.35354336,30 C2.69668911,30 1.35354336,28.6568542 1.35354336,27 C1.35354336,26.4472753 1.50624201,25.9052947 1.794789,25.4338659 L16.75,0 L16.75,0 Z");
-        path.setAttribute("transform", "translate(16.750000, 15.500000) scale(1, -1) translate(-16.750000, -15.500000)");
-        path.setAttribute("id", "polygon");
-        path.setAttribute("stroke", "#979797");
-        path.setAttribute("fill", DEFAULT_FILL_COLOR);
+        el.setAttribute('viewBox', '0 0 33 30');
+        path.setAttribute('d', 'M16.75 31 31.705 5.566A3 3 0 0 0 29.146 1H4.354a3 3 0 0 0-2.56 4.566L16.75 31z');
+        path.setAttribute('stroke', '#979797');
+        path.setAttribute('fill', DEFAULT_FILL_COLOR);
 
         el.appendChild(path);
 
         this.style(el, {
-            width: this.markerWidth + "px",
-            height: this.markerHeight + "px",
-            cursor: "pointer",
-            "z-index": 5
+            width: this.markerWidth + 'px',
+            height: this.markerHeight + 'px',
+            cursor: 'pointer',
+            'z-index': 5
         });
         return el;
     }
 
     _createPlayheadElement() {
         const el = document.createElement('playhead');
-        el.className = "wavesurfer-playhead";
+        el.className = 'wavesurfer-playhead';
 
         this.style(el, {
-            position: "absolute",
-            height: "100%",
-            display: "flex",
-            "flex-direction": "column"
+            position: 'absolute',
+            height: '100%',
+            display: 'flex',
+            'flex-direction': 'column'
         });
 
         const pointer = this._createPointerSVG();
         el.appendChild(pointer);
 
-        pointer.addEventListener("click", e => {
+        pointer.addEventListener('click', e => {
             e.stopPropagation();
             this.wavesurfer.setCurrentTime(this.playheadTime);
         });
 
         const line = document.createElement('div');
         this.style(line, {
-            "flex-grow": 1,
-            "margin-left": (this.markerWidth / 2 - 0.5) + "px",
-            background: "black",
-            width: "1px",
+            'flex-grow': 1,
+            'margin-left': (this.markerWidth / 2 - 0.5) + 'px',
+            background: 'black',
+            width: '1px',
             opacity: 0.1
         });
 
@@ -219,7 +215,7 @@ export default class PlayheadPlugin {
 
         const positionPct = this.playheadTime / duration;
         this.style(this.element, {
-            left: ((elementWidth * positionPct) - (this.markerWidth / 2)) + "px"
+            left: ((elementWidth * positionPct) - (this.markerWidth / 2)) + 'px'
         });
     }
 }
