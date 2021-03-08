@@ -3,6 +3,8 @@ wavesurfer.js changelog
 
 x.x.x (unreleased)
 ------------------
+- Playhead plugin: add a new plugin that allows the setting of a independent
+  "play head", or song-start position. (#XXXX)
 - Markers plugin: fix a bug where markers at the end of a track would cause
   incorrect click-to-seek behavior (#2208)
 
