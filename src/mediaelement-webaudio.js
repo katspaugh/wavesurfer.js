@@ -74,4 +74,18 @@ export default class MediaElementWebAudio extends MediaElement {
 
         this.destroyWebAudio();
     }
+
+    /**
+     * Set the audio volume.
+     *
+     * Previously, calling setVolume on this backend would use the MediaElement backend's setVolume,
+     * which set the volume on the media element. On iOS Safari, media element volume cannot be
+     * programmatically set. Using the gain node allows volume to be changed programmatically.
+     *
+     * @since 4.7.0
+     * @param {number} value A floating point value between 0 and 1.
+     */
+    setVolume(value) {
+        this.gainNode.gain.setValueAtTime(value, this.ac.currentTime);
+    }
 }

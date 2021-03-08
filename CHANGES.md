@@ -5,6 +5,7 @@ x.x.x (unreleased)
 ------------------
 - Markers plugin: fix a bug where markers at the end of a track would cause
   incorrect click-to-seek behavior (#2208)
+- Fix `setVolume` not working with the `MediaElementWebAudio` backend on iOS Safari.
 
 4.6.0 (04.03.2021)
 ------------------
