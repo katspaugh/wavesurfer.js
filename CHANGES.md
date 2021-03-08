@@ -5,6 +5,10 @@ x.x.x (unreleased)
 ------------------
 - Fixed `exportPCM()` to return valid json on `noWindow` and create a valid JSON blob
   file on promise (#1896, #1954)
+
+4.6.0 (04.03.2021)
+------------------
+- Webaudio: fix `decodeAudioData` handling in Safari (#2201)
 - Markers plugin: add new plugin that allows for timeline markers (#2196)
 
 4.5.0 (14.02.2021)
