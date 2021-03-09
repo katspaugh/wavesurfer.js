@@ -675,18 +675,18 @@ export class Region {
         document.body.addEventListener('mousemove', onMove);
         document.body.addEventListener('touchmove', onMove);
 
-        document.body.addEventListener('mouseup', onUp);
+        document.addEventListener('mouseup', onUp);
         document.body.addEventListener('touchend', onUp);
 
         this.on('remove', () => {
-            document.body.removeEventListener('mouseup', onUp);
+            document.removeEventListener('mouseup', onUp);
             document.body.removeEventListener('touchend', onUp);
             document.body.removeEventListener('mousemove', onMove);
             document.body.removeEventListener('touchmove', onMove);
         });
 
         this.wavesurfer.on('destroy', () => {
-            document.body.removeEventListener('mouseup', onUp);
+            document.removeEventListener('mouseup', onUp);
             document.body.removeEventListener('touchend', onUp);
         });
     }
