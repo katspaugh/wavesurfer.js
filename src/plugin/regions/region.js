@@ -42,7 +42,7 @@ export class Region {
         this.handleRightEl = null;
         this.data = params.data || {};
         this.attributes = params.attributes || {};
-		this.showTooltip = params.showTooltip ?? true;
+        this.showTooltip = params.showTooltip ?? true;
 
         this.maxLength = params.maxLength;
         // It assumes the minLength parameter value, or the regionsMinLength parameter value, if the first one not provided
