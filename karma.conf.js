@@ -94,6 +94,7 @@ module.exports = function(config) {
             'karma-jasmine-matchers',
             'karma-chrome-launcher',
             'karma-firefox-launcher',
+            '@chiragrupani/karma-chromium-edge-launcher',
             'karma-coverage',
             'karma-verbose-reporter'
         ],
@@ -125,12 +126,26 @@ module.exports = function(config) {
             Firefox_ci: {
                 base: 'FirefoxHeadless',
                 prefs: firefoxFlags
+            },
+            Edge_dev: {
+                base: 'Edge',
+                flags: chromeFlags,
+                chromeDataDir: path.resolve(__dirname, '.edge')
+            },
+            Edge_ci: {
+                base: 'EdgeHeadless',
+                flags: chromeFlags,
+                chromeDataDir: path.resolve(__dirname, '.edge')
             }
         }
     };
 
     if (ci) {
         configuration.browsers = ['Firefox_ci', 'Chrome_ci'];
+
+        if (process.env.APPVEYOR) {
+            configuration.browsers.push('Edge_ci');
+        }
     }
     config.set(configuration);
 };
