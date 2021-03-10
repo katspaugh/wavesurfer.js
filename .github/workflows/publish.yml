@@ -26,3 +26,5 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - run: git tag $(node -p 'require("./package.json").version')
+      - run: git push --tags
