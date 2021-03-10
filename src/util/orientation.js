@@ -48,6 +48,8 @@ function mapProp(prop, vertical) {
     }
 }
 
+const isProxy = Symbol("isProxy");
+
 /**
  * Returns an appropriately oriented object based on vertical.
  *
@@ -56,13 +58,17 @@ function mapProp(prop, vertical) {
  * @returns {Proxy} An oriented object with attr translation via verticalAttrMap
  */
 export default function withOrientation(target, vertical) {
-    if (typeof(Proxy) === "undefined") {
+    if (target[isProxy]) {
         return target;
     } else {
         return new Proxy(
             target, {
                 get: function(obj, prop, receiver) {
-                    if (prop === 'style') {
+                    if (prop === isProxy) {
+                        return true;
+                    } else if (prop === 'proxiedElement') {
+                        return obj;
+                    } else if (prop === 'style') {
                         return withOrientation(obj.style, vertical);
                     } else if (prop === 'canvas') {
                         return withOrientation(obj.canvas, vertical);
@@ -87,7 +93,3 @@ export default function withOrientation(target, vertical) {
         );
     }
 }
-
-// Cursors: used where?
-// return 'col-resize';
-// return 'row-resize';
