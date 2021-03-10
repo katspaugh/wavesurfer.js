@@ -6,7 +6,10 @@ on:
 
 jobs:
   publish-npm:
-    if: startsWith(github.ref, 'refs/heads/release')
+    env:
+      OLD_VERSION: $(npm show wavesurfer.js version)
+      NEW_VERSION: $(node -p 'require("./package.json").version')
+    if: env.NEW_VERSION != env.OLD_VERSION
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -27,5 +30,5 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
-      - run: git tag $(node -p 'require("./package.json").version')
+      - run: git tag "$NEW_VERSION"
       - run: git push --tags
