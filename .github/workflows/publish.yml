@@ -2,10 +2,11 @@ name: NPM Package
 
 on:
   push:
-    branches: [ release ]
+    branches: [ master ]
 
 jobs:
   publish-npm:
+    if: startsWith(github.ref, 'refs/heads/release')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
