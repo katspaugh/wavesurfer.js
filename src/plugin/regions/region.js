@@ -15,7 +15,7 @@ export class Region {
         this.util = ws.util;
         this.style = this.util.style;
         this.regionsUtil = regionsUtils;
-        this.orientation = ws.drawer.orientation;
+        this.vertical = ws.drawer.params.vertical;
 
         this.id = params.id == null ? ws.util.getId() : params.id;
         this.start = Number(params.start) || 0;
@@ -23,7 +23,7 @@ export class Region {
             params.end == null
                 ? // small marker-like region
                 this.start +
-                (4 / this.wrapper[this.orientation.attrFor('scrollWidth')]) * this.wavesurfer.getDuration()
+                (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration()
                 : Number(params.end);
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
@@ -170,35 +170,40 @@ export class Region {
 
     /* Render a region as a DOM element. */
     render() {
-        const regionEl = document.createElement('region');
+        this.element = this.util.withOrientation(
+            this.wrapper.appendChild(document.createElement('region')),
+            this.vertical
+        );
 
-        regionEl.className = 'wavesurfer-region';
+        this.element.className = 'wavesurfer-region';
         if (this.showTooltip) {
-            regionEl.title = this.formatTime(this.start, this.end);
+            this.element.title = this.formatTime(this.start, this.end);
         }
-        regionEl.setAttribute('data-id', this.id);
+        this.element.setAttribute('data-id', this.id);
 
         for (const attrname in this.attributes) {
-            regionEl.setAttribute(
+            this.element.setAttribute(
                 'data-region-' + attrname,
                 this.attributes[attrname]
             );
         }
 
-        this.style(regionEl, {
+        this.style(this.element, {
             position: 'absolute',
             zIndex: 2,
-            [this.orientation.attrFor('height')]: this.regionHeight,
-            [this.orientation.attrFor('top')]: this.marginTop
+            height: this.regionHeight,
+            top: this.marginTop
         });
 
         /* Resize handles */
         if (this.resize) {
-            this.handleLeftEl = regionEl.appendChild(
-                document.createElement('handle')
+            this.handleLeftEl = this.util.withOrientation(
+                this.element.appendChild(document.createElement('handle')),
+                this.vertical
             );
-            this.handleRightEl = regionEl.appendChild(
-                document.createElement('handle')
+            this.handleRightEl = this.util.withOrientation(
+                this.element.appendChild(document.createElement('handle')),
+                this.vertical
             );
 
             this.handleLeftEl.className = 'wavesurfer-handle wavesurfer-handle-start';
@@ -208,27 +213,27 @@ export class Region {
             const css = {
                 cursor: 'row-resize',
                 position: 'absolute',
-                [this.orientation.attrFor('top')]: '0px',
-                [this.orientation.attrFor('width')]: '2px',
-                [this.orientation.attrFor('height')]: '100%',
+                top: '0px',
+                width: '2px',
+                height: '100%',
                 backgroundColor: 'rgba(0, 0, 0, 1)'
             };
 
             // Merge CSS properties per handle.
             const handleLeftCss =
-                this.handleStyle[this.orientation.attrFor('left')] !== 'none'
+                this.handleStyle.left !== 'none'
                     ? Object.assign(
-                        { [this.orientation.attrFor('left')]: '0px' },
+                        { left: '0px' },
                         css,
-                        this.handleStyle[this.orientation.attrFor('left')]
+                        this.handleStyle.left
                     )
                     : null;
             const handleRightCss =
-                this.handleStyle[this.orientation.attrFor('right')] !== 'none'
+                this.handleStyle.right !== 'none'
                     ? Object.assign(
-                        { [this.orientation.attrFor('right')]: '0px' },
+                        { right: '0px' },
                         css,
-                        this.handleStyle[this.orientation.attrFor('right')]
+                        this.handleStyle.right
                     )
                     : null;
 
@@ -241,9 +246,8 @@ export class Region {
             }
         }
 
-        this.element = this.wrapper.appendChild(regionEl);
         this.updateRender();
-        this.bindEvents(regionEl);
+        this.bindEvents();
     }
 
     formatTime(start, end) {
@@ -296,8 +300,8 @@ export class Region {
             const regionWidth = Math.round((endLimited / dur) * width) - left;
 
             this.style(this.element, {
-                [this.orientation.attrFor('left')]: left + 'px',
-                [this.orientation.attrFor('width')]: regionWidth + 'px',
+                left: left + 'px',
+                width: regionWidth + 'px',
                 backgroundColor: this.color,
                 cursor: this.drag ? 'move' : 'default'
             });
@@ -417,30 +421,31 @@ export class Region {
         let regionRightHalfTime;
 
         // Scroll when the user is dragging within the threshold
-        const edgeScroll = (e) => {
+        const edgeScroll = (event) => {
+            let orientedEvent = this.util.withOrientation(event, this.vertical);
             const duration = this.wavesurfer.getDuration();
             if (!scrollDirection || (!drag && !resize)) {
                 return;
             }
 
-            const x = e[this.orientation.attrFor('clientX')];
+            const x = orientedEvent.clientX;
             let distanceBetweenCursorAndWrapperEdge = 0;
             let regionHalfTimeWidth = 0;
             let adjustment = 0;
 
             // Get the currently selected time according to the mouse position
             let time = this.regionsUtil.getRegionSnapToGridValue(
-                this.wavesurfer.drawer.handleEvent(e) * duration
+                this.wavesurfer.drawer.handleEvent(event) * duration
             );
 
             if (drag) {
                 // Considering the point of contact with the region while edgescrolling
                 if (scrollDirection === -1) {
                     regionHalfTimeWidth = regionLeftHalfTime * this.wavesurfer.params.minPxPerSec;
-                    distanceBetweenCursorAndWrapperEdge = x - wrapperRect[this.orientation.attrFor('left')];
+                    distanceBetweenCursorAndWrapperEdge = x - wrapperRect.left;
                 } else {
                     regionHalfTimeWidth = regionRightHalfTime * this.wavesurfer.params.minPxPerSec;
-                    distanceBetweenCursorAndWrapperEdge = wrapperRect[this.orientation.attrFor('right')] - x;
+                    distanceBetweenCursorAndWrapperEdge = wrapperRect.right - x;
                 }
             } else {
                 // Considering minLength while edgescroll
@@ -471,7 +476,7 @@ export class Region {
             }
 
             // Don't edgescroll if region has reached min or max limit
-            const wrapperScrollLeft = this.wrapper[this.orientation.attrFor('scrollLeft')];
+            const wrapperScrollLeft = this.wrapper.scrollLeft;
 
             if (scrollDirection === -1) {
                 if (Math.round(wrapperScrollLeft) === 0) {
@@ -496,10 +501,10 @@ export class Region {
 
             if (scrollDirection === -1) {
                 const calculatedLeft = Math.max(0 + regionHalfTimeWidth - distanceBetweenCursorAndWrapperEdge, scrollLeft);
-                this.wrapper[this.orientation.attrFor('scrollLeft')] = scrollLeft = calculatedLeft;
+                this.wrapper.scrollLeft = scrollLeft = calculatedLeft;
             } else {
                 const calculatedRight = Math.min(maxScroll - regionHalfTimeWidth + distanceBetweenCursorAndWrapperEdge, scrollLeft);
-                this.wrapper[this.orientation.attrFor('scrollLeft')] = scrollLeft = calculatedRight;
+                this.wrapper.scrollLeft = scrollLeft = calculatedRight;
             }
 
             const delta = time - startTime;
@@ -510,26 +515,26 @@ export class Region {
 
             // Repeat
             window.requestAnimationFrame(() => {
-                edgeScroll(e);
+                edgeScroll(event);
             });
         };
 
-        const onDown = (e) => {
+        const onDown = (event) => {
             const duration = this.wavesurfer.getDuration();
-            if (e.touches && e.touches.length > 1) {
+            if (event.touches && event.touches.length > 1) {
                 return;
             }
-            touchId = e.targetTouches ? e.targetTouches[0].identifier : null;
+            touchId = event.targetTouches ? event.targetTouches[0].identifier : null;
 
             // stop the event propagation, if this region is resizable or draggable
             // and the event is therefore handled here.
             if (this.drag || this.resize) {
-                e.stopPropagation();
+                event.stopPropagation();
             }
 
             // Store the selected startTime we begun dragging or resizing
             startTime = this.regionsUtil.getRegionSnapToGridValue(
-                this.wavesurfer.drawer.handleEvent(e, true) * duration
+                this.wavesurfer.drawer.handleEvent(event, true) * duration
             );
 
             // Store the selected point of contact when we begin dragging
@@ -537,15 +542,18 @@ export class Region {
             regionRightHalfTime = this.end - startTime;
 
             // Store for scroll calculations
-            maxScroll = this.wrapper[this.orientation.attrFor('scrollWidth')] -
-                this.wrapper[this.orientation.attrFor('clientWidth')];
-            wrapperRect = this.wrapper.getBoundingClientRect();
+            maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
+
+            wrapperRect = this.util.withOrientation(
+                this.wrapper.getBoundingClientRect(),
+                this.vertical
+            );
 
             this.isResizing = false;
             this.isDragging = false;
-            if (e.target.tagName.toLowerCase() === 'handle') {
+            if (event.target.tagName.toLowerCase() === 'handle') {
                 this.isResizing = true;
-                resize = e.target.classList.contains('wavesurfer-handle-start')
+                resize = event.target.classList.contains('wavesurfer-handle-start')
                     ? 'start'
                     : 'end';
             } else {
@@ -554,8 +562,8 @@ export class Region {
                 resize = false;
             }
         };
-        const onUp = (e) => {
-            if (e.touches && e.touches.length > 1) {
+        const onUp = (event) => {
+            if (event.touches && event.touches.length > 1) {
                 return;
             }
 
@@ -570,17 +578,18 @@ export class Region {
             if (updated) {
                 updated = false;
                 this.util.preventClick();
-                this.fireEvent('update-end', e);
-                this.wavesurfer.fireEvent('region-update-end', this, e);
+                this.fireEvent('update-end', event);
+                this.wavesurfer.fireEvent('region-update-end', this, event);
             }
         };
-        const onMove = (e) => {
+        const onMove = (event) => {
             const duration = this.wavesurfer.getDuration();
+            let orientedEvent = this.util.withOrientation(event, this.vertical);
 
-            if (e.touches && e.touches.length > 1) {
+            if (event.touches && event.touches.length > 1) {
                 return;
             }
-            if (e.targetTouches && e.targetTouches[0].identifier != touchId) {
+            if (event.targetTouches && event.targetTouches[0].identifier != touchId) {
                 return;
             }
             if (!drag && !resize) {
@@ -589,7 +598,7 @@ export class Region {
 
             const oldTime = startTime;
             let time = this.regionsUtil.getRegionSnapToGridValue(
-                this.wavesurfer.drawer.handleEvent(e) * duration
+                this.wavesurfer.drawer.handleEvent(event) * duration
             );
 
             if (drag) {
@@ -647,24 +656,22 @@ export class Region {
             }
 
             if (
-                this.scroll &&
-                container[this.orientation.attrFor('clientWidth')] <
-                    this.wrapper[this.orientation.attrFor('scrollWidth')]
+                this.scroll && container.clientWidth < this.wrapper.scrollWidth
             ) {
                 // Triggering edgescroll from within edgeScrollWidth
-                let x = e[this.orientation.attrFor('clientX')];
+                let x = orientedEvent.clientX;
 
                 // Check direction
-                if (x < wrapperRect[this.orientation.attrFor('left')] + this.edgeScrollWidth) {
+                if (x < wrapperRect.left + this.edgeScrollWidth) {
                     scrollDirection = -1;
-                } else if (x > wrapperRect[this.orientation.attrFor('right')] - this.edgeScrollWidth) {
+                } else if (x > wrapperRect.right - this.edgeScrollWidth) {
                     scrollDirection = 1;
                 } else {
                     scrollDirection = null;
                 }
 
                 if (scrollDirection) {
-                    edgeScroll(e);
+                    edgeScroll(event);
                 }
             }
         };
@@ -751,7 +758,12 @@ export class Region {
     }
 
     updateHandlesResize(resize) {
-        const cursorStyle = resize ? 'col-resize' : 'auto';
+        let cursorStyle;
+        if (resize) {
+            cursorStyle = this.vertical ? 'row-resize' : 'col-resize';
+        } else {
+            cursorStyle = 'auto';
+        }
 
         this.handleLeftEl && this.style(this.handleLeftEl, { cursor: cursorStyle });
         this.handleRightEl && this.style(this.handleRightEl, { cursor: cursorStyle });
