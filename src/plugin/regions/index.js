@@ -187,7 +187,9 @@ export default class RegionsPlugin {
      * @return {Region} The created region
      */
     add(params) {
-        if (this.wouldExceedMaxRegions()) return null;
+        if (this.wouldExceedMaxRegions()) {
+            return null;
+        }
 
         if (!params.minLength && this.regionsMinLength) {
             params = {...params, minLength: this.regionsMinLength};
@@ -333,7 +335,9 @@ export default class RegionsPlugin {
             // auto-create a region during mouse drag, unless region-count would exceed "maxRegions"
             if (!region) {
                 region = this.add(params || {});
-                if (!region) return;
+                if (!region) {
+                    return;
+                }
             }
 
             const end = this.wavesurfer.drawer.handleEvent(e);
