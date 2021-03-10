@@ -54,6 +54,9 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-elan">plugin/elan</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/elan/index.js~ElanPlugin.html">ElanPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ElanPluginParams">ElanPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-markers">plugin/markers</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html">MarkersPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MarkerParams">MarkerParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MarkersPluginParams">MarkersPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-mediasession">plugin/mediasession</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/mediasession/index.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MediaSessionPluginParams">MediaSessionPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-microphone">plugin/microphone</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone/index.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
@@ -435,18 +438,19 @@ export default class WebAudio extends util.Observer {
                 this.ac &amp;&amp; this.ac.sampleRate ? this.ac.sampleRate : 44100
             );
         }
-        if (&apos;AudioContext&apos; in window) {
-            this.offlineAc.decodeAudioData(arraybuffer).then(
-                (data) =&gt; callback(data)
-            ).catch(
-                (err) =&gt; errback(err)
-            );
-        } else {
-            // Safari: no support for Promise-based decodeAudioData yet
+        if (&apos;webkitAudioContext&apos; in window) {
+            // Safari: no support for Promise-based decodeAudioData enabled
+            // Enable it in Safari using the Experimental Features &gt; Modern WebAudio API option
             this.offlineAc.decodeAudioData(
                 arraybuffer,
                 data =&gt; callback(data),
                 errback
+            );
+        } else {
+            this.offlineAc.decodeAudioData(arraybuffer).then(
+                (data) =&gt; callback(data)
+            ).catch(
+                (err) =&gt; errback(err)
             );
         }
     }

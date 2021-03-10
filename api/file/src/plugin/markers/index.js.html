@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <base data-ice="baseUrl" href="../../../../">
-  <title data-ice="title">src/plugin/minimap/index.js | wavesurfer.js</title>
+  <title data-ice="title">src/plugin/markers/index.js | wavesurfer.js</title>
   <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
   <script src="script/prettify/prettify.js"></script>
@@ -87,390 +87,273 @@
 </div>
 </nav>
 
-<div class="content" data-ice="content"><h1 data-ice="title">src/plugin/minimap/index.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/*eslint no-console: [&quot;error&quot;, { allow: [&quot;warn&quot;] }] */
+<div class="content" data-ice="content"><h1 data-ice="title">src/plugin/markers/index.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">
 /**
- * @typedef {Object} MinimapPluginParams
- * @desc Extends the `WavesurferParams` wavesurfer was initialised with
- * @property {?string|HTMLElement} container CSS selector or HTML element where
- * the map should be rendered. By default it is simply appended
- * after the waveform.
- * @property {?boolean} deferInit Set to true to manually call
- * `initPlugin(&apos;minimap&apos;)`
+ * @typedef {Object} MarkerParams
+ * @desc The parameters used to describe a marker.
+ * @example wavesurfer.addMarker(regionParams);
+ * @property {number} time The time to set the marker at
+ * @property {?label} string an optional marker label
+ * @property {?color} string background color for marker
+ * @property {?position} string &quot;top&quot; or &quot;bottom&quot;, defaults to &quot;bottom&quot;
  */
 
+
 /**
- * Renders a smaller version waveform as a minimap of the main waveform.
+ * Markers are points in time in the audio that can be jumped to.
  *
  * @implements {PluginClass}
- * @extends {Observer}
- * @example
- * // es6
- * import MinimapPlugin from &apos;wavesurfer.minimap.js&apos;;
  *
- * // commonjs
- * var MinimapPlugin = require(&apos;wavesurfer.minimap.js&apos;);
+ * @example
+ * import MarkersPlugin from &apos;wavesurfer.markers.js&apos;;
  *
  * // if you are using &lt;script&gt; tags
- * var MinimapPlugin = window.WaveSurfer.minimap;
+ * var MarkerPlugin = window.WaveSurfer.markers;
  *
  * // ... initialising wavesurfer with the plugin
  * var wavesurfer = WaveSurfer.create({
  *   // wavesurfer options ...
  *   plugins: [
- *     MinimapPlugin.create({
+ *     MarkersPlugin.create({
  *       // plugin options ...
  *     })
  *   ]
  * });
  */
-export default class MinimapPlugin {
+
+const DEFAULT_FILL_COLOR = &quot;#D8D8D8&quot;;
+const DEFAULT_POSITION = &quot;bottom&quot;;
+
+export default class MarkersPlugin {
     /**
-     * Minimap plugin definition factory
+     * @typedef {Object} MarkersPluginParams
+     * @property {?MarkerParams[]} markers Initial set of markers
+     */
+
+    /**
+     * Markers plugin definition factory
      *
      * This function must be used to create a plugin definition which can be
      * used by wavesurfer to correctly instantiate the plugin.
      *
-     * @param  {MinimapPluginParams} params parameters use to initialise the plugin
+     * @param {MarkersPluginParams} params parameters use to initialise the plugin
+     * @since 4.6.0
      * @return {PluginDefinition} an object representing the plugin
      */
     static create(params) {
         return {
-            name: &apos;minimap&apos;,
+            name: &apos;markers&apos;,
             deferInit: params &amp;&amp; params.deferInit ? params.deferInit : false,
             params: params,
-            staticProps: {},
-            instance: MinimapPlugin
+            staticProps: {
+                addMarker(options) {
+                    if (!this.initialisedPluginList.markers) {
+                        this.initPlugin(&apos;markers&apos;);
+                    }
+                    return this.markers.add(options);
+                },
+                clearMarkers() {
+                    this.markers &amp;&amp; this.markers.clear();
+                }
+            },
+            instance: MarkersPlugin
         };
     }
 
     constructor(params, ws) {
-        this.params = Object.assign(
-            {},
-            ws.params,
-            {
-                showRegions: false,
-                regionsPluginName: params.regionsPluginName || &apos;regions&apos;,
-                showOverview: false,
-                overviewBorderColor: &apos;green&apos;,
-                overviewBorderSize: 2,
-                // the container should be different
-                container: false,
-                height: Math.max(Math.round(ws.params.height / 4), 20)
-            },
-            params,
-            {
-                scrollParent: false,
-                fillParent: true
-            }
-        );
-        // if container is a selector, get the element
-        if (typeof params.container === &apos;string&apos;) {
-            const el = document.querySelector(params.container);
-            if (!el) {
-                console.warn(
-                    `Wavesurfer minimap container ${params.container} was not found! The minimap will be automatically appended below the waveform.`
-                );
-            }
-            this.params.container = el;
-        }
-        // if no container is specified add a new element and insert it
-        if (!params.container) {
-            this.params.container = ws.util.style(
-                document.createElement(&apos;minimap&apos;),
-                {
-                    display: &apos;block&apos;
-                }
-            );
-        }
-        this.drawer = new ws.Drawer(this.params.container, this.params);
+        this.params = params;
         this.wavesurfer = ws;
         this.util = ws.util;
-        /**
-         * Minimap needs to listen for the `ready` and `waveform-ready` events
-         * to work with the `MediaElement` backend. The moment the `ready` event
-         * is called is different (and peaks would not load).
-         *
-         * @type {string}
-         * @see https://github.com/katspaugh/wavesurfer.js/issues/736
-         */
-        this.renderEvent =
-            ws.params.backend === &apos;MediaElement&apos; ? &apos;waveform-ready&apos; : &apos;ready&apos;;
-        this.overviewRegion = null;
-        this.regionsPlugin = this.wavesurfer[this.params.regionsPluginName];
+        this.style = this.util.style;
+        this.markerWidth = 11;
+        this.markerHeight = 22;
 
-        this.drawer.createWrapper();
-        this.createElements();
-        let isInitialised = false;
 
-        // ws ready event listener
-        this._onShouldRender = () =&gt; {
-            // only bind the events in the first run
-            if (!isInitialised) {
-                this.bindWavesurferEvents();
-                this.bindMinimapEvents();
-                isInitialised = true;
-            }
-            // if there is no such element, append it to the container (below
-            // the waveform)
-            if (!document.body.contains(this.params.container)) {
-                ws.container.insertBefore(this.params.container, null);
-            }
-
-            if (this.regionsPlugin &amp;&amp; this.params.showRegions) {
-                this.regions();
-            }
-            this.render();
+        this._onResize = () =&gt; {
+            this._updateMarkerPositions();
         };
 
-        this._onAudioprocess = currentTime =&gt; {
-            this.drawer.progress(this.wavesurfer.backend.getPlayedPercents());
+        this._onBackendCreated = () =&gt; {
+            this.wrapper = this.wavesurfer.drawer.wrapper;
+            if (this.params.markers) {
+                this.params.markers.forEach(marker =&gt; this.add(marker));
+            }
+            window.addEventListener(&apos;resize&apos;, this._onResize, true);
+            window.addEventListener(&apos;orientationchange&apos;, this._onResize, true);
+            this.wavesurfer.on(&apos;zoom&apos;, this._onResize);
         };
 
-        // ws seek event listener
-        this._onSeek = () =&gt;
-            this.drawer.progress(ws.backend.getPlayedPercents());
-
-        // event listeners for the overview region
-        this._onScroll = e =&gt; {
-            if (!this.draggingOverview) {
-                this.moveOverviewRegion(e.target.scrollLeft / this.ratio);
-            }
+        this.markers = [];
+        this._onReady = () =&gt; {
+            this.wrapper = this.wavesurfer.drawer.wrapper;
+            this._updateMarkerPositions();
         };
-        this._onMouseover = e =&gt; {
-            if (this.draggingOverview) {
-                this.draggingOverview = false;
-            }
-        };
-        let prevWidth = 0;
-        this._onResize = ws.util.debounce(() =&gt; {
-            if (prevWidth != this.drawer.wrapper.clientWidth) {
-                prevWidth = this.drawer.wrapper.clientWidth;
-                this.render();
-                this.drawer.progress(
-                    this.wavesurfer.backend.getPlayedPercents()
-                );
-            }
-        });
-        this._onZoom = e =&gt; {
-            this.render();
-        };
-        this.wavesurfer.on(&apos;zoom&apos;, this._onZoom);
     }
 
     init() {
+        // Check if ws is ready
         if (this.wavesurfer.isReady) {
-            this._onShouldRender();
+            this._onBackendCreated();
+            this._onReady();
+        } else {
+            this.wavesurfer.once(&apos;ready&apos;, this._onReady);
+            this.wavesurfer.once(&apos;backend-created&apos;, this._onBackendCreated);
         }
-        this.wavesurfer.on(this.renderEvent, this._onShouldRender);
     }
 
     destroy() {
+        this.wavesurfer.un(&apos;ready&apos;, this._onReady);
+        this.wavesurfer.un(&apos;backend-created&apos;, this._onBackendCreated);
+
+        this.wavesurfer.un(&apos;zoom&apos;, this._onResize);
+
         window.removeEventListener(&apos;resize&apos;, this._onResize, true);
         window.removeEventListener(&apos;orientationchange&apos;, this._onResize, true);
-        this.wavesurfer.drawer.wrapper.removeEventListener(
-            &apos;mouseover&apos;,
-            this._onMouseover
-        );
-        this.wavesurfer.un(this.renderEvent, this._onShouldRender);
-        this.wavesurfer.un(&apos;seek&apos;, this._onSeek);
-        this.wavesurfer.un(&apos;scroll&apos;, this._onScroll);
-        this.wavesurfer.un(&apos;audioprocess&apos;, this._onAudioprocess);
-        this.wavesurfer.un(&apos;zoom&apos;, this._onZoom);
-        this.drawer.destroy();
-        this.overviewRegion = null;
-        this.unAll();
+
+        this.clear();
     }
 
-    regions() {
-        this.regions = {};
-
-        this.wavesurfer.on(&apos;region-created&apos;, region =&gt; {
-            this.regions[region.id] = region;
-            this.drawer.wrapper &amp;&amp; this.renderRegions();
-        });
-
-        this.wavesurfer.on(&apos;region-updated&apos;, region =&gt; {
-            this.regions[region.id] = region;
-            this.drawer.wrapper &amp;&amp; this.renderRegions();
-        });
-
-        this.wavesurfer.on(&apos;region-removed&apos;, region =&gt; {
-            delete this.regions[region.id];
-            this.drawer.wrapper &amp;&amp; this.renderRegions();
-        });
-    }
-
-    renderRegions() {
-        const regionElements = this.drawer.wrapper.querySelectorAll(&apos;region&apos;);
-        let i;
-        for (i = 0; i &lt; regionElements.length; ++i) {
-            this.drawer.wrapper.removeChild(regionElements[i]);
-        }
-
-        Object.keys(this.regions).forEach(id =&gt; {
-            const region = this.regions[id];
-            const width =
-                this.getWidth() *
-                ((region.end - region.start) / this.wavesurfer.getDuration());
-            const left =
-                this.getWidth() *
-                (region.start / this.wavesurfer.getDuration());
-            const regionElement = this.util.style(
-                document.createElement(&apos;region&apos;),
-                {
-                    height: &apos;inherit&apos;,
-                    backgroundColor: region.color,
-                    width: width + &apos;px&apos;,
-                    left: left + &apos;px&apos;,
-                    display: &apos;block&apos;,
-                    position: &apos;absolute&apos;
-                }
-            );
-            regionElement.classList.add(id);
-            this.drawer.wrapper.appendChild(regionElement);
-        });
-    }
-
-    createElements() {
-        this.drawer.createElements();
-        if (this.params.showOverview) {
-            this.overviewRegion = this.util.style(
-                document.createElement(&apos;overview&apos;),
-                {
-                    top: 0,
-                    bottom: 0,
-                    width: &apos;0px&apos;,
-                    display: &apos;block&apos;,
-                    position: &apos;absolute&apos;,
-                    cursor: &apos;move&apos;,
-                    border:
-                        this.params.overviewBorderSize +
-                        &apos;px solid &apos; +
-                        this.params.overviewBorderColor,
-                    zIndex: 2,
-                    opacity: this.params.overviewOpacity
-                }
-            );
-            this.drawer.wrapper.appendChild(this.overviewRegion);
-        }
-    }
-
-    bindWavesurferEvents() {
-        window.addEventListener(&apos;resize&apos;, this._onResize, true);
-        window.addEventListener(&apos;orientationchange&apos;, this._onResize, true);
-        this.wavesurfer.on(&apos;audioprocess&apos;, this._onAudioprocess);
-        this.wavesurfer.on(&apos;seek&apos;, this._onSeek);
-        if (this.params.showOverview) {
-            this.wavesurfer.on(&apos;scroll&apos;, this._onScroll);
-            this.wavesurfer.drawer.wrapper.addEventListener(
-                &apos;mouseover&apos;,
-                this._onMouseover
-            );
-        }
-    }
-
-    bindMinimapEvents() {
-        const positionMouseDown = {
-            clientX: 0,
-            clientY: 0
+    /**
+     * Add a marker
+     *
+     * @param {MarkerParams} params Marker definition
+     * @return {object} The created marker
+     */
+    add(params) {
+        let marker = {
+            time: params.time,
+            label: params.label,
+            color: params.color || DEFAULT_FILL_COLOR,
+            position: params.position || DEFAULT_POSITION
         };
-        let relativePositionX = 0;
-        let seek = true;
 
-        // the following event listeners will be destroyed by using
-        // this.unAll() and nullifying the DOM node references after
-        // removing them
-        if (this.params.interact) {
-            this.drawer.wrapper.addEventListener(&apos;click&apos;, event =&gt; {
-                this.fireEvent(&apos;click&apos;, event, this.drawer.handleEvent(event));
-            });
+        marker.el = this._createMarkerElement(marker);
 
-            this.on(&apos;click&apos;, (event, position) =&gt; {
-                if (seek) {
-                    this.drawer.progress(position);
-                    this.wavesurfer.seekAndCenter(position);
-                } else {
-                    seek = true;
-                }
-            });
+        this.wrapper.appendChild(marker.el);
+        this.markers.push(marker);
+        this._updateMarkerPositions();
+
+        return marker;
+    }
+
+    /**
+     * Remove a marker
+     *
+     * @param {number} index Index of the marker to remove
+     */
+    remove(index) {
+        let marker = this.markers[index];
+        if ( !marker ) return;
+
+        this.wrapper.removeChild(marker.el);
+        this.markers.splice(index, 1);
+    }
+
+    _createPointerSVG(color, position) {
+        const svgNS = &quot;http://www.w3.org/2000/svg&quot;;
+
+        const el = document.createElementNS(svgNS, &quot;svg&quot;);
+        const polygon = document.createElementNS(svgNS, &quot;polygon&quot;);
+
+        el.setAttribute(&quot;viewBox&quot;, &quot;0 0 40 80&quot;);
+
+        polygon.setAttribute(&quot;id&quot;, &quot;polygon&quot;);
+        polygon.setAttribute(&quot;stroke&quot;, &quot;#979797&quot;);
+        polygon.setAttribute(&quot;fill&quot;, color);
+        polygon.setAttribute(&quot;points&quot;, &quot;20 0 40 30 40 80 0 80 0 30&quot;);
+        if ( position == &quot;top&quot; ) {
+            polygon.setAttribute(&quot;transform&quot;, &quot;rotate(180, 20 40)&quot;);
         }
 
-        if (this.params.showOverview) {
-            this.overviewRegion.addEventListener(&apos;mousedown&apos;, event =&gt; {
-                this.draggingOverview = true;
-                relativePositionX = event.layerX;
-                positionMouseDown.clientX = event.clientX;
-                positionMouseDown.clientY = event.clientY;
-            });
+        el.appendChild(polygon);
 
-            this.drawer.wrapper.addEventListener(&apos;mousemove&apos;, event =&gt; {
-                if (this.draggingOverview) {
-                    this.moveOverviewRegion(
-                        event.clientX -
-                            this.drawer.container.getBoundingClientRect().left -
-                            relativePositionX
-                    );
-                }
-            });
+        this.style(el, {
+            width: this.markerWidth + &quot;px&quot;,
+            height: this.markerHeight + &quot;px&quot;,
+            &quot;margin-right&quot;: &quot;5px&quot;,
+            &quot;z-index&quot;: 4
+        });
+        return el;
+    }
 
-            this.drawer.wrapper.addEventListener(&apos;mouseup&apos;, event =&gt; {
-                if (
-                    positionMouseDown.clientX - event.clientX === 0 &amp;&amp;
-                    positionMouseDown.clientX - event.clientX === 0
-                ) {
-                    seek = true;
-                    this.draggingOverview = false;
-                } else if (this.draggingOverview) {
-                    seek = false;
-                    this.draggingOverview = false;
-                }
+    _createMarkerElement(marker) {
+        let label = marker.label;
+        let time = marker.time;
+
+        const el = document.createElement(&apos;marker&apos;);
+        el.className = &quot;wavesurfer-marker&quot;;
+
+        this.style(el, {
+            position: &quot;absolute&quot;,
+            height: &quot;100%&quot;,
+            display: &quot;flex&quot;,
+            &quot;flex-direction&quot;: (marker.position == &quot;top&quot; ? &quot;column-reverse&quot; : &quot;column&quot;)
+        });
+
+        const line = document.createElement(&apos;div&apos;);
+        this.style(line, {
+            &quot;flex-grow&quot;: 1,
+            &quot;margin-left&quot;: (this.markerWidth / 2 - 0.5) + &quot;px&quot;,
+            background: &quot;black&quot;,
+            width: &quot;1px&quot;,
+            opacity: 0.1
+        });
+        el.appendChild(line);
+
+        const labelDiv = document.createElement(&apos;div&apos;);
+        const point = this._createPointerSVG(marker.color, marker.position);
+        labelDiv.appendChild(point);
+
+        if ( label ) {
+            const labelEl = document.createElement(&apos;span&apos;);
+            labelEl.innerText = label;
+            this.style(labelEl, {
+                &quot;font-family&quot;: &quot;monospace&quot;,
+                &quot;font-size&quot;: &quot;90%&quot;
+            });
+            labelDiv.appendChild(labelEl);
+        }
+
+        this.style(labelDiv, {
+            display: &quot;flex&quot;,
+            &quot;align-items&quot;: &quot;center&quot;,
+            cursor: &quot;pointer&quot;
+        });
+
+        el.appendChild(labelDiv);
+
+        labelDiv.addEventListener(&quot;click&quot;, e =&gt; {
+            e.stopPropagation();
+            this.wavesurfer.setCurrentTime(time);
+        });
+
+        return el;
+    }
+
+    _updateMarkerPositions() {
+        const duration = this.wavesurfer.getDuration();
+
+        for ( let i = 0 ; i &lt; this.markers.length; i++ ) {
+            let marker = this.markers[i];
+            const elementWidth =
+                this.wavesurfer.drawer.width /
+                this.wavesurfer.params.pixelRatio;
+
+            const positionPct = marker.time / duration;
+            this.style(marker.el, {
+                left: ((elementWidth * positionPct) - (this.markerWidth / 2)) + &quot;px&quot;
             });
         }
     }
 
-    render() {
-        const len = this.drawer.getWidth();
-        const peaks = this.wavesurfer.backend.getPeaks(len, 0, len);
-        this.drawer.drawPeaks(peaks, len, 0, len);
-        this.drawer.progress(this.wavesurfer.backend.getPlayedPercents());
-
-        if (this.params.showOverview) {
-            //get proportional width of overview region considering the respective
-            //width of the drawers
-            this.ratio = this.wavesurfer.drawer.width / this.drawer.width;
-            this.waveShowedWidth = this.wavesurfer.drawer.width / this.ratio;
-            this.waveWidth = this.wavesurfer.drawer.width;
-            this.overviewWidth = this.drawer.container.offsetWidth / this.ratio;
-            this.overviewPosition = 0;
-            this.moveOverviewRegion(
-                this.wavesurfer.drawer.wrapper.scrollLeft / this.ratio
-            );
-            this.overviewRegion.style.width = this.overviewWidth + &apos;px&apos;;
+    /**
+     * Remove all markers
+     */
+    clear() {
+        while ( this.markers.length &gt; 0 ) {
+            this.remove(0);
         }
-    }
-
-    moveOverviewRegion(pixels) {
-        if (pixels &lt; 0) {
-            this.overviewPosition = 0;
-        } else if (
-            pixels + this.overviewWidth &lt;
-            this.drawer.container.offsetWidth
-        ) {
-            this.overviewPosition = pixels;
-        } else {
-            this.overviewPosition =
-                this.drawer.container.offsetWidth - this.overviewWidth;
-        }
-        this.overviewRegion.style.left = this.overviewPosition + &apos;px&apos;;
-        if (this.draggingOverview) {
-            this.wavesurfer.drawer.wrapper.scrollLeft =
-                this.overviewPosition * this.ratio;
-        }
-    }
-
-    getWidth() {
-        return this.drawer.width / this.params.pixelRatio;
     }
 }
 </code></pre>

@@ -1,4 +1,4 @@
-let wavesurfer = window.wavesurfer;
+var wavesurfer = window.wavesurfer; // eslint-disable-line no-var
 
 let GLOBAL_ACTIONS = {
     play: function() {

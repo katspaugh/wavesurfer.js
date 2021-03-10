@@ -1,7 +1,7 @@
 {
-  "coverage": "66.1%",
-  "expectCount": 590,
-  "actualCount": 390,
+  "coverage": "64.22%",
+  "expectCount": 615,
+  "actualCount": 395,
   "files": {
     "src/drawer.canvasentry.js": {
       "expectCount": 22,
@@ -79,6 +79,32 @@
         280,
         292,
         304
+      ]
+    },
+    "src/plugin/markers/index.js": {
+      "expectCount": 25,
+      "actualCount": 5,
+      "undocumentLines": [
+        36,
+        38,
+        67,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        83,
+        87,
+        88,
+        97,
+        98,
+        104,
+        115,
+        163,
+        190,
+        244
       ]
     },
     "src/plugin/mediasession/index.js": {

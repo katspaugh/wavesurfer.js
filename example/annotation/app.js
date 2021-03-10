@@ -1,7 +1,7 @@
 /**
  * Create a WaveSurfer instance.
  */
-let wavesurfer;
+var wavesurfer; // eslint-disable-line no-var
 
 /**
  * Init & load.
@@ -58,12 +58,9 @@ document.addEventListener('DOMContentLoaded', function() {
             //         wavesurfer.getDuration()
             //     )
             // );
-            wavesurfer.util
-                .ajax({
-                    responseType: 'json',
-                    url: 'annotations.json'
-                })
-                .on('success', function(data) {
+            fetch('annotations.json')
+                .then(r => r.json())
+                .then(data => {
                     loadRegions(data);
                     saveRegions();
                 });
@@ -96,6 +93,18 @@ document.addEventListener('DOMContentLoaded', function() {
     wavesurfer.on('pause', function() {
         playButton.style.display = '';
         pauseButton.style.display = 'none';
+    });
+
+
+    document.querySelector(
+        '[data-action="delete-region"]'
+    ).addEventListener('click', function() {
+        let form = document.forms.edit;
+        let regionId = form.dataset.region;
+        if (regionId) {
+            wavesurfer.regions.list[regionId].remove();
+            form.reset();
+        }
     });
 });
 
@@ -246,21 +255,3 @@ function showNote(region) {
     showNote.el.textContent = region.data.note || '–';
 }
 
-/**
- * Bind controls.
- */
-window.GLOBAL_ACTIONS['delete-region'] = function() {
-    let form = document.forms.edit;
-    let regionId = form.dataset.region;
-    if (regionId) {
-        wavesurfer.regions.list[regionId].remove();
-        form.reset();
-    }
-};
-
-window.GLOBAL_ACTIONS['export'] = function() {
-    window.open(
-        'data:application/json;charset=utf-8,' +
-            encodeURIComponent(localStorage.regions)
-    );
-};

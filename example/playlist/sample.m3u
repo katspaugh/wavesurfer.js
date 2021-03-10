@@ -1,5 +1,0 @@
-#EXTM3U
-#EXTINF:1,Demo Song
-https://wavesurfer-js.org/example/media/demo.wav
-#EXTINF:1,Stereo Audio
-https://wavesurfer-js.org/example/media/stereo.mp3

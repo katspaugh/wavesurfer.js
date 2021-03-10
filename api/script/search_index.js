@@ -36,6 +36,12 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
+    "wavesurfer.js/src/plugin/markers/index.js~markersplugin",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html",
+    "<span>MarkersPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/markers/index.js</span>",
+    "class"
+  ],
+  [
     "wavesurfer.js/src/mediaelement.js~mediaelement",
     "class/src/mediaelement.js~MediaElement.html",
     "<span>MediaElement</span> <span class=\"search-result-import-path\">wavesurfer.js/src/mediaelement.js</span>",
@@ -1402,6 +1408,120 @@ window.esdocSearchIndex = [
     "typedef/index.html#static-typedef-ElanPluginParams",
     "src/plugin/elan/index.js~ElanPluginParams",
     "typedef"
+  ],
+  [
+    "src/plugin/markers/index.js",
+    "file/src/plugin/markers/index.js.html",
+    "src/plugin/markers/index.js",
+    "file"
+  ],
+  [
+    "src/plugin/markers/index.js~markerparams",
+    "typedef/index.html#static-typedef-MarkerParams",
+    "src/plugin/markers/index.js~MarkerParams",
+    "typedef"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#add",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-add",
+    "src/plugin/markers/index.js~MarkersPlugin#add",
+    "method"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#clear",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-clear",
+    "src/plugin/markers/index.js~MarkersPlugin#clear",
+    "method"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#constructor",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-constructor-constructor",
+    "src/plugin/markers/index.js~MarkersPlugin#constructor",
+    "method"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#destroy",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-destroy",
+    "src/plugin/markers/index.js~MarkersPlugin#destroy",
+    "method"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#init",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-init",
+    "src/plugin/markers/index.js~MarkersPlugin#init",
+    "method"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#markerheight",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-markerHeight",
+    "src/plugin/markers/index.js~MarkersPlugin#markerHeight",
+    "member"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#markerwidth",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-markerWidth",
+    "src/plugin/markers/index.js~MarkersPlugin#markerWidth",
+    "member"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#markers",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-markers",
+    "src/plugin/markers/index.js~MarkersPlugin#markers",
+    "member"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#params",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-params",
+    "src/plugin/markers/index.js~MarkersPlugin#params",
+    "member"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#remove",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-remove",
+    "src/plugin/markers/index.js~MarkersPlugin#remove",
+    "method"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#style",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-style",
+    "src/plugin/markers/index.js~MarkersPlugin#style",
+    "member"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#util",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-util",
+    "src/plugin/markers/index.js~MarkersPlugin#util",
+    "member"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#wavesurfer",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-wavesurfer",
+    "src/plugin/markers/index.js~MarkersPlugin#wavesurfer",
+    "member"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#wrapper",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-wrapper",
+    "src/plugin/markers/index.js~MarkersPlugin#wrapper",
+    "member"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin.markerspluginparams",
+    "typedef/index.html#static-typedef-MarkersPluginParams",
+    "src/plugin/markers/index.js~MarkersPlugin.MarkersPluginParams",
+    "typedef"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin.create",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#static-method-create",
+    "src/plugin/markers/index.js~MarkersPlugin.create",
+    "method"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin.markers",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#static-member-markers",
+    "src/plugin/markers/index.js~MarkersPlugin.markers",
+    "member"
   ],
   [
     "src/plugin/mediasession/index.js",

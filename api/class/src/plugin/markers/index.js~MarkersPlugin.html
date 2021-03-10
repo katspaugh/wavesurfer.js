@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <base data-ice="baseUrl" href="../../../../">
-  <title data-ice="title">RegionsPlugin | wavesurfer.js</title>
+  <title data-ice="title">MarkersPlugin | wavesurfer.js</title>
   <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
   <script src="script/prettify/prettify.js"></script>
@@ -88,66 +88,38 @@
 </nav>
 
 <div class="content" data-ice="content"><div class="header-notice">
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import RegionsPlugin from &apos;<span><a href="file/src/plugin/regions/index.js.html#lineNumber67">wavesurfer.js/src/plugin/regions/index.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import MarkersPlugin from &apos;<span><a href="file/src/plugin/markers/index.js.html#lineNumber38">wavesurfer.js/src/plugin/markers/index.js</a></span>&apos;</code></pre></div>
   <span data-ice="access">public</span>
   <span data-ice="kind">class</span>
   
   
   
-  <span data-ice="source">| <span><a href="file/src/plugin/regions/index.js.html#lineNumber67">source</a></span></span>
+  <span data-ice="source">| <span><a href="file/src/plugin/markers/index.js.html#lineNumber38">source</a></span></span>
 </div>
 
 <div class="self-detail detail">
-  <h1 data-ice="name">RegionsPlugin</h1>
+  <h1 data-ice="name">MarkersPlugin</h1>
 
   
 
   
   
-  <div class="flat-list" data-ice="extendsChain"><h4>Extends:</h4><div><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span> &#x2192; RegionsPlugin</div></div>
   
   
-  <div class="flat-list" data-ice="implements"><h4>Implements:</h4><ul><li><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></li></ul></div>
+  
+  
   
   
   
 
   
   
-  <div class="description" data-ice="description"><p>Regions are visual overlays on waveform that can be used to play and loop
-portions of audio. Regions can be dragged and resized.</p>
-<p>Visual customization is possible via CSS (using the selectors
-<code>.wavesurfer-region</code> and <code>.wavesurfer-handle</code>).</p>
-</div>
+  
   
 
   
 
-  <div data-ice="exampleDocs">
-    <h4>Example:</h4>
-    
-  <div class="example-doc" data-ice="exampleDoc">
-      
-      <pre class="prettyprint source-code"><code data-ice="exampleCode">// es6
-import RegionsPlugin from &apos;wavesurfer.regions.js&apos;;
-
-// commonjs
-var RegionsPlugin = require(&apos;wavesurfer.regions.js&apos;);
-
-// if you are using &lt;script&gt; tags
-var RegionsPlugin = window.WaveSurfer.regions;
-
-// ... initialising wavesurfer with the plugin
-var wavesurfer = WaveSurfer.create({
-  // wavesurfer options ...
-  plugins: [
-    RegionsPlugin.create({
-      // plugin options ...
-    })
-  ]
-});</code></pre>
-    </div>
-</div>
+  
 
   
 
@@ -172,7 +144,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#static-member-regions">regions</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#static-member-markers">markers</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
         </p>
       </div>
       <div>
@@ -207,19 +179,19 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#static-method-create">create</a></span></span><span class="code" data-ice="signature">(params: <span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span>): <span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#static-method-create">create</a></span></span><span class="code" data-ice="signature">(params: <span><a href="typedef/index.html#static-typedef-MarkersPluginParams">MarkersPluginParams</a></span>): <span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>Regions plugin definition factory</p>
+        <div data-ice="description"><p>Markers plugin definition factory</p>
 </div>
       </div>
     </td>
     <td>
       
-      
+      <span class="since" data-ice="since">since 4.6.0</span>
     </td>
   </tr>
 </tbody>
@@ -243,7 +215,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-constructor-constructor">constructor</a></span></span><span class="code" data-ice="signature">()</span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-constructor-constructor">constructor</a></span></span><span class="code" data-ice="signature">()</span>
         </p>
       </div>
       <div>
@@ -278,7 +250,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-list">list</a></span></span><span class="code" data-ice="signature">: {}</span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-markerHeight">markerHeight</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
         </p>
       </div>
       <div>
@@ -306,7 +278,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-maxRegions">maxRegions</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-markerWidth">markerWidth</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
         </p>
       </div>
       <div>
@@ -334,7 +306,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-params">params</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-markers">markers</a></span></span><span class="code" data-ice="signature">: <span><span>*</span><span>[]</span></span></span>
         </p>
       </div>
       <div>
@@ -362,7 +334,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-regionsMinLength">regionsMinLength</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-params">params</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
         </p>
       </div>
       <div>
@@ -390,7 +362,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-util">util</a></span></span><span class="code" data-ice="signature">: {...undefined: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, &quot;getRegionSnapToGridValue&quot;: <span>*</span>}</span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-style">style</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
         </p>
       </div>
       <div>
@@ -418,7 +390,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-wavesurfer">wavesurfer</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-util">util</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
         </p>
       </div>
       <div>
@@ -446,7 +418,35 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-wrapper">wrapper</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-wavesurfer">wavesurfer</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-wrapper">wrapper</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
         </p>
       </div>
       <div>
@@ -481,13 +481,13 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-add">add</a></span></span><span class="code" data-ice="signature">(params: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span>): <span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-add">add</a></span></span><span class="code" data-ice="signature">(params: <span><a href="typedef/index.html#static-typedef-MarkerParams">MarkerParams</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span></span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>Add a region</p>
+        <div data-ice="description"><p>Add a marker</p>
 </div>
       </div>
     </td>
@@ -510,13 +510,13 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-clear">clear</a></span></span><span class="code" data-ice="signature">()</span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-clear">clear</a></span></span><span class="code" data-ice="signature">()</span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>Remove all regions</p>
+        <div data-ice="description"><p>Remove all markers</p>
 </div>
       </div>
     </td>
@@ -539,7 +539,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-destroy">destroy</a></span></span><span class="code" data-ice="signature">()</span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-destroy">destroy</a></span></span><span class="code" data-ice="signature">()</span>
         </p>
       </div>
       <div>
@@ -567,7 +567,7 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-disableDragSelection">disableDragSelection</a></span></span><span class="code" data-ice="signature">()</span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-init">init</a></span></span><span class="code" data-ice="signature">()</span>
         </p>
       </div>
       <div>
@@ -595,99 +595,14 @@ var wavesurfer = WaveSurfer.create({
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-enableDragSelection">enableDragSelection</a></span></span><span class="code" data-ice="signature">(params: <span>*</span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-remove">remove</a></span></span><span class="code" data-ice="signature">(index: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
         </p>
       </div>
       <div>
         
         
-        
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-getCurrentRegion">getCurrentRegion</a></span></span><span class="code" data-ice="signature">(): <span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Get current region</p>
+        <div data-ice="description"><p>Remove a marker</p>
 </div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-getRegionSnapToGridValue">getRegionSnapToGridValue</a></span></span><span class="code" data-ice="signature">(value: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, params: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Match the value to the grid, if required</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-init">init</a></span></span><span class="code" data-ice="signature">()</span>
-        </p>
-      </div>
-      <div>
-        
-        
-        
       </div>
     </td>
     <td>
@@ -699,231 +614,23 @@ var wavesurfer = WaveSurfer.create({
 </table>
 </div>
 
-<div class="inherited-summary" data-ice="inheritedSummary"><h2>Inherited Summary</h2><table class="summary" data-ice="summary">
-  <thead><tr><td data-ice="title" colspan="3"><span class="toggle closed"></span> From class <span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></td></tr></thead>
-  <tbody>
-  
-  <tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-member-handlers">handlers</a></span></span><span class="code" data-ice="signature">: <span>*</span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-method-fireEvent">fireEvent</a></span></span><span class="code" data-ice="signature">(event: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, args: ...<span>any</span>)</span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Manually fire an event</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-method-on">on</a></span></span><span class="code" data-ice="signature">(event: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, fn: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span>): <span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Attach a handler function for an event.</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-method-once">once</a></span></span><span class="code" data-ice="signature">(event: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, handler: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span>): <span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Attach a handler to an event.</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-method-setDisabledEventEmissions">setDisabledEventEmissions</a></span></span><span class="code" data-ice="signature">(eventNames: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span><span>[]</span></span>)</span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Disable firing a list of events by name.</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      <span class="since" data-ice="since">since 4.0.0</span>
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-method-un">un</a></span></span><span class="code" data-ice="signature">(event: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>, fn: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span>)</span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Remove an event handler.</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/src/util/observer.js~Observer.html#instance-method-unAll">unAll</a></span></span><span class="code" data-ice="signature">()</span>
-        </p>
-      </div>
-      <div>
-        
-        
-        <div data-ice="description"><p>Remove all event handlers.</p>
-</div>
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-</tbody>
-</table>
-</div>
+
 
 <div data-ice="staticMemberDetails"><h2 data-ice="title">Static Public Members</h2>
 
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="static-member-regions">
+  <h3 data-ice="anchor" id="static-member-markers">
     <span class="access" data-ice="access">public</span>
     <span data-ice="static">static</span>
     
     
     
     
-    <span class="code" data-ice="name">regions</span><span class="code" data-ice="signature">: <span>*</span></span>
+    <span class="code" data-ice="name">markers</span><span class="code" data-ice="signature">: <span>*</span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber91">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber67">source</a></span></span>
     </span>
   </h3>
 
@@ -965,18 +672,18 @@ var wavesurfer = WaveSurfer.create({
     
     
     
-    <span class="code" data-ice="name">create</span><span class="code" data-ice="signature">(params: <span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span>): <span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span>
+    <span class="code" data-ice="name">create</span><span class="code" data-ice="signature">(params: <span><a href="typedef/index.html#static-typedef-MarkersPluginParams">MarkersPluginParams</a></span>): <span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span>
     <span class="right-info">
       
-      
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber77">source</a></span></span>
+      <span class="since" data-ice="since">since 4.6.0</span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber54">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Regions plugin definition factory</p>
+  <div data-ice="description"><p>Markers plugin definition factory</p>
 <p>This function must be used to create a plugin definition which can be
 used by wavesurfer to correctly instantiate the plugin.</p>
 </div>
@@ -993,7 +700,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     
     <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">params</td>
-      <td data-ice="type" class="code"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></td>
+      <td data-ice="type" class="code"><span><a href="typedef/index.html#static-typedef-MarkersPluginParams">MarkersPluginParams</a></span></td>
       <td data-ice="appendix"></td>
       <td data-ice="description"><p>parameters use to initialise the plugin</p>
 </td>
@@ -1048,17 +755,16 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber109">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber74">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Instantiate Observer</p>
-</div>
+  
 
-  <div data-ice="override"><h4>Override:</h4><span><a href="class/src/util/observer.js~Observer.html#instance-constructor-constructor">Observer#constructor</a></span></div>
+  
 
   <div data-ice="properties">
 </div>
@@ -1084,18 +790,18 @@ used by wavesurfer to correctly instantiate the plugin.</p>
 <div data-ice="memberDetails"><h2 data-ice="title">Public Members</h2>
 
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-list">
+  <h3 data-ice="anchor" id="instance-member-markerHeight">
     <span class="access" data-ice="access">public</span>
     
     
     
     
     
-    <span class="code" data-ice="name">list</span><span class="code" data-ice="signature">: {}</span>
+    <span class="code" data-ice="name">markerHeight</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber141">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber80">source</a></span></span>
     </span>
   </h3>
 
@@ -1127,18 +833,61 @@ used by wavesurfer to correctly instantiate the plugin.</p>
   
 </div>
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-maxRegions">
+  <h3 data-ice="anchor" id="instance-member-markerWidth">
     <span class="access" data-ice="access">public</span>
     
     
     
     
     
-    <span class="code" data-ice="name">maxRegions</span><span class="code" data-ice="signature">: <span>*</span></span>
+    <span class="code" data-ice="name">markerWidth</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber118">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber79">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-member-markers">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">markers</span><span class="code" data-ice="signature">: <span><span>*</span><span>[]</span></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber97">source</a></span></span>
     </span>
   </h3>
 
@@ -1181,7 +930,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber110">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber75">source</a></span></span>
     </span>
   </h3>
 
@@ -1213,18 +962,18 @@ used by wavesurfer to correctly instantiate the plugin.</p>
   
 </div>
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-regionsMinLength">
+  <h3 data-ice="anchor" id="instance-member-style">
     <span class="access" data-ice="access">public</span>
     
     
     
     
     
-    <span class="code" data-ice="name">regionsMinLength</span><span class="code" data-ice="signature">: <span>*</span></span>
+    <span class="code" data-ice="name">style</span><span class="code" data-ice="signature">: <span>*</span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber119">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber78">source</a></span></span>
     </span>
   </h3>
 
@@ -1263,11 +1012,11 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     
     
     
-    <span class="code" data-ice="name">util</span><span class="code" data-ice="signature">: {...undefined: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>, &quot;getRegionSnapToGridValue&quot;: <span>*</span>}</span>
+    <span class="code" data-ice="name">util</span><span class="code" data-ice="signature">: <span>*</span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber112">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber77">source</a></span></span>
     </span>
   </h3>
 
@@ -1310,7 +1059,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber111">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber76">source</a></span></span>
     </span>
   </h3>
 
@@ -1353,7 +1102,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber131">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber88">source</a></span></span>
     </span>
   </h3>
 
@@ -1395,18 +1144,18 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     
     
     
-    <span class="code" data-ice="name">add</span><span class="code" data-ice="signature">(params: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span>): <span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span>
+    <span class="code" data-ice="name">add</span><span class="code" data-ice="signature">(params: <span><a href="typedef/index.html#static-typedef-MarkerParams">MarkerParams</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber188">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber133">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Add a region</p>
+  <div data-ice="description"><p>Add a marker</p>
 </div>
 
   
@@ -1421,9 +1170,9 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     
     <tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">params</td>
-      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span></td>
+      <td data-ice="type" class="code"><span><a href="typedef/index.html#static-typedef-MarkerParams">MarkerParams</a></span></td>
       <td data-ice="appendix"></td>
-      <td data-ice="description"><p>Region parameters</p>
+      <td data-ice="description"><p>Marker definition</p>
 </td>
     </tr>
 </tbody>
@@ -1436,8 +1185,8 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></td>
-          <td class="return-desc" data-ice="returnDescription"><p>The created region</p>
+          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>The created marker</p>
 </td>
         </tr>
       </tbody>
@@ -1473,14 +1222,14 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber209">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber263">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Remove all regions</p>
+  <div data-ice="description"><p>Remove all markers</p>
 </div>
 
   
@@ -1517,7 +1266,7 @@ used by wavesurfer to correctly instantiate the plugin.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber164">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber115">source</a></span></span>
     </span>
   </h3>
 
@@ -1532,251 +1281,6 @@ used by wavesurfer to correctly instantiate the plugin.</p>
 </div>
 
   
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-method-disableDragSelection">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">disableDragSelection</span><span class="code" data-ice="signature">()</span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber378">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-method-enableDragSelection">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">enableDragSelection</span><span class="code" data-ice="signature">(params: <span>*</span>)</span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber215">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  
-
-  
-
-  <div data-ice="properties"><div data-ice="properties">
-  <h4 data-ice="title">Params:</h4>
-  <table class="params">
-    <thead>
-    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-    
-    <tr data-ice="property" data-depth="0">
-      <td data-ice="name" class="code" data-depth="0">params</td>
-      <td data-ice="type" class="code"><span>*</span></td>
-      <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
-    </tr>
-</tbody>
-  </table>
-</div>
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-method-getCurrentRegion">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">getCurrentRegion</span><span class="code" data-ice="signature">(): <span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber390">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Get current region</p>
-<p>The smallest region that contains the current time. If several such
-regions exist, take the first. Return <code>null</code> if none exist.</p>
-</div>
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  <div class="return-params" data-ice="returnParams">
-    <h4>Return:</h4>
-    <table>
-      <tbody>
-        <tr>
-          <td class="return-type code" data-ice="returnType"><span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></td>
-          <td class="return-desc" data-ice="returnDescription"><p>The current region</p>
-</td>
-        </tr>
-      </tbody>
-    </table>
-    <div data-ice="returnProperties">
-</div>
-  </div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-method-getRegionSnapToGridValue">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">getRegionSnapToGridValue</span><span class="code" data-ice="signature">(value: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>, params: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber416">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  <div data-ice="description"><p>Match the value to the grid, if required</p>
-<p>If the regions plugin params have a snapToGridInterval set, return the
-value matching the nearest grid interval. If no snapToGridInterval is set,
-the passed value will be returned without modification.</p>
-</div>
-
-  
-
-  <div data-ice="properties"><div data-ice="properties">
-  <h4 data-ice="title">Params:</h4>
-  <table class="params">
-    <thead>
-    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-    
-    <tr data-ice="property" data-depth="0">
-      <td data-ice="name" class="code" data-depth="0">value</td>
-      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
-      <td data-ice="appendix"></td>
-      <td data-ice="description"><p>the value to snap to the grid, if needed</p>
-</td>
-    </tr>
-<tr data-ice="property" data-depth="0">
-      <td data-ice="name" class="code" data-depth="0">params</td>
-      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></td>
-      <td data-ice="appendix"></td>
-      <td data-ice="description"><p>the regions plugin params</p>
-</td>
-    </tr>
-</tbody>
-  </table>
-</div>
-</div>
-
-  <div class="return-params" data-ice="returnParams">
-    <h4>Return:</h4>
-    <table>
-      <tbody>
-        <tr>
-          <td class="return-type code" data-ice="returnType"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
-          <td class="return-desc" data-ice="returnDescription"><p>value</p>
-</td>
-        </tr>
-      </tbody>
-    </table>
-    <div data-ice="returnProperties">
-</div>
-  </div>
 
   
 
@@ -1805,7 +1309,7 @@ the passed value will be returned without modification.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/plugin/regions/index.js.html#lineNumber153">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber104">source</a></span></span>
     </span>
   </h3>
 
@@ -1817,6 +1321,67 @@ the passed value will be returned without modification.</p>
   
 
   <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-remove">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">remove</span><span class="code" data-ice="signature">(index: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>)</span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/plugin/markers/index.js.html#lineNumber155">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Remove a marker</p>
+</div>
+
+  
+
+  <div data-ice="properties"><div data-ice="properties">
+  <h4 data-ice="title">Params:</h4>
+  <table class="params">
+    <thead>
+    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+    
+    <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">index</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>Index of the marker to remove</p>
+</td>
+    </tr>
+</tbody>
+  </table>
+</div>
 </div>
 
   
