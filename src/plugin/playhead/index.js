@@ -60,10 +60,11 @@ export default class PlayheadPlugin {
         this.options = {};
 
         ['draw', 'moveOnSeek', 'returnOnPause'].forEach(opt => {
-            if ( opt in params )
+            if (opt in params) {
                 this.options[opt] = params[opt];
-            else
+            } else {
                 this.options[opt] = true;
+            }
         });
 
 
@@ -208,11 +209,11 @@ export default class PlayheadPlugin {
     }
 
     _updatePlayheadPosition() {
-        if ( !this.element )
+        if (!this.element) {
             return;
+        }
 
         const duration = this.wavesurfer.getDuration();
-
         const elementWidth =
             this.wavesurfer.drawer.width /
             this.wavesurfer.params.pixelRatio;

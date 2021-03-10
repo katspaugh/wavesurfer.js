@@ -18,6 +18,7 @@ module.exports = {
     rules: {
         eqeqeq: 'off',
         'semi': 2,
+        'curly': "error",
         "indent": ["error", 4, {
             "ignoredNodes": ["TemplateLiteral"],
             "SwitchCase": 1
