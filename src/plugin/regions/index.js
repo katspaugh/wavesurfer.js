@@ -30,6 +30,7 @@
  * @property {?number} channelIdx Select channel to draw the region on (if there are multiple channel waveforms).
  * @property {?object} handleStyle A set of CSS properties used to style the left and right handle.
  * @property {?boolean} preventContextMenu=false Determines whether the context menu is prevented from being opened.
+ * @property {boolean} showTooltip=true Enable/disable tooltip displaying start and end times when hovering over region.
  */
 
 import {Region} from "./region.js";

@@ -7,6 +7,9 @@ x.x.x (unreleased)
   "play head", or song-start position. (#2209)
 - Markers plugin: fix a bug where markers at the end of a track would cause
   incorrect click-to-seek behavior (#2208)
+- Regions plugin:
+  - Fix mouseup not firing if click & drag a region handle & release outside browser window (#2213)
+  - Added new `showTooltip` param allowing disabling region `title` tooltip (#2213)
 
 4.6.0 (04.03.2021)
 ------------------
