@@ -22,7 +22,9 @@ jobs:
           restore-keys: |
             ${{ runner.OS }}-node-
             ${{ runner.OS }}-
-      - run: npm install
-      - run: npm publish
+      #- run: npm install
+      #- run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - run: git tag $(node -p 'require("./package.json").version')
+      - run: git push --tags
