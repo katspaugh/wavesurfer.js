@@ -172,7 +172,9 @@ export class Region {
         const regionEl = document.createElement('region');
 
         regionEl.className = 'wavesurfer-region';
-        if (this.showTooltip) regionEl.title = this.formatTime(this.start, this.end);
+        if (this.showTooltip) {
+            regionEl.title = this.formatTime(this.start, this.end);
+        }
         regionEl.setAttribute('data-id', this.id);
 
         for (const attrname in this.attributes) {
@@ -302,7 +304,9 @@ export class Region {
                 );
             }
 
-            if (this.showTooltip) this.element.title = this.formatTime(this.start, this.end);
+            if (this.showTooltip) {
+                this.element.title = this.formatTime(this.start, this.end);
+            }
         }
     }
 
