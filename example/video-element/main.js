@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-var wavesurfer;
+let wavesurfer;
 
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function() {
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Load audio from existing media element
-    var mediaElt = document.querySelector('video');
+    let mediaElt = document.querySelector('video');
 
     wavesurfer.on('error', function(e) {
         console.warn(e);

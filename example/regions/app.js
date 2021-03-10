@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-var wavesurfer;
+let wavesurfer;
 
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function() {
@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         backend: 'MediaElement',
         plugins: [
             WaveSurfer.regions.create({
+                regionsMinLength: 2,
                 regions: [
                     {
                         start: 1,
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         end: 7,
                         loop: false,
                         color: 'hsla(200, 50%, 70%, 0.4)',
-                        minLength: 1,
+                        minLength: 1
                     }
                 ],
                 dragSelection: {

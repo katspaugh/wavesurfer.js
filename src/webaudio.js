@@ -305,7 +305,7 @@ export default class WebAudio extends util.Observer {
                 );
             }
             audio.autoplay = true;
-            var dest = this.ac.createMediaStreamDestination();
+            const dest = this.ac.createMediaStreamDestination();
             this.gainNode.disconnect();
             this.gainNode.connect(dest);
             audio.srcObject = dest.stream;
@@ -348,11 +348,21 @@ export default class WebAudio extends util.Observer {
                 this.ac && this.ac.sampleRate ? this.ac.sampleRate : 44100
             );
         }
-        this.offlineAc.decodeAudioData(
-            arraybuffer,
-            data => callback(data),
-            errback
-        );
+        if ('webkitAudioContext' in window) {
+            // Safari: no support for Promise-based decodeAudioData enabled
+            // Enable it in Safari using the Experimental Features > Modern WebAudio API option
+            this.offlineAc.decodeAudioData(
+                arraybuffer,
+                data => callback(data),
+                errback
+            );
+        } else {
+            this.offlineAc.decodeAudioData(arraybuffer).then(
+                (data) => callback(data)
+            ).catch(
+                (err) => errback(err)
+            );
+        }
     }
 
     /**
@@ -567,10 +577,7 @@ export default class WebAudio extends util.Observer {
         this.source.start = this.source.start || this.source.noteGrainOn;
         this.source.stop = this.source.stop || this.source.noteOff;
 
-        this.source.playbackRate.setValueAtTime(
-            this.playbackRate,
-            this.ac.currentTime
-        );
+        this.setPlaybackRate(this.playbackRate);
         this.source.buffer = this.buffer;
         this.source.connect(this.analyser);
     }
@@ -727,14 +734,11 @@ export default class WebAudio extends util.Observer {
      * @param {number} value The playback rate to use
      */
     setPlaybackRate(value) {
-        value = value || 1;
-        if (this.isPaused()) {
-            this.playbackRate = value;
-        } else {
-            this.pause();
-            this.playbackRate = value;
-            this.play();
-        }
+        this.playbackRate = value || 1;
+        this.source && this.source.playbackRate.setValueAtTime(
+            this.playbackRate,
+            this.ac.currentTime
+        );
     }
 
     /**

@@ -272,7 +272,7 @@ export default class MultiCanvas extends Drawer {
             channelIndex,
             start,
             end,
-            ({ absmax, hasMinVals, height, offsetY, halfH, peaks }) => {
+            ({ absmax, hasMinVals, height, offsetY, halfH, peaks, channelIndex: ch }) => {
                 // if drawBars was called within ws.empty we don't pass a start and
                 // don't want anything to happen
                 if (start === undefined) {
@@ -311,7 +311,8 @@ export default class MultiCanvas extends Drawer {
                         halfH - h + offsetY,
                         bar + this.halfPixel,
                         h * 2,
-                        this.barRadius
+                        this.barRadius,
+                        ch
                     );
                 }
             }
@@ -361,7 +362,8 @@ export default class MultiCanvas extends Drawer {
                     halfH + offsetY - this.halfPixel,
                     this.width,
                     this.halfPixel,
-                    this.barRadius
+                    this.barRadius,
+                    channelIndex
                 );
             }
         );
@@ -396,8 +398,9 @@ export default class MultiCanvas extends Drawer {
      * @param {number} width Width of the rectangle
      * @param {number} height Height of the rectangle
      * @param {number} radius Radius of the rectangle
+     * @param {channelIndex} channelIndex The channel index of the bar drawn
      */
-    fillRect(x, y, width, height, radius) {
+    fillRect(x, y, width, height, radius, channelIndex) {
         const startCanvas = Math.floor(x / this.maxCanvasWidth);
         const endCanvas = Math.min(
             Math.ceil((x + width) / this.maxCanvasWidth) + 1,
@@ -419,7 +422,8 @@ export default class MultiCanvas extends Drawer {
             };
 
             if (intersection.x1 < intersection.x2) {
-                this.setFillStyles(entry);
+                const { waveColor, progressColor } = this.params.splitChannelsOptions.channelColors[channelIndex] || {};
+                this.setFillStyles(entry, waveColor, progressColor);
 
                 entry.fillRects(
                     intersection.x1 - leftOffset,
@@ -456,16 +460,17 @@ export default class MultiCanvas extends Drawer {
      * rendered
      * @param {function} fn The render function to call, e.g. `drawWave`
      * @param {number} drawIndex The index of the current channel after filtering.
+     * @param {number?} normalizedMax Maximum modulation value across channels for use with relativeNormalization. Ignored when undefined
      * @returns {void}
      */
-    prepareDraw(peaks, channelIndex, start, end, fn, drawIndex) {
+    prepareDraw(peaks, channelIndex, start, end, fn, drawIndex, normalizedMax) {
         return util.frame(() => {
             // Split channels and call this function with the channelIndex set
             if (peaks[0] instanceof Array) {
                 const channels = peaks;
 
                 if (this.params.splitChannels) {
-                    const filteredChannels =  channels.filter((c, i) => !this.hideChannel(i));
+                    const filteredChannels = channels.filter((c, i) => !this.hideChannel(i));
                     if (!this.params.splitChannelsOptions.overlay) {
                         this.setHeight(
                             Math.max(filteredChannels.length, 1) *
@@ -474,8 +479,15 @@ export default class MultiCanvas extends Drawer {
                         );
                     }
 
+                    let overallAbsMax;
+                    if (this.params.splitChannelsOptions && this.params.splitChannelsOptions.relativeNormalization) {
+                        // calculate maximum peak across channels to use for normalization
+                        overallAbsMax = util.max(channels.map((channelPeaks => util.absMax(channelPeaks))));
+                    }
+
+
                     return channels.forEach((channelPeaks, i) =>
-                        this.prepareDraw(channelPeaks, i, start, end, fn, filteredChannels.indexOf(channelPeaks))
+                        this.prepareDraw(channelPeaks, i, start, end, fn, filteredChannels.indexOf(channelPeaks), overallAbsMax)
                     );
                 }
                 peaks = channels[0];
@@ -491,17 +503,21 @@ export default class MultiCanvas extends Drawer {
             // set
             let absmax = 1 / this.params.barHeight;
             if (this.params.normalize) {
-                const max = util.max(peaks);
-                const min = util.min(peaks);
-                absmax = -min > max ? -min : max;
+                absmax = normalizedMax === undefined ? util.absMax(peaks) : normalizedMax;
             }
 
             // Bar wave draws the bottom only as a reflection of the top,
             // so we don't need negative values
             const hasMinVals = [].some.call(peaks, val => val < 0);
             const height = this.params.height * this.params.pixelRatio;
-            const offsetY = height * drawIndex || 0;
             const halfH = height / 2;
+
+            let offsetY = height * drawIndex || 0;
+
+            // Override offsetY if overlay is true
+            if (this.params.splitChannelsOptions && this.params.splitChannelsOptions.overlay) {
+                offsetY = 0;
+            }
 
             return fn({
                 absmax: absmax,
@@ -510,7 +526,7 @@ export default class MultiCanvas extends Drawer {
                 offsetY: offsetY,
                 halfH: halfH,
                 peaks: peaks,
-                channelIndex: channelIndex,
+                channelIndex: channelIndex
             });
         })();
     }

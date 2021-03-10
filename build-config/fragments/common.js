@@ -7,6 +7,9 @@ const datefns = require('date-fns');
 const rootDir = path.resolve(__dirname, '..', '..');
 const pckg = require(path.join(rootDir, 'package.json'));
 
+// enable logging of deprecation warnings stacktrace
+process.traceDeprecation = true;
+
 // inject JS version number
 const jsVersionPlugin = new webpack.DefinePlugin({
     __VERSION__: JSON.stringify(pckg.version)
@@ -22,6 +25,9 @@ module.exports = {
     },
     performance: {
         hints: false
+    },
+    stats: {
+        colors: true
     },
     module: {
         rules: [

@@ -1,20 +1,79 @@
 wavesurfer.js changelog
 =======================
 
-Next (unreleased)
------------------
+x.x.x (unreleased)
+------------------
+- Playhead plugin: add a new plugin that allows the setting of a independent
+  "play head", or song-start position. (#2209)
+- Markers plugin: fix a bug where markers at the end of a track would cause
+  incorrect click-to-seek behavior (#2208)
+
+4.6.0 (04.03.2021)
+------------------
+- Webaudio: fix `decodeAudioData` handling in Safari (#2201)
+- Markers plugin: add new plugin that allows for timeline markers (#2196)
+
+4.5.0 (14.02.2021)
+------------------
+- Split channels: `overlay` param now properly displays a single canvas (#2161)
+- Fixed memory leak with `destroy()` in `WebAudio` backend (#1940)
+- Fixed `WaveSurfer.load(url)` not working when passing a HTMLMediaElement as
+  the url parameter, with the WebAudio backend.
+- Microphone plugin: remove deprecated `MediaStream.stop` call (#2168)
+- Regions plugin: stop region dragging when mouse leaves canvas (#2158)
+
+4.4.0 (13.01.2021)
+------------------
+
+- Use Webpack 5 for build (#2093)
+- Fix seeking issues for `WebAudio` backend (#2149)
+- Use `splitChannelsOptions` to color wave bars (#2150)
+
+4.3.0 (12.12.2020)
+------------------
+
+- Add `relativeNormalization` option to maintain proportionality between
+  waveforms when `splitChannels` and `normalize` are `true` (#2108)
+- WebAudio backend: set playback rate modifying directly the playback
+  property of the source node (#2118)
+- Spectrogram plugin: Use `ImageData` to draw pixel-by-pixel (#2127)
+
+4.2.0 (20.10.2020)
+------------------
+
+- Fix performance issues with `seekTo` while audio is playing (#2045)
+- Trigger `waveform-ready` event when provided peaks are drawn (#2031)
+
+4.1.1 (24.09.2020)
+------------------
+
+- Revert Code cleanup for Observer class (#2069)
+
+4.1.0 (16.09.2020)
+------------------
 
 - Don't call HTMLMediaElement#load when given peaks and preload == 'none'.
   Prevents browsers from pre-fetching audio (#1969, #1990)
+- `seekTo` bugfix inc. basic unit tests (#2047)
+- Fix unhandled `AbortError` thrown during `cancelAjax` (#2063)
 - Remove `util.extend`: deprecated since v3.3.0 (#1995)
+- Remove `util.ajax`: deprecated since v3.0.0 (#2033)
 - Regions plugin:
-  - Removed 'col-resize' cursor when resize is disabled (#1985)
+  - Removed `col-resize` cursor when resize is disabled (#1985)
   - Improved and unified loop playback logic (#1868)
   - Check `minLength` before resizing region (#2001)
+  - Dragging and resizing will continue outside canvas (#2006)
+  - `regionsMinLength` parameter to assign a min length to those regions for which the `minLength`  is not specified (#2009)
+  - Revert PR #1926 click propagation on regions. Use event parameter passed
+    in `region-click` if you need `stopPropagation`. (#2024)
+  - Edgescroll works for both edges (#2011)
 - Microphone plugin: move to separate directory (#1997)
 - Minimap plugin: move plugin to separate directory (#1999)
 - Cursor plugin: move plugin to separate directory (#1998)
+- Elan plugin: move plugin to separate directory (#2019)
 - Spectrogram plugin: move to separate directory (#1996)
+- Mediasession plugin: move to separate directory (#2020)
+- Timeline plugin: move to separate directory (#2018)
 
 4.0.1 (23.06.2020)
 ------------------
