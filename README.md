@@ -136,9 +136,7 @@ If you want to use [the VS Code - Debugger for Chrome](https://github.com/Micros
 The homepage and documentation files are maintained in the [`gh-pages` branch](https://github.com/katspaugh/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
 
 ## Updating the NPM package
-When preparing a new release, update the version in the `package.json` and have it merged to master. Also don't forget to update the changelog.
-
-Once the updated version is on master, create a pull request to the protected `release` branch. When it's merged (please use the rebase option on GitHub), a new version of the package will be published to NPM.
+When preparing a new release, update the version in the `package.json` and have it merged to master. The new version of the package will be published to NPM automatically via GitHub Actions.
 
 ## Credits
 
