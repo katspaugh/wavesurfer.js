@@ -14,7 +14,9 @@ describe('Drawer', function() {
     });
 
     afterEach(function() {
-        if (drawer) drawer.destroy();
+        if (drawer) {
+            drawer.destroy();
+        }
         TestHelpers.removeElement(container);
     });
 

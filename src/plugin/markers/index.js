@@ -154,7 +154,9 @@ export default class MarkersPlugin {
      */
     remove(index) {
         let marker = this.markers[index];
-        if ( !marker ) return;
+        if (!marker) {
+            return;
+        }
 
         this.wrapper.removeChild(marker.el);
         this.markers.splice(index, 1);

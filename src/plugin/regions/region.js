@@ -42,6 +42,7 @@ export class Region {
         this.handleRightEl = null;
         this.data = params.data || {};
         this.attributes = params.attributes || {};
+        this.showTooltip = params.showTooltip ?? true;
 
         this.maxLength = params.maxLength;
         // It assumes the minLength parameter value, or the regionsMinLength parameter value, if the first one not provided
@@ -171,7 +172,9 @@ export class Region {
         const regionEl = document.createElement('region');
 
         regionEl.className = 'wavesurfer-region';
-        regionEl.title = this.formatTime(this.start, this.end);
+        if (this.showTooltip) {
+            regionEl.title = this.formatTime(this.start, this.end);
+        }
         regionEl.setAttribute('data-id', this.id);
 
         for (const attrname in this.attributes) {
@@ -301,7 +304,9 @@ export class Region {
                 );
             }
 
-            this.element.title = this.formatTime(this.start, this.end);
+            if (this.showTooltip) {
+                this.element.title = this.formatTime(this.start, this.end);
+            }
         }
     }
 
@@ -674,18 +679,18 @@ export class Region {
         document.body.addEventListener('mousemove', onMove);
         document.body.addEventListener('touchmove', onMove);
 
-        document.body.addEventListener('mouseup', onUp);
+        document.addEventListener('mouseup', onUp);
         document.body.addEventListener('touchend', onUp);
 
         this.on('remove', () => {
-            document.body.removeEventListener('mouseup', onUp);
+            document.removeEventListener('mouseup', onUp);
             document.body.removeEventListener('touchend', onUp);
             document.body.removeEventListener('mousemove', onMove);
             document.body.removeEventListener('touchmove', onMove);
         });
 
         this.wavesurfer.on('destroy', () => {
-            document.body.removeEventListener('mouseup', onUp);
+            document.removeEventListener('mouseup', onUp);
             document.body.removeEventListener('touchend', onUp);
         });
     }
