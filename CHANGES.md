@@ -7,6 +7,7 @@ x.x.x (unreleased)
   "play head", or song-start position. (#2209)
 - Markers plugin: fix a bug where markers at the end of a track would cause
   incorrect click-to-seek behavior (#2208)
+- Nullify `onaudioprocess` on remove to not execute in background (#2218)
 
 4.6.0 (04.03.2021)
 ------------------
