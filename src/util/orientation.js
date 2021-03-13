@@ -1,9 +1,3 @@
-import utilCapitalize from './capitalize';
-
-/**
- * @property {function} makeOrientation Factory for an Orientation object
- */
-
 const verticalPropMap = {
     width: 'height',
     height: 'width',
@@ -62,6 +56,7 @@ const isProxy = Symbol("isProxy");
  * @param {object} target The object to be wrapped and oriented
  * @param {bool} vertical Whether the element is oriented vertically
  * @returns {Proxy} An oriented object with attr translation via verticalAttrMap
+ * @since 4.7.0
  */
 export default function withOrientation(target, vertical) {
     if (target[isProxy]) {

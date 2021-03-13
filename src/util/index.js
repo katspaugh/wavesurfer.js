@@ -11,4 +11,3 @@ export { default as preventClick } from './prevent-click';
 export { default as fetchFile } from './fetch';
 export { default as clamp } from './clamp';
 export { default as withOrientation } from './orientation';
-export { default as capitalize } from './capitalize';
