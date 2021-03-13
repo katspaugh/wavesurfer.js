@@ -52,6 +52,12 @@ const isProxy = Symbol("isProxy");
 
 /**
  * Returns an appropriately oriented object based on vertical.
+ * If vertical is true, attribute getting and setting will be mapped through
+ * verticalPropMap, so that e.g. getting the object's .width will give its
+ * .height instead.
+ * Certain methods of an oriented object will return oriented objects as well.
+ * Oriented objects can't be added to the DOM directly since they are Proxy objects
+ * and thus fail typechecks. Use proxiedElement to get the actual element for this.
  *
  * @param {object} target The object to be wrapped and oriented
  * @param {bool} vertical Whether the element is oriented vertically
