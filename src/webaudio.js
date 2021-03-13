@@ -261,7 +261,7 @@ export default class WebAudio extends util.Observer {
 
     /** @private */
     removeOnAudioProcess() {
-        this.scriptNode.onaudioprocess = () => {};
+        this.scriptNode.onaudioprocess = null;
     }
     /** Create analyser node to perform audio analysis */
     createAnalyserNode() {
