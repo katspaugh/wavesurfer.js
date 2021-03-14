@@ -116,6 +116,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * the channels of the audio
  * @property {SplitChannelOptions} splitChannelsOptions={} Options for splitChannel rendering
  * @property {boolean} vertical=false Render the waveform vertically instead of horizontally.
+ * This may not be compatible with any plugins besides the regions plugin.
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options. For example:
