@@ -131,7 +131,7 @@ export class Region {
     /* Remove a single region. */
     remove() {
         if (this.element) {
-            this.wrapper.removeChild(this.element);
+            this.wrapper.removeChild(this.element.proxiedElement);
             this.element = null;
             this.fireEvent('remove');
             this.wavesurfer.un('zoom', this._onRedraw);
