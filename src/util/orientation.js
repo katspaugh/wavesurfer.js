@@ -15,7 +15,9 @@ const verticalPropMap = {
     scrollLeft: 'scrollTop',
 
     offsetLeft: 'offsetTop',
+    offsetTop: 'offsetLeft',
     offsetHeight: 'offsetWidth',
+    offsetWidth: 'offsetHeight',
 
     left: 'top',
     right: 'bottom',
