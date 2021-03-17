@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-let wavesurfer;
+var wavesurfer; //eslint-disable-line
 
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function() {

@@ -1,6 +1,6 @@
 'use strict';
 
-let wavesurfer;
+var wavesurfer; //eslint-disable-line
 
 // Init & load
 function initAndLoadSpectrogram(colorMap) {
