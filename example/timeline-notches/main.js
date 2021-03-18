@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-var wavesurfer; //eslint-disable-line
+var wavesurfer;
 
 /**
  * Use formatTimeCallback to style the notch labels as you wish, such

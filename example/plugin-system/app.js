@@ -2,7 +2,7 @@
 
 import CursorCustomPlugin from './custom-plugin/CursorCustomPlugin.js';
 
-var wavesurfer; //eslint-disable-line
+var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function() {

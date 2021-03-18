@@ -1,5 +1,5 @@
 // Create an instance
-var wavesurfer; //eslint-disable-line
+var wavesurfer;
 
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function() {

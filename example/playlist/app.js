@@ -1,5 +1,5 @@
 // Create a WaveSurfer instance
-var wavesurfer; //eslint-disable-line
+var wavesurfer;
 
 // Init on DOM ready
 document.addEventListener('DOMContentLoaded', function() {

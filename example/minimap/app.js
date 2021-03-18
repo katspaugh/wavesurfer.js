@@ -1,6 +1,6 @@
 'use strict';
 
-var wavesurfer; //eslint-disable-line
+var wavesurfer;
 
 function init() {
     // configure

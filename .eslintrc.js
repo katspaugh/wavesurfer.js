@@ -48,6 +48,7 @@ module.exports = {
     {
         'files': ['example/**/*.js', 'spec/**/*.js'],
         'rules': {
+            'no-var': 'off',
             'no-console': 'off',
             'require-jsdoc': 0,
             'valid-jsdoc': 0
