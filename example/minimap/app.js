@@ -1,6 +1,6 @@
 'use strict';
 
-let wavesurfer;
+var wavesurfer;
 
 function init() {
     // configure
