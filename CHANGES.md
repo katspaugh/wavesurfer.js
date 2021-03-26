@@ -11,8 +11,7 @@ x.x.x (unreleased)
   - Fix mouseup not firing if click & drag a region handle & release outside browser window (#2213)
   - Added new `showTooltip` param allowing disabling region `title` tooltip (#2213)
 - Nullify `onaudioprocess` on remove to not execute in background (#2218)
-- Add new `vertical` param enabling displaying waveforms vertically; currently not compatible
-  with any plugins besides the regions plugin (#2195)
+- Add new `vertical` param enabling displaying waveforms vertically
 
 4.6.0 (04.03.2021)
 ------------------
