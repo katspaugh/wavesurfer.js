@@ -221,11 +221,11 @@ export default class MultiCanvas extends Drawer {
         let lastEntry = this.canvases[this.canvases.length - 1];
 
         // wave
-        lastEntry.wave.parentElement.removeChild(lastEntry.wave.proxiedElement);
+        lastEntry.wave.parentElement.removeChild(lastEntry.wave.domElement);
 
         // progress
         if (this.hasProgressCanvas) {
-            lastEntry.progress.parentElement.removeChild(lastEntry.progress.proxiedElement);
+            lastEntry.progress.parentElement.removeChild(lastEntry.progress.domElement);
         }
 
         // cleanup
