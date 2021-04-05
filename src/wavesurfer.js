@@ -1610,7 +1610,8 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Exports PCM data into a JSON array and opens in a new window as valid json blob file
+     * Exports PCM data into a JSON array and optionally opens in a new window
+     * as valid JSON Blob instance.
      *
      * @param {number} length=1024 The scale in which to export the peaks
      * @param {number} accuracy=10000
@@ -1632,13 +1633,16 @@ export default class WaveSurfer extends util.Observer {
         );
 
         return new Promise((resolve, reject) => {
-            if (noWindow){
-                resolve(arr);
-                return;
+            if (!noWindow){
+                const blobJSON = new Blob(
+                    [JSON.stringify(arr)],
+                    {type: 'application/json;charset=utf-8'}
+                );
+                const objURL = URL.createObjectURL(blobJSON);
+                window.open(objURL);
+                URL.revokeObjectURL(objURL);
             }
-            const blobJSON = URL.createObjectURL(new Blob([JSON.stringify(arr)], {type:'application/json;charset=utf-8'}));
-            window.open(blobJSON);
-            resolve(blobJSON);
+            resolve(arr);
         });
     }
 

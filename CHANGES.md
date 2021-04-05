@@ -1,10 +1,10 @@
 wavesurfer.js changelog
 =======================
 
-x.x.x (unreleased)
+4.7.0 (unreleased)
 ------------------
-- Fixed `exportPCM()` to return valid json on `noWindow` and create a valid JSON blob
-  file returned with a Promise (#1896, #1954)
+- Fixed `exportPCM()` to return a Promise containing valid JSON data with `noWindow`
+  (#1896, #1954)
 - Playhead plugin: add a new plugin that allows the setting of a independent
   "play head", or song-start position. (#2209)
 - Markers plugin: fix a bug where markers at the end of a track would cause
