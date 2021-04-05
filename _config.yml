@@ -11,7 +11,7 @@ email: katspaugh@gmail.com
 description: > # this means to ignore newlines until "baseurl:"
   wavesurfer.js is an HTML 5 audio player and waveform visualizer, made with JavaScript and Web Audio.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://wavesurfer-js.org" # the base hostname & protocol for your site
+url: "https://wavesurfer-js.org" # the base hostname & protocol for your site
 twitter_username: jekyllrb
 github_username:  jekyll
 
@@ -21,17 +21,6 @@ markdown: kramdown
 navigation:
   - title: Overview
     url: /
-  - title: Version 2
-    url: /v2/
-    subnav:
-      - title: Changes
-        url: /v2/changes.html
-      - title: Upgrading
-        url: /v2/upgrading.html
-      - title: Plugin class example
-        url: /v2/plugin-class.html
-      - title: Documentation
-        url: /doc/
   - title: Documentation
     url: /docs/
     subnav:
@@ -47,6 +36,13 @@ navigation:
     url: /examples/
   - title: FAQ
     url: /faq/
+  - title: Upgrade
+    url: /upgrade/v2/
+    subnav:
+      - title: Changes
+        url: /upgrade/v2/changes.html
+      - title: Upgrading
+        url: /upgrade/v2/upgrading.html
   - title: Plugins
     url: /plugins/
     subnav:
