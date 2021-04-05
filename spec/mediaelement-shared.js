@@ -301,7 +301,7 @@ export function sharedErrorTests(backend) {
      * @test {WaveSurfer}
      */
     it('throw when load is called with invalid HTMLMediaElement', function() {
-        var wave = TestHelpers.createWaveform({
+        let wave = TestHelpers.createWaveform({
             container: '#test',
             backend: backend
         });

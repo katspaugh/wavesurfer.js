@@ -261,7 +261,7 @@ export default class WebAudio extends util.Observer {
 
     /** @private */
     removeOnAudioProcess() {
-        this.scriptNode.onaudioprocess = () => {};
+        this.scriptNode.onaudioprocess = null;
     }
     /** Create analyser node to perform audio analysis */
     createAnalyserNode() {
@@ -305,7 +305,7 @@ export default class WebAudio extends util.Observer {
                 );
             }
             audio.autoplay = true;
-            var dest = this.ac.createMediaStreamDestination();
+            const dest = this.ac.createMediaStreamDestination();
             this.gainNode.disconnect();
             this.gainNode.connect(dest);
             audio.srcObject = dest.stream;
@@ -348,18 +348,19 @@ export default class WebAudio extends util.Observer {
                 this.ac && this.ac.sampleRate ? this.ac.sampleRate : 44100
             );
         }
-        if ('AudioContext' in window) {
-            this.offlineAc.decodeAudioData(arraybuffer).then(
-                (data) => callback(data)
-            ).catch(
-                (err) => errback(err)
-            );
-        } else {
-            // Safari: no support for Promise-based decodeAudioData yet
+        if ('webkitAudioContext' in window) {
+            // Safari: no support for Promise-based decodeAudioData enabled
+            // Enable it in Safari using the Experimental Features > Modern WebAudio API option
             this.offlineAc.decodeAudioData(
                 arraybuffer,
                 data => callback(data),
                 errback
+            );
+        } else {
+            this.offlineAc.decodeAudioData(arraybuffer).then(
+                (data) => callback(data)
+            ).catch(
+                (err) => errback(err)
             );
         }
     }

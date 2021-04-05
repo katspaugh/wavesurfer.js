@@ -23,7 +23,7 @@
      * Giving this value for the sequence length sets automatic parameter value
      * according to tempo setting (recommended)
      */
-    var USE_AUTO_SEQUENCE_LEN = 0;
+    let USE_AUTO_SEQUENCE_LEN = 0;
 
     /**
      * Default length of a single processing sequence, in milliseconds. This determines to how
@@ -35,14 +35,14 @@
      *
      * Increasing this value reduces computational burden and vice versa.
      */
-    //var DEFAULT_SEQUENCE_MS = 130
-    var DEFAULT_SEQUENCE_MS = USE_AUTO_SEQUENCE_LEN;
+    //let DEFAULT_SEQUENCE_MS = 130
+    let DEFAULT_SEQUENCE_MS = USE_AUTO_SEQUENCE_LEN;
 
     /**
      * Giving this value for the seek window length sets automatic parameter value
      * according to tempo setting (recommended)
      */
-    var USE_AUTO_SEEKWINDOW_LEN = 0;
+    let USE_AUTO_SEEKWINDOW_LEN = 0;
 
     /**
      * Seeking window default length in milliseconds for algorithm that finds the best possible
@@ -58,8 +58,8 @@
      *
      * Increasing this value increases computational burden and vice versa.
      */
-    //var DEFAULT_SEEKWINDOW_MS = 25;
-    var DEFAULT_SEEKWINDOW_MS = USE_AUTO_SEEKWINDOW_LEN;
+    //let DEFAULT_SEEKWINDOW_MS = 25;
+    let DEFAULT_SEEKWINDOW_MS = USE_AUTO_SEEKWINDOW_LEN;
 
     /**
      * Overlap length in milliseconds. When the chopped sound sequences are mixed back together,
@@ -71,10 +71,10 @@
      *
      * Increasing this value increases computational burden and vice versa.
      */
-    var DEFAULT_OVERLAP_MS = 8;
+    let DEFAULT_OVERLAP_MS = 8;
 
     // Table for the hierarchical mixing position seeking algorithm
-    var _SCAN_OFFSETS = [
+    let _SCAN_OFFSETS = [
         [
             124,
             186,
@@ -183,28 +183,28 @@
 
     // Adjust tempo param according to tempo, so that variating processing sequence length is used
     // at varius tempo settings, between the given low...top limits
-    var AUTOSEQ_TEMPO_LOW = 0.5; // auto setting low tempo range (-50%)
-    var AUTOSEQ_TEMPO_TOP = 2.0; // auto setting top tempo range (+100%)
+    let AUTOSEQ_TEMPO_LOW = 0.5; // auto setting low tempo range (-50%)
+    let AUTOSEQ_TEMPO_TOP = 2.0; // auto setting top tempo range (+100%)
 
     // sequence-ms setting values at above low & top tempo
-    var AUTOSEQ_AT_MIN = 125.0;
-    var AUTOSEQ_AT_MAX = 50.0;
-    var AUTOSEQ_K =
+    let AUTOSEQ_AT_MIN = 125.0;
+    let AUTOSEQ_AT_MAX = 50.0;
+    let AUTOSEQ_K =
         (AUTOSEQ_AT_MAX - AUTOSEQ_AT_MIN) /
         (AUTOSEQ_TEMPO_TOP - AUTOSEQ_TEMPO_LOW);
-    var AUTOSEQ_C = AUTOSEQ_AT_MIN - AUTOSEQ_K * AUTOSEQ_TEMPO_LOW;
+    let AUTOSEQ_C = AUTOSEQ_AT_MIN - AUTOSEQ_K * AUTOSEQ_TEMPO_LOW;
 
     // seek-window-ms setting values at above low & top tempo
-    var AUTOSEEK_AT_MIN = 25.0;
-    var AUTOSEEK_AT_MAX = 15.0;
-    var AUTOSEEK_K =
+    let AUTOSEEK_AT_MIN = 25.0;
+    let AUTOSEEK_AT_MAX = 15.0;
+    let AUTOSEEK_K =
         (AUTOSEEK_AT_MAX - AUTOSEEK_AT_MIN) /
         (AUTOSEQ_TEMPO_TOP - AUTOSEQ_TEMPO_LOW);
-    var AUTOSEEK_C = AUTOSEEK_AT_MIN - AUTOSEEK_K * AUTOSEQ_TEMPO_LOW;
+    let AUTOSEEK_C = AUTOSEEK_AT_MIN - AUTOSEEK_K * AUTOSEQ_TEMPO_LOW;
 
     function extend(a, b) {
-        for (var i in b) {
-            var g = b.__lookupGetter__(i),
+        for (let i in b) {
+            let g = b.__lookupGetter__(i),
                 s = b.__lookupSetter__(i);
             if (g || s) {
                 if (g) {
@@ -269,11 +269,11 @@
         },
         process: function() {
             // TODO aa filter
-            var numFrames = this._inputBuffer.frameCount;
+            let numFrames = this._inputBuffer.frameCount;
             this._outputBuffer.ensureAdditionalCapacity(
                 numFrames / this._rate + 1
             );
-            var numFramesOutput = this._transpose(numFrames);
+            let numFramesOutput = this._transpose(numFrames);
             this._inputBuffer.receive();
             this._outputBuffer.put(numFramesOutput);
         },
@@ -282,14 +282,14 @@
                 return 0; // No work.
             }
 
-            var src = this._inputBuffer.vector;
-            var srcOffset = this._inputBuffer.startIndex;
+            let src = this._inputBuffer.vector;
+            let srcOffset = this._inputBuffer.startIndex;
 
-            var dest = this._outputBuffer.vector;
-            var destOffset = this._outputBuffer.endIndex;
+            let dest = this._outputBuffer.vector;
+            let destOffset = this._outputBuffer.endIndex;
 
-            var used = 0;
-            var i = 0;
+            let used = 0;
+            let i = 0;
 
             while (this.slopeCount < 1.0) {
                 dest[destOffset + 2 * i] =
@@ -315,7 +315,7 @@
                         }
                     }
 
-                    var srcIndex = srcOffset + 2 * used;
+                    let srcIndex = srcOffset + 2 * used;
                     dest[destOffset + 2 * i] =
                         (1.0 - this.slopeCount) * src[srcIndex] +
                         this.slopeCount * src[srcIndex + 2];
@@ -365,15 +365,15 @@
         },
         putSamples: function(samples, position, numFrames) {
             position = position || 0;
-            var sourceOffset = position * 2;
+            let sourceOffset = position * 2;
             if (!(numFrames >= 0)) {
                 numFrames = (samples.length - sourceOffset) / 2;
             }
-            var numSamples = numFrames * 2;
+            let numSamples = numFrames * 2;
 
             this.ensureCapacity(numFrames + this._frameCount);
 
-            var destOffset = this.endIndex;
+            let destOffset = this.endIndex;
             this._vector.set(
                 samples.subarray(sourceOffset, sourceOffset + numSamples),
                 destOffset
@@ -400,24 +400,24 @@
             this._position += numFrames;
         },
         receiveSamples: function(output, numFrames) {
-            var numSamples = numFrames * 2;
-            var sourceOffset = this.startIndex;
+            let numSamples = numFrames * 2;
+            let sourceOffset = this.startIndex;
             output.set(
                 this._vector.subarray(sourceOffset, sourceOffset + numSamples)
             );
             this.receive(numFrames);
         },
         extract: function(output, position, numFrames) {
-            var sourceOffset = this.startIndex + position * 2;
-            var numSamples = numFrames * 2;
+            let sourceOffset = this.startIndex + position * 2;
+            let numSamples = numFrames * 2;
             output.set(
                 this._vector.subarray(sourceOffset, sourceOffset + numSamples)
             );
         },
         ensureCapacity: function(numFrames) {
-            var minLength = numFrames * 2;
+            let minLength = numFrames * 2;
             if (this._vector.length < minLength) {
-                var newVector = new Float32Array(minLength);
+                let newVector = new Float32Array(minLength);
                 newVector.set(
                     this._vector.subarray(this.startIndex, this.endIndex)
                 );
@@ -461,7 +461,7 @@
                     'New position may not be greater than current position'
                 );
             }
-            var newOutputBufferPosition =
+            let newOutputBufferPosition =
                 this.outputBufferPosition - (this._position - position);
             if (newOutputBufferPosition < 0) {
                 throw new RangeError(
@@ -485,8 +485,8 @@
             return this._pipe.outputBuffer;
         },
         fillInputBuffer: function(numFrames) {
-            var samples = new Float32Array(numFrames * 2);
-            var numFramesExtracted = this.sourceSound.extract(
+            let samples = new Float32Array(numFrames * 2);
+            let numFramesExtracted = this.sourceSound.extract(
                 samples,
                 numFrames,
                 this._sourcePosition
@@ -497,7 +497,7 @@
         fillOutputBuffer: function(numFrames) {
             while (this.outputBuffer.frameCount < numFrames) {
                 // TODO hardcoded buffer size
-                var numInputFrames = 8192 * 2 - this.inputBuffer.frameCount;
+                let numInputFrames = 8192 * 2 - this.inputBuffer.frameCount;
 
                 this.fillInputBuffer(numInputFrames);
 
@@ -511,7 +511,7 @@
         extract: function(target, numFrames) {
             this.fillOutputBuffer(this.outputBufferPosition + numFrames);
 
-            var numFramesExtracted = Math.min(
+            let numFramesExtracted = Math.min(
                 numFrames,
                 this.outputBuffer.frameCount - this.outputBufferPosition
             );
@@ -521,7 +521,7 @@
                 numFramesExtracted
             );
 
-            var currentFrames = this.outputBufferPosition + numFramesExtracted;
+            let currentFrames = this.outputBufferPosition + numFramesExtracted;
             this.outputBufferPosition = Math.min(
                 this.historyBufferSize,
                 currentFrames
@@ -628,7 +628,7 @@
          * tempo, larger faster tempo.
          */
         set tempo(newTempo) {
-            var intskip;
+            let intskip;
 
             this._tempo = newTempo;
 
@@ -661,11 +661,13 @@
          * Calculates overlapInMsec period length in samples.
          */
         calculateOverlapLength: function(overlapInMsec) {
-            var newOvl;
+            let newOvl;
 
             // TODO assert(overlapInMsec >= 0);
             newOvl = (this.sampleRate * overlapInMsec) / 1000;
-            if (newOvl < 16) newOvl = 16;
+            if (newOvl < 16) {
+                newOvl = 16;
+            }
 
             // must be divisible by 8
             newOvl -= newOvl % 8;
@@ -683,8 +685,8 @@
          * Calculates processing sequence length according to tempo setting
          */
         calcSeqParameters: function() {
-            var seq;
-            var seek;
+            let seq;
+            let seek;
 
             if (this.bAutoSeqSetting) {
                 seq = AUTOSEQ_C + AUTOSEQ_K * this._tempo;
@@ -734,7 +736,7 @@
          * value over the overlapping period
          */
         seekBestOverlapPositionStereo: function() {
-            var bestOffs, bestCorr, corr, i;
+            let bestOffs, bestCorr, corr, i;
 
             // Slopes the amplitudes of the 'midBuffer' samples.
             this.precalcCorrReferenceStereo();
@@ -767,7 +769,7 @@
          * value over the overlapping period
          */
         seekBestOverlapPositionStereoQuick: function() {
-            var j, bestOffs, bestCorr, corr, scanCount, corrOffset, tempOffset;
+            let j, bestOffs, bestCorr, corr, scanCount, corrOffset, tempOffset;
 
             // Slopes the amplitude of the 'midBuffer' samples
             this.precalcCorrReferenceStereo();
@@ -815,7 +817,7 @@
          * is faster to calculate
          */
         precalcCorrReferenceStereo: function() {
-            var i, cnt2, temp;
+            let i, cnt2, temp;
 
             for (i = 0; i < this.overlapLength; i++) {
                 temp = i * (this.overlapLength - i);
@@ -826,10 +828,10 @@
         },
 
         calcCrossCorrStereo: function(mixingPos, compare) {
-            var mixing = this._inputBuffer.vector;
+            let mixing = this._inputBuffer.vector;
             mixingPos += this._inputBuffer.startIndex;
 
-            var corr, i, mixingOffset;
+            let corr, i, mixingOffset;
             corr = 0;
             for (i = 2; i < 2 * this.overlapLength; i += 2) {
                 mixingOffset = i + mixingPos;
@@ -853,10 +855,10 @@
          * Overlaps samples in 'midBuffer' with the samples in 'pInput'
          */
         overlapStereo: function(pInputPos) {
-            var pInput = this._inputBuffer.vector;
+            let pInput = this._inputBuffer.vector;
             pInputPos += this._inputBuffer.startIndex;
 
-            var pOutput = this._outputBuffer.vector,
+            let pOutput = this._outputBuffer.vector,
                 pOutputPos = this._outputBuffer.endIndex,
                 i,
                 cnt2,
@@ -882,7 +884,7 @@
             }
         },
         process: function() {
-            var ovlSkip, offset, temp, i;
+            let ovlSkip, offset, temp, i;
             if (this.pMidBuffer === null) {
                 // if midBuffer is empty, move the first samples of the input stream
                 // into it
@@ -897,7 +899,7 @@
                 );
             }
 
-            var output;
+            let output;
             // Process samples as long as there are enough samples in 'inputBuffer'
             // to form a processing frame.
             while (this._inputBuffer.frameCount >= this.sampleReq) {
@@ -929,7 +931,7 @@
                 // 'midBuffer' for being mixed with the beginning of the next
                 // processing sequence and so on
                 //assert(offset + seekWindowLength <= (int)inputBuffer.numSamples());
-                var start =
+                let start =
                     this.inputBuffer.startIndex +
                     2 * (offset + this.seekWindowLength - this.overlapLength);
                 this.pMidBuffer.set(
@@ -1017,8 +1019,8 @@
             return this._outputBuffer;
         },
         _calculateEffectiveRateAndTempo: function() {
-            var previousTempo = this._tempo;
-            var previousRate = this._rate;
+            let previousTempo = this._tempo;
+            let previousRate = this._rate;
 
             this._tempo = this.virtualTempo / this.virtualPitch;
             this._rate = this.virtualRate * this.virtualPitch;
@@ -1064,9 +1066,9 @@
     }
     WebAudioBufferSource.prototype = {
         extract: function(target, numFrames, position) {
-            var l = this.buffer.getChannelData(0),
+            let l = this.buffer.getChannelData(0),
                 r = this.buffer.getChannelData(1);
-            for (var i = 0; i < numFrames; i++) {
+            for (let i = 0; i < numFrames; i++) {
                 target[i * 2] = l[i + position];
                 target[i * 2 + 1] = r[i + position];
             }
@@ -1075,17 +1077,17 @@
     };
 
     function getWebAudioNode(context, filter) {
-        var BUFFER_SIZE = 4096;
-        var node = context.createScriptProcessor(BUFFER_SIZE, 2, 2),
+        let BUFFER_SIZE = 4096;
+        let node = context.createScriptProcessor(BUFFER_SIZE, 2, 2),
             samples = new Float32Array(BUFFER_SIZE * 2);
         node.onaudioprocess = function(e) {
-            var l = e.outputBuffer.getChannelData(0),
+            let l = e.outputBuffer.getChannelData(0),
                 r = e.outputBuffer.getChannelData(1);
-            var framesExtracted = filter.extract(samples, BUFFER_SIZE);
+            let framesExtracted = filter.extract(samples, BUFFER_SIZE);
             if (framesExtracted === 0) {
                 node.disconnect(); // Pause.
             }
-            for (var i = 0; i < framesExtracted; i++) {
+            for (let i = 0; i < framesExtracted; i++) {
                 l[i] = samples[i * 2];
                 r[i] = samples[i * 2 + 1];
             }

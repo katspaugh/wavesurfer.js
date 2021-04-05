@@ -5,7 +5,7 @@ var wavesurfer;
 
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function() {
-    var options = {
+    let options = {
         container: document.querySelector('#waveform'),
         waveColor: 'violet',
         progressColor: 'purple',
@@ -48,15 +48,15 @@ wavesurfer.on('finish', function() {
 
 /* Progress bar */
 document.addEventListener('DOMContentLoaded', function() {
-    var progressDiv = document.querySelector('#progress-bar');
-    var progressBar = progressDiv.querySelector('.progress-bar');
+    const progressDiv = document.querySelector('#progress-bar');
+    const progressBar = progressDiv.querySelector('.progress-bar');
 
-    var showProgress = function(percent) {
+    let showProgress = function(percent) {
         progressDiv.style.display = 'block';
         progressBar.style.width = percent + '%';
     };
 
-    var hideProgress = function() {
+    let hideProgress = function() {
         progressDiv.style.display = 'none';
     };
 
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Drag'n'drop
 document.addEventListener('DOMContentLoaded', function() {
-    var toggleActive = function(e, toggle) {
+    let toggleActive = function(e, toggle) {
         e.stopPropagation();
         e.preventDefault();
         toggle
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
             : e.target.classList.remove('wavesurfer-dragover');
     };
 
-    var handlers = {
+    let handlers = {
         // Drop event
         drop: function(e) {
             toggleActive(e, false);
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    var dropTarget = document.querySelector('#drop');
+    let dropTarget = document.querySelector('#drop');
     Object.keys(handlers).forEach(function(event) {
         dropTarget.addEventListener(event, handlers[event]);
     });

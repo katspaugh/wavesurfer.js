@@ -115,6 +115,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {boolean} splitChannels=false Render with separate waveforms for
  * the channels of the audio
  * @property {SplitChannelOptions} splitChannelsOptions={} Options for splitChannel rendering
+ * @property {boolean} vertical=false Render the waveform vertically instead of horizontally.
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options. For example:
@@ -293,6 +294,7 @@ export default class WaveSurfer extends util.Observer {
             filterChannels: [],
             relativeNormalization: false
         },
+        vertical: false,
         waveColor: '#999',
         xhr: {}
     };
@@ -401,7 +403,11 @@ export default class WaveSurfer extends util.Observer {
         }
 
         if (this.params.rtl === true) {
-            util.style(this.container, { transform: 'rotateY(180deg)' });
+            if (this.params.vertical === true) {
+                util.style(this.container, { transform: 'rotateX(180deg)' });
+            } else {
+                util.style(this.container, { transform: 'rotateY(180deg)' });
+            }
         }
 
         if (this.params.backgroundColor) {
@@ -928,11 +934,22 @@ export default class WaveSurfer extends util.Observer {
         }
         this.fireEvent('interaction', () => this.seekTo(progress));
 
+        const isWebAudioBackend = this.params.backend === 'WebAudio';
+        const paused = this.backend.isPaused();
+
+        if (isWebAudioBackend && !paused) {
+            this.backend.pause();
+        }
+
         // avoid small scrolls while paused seeking
         const oldScrollParent = this.params.scrollParent;
         this.params.scrollParent = false;
         this.backend.seekTo(progress * this.getDuration());
         this.drawer.progress(progress);
+
+        if (isWebAudioBackend && !paused) {
+            this.backend.play();
+        }
 
         this.params.scrollParent = oldScrollParent;
         this.fireEvent('seek', progress);
@@ -1406,6 +1423,12 @@ export default class WaveSurfer extends util.Observer {
             }
         }
 
+        // loadBuffer(url, peaks, duration) requires that url is a string
+        // but users can pass in a HTMLMediaElement to WaveSurfer
+        if (this.params.backend === 'WebAudio' && url instanceof HTMLMediaElement) {
+            url = url.src;
+        }
+
         switch (this.params.backend) {
             case 'WebAudio':
                 return this.loadBuffer(url, peaks, duration);
@@ -1716,6 +1739,8 @@ export default class WaveSurfer extends util.Observer {
         }
         if (this.backend) {
             this.backend.destroy();
+            // clears memory usage
+            this.backend = null;
         }
         if (this.drawer) {
             this.drawer.destroy();

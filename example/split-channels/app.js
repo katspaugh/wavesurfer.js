@@ -1,6 +1,6 @@
 // Create an instance
 var wavesurfer;
-var wavesurferWithOptions;
+let wavesurferWithOptions;
 
 window.onload = function() {
     wavesurfer = WaveSurfer.create({
@@ -21,7 +21,7 @@ window.onload = function() {
         .addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
 
     // Drag'n'drop
-    var toggleActive = function(e, toggle) {
+    let toggleActive = function(e, toggle) {
         e.stopPropagation();
         e.preventDefault();
         toggle
@@ -29,7 +29,7 @@ window.onload = function() {
             : e.target.classList.remove('wavesurfer-dragover');
     };
 
-    var handlers = {
+    let handlers = {
         // Drop event
         drop: function(e) {
             toggleActive(e, false);
@@ -53,7 +53,7 @@ window.onload = function() {
         }
     };
 
-    var dropTarget = document.querySelector('#drop');
+    let dropTarget = document.querySelector('#drop');
     Object.keys(handlers).forEach(function(event) {
         dropTarget.addEventListener(event, handlers[event]);
     });

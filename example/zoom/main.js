@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     wavesurfer.load('../media/demo.wav');
 
     // Zoom slider
-    var slider = document.querySelector('[data-action="zoom"]');
+    let slider = document.querySelector('[data-action="zoom"]');
 
     slider.value = wavesurfer.params.minPxPerSec;
     slider.min = wavesurfer.params.minPxPerSec;
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
     wavesurfer.zoom(slider.value);
 
     // Play button
-    var button = document.querySelector('[data-action="play"]');
+    let button = document.querySelector('[data-action="play"]');
 
     button.addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
 });

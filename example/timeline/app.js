@@ -4,7 +4,7 @@ var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function() {
-    var options = {
+    let options = {
         container: '#waveform',
         waveColor: 'violet',
         progressColor: 'purple',
@@ -31,15 +31,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /* Progress bar */
     (function() {
-        var progressDiv = document.querySelector('#progress-bar');
-        var progressBar = progressDiv.querySelector('.progress-bar');
+        const progressDiv = document.querySelector('#progress-bar');
+        const progressBar = progressDiv.querySelector('.progress-bar');
 
-        var showProgress = function(percent) {
+        let showProgress = function(percent) {
             progressDiv.style.display = 'block';
             progressBar.style.width = percent + '%';
         };
 
-        var hideProgress = function() {
+        let hideProgress = function() {
             progressDiv.style.display = 'none';
         };
 

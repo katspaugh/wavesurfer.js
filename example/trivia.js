@@ -1,34 +1,34 @@
-var wavesurfer = window.wavesurfer;
+let ws = window.wavesurfer;
 
-var GLOBAL_ACTIONS = {
+var GLOBAL_ACTIONS = { // eslint-disable-line
     play: function() {
-        wavesurfer.playPause();
+        window.wavesurfer.playPause();
     },
 
     back: function() {
-        wavesurfer.skipBackward();
+        window.wavesurfer.skipBackward();
     },
 
     forth: function() {
-        wavesurfer.skipForward();
+        window.wavesurfer.skipForward();
     },
 
     'toggle-mute': function() {
-        wavesurfer.toggleMute();
+        window.wavesurfer.toggleMute();
     }
 };
 
 // Bind actions to buttons and keypresses
 document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keydown', function(e) {
-        var map = {
+        let map = {
             32: 'play', // space
             37: 'back', // left
             39: 'forth' // right
         };
-        var action = map[e.keyCode];
+        let action = map[e.keyCode];
         if (action in GLOBAL_ACTIONS) {
-            if (document == e.target || document.body == e.target) {
+            if (document == e.target || document.body == e.target || e.target.attributes["data-action"]) {
                 e.preventDefault();
             }
             GLOBAL_ACTIONS[action](e);
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     [].forEach.call(document.querySelectorAll('[data-action]'), function(el) {
         el.addEventListener('click', function(e) {
-            var action = e.currentTarget.dataset.action;
+            let action = e.currentTarget.dataset.action;
             if (action in GLOBAL_ACTIONS) {
                 e.preventDefault();
                 GLOBAL_ACTIONS[action](e);
@@ -50,19 +50,23 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     // Web Audio not supported
     if (!window.AudioContext && !window.webkitAudioContext) {
-        var demo = document.querySelector('#demo');
+        let demo = document.querySelector('#demo');
         if (demo) {
             demo.innerHTML = '<img src="/example/screenshot.png" />';
         }
     }
 
     // Navbar links
-    var ul = document.querySelector('.nav-pills');
-    var pills = ul.querySelectorAll('li');
-    var active = pills[0];
+    let ul = document.querySelector('.nav-pills');
+    if ( !ul ) {
+        return;
+    }
+
+    let pills = ul.querySelectorAll('li');
+    let active = pills[0];
     if (location.search) {
-        var first = location.search.split('&')[0];
-        var link = ul.querySelector('a[href="' + first + '"]');
+        let first = location.search.split('&')[0];
+        let link = ul.querySelector('a[href="' + first + '"]');
         if (link) {
             active = link.parentNode;
         }

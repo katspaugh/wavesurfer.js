@@ -3,8 +3,36 @@ wavesurfer.js changelog
 
 x.x.x (unreleased)
 ------------------
+- Playhead plugin: add a new plugin that allows the setting of a independent
+  "play head", or song-start position. (#2209)
+- Markers plugin: fix a bug where markers at the end of a track would cause
+  incorrect click-to-seek behavior (#2208)
+- Regions plugin:
+  - Fix mouseup not firing if click & drag a region handle & release outside browser window (#2213)
+  - Added new `showTooltip` param allowing disabling region `title` tooltip (#2213)
+- Nullify `onaudioprocess` on remove to not execute in background (#2218)
+- Add new `vertical` param enabling displaying waveforms vertically (#2195)
+
+4.6.0 (04.03.2021)
+------------------
+- Webaudio: fix `decodeAudioData` handling in Safari (#2201)
+- Markers plugin: add new plugin that allows for timeline markers (#2196)
+
+4.5.0 (14.02.2021)
+------------------
+- Split channels: `overlay` param now properly displays a single canvas (#2161)
+- Fixed memory leak with `destroy()` in `WebAudio` backend (#1940)
+- Fixed `WaveSurfer.load(url)` not working when passing a HTMLMediaElement as
+  the url parameter, with the WebAudio backend.
+- Microphone plugin: remove deprecated `MediaStream.stop` call (#2168)
+- Regions plugin: stop region dragging when mouse leaves canvas (#2158)
+
+4.4.0 (13.01.2021)
+------------------
 
 - Use Webpack 5 for build (#2093)
+- Fix seeking issues for `WebAudio` backend (#2149)
+- Use `splitChannelsOptions` to color wave bars (#2150)
 
 4.3.0 (12.12.2020)
 ------------------

@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Equalizer
     wavesurfer.on('ready', function() {
-        var EQ = [
+        let EQ = [
             {
                 f: 32,
                 type: 'lowshelf'
@@ -61,8 +61,8 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
 
         // Create filters
-        var filters = EQ.map(function(band) {
-            var filter = wavesurfer.backend.ac.createBiquadFilter();
+        let filters = EQ.map(function(band) {
+            let filter = wavesurfer.backend.ac.createBiquadFilter();
             filter.type = band.type;
             filter.gain.value = 0;
             filter.Q.value = 1;
@@ -74,9 +74,9 @@ document.addEventListener('DOMContentLoaded', function() {
         wavesurfer.backend.setFilters(filters);
 
         // Bind filters to vertical range sliders
-        var container = document.querySelector('#equalizer');
+        let container = document.querySelector('#equalizer');
         filters.forEach(function(filter) {
-            var input = document.createElement('input');
+            let input = document.createElement('input');
             Object.assign(input, {
                 type: 'range',
                 min: -40,
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             container.appendChild(input);
 
-            var onChange = function(e) {
+            let onChange = function(e) {
                 filter.gain.value = ~~e.target.value;
             };
 
@@ -117,15 +117,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Progress bar
     (function() {
-        var progressDiv = document.querySelector('#progress-bar');
-        var progressBar = progressDiv.querySelector('.progress-bar');
+        const progressDiv = document.querySelector('#progress-bar');
+        const progressBar = progressDiv.querySelector('.progress-bar');
 
-        var showProgress = function(percent) {
+        let showProgress = function(percent) {
             progressDiv.style.display = 'block';
             progressBar.style.width = percent + '%';
         };
 
-        var hideProgress = function() {
+        let hideProgress = function() {
             progressDiv.style.display = 'none';
         };
 

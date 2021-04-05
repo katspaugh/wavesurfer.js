@@ -19,7 +19,7 @@
                     '../elan/transcripts/001z.mp3'
                 ];
                 $scope.longList = [];
-                for (var i = 0; i < 100; i++) {
+                for (let i = 0; i < 100; i++) {
                     $scope.longList.push({
                         title: 'Long List test: ' + i,
                         url: $scope.urls[Math.floor(3 * Math.random())]

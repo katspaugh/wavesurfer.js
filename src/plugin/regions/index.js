@@ -30,6 +30,7 @@
  * @property {?number} channelIdx Select channel to draw the region on (if there are multiple channel waveforms).
  * @property {?object} handleStyle A set of CSS properties used to style the left and right handle.
  * @property {?boolean} preventContextMenu=false Determines whether the context menu is prevented from being opened.
+ * @property {boolean} showTooltip=true Enable/disable tooltip displaying start and end times when hovering over region.
  */
 
 import {Region} from "./region.js";
@@ -186,7 +187,9 @@ export default class RegionsPlugin {
      * @return {Region} The created region
      */
     add(params) {
-        if (this.wouldExceedMaxRegions()) return null;
+        if (this.wouldExceedMaxRegions()) {
+            return null;
+        }
 
         if (!params.minLength && this.regionsMinLength) {
             params = {...params, minLength: this.regionsMinLength};
@@ -300,6 +303,7 @@ export default class RegionsPlugin {
 
             region = null;
         };
+        this.wrapper.addEventListener('mouseleave', eventUp);
         this.wrapper.addEventListener('mouseup', eventUp);
         this.wrapper.addEventListener('touchend', eventUp);
 
@@ -310,6 +314,7 @@ export default class RegionsPlugin {
             document.body.removeEventListener('touchend', eventUp);
             this.wrapper.removeEventListener('touchend', eventUp);
             this.wrapper.removeEventListener('mouseup', eventUp);
+            this.wrapper.removeEventListener('mouseleave', eventUp);
         });
 
         const eventMove = e => {
@@ -330,7 +335,9 @@ export default class RegionsPlugin {
             // auto-create a region during mouse drag, unless region-count would exceed "maxRegions"
             if (!region) {
                 region = this.add(params || {});
-                if (!region) return;
+                if (!region) {
+                    return;
+                }
             }
 
             const end = this.wavesurfer.drawer.handleEvent(e);

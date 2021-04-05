@@ -25,12 +25,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Bind panner slider
         // @see http://stackoverflow.com/a/14412601/352796
-        var onChange = function() {
-            var xDeg = parseInt(slider.value);
-            var x = Math.sin(xDeg * (Math.PI / 180));
+        let onChange = function() {
+            let xDeg = parseInt(slider.value);
+            const x = Math.sin(xDeg * (Math.PI / 180));
             wavesurfer.panner.setPosition(x, 0, 0);
         };
-        var slider = document.querySelector('[data-action="pan"]');
+        let slider = document.querySelector('[data-action="pan"]');
         slider.addEventListener('input', onChange);
         slider.addEventListener('change', onChange);
         onChange();
@@ -48,15 +48,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Progress bar
     (function() {
-        var progressDiv = document.querySelector('#progress-bar');
-        var progressBar = progressDiv.querySelector('.progress-bar');
+        const progressDiv = document.querySelector('#progress-bar');
+        const progressBar = progressDiv.querySelector('.progress-bar');
 
-        var showProgress = function(percent) {
+        let showProgress = function(percent) {
             progressDiv.style.display = 'block';
             progressBar.style.width = percent + '%';
         };
 
-        var hideProgress = function() {
+        let hideProgress = function() {
             progressDiv.style.display = 'none';
         };
 

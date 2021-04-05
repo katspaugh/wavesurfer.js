@@ -59,6 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
 
     // load audio from existing media element
-    var mediaElt = document.querySelector('audio');
+    let mediaElt = document.querySelector('audio');
     wavesurfer.load(mediaElt);
 });

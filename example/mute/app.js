@@ -5,7 +5,7 @@ var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function() {
-    var playButton = document.querySelector('#playBtn'),
+    let playButton = document.querySelector('#playBtn'),
         toggleMuteButton = document.querySelector('#toggleMuteBtn'),
         setMuteOnButton = document.querySelector('#setMuteOnBtn'),
         setMuteOffButton = document.querySelector('#setMuteOffBtn');
