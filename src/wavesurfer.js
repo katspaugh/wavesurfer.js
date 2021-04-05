@@ -115,6 +115,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {boolean} splitChannels=false Render with separate waveforms for
  * the channels of the audio
  * @property {SplitChannelOptions} splitChannelsOptions={} Options for splitChannel rendering
+ * @property {boolean} vertical=false Render the waveform vertically instead of horizontally.
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options. For example:
@@ -293,6 +294,7 @@ export default class WaveSurfer extends util.Observer {
             filterChannels: [],
             relativeNormalization: false
         },
+        vertical: false,
         waveColor: '#999',
         xhr: {}
     };
@@ -401,7 +403,11 @@ export default class WaveSurfer extends util.Observer {
         }
 
         if (this.params.rtl === true) {
-            util.style(this.container, { transform: 'rotateY(180deg)' });
+            if (this.params.vertical === true) {
+                util.style(this.container, { transform: 'rotateX(180deg)' });
+            } else {
+                util.style(this.container, { transform: 'rotateY(180deg)' });
+            }
         }
 
         if (this.params.backgroundColor) {

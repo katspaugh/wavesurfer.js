@@ -7,6 +7,8 @@ module.exports = {
         Float32Array: true,
         Uint32Array: true,
         Promise: true,
+        Proxy: true,
+        Symbol: true,
         Uint8Array: true,
         ArrayBuffer: true,
         __VERSION__: true

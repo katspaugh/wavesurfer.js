@@ -29,6 +29,7 @@
     "lint-js-html": "lint-staged",
     "doc": "esdoc",
     "test": "karma start karma.conf.js",
+    "test:chrome": "karma start karma.conf.js --browsers=Chrome --single-run=false",
     "prepublishOnly": "not-in-install && npm run build || in-install",
     "prepare": "npm run build"
   },
@@ -62,6 +63,7 @@
     "babel-loader": "^8.2.2",
     "babel-plugin-add-module-exports": "^1.0.4",
     "babel-plugin-istanbul": "^6.0.0",
+    "babel-plugin-proxy": "^1.1.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "date-fns": "^2.18.0",
     "debounce": "^1.2.0",
