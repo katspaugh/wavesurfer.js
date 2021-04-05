@@ -2,7 +2,7 @@ name: NPM Package
 
 on:
   push:
-    branches: [ test-release ]
+    branches: [ master ]
 
 jobs:
   publish-npm:
@@ -47,7 +47,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo '4.4.0' > version.txt
           if [ -f version.txt ]; then
             curl \
               -X POST \
