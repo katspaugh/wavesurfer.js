@@ -42,24 +42,6 @@ function mapProp(prop, vertical) {
     } else {
         return prop;
     }
-
-    canvasTransform(ctx) {
-        super.canvasTransform(ctx);
-    }
-
-/**
- * Convert a horizontally-oriented property name to a vertical one.
- *
- * @param {string} prop A property name
- * @param {bool} vertical Whether the element is oriented vertically
- * @returns {string} prop, converted appropriately
- */
-function mapProp(prop, vertical) {
-    if (Object.prototype.hasOwnProperty.call(verticalPropMap, prop)) {
-        return vertical ? verticalPropMap[prop] : prop;
-    } else {
-        return prop;
-    }
 }
 
 const isProxy = Symbol("isProxy");
@@ -112,15 +94,5 @@ export default function withOrientation(target, vertical) {
                 }
             }
         );
-    }
-
-    canvasTransform(ctx) {
-        // reflect across y = -x
-        ctx.setTransform(0, 1, 1, 0, 0, 0);
-        super.canvasTransform(ctx);
-    }
-
-    resizeCursor() {
-        return 'row-resize';
     }
 }

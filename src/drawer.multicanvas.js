@@ -567,16 +567,6 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
-     * Set the canvas transforms for a certain entry (wave and progress)
-     *
-     * @param {CanvasEntry} entry Target entry
-     * @param {boolean} vertical Whether to render the waveform vertically
-     */
-    applyCanvasTransforms(entry, vertical = false) {
-        entry.applyCanvasTransforms(vertical);
-    }
-
-    /**
      * Return image data of the multi-canvas
      *
      * When using a `type` of `'blob'`, this will return a `Promise`.
