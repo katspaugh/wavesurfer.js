@@ -23,14 +23,35 @@ jobs:
             ${{ runner.OS }}-node-
             ${{ runner.OS }}-
       - run: npm install
-      - name: Tag & publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - name: Extract version
         run: |
           OLD_VERSION=$(npm show wavesurfer.js version)
           NEW_VERSION=$(node -p 'require("./package.json").version')
           if [ $NEW_VERSION != $OLD_VERSION ]; then
-            git tag "$NEW_VERSION"
+            echo $NEW_VERSION > version.txt
+          fi
+      - name: Tag
+        run: |
+          if [ -f version.txt ]; then
+            git tag $(cat version.txt)
             git push --tags
+          fi
+      - name: Publish to NPM
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+        run: |
+          if [ -f version.txt ]; then
             npm publish
+          fi
+      - name: Release on GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f version.txt ]; then
+            curl \
+              -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token $GITHUB_TOKEN"
+              https://api.github.com/repos/katspaugh/wavesurfer.js/releases \
+              -d "{\"tag_name":\"$(cat version.txt)\"}\"
           fi
