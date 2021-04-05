@@ -3,8 +3,8 @@ layout: default
 ---
 
 <section>
-  <h1>Upgrading to version 2</h1>
-  <p>The API has mostly stayed the same but there are some changes to consider:</p>
+  <h1>Upgrading from v1.x to version 2.x or newer</h1>
+  <p>The API between v1.x and v2.x has mostly stayed the same but there are some changes to consider:</p>
   <ul>
     <li>
       <p>
@@ -58,5 +58,49 @@ var wavesurfer = WaveSurfer.create({
 });
 </code></pre>
     </li>
-  </ul>
+  <li>
+    <p><strong>Standardised plugin format:</strong> all plugins now follow a common format and their initialisation is handled by wavesurfer.js core.
+      It is no longer necessary to manually initialise them.
+  </p>
+  <pre><code class="javascript">export default class MyAwesomePlugin {
+    /**
+     * MyAwesome plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param  {MyAwesomePluginParams} params parameters use to initialise the
+     * plugin
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: 'myawesome',
+            deferInit: params && params.deferInit ? params.deferInit : false,
+            params: params,
+            staticProps: {
+                staticMethod() {
+                    // this will be added to the wavesurfer instance and can then be called
+                    // wavesurfer.staticMethod();
+                }
+            },
+            instance: MyAwesomePlugin
+        };
+    }
+
+    constructor(params, ws) {
+      // instantiate the plugin
+    }
+
+    init() {
+      // start doing something
+    }
+
+    destroy() {
+      // stop doing something
+    }
+}
+</code></pre>
+</li>
+</ul>
 </section>
