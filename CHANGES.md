@@ -1,6 +1,8 @@
 wavesurfer.js changelog
 =======================
 
+- Use intersection observer to reduce canvas updates in `MultiCanvas` (#1622)
+
 x.x.x (unreleased)
 ------------------
 - Playhead plugin: add a new plugin that allows the setting of a independent
@@ -212,7 +214,6 @@ x.x.x (unreleased)
 - Update progress when seeking with HTML media controls (#1535)
 - Make sure mute/volume is updated when using `MediaElement` backend (#1615)
 - Refactor `MultiCanvas` and add `CanvasEntry` class (#1617)
-- Use intersection observer to reduce canvas updates in `MultiCanvas` (#1622)
 - Fix `wavesurfer.isReady`: make it a public boolean, the
   broken `isReady` method is removed (#1597)
 - Add support for `Blob` output type in `wavesurfer.exportImage` (#1610)
