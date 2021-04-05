@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
-        rtl: true
+        vertical: true
     });
 
     wavesurfer.on('error', function(e) {

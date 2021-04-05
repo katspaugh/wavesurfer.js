@@ -326,7 +326,9 @@ export default class CursorPlugin {
      * @returns {number} outer width
      */
     outerWidth(element) {
-        if (!element) return 0;
+        if (!element) {
+            return 0;
+        }
 
         let width = element.offsetWidth;
         let style = getComputedStyle(element);

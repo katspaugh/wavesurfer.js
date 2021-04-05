@@ -158,6 +158,22 @@ export default class CanvasEntry {
     }
 
     /**
+     * Set the canvas transforms for wave and progress
+     *
+     * @param {boolean} vertical Whether to render vertically
+     */
+    applyCanvasTransforms(vertical) {
+        if (vertical) {
+            // Reflect the waveform across the line y = -x
+            this.waveCtx.setTransform(0, 1, 1, 0, 0, 0);
+
+            if (this.hasProgressCanvas) {
+                this.progressCtx.setTransform(0, 1, 1, 0, 0, 0);
+            }
+        }
+    }
+
+    /**
      * Draw a rectangle for wave and progress
      *
      * @param {number} x X start position

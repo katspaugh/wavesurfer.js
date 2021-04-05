@@ -15,6 +15,11 @@ document.addEventListener('DOMContentLoaded', function() {
             WaveSurfer.markers.create({
                 markers: [
                     {
+                        time: 0,
+                        label: "BEGIN",
+                        color: '#ff990a'
+                    },
+                    {
                         time: 5.5,
                         label: "V1",
                         color: '#ff990a'
@@ -22,6 +27,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     {
                         time: 10,
                         label: "V2",
+                        color: '#00ffcc',
+                        position: 'top'
+                    },
+                    {
+                        time: 24,
+                        label: "END",
                         color: '#00ffcc',
                         position: 'top'
                     }

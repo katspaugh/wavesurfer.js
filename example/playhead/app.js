@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-var wavesurfer;
+var wavesurfer; // eslint-disable-line no-var
 
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function() {
@@ -10,7 +10,18 @@ document.addEventListener('DOMContentLoaded', function() {
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
-        rtl: true
+        backend: 'MediaElement',
+        plugins: [
+            WaveSurfer.playhead.create({
+                returnOnPause: true,
+                moveOnSeek: true,
+                draw: true
+            })
+        ]
+    });
+
+    wavesurfer.on('ready', function(e) {
+        wavesurfer.playhead.setPlayheadTime(2.3);
     });
 
     wavesurfer.on('error', function(e) {
@@ -20,7 +31,5 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load audio from URL
     wavesurfer.load('../media/demo.wav');
 
-    document
-        .querySelector('[data-action="play"]')
-        .addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
+
 });

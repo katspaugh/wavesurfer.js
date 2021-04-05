@@ -1,20 +1,20 @@
-var wavesurfer = window.wavesurfer; // eslint-disable-line no-var
+let ws = window.wavesurfer;
 
-let GLOBAL_ACTIONS = {
+var GLOBAL_ACTIONS = { // eslint-disable-line
     play: function() {
-        wavesurfer.playPause();
+        window.wavesurfer.playPause();
     },
 
     back: function() {
-        wavesurfer.skipBackward();
+        window.wavesurfer.skipBackward();
     },
 
     forth: function() {
-        wavesurfer.skipForward();
+        window.wavesurfer.skipForward();
     },
 
     'toggle-mute': function() {
-        wavesurfer.toggleMute();
+        window.wavesurfer.toggleMute();
     }
 };
 
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         let action = map[e.keyCode];
         if (action in GLOBAL_ACTIONS) {
-            if (document == e.target || document.body == e.target) {
+            if (document == e.target || document.body == e.target || e.target.attributes["data-action"]) {
                 e.preventDefault();
             }
             GLOBAL_ACTIONS[action](e);
@@ -58,6 +58,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Navbar links
     let ul = document.querySelector('.nav-pills');
+    if ( !ul ) {
+        return;
+    }
+
     let pills = ul.querySelectorAll('li');
     let active = pills[0];
     if (location.search) {
