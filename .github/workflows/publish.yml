@@ -38,7 +38,7 @@ jobs:
           fi
       - name: Publish to NPM
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
         run: |
           if [ -f version.txt ]; then
             npm publish
@@ -48,10 +48,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ -f version.txt ]; then
+            NEW_VERSION=$(cat version.txt)
             curl \
               -X POST \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Authorization: token $GITHUB_TOKEN" \
               'https://api.github.com/repos/katspaugh/wavesurfer.js/releases' \
-              -d "{\"tag_name\":\"$(cat version.txt)\"}"
+              -d "{\"tag_name\":\"$NEW_VERSION\", \"name\": \"$NEW_VERSION\"}"
           fi
