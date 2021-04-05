@@ -2,7 +2,7 @@ name: NPM Package
 
 on:
   push:
-    branches: [ master ]
+    branches: [ test-release ]
 
 jobs:
   publish-npm:
@@ -47,11 +47,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo '4.4.0' > version.txt
           if [ -f version.txt ]; then
             curl \
               -X POST \
               -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: token $GITHUB_TOKEN"
-              https://api.github.com/repos/katspaugh/wavesurfer.js/releases \
-              -d "{\"tag_name":\"$(cat version.txt)\"}\"
+              -H "Authorization: token $GITHUB_TOKEN" \
+              'https://api.github.com/repos/katspaugh/wavesurfer.js/releases' \
+              -d "{\"tag_name\":\"$(cat version.txt)\"}"
           fi
