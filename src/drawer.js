@@ -343,7 +343,7 @@ export default class Drawer extends util.Observer {
         this.unAll();
         if (this.wrapper) {
             if (this.wrapper.parentNode == this.container) {
-                this.container.removeChild(this.wrapper);
+                this.container.removeChild(this.wrapper.domElement);
             }
             this.wrapper = null;
         }
