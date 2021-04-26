@@ -17,7 +17,7 @@ header {
               rgba(0, 0, 0, 0.35),
               rgba(0, 0, 0, 0.35)
           ),
-       url('./bg.jpg') no-repeat top center;
+       url('/css/bg.jpg') no-repeat top center;
     padding: 5px;
     padding-right: .9375rem;
     padding-left: .9375rem;
@@ -39,7 +39,7 @@ header .overview .logo {
               rgba(0, 0, 0, 0.5),
               rgba(0, 0, 0, 0.5)
           ),
-       url('./bg.jpg') no-repeat center;
+       url('/css/bg.jpg') no-repeat center;
     background-size: cover;
     color: #fff;
     margin-bottom: 30px;
