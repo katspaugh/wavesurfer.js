@@ -60,5 +60,5 @@ jobs:
               -H "Accept: application/vnd.github.v3+json" \
               -H "Authorization: token $GITHUB_TOKEN" \
               'https://api.github.com/repos/katspaugh/wavesurfer.js/releases' \
-              -d "{\"tag_name\":\"$NEW_VERSION\", \"name\": \"$NEW_VERSION\", \"owner\": \"wavesurfer.js\" }"
+              -d "{\"tag_name\":\"$NEW_VERSION\", \"name\": \"$NEW_VERSION\"}"
           fi
