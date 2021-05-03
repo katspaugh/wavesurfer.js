@@ -28,9 +28,7 @@
         {
             "name": "esdoc-ecmascript-proposal-plugin",
             "option": {
-                "classProperties": true,
-                "objectRestSpread": true,
-                "exportExtensions": true
+                "all": true
             }
         }
     ]

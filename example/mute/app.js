@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-let wavesurfer;
+var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function() {

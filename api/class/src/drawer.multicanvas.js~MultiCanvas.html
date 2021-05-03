@@ -63,8 +63,9 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-minimap">plugin/minimap</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap/index.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-playhead">plugin/playhead</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/playhead/index.js~PlayheadPlugin.html">PlayheadPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PlayheadPluginParams">PlayheadPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-regions">plugin/regions</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-spectrogram">plugin/spectrogram</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
@@ -80,6 +81,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-withOrientation">withOrientation</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
@@ -458,6 +460,35 @@ between <code>canvas</code> elements.</p>
       
     </td>
   </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-vertical">vertical</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Whether to render the waveform vertically.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -486,6 +517,35 @@ between <code>canvas</code> elements.</p>
         
         
         <div data-ice="description"><p>Add a canvas to the canvas list</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-applyCanvasTransforms">applyCanvasTransforms</a></span></span><span class="code" data-ice="signature">(entry: <span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span>, vertical: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>)</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Set the canvas transforms for a certain entry (wave and progress)</p>
 </div>
       </div>
     </td>
@@ -1536,6 +1596,34 @@ interaction</p>
           
           
           
+          <span class="code" data-ice="name"><span><a href="class/src/drawer.js~Drawer.html#instance-method-getProgressPixels">getProgressPixels</a></span></span><span class="code" data-ice="signature">(wrapperBbox: <span>*</span>, clientX: <span>*</span>): <span>*</span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
           <span class="code" data-ice="name"><span><a href="class/src/drawer.js~Drawer.html#instance-method-getScrollX">getScrollX</a></span></span><span class="code" data-ice="signature">(): <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
         </p>
       </div>
@@ -2445,6 +2533,50 @@ between <code>canvas</code> elements.</p>
   
   
 </div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-member-vertical">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">vertical</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber91">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Whether to render the waveform vertically. Defaults to false.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
 </div>
 <div data-ice="methodDetails"><h2 data-ice="title">Public Methods</h2>
 
@@ -2460,7 +2592,7 @@ between <code>canvas</code> elements.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber165">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber174">source</a></span></span>
     </span>
   </h3>
 
@@ -2493,6 +2625,74 @@ between <code>canvas</code> elements.</p>
   
 </div>
 <div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-applyCanvasTransforms">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">applyCanvasTransforms</span><span class="code" data-ice="signature">(entry: <span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span>, vertical: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>)</span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber565">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Set the canvas transforms for a certain entry (wave and progress)</p>
+</div>
+
+  
+
+  <div data-ice="properties"><div data-ice="properties">
+  <h4 data-ice="title">Params:</h4>
+  <table class="params">
+    <thead>
+    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+    
+    <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">entry</td>
+      <td data-ice="type" class="code"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>Target entry</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">vertical</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>Whether to render the waveform vertically</p>
+</td>
+    </tr>
+</tbody>
+  </table>
+</div>
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-method-clearWave">
     <span class="access" data-ice="access">public</span>
     
@@ -2504,7 +2704,7 @@ between <code>canvas</code> elements.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber250">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber261">source</a></span></span>
     </span>
   </h3>
 
@@ -2548,7 +2748,7 @@ between <code>canvas</code> elements.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber99">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber106">source</a></span></span>
     </span>
   </h3>
 
@@ -2592,7 +2792,7 @@ between <code>canvas</code> elements.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber269">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber280">source</a></span></span>
     </span>
   </h3>
 
@@ -2690,7 +2890,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber385">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber397">source</a></span></span>
     </span>
   </h3>
 
@@ -2795,7 +2995,7 @@ should be rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber335">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber347">source</a></span></span>
     </span>
   </h3>
 
@@ -2893,7 +3093,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber403">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber416">source</a></span></span>
     </span>
   </h3>
 
@@ -2989,7 +3189,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber559">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber583">source</a></span></span>
     </span>
   </h3>
 
@@ -3082,7 +3282,7 @@ canvas.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber445">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber459">source</a></span></span>
     </span>
   </h3>
 
@@ -3156,7 +3356,7 @@ canvas.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber90">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber97">source</a></span></span>
     </span>
   </h3>
 
@@ -3200,7 +3400,7 @@ canvas.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber466">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber480">source</a></span></span>
     </span>
   </h3>
 
@@ -3320,7 +3520,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber209">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber220">source</a></span></span>
     </span>
   </h3>
 
@@ -3364,7 +3564,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber541">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber555">source</a></span></span>
     </span>
   </h3>
 
@@ -3439,7 +3639,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber123">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber132">source</a></span></span>
     </span>
   </h3>
 
@@ -3483,7 +3683,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber236">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber247">source</a></span></span>
     </span>
   </h3>
 
@@ -3558,7 +3758,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber579">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber603">source</a></span></span>
     </span>
   </h3>
 
@@ -3619,7 +3819,7 @@ rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber133">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.multicanvas.js.html#lineNumber142">source</a></span></span>
     </span>
   </h3>
 

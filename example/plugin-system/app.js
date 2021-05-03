@@ -2,7 +2,7 @@
 
 import CursorCustomPlugin from './custom-plugin/CursorCustomPlugin.js';
 
-let wavesurfer;
+var wavesurfer;
 
 // Init & load
 document.addEventListener('DOMContentLoaded', function() {

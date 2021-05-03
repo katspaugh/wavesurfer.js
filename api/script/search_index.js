@@ -90,15 +90,15 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "wavesurfer.js/src/wavesurfer.js~pluginclass",
-    "class/src/wavesurfer.js~PluginClass.html",
-    "<span>PluginClass</span> <span class=\"search-result-import-path\">wavesurfer.js/src/wavesurfer.js</span>",
+    "wavesurfer.js/src/plugin/playhead/index.js~playheadplugin",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html",
+    "<span>PlayheadPlugin</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/playhead/index.js</span>",
     "class"
   ],
   [
-    "wavesurfer.js/src/plugin/regions/region.js~region",
-    "class/src/plugin/regions/region.js~Region.html",
-    "<span>Region</span> <span class=\"search-result-import-path\">wavesurfer.js/src/plugin/regions/region.js</span>",
+    "wavesurfer.js/src/wavesurfer.js~pluginclass",
+    "class/src/wavesurfer.js~PluginClass.html",
+    "<span>PluginClass</span> <span class=\"search-result-import-path\">wavesurfer.js/src/wavesurfer.js</span>",
     "class"
   ],
   [
@@ -183,6 +183,12 @@ window.esdocSearchIndex = [
     "wavesurfer.js/src/util/style.js~style",
     "function/index.html#static-function-style",
     "<span>style</span> <span class=\"search-result-import-path\">wavesurfer.js/src/util/style.js</span>",
+    "function"
+  ],
+  [
+    "wavesurfer.js/src/util/orientation.js~withorientation",
+    "function/index.html#static-function-withOrientation",
+    "<span>withOrientation</span> <span class=\"search-result-import-path\">wavesurfer.js/src/util/orientation.js</span>",
     "function"
   ],
   [
@@ -474,6 +480,12 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "src/drawer.canvasentry.js~canvasentry#applycanvastransforms",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-applyCanvasTransforms",
+    "src/drawer.canvasentry.js~CanvasEntry#applyCanvasTransforms",
+    "method"
+  ],
+  [
     "src/drawer.canvasentry.js~canvasentry#canvascontextattributes",
     "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-member-canvasContextAttributes",
     "src/drawer.canvasentry.js~CanvasEntry#canvasContextAttributes",
@@ -654,6 +666,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/drawer.js~drawer#getprogresspixels",
+    "class/src/drawer.js~Drawer.html#instance-method-getProgressPixels",
+    "src/drawer.js~Drawer#getProgressPixels",
+    "method"
+  ],
+  [
     "src/drawer.js~drawer#getscrollx",
     "class/src/drawer.js~Drawer.html#instance-method-getScrollX",
     "src/drawer.js~Drawer#getScrollX",
@@ -783,6 +801,12 @@ window.esdocSearchIndex = [
     "src/drawer.multicanvas.js~multicanvas#addcanvas",
     "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-addCanvas",
     "src/drawer.multicanvas.js~MultiCanvas#addCanvas",
+    "method"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#applycanvastransforms",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-applyCanvasTransforms",
+    "src/drawer.multicanvas.js~MultiCanvas#applyCanvasTransforms",
     "method"
   ],
   [
@@ -940,6 +964,12 @@ window.esdocSearchIndex = [
     "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-method-updateSize",
     "src/drawer.multicanvas.js~MultiCanvas#updateSize",
     "method"
+  ],
+  [
+    "src/drawer.multicanvas.js~multicanvas#vertical",
+    "class/src/drawer.multicanvas.js~MultiCanvas.html#instance-member-vertical",
+    "src/drawer.multicanvas.js~MultiCanvas#vertical",
+    "member"
   ],
   [
     "src/html-init.js",
@@ -1950,6 +1980,120 @@ window.esdocSearchIndex = [
     "typedef"
   ],
   [
+    "src/plugin/playhead/index.js",
+    "file/src/plugin/playhead/index.js.html",
+    "src/plugin/playhead/index.js",
+    "file"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#constructor",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-constructor-constructor",
+    "src/plugin/playhead/index.js~PlayheadPlugin#constructor",
+    "method"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#destroy",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-method-destroy",
+    "src/plugin/playhead/index.js~PlayheadPlugin#destroy",
+    "method"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#element",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-member-element",
+    "src/plugin/playhead/index.js~PlayheadPlugin#element",
+    "member"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#init",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-method-init",
+    "src/plugin/playhead/index.js~PlayheadPlugin#init",
+    "method"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#markerheight",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-member-markerHeight",
+    "src/plugin/playhead/index.js~PlayheadPlugin#markerHeight",
+    "member"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#markerwidth",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-member-markerWidth",
+    "src/plugin/playhead/index.js~PlayheadPlugin#markerWidth",
+    "member"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#options",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-member-options",
+    "src/plugin/playhead/index.js~PlayheadPlugin#options",
+    "member"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#params",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-member-params",
+    "src/plugin/playhead/index.js~PlayheadPlugin#params",
+    "member"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#playheadtime",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-member-playheadTime",
+    "src/plugin/playhead/index.js~PlayheadPlugin#playheadTime",
+    "member"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#setplayheadtime",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-method-setPlayheadTime",
+    "src/plugin/playhead/index.js~PlayheadPlugin#setPlayheadTime",
+    "method"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#style",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-member-style",
+    "src/plugin/playhead/index.js~PlayheadPlugin#style",
+    "member"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#unfuns",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-member-unFuns",
+    "src/plugin/playhead/index.js~PlayheadPlugin#unFuns",
+    "member"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#util",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-member-util",
+    "src/plugin/playhead/index.js~PlayheadPlugin#util",
+    "member"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#wavesurfer",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-member-wavesurfer",
+    "src/plugin/playhead/index.js~PlayheadPlugin#wavesurfer",
+    "member"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#wavesurferon",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-method-wavesurferOn",
+    "src/plugin/playhead/index.js~PlayheadPlugin#wavesurferOn",
+    "method"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin#wrapper",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#instance-member-wrapper",
+    "src/plugin/playhead/index.js~PlayheadPlugin#wrapper",
+    "member"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin.playheadpluginparams",
+    "typedef/index.html#static-typedef-PlayheadPluginParams",
+    "src/plugin/playhead/index.js~PlayheadPlugin.PlayheadPluginParams",
+    "typedef"
+  ],
+  [
+    "src/plugin/playhead/index.js~playheadplugin.create",
+    "class/src/plugin/playhead/index.js~PlayheadPlugin.html#static-method-create",
+    "src/plugin/playhead/index.js~PlayheadPlugin.create",
+    "method"
+  ],
+  [
     "src/plugin/regions/index.js",
     "file/src/plugin/regions/index.js.html",
     "src/plugin/regions/index.js",
@@ -2028,6 +2172,12 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/plugin/regions/index.js~regionsplugin#orientation",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-orientation",
+    "src/plugin/regions/index.js~RegionsPlugin#orientation",
+    "member"
+  ],
+  [
     "src/plugin/regions/index.js~regionsplugin#params",
     "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-params",
     "src/plugin/regions/index.js~RegionsPlugin#params",
@@ -2043,6 +2193,12 @@ window.esdocSearchIndex = [
     "src/plugin/regions/index.js~regionsplugin#util",
     "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-util",
     "src/plugin/regions/index.js~RegionsPlugin#util",
+    "member"
+  ],
+  [
+    "src/plugin/regions/index.js~regionsplugin#vertical",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-vertical",
+    "src/plugin/regions/index.js~RegionsPlugin#vertical",
     "member"
   ],
   [
@@ -2074,300 +2230,6 @@ window.esdocSearchIndex = [
     "typedef/index.html#static-typedef-RegionsPluginParams",
     "src/plugin/regions/index.js~RegionsPluginParams",
     "typedef"
-  ],
-  [
-    "src/plugin/regions/region.js",
-    "file/src/plugin/regions/region.js.html",
-    "src/plugin/regions/region.js",
-    "file"
-  ],
-  [
-    "src/plugin/regions/region.js~region#attributes",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-attributes",
-    "src/plugin/regions/region.js~Region#attributes",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#binddragevents",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-bindDragEvents",
-    "src/plugin/regions/region.js~Region#bindDragEvents",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#bindevents",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-bindEvents",
-    "src/plugin/regions/region.js~Region#bindEvents",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#bindinout",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-bindInOut",
-    "src/plugin/regions/region.js~Region#bindInOut",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#color",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-color",
-    "src/plugin/regions/region.js~Region#color",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#constructor",
-    "class/src/plugin/regions/region.js~Region.html#instance-constructor-constructor",
-    "src/plugin/regions/region.js~Region#constructor",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#data",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-data",
-    "src/plugin/regions/region.js~Region#data",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#drag",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-drag",
-    "src/plugin/regions/region.js~Region#drag",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#edgescrollwidth",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-edgeScrollWidth",
-    "src/plugin/regions/region.js~Region#edgeScrollWidth",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#element",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-element",
-    "src/plugin/regions/region.js~Region#element",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#end",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-end",
-    "src/plugin/regions/region.js~Region#end",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#firedin",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-firedIn",
-    "src/plugin/regions/region.js~Region#firedIn",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#firedout",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-firedOut",
-    "src/plugin/regions/region.js~Region#firedOut",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#formattime",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-formatTime",
-    "src/plugin/regions/region.js~Region#formatTime",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#formattimecallback",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-formatTimeCallback",
-    "src/plugin/regions/region.js~Region#formatTimeCallback",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#getwidth",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-getWidth",
-    "src/plugin/regions/region.js~Region#getWidth",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#handleleftel",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-handleLeftEl",
-    "src/plugin/regions/region.js~Region#handleLeftEl",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#handlerightel",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-handleRightEl",
-    "src/plugin/regions/region.js~Region#handleRightEl",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#handlestyle",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-handleStyle",
-    "src/plugin/regions/region.js~Region#handleStyle",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#id",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-id",
-    "src/plugin/regions/region.js~Region#id",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#isdragging",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-isDragging",
-    "src/plugin/regions/region.js~Region#isDragging",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#isresizing",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-isResizing",
-    "src/plugin/regions/region.js~Region#isResizing",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#loop",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-loop",
-    "src/plugin/regions/region.js~Region#loop",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#margintop",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-marginTop",
-    "src/plugin/regions/region.js~Region#marginTop",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#maxlength",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-maxLength",
-    "src/plugin/regions/region.js~Region#maxLength",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#minlength",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-minLength",
-    "src/plugin/regions/region.js~Region#minLength",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#ondrag",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-onDrag",
-    "src/plugin/regions/region.js~Region#onDrag",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#onresize",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-onResize",
-    "src/plugin/regions/region.js~Region#onResize",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#play",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-play",
-    "src/plugin/regions/region.js~Region#play",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#playloop",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-playLoop",
-    "src/plugin/regions/region.js~Region#playLoop",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#preventcontextmenu",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-preventContextMenu",
-    "src/plugin/regions/region.js~Region#preventContextMenu",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#regionheight",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-regionHeight",
-    "src/plugin/regions/region.js~Region#regionHeight",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#regionsutil",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-regionsUtil",
-    "src/plugin/regions/region.js~Region#regionsUtil",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#remove",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-remove",
-    "src/plugin/regions/region.js~Region#remove",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#render",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-render",
-    "src/plugin/regions/region.js~Region#render",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#resize",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-resize",
-    "src/plugin/regions/region.js~Region#resize",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#scroll",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-scroll",
-    "src/plugin/regions/region.js~Region#scroll",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#scrollspeed",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-scrollSpeed",
-    "src/plugin/regions/region.js~Region#scrollSpeed",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#scrollthreshold",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-scrollThreshold",
-    "src/plugin/regions/region.js~Region#scrollThreshold",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#setloop",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-setLoop",
-    "src/plugin/regions/region.js~Region#setLoop",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#start",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-start",
-    "src/plugin/regions/region.js~Region#start",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#style",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-style",
-    "src/plugin/regions/region.js~Region#style",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#update",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-update",
-    "src/plugin/regions/region.js~Region#update",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#updatehandlesresize",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-updateHandlesResize",
-    "src/plugin/regions/region.js~Region#updateHandlesResize",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#updaterender",
-    "class/src/plugin/regions/region.js~Region.html#instance-method-updateRender",
-    "src/plugin/regions/region.js~Region#updateRender",
-    "method"
-  ],
-  [
-    "src/plugin/regions/region.js~region#util",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-util",
-    "src/plugin/regions/region.js~Region#util",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#wavesurfer",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-wavesurfer",
-    "src/plugin/regions/region.js~Region#wavesurfer",
-    "member"
-  ],
-  [
-    "src/plugin/regions/region.js~region#wrapper",
-    "class/src/plugin/regions/region.js~Region.html#instance-member-wrapper",
-    "src/plugin/regions/region.js~Region#wrapper",
-    "member"
   ],
   [
     "src/plugin/spectrogram/fft.js",
@@ -2872,6 +2734,12 @@ window.esdocSearchIndex = [
     "class/src/util/observer.js~Observer.html#instance-method-unAll",
     "src/util/observer.js~Observer#unAll",
     "method"
+  ],
+  [
+    "src/util/orientation.js",
+    "file/src/util/orientation.js.html",
+    "src/util/orientation.js",
+    "file"
   ],
   [
     "src/util/prevent-click.js",

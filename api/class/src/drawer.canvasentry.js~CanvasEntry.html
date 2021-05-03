@@ -63,8 +63,9 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-minimap">plugin/minimap</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap/index.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-playhead">plugin/playhead</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/playhead/index.js~PlayheadPlugin.html">PlayheadPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PlayheadPluginParams">PlayheadPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-regions">plugin/regions</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-spectrogram">plugin/spectrogram</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
@@ -80,6 +81,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-withOrientation">withOrientation</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
@@ -411,6 +413,35 @@ render a waveform, depending on the zoom level.</p>
   <tbody>
   
   <tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-applyCanvasTransforms">applyCanvasTransforms</a></span></span><span class="code" data-ice="signature">(vertical: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>)</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Set the canvas transforms for wave and progress</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
     <td>
       <span class="access" data-ice="access">public</span>
       
@@ -1171,6 +1202,67 @@ context</p>
 <div data-ice="methodDetails"><h2 data-ice="title">Public Methods</h2>
 
 <div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-applyCanvasTransforms">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">applyCanvasTransforms</span><span class="code" data-ice="signature">(vertical: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>)</span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber165">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Set the canvas transforms for wave and progress</p>
+</div>
+
+  
+
+  <div data-ice="properties"><div data-ice="properties">
+  <h4 data-ice="title">Params:</h4>
+  <table class="params">
+    <thead>
+    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+    
+    <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">vertical</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>Whether to render vertically</p>
+</td>
+    </tr>
+</tbody>
+  </table>
+</div>
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
   <h3 data-ice="anchor" id="instance-method-clearWave">
     <span class="access" data-ice="access">public</span>
     
@@ -1226,7 +1318,7 @@ context</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber354">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber370">source</a></span></span>
     </span>
   </h3>
 
@@ -1270,7 +1362,7 @@ context</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber297">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber313">source</a></span></span>
     </span>
   </h3>
 
@@ -1375,7 +1467,7 @@ should be rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber260">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber276">source</a></span></span>
     </span>
   </h3>
 
@@ -1473,7 +1565,7 @@ should be rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber219">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber235">source</a></span></span>
     </span>
   </h3>
 
@@ -1588,7 +1680,7 @@ should be rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber194">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber210">source</a></span></span>
     </span>
   </h3>
 
@@ -1684,7 +1776,7 @@ should be rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber169">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber185">source</a></span></span>
     </span>
   </h3>
 
@@ -1773,7 +1865,7 @@ should be rendered</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber375">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/drawer.canvasentry.js.html#lineNumber391">source</a></span></span>
     </span>
   </h3>
 

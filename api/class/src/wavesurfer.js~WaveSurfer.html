@@ -63,8 +63,9 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-minimap">plugin/minimap</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap/index.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-playhead">plugin/playhead</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/playhead/index.js~PlayheadPlugin.html">PlayheadPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PlayheadPluginParams">PlayheadPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-regions">plugin/regions</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-spectrogram">plugin/spectrogram</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
@@ -80,6 +81,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-withOrientation">withOrientation</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
@@ -88,13 +90,13 @@
 </nav>
 
 <div class="content" data-ice="content"><div class="header-notice">
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import WaveSurfer from &apos;<span><a href="file/src/wavesurfer.js.html#lineNumber240">wavesurfer.js/src/wavesurfer.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import WaveSurfer from &apos;<span><a href="file/src/wavesurfer.js.html#lineNumber241">wavesurfer.js/src/wavesurfer.js</a></span>&apos;</code></pre></div>
   <span data-ice="access">public</span>
   <span data-ice="kind">class</span>
   
   
   
-  <span data-ice="source">| <span><a href="file/src/wavesurfer.js.html#lineNumber240">source</a></span></span>
+  <span data-ice="source">| <span><a href="file/src/wavesurfer.js.html#lineNumber241">source</a></span></span>
 </div>
 
 <div class="self-detail detail">
@@ -639,7 +641,8 @@ all instances</p>
       <div>
         
         
-        <div data-ice="description"><p>Exports PCM data into a JSON array and opens in a new window.</p>
+        <div data-ice="description"><p>Exports PCM data into a JSON array and optionally opens in a new window
+as valid JSON Blob instance.</p>
 </div>
       </div>
     </td>
@@ -2127,7 +2130,7 @@ to go backwards).</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber327">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber329">source</a></span></span>
     </span>
   </h3>
 
@@ -2179,7 +2182,7 @@ WaveSurfer class</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber348">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber350">source</a></span></span>
     </span>
   </h3>
 
@@ -2234,7 +2237,7 @@ WaveSurfer class</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber314">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber316">source</a></span></span>
     </span>
   </h3>
 
@@ -2318,7 +2321,7 @@ WaveSurfer class</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber358">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber360">source</a></span></span>
     </span>
   </h3>
 
@@ -2402,7 +2405,7 @@ WaveSurfer class</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber468">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber474">source</a></span></span>
     </span>
   </h3>
 
@@ -2445,7 +2448,7 @@ WaveSurfer class</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber601">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber607">source</a></span></span>
     </span>
   </h3>
 
@@ -2490,7 +2493,7 @@ instance</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber582">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber588">source</a></span></span>
     </span>
   </h3>
 
@@ -2535,7 +2538,7 @@ staticProps properties of the WaveSurfer instance</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber483">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber489">source</a></span></span>
     </span>
   </h3>
 
@@ -2598,7 +2601,7 @@ staticProps properties of the WaveSurfer instance</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber338">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber340">source</a></span></span>
     </span>
   </h3>
 
@@ -2654,7 +2657,7 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber565">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber571">source</a></span></span>
     </span>
   </h3>
 
@@ -2747,7 +2750,7 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1675">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1684">source</a></span></span>
     </span>
   </h3>
 
@@ -2791,7 +2794,7 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1720">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1729">source</a></span></span>
     </span>
   </h3>
 
@@ -2847,7 +2850,7 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber636">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber642">source</a></span></span>
     </span>
   </h3>
 
@@ -2940,7 +2943,7 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1700">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1709">source</a></span></span>
     </span>
   </h3>
 
@@ -2984,7 +2987,7 @@ wavesurfer.util.style(myElement, { background: &apos;blue&apos; });</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1658">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1667">source</a></span></span>
     </span>
   </h3>
 
@@ -3081,14 +3084,15 @@ instances, one for each canvas.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1617">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1624">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Exports PCM data into a JSON array and opens in a new window.</p>
+  <div data-ice="description"><p>Exports PCM data into a JSON array and optionally opens in a new window
+as valid JSON Blob instance.</p>
 </div>
 
   
@@ -3183,7 +3187,7 @@ window with the JSON</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber553">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber559">source</a></span></span>
     </span>
   </h3>
 
@@ -3247,7 +3251,7 @@ window with the JSON</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1156">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1162">source</a></span></span>
     </span>
   </h3>
 
@@ -3304,7 +3308,7 @@ window with the JSON</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber779">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber785">source</a></span></span>
     </span>
   </h3>
 
@@ -3368,7 +3372,7 @@ window with the JSON</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1177">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1183">source</a></span></span>
     </span>
   </h3>
 
@@ -3426,7 +3430,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber769">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber775">source</a></span></span>
     </span>
   </h3>
 
@@ -3490,7 +3494,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1088">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1094">source</a></span></span>
     </span>
   </h3>
 
@@ -3548,7 +3552,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1198">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1204">source</a></span></span>
     </span>
   </h3>
 
@@ -3605,7 +3609,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1077">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1083">source</a></span></span>
     </span>
   </h3>
 
@@ -3669,7 +3673,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1013">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1019">source</a></span></span>
     </span>
   </h3>
 
@@ -3726,7 +3730,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1136">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1142">source</a></span></span>
     </span>
   </h3>
 
@@ -3783,7 +3787,7 @@ position.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber993">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber999">source</a></span></span>
     </span>
   </h3>
 
@@ -3841,7 +3845,7 @@ volume and 1 being full volume.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1116">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1122">source</a></span></span>
     </span>
   </h3>
 
@@ -3898,7 +3902,7 @@ volume and 1 being full volume.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber515">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber521">source</a></span></span>
     </span>
   </h3>
 
@@ -3963,7 +3967,7 @@ wavesurfer.init();</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber614">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber620">source</a></span></span>
     </span>
   </h3>
 
@@ -4056,7 +4060,7 @@ wavesurfer.init();</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber852">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber858">source</a></span></span>
     </span>
   </h3>
 
@@ -4120,7 +4124,7 @@ wavesurfer.init();</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1388">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1394">source</a></span></span>
     </span>
   </h3>
 
@@ -4248,7 +4252,7 @@ wavesurfer.load(
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1347">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1353">source</a></span></span>
     </span>
   </h3>
 
@@ -4316,7 +4320,7 @@ wavesurfer.load(
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber830">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber836">source</a></span></span>
     </span>
   </h3>
 
@@ -4380,7 +4384,7 @@ wavesurfer.load(
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber809">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber815">source</a></span></span>
     </span>
   </h3>
 
@@ -4482,7 +4486,7 @@ wavesurfer.play(1, 5);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber842">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber848">source</a></span></span>
     </span>
   </h3>
 
@@ -4546,7 +4550,7 @@ wavesurfer.play(1, 5);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber531">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber537">source</a></span></span>
     </span>
   </h3>
 
@@ -4633,7 +4637,7 @@ this function is called in the init function of wavesurfer</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber902">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber908">source</a></span></span>
     </span>
   </h3>
 
@@ -4702,7 +4706,7 @@ wavesurfer.seekTo(0.5);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber917">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber923">source</a></span></span>
     </span>
   </h3>
 
@@ -4788,7 +4792,7 @@ wavesurfer.seekTo(0.5);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1166">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1172">source</a></span></span>
     </span>
   </h3>
 
@@ -4856,7 +4860,7 @@ wavesurfer.seekTo(0.5);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber789">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber795">source</a></span></span>
     </span>
   </h3>
 
@@ -4918,7 +4922,7 @@ seconds, 60 means 1 minute</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1188">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1194">source</a></span></span>
     </span>
   </h3>
 
@@ -4987,7 +4991,7 @@ position.</p>
     <span class="right-info">
       <span class="version" data-ice="version">version 4.0.0</span>
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1227">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1233">source</a></span></span>
     </span>
   </h3>
 
@@ -5052,7 +5056,7 @@ wavesurfer.load(&apos;stereo_audio.mp3&apos;);</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1208">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1214">source</a></span></span>
     </span>
   </h3>
 
@@ -5120,7 +5124,7 @@ wavesurfer.load(&apos;stereo_audio.mp3&apos;);</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1040">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1046">source</a></span></span>
     </span>
   </h3>
 
@@ -5207,7 +5211,7 @@ console.log(wavesurfer.getMute()) // logs false</code></pre>
     <span class="right-info">
       <span class="version" data-ice="version">version 3.3.0</span>
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber820">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber826">source</a></span></span>
     </span>
   </h3>
 
@@ -5268,7 +5272,7 @@ console.log(wavesurfer.getMute()) // logs false</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1004">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1010">source</a></span></span>
     </span>
   </h3>
 
@@ -5337,7 +5341,7 @@ speed, 2 means double speed and so on.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1146">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1152">source</a></span></span>
     </span>
   </h3>
 
@@ -5405,7 +5409,7 @@ speed, 2 means double speed and so on.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber971">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber977">source</a></span></span>
     </span>
   </h3>
 
@@ -5481,7 +5485,7 @@ no errors detected.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber982">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber988">source</a></span></span>
     </span>
   </h3>
 
@@ -5555,7 +5559,7 @@ volume and 1 being full volume.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1126">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1132">source</a></span></span>
     </span>
   </h3>
 
@@ -5623,7 +5627,7 @@ volume and 1 being full volume.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber887">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber893">source</a></span></span>
     </span>
   </h3>
 
@@ -5693,7 +5697,7 @@ wavesurfer.skip(-2);</code></pre>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber863">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber869">source</a></span></span>
     </span>
   </h3>
 
@@ -5762,7 +5766,7 @@ is used</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber874">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber880">source</a></span></span>
     </span>
   </h3>
 
@@ -5831,7 +5835,7 @@ is used</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber957">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber963">source</a></span></span>
     </span>
   </h3>
 
@@ -5882,7 +5886,7 @@ is used</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1107">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1113">source</a></span></span>
     </span>
   </h3>
 
@@ -5933,7 +5937,7 @@ is used</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1025">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1031">source</a></span></span>
     </span>
   </h3>
 
@@ -5987,7 +5991,7 @@ value.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1097">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1103">source</a></span></span>
     </span>
   </h3>
 
@@ -6038,7 +6042,7 @@ value.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1297">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/wavesurfer.js.html#lineNumber1303">source</a></span></span>
     </span>
   </h3>
 

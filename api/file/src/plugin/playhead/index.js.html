@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../../">
+  <title data-ice="title">src/plugin/playhead/index.js | wavesurfer.js</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Interactive navigable audio visualization using Web Audio and Canvas"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="wavesurfer.js"><meta property="twitter:description" content="Interactive navigable audio visualization using Web Audio and Canvas"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.canvasentry.js~CanvasEntry.html">CanvasEntry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.js~Drawer.html">Drawer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/drawer.multicanvas.js~MultiCanvas.html">MultiCanvas</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/html-init.js~Init.html">Init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement-webaudio.js~MediaElementWebAudio.html">MediaElementWebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/mediaelement.js~MediaElement.html">MediaElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/peakcache.js~PeakCache.html">PeakCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~PluginClass.html">PluginClass</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wavesurfer.js~WaveSurfer.html">WaveSurfer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/webaudio.js~WebAudio.html">WebAudio</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-InitParams">InitParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PluginDefinition">PluginDefinition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SplitChannelOptions">SplitChannelOptions</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-WavesurferParams">WavesurferParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/de/docs/Web/API/AudioNode">AudioNode</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D">CanvasRenderingContext2D</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en/docs/Web/API/HTMLElement">HTMLElement</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints">MediaStreamConstraints</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext">OfflineAudioContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-cursor">plugin/cursor</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/cursor/index.js~CursorPlugin.html">CursorPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-CursorPluginParams">CursorPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-elan">plugin/elan</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/elan/index.js~ElanPlugin.html">ElanPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ElanPluginParams">ElanPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-markers">plugin/markers</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/markers/index.js~MarkersPlugin.html">MarkersPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MarkerParams">MarkerParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MarkersPluginParams">MarkersPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-mediasession">plugin/mediasession</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/mediasession/index.js~MediaSessionPlugin.html">MediaSessionPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MediaSessionPluginParams">MediaSessionPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-microphone">plugin/microphone</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/microphone/index.js~MicrophonePlugin.html">MicrophonePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-minimap">plugin/minimap</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap/index.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-playhead">plugin/playhead</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/playhead/index.js~PlayheadPlugin.html">PlayheadPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PlayheadPluginParams">PlayheadPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-regions">plugin/regions</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-spectrogram">plugin/spectrogram</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-FFT">FFT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-SpectrogramPluginParams">SpectrogramPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-timeline">plugin/timeline</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/timeline/index.js~TimelinePlugin.html">TimelinePlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TimelinePluginParams">TimelinePluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#util">util</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/util/observer.js~Observer.html">Observer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-absMax">absMax</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-clamp">clamp</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-fetchFile">fetchFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-frame">frame</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-withOrientation">withOrientation</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/plugin/playhead/index.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">
+/**
+ * The playhead plugin separates the notion of the currently playing position from
+ * a &apos;play-start&apos; position.  Having a playhead enables a listening pattern
+ * (commonly found in DAWs) that involves listening to a section of a track
+ * repeatedly, rather than listening to an entire track in a linear fashion.
+ *
+ * @implements {PluginClass}
+ *
+ * @example
+ * import PlayheadPlugin from &apos;wavesurfer.playhead.js&apos;;
+ *
+ * // if you are using &lt;script&gt; tags
+ * var PlayheadPlugin = window.WaveSurfer.playhead;
+ *
+ * // ... initialising wavesurfer with the plugin
+ * var wavesurfer = WaveSurfer.create({
+ *   // wavesurfer options ...
+ *   plugins: [
+ *     PlayheadPlugin.create({
+ *        movePlayheadOnSeek: true,
+ *        drawPlayhead: false,
+ *        movePlayheadOnPause: false
+ *     })
+ *   ]
+ * });
+ */
+
+const DEFAULT_FILL_COLOR = &apos;#CF2F00&apos;;
+
+export default class PlayheadPlugin {
+    /**
+     * @typedef {Object} PlayheadPluginParams
+     * @property {?boolean} draw=true Draw the playhead as a triangle/line
+     * @property {?boolean} moveOnSeek=true Seeking (via clicking) while playing moves the playhead
+     * @property {?boolean} returnOnPause=true Pausing the track returns the seek position to the playhead
+     */
+
+    /**
+     * Playhead plugin definition factory
+     *
+     * This function must be used to create a plugin definition which can be
+     * used by wavesurfer to correctly instantiate the plugin.
+     *
+     * @param {PlayheadPluginParams} params parameters use to initialise the plugin
+     * @since 5.0.0
+     * @return {PluginDefinition} an object representing the plugin
+     */
+    static create(params) {
+        return {
+            name: &apos;playhead&apos;,
+            deferInit: params &amp;&amp; params.deferInit ? params.deferInit : false,
+            params: params,
+            instance: PlayheadPlugin
+        };
+    }
+
+    constructor(params, ws) {
+        this.params = params;
+        this.options = {};
+
+        [&apos;draw&apos;, &apos;moveOnSeek&apos;, &apos;returnOnPause&apos;].forEach(opt =&gt; {
+            if (opt in params) {
+                this.options[opt] = params[opt];
+            } else {
+                this.options[opt] = true;
+            }
+        });
+
+
+        this.wavesurfer = ws;
+        this.util = ws.util;
+        this.style = this.util.style;
+        this.markerWidth = 21;
+        this.markerHeight = 16;
+        this.playheadTime = 0;
+        this.unFuns = [];
+
+        this._onResize = () =&gt; {
+            this._updatePlayheadPosition();
+        };
+
+        this._onReady = () =&gt; {
+            this.wrapper = this.wavesurfer.drawer.wrapper;
+            this._updatePlayheadPosition();
+        };
+    }
+
+    _onBackendCreated() {
+        this.wrapper = this.wavesurfer.drawer.wrapper;
+
+        if (this.options.draw) {
+            this._createPlayheadElement();
+            window.addEventListener(&apos;resize&apos;, this._onResize, true);
+            window.addEventListener(&apos;orientationchange&apos;, this._onResize, true);
+
+            this.wavesurferOn(&apos;zoom&apos;, this._onResize);
+        }
+
+        this.wavesurferOn(&apos;pause&apos;, () =&gt; {
+            if ( this.options.returnOnPause ) {
+                this.wavesurfer.setCurrentTime(this.playheadTime);
+            }
+        });
+
+        this.wavesurferOn(&apos;seek&apos;, () =&gt; {
+            if ( this.options.moveOnSeek ) {
+                this.playheadTime = this.wavesurfer.getCurrentTime();
+                this._updatePlayheadPosition();
+            }
+        });
+
+        this.playheadTime = this.wavesurfer.getCurrentTime();
+    }
+
+    wavesurferOn(ev, fn) {
+        let ret = this.wavesurfer.on(ev, fn);
+        this.unFuns.push(() =&gt; {
+            this.wavesurfer.un(ev, fn);
+        });
+        return ret;
+    }
+
+    init() {
+        if (this.wavesurfer.isReady) {
+            this._onBackendCreated();
+            this._onReady();
+        } else {
+            let r;
+
+            this.wavesurfer.once(&apos;ready&apos;, () =&gt; this._onReady());
+            this.wavesurfer.once(&apos;backend-created&apos;, () =&gt; this._onBackendCreated());
+        }
+    }
+
+    destroy() {
+        this.unFuns.forEach(f =&gt; f());
+        this.unFuns = [];
+
+        this.wrapper.removeChild(this.element);
+
+        window.removeEventListener(&apos;resize&apos;, this._onResize, true);
+        window.removeEventListener(&apos;orientationchange&apos;, this._onResize, true);
+    }
+
+    setPlayheadTime(time) {
+        this.playheadTime = time;
+
+        if (!this.wavesurfer.isPlaying()) {
+            this.wavesurfer.setCurrentTime(time);
+        }
+        this._updatePlayheadPosition();
+    }
+
+    _createPointerSVG() {
+        const svgNS = &apos;http://www.w3.org/2000/svg&apos;;
+
+        const el = document.createElementNS(svgNS, &apos;svg&apos;);
+        const path = document.createElementNS(svgNS, &apos;path&apos;);
+
+        el.setAttribute(&apos;viewBox&apos;, &apos;0 0 33 30&apos;);
+        path.setAttribute(&apos;d&apos;, &apos;M16.75 31 31.705 5.566A3 3 0 0 0 29.146 1H4.354a3 3 0 0 0-2.56 4.566L16.75 31z&apos;);
+        path.setAttribute(&apos;stroke&apos;, &apos;#979797&apos;);
+        path.setAttribute(&apos;fill&apos;, DEFAULT_FILL_COLOR);
+
+        el.appendChild(path);
+
+        this.style(el, {
+            width: this.markerWidth + &apos;px&apos;,
+            height: this.markerHeight + &apos;px&apos;,
+            cursor: &apos;pointer&apos;,
+            &apos;z-index&apos;: 5
+        });
+        return el;
+    }
+
+    _createPlayheadElement() {
+        const el = document.createElement(&apos;playhead&apos;);
+        el.className = &apos;wavesurfer-playhead&apos;;
+
+        this.style(el, {
+            position: &apos;absolute&apos;,
+            height: &apos;100%&apos;,
+            display: &apos;flex&apos;,
+            &apos;flex-direction&apos;: &apos;column&apos;
+        });
+
+        const pointer = this._createPointerSVG();
+        el.appendChild(pointer);
+
+        pointer.addEventListener(&apos;click&apos;, e =&gt; {
+            e.stopPropagation();
+            this.wavesurfer.setCurrentTime(this.playheadTime);
+        });
+
+        const line = document.createElement(&apos;div&apos;);
+        this.style(line, {
+            &apos;flex-grow&apos;: 1,
+            &apos;margin-left&apos;: (this.markerWidth / 2 - 0.5) + &apos;px&apos;,
+            background: &apos;black&apos;,
+            width: &apos;1px&apos;,
+            opacity: 0.1
+        });
+
+        el.appendChild(line);
+
+        this.element = el;
+        this.wrapper.appendChild(el);
+    }
+
+    _updatePlayheadPosition() {
+        if (!this.element) {
+            return;
+        }
+
+        const duration = this.wavesurfer.getDuration();
+        const elementWidth =
+            this.wavesurfer.drawer.width /
+            this.wavesurfer.params.pixelRatio;
+
+        const positionPct = this.playheadTime / duration;
+        this.style(this.element, {
+            left: ((elementWidth * positionPct) - (this.markerWidth / 2)) + &apos;px&apos;
+        });
+    }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

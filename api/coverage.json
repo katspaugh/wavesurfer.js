@@ -1,27 +1,28 @@
 {
-  "coverage": "64.22%",
-  "expectCount": 615,
-  "actualCount": 395,
+  "coverage": "66.16%",
+  "expectCount": 600,
+  "actualCount": 397,
   "files": {
     "src/drawer.canvasentry.js": {
-      "expectCount": 22,
-      "actualCount": 21,
+      "expectCount": 23,
+      "actualCount": 22,
       "undocumentLines": [
         16
       ]
     },
     "src/drawer.js": {
-      "expectCount": 28,
+      "expectCount": 29,
       "actualCount": 25,
       "undocumentLines": [
         16,
         32,
-        114
+        112,
+        120
       ]
     },
     "src/drawer.multicanvas.js": {
-      "expectCount": 29,
-      "actualCount": 29,
+      "expectCount": 31,
+      "actualCount": 31,
       "undocumentLines": []
     },
     "src/html-init.js": {
@@ -102,9 +103,9 @@
         98,
         104,
         115,
-        163,
-        190,
-        244
+        165,
+        193,
+        248
       ]
     },
     "src/plugin/mediasession/index.js": {
@@ -180,76 +181,56 @@
         382
       ]
     },
+    "src/plugin/playhead/index.js": {
+      "expectCount": 25,
+      "actualCount": 2,
+      "undocumentLines": [
+        31,
+        58,
+        59,
+        60,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        79,
+        83,
+        84,
+        89,
+        116,
+        124,
+        136,
+        146,
+        155,
+        177,
+        207,
+        211
+      ]
+    },
     "src/plugin/regions/index.js": {
-      "expectCount": 22,
+      "expectCount": 24,
       "actualCount": 7,
       "undocumentLines": [
-        91,
-        109,
+        92,
         110,
         111,
         112,
-        118,
+        113,
         119,
-        130,
-        131,
-        141,
-        142,
-        153,
-        164,
-        215,
-        378
-      ]
-    },
-    "src/plugin/regions/region.js": {
-      "expectCount": 50,
-      "actualCount": 5,
-      "undocumentLines": [
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        19,
-        20,
-        21,
-        27,
-        29,
-        31,
-        32,
-        33,
-        34,
-        37,
-        41,
-        42,
-        43,
-        44,
-        46,
-        48,
-        49,
-        51,
-        52,
-        53,
-        55,
-        63,
-        64,
-        78,
-        79,
-        88,
-        130,
-        133,
-        170,
-        241,
-        255,
-        260,
-        309,
-        310,
-        311,
-        354,
-        394,
-        693,
-        752
+        120,
+        134,
+        135,
+        136,
+        147,
+        148,
+        150,
+        160,
+        171,
+        224,
+        395
       ]
     },
     "src/plugin/spectrogram/fft.js": {
@@ -364,6 +345,14 @@
         22
       ]
     },
+    "src/util/orientation.js": {
+      "expectCount": 4,
+      "actualCount": 2,
+      "undocumentLines": [
+        1,
+        47
+      ]
+    },
     "src/util/prevent-click.js": {
       "expectCount": 2,
       "actualCount": 2,
@@ -378,8 +367,8 @@
       "expectCount": 95,
       "actualCount": 93,
       "undocumentLines": [
-        468,
-        489
+        474,
+        495
       ]
     },
     "src/webaudio.js": {

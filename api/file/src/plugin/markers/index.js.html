@@ -63,8 +63,9 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MicrophonePluginParams">MicrophonePluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-minimap">plugin/minimap</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/minimap/index.js~MinimapPlugin.html">MinimapPlugin</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-MinimapPluginParams">MinimapPluginParams</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-playhead">plugin/playhead</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/playhead/index.js~PlayheadPlugin.html">PlayheadPlugin</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-PlayheadPluginParams">PlayheadPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-regions">plugin/regions</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/index.js~RegionsPlugin.html">RegionsPlugin</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/regions/region.js~Region.html">Region</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionParams">RegionParams</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-RegionsPluginParams">RegionsPluginParams</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#plugin-spectrogram">plugin/spectrogram</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html">SpectrogramPlugin</a></span></span></li>
@@ -80,6 +81,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getId">getId</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-max">max</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-withOrientation">withOrientation</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
@@ -244,7 +246,9 @@ export default class MarkersPlugin {
      */
     remove(index) {
         let marker = this.markers[index];
-        if ( !marker ) return;
+        if (!marker) {
+            return;
+        }
 
         this.wrapper.removeChild(marker.el);
         this.markers.splice(index, 1);
@@ -271,6 +275,7 @@ export default class MarkersPlugin {
         this.style(el, {
             width: this.markerWidth + &quot;px&quot;,
             height: this.markerHeight + &quot;px&quot;,
+            &quot;min-width&quot;: this.markerWidth + &quot;px&quot;,
             &quot;margin-right&quot;: &quot;5px&quot;,
             &quot;z-index&quot;: 4
         });
@@ -288,6 +293,7 @@ export default class MarkersPlugin {
             position: &quot;absolute&quot;,
             height: &quot;100%&quot;,
             display: &quot;flex&quot;,
+            overflow: &quot;hidden&quot;,
             &quot;flex-direction&quot;: (marker.position == &quot;top&quot; ? &quot;column-reverse&quot; : &quot;column&quot;)
         });
 
@@ -340,9 +346,11 @@ export default class MarkersPlugin {
                 this.wavesurfer.drawer.width /
                 this.wavesurfer.params.pixelRatio;
 
-            const positionPct = marker.time / duration;
+            const positionPct = Math.min(marker.time / duration, 1);
+            const leftPx = ((elementWidth * positionPct) - (this.markerWidth / 2));
             this.style(marker.el, {
-                left: ((elementWidth * positionPct) - (this.markerWidth / 2)) + &quot;px&quot;
+                &quot;left&quot;:  leftPx + &quot;px&quot;,
+                &quot;max-width&quot;: (elementWidth - leftPx) + &quot;px&quot;
             });
         }
     }
