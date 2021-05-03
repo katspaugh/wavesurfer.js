@@ -43,7 +43,7 @@ export default class PlayheadPlugin {
      * used by wavesurfer to correctly instantiate the plugin.
      *
      * @param {PlayheadPluginParams} params parameters use to initialise the plugin
-     * @since 4.7.0
+     * @since 5.0.0
      * @return {PluginDefinition} an object representing the plugin
      */
     static create(params) {
