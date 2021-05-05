@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-5.0.1 (unreleased)
+5.0.1 (05.05.2021)
 ------------------
 
 - Fix removing DOM element on `destroy()` (#2258)
