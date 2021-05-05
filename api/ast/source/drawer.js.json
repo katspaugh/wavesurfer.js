@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 12092,
+  "end": 12103,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 12092,
+    "end": 12103,
     "loc": {
       "start": {
         "line": 1,
@@ -118,7 +118,7 @@
       {
         "type": "ExportDefaultDeclaration",
         "start": 97,
-        "end": 12091,
+        "end": 12102,
         "loc": {
           "start": {
             "line": 8,
@@ -132,7 +132,7 @@
         "declaration": {
           "type": "ClassDeclaration",
           "start": 112,
-          "end": 12091,
+          "end": 12102,
           "loc": {
             "start": {
               "line": 8,
@@ -214,7 +214,7 @@
           "body": {
             "type": "ClassBody",
             "start": 147,
-            "end": 12091,
+            "end": 12102,
             "loc": {
               "start": {
                 "line": 8,
@@ -17729,7 +17729,7 @@
               {
                 "type": "ClassMethod",
                 "start": 10224,
-                "end": 10478,
+                "end": 10489,
                 "loc": {
                   "start": {
                     "line": 342,
@@ -17769,7 +17769,7 @@
                 "body": {
                   "type": "BlockStatement",
                   "start": 10234,
-                  "end": 10478,
+                  "end": 10489,
                   "loc": {
                     "start": {
                       "line": 342,
@@ -17863,7 +17863,7 @@
                     {
                       "type": "IfStatement",
                       "start": 10266,
-                      "end": 10472,
+                      "end": 10483,
                       "loc": {
                         "start": {
                           "line": 344,
@@ -17925,7 +17925,7 @@
                       "consequent": {
                         "type": "BlockStatement",
                         "start": 10284,
-                        "end": 10472,
+                        "end": 10483,
                         "loc": {
                           "start": {
                             "line": 344,
@@ -17940,7 +17940,7 @@
                           {
                             "type": "IfStatement",
                             "start": 10298,
-                            "end": 10429,
+                            "end": 10440,
                             "loc": {
                               "start": {
                                 "line": 345,
@@ -17954,7 +17954,7 @@
                             "test": {
                               "type": "BinaryExpression",
                               "start": 10302,
-                              "end": 10343,
+                              "end": 10354,
                               "loc": {
                                 "start": {
                                   "line": 345,
@@ -17962,7 +17962,7 @@
                                 },
                                 "end": {
                                   "line": 345,
-                                  "column": 57
+                                  "column": 68
                                 }
                               },
                               "left": {
@@ -18050,7 +18050,7 @@
                               "right": {
                                 "type": "MemberExpression",
                                 "start": 10329,
-                                "end": 10343,
+                                "end": 10354,
                                 "loc": {
                                   "start": {
                                     "line": 345,
@@ -18058,13 +18058,13 @@
                                   },
                                   "end": {
                                     "line": 345,
-                                    "column": 57
+                                    "column": 68
                                   }
                                 },
                                 "object": {
-                                  "type": "ThisExpression",
+                                  "type": "MemberExpression",
                                   "start": 10329,
-                                  "end": 10333,
+                                  "end": 10343,
                                   "loc": {
                                     "start": {
                                       "line": 345,
@@ -18072,38 +18072,71 @@
                                     },
                                     "end": {
                                       "line": 345,
-                                      "column": 47
+                                      "column": 57
                                     }
-                                  }
+                                  },
+                                  "object": {
+                                    "type": "ThisExpression",
+                                    "start": 10329,
+                                    "end": 10333,
+                                    "loc": {
+                                      "start": {
+                                        "line": 345,
+                                        "column": 43
+                                      },
+                                      "end": {
+                                        "line": 345,
+                                        "column": 47
+                                      }
+                                    }
+                                  },
+                                  "property": {
+                                    "type": "Identifier",
+                                    "start": 10334,
+                                    "end": 10343,
+                                    "loc": {
+                                      "start": {
+                                        "line": 345,
+                                        "column": 48
+                                      },
+                                      "end": {
+                                        "line": 345,
+                                        "column": 57
+                                      },
+                                      "identifierName": "container"
+                                    },
+                                    "name": "container"
+                                  },
+                                  "computed": false
                                 },
                                 "property": {
                                   "type": "Identifier",
-                                  "start": 10334,
-                                  "end": 10343,
+                                  "start": 10344,
+                                  "end": 10354,
                                   "loc": {
                                     "start": {
                                       "line": 345,
-                                      "column": 48
+                                      "column": 58
                                     },
                                     "end": {
                                       "line": 345,
-                                      "column": 57
+                                      "column": 68
                                     },
-                                    "identifierName": "container"
+                                    "identifierName": "domElement"
                                   },
-                                  "name": "container"
+                                  "name": "domElement"
                                 },
                                 "computed": false
                               }
                             },
                             "consequent": {
                               "type": "BlockStatement",
-                              "start": 10345,
-                              "end": 10429,
+                              "start": 10356,
+                              "end": 10440,
                               "loc": {
                                 "start": {
                                   "line": 345,
-                                  "column": 59
+                                  "column": 70
                                 },
                                 "end": {
                                   "line": 347,
@@ -18113,8 +18146,8 @@
                               "body": [
                                 {
                                   "type": "ExpressionStatement",
-                                  "start": 10363,
-                                  "end": 10415,
+                                  "start": 10374,
+                                  "end": 10426,
                                   "loc": {
                                     "start": {
                                       "line": 346,
@@ -18127,8 +18160,8 @@
                                   },
                                   "expression": {
                                     "type": "CallExpression",
-                                    "start": 10363,
-                                    "end": 10414,
+                                    "start": 10374,
+                                    "end": 10425,
                                     "loc": {
                                       "start": {
                                         "line": 346,
@@ -18141,8 +18174,8 @@
                                     },
                                     "callee": {
                                       "type": "MemberExpression",
-                                      "start": 10363,
-                                      "end": 10389,
+                                      "start": 10374,
+                                      "end": 10400,
                                       "loc": {
                                         "start": {
                                           "line": 346,
@@ -18155,8 +18188,8 @@
                                       },
                                       "object": {
                                         "type": "MemberExpression",
-                                        "start": 10363,
-                                        "end": 10377,
+                                        "start": 10374,
+                                        "end": 10388,
                                         "loc": {
                                           "start": {
                                             "line": 346,
@@ -18169,8 +18202,8 @@
                                         },
                                         "object": {
                                           "type": "ThisExpression",
-                                          "start": 10363,
-                                          "end": 10367,
+                                          "start": 10374,
+                                          "end": 10378,
                                           "loc": {
                                             "start": {
                                               "line": 346,
@@ -18184,8 +18217,8 @@
                                         },
                                         "property": {
                                           "type": "Identifier",
-                                          "start": 10368,
-                                          "end": 10377,
+                                          "start": 10379,
+                                          "end": 10388,
                                           "loc": {
                                             "start": {
                                               "line": 346,
@@ -18203,8 +18236,8 @@
                                       },
                                       "property": {
                                         "type": "Identifier",
-                                        "start": 10378,
-                                        "end": 10389,
+                                        "start": 10389,
+                                        "end": 10400,
                                         "loc": {
                                           "start": {
                                             "line": 346,
@@ -18223,8 +18256,8 @@
                                     "arguments": [
                                       {
                                         "type": "MemberExpression",
-                                        "start": 10390,
-                                        "end": 10413,
+                                        "start": 10401,
+                                        "end": 10424,
                                         "loc": {
                                           "start": {
                                             "line": 346,
@@ -18237,8 +18270,8 @@
                                         },
                                         "object": {
                                           "type": "MemberExpression",
-                                          "start": 10390,
-                                          "end": 10402,
+                                          "start": 10401,
+                                          "end": 10413,
                                           "loc": {
                                             "start": {
                                               "line": 346,
@@ -18251,8 +18284,8 @@
                                           },
                                           "object": {
                                             "type": "ThisExpression",
-                                            "start": 10390,
-                                            "end": 10394,
+                                            "start": 10401,
+                                            "end": 10405,
                                             "loc": {
                                               "start": {
                                                 "line": 346,
@@ -18266,8 +18299,8 @@
                                           },
                                           "property": {
                                             "type": "Identifier",
-                                            "start": 10395,
-                                            "end": 10402,
+                                            "start": 10406,
+                                            "end": 10413,
                                             "loc": {
                                               "start": {
                                                 "line": 346,
@@ -18285,8 +18318,8 @@
                                         },
                                         "property": {
                                           "type": "Identifier",
-                                          "start": 10403,
-                                          "end": 10413,
+                                          "start": 10414,
+                                          "end": 10424,
                                           "loc": {
                                             "start": {
                                               "line": 346,
@@ -18312,8 +18345,8 @@
                           },
                           {
                             "type": "ExpressionStatement",
-                            "start": 10442,
-                            "end": 10462,
+                            "start": 10453,
+                            "end": 10473,
                             "loc": {
                               "start": {
                                 "line": 348,
@@ -18326,8 +18359,8 @@
                             },
                             "expression": {
                               "type": "AssignmentExpression",
-                              "start": 10442,
-                              "end": 10461,
+                              "start": 10453,
+                              "end": 10472,
                               "loc": {
                                 "start": {
                                   "line": 348,
@@ -18341,8 +18374,8 @@
                               "operator": "=",
                               "left": {
                                 "type": "MemberExpression",
-                                "start": 10442,
-                                "end": 10454,
+                                "start": 10453,
+                                "end": 10465,
                                 "loc": {
                                   "start": {
                                     "line": 348,
@@ -18355,8 +18388,8 @@
                                 },
                                 "object": {
                                   "type": "ThisExpression",
-                                  "start": 10442,
-                                  "end": 10446,
+                                  "start": 10453,
+                                  "end": 10457,
                                   "loc": {
                                     "start": {
                                       "line": 348,
@@ -18370,8 +18403,8 @@
                                 },
                                 "property": {
                                   "type": "Identifier",
-                                  "start": 10447,
-                                  "end": 10454,
+                                  "start": 10458,
+                                  "end": 10465,
                                   "loc": {
                                     "start": {
                                       "line": 348,
@@ -18389,8 +18422,8 @@
                               },
                               "right": {
                                 "type": "NullLiteral",
-                                "start": 10457,
-                                "end": 10461,
+                                "start": 10468,
+                                "end": 10472,
                                 "loc": {
                                   "start": {
                                     "line": 348,
@@ -18435,8 +18468,8 @@
                   {
                     "type": "CommentBlock",
                     "value": " Renderer-specific methods ",
-                    "start": 10484,
-                    "end": 10515,
+                    "start": 10495,
+                    "end": 10526,
                     "loc": {
                       "start": {
                         "line": 352,
@@ -18451,8 +18484,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Called after cursor related params have changed.\n     *\n     * @abstract\n     ",
-                    "start": 10521,
-                    "end": 10612,
+                    "start": 10532,
+                    "end": 10623,
                     "loc": {
                       "start": {
                         "line": 354,
@@ -18468,8 +18501,8 @@
               },
               {
                 "type": "ClassMethod",
-                "start": 10617,
-                "end": 10634,
+                "start": 10628,
+                "end": 10645,
                 "loc": {
                   "start": {
                     "line": 359,
@@ -18484,8 +18517,8 @@
                 "computed": false,
                 "key": {
                   "type": "Identifier",
-                  "start": 10617,
-                  "end": 10629,
+                  "start": 10628,
+                  "end": 10640,
                   "loc": {
                     "start": {
                       "line": 359,
@@ -18508,8 +18541,8 @@
                 "params": [],
                 "body": {
                   "type": "BlockStatement",
-                  "start": 10632,
-                  "end": 10634,
+                  "start": 10643,
+                  "end": 10645,
                   "loc": {
                     "start": {
                       "line": 359,
@@ -18529,8 +18562,8 @@
                   {
                     "type": "CommentBlock",
                     "value": " Renderer-specific methods ",
-                    "start": 10484,
-                    "end": 10515,
+                    "start": 10495,
+                    "end": 10526,
                     "loc": {
                       "start": {
                         "line": 352,
@@ -18545,8 +18578,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Called after cursor related params have changed.\n     *\n     * @abstract\n     ",
-                    "start": 10521,
-                    "end": 10612,
+                    "start": 10532,
+                    "end": 10623,
                     "loc": {
                       "start": {
                         "line": 354,
@@ -18563,8 +18596,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Called when the size of the container changes so the renderer can adjust\n     *\n     * @abstract\n     ",
-                    "start": 10640,
-                    "end": 10755,
+                    "start": 10651,
+                    "end": 10766,
                     "loc": {
                       "start": {
                         "line": 361,
@@ -18580,8 +18613,8 @@
               },
               {
                 "type": "ClassMethod",
-                "start": 10760,
-                "end": 10775,
+                "start": 10771,
+                "end": 10786,
                 "loc": {
                   "start": {
                     "line": 366,
@@ -18596,8 +18629,8 @@
                 "computed": false,
                 "key": {
                   "type": "Identifier",
-                  "start": 10760,
-                  "end": 10770,
+                  "start": 10771,
+                  "end": 10781,
                   "loc": {
                     "start": {
                       "line": 366,
@@ -18620,8 +18653,8 @@
                 "params": [],
                 "body": {
                   "type": "BlockStatement",
-                  "start": 10773,
-                  "end": 10775,
+                  "start": 10784,
+                  "end": 10786,
                   "loc": {
                     "start": {
                       "line": 366,
@@ -18641,8 +18674,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Called when the size of the container changes so the renderer can adjust\n     *\n     * @abstract\n     ",
-                    "start": 10640,
-                    "end": 10755,
+                    "start": 10651,
+                    "end": 10766,
                     "loc": {
                       "start": {
                         "line": 361,
@@ -18659,8 +18692,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Draw a waveform with bars\n     *\n     * @abstract\n     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for split channel\n     * rendering\n     * @param {number} channelIndex The index of the current channel. Normally\n     * should be 0\n     * @param {number} start The x-offset of the beginning of the area that\n     * should be rendered\n     * @param {number} end The x-offset of the end of the area that should be\n     * rendered\n     ",
-                    "start": 10781,
-                    "end": 11257,
+                    "start": 10792,
+                    "end": 11268,
                     "loc": {
                       "start": {
                         "line": 368,
@@ -18676,8 +18709,8 @@
               },
               {
                 "type": "ClassMethod",
-                "start": 11262,
-                "end": 11306,
+                "start": 11273,
+                "end": 11317,
                 "loc": {
                   "start": {
                     "line": 381,
@@ -18692,8 +18725,8 @@
                 "computed": false,
                 "key": {
                   "type": "Identifier",
-                  "start": 11262,
-                  "end": 11270,
+                  "start": 11273,
+                  "end": 11281,
                   "loc": {
                     "start": {
                       "line": 381,
@@ -18716,8 +18749,8 @@
                 "params": [
                   {
                     "type": "Identifier",
-                    "start": 11271,
-                    "end": 11276,
+                    "start": 11282,
+                    "end": 11287,
                     "loc": {
                       "start": {
                         "line": 381,
@@ -18733,8 +18766,8 @@
                   },
                   {
                     "type": "Identifier",
-                    "start": 11278,
-                    "end": 11290,
+                    "start": 11289,
+                    "end": 11301,
                     "loc": {
                       "start": {
                         "line": 381,
@@ -18750,8 +18783,8 @@
                   },
                   {
                     "type": "Identifier",
-                    "start": 11292,
-                    "end": 11297,
+                    "start": 11303,
+                    "end": 11308,
                     "loc": {
                       "start": {
                         "line": 381,
@@ -18767,8 +18800,8 @@
                   },
                   {
                     "type": "Identifier",
-                    "start": 11299,
-                    "end": 11302,
+                    "start": 11310,
+                    "end": 11313,
                     "loc": {
                       "start": {
                         "line": 381,
@@ -18785,8 +18818,8 @@
                 ],
                 "body": {
                   "type": "BlockStatement",
-                  "start": 11304,
-                  "end": 11306,
+                  "start": 11315,
+                  "end": 11317,
                   "loc": {
                     "start": {
                       "line": 381,
@@ -18806,8 +18839,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Draw a waveform with bars\n     *\n     * @abstract\n     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for split channel\n     * rendering\n     * @param {number} channelIndex The index of the current channel. Normally\n     * should be 0\n     * @param {number} start The x-offset of the beginning of the area that\n     * should be rendered\n     * @param {number} end The x-offset of the end of the area that should be\n     * rendered\n     ",
-                    "start": 10781,
-                    "end": 11257,
+                    "start": 10792,
+                    "end": 11268,
                     "loc": {
                       "start": {
                         "line": 368,
@@ -18824,8 +18857,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Draw a waveform\n     *\n     * @abstract\n     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for split channel\n     * rendering\n     * @param {number} channelIndex The index of the current channel. Normally\n     * should be 0\n     * @param {number} start The x-offset of the beginning of the area that\n     * should be rendered\n     * @param {number} end The x-offset of the end of the area that should be\n     * rendered\n     ",
-                    "start": 11312,
-                    "end": 11778,
+                    "start": 11323,
+                    "end": 11789,
                     "loc": {
                       "start": {
                         "line": 383,
@@ -18841,8 +18874,8 @@
               },
               {
                 "type": "ClassMethod",
-                "start": 11783,
-                "end": 11827,
+                "start": 11794,
+                "end": 11838,
                 "loc": {
                   "start": {
                     "line": 396,
@@ -18857,8 +18890,8 @@
                 "computed": false,
                 "key": {
                   "type": "Identifier",
-                  "start": 11783,
-                  "end": 11791,
+                  "start": 11794,
+                  "end": 11802,
                   "loc": {
                     "start": {
                       "line": 396,
@@ -18881,8 +18914,8 @@
                 "params": [
                   {
                     "type": "Identifier",
-                    "start": 11792,
-                    "end": 11797,
+                    "start": 11803,
+                    "end": 11808,
                     "loc": {
                       "start": {
                         "line": 396,
@@ -18898,8 +18931,8 @@
                   },
                   {
                     "type": "Identifier",
-                    "start": 11799,
-                    "end": 11811,
+                    "start": 11810,
+                    "end": 11822,
                     "loc": {
                       "start": {
                         "line": 396,
@@ -18915,8 +18948,8 @@
                   },
                   {
                     "type": "Identifier",
-                    "start": 11813,
-                    "end": 11818,
+                    "start": 11824,
+                    "end": 11829,
                     "loc": {
                       "start": {
                         "line": 396,
@@ -18932,8 +18965,8 @@
                   },
                   {
                     "type": "Identifier",
-                    "start": 11820,
-                    "end": 11823,
+                    "start": 11831,
+                    "end": 11834,
                     "loc": {
                       "start": {
                         "line": 396,
@@ -18950,8 +18983,8 @@
                 ],
                 "body": {
                   "type": "BlockStatement",
-                  "start": 11825,
-                  "end": 11827,
+                  "start": 11836,
+                  "end": 11838,
                   "loc": {
                     "start": {
                       "line": 396,
@@ -18971,8 +19004,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Draw a waveform\n     *\n     * @abstract\n     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for split channel\n     * rendering\n     * @param {number} channelIndex The index of the current channel. Normally\n     * should be 0\n     * @param {number} start The x-offset of the beginning of the area that\n     * should be rendered\n     * @param {number} end The x-offset of the end of the area that should be\n     * rendered\n     ",
-                    "start": 11312,
-                    "end": 11778,
+                    "start": 11323,
+                    "end": 11789,
                     "loc": {
                       "start": {
                         "line": 383,
@@ -18989,8 +19022,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Clear the waveform\n     *\n     * @abstract\n     ",
-                    "start": 11833,
-                    "end": 11894,
+                    "start": 11844,
+                    "end": 11905,
                     "loc": {
                       "start": {
                         "line": 398,
@@ -19006,8 +19039,8 @@
               },
               {
                 "type": "ClassMethod",
-                "start": 11899,
-                "end": 11913,
+                "start": 11910,
+                "end": 11924,
                 "loc": {
                   "start": {
                     "line": 403,
@@ -19022,8 +19055,8 @@
                 "computed": false,
                 "key": {
                   "type": "Identifier",
-                  "start": 11899,
-                  "end": 11908,
+                  "start": 11910,
+                  "end": 11919,
                   "loc": {
                     "start": {
                       "line": 403,
@@ -19046,8 +19079,8 @@
                 "params": [],
                 "body": {
                   "type": "BlockStatement",
-                  "start": 11911,
-                  "end": 11913,
+                  "start": 11922,
+                  "end": 11924,
                   "loc": {
                     "start": {
                       "line": 403,
@@ -19067,8 +19100,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Clear the waveform\n     *\n     * @abstract\n     ",
-                    "start": 11833,
-                    "end": 11894,
+                    "start": 11844,
+                    "end": 11905,
                     "loc": {
                       "start": {
                         "line": 398,
@@ -19085,8 +19118,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Render the new progress\n     *\n     * @abstract\n     * @param {number} position X-Offset of progress position in pixels\n     ",
-                    "start": 11919,
-                    "end": 12057,
+                    "start": 11930,
+                    "end": 12068,
                     "loc": {
                       "start": {
                         "line": 405,
@@ -19102,8 +19135,8 @@
               },
               {
                 "type": "ClassMethod",
-                "start": 12062,
-                "end": 12089,
+                "start": 12073,
+                "end": 12100,
                 "loc": {
                   "start": {
                     "line": 411,
@@ -19118,8 +19151,8 @@
                 "computed": false,
                 "key": {
                   "type": "Identifier",
-                  "start": 12062,
-                  "end": 12076,
+                  "start": 12073,
+                  "end": 12087,
                   "loc": {
                     "start": {
                       "line": 411,
@@ -19142,8 +19175,8 @@
                 "params": [
                   {
                     "type": "Identifier",
-                    "start": 12077,
-                    "end": 12085,
+                    "start": 12088,
+                    "end": 12096,
                     "loc": {
                       "start": {
                         "line": 411,
@@ -19160,8 +19193,8 @@
                 ],
                 "body": {
                   "type": "BlockStatement",
-                  "start": 12087,
-                  "end": 12089,
+                  "start": 12098,
+                  "end": 12100,
                   "loc": {
                     "start": {
                       "line": 411,
@@ -19179,8 +19212,8 @@
                   {
                     "type": "CommentBlock",
                     "value": "*\n     * Render the new progress\n     *\n     * @abstract\n     * @param {number} position X-Offset of progress position in pixels\n     ",
-                    "start": 11919,
-                    "end": 12057,
+                    "start": 11930,
+                    "end": 12068,
                     "loc": {
                       "start": {
                         "line": 405,
@@ -19754,8 +19787,8 @@
     {
       "type": "CommentBlock",
       "value": " Renderer-specific methods ",
-      "start": 10484,
-      "end": 10515,
+      "start": 10495,
+      "end": 10526,
       "loc": {
         "start": {
           "line": 352,
@@ -19770,8 +19803,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Called after cursor related params have changed.\n     *\n     * @abstract\n     ",
-      "start": 10521,
-      "end": 10612,
+      "start": 10532,
+      "end": 10623,
       "loc": {
         "start": {
           "line": 354,
@@ -19786,8 +19819,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Called when the size of the container changes so the renderer can adjust\n     *\n     * @abstract\n     ",
-      "start": 10640,
-      "end": 10755,
+      "start": 10651,
+      "end": 10766,
       "loc": {
         "start": {
           "line": 361,
@@ -19802,8 +19835,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Draw a waveform with bars\n     *\n     * @abstract\n     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for split channel\n     * rendering\n     * @param {number} channelIndex The index of the current channel. Normally\n     * should be 0\n     * @param {number} start The x-offset of the beginning of the area that\n     * should be rendered\n     * @param {number} end The x-offset of the end of the area that should be\n     * rendered\n     ",
-      "start": 10781,
-      "end": 11257,
+      "start": 10792,
+      "end": 11268,
       "loc": {
         "start": {
           "line": 368,
@@ -19818,8 +19851,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Draw a waveform\n     *\n     * @abstract\n     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for split channel\n     * rendering\n     * @param {number} channelIndex The index of the current channel. Normally\n     * should be 0\n     * @param {number} start The x-offset of the beginning of the area that\n     * should be rendered\n     * @param {number} end The x-offset of the end of the area that should be\n     * rendered\n     ",
-      "start": 11312,
-      "end": 11778,
+      "start": 11323,
+      "end": 11789,
       "loc": {
         "start": {
           "line": 383,
@@ -19834,8 +19867,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Clear the waveform\n     *\n     * @abstract\n     ",
-      "start": 11833,
-      "end": 11894,
+      "start": 11844,
+      "end": 11905,
       "loc": {
         "start": {
           "line": 398,
@@ -19850,8 +19883,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Render the new progress\n     *\n     * @abstract\n     * @param {number} position X-Offset of progress position in pixels\n     ",
-      "start": 11919,
-      "end": 12057,
+      "start": 11930,
+      "end": 12068,
       "loc": {
         "start": {
           "line": 405,
@@ -53746,7 +53779,7 @@
     },
     {
       "type": {
-        "label": ")",
+        "label": ".",
         "beforeExpr": false,
         "startsExpr": false,
         "rightAssociative": false,
@@ -53754,7 +53787,8 @@
         "isAssign": false,
         "prefix": false,
         "postfix": false,
-        "binop": null
+        "binop": null,
+        "updateContext": null
       },
       "start": 10343,
       "end": 10344,
@@ -53771,6 +53805,57 @@
     },
     {
       "type": {
+        "label": "name",
+        "beforeExpr": false,
+        "startsExpr": true,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "value": "domElement",
+      "start": 10344,
+      "end": 10354,
+      "loc": {
+        "start": {
+          "line": 345,
+          "column": 58
+        },
+        "end": {
+          "line": 345,
+          "column": 68
+        }
+      }
+    },
+    {
+      "type": {
+        "label": ")",
+        "beforeExpr": false,
+        "startsExpr": false,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "start": 10354,
+      "end": 10355,
+      "loc": {
+        "start": {
+          "line": 345,
+          "column": 68
+        },
+        "end": {
+          "line": 345,
+          "column": 69
+        }
+      }
+    },
+    {
+      "type": {
         "label": "{",
         "beforeExpr": true,
         "startsExpr": true,
@@ -53781,16 +53866,16 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10345,
-      "end": 10346,
+      "start": 10356,
+      "end": 10357,
       "loc": {
         "start": {
           "line": 345,
-          "column": 59
+          "column": 70
         },
         "end": {
           "line": 345,
-          "column": 60
+          "column": 71
         }
       }
     },
@@ -53809,8 +53894,8 @@
         "updateContext": null
       },
       "value": "this",
-      "start": 10363,
-      "end": 10367,
+      "start": 10374,
+      "end": 10378,
       "loc": {
         "start": {
           "line": 346,
@@ -53835,8 +53920,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 10367,
-      "end": 10368,
+      "start": 10378,
+      "end": 10379,
       "loc": {
         "start": {
           "line": 346,
@@ -53861,8 +53946,8 @@
         "binop": null
       },
       "value": "container",
-      "start": 10368,
-      "end": 10377,
+      "start": 10379,
+      "end": 10388,
       "loc": {
         "start": {
           "line": 346,
@@ -53887,8 +53972,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 10377,
-      "end": 10378,
+      "start": 10388,
+      "end": 10389,
       "loc": {
         "start": {
           "line": 346,
@@ -53913,8 +53998,8 @@
         "binop": null
       },
       "value": "removeChild",
-      "start": 10378,
-      "end": 10389,
+      "start": 10389,
+      "end": 10400,
       "loc": {
         "start": {
           "line": 346,
@@ -53938,8 +54023,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10389,
-      "end": 10390,
+      "start": 10400,
+      "end": 10401,
       "loc": {
         "start": {
           "line": 346,
@@ -53966,8 +54051,8 @@
         "updateContext": null
       },
       "value": "this",
-      "start": 10390,
-      "end": 10394,
+      "start": 10401,
+      "end": 10405,
       "loc": {
         "start": {
           "line": 346,
@@ -53992,8 +54077,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 10394,
-      "end": 10395,
+      "start": 10405,
+      "end": 10406,
       "loc": {
         "start": {
           "line": 346,
@@ -54018,8 +54103,8 @@
         "binop": null
       },
       "value": "wrapper",
-      "start": 10395,
-      "end": 10402,
+      "start": 10406,
+      "end": 10413,
       "loc": {
         "start": {
           "line": 346,
@@ -54044,8 +54129,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 10402,
-      "end": 10403,
+      "start": 10413,
+      "end": 10414,
       "loc": {
         "start": {
           "line": 346,
@@ -54070,8 +54155,8 @@
         "binop": null
       },
       "value": "domElement",
-      "start": 10403,
-      "end": 10413,
+      "start": 10414,
+      "end": 10424,
       "loc": {
         "start": {
           "line": 346,
@@ -54095,8 +54180,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10413,
-      "end": 10414,
+      "start": 10424,
+      "end": 10425,
       "loc": {
         "start": {
           "line": 346,
@@ -54121,8 +54206,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 10414,
-      "end": 10415,
+      "start": 10425,
+      "end": 10426,
       "loc": {
         "start": {
           "line": 346,
@@ -54146,8 +54231,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10428,
-      "end": 10429,
+      "start": 10439,
+      "end": 10440,
       "loc": {
         "start": {
           "line": 347,
@@ -54174,8 +54259,8 @@
         "updateContext": null
       },
       "value": "this",
-      "start": 10442,
-      "end": 10446,
+      "start": 10453,
+      "end": 10457,
       "loc": {
         "start": {
           "line": 348,
@@ -54200,8 +54285,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 10446,
-      "end": 10447,
+      "start": 10457,
+      "end": 10458,
       "loc": {
         "start": {
           "line": 348,
@@ -54226,8 +54311,8 @@
         "binop": null
       },
       "value": "wrapper",
-      "start": 10447,
-      "end": 10454,
+      "start": 10458,
+      "end": 10465,
       "loc": {
         "start": {
           "line": 348,
@@ -54253,8 +54338,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 10455,
-      "end": 10456,
+      "start": 10466,
+      "end": 10467,
       "loc": {
         "start": {
           "line": 348,
@@ -54281,8 +54366,8 @@
         "updateContext": null
       },
       "value": "null",
-      "start": 10457,
-      "end": 10461,
+      "start": 10468,
+      "end": 10472,
       "loc": {
         "start": {
           "line": 348,
@@ -54307,8 +54392,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 10461,
-      "end": 10462,
+      "start": 10472,
+      "end": 10473,
       "loc": {
         "start": {
           "line": 348,
@@ -54332,8 +54417,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10471,
-      "end": 10472,
+      "start": 10482,
+      "end": 10483,
       "loc": {
         "start": {
           "line": 349,
@@ -54357,8 +54442,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10477,
-      "end": 10478,
+      "start": 10488,
+      "end": 10489,
       "loc": {
         "start": {
           "line": 350,
@@ -54373,8 +54458,8 @@
     {
       "type": "CommentBlock",
       "value": " Renderer-specific methods ",
-      "start": 10484,
-      "end": 10515,
+      "start": 10495,
+      "end": 10526,
       "loc": {
         "start": {
           "line": 352,
@@ -54389,8 +54474,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Called after cursor related params have changed.\n     *\n     * @abstract\n     ",
-      "start": 10521,
-      "end": 10612,
+      "start": 10532,
+      "end": 10623,
       "loc": {
         "start": {
           "line": 354,
@@ -54415,8 +54500,8 @@
         "binop": null
       },
       "value": "updateCursor",
-      "start": 10617,
-      "end": 10629,
+      "start": 10628,
+      "end": 10640,
       "loc": {
         "start": {
           "line": 359,
@@ -54440,8 +54525,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10629,
-      "end": 10630,
+      "start": 10640,
+      "end": 10641,
       "loc": {
         "start": {
           "line": 359,
@@ -54465,8 +54550,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10630,
-      "end": 10631,
+      "start": 10641,
+      "end": 10642,
       "loc": {
         "start": {
           "line": 359,
@@ -54490,8 +54575,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10632,
-      "end": 10633,
+      "start": 10643,
+      "end": 10644,
       "loc": {
         "start": {
           "line": 359,
@@ -54515,8 +54600,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10633,
-      "end": 10634,
+      "start": 10644,
+      "end": 10645,
       "loc": {
         "start": {
           "line": 359,
@@ -54531,8 +54616,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Called when the size of the container changes so the renderer can adjust\n     *\n     * @abstract\n     ",
-      "start": 10640,
-      "end": 10755,
+      "start": 10651,
+      "end": 10766,
       "loc": {
         "start": {
           "line": 361,
@@ -54557,8 +54642,8 @@
         "binop": null
       },
       "value": "updateSize",
-      "start": 10760,
-      "end": 10770,
+      "start": 10771,
+      "end": 10781,
       "loc": {
         "start": {
           "line": 366,
@@ -54582,8 +54667,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10770,
-      "end": 10771,
+      "start": 10781,
+      "end": 10782,
       "loc": {
         "start": {
           "line": 366,
@@ -54607,8 +54692,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10771,
-      "end": 10772,
+      "start": 10782,
+      "end": 10783,
       "loc": {
         "start": {
           "line": 366,
@@ -54632,8 +54717,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10773,
-      "end": 10774,
+      "start": 10784,
+      "end": 10785,
       "loc": {
         "start": {
           "line": 366,
@@ -54657,8 +54742,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 10774,
-      "end": 10775,
+      "start": 10785,
+      "end": 10786,
       "loc": {
         "start": {
           "line": 366,
@@ -54673,8 +54758,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Draw a waveform with bars\n     *\n     * @abstract\n     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for split channel\n     * rendering\n     * @param {number} channelIndex The index of the current channel. Normally\n     * should be 0\n     * @param {number} start The x-offset of the beginning of the area that\n     * should be rendered\n     * @param {number} end The x-offset of the end of the area that should be\n     * rendered\n     ",
-      "start": 10781,
-      "end": 11257,
+      "start": 10792,
+      "end": 11268,
       "loc": {
         "start": {
           "line": 368,
@@ -54699,8 +54784,8 @@
         "binop": null
       },
       "value": "drawBars",
-      "start": 11262,
-      "end": 11270,
+      "start": 11273,
+      "end": 11281,
       "loc": {
         "start": {
           "line": 381,
@@ -54724,8 +54809,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11270,
-      "end": 11271,
+      "start": 11281,
+      "end": 11282,
       "loc": {
         "start": {
           "line": 381,
@@ -54750,8 +54835,8 @@
         "binop": null
       },
       "value": "peaks",
-      "start": 11271,
-      "end": 11276,
+      "start": 11282,
+      "end": 11287,
       "loc": {
         "start": {
           "line": 381,
@@ -54776,8 +54861,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 11276,
-      "end": 11277,
+      "start": 11287,
+      "end": 11288,
       "loc": {
         "start": {
           "line": 381,
@@ -54802,8 +54887,8 @@
         "binop": null
       },
       "value": "channelIndex",
-      "start": 11278,
-      "end": 11290,
+      "start": 11289,
+      "end": 11301,
       "loc": {
         "start": {
           "line": 381,
@@ -54828,8 +54913,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 11290,
-      "end": 11291,
+      "start": 11301,
+      "end": 11302,
       "loc": {
         "start": {
           "line": 381,
@@ -54854,8 +54939,8 @@
         "binop": null
       },
       "value": "start",
-      "start": 11292,
-      "end": 11297,
+      "start": 11303,
+      "end": 11308,
       "loc": {
         "start": {
           "line": 381,
@@ -54880,8 +54965,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 11297,
-      "end": 11298,
+      "start": 11308,
+      "end": 11309,
       "loc": {
         "start": {
           "line": 381,
@@ -54906,8 +54991,8 @@
         "binop": null
       },
       "value": "end",
-      "start": 11299,
-      "end": 11302,
+      "start": 11310,
+      "end": 11313,
       "loc": {
         "start": {
           "line": 381,
@@ -54931,8 +55016,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11302,
-      "end": 11303,
+      "start": 11313,
+      "end": 11314,
       "loc": {
         "start": {
           "line": 381,
@@ -54956,8 +55041,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11304,
-      "end": 11305,
+      "start": 11315,
+      "end": 11316,
       "loc": {
         "start": {
           "line": 381,
@@ -54981,8 +55066,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11305,
-      "end": 11306,
+      "start": 11316,
+      "end": 11317,
       "loc": {
         "start": {
           "line": 381,
@@ -54997,8 +55082,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Draw a waveform\n     *\n     * @abstract\n     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays for split channel\n     * rendering\n     * @param {number} channelIndex The index of the current channel. Normally\n     * should be 0\n     * @param {number} start The x-offset of the beginning of the area that\n     * should be rendered\n     * @param {number} end The x-offset of the end of the area that should be\n     * rendered\n     ",
-      "start": 11312,
-      "end": 11778,
+      "start": 11323,
+      "end": 11789,
       "loc": {
         "start": {
           "line": 383,
@@ -55023,8 +55108,8 @@
         "binop": null
       },
       "value": "drawWave",
-      "start": 11783,
-      "end": 11791,
+      "start": 11794,
+      "end": 11802,
       "loc": {
         "start": {
           "line": 396,
@@ -55048,8 +55133,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11791,
-      "end": 11792,
+      "start": 11802,
+      "end": 11803,
       "loc": {
         "start": {
           "line": 396,
@@ -55074,8 +55159,8 @@
         "binop": null
       },
       "value": "peaks",
-      "start": 11792,
-      "end": 11797,
+      "start": 11803,
+      "end": 11808,
       "loc": {
         "start": {
           "line": 396,
@@ -55100,8 +55185,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 11797,
-      "end": 11798,
+      "start": 11808,
+      "end": 11809,
       "loc": {
         "start": {
           "line": 396,
@@ -55126,8 +55211,8 @@
         "binop": null
       },
       "value": "channelIndex",
-      "start": 11799,
-      "end": 11811,
+      "start": 11810,
+      "end": 11822,
       "loc": {
         "start": {
           "line": 396,
@@ -55152,8 +55237,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 11811,
-      "end": 11812,
+      "start": 11822,
+      "end": 11823,
       "loc": {
         "start": {
           "line": 396,
@@ -55178,8 +55263,8 @@
         "binop": null
       },
       "value": "start",
-      "start": 11813,
-      "end": 11818,
+      "start": 11824,
+      "end": 11829,
       "loc": {
         "start": {
           "line": 396,
@@ -55204,8 +55289,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 11818,
-      "end": 11819,
+      "start": 11829,
+      "end": 11830,
       "loc": {
         "start": {
           "line": 396,
@@ -55230,8 +55315,8 @@
         "binop": null
       },
       "value": "end",
-      "start": 11820,
-      "end": 11823,
+      "start": 11831,
+      "end": 11834,
       "loc": {
         "start": {
           "line": 396,
@@ -55255,8 +55340,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11823,
-      "end": 11824,
+      "start": 11834,
+      "end": 11835,
       "loc": {
         "start": {
           "line": 396,
@@ -55280,8 +55365,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11825,
-      "end": 11826,
+      "start": 11836,
+      "end": 11837,
       "loc": {
         "start": {
           "line": 396,
@@ -55305,8 +55390,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11826,
-      "end": 11827,
+      "start": 11837,
+      "end": 11838,
       "loc": {
         "start": {
           "line": 396,
@@ -55321,8 +55406,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Clear the waveform\n     *\n     * @abstract\n     ",
-      "start": 11833,
-      "end": 11894,
+      "start": 11844,
+      "end": 11905,
       "loc": {
         "start": {
           "line": 398,
@@ -55347,8 +55432,8 @@
         "binop": null
       },
       "value": "clearWave",
-      "start": 11899,
-      "end": 11908,
+      "start": 11910,
+      "end": 11919,
       "loc": {
         "start": {
           "line": 403,
@@ -55372,8 +55457,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11908,
-      "end": 11909,
+      "start": 11919,
+      "end": 11920,
       "loc": {
         "start": {
           "line": 403,
@@ -55397,8 +55482,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11909,
-      "end": 11910,
+      "start": 11920,
+      "end": 11921,
       "loc": {
         "start": {
           "line": 403,
@@ -55422,8 +55507,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11911,
-      "end": 11912,
+      "start": 11922,
+      "end": 11923,
       "loc": {
         "start": {
           "line": 403,
@@ -55447,8 +55532,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 11912,
-      "end": 11913,
+      "start": 11923,
+      "end": 11924,
       "loc": {
         "start": {
           "line": 403,
@@ -55463,8 +55548,8 @@
     {
       "type": "CommentBlock",
       "value": "*\n     * Render the new progress\n     *\n     * @abstract\n     * @param {number} position X-Offset of progress position in pixels\n     ",
-      "start": 11919,
-      "end": 12057,
+      "start": 11930,
+      "end": 12068,
       "loc": {
         "start": {
           "line": 405,
@@ -55489,8 +55574,8 @@
         "binop": null
       },
       "value": "updateProgress",
-      "start": 12062,
-      "end": 12076,
+      "start": 12073,
+      "end": 12087,
       "loc": {
         "start": {
           "line": 411,
@@ -55514,8 +55599,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 12076,
-      "end": 12077,
+      "start": 12087,
+      "end": 12088,
       "loc": {
         "start": {
           "line": 411,
@@ -55540,8 +55625,8 @@
         "binop": null
       },
       "value": "position",
-      "start": 12077,
-      "end": 12085,
+      "start": 12088,
+      "end": 12096,
       "loc": {
         "start": {
           "line": 411,
@@ -55565,8 +55650,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 12085,
-      "end": 12086,
+      "start": 12096,
+      "end": 12097,
       "loc": {
         "start": {
           "line": 411,
@@ -55590,8 +55675,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 12087,
-      "end": 12088,
+      "start": 12098,
+      "end": 12099,
       "loc": {
         "start": {
           "line": 411,
@@ -55615,8 +55700,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 12088,
-      "end": 12089,
+      "start": 12099,
+      "end": 12100,
       "loc": {
         "start": {
           "line": 411,
@@ -55640,8 +55725,8 @@
         "postfix": false,
         "binop": null
       },
-      "start": 12090,
-      "end": 12091,
+      "start": 12101,
+      "end": 12102,
       "loc": {
         "start": {
           "line": 412,
@@ -55666,8 +55751,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 12092,
-      "end": 12092,
+      "start": 12103,
+      "end": 12103,
       "loc": {
         "start": {
           "line": 413,
