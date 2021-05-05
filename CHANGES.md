@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+5.0.1 (unreleased)
+------------------
+
+- Fix removing DOM element on `destroy()` (#2258)
+
 5.0.0 (02.05.2021)
 ------------------
 - Add new `vertical` parameter enabling displaying waveforms vertically (#2195)
