@@ -16,6 +16,9 @@ describe('Drawer', function() {
     afterEach(function() {
         if (drawer) {
             drawer.destroy();
+
+            // destroy removed the dom element of the wrapper
+            expect(drawer.container.domElement.children.length).toEqual(0);
         }
         TestHelpers.removeElement(container);
     });
