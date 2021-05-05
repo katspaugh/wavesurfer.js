@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "directories": {
@@ -55,8 +55,8 @@
     "visualization"
   ],
   "devDependencies": {
-    "@babel/core": "^7.13.16",
-    "@babel/preset-env": "^7.13.15",
+    "@babel/core": "^7.14.0",
+    "@babel/preset-env": "^7.14.1",
     "@babel/register": "^7.13.16",
     "@chiragrupani/karma-chromium-edge-launcher": "^2.1.0",
     "babel-eslint": "^10.1.0",
@@ -65,7 +65,7 @@
     "babel-plugin-istanbul": "^6.0.0",
     "babel-plugin-proxy": "^1.1.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
-    "date-fns": "^2.21.1",
+    "date-fns": "^2.21.2",
     "debounce": "^1.2.1",
     "esdoc": "^1.1.0",
     "esdoc-accessor-plugin": "^1.0.0",
@@ -74,7 +74,7 @@
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-integrate-test-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^7.24.0",
+    "eslint": "^7.25.0",
     "htmlhint": "^0.14.2",
     "in-publish": "^2.0.1",
     "jasmine-core": "^3.7.1",
@@ -89,7 +89,7 @@
     "lint-staged": "^10.5.4",
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
-    "webpack": "^5.35.0",
+    "webpack": "^5.36.2",
     "webpack-cli": "^4.6.0",
     "webpack-dev-server": "^4.0.0-beta.2",
     "webpack-merge": "^5.7.3"
