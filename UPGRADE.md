@@ -13,6 +13,10 @@ This affects the following objects:
 
 2. **`WaveSurfer.exportPCM()` now returns a `Promise` that resolves to an `Array`**: Before, the Promise resolved to a JSON `string` representing the `Array`. You can get the same result by converting the resulting `Array` via [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).
 
+## Upgrading to version 4 from version 3
+
+(No backward-incompatible changes.)
+
 ## Upgrading to version 3 from version 2
 
 - `util.ajax` was deprecated; use `util.fetchFile instead.
