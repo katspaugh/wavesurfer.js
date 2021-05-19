@@ -77,7 +77,7 @@ export default class MarkersPlugin {
         this.util = ws.util;
         this.style = this.util.style;
         this.markerWidth = 11;
-        this.markerHeight = 22;
+        this.markerHeight = 11;
 
 
         this._onResize = () => {
@@ -168,14 +168,14 @@ export default class MarkersPlugin {
         const el = document.createElementNS(svgNS, "svg");
         const polygon = document.createElementNS(svgNS, "polygon");
 
-        el.setAttribute("viewBox", "0 0 40 80");
+        el.setAttribute("viewBox", "0 0 40 50");
 
         polygon.setAttribute("id", "polygon");
         polygon.setAttribute("stroke", "#979797");
         polygon.setAttribute("fill", color);
-        polygon.setAttribute("points", "20 0 40 30 40 80 0 80 0 30");
+        polygon.setAttribute("points", "20 0 25 30 40 50 0 50 15 30");
         if ( position == "top" ) {
-            polygon.setAttribute("transform", "rotate(180, 20 40)");
+            polygon.setAttribute("transform", "rotate(180, 20 30)");
         }
 
         el.appendChild(polygon);
@@ -209,9 +209,12 @@ export default class MarkersPlugin {
         this.style(line, {
             "flex-grow": 1,
             "margin-left": (this.markerWidth / 2 - 0.5) + "px",
-            background: "black",
+            "margin-bottom": "-6px",
+            "margin-top": "-6px",
+            background: marker.color,
             width: "1px",
-            opacity: 0.1
+            cursor: "pointer",
+            opacity: 0.8
         });
         el.appendChild(line);
 
@@ -237,7 +240,7 @@ export default class MarkersPlugin {
 
         el.appendChild(labelDiv);
 
-        labelDiv.addEventListener("click", e => {
+        el.addEventListener("click", e => {
             e.stopPropagation();
             this.wavesurfer.setCurrentTime(time);
         });
