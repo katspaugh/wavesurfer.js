@@ -138,7 +138,7 @@ export default class MarkersPlugin {
             position: params.position || DEFAULT_POSITION
         };
 
-        marker.el = this._createMarkerElement(marker, params.img);
+        marker.el = this._createMarkerElement(marker, params.markerElement);
 
         this.wrapper.appendChild(marker.el);
         this.markers.push(marker);
@@ -190,7 +190,7 @@ export default class MarkersPlugin {
         return el;
     }
 
-    _createMarkerElement(marker, img) {
+    _createMarkerElement(marker, markerElement) {
         let label = marker.label;
         let time = marker.time;
 
@@ -216,7 +216,7 @@ export default class MarkersPlugin {
         el.appendChild(line);
 
         const labelDiv = document.createElement('div');
-        const point = img || this._createPointerSVG(marker.color, marker.position);
+        const point = markerElement || this._createPointerSVG(marker.color, marker.position);
         labelDiv.appendChild(point);
 
         if ( label ) {
