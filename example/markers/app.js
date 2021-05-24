@@ -6,6 +6,8 @@ var wavesurfer; // eslint-disable-line no-var
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function() {
     // Init
+    var button = document.createElement("button");
+    button.innerHTML = "click";
     wavesurfer = WaveSurfer.create({
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
@@ -28,7 +30,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         time: 10,
                         label: "V2",
                         color: '#00ffcc',
-                        position: 'top'
+                        position: 'top',
+                        markerElement: button
                     },
                     {
                         time: 24,
