@@ -5,6 +5,7 @@ wavesurfer.js changelog
 ------------------
 
 - Fix removing DOM element on `destroy()` (#2258)
+- Markers plugin: add the ability to use custom HTML elements in place of the default marker icon by passing the new `markerElement` parameter to the marker constructor (#2269)
 
 5.0.0 (02.05.2021)
 ------------------
