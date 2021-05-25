@@ -7,6 +7,7 @@
  * @property {?label} string an optional marker label
  * @property {?color} string background color for marker
  * @property {?position} string "top" or "bottom", defaults to "bottom"
+ * @property {?markerElement} element "an HTML element to display instead of the default marker image"
  */
 
 
