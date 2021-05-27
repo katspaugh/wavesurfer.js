@@ -4,10 +4,10 @@
  * @desc The parameters used to describe a marker.
  * @example wavesurfer.addMarker(regionParams);
  * @property {number} time The time to set the marker at
- * @property {?label} string an optional marker label
- * @property {?color} string background color for marker
+ * @property {?label} string An optional marker label
+ * @property {?color} string Background color for marker
  * @property {?position} string "top" or "bottom", defaults to "bottom"
- * @property {?markerElement} element "an HTML element to display instead of the default marker image"
+ * @property {?markerElement} element An HTML element to display instead of the default marker image
  */
 
 
