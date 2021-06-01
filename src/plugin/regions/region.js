@@ -9,7 +9,7 @@
  * @extends {Observer}
  */
 export class Region {
-    constructor(params, regionsUtils, ws) {
+    constructor(params, pluginParams, regionsUtils, ws) {
         this.wavesurfer = ws;
         this.wrapper = ws.drawer.wrapper;
         this.util = ws.util;
@@ -77,7 +77,7 @@ export class Region {
             }
         }
 
-        this.formatTimeCallback = params.formatTimeCallback;
+        this.formatTimeCallback = pluginParams.formatTimeCallback;
         this.edgeScrollWidth = params.edgeScrollWidth;
         this.bindInOut();
         this.render();
