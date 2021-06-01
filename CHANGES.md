@@ -5,15 +5,26 @@ wavesurfer.js changelog
 
 x.x.x (unreleased)
 ------------------
+- Markers plugin: add the ability to use custom HTML elements in place of the default marker icon by passing the new `markerElement` parameter to the marker constructor (#2269)
+
+5.0.1 (05.05.2021)
+------------------
+- Fix removing DOM element on `destroy()` (#2258)
+
+5.0.0 (02.05.2021)
+------------------
+- Add new `vertical` parameter enabling displaying waveforms vertically (#2195)
+- Fixed `exportPCM()` to return a Promise containing valid JSON data with `noWindow`
+  (#1896, #1954)
+- Nullify `onaudioprocess` on remove to not execute in background (#2218)
 - Playhead plugin: add a new plugin that allows the setting of a independent
   "play head", or song-start position. (#2209)
 - Markers plugin: fix a bug where markers at the end of a track would cause
   incorrect click-to-seek behavior (#2208)
 - Regions plugin:
-  - Fix mouseup not firing if click & drag a region handle & release outside browser window (#2213)
+  - Fix mouseup not firing if click & drag a region handle & release outside the
+    browser window (#2213)
   - Added new `showTooltip` param allowing disabling region `title` tooltip (#2213)
-- Nullify `onaudioprocess` on remove to not execute in background (#2218)
-- Add new `vertical` param enabling displaying waveforms vertically (#2195)
 
 4.6.0 (04.03.2021)
 ------------------
