@@ -8,6 +8,7 @@ wavesurfer.js changelog
 - Regions plugin: check `maxLength` before resizing region (#2374)
 - Regions plugin: Add support for drag selection to be separated for each channel (#2380)
 - add optional `channelIdx` parameter to `setWaveColor`, `getWaveColor`, `setProgressColor`, `getProgressColor` methods (#2391)
+- Regions plugin: allow `formatTimeCallback` from plugin params to be used (#2294)
 
 5.2.0 (16.08.2021)
 ------------------

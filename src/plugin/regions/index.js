@@ -197,6 +197,11 @@ export default class RegionsPlugin {
             return null;
         }
 
+        // Take formatTimeCallback from plugin params if not already set
+        if (!params.formatTimeCallback && this.params.formatTimeCallback) {
+            params = {...params, formatTimeCallback: this.params.formatTimeCallback};
+        }
+
         if (!params.minLength && this.regionsMinLength) {
             params = {...params, minLength: this.regionsMinLength};
         }
