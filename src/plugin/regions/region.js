@@ -211,7 +211,7 @@ export class Region {
 
             // Default CSS properties for both handles.
             const css = {
-                cursor: 'row-resize',
+                cursor: this.vertical ? 'row-resize' : 'col-resize',
                 position: 'absolute',
                 top: '0px',
                 width: '2px',
