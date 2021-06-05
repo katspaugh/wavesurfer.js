@@ -89,12 +89,37 @@ export default class MultiCanvas extends Drawer {
          * @type {boolean}
          */
         this.vertical = params.vertical;
+
+        /**
+         * @private
+         * @type {IntersectionObserver}
+         */
+        this.intersectionObserver = null;
+
+        /**
+         * @private
+         * @type {boolean}
+         */
+        this.supportsIntersectionObserver = 'IntersectionObserver' in window;
     }
 
     /**
      * Initialize the drawer
      */
     init() {
+        if (this.supportsIntersectionObserver) {
+            // observe canvas entry intersections
+            const intersectionOptions = {
+                root: this.wrapper,
+                rootMargin: '0px',
+                threshold: 0.001
+            };
+            this.intersectionObserver = new IntersectionObserver(
+                entries => this.onIntersectionChange(entries),
+                intersectionOptions
+            );
+        }
+
         this.createWrapper();
         this.createElements();
     }
@@ -158,6 +183,10 @@ export default class MultiCanvas extends Drawer {
         let canvasWidth = this.maxCanvasWidth + this.overlap;
         const lastCanvas = this.canvases.length - 1;
         this.canvases.forEach((entry, i) => {
+            // reset entry
+            entry.renderComplete = false;
+            entry.cachedCoordinates = null;
+
             if (i == lastCanvas) {
                 canvasWidth = this.width - this.maxCanvasWidth * lastCanvas;
             }
@@ -172,11 +201,12 @@ export default class MultiCanvas extends Drawer {
      *
      */
     addCanvas() {
+        const leftOffset = this.maxCanvasElementWidth * this.canvases.length;
         const entry = new this.EntryClass();
         entry.canvasContextAttributes = this.canvasContextAttributes;
         entry.hasProgressCanvas = this.hasProgressCanvas;
         entry.halfPixel = this.halfPixel;
-        const leftOffset = this.maxCanvasElementWidth * this.canvases.length;
+        entry.usesIntersectionObserver = this.supportsIntersectionObserver;
 
         // wave
         let wave = util.withOrientation(
@@ -210,6 +240,11 @@ export default class MultiCanvas extends Drawer {
             entry.initProgress(progress);
         }
 
+        if (this.intersectionObserver) {
+            // start observing intersections
+            this.intersectionObserver.observe(entry.wave);
+        }
+
         this.canvases.push(entry);
     }
 
@@ -219,6 +254,11 @@ export default class MultiCanvas extends Drawer {
      */
     removeCanvas() {
         let lastEntry = this.canvases[this.canvases.length - 1];
+
+        if (this.intersectionObserver) {
+            // stop observing
+            this.intersectionObserver.unobserve(lastEntry.wave);
+        }
 
         // wave
         lastEntry.wave.parentElement.removeChild(lastEntry.wave.domElement);
@@ -564,6 +604,36 @@ export default class MultiCanvas extends Drawer {
      */
     applyCanvasTransforms(entry, vertical = false) {
         entry.applyCanvasTransforms(vertical);
+    }
+
+    /**
+     * Called when an entry intersection goes above or below threshold.
+     *
+     * @param {array} entries List of CanvasEntry instances.
+     * @private
+     */
+    onIntersectionChange(entries) {
+        entries.forEach(entry => {
+            let canvasEntry = this.getCanvasEntryByElement(entry.target);
+            canvasEntry.intersecting = entry.isIntersecting;
+
+            // entry is visible in view-port
+            if (entry.isIntersecting === true) {
+                // render content
+                canvasEntry.drawLinesFromCache();
+            }
+        });
+    }
+
+    /**
+     * Find `CanvasEntry` by HTML element.
+     *
+     * @private
+     * @param {HTMLCanvasElement} element Element
+     * @return {CanvasEntry} The canvas entry associated with `element`
+     */
+    getCanvasEntryByElement(element) {
+        return this.canvases.find(entry => entry.wave == element);
     }
 
     /**

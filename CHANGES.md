@@ -1,7 +1,9 @@
 wavesurfer.js changelog
 =======================
 
-x.x.x (unreleased) 
+- Use intersection observer to reduce canvas updates in `MultiCanvas` (#1622)
+
+x.x.x (unreleased)
 ------------------
 - Markers plugin: add the ability to use custom HTML elements in place of the default marker icon by passing the new `markerElement` parameter to the marker constructor (#2269)
 - Regions plugin: handle rollover cursor bug fix (#2293)
