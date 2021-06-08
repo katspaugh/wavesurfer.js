@@ -1,9 +1,10 @@
 wavesurfer.js changelog
 =======================
 
-x.x.x (unreleased) 
+x.x.x (unreleased)
 ------------------
 - Markers plugin: add the ability to use custom HTML elements in place of the default marker icon by passing the new `markerElement` parameter to the marker constructor (#2269)
+- Markers plugin:  trigger `marker-click` event on wavesurfer
 
 5.0.1 (05.05.2021)
 ------------------

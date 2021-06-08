@@ -241,7 +241,6 @@ export default class MarkersPlugin {
         labelDiv.addEventListener("click", e => {
             e.stopPropagation();
             this.wavesurfer.setCurrentTime(time);
-            this.fireEvent("click", e);
             this.wavesurfer.fireEvent("marker-click", marker, e);
         });
 
