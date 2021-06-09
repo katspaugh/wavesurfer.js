@@ -40,6 +40,7 @@ export default class MarkersPlugin {
     /**
      * @typedef {Object} MarkersPluginParams
      * @property {?MarkerParams[]} markers Initial set of markers
+     * @fires MarkersPlugin#marker-click
      */
 
     /**
