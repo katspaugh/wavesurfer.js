@@ -1,0 +1,85 @@
+---
+layout: default
+---
+<section>
+  <h1>Markers plugin</h1>
+
+  <p>Markers plugin very similar to what Pro Tools gives you. Just a way to easily jump around in a waveform.</p>
+
+  <h2>Quick start</h2>
+
+  <!-- main wavesurfer.js lib -->
+  <script src="//unpkg.com/wavesurfer.js"></script>
+
+  <!-- wavesurfer.js markers -->
+  <script src="//unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.markers.min.js"></script>
+
+  <script src="markers.js"></script>
+
+  <div id="waveform"></div>
+
+  <p align="center">
+      <button class="btn btn-primary" onclick="wavesurfer.playPause()">
+          <i class="glyphicon glyphicon-play"></i>
+          Play
+      </button>
+  </p>
+
+  <h2>Methods added to the <code>WaveSurfer</code> object</h2>
+
+  <ul>
+    <li>
+      <code>addMarker(options)</code> – Creates a marker on the waveform.
+    </li>
+
+    <li>
+      <code>clearMarkers()</code> – Removes all markers.
+    </li>
+  </ul>
+
+  <h2>Options</h2>
+
+  <p>Marker objects have the following options:</p>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>option</th>
+        <th>type</th>
+        <th>default</th>
+        <th>description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>id</code></td>
+        <td>number</td>
+        <td></td>
+        <td>The time to set the marker at</td>
+      </tr>
+      <tr>
+        <td><code>label</code></td>
+        <td>string</td>
+        <td></td>
+        <td>an optional marker label</td>
+      </tr>
+      <tr>
+        <td><code>color</code></td>
+        <td>string</td>
+        <td><code></code></td>
+        <td>background color for marker</td>
+      </tr>
+      <tr>
+        <td><code>position</code></td>
+        <td>string</td>
+        <td><code>"bottom"</code></td>
+        <td>"top" or "bottom", defaults to "bottom"</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>WaveSurfer events</h3>
+  <ul>
+    <li><code>marker-click</code></li>
+  </ul>
+</section>

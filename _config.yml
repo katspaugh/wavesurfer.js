@@ -60,5 +60,7 @@ navigation:
         url: /plugins/cursor.html
       - title: Spectrogram
         url: /plugins/spectrogram.html
+      - title: Markers
+        url: /plugins/markers.html
   - title: Projects
     url: /projects/
