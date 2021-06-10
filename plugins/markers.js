@@ -46,5 +46,5 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Load audio from URL
-    wavesurfer.load('../media/demo.wav');
+    wavesurfer.load('../example/media/demo.wav');
 });
