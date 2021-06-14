@@ -450,7 +450,7 @@ export default class TimelinePlugin {
         this.canvases.forEach(canvas => {
             const context = canvas.getContext('2d');
             if (context) {
-                canvas.getContext('2d').font = font;
+                context.font = font;
             }
         });
     }
@@ -477,14 +477,17 @@ export default class TimelinePlugin {
             };
 
             if (intersection.x1 < intersection.x2) {
-                canvas
-                    .getContext('2d')
-                    .fillRect(
-                        intersection.x1 - leftOffset,
-                        intersection.y1,
-                        intersection.x2 - intersection.x1,
-                        intersection.y2 - intersection.y1
-                    );
+                const context = canvas
+                    .getContext('2d');
+                if (context) {
+                    context
+                        .fillRect(
+                            intersection.x1 - leftOffset,
+                            intersection.y1,
+                            intersection.x2 - intersection.x1,
+                            intersection.y2 - intersection.y1
+                        );
+                }
             }
         });
     }
@@ -508,7 +511,7 @@ export default class TimelinePlugin {
                 return;
             }
 
-            if (xOffset + canvasWidth > x) {
+            if (xOffset + canvasWidth > x && context) {
                 textWidth = context.measureText(text).width;
                 context.fillText(text, x - xOffset, y);
             }
