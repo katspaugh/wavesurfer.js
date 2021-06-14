@@ -254,30 +254,32 @@ export default class SpectrogramPlugin {
         const width = my.width;
         const pixels = my.resample(frequenciesData);
         const heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
-        const imageData = spectrCc.createImageData(width, height);
-        let i;
-        let j;
-        let k;
+        if (spectrCc) {
+            const imageData = spectrCc.createImageData(width, height);
+            let i;
+            let j;
+            let k;
 
-        for (i = 0; i < pixels.length; i++) {
-            for (j = 0; j < pixels[i].length; j++) {
-                const colorMap = my.colorMap[pixels[i][j]];
-                /* eslint-disable max-depth */
-                for (k = 0; k < heightFactor; k++) {
-                    let y = height - j * heightFactor;
-                    if (heightFactor === 2 && k === 1) {
-                        y--;
+            for (i = 0; i < pixels.length; i++) {
+                for (j = 0; j < pixels[i].length; j++) {
+                    const colorMap = my.colorMap[pixels[i][j]];
+                    /* eslint-disable max-depth */
+                    for (k = 0; k < heightFactor; k++) {
+                        let y = height - j * heightFactor;
+                        if (heightFactor === 2 && k === 1) {
+                            y--;
+                        }
+                        const redIndex = y * (width * 4) + i * 4;
+                        imageData.data[redIndex] = colorMap[0] * 255;
+                        imageData.data[redIndex + 1] = colorMap[1] * 255;
+                        imageData.data[redIndex + 2] = colorMap[2] * 255;
+                        imageData.data[redIndex + 3] = colorMap[3] * 255;
                     }
-                    const redIndex = y * (width * 4) + i * 4;
-                    imageData.data[redIndex] = colorMap[0] * 255;
-                    imageData.data[redIndex + 1] = colorMap[1] * 255;
-                    imageData.data[redIndex + 2] = colorMap[2] * 255;
-                    imageData.data[redIndex + 3] = colorMap[3] * 255;
+                    /* eslint-enable max-depth */
                 }
-                /* eslint-enable max-depth */
             }
+            spectrCc.putImageData(imageData, 0, 0);
         }
-        spectrCc.putImageData(imageData, 0, 0);
     }
 
     getFrequencies(callback) {
@@ -378,47 +380,49 @@ export default class SpectrogramPlugin {
         this.labelsEl.height = this.height;
         this.labelsEl.width = bgWidth;
 
-        // fill background
-        ctx.fillStyle = bgFill;
-        ctx.fillRect(0, 0, bgWidth, getMaxY);
-        ctx.fill();
-        let i;
+        if (ctx) {
+            // fill background
+            ctx.fillStyle = bgFill;
+            ctx.fillRect(0, 0, bgWidth, getMaxY);
+            ctx.fill();
+            let i;
 
-        // render labels
-        for (i = 0; i <= labelIndex; i++) {
-            ctx.textAlign = textAlign;
-            ctx.textBaseline = 'middle';
+            // render labels
+            for (i = 0; i <= labelIndex; i++) {
+                ctx.textAlign = textAlign;
+                ctx.textBaseline = 'middle';
 
-            const freq = freqStart + step * i;
-            const index = Math.round(
-                (freq / (this.sampleRate / 2)) * this.fftSamples
-            );
-            const label = this.freqType(freq);
-            const units = this.unitType(freq);
-            const yLabelOffset = 2;
-            const x = 16;
-            let y;
+                const freq = freqStart + step * i;
+                const index = Math.round(
+                    (freq / (this.sampleRate / 2)) * this.fftSamples
+                );
+                const label = this.freqType(freq);
+                const units = this.unitType(freq);
+                const yLabelOffset = 2;
+                const x = 16;
+                let y;
 
-            if (i == 0) {
-                y = getMaxY + i - 10;
-                // unit label
-                ctx.fillStyle = textColorUnit;
-                ctx.font = fontSizeUnit + ' ' + fontType;
-                ctx.fillText(units, x + 24, y);
-                // freq label
-                ctx.fillStyle = textColorFreq;
-                ctx.font = fontSizeFreq + ' ' + fontType;
-                ctx.fillText(label, x, y);
-            } else {
-                y = getMaxY - i * 50 + yLabelOffset;
-                // unit label
-                ctx.fillStyle = textColorUnit;
-                ctx.font = fontSizeUnit + ' ' + fontType;
-                ctx.fillText(units, x + 24, y);
-                // freq label
-                ctx.fillStyle = textColorFreq;
-                ctx.font = fontSizeFreq + ' ' + fontType;
-                ctx.fillText(label, x, y);
+                if (i == 0) {
+                    y = getMaxY + i - 10;
+                    // unit label
+                    ctx.fillStyle = textColorUnit;
+                    ctx.font = fontSizeUnit + ' ' + fontType;
+                    ctx.fillText(units, x + 24, y);
+                    // freq label
+                    ctx.fillStyle = textColorFreq;
+                    ctx.font = fontSizeFreq + ' ' + fontType;
+                    ctx.fillText(label, x, y);
+                } else {
+                    y = getMaxY - i * 50 + yLabelOffset;
+                    // unit label
+                    ctx.fillStyle = textColorUnit;
+                    ctx.font = fontSizeUnit + ' ' + fontType;
+                    ctx.fillText(units, x + 24, y);
+                    // freq label
+                    ctx.fillStyle = textColorFreq;
+                    ctx.font = fontSizeFreq + ' ' + fontType;
+                    ctx.fillText(label, x, y);
+                }
             }
         }
     }

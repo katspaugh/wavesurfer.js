@@ -5,6 +5,8 @@ x.x.x (unreleased)
 ------------------
 - Markers plugin: add the ability to use custom HTML elements in place of the default marker icon by passing the new `markerElement` parameter to the marker constructor (#2269)
 - Regions plugin: handle rollover cursor bug fix (#2293)
+- Timeline plugin: prevent calling Canvas context methods on null values (#2299)
+- Spectrogram plugin: prevent calling Canvas context methods on null values (#2299)
 - Markers plugin: trigger `marker-click` event on wavesurfer (#2287)
 
 5.0.1 (05.05.2021)
