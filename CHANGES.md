@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-x.x.x (unreleased)
+5.0.2 (07.15.2021)
 ------------------
 - Markers plugin: add the ability to use custom HTML elements in place of the default marker icon by passing the new `markerElement` parameter to the marker constructor (#2269)
 - Regions plugin: handle rollover cursor bug fix (#2293)
