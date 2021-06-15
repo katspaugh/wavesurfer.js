@@ -140,6 +140,11 @@ export default class MarkersPlugin {
             position: params.position || DEFAULT_POSITION
         };
 
+        if (params.markerElement) {
+            this.markerWidth = params.markerElement.width;
+            this.markerHeight = params.markerElement.height;
+        }
+
         marker.el = this._createMarkerElement(marker, params.markerElement);
 
         this.wrapper.appendChild(marker.el);
