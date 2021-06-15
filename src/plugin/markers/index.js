@@ -40,6 +40,7 @@ export default class MarkersPlugin {
     /**
      * @typedef {Object} MarkersPluginParams
      * @property {?MarkerParams[]} markers Initial set of markers
+     * @fires MarkersPlugin#marker-click
      */
 
     /**
@@ -246,6 +247,7 @@ export default class MarkersPlugin {
         labelDiv.addEventListener("click", e => {
             e.stopPropagation();
             this.wavesurfer.setCurrentTime(time);
+            this.wavesurfer.fireEvent("marker-click", marker, e);
         });
 
         return el;

@@ -680,7 +680,7 @@ export class Region {
         this.element.addEventListener('touchstart', onDown);
 
         document.body.addEventListener('mousemove', onMove);
-        document.body.addEventListener('touchmove', onMove);
+        document.body.addEventListener('touchmove', onMove, {passive: false});
 
         document.addEventListener('mouseup', onUp);
         document.body.addEventListener('touchend', onUp);
