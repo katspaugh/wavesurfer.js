@@ -5,6 +5,7 @@ x.x.x (unreleased)
 ------------------
 - Markers plugin: add the ability to use custom HTML elements in place of the default marker icon by passing the new `markerElement` parameter to the marker constructor (#2269)
 - Regions plugin: handle rollover cursor bug fix (#2293)
+- Markers plugin: custom HTML elements are now centered over the marker line (#2298)
 
 5.0.1 (05.05.2021)
 ------------------
