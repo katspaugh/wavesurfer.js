@@ -77,7 +77,7 @@ export class Region {
             }
         }
 
-        this.formatTimeCallback = pluginParams.formatTimeCallback;
+        this.formatTimeCallback = params.formatTimeCallback || pluginParams.formatTimeCallback;
         this.edgeScrollWidth = params.edgeScrollWidth;
         this.bindInOut();
         this.render();
