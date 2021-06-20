@@ -1,13 +1,13 @@
 wavesurfer.js changelog
 =======================
 
-x.x.x (unreleased)
+5.1.0 (20.06.2021)
 ------------------
 - Markers plugin:
   - Add the ability to use custom HTML elements in place of the default marker icon by
     passing the new `markerElement` parameter to the marker constructor (#2269)
   - Custom HTML elements are now centered over the marker line (#2298)
-  - trigger `marker-click` event on wavesurfer (#2287)
+  - Trigger `marker-click` event on wavesurfer (#2287)
 - Regions plugin: handle rollover cursor bug fix (#2293)
 - Timeline plugin: prevent calling `Canvas` context methods on `null` values (#2299)
 - Spectrogram plugin: prevent calling `Canvas` context methods on `null` values (#2299)
