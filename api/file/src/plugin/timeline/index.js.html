@@ -526,7 +526,10 @@ export default class TimelinePlugin {
      */
     setFillStyles(fillStyle) {
         this.canvases.forEach(canvas =&gt; {
-            canvas.getContext(&apos;2d&apos;).fillStyle = fillStyle;
+            const context = canvas.getContext(&apos;2d&apos;);
+            if (context) {
+                context.fillStyle = fillStyle;
+            }
         });
     }
 
@@ -537,7 +540,10 @@ export default class TimelinePlugin {
      */
     setFonts(font) {
         this.canvases.forEach(canvas =&gt; {
-            canvas.getContext(&apos;2d&apos;).font = font;
+            const context = canvas.getContext(&apos;2d&apos;);
+            if (context) {
+                context.font = font;
+            }
         });
     }
 
@@ -563,14 +569,17 @@ export default class TimelinePlugin {
             };
 
             if (intersection.x1 &lt; intersection.x2) {
-                canvas
-                    .getContext(&apos;2d&apos;)
-                    .fillRect(
-                        intersection.x1 - leftOffset,
-                        intersection.y1,
-                        intersection.x2 - intersection.x1,
-                        intersection.y2 - intersection.y1
-                    );
+                const context = canvas
+                    .getContext(&apos;2d&apos;);
+                if (context) {
+                    context
+                        .fillRect(
+                            intersection.x1 - leftOffset,
+                            intersection.y1,
+                            intersection.x2 - intersection.x1,
+                            intersection.y2 - intersection.y1
+                        );
+                }
             }
         });
     }
@@ -594,7 +603,7 @@ export default class TimelinePlugin {
                 return;
             }
 
-            if (xOffset + canvasWidth &gt; x) {
+            if (xOffset + canvasWidth &gt; x &amp;&amp; context) {
                 textWidth = context.measureText(text).width;
                 context.fillText(text, x - xOffset, y);
             }
