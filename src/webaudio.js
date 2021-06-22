@@ -702,7 +702,11 @@ export default class WebAudio extends util.Observer {
         this.scheduledPause = null;
 
         this.startPosition += this.getPlayedTime();
-        this.source && this.source.stop(0);
+        try {
+            this.source && this.source.stop(0);
+        } catch (err) {
+            // no-op, see https://github.com/katspaugh/wavesurfer.js/issues/1473
+        }
 
         this.setState(PAUSED);
 
