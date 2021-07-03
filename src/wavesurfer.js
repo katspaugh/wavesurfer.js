@@ -1538,19 +1538,21 @@ export default class WaveSurfer extends util.Observer {
      * @param {function} callback The function to call on complete
      */
     decodeArrayBuffer(arraybuffer, callback) {
-        this.arraybuffer = arraybuffer;
-        this.backend.decodeArrayBuffer(
-            arraybuffer,
-            data => {
-                // Only use the decoded data if we haven't been destroyed or
-                // another decode started in the meantime
-                if (!this.isDestroyed && this.arraybuffer == arraybuffer) {
-                    callback(data);
-                    this.arraybuffer = null;
-                }
-            },
-            () => this.fireEvent('error', 'Error decoding audiobuffer')
-        );
+        if (!this.isDestroyed) {
+            this.arraybuffer = arraybuffer;
+            this.backend.decodeArrayBuffer(
+                arraybuffer,
+                data => {
+                    // Only use the decoded data if we haven't been destroyed or
+                    // another decode started in the meantime
+                    if (!this.isDestroyed && this.arraybuffer == arraybuffer) {
+                        callback(data);
+                        this.arraybuffer = null;
+                    }
+                },
+                () => this.fireEvent('error', 'Error decoding audiobuffer')
+            );
+        }
     }
 
     /**

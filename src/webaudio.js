@@ -702,7 +702,16 @@ export default class WebAudio extends util.Observer {
         this.scheduledPause = null;
 
         this.startPosition += this.getPlayedTime();
-        this.source && this.source.stop(0);
+        try {
+            this.source && this.source.stop(0);
+        } catch (err) {
+            // Calling stop can throw the following 2 errors:
+            // - RangeError (The value specified for when is negative.)
+            // - InvalidStateNode (The node has not been started by calling start().)
+            // We can safely ignore both errors, because:
+            // - The range is surely correct
+            // - The node might not have been started yet, in which case we just want to carry on without causing any trouble.
+        }
 
         this.setState(PAUSED);
 

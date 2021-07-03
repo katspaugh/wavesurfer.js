@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+x.x.x (unreleased)
+------------------
+- Fixed unhandled `Failed to execute 'stop' on 'AudioScheduledSourceNode'` error (#1473)
+- Fixed unhandled `Cannot read property 'decodeArrayBuffer' of null` error (#2279)
+
 5.1.0 (20.06.2021)
 ------------------
 - Markers plugin:
