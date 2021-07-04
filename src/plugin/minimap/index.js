@@ -307,27 +307,35 @@ export default class MinimapPlugin {
         }
 
         if (this.params.showOverview) {
-            this.overviewRegion.addEventListener('mousedown', event => {
-                this.draggingOverview = true;
-                relativePositionX = event.layerX;
-                positionMouseDown.clientX = event.clientX;
-                positionMouseDown.clientY = event.clientY;
-            });
+            let clientX = (event)=> event.changedTouches ? event.changedTouches[0].clientX : event.clientX
+        	let clientY = (event)=> event.changedTouches ? event.changedTouches[0].clientY : event.clientY
+			let layerX = (event)=> clientX(event) - event.target.getBoundingClientRect().x
 
-            this.drawer.wrapper.addEventListener('mousemove', event => {
+        	let mouseDown = event => {
+                this.draggingOverview = true;
+                relativePositionX = layerX(event);
+                positionMouseDown.clientX = clientX(event);
+                positionMouseDown.clientY = clientY(event);               
+            }
+            this.overviewRegion.addEventListener('mousedown', mouseDown);
+            this.overviewRegion.addEventListener('touchstart', mouseDown);
+
+            let mouseMove = event => {
                 if (this.draggingOverview) {
                     this.moveOverviewRegion(
-                        event.clientX -
+                        clientX(event) -
                             this.drawer.container.getBoundingClientRect().left -
                             relativePositionX
                     );
                 }
-            });
+            }
+            this.drawer.wrapper.addEventListener('mousemove', mouseMove);
+            this.drawer.wrapper.addEventListener('touchmove',  mouseMove);
 
-            this.drawer.wrapper.addEventListener('mouseup', event => {
+            let mouseUp = event => {
                 if (
-                    positionMouseDown.clientX - event.clientX === 0 &&
-                    positionMouseDown.clientX - event.clientX === 0
+                    positionMouseDown.clientX - clientX(event) === 0 &&
+                    positionMouseDown.clientX - clientX(event) === 0
                 ) {
                     seek = true;
                     this.draggingOverview = false;
@@ -335,7 +343,10 @@ export default class MinimapPlugin {
                     seek = false;
                     this.draggingOverview = false;
                 }
-            });
+            }
+            this.drawer.wrapper.addEventListener('mouseup', mouseUp);
+            this.drawer.wrapper.addEventListener('touchend',  mouseUp);
+            this.drawer.wrapper.addEventListener('touchcancel',  mouseUp);
         }
     }
 
