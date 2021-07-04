@@ -307,16 +307,16 @@ export default class MinimapPlugin {
         }
 
         if (this.params.showOverview) {
-            let clientX = (event)=> event.changedTouches ? event.changedTouches[0].clientX : event.clientX
-        	let clientY = (event)=> event.changedTouches ? event.changedTouches[0].clientY : event.clientY
-			let layerX = (event)=> clientX(event) - event.target.getBoundingClientRect().x
+            let clientX = (event)=> event.changedTouches ? event.changedTouches[0].clientX : event.clientX;
+            let clientY = (event)=> event.changedTouches ? event.changedTouches[0].clientY : event.clientY;
+            let layerX = (event)=> clientX(event) - event.target.getBoundingClientRect().x;
 
-        	let mouseDown = event => {
+            let mouseDown = event => {
                 this.draggingOverview = true;
                 relativePositionX = layerX(event);
                 positionMouseDown.clientX = clientX(event);
-                positionMouseDown.clientY = clientY(event);               
-            }
+                positionMouseDown.clientY = clientY(event);
+            };
             this.overviewRegion.addEventListener('mousedown', mouseDown);
             this.overviewRegion.addEventListener('touchstart', mouseDown);
 
@@ -328,9 +328,9 @@ export default class MinimapPlugin {
                             relativePositionX
                     );
                 }
-            }
+            };
             this.drawer.wrapper.addEventListener('mousemove', mouseMove);
-            this.drawer.wrapper.addEventListener('touchmove',  mouseMove);
+            this.drawer.wrapper.addEventListener('touchmove', mouseMove);
 
             let mouseUp = event => {
                 if (
