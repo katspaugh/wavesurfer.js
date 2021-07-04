@@ -343,10 +343,10 @@ export default class MinimapPlugin {
                     seek = false;
                     this.draggingOverview = false;
                 }
-            }
+            };
             this.drawer.wrapper.addEventListener('mouseup', mouseUp);
-            this.drawer.wrapper.addEventListener('touchend',  mouseUp);
-            this.drawer.wrapper.addEventListener('touchcancel',  mouseUp);
+            this.drawer.wrapper.addEventListener('touchend', mouseUp);
+            this.drawer.wrapper.addEventListener('touchcancel', mouseUp);
         }
     }
 
