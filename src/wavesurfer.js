@@ -807,9 +807,6 @@ export default class WaveSurfer extends util.Observer {
      * Starts playback from the current position. Optional start and end
      * measured in seconds can be used to set the range of audio to play.
      *
-     * An empty audio base64 file will be played first to ensure devices
-     * play the audio while the device is in silent mode
-     *
      * @param {?number} start Position to start at
      * @param {?number} end Position to end at
      * @emits WaveSurfer#interaction
@@ -820,6 +817,7 @@ export default class WaveSurfer extends util.Observer {
      */
     play(start, end) {
         if (this.params.ignoreSilenceMode) {
+            // ignores device hardware silence mode
             util.ignoreSilenceMode();
         }
 
