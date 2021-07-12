@@ -3,11 +3,52 @@ wavesurfer.js changelog
 
 x.x.x (unreleased)
 ------------------
+- Fixed unhandled `Failed to execute 'stop' on 'AudioScheduledSourceNode'` error (#1473)
+- Fixed unhandled `Cannot read property 'decodeArrayBuffer' of null` error (#2279)
 
+5.1.0 (20.06.2021)
+------------------
+- Markers plugin:
+  - Add the ability to use custom HTML elements in place of the default marker icon by
+    passing the new `markerElement` parameter to the marker constructor (#2269)
+  - Custom HTML elements are now centered over the marker line (#2298)
+  - Trigger `marker-click` event on wavesurfer (#2287)
+- Regions plugin: handle rollover cursor bug fix (#2293)
+- Timeline plugin: prevent calling `Canvas` context methods on `null` values (#2299)
+- Spectrogram plugin: prevent calling `Canvas` context methods on `null` values (#2299)
+
+5.0.1 (05.05.2021)
+------------------
+- Fix removing DOM element on `destroy()` (#2258)
+
+5.0.0 (02.05.2021)
+------------------
+- Add new `vertical` parameter enabling displaying waveforms vertically (#2195)
+- Fixed `exportPCM()` to return a Promise containing valid JSON data with `noWindow`
+  (#1896, #1954)
+- Nullify `onaudioprocess` on remove to not execute in background (#2218)
+- Playhead plugin: add a new plugin that allows the setting of a independent
+  "play head", or song-start position. (#2209)
+- Markers plugin: fix a bug where markers at the end of a track would cause
+  incorrect click-to-seek behavior (#2208)
+- Regions plugin:
+  - Fix mouseup not firing if click & drag a region handle & release outside the
+    browser window (#2213)
+  - Added new `showTooltip` param allowing disabling region `title` tooltip (#2213)
+
+4.6.0 (04.03.2021)
+------------------
+- Webaudio: fix `decodeAudioData` handling in Safari (#2201)
+- Markers plugin: add new plugin that allows for timeline markers (#2196)
+
+4.5.0 (14.02.2021)
+------------------
+- Split channels: `overlay` param now properly displays a single canvas (#2161)
 - Fixed memory leak with `destroy()` in `WebAudio` backend (#1940)
-- Regions plugin: Stop region dragging when mouse leaves canvas (#2158)
-- Fixed `WaveSurfer.load(url)` not working when passing a HTMLMediaElement as the url parameter, with the WebAudio backend. 
+- Fixed `WaveSurfer.load(url)` not working when passing a HTMLMediaElement as
+  the url parameter, with the WebAudio backend.
 - Microphone plugin: remove deprecated `MediaStream.stop` call (#2168)
+- Regions plugin: stop region dragging when mouse leaves canvas (#2158)
 
 4.4.0 (13.01.2021)
 ------------------

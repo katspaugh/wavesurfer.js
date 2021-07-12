@@ -1,5 +1,5 @@
 // Create an instance
-let wavesurfer;
+var wavesurfer;
 let wavesurferWithOptions;
 
 window.onload = function() {

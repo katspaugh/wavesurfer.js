@@ -115,6 +115,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {boolean} splitChannels=false Render with separate waveforms for
  * the channels of the audio
  * @property {SplitChannelOptions} splitChannelsOptions={} Options for splitChannel rendering
+ * @property {boolean} vertical=false Render the waveform vertically instead of horizontally.
  * @property {string} waveColor='#999' The fill color of the waveform after the
  * cursor.
  * @property {object} xhr={} XHR options. For example:
@@ -293,6 +294,7 @@ export default class WaveSurfer extends util.Observer {
             filterChannels: [],
             relativeNormalization: false
         },
+        vertical: false,
         waveColor: '#999',
         xhr: {}
     };
@@ -401,7 +403,11 @@ export default class WaveSurfer extends util.Observer {
         }
 
         if (this.params.rtl === true) {
-            util.style(this.container, { transform: 'rotateY(180deg)' });
+            if (this.params.vertical === true) {
+                util.style(this.container, { transform: 'rotateX(180deg)' });
+            } else {
+                util.style(this.container, { transform: 'rotateY(180deg)' });
+            }
         }
 
         if (this.params.backgroundColor) {
@@ -1543,19 +1549,21 @@ export default class WaveSurfer extends util.Observer {
      * @param {function} callback The function to call on complete
      */
     decodeArrayBuffer(arraybuffer, callback) {
-        this.arraybuffer = arraybuffer;
-        this.backend.decodeArrayBuffer(
-            arraybuffer,
-            data => {
-                // Only use the decoded data if we haven't been destroyed or
-                // another decode started in the meantime
-                if (!this.isDestroyed && this.arraybuffer == arraybuffer) {
-                    callback(data);
-                    this.arraybuffer = null;
-                }
-            },
-            () => this.fireEvent('error', 'Error decoding audiobuffer')
-        );
+        if (!this.isDestroyed) {
+            this.arraybuffer = arraybuffer;
+            this.backend.decodeArrayBuffer(
+                arraybuffer,
+                data => {
+                    // Only use the decoded data if we haven't been destroyed or
+                    // another decode started in the meantime
+                    if (!this.isDestroyed && this.arraybuffer == arraybuffer) {
+                        callback(data);
+                        this.arraybuffer = null;
+                    }
+                },
+                () => this.fireEvent('error', 'Error decoding audiobuffer')
+            );
+        }
     }
 
     /**
@@ -1615,7 +1623,8 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
-     * Exports PCM data into a JSON array and opens in a new window.
+     * Exports PCM data into a JSON array and optionally opens in a new window
+     * as valid JSON Blob instance.
      *
      * @param {number} length=1024 The scale in which to export the peaks
      * @param {number} accuracy=10000
@@ -1635,16 +1644,18 @@ export default class WaveSurfer extends util.Observer {
             peaks,
             val => Math.round(val * accuracy) / accuracy
         );
-        return new Promise((resolve, reject) => {
-            const json = JSON.stringify(arr);
 
-            if (!noWindow) {
-                window.open(
-                    'data:application/json;charset=utf-8,' +
-                        encodeURIComponent(json)
+        return new Promise((resolve, reject) => {
+            if (!noWindow){
+                const blobJSON = new Blob(
+                    [JSON.stringify(arr)],
+                    {type: 'application/json;charset=utf-8'}
                 );
+                const objURL = URL.createObjectURL(blobJSON);
+                window.open(objURL);
+                URL.revokeObjectURL(objURL);
             }
-            resolve(json);
+            resolve(arr);
         });
     }
 

@@ -261,7 +261,7 @@ export default class WebAudio extends util.Observer {
 
     /** @private */
     removeOnAudioProcess() {
-        this.scriptNode.onaudioprocess = () => {};
+        this.scriptNode.onaudioprocess = null;
     }
     /** Create analyser node to perform audio analysis */
     createAnalyserNode() {
@@ -348,18 +348,19 @@ export default class WebAudio extends util.Observer {
                 this.ac && this.ac.sampleRate ? this.ac.sampleRate : 44100
             );
         }
-        if ('AudioContext' in window) {
-            this.offlineAc.decodeAudioData(arraybuffer).then(
-                (data) => callback(data)
-            ).catch(
-                (err) => errback(err)
-            );
-        } else {
-            // Safari: no support for Promise-based decodeAudioData yet
+        if ('webkitAudioContext' in window) {
+            // Safari: no support for Promise-based decodeAudioData enabled
+            // Enable it in Safari using the Experimental Features > Modern WebAudio API option
             this.offlineAc.decodeAudioData(
                 arraybuffer,
                 data => callback(data),
                 errback
+            );
+        } else {
+            this.offlineAc.decodeAudioData(arraybuffer).then(
+                (data) => callback(data)
+            ).catch(
+                (err) => errback(err)
             );
         }
     }
@@ -701,7 +702,16 @@ export default class WebAudio extends util.Observer {
         this.scheduledPause = null;
 
         this.startPosition += this.getPlayedTime();
-        this.source && this.source.stop(0);
+        try {
+            this.source && this.source.stop(0);
+        } catch (err) {
+            // Calling stop can throw the following 2 errors:
+            // - RangeError (The value specified for when is negative.)
+            // - InvalidStateNode (The node has not been started by calling start().)
+            // We can safely ignore both errors, because:
+            // - The range is surely correct
+            // - The node might not have been started yet, in which case we just want to carry on without causing any trouble.
+        }
 
         this.setState(PAUSED);
 
