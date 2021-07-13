@@ -69,6 +69,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * pixels.
  * @property {boolean} hideScrollbar=false Whether to hide the horizontal
  * scrollbar when one would normally be shown.
+ * @property {boolean} ignoreSilenceMode=false If true, ignores device silence mode
+ * when using the `WebAudio` backend.
  * @property {boolean} interact=true Whether the mouse interaction will be
  * enabled at initialization. You can switch this parameter at any time later
  * on.
@@ -268,6 +270,7 @@ export default class WaveSurfer extends util.Observer {
         forceDecode: false,
         height: 128,
         hideScrollbar: false,
+        ignoreSilenceMode: false,
         interact: true,
         loopSelection: true,
         maxCanvasWidth: 4000,
@@ -813,6 +816,11 @@ export default class WaveSurfer extends util.Observer {
      * wavesurfer.play(1, 5);
      */
     play(start, end) {
+        if (this.params.ignoreSilenceMode) {
+            // ignores device hardware silence mode
+            util.ignoreSilenceMode();
+        }
+
         this.fireEvent('interaction', () => this.play(start, end));
         return this.backend.play(start, end);
     }

@@ -1,8 +1,10 @@
 wavesurfer.js changelog
 =======================
 
-x.x.x (unreleased)
+5.2.0 (unreleased)
 ------------------
+- Add `ignoreSilenceMode` option to ignore iOS hardware silence switch when using the
+  `WebAudio` backend (#1864)
 - Fixed unhandled `Failed to execute 'stop' on 'AudioScheduledSourceNode'` error (#1473)
 - Fixed unhandled `Cannot read property 'decodeArrayBuffer' of null` error (#2279)
 
