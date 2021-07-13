@@ -21,6 +21,7 @@ export default class WebAudio extends util.Observer {
     stateBehaviors = {
         [PLAYING]: {
             init() {
+                this.createScriptNode();
                 this.addOnAudioProcess();
             },
             getPlayedPercents() {
@@ -156,7 +157,6 @@ export default class WebAudio extends util.Observer {
      */
     init() {
         this.createVolumeNode();
-        this.createScriptNode();
         this.createAnalyserNode();
 
         this.setState(PAUSED);
@@ -227,6 +227,9 @@ export default class WebAudio extends util.Observer {
     }
     /** Create ScriptProcessorNode to process audio */
     createScriptNode() {
+        if ( this.scriptNode )
+            return;
+
         if (this.params.audioScriptProcessor) {
             this.scriptNode = this.params.audioScriptProcessor;
         } else {
