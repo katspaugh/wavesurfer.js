@@ -201,7 +201,7 @@ export default class RegionsPlugin {
             params = {...params, minLength: this.regionsMinLength};
         }
 
-        const region = new this.wavesurfer.Region(params, this.util, this.wavesurfer);
+        const region = new this.wavesurfer.Region(params, this.params, this.util, this.wavesurfer);
 
         this.list[region.id] = region;
 
