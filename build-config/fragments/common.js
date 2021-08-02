@@ -20,8 +20,7 @@ module.exports = {
     mode: 'development',
     output: {
         libraryTarget: 'umd',
-        umdNamedDefine: true,
-        globalObject: 'this'
+        umdNamedDefine: true
     },
     performance: {
         hints: false
