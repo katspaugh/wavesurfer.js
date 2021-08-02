@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-5.2.0 (unreleased)
+5.2.0 (02.08.2021)
 ------------------
 - Add `ignoreSilenceMode` option to ignore iOS hardware silence switch when using the
   `WebAudio` backend (#1864)
