@@ -1,7 +1,7 @@
 'use strict';
 
 // Create an instance
-let wavesurfer;
+var wavesurfer;
 
 /**
  * Use formatTimeCallback to style the notch labels as you wish, such

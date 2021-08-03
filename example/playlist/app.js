@@ -1,5 +1,5 @@
 // Create a WaveSurfer instance
-let wavesurfer;
+var wavesurfer;
 
 // Init on DOM ready
 document.addEventListener('DOMContentLoaded', function() {

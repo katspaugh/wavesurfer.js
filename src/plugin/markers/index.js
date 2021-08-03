@@ -4,9 +4,10 @@
  * @desc The parameters used to describe a marker.
  * @example wavesurfer.addMarker(regionParams);
  * @property {number} time The time to set the marker at
- * @property {?label} string an optional marker label
- * @property {?color} string background color for marker
+ * @property {?label} string An optional marker label
+ * @property {?color} string Background color for marker
  * @property {?position} string "top" or "bottom", defaults to "bottom"
+ * @property {?markerElement} element An HTML element to display instead of the default marker image
  */
 
 
@@ -39,6 +40,7 @@ export default class MarkersPlugin {
     /**
      * @typedef {Object} MarkersPluginParams
      * @property {?MarkerParams[]} markers Initial set of markers
+     * @fires MarkersPlugin#marker-click
      */
 
     /**
@@ -138,7 +140,12 @@ export default class MarkersPlugin {
             position: params.position || DEFAULT_POSITION
         };
 
-        marker.el = this._createMarkerElement(marker);
+        if (params.markerElement) {
+            this.markerWidth = params.markerElement.width;
+            this.markerHeight = params.markerElement.height;
+        }
+
+        marker.el = this._createMarkerElement(marker, params.markerElement);
 
         this.wrapper.appendChild(marker.el);
         this.markers.push(marker);
@@ -154,7 +161,9 @@ export default class MarkersPlugin {
      */
     remove(index) {
         let marker = this.markers[index];
-        if ( !marker ) return;
+        if (!marker) {
+            return;
+        }
 
         this.wrapper.removeChild(marker.el);
         this.markers.splice(index, 1);
@@ -188,7 +197,7 @@ export default class MarkersPlugin {
         return el;
     }
 
-    _createMarkerElement(marker) {
+    _createMarkerElement(marker, markerElement) {
         let label = marker.label;
         let time = marker.time;
 
@@ -214,7 +223,7 @@ export default class MarkersPlugin {
         el.appendChild(line);
 
         const labelDiv = document.createElement('div');
-        const point = this._createPointerSVG(marker.color, marker.position);
+        const point = markerElement || this._createPointerSVG(marker.color, marker.position);
         labelDiv.appendChild(point);
 
         if ( label ) {
@@ -238,6 +247,7 @@ export default class MarkersPlugin {
         labelDiv.addEventListener("click", e => {
             e.stopPropagation();
             this.wavesurfer.setCurrentTime(time);
+            this.wavesurfer.fireEvent("marker-click", marker, e);
         });
 
         return el;

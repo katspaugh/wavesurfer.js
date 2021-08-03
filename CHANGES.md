@@ -1,11 +1,43 @@
 wavesurfer.js changelog
 =======================
 
-x.x.x (unreleased)
+5.2.0 (unreleased)
 ------------------
+- Add `ignoreSilenceMode` option to ignore iOS hardware silence switch when using the
+  `WebAudio` backend (#1864)
+- Fixed unhandled `Failed to execute 'stop' on 'AudioScheduledSourceNode'` error (#1473)
+- Fixed unhandled `Cannot read property 'decodeArrayBuffer' of null` error (#2279)
+- Fix `setVolume` not working with the `MediaElementWebAudio` backend on iOS Safari (#2211)
+
+5.1.0 (20.06.2021)
+------------------
+- Markers plugin:
+  - Add the ability to use custom HTML elements in place of the default marker icon by
+    passing the new `markerElement` parameter to the marker constructor (#2269)
+  - Custom HTML elements are now centered over the marker line (#2298)
+  - Trigger `marker-click` event on wavesurfer (#2287)
+- Regions plugin: handle rollover cursor bug fix (#2293)
+- Timeline plugin: prevent calling `Canvas` context methods on `null` values (#2299)
+- Spectrogram plugin: prevent calling `Canvas` context methods on `null` values (#2299)
+
+5.0.1 (05.05.2021)
+------------------
+- Fix removing DOM element on `destroy()` (#2258)
+
+5.0.0 (02.05.2021)
+------------------
+- Add new `vertical` parameter enabling displaying waveforms vertically (#2195)
+- Fixed `exportPCM()` to return a Promise containing valid JSON data with `noWindow`
+  (#1896, #1954)
+- Nullify `onaudioprocess` on remove to not execute in background (#2218)
+- Playhead plugin: add a new plugin that allows the setting of a independent
+  "play head", or song-start position. (#2209)
 - Markers plugin: fix a bug where markers at the end of a track would cause
   incorrect click-to-seek behavior (#2208)
-- Fix `setVolume` not working with the `MediaElementWebAudio` backend on iOS Safari.
+- Regions plugin:
+  - Fix mouseup not firing if click & drag a region handle & release outside the
+    browser window (#2213)
+  - Added new `showTooltip` param allowing disabling region `title` tooltip (#2213)
 
 4.6.0 (04.03.2021)
 ------------------

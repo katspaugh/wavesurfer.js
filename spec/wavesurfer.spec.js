@@ -321,11 +321,24 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#exportPCM} */
-    it('return Promise with PCM data formatted using JSON.stringify', function(done) {
-        wavesurfer.exportPCM().then(pcmData => {
-            expect(pcmData).toBeNonEmptyString();
+    it('return Promise with PCM array data', function(done) {
+        wavesurfer.load(TestHelpers.EXAMPLE_FILE_PATH);
+        wavesurfer.once('ready', function() {
+            wavesurfer.exportPCM(1024, 10000, false, 0, 100).then(pcmData => {
+                expect(pcmData instanceof Array).toBeTruthy();
 
-            done();
+                done();
+            });
+        });
+    });
+    it('return Promise with PCM array data in new window', function(done) {
+        wavesurfer.load(TestHelpers.EXAMPLE_FILE_PATH);
+        wavesurfer.once('ready', function() {
+            wavesurfer.exportPCM(1024, 10000, true, 0, 100).then(pcmData => {
+                expect(pcmData instanceof Array).toBeTruthy();
+
+                done();
+            });
         });
     });
 

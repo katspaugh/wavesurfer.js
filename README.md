@@ -135,11 +135,14 @@ If you want to use [the VS Code - Debugger for Chrome](https://github.com/Micros
 ## Editing documentation
 The homepage and documentation files are maintained in the [`gh-pages` branch](https://github.com/katspaugh/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
 
+## Updating the NPM package
+When preparing a new release, update the version in the `package.json` and have it merged to master. The new version of the package will be published to NPM automatically via GitHub Actions.
+
 ## Credits
 
-Initial idea by [Alex Khokhulin](https://github.com/xoxulin). Many
-thanks to
-[the awesome contributors](https://github.com/katspaugh/wavesurfer.js/contributors)!
+The main maintainer: <img src="https://avatars.githubusercontent.com/u/305679" width="16" height="16" /> [Thijs Triemstra](https://github.com/thijstriemstra)
+
+Many thanks to [all the awesome contributors](https://github.com/katspaugh/wavesurfer.js/contributors)!
 
 ## License
 
