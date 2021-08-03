@@ -82,7 +82,7 @@ export default class MediaElementWebAudio extends MediaElement {
      * which set the volume on the media element. On iOS Safari, media element volume cannot be
      * programmatically set. Using the gain node allows volume to be changed programmatically.
      *
-     * @since 4.7.0
+     * @since 5.2.0
      * @param {number} value A floating point value between 0 and 1.
      */
     setVolume(value) {
@@ -92,7 +92,9 @@ export default class MediaElementWebAudio extends MediaElement {
     /**
      * Get the current volume.
      *
-     * @since 4.7.0 See {@link MediaElementWebAudio#setVolume}
+     * See {@link MediaElementWebAudio#setVolume}
+     *
+     * @since 5.2.0
      * @return {number} value A floating point value between 0 and 1.
      */
     getVolume() {
