@@ -7,6 +7,7 @@ wavesurfer.js changelog
   `WebAudio` backend (#1864)
 - Fixed unhandled `Failed to execute 'stop' on 'AudioScheduledSourceNode'` error (#1473)
 - Fixed unhandled `Cannot read property 'decodeArrayBuffer' of null` error (#2279)
+- Regions plugin: Add `direction` and `action` fields  to the region-updated event params (#2339)
 
 5.1.0 (20.06.2021)
 ------------------
