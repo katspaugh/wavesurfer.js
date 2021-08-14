@@ -87,6 +87,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * `'audio'|'video'` ('video' only for `MediaElement`)
  * @property {number} minPxPerSec=20 Minimum number of pixels per second of
  * audio.
+ * @property {number} sampleStep=null If set, use the sampleStep in webaudio. Default behavior is to use ~~(sampleSize / 10).
  * @property {boolean} normalize=false If true, normalize by the maximum peak
  * instead of 1.0.
  * @property {boolean} partialRender=false Use the PeakCache to improve
@@ -278,6 +279,7 @@ export default class WaveSurfer extends util.Observer {
         mediaControls: false,
         mediaType: 'audio',
         minPxPerSec: 20,
+        sampleStep: null,
         normalize: false,
         partialRender: false,
         pixelRatio:

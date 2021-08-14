@@ -444,19 +444,17 @@ export default class WebAudio extends util.Observer {
             this.buffer = newBuffer.buffer;
         }
 
-        const sampleSize = this.buffer.length / length;
-        const sampleStep = ~~(sampleSize / 10) || 1;
+        const sampleSize = ~~(this.buffer.length / length);
+        const sampleStep = this.params.sampleStep ? this.params.sampleStep : (~~(sampleSize / 10) || 1);
         const channels = this.buffer.numberOfChannels;
         let c;
-
         for (c = 0; c < channels; c++) {
             const peaks = this.splitPeaks[c];
             const chan = this.buffer.getChannelData(c);
             let i;
-
             for (i = first; i <= last; i++) {
-                const start = ~~(i * sampleSize);
-                const end = ~~(start + sampleSize);
+                const start = i * sampleSize;
+                const end = start + sampleSize;
                 /**
                  * Initialize the max and min to the first sample of this
                  * subrange, so that even if the samples are entirely
@@ -472,9 +470,7 @@ export default class WebAudio extends util.Observer {
 
                     if (value > max) {
                         max = value;
-                    }
-
-                    if (value < min) {
+                    } else if (value < min) {
                         min = value;
                     }
                 }
