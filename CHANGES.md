@@ -1,15 +1,16 @@
 wavesurfer.js changelog
 =======================
 
-5.2.0 (unreleased)
+5.2.0 (16.08.2021)
 ------------------
 - Add `ignoreSilenceMode` option to ignore iOS hardware silence switch when using the
   `WebAudio` backend (#1864)
 - Fixed unhandled `Failed to execute 'stop' on 'AudioScheduledSourceNode'` error (#1473)
 - Fixed unhandled `Cannot read property 'decodeArrayBuffer' of null` error (#2279)
-- Timeline plugin: fixed unhandled `null is not an object (evaluating context.canvas)` error
-  in Safari v14 (#2333)
-- Regions plugin: Add `direction` and `action` fields  to the region-updated event params (#2339)
+- Timeline plugin: fixed unhandled `null is not an object (evaluating context.canvas)`
+  error in Safari v14 (#2333)
+- Regions plugin: add `direction` and `action` fields to the `region-updated` event
+  params (#2339)
 
 5.1.0 (20.06.2021)
 ------------------
