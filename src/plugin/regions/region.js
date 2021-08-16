@@ -87,7 +87,7 @@ export class Region {
     }
 
     /* Update region params. */
-    update(params) {
+    update(params, eventParams) {
         if (params.start != null) {
             this.start = Number(params.start);
         }
@@ -125,7 +125,7 @@ export class Region {
 
         this.updateRender();
         this.fireEvent('update');
-        this.wavesurfer.fireEvent('region-updated', this);
+        this.wavesurfer.fireEvent('region-updated', this, eventParams);
     }
 
     /* Remove a single region. */
@@ -708,10 +708,33 @@ export class Region {
             delta = this.start * -1;
         }
 
+        const eventParams = {
+            direction: this._getDragDirection(delta),
+            action: 'drag'
+        };
+
         this.update({
             start: this.start + delta,
             end: this.end + delta
-        });
+        }, eventParams);
+    }
+
+    /**
+     * Returns the direction of dragging region based on delta
+     * Negative delta means region is moving to the left
+     * Positive - to the right
+     * For zero delta the direction is not defined
+     * @param {number} delta Drag offset
+     * @returns {string|null} Direction 'left', 'right' or null
+     */
+    _getDragDirection(delta) {
+        if (delta < 0) {
+            return 'left';
+        }
+        if (delta > 0) {
+            return 'right';
+        }
+        return null;
     }
 
     /**
@@ -724,6 +747,11 @@ export class Region {
      */
     onResize(delta, direction) {
         const duration = this.wavesurfer.getDuration();
+        const eventParams = {
+            action: 'resize',
+            direction: direction === 'start' ? 'right' : 'left'
+        };
+
         if (direction === 'start') {
             // Check if changing the start by the given delta would result in the region being smaller than minLength
             // Ignore cases where we are making the region wider rather than shrinking it
@@ -738,7 +766,7 @@ export class Region {
             this.update({
                 start: Math.min(this.start + delta, this.end),
                 end: Math.max(this.start + delta, this.end)
-            });
+            }, eventParams);
         } else {
             // Check if changing the end by the given delta would result in the region being smaller than minLength
             // Ignore cases where we are making the region wider rather than shrinking it
@@ -753,7 +781,7 @@ export class Region {
             this.update({
                 start: Math.min(this.end + delta, this.start),
                 end: Math.max(this.end + delta, this.start)
-            });
+            }, eventParams);
         }
     }
 
