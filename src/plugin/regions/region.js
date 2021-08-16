@@ -749,7 +749,7 @@ export class Region {
         const duration = this.wavesurfer.getDuration();
         const eventParams = {
             action: 'resize',
-            direction: direction === 'start' ? 'right' : 'left'
+            direction: direction === 'start' ? 'left' : 'right'
         };
 
         if (direction === 'start') {
