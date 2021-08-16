@@ -7,6 +7,8 @@ wavesurfer.js changelog
   `WebAudio` backend (#1864)
 - Fixed unhandled `Failed to execute 'stop' on 'AudioScheduledSourceNode'` error (#1473)
 - Fixed unhandled `Cannot read property 'decodeArrayBuffer' of null` error (#2279)
+- Timeline plugin: fixed unhandled `null is not an object (evaluating context.canvas)` error
+  in Safari v14 (#2333)
 
 5.1.0 (20.06.2021)
 ------------------
