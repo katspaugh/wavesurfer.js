@@ -505,18 +505,20 @@ export default class TimelinePlugin {
 
         this.canvases.forEach(canvas => {
             const context = canvas.getContext('2d');
-            const canvasWidth = context.canvas.width;
+            if (context) {
+                const canvasWidth = context.canvas.width;
 
-            if (xOffset > x + textWidth) {
-                return;
+                if (xOffset > x + textWidth) {
+                    return;
+                }
+
+                if (xOffset + canvasWidth > x && context) {
+                    textWidth = context.measureText(text).width;
+                    context.fillText(text, x - xOffset, y);
+                }
+
+                xOffset += canvasWidth;
             }
-
-            if (xOffset + canvasWidth > x && context) {
-                textWidth = context.measureText(text).width;
-                context.fillText(text, x - xOffset, y);
-            }
-
-            xOffset += canvasWidth;
         });
     }
 
