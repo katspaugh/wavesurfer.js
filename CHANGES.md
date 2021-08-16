@@ -9,6 +9,7 @@ wavesurfer.js changelog
 - Fixed unhandled `Cannot read property 'decodeArrayBuffer' of null` error (#2279)
 - Timeline plugin: fixed unhandled `null is not an object (evaluating context.canvas)` error
   in Safari v14 (#2333)
+- Regions plugin: Add `direction` and `action` fields  to the region-updated event params (#2339)
 
 5.1.0 (20.06.2021)
 ------------------
