@@ -146,14 +146,25 @@ export default class CanvasEntry {
     /**
      * Set the fill styles for wave and progress
      *
-     * @param {string} waveColor Fill color for the wave canvas
-     * @param {?string} progressColor Fill color for the progress canvas
+     * @param {string|string[]} waveColor Fill color for the wave canvas, or an array of colors to apply as a gradient
+     * @param {?string|string[]} progressColor Fill color for the progress canvas, or an array of colors to apply as a gradient
      */
     setFillStyles(waveColor, progressColor) {
-        this.waveCtx.fillStyle = waveColor;
-
+        if (typeof waveColor == 'string') {
+            this.waveCtx.fillStyle = waveColor;
+        } else if (typeof waveColor == 'object') {
+            const waveGradient = this.waveCtx.createLinearGradient(0, 0, 0, this.waveCtx.canvas.height);
+            waveColor.forEach((color, index) => waveGradient.addColorStop((index / waveColor.length), color));
+            this.waveCtx.fillStyle = waveGradient;
+        }
         if (this.hasProgressCanvas) {
-            this.progressCtx.fillStyle = progressColor;
+            if (typeof progressColor == 'string') {
+                this.progressCtx.fillStyle = progressColor;
+            } else if (typeof progressColor == 'object') {
+                const progressColorGradient = this.progressCtx.createLinearGradient(0, 0, 0, this.progressCtx.canvas.height);
+                progressColor.forEach((color, index) => progressColorGradient.addColorStop((index / progressColor.length), color));
+                this.progressCtx.fillStyle = progressColorGradient;
+            }
         }
     }
 
