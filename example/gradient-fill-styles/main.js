@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     button.addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
 
 
-    // WaveSurfer with bars example
+    // WaveSurfer with gradient fill styles - bars example
     wavesurferWithBars = WaveSurfer.create({
         container: document.querySelector('#waveform-with-bars'),
         barGap: 6,
