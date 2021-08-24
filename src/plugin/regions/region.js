@@ -559,7 +559,6 @@ export class Region {
             if (updated) {
                 updated = false;
                 // ** CUSTOMIZATION **
-                this.util.preventClick(undefined, this.wavesurfer.params.doc);
                 this.fireEvent('update-end', e);
                 this.wavesurfer.fireEvent('region-update-end', this, e);
             }
