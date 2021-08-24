@@ -293,8 +293,6 @@ export default class RegionsPlugin {
             scrollDirection = null;
 
             if (region) {
-                // ** CUSTOMIZATION **
-                this.util.preventClick(undefined, this.wavesurfer.params.doc);
                 region.fireEvent('update-end', e);
                 this.wavesurfer.fireEvent('region-update-end', region, e);
             }
