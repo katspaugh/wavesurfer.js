@@ -145,9 +145,10 @@ export default class CanvasEntry {
 
     /**
      * Set the fill styles for wave and progress
-     *
-     * @param {string|string[]} waveColor Fill color for the wave canvas, or an array of colors to apply as a gradient
-     * @param {?string|string[]} progressColor Fill color for the progress canvas, or an array of colors to apply as a gradient
+     * @param {string|string[]} waveColor Fill color for the wave canvas,
+     * or an array of colors to apply as a gradient
+     * @param {?string|string[]} progressColor Fill color for the progress canvas,
+     * or an array of colors to apply as a gradient
      */
     setFillStyles(waveColor, progressColor) {
         this.waveCtx.fillStyle = this.getFillStyle(this.waveCtx, waveColor);
@@ -158,11 +159,16 @@ export default class CanvasEntry {
     }
 
     /**
-     * Set the fill styles for wave and progress
+     * Utility function to handle wave color arguments
      *
+     * When the color argument type is a string, it will be returned as is.
+     * Otherwise, it will be treated as an array, and a canvas gradient will
+     * be returned
+     *
+     * @since 5.3.0
      * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
      * @param {string|string[]} color Fill color for the wave canvas, or an array of colors to apply as a gradient
-     * @returns {string | CanvasGradient} Returns a string fillstyle value, or a canvas gradient
+     * @returns {string|CanvasGradient} Returns a string fillstyle value, or a canvas gradient
      */
     getFillStyle(ctx, color) {
         if (typeof color == 'string') {

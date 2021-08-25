@@ -276,13 +276,7 @@ describe('WaveSurfer/playback:', function() {
         wavesurfer.setWaveColor(colors);
         const waveColor = wavesurfer.getWaveColor();
 
-        expect(waveColor).toEqual([
-            "red",
-            "green",
-            "purple",
-            "yellow",
-            "rgba(0,255,255,.5)"
-        ]);
+        expect(waveColor).toEqual(colors);
     });
 
     /** @test {WaveSurfer#getProgressColor} */
