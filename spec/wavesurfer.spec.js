@@ -264,6 +264,21 @@ describe('WaveSurfer/playback:', function() {
         expect(waveColor).toEqual(color);
     });
 
+    /** @test {WaveSurfer#setWaveColorGradient} */
+    it('allow setting waveColor gradient', function() {
+        let colors = [
+            "red",
+            "green",
+            "purple",
+            "yellow",
+            "rgba(0,255,255,.5)"
+        ];
+        wavesurfer.setWaveColor(colors);
+        const waveColor = wavesurfer.getWaveColor();
+
+        expect(waveColor).toEqual(colors);
+    });
+
     /** @test {WaveSurfer#getProgressColor} */
     it('allow getting progressColor', function() {
         const progressColor = wavesurfer.getProgressColor();
