@@ -1136,7 +1136,6 @@ export default class WaveSurfer extends util.Observer {
      *
      * @param {string|object} color A CSS color string, or an array of CSS color strings.
      * @example wavesurfer.setWaveColor('#ddd');
-     * @example wavesurfer.setWavecolor(['blue','black','yellow']);
      */
     setWaveColor(color) {
         this.params.waveColor = color;
@@ -1157,7 +1156,6 @@ export default class WaveSurfer extends util.Observer {
      *
      * @param {string|object} color A CSS color string, or an array of CSS color strings.
      * @example wavesurfer.setProgressColor('#400');
-     * @example wavesurfer.setWavecolor(['blue','black','yellow']);
      */
     setProgressColor(color) {
         this.params.progressColor = color;

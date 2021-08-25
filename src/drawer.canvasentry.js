@@ -150,22 +150,29 @@ export default class CanvasEntry {
      * @param {?string|string[]} progressColor Fill color for the progress canvas, or an array of colors to apply as a gradient
      */
     setFillStyles(waveColor, progressColor) {
-        if (typeof waveColor == 'string') {
-            this.waveCtx.fillStyle = waveColor;
-        } else if (typeof waveColor == 'object') {
-            const waveGradient = this.waveCtx.createLinearGradient(0, 0, 0, this.waveCtx.canvas.height);
-            waveColor.forEach((color, index) => waveGradient.addColorStop((index / waveColor.length), color));
-            this.waveCtx.fillStyle = waveGradient;
-        }
+        this.waveCtx.fillStyle = this.getFillStyle(this.waveCtx, waveColor);
+
         if (this.hasProgressCanvas) {
-            if (typeof progressColor == 'string') {
-                this.progressCtx.fillStyle = progressColor;
-            } else if (typeof progressColor == 'object') {
-                const progressColorGradient = this.progressCtx.createLinearGradient(0, 0, 0, this.progressCtx.canvas.height);
-                progressColor.forEach((color, index) => progressColorGradient.addColorStop((index / progressColor.length), color));
-                this.progressCtx.fillStyle = progressColorGradient;
-            }
+            this.progressCtx.fillStyle = this.getFillStyle(this.progressCtx, progressColor);
         }
+    }
+
+    /**
+     * Set the fill styles for wave and progress
+     *
+     * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
+     * @param {string|string[]} color Fill color for the wave canvas, or an array of colors to apply as a gradient
+     * @returns {string | CanvasGradient} Returns a string fillstyle value, or a canvas gradient
+     */
+    getFillStyle(ctx, color) {
+        if (typeof waveColor == 'string') {
+            return color;
+        }
+
+        const waveGradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+        color.forEach((value, index) => waveGradient.addColorStop((index / color.length), value));
+
+        return waveGradient;
     }
 
     /**
@@ -368,7 +375,7 @@ export default class CanvasEntry {
         ctx.lineTo(
             (canvasStart - first) * scale,
             halfOffset -
-                Math.round((peaks[2 * canvasStart + 1] || 0) / absmaxHalf)
+            Math.round((peaks[2 * canvasStart + 1] || 0) / absmaxHalf)
         );
 
         ctx.closePath();
