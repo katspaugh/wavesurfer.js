@@ -165,7 +165,7 @@ export default class CanvasEntry {
      * @returns {string | CanvasGradient} Returns a string fillstyle value, or a canvas gradient
      */
     getFillStyle(ctx, color) {
-        if (typeof waveColor == 'string') {
+        if (typeof color == 'string') {
             return color;
         }
 
