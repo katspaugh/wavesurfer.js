@@ -1,7 +1,7 @@
 {
-  "coverage": "66.16%",
-  "expectCount": 600,
-  "actualCount": 397,
+  "coverage": "66.22%",
+  "expectCount": 601,
+  "actualCount": 398,
   "files": {
     "src/drawer.canvasentry.js": {
       "expectCount": 23,
@@ -358,6 +358,11 @@
       "actualCount": 2,
       "undocumentLines": []
     },
+    "src/util/silence-mode.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
     "src/util/style.js": {
       "expectCount": 1,
       "actualCount": 1,
@@ -367,8 +372,8 @@
       "expectCount": 95,
       "actualCount": 93,
       "undocumentLines": [
-        474,
-        495
+        477,
+        498
       ]
     },
     "src/webaudio.js": {

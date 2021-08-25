@@ -83,6 +83,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-withOrientation">withOrientation</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ignoreSilenceMode">ignoreSilenceMode</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
 </ul>
@@ -267,6 +268,35 @@ cycle</p>
     <td>
       
       
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+          
+          
+          
+          <span class="code" data-ice="name"><span><a href="function/index.html#static-function-ignoreSilenceMode">ignoreSilenceMode</a></span></span><span class="code" data-ice="signature">()</span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Ignores device silence mode when using the <code>WebAudio</code> backend.</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      <span class="since" data-ice="since">since 5.2.0</span>
     </td>
   </tr>
 <tr data-ice="target">
@@ -937,6 +967,55 @@ let prefix = &apos;foo-&apos;;
 console.log(getId(prefix)); // logs &apos;foo-b5pors4ru6g&apos;</code></pre>
     </div>
 </div>
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="static-function-ignoreSilenceMode">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    
+    <span class="code" data-ice="name">ignoreSilenceMode</span><span class="code" data-ice="signature">()</span>
+    <span class="right-info">
+      
+      <span class="since" data-ice="since">since 5.2.0</span>
+      <span data-ice="source"><span><a href="file/src/util/silence-mode.js.html#lineNumber12">source</a></span></span>
+    </span>
+  </h3>
+
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import ignoreSilenceMode from &apos;<span><a href="file/src/util/silence-mode.js.html#lineNumber12">wavesurfer.js/src/util/silence-mode.js</a></span>&apos;</code></pre></div>
+  
+  
+  <div data-ice="description"><p>Ignores device silence mode when using the <code>WebAudio</code> backend.</p>
+<p>Many mobile devices contain a hardware button to mute the ringtone for incoming
+calls and messages. Unfortunately, on some platforms like iOS, this also mutes
+wavesurfer&apos;s audio when using the <code>WebAudio</code> backend. This function creates a
+temporary <code>&lt;audio&gt;</code> element that makes sure the WebAudio backend keeps playing
+when muting the device ringer.</p>
+</div>
+
+  
+
+  <div data-ice="properties">
+</div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
 
   
 

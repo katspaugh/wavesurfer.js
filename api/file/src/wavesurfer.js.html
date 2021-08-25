@@ -83,6 +83,7 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-min">min</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-withOrientation">withOrientation</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-preventClick">preventClick</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-ignoreSilenceMode">ignoreSilenceMode</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-style">style</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ListenerDescriptor">ListenerDescriptor</a></span></span></li>
 </ul>
@@ -161,6 +162,8 @@ import MediaElementWebAudio from &apos;./mediaelement-webaudio&apos;;
  * pixels.
  * @property {boolean} hideScrollbar=false Whether to hide the horizontal
  * scrollbar when one would normally be shown.
+ * @property {boolean} ignoreSilenceMode=false If true, ignores device silence mode
+ * when using the `WebAudio` backend.
  * @property {boolean} interact=true Whether the mouse interaction will be
  * enabled at initialization. You can switch this parameter at any time later
  * on.
@@ -360,6 +363,7 @@ export default class WaveSurfer extends util.Observer {
         forceDecode: false,
         height: 128,
         hideScrollbar: false,
+        ignoreSilenceMode: false,
         interact: true,
         loopSelection: true,
         maxCanvasWidth: 4000,
@@ -905,6 +909,11 @@ export default class WaveSurfer extends util.Observer {
      * wavesurfer.play(1, 5);
      */
     play(start, end) {
+        if (this.params.ignoreSilenceMode) {
+            // ignores device hardware silence mode
+            util.ignoreSilenceMode();
+        }
+
         this.fireEvent(&apos;interaction&apos;, () =&gt; this.play(start, end));
         return this.backend.play(start, end);
     }
@@ -1630,19 +1639,21 @@ export default class WaveSurfer extends util.Observer {
      * @param {function} callback The function to call on complete
      */
     decodeArrayBuffer(arraybuffer, callback) {
-        this.arraybuffer = arraybuffer;
-        this.backend.decodeArrayBuffer(
-            arraybuffer,
-            data =&gt; {
-                // Only use the decoded data if we haven&apos;t been destroyed or
-                // another decode started in the meantime
-                if (!this.isDestroyed &amp;&amp; this.arraybuffer == arraybuffer) {
-                    callback(data);
-                    this.arraybuffer = null;
-                }
-            },
-            () =&gt; this.fireEvent(&apos;error&apos;, &apos;Error decoding audiobuffer&apos;)
-        );
+        if (!this.isDestroyed) {
+            this.arraybuffer = arraybuffer;
+            this.backend.decodeArrayBuffer(
+                arraybuffer,
+                data =&gt; {
+                    // Only use the decoded data if we haven&apos;t been destroyed or
+                    // another decode started in the meantime
+                    if (!this.isDestroyed &amp;&amp; this.arraybuffer == arraybuffer) {
+                        callback(data);
+                        this.arraybuffer = null;
+                    }
+                },
+                () =&gt; this.fireEvent(&apos;error&apos;, &apos;Error decoding audiobuffer&apos;)
+            );
+        }
     }
 
     /**

@@ -162,6 +162,12 @@ window.esdocSearchIndex = [
     "function"
   ],
   [
+    "wavesurfer.js/src/util/silence-mode.js~ignoresilencemode",
+    "function/index.html#static-function-ignoreSilenceMode",
+    "<span>ignoreSilenceMode</span> <span class=\"search-result-import-path\">wavesurfer.js/src/util/silence-mode.js</span>",
+    "function"
+  ],
+  [
     "wavesurfer.js/src/util/max.js~max",
     "function/index.html#static-function-max",
     "<span>max</span> <span class=\"search-result-import-path\">wavesurfer.js/src/util/max.js</span>",
@@ -2751,6 +2757,12 @@ window.esdocSearchIndex = [
     "src/util/request-animation-frame.js",
     "file/src/util/request-animation-frame.js.html",
     "src/util/request-animation-frame.js",
+    "file"
+  ],
+  [
+    "src/util/silence-mode.js",
+    "file/src/util/silence-mode.js.html",
+    "src/util/silence-mode.js",
     "file"
   ],
   [
