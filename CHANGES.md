@@ -1,5 +1,9 @@
 wavesurfer.js changelog
 =======================
+5.4.0 (unreleased)
+------------------
+- add image handling for `waveColor` and `progressColor` parameters (#2345)
+
 5.3.0 (unreleased)
 ------------------
 - add additional type to `waveColor` and `progressColor` parameters to support linear gradients (#2345)

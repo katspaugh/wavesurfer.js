@@ -145,10 +145,12 @@ export default class CanvasEntry {
 
     /**
      * Set the fill styles for wave and progress
-     * @param {string|string[]} waveColor Fill color for the wave canvas,
-     * or an array of colors to apply as a gradient
-     * @param {?string|string[]} progressColor Fill color for the progress canvas,
-     * or an array of colors to apply as a gradient
+     * @param {string|string[]|HTMLImageElement} waveColor Fill color for the
+     * wave canvas, an array of colors to apply as a gradient, or a loaded
+     * HTML image element.
+     * @param {?string|string[]|HTMLImageElement} progressColor Fill color for the
+     * wave canvas, an array of colors to apply as a gradient, or a loaded
+     * HTML image element.
      */
     setFillStyles(waveColor, progressColor) {
         this.waveCtx.fillStyle = this.getFillStyle(this.waveCtx, waveColor);
@@ -168,17 +170,25 @@ export default class CanvasEntry {
      * @since 5.3.0
      * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
      * @param {string|string[]} color Fill color for the wave canvas, or an array of colors to apply as a gradient
-     * @returns {string|CanvasGradient} Returns a string fillstyle value, or a canvas gradient
+     * @returns {string|CanvasGradient|HTMLImageElement} Returns a string
+     * fillstyle value, a canvas gradient or an canvas pattern.
      */
     getFillStyle(ctx, color) {
+        // if the color argument is a string, handle it as a CSS color value
         if (typeof color == 'string') {
             return color;
         }
-
-        const waveGradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-        color.forEach((value, index) => waveGradient.addColorStop((index / color.length), value));
-
-        return waveGradient;
+        // if it was not a string, check to see if it is an array
+        // if it is an array, handle it as a gradient
+        let thislength = Object.keys(color).length;
+        if (thislength > 0) {
+            const waveGradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+            color.forEach((value, index) => waveGradient.addColorStop((index / color.length), value));
+            return waveGradient;
+        }
+        // if it was neither array nor string, handle it as an image
+        let pattern = ctx.createPattern(color, "repeat");
+        return pattern;
     }
 
     /**

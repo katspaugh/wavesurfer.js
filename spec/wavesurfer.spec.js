@@ -279,6 +279,15 @@ describe('WaveSurfer/playback:', function() {
         expect(waveColor).toEqual(colors);
     });
 
+    /** @test {WaveSurfer#setWaveColorImage} */
+    it('allow setting waveColor Image', function() {
+        var img = new Image(); // Create new img element
+        img.src = "data:image/gif;base64,R0lGODlhCwALAIAAAAAA3pn/ZiH5BAEAAAEALAAAAAALAAsAAAIUhA+hkcuO4lmNVindo7qyrIXiGBYAOw==";
+        wavesurfer.setWaveColor(img);
+        const waveColor = wavesurfer.getWaveColor();
+        expect(waveColor).toEqual(img);
+    });
+
     /** @test {WaveSurfer#getProgressColor} */
     it('allow getting progressColor', function() {
         const progressColor = wavesurfer.getProgressColor();
