@@ -12,7 +12,8 @@ document.addEventListener("DOMContentLoaded", function() {
         progressColor: document.querySelector("#wavesurfer-wood"),
         cursorColor:'rgba(255,255,255,.5)',
         cursorWidth: 20,
-        fillParent: true
+        fillParent: true,
+        responsive: true
     });
     let wavesurfer2 = WaveSurfer.create({
         container: document.querySelector("#waveform2"),
