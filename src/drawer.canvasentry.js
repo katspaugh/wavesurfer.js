@@ -192,8 +192,7 @@ export default class CanvasEntry {
 
         // if it is an object, handle it as a CanvasImageSource
         if (typeof color == "object") {
-            let pattern = ctx.createPattern(color, "repeat");
-            return pattern;
+            return ctx.createPattern(color, "repeat");
         }
 
         // if it passed none of the checks, return a default value

@@ -1,6 +1,6 @@
 wavesurfer.js changelog
 =======================
-5.4.0 (unreleased)
+6.0.0 (unreleased)
 ------------------
 - add image handling for `waveColor` and `progressColor` parameters (#2345)
 

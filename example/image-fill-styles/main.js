@@ -50,7 +50,6 @@ document.addEventListener("DOMContentLoaded", function() {
     wavesurfer5.load("../media/demo.mp3");
 
     // Set the playhead to halfway through the media, as to demonstrate the colorProgress gradient
-    // wavesurfer.on("ready", () => wavesurfer.seekTo(0.1));
     wavesurfer2.on("ready", () => wavesurfer2.seekTo(0.2));
     wavesurfer3.on("ready", () => wavesurfer3.seekTo(0.8));
     wavesurfer4.on("ready", () => wavesurfer4.seekTo(0.4));
