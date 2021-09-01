@@ -150,3 +150,23 @@ Many thanks to [all the awesome contributors](https://github.com/katspaugh/waves
 
 This work is licensed under a
 [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause).
+
+
+
+
+## SANDI CHANGES
+```
+f844fb60019f181709c265a565e7a34e09d6b6f6 - add old progress api -- REMOVED
+0ded29b7fd43251816652a45eaf4df81a2a3d6e7 - disconnect analyser from biquadfilters
+515de03d8476d1d3c17c096abc06cc526973ccc6 - add support for scrolling by page --- REMOVED
+b60c04055c6d9bfba1b91edbb03b4a8e63c316d1 - add extraOffset params to cursor
+aca175aaea8921eb770c7369357d36154fb260b0 - use translateX
+d187c95f7c58c10ea56749cba41478479274900e - use transform to update progress wave
+46176be3d042e6b154d6584ba6d7d8dd381bfb55 - update progress with requestAnimationFrame instead of audioprocess
+ec1daf4b61957505d594238f943c57def54bc1b0 - add redraw event handler
+7adc9b0ba185c10fb6d35b30d1bd1b199a2333c4 - add yarn lock + post analyser node
+```
+
+
+
+
