@@ -195,28 +195,28 @@ class PluginClass {
      *
      * @param {Object} params={} The plugin params (specific to the plugin)
      */
-    create(params) {}
+    create(params) { }
     /**
      * Construct the plugin
      *
      * @param {Object} params={} The plugin params (specific to the plugin)
      * @param {Object} ws The wavesurfer instance
      */
-    constructor(params, ws) {}
+    constructor(params, ws) { }
     /**
      * Initialise the plugin
      *
      * Start doing something. This is called by
      * `wavesurfer.initPlugin(pluginName)`
      */
-    init() {}
+    init() { }
     /**
      * Destroy the plugin instance
      *
      * Stop doing something. This is called by
      * `wavesurfer.destroyPlugin(pluginName)`
      */
-    destroy() {}
+    destroy() { }
 }
 
 /**
@@ -1138,8 +1138,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setWaveColor('#ddd');
      */
     setWaveColor(color) {
-        this.params.waveColor = color;
-        this.drawBuffer();
+        this.setWaveStyle(color);
     }
 
     /**
@@ -1158,7 +1157,32 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setProgressColor('#400');
      */
     setProgressColor(color) {
-        this.params.progressColor = color;
+        this.setProgressStyle(color);
+    }
+
+    /**
+     * Set the style used to fill the waveform.
+     *
+     * @param {string|object} style A CSS color string, or an array of CSS
+     * color strings, or a Canvas Image Source (HTML Image, SVG Image, HTML
+     * Video, HTML Canvas, Image Bitmap and Offscreen Canvas elements)
+     * @example wavesurfer.setWaveStyle(document.getElementById('#myImageElement'));
+     */
+    setWaveStyle(style) {
+        this.params.waveColor = style;
+        this.drawBuffer();
+    }
+
+    /**
+     * Set the style used to fill the waveform before the cursor.
+     *
+     * @param {string|object} style A CSS color string, or an array of CSS
+     * color strings, or a Canvas Image Source (HTML Image, SVG Image, HTML
+     * Video, HTML Canvas, Image Bitmap and Offscreen Canvas elements)
+     * @example wavesurfer.setWaveStyle(document.getElementById('#myImageElement'));
+     */
+    setProgressStyle(style) {
+        this.params.progressColor = style;
         this.drawBuffer();
     }
 
@@ -1252,8 +1276,8 @@ export default class WaveSurfer extends util.Observer {
     drawBuffer() {
         const nominalWidth = Math.round(
             this.getDuration() *
-                this.params.minPxPerSec *
-                this.params.pixelRatio
+            this.params.minPxPerSec *
+            this.params.pixelRatio
         );
         const parentWidth = this.drawer.getWidth();
         let width = nominalWidth;
@@ -1424,7 +1448,7 @@ export default class WaveSurfer extends util.Observer {
                 // eslint-disable-next-line no-console
                 console.warn(
                     'Preload parameter of wavesurfer.load will be ignored because:\n\t- ' +
-                        activeReasons.join('\n\t- ')
+                    activeReasons.join('\n\t- ')
                 );
                 // stop invalid values from being used
                 preload = null;
@@ -1643,10 +1667,10 @@ export default class WaveSurfer extends util.Observer {
         );
 
         return new Promise((resolve, reject) => {
-            if (!noWindow){
+            if (!noWindow) {
                 const blobJSON = new Blob(
                     [JSON.stringify(arr)],
-                    {type: 'application/json;charset=utf-8'}
+                    { type: 'application/json;charset=utf-8' }
                 );
                 const objURL = URL.createObjectURL(blobJSON);
                 window.open(objURL);
@@ -1698,7 +1722,7 @@ export default class WaveSurfer extends util.Observer {
             // See Firefox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=1583815
             if (this.currentRequest._reader) {
                 // Ignoring exceptions thrown by call to cancel()
-                this.currentRequest._reader.cancel().catch(err => {});
+                this.currentRequest._reader.cancel().catch(err => { });
             }
 
             this.currentRequest.controller.abort();

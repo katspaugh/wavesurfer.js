@@ -1,65 +1,79 @@
 <!DOCTYPE html>
 <html>
-   <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-      <title>wavesurfer.js | Image Fill Styles Example</title>
-      <link href="data:image/gif;" rel="icon" type="image/x-icon" />
-      <!-- Bootstrap -->
-      <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
-      <link rel="stylesheet" href="../css/style.css" />
-      <link rel="stylesheet" href="../css/ribbon.css" />
-      <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
-      <!-- wavesurfer.js -->
-      <script src="../../dist/wavesurfer.js"></script>
-      <!-- Demo -->
-      <script src="main.js"></script>
-      <!-- highlight.js for syntax highlighting in this example -->
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
-      <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
-      <script>hljs.highlightAll();</script>
-      <style>#waveform {
-         z-index:-5;
-         margin-top:-150px;
-         }
-         .controls {
-         margin-top:-180px;
-         }
-      </style>
-   </head>
-   <body itemscope itemtype="http://schema.org/WebApplication">
-      <div class="container">
-         <div class="header">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>wavesurfer.js | Image Fill Styles Example</title>
+    <link href="data:image/gif;" rel="icon" type="image/x-icon">
+    <!-- Bootstrap -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/ribbon.css">
+    <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png">
+    <!-- wavesurfer.js -->
+    <script src="../../dist/wavesurfer.js"></script>
+    <!-- Demo -->
+    <script src="main.js"></script>
+    <!-- highlight.js for syntax highlighting in this example -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+    <script>
+        hljs.highlightAll();
+    </script>
+    <style>
+        #waveform {
+            z-index: -5;
+            margin-top: -150px;
+        }
+
+        .controls {
+            margin-top: -180px;
+        }
+    </style>
+</head>
+<body itemscope itemtype="http://schema.org/WebApplication">
+    <div class="container">
+        <div class="header">
             <ul class="nav nav-pills pull-right">
-               <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
+                <li>
+                    <a href="/">
+                        <i class="glyphicon glyphicon-home"></i>
+                    </a>
+                </li>
             </ul>
             <h1 itemprop="name">Image Fill Style</h1>
-         </div>
-         <p class="marketing">
+        </div>
+        <p class="marketing">
             Use any image element that has been loaded onto the page as the wave background.
-         </p>
-         <div id="demo">
-            <img width="100" src="water2.jpg" id="wavesurfer-water" style="display:none;" />
-            <img width="100" src="wood.jpg" id="wavesurfer-wood" style="display:none;" />
+        </p>
+        <div id="demo">
+            <img width="100" src="water2.jpg" id="wavesurfer-water" style="display:none;">
+            <img width="100" src="wood.jpg" id="wavesurfer-wood" style="display:none;">
             <div id="waveformwrapper">
-               <div id="waveform"></div>
+                <div id="waveform"></div>
             </div>
             <div class="controls">
-               <button id="waveform-btn">Play</button>
+                <button id="waveform-btn">Play</button>
             </div>
-         </div>
-         <div class="row marketing">
+        </div>
+        <div class="row marketing">
             <h3>Image Fill Style example</h3>
-            <hr />
-            <p><b>Important: </b> You need to load the image before passing it to the WaveSurfer.create method, as illustrated below.</p>
+            <hr>
+            <p>
+                <b>Important:</b> You need to load the image before passing it to the WaveSurfer.create method, as illustrated below.
+            </p>
             <h4>HTML</h4>
             <p>
-            <pre><code>&lt;!-- HTML --&gt;
+                <pre>
+                        <code>&lt;!-- HTML --&gt;
 &lt;!-- Load wave and progress images, set the style display properties to none. --&gt;
 &lt;img width=&quot;100&quot; src=&quot;water2.jpg&quot; id=&quot;wavesurfer-water&quot; style=&quot;display:none;&quot; /&gt;
 &lt;img width=&quot;100&quot; src=&quot;wood.jpg&quot;   id=&quot;wavesurfer-wood&quot;  style=&quot;display:none;&quot; /&gt;
-&lt;div id=&quot;waveform&quot;&gt;&lt;/div&gt;</code></pre>
-            <h4>JS</h4>
-            <pre><code>/**
+&lt;div id=&quot;waveform&quot;&gt;&lt;/div&gt;</code>
+                    </pre>
+                <h4>JS</h4>
+                <pre>
+                        <code>/**
  * JS
  * Pass the image element as an argument for the waveColor (and/or progressColor) parameter.
  */
@@ -67,107 +81,128 @@ wavesurfer = WaveSurfer.create({
     container: document.querySelector("#waveform"),
     waveColor: document.querySelector("#wavesurfer-water"),
     progressColor: document.querySelector("#wavesurfer-wood")
-});
-</code></pre>
+});</code>
+                    </pre>
             </p>
-         </div>
-         <div class="row marketing">
+        </div>
+        <div class="row marketing">
             <h3>More Image Fill Style examples</h3>
-            <hr />
+            <hr>
             <div>
-               <table  padding="5">
-                  <tr>
-                     <td>
-                        <img
-                           src="tile3.jpg"
-                           id="wavesurfer-tile2"
-                           width="50"
-                           />
-                        <img
-                           src="tile1.jpg"
-                           id="wavesurfer-tile1"
-                           width="50"
-                           />
-                     </td>
-                     <td width="500">
-                        <div id="waveform2"></div>
-                     </td>
-                     <td>
-                        <button id="waveform-btn2">Play</button>
-                     </td>
-                  </tr>
-                  <tr>
-                     <td><img width="100" src="boxes.jpg" id="wavesurfer-boxes" /></td>
-                     <td>
-                        <div id="waveform3"></div>
-                     </td>
-                     <td>
-                        <button id="waveform-btn3">Play</button>
-                     </td>
-                  </tr>
-               </table>
-               <h3>Mixing Image, Gradient and Color fill styles</h3>
-               <table>
-                  <tr>
-                     <td><img width="100" src="abstract.jpg" id="wavesurfer-abstract" /></td>
-                     <td width="500">
-                        <div id="waveform4"></div>
-                     </td>
-                     <td>
-                        <button id="waveform-btn4">Play</button>
-                     </td>
-                  </tr>
-                  <tr>
-                     <td><img width="100" src="doors.jpg" id="wavesurfer-doors" /></td>
-                     <td>
-                        <div id="waveform5"></div>
-                     </td>
-                     <td>
-                        <button id="waveform-btn5">Play</button>
-                     </td>
-                  </tr>
-               </table>
+                <table padding="5">
+                    <tr>
+                        <td>
+                            <img src="tile3.jpg" id="wavesurfer-tile2" width="50">
+                            <img src="tile1.jpg" id="wavesurfer-tile1" width="50">
+                        </td>
+                        <td width="500">
+                            <div id="waveform2"></div>
+                        </td>
+                        <td>
+                            <button id="waveform-btn2">Play</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img width="100" src="boxes.jpg" id="wavesurfer-boxes">
+                        </td>
+                        <td>
+                            <div id="waveform3"></div>
+                        </td>
+                        <td>
+                            <button id="waveform-btn3">Play</button>
+                        </td>
+                    </tr>
+                </table>
+                <h3>Mixing Image, Gradient and Color fill styles</h3>
+                <table>
+                    <tr>
+                        <td>
+                            <img width="100" src="abstract.jpg" id="wavesurfer-abstract">
+                        </td>
+                        <td width="500">
+                            <div id="waveform4"></div>
+                        </td>
+                        <td>
+                            <button id="waveform-btn4">Play</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img width="100" src="doors.jpg" id="wavesurfer-doors">
+                        </td>
+                        <td>
+                            <div id="waveform5"></div>
+                        </td>
+                        <td>
+                            <button id="waveform-btn5">Play</button>
+                        </td>
+                    </tr>
+                </table>
             </div>
-         </div>
-         <h4>WaveSurfer Options</h4>
-         <p>
+        </div>
+        <h4>WaveSurfer Options</h4>
+        <p>
             <code>waveColor</code> - string | array | HTMLImageElement - Can be CSS color value string, an array of colors, or an HTML Image Element.
-         </p>
-         <p>
+        </p>
+        <p>
             <code>progressColor</code> - string | array | HTMLImageElement - Can be CSS color value string, an array of colors, or an HTML Image Element.
-         </p>
-         <div class="footer row">
+        </p>
+        <div class="footer row">
             <div class="col-sm-12">
-               <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
+                <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause">
+                    <img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg">
+                </a>
             </div>
             <div class="col-sm-7">
-               <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
+                <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by
+                <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;
+                <a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">
+                        BSD-3-Clause
+                        License
+                    </a> .
             </div>
             <div class="col-sm-5">
-               <div class="pull-right">
-                  <noindex>
-                     The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used
-                     with permission.
-                  </noindex>
-               </div>
+                <div class="pull-right">
+                    <noindex>
+                        The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.<br><br>
+                        Images used to fill the waveforms are provided courtesy of <a href="https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a> and the following photographers:<br>
+                        <a href="https://unsplash.com/@ro_ka?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Robert Katzki</a><br>
+                        <a href="https://unsplash.com/@julianhochgesang?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Julian Hochgesang</a><br>
+                        <a href="https://unsplash.com/@vinomamba24?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Vino LiPhoto</a><br>
+                        <a href="https://unsplash.com/@thejmoore?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Jon Moore</a><br>
+                        <a href="https://unsplash.com/@birdeye?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Adam Azim</a><br>
+                        <a href="https://unsplash.com/@hectorfalcon?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Hector Falcon</a><br>
+                        <a href="https://unsplash.com/@max_williams?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Max Williams</a><br>
+                    </noindex>
+                </div>
             </div>
-         </div>
-      </div>
-      <div class="github-fork-ribbon-wrapper right">
-         <div class="github-fork-ribbon">
-            <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
-         </div>
-      </div>
-      <script>
-         (function (i, s, o, g, r, a, m) {
-             i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-                 (i[r].q = i[r].q || []).push(arguments)
-             }, i[r].l = 1 * new Date(); a = s.createElement(o),
-                 m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-         })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+        </div>
+    </div>
+    <div class="github-fork-ribbon-wrapper right">
+        <div class="github-fork-ribbon">
+            <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">
+                    Fork me on
+                    GitHub
+                </a>
+        </div>
+    </div>
+    <script>
+        (function(i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function() {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
-         ga('create', 'UA-50026819-1', 'wavesurfer.fm');
-         ga('send', 'pageview');
-      </script>
-   </body>
+        ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+        ga('send', 'pageview');
+    </script>
+</body>
+
 </html>

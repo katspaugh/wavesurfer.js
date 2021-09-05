@@ -279,13 +279,13 @@ describe('WaveSurfer/playback:', function() {
         expect(waveColor).toEqual(colors);
     });
 
-    /** @test {WaveSurfer#setWaveColorImage} */
-    it('allow setting waveColor Image', function() {
+    /** @test {WaveSurfer#setWaveStyle} */
+    it('allow setting waveStyle Image', function() {
         var img = new Image(); // Create new img element
         img.src = "data:image/gif;base64,R0lGODlhCwALAIAAAAAA3pn/ZiH5BAEAAAEALAAAAAALAAsAAAIUhA+hkcuO4lmNVindo7qyrIXiGBYAOw==";
-        wavesurfer.setWaveColor(img);
-        const waveColor = wavesurfer.getWaveColor();
-        expect(waveColor).toEqual(img);
+        wavesurfer.setWaveStyle(img);
+        const waveStyle = wavesurfer.getWaveColor();
+        expect(waveStyle).toEqual(img);
     });
 
     /** @test {WaveSurfer#getProgressColor} */
