@@ -3,6 +3,7 @@ wavesurfer.js changelog
 5.3.0 (unreleased)
 ------------------
 - add additional type to `waveColor` and `progressColor` parameters to support linear gradients (#2345)
+- Regions plugin: increase region z-index to fix stacking inconsistencies (#2353)
 
 5.2.0 (16.08.2021)
 ------------------
