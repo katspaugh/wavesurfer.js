@@ -86,14 +86,15 @@ export default class CursorPlugin {
      * @param {object} e Mouse move event
      */
     _onMousemove = e => {
-        const bbox = this.wavesurfer.container.getBoundingClientRect();
+        const event = this.util.withOrientation(event, this.wavesurfer.params.vertical);
+        const bbox = this.wrapper.getBoundingClientRect();
         let y = 0;
-        let x = e.clientX - bbox.left;
-        let flip = bbox.right < e.clientX + this.outerWidth(this.displayTime);
+        let x = this.wrapper.scrollLeft + event.clientX - bbox.left;
+        let flip = bbox.right < event.clientX + this.displayTime.getBoundingClientRect().width;
 
         if (this.params.showTime && this.params.followCursorY) {
             // follow y-position of the mouse
-            y = e.clientY - (bbox.top + bbox.height / 2);
+            y = event.clientY - (bbox.top + bbox.height / 2);
         }
 
         this.updateCursorPosition(x, y, flip);
@@ -119,6 +120,7 @@ export default class CursorPlugin {
     constructor(params, ws) {
         this.wavesurfer = ws;
         this.style = ws.util.style;
+        this.util = ws.util;
         /**
          * The cursor HTML element
          *
@@ -141,14 +143,38 @@ export default class CursorPlugin {
         this.params = Object.assign({}, this.defaultParams, params);
     }
 
-    /**
-     * Initialise the plugin (used by the Plugin API)
-     */
-    init() {
-        this.wrapper = this.wavesurfer.container;
-        this.cursor = this.wrapper.appendChild(
+    _onReady() {
+        this.wrapper = this.wavesurfer.drawer.wrapper;
+        this.cursor = this.util.withOrientation(this.wrapper.appendChild(
+            document.createElement('cursor'),
+        ), this.wavesurfer.params.vertical);
+
+        this.style(this.cursor,
+            Object.assign(
+                {
+                    position: 'absolute',
+                    zIndex: this.params.zIndex,
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: '0',
+                    display: 'flex',
+                    borderRightStyle: this.params.style,
+                    borderRightWidth: this.params.width,
+                    borderRightColor: this.params.color,
+                    opacity: this.params.opacity,
+                    pointerEvents: 'none'
+                },
+                this.params.customStyle
+            )
+        );
+
+        if (this.params.showTime) {
+            this.showTime = this.util.withOrientation(this.wrapper.appendChild(
+                document.createElement('showTitle')
+            ), this.wavesurfer.params.vertical);
             this.style(
-                document.createElement('cursor'),
+                this.showTime,
                 Object.assign(
                     {
                         position: 'absolute',
@@ -156,53 +182,32 @@ export default class CursorPlugin {
                         left: 0,
                         top: 0,
                         bottom: 0,
-                        width: '0',
+                        width: 'auto',
                         display: 'flex',
-                        borderRightStyle: this.params.style,
-                        borderRightWidth: this.params.width,
-                        borderRightColor: this.params.color,
                         opacity: this.params.opacity,
-                        pointerEvents: 'none'
+                        pointerEvents: 'none',
+                        height: '100%'
                     },
                     this.params.customStyle
                 )
-            )
-        );
-        if (this.params.showTime) {
-            this.showTime = this.wrapper.appendChild(
-                this.style(
-                    document.createElement('showTitle'),
-                    Object.assign(
-                        {
-                            position: 'absolute',
-                            zIndex: this.params.zIndex,
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: 'auto',
-                            display: 'flex',
-                            opacity: this.params.opacity,
-                            pointerEvents: 'none',
-                            height: '100%'
-                        },
-                        this.params.customStyle
-                    )
+            );
+
+            this.displayTime = this.util.withOrientation(this.showTime.appendChild(
+                document.createElement('div'),
+            ), this.wavesurfer.params.vertical);
+
+            this.style(this.displayTime,
+                Object.assign(
+                    {
+                        display: 'inline',
+                        pointerEvents: 'none',
+                        margin: 'auto',
+                        visibility: 'hidden' // initial value will be hidden just for measuring purpose
+                    },
+                    this.params.customShowTimeStyle
                 )
             );
-            this.displayTime = this.showTime.appendChild(
-                this.style(
-                    document.createElement('div'),
-                    Object.assign(
-                        {
-                            display: 'inline',
-                            pointerEvents: 'none',
-                            margin: 'auto',
-                            visibility: 'hidden' // initial value will be hidden just for measuring purpose
-                        },
-                        this.params.customShowTimeStyle
-                    )
-                )
-            );
+
             // initial value to measure display width
             this.displayTime.innerHTML = this.formatTime(0);
         }
@@ -213,6 +218,17 @@ export default class CursorPlugin {
             this.hideCursor();
             this.wrapper.addEventListener('mouseenter', this._onMouseenter);
             this.wrapper.addEventListener('mouseleave', this._onMouseleave);
+        }
+    }
+
+    /**
+     * Initialise the plugin (used by the Plugin API)
+     */
+    init() {
+        if (this.wavesurfer.isReady) {
+            this._onReady();
+        } else {
+            this.wavesurfer.once('ready', () => this._onReady());
         }
     }
 
@@ -253,10 +269,10 @@ export default class CursorPlugin {
                 (duration / this.wavesurfer.drawer.width) * scrollWidth;
 
             const timeValue =
-                Math.max(0, (xpos / elementWidth) * duration) + scrollTime;
+                Math.max(0, ((xpos - this.wrapper.scrollLeft) / elementWidth) * duration) + scrollTime;
             const formatValue = this.formatTime(timeValue);
             if (flip) {
-                const textOffset = this.outerWidth(this.displayTime);
+                const textOffset = this.displayTime.getBoundingClientRect().width;
                 xpos -= textOffset;
             }
             this.style(this.showTime, {
@@ -317,23 +333,5 @@ export default class CursorPlugin {
                 ('000' + Math.floor((time % 1) * 1000)).slice(-3) // milliseconds
             ].join(':')
         );
-    }
-
-    /**
-     * Get outer width of given element.
-     *
-     * @param {DOM} element DOM Element
-     * @returns {number} outer width
-     */
-    outerWidth(element) {
-        if (!element) {
-            return 0;
-        }
-
-        let width = element.offsetWidth;
-        let style = getComputedStyle(element);
-
-        width += parseInt(style.marginLeft + style.marginRight);
-        return width;
     }
 }
