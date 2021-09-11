@@ -168,7 +168,7 @@ export default class CanvasEntry {
      *
      * Return type is dependent on the color argument's type
      *
-     * @since 5.3.0
+     * @since 6.0.0
      * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
      * @param {string|string[]|CanvasImageSource} color A CSS color value as a
      * string, an array of CSS color value strings, or a Canvas Image Source
