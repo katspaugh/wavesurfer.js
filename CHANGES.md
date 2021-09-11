@@ -2,8 +2,8 @@ wavesurfer.js changelog
 =======================
 6.0.0 (unreleased)
 ------------------
-- Add image handling for `waveColor` and `progressColor` parameters (#2345)
-- Add additional type to `waveColor` and `progressColor` parameters to support linear gradients (#2345)
+- add additional type to `waveColor` and `progressColor` parameters to support linear gradients (#2345)
+- Regions plugin: increase region z-index to fix stacking inconsistencies (#2353)
 
 5.2.0 (16.08.2021)
 ------------------
