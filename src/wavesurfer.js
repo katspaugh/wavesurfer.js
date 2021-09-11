@@ -195,28 +195,28 @@ class PluginClass {
      *
      * @param {Object} params={} The plugin params (specific to the plugin)
      */
-    create(params) { }
+    create(params) {}
     /**
      * Construct the plugin
      *
      * @param {Object} params={} The plugin params (specific to the plugin)
      * @param {Object} ws The wavesurfer instance
      */
-    constructor(params, ws) { }
+    constructor(params, ws) {}
     /**
      * Initialise the plugin
      *
      * Start doing something. This is called by
      * `wavesurfer.initPlugin(pluginName)`
      */
-    init() { }
+    init() {}
     /**
      * Destroy the plugin instance
      *
      * Stop doing something. This is called by
      * `wavesurfer.destroyPlugin(pluginName)`
      */
-    destroy() { }
+    destroy() {}
 }
 
 /**
@@ -1667,10 +1667,10 @@ export default class WaveSurfer extends util.Observer {
         );
 
         return new Promise((resolve, reject) => {
-            if (!noWindow) {
+            if (!noWindow){
                 const blobJSON = new Blob(
                     [JSON.stringify(arr)],
-                    { type: 'application/json;charset=utf-8' }
+                    {type: 'application/json;charset=utf-8'}
                 );
                 const objURL = URL.createObjectURL(blobJSON);
                 window.open(objURL);
@@ -1722,7 +1722,7 @@ export default class WaveSurfer extends util.Observer {
             // See Firefox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=1583815
             if (this.currentRequest._reader) {
                 // Ignoring exceptions thrown by call to cancel()
-                this.currentRequest._reader.cancel().catch(err => { });
+                this.currentRequest._reader.cancel().catch(err => {});
             }
 
             this.currentRequest.controller.abort();
