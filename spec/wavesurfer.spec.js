@@ -281,7 +281,7 @@ describe('WaveSurfer/playback:', function() {
 
     /** @test {WaveSurfer#setWaveStyle} */
     it('allow setting waveStyle Image', function() {
-        var img = new Image(); // Create new img element
+        let img = new Image(); // Create new img element
         img.src = "data:image/gif;base64,R0lGODlhCwALAIAAAAAA3pn/ZiH5BAEAAAEALAAAAAALAAsAAAIUhA+hkcuO4lmNVindo7qyrIXiGBYAOw==";
         wavesurfer.setWaveStyle(img);
         const waveStyle = wavesurfer.getWaveColor();
@@ -325,7 +325,7 @@ describe('WaveSurfer/playback:', function() {
     /** @test {WaveSurfer#setBackgroundColor} */
     it('allow setting backgroundColor', function() {
         wavesurfer.setBackgroundColor('#FFFF00');
-        const bgColor = wavesurfer.getBackgroundColor();
+        let bgColor = wavesurfer.getBackgroundColor();
 
         expect(bgColor).toEqual('#FFFF00');
     });

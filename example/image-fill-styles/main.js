@@ -66,5 +66,4 @@ document.addEventListener("DOMContentLoaded", function() {
     waveformBtn4.addEventListener('click', wavesurfer4.playPause.bind(wavesurfer4));
     let waveformBtn5 = document.getElementById('waveform-btn5');
     waveformBtn5.addEventListener('click', wavesurfer5.playPause.bind(wavesurfer5));
-
 });

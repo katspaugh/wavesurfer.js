@@ -179,7 +179,7 @@ export default class CanvasEntry {
      */
     getFillStyle(ctx, color) {
         // if the color argument is a string, handle it as a CSS color value
-        if (typeof color == 'string') {
+        if (typeof color === 'string') {
             return color;
         }
 
@@ -191,7 +191,7 @@ export default class CanvasEntry {
         }
 
         // if it is an object, handle it as a CanvasImageSource
-        if (typeof color == "object") {
+        if (typeof color === "object") {
             return ctx.createPattern(color, "repeat");
         }
 

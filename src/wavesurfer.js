@@ -1167,6 +1167,7 @@ export default class WaveSurfer extends util.Observer {
      * color strings, or a Canvas Image Source (HTML Image, SVG Image, HTML
      * Video, HTML Canvas, Image Bitmap and Offscreen Canvas elements)
      * @example wavesurfer.setWaveStyle(document.getElementById('#myImageElement'));
+     * @version 6.0.0
      */
     setWaveStyle(style) {
         this.params.waveColor = style;
@@ -1180,6 +1181,7 @@ export default class WaveSurfer extends util.Observer {
      * color strings, or a Canvas Image Source (HTML Image, SVG Image, HTML
      * Video, HTML Canvas, Image Bitmap and Offscreen Canvas elements)
      * @example wavesurfer.setWaveStyle(document.getElementById('#myImageElement'));
+     * @version 6.0.0
      */
     setProgressStyle(style) {
         this.params.progressColor = style;
