@@ -55,8 +55,8 @@
     "visualization"
   ],
   "devDependencies": {
-    "@babel/core": "^7.15.0",
-    "@babel/preset-env": "^7.15.0",
+    "@babel/core": "^7.15.5",
+    "@babel/preset-env": "^7.15.6",
     "@babel/register": "^7.15.3",
     "@chiragrupani/karma-chromium-edge-launcher": "^2.1.1",
     "babel-eslint": "^10.1.0",
@@ -89,9 +89,9 @@
     "lint-staged": "^11.1.2",
     "load-script": "^1.0.0",
     "pre-commit": "^1.2.2",
-    "webpack": "^5.51.1",
+    "webpack": "^5.52.1",
     "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.0.0",
+    "webpack-dev-server": "^4.2.0",
     "webpack-merge": "^5.8.0"
   },
   "homepage": "https://wavesurfer-js.org",
