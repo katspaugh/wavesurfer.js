@@ -325,7 +325,7 @@ describe('WaveSurfer/playback:', function() {
     /** @test {WaveSurfer#setBackgroundColor} */
     it('allow setting backgroundColor', function() {
         wavesurfer.setBackgroundColor('#FFFF00');
-        let bgColor = wavesurfer.getBackgroundColor();
+        const bgColor = wavesurfer.getBackgroundColor();
 
         expect(bgColor).toEqual('#FFFF00');
     });
