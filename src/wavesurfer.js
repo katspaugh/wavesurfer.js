@@ -1166,11 +1166,15 @@ export default class WaveSurfer extends util.Observer {
      * @param {string|object} style A CSS color string, or an array of CSS
      * color strings, or a Canvas Image Source (HTML Image, SVG Image, HTML
      * Video, HTML Canvas, Image Bitmap and Offscreen Canvas elements)
+     * @param {object} options Fill style options
      * @example wavesurfer.setWaveStyle(document.getElementById('#myImageElement'));
      * @version 6.0.0
      */
-    setWaveStyle(style) {
+    setWaveStyle(style, options) {
         this.params.waveColor = style;
+        if (options) {
+            this.params.waveStyleOptions = options;
+        }
         this.drawBuffer();
     }
 
@@ -1180,11 +1184,15 @@ export default class WaveSurfer extends util.Observer {
      * @param {string|object} style A CSS color string, or an array of CSS
      * color strings, or a Canvas Image Source (HTML Image, SVG Image, HTML
      * Video, HTML Canvas, Image Bitmap and Offscreen Canvas elements)
+     * @param {object} options Fill style options
      * @example wavesurfer.setWaveStyle(document.getElementById('#myImageElement'));
      * @version 6.0.0
      */
-    setProgressStyle(style) {
+    setProgressStyle(style, options) {
         this.params.progressColor = style;
+        if (options) {
+            this.params.progressStyleOptions = options;
+        }
         this.drawBuffer();
     }
 

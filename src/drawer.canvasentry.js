@@ -153,12 +153,14 @@ export default class CanvasEntry {
      * the wave canvas, an array of colors to apply as a gradient, or a Canvas
      * Image Source (HTML Image, SVG Image, HTML Video, HTML Canvas, Image
      * Bitmap and Offscreen Canvas elements)
+     * @param {object} waveStyleOptions Wave style options
+     * @param {object} progressStyleOptions Progress style options
      */
-    setFillStyles(waveColor, progressColor) {
-        this.waveCtx.fillStyle = this.getFillStyle(this.waveCtx, waveColor);
+    setFillStyles(waveColor, progressColor, waveStyleOptions, progressStyleOptions) {
+        this.waveCtx.fillStyle = this.getFillStyle(this.waveCtx, waveColor, waveStyleOptions);
 
         if (this.hasProgressCanvas) {
-            this.progressCtx.fillStyle = this.getFillStyle(this.progressCtx, progressColor);
+            this.progressCtx.fillStyle = this.getFillStyle(this.progressCtx, progressColor, progressStyleOptions);
         }
     }
 
@@ -174,10 +176,11 @@ export default class CanvasEntry {
      * string, an array of CSS color value strings, or a Canvas Image Source
      * (HTML Image, SVG Image, HTML Video, HTML Canvas, Image Bitmap or
      * Offscreen Canvas element)
+     * @param {object} fillStyleOptions Options for the fill style
      * @returns {string|CanvasGradient|CanvasPattern} Returns a CSS color
      * value string, a canvas gradient or a canvas pattern
      */
-    getFillStyle(ctx, color) {
+    getFillStyle(ctx, color, fillStyleOptions) {
         // if the color argument is a string, handle it as a CSS color value
         if (typeof color === 'string') {
             return color;
@@ -192,7 +195,11 @@ export default class CanvasEntry {
 
         // if it is an object, handle it as a CanvasImageSource
         if (typeof color === "object") {
-            return ctx.createPattern(color, "repeat");
+            if (typeof fillStyleOptions === "object") {
+                return ctx.createPattern(color, fillStyleOptions.repeat);
+            } else {
+                return ctx.createPattern(color, 'repeat');
+            }
         }
 
         // if it passed none of the checks, return a default value

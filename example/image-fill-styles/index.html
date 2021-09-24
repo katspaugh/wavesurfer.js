@@ -47,7 +47,7 @@
             Use any image element that has been loaded onto the page as the wave background.
         </p>
         <div id="demo">
-            <img width="100" src="water2.jpg" id="wavesurfer-water" style="display:none;">
+            <img width="100" data-fillstylerepeat="repeat-x" src="water2.jpg" id="wavesurfer-water" style="display:none;">
             <img width="100" src="wood.jpg" id="wavesurfer-wood" style="display:none;">
             <div id="waveformwrapper">
                 <div id="waveform"></div>
@@ -139,6 +139,20 @@ var wavesurfer = WaveSurfer.create({
                         </td>
                     </tr>
                 </table>
+                <h3>Image Repeat Options</h3>
+                <table>
+                    <tr>
+                        <td>
+                            <img width="50" src="grass-tile-sm.jpg" id="wavesurfer-grass">
+                        </td>
+                        <td width="500">
+                            <div id="waveform6"></div>
+                        </td>
+                        <td>
+                            <button id="waveform-btn6">Play</button>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
         <h4>WaveSurfer Options</h4>
@@ -146,7 +160,15 @@ var wavesurfer = WaveSurfer.create({
             <code>waveColor</code> - string | array | HTMLImageElement - Can be CSS color value string, an array of colors, or an HTML Image Element.
         </p>
         <p>
+            <code>waveStyleOptions</code> - object - When passing an HTMLImageElement as the waveColor, you can pass an options object with a repeat
+            property here.  The default value is repeat.  {repeat: 'no-repeat'} (no-repeat, repeat-x, repeat-y)
+        </p>
+        <p>
             <code>progressColor</code> - string | array | HTMLImageElement - Can be CSS color value string, an array of colors, or an HTML Image Element.
+        </p>
+        <p>
+            <code>progressStyleOptions</code> - object - When passing an HTMLImageElement as the progressColor, you can pass an options object with a repeat
+            property here.  The default value is repeat.  {repeat: 'no-repeat'} (no-repeat, repeat-x, repeat-y)
         </p>
         <div class="footer row">
             <div class="col-sm-12">

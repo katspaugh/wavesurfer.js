@@ -551,9 +551,12 @@ export default class MultiCanvas extends Drawer {
      * @param {CanvasEntry} entry Target entry
      * @param {string} waveColor Wave color to draw this entry
      * @param {string} progressColor Progress color to draw this entry
+     * @param {object} waveStyleOptions Wave style options
+     * @param {object} progressStyleOptions Progress style options
      */
-    setFillStyles(entry, waveColor = this.params.waveColor, progressColor = this.params.progressColor) {
-        entry.setFillStyles(waveColor, progressColor);
+    setFillStyles(entry, waveColor = this.params.waveColor, progressColor = this.params.progressColor,
+        waveStyleOptions = this.params.waveStyleOptions, progressStyleOptions = this.params.progressStyleOptions) {
+        entry.setFillStyles(waveColor, progressColor, waveStyleOptions, progressStyleOptions);
     }
 
     /**

@@ -42,12 +42,19 @@ document.addEventListener("DOMContentLoaded", function() {
         waveColor: document.querySelector("#wavesurfer-doors"),
         progressColor: '#000'
     });
+    let wavesurfer6 = WaveSurfer.create({
+        container: document.querySelector("#waveform6"),
+        waveColor: document.querySelector("#wavesurfer-grass"),
+        waveStyleOptions: {repeat: 'repeat-y'},
+        progressColor: '#000'
+    });
 
     wavesurfer.load("../media/demo.mp3");
     wavesurfer2.load("../media/demo.mp3");
     wavesurfer3.load("../media/demo.mp3");
     wavesurfer4.load("../media/demo.mp3");
     wavesurfer5.load("../media/demo.mp3");
+    wavesurfer6.load("../media/demo.mp3");
 
     // Set the playhead to halfway through the media, as to demonstrate the colorProgress gradient
     wavesurfer2.on("ready", () => wavesurfer2.seekTo(0.2));
