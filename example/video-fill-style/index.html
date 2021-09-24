@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>wavesurfer.js | Video Fill Style Example</title>
+
+    <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+    <!-- Bootstrap -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/ribbon.css" />
+    <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+
+    <!-- wavesurfer.js -->
+    <script src="../../dist/wavesurfer.js"></script>
+
+    <!-- highlight.js for syntax highlighting in this example -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <script src="../../dist/wavesurfer.js"></script>
+    <style>
+        #video, #myCanvas {display:none;}
+        .waveform-wrapper {
+            width:700px;
+            height:250px;
+        }
+        #waveform-btn {
+            display:block;
+            margin-left:20px;
+        }
+    </style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebApplication">
+    <div class="container">
+        <div class="header">
+            <ul class="nav nav-pills pull-right">
+                <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
+            </ul>
+
+            <h1 itemprop="name">Video Fill Style</h1>
+        </div>
+
+        <div id="demo">
+            <video id="video" muted controls width="500" height="250">
+                <source src="../media/divavid.mp4" type='video/mp4'>
+            </video>
+              <canvas id="myCanvas" width="777" height="338" style="border:1px solid #d3d3d3;">
+              Your browser does not support the HTML5 canvas tag.</canvas>
+            <div class="waveform-wrapper">
+                <div id="waveform"></div>
+            </div>
+            <div class="controls">
+                <div class="row">
+                    <div class="col-12">
+                        <button id="waveform-btn" class="btn btn-primary" data-action="play">
+                            <i class="glyphicon glyphicon-play"></i>
+                            Play /
+                            <i class="glyphicon glyphicon-pause"></i>
+                            Pause
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row marketing">
+            <h3>Video Fill Style example</h3>
+            <hr />
+            <p>This video fill style example uses an on-page video element and a canvas element that are hidden with CSS.  When the waveform plays, an interval runs to draw the video display to the context of the canvas element, and then pass that canvas to WaveSurfer setWaveStyle / setProgressStyle methods.</p>
+
+            <p>
+                <pre><code>document.addEventListener("DOMContentLoaded", function() {
+
+    // setup WaveSurfer
+    var wavesurfer = WaveSurfer.create({
+        container: document.querySelector("#waveform"),
+        height: 250,
+        backgroundColor: 'black',
+        waveColor: 'navy',
+        cursorColor: 'white',
+        cursorWidth: 2,
+        fillParent: true,
+        barGap: 0,
+        barHeight: 1,
+        barMinHeight: 1,
+        barRadius: 0,
+        barWidth: 15,
+        normalize: true
+    });
+    wavesurfer.load("../media/divavid.mp3");
+
+    // get references to the play button, Video and Canvas Elements
+    var waveformBtn = document.getElementById('waveform-btn');
+    var videoElement = document.getElementById("video");
+    var canvasElement = document.getElementById("myCanvas");
+    var ctx = canvasElement.getContext("2d");
+
+    // setup WaveSurfer events
+    waveformBtn.addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
+    wavesurfer.on('ready', () => {
+        wavesurfer.play();
+        wavesurfer.pause();
+        wavesurfer.seek(0);
+    });
+    wavesurfer.on('play', () => {
+        // when WaveSurfer plays, play the video
+        videoElement.play(wavesurfer.getCurrentTime());
+    });
+    wavesurfer.on('seek', () => {
+        // when WaveSurfer seeks, seek the video
+        videoElement.currentTime = wavesurfer.getCurrentTime();
+    });
+    wavesurfer.on('pause', () => {
+        // when WaveSurfer pauses, pause the video
+        videoElement.pause();
+    });
+
+    // setup interval to draw the video to the canvas
+    var drawVideoInterval;
+    videoElement.addEventListener("play", function() {
+        drawVideoInterval = window.setInterval(() => {
+
+            // draw the video element to the 2d context of the canvas element
+            // adjusting the width and height parameters #4 and #5
+            // to suit the video and waveform
+            ctx.drawImage(videoElement, 0, 0, 777, 414);
+            wavesurfer.setWaveColor(canvasElement);
+            wavesurfer.setProgressColor(canvasElement);
+        }, 0);
+    }, false);
+    videoElement.addEventListener("pause",
+        () => window.clearInterval(drawVideoInterval), false);
+    videoElement.addEventListener("ended",
+        () => clearInterval(drawVideoInterval), false);
+});
+
+</code></pre>
+            </p>
+        </div>
+
+
+
+        <div class="footer row">
+            <div class="col-sm-12">
+                <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
+            </div>
+
+            <div class="col-sm-7">
+                <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
+            </div>
+
+            <div class="col-sm-5">
+                <div class="pull-right">
+                    <noindex>
+                        The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used
+                        with permission.
+                    </noindex>
+                    <br>Canvas Effect <a href="https://codepen.io/PavelDoGreat/pen/zdWzEL">"WebGL Fluid Simulation"</a> by Pavel Dobryakov
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="github-fork-ribbon-wrapper right">
+        <div class="github-fork-ribbon">
+            <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+        ga('send', 'pageview');
+    </script>
+</body>
+
+</html>

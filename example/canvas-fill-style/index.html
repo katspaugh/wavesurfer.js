@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>wavesurfer.js | Canvas Fill Style Example</title>
+
+    <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+    <!-- Bootstrap -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/ribbon.css" />
+    <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+
+    <!-- wavesurfer.js -->
+    <script src="../../dist/wavesurfer.js"></script>
+
+
+    <!-- highlight.js for syntax highlighting in this example -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <script src="../../dist/wavesurfer.js"></script>
+    <style>
+        #liquid {
+            height: 350px;
+            width: 500;
+            position: absolute;
+            top:0px;
+            opacity: 0;
+        }
+        #waveform {
+            width: 720px;
+            height: 350px;
+            position: absolute;
+            top:0px;
+            z-index: -12;
+        }
+        .waveform-wrapper {
+            width:500px;
+            height:100px;           }
+        #waveform-btn {z-index:10;}
+    </style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebApplication">
+    <div class="container">
+        <div class="header">
+            <ul class="nav nav-pills pull-right">
+                <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
+            </ul>
+
+            <h1 itemprop="name">Canvas Fill Style</h1>
+        </div>
+
+        <div id="demo">
+            <div class="waveform-wrapper">
+                <canvas width="1000" height="350" id="liquid"></canvas>
+
+                <div id="waveform">
+                    <!-- Here be the waveform -->
+                </div>
+            </div>
+            <div class="controls">
+                <div class="row">
+                    <div class="col-sm-7">
+                        <button id="waveform-btn" class="btn btn-primary" data-action="play">
+                            <i class="glyphicon glyphicon-play"></i>
+                            Play /
+                            <i class="glyphicon glyphicon-pause"></i>
+                            Pause
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row marketing">
+            <h3>Interactive Canvas Fill Style example</h3>
+            <hr />
+            <p>This interactive wave background effect happens via an HTML Canvas Element that has 0 opacity via CSS, and is absolutely positioned behind the waveform.  This allows it to register the mouseover events.  The script below then copies what is happening on that interactive canvas to the background of the waveform.</p>
+
+            <p>
+                <pre><code>var wavesurfer = {};
+document.addEventListener("DOMContentLoaded", function () {
+    var c = document.getElementById("myCanvas");
+    var waveformBtn = document.getElementById("waveform-btn");
+
+    wavesurfer = WaveSurfer.create({
+        container: document.querySelector("#waveform"),
+        height: 350,
+        waveColor: document.getElementById("liquid"),
+        progressColor: document.getElementById("liquid"),
+        cursorColor: "rgba(255,255,255,1)",
+        cursorWidth: 2,
+        loop: true,
+        fillParent: true,
+        responsive: false,
+        barGap: 0,
+        barHeight: 1,
+        barMinHeight: 1,
+        barRadius: 0,
+        barWidth:10
+    });
+
+    wavesurfer.load("../media/demo.mp3");
+
+    waveformBtn.addEventListener("click",
+    wavesurfer.playPause.bind(wavesurfer));
+
+    let waveform = document.getElementById("waveform");
+    waveform.addEventListener("mouseover", () => {
+        pointers[0].down = true;
+        pointers[0].color = [
+            Math.random() + 0.2,
+            Math.random() + 0.2,
+            Math.random() + 0.2,
+        ];
+    });
+    wavesurfer.on("play", () => {
+        i = window.setInterval(() => {
+            wavesurfer.setWaveColor(document.getElementById("liquid"));
+            wavesurfer.setProgressColor(document.getElementById("liquid"));
+            }, 0)
+        }, false);
+    wavesurfer.on("pause", () => window.clearInterval(i), false);
+});
+</code></pre>
+            </p>
+        </div>
+
+
+
+        <div class="footer row">
+            <div class="col-sm-12">
+                <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="BSD-3-Clause License" style="border-width:0" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
+            </div>
+
+            <div class="col-sm-7">
+                <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a&nbsp;<a style="white-space: nowrap" rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
+            </div>
+
+            <div class="col-sm-5">
+                <div class="pull-right">
+                    <noindex>
+                        The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used
+                        with permission.
+                    </noindex>
+                    <br>Canvas Effect <a href="https://codepen.io/PavelDoGreat/pen/zdWzEL">"WebGL Fluid Simulation"</a> by Pavel Dobryakov
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="github-fork-ribbon-wrapper right">
+        <div class="github-fork-ribbon">
+            <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+        </div>
+    </div>
+
+    <!-- Demo -->
+    <script src="main.js"></script>
+    <script src="canvas.js"></script>
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-50026819-1', 'wavesurfer.fm');
+        ga('send', 'pageview');
+    </script>
+</body>
+
+</html>
