@@ -15,7 +15,22 @@ export default function createAnnouncementElement() {
         announcement = document.createElement("div");        
         announcement.setAttribute("id", id);
         announcement.setAttribute("aria-live", "polite");
-        announcement.classList.add("sr-only");
+        var styles = {
+            position: 'absolute',
+            width: '1px',
+            height: '1px',
+            padding: '0',
+            margin: '-1',
+            overflow: 'hidden',
+            clip: 'rect(0,0,0,0)',
+            white-space: 'nowrap',
+            border: '0'            
+        };
+        Object.keys(styles).forEach(prop => {
+            if (announcement.style[prop] !== styles[prop]) {
+                announcement.style[prop] = styles[prop];
+            }
+        });
         document.body.appendChild(announcement);
     }
     document.getElementById(id).innerHTML = "Loading waveform";
