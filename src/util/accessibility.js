@@ -8,12 +8,17 @@
  * Create the announcement element
  */
 export default function createAnnouncementElement() {
-    var announcement = document.createElement("div");
+    var exists = document.getElementById("announce-waveform");
+    var announcement;
     var id = "announce-waveform";
-    announcement.setAttribute("id", id);
-    announcement.setAttribute("aria-live", "polite");
-    announcement.classList.add("sr-only");
-    document.body.appendChild(announcement);
+    
+    if(!exists){
+        announcement = document.createElement("div");        
+        announcement.setAttribute("id", id);
+        announcement.setAttribute("aria-live", "polite");
+        announcement.classList.add("sr-only");
+        document.body.appendChild(announcement);
+    }
     document.getElementById(id).innerHTML = "Loading waveform";
 }
 
