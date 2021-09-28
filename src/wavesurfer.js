@@ -270,6 +270,7 @@ export default class WaveSurfer extends util.Observer {
         forceDecode: false,
         height: 128,
         hideScrollbar: false,
+        hideCursor: false,
         ignoreSilenceMode: false,
         interact: true,
         loopSelection: true,
