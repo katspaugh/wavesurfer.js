@@ -8,11 +8,10 @@
  * Create the announcement element
  */
 export default function createAnnouncementElement() {
-    var exists = document.getElementById("announce-waveform");
-    var announcement;
+    var announcement = document.getElementById("announce-waveform");
     var id = "announce-waveform";
     
-    if(!exists){
+    if(!announcement){
         announcement = document.createElement("div");        
         announcement.setAttribute("id", id);
         announcement.setAttribute("aria-live", "polite");
