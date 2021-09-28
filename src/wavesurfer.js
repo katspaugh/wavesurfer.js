@@ -353,6 +353,11 @@ export default class WaveSurfer extends util.Observer {
     static util = util;
 
     /**
+     * Create the accessibility announcement element
+     */
+    util.createAnnouncementElement();
+
+    /**
      * Initialise wavesurfer instance
      *
      * @param {WavesurferParams} params Instantiation options for wavesurfer
