@@ -69,6 +69,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * pixels.
  * @property {boolean} hideScrollbar=false Whether to hide the horizontal
  * scrollbar when one would normally be shown.
+ * @property {boolean} hideCursor=false Whether to hide the mouse cursor
+ * when one would normally be shown by default.
  * @property {boolean} ignoreSilenceMode=false If true, ignores device silence mode
  * when using the `WebAudio` backend.
  * @property {boolean} interact=true Whether the mouse interaction will be
