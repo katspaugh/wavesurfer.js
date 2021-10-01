@@ -14,15 +14,15 @@ export class Accessibility {
     this.announcement.setAttribute('aria-live', 'polite');
 
     style(this.announcement, {
-      position: 'absolute',
-      width: '1px',
-      height: '1px',
-      padding: '0',
-      margin: '-1',
-      overflow: 'hidden',
-      clip: 'rect(0,0,0,0)',
-      white-space: 'nowrap',
-      border: '0'            
+      position: "absolute",
+      width: "1px",
+      height: "1px",
+      padding: "0",
+      margin: "-1",
+      overflow: "hidden",
+      clip: "rect(0,0,0,0)",
+      "white-space": "nowrap",
+      border: "0"
     });
 
     this.updateAnnouncementText('Loading waveform');
