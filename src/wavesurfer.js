@@ -1334,7 +1334,6 @@ export default class WaveSurfer extends util.Observer {
         }
 
         this.accessibility.updateAnnouncementText('waveform zoom changed to ' + pxPerSec + ' px');
-        
         this.drawBuffer();
         this.drawer.progress(this.backend.getPlayedPercents());
 
@@ -1488,7 +1487,7 @@ export default class WaveSurfer extends util.Observer {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
             this.accessibility.updateAnnouncementText('waveform audio has been loaded');
-            this.fireEvent('waveform-ready');            
+            this.fireEvent('waveform-ready');
             this.tmpEvents.push(this.once('interaction', load));
         } else {
             return load();
