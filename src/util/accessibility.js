@@ -39,7 +39,7 @@ export class Accessibility {
   }
 
   // remove the announcement text element
-  removeAnnouncementText() {
+  destroy() {
     this.announcement.remove();
   }
 }
