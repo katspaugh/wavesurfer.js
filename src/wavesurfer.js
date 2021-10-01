@@ -1066,7 +1066,7 @@ export default class WaveSurfer extends util.Observer {
             this.accessibility.updateAnnouncementText('audio has been muted');
             this.fireEvent('mute', this.isMuted);
             return;
-        } else{
+        } else {
             this.accessibility.updateAnnouncementText('audio has been unmuted');
         }
 
