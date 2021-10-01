@@ -12,4 +12,4 @@ export { default as fetchFile } from './fetch';
 export { default as clamp } from './clamp';
 export { default as withOrientation } from './orientation';
 export { default as ignoreSilenceMode } from './silence-mode';
-export { createAnnouncementElement, updateAnnouncementText, clearAnnouncementText } from './accessibility';
+export { default as accessibility } from './accessibility';
