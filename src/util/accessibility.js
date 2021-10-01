@@ -12,7 +12,7 @@ export class Accessibility {
             document.createElement('div')
         );
         this.announcement.setAttribute('aria-live', 'polite');
-
+        
         style(this.announcement, {
             position: "absolute",
             width: "1px",
@@ -24,26 +24,21 @@ export class Accessibility {
             "white-space": "nowrap",
             border: "0"
         });
-
+        
         this.updateAnnouncementText('Loading waveform');
     }
-
+    
     // update the announcement text element
     updateAnnouncementText(text) {
         this.announcement.textContent = text;
     }
-
+    
     // clear the announcement text element
     clearAnnouncementText() {
         this.announcement.textContent = '';
     }
-
     // remove the announcement text element
-        destroy() {
+    destroy() {
         this.announcement.remove();
     }
 }
-
-
-
-
