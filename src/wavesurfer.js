@@ -1024,7 +1024,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setPlaybackRate(2);
      */
     setPlaybackRate(rate) {
-        this.accessibility.updateAnnouncementText('audio playback rate changed to '+rate);
+        this.accessibility.updateAnnouncementText('audio playback rate changed to ' + rate);
         this.backend.setPlaybackRate(rate);
     }
 
@@ -1150,7 +1150,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setWaveColor('#ddd');
      */
     setWaveColor(color) {
-        this.accessibility.updateAnnouncementText('waveform color changed to hex code '+color);
+        this.accessibility.updateAnnouncementText('waveform color changed to hex code ' + color);
         this.params.waveColor = color;
         this.drawBuffer();
     }
@@ -1171,7 +1171,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setProgressColor('#400');
      */
     setProgressColor(color) {
-        this.accessibility.updateAnnouncementText('waveform progress color changed to hex code '+color);
+        this.accessibility.updateAnnouncementText('waveform progress color changed to hex code ' + color);
         this.params.progressColor = color;
         this.drawBuffer();
     }
@@ -1192,7 +1192,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setBackgroundColor('#FF00FF');
      */
     setBackgroundColor(color) {
-        this.accessibility.updateAnnouncementText('waveform background color changed to hex code '+color);
+        this.accessibility.updateAnnouncementText('waveform background color changed to hex code ' + color);
         this.params.backgroundColor = color;
         util.style(this.container, { background: this.params.backgroundColor });
     }
@@ -1215,7 +1215,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setCursorColor('#222');
      */
     setCursorColor(color) {
-        this.accessibility.updateAnnouncementText('waveform cursor color changed to hex code '+color);
+        this.accessibility.updateAnnouncementText('waveform cursor color changed to hex code ' + color);
         this.params.cursorColor = color;
         this.drawer.updateCursor();
     }
@@ -1333,7 +1333,7 @@ export default class WaveSurfer extends util.Observer {
             this.params.scrollParent = true;
         }
 
-        this.accessibility.updateAnnouncementText('waveform zoom changed to '+pxPerSec+' px');
+        this.accessibility.updateAnnouncementText('waveform zoom changed to ' + pxPerSec + ' px');
         
         this.drawBuffer();
         this.drawer.progress(this.backend.getPlayedPercents());
