@@ -353,11 +353,6 @@ export default class WaveSurfer extends util.Observer {
     static util = util;
 
     /**
-     * Create the accessibility announcement element
-     */
-    util.createAnnouncementElement();
-
-    /**
      * Initialise wavesurfer instance
      *
      * @param {WavesurferParams} params Instantiation options for wavesurfer
@@ -487,6 +482,11 @@ export default class WaveSurfer extends util.Observer {
         this.initialisedPluginList = {};
         /** @private */
         this.isDestroyed = false;
+
+        /**
+         * Create the accessibility announcement element
+         */
+        this.accessibility = new Accessibility();
 
         /**
          * Get the current ready status.
@@ -821,7 +821,7 @@ export default class WaveSurfer extends util.Observer {
      * wavesurfer.play(1, 5);
      */
     play(start, end) {
-        util.updateAnnouncementText('audio playing');
+        this.accessibility.updateAnnouncementText('audio playing');
         if (this.params.ignoreSilenceMode) {
             // ignores device hardware silence mode
             util.ignoreSilenceMode();
@@ -848,7 +848,7 @@ export default class WaveSurfer extends util.Observer {
      * @return {Promise} Result of the backend pause method
      */
     pause() {
-        util.updateAnnouncementText('audio paused');
+        this.accessibility.updateAnnouncementText('audio paused');
         if (!this.backend.isPaused()) {
             return this.backend.pause();
         }
@@ -976,7 +976,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.stop();
      */
     stop() {
-        util.updateAnnouncementText('audio stopped');
+        this.accessibility.updateAnnouncementText('audio stopped');
         this.pause();
         this.seekTo(0);
         this.drawer.progress(0);
@@ -1024,7 +1024,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setPlaybackRate(2);
      */
     setPlaybackRate(rate) {
-        util.updateAnnouncementText('audio playback rate changed to '+rate);
+        this.accessibility.updateAnnouncementText('audio playback rate changed to '+rate);
         this.backend.setPlaybackRate(rate);
     }
 
@@ -1063,11 +1063,11 @@ export default class WaveSurfer extends util.Observer {
     setMute(mute) {
         // ignore all muting requests if the audio is already in that state
         if (mute === this.isMuted) {
-            util.updateAnnouncementText('audio has been muted');
+            this.accessibility.updateAnnouncementText('audio has been muted');
             this.fireEvent('mute', this.isMuted);
             return;
         } else{
-            util.updateAnnouncementText('audio has been unmuted');
+            this.accessibility.updateAnnouncementText('audio has been unmuted');
         }
 
         if (this.backend.setMute) {
@@ -1150,7 +1150,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setWaveColor('#ddd');
      */
     setWaveColor(color) {
-        util.updateAnnouncementText('waveform color changed to hex code '+color);
+        this.accessibility.updateAnnouncementText('waveform color changed to hex code '+color);
         this.params.waveColor = color;
         this.drawBuffer();
     }
@@ -1171,7 +1171,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setProgressColor('#400');
      */
     setProgressColor(color) {
-        util.updateAnnouncementText('waveform progress color changed to hex code '+color);
+        this.accessibility.updateAnnouncementText('waveform progress color changed to hex code '+color);
         this.params.progressColor = color;
         this.drawBuffer();
     }
@@ -1192,7 +1192,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setBackgroundColor('#FF00FF');
      */
     setBackgroundColor(color) {
-        util.updateAnnouncementText('waveform background color changed to hex code '+color);
+        this.accessibility.updateAnnouncementText('waveform background color changed to hex code '+color);
         this.params.backgroundColor = color;
         util.style(this.container, { background: this.params.backgroundColor });
     }
@@ -1215,7 +1215,7 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setCursorColor('#222');
      */
     setCursorColor(color) {
-        util.updateAnnouncementText('waveform cursor color changed to hex code '+color);
+        this.accessibility.updateAnnouncementText('waveform cursor color changed to hex code '+color);
         this.params.cursorColor = color;
         this.drawer.updateCursor();
     }
@@ -1333,7 +1333,7 @@ export default class WaveSurfer extends util.Observer {
             this.params.scrollParent = true;
         }
 
-        util.updateAnnouncementText('waveform zoom changed to '+pxPerSec+' px');
+        this.accessibility.updateAnnouncementText('waveform zoom changed to '+pxPerSec+' px');
         
         this.drawBuffer();
         this.drawer.progress(this.backend.getPlayedPercents());
@@ -1422,7 +1422,7 @@ export default class WaveSurfer extends util.Observer {
             throw new Error('url parameter cannot be empty');
         }
 
-        util.updateAnnouncementText('waveform audio is loading');
+        this.accessibility.updateAnnouncementText('waveform audio is loading');
         this.empty();
         if (preload) {
             // check whether the preload attribute will be usable and if not log
@@ -1487,7 +1487,7 @@ export default class WaveSurfer extends util.Observer {
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
-            util.updateAnnouncementText('waveform audio has been loaded');
+            this.accessibility.updateAnnouncementText('waveform audio has been loaded');
             this.fireEvent('waveform-ready');            
             this.tmpEvents.push(this.once('interaction', load));
         } else {
@@ -1538,7 +1538,7 @@ export default class WaveSurfer extends util.Observer {
         if (peaks) {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
-            util.updateAnnouncementText('waveform audio has been loaded');
+            this.accessibility.updateAnnouncementText('waveform audio has been loaded');
             this.fireEvent('waveform-ready');
         }
 
@@ -1554,7 +1554,7 @@ export default class WaveSurfer extends util.Observer {
                     this.backend.buffer = buffer;
                     this.backend.setPeaks(null);
                     this.drawBuffer();
-                    util.updateAnnouncementText('waveform audio has been loaded');
+                    this.accessibility.updateAnnouncementText('waveform audio has been loaded');
                     this.fireEvent('waveform-ready');
                 });
             });
@@ -1780,6 +1780,9 @@ export default class WaveSurfer extends util.Observer {
         }
         if (this.drawer) {
             this.drawer.destroy();
+        }
+        if (this.accessibility) {
+            this.accessibility.destroy();
         }
         this.isDestroyed = true;
         this.isReady = false;
