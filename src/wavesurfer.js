@@ -486,7 +486,7 @@ export default class WaveSurfer extends util.Observer {
         /**
          * Create the accessibility announcement element
          */
-        this.accessibility = new Accessibility();
+        this.accessibility = new util.Accessibility();
 
         /**
          * Get the current ready status.
