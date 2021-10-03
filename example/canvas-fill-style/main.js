@@ -1,8 +1,7 @@
-var wavesurfer = {};
 document.addEventListener("DOMContentLoaded", function() {
-    var c = document.getElementById("myCanvas");
-    var waveformBtn = document.getElementById("waveform-btn");
 
+    // setup WaveSurfer
+    var wavesurfer = {};
     wavesurfer = WaveSurfer.create({
         container: document.querySelector("#waveform"),
         height: 350,
@@ -20,25 +19,24 @@ document.addEventListener("DOMContentLoaded", function() {
         barWidth: 10
     });
 
+    // load a media file
     wavesurfer.load("../media/demo.mp3");
 
+    // setup the play button
+    var waveformBtn = document.getElementById("waveform-btn");
     waveformBtn.addEventListener("click", wavesurfer.playPause.bind(wavesurfer));
 
-    let waveform = document.getElementById("waveform");
-    waveform.addEventListener("mouseover", () => {
-        pointers[0].down = true; // eslint-disable-line no-undef
-        pointers[0].color = [ // eslint-disable-line no-undef
-            Math.random() + 0.2,
-            Math.random() + 0.2,
-            Math.random() + 0.2
-        ];
-    });
-    var i;
+    var drawCanvasInterval;
     wavesurfer.on("play", () => {
-        i = window.setInterval(() => {
-            wavesurfer.setWaveColor(document.getElementById("liquid"));
-            wavesurfer.setProgressColor(document.getElementById("liquid"));
+        // when the audio is playing
+        drawCanvasInterval = window.setInterval(() => {
+
+            // draw the contents of the hidden effects canvas to the waveform background
+            wavesurfer.setWaveStyle(document.getElementById("liquid"));
+            wavesurfer.setProgressStyle(document.getElementById("liquid"));
         }, 0);
     }, false);
-    wavesurfer.on("pause", () => window.clearInterval(i), false);
+
+    // when the audio is paused, stop drawing
+    wavesurfer.on("pause", () => window.clearInterval(drawCanvasInterval), false);
 });

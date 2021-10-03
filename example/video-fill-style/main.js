@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function() {
         barWidth: 2,
         normalize: true
     });
-    wavesurfer.load("../media/divavid.mp3");
+    wavesurfer.load("../media/demo.mp3");
 
     // get references to the play button, Video and Canvas Elements
     var waveformBtn = document.getElementById('waveform-btn');
@@ -38,11 +38,21 @@ document.addEventListener("DOMContentLoaded", function() {
     wavesurfer.on('seek', () => {
         // when WaveSurfer seeks, seek the video
         videoElement.currentTime = wavesurfer.getCurrentTime();
+        if (!wavesurfer.isPlaying()) {
+            drawVideoFrame();
+        }
     });
     wavesurfer.on('pause', () => {
         // when WaveSurfer pauses, pause the video
         videoElement.pause();
     });
+
+    // draw one frame of video
+    function drawVideoFrame() {
+        ctx.drawImage(videoElement, 0, 0, 777, 414);
+        wavesurfer.setWaveStyle(canvasElement);
+        wavesurfer.setProgressStyle(canvasElement);
+    }
 
     // setup interval to draw the video to the canvas
     var drawVideoInterval;

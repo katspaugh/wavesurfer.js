@@ -47,7 +47,7 @@
 
         <div id="demo">
             <video id="video" muted controls width="500" height="250">
-                <source src="../media/divavid.mp4" type='video/mp4'>
+                <source src="../media/videofillstyle.mp4" type='video/mp4'>
             </video>
               <canvas id="myCanvas" width="777" height="338" style="border:1px solid #d3d3d3;">
               Your browser does not support the HTML5 canvas tag.</canvas>
@@ -71,74 +71,84 @@
         <div class="row marketing">
             <h3>Video Fill Style example</h3>
             <hr />
-            <p>This video fill style example uses an on-page video element and a canvas element that are hidden with CSS.  When the waveform plays, an interval runs to draw the video display to the context of the canvas element, and then pass that canvas to WaveSurfer setWaveStyle / setProgressStyle methods.</p>
+            <p>This video fill style example uses an on-page video element and a canvas element that are hidden with CSS.  As the waveform plays, the following script draws the video to the canvas, and passes it to WaveSurfer to use as the waveform background.  Check out this page's source code for the HTML.</p>
 
             <p>
                 <pre><code>document.addEventListener("DOMContentLoaded", function() {
 
-    // setup WaveSurfer
-    var wavesurfer = WaveSurfer.create({
-        container: document.querySelector("#waveform"),
-        height: 250,
-        backgroundColor: 'black',
-        waveColor: 'navy',
-        cursorColor: 'white',
-        cursorWidth: 2,
-        fillParent: true,
-        barGap: 0,
-        barHeight: 1,
-        barMinHeight: 1,
-        barRadius: 0,
-        barWidth: 15,
-        normalize: true
-    });
-    wavesurfer.load("../media/divavid.mp3");
+// setup WaveSurfer
+var wavesurfer = WaveSurfer.create({
+    container: document.querySelector("#waveform"),
+    height: 250,
+    backgroundColor: 'black',
+    waveColor: 'navy',
+    cursorColor: 'white',
+    cursorWidth: 2,
+    fillParent: true,
+    barGap: 0,
+    barHeight: 1,
+    barMinHeight: 1,
+    barRadius: 0,
+    barWidth: 2,
+    normalize: true
+});
+wavesurfer.load("../media/demo.mp3");
 
-    // get references to the play button, Video and Canvas Elements
-    var waveformBtn = document.getElementById('waveform-btn');
-    var videoElement = document.getElementById("video");
-    var canvasElement = document.getElementById("myCanvas");
-    var ctx = canvasElement.getContext("2d");
+// get references to the play button, Video and Canvas Elements
+var waveformBtn = document.getElementById('waveform-btn');
+var videoElement = document.getElementById("video");
+var canvasElement = document.getElementById("myCanvas");
+var ctx = canvasElement.getContext("2d");
 
-    // setup WaveSurfer events
-    waveformBtn.addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
-    wavesurfer.on('ready', () => {
-        wavesurfer.play();
-        wavesurfer.pause();
-        wavesurfer.seek(0);
-    });
-    wavesurfer.on('play', () => {
-        // when WaveSurfer plays, play the video
-        videoElement.play(wavesurfer.getCurrentTime());
-    });
-    wavesurfer.on('seek', () => {
-        // when WaveSurfer seeks, seek the video
-        videoElement.currentTime = wavesurfer.getCurrentTime();
-    });
-    wavesurfer.on('pause', () => {
-        // when WaveSurfer pauses, pause the video
-        videoElement.pause();
-    });
-
-    // setup interval to draw the video to the canvas
-    var drawVideoInterval;
-    videoElement.addEventListener("play", function() {
-        drawVideoInterval = window.setInterval(() => {
-
-            // draw the video element to the 2d context of the canvas element
-            // adjusting the width and height parameters #4 and #5
-            // to suit the video and waveform
-            ctx.drawImage(videoElement, 0, 0, 777, 414);
-            wavesurfer.setWaveColor(canvasElement);
-            wavesurfer.setProgressColor(canvasElement);
-        }, 0);
-    }, false);
-    videoElement.addEventListener("pause",
-        () => window.clearInterval(drawVideoInterval), false);
-    videoElement.addEventListener("ended",
-        () => clearInterval(drawVideoInterval), false);
+// setup WaveSurfer events
+waveformBtn.addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
+wavesurfer.on('ready', () => {
+    wavesurfer.play();
+    wavesurfer.pause();
+    wavesurfer.seek(0);
+});
+wavesurfer.on('play', () => {
+    // when WaveSurfer plays, play the video
+    videoElement.play(wavesurfer.getCurrentTime());
+});
+wavesurfer.on('seek', () => {
+    // when WaveSurfer seeks, seek the video
+    videoElement.currentTime = wavesurfer.getCurrentTime();
+    if (!wavesurfer.isPlaying()) {
+        drawVideoFrame();
+    }
+});
+wavesurfer.on('pause', () => {
+    // when WaveSurfer pauses, pause the video
+    videoElement.pause();
 });
 
+// draw one frame of video
+function drawVideoFrame() {
+    ctx.drawImage(videoElement, 0, 0, 777, 414);
+    wavesurfer.setWaveStyle(canvasElement);
+    wavesurfer.setProgressStyle(canvasElement);
+}
+
+// setup interval to draw the video to the canvas
+var drawVideoInterval;
+videoElement.addEventListener("play", function() {
+
+    drawVideoInterval = window.setInterval(() => {
+
+        // draw the video element to the 2d context of the canvas element
+        // adjusting the width and height parameters #4 and #5
+        // to suit the video and waveform
+        ctx.drawImage(videoElement, 0, 0, 777, 414);
+        wavesurfer.setWaveStyle(canvasElement);
+        wavesurfer.setProgressStyle(canvasElement);
+    }, 0);
+}, false);
+
+videoElement.addEventListener("pause", () => window.clearInterval(drawVideoInterval), false);
+videoElement.addEventListener("ended", () => clearInterval(drawVideoInterval), false);
+
+});
 </code></pre>
             </p>
         </div>
@@ -160,7 +170,7 @@
                         The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used
                         with permission.
                     </noindex>
-                    <br>Canvas Effect <a href="https://codepen.io/PavelDoGreat/pen/zdWzEL">"WebGL Fluid Simulation"</a> by Pavel Dobryakov
+                    <br>"Video Fill Style" video contributed by <a href="https://www.kennethcaple.com/">Kenneth Caple</a>
                 </div>
             </div>
         </div>

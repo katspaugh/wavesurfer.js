@@ -83,49 +83,48 @@
             <p>This interactive wave background effect happens via an HTML Canvas Element that has 0 opacity via CSS, and is absolutely positioned behind the waveform.  This allows it to register the mouseover events.  The script below then copies what is happening on that interactive canvas to the background of the waveform.</p>
 
             <p>
-                <pre><code>var wavesurfer = {};
-document.addEventListener("DOMContentLoaded", function () {
-    var c = document.getElementById("myCanvas");
-    var waveformBtn = document.getElementById("waveform-btn");
+                <pre><code>document.addEventListener("DOMContentLoaded", function() {
 
-    wavesurfer = WaveSurfer.create({
-        container: document.querySelector("#waveform"),
-        height: 350,
-        waveColor: document.getElementById("liquid"),
-        progressColor: document.getElementById("liquid"),
-        cursorColor: "rgba(255,255,255,1)",
-        cursorWidth: 2,
-        loop: true,
-        fillParent: true,
-        responsive: false,
-        barGap: 0,
-        barHeight: 1,
-        barMinHeight: 1,
-        barRadius: 0,
-        barWidth:10
-    });
+// setup WaveSurfer
+var wavesurfer = {};
+wavesurfer = WaveSurfer.create({
+    container: document.querySelector("#waveform"),
+    height: 350,
+    waveColor: document.getElementById("liquid"),
+    progressColor: document.getElementById("liquid"),
+    cursorColor: "rgba(255,255,255,1)",
+    cursorWidth: 2,
+    loop: true,
+    fillParent: true,
+    responsive: false,
+    barGap: 0,
+    barHeight: 1,
+    barMinHeight: 1,
+    barRadius: 0,
+    barWidth: 10
+});
 
-    wavesurfer.load("../media/demo.mp3");
+// load a media file
+wavesurfer.load("../media/demo.mp3");
 
-    waveformBtn.addEventListener("click",
-    wavesurfer.playPause.bind(wavesurfer));
+// setup the play button
+var waveformBtn = document.getElementById("waveform-btn");
+waveformBtn.addEventListener("click", wavesurfer.playPause.bind(wavesurfer));
 
-    let waveform = document.getElementById("waveform");
-    waveform.addEventListener("mouseover", () => {
-        pointers[0].down = true;
-        pointers[0].color = [
-            Math.random() + 0.2,
-            Math.random() + 0.2,
-            Math.random() + 0.2,
-        ];
-    });
-    wavesurfer.on("play", () => {
-        i = window.setInterval(() => {
-            wavesurfer.setWaveColor(document.getElementById("liquid"));
-            wavesurfer.setProgressColor(document.getElementById("liquid"));
-            }, 0)
-        }, false);
-    wavesurfer.on("pause", () => window.clearInterval(i), false);
+var drawCanvasInterval;
+wavesurfer.on("play", () => {
+    // when the audio is playing
+    drawCanvasInterval = window.setInterval(() => {
+
+        // draw the contents of the hidden effects canvas to the waveform background
+        wavesurfer.setWaveStyle(document.getElementById("liquid"));
+        wavesurfer.setProgressStyle(document.getElementById("liquid"));
+    }, 0);
+}, false);
+
+// when the audio is paused, stop drawing
+wavesurfer.on("pause", () => window.clearInterval(drawCanvasInterval), false);
+
 });
 </code></pre>
             </p>
