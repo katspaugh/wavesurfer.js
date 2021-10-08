@@ -754,9 +754,13 @@ export class Region {
 
         if (direction === 'start') {
             // Check if changing the start by the given delta would result in the region being smaller than minLength
-            // Ignore cases where we are making the region wider rather than shrinking it
             if (delta > 0 && this.end - (this.start + delta) < this.minLength) {
                 delta = this.end - this.minLength - this.start;
+            }
+
+            // Check if changing the start by the given delta would result in the region being larger than maxLength
+            if (delta < 0 && this.end - (this.start + delta) > this.maxLength) {
+                delta = this.end - this.start - this.maxLength;
             }
 
             if (delta < 0 && (this.start + delta) < 0) {
@@ -769,9 +773,13 @@ export class Region {
             }, eventParams);
         } else {
             // Check if changing the end by the given delta would result in the region being smaller than minLength
-            // Ignore cases where we are making the region wider rather than shrinking it
             if (delta < 0 && this.end + delta - this.start < this.minLength) {
                 delta = this.start + this.minLength - this.end;
+            }
+
+            // Check if changing the end by the given delta would result in the region being larger than maxLength
+            if (delta > 0 && this.end + delta - this.start > this.maxLength) {
+                delta = this.maxLength - (this.end - this.start);
             }
 
             if (delta > 0 && (this.end + delta) > duration) {
