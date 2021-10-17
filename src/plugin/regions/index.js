@@ -284,13 +284,13 @@ export default class RegionsPlugin {
                 this.vertical
             );
 
-            if (_this4.wavesurfer.params.splitChannels) {
+            if (this.wavesurfer.params.splitChannels) {
                 const y = (e.touches ? e.touches[0].clientY : e.clientY) - wrapperRect.top;
-                const channelCount = _this4.wavesurfer.backend.buffer != null ? _this4.wavesurfer.backend.buffer.numberOfChannels : 1;
-                const channelHeight = _this4.wrapper.clientHeight/channelCount;
-                const channelIdx = Math.floor(y/channelHeight);
+                const channelCount = this.wavesurfer.backend.buffer != null ? this.wavesurfer.backend.buffer.numberOfChannels : 1;
+                const channelHeight = this.wrapper.clientHeight / channelCount;
+                const channelIdx = Math.floor(y / channelHeight);
                 params.channelIdx = channelIdx;
-                const channelColors = _this4.wavesurfer.params.splitChannelsOptions.channelColors[channelIdx];
+                const channelColors = this.wavesurfer.params.splitChannelsOptions.channelColors[channelIdx];
                 if (channelColors && channelColors.dragColor) {
                     params.color = channelColors.dragColor;
                 }
