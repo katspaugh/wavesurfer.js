@@ -290,7 +290,10 @@ export default class RegionsPlugin {
                 const channelHeight = _this4.wrapper.clientHeight/channelCount;
                 const channelIdx = Math.floor(y/channelHeight);
                 params.channelIdx = channelIdx;
-                params.color = _this4.wavesurfer.params.splitChannelsOptions.channelColors[channelIdx].dragColor;
+                const channelColors = _this4.wavesurfer.params.splitChannelsOptions.channelColors[channelIdx];
+                if (channelColors && channelColors.dragColor) {
+                    params.color = channelColors.dragColor;
+                }
             }
 
             drag = true;
