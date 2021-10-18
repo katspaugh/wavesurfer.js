@@ -6,6 +6,7 @@ wavesurfer.js changelog
 - Regions plugin: increase region z-index to fix stacking inconsistencies (#2353)
 - add `hideCursor` option to hide the mouse cursor when hovering over the waveform (#2367)
 - Regions plugin: check `maxLength` before resizing region (#2374)
+- Regions plugin: Add support for drag selection to be separated for each channel (#2380)
 
 5.2.0 (16.08.2021)
 ------------------

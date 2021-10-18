@@ -62,6 +62,7 @@ export class Region {
         // select channel ID to set region
         let channelIdx =
             params.channelIdx == null ? -1 : parseInt(params.channelIdx);
+        this.channelIdx = channelIdx;
         this.regionHeight = '100%';
         this.marginTop = '0px';
 
