@@ -35,7 +35,7 @@ export class Region {
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
         // The left and right handleStyle properties can be set to 'none' for
         // no styling or can be assigned an object containing CSS properties.
-        this.handleStyle = params.handleStyle || {
+        this.handleStyle = params.params.handleStyle || {
             left: {},
             right: {}
         };
@@ -147,7 +147,7 @@ export class Region {
      */
     play(start) {
         const s = start || this.start;
-        this.wavesurfer.play(s, this.end);
+        this.wavesurfer.play(s);
         this.fireEvent('play');
         this.wavesurfer.fireEvent('region-play', this);
     }
