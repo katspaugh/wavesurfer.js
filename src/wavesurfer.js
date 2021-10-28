@@ -740,6 +740,10 @@ export default class WaveSurfer extends util.Observer {
             this.fireEvent('audioprocess', time);
         });
 
+        this.backend.on('seek', () => {
+            this.backend.fireEvent("audioprocess", this.getCurrentTime());
+        });
+
         // only needed for MediaElement and MediaElementWebAudio backend
         if (
             this.params.backend === 'MediaElement' ||
