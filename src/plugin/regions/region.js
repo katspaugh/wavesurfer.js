@@ -244,11 +244,15 @@ export class Region {
         if (this.formatTimeCallback) {
             return this.formatTimeCallback(start, end);
         }
+
         return (start == end ? [start] : [start, end])
             .map((time) =>
                 [
-                    Math.floor((time % 3600) / 60), // minutes
-                    ('00' + Math.floor(time % 60)).slice(-2) // seconds
+                    // ** CUSTOMIZATION **
+                    // To show HH:MM:SS instead of just MM:SS
+                    new Date(Math.round(time) * 1000).toISOString().substr(11, 8)
+                    // Math.floor((time % 3600) / 60), // minutes
+                    // ('00' + Math.floor(time % 60)).slice(-2) // seconds
                 ].join(':')
             )
             .join('-');
