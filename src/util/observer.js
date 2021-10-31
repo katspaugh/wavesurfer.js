@@ -136,9 +136,24 @@ export default class Observer {
         }
 
         const handlers = this.handlers[event];
-        handlers &&
-            handlers.forEach(fn => {
-                fn(...args);
-            });
+        // run fireRegionOut handlers first
+        if (handlers) {
+            if (event == "audioprocess") {
+                handlers.forEach(fn => {
+                    if (fn.name == "fireRegionOut") {
+                        fn(...args);
+                    }
+                });
+                handlers.forEach(fn => {
+                    if (fn.name != "fireRegionOut") {
+                        fn(...args);
+                    }
+                });
+            } else {
+                handlers.forEach(fn => {
+                    fn(...args);
+                });
+            }
+        }
     }
 }

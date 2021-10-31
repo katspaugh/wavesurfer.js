@@ -325,9 +325,10 @@ export class Region {
         this.firedIn = false;
         this.firedOut = false;
 
-        const onProcess = (time) => {
-            let start = Math.round(this.start * 10) / 10;
-            let end = Math.round(this.end * 10) / 10;
+        let start = Math.round(this.start * 10) / 10;
+        let end = Math.round(this.end * 10) / 10;
+
+        const fireRegionOut = (time) => {
             time = Math.round(time * 10) / 10;
 
             if (
@@ -340,6 +341,11 @@ export class Region {
                 this.fireEvent('out');
                 this.wavesurfer.fireEvent('region-out', this);
             }
+        };
+
+        const fireRegionIn = (time) => {
+            time = Math.round(time * 10) / 10;
+
             if (!this.firedIn && start <= time && end > time) {
                 this.firedIn = true;
                 this.firedOut = false;
@@ -348,10 +354,12 @@ export class Region {
             }
         };
 
-        this.wavesurfer.backend.on('audioprocess', onProcess);
+        this.wavesurfer.backend.on('audioprocess', fireRegionOut);
+        this.wavesurfer.backend.on('audioprocess', fireRegionIn);
 
         this.on('remove', () => {
-            this.wavesurfer.backend.un('audioprocess', onProcess);
+            this.wavesurfer.backend.un('audioprocess', fireRegionOut);
+            this.wavesurfer.backend.un('audioprocess', fireRegionIn);
         });
 
         /* Loop playback. */
