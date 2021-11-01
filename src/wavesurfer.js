@@ -1146,9 +1146,10 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setWaveColor('#ddd');
      */
     setWaveColor(color, channelIdx = null) {
-        this.params.waveColor = color;
         if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
             this.params.splitChannelsOptions.channelColors[channelIdx].waveColor = color;
+        } else {
+            this.params.waveColor = color;
         }
         this.drawBuffer();
     }
@@ -1174,9 +1175,10 @@ export default class WaveSurfer extends util.Observer {
      * @example wavesurfer.setProgressColor('#400');
      */
     setProgressColor(color, channelIdx) {
-        this.params.progressColor = color;
         if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
             this.params.splitChannelsOptions.channelColors[channelIdx].progressColor = color;
+        } else {
+            this.params.progressColor = color;
         }
         this.drawBuffer();
     }
