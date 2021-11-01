@@ -293,6 +293,61 @@ describe('WaveSurfer/playback:', function() {
         expect(progressColor).toEqual('green');
     });
 
+    describe('split channels options', function() {
+        beforeEach(function() {
+            wavesurfer.params.splitChannels = true;
+            wavesurfer.params.splitChannelsOptions = {
+                channelColors: {
+                    0: {
+                        progressColor: 'green',
+                        waveColor: 'pink'
+                    },
+                    1: {
+                        progressColor: 'orange',
+                        waveColor: 'purple'
+                    }
+                }
+            };
+        });
+
+        afterEach(function() {
+            wavesurfer.params.splitChannels = false;
+            wavesurfer.params.splitChannelsOptions = {
+                channelColors: {}
+            };
+        });
+
+        /** @test {WaveSurfer#getChannelWaveColor} */
+        it('allow getting channel waveColor', function() {
+            const waveColor = wavesurfer.getWaveColor(1);
+            expect(waveColor).toEqual('purple');
+        });
+
+        /** @test {WaveSurfer#setChannelWaveColor} */
+        it('allow setting channel waveColor', function() {
+            let color = 'blue';
+            wavesurfer.setWaveColor(color, 1);
+            const waveColor = wavesurfer.getWaveColor(1);
+
+            expect(waveColor).toEqual(color);
+        });
+
+        /** @test {WaveSurfer#getChannelProgressColor} */
+        it('allow getting channel progressColor', function() {
+            const progressColor = wavesurfer.getProgressColor(1);
+            expect(progressColor).toEqual('orange');
+        });
+
+        /** @test {WaveSurfer#setChannelProgressColor} */
+        it('allow setting channel progressColor', function() {
+            let color = 'blue';
+            wavesurfer.setProgressColor(color, 1);
+            const progressColor = wavesurfer.getProgressColor(1);
+
+            expect(progressColor).toEqual(color);
+        });
+    });
+
     /** @test {WaveSurfer#getCursorColor} */
     it('allow getting cursorColor', function() {
         const cursorColor = wavesurfer.getCursorColor();
