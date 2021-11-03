@@ -1128,9 +1128,13 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Get the fill color of the waveform after the cursor.
      *
+     * @param {?number} channelIdx Optional index of the channel to get its wave color if splitChannels is true
      * @return {string|object} A CSS color string, or an array of CSS color strings.
      */
-    getWaveColor() {
+    getWaveColor(channelIdx = null) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            return this.params.splitChannelsOptions.channelColors[channelIdx].waveColor;
+        }
         return this.params.waveColor;
     }
 
@@ -1138,19 +1142,28 @@ export default class WaveSurfer extends util.Observer {
      * Set the fill color of the waveform after the cursor.
      *
      * @param {string|object} color A CSS color string, or an array of CSS color strings.
+     * @param {?number} channelIdx Optional index of the channel to set its wave color if splitChannels is true
      * @example wavesurfer.setWaveColor('#ddd');
      */
-    setWaveColor(color) {
-        this.params.waveColor = color;
+    setWaveColor(color, channelIdx = null) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            this.params.splitChannelsOptions.channelColors[channelIdx].waveColor = color;
+        } else {
+            this.params.waveColor = color;
+        }
         this.drawBuffer();
     }
 
     /**
      * Get the fill color of the waveform behind the cursor.
      *
+     * @param {?number} channelIdx Optional index of the channel to get its progress color if splitChannels is true
      * @return {string|object} A CSS color string, or an array of CSS color strings.
      */
-    getProgressColor() {
+    getProgressColor(channelIdx = null) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            return this.params.splitChannelsOptions.channelColors[channelIdx].progressColor;
+        }
         return this.params.progressColor;
     }
 
@@ -1158,10 +1171,15 @@ export default class WaveSurfer extends util.Observer {
      * Set the fill color of the waveform behind the cursor.
      *
      * @param {string|object} color A CSS color string, or an array of CSS color strings.
+     * @param {?number} channelIdx Optional index of the channel to set its progress color if splitChannels is true
      * @example wavesurfer.setProgressColor('#400');
      */
-    setProgressColor(color) {
-        this.params.progressColor = color;
+    setProgressColor(color, channelIdx) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            this.params.splitChannelsOptions.channelColors[channelIdx].progressColor = color;
+        } else {
+            this.params.progressColor = color;
+        }
         this.drawBuffer();
     }
 
