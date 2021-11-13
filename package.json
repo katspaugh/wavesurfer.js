@@ -103,5 +103,8 @@
     "*.html": [
       "htmlhint"
     ]
+  },
+  "dependencies": {
+    "collections": "^5.1.12"
   }
 }

@@ -5,6 +5,8 @@
  * @property {function} un The function to call to remove the listener
  */
 
+const SortedSet = require("collections/sorted-set");
+
 /**
  * Observer class
  */
@@ -20,6 +22,7 @@ export default class Observer {
          */
         this._disabledEventEmissions = [];
         this.handlers = null;
+        this._seqNum = 0;
     }
     /**
      * Attach a handler function for an event.
@@ -35,8 +38,14 @@ export default class Observer {
 
         let handlers = this.handlers[event];
         if (!handlers) {
-            handlers = this.handlers[event] = [];
+            handlers = this.handlers[event] = SortedSet([], null, (a, b) => {
+                if (a.order && b.order && a.order != b.order) {
+                    return a.order - b.order;
+                }
+                return a.seqNum - b.seqNum;
+            });
         }
+        fn.seqNum = this._seqNum++;
         handlers.push(fn);
 
         // Return an event descriptor
@@ -60,17 +69,8 @@ export default class Observer {
         }
 
         const handlers = this.handlers[event];
-        let i;
         if (handlers) {
-            if (fn) {
-                for (i = handlers.length - 1; i >= 0; i--) {
-                    if (handlers[i] == fn) {
-                        handlers.splice(i, 1);
-                    }
-                }
-            } else {
-                handlers.length = 0;
-            }
+            handlers.delete(fn);
         }
     }
 
