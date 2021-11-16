@@ -129,15 +129,14 @@ export default class RegionsPlugin {
         this.wavesurfer.Region = Region;
 
         // By default, scroll the container if the user drags a region
-        // within 5% of its edge
+        // within 5% (based on its initial size) of its edge
         const scrollWidthProportion = 0.05;
         this._onBackendCreated = () => {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             this.orientation = this.wavesurfer.drawer.orientation;
+            this.defaultEdgeScrollWidth = this.wrapper.clientWidth * scrollWidthProportion;
             if (this.params.regions) {
                 this.params.regions.forEach(region => {
-                    region.edgeScrollWidth = this.params.edgeScrollWidth ||
-                        this.wrapper.clientWidth * scrollWidthProportion;
                     this.add(region);
                 });
             }
@@ -196,6 +195,11 @@ export default class RegionsPlugin {
         if (this.wouldExceedMaxRegions()) {
             return null;
         }
+
+        params = {
+            edgeScrollWidth: this.params.edgeScrollWidth || this.defaultEdgeScrollWidth,
+            ...params
+        };
 
         // Take formatTimeCallback from plugin params if not already set
         if (!params.formatTimeCallback && this.params.formatTimeCallback) {

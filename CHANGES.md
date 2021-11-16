@@ -11,6 +11,8 @@ wavesurfer.js changelog
 - Regions plugin: allow `formatTimeCallback` from plugin params to be used (#2294)
 - Markers plugin: Add the ability to set markers as draggable using param `draggable=true`,
   `marker-drag` and `marker-drop` events will be triggered (#2398)
+- Regions plugin: use of default `edgeScrollWidth` value no longer dependent on
+  regions being created via plugin params (#2401)
 
 5.2.0 (16.08.2021)
 ------------------
