@@ -170,6 +170,7 @@ export default class RegionsPlugin {
     destroy() {
         this.wavesurfer.un('ready', this._onReady);
         this.wavesurfer.un('backend-created', this._onBackendCreated);
+        this.wavesurfer.setDisabledEventEmissions(['region-removed']);
         this.disableDragSelection();
         this.clear();
     }
