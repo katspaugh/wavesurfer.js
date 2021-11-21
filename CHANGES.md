@@ -15,6 +15,7 @@ wavesurfer.js changelog
   - Allow `formatTimeCallback` from plugin params to be used (#2294)
   - Use of default `edgeScrollWidth` value no longer dependent on regions being created via
     plugin params (#2401)
+  - Disable `region-remove` event emission during plugin teardown (#2403)
 
 5.2.0 (16.08.2021)
 ------------------

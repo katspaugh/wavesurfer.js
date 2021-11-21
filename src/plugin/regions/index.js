@@ -170,6 +170,11 @@ export default class RegionsPlugin {
     destroy() {
         this.wavesurfer.un('ready', this._onReady);
         this.wavesurfer.un('backend-created', this._onBackendCreated);
+        // Disabling `region-removed' because destroying the plugin calls
+        // the Region.remove() method that is also used to remove regions based
+        // on user input. This can cause confusion since teardown is not a
+        // user event, but would emit `region-removed` as if it was.
+        this.wavesurfer.setDisabledEventEmissions(['region-removed']);
         this.disableDragSelection();
         this.clear();
     }
