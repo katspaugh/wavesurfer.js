@@ -16,6 +16,10 @@ wavesurfer.js changelog
   - Use of default `edgeScrollWidth` value no longer dependent on regions being created via
     plugin params (#2401)
 
+5.3.0 (21.11.2021)
+------------------
+- Regions plugin: disable `region-remove` event emission during plugin teardown (#2403)
+
 5.2.0 (16.08.2021)
 ------------------
 - Add `ignoreSilenceMode` option to ignore iOS hardware silence switch when using the
