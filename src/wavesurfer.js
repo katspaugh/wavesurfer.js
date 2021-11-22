@@ -963,6 +963,7 @@ export default class WaveSurfer extends util.Observer {
         }
 
         this.params.scrollParent = oldScrollParent;
+        this.fireEvent('seekfromto', {from:this.getCurrentTime(),to:progress});
         this.fireEvent('seek', progress);
     }
 
