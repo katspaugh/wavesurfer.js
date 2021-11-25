@@ -926,8 +926,7 @@ export default class WaveSurfer extends util.Observer {
      *
      * @param {number} progress Between 0 (=beginning) and 1 (=end)
      * @emits WaveSurfer#interaction
-     * @emits WaveSurfer#seek
-     * @return {object} `from` being time started, `to` being time seeked for the `seek` event as {from:0, to:5}
+     * @emits WaveSurfer#seek - with {object} `from` being time started, `to` being time seeked for the `seek` event as {from:0, to:5}
      * @example
      * // seek to the middle of the audio
      * wavesurfer.seekTo(0.5);
