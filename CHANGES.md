@@ -16,6 +16,7 @@ wavesurfer.js changelog
   - Use of default `edgeScrollWidth` value no longer dependent on regions being created via
     plugin params (#2401)
   - Disable `region-remove` event emission during plugin teardown (#2403)
+- Update `seek` event to return object with `from` and `to` timestamp (#2410)
 
 5.2.0 (16.08.2021)
 ------------------
