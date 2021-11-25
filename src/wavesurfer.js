@@ -927,6 +927,7 @@ export default class WaveSurfer extends util.Observer {
      * @param {number} progress Between 0 (=beginning) and 1 (=end)
      * @emits WaveSurfer#interaction
      * @emits WaveSurfer#seek
+     * @return {object} `from` being time started, `to` being time seeked for the `seek` event as {from:0, to:5}
      * @example
      * // seek to the middle of the audio
      * wavesurfer.seekTo(0.5);
@@ -947,6 +948,7 @@ export default class WaveSurfer extends util.Observer {
 
         const isWebAudioBackend = this.params.backend === 'WebAudio';
         const paused = this.backend.isPaused();
+        const currentTime = this.getCurrentTime();
 
         if (isWebAudioBackend && !paused) {
             this.backend.pause();
@@ -963,8 +965,7 @@ export default class WaveSurfer extends util.Observer {
         }
 
         this.params.scrollParent = oldScrollParent;
-        this.fireEvent('seekfromto', {from:this.getCurrentTime(), to:progress});
-        this.fireEvent('seek', progress);
+        this.fireEvent('seek', {from:currentTime, to:progress * this.getDuration()});
     }
 
     /**
