@@ -253,33 +253,26 @@ export default class SpectrogramPlugin {
         const height = my.height;
         const width = my.width;
         const pixels = my.resample(frequenciesData);
-        const heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
-        if (spectrCc) {
-            const imageData = spectrCc.createImageData(width, height);
-            let i;
-            let j;
-            let k;
 
-            for (i = 0; i < pixels.length; i++) {
-                for (j = 0; j < pixels[i].length; j++) {
-                    const colorMap = my.colorMap[pixels[i][j]];
-                    /* eslint-disable max-depth */
-                    for (k = 0; k < heightFactor; k++) {
-                        let y = height - j * heightFactor;
-                        if (heightFactor === 2 && k === 1) {
-                            y--;
-                        }
-                        const redIndex = y * (width * 4) + i * 4;
-                        imageData.data[redIndex] = colorMap[0] * 255;
-                        imageData.data[redIndex + 1] = colorMap[1] * 255;
-                        imageData.data[redIndex + 2] = colorMap[2] * 255;
-                        imageData.data[redIndex + 3] = colorMap[3] * 255;
-                    }
-                    /* eslint-enable max-depth */
-                }
-            }
-            spectrCc.putImageData(imageData, 0, 0);
+        if (!spectrCc) {
+            return;
         }
+
+        const imageData = spectrCc.createImageData(width, height);
+        let i;
+        let j;
+
+        for (i = 0; i < pixels.length; i++) {
+            for (j = 0; j < pixels[i].length; j++) {
+                const colorMap = my.colorMap[pixels[i][j]];
+                const redIndex = ((height - j) * width + i) * 4;
+                imageData.data[redIndex] = colorMap[0] * 255;
+                imageData.data[redIndex + 1] = colorMap[1] * 255;
+                imageData.data[redIndex + 2] = colorMap[2] * 255;
+                imageData.data[redIndex + 3] = colorMap[3] * 255;
+            }
+        }
+        spectrCc.putImageData(imageData, 0, 0);
     }
 
     getFrequencies(callback) {
