@@ -8,6 +8,8 @@ import FFT from './fft';
  * which to render
  * @property {number} fftSamples=512 Number of samples to fetch to FFT. Must be
  * a power of 2.
+ * @property {boolean} splitChannels=false Render with separate spectrograms for
+ * the channels of the audio
  * @property {boolean} labels Set to true to display frequency labels.
  * @property {number} noverlap Size of the overlapping window. Must be <
  * fftSamples. Auto deduced from canvas size by default.
@@ -127,6 +129,8 @@ export default class SpectrogramPlugin {
             this.noverlap = params.noverlap;
             this.windowFunc = params.windowFunc;
             this.alpha = params.alpha;
+            this.splitChannels = params.splitChannels;
+            this.channels = this.splitChannels ? ws.backend.buffer.numberOfChannels : 1;
 
             this.createWrapper();
             this.createCanvas();
@@ -176,7 +180,7 @@ export default class SpectrogramPlugin {
                 left: 0,
                 position: 'absolute',
                 zIndex: 9,
-                height: `${this.height / this.pixelRatio}px`,
+                height: `${this.height * this.channels / this.pixelRatio}px`,
                 width: `${55 / this.pixelRatio}px`
             });
             this.wrapper.appendChild(labelsEl);
@@ -197,7 +201,7 @@ export default class SpectrogramPlugin {
             position: 'relative',
             userSelect: 'none',
             webkitUserSelect: 'none',
-            height: `${this.height / this.pixelRatio}px`
+            height: `${this.height * this.channels / this.pixelRatio}px`
         });
 
         if (wsParams.fillParent || wsParams.scrollParent) {
@@ -244,42 +248,48 @@ export default class SpectrogramPlugin {
     updateCanvasStyle() {
         const width = Math.round(this.width / this.pixelRatio) + 'px';
         this.canvas.width = this.width;
-        this.canvas.height = this.height;
+        this.canvas.height = this.height * this.channels;
         this.canvas.style.width = width;
     }
 
     drawSpectrogram(frequenciesData, my) {
+        if (!isNaN(frequenciesData[0][0])) { // data is 1ch [sample, fft] format
+            // to [channel, sample, fft] format
+            frequenciesData = [frequenciesData];
+        }
+
         const spectrCc = my.spectrCc;
         const height = my.height;
         const width = my.width;
-        const pixels = my.resample(frequenciesData);
 
         if (!spectrCc) {
             return;
         }
 
-        const imageData = spectrCc.createImageData(width, height);
-        let i;
-        let j;
+        for (let c = 0; c < frequenciesData.length; c++) { // for each channel
+            const pixels = my.resample(frequenciesData[c]);
+            const imageData = spectrCc.createImageData(width, height);
 
-        for (i = 0; i < pixels.length; i++) {
-            for (j = 0; j < pixels[i].length; j++) {
-                const colorMap = my.colorMap[pixels[i][j]];
-                const redIndex = ((height - j) * width + i) * 4;
-                imageData.data[redIndex] = colorMap[0] * 255;
-                imageData.data[redIndex + 1] = colorMap[1] * 255;
-                imageData.data[redIndex + 2] = colorMap[2] * 255;
-                imageData.data[redIndex + 3] = colorMap[3] * 255;
+            for (let i = 0; i < pixels.length; i++) {
+                for (let j = 0; j < pixels[i].length; j++) {
+                    const colorMap = my.colorMap[pixels[i][j]];
+                    const redIndex = ((height - j) * width + i) * 4;
+                    imageData.data[redIndex] = colorMap[0] * 255;
+                    imageData.data[redIndex + 1] = colorMap[1] * 255;
+                    imageData.data[redIndex + 2] = colorMap[2] * 255;
+                    imageData.data[redIndex + 3] = colorMap[3] * 255;
+                }
             }
+
+            // stack spectrograms
+            spectrCc.putImageData(imageData, 0, height * c);
         }
-        spectrCc.putImageData(imageData, 0, 0);
     }
 
     getFrequencies(callback) {
         const fftSamples = this.fftSamples;
         const buffer = (this.buffer = this.wavesurfer.backend.buffer);
-        const channelOne = buffer.getChannelData(0);
-        const bufferLength = buffer.length;
+        const channels = this.channels;
         const sampleRate = buffer.sampleRate;
         const frequencies = [];
 
@@ -300,24 +310,30 @@ export default class SpectrogramPlugin {
             this.windowFunc,
             this.alpha
         );
-        const maxSlicesCount = Math.floor(
-            bufferLength / (fftSamples - noverlap)
-        );
-        let currentOffset = 0;
 
-        while (currentOffset + fftSamples < channelOne.length) {
-            const segment = channelOne.slice(
-                currentOffset,
-                currentOffset + fftSamples
-            );
-            const spectrum = fft.calculateSpectrum(segment);
-            const array = new Uint8Array(fftSamples / 2);
-            let j;
-            for (j = 0; j < fftSamples / 2; j++) {
-                array[j] = Math.max(-255, Math.log10(spectrum[j]) * 45);
+        for (let c = 0; c < channels; c++) {
+            const channelData = buffer.getChannelData(c);
+            const channelFreq = [];
+            let currentOffset = 0;
+
+            while (currentOffset + fftSamples < channelData.length) {
+                const segment = channelData.slice(
+                    currentOffset,
+                    currentOffset + fftSamples
+                );
+                const spectrum = fft.calculateSpectrum(segment);
+                const array = new Uint8Array(fftSamples / 2);
+                let j;
+                for (j = 0; j < fftSamples / 2; j++) {
+                    array[j] = Math.max(-255, Math.log10(spectrum[j]) * 45);
+                }
+                channelFreq.push(array);
+                // channelFreq: [sample, freq]
+
+                currentOffset += fftSamples - noverlap;
             }
-            frequencies.push(array);
-            currentOffset += fftSamples - noverlap;
+            frequencies.push(channelFreq);
+            // frequencies: [channel, sample, freq]
         }
         callback(frequencies, this);
     }
@@ -370,13 +386,17 @@ export default class SpectrogramPlugin {
 
         // prepare canvas element for labels
         const ctx = this.labelsEl.getContext('2d');
-        this.labelsEl.height = this.height;
+        this.labelsEl.height = this.height * this.channels;
         this.labelsEl.width = bgWidth;
 
-        if (ctx) {
+        if (!ctx) {
+            return;
+        }
+
+        for (let c = 0; c < this.channels; c++) {
             // fill background
             ctx.fillStyle = bgFill;
-            ctx.fillRect(0, 0, bgWidth, getMaxY);
+            ctx.fillRect(0, c * getMaxY, bgWidth, (1 + c) * getMaxY);
             ctx.fill();
             let i;
 
@@ -396,7 +416,7 @@ export default class SpectrogramPlugin {
                 let y;
 
                 if (i == 0) {
-                    y = getMaxY + i - 10;
+                    y = (1 + c) * getMaxY + i - 10;
                     // unit label
                     ctx.fillStyle = textColorUnit;
                     ctx.font = fontSizeUnit + ' ' + fontType;
@@ -406,7 +426,7 @@ export default class SpectrogramPlugin {
                     ctx.font = fontSizeFreq + ' ' + fontType;
                     ctx.fillText(label, x, y);
                 } else {
-                    y = getMaxY - i * 50 + yLabelOffset;
+                    y = (1 + c) * getMaxY - i * 50 + yLabelOffset;
                     // unit label
                     ctx.fillStyle = textColorUnit;
                     ctx.font = fontSizeUnit + ' ' + fontType;
