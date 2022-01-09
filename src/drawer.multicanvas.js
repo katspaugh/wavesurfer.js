@@ -308,8 +308,13 @@ export default class MultiCanvas extends Drawer {
                 let i = first;
 
                 for (i; i < last; i += step) {
-                    const peak =
-                        peaks[Math.floor(i * scale * peakIndexScale)] || 0;
+                    let peak = 0;
+                    let peakIndex = Math.floor(i * scale) * peakIndexScale;
+                    const peakIndexEnd = Math.floor((i + step) * scale) * peakIndexScale;
+                    do {
+                        peak = Math.max(peak, peaks[peakIndex] || 0);
+                        peakIndex += peakIndexScale;
+                    } while (peakIndex < peakIndexEnd);
                     let h = Math.round((peak / absmax) * halfH);
 
                     /* in case of silences, allow the user to specify that we
