@@ -253,8 +253,8 @@ export default class SpectrogramPlugin {
     }
 
     drawSpectrogram(frequenciesData, my) {
-        if (!isNaN(frequenciesData[0][0])) { // data is 1ch [sample, fft] format
-            // to [channel, sample, fft] format
+        if (!isNaN(frequenciesData[0][0])) { // data is 1ch [sample, freq] format
+            // to [channel, sample, freq] format
             frequenciesData = [frequenciesData];
         }
 
@@ -290,13 +290,15 @@ export default class SpectrogramPlugin {
         const fftSamples = this.fftSamples;
         const buffer = (this.buffer = this.wavesurfer.backend.buffer);
         const channels = this.channels;
-        const sampleRate = buffer.sampleRate;
-        const frequencies = [];
 
         if (!buffer) {
             this.fireEvent('error', 'Web Audio buffer is not available');
             return;
         }
+
+        // This may differ from file samplerate. Browser resamples audio.
+        const sampleRate = buffer.sampleRate;
+        const frequencies = [];
 
         let noverlap = this.noverlap;
         if (!noverlap) {
@@ -311,7 +313,7 @@ export default class SpectrogramPlugin {
             this.alpha
         );
 
-        for (let c = 0; c < channels; c++) {
+        for (let c = 0; c < channels; c++) { // for each channel
             const channelData = buffer.getChannelData(c);
             const channelFreq = [];
             let currentOffset = 0;
@@ -393,7 +395,7 @@ export default class SpectrogramPlugin {
             return;
         }
 
-        for (let c = 0; c < this.channels; c++) {
+        for (let c = 0; c < this.channels; c++) { // for each channel
             // fill background
             ctx.fillStyle = bgFill;
             ctx.fillRect(0, c * getMaxY, bgWidth, (1 + c) * getMaxY);

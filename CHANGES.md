@@ -16,6 +16,9 @@ wavesurfer.js changelog
   - Use of default `edgeScrollWidth` value no longer dependent on regions being created via
     plugin params (#2401)
   - Disable `region-remove` event emission during plugin teardown (#2403)
+- Spectrogram plugin:
+  - Remove inaccurate frequency doubling of spectrogram (#2232)
+  - Add `splitChannels` option to draw spectrograms for each channels (#2424)
 
 5.2.0 (16.08.2021)
 ------------------
