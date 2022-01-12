@@ -308,17 +308,21 @@ export default class MultiCanvas extends Drawer {
                 let i = first;
 
                 for (i; i < last; i += step) {
+
+                    // search for the highest peak in the range this bar falls into
                     let peak = 0;
-                    let peakIndex = Math.floor(i * scale) * peakIndexScale;
+                    let peakIndex = Math.floor(i * scale) * peakIndexScale; // start index
                     const peakIndexEnd = Math.floor((i + step) * scale) * peakIndexScale;
-                    do {
-                        peak = Math.max(peak, peaks[peakIndex] || 0);
-                        peakIndex += peakIndexScale;
+                    do { // do..while makes sure at least one peak is always evaluated
+                        peak = Math.max(peak, peaks[peakIndex] || 0); // highest
+                        peakIndex += peakIndexScale; // skip every other value for negatives
                     } while (peakIndex < peakIndexEnd);
+
+                    // calculate the height this bar according to highest peak found
                     let h = Math.round((peak / absmax) * halfH);
 
-                    /* in case of silences, allow the user to specify that we
-                     * always draw *something* (normally a 1px high bar) */
+                    // in case of silences, allow the user to specify that we
+                    // always draw *something* (normally a 1px high bar)
                     if (h == 0 && this.params.barMinHeight) {
                         h = this.params.barMinHeight;
                     }
