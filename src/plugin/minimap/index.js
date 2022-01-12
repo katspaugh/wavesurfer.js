@@ -246,6 +246,7 @@ export default class MinimapPlugin {
             );
             regionElement.classList.add(id);
             this.drawer.wrapper.appendChild(regionElement);
+            this.render();
         });
     }
 

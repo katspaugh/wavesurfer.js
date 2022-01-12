@@ -27,10 +27,14 @@
  * @property {boolean} drag=true Allow/disallow dragging the region.
  * @property {boolean} resize=true Allow/disallow resizing the region.
  * @property {string} [color='rgba(0, 0, 0, 0.1)'] HTML color code.
+ * @property {string} background='' String for 'background' CSS property.
  * @property {?number} channelIdx Select channel to draw the region on (if there are multiple channel waveforms).
  * @property {?object} handleStyle A set of CSS properties used to style the left and right handle.
  * @property {?boolean} preventContextMenu=false Determines whether the context menu is prevented from being opened.
  * @property {boolean} showTooltip=true Enable/disable tooltip displaying start and end times when hovering over region.
+ * @property {boolean} accepted=false Determines if a region edit has been accepted.
+ * @property {string} mode='' The current mode a Region is in - 'default', 'edit', 'accepted', 'ignored', 'restore'.
+ * @property {string} prevMode=null The previous mode the Region was just in.
  */
 
 import {Region} from "./region.js";
