@@ -64,9 +64,11 @@ export default class MinimapPlugin {
                 showOverview: false,
                 overviewBorderColor: 'green',
                 overviewBorderSize: 2,
+                overviewZIndex: params.overviewZIndex || 2,
                 // the container should be different
                 container: false,
-                height: Math.max(Math.round(ws.params.height / 4), 20)
+                height: Math.max(Math.round(ws.params.height / 4), 20),
+                widthRatio: params.width || 1,
             },
             params,
             {
@@ -138,6 +140,12 @@ export default class MinimapPlugin {
                 const orientedTarget = this.util.withOrientation(e.target, this.wavesurfer.params.vertical);
                 this.moveOverviewRegion(orientedTarget.scrollLeft / this.ratio);
             }
+
+            if (!e.target) {
+                this.moveOverviewRegion(e.scrollLeft / this.ratio);
+              } else {
+                this.moveOverviewRegion(e.target.scrollLeft / this.ratio);
+            }
         };
         this._onMouseover = e => {
             if (this.draggingOverview) {
@@ -149,6 +157,7 @@ export default class MinimapPlugin {
             if (prevWidth != this.drawer.wrapper.clientWidth) {
                 prevWidth = this.drawer.wrapper.clientWidth;
                 this.render();
+                this.renderRegions();
                 this.drawer.progress(
                     this.wavesurfer.backend.getPlayedPercents()
                 );
@@ -185,7 +194,11 @@ export default class MinimapPlugin {
     }
 
     regions() {
-        this.regions = {};
+        this.regions = this.regionsPlugin.list || {};
+
+        Object.keys(this.regions).forEach(function (id) {
+            this.drawer.wrapper && this.renderRegions();
+        });
 
         this.wavesurfer.on('region-created', region => {
             this.regions[region.id] = region;
@@ -223,6 +236,8 @@ export default class MinimapPlugin {
                 {
                     height: 'inherit',
                     backgroundColor: region.color,
+                    background: region.background,
+                    zIndex: 3,
                     width: width + 'px',
                     left: left + 'px',
                     display: 'block',
@@ -350,7 +365,7 @@ export default class MinimapPlugin {
             this.ratio = this.wavesurfer.drawer.width / this.drawer.width;
             this.waveShowedWidth = this.wavesurfer.drawer.width / this.ratio;
             this.waveWidth = this.wavesurfer.drawer.width;
-            this.overviewWidth = this.drawer.container.offsetWidth / this.ratio;
+            this.overviewWidth = (this.drawer.container.offsetWidth / this.ratio) * this.params.widthRatio;
             this.overviewPosition = 0;
             this.moveOverviewRegion(
                 this.wavesurfer.drawer.wrapper.scrollLeft / this.ratio
@@ -358,6 +373,7 @@ export default class MinimapPlugin {
             this.util.style(this.overviewRegion, {
                 width: this.overviewWidth + 'px'
             });
+            this.overviewRegion.style.zIndex = this.params.overviewZIndex;
         }
     }
 

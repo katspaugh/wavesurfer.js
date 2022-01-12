@@ -33,6 +33,7 @@ export class Region {
         this.isDragging = false;
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
+        this.background = params.background || null;
         // The left and right handleStyle properties can be set to 'none' for
         // no styling or can be assigned an object containing CSS properties.
         this.handleStyle = params.handleStyle || {
@@ -44,6 +45,9 @@ export class Region {
         this.data = params.data || {};
         this.attributes = params.attributes || {};
         this.showTooltip = params.showTooltip ?? true;
+        this.accepted = params.accepted || false;
+        this.mode = params.mode || 'default';
+        this.prevMode = null;
 
         this.maxLength = params.maxLength;
         // It assumes the minLength parameter value, or the regionsMinLength parameter value, if the first one not provided
@@ -86,6 +90,77 @@ export class Region {
         this.wavesurfer.on('redraw', this._onRedraw);
         this.wavesurfer.fireEvent('region-created', this);
     }
+    
+
+    /* Change the region to default (red) mode. */
+    changeToDefault() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #ed506acc, rgba(0, 0, 0, 0))'});
+
+        this.handleLeftEl.style.display = 'none';
+        this.handleRightEl.style.display = 'none';
+        this.element.style.borderRight = '';
+        this.element.style.borderLeft = '';
+
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'default';
+    }
+
+    /* Change the region to edit (blue) mode. */
+    changeToEdit() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #225db3c4, rgba(0, 0, 0, 0))'});
+
+        this.handleLeftEl.style.display = 'block';
+        this.handleRightEl.style.display = 'block';
+        this.element.style.borderRight = '2px solid #225DB3';
+        this.element.style.borderLeft = '2px solid #225DB3';
+
+        this.resize = true;
+        this.prevMode = this.mode;
+        this.mode = 'edit';
+    }
+
+    /* Change region to accepted (green) mode. */
+    changeToAccepted() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #E7F971cc, rgba(0, 0, 0, 0))'});
+  
+        this.handleLeftEl.style.display = 'none';
+        this.handleRightEl.style.display = 'none';
+        this.element.style.borderRight = '';
+        this.element.style.borderLeft = '';
+
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'accepted';
+    }
+
+    /* Change region to ignore (white) mode. */
+    changeToIgnored() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #C8CCCCcc, rgba(0, 0, 0, 0))'});
+  
+        this.handleLeftEl.style.display = 'none';
+        this.handleRightEl.style.display = 'none';
+        this.element.style.borderRight = '';
+        this.element.style.borderLeft = '';
+
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'ignored';
+    }
+
+    /* Change region to restore (highlighted-white) mode. */
+    changeToRestore() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #C8CCCCcc, rgba(0, 0, 0, 0))'});
+  
+        this.handleLeftEl.style.display = 'none';
+        this.handleRightEl.style.display = 'none';
+        this.element.style.borderRight = '2px solid #C8CCCC';
+        this.element.style.borderLeft = '2px solid #C8CCCC';
+  
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'restore';
+    }
 
     /* Update region params. */
     update(params, eventParams) {
@@ -100,6 +175,9 @@ export class Region {
         }
         if (params.color != null) {
             this.color = params.color;
+        }
+        if (params.background != null) {
+            this.background = params.background;
         }
         if (params.handleStyle != null) {
             this.handleStyle = params.handleStyle;
@@ -304,6 +382,7 @@ export class Region {
                 left: left + 'px',
                 width: regionWidth + 'px',
                 backgroundColor: this.color,
+                background: this.background,
                 cursor: this.drag ? 'move' : 'default'
             });
 
