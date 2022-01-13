@@ -193,11 +193,9 @@ export default class MinimapPlugin {
     regions() {
         this.regions = this.regionsPlugin.list || {};
 
-        if (Object.keys(this.regions).length !== 0) {
-            Object.keys(this.regions).forEach(function () {
-                this.drawer.wrapper && this.renderRegions();
-            });
-        }
+        Object.keys(this.regions).forEach(() => {
+            this.drawer.wrapper && this.renderRegions();
+        });
 
         this.wavesurfer.on('region-created', region => {
             this.regions[region.id] = region;
