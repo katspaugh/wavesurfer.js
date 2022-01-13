@@ -137,20 +137,11 @@ export default class MinimapPlugin {
         // event listeners for the overview region
         this._onScroll = e => {
             if (!this.draggingOverview) {
-                const orientedTarget = this.util.withOrientation(e.target, this.wavesurfer.params.vertical);
-                this.moveOverviewRegion(orientedTarget.scrollLeft / this.ratio);
-
                 if (!e.target) {
                     this.moveOverviewRegion(e.scrollLeft / this.ratio);
-                    } else {
+                  } else {
                     this.moveOverviewRegion(e.target.scrollLeft / this.ratio);
                 }
-            }
-
-            if (!e.target) {
-                this.moveOverviewRegion(e.scrollLeft / this.ratio);
-              } else {
-                this.moveOverviewRegion(e.target.scrollLeft / this.ratio);
             }
         };
         this._onMouseover = e => {
@@ -202,9 +193,11 @@ export default class MinimapPlugin {
     regions() {
         this.regions = this.regionsPlugin.list || {};
 
-        Object.keys(this.regions).forEach(function () {
-            this.drawer.wrapper && this.renderRegions();
-        });
+        if (Object.keys(this.regions).length !== 0) {
+            Object.keys(this.regions).forEach(function () {
+                this.drawer.wrapper && this.renderRegions();
+            });
+        }
 
         this.wavesurfer.on('region-created', region => {
             this.regions[region.id] = region;
