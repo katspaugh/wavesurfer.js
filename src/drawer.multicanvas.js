@@ -119,7 +119,8 @@ export default class MultiCanvas extends Drawer {
             display: 'none',
             boxSizing: 'border-box',
             borderRightStyle: 'solid',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            height: this.params.canvasHeight
         });
 
         this.addCanvas();
@@ -189,7 +190,7 @@ export default class MultiCanvas extends Drawer {
             left: leftOffset + 'px',
             top: 0,
             bottom: 0,
-            height: '100%',
+            height: this.params.canvasHeight || '100%',
             pointerEvents: 'none'
         });
         entry.initWave(wave);
