@@ -68,7 +68,7 @@ export default class MinimapPlugin {
                 // the container should be different
                 container: false,
                 height: Math.max(Math.round(ws.params.height / 4), 20),
-                widthRatio: params.width || 1,
+                widthRatio: params.width || 1
             },
             params,
             {
@@ -139,6 +139,12 @@ export default class MinimapPlugin {
             if (!this.draggingOverview) {
                 const orientedTarget = this.util.withOrientation(e.target, this.wavesurfer.params.vertical);
                 this.moveOverviewRegion(orientedTarget.scrollLeft / this.ratio);
+
+                if (!e.target) {
+                    this.moveOverviewRegion(e.scrollLeft / this.ratio);
+                    } else {
+                    this.moveOverviewRegion(e.target.scrollLeft / this.ratio);
+                }
             }
 
             if (!e.target) {
@@ -196,7 +202,7 @@ export default class MinimapPlugin {
     regions() {
         this.regions = this.regionsPlugin.list || {};
 
-        Object.keys(this.regions).forEach(function (id) {
+        Object.keys(this.regions).forEach(function () {
             this.drawer.wrapper && this.renderRegions();
         });
 
@@ -372,7 +378,8 @@ export default class MinimapPlugin {
                 this.wavesurfer.drawer.wrapper.scrollLeft / this.ratio
             );
             this.util.style(this.overviewRegion, {
-                width: this.overviewWidth + 'px'
+                width: this.overviewWidth + 'px',
+                zIndex: this.params.overviewZIndex
             });
             this.overviewRegion.style.zIndex = this.params.overviewZIndex;
         }

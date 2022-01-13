@@ -33,7 +33,6 @@ export class Region {
         this.isDragging = false;
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
-        console.log('test');
         this.background = params.background || null;
         // The left and right handleStyle properties can be set to 'none' for
         // no styling or can be assigned an object containing CSS properties.
@@ -46,6 +45,7 @@ export class Region {
         this.data = params.data || {};
         this.attributes = params.attributes || {};
         this.showTooltip = params.showTooltip ?? true;
+        this.editMode = params.editMode || false;
         this.accepted = params.accepted || false;
         this.mode = params.mode || 'default';
         this.prevMode = null;
@@ -68,7 +68,7 @@ export class Region {
         let channelIdx =
             params.channelIdx == null ? -1 : parseInt(params.channelIdx);
         this.channelIdx = channelIdx;
-        this.regionHeight = '100%';
+        this.regionHeight = params.height || '100%';
         this.marginTop = '0px';
 
         if (channelIdx !== -1) {
@@ -157,6 +157,106 @@ export class Region {
         this.handleRightEl.style.display = 'none';
         this.element.style.borderRight = '2px solid #C8CCCC';
         this.element.style.borderLeft = '2px solid #C8CCCC';
+  
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'restore';
+    }
+
+    /* Change the region to default (red) mode. */
+    changeToDefault() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #ed506acc, rgba(0, 0, 0, 0))'});
+
+        this.style(this.handleLeftEl, {
+            display: 'none',
+        });
+        this.style(this.handleRightEl, {
+            display: 'none',
+        });
+        this.style(this.element, {
+            borderRight: '',
+            borderLeft: '',
+        });
+
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'default';
+    }
+
+    /* Change the region to edit (blue) mode. */
+    changeToEdit() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #225db3c4, rgba(0, 0, 0, 0))'});
+  
+        this.style(this.handleLeftEl, {
+            display: 'block',
+        });
+        this.style(this.handleRightEl, {
+            display: 'block',
+        });
+        this.style(this.element, {
+            borderRight: '2px solid #225DB3',
+            borderLeft: '2px solid #225DB3',
+        });
+
+        this.resize = true;
+        this.prevMode = this.mode;
+        this.mode = 'edit';
+    }
+
+    /* Change region to accepted (lime) mode. */
+    changeToAccepted() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #E7F971cc, rgba(0, 0, 0, 0))'});
+  
+        this.style(this.handleLeftEl, {
+            display: 'none',
+        });
+        this.style(this.handleRightEl, {
+            display: 'none',
+        });
+        this.style(this.element, {
+            borderRight: '',
+            borderLeft: '',
+        });
+
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'accepted';
+    }
+
+    /* Change region to ignored (white) mode. */
+    changeToIgnored() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #C8CCCCcc, rgba(0, 0, 0, 0))'});
+  
+        this.style(this.handleLeftEl, {
+            display: 'none',
+        });
+        this.style(this.handleRightEl, {
+            display: 'none',
+        });
+        this.style(this.element, {
+            borderRight: '',
+            borderLeft: '',
+        });
+
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'ignored';
+    }
+
+    /* Change region to restore (highlighted-white) mode. */
+    changeToRestore() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #C8CCCCcc, rgba(0, 0, 0, 0))'});
+  
+        this.style(this.handleLeftEl, {
+            display: 'none',
+        });
+        this.style(this.handleRightEl, {
+            display: 'none',
+        });
+        this.style(this.element, {
+            borderRight: '2px solid #C8CCCC',
+            borderLeft: '2px solid #C8CCCC',
+        });
   
         this.resize = false;
         this.prevMode = this.mode;

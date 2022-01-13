@@ -67,6 +67,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * when zooming to get a more detailed waveform.
  * @property {number} height=128 The height of the waveform. Measured in
  * pixels.
+ * @property {string} canvasHeight The height of the canvas in percentage (string).
  * @property {boolean} hideScrollbar=false Whether to hide the horizontal
  * scrollbar when one would normally be shown.
  * @property {boolean} hideCursor=false Whether to hide the mouse cursor
@@ -271,6 +272,7 @@ export default class WaveSurfer extends util.Observer {
         fillParent: true,
         forceDecode: false,
         height: 128,
+        canvasHeight: '100%',
         hideScrollbar: false,
         hideCursor: false,
         ignoreSilenceMode: false,
