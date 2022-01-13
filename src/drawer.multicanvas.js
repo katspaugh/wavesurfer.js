@@ -305,21 +305,32 @@ export default class MultiCanvas extends Drawer {
                 const scale = length / this.width;
                 const first = start;
                 const last = end;
-                let i = first;
+                let peakIndex = first;
+                for (peakIndex; peakIndex < last; peakIndex += step) {
 
-                for (i; i < last; i += step) {
-                    const peak =
-                        peaks[Math.floor(i * scale * peakIndexScale)] || 0;
+                    // search for the highest peak in the range this bar falls into
+                    let peak = 0;
+                    let peakIndexRange = Math.floor(peakIndex * scale) * peakIndexScale; // start index
+                    const peakIndexEnd = Math.floor((peakIndex + step) * scale) * peakIndexScale;
+                    do { // do..while makes sure at least one peak is always evaluated
+                        const newPeak = peaks[peakIndexRange];
+                        if (newPeak > peak) {
+                            peak = newPeak; // higher
+                        }
+                        peakIndexRange += peakIndexScale; // skip every other value for negatives
+                    } while (peakIndexRange < peakIndexEnd);
+
+                    // calculate the height of this bar according to the highest peak found
                     let h = Math.round((peak / absmax) * halfH);
 
-                    /* in case of silences, allow the user to specify that we
-                     * always draw *something* (normally a 1px high bar) */
+                    // in case of silences, allow the user to specify that we
+                    // always draw *something* (normally a 1px high bar)
                     if (h == 0 && this.params.barMinHeight) {
                         h = this.params.barMinHeight;
                     }
 
                     this.fillRect(
-                        i + this.halfPixel,
+                        peakIndex + this.halfPixel,
                         halfH - h + offsetY,
                         bar + this.halfPixel,
                         h * 2,
