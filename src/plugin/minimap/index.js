@@ -146,6 +146,12 @@ export default class MinimapPlugin {
                     this.moveOverviewRegion(e.target.scrollLeft / this.ratio);
                 }
             }
+
+            if (!e.target) {
+                this.moveOverviewRegion(e.scrollLeft / this.ratio);
+              } else {
+                this.moveOverviewRegion(e.target.scrollLeft / this.ratio);
+            }
         };
         this._onMouseover = e => {
             if (this.draggingOverview) {
@@ -246,6 +252,7 @@ export default class MinimapPlugin {
             );
             regionElement.classList.add(id);
             this.drawer.wrapper.appendChild(regionElement);
+            this.render();
         });
     }
 
@@ -374,6 +381,7 @@ export default class MinimapPlugin {
                 width: this.overviewWidth + 'px',
                 zIndex: this.params.overviewZIndex
             });
+            this.overviewRegion.style.zIndex = this.params.overviewZIndex;
         }
     }
 

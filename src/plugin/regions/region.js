@@ -50,7 +50,6 @@ export class Region {
         this.mode = params.mode || 'default';
         this.prevMode = null;
 
-
         this.maxLength = params.maxLength;
         // It assumes the minLength parameter value, or the regionsMinLength parameter value, if the first one not provided
         this.minLength = params.minLength;
@@ -91,6 +90,77 @@ export class Region {
         this.wavesurfer.on('zoom', this._onRedraw);
         this.wavesurfer.on('redraw', this._onRedraw);
         this.wavesurfer.fireEvent('region-created', this);
+    }
+    
+
+    /* Change the region to default (red) mode. */
+    changeToDefault() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #ed506acc, rgba(0, 0, 0, 0))'});
+
+        this.handleLeftEl.style.display = 'none';
+        this.handleRightEl.style.display = 'none';
+        this.element.style.borderRight = '';
+        this.element.style.borderLeft = '';
+
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'default';
+    }
+
+    /* Change the region to edit (blue) mode. */
+    changeToEdit() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #225db3c4, rgba(0, 0, 0, 0))'});
+
+        this.handleLeftEl.style.display = 'block';
+        this.handleRightEl.style.display = 'block';
+        this.element.style.borderRight = '2px solid #225DB3';
+        this.element.style.borderLeft = '2px solid #225DB3';
+
+        this.resize = true;
+        this.prevMode = this.mode;
+        this.mode = 'edit';
+    }
+
+    /* Change region to accepted (green) mode. */
+    changeToAccepted() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #E7F971cc, rgba(0, 0, 0, 0))'});
+  
+        this.handleLeftEl.style.display = 'none';
+        this.handleRightEl.style.display = 'none';
+        this.element.style.borderRight = '';
+        this.element.style.borderLeft = '';
+
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'accepted';
+    }
+
+    /* Change region to ignore (white) mode. */
+    changeToIgnored() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #C8CCCCcc, rgba(0, 0, 0, 0))'});
+  
+        this.handleLeftEl.style.display = 'none';
+        this.handleRightEl.style.display = 'none';
+        this.element.style.borderRight = '';
+        this.element.style.borderLeft = '';
+
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'ignored';
+    }
+
+    /* Change region to restore (highlighted-white) mode. */
+    changeToRestore() {
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #C8CCCCcc, rgba(0, 0, 0, 0))'});
+  
+        this.handleLeftEl.style.display = 'none';
+        this.handleRightEl.style.display = 'none';
+        this.element.style.borderRight = '2px solid #C8CCCC';
+        this.element.style.borderLeft = '2px solid #C8CCCC';
+  
+        this.resize = false;
+        this.prevMode = this.mode;
+        this.mode = 'restore';
     }
 
     /* Change the region to default (red) mode. */
