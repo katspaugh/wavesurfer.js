@@ -121,7 +121,26 @@ export default class MinimapPlugin {
             }
 
             if (this.regionsPlugin && this.params.showRegions) {
-                this.regions();
+                this.regions = this.regionsPlugin.list || {};
+
+                if (Object.keys(this.regions).length !== 0) {
+                    this.renderRegions();
+                }
+
+                this.wavesurfer.on('region-created', region => {
+                    this.regions[region.id] = region;
+                    this.drawer.wrapper && this.renderRegions();
+                });
+
+                this.wavesurfer.on('region-updated', region => {
+                    this.regions[region.id] = region;
+                    this.drawer.wrapper && this.renderRegions();
+                });
+
+                this.wavesurfer.on('region-removed', region => {
+                    delete this.regions[region.id];
+                    this.drawer.wrapper && this.renderRegions();
+                });
             }
             this.render();
         };
@@ -372,7 +391,6 @@ export default class MinimapPlugin {
                 width: this.overviewWidth + 'px',
                 zIndex: this.params.overviewZIndex
             });
-            this.overviewRegion.style.zIndex = this.params.overviewZIndex;
         }
     }
 
