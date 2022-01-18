@@ -7,7 +7,8 @@ wavesurfer.js changelog
 - Add `hideCursor` option to hide the mouse cursor when hovering over the waveform (#2367)
 - Add optional `channelIdx` parameter to `setWaveColor`, `getWaveColor`, `setProgressColor` and
   `getProgressColor` methods (#2391)
-- Improved drawing waveform with bars, now bars height is the maximum peak value in range (#2428) 
+- Improved drawing waveform with bars, now bars height is the maximum peak value in range (#2428)
+- Workaround for `seekTo` occasionally crashing on Firefox (#1228, #2431)
 - Markers plugin: Add the ability to set markers as draggable using param `draggable=true`,
   `marker-drag` and `marker-drop` events will be triggered (#2398)
 - Regions plugin:
