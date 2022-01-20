@@ -9,6 +9,16 @@ Interactive navigable audio visualization using Web Audio and Canvas.
 
 See a [tutorial](https://wavesurfer-js.org/docs) and [examples](https://wavesurfer-js.org/examples) on [wavesurfer-js.org](https://wavesurfer-js.org).
 
+## 10 years of wavesufer.js 🎉
+Wavesufer.js was started in March 2012. To celebrate the 10-year anniversary of wavesufer.js, we created an NFT representing the initial commit to this repository.
+
+If you're a company, or an individual, wishing to support the project, please consider buying this memorable commit.
+
+|[<img alt="wavesufer.js NFT" src="https://lh3.googleusercontent.com/82rx4HORLYEodBBt13X6nZ2pdR-Ij25iRInmYuzCjjKU1uZ8NQmhaS-wB5u74qZlDShJlbEVTxUu8OodD8JdN79N7za4-AZfipT3=w600" width="300" />](https://opensea.io/assets/matic/0xE7ea2E2bE12C257d376400cB231D8eE51e972BD6/41246820351435245535444587687799096392219692760736652072803901002414398825025)|[Buy the first commit NFT 🎁](https://opensea.io/assets/matic/0xE7ea2E2bE12C257d376400cB231D8eE51e972BD6/41246820351435245535444587687799096392219692760736652072803901002414398825025)|
+---|---|
+
+The proceeds will go to the author and the current maintainer.
+
 ## Browser support
 wavesurfer.js works only in [modern browsers supporting Web Audio](http://caniuse.com/audio-api).
 
