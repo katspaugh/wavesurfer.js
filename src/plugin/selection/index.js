@@ -110,6 +110,11 @@ export default class SelectionPlugin {
                     return this.selection._getDisplayRange();
                 },
 
+                seekTo(progress) {
+                    // no-op. Overides seek so that it can be handled by
+                    // the selection area
+                },
+
                 updateDisplayRange({
                     start,
                     end,

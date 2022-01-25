@@ -421,105 +421,7 @@ export class Region {
         let wrapperRect;
         let regionLeftHalfTime;
         let regionRightHalfTime;
-
-        // Scroll when the user is dragging within the threshold
-        const edgeScroll = (event) => {
-            let orientedEvent = this.util.withOrientation(event, this.vertical);
-            const duration = this.wavesurfer.getDuration();
-            if (!scrollDirection || (!drag && !resize)) {
-                return;
-            }
-
-            const x = orientedEvent.clientX;
-            let distanceBetweenCursorAndWrapperEdge = 0;
-            let regionHalfTimeWidth = 0;
-            let adjustment = 0;
-
-            // Get the currently selected time according to the mouse position
-            let time = this.regionsUtil.getRegionSnapToGridValue(
-                this.wavesurfer.drawer.handleEvent(event) * duration
-            );
-
-            if (drag) {
-                // Considering the point of contact with the region while edgescrolling
-                if (scrollDirection === -1) {
-                    regionHalfTimeWidth = regionLeftHalfTime * this.wavesurfer.params.minPxPerSec;
-                    distanceBetweenCursorAndWrapperEdge = x - wrapperRect.left;
-                } else {
-                    regionHalfTimeWidth = regionRightHalfTime * this.wavesurfer.params.minPxPerSec;
-                    distanceBetweenCursorAndWrapperEdge = wrapperRect.right - x;
-                }
-            } else {
-                // Considering minLength while edgescroll
-                let minLength = this.minLength;
-                if (!minLength) {
-                    minLength = 0;
-                }
-
-                if (resize === 'start') {
-                    if (time > this.end - minLength) {
-                        time = this.end - minLength;
-                        adjustment = scrollSpeed * scrollDirection;
-                    }
-
-                    if (time < 0) {
-                        time = 0;
-                    }
-                } else if (resize === 'end') {
-                    if (time < this.start + minLength) {
-                        time = this.start + minLength;
-                        adjustment = scrollSpeed * scrollDirection;
-                    }
-
-                    if (time > duration) {
-                        time = duration;
-                    }
-                }
-            }
-
-            // Don't edgescroll if region has reached min or max limit
-            const wrapperScrollLeft = this.wrapper.scrollLeft;
-
-            if (scrollDirection === -1) {
-                if (Math.round(wrapperScrollLeft) === 0) {
-                    return;
-                }
-
-                if (Math.round(wrapperScrollLeft - regionHalfTimeWidth + distanceBetweenCursorAndWrapperEdge) <= 0) {
-                    return;
-                }
-            } else {
-                if (Math.round(wrapperScrollLeft) === maxScroll) {
-                    return;
-                }
-
-                if (Math.round(wrapperScrollLeft + regionHalfTimeWidth - distanceBetweenCursorAndWrapperEdge) >= maxScroll) {
-                    return;
-                }
-            }
-
-            // Update scroll position
-            let scrollLeft = wrapperScrollLeft - adjustment + scrollSpeed * scrollDirection;
-
-            if (scrollDirection === -1) {
-                const calculatedLeft = Math.max(0 + regionHalfTimeWidth - distanceBetweenCursorAndWrapperEdge, scrollLeft);
-                this.wrapper.scrollLeft = scrollLeft = calculatedLeft;
-            } else {
-                const calculatedRight = Math.min(maxScroll - regionHalfTimeWidth + distanceBetweenCursorAndWrapperEdge, scrollLeft);
-                this.wrapper.scrollLeft = scrollLeft = calculatedRight;
-            }
-
-            const delta = time - startTime;
-            startTime = time;
-
-            // Continue dragging or resizing
-            drag ? this.onDrag(delta) : this.onResize(delta, resize);
-
-            // Repeat
-            window.requestAnimationFrame(() => {
-                edgeScroll(event);
-            });
-        };
+        let startProportion;
 
         const onDown = (event) => {
             const duration = this.wavesurfer.getDisplayRange().duration;
@@ -534,7 +436,7 @@ export class Region {
                 event.stopPropagation();
             }
 
-            const startProportion = this.wavesurfer.drawer.handleEvent(event, true);
+            startProportion = this.wavesurfer.drawer.handleEvent(event, true);
             const displayStart = this.wavesurfer.getDisplayRange().start;
             // Store the selected startTime we begun dragging or resizing
             startTime = this.regionsUtil.getRegionSnapToGridValue(
@@ -585,6 +487,28 @@ export class Region {
                 this.fireEvent('update-end', event);
                 this.wavesurfer.fireEvent('region-update-end', this, event);
             }
+
+            if (this.element.isEqualNode(event.srcElement)) {
+                const ws = this.wavesurfer;
+                const isWebAudioBackend = ws.params.backend === 'WebAudio';
+                const paused = ws.backend.isPaused();
+
+                if (isWebAudioBackend && !paused) {
+                    ws.backend.pause();
+                }
+
+                const startTime = this.start + regionLeftHalfTime;
+                const progressProportion = startTime / ws.getDuration();
+
+                ws.backend.seekTo(startTime);
+                ws.drawer.progress(progressProportion);
+
+                if (isWebAudioBackend && !paused) {
+                    ws.backend.play(startTime, this.end);
+                }
+
+                ws.fireEvent('seek', progressProportion);
+            }
         };
         const onMove = (event) => {
             const duration = this.wavesurfer.getDisplayRange().duration;
@@ -610,13 +534,11 @@ export class Region {
             if (drag) {
                 // To maintain relative cursor start point while dragging
                 const maxEnd = this.wavesurfer.getDisplayRange().duration;
-                //console.log([oldTime, regionRightHalfTime, time, maxEnd]);
                 if (time > maxEnd - regionRightHalfTime) {
                     time = maxEnd - regionRightHalfTime;
                 }
 
                 const minStart = 0;
-                // console.log([startTime, regionLeftHalfTime, time, minStart]);
                 if (time - regionLeftHalfTime < minStart) {
                     time = minStart + regionLeftHalfTime;
                 }
@@ -662,26 +584,6 @@ export class Region {
             if (this.resize && resize) {
                 updated = updated || !!delta;
                 this.onResize(delta, resize);
-            }
-
-            if (
-                this.scroll && container.clientWidth < this.wrapper.scrollWidth
-            ) {
-                // Triggering edgescroll from within edgeScrollWidth
-                let x = orientedEvent.clientX;
-
-                // Check direction
-                if (x < wrapperRect.left + this.edgeScrollWidth) {
-                    scrollDirection = -1;
-                } else if (x > wrapperRect.right - this.edgeScrollWidth) {
-                    scrollDirection = 1;
-                } else {
-                    scrollDirection = null;
-                }
-
-                if (scrollDirection) {
-                    edgeScroll(event);
-                }
             }
         };
 
