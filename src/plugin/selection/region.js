@@ -534,14 +534,16 @@ export class Region {
                 event.stopPropagation();
             }
 
+            const startProportion = this.wavesurfer.drawer.handleEvent(event, true);
+            const displayStart = this.wavesurfer.getDisplayRange().start;
             // Store the selected startTime we begun dragging or resizing
             startTime = this.regionsUtil.getRegionSnapToGridValue(
-                this.wavesurfer.drawer.handleEvent(event, true) * duration
+                startProportion * duration
             );
 
             // Store the selected point of contact when we begin dragging
-            regionLeftHalfTime = startTime - this.start;
-            regionRightHalfTime = this.end - startTime;
+            regionLeftHalfTime = event.offsetX / this.wavesurfer.params.minPxPerSec;
+            regionRightHalfTime = this.end - this.start - regionLeftHalfTime;
 
             // Store for scroll calculations
             maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
@@ -598,19 +600,24 @@ export class Region {
                 return;
             }
 
+            const oldTime = startTime;
+            const timeProportion = this.wavesurfer.drawer.handleEvent(event, true);
+            const displayStart = this.wavesurfer.getDisplayRange().start;
+
             let time = this.regionsUtil.getRegionSnapToGridValue(
-                this.wavesurfer.drawer.handleEvent(event) * duration
+                timeProportion * duration
             );
             if (drag) {
                 // To maintain relative cursor start point while dragging
-                const maxEnd = this.wavesurfer.getDisplayRange().end;
-                if (time >= maxEnd - regionRightHalfTime) {
+                const maxEnd = this.wavesurfer.getDisplayRange().duration;
+                //console.log([oldTime, regionRightHalfTime, time, maxEnd]);
+                if (time > maxEnd - regionRightHalfTime) {
                     time = maxEnd - regionRightHalfTime;
                 }
 
-                const minStart = this.wavesurfer.getDisplayRange().start;
-                console.log([startTime, regionLeftHalfTime, time, minStart]);
-                if (time - regionLeftHalfTime <= minStart) {
+                const minStart = 0;
+                // console.log([startTime, regionLeftHalfTime, time, minStart]);
+                if (time - regionLeftHalfTime < minStart) {
                     time = minStart + regionLeftHalfTime;
                 }
             }
@@ -623,23 +630,23 @@ export class Region {
                     minLength = 0;
                 }
 
-                if (resize === 'start') {
-                    if (time > this.end - minLength) {
-                        time = this.end - minLength;
-                    }
+                // if (resize === 'start') {
+                //     if (time > this.end - minLength) {
+                //         time = this.end - minLength;
+                //     }
 
-                    if (time < 0) {
-                        time = 0;
-                    }
-                } else if (resize === 'end') {
-                    if (time < this.start + minLength) {
-                        time = this.start + minLength;
-                    }
+                //     if (time < 0) {
+                //         time = 0;
+                //     }
+                // } else if (resize === 'end') {
+                //     if (time - displayStart < this.start + minLength) {
+                //         time = this.start + minLength;
+                //     }
 
-                    if (time > duration) {
-                        time = duration;
-                    }
-                }
+                //     if (time > duration) {
+                //         time = duration;
+                //     }
+                // }
             }
 
             let delta = time - startTime;
@@ -702,14 +709,14 @@ export class Region {
 
     onDrag(delta) {
         const maxEnd = this.wavesurfer.getDisplayRange().duration;
-        if (this.end + delta > maxEnd) {
-            delta = maxEnd - this.end;
-        }
+        // if (this.end + delta > maxEnd) {
+        //     delta = maxEnd - this.end;
+        // }
 
-        const minStart = this.wavesurfer.getDisplayRange().start;
-        if (this.start + delta < minStart) {
-            delta = minStart + this.start;
-        }
+        // const minStart = this.wavesurfer.getDisplayRange().start;
+        // if (this.start + delta < minStart) {
+        //     delta = minStart + this.start;
+        // }
 
         const eventParams = {
             direction: this._getDragDirection(delta),
@@ -752,7 +759,8 @@ export class Region {
      * @param {string} direction 'start 'or 'end'
      */
     onResize(delta, direction) {
-        const duration = this.wavesurfer.getDisplayRange().duration;
+        const audioDuration = this.wavesurfer.getDuration();
+        const displayDuration = this.wavesurfer.getDisplayRange().duration;
         const eventParams = {
             action: 'resize',
             direction: direction === 'start' ? 'left' : 'right'
@@ -788,8 +796,8 @@ export class Region {
                 delta = this.maxLength - (this.end - this.start);
             }
 
-            if (delta > 0 && (this.end + delta) > duration) {
-                delta = duration - this.end;
+            if (delta > 0 && (this.end + delta) > audioDuration) {
+                delta = audioDuration - this.end;
             }
 
             this.update({

@@ -17,20 +17,21 @@ document.addEventListener('DOMContentLoaded', function() {
         cursorColor   : '#ff47d7',
         cursorWidth   : 2,
         progressColor : '#ffb2be80',
-        responsive    : true,
+        responsive    : false,
         waveColor     : '#afb2be',
         scrollParent  : false,
         hideScrollbar : false,
+        fillParent    : false,
         plugins       : [WaveSurfer.selection.create({
             selection : [
                 {
-                    start : 5,
-                    end   : 10,
+                    start : 0,
+                    end   : 3,
                     color : 'rgba(155, 169, 223, 0.3'
                 }
             ],
             displayDuration : 20,
-            displayStart : 2
+            displayStart : 0
         })],
         renderer      : SelectionPlugin.SelectiveCanvas
     });
@@ -46,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Load audio from URL
-    wavesurfer.load('../media/demo.wav');
+    wavesurfer.load('../media/count.wav');
 
 
     document.querySelector(

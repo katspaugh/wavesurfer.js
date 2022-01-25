@@ -630,12 +630,41 @@ export default class SelectiveCanvas extends Drawer {
     }
 
     /**
+     * Handle click event
+     *
+     * @param {Event} e Click event
+     * @param {?boolean} noPrevent Set to true to not call `e.preventDefault()`
+     * @return {number} Playback position from 0 to 1
+     */
+    handleEvent(e, noPrevent) {
+        !noPrevent && e.preventDefault();
+
+        const clientX = util.withOrientation(
+            e.targetTouches ? e.targetTouches[0] : e,
+            this.params.vertical
+        ).clientX;
+        const bbox = this.wrapper.getBoundingClientRect();
+
+        const nominalWidth = this.width;
+        const parentWidth = this.getWidth();
+        const progressPixels = this.getProgressPixels(bbox, clientX);
+
+        const progress = progressPixels *
+                    (this.params.pixelRatio / parentWidth) || 0;
+
+
+        return util.clamp(progress, 0, 1);
+    }
+
+    /**
      * Render the new progress
      *
      * @param {number} position X-offset of progress position in pixels
      */
     updateProgress(position) {
-        this.style(this.progressWave, { width: position + 'px' });
+        const displayOffset = this.displayStart * this.params.minPxPerSec * this.params.pixelRatio;
+        const offsetPosition = position - displayOffset;
+        this.style(this.progressWave, { width: offsetPosition + 'px' });
     }
 }
 

@@ -22,7 +22,6 @@
         <!-- <script src="../../dist/plugin/wavesurfer.selection.js"></script> -->
         
         <!-- App -->
-        <script src="../trivia.js"></script>
         <script src="app.js"></script>
 
         <!-- highlight.js for syntax highlighting in this example -->
@@ -42,7 +41,7 @@
             </div>
 
             <div id="demo">
-                <div id="waveform" width="800px">
+                <div id="waveform" style="width: 700px;">
                     <!-- Here be waveform -->
                 </div>
 
@@ -61,34 +60,33 @@
 
             <div class="row marketing">
                 <p>
-<pre><code>var wavesurfer = WaveSurfer.create({
+<pre><code>    wavesurfer = WaveSurfer.create({
+    barGap        : 2,
+    barHeight     : 0.8,
+    barMinHeight  : 2,
+    barWidth      : 2,
+    height        : '72',
     container: document.querySelector('#waveform'),
-    waveColor: '#A8DBA8',
-    progressColor: '#3B8686',
-    backend: 'MediaElement',
-    plugins: [
-        WaveSurfer.regions.create({
-            regionsMinLength: 2,
-            regions: [
-                {
-                    start: 1,
-                    end: 3,
-                    loop: false,
-                    color: 'hsla(400, 100%, 30%, 0.5)'
-                }, {
-                    start: 5,
-                    end: 7,
-                    loop: false,
-                    color: 'hsla(200, 50%, 70%, 0.4)',
-                    minLength: 1,
-                    maxLength: 5,
-                }
-            ],
-            dragSelection: {
-                slop: 5
+    cursorColor   : '#ff47d7',
+    cursorWidth   : 2,
+    progressColor : '#ffb2be80',
+    responsive    : false,
+    waveColor     : '#afb2be',
+    scrollParent  : false,
+    hideScrollbar : false,
+    fillParent    : false,
+    plugins       : [WaveSurfer.selection.create({
+        selection : [
+            {
+                start : 0,
+                end   : 5,
+                color : 'rgba(155, 169, 223, 0.3'
             }
-        })
-    ]
+        ],
+        displayDuration : 5,
+        displayStart : 0
+    })],
+    renderer      : SelectionPlugin.SelectiveCanvas
 });
 </code></pre>
                 </p>
