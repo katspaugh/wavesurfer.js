@@ -662,7 +662,7 @@ export default class SelectiveCanvas extends Drawer {
      * @param {number} position X-offset of progress position in pixels
      */
     updateProgress(position) {
-        const displayOffset = this.displayStart * this.params.minPxPerSec * this.params.pixelRatio;
+        const displayOffset = this.displayStart * this.params.minPxPerSec;
         const offsetPosition = position - displayOffset;
         this.style(this.progressWave, { width: offsetPosition + 'px' });
     }

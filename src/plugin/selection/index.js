@@ -171,7 +171,7 @@ export default class SelectionPlugin {
             }
 
             const width = this.wavesurfer.drawer.getWidth();
-            const pxPerSec = width / this._getDisplayRange().duration;
+            const pxPerSec = width / (this._getDisplayRange().duration * this.wavesurfer.params.pixelRatio);
             this.wavesurfer.zoom(pxPerSec);
             this.wavesurfer.params.scrollParent = false;
         };

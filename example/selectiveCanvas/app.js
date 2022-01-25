@@ -27,10 +27,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     start : 0,
                     end   : 3,
-                    color : 'rgba(155, 169, 223, 0.3'
+                    color : 'rgba(155, 169, 223, 0.3',
+                    minLength : 0.2
                 }
             ],
-            displayDuration : 20,
+            displayDuration : 5,
             displayStart : 0
         })],
         renderer      : SelectionPlugin.SelectiveCanvas
