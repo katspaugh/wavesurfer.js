@@ -101,6 +101,7 @@ export class Region {
         this.handleRightEl.style.display = 'none';
         this.element.style.borderRight = '';
         this.element.style.borderLeft = '';
+        this.element.classList.remove('region-hover');
 
         this.resize = false;
         this.prevMode = this.mode;
@@ -115,6 +116,7 @@ export class Region {
         this.handleRightEl.style.display = 'block';
         this.element.style.borderRight = '2px solid #225DB3';
         this.element.style.borderLeft = '2px solid #225DB3';
+        this.element.classList.remove('region-hover');
 
         this.resize = true;
         this.prevMode = this.mode;
@@ -129,6 +131,7 @@ export class Region {
         this.handleRightEl.style.display = 'none';
         this.element.style.borderRight = '';
         this.element.style.borderLeft = '';
+        this.element.classList.remove('region-hover');
 
         this.resize = false;
         this.prevMode = this.mode;
@@ -137,12 +140,13 @@ export class Region {
 
     /* Change region to ignore (white) mode. */
     changeToIgnored() {
-        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #C8CCCCcc, rgba(0, 0, 0, 0))'});
+        this.update({background: '#ffffff00'});
   
         this.handleLeftEl.style.display = 'none';
         this.handleRightEl.style.display = 'none';
-        this.element.style.borderRight = '';
-        this.element.style.borderLeft = '';
+        this.element.style.borderRight = '2px solid #C8CCCC';
+        this.element.style.borderLeft = '2px solid #C8CCCC';
+        this.element.classList.add('region-hover');
 
         this.resize = false;
         this.prevMode = this.mode;
@@ -157,6 +161,7 @@ export class Region {
         this.handleRightEl.style.display = 'none';
         this.element.style.borderRight = '2px solid #C8CCCC';
         this.element.style.borderLeft = '2px solid #C8CCCC';
+        this.element.classList.remove('region-hover');
   
         this.resize = false;
         this.prevMode = this.mode;
