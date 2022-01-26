@@ -545,30 +545,12 @@ export class Region {
             }
 
             if (resize) {
-                // To maintain relative cursor start point while resizing
-                // we have to handle for minLength
-                let minLength = this.minLength;
-                if (!minLength) {
-                    minLength = 0;
+                // Avoid resizing off the start by allowing a buffer
+                const minStart = 0.01;
+                if (time <= minStart) {
+                    time = minStart;
                 }
 
-                // if (resize === 'start') {
-                //     if (time > this.end - minLength) {
-                //         time = this.end - minLength;
-                //     }
-
-                //     if (time < 0) {
-                //         time = 0;
-                //     }
-                // } else if (resize === 'end') {
-                //     if (time - displayStart < this.start + minLength) {
-                //         time = this.start + minLength;
-                //     }
-
-                //     if (time > duration) {
-                //         time = duration;
-                //     }
-                // }
             }
 
             let delta = time - startTime;
