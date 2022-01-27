@@ -241,6 +241,7 @@ export default class RegionsPlugin {
     }
 
     enableDragSelection(params) {
+        console.log('enableDragSelection hit');
         this.disableDragSelection();
 
         const slop = params.slop || 2;
