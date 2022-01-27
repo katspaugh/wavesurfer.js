@@ -40,6 +40,7 @@ export class Region {
             left: {},
             right: {}
         };
+        this.regionStyle = params.regionStyle || {};
         this.handleLeftEl = null;
         this.handleRightEl = null;
         this.data = params.data || {};
@@ -104,6 +105,9 @@ export class Region {
         }
         if (params.handleStyle != null) {
             this.handleStyle = params.handleStyle;
+        }
+        if (params.regionStyle != null) {
+            this.regionStyle = params.regionStyle;
         }
         if (params.data != null) {
             this.data = params.data;
@@ -190,12 +194,25 @@ export class Region {
             );
         }
 
-        this.style(this.element, {
+        const defaultRegionCss = {
             position: 'absolute',
             zIndex: 3,
             height: this.regionHeight,
             top: this.marginTop
-        });
+        };
+
+        const regionCss =
+            this.regionStyle.right !== 'none'
+                ? Object.assign(
+                    defaultRegionCss,
+                    this.regionStyle
+                )
+                : null;
+
+        if (regionCss) {
+            this.style(this.element, regionCss);
+        }
+
 
         /* Resize handles */
         if (this.resize) {

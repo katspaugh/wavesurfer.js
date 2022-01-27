@@ -9,30 +9,53 @@ document.addEventListener('DOMContentLoaded', function() {
     // Init
     wavesurfer = WaveSurfer.create({
         barGap        : 1,
-        barHeight     : 0.8,
-        barMinHeight  : 2,
+        barHeight     : 0.9,
+        barMinHeight  : 1,
         barWidth      : 1,
-        height        : '72',
+        height        : '40',
         container: document.querySelector('#waveform'),
-        cursorColor   : '#ff47d7',
-        cursorWidth   : 2,
-        progressColor : '#ffb2be80',
+        cursorColor   : '#000000',
+        cursorWidth   : 1,
+        progressColor : '#9BA9DF',
         responsive    : false,
-        waveColor     : '#afb2be',
+        waveColor     : '#9BA9DF',
         scrollParent  : false,
         hideScrollbar : false,
         fillParent    : false,
         plugins       : [WaveSurfer.selection.create({
             selection : [
                 {
-                    start : 0,
-                    end   : 5,
-                    color : 'rgba(155, 169, 223, 0.3',
-                    minLength : 0.2
+                    start : 3,
+                    end   : 9,
+                    color : 'rgba(223, 228, 249,1)',
+                    minLength : 0.2,
+                    regionStyle : {
+                        zIndex : 1,
+                        "border-radius": '13px'
+                    },
+                    handleStyle : {
+                        left : {
+                            left : '12px',
+                            width : '3px',
+                            'z-index' : '4',
+                            'background-color':'#FFFFFF',
+                            top: '8px',
+                            height: '60%'
+                        },
+                        right : {
+                            right : '12px',
+                            width : '3px',
+                            top: '8px',
+                            height: '60%',
+                            'z-index' : '4',
+                            'background-color':'#FFFFFF'
+                        }
+                    }
+
                 }
             ],
             displayDuration : 20,
-            displayStart : 0
+            displayStart : -2
         })],
         renderer      : SelectionPlugin.SelectiveCanvas
     });
