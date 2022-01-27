@@ -95,7 +95,7 @@ export class Region {
 
     /* Change the region to default (red) mode. */
     changeToDefault() {
-        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #fc97d2cc, rgba(0, 0, 0, 0))'});
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #ed506acc, rgba(0, 0, 0, 0))'});
 
         this.handleLeftEl.style.display = 'none';
         this.handleRightEl.style.display = 'none';
@@ -168,105 +168,6 @@ export class Region {
         this.mode = 'restore';
     }
 
-    /* Change the region to default (red) mode. */
-    changeToDefault() {
-        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #ed506acc, rgba(0, 0, 0, 0))'});
-
-        this.style(this.handleLeftEl, {
-            display: 'none',
-        });
-        this.style(this.handleRightEl, {
-            display: 'none',
-        });
-        this.style(this.element, {
-            borderRight: '',
-            borderLeft: '',
-        });
-
-        this.resize = false;
-        this.prevMode = this.mode;
-        this.mode = 'default';
-    }
-
-    /* Change the region to edit (blue) mode. */
-    changeToEdit() {
-        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #225db3c4, rgba(0, 0, 0, 0))'});
-  
-        this.style(this.handleLeftEl, {
-            display: 'block',
-        });
-        this.style(this.handleRightEl, {
-            display: 'block',
-        });
-        this.style(this.element, {
-            borderRight: '2px solid #225DB3',
-            borderLeft: '2px solid #225DB3',
-        });
-
-        this.resize = true;
-        this.prevMode = this.mode;
-        this.mode = 'edit';
-    }
-
-    /* Change region to accepted (lime) mode. */
-    changeToAccepted() {
-        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #E7F971cc, rgba(0, 0, 0, 0))'});
-  
-        this.style(this.handleLeftEl, {
-            display: 'none',
-        });
-        this.style(this.handleRightEl, {
-            display: 'none',
-        });
-        this.style(this.element, {
-            borderRight: '',
-            borderLeft: '',
-        });
-
-        this.resize = false;
-        this.prevMode = this.mode;
-        this.mode = 'accepted';
-    }
-
-    /* Change region to ignored (white) mode. */
-    changeToIgnored() {
-        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #C8CCCCcc, rgba(0, 0, 0, 0))'});
-  
-        this.style(this.handleLeftEl, {
-            display: 'none',
-        });
-        this.style(this.handleRightEl, {
-            display: 'none',
-        });
-        this.style(this.element, {
-            borderRight: '',
-            borderLeft: '',
-        });
-
-        this.resize = false;
-        this.prevMode = this.mode;
-        this.mode = 'ignored';
-    }
-
-    /* Change region to restore (highlighted-white) mode. */
-    changeToRestore() {
-        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #C8CCCCcc, rgba(0, 0, 0, 0))'});
-  
-        this.style(this.handleLeftEl, {
-            display: 'none',
-        });
-        this.style(this.handleRightEl, {
-            display: 'none',
-        });
-        this.style(this.element, {
-            borderRight: '2px solid #C8CCCC',
-            borderLeft: '2px solid #C8CCCC',
-        });
-  
-        this.resize = false;
-        this.prevMode = this.mode;
-        this.mode = 'restore';
-    }
 
     /* Update region params. */
     update(params, eventParams) {
