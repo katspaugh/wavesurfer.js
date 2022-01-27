@@ -8,10 +8,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const SelectionPlugin = WaveSurfer.selection;
     // Init
     wavesurfer = WaveSurfer.create({
-        barGap        : 2,
+        barGap        : 1,
         barHeight     : 0.8,
         barMinHeight  : 2,
-        barWidth      : 2,
+        barWidth      : 1,
         height        : '72',
         container: document.querySelector('#waveform'),
         cursorColor   : '#ff47d7',
@@ -26,12 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
             selection : [
                 {
                     start : 0,
-                    end   : 3,
+                    end   : 5,
                     color : 'rgba(155, 169, 223, 0.3',
                     minLength : 0.2
                 }
             ],
-            displayDuration : 5,
+            displayDuration : 20,
             displayStart : 0
         })],
         renderer      : SelectionPlugin.SelectiveCanvas

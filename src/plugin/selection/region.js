@@ -274,6 +274,7 @@ export class Region {
     updateRender() {
         // duration varies during loading process, so don't overwrite important data
         const dur = this.wavesurfer.getDuration();
+        const displayDuration = this.wavesurfer.getDisplayRange().duration;
         const width = this.getWidth();
 
         let startLimited = this.start - this.wavesurfer.getDisplayRange().start;
@@ -282,9 +283,9 @@ export class Region {
             startLimited = 0;
             endLimited = endLimited - startLimited;
         }
-        if (endLimited > dur) {
-            endLimited = dur;
-            startLimited = dur - (endLimited - startLimited);
+        if (endLimited > displayDuration) {
+            endLimited = displayDuration;
+            startLimited = displayDuration - (endLimited - startLimited);
         }
 
         if (this.minLength != null) {

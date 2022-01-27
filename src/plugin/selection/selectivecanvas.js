@@ -162,6 +162,11 @@ export default class SelectiveCanvas extends Drawer {
         const requiredCanvases = Math.ceil(
             totalWidth / (this.maxCanvasElementWidth + this.overlap)
         );
+        const displayPixelWidth = (
+            this.selection.wavesurfer.getDisplayRange().duration
+            * this.params.minPxPerSec
+            * this.params.pixelRatio
+        );
 
         // add required canvases
         while (this.canvases.length < requiredCanvases) {
@@ -177,7 +182,10 @@ export default class SelectiveCanvas extends Drawer {
         const lastCanvas = this.canvases.length - 1;
         this.canvases.forEach((entry, i) => {
             if (i == lastCanvas) {
-                canvasWidth = this.width - this.maxCanvasWidth * lastCanvas;
+                canvasWidth = Math.max(
+                    this.width - this.maxCanvasWidth * lastCanvas,
+                    displayPixelWidth
+                );
             }
             this.updateDimensions(entry, canvasWidth, this.height);
 
@@ -561,6 +569,17 @@ export default class SelectiveCanvas extends Drawer {
             const halfH = height / 2;
 
             let offsetY = height * drawIndex || 0;
+
+            // Selective canvas widths can be longer than the duration of the audio sample.
+            // As a result the peaks array becomes padded with undefined data.
+            // This strips this data if present
+
+            // The array should have 2 trailing elements, which we retain
+            const endPeaksToPreserve = 2;
+
+            if ( peaks instanceof Array) {
+                peaks = peaks.slice(0, -endPeaksToPreserve).filter((e)=> e !== undefined).concat(peaks.slice(-endPeaksToPreserve));
+            }
 
             // Override offsetY if overlay is true
             if (this.params.splitChannelsOptions && this.params.splitChannelsOptions.overlay) {
