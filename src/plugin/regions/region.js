@@ -95,7 +95,7 @@ export class Region {
 
     /* Change the region to default (red) mode. */
     changeToDefault() {
-        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #ed506acc, rgba(0, 0, 0, 0))'});
+        this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #fc97d2cc, rgba(0, 0, 0, 0))'});
 
         this.handleLeftEl.style.display = 'none';
         this.handleRightEl.style.display = 'none';
