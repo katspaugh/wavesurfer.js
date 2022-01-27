@@ -128,6 +128,7 @@ export default class MinimapPlugin {
                 }
 
                 this.wavesurfer.on('region-created', region => {
+                    console.log('region created');
                     this.regions[region.id] = region;
                     this.drawer.wrapper && this.renderRegions();
                 });
