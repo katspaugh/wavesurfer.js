@@ -27,26 +27,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     start : 3,
                     end   : 9,
-                    color : 'rgba(0, 28, 142, 0.3)',
+                    color : 'rgba(0, 28, 142, 0.1)',
                     minLength : 0.2,
                     regionStyle : {
-                        zIndex : 3,
+                        zIndex : 2,
                         "border-radius": '13px'
                     },
                     handleStyle : {
                         left : {
                             left : '12px',
-                            width : '3px',
+                            width : '4px',
                             'z-index' : '4',
                             'background-color':'#FFFFFF',
                             top: '8px',
+                            zIndex: 5,
                             height: '60%'
                         },
                         right : {
                             right : '12px',
-                            width : '3px',
+                            width : '4px',
                             top: '8px',
                             height: '60%',
+                            zIndex: 5,
                             'background-color':'#FFFFFF'
                         }
                     }
