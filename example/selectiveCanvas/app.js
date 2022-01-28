@@ -27,10 +27,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     start : 3,
                     end   : 9,
-                    color : 'rgba(223, 228, 249,1)',
+                    color : 'rgba(0, 28, 142, 0.3)',
                     minLength : 0.2,
                     regionStyle : {
-                        zIndex : 1,
+                        zIndex : 3,
                         "border-radius": '13px'
                     },
                     handleStyle : {
@@ -47,7 +47,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             width : '3px',
                             top: '8px',
                             height: '60%',
-                            'z-index' : '4',
                             'background-color':'#FFFFFF'
                         }
                     }
