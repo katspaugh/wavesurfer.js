@@ -461,10 +461,6 @@ export class Region {
                 startProportion * duration
             );
 
-            // Store the selected point of contact when we begin dragging
-            regionLeftHalfTime = event.offsetX / this.wavesurfer.params.minPxPerSec;
-            regionRightHalfTime = this.end - this.start - regionLeftHalfTime;
-
             // Store for scroll calculations
             maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
 
@@ -476,15 +472,18 @@ export class Region {
             this.isResizing = false;
             this.isDragging = false;
             if (event.target.tagName.toLowerCase() === 'handle') {
+                regionLeftHalfTime = (event.target.offsetLeft + event.offsetX) / this.wavesurfer.params.minPxPerSec;
                 this.isResizing = true;
                 resize = event.target.classList.contains('wavesurfer-handle-start')
                     ? 'start'
                     : 'end';
             } else {
+                regionLeftHalfTime = event.offsetX / this.wavesurfer.params.minPxPerSec;
                 this.isDragging = true;
                 drag = true;
                 resize = false;
             }
+            regionRightHalfTime = this.end - this.start - regionLeftHalfTime;
         };
         const onUp = (event) => {
             if (event.touches && event.touches.length > 1) {
@@ -562,13 +561,12 @@ export class Region {
                 }
             }
 
-            if (resize) {
+            if (resize === 'start') {
                 // Avoid resizing off the start by allowing a buffer
-                const minStart = 0.01;
+                const minStart = 0.01 + regionLeftHalfTime;
                 if (time <= minStart) {
                     time = minStart;
                 }
-
             }
 
             let delta = time - startTime;
