@@ -196,7 +196,6 @@ export class Region {
 
         const defaultRegionCss = {
             position: 'absolute',
-            zIndex: 3,
             height: this.regionHeight,
             top: this.marginTop
         };
