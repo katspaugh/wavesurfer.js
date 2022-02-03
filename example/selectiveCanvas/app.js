@@ -23,42 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         hideScrollbar : false,
         fillParent    : false,
         plugins       : [WaveSurfer.selection.create({
-            selection : [
-                {
-                    start : 3,
-                    end   : 9,
-                    color : 'rgba(0, 28, 142, 1)',
-                    minLength : 0.2,
-                    regionStyle : {
-                        "border-radius": '13px'
-                    },
-                    decoratorStyle : {
-                        'border-width' : '3px',
-                        'border-color' : '#de0010',
-                        'border-style' : 'solid',
-                        left:'0px',
-                        top: '0px',
-                        'border-radius': 'inherit'
-                    },
-                    handleStyle : {
-                        left : {
-                            left : '12px',
-                            width : '4px',
-                            'background-color':'#FFFFFF',
-                            top: '8px',
-                            height: '60%'
-                        },
-                        right : {
-                            right : '12px',
-                            width : '4px',
-                            top: '8px',
-                            height: '60%',
-                            'background-color':'#FFFFFF'
-                        }
-                    }
-
-                }
-            ],
+            selection : [{}],
             displayDuration : 20,
             displayStart : -2
         })],
@@ -67,6 +32,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     wavesurfer.on('ready', () => {
+        wavesurfer.addSelection({
+            start : 3,
+            end   : 9,
+            color : 'rgba(0, 28, 142, 1)',
+            minLength : 0.2,
+            regionStyle : {
+                "border-radius": '13px'
+            },
+            decoratorStyle : {
+                'border-width' : '3px',
+                'border-color' : '#de0010',
+                'border-style' : 'solid',
+                left:'0px',
+                top: '0px',
+                'border-radius': 'inherit'
+            },
+            handleStyle : {
+                left : {
+                    left : '12px',
+                    width : '4px',
+                    'background-color':'#FFFFFF',
+                    top: '8px',
+                    height: '60%'
+                },
+                right : {
+                    right : '12px',
+                    width : '4px',
+                    top: '8px',
+                    height: '60%',
+                    'background-color':'#FFFFFF'
+                }
+            }
+
+        });
         window.ws = wavesurfer;
         window.peakCache = wavesurfer.backend.mergedPeaks;
     });

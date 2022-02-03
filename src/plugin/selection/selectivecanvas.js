@@ -333,8 +333,10 @@ export default class SelectiveCanvas extends Drawer {
 
                 let last = end;
                 let peakIndex = first;
-                last = this.selection.end * this.params.minPxPerSec * this.params.pixelRatio;
-                peakIndex = this.selection.start * this.params.minPxPerSec * this.params.pixelRatio;
+                if (this.selection) {
+                    last = this.selection.end * this.params.minPxPerSec * this.params.pixelRatio;
+                    peakIndex = this.selection.start * this.params.minPxPerSec * this.params.pixelRatio;
+                }
                 const displayOffset = this.displayStart * this.params.minPxPerSec * this.params.pixelRatio;
 
                 for (peakIndex; peakIndex < last; peakIndex += step) {
