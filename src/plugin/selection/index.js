@@ -175,9 +175,9 @@ export default class SelectionPlugin {
                 });
             }
 
-            // const width = this.wavesurfer.drawer.getWidth();
-            // const pxPerSec = width / (this._getDisplayRange().duration * this.wavesurfer.params.pixelRatio);
-            // this.wavesurfer.zoom(pxPerSec);
+            const width = this.wavesurfer.drawer.getWidth();
+            const pxPerSec = width / (this._getDisplayRange().duration * this.wavesurfer.params.pixelRatio);
+            this.wavesurfer.zoom(pxPerSec);
             this.wavesurfer.params.scrollParent = false;
         };
 
@@ -190,10 +190,6 @@ export default class SelectionPlugin {
                 this.enableDragSelection(this.params);
             }
             if (this.region) {
-                const width = this.wavesurfer.drawer.getWidth();
-                const pxPerSec = width / (this._getDisplayRange().duration * this.wavesurfer.params.pixelRatio);
-                this.wavesurfer.zoom(pxPerSec);
-
                 this.region.updateRender();
             }
         };
@@ -258,6 +254,7 @@ export default class SelectionPlugin {
             params = {...params, minLength: this.selectionsMinLength};
         }
 
+        this.clear();
         const selection = new this.wavesurfer.Selection(params, this.util, this.wavesurfer);
 
         // replace region with new selection area
@@ -280,7 +277,7 @@ export default class SelectionPlugin {
      * Remove selection
      */
     clear() {
-        this.region.remove();
+        this.region?.remove();
     }
 
     enableDragSelection(params) {
