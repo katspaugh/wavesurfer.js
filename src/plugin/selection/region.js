@@ -41,8 +41,10 @@ export class Region {
             right: {}
         };
         this.regionStyle = params.regionStyle || {};
+        this.decoratorStyle = params.decoratorStyle;
         this.handleLeftEl = null;
         this.handleRightEl = null;
+        this.decoratorEl = null;
         this.data = params.data || {};
         this.attributes = params.attributes || {};
         this.showTooltip = params.showTooltip ?? true;
@@ -201,12 +203,10 @@ export class Region {
         };
 
         const regionCss =
-            this.regionStyle.right !== 'none'
-                ? Object.assign(
-                    defaultRegionCss,
-                    this.regionStyle
-                )
-                : null;
+            Object.assign(
+                defaultRegionCss,
+                this.regionStyle
+            );
 
         if (regionCss) {
             this.style(this.element, regionCss);
@@ -234,7 +234,8 @@ export class Region {
                 top: '0px',
                 width: '2px',
                 height: '100%',
-                backgroundColor: 'rgba(0, 0, 0, 1)'
+                backgroundColor: 'rgba(0, 0, 0, 1)',
+                'z-index': 5
             };
 
             // Merge CSS properties per handle.
@@ -262,6 +263,33 @@ export class Region {
             if (handleRightCss) {
                 this.style(this.handleRightEl, handleRightCss);
             }
+        }
+
+        // create overlay decorator if passed. Sits on top of everything else
+        if (this.decoratorStyle !== undefined) {
+            this.decoratorEl = this.element.appendChild(document.createElement('decorator'));
+            this.decoratorEl.className = 'wavesurfer-selection-decorator';
+
+            // Default CSS properties for decorator.
+            const defaultDecoratorCss = {
+                position: 'absolute',
+                top: '0px',
+                left: '0px',
+                width: 'inherit',
+                height: 'inherit',
+                'pointer-events': 'none',
+                'z-index':6
+            };
+
+            // Merge defaultDecoratorCSS properties.
+            const decoratorCss =
+                Object.assign(
+                    defaultDecoratorCss,
+                    this.decoratorStyle
+                );
+
+            this.style(this.decoratorEl, decoratorCss);
+
         }
 
         this.updateRender();

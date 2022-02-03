@@ -32,13 +32,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     regionStyle : {
                         "border-radius": '13px'
                     },
+                    decoratorStyle : {
+                        'border-width' : '3px',
+                        'border-color' : '#de0010',
+                        'border-style' : 'solid',
+                        left:'0px',
+                        top: '0px',
+                        'border-radius': 'inherit'
+                    },
                     handleStyle : {
                         left : {
                             left : '12px',
                             width : '4px',
                             'background-color':'#FFFFFF',
                             top: '8px',
-                            zIndex: 5,
                             height: '60%'
                         },
                         right : {
@@ -46,7 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             width : '4px',
                             top: '8px',
                             height: '60%',
-                            zIndex: 5,
                             'background-color':'#FFFFFF'
                         }
                     }
