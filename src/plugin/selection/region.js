@@ -34,6 +34,8 @@ export class Region {
         this.isDragging = false;
         this.loop = Boolean(params.loop);
         this.color = params.color || 'rgba(0, 0, 0, 0.1)';
+        // favor using css background-color to set the region color, ignoring the color param
+        this.cssColor = params.cssColor || false;
         // The left and right handleStyle properties can be set to 'none' for
         // no styling or can be assigned an object containing CSS properties.
         this.handleStyle = params.handleStyle || {
@@ -349,7 +351,7 @@ export class Region {
             this.style(this.element, {
                 left: left + 'px',
                 width: regionWidth + 'px',
-                backgroundColor: this.color,
+                backgroundColor: this.cssColor ? undefined : this.color,
                 cursor: this.drag ? 'move' : 'default'
             });
 
