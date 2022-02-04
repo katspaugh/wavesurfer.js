@@ -163,7 +163,7 @@ export default class SelectiveCanvas extends Drawer {
             totalWidth / (this.maxCanvasElementWidth + this.overlap)
         );
         const displayPixelWidth = (
-            this.selection.wavesurfer.getDisplayRange().duration
+            (this.selection?.wavesurfer.getDisplayRange().duration || 0)
             * this.params.minPxPerSec
             * this.params.pixelRatio
         );
