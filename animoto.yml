@@ -1,0 +1,10 @@
+---
+test:
+  - name: lint
+    cmd: yarn lint
+    volumes:
+      - /lintcache:/lintcache
+publish: npm publish
+slack:
+  main: "#web"
+  branches: "#web-bamboo"

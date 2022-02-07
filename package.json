@@ -31,14 +31,12 @@
     "test": "karma start karma.conf.js",
     "test:chrome": "karma start karma.conf.js --browsers=Chrome --single-run=false",
     "prepublishOnly": "not-in-install && npm run build || in-install",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "release": "standard-version -m 'chore(release): %s [bump version] :rocket:' --commit-all"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/katspaugh/wavesurfer.js.git"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org"
+    "url": "git://github.com/animoto/wavesurfer.js.git"
   },
   "author": "",
   "license": "BSD-3-Clause",
@@ -89,6 +87,7 @@
     "lint-staged": "^12.1.7",
     "load-script": "^2.0.0",
     "pre-commit": "^1.2.2",
+    "standard-version": "^9.3.2",
     "webpack": "^5.66.0",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.7.3",
