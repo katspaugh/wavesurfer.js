@@ -513,7 +513,7 @@ export class Region {
                 resize = false;
             }
             regionRightHalfTime = this.end - this.start - regionLeftHalfTime;
-            this.fireEvent('region-move-start', event);
+            this.wavesurfer.fireEvent('region-move-start', event);
         };
         const onUp = (event) => {
             if (event.touches && event.touches.length > 1) {
@@ -556,7 +556,7 @@ export class Region {
 
                 ws.fireEvent('seek', progressProportion);
             }
-            this.fireEvent('region-move-end', event);
+            this.wavesurfer.fireEvent('region-move-end', event);
         };
         const onMove = (event) => {
             const duration = this.wavesurfer.getDisplayRange().duration;
