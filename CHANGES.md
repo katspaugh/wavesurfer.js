@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-6.0.0 (unreleased)
+6.0.0 (07.02.2022)
 ------------------
 - Add additional type to `waveColor` and `progressColor` parameters to support linear gradients (#2345)
 - Add `hideCursor` option to hide the mouse cursor when hovering over the waveform (#2367)
