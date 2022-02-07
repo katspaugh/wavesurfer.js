@@ -20,16 +20,11 @@ RUN test -n "$ANIMOTO_NPM_TOKEN"
 # Write our .npmrc file to root directory for publishing
 RUN echo "//registry.npmjs.org/:_authToken=${ANIMOTO_NPM_TOKEN}" >> ~/.npmrc
 
-# First copy over the package.json, yarn.lock and install.
-# We do this instead of just copying everything since app source files
-# change more frequently than node modules so we want a way to install
-# node modules without the app files which should increase the ability
-# of docker to use a cached image.
-COPY package.json yarn.lock ${WORKDIR}/
-RUN yarn install --production=false
 
 # Copy over the source
 COPY . ${WORKDIR}/
+RUN yarn install --production=false
+
 
 # Set git config for commiting to repo
 RUN git config user.email "techops@animoto.com"
