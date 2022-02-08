@@ -1,5 +1,9 @@
 # Upgrade
 
+## Upgrading to version 6 from version 5
+
+- `CursorPlugin.outerWidth(element)` was removed. You can use [`element.getBoundingClientRect().width`](https://developer.mozilla.org/docs/Web/API/Element/getBoundingClientRect) instead.
+
 ## Upgrading to version 5 from version 4
 
 1. **`MultiCanvas` and `Drawer` now use [`Proxy`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) objects for DOM elements**: You can access the original instances via the `domElement` property on the Proxy objects (e.g. `CanvasEntry.wave.domElement`).
