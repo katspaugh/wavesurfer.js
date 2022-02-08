@@ -165,7 +165,7 @@ export default class CanvasEntry {
      * Otherwise, it will be treated as an array, and a canvas gradient will
      * be returned
      *
-     * @since 5.3.0
+     * @since 6.0.0
      * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
      * @param {string|string[]} color Fill color for the wave canvas, or an array of colors to apply as a gradient
      * @returns {string|CanvasGradient} Returns a string fillstyle value, or a canvas gradient
