@@ -29,7 +29,7 @@ RUN yarn install --production=false
 # Set git config for commiting to repo
 RUN git config user.email "techops@animoto.com"
 RUN git config user.name "animoto-techops"
-RUN git config remote.origin.url "https://${GITHUB_TOKEN}:@github.com/animoto/components.git"
+RUN git config remote.origin.url "https://${GITHUB_TOKEN}:@github.com/animoto/wavesurfer.js.git"
 
 # Bootstrap and clean up the yarn cache to keep container size down
 RUN yarn build && yarn cache clean

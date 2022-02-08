@@ -139,27 +139,8 @@ def isLatestCommit() {
   IS_LATEST_MAIN = sh (
     script: """
       ao run \
-       -v /get_main_hash.sh:/components/get_main_hash.sh \
-       -- /components/get_main_hash.sh main
-    """,
-    returnStatus: true
-  )
-
-  return IS_LATEST_MAIN == 0
-}
-
-// Checks if current local commit hash is the same as the latest origin commit hash
-// The sh command returns:
-// Returns 0 if local commit hash is the same as the latest origin commit hash
-// Returns 1 if local commit hash is not the same as the latest origin commit hash
-def isLatestV5Commit() {
-  def IS_LATEST_MAIN
-
-  IS_LATEST_MAIN = sh (
-    script: """
-      ao run \
-       -v /get_main_hash.sh:/components/get_main_hash.sh \
-       -- /components/get_main_hash.sh v5-beta
+       -v /get_main_hash.sh:/wavesurfer.js/get_main_hash.sh \
+       -- /wavesurfer.js/get_main_hash.sh main
     """,
     returnStatus: true
   )
@@ -175,8 +156,4 @@ def isLatestV5Commit() {
 // Returns 1 if current local commit is [bump version] commit or is not the latest origin commit
 def shouldVersion() {
   return !hasBumpVersion() && isLatestCommit()
-}
-
-def shouldVersionV5() {
-  return !hasBumpVersion() && isLatestV5Commit()
 }
