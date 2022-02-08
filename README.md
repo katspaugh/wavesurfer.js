@@ -1,4 +1,4 @@
-# Animoto fork of...
+# Animoto fork of..
 # [wavesurfer.js](https://wavesurfer-js.org)
 
 [![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
