@@ -58,7 +58,7 @@ pipeline {
           }
           post {
             always {
-              junit(allowEmptyResults: false, testResults: 'test_output/jest/jest.xml')
+              junit(allowEmptyResults: false, testResults: 'test_output/karma/wavesurfer-results.xml')
             }
           }
         }
