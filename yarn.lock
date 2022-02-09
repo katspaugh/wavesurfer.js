@@ -5319,6 +5319,14 @@ karma-jasmine@4.0.1:
   dependencies:
     jasmine-core "^3.6.0"
 
+karma-junit-reporter@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/karma-junit-reporter/-/karma-junit-reporter-2.0.1.tgz#d34eef7f0b2fd064e0896954e8851a90cf14c8f3"
+  integrity sha512-VtcGfE0JE4OE1wn0LK8xxDKaTP7slN8DO3I+4xg6gAi1IoAHAXOJ1V9G/y45Xg6sxdxPOR3THCFtDlAfBo9Afw==
+  dependencies:
+    path-is-absolute "^1.0.0"
+    xmlbuilder "12.0.0"
+
 karma-verbose-reporter@0.0.8:
   version "0.0.8"
   resolved "https://registry.yarnpkg.com/karma-verbose-reporter/-/karma-verbose-reporter-0.0.8.tgz#472d1062af5402d8f2d38d534a8614a5b77b84e8"
@@ -8261,6 +8269,11 @@ xml@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/xml/-/xml-1.0.1.tgz#78ba72020029c5bc87b8a81a3cfcd74b4a2fc1e5"
   integrity sha1-eLpyAgApxbyHuKgaPPzXS0ovweU=
+
+xmlbuilder@12.0.0:
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-12.0.0.tgz#e2ed675e06834a089ddfb84db96e2c2b03f78c1a"
+  integrity sha512-lMo8DJ8u6JRWp0/Y4XLa/atVDr75H9litKlb2E5j3V3MesoL50EBgZDWoLT3F/LztVnG67GjPXLZpqcky/UMnQ==
 
 xtend@~4.0.1:
   version "4.0.2"

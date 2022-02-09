@@ -92,6 +92,7 @@ module.exports = function(config) {
             'karma-webpack',
             'karma-jasmine',
             'karma-jasmine-matchers',
+            'karma-junit-reporter',
             'karma-chrome-launcher',
             'karma-firefox-launcher',
             '@chiragrupani/karma-chromium-edge-launcher',
@@ -142,6 +143,13 @@ module.exports = function(config) {
 
     if (ci) {
         configuration.browsers = ['Firefox_ci', 'Chrome_ci'];
+        configuration.reporters.push['junit'];
+        configuration.junitReporter = {
+            outputDir      : '/test_output/karma/',
+            useBrowserName : false,
+            outputFile     : 'wavesurfer-results.xml',
+            suite          : 'wavesurfer'
+        };
 
         if (process.env.APPVEYOR) {
             configuration.browsers.push('Edge_ci');

@@ -82,6 +82,7 @@
     "karma-firefox-launcher": "^2.1.2",
     "karma-jasmine": "4.0.1",
     "karma-jasmine-matchers": "4.0.2",
+    "karma-junit-reporter": "^2.0.1",
     "karma-verbose-reporter": "0.0.8",
     "karma-webpack": "^5.0.0",
     "lint-staged": "^12.1.7",
