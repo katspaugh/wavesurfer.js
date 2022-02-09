@@ -1,0 +1,8 @@
+---
+test:
+  - name: test
+    cmd: yarn test:ci
+publish: npm publish
+slack:
+  main: "#web"
+  branches: "#web-bamboo"
