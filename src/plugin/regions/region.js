@@ -101,6 +101,7 @@ export class Region {
         this.handleRightEl.style.display = 'none';
         this.element.style.borderRight = '';
         this.element.style.borderLeft = '';
+        this.element.style.zIndex = 3;
         this.element.classList.remove('region-hover');
 
         this.resize = false;
@@ -116,6 +117,7 @@ export class Region {
         this.handleRightEl.style.display = 'block';
         this.element.style.borderRight = '2px solid #225DB3';
         this.element.style.borderLeft = '2px solid #225DB3';
+        this.element.style.zIndex = 4;
         this.element.classList.remove('region-hover');
 
         this.resize = true;
@@ -131,6 +133,7 @@ export class Region {
         this.handleRightEl.style.display = 'none';
         this.element.style.borderRight = '';
         this.element.style.borderLeft = '';
+        this.element.style.zIndex = 3;
         this.element.classList.remove('region-hover');
 
         this.resize = false;
@@ -146,6 +149,7 @@ export class Region {
         this.handleRightEl.style.display = 'none';
         this.element.style.borderRight = '2px solid #C8CCCC';
         this.element.style.borderLeft = '2px solid #C8CCCC';
+        this.element.style.zIndex = 3;
         this.element.classList.add('region-hover');
 
         this.resize = false;
@@ -161,6 +165,7 @@ export class Region {
         this.handleRightEl.style.display = 'none';
         this.element.style.borderRight = '2px solid #C8CCCC';
         this.element.style.borderLeft = '2px solid #C8CCCC';
+        this.element.style.zIndex = 3;
         this.element.classList.remove('region-hover');
   
         this.resize = false;
