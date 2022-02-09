@@ -105,9 +105,6 @@ pipeline {
         }
       }
     }
-    cleanup {
-
-    }
   }
 }
 
