@@ -142,7 +142,9 @@ module.exports = function(config) {
     };
 
     if (ci) {
-        configuration.browsers = ['Firefox_ci', 'Chrome_ci'];
+        configuration.browsers = ['Chrome_ci'];
+        process.env.CHROME_BIN = require('puppeteer').executablePath();
+
         configuration.reporters.push['junit'];
         configuration.junitReporter = {
             outputDir      : '/test_output/karma/',

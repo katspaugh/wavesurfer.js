@@ -1,9 +1,7 @@
 ---
 test:
-  - name: lint
-    cmd: yarn lint
-    volumes:
-      - /lintcache:/lintcache
+  - name: test
+    cmd: yarn test:ci
 publish: npm publish
 slack:
   main: "#web"
