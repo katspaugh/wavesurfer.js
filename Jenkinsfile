@@ -32,10 +32,9 @@ pipeline {
     stage('test') {
       when {
         not {
-          true
-          // expression {
-          //   hasBumpVersion()
-          // }
+           expression {
+            hasBumpVersion()
+          }
         }
       }
       parallel {
