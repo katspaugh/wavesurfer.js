@@ -29,41 +29,41 @@ pipeline {
         }
       }
     }
-    // stage('test') {
-    //   when {
-    //     not {
-    //        expression {
-    //         hasBumpVersion()
-    //       }
-    //     }
-    //   }
-    //   parallel {
-    //     stage('linting') {
-    //       steps {
-    //         sh '''
-    //           ao test -n lint
-    //           '''
-    //       }
-    //       post {
-    //         always {
-    //           junit(allowEmptyResults: false, testResults: 'test_output/eslint/eslint.xml, test_output/stylelint.xml')
-    //         }
-    //       }
-    //     }
-    //     stage('unit tests') {
-    //       steps {
-    //         sh '''
-    //           ao test -n test
-    //           '''
-    //       }
-    //       post {
-    //         always {
-    //           junit(allowEmptyResults: false, testResults: 'test_output/jest/jest.xml')
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
+    stage('test') {
+      when {
+        not {
+           expression {
+            hasBumpVersion()
+          }
+        }
+      }
+      parallel {
+        // stage('linting') {
+        //   steps {
+        //     sh '''
+        //       ao test -n lint
+        //       '''
+        //   }
+        //   post {
+        //     always {
+        //       junit(allowEmptyResults: false, testResults: 'test_output/eslint/eslint.xml, test_output/stylelint.xml')
+        //     }
+        //   }
+        // }
+        stage('unit tests') {
+          steps {
+            sh '''
+              ao test -n test
+              '''
+          }
+          post {
+            always {
+              junit(allowEmptyResults: false, testResults: 'test_output/jest/jest.xml')
+            }
+          }
+        }
+      }
+    }
     stage('version'){
       when {
         allOf {
