@@ -506,14 +506,16 @@ export class Region {
                 resize = event.target.classList.contains('wavesurfer-handle-start')
                     ? 'start'
                     : 'end';
-            } else {
+            } else if (event.target == event.currentTarget) {
                 regionLeftHalfTime = event.offsetX / this.wavesurfer.params.minPxPerSec;
                 this.isDragging = true;
                 drag = true;
                 resize = false;
             }
-            regionRightHalfTime = this.end - this.start - regionLeftHalfTime;
-            this.wavesurfer.fireEvent('region-move-start', event);
+            if (drag || resize) {
+                regionRightHalfTime = this.end - this.start - regionLeftHalfTime;
+                this.wavesurfer.fireEvent('region-move-start', event);
+            }
         };
         const onUp = (event) => {
             if (event.touches && event.touches.length > 1) {
