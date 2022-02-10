@@ -313,7 +313,7 @@ export default class MultiCanvas extends Drawer {
                     let peakIndexRange = Math.floor(peakIndex * scale) * peakIndexScale; // start index
                     const peakIndexEnd = Math.floor((peakIndex + step) * scale) * peakIndexScale;
                     do { // do..while makes sure at least one peak is always evaluated
-                        const newPeak = peaks[peakIndexRange];
+                        const newPeak = Math.abs(peaks[peakIndexRange]);
                         if (newPeak > peak) {
                             peak = newPeak; // higher
                         }
