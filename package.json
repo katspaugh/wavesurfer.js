@@ -1,6 +1,6 @@
 {
   "name": "@animoto/wavesurfer.js",
-  "version": "5.3.0",
+  "version": "5.3.1",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "directories": {
@@ -35,7 +35,6 @@
     "prepare": "npm run build",
     "release": "standard-version -m 'chore(release): %s [bump version] :rocket:' --commit-all",
     "postrelease": "./postrelease.sh"
-    
   },
   "repository": {
     "type": "git",
