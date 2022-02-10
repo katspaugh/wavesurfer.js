@@ -1,5 +1,5 @@
 {
-  "name": "wavesurfer.js",
+  "name": "@animoto/wavesurfer.js",
   "version": "5.3.0",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
@@ -33,7 +33,9 @@
     "test:chrome": "karma start karma.conf.js --browsers=Chrome --single-run=false",
     "prepublishOnly": "not-in-install && npm run build || in-install",
     "prepare": "npm run build",
-    "release": "standard-version -m 'chore(release): %s [bump version] :rocket:' --commit-all"
+    "release": "standard-version -m 'chore(release): %s [bump version] :rocket:' --commit-all",
+    "postrelease": "./postrelease.sh"
+    
   },
   "repository": {
     "type": "git",
