@@ -534,7 +534,10 @@ export class Region {
                 updated = false;
                 this.util.preventClick();
                 this.fireEvent('update-end', event);
-                this.wavesurfer.fireEvent('region-update-end', this, event);
+                this.wavesurfer.fireEvent('region-update-end', {
+                    ...this,
+                    displayStart : this.wavesurfer.getDisplayRange().start
+                }, event);
             }
 
             if (this.element.isEqualNode(event.srcElement)) {
