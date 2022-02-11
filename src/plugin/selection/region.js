@@ -93,6 +93,14 @@ export class Region {
         this.wavesurfer.fireEvent('region-created', this);
     }
 
+    /* Returns this, with added displayStart */
+    withDisplay() {
+        return {
+            ...this,
+            displayStart : this.wavesurfer.getDisplayRange().start
+        };
+    }
+
     /* Update region params. */
     update(params, eventParams) {
         if (params.start != null) {
@@ -135,7 +143,7 @@ export class Region {
 
         this.updateRender();
         this.fireEvent('update');
-        this.wavesurfer.fireEvent('region-updated', this, eventParams);
+        this.wavesurfer.fireEvent('region-updated', this.withDisplay(), eventParams);
     }
 
     /* Remove a single region. */
@@ -534,7 +542,7 @@ export class Region {
                 updated = false;
                 this.util.preventClick();
                 this.fireEvent('update-end', event);
-                this.wavesurfer.fireEvent('region-update-end', this, event);
+                this.wavesurfer.fireEvent('region-update-end', this.withDisplay(), event);
             }
 
             if (this.element.isEqualNode(event.srcElement)) {
