@@ -3,7 +3,7 @@ wavesurfer.js changelog
 
 6.0.1 (unreleased)
 ------------------
-- Fixed a regression that broke bars rendering when using a certain format for the peaks array (#2439, #2446)
+- Fixed a regression that broke bars rendering when using a certain format for the peaks array (#2439)
 
 6.0.0 (07.02.2022)
 ------------------
