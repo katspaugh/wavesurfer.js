@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+6.0.1 (unreleased)
+------------------
+- Fixed a regression that broke bars rendering when using a certain format for the peaks array (#2439)
+
 6.0.0 (07.02.2022)
 ------------------
 - Add additional type to `waveColor` and `progressColor` parameters to support linear gradients (#2345)
