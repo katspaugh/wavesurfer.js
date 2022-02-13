@@ -222,15 +222,14 @@ export default class RegionsPlugin {
         this.wavesurfer.Region = Region;
 
         // By default, scroll the container if the user drags a region
-        // within 5% of its edge
+        // within 5% (based on its initial size) of its edge
         const scrollWidthProportion = 0.05;
         this._onBackendCreated = () =&gt; {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             this.orientation = this.wavesurfer.drawer.orientation;
+            this.defaultEdgeScrollWidth = this.wrapper.clientWidth * scrollWidthProportion;
             if (this.params.regions) {
                 this.params.regions.forEach(region =&gt; {
-                    region.edgeScrollWidth = this.params.edgeScrollWidth ||
-                        this.wrapper.clientWidth * scrollWidthProportion;
                     this.add(region);
                 });
             }
@@ -264,6 +263,11 @@ export default class RegionsPlugin {
     destroy() {
         this.wavesurfer.un(&apos;ready&apos;, this._onReady);
         this.wavesurfer.un(&apos;backend-created&apos;, this._onBackendCreated);
+        // Disabling `region-removed&apos; because destroying the plugin calls
+        // the Region.remove() method that is also used to remove regions based
+        // on user input. This can cause confusion since teardown is not a
+        // user event, but would emit `region-removed` as if it was.
+        this.wavesurfer.setDisabledEventEmissions([&apos;region-removed&apos;]);
         this.disableDragSelection();
         this.clear();
     }
@@ -288,6 +292,16 @@ export default class RegionsPlugin {
     add(params) {
         if (this.wouldExceedMaxRegions()) {
             return null;
+        }
+
+        params = {
+            edgeScrollWidth: this.params.edgeScrollWidth || this.defaultEdgeScrollWidth,
+            ...params
+        };
+
+        // Take formatTimeCallback from plugin params if not already set
+        if (!params.formatTimeCallback &amp;&amp; this.params.formatTimeCallback) {
+            params = {...params, formatTimeCallback: this.params.formatTimeCallback};
         }
 
         if (!params.minLength &amp;&amp; this.regionsMinLength) {
@@ -376,6 +390,19 @@ export default class RegionsPlugin {
                 this.wrapper.getBoundingClientRect(),
                 this.vertical
             );
+
+            // set the region channel index based on the clicked area
+            if (this.wavesurfer.params.splitChannels) {
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - wrapperRect.top;
+                const channelCount = this.wavesurfer.backend.buffer != null ? this.wavesurfer.backend.buffer.numberOfChannels : 1;
+                const channelHeight = this.wrapper.clientHeight / channelCount;
+                const channelIdx = Math.floor(y / channelHeight);
+                params.channelIdx = channelIdx;
+                const channelColors = this.wavesurfer.params.splitChannelsOptions.channelColors[channelIdx];
+                if (channelColors &amp;&amp; channelColors.dragColor) {
+                    params.color = channelColors.dragColor;
+                }
+            }
 
             drag = true;
             start = this.wavesurfer.drawer.handleEvent(e, true);

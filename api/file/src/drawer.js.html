@@ -162,6 +162,7 @@ export default class Drawer extends util.Observer {
         if (this.params.fillParent || this.params.scrollParent) {
             this.style(this.wrapper, {
                 width: &apos;100%&apos;,
+                cursor: this.params.hideCursor ? &apos;none&apos; : &apos;auto&apos;,
                 overflowX: this.params.hideScrollbar ? &apos;hidden&apos; : &apos;auto&apos;,
                 overflowY: &apos;hidden&apos;
             });

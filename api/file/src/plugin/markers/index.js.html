@@ -91,8 +91,7 @@
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">src/plugin/markers/index.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">
-/**
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
  * @typedef {Object} MarkerParams
  * @desc The parameters used to describe a marker.
  * @example wavesurfer.addMarker(regionParams);
@@ -101,6 +100,7 @@
  * @property {?color} string Background color for marker
  * @property {?position} string &quot;top&quot; or &quot;bottom&quot;, defaults to &quot;bottom&quot;
  * @property {?markerElement} element An HTML element to display instead of the default marker image
+ * @property {?draggable} boolean Set marker as draggable, defaults to false
  */
 
 
@@ -134,6 +134,8 @@ export default class MarkersPlugin {
      * @typedef {Object} MarkersPluginParams
      * @property {?MarkerParams[]} markers Initial set of markers
      * @fires MarkersPlugin#marker-click
+     * @fires MarkersPlugin#marker-drag
+     * @fires MarkersPlugin#marker-drop
      */
 
     /**
@@ -171,8 +173,10 @@ export default class MarkersPlugin {
         this.wavesurfer = ws;
         this.util = ws.util;
         this.style = this.util.style;
+        this.markerLineWidth = 1;
         this.markerWidth = 11;
         this.markerHeight = 22;
+        this.dragging = false;
 
 
         this._onResize = () =&gt; {
@@ -187,6 +191,16 @@ export default class MarkersPlugin {
             window.addEventListener(&apos;resize&apos;, this._onResize, true);
             window.addEventListener(&apos;orientationchange&apos;, this._onResize, true);
             this.wavesurfer.on(&apos;zoom&apos;, this._onResize);
+
+            if (!this.markers.find(marker =&gt; marker.draggable)){
+                return;
+            }
+
+            this.onMouseMove = (e) =&gt; this._onMouseMove(e);
+            window.addEventListener(&apos;mousemove&apos;, this.onMouseMove);
+
+            this.onMouseUp = (e) =&gt; this._onMouseUp(e);
+            window.addEventListener(&quot;mouseup&quot;, this.onMouseUp);
         };
 
         this.markers = [];
@@ -216,6 +230,13 @@ export default class MarkersPlugin {
         window.removeEventListener(&apos;resize&apos;, this._onResize, true);
         window.removeEventListener(&apos;orientationchange&apos;, this._onResize, true);
 
+        if (this.onMouseMove) {
+            window.removeEventListener(&apos;mousemove&apos;, this.onMouseMove);
+        }
+        if (this.onMouseUp) {
+            window.removeEventListener(&quot;mouseup&quot;, this.onMouseUp);
+        }
+
         this.clear();
     }
 
@@ -230,13 +251,9 @@ export default class MarkersPlugin {
             time: params.time,
             label: params.label,
             color: params.color || DEFAULT_FILL_COLOR,
-            position: params.position || DEFAULT_POSITION
+            position: params.position || DEFAULT_POSITION,
+            draggable: !!params.draggable
         };
-
-        if (params.markerElement) {
-            this.markerWidth = params.markerElement.width;
-            this.markerHeight = params.markerElement.height;
-        }
 
         marker.el = this._createMarkerElement(marker, params.markerElement);
 
@@ -292,7 +309,6 @@ export default class MarkersPlugin {
 
     _createMarkerElement(marker, markerElement) {
         let label = marker.label;
-        let time = marker.time;
 
         const el = document.createElement(&apos;marker&apos;);
         el.className = &quot;wavesurfer-marker&quot;;
@@ -306,17 +322,22 @@ export default class MarkersPlugin {
         });
 
         const line = document.createElement(&apos;div&apos;);
+        const width = markerElement ? markerElement.width : this.markerWidth;
+        marker.offset = (width - this.markerLineWidth) / 2;
         this.style(line, {
             &quot;flex-grow&quot;: 1,
-            &quot;margin-left&quot;: (this.markerWidth / 2 - 0.5) + &quot;px&quot;,
+            &quot;margin-left&quot;: marker.offset + &quot;px&quot;,
             background: &quot;black&quot;,
-            width: &quot;1px&quot;,
+            width: this.markerLineWidth + &quot;px&quot;,
             opacity: 0.1
         });
         el.appendChild(line);
 
         const labelDiv = document.createElement(&apos;div&apos;);
         const point = markerElement || this._createPointerSVG(marker.color, marker.position);
+        if (marker.draggable){
+            point.draggable = false;
+        }
         labelDiv.appendChild(point);
 
         if ( label ) {
@@ -339,29 +360,97 @@ export default class MarkersPlugin {
 
         labelDiv.addEventListener(&quot;click&quot;, e =&gt; {
             e.stopPropagation();
-            this.wavesurfer.setCurrentTime(time);
+            // Click event is caught when the marker-drop event was dispatched.
+            // Drop event was dispatched at this moment, but this.dragging
+            // is waiting for the next tick to set as false
+            if (this.dragging){
+                return;
+            }
+            this.wavesurfer.setCurrentTime(marker.time);
             this.wavesurfer.fireEvent(&quot;marker-click&quot;, marker, e);
         });
 
+        if (marker.draggable) {
+            labelDiv.addEventListener(&quot;mousedown&quot;, e =&gt; {
+                this.selectedMarker = marker;
+            });
+        }
         return el;
     }
 
     _updateMarkerPositions() {
-        const duration = this.wavesurfer.getDuration();
-
         for ( let i = 0 ; i &lt; this.markers.length; i++ ) {
             let marker = this.markers[i];
-            const elementWidth =
-                this.wavesurfer.drawer.width /
-                this.wavesurfer.params.pixelRatio;
-
-            const positionPct = Math.min(marker.time / duration, 1);
-            const leftPx = ((elementWidth * positionPct) - (this.markerWidth / 2));
-            this.style(marker.el, {
-                &quot;left&quot;:  leftPx + &quot;px&quot;,
-                &quot;max-width&quot;: (elementWidth - leftPx) + &quot;px&quot;
-            });
+            this._updateMarkerPosition(marker);
         }
+    }
+
+    /**
+     * Update a marker position based on its time property.
+     *
+     * @private
+     * @param {MarkerParams} params The marker to update.
+     * @returns {void}
+     */
+    _updateMarkerPosition(params) {
+        const duration = this.wavesurfer.getDuration();
+        const elementWidth =
+            this.wavesurfer.drawer.width /
+            this.wavesurfer.params.pixelRatio;
+
+        const positionPct = Math.min(params.time / duration, 1);
+        const leftPx = ((elementWidth * positionPct) - params.offset);
+        this.style(params.el, {
+            &quot;left&quot;: leftPx + &quot;px&quot;,
+            &quot;max-width&quot;: (elementWidth - leftPx) + &quot;px&quot;
+        });
+    }
+
+    /**
+     * Fires `marker-drag` event, update the `time` property for the
+     * selected marker based on the mouse position, and calls to update
+     * its position.
+     *
+     * @private
+     * @param {MouseEvent} event The mouse event.
+     * @returns {void}
+     */
+    _onMouseMove(event) {
+        if (!this.selectedMarker){
+            return;
+        }
+        if (!this.dragging){
+            this.dragging = true;
+            this.wavesurfer.fireEvent(&quot;marker-drag&quot;, this.selectedMarker, event);
+        }
+        this.selectedMarker.time = this.wavesurfer.drawer.handleEvent(event) * this.wavesurfer.getDuration();
+        this._updateMarkerPositions();
+    }
+
+    /**
+     * Fires `marker-drop` event and unselect the dragged marker.
+     *
+     * @private
+     * @param {MouseEvent} event The mouse event.
+     * @returns {void}
+     */
+    _onMouseUp(event) {
+        if (this.selectedMarker) {
+            setTimeout(() =&gt; {
+                this.selectedMarker = false;
+                this.dragging = false;
+            }, 0);
+        }
+
+        if (!this.dragging) {
+            return;
+        }
+
+        event.stopPropagation();
+        const duration = this.wavesurfer.getDuration();
+        this.selectedMarker.time = this.wavesurfer.drawer.handleEvent(event) * duration;
+        this._updateMarkerPositions();
+        this.wavesurfer.fireEvent(&quot;marker-drop&quot;, this.selectedMarker, event);
     }
 
     /**

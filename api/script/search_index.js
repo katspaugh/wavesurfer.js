@@ -552,6 +552,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/drawer.canvasentry.js~canvasentry#getfillstyle",
+    "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-getFillStyle",
+    "src/drawer.canvasentry.js~CanvasEntry#getFillStyle",
+    "method"
+  ],
+  [
     "src/drawer.canvasentry.js~canvasentry#getimage",
     "class/src/drawer.canvasentry.js~CanvasEntry.html#instance-method-getImage",
     "src/drawer.canvasentry.js~CanvasEntry#getImage",
@@ -1278,12 +1284,6 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/plugin/cursor/index.js~cursorplugin#outerwidth",
-    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-method-outerWidth",
-    "src/plugin/cursor/index.js~CursorPlugin#outerWidth",
-    "method"
-  ],
-  [
     "src/plugin/cursor/index.js~cursorplugin#params",
     "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-params",
     "src/plugin/cursor/index.js~CursorPlugin#params",
@@ -1312,6 +1312,12 @@ window.esdocSearchIndex = [
     "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-method-updateCursorPosition",
     "src/plugin/cursor/index.js~CursorPlugin#updateCursorPosition",
     "method"
+  ],
+  [
+    "src/plugin/cursor/index.js~cursorplugin#util",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-util",
+    "src/plugin/cursor/index.js~CursorPlugin#util",
+    "member"
   ],
   [
     "src/plugin/cursor/index.js~cursorplugin#wavesurfer",
@@ -1482,6 +1488,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/plugin/markers/index.js~markersplugin#dragging",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-dragging",
+    "src/plugin/markers/index.js~MarkersPlugin#dragging",
+    "member"
+  ],
+  [
     "src/plugin/markers/index.js~markersplugin#init",
     "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-init",
     "src/plugin/markers/index.js~MarkersPlugin#init",
@@ -1491,6 +1503,12 @@ window.esdocSearchIndex = [
     "src/plugin/markers/index.js~markersplugin#markerheight",
     "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-markerHeight",
     "src/plugin/markers/index.js~MarkersPlugin#markerHeight",
+    "member"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#markerlinewidth",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-markerLineWidth",
+    "src/plugin/markers/index.js~MarkersPlugin#markerLineWidth",
     "member"
   ],
   [
@@ -1506,6 +1524,18 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/plugin/markers/index.js~markersplugin#onmousemove",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-onMouseMove",
+    "src/plugin/markers/index.js~MarkersPlugin#onMouseMove",
+    "member"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#onmouseup",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-onMouseUp",
+    "src/plugin/markers/index.js~MarkersPlugin#onMouseUp",
+    "member"
+  ],
+  [
     "src/plugin/markers/index.js~markersplugin#params",
     "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-params",
     "src/plugin/markers/index.js~MarkersPlugin#params",
@@ -1516,6 +1546,12 @@ window.esdocSearchIndex = [
     "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-method-remove",
     "src/plugin/markers/index.js~MarkersPlugin#remove",
     "method"
+  ],
+  [
+    "src/plugin/markers/index.js~markersplugin#selectedmarker",
+    "class/src/plugin/markers/index.js~MarkersPlugin.html#instance-member-selectedMarker",
+    "src/plugin/markers/index.js~MarkersPlugin#selectedMarker",
+    "member"
   ],
   [
     "src/plugin/markers/index.js~markersplugin#style",
@@ -2130,6 +2166,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/plugin/regions/index.js~regionsplugin#defaultedgescrollwidth",
+    "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-member-defaultEdgeScrollWidth",
+    "src/plugin/regions/index.js~RegionsPlugin#defaultEdgeScrollWidth",
+    "member"
+  ],
+  [
     "src/plugin/regions/index.js~regionsplugin#destroy",
     "class/src/plugin/regions/index.js~RegionsPlugin.html#instance-method-destroy",
     "src/plugin/regions/index.js~RegionsPlugin#destroy",
@@ -2253,6 +2295,12 @@ window.esdocSearchIndex = [
     "src/plugin/spectrogram/index.js~spectrogramplugin#alpha",
     "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-alpha",
     "src/plugin/spectrogram/index.js~SpectrogramPlugin#alpha",
+    "member"
+  ],
+  [
+    "src/plugin/spectrogram/index.js~spectrogramplugin#channels",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-channels",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#channels",
     "member"
   ],
   [
@@ -2385,6 +2433,12 @@ window.esdocSearchIndex = [
     "src/plugin/spectrogram/index.js~spectrogramplugin#spectrcc",
     "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-spectrCc",
     "src/plugin/spectrogram/index.js~SpectrogramPlugin#spectrCc",
+    "member"
+  ],
+  [
+    "src/plugin/spectrogram/index.js~spectrogramplugin#splitchannels",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-splitChannels",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#splitChannels",
     "member"
   ],
   [

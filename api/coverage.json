@@ -1,11 +1,11 @@
 {
-  "coverage": "66.22%",
-  "expectCount": 601,
-  "actualCount": 398,
+  "coverage": "65.14%",
+  "expectCount": 614,
+  "actualCount": 400,
   "files": {
     "src/drawer.canvasentry.js": {
-      "expectCount": 23,
-      "actualCount": 22,
+      "expectCount": 24,
+      "actualCount": 23,
       "undocumentLines": [
         16
       ]
@@ -16,8 +16,8 @@
       "undocumentLines": [
         16,
         32,
-        112,
-        120
+        113,
+        121
       ]
     },
     "src/drawer.multicanvas.js": {
@@ -51,13 +51,15 @@
       "undocumentLines": []
     },
     "src/plugin/cursor/index.js": {
-      "expectCount": 21,
-      "actualCount": 17,
+      "expectCount": 22,
+      "actualCount": 16,
       "undocumentLines": [
-        120,
         121,
-        141,
-        148
+        122,
+        123,
+        143,
+        146,
+        147
       ]
     },
     "src/plugin/elan/index.js": {
@@ -83,29 +85,34 @@
       ]
     },
     "src/plugin/markers/index.js": {
-      "expectCount": 25,
-      "actualCount": 5,
+      "expectCount": 33,
+      "actualCount": 8,
       "undocumentLines": [
         37,
         39,
-        69,
-        76,
-        77,
+        71,
         78,
         79,
         80,
         81,
         82,
+        83,
+        84,
         85,
+        86,
         89,
-        90,
-        99,
-        100,
+        93,
+        94,
         106,
-        117,
-        172,
-        200,
-        256
+        109,
+        113,
+        114,
+        120,
+        131,
+        189,
+        217,
+        282,
+        288
       ]
     },
     "src/plugin/mediasession/index.js": {
@@ -147,38 +154,39 @@
     },
     "src/plugin/minimap/index.js": {
       "expectCount": 33,
-      "actualCount": 3,
+      "actualCount": 2,
       "undocumentLines": [
         57,
         58,
         96,
         97,
         98,
-        109,
-        110,
-        117,
+        99,
+        100,
+        101,
+        108,
+        127,
+        132,
         136,
-        141,
-        145,
-        150,
-        152,
-        156,
-        165,
-        171,
-        178,
-        195,
-        214,
-        245,
-        269,
-        283,
-        342,
+        142,
+        144,
+        148,
+        157,
+        163,
+        170,
+        187,
+        206,
+        237,
+        265,
+        279,
+        341,
+        350,
         351,
         352,
         353,
         354,
-        355,
-        363,
-        382
+        364,
+        385
       ]
     },
     "src/plugin/playhead/index.js": {
@@ -211,7 +219,7 @@
       ]
     },
     "src/plugin/regions/index.js": {
-      "expectCount": 24,
+      "expectCount": 25,
       "actualCount": 7,
       "undocumentLines": [
         92,
@@ -224,13 +232,14 @@
         134,
         135,
         136,
+        137,
+        146,
         147,
-        148,
-        150,
-        160,
-        171,
-        224,
-        395
+        149,
+        159,
+        170,
+        238,
+        422
       ]
     },
     "src/plugin/spectrogram/fft.js": {
@@ -239,45 +248,47 @@
       "undocumentLines": []
     },
     "src/plugin/spectrogram/index.js": {
-      "expectCount": 38,
+      "expectCount": 40,
       "actualCount": 2,
       "undocumentLines": [
-        76,
-        77,
         78,
         79,
+        80,
         81,
-        82,
-        85,
-        88,
-        91,
-        94,
-        114,
-        122,
-        123,
+        83,
+        84,
+        87,
+        90,
+        93,
+        96,
+        116,
         124,
+        125,
         126,
-        127,
         128,
         129,
-        140,
-        149,
+        130,
+        131,
+        132,
+        133,
+        144,
         153,
-        160,
+        157,
         164,
-        215,
-        221,
-        226,
-        234,
-        244,
-        251,
-        285,
-        332,
+        168,
+        219,
+        225,
+        230,
+        238,
+        248,
+        255,
+        289,
         343,
-        347,
-        351,
-        430,
-        436
+        354,
+        358,
+        362,
+        445,
+        451
       ]
     },
     "src/plugin/timeline/index.js": {
@@ -372,8 +383,8 @@
       "expectCount": 95,
       "actualCount": 93,
       "undocumentLines": [
-        477,
-        498
+        480,
+        501
       ]
     },
     "src/webaudio.js": {
