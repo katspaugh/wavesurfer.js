@@ -3,7 +3,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>wavesurfer.js | Waveform using bars</title>
+    <title>wavesurfer.js | Gradient Fill Styles Example</title>
 
     <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -33,7 +33,7 @@
                 <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
             </ul>
 
-            <h1 itemprop="name">Bars Example</h1>
+            <h1 itemprop="name">Gradient Fill Styles Example</h1>
         </div>
 
         <div id="demo">
@@ -56,29 +56,40 @@
         </div>
 
         <div class="row marketing">
-            <h3>Bars example</h3>
+            <h3>Gradient Fill Styles example</h3>
             <hr />
-            <p>Draws a waveform with bars.</p>
+            <p>Draws a waveform with a gradient fill.</p>
 
             <p>
-                <pre><code>let wavesurfer = WaveSurfer.create({
+                <pre><code>wavesurfer = WaveSurfer.create({
     container: document.querySelector('#waveform'),
-    barWidth: 2,
-    barHeight: 1, // the height of the wave
-    barGap: null // the optional spacing between bars of the wave, if not provided will be calculated in legacy format
+    waveColor: [ // an array of colors, to be applied as gradient color stops to the waveform.
+        "red",
+        "green",
+        "purple",
+        "yellow",
+        "rgba(0,255,255,.5)",
+    ],
+    progressColor: [ // the gradient fill styles are also available on the progressColor option
+        "orange",
+        "blue",
+        "cyan",
+        "black",
+        "rgba(0,255,255,.5)",
+    ]
 });
 </code></pre>
             </p>
         </div>
 
-        <div class="row marketing">
-            <h3>Split Channel Options</h3>
 
-            <p>
-                The split channel view can be modified with the <code>splitChannelsOptions</code>. The waveforms can be stacked on top of each other. And colors can be added to each channel.
-            </p>
-            <div id="demo-with-options">
-                <div id="waveform-with-options">
+        <div class="row marketing">
+            <h3>Gradient Fill Styles with Bars example</h3>
+            <hr />
+            <p>Draws a waveform using bars with a gradient fill.</p>
+
+            <div id="demo-with-bars">
+                <div id="waveform-with-bars">
                     <!-- Here be the waveform -->
                 </div>
 
@@ -93,38 +104,38 @@
                 </div>
             </div>
             <p>
-            <pre><code>var wavesurfer = WaveSurfer.create({
-    container: document.querySelector('#wave'),
-    splitChannels: true,
-    splitChannelsOptions: {
-        overlay: false,
-        channelColors: {
-            0: {
-                progressColor: 'green',
-                waveColor: 'pink'
-            },
-            1: {
-                progressColor: 'orange',
-                waveColor: 'purple'
-            }
-        }
-    }
+                <pre><code>wavesurferWithBars = WaveSurfer.create({
+    container: document.querySelector('#waveform-with-bars'),
+    barGap: 6,
+    barHeight: 1,
+    barMinHeight: 1,
+    barRadius: 6,
+    barWidth: 12,
+    waveColor: [ // an array of colors, to be applied as gradient color stops to the waveform barsr
+        "red",
+        "green",
+        "purple",
+        "yellow",
+        "rgba(0,255,255,.5)",
+    ],
+    progressColor: [ // the gradient fill styles are also available on the progressColor option
+        "orange",
+        "blue",
+        "cyan",
+        "black",
+        "rgba(0,255,255,.5)",
+    ]
 });
 </code></pre>
             </p>
         </div>
-        <h4>splitChannelOptions</h4>
+
+        <h4>WaveSurfer Options</h4>
         <p>
-            <code>overlay</code> - boolean - This determines whether channels are drawn on top of each  other.
+            <code>waveColor</code> - string | array - Can be a string referencing a color value, or an array of strings referencing color values.
         </p>
         <p>
-            <code>channelColors</code> - object - Pass this to set colors for each channel. If the channel index is not found on the object, colors will default to the top level color params.
-        </p>
-        <p>
-            <code>filterChannels</code> - array - Array of channel numbers. Channels included in the array will not be drawn.
-        </p>
-        <p>
-            <code>relativeNormalization</code> - boolean - When <code>normalize</code> and <code>splitChannels</code> are both true the channels will be normalized individually or proportionally to each other. Defaults to <code>false</code> (each channel will be normalized in isolation).
+            <code>progressColor</code> - string | array - Can be a string referencing a color value, or an array of strings referencing color values.
         </p>
 
         <div class="footer row">

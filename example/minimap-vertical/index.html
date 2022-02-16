@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Media Element Example</title>
+        <title>wavesurfer.js | Vertical waveform</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -15,15 +15,21 @@
 
         <!-- wavesurfer.js -->
         <script src="../../dist/wavesurfer.js"></script>
-        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
+        <script src="../../dist/plugin/wavesurfer.minimap.js"></script>
 
         <!-- Demo -->
         <script src="main.js"></script>
-        
+
         <!-- highlight.js for syntax highlighting in this example -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
         <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
         <script>hljs.highlightAll();</script>
+        <style>
+            #wave-minimap, #waveform {
+                display: inline-flex;
+                height: 400px;
+            }
+        </style>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
@@ -33,72 +39,74 @@
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">Media Element Fallback Example</h1>
+                <h1 itemprop="name">Minimap vertical</h1>
             </div>
 
-            <div id="demo">
-                <div id="waveform">
-                    <!-- Here be the waveform -->
+            <div>
+                <div id="demo">
+
+                    <div id="waveform" class="vertical">
+                        <!-- Here be the waveform -->
+                    </div>
+
+                    <div id="wave-minimap" class="vertical">
+                        <!-- Here be the waveform -->
+                    </div>
+                    <div class="controls">
+                        <button class="btn btn-primary" data-action="play">
+                            <i class="glyphicon glyphicon-play"></i>
+                            Play
+                            /
+                            <i class="glyphicon glyphicon-pause"></i>
+                            Pause
+                        </button>
+                    </div>
+
                 </div>
 
-                <div class="controls">
-                    <button class="btn btn-primary" data-action="play">
-                        <i class="glyphicon glyphicon-play"></i>
-                        Play
-                        /
-                        <i class="glyphicon glyphicon-pause"></i>
-                        Pause
-                    </button>
-                </div>
-            </div>
+                <div class="row marketing">
+                    <h3>How to use minimap in vertical mode</h3>
 
-            <div class="row marketing">
-                <h3>How to Enable the Fallback</h3>
+                    <hr />
 
-                <hr />
+                    <p>
+                        Simply set the <code>vertical</code>
+                        option to <code>true</code>.
+                    </p>
 
-                <p>
-                    <strong>wavesurfer.js</strong> will automatically
-                    fallback to HTML5 Media if Web Audio is not
-                    supported. However, you can choose to use audio
-                    element manually. Simply set the <code>backend</code>
-                    option to <code>"MediaElement"</code>.
-                </p>
-
-                <p>
+                    <p>
 <pre><code>var wavesurfer = WaveSurfer.create({
-    container: document.querySelector('#wave'),
-    backend: 'MediaElement'
-});
+        container: '#waveform',
+        waveColor: 'violet',
+        progressColor: 'purple',
+        loaderColor: 'purple',
+        cursorColor: 'navy',
+        vertical: true,
+        plugins: [
+            WaveSurfer.minimap.create({
+                container: '#wave-minimap',
+                waveColor: '#777',
+                progressColor: '#222',
+                height: 50
+            })
+        ]
+    });
 </code></pre>
-                </p>
+                    </p>
 
-                <h3>Pre-rendered Peaks</h3>
-
-                <p>
-                    If you have pre-rendered peaks (on your server),
-                    you can pass them into the <code>load</code>
-                    function. This is optional–if you don't provide
-                    any peaks,
-                    <strong>wavesurfer.js</strong> will first draw a
-                    thin line instead of a waveform, then attempt to
-                    download the audio file via Ajax and decode it
-                    with Web Audio if available.
-                </p>
-                <p>
-                    Check the <a href="https://wavesurfer-js.org/faq/">FAQ</a> for instructions on how to generate peaks.
-                </p>
-                <p>
-<pre><code>wavesurfer.load('example/media/demo.mp3');</code></pre>
-                </p>
+                    <p>
+                        You probably want to set an explicit height
+                        and use <code>display: inline-flex</code>
+                        on the container to ensure that the wave expands vertically and the waveform and minimap align well horizontally:
+<pre><code>#waveform {
+    display: inline-flex;
+    height: 400px;
+}
+</code></pre>
+                    </p>
 
 
-                <p>
-                    Press this button to see the same demo with pre-decoded peaks:
-                    <button class="btn btn-warning" data-action="peaks">
-                        Load with pre-rendered peaks
-                    </button>
-                </p>
+                </div>
             </div>
 
             <div class="footer row">

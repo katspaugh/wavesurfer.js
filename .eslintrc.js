@@ -1,7 +1,7 @@
 /* eslint-disable */
 module.exports = {
     extends: ['eslint:recommended'], // extending recommended config and config derived from eslint-config-prettier
-    parser: 'babel-eslint',
+    parser: '@babel/eslint-parser',
     globals: {
         WaveSurfer: true,
         Float32Array: true,

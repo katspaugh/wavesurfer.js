@@ -3,9 +3,53 @@ wavesurfer.js changelog
 
 - Use intersection observer to reduce canvas updates in `MultiCanvas` (#1622)
 
-x.x.x (unreleased)
+6.0.1 (13.02.2022)
 ------------------
-- Markers plugin: add the ability to use custom HTML elements in place of the default marker icon by passing the new `markerElement` parameter to the marker constructor (#2269)
+- Fixed a regression that broke bars rendering when using a certain format for the peaks array (#2439)
+
+6.0.0 (07.02.2022)
+------------------
+- Add additional type to `waveColor` and `progressColor` parameters to support linear gradients (#2345)
+- Add `hideCursor` option to hide the mouse cursor when hovering over the waveform (#2367)
+- Add optional `channelIdx` parameter to `setWaveColor`, `getWaveColor`, `setProgressColor` and
+  `getProgressColor` methods (#2391)
+- Improved drawing waveform with bars, now bars height is the maximum peak value in range (#2428)
+- Workaround for `seekTo` occasionally crashing on Firefox (#1228, #2431)
+- Markers plugin: Add the ability to set markers as draggable using param `draggable=true`,
+  `marker-drag` and `marker-drop` events will be triggered (#2398)
+- Regions plugin:
+  - Increase region z-index to fix stacking inconsistencies (#2353)
+  - Check `maxLength` before resizing region (#2374)
+  - Add support for drag selection to be separated for each channel (#2380)
+  - Allow `formatTimeCallback` from plugin params to be used (#2294)
+  - Use of default `edgeScrollWidth` value no longer dependent on regions being created via
+    plugin params (#2401)
+  - Disable `region-remove` event emission during plugin teardown (#2403)
+- Spectrogram plugin:
+  - Remove inaccurate frequency doubling of spectrogram (#2232)
+  - Support for `splitChannels` option to draw spectrogram for each channel (#2424)
+
+5.2.0 (16.08.2021)
+------------------
+- Add `ignoreSilenceMode` option to ignore iOS hardware silence switch when using the
+  `WebAudio` backend (#1864)
+- Fixed unhandled `Failed to execute 'stop' on 'AudioScheduledSourceNode'` error (#1473)
+- Fixed unhandled `Cannot read property 'decodeArrayBuffer' of null` error (#2279)
+- Timeline plugin: fixed unhandled `null is not an object (evaluating context.canvas)`
+  error in Safari v14 (#2333)
+- Regions plugin: add `direction` and `action` fields to the `region-updated` event
+  params (#2339)
+
+5.1.0 (20.06.2021)
+------------------
+- Markers plugin:
+  - Add the ability to use custom HTML elements in place of the default marker icon by
+    passing the new `markerElement` parameter to the marker constructor (#2269)
+  - Custom HTML elements are now centered over the marker line (#2298)
+  - Trigger `marker-click` event on wavesurfer (#2287)
+- Regions plugin: handle rollover cursor bug fix (#2293)
+- Timeline plugin: prevent calling `Canvas` context methods on `null` values (#2299)
+- Spectrogram plugin: prevent calling `Canvas` context methods on `null` values (#2299)
 
 5.0.1 (05.05.2021)
 ------------------

@@ -6,8 +6,7 @@ var wavesurfer; // eslint-disable-line no-var
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function() {
     // Init
-    var button = document.createElement("button");
-    button.innerHTML = "click";
+
     wavesurfer = WaveSurfer.create({
         container: document.querySelector('#waveform'),
         waveColor: '#A8DBA8',
@@ -24,15 +23,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     {
                         time: 5.5,
                         label: "V1",
-                        color: '#ff990a'
+                        color: '#ff990a',
+                        draggable: true
                     },
-                    {
-                        time: 10,
-                        label: "V2",
-                        color: '#00ffcc',
-                        position: 'top',
-                        markerElement: button
-                    },
+
                     {
                         time: 24,
                         label: "END",
@@ -44,8 +38,26 @@ document.addEventListener('DOMContentLoaded', function() {
         ]
     });
 
+    var img = new Image(40, 40);
+    img.src = "./settings_icon.png";
+    img.onload = () => {
+        wavesurfer.markers.add({
+            time: 12,
+            position: "bottom",
+            markerElement: img
+        });
+    };
+
     wavesurfer.on('error', function(e) {
         console.warn(e);
+    });
+
+    wavesurfer.on('marker-drag', function(marker) {
+        console.log("marker drag", marker.label);
+    });
+
+    wavesurfer.on('marker-drop', function(marker) {
+        console.log("marker drop", marker.label);
     });
 
     // Load audio from URL

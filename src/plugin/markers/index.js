@@ -1,4 +1,3 @@
-
 /**
  * @typedef {Object} MarkerParams
  * @desc The parameters used to describe a marker.
@@ -8,6 +7,7 @@
  * @property {?color} string Background color for marker
  * @property {?position} string "top" or "bottom", defaults to "bottom"
  * @property {?markerElement} element An HTML element to display instead of the default marker image
+ * @property {?draggable} boolean Set marker as draggable, defaults to false
  */
 
 
@@ -40,6 +40,9 @@ export default class MarkersPlugin {
     /**
      * @typedef {Object} MarkersPluginParams
      * @property {?MarkerParams[]} markers Initial set of markers
+     * @fires MarkersPlugin#marker-click
+     * @fires MarkersPlugin#marker-drag
+     * @fires MarkersPlugin#marker-drop
      */
 
     /**
@@ -77,8 +80,10 @@ export default class MarkersPlugin {
         this.wavesurfer = ws;
         this.util = ws.util;
         this.style = this.util.style;
+        this.markerLineWidth = 1;
         this.markerWidth = 11;
         this.markerHeight = 22;
+        this.dragging = false;
 
 
         this._onResize = () => {
@@ -93,6 +98,16 @@ export default class MarkersPlugin {
             window.addEventListener('resize', this._onResize, true);
             window.addEventListener('orientationchange', this._onResize, true);
             this.wavesurfer.on('zoom', this._onResize);
+
+            if (!this.markers.find(marker => marker.draggable)){
+                return;
+            }
+
+            this.onMouseMove = (e) => this._onMouseMove(e);
+            window.addEventListener('mousemove', this.onMouseMove);
+
+            this.onMouseUp = (e) => this._onMouseUp(e);
+            window.addEventListener("mouseup", this.onMouseUp);
         };
 
         this.markers = [];
@@ -122,6 +137,13 @@ export default class MarkersPlugin {
         window.removeEventListener('resize', this._onResize, true);
         window.removeEventListener('orientationchange', this._onResize, true);
 
+        if (this.onMouseMove) {
+            window.removeEventListener('mousemove', this.onMouseMove);
+        }
+        if (this.onMouseUp) {
+            window.removeEventListener("mouseup", this.onMouseUp);
+        }
+
         this.clear();
     }
 
@@ -136,7 +158,8 @@ export default class MarkersPlugin {
             time: params.time,
             label: params.label,
             color: params.color || DEFAULT_FILL_COLOR,
-            position: params.position || DEFAULT_POSITION
+            position: params.position || DEFAULT_POSITION,
+            draggable: !!params.draggable
         };
 
         marker.el = this._createMarkerElement(marker, params.markerElement);
@@ -193,7 +216,6 @@ export default class MarkersPlugin {
 
     _createMarkerElement(marker, markerElement) {
         let label = marker.label;
-        let time = marker.time;
 
         const el = document.createElement('marker');
         el.className = "wavesurfer-marker";
@@ -207,17 +229,22 @@ export default class MarkersPlugin {
         });
 
         const line = document.createElement('div');
+        const width = markerElement ? markerElement.width : this.markerWidth;
+        marker.offset = (width - this.markerLineWidth) / 2;
         this.style(line, {
             "flex-grow": 1,
-            "margin-left": (this.markerWidth / 2 - 0.5) + "px",
+            "margin-left": marker.offset + "px",
             background: "black",
-            width: "1px",
+            width: this.markerLineWidth + "px",
             opacity: 0.1
         });
         el.appendChild(line);
 
         const labelDiv = document.createElement('div');
         const point = markerElement || this._createPointerSVG(marker.color, marker.position);
+        if (marker.draggable){
+            point.draggable = false;
+        }
         labelDiv.appendChild(point);
 
         if ( label ) {
@@ -240,28 +267,97 @@ export default class MarkersPlugin {
 
         labelDiv.addEventListener("click", e => {
             e.stopPropagation();
-            this.wavesurfer.setCurrentTime(time);
+            // Click event is caught when the marker-drop event was dispatched.
+            // Drop event was dispatched at this moment, but this.dragging
+            // is waiting for the next tick to set as false
+            if (this.dragging){
+                return;
+            }
+            this.wavesurfer.setCurrentTime(marker.time);
+            this.wavesurfer.fireEvent("marker-click", marker, e);
         });
 
+        if (marker.draggable) {
+            labelDiv.addEventListener("mousedown", e => {
+                this.selectedMarker = marker;
+            });
+        }
         return el;
     }
 
     _updateMarkerPositions() {
-        const duration = this.wavesurfer.getDuration();
-
         for ( let i = 0 ; i < this.markers.length; i++ ) {
             let marker = this.markers[i];
-            const elementWidth =
-                this.wavesurfer.drawer.width /
-                this.wavesurfer.params.pixelRatio;
-
-            const positionPct = Math.min(marker.time / duration, 1);
-            const leftPx = ((elementWidth * positionPct) - (this.markerWidth / 2));
-            this.style(marker.el, {
-                "left":  leftPx + "px",
-                "max-width": (elementWidth - leftPx) + "px"
-            });
+            this._updateMarkerPosition(marker);
         }
+    }
+
+    /**
+     * Update a marker position based on its time property.
+     *
+     * @private
+     * @param {MarkerParams} params The marker to update.
+     * @returns {void}
+     */
+    _updateMarkerPosition(params) {
+        const duration = this.wavesurfer.getDuration();
+        const elementWidth =
+            this.wavesurfer.drawer.width /
+            this.wavesurfer.params.pixelRatio;
+
+        const positionPct = Math.min(params.time / duration, 1);
+        const leftPx = ((elementWidth * positionPct) - params.offset);
+        this.style(params.el, {
+            "left": leftPx + "px",
+            "max-width": (elementWidth - leftPx) + "px"
+        });
+    }
+
+    /**
+     * Fires `marker-drag` event, update the `time` property for the
+     * selected marker based on the mouse position, and calls to update
+     * its position.
+     *
+     * @private
+     * @param {MouseEvent} event The mouse event.
+     * @returns {void}
+     */
+    _onMouseMove(event) {
+        if (!this.selectedMarker){
+            return;
+        }
+        if (!this.dragging){
+            this.dragging = true;
+            this.wavesurfer.fireEvent("marker-drag", this.selectedMarker, event);
+        }
+        this.selectedMarker.time = this.wavesurfer.drawer.handleEvent(event) * this.wavesurfer.getDuration();
+        this._updateMarkerPositions();
+    }
+
+    /**
+     * Fires `marker-drop` event and unselect the dragged marker.
+     *
+     * @private
+     * @param {MouseEvent} event The mouse event.
+     * @returns {void}
+     */
+    _onMouseUp(event) {
+        if (this.selectedMarker) {
+            setTimeout(() => {
+                this.selectedMarker = false;
+                this.dragging = false;
+            }, 0);
+        }
+
+        if (!this.dragging) {
+            return;
+        }
+
+        event.stopPropagation();
+        const duration = this.wavesurfer.getDuration();
+        this.selectedMarker.time = this.wavesurfer.drawer.handleEvent(event) * duration;
+        this._updateMarkerPositions();
+        this.wavesurfer.fireEvent("marker-drop", this.selectedMarker, event);
     }
 
     /**

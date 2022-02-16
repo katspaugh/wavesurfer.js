@@ -275,7 +275,7 @@ export default class MediaElement extends WebAudio {
      * @param {number} start Position to start at in seconds
      */
     seekTo(start) {
-        if (start != null) {
+        if (start != null && !isNaN(start)) {
             this.media.currentTime = start;
         }
         this.clearPlayEnd();

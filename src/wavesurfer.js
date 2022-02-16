@@ -69,6 +69,10 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * pixels.
  * @property {boolean} hideScrollbar=false Whether to hide the horizontal
  * scrollbar when one would normally be shown.
+ * @property {boolean} hideCursor=false Whether to hide the mouse cursor
+ * when one would normally be shown by default.
+ * @property {boolean} ignoreSilenceMode=false If true, ignores device silence mode
+ * when using the `WebAudio` backend.
  * @property {boolean} interact=true Whether the mouse interaction will be
  * enabled at initialization. You can switch this parameter at any time later
  * on.
@@ -268,6 +272,8 @@ export default class WaveSurfer extends util.Observer {
         forceDecode: false,
         height: 128,
         hideScrollbar: false,
+        hideCursor: false,
+        ignoreSilenceMode: false,
         interact: true,
         loopSelection: true,
         maxCanvasWidth: 4000,
@@ -813,6 +819,11 @@ export default class WaveSurfer extends util.Observer {
      * wavesurfer.play(1, 5);
      */
     play(start, end) {
+        if (this.params.ignoreSilenceMode) {
+            // ignores device hardware silence mode
+            util.ignoreSilenceMode();
+        }
+
         this.fireEvent('interaction', () => this.play(start, end));
         return this.backend.play(start, end);
     }
@@ -1117,40 +1128,58 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Get the fill color of the waveform after the cursor.
      *
-     * @return {string} A CSS color string.
+     * @param {?number} channelIdx Optional index of the channel to get its wave color if splitChannels is true
+     * @return {string|object} A CSS color string, or an array of CSS color strings.
      */
-    getWaveColor() {
+    getWaveColor(channelIdx = null) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            return this.params.splitChannelsOptions.channelColors[channelIdx].waveColor;
+        }
         return this.params.waveColor;
     }
 
     /**
      * Set the fill color of the waveform after the cursor.
      *
-     * @param {string} color A CSS color string.
+     * @param {string|object} color A CSS color string, or an array of CSS color strings.
+     * @param {?number} channelIdx Optional index of the channel to set its wave color if splitChannels is true
      * @example wavesurfer.setWaveColor('#ddd');
      */
-    setWaveColor(color) {
-        this.params.waveColor = color;
+    setWaveColor(color, channelIdx = null) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            this.params.splitChannelsOptions.channelColors[channelIdx].waveColor = color;
+        } else {
+            this.params.waveColor = color;
+        }
         this.drawBuffer();
     }
 
     /**
      * Get the fill color of the waveform behind the cursor.
      *
-     * @return {string} A CSS color string.
+     * @param {?number} channelIdx Optional index of the channel to get its progress color if splitChannels is true
+     * @return {string|object} A CSS color string, or an array of CSS color strings.
      */
-    getProgressColor() {
+    getProgressColor(channelIdx = null) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            return this.params.splitChannelsOptions.channelColors[channelIdx].progressColor;
+        }
         return this.params.progressColor;
     }
 
     /**
      * Set the fill color of the waveform behind the cursor.
      *
-     * @param {string} color A CSS color string.
+     * @param {string|object} color A CSS color string, or an array of CSS color strings.
+     * @param {?number} channelIdx Optional index of the channel to set its progress color if splitChannels is true
      * @example wavesurfer.setProgressColor('#400');
      */
-    setProgressColor(color) {
-        this.params.progressColor = color;
+    setProgressColor(color, channelIdx) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            this.params.splitChannelsOptions.channelColors[channelIdx].progressColor = color;
+        } else {
+            this.params.progressColor = color;
+        }
         this.drawBuffer();
     }
 
@@ -1538,19 +1567,21 @@ export default class WaveSurfer extends util.Observer {
      * @param {function} callback The function to call on complete
      */
     decodeArrayBuffer(arraybuffer, callback) {
-        this.arraybuffer = arraybuffer;
-        this.backend.decodeArrayBuffer(
-            arraybuffer,
-            data => {
-                // Only use the decoded data if we haven't been destroyed or
-                // another decode started in the meantime
-                if (!this.isDestroyed && this.arraybuffer == arraybuffer) {
-                    callback(data);
-                    this.arraybuffer = null;
-                }
-            },
-            () => this.fireEvent('error', 'Error decoding audiobuffer')
-        );
+        if (!this.isDestroyed) {
+            this.arraybuffer = arraybuffer;
+            this.backend.decodeArrayBuffer(
+                arraybuffer,
+                data => {
+                    // Only use the decoded data if we haven't been destroyed or
+                    // another decode started in the meantime
+                    if (!this.isDestroyed && this.arraybuffer == arraybuffer) {
+                        callback(data);
+                        this.arraybuffer = null;
+                    }
+                },
+                () => this.fireEvent('error', 'Error decoding audiobuffer')
+            );
+        }
     }
 
     /**
