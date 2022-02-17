@@ -175,15 +175,16 @@ export default class SelectionPlugin {
                 });
             }
 
-            const width = this.wavesurfer.drawer.getWidth();
-            const pxPerSec = width / (this._getDisplayRange().duration * this.wavesurfer.params.pixelRatio);
-            this.wavesurfer.zoom(pxPerSec);
-            this.wavesurfer.params.scrollParent = false;
         };
 
         // selection's one allowed region
         this.region = null;
         this._onReady = () => {
+            const width = this.wavesurfer.drawer.getWidth();
+            const pxPerSec = width / (this._getDisplayRange().duration * this.wavesurfer.params.pixelRatio);
+            this.wavesurfer.zoom(pxPerSec);
+
+            this.wavesurfer.params.scrollParent = false;
             this.wrapper = this.wavesurfer.drawer.wrapper;
             this.vertical = this.wavesurfer.drawer.params.vertical;
             if (this.params.dragSelection) {
