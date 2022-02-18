@@ -123,12 +123,6 @@ export default class SelectionPlugin {
                     this.selection.displayRange.start = start || this.selection.displayRange.start;
                     this.selection.displayRange.end = end || this.selection.displayRange.end;
                     this.selection.displayRange.duration = duration || this.selection.displayRange.duration;
-                },
-
-                // override getDuration to return the duration of container
-                getDuration() {
-                    return this.backend.getDuration();
-                    // return this.selection._getDisplayRange().duration;
                 }
             },
             instance: SelectionPlugin
