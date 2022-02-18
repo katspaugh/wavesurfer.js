@@ -326,6 +326,8 @@ export class Region {
 
     /* Update element's position, width, color. */
     updateRender() {
+        // break out if we currently don't have a backend
+        if (!this.wavesurfer.backend ) {return;}
         // duration varies during loading process, so don't overwrite important data
         const dur = this.wavesurfer.getDuration();
         const displayDuration = this.wavesurfer.getDisplayRange().duration;

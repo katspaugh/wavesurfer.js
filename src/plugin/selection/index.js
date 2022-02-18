@@ -123,12 +123,6 @@ export default class SelectionPlugin {
                     this.selection.displayRange.start = start || this.selection.displayRange.start;
                     this.selection.displayRange.end = end || this.selection.displayRange.end;
                     this.selection.displayRange.duration = duration || this.selection.displayRange.duration;
-                },
-
-                // override getDuration to return the duration of container
-                getDuration() {
-                    return this.backend.getDuration();
-                    // return this.selection._getDisplayRange().duration;
                 }
             },
             instance: SelectionPlugin
@@ -175,15 +169,16 @@ export default class SelectionPlugin {
                 });
             }
 
-            const width = this.wavesurfer.drawer.getWidth();
-            const pxPerSec = width / (this._getDisplayRange().duration * this.wavesurfer.params.pixelRatio);
-            this.wavesurfer.zoom(pxPerSec);
-            this.wavesurfer.params.scrollParent = false;
         };
 
         // selection's one allowed region
         this.region = null;
         this._onReady = () => {
+            const width = this.wavesurfer.drawer.getWidth();
+            const pxPerSec = width / (this._getDisplayRange().duration * this.wavesurfer.params.pixelRatio);
+            this.wavesurfer.zoom(pxPerSec);
+
+            this.wavesurfer.params.scrollParent = false;
             this.wrapper = this.wavesurfer.drawer.wrapper;
             this.vertical = this.wavesurfer.drawer.params.vertical;
             if (this.params.dragSelection) {
