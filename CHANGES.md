@@ -1,21 +1,27 @@
 wavesurfer.js changelog
 =======================
 
-6.1.0
+6.0.2 (unreleased)
 ------------------
-- Fixed the type annotation of `maxRegions` in the regions plugin.
+- Fix regression and restore support for passing a `CanvasGradient` to
+  `setWaveColor()` (#2448)
+- Regions plugin:
+  - Fixed the type annotation of `maxRegions` in the regions plugin (#2454)
 
 6.0.1 (13.02.2022)
 ------------------
-- Fixed a regression that broke bars rendering when using a certain format for the peaks array (#2439)
+- Fixed a regression that broke bars rendering when using a certain format for
+  the peaks array (#2439)
 
 6.0.0 (07.02.2022)
 ------------------
-- Add additional type to `waveColor` and `progressColor` parameters to support linear gradients (#2345)
+- Add additional type to `waveColor` and `progressColor` parameters to support linear
+  gradients (#2345)
 - Add `hideCursor` option to hide the mouse cursor when hovering over the waveform (#2367)
-- Add optional `channelIdx` parameter to `setWaveColor`, `getWaveColor`, `setProgressColor` and
-  `getProgressColor` methods (#2391)
-- Improved drawing waveform with bars, now bars height is the maximum peak value in range (#2428)
+- Add optional `channelIdx` parameter to `setWaveColor`, `getWaveColor`, `setProgressColor`
+  and `getProgressColor` methods (#2391)
+- Improved drawing waveform with bars, now bars height is the maximum peak value in
+  range (#2428)
 - Workaround for `seekTo` occasionally crashing on Firefox (#1228, #2431)
 - Markers plugin: Add the ability to set markers as draggable using param `draggable=true`,
   `marker-drag` and `marker-drop` events will be triggered (#2398)
