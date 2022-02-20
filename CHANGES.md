@@ -1,11 +1,46 @@
 wavesurfer.js changelog
 =======================
-6.0.0 (unreleased)
+
+6.1.0 (unreleased)
 ------------------
 - Add `setWaveStyle` and `setProgressStyle` methods, which enable specifying a
   canvas image source to use as the waveform background (#2348)
-- Add additional type to `waveColor` and `progressColor` parameters to support linear gradients (#2345)
-- Regions plugin: increase region z-index to fix stacking inconsistencies (#2353)
+
+6.0.2 (20.02.2022)
+------------------
+- Fix regression and restore support for passing a `CanvasGradient` to
+  `setWaveColor()` (#2448)
+- Regions plugin:
+  - Fixed the type annotation of `maxRegions` in the regions plugin (#2454)
+
+6.0.1 (13.02.2022)
+------------------
+- Fixed a regression that broke bars rendering when using a certain format for
+  the peaks array (#2439)
+
+6.0.0 (07.02.2022)
+------------------
+- Add additional type to `waveColor` and `progressColor` parameters to support linear
+  gradients (#2345)
+- Add `hideCursor` option to hide the mouse cursor when hovering over the waveform (#2367)
+- Add optional `channelIdx` parameter to `setWaveColor`, `getWaveColor`, `setProgressColor`
+  and `getProgressColor` methods (#2391)
+- Improved drawing waveform with bars, now bars height is the maximum peak value in
+  range (#2428)
+- Workaround for `seekTo` occasionally crashing on Firefox (#1228, #2431)
+- Markers plugin: Add the ability to set markers as draggable using param `draggable=true`,
+  `marker-drag` and `marker-drop` events will be triggered (#2398)
+- Regions plugin:
+  - Increase region z-index to fix stacking inconsistencies (#2353)
+  - Check `maxLength` before resizing region (#2374)
+  - Add support for drag selection to be separated for each channel (#2380)
+  - Allow `formatTimeCallback` from plugin params to be used (#2294)
+  - Use of default `edgeScrollWidth` value no longer dependent on regions being created via
+    plugin params (#2401)
+  - Disable `region-remove` event emission during plugin teardown (#2403)
+- Spectrogram plugin:
+  - Remove inaccurate frequency doubling of spectrogram (#2232)
+  - Support for `splitChannels` option to draw spectrogram for each channel (#2424)
 
 5.2.0 (16.08.2021)
 ------------------

@@ -69,6 +69,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * pixels.
  * @property {boolean} hideScrollbar=false Whether to hide the horizontal
  * scrollbar when one would normally be shown.
+ * @property {boolean} hideCursor=false Whether to hide the mouse cursor
+ * when one would normally be shown by default.
  * @property {boolean} ignoreSilenceMode=false If true, ignores device silence mode
  * when using the `WebAudio` backend.
  * @property {boolean} interact=true Whether the mouse interaction will be
@@ -270,6 +272,7 @@ export default class WaveSurfer extends util.Observer {
         forceDecode: false,
         height: 128,
         hideScrollbar: false,
+        hideCursor: false,
         ignoreSilenceMode: false,
         interact: true,
         loopSelection: true,
@@ -1125,9 +1128,14 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Get the fill color of the waveform after the cursor.
      *
+     * @param {?number} channelIdx Optional index of the channel to get its wave color
+     *     if splitChannels is true
      * @return {string|object} A CSS color string, or an array of CSS color strings.
      */
-    getWaveColor() {
+    getWaveColor(channelIdx = null) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            return this.params.splitChannelsOptions.channelColors[channelIdx].waveColor;
+        }
         return this.params.waveColor;
     }
 
@@ -1135,18 +1143,33 @@ export default class WaveSurfer extends util.Observer {
      * Set the fill color of the waveform after the cursor.
      *
      * @param {string|object} color A CSS color string, or an array of CSS color strings.
+     * @param {?number} channelIdx Optional index of the channel to set its wave color if
+     *     splitChannels is true
      * @example wavesurfer.setWaveColor('#ddd');
      */
-    setWaveColor(color) {
+    setWaveColor(color, channelIdx = null) {
         this.setWaveStyle(color);
+        /*TODO
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            this.params.splitChannelsOptions.channelColors[channelIdx].waveColor = color;
+        } else {
+            this.params.waveColor = color;
+        }
+        this.drawBuffer();
+        */
     }
 
     /**
      * Get the fill color of the waveform behind the cursor.
      *
+     * @param {?number} channelIdx Optional index of the channel to get its progress color
+     *     if splitChannels is true
      * @return {string|object} A CSS color string, or an array of CSS color strings.
      */
-    getProgressColor() {
+    getProgressColor(channelIdx = null) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            return this.params.splitChannelsOptions.channelColors[channelIdx].progressColor;
+        }
         return this.params.progressColor;
     }
 
@@ -1154,10 +1177,19 @@ export default class WaveSurfer extends util.Observer {
      * Set the fill color of the waveform behind the cursor.
      *
      * @param {string|object} color A CSS color string, or an array of CSS color strings.
+     * @param {?number} channelIdx Optional index of the channel to set its progress color
+     *     if splitChannels is true
      * @example wavesurfer.setProgressColor('#400');
      */
-    setProgressColor(color) {
+    setProgressColor(color, channelIdx) {
         this.setProgressStyle(color);
+        /* TODO
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            this.params.splitChannelsOptions.channelColors[channelIdx].progressColor = color;
+        } else {
+            this.params.progressColor = color;
+        }
+        */
     }
 
     /**
@@ -1168,7 +1200,7 @@ export default class WaveSurfer extends util.Observer {
      * Video, HTML Canvas, Image Bitmap and Offscreen Canvas elements)
      * @param {object} options Fill style options
      * @example wavesurfer.setWaveStyle(document.getElementById('#myImageElement'));
-     * @version 6.0.0
+     * @version 6.1.0
      */
     setWaveStyle(style, options) {
         this.params.waveColor = style;
@@ -1186,13 +1218,14 @@ export default class WaveSurfer extends util.Observer {
      * Video, HTML Canvas, Image Bitmap and Offscreen Canvas elements)
      * @param {object} options Fill style options
      * @example wavesurfer.setWaveStyle(document.getElementById('#myImageElement'));
-     * @version 6.0.0
+     * @version 6.1.0
      */
     setProgressStyle(style, options) {
         this.params.progressColor = style;
         if (options) {
             this.params.progressStyleOptions = options;
         }
+
         this.drawBuffer();
     }
 

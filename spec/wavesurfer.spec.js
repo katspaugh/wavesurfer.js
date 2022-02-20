@@ -265,7 +265,7 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#setWaveColorGradient} */
-    it('allow setting waveColor gradient', function() {
+    it('allow setting waveColor gradient using array of fill colors', function() {
         let colors = [
             "red",
             "green",
@@ -284,8 +284,25 @@ describe('WaveSurfer/playback:', function() {
         let img = new Image(); // Create new img element
         img.src = "data:image/gif;base64,R0lGODlhCwALAIAAAAAA3pn/ZiH5BAEAAAEALAAAAAALAAsAAAIUhA+hkcuO4lmNVindo7qyrIXiGBYAOw==";
         wavesurfer.setWaveStyle(img);
+
         const waveStyle = wavesurfer.getWaveColor();
         expect(waveStyle).toEqual(img);
+    });
+ 
+    /** @test {WaveSurfer#setWaveColorCanvasGradient} */
+    it('allow setting waveColor using CanvasGradient', function() {
+        let testCanvas = TestHelpers.createElement("linGrad", "canvas");
+        let ctx = testCanvas.getContext('2d');
+        let linGrad = ctx.createLinearGradient(0, 64, 0, 200);
+        linGrad.addColorStop(0.5, 'rgba(255, 255, 255, 1.000)');
+        linGrad.addColorStop(0.5, 'rgba(183, 183, 183, 1.000)');
+
+        wavesurfer.setWaveColor(linGrad);
+        const waveColor = wavesurfer.getWaveColor();
+
+        expect(waveColor).toEqual(linGrad);
+
+        TestHelpers.removeElement(testCanvas);
     });
 
     /** @test {WaveSurfer#getProgressColor} */
@@ -300,6 +317,61 @@ describe('WaveSurfer/playback:', function() {
         const progressColor = wavesurfer.getProgressColor();
 
         expect(progressColor).toEqual('green');
+    });
+
+    describe('split channels options', function() {
+        beforeEach(function() {
+            wavesurfer.params.splitChannels = true;
+            wavesurfer.params.splitChannelsOptions = {
+                channelColors: {
+                    0: {
+                        progressColor: 'green',
+                        waveColor: 'pink'
+                    },
+                    1: {
+                        progressColor: 'orange',
+                        waveColor: 'purple'
+                    }
+                }
+            };
+        });
+
+        afterEach(function() {
+            wavesurfer.params.splitChannels = false;
+            wavesurfer.params.splitChannelsOptions = {
+                channelColors: {}
+            };
+        });
+
+        /** @test {WaveSurfer#getChannelWaveColor} */
+        it('allow getting channel waveColor', function() {
+            const waveColor = wavesurfer.getWaveColor(1);
+            expect(waveColor).toEqual('purple');
+        });
+
+        /** @test {WaveSurfer#setChannelWaveColor} */
+        it('allow setting channel waveColor', function() {
+            let color = 'blue';
+            wavesurfer.setWaveColor(color, 1);
+            const waveColor = wavesurfer.getWaveColor(1);
+
+            expect(waveColor).toEqual(color);
+        });
+
+        /** @test {WaveSurfer#getChannelProgressColor} */
+        it('allow getting channel progressColor', function() {
+            const progressColor = wavesurfer.getProgressColor(1);
+            expect(progressColor).toEqual('orange');
+        });
+
+        /** @test {WaveSurfer#setChannelProgressColor} */
+        it('allow setting channel progressColor', function() {
+            let color = 'blue';
+            wavesurfer.setProgressColor(color, 1);
+            const progressColor = wavesurfer.getProgressColor(1);
+
+            expect(progressColor).toEqual(color);
+        });
     });
 
     /** @test {WaveSurfer#getCursorColor} */

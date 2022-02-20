@@ -168,21 +168,21 @@ export default class CanvasEntry {
      * Utility function to determine the type and handle the argument passed to
      * a color setting method
      *
-     * Return type is dependent on the color argument's type
+     * When the color argument type is a string or CanvasGradient instance,
+     * it will be returned as is. Otherwise, it will be treated as an array,
+     * and a new CanvasGradient will be returned
      *
      * @since 6.0.0
      * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
-     * @param {string|string[]|CanvasImageSource} color A CSS color value as a
-     * string, an array of CSS color value strings, or a Canvas Image Source
-     * (HTML Image, SVG Image, HTML Video, HTML Canvas, Image Bitmap or
-     * Offscreen Canvas element)
+     * @param {string|string[]|CanvasGradient|CanvasImageSource} color Either a
+     *    CSS color value as a string, an array of CSS color value strings,
+     *    or an existing CanvasGradient or CanvasImageSource instance
      * @param {object} fillStyleOptions Options for the fill style
-     * @returns {string|CanvasGradient|CanvasPattern} Returns a CSS color
-     * value string, a canvas gradient or a canvas pattern
+     * @returns {string|CanvasGradient} Returns a string fillstyle value, a
+     *     canvas gradient or a canvas pattern
      */
     getFillStyle(ctx, color, fillStyleOptions) {
-        // if the color argument is a string, handle it as a CSS color value
-        if (typeof color === 'string') {
+        if (typeof color == 'string' || color instanceof CanvasGradient) {
             return color;
         }
 

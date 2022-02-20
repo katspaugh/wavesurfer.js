@@ -96,16 +96,7 @@ export default class MinimapPlugin {
         this.drawer = new ws.Drawer(this.params.container, this.params);
         this.wavesurfer = ws;
         this.util = ws.util;
-        /**
-         * Minimap needs to listen for the `ready` and `waveform-ready` events
-         * to work with the `MediaElement` backend. The moment the `ready` event
-         * is called is different (and peaks would not load).
-         *
-         * @type {string}
-         * @see https://github.com/katspaugh/wavesurfer.js/issues/736
-         */
-        this.renderEvent =
-            ws.params.backend === 'MediaElement' ? 'waveform-ready' : 'ready';
+        this.renderEvent = 'redraw';
         this.overviewRegion = null;
         this.regionsPlugin = this.wavesurfer[this.params.regionsPluginName];
 
@@ -144,7 +135,8 @@ export default class MinimapPlugin {
         // event listeners for the overview region
         this._onScroll = e => {
             if (!this.draggingOverview) {
-                this.moveOverviewRegion(e.target.scrollLeft / this.ratio);
+                const orientedTarget = this.util.withOrientation(e.target, this.wavesurfer.params.vertical);
+                this.moveOverviewRegion(orientedTarget.scrollLeft / this.ratio);
             }
         };
         this._onMouseover = e => {
@@ -245,8 +237,13 @@ export default class MinimapPlugin {
     createElements() {
         this.drawer.createElements();
         if (this.params.showOverview) {
-            this.overviewRegion = this.util.style(
-                document.createElement('overview'),
+            this.overviewRegion = this.util.withOrientation(
+                this.drawer.wrapper.appendChild(document.createElement('overview')),
+                this.wavesurfer.params.vertical
+            );
+
+            this.util.style(
+                this.overviewRegion,
                 {
                     top: 0,
                     bottom: 0,
@@ -262,7 +259,6 @@ export default class MinimapPlugin {
                     opacity: this.params.overviewOpacity
                 }
             );
-            this.drawer.wrapper.appendChild(this.overviewRegion);
         }
     }
 
@@ -307,24 +303,27 @@ export default class MinimapPlugin {
         }
 
         if (this.params.showOverview) {
-            this.overviewRegion.addEventListener('mousedown', event => {
+            this.overviewRegion.domElement.addEventListener('mousedown', e => {
+                const event = this.util.withOrientation(e, this.wavesurfer.params.vertical);
                 this.draggingOverview = true;
                 relativePositionX = event.layerX;
                 positionMouseDown.clientX = event.clientX;
                 positionMouseDown.clientY = event.clientY;
             });
 
-            this.drawer.wrapper.addEventListener('mousemove', event => {
+            this.drawer.wrapper.addEventListener('mousemove', e => {
                 if (this.draggingOverview) {
+                    const event = this.util.withOrientation(e, this.wavesurfer.params.vertical);
                     this.moveOverviewRegion(
                         event.clientX -
-                            this.drawer.container.getBoundingClientRect().left -
-                            relativePositionX
+                        this.drawer.container.getBoundingClientRect().left -
+                        relativePositionX
                     );
                 }
             });
 
-            this.drawer.wrapper.addEventListener('mouseup', event => {
+            this.drawer.wrapper.addEventListener('mouseup', e => {
+                const event = this.util.withOrientation(e, this.wavesurfer.params.vertical);
                 if (
                     positionMouseDown.clientX - event.clientX === 0 &&
                     positionMouseDown.clientX - event.clientX === 0
@@ -356,7 +355,9 @@ export default class MinimapPlugin {
             this.moveOverviewRegion(
                 this.wavesurfer.drawer.wrapper.scrollLeft / this.ratio
             );
-            this.overviewRegion.style.width = this.overviewWidth + 'px';
+            this.util.style(this.overviewRegion, {
+                width: this.overviewWidth + 'px'
+            });
         }
     }
 
@@ -372,7 +373,9 @@ export default class MinimapPlugin {
             this.overviewPosition =
                 this.drawer.container.offsetWidth - this.overviewWidth;
         }
-        this.overviewRegion.style.left = this.overviewPosition + 'px';
+        this.util.style(this.overviewRegion, {
+            left: this.overviewPosition + 'px'
+        });
         if (this.draggingOverview) {
             this.wavesurfer.drawer.wrapper.scrollLeft =
                 this.overviewPosition * this.ratio;
