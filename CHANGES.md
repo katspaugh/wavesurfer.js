@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-6.0.2 (unreleased)
+6.0.2 (20.02.2022)
 ------------------
 - Fix regression and restore support for passing a `CanvasGradient` to
   `setWaveColor()` (#2448)

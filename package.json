@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "6.0.1",
+  "version": "6.0.2",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "directories": {
@@ -55,7 +55,7 @@
     "visualization"
   ],
   "devDependencies": {
-    "@babel/core": "^7.17.2",
+    "@babel/core": "^7.17.5",
     "@babel/eslint-parser": "^7.17.0",
     "@babel/plugin-proposal-class-properties": "^7.16.7",
     "@babel/preset-env": "^7.16.11",
@@ -86,10 +86,10 @@
     "karma-jasmine-matchers": "5.0.0",
     "karma-verbose-reporter": "0.0.8",
     "karma-webpack": "^5.0.0",
-    "lint-staged": "^12.3.3",
+    "lint-staged": "^12.3.4",
     "load-script": "^2.0.0",
     "pre-commit": "^1.2.2",
-    "webpack": "^5.68.0",
+    "webpack": "^5.69.1",
     "webpack-cli": "^4.9.2",
     "webpack-dev-server": "^4.7.4",
     "webpack-merge": "^5.8.0"
