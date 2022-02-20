@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+6.1.0
+------------------
+- Fixed the type annotation of `maxRegions` in the regions plugin.
+
 6.0.1 (13.02.2022)
 ------------------
 - Fixed a regression that broke bars rendering when using a certain format for the peaks array (#2439)
