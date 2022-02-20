@@ -281,14 +281,14 @@ describe('WaveSurfer/playback:', function() {
 
     /** @test {WaveSurfer#setWaveStyle} */
     it('allow setting waveStyle Image', function() {
-        let img = new Image(); // Create new img element
+        let img = new Image();
         img.src = "data:image/gif;base64,R0lGODlhCwALAIAAAAAA3pn/ZiH5BAEAAAEALAAAAAALAAsAAAIUhA+hkcuO4lmNVindo7qyrIXiGBYAOw==";
         wavesurfer.setWaveStyle(img);
 
         const waveStyle = wavesurfer.getWaveColor();
         expect(waveStyle).toEqual(img);
     });
- 
+
     /** @test {WaveSurfer#setWaveColorCanvasGradient} */
     it('allow setting waveColor using CanvasGradient', function() {
         let testCanvas = TestHelpers.createElement("linGrad", "canvas");
