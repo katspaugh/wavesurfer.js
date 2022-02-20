@@ -1,7 +1,7 @@
 "use strict";
 
 // Create an instance
-let wavesurfer = {};
+var wavesurfer = {};
 
 // Init & load audio file
 document.addEventListener("DOMContentLoaded", function() {
@@ -15,13 +15,13 @@ document.addEventListener("DOMContentLoaded", function() {
         fillParent: true,
         responsive: true
     });
-    let wavesurfer2 = WaveSurfer.create({
+    var wavesurfer2 = WaveSurfer.create({
         container: document.querySelector("#waveform2"),
         height: 150,
         waveColor: document.querySelector("#wavesurfer-tile2"),
         progressColor: document.querySelector("#wavesurfer-tile1")
     });
-    let wavesurfer3 = WaveSurfer.create({
+    var wavesurfer3 = WaveSurfer.create({
         container: document.querySelector("#waveform3"),
         waveColor: document.querySelector("#wavesurfer-boxes"),
         progressColor: document.querySelector("#wavesurfer-boxes"),
@@ -32,17 +32,17 @@ document.addEventListener("DOMContentLoaded", function() {
         barWidth: 4,
         height: 250
     });
-    let wavesurfer4 = WaveSurfer.create({
+    var wavesurfer4 = WaveSurfer.create({
         container: document.querySelector("#waveform4"),
         waveColor: document.querySelector("#wavesurfer-abstract"),
         progressColor: ['rgba(0,255,255,.5)', 'blue', 'aqua']
     });
-    let wavesurfer5 = WaveSurfer.create({
+    var wavesurfer5 = WaveSurfer.create({
         container: document.querySelector("#waveform5"),
         waveColor: document.querySelector("#wavesurfer-doors"),
         progressColor: '#000'
     });
-    let wavesurfer6 = WaveSurfer.create({
+    var wavesurfer6 = WaveSurfer.create({
         container: document.querySelector("#waveform6"),
         waveColor: document.querySelector("#wavesurfer-grass"),
         waveStyleOptions: {repeat: 'repeat-y'},
@@ -62,15 +62,15 @@ document.addEventListener("DOMContentLoaded", function() {
     wavesurfer4.on("ready", () => wavesurfer4.seekTo(0.4));
     wavesurfer5.on("ready", () => wavesurfer5.seekTo(0.3));
 
-    let waveformBtn = document.getElementById('waveform-btn');
+    var waveformBtn = document.getElementById('waveform-btn');
     waveformBtn.addEventListener('click', wavesurfer.playPause.bind(wavesurfer));
-    let waveformBtn2 = document.getElementById('waveform-btn2');
+    var waveformBtn2 = document.getElementById('waveform-btn2');
     waveformBtn2.addEventListener('click', wavesurfer2.playPause.bind(wavesurfer2));
 
-    let waveformBtn3 = document.getElementById('waveform-btn3');
+    var waveformBtn3 = document.getElementById('waveform-btn3');
     waveformBtn3.addEventListener('click', wavesurfer3.playPause.bind(wavesurfer3));
-    let waveformBtn4 = document.getElementById('waveform-btn4');
+    var waveformBtn4 = document.getElementById('waveform-btn4');
     waveformBtn4.addEventListener('click', wavesurfer4.playPause.bind(wavesurfer4));
-    let waveformBtn5 = document.getElementById('waveform-btn5');
+    var waveformBtn5 = document.getElementById('waveform-btn5');
     waveformBtn5.addEventListener('click', wavesurfer5.playPause.bind(wavesurfer5));
 });
