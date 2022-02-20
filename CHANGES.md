@@ -1,12 +1,12 @@
 wavesurfer.js changelog
 =======================
 
-6.1.0 (unreleased)
+6.0.2 (unreleased)
 ------------------
 - Fix regression and restore support for passing a `CanvasGradient` to
   `setWaveColor()` (#2448)
 - Regions plugin:
-  - Fixed the type annotation of `maxRegions` in the regions plugin.
+  - Fixed the type annotation of `maxRegions` in the regions plugin (#2454)
 
 6.0.1 (13.02.2022)
 ------------------
