@@ -5,7 +5,7 @@
  * @property {function} un The function to call to remove the listener
  */
 
-const SortedSet = require("collections/sorted-set");
+import SortedSet from "./sortedSet";
 
 /**
  * Observer class
@@ -38,7 +38,7 @@ export default class Observer {
 
         let handlers = this.handlers[event];
         if (!handlers) {
-            handlers = this.handlers[event] = SortedSet([], null, (a, b) => {
+            handlers = this.handlers[event] = new SortedSet((a, b) => {
                 if (a.order && b.order && a.order != b.order) {
                     return a.order - b.order;
                 }
@@ -46,7 +46,7 @@ export default class Observer {
             });
         }
         fn.seqNum = this._seqNum++;
-        handlers.push(fn);
+        handlers.add(fn);
 
         // Return an event descriptor
         return {
