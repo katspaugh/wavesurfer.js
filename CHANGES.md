@@ -1,6 +1,12 @@
 wavesurfer.js changelog
 =======================
 
+6.0.3 (unreleased)
+------------------
+
+- Cursor plugin:
+  - Fix type documentation for `followCursorY` and `opacity` options (#2459)
+
 6.0.2 (20.02.2022)
 ------------------
 - Fix regression and restore support for passing a `CanvasGradient` to
