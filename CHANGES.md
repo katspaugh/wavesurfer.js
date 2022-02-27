@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+6.0.3 (unreleased)
+- Cursor plugin:
+  - Fix destroying cursor and showTime dom nodes (#2460)
+
 6.0.2 (20.02.2022)
 ------------------
 - Fix regression and restore support for passing a `CanvasGradient` to
