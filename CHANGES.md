@@ -3,7 +3,6 @@ wavesurfer.js changelog
 
 6.0.3 (unreleased)
 ------------------
-
 - Cursor plugin:
   - Fix type documentation for `followCursorY` and `opacity` options (#2459)
   - Fix destroying cursor and showTime dom nodes (#2460)
