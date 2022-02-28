@@ -255,6 +255,7 @@ export default class RegionsPlugin {
         let start;
         let region;
         let touchId;
+        let touchesToCreateRegion = params.touchesToCreateRegion || 1;
         let pxMove = 0;
         let scrollDirection;
         let wrapperRect;
@@ -289,7 +290,7 @@ export default class RegionsPlugin {
         };
 
         const eventDown = e => {
-            if (e.touches && e.touches.length > 1) {
+            if (e.touches && e.touches.length > touchesToCreateRegion) {
                 return;
             }
             duration = this.wavesurfer.getDuration();
@@ -367,7 +368,7 @@ export default class RegionsPlugin {
                 return;
             }
 
-            if (event.touches && event.touches.length > 1) {
+            if (event.touches && event.touches.length > touchesToCreateRegion) {
                 return;
             }
             if (event.targetTouches && event.targetTouches[0].identifier != touchId) {
