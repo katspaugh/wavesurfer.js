@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "6.0.2",
+  "version": "6.0.3",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "directories": {
@@ -74,11 +74,11 @@
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-integrate-test-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^8.9.0",
+    "eslint": "^8.10.0",
     "htmlhint": "^1.1.2",
     "in-publish": "^2.0.1",
-    "jasmine-core": "^4.0.0",
-    "karma": "^6.3.16",
+    "jasmine-core": "^4.0.1",
+    "karma": "^6.3.17",
     "karma-chrome-launcher": "3.1.0",
     "karma-coverage": "^2.2.0",
     "karma-firefox-launcher": "^2.1.2",
