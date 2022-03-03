@@ -335,6 +335,7 @@ export default class MinimapPlugin {
         }
 
         if (this.params.showOverview) {
+            // Mouse events for moving the overview
             this.overviewRegion.domElement.addEventListener('mousedown', e => {
                 const event = this.util.withOrientation(e, this.wavesurfer.params.vertical);
                 this.draggingOverview = true;
@@ -342,7 +343,6 @@ export default class MinimapPlugin {
                 positionMouseDown.clientX = event.clientX;
                 positionMouseDown.clientY = event.clientY;
             });
-
             this.drawer.wrapper.addEventListener('mousemove', e => {
                 if (this.draggingOverview) {
                     const event = this.util.withOrientation(e, this.wavesurfer.params.vertical);
@@ -353,13 +353,42 @@ export default class MinimapPlugin {
                     );
                 }
             });
-
             this.drawer.wrapper.addEventListener('mouseup', e => {
                 const event = this.util.withOrientation(e, this.wavesurfer.params.vertical);
                 if (
                     positionMouseDown.clientX - event.clientX === 0 &&
                     positionMouseDown.clientX - event.clientX === 0
                 ) {
+                    seek = true;
+                    this.draggingOverview = false;
+                } else if (this.draggingOverview) {
+                    seek = false;
+                    this.draggingOverview = false;
+                }
+            });
+            // Touch events for moving the overview
+            this.overviewRegion.domElement.addEventListener('touchstart', e => {
+                const event = this.util.withOrientation(e, this.wavesurfer.params.vertical);
+                const rect = event.target.getBoundingClientRect();
+                const layerX = event.targetTouches[0].pageX - rect.left;
+                this.draggingOverview = true;
+                relativePositionX = layerX;
+                positionMouseDown.clientX = event.touches[0].clientX;
+                positionMouseDown.clientY = event.touches[0].clientY;
+            });
+            this.drawer.wrapper.addEventListener('touchmove', e => {
+                if (this.draggingOverview) {
+                    const event = this.util.withOrientation(e, this.wavesurfer.params.vertical);
+                    this.moveOverviewRegion(
+                        event.touches[0].clientX -
+                        this.drawer.container.getBoundingClientRect().left -
+                        relativePositionX
+                    );
+                }
+            });
+            this.drawer.wrapper.addEventListener('touchend', e => {
+                const event = this.util.withOrientation(e, this.wavesurfer.params.vertical);
+                if (positionMouseDown.clientX - event.changedTouches[0].clientX === 0) {
                     seek = true;
                     this.draggingOverview = false;
                 } else if (this.draggingOverview) {
