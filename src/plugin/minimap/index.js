@@ -377,6 +377,7 @@ export default class MinimapPlugin {
                 positionMouseDown.clientY = event.touches[0].clientY;
             });
             this.drawer.wrapper.addEventListener('touchmove', e => {
+                e.preventDefault();
                 if (this.draggingOverview) {
                     const event = this.util.withOrientation(e, this.wavesurfer.params.vertical);
                     this.moveOverviewRegion(
