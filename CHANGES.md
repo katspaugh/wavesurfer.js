@@ -1,10 +1,10 @@
 wavesurfer.js changelog
 =======================
 
-6.0.4 (04.03.2022)
+6.0.4 (unreleased)
 ------------------
-- Timline plugin:
-  - Fix rendering issue on negative offset values (#2463)
+- Timeline plugin:
+  - Fix rendering issue for negative `offset` values (#2463)
 
 6.0.3 (01.03.2022)
 ------------------
