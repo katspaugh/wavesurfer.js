@@ -136,7 +136,7 @@ export default class SpectrogramPlugin {
             this.channels = this.splitChannels ? ws.backend.buffer.numberOfChannels : 1;
 
             // Getting file's original samplerate is difficult(#1248).
-            // So set 12kHz default to render like 5.x.
+            // So set 12kHz default to render like wavesurfer.js 5.x.
             this.frequencyMin = params.frequencyMin || 0;
             this.frequencyMax = params.frequencyMax || 12000;
 
