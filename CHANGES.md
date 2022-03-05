@@ -3,6 +3,9 @@ wavesurfer.js changelog
 
 6.0.4 (unreleased)
 ------------------
+- Spectrogram plugin:
+  - Add `frequencyMin`, `frequencyMax` option to scale frequency axis. 
+    And set default 12kHz range to draw spectrogram like 5.x (#2455)
 - Timeline plugin:
   - Fix rendering issue for negative `offset` values (#2463)
 
