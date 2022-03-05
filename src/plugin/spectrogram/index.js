@@ -135,7 +135,7 @@ export default class SpectrogramPlugin {
             this.splitChannels = params.splitChannels;
             this.channels = this.splitChannels ? ws.backend.buffer.numberOfChannels : 1;
 
-            // Getting file's original samplerate is difficult(#1248). 
+            // Getting file's original samplerate is difficult(#1248).
             // So set 12kHz default to render like 5.x.
             this.frequencyMin = params.frequencyMin || 0;
             this.frequencyMax = params.frequencyMax || 12000;
@@ -279,7 +279,7 @@ export default class SpectrogramPlugin {
 
         for (let c = 0; c < frequenciesData.length; c++) { // for each channel
             const pixels = my.resample(frequenciesData[c]);
-            var imageData = new ImageData(new Uint8ClampedArray(width * height * 4), width, height);
+            const imageData = new ImageData(width, height);
 
             for (let i = 0; i < pixels.length; i++) {
                 for (let j = 0; j < pixels[i].length; j++) {
@@ -293,14 +293,14 @@ export default class SpectrogramPlugin {
             }
 
             // scale and stack spectrograms
-            createImageBitmap(imageData).then(renderer => 
+            createImageBitmap(imageData).then(renderer =>
                 spectrCc.drawImage(renderer,
-                    0, height * (1 - freqMax / freqFrom),           // source x, y
+                    0, height * (1 - freqMax / freqFrom), // source x, y
                     width, height * (freqMax - freqMin) / freqFrom, // source width, height
-                    0, height * c,                                  // destination x, y
-                    width, height                                   // destination width, height
+                    0, height * c, // destination x, y
+                    width, height // destination width, height
                 )
-            )
+            );
         }
     }
 
