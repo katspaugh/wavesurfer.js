@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-6.0.4 (unreleased)
+6.0.4 (09.03.2022)
 ------------------
 - Spectrogram plugin:
   - Add `frequencyMin`, `frequencyMax` option to scale frequency axis. 
