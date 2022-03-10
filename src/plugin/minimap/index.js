@@ -156,16 +156,16 @@ export default class MinimapPlugin {
             }
         });
         this._onLoading = percent => {
-            if (percent < 100) {
-                if (this.cleared === true) {
-                    return;
-                }
-                const len = this.drawer.getWidth();
-                this.drawer.drawPeaks([0], len, 0, len);
-                this.cleared = true;
+            if (percent >= 100) {
+                this.cleared = false;
                 return;
             }
-            this.cleared = false;
+            if (this.cleared === true) {
+                return;
+            }
+            const len = this.drawer.getWidth();
+            this.drawer.drawPeaks([0], len, 0, len);
+            this.cleared = true;
         };
         this._onZoom = e => {
             this.render();
