@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+6.0.5 (unreleased)
+------------------
+- Minimap plugin:
+  - Remove waveform of previous audio when starting to load new audio (#2479)
+
 6.0.4 (09.03.2022)
 ------------------
 - Spectrogram plugin:
