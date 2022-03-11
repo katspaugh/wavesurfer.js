@@ -524,7 +524,7 @@ export class Region {
             }
             if (drag || resize) {
                 regionRightHalfTime = this.end - this.start - regionLeftHalfTime;
-                this.wavesurfer.fireEvent('region-move-start', event);
+                this.wavesurfer.fireEvent('region-move-start', drag, event);
             }
         };
         const onUp = (event) => {
