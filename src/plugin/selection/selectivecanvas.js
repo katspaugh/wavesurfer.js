@@ -464,6 +464,9 @@ export default class SelectiveCanvas extends Drawer {
             this.canvases.length
         );
         let i = startCanvas;
+        // catch < 0 case that can happen temporarily during resizing
+        if (i < 0) {return;}
+
         for (i; i < endCanvas; i++) {
             const entry = this.canvases[i];
             const leftOffset = i * this.maxCanvasWidth;
