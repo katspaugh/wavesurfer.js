@@ -51,14 +51,14 @@ document.addEventListener('DOMContentLoaded', function() {
             handleStyle : {
                 left : {
                     left : '12px',
-                    width : '4px',
+                    width : '3px',
                     'background-color':'#FFFFFF',
                     top: '8px',
                     height: '60%'
                 },
                 right : {
                     right : '12px',
-                    width : '4px',
+                    width : '3px',
                     top: '8px',
                     height: '60%',
                     'background-color':'#FFFFFF'
