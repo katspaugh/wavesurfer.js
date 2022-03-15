@@ -334,10 +334,11 @@ export class Region {
         const width = this.getWidth();
 
         const drawerWidth = this.wavesurfer.drawer.getWidth();
-        const pxPerSec = drawerWidth / (displayDuration * this.wavesurfer.params.pixelRatio);
-        this.wavesurfer.params.minPxPerSec = pxPerSec;
-
-        this.wavesurfer.params.scrollParent = false;
+        // if we cannot get drawerWidth, we shouldn't set minPxPerSec using it.
+        if (drawerWidth !== 0) {
+            const pxPerSec = drawerWidth / (displayDuration * this.wavesurfer.params.pixelRatio);
+            this.wavesurfer.params.minPxPerSec = pxPerSec;
+        }
 
         let startLimited = this.start - this.wavesurfer.getDisplayRange().start;
         let endLimited = this.end - this.wavesurfer.getDisplayRange().start;
