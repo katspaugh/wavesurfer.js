@@ -506,6 +506,7 @@ export default class WaveSurfer extends util.Observer {
                 ) {
                     prevWidth = this.drawer.wrapper.clientWidth;
                     if (prevWidth) {
+                        // redraw only if waveform container is rendered and has a width
                         this.drawer.fireEvent('redraw');
                     }
                 }
