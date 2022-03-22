@@ -105,7 +105,7 @@ export class Region {
         regionHoverState: false,
         canResizeRegion: false,
     }) {
-        const newStyleOpitions = {
+        const newStyleOptions = {
             name: data.name ?? 'default',
             background: data.background ?? `linear-gradient(rgba(0, 0, 0, 0), #ed506acc, rgba(0, 0, 0, 0))`,
             leftHandleDisplayStyle: data.leftHandleDisplayStyle ?? 'none',
@@ -116,8 +116,9 @@ export class Region {
             regionHoverState: data.regionHoverState ?? false,
             canResizeRegion: data.canResizeRegion ?? false,
         }
+        console.log(newStyleOptions);
 
-        this.styleOptions.push(newStyleOpitions);
+        this.styleOptions.push(newStyleOptions);
     }
 
     setStyleState(styleName) {
