@@ -50,6 +50,8 @@ export class Region {
         this.mode = params.mode || 'default';
         this.prevMode = null;
 
+        this.styleOptions = [];
+
         this.maxLength = params.maxLength;
         // It assumes the minLength parameter value, or the regionsMinLength parameter value, if the first one not provided
         this.minLength = params.minLength;
@@ -91,7 +93,65 @@ export class Region {
         this.wavesurfer.on('redraw', this._onRedraw);
         this.wavesurfer.fireEvent('region-created', this);
     }
-    
+
+    addStyleState(data={
+        name: 'default',
+        background: `linear-gradient(rgba(0, 0, 0, 0), #ed506acc, rgba(0, 0, 0, 0))`,
+        leftHandleDisplayStyle: 'none',
+        righthandleDisplayStyle: 'none',
+        leftBorderStyle: '',
+        rightBorderStyle: '',
+        zIndexStyle: 3,
+        regionHoverState: false,
+        canResizeRegion: false,
+    }) {
+        const newStyleOpitions = {
+            name: data.name ?? 'default',
+            background: data.background ?? `linear-gradient(rgba(0, 0, 0, 0), #ed506acc, rgba(0, 0, 0, 0))`,
+            leftHandleDisplayStyle: data.leftHandleDisplayStyle ?? 'none',
+            righthandleDisplayStyle: data.rightHandleDisplayStyle ?? 'none',
+            leftBorderStyle: data.leftBorderStyle ?? '',
+            rightBorderStyle: data.rightBorderStyle ?? '',
+            zIndexStyle: data.zIndexStyle ?? 3,
+            regionHoverState: data.regionHoverState ?? false,
+            canResizeRegion: data.canResizeRegion ?? false,
+        }
+
+        this.styleOptions.push(newStyleOpitions);
+    }
+
+    setStyleState(styleName) {
+        const match = this.styleOptions.find( ({name}) => { name === styleName});
+
+        if (match) {
+            this.update({background: match.background});
+
+            this.handleLeftEl.style.display = match.leftHandleDisplayStyle;
+            this.handleRightEl.style.display = match.rightHandleDisplayStyle;
+            this.element.style.borderRight = match.rightBorderStyle;
+            this.element.style.borderLeft = match.leftBorderStyle;
+            this.element.style.zIndex = match.zIndexStyle;
+            match.regionHoverState ? this.element.classList.add('region-hover') : this.element.classList.remove('region-hover');
+
+            this.resize = match.canResizeRegion;
+            this.prevMode = this.mode;
+            this.mode = match.name;
+        } else {
+            const defaultOption = this.styleOptions.find( ({name}) => { name === 'default'});
+            this.update({background: defaultOption.background});
+
+            this.handleLeftEl.style.display = defaultOption.leftHandleDisplayStyle;
+            this.handleRightEl.style.display = defaultOption.rightHandleDisplayStyle;
+            this.element.style.borderRight = defaultOption.rightBorderStyle;
+            this.element.style.borderLeft = defaultOption.leftBorderStyle;
+            this.element.style.zIndex = defaultOption.zIndexStyle;
+            defaultOption.regionHoverState ? this.element.classList.add('region-hover') : this.element.classList.remove('region-hover');
+
+            this.resize = defaultOption.canResizeRegion;
+            this.prevMode = this.mode;
+            this.mode = defaultOption.name;
+        }
+    }
 
     /* Change the region to default (red) mode. */
     changeToDefault() {
@@ -128,7 +188,7 @@ export class Region {
     /* Change region to accepted (green) mode. */
     changeToAccepted() {
         this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #E7F971cc, rgba(0, 0, 0, 0))'});
-  
+
         this.handleLeftEl.style.display = 'none';
         this.handleRightEl.style.display = 'none';
         this.element.style.borderRight = '';
@@ -144,7 +204,7 @@ export class Region {
     /* Change region to ignore (white) mode. */
     changeToIgnored() {
         this.update({background: '#ffffff00'});
-  
+
         this.handleLeftEl.style.display = 'none';
         this.handleRightEl.style.display = 'none';
         this.element.style.borderRight = '2px solid #C8CCCC';
@@ -160,14 +220,14 @@ export class Region {
     /* Change region to restore (highlighted-white) mode. */
     changeToRestore() {
         this.update({background: 'linear-gradient(rgba(0, 0, 0, 0), #C8CCCCcc, rgba(0, 0, 0, 0))'});
-  
+
         this.handleLeftEl.style.display = 'none';
         this.handleRightEl.style.display = 'none';
         this.element.style.borderRight = '2px solid #C8CCCC';
         this.element.style.borderLeft = '2px solid #C8CCCC';
         this.element.style.zIndex = 3;
         this.element.classList.remove('region-hover');
-  
+
         this.resize = false;
         this.prevMode = this.mode;
         this.mode = 'restore';
