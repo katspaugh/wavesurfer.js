@@ -94,17 +94,7 @@ export class Region {
         this.wavesurfer.fireEvent('region-created', this);
     }
 
-    addStyleState(data={
-        name: 'default',
-        background: `linear-gradient(rgba(0, 0, 0, 0), #ed506acc, rgba(0, 0, 0, 0))`,
-        leftHandleDisplayStyle: 'none',
-        righthandleDisplayStyle: 'none',
-        leftBorderStyle: '',
-        rightBorderStyle: '',
-        zIndexStyle: 3,
-        regionHoverState: false,
-        canResizeRegion: false,
-    }) {
+    addStyleState(data) {
         const newStyleOptions = {
             name: data.name ?? 'default',
             background: data.background ?? `linear-gradient(rgba(0, 0, 0, 0), #ed506acc, rgba(0, 0, 0, 0))`,
