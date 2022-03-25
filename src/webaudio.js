@@ -306,8 +306,7 @@ export default class WebAudio extends util.Observer {
                 this.audio = new window.Audio();
                 this.audio.autoplay = true;
             }
-            let audio = this.audio;
-            if (!audio.setSinkId) {
+            if (!this.audio.setSinkId) {
                 return Promise.reject(
                     new Error('setSinkId is not supported in your browser')
                 );
@@ -317,9 +316,9 @@ export default class WebAudio extends util.Observer {
             }
             this.gainNode.disconnect();
             this.gainNode.connect(this.dest);
-            audio.srcObject = this.dest.stream;
+            this.audio.srcObject = this.dest.stream;
 
-            return audio.setSinkId(deviceId);
+            return this.audio.setSinkId(deviceId);
         } else {
             return Promise.reject(new Error('Invalid deviceId: ' + deviceId));
         }
