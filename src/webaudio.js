@@ -145,6 +145,10 @@ export default class WebAudio extends util.Observer {
         this.state = null;
         /** @private */
         this.explicitDuration = params.duration;
+        /** @private */
+        this.dest = null;
+        /** @private */
+        this.audio = null;
         /**
          * Boolean indicating if the backend was destroyed.
          */
@@ -298,17 +302,22 @@ export default class WebAudio extends util.Observer {
              * output. Here we create an HTMLAudioElement, connect the
              * webaudio stream to that element and setSinkId there.
              */
-            let audio = new window.Audio();
+            if (!this.audio) {
+                this.audio = new window.Audio();
+                this.audio.autoplay = true;
+            }
+            let audio = this.audio;
             if (!audio.setSinkId) {
                 return Promise.reject(
                     new Error('setSinkId is not supported in your browser')
                 );
             }
-            audio.autoplay = true;
-            const dest = this.ac.createMediaStreamDestination();
+            if (!this.dest) {
+                this.dest = this.ac.createMediaStreamDestination();
+            }
             this.gainNode.disconnect();
-            this.gainNode.connect(dest);
-            audio.srcObject = dest.stream;
+            this.gainNode.connect(this.dest);
+            audio.srcObject = this.dest.stream;
 
             return audio.setSinkId(deviceId);
         } else {
@@ -540,6 +549,13 @@ export default class WebAudio extends util.Observer {
             }
             // clear the offlineAudioContext
             window.WaveSurferOfflineAudioContext = null;
+        }
+
+        if (this.dest) {
+            this.audio.pause();
+            this.audio.srcObject = null;
+            this.dest.disconnect();
+            this.dest = null;
         }
     }
     /**
