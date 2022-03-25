@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+6.0.5 (25.03.2022)
+------------------
+- setSinkId:
+  - Fix #2481 Many calls to setSinkId results in no sound
+
 6.0.4 (09.03.2022)
 ------------------
 - Spectrogram plugin:
