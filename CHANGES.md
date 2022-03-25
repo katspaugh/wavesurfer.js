@@ -1,6 +1,11 @@
 wavesurfer.js changelog
 =======================
 
+6.1.0 (unreleased)
+------------------
+- Minimap plugin:
+  - Changed regions function name to resolve ambiguities (#2482)
+
 6.0.4 (09.03.2022)
 ------------------
 - Spectrogram plugin:
