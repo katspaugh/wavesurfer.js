@@ -120,7 +120,7 @@ export default class MinimapPlugin {
             }
 
             if (this.regionsPlugin && this.params.showRegions) {
-                this.regions();
+                this.drawRegions();
             }
             this.render();
         };
@@ -198,7 +198,7 @@ export default class MinimapPlugin {
         this.unAll();
     }
 
-    regions() {
+    drawRegions() {
         this.regions = {};
 
         this.wavesurfer.on('region-created', region => {

@@ -7,6 +7,7 @@ wavesurfer.js changelog
 - Optimize responsive resize to avoid unnecessarily firing redraw on unpainted waveforms (#2485)
 - Minimap plugin:
   - Remove waveform of previous audio when starting to load new audio (#2479)
+  - Changed regions function name to resolve ambiguities (#2482)
 
 6.0.4 (09.03.2022)
 ------------------
