@@ -3,6 +3,7 @@ wavesurfer.js changelog
 
 6.0.5 (unreleased)
 ------------------
+- Optimize responsive resize to avoid unnecessarily firing redraw on unpainted waveforms (#2485)
 - Minimap plugin:
   - Remove waveform of previous audio when starting to load new audio (#2479)
 
