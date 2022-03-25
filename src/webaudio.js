@@ -146,9 +146,9 @@ export default class WebAudio extends util.Observer {
         /** @private */
         this.explicitDuration = params.duration;
         /** @private */
-        this.dest = null;
+        this.sinkStreamDestination = null;
         /** @private */
-        this.audio = null;
+        this.sinkAudioElement = null;
         /**
          * Boolean indicating if the backend was destroyed.
          */
@@ -302,23 +302,23 @@ export default class WebAudio extends util.Observer {
              * output. Here we create an HTMLAudioElement, connect the
              * webaudio stream to that element and setSinkId there.
              */
-            if (!this.audio) {
-                this.audio = new window.Audio();
-                this.audio.autoplay = true;
+            if (!this.sinkAudioElement) {
+                this.sinkAudioElement = new window.Audio();
+                this.sinkAudioElement.autoplay = true;
             }
-            if (!this.audio.setSinkId) {
+            if (!this.sinkAudioElement.setSinkId) {
                 return Promise.reject(
                     new Error('setSinkId is not supported in your browser')
                 );
             }
-            if (!this.dest) {
-                this.dest = this.ac.createMediaStreamDestination();
+            if (!this.sinkStreamDestination) {
+                this.sinkStreamDestination = this.ac.createMediaStreamDestination();
             }
             this.gainNode.disconnect();
-            this.gainNode.connect(this.dest);
-            this.audio.srcObject = this.dest.stream;
+            this.gainNode.connect(this.sinkStreamDestination);
+            this.sinkAudioElement.srcObject = this.sinkStreamDestination.stream;
 
-            return this.audio.setSinkId(deviceId);
+            return this.sinkAudioElement.setSinkId(deviceId);
         } else {
             return Promise.reject(new Error('Invalid deviceId: ' + deviceId));
         }
@@ -550,11 +550,12 @@ export default class WebAudio extends util.Observer {
             window.WaveSurferOfflineAudioContext = null;
         }
 
-        if (this.dest) {
-            this.audio.pause();
-            this.audio.srcObject = null;
-            this.dest.disconnect();
-            this.dest = null;
+        // disconnect resources used by setSinkId
+        if (this.sinkStreamDestination) {
+            this.sinkAudioElement.pause();
+            this.sinkAudioElement.srcObject = null;
+            this.sinkStreamDestination.disconnect();
+            this.sinkStreamDestination = null;
         }
     }
     /**
