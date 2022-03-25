@@ -96,6 +96,7 @@ export default class MinimapPlugin {
         this.drawer = new ws.Drawer(this.params.container, this.params);
         this.wavesurfer = ws;
         this.util = ws.util;
+        this.cleared = false;
         this.renderEvent = 'redraw';
         this.overviewRegion = null;
         this.regionsPlugin = this.wavesurfer[this.params.regionsPluginName];
@@ -154,6 +155,18 @@ export default class MinimapPlugin {
                 );
             }
         });
+        this._onLoading = percent => {
+            if (percent >= 100) {
+                this.cleared = false;
+                return;
+            }
+            if (this.cleared === true) {
+                return;
+            }
+            const len = this.drawer.getWidth();
+            this.drawer.drawPeaks([0], len, 0, len);
+            this.cleared = true;
+        };
         this._onZoom = e => {
             this.render();
         };
@@ -179,6 +192,7 @@ export default class MinimapPlugin {
         this.wavesurfer.un('scroll', this._onScroll);
         this.wavesurfer.un('audioprocess', this._onAudioprocess);
         this.wavesurfer.un('zoom', this._onZoom);
+        this.wavesurfer.un('loading', this._onLoading);
         this.drawer.destroy();
         this.overviewRegion = null;
         this.unAll();
@@ -267,6 +281,7 @@ export default class MinimapPlugin {
         window.addEventListener('orientationchange', this._onResize, true);
         this.wavesurfer.on('audioprocess', this._onAudioprocess);
         this.wavesurfer.on('seek', this._onSeek);
+        this.wavesurfer.on('loading', this._onLoading);
         if (this.params.showOverview) {
             this.wavesurfer.on('scroll', this._onScroll);
             this.wavesurfer.drawer.wrapper.addEventListener(
