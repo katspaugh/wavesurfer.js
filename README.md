@@ -22,7 +22,7 @@ The proceeds will go to the author and the current maintainer.
 ## Browser support
 wavesurfer.js works only in [modern browsers supporting Web Audio](http://caniuse.com/audio-api).
 
-It will fallback to Audio Element without graphics in other browsers (IE 11 and lower). You can also try [wavesurfer.swf](https://github.com/laurentvd/wavesurfer.swf) which is a Flash-based fallback.
+It will fallback to Audio Element without graphics in other browsers (IE 11 and lower).
 
 ## FAQ
 ### Can the audio start playing before the waveform is drawn?
