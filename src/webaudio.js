@@ -304,6 +304,7 @@ export default class WebAudio extends util.Observer {
              */
             if (!this.sinkAudioElement) {
                 this.sinkAudioElement = new window.Audio();
+                // autoplay is necessary since we're not invoking .play()
                 this.sinkAudioElement.autoplay = true;
             }
             if (!this.sinkAudioElement.setSinkId) {
