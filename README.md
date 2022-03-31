@@ -9,8 +9,8 @@ Interactive navigable audio visualization using Web Audio and Canvas.
 
 See a [tutorial](https://wavesurfer-js.org/docs) and [examples](https://wavesurfer-js.org/examples) on [wavesurfer-js.org](https://wavesurfer-js.org).
 
-## 10 years of wavesufer.js 🎉
-Wavesufer.js was started in March 2012. To celebrate the 10-year anniversary of wavesufer.js, we created an NFT representing the initial commit to this repository.
+## 10 years of wavesurfer.js 🎉
+Wavesurfer.js was started in March 2012. To celebrate the 10-year anniversary of wavesurfer.js, we created an NFT representing the initial commit to this repository.
 
 If you're a company, or an individual, wishing to support the project, please consider buying this memorable commit.
 
