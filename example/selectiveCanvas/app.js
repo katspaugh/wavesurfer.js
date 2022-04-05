@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
         plugins       : [WaveSurfer.selection.create({
             selection : [{}],
             displayDuration : 20,
-            displayStart : -2
+            displayStart : -5
         })],
         renderer      : SelectionPlugin.SelectiveCanvas
     });
@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     wavesurfer.on('ready', () => {
         wavesurfer.addSelection({
-            start : 3,
-            end   : 9,
+            start : 5,
+            end   : 10,
             color : 'rgba(0, 28, 142, 1)',
             minLength : 0.2,
             regionStyle : {
@@ -89,5 +89,16 @@ document.addEventListener('DOMContentLoaded', function() {
         '[data-action="pause"]'
     ).addEventListener('click', function() {
         wavesurfer.pause();
+    });
+
+
+    document.querySelector(
+        '[data-action="update"]'
+    ).addEventListener('click', function() {
+        let region = wavesurfer.selection.region;
+
+        wavesurfer.updateDisplayRange({start:-10});
+        region.update({ start : 0 });
+        region.update({ end : 6 });
     });
 });
