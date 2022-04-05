@@ -334,17 +334,24 @@ export default class SelectiveCanvas extends Drawer {
                 let last = end;
                 let peakIndex = first;
                 if (this.selection) {
-                    last = this.selection.end * this.params.minPxPerSec * this.params.pixelRatio;
-                    peakIndex = this.selection.start * this.params.minPxPerSec * this.params.pixelRatio;
+                    last = Math.floor(this.selection.end * this.params.minPxPerSec * this.params.pixelRatio);
+                    peakIndex = Math.floor(this.selection.start * this.params.minPxPerSec * this.params.pixelRatio);
                 }
                 const displayOffset = this.displayStart * this.params.minPxPerSec * this.params.pixelRatio;
+
+                const hideBarEnds = 1;
+                const adjustedDrawStart = peakIndex + step * hideBarEnds;
+                const adjustedDrawEnd = last - step * hideBarEnds;
 
                 for (peakIndex; peakIndex < last; peakIndex += step) {
 
                     // search for the highest peak in the range this bar falls into
                     let peak = 0;
-                    let peakIndexRange = Math.floor(peakIndex * scale) * peakIndexScale; // start index
-                    const peakIndexEnd = Math.floor((peakIndex + step) * scale) * peakIndexScale;
+                    // normedIndex forces bars to be started at multiples of the step
+                    // so that moving the start doesn't cause a recalculation of the bars
+                    const normedIndex = peakIndex - (peakIndex % step);
+                    let peakIndexRange = Math.floor(normedIndex * scale) * peakIndexScale; // start index
+                    const peakIndexEnd = Math.floor((normedIndex + step) * scale) * peakIndexScale;
                     do { // do..while makes sure at least one peak is always evaluated
                         const newPeak = peaks[peakIndexRange];
                         if (newPeak > peak) {
@@ -362,14 +369,16 @@ export default class SelectiveCanvas extends Drawer {
                         h = this.params.barMinHeight;
                     }
 
-                    this.fillRect(
-                        peakIndex - displayOffset + this.halfPixel,
-                        halfH - h + offsetY,
-                        bar + this.halfPixel,
-                        h * 2,
-                        this.barRadius,
-                        ch
-                    );
+                    if (peakIndex > adjustedDrawStart && peakIndex < adjustedDrawEnd) {
+                        this.fillRect(
+                            normedIndex - displayOffset + this.halfPixel,
+                            halfH - h + offsetY,
+                            bar + this.halfPixel,
+                            h * 2,
+                            this.barRadius,
+                            ch
+                        );
+                    }
                 }
             }
         );
