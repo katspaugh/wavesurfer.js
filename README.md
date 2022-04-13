@@ -10,8 +10,8 @@ Interactive navigable audio visualization using Web Audio and Canvas.
 
 See a [tutorial](https://wavesurfer-js.org/docs) and [examples](https://wavesurfer-js.org/examples) on [wavesurfer-js.org](https://wavesurfer-js.org).
 
-## 10 years of wavesufer.js 🎉
-Wavesufer.js was started in March 2012. To celebrate the 10-year anniversary of wavesufer.js, we created an NFT representing the initial commit to this repository.
+## 10 years of wavesurfer.js 🎉
+Wavesurfer.js was started in March 2012. To celebrate the 10-year anniversary of wavesurfer.js, we created an NFT representing the initial commit to this repository.
 
 If you're a company, or an individual, wishing to support the project, please consider buying this memorable commit.
 
@@ -23,7 +23,7 @@ The proceeds will go to the author and the current maintainer.
 ## Browser support
 wavesurfer.js works only in [modern browsers supporting Web Audio](http://caniuse.com/audio-api).
 
-It will fallback to Audio Element without graphics in other browsers (IE 11 and lower). You can also try [wavesurfer.swf](https://github.com/laurentvd/wavesurfer.swf) which is a Flash-based fallback.
+It will fallback to Audio Element without graphics in other browsers (IE 11 and lower).
 
 ## FAQ
 ### Can the audio start playing before the waveform is drawn?

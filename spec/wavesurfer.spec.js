@@ -265,7 +265,7 @@ describe('WaveSurfer/playback:', function() {
     });
 
     /** @test {WaveSurfer#setWaveColorGradient} */
-    it('allow setting waveColor gradient', function() {
+    it('allow setting waveColor gradient using array of fill colors', function() {
         let colors = [
             "red",
             "green",
@@ -277,6 +277,22 @@ describe('WaveSurfer/playback:', function() {
         const waveColor = wavesurfer.getWaveColor();
 
         expect(waveColor).toEqual(colors);
+    });
+
+    /** @test {WaveSurfer#setWaveColorCanvasGradient} */
+    it('allow setting waveColor using CanvasGradient', function() {
+        let testCanvas = TestHelpers.createElement("linGrad", "canvas");
+        let ctx = testCanvas.getContext('2d');
+        let linGrad = ctx.createLinearGradient(0, 64, 0, 200);
+        linGrad.addColorStop(0.5, 'rgba(255, 255, 255, 1.000)');
+        linGrad.addColorStop(0.5, 'rgba(183, 183, 183, 1.000)');
+
+        wavesurfer.setWaveColor(linGrad);
+        const waveColor = wavesurfer.getWaveColor();
+
+        expect(waveColor).toEqual(linGrad);
+
+        TestHelpers.removeElement(testCanvas);
     });
 
     /** @test {WaveSurfer#getProgressColor} */
