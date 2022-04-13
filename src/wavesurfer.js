@@ -1749,7 +1749,7 @@ export default class WaveSurfer extends util.Observer {
         // empty drawer
         this.drawer.progress(0);
         this.drawer.setWidth(0);
-        this.drawer.drawPeaks({ length: this.drawer.getWidth() }, 0);
+        this.drawer.drawPeaks([0, 0], this.drawer.getWidth(), 0);
     }
 
     /**
