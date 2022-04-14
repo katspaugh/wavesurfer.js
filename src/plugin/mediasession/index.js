@@ -1,5 +1,3 @@
-/*global MediaMetadata*/
-
 /**
  * @typedef {Object} MediaSessionPluginParams
  * @property {MediaMetadata} metadata A MediaMetadata object: a representation
@@ -90,6 +88,7 @@ export default class MediaSessionPlugin {
     update() {
         if (typeof MediaMetadata === typeof Function) {
             // set metadata
+            // eslint-disable-next-line no-undef
             navigator.mediaSession.metadata = new MediaMetadata(this.metadata);
         }
     }

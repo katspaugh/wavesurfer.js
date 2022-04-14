@@ -10,7 +10,7 @@
  * @property {?number} snapToGridInterval Snap the regions to a grid of the specified multiples in seconds
  * @property {?number} snapToGridOffset Shift the snap-to-grid by the specified seconds. May also be negative.
  * @property {?boolean} deferInit Set to true to manually call
- * @property {number[]} maxRegions Maximum number of regions that may be created by the user at one time.
+ * @property {number} maxRegions Maximum number of regions that may be created by the user at one time.
  * `initPlugin('regions')`
  * @property {function} formatTimeCallback Allows custom formating for region tooltip.
  * @property {?number} edgeScrollWidth='5% from container edges' Optional width for edgeScroll to start

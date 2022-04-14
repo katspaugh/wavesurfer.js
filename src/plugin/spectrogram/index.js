@@ -21,6 +21,9 @@ import FFT from './fft';
  * @property {number} pixelRatio=wavesurfer.params.pixelRatio to control the
  * size of the spectrogram in relation with its canvas. 1 = Draw on the whole
  * canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)
+ * @property {number} frequencyMin=0 Min frequency to scale spectrogram.
+ * @property {number} frequencyMax=12000 Max frequency to scale spectrogram.
+ * Set this to samplerate/2 to draw whole range of spectrogram.
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('spectrogram')`
  * @property {?number[][]} colorMap A 256 long array of 4-element arrays.
@@ -131,6 +134,11 @@ export default class SpectrogramPlugin {
             this.alpha = params.alpha;
             this.splitChannels = params.splitChannels;
             this.channels = this.splitChannels ? ws.backend.buffer.numberOfChannels : 1;
+
+            // Getting file's original samplerate is difficult(#1248).
+            // So set 12kHz default to render like wavesurfer.js 5.x.
+            this.frequencyMin = params.frequencyMin || 0;
+            this.frequencyMax = params.frequencyMax || 12000;
 
             this.createWrapper();
             this.createCanvas();
@@ -261,6 +269,9 @@ export default class SpectrogramPlugin {
         const spectrCc = my.spectrCc;
         const height = my.height;
         const width = my.width;
+        const freqFrom = my.buffer.sampleRate / 2;
+        const freqMin = my.frequencyMin;
+        const freqMax = my.frequencyMax;
 
         if (!spectrCc) {
             return;
@@ -268,7 +279,7 @@ export default class SpectrogramPlugin {
 
         for (let c = 0; c < frequenciesData.length; c++) { // for each channel
             const pixels = my.resample(frequenciesData[c]);
-            const imageData = spectrCc.createImageData(width, height);
+            const imageData = new ImageData(width, height);
 
             for (let i = 0; i < pixels.length; i++) {
                 for (let j = 0; j < pixels[i].length; j++) {
@@ -281,8 +292,15 @@ export default class SpectrogramPlugin {
                 }
             }
 
-            // stack spectrograms
-            spectrCc.putImageData(imageData, 0, height * c);
+            // scale and stack spectrograms
+            createImageBitmap(imageData).then(renderer =>
+                spectrCc.drawImage(renderer,
+                    0, height * (1 - freqMax / freqFrom), // source x, y
+                    width, height * (freqMax - freqMin) / freqFrom, // source width, height
+                    0, height * c, // destination x, y
+                    width, height // destination width, height
+                )
+            );
         }
     }
 
@@ -381,10 +399,8 @@ export default class SpectrogramPlugin {
         const bgWidth = 55;
         const getMaxY = frequenciesHeight || 512;
         const labelIndex = 5 * (getMaxY / 256);
-        const freqStart = 0;
-        const step =
-            (this.wavesurfer.backend.ac.sampleRate / 2 - freqStart) /
-            labelIndex;
+        const freqStart = this.frequencyMin;
+        const step = (this.frequencyMax - freqStart) / labelIndex;
 
         // prepare canvas element for labels
         const ctx = this.labelsEl.getContext('2d');
@@ -408,9 +424,6 @@ export default class SpectrogramPlugin {
                 ctx.textBaseline = 'middle';
 
                 const freq = freqStart + step * i;
-                const index = Math.round(
-                    (freq / (this.sampleRate / 2)) * this.fftSamples
-                );
                 const label = this.freqType(freq);
                 const units = this.unitType(freq);
                 const yLabelOffset = 2;

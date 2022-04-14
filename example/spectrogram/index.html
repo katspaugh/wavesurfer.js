@@ -96,6 +96,9 @@ wavesurfer.load('../media/demo.wav');</code></pre>
                       <li><code>wavesurfer</code> - <em>required</em> - a WaveSurfer instance.</li>
                       <li><code>container</code> - <em>required</em> - the element in which to place the spectrogram, or a CSS selector to find it.</li>
                       <li><code>fftSamples</code> - number of FFT samples (<code>512</code> by default). Number of spectral lines and height of the spectrogram will be a half of this parameter.</li>
+                      <li><code>frequencyMin</code> - Min frequency to scale spectrogram(<code>0</code> by default).</li>
+                      <li><code>frequencyMax</code> - Max frequency to scale spectrogram(<code>12000</code> by default). Set this to samplerate/2 to draw whole range of spectrogram.</li>
+                      <li><code>splitChannels</code> - Render with separate spectrograms for the channels of the audio</li>
                       <li><code>frequenciesDataUrl</code> - URL to load spectral data from.</li>
                       <li><code>labels</code> - Whether or not to display frequency labels.</li>
                       <li><code>colorMap</code> - Specifies the colormap to be used when rendering the spectrogram.</li>
