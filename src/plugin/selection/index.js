@@ -123,6 +123,10 @@ export default class SelectionPlugin {
                     this.selection.displayRange.start = start || this.selection.displayRange.start;
                     this.selection.displayRange.end = end || this.selection.displayRange.end;
                     this.selection.displayRange.duration = duration || this.selection.displayRange.duration;
+                },
+
+                isOverlapping(start, end) {
+                    return this.selection._isOverlapping(start, end);
                 }
             },
             instance: SelectionPlugin
@@ -145,6 +149,18 @@ export default class SelectionPlugin {
             start : this.params.displayStart,
             duration : this.params.displayDuration,
             end : this.params.displayDuration + this.params.displayStart
+        };
+
+        this.id = "ws1";
+        this.selectionZones = {
+            self : {
+                start : this.displayRange.start,
+                end: this.displayRange.end
+            },
+            dead : {
+                start : 0,
+                end : 5
+            }
         };
 
         // turn the plugin instance into an observer
@@ -214,7 +230,7 @@ export default class SelectionPlugin {
             this.wavesurfer.drawer.updateSelection(selection);
             this.wavesurfer.drawer.updateDisplayState({
                 displayStart    : this.displayRange.start,
-                displayEnd : this.displayRange.duration + this.displayRange.start
+                displayDuration : this.displayRange.duration
             });
             this.wavesurfer.drawBuffer();
         }
@@ -222,6 +238,23 @@ export default class SelectionPlugin {
 
     _getDisplayRange() {
         return this.displayRange;
+    }
+
+    getDeadZones() {
+        const {self, ...dead} = this.selectionZones;
+        return dead;
+    }
+
+    _isOverlapping(start, end = start) {
+        const zones = this.getDeadZones();
+        return Object.values(zones).some(({start: zoneStart, end: zoneEnd}) => (
+            // selection overlaps the right side of a zone
+            (zoneStart <= start && zoneEnd >= start) ||
+            // selection overlaps the left side of a zone
+            (zoneStart <= end && zoneEnd >= end) ||
+            // zone is entirely within selection
+            (zoneStart >= start && zoneEnd <= end)
+        ));
     }
 
     /**

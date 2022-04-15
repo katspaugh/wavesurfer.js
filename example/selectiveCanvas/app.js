@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
             start : 5,
             end   : 10,
             color : 'rgba(0, 28, 142, 1)',
-            minLength : 0.2,
+            minLength : 1,
             regionStyle : {
                 "border-radius": '13px'
             },

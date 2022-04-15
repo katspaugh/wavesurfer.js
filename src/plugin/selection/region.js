@@ -486,6 +486,8 @@ export class Region {
         let regionLeftHalfTime;
         let regionRightHalfTime;
         let startProportion;
+        let startRange;
+        let lastGoodRange;
 
         const onDown = (event) => {
             const duration = this.wavesurfer.getDisplayRange().duration;
@@ -533,6 +535,9 @@ export class Region {
                 regionRightHalfTime = this.end - this.start - regionLeftHalfTime;
                 this.wavesurfer.fireEvent('region-move-start', drag, event);
             }
+
+            startRange = {start: startTime - regionLeftHalfTime, end : startTime + regionRightHalfTime};
+            lastGoodRange = startRange;
         };
         const onUp = (event) => {
             if (event.touches && event.touches.length > 1) {
@@ -591,13 +596,14 @@ export class Region {
                 return;
             }
 
-            const oldTime = startTime;
             const timeProportion = this.wavesurfer.drawer.handleEvent(event, true);
             const displayStart = this.wavesurfer.getDisplayRange().start;
 
             let time = this.regionsUtil.getRegionSnapToGridValue(
                 timeProportion * duration
             );
+            const newRange = {start: time - regionLeftHalfTime, end : time + regionRightHalfTime};
+
             if (drag) {
                 // To maintain relative cursor start point while dragging
                 const maxEnd = this.wavesurfer.getDisplayRange().duration;
@@ -608,6 +614,10 @@ export class Region {
                 const minStart = 0;
                 if (time - regionLeftHalfTime < minStart) {
                     time = minStart + regionLeftHalfTime;
+                }
+
+                if (this.wavesurfer.isOverlapping(newRange.start, newRange.end)) {
+                    time = startTime;
                 }
             }
 
@@ -621,6 +631,10 @@ export class Region {
 
             let delta = time - startTime;
             startTime = time;
+            startRange = newRange;
+            if (delta) {
+                lastGoodRange = startRange;
+            }
 
             // Drag
             if (this.drag && drag) {
@@ -658,16 +672,6 @@ export class Region {
     }
 
     onDrag(delta) {
-        const maxEnd = this.wavesurfer.getDisplayRange().duration;
-        // if (this.end + delta > maxEnd) {
-        //     delta = maxEnd - this.end;
-        // }
-
-        // const minStart = this.wavesurfer.getDisplayRange().start;
-        // if (this.start + delta < minStart) {
-        //     delta = minStart + this.start;
-        // }
-
         const eventParams = {
             direction: this._getDragDirection(delta),
             action: 'drag'
@@ -677,8 +681,8 @@ export class Region {
             start :     this.wavesurfer.getDisplayRange().start - delta
         });
         this.update({
-            start: this.start, // - delta,
-            end: this.end// - delta
+            start: this.start,
+            end: this.end
         }, eventParams);
     }
 
