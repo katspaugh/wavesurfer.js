@@ -602,9 +602,11 @@ export class Region {
             let time = this.regionsUtil.getRegionSnapToGridValue(
                 timeProportion * duration
             );
-            const newRange = {start: time - regionLeftHalfTime, end : time + regionRightHalfTime};
+            let newRange;
 
             if (drag) {
+                newRange = {start: time - regionLeftHalfTime, end : time + regionRightHalfTime};
+
                 // To maintain relative cursor start point while dragging
                 const maxEnd = this.wavesurfer.getDisplayRange().duration;
                 if (time > maxEnd - regionRightHalfTime) {
@@ -622,12 +624,27 @@ export class Region {
             }
 
             if (resize === 'start') {
+                newRange = {...startRange, start: time - regionLeftHalfTime};
+
                 // Avoid resizing off the start by allowing a buffer
                 const minStart = 0.01 + regionLeftHalfTime;
                 if (time <= minStart) {
                     time = minStart;
                 }
+
+                if (this.wavesurfer.isOverlapping(newRange.start, newRange.end)) {
+                    time = startTime;
+                }
             }
+
+            if (resize === 'end') {
+                newRange = {...startRange, end : time + regionRightHalfTime};
+
+                if (this.wavesurfer.isOverlapping(newRange.start, newRange.end)) {
+                    time = startTime;
+                }
+            }
+
 
             let delta = time - startTime;
             startTime = time;

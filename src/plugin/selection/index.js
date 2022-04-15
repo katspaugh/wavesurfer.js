@@ -160,6 +160,10 @@ export default class SelectionPlugin {
             dead : {
                 start : 0,
                 end : 5
+            },
+            dead2 : {
+                start : 18,
+                end : 20
             }
         };
 
