@@ -150,22 +150,9 @@ export default class SelectionPlugin {
             duration : this.params.displayDuration,
             end : this.params.displayDuration + this.params.displayStart
         };
-
-        this.id = "ws1";
-        this.selectionZones = {
-            self : {
-                start : this.displayRange.start,
-                end: this.displayRange.end
-            },
-            dead : {
-                start : 0,
-                end : 5
-            },
-            dead2 : {
-                start : 18,
-                end : 20
-            }
-        };
+        this.id = params.zoneId;
+        this.selectionZones = {};
+        this.updateSelectionZones(params.selectionZones || {});
 
         // turn the plugin instance into an observer
         const observerPrototypeKeys = Object.getOwnPropertyNames(
@@ -229,15 +216,92 @@ export default class SelectionPlugin {
         this.clear();
     }
 
+    getVisualRange({start, end}) {
+        return {
+            start: start - this.displayRange.start,
+            end: end - this.displayRange.start
+        };
+    }
+
     updateCanvasSelection(selection) {
         if (this.wavesurfer.drawer instanceof SelectiveCanvas) {
-            this.wavesurfer.drawer.updateSelection(selection);
-            this.wavesurfer.drawer.updateDisplayState({
-                displayStart    : this.displayRange.start,
-                displayDuration : this.displayRange.duration
-            });
-            this.wavesurfer.drawBuffer();
+            const {start, end} = selection;
+
+            if (this.updateSelectionZones({self: this.getVisualRange({ start, end })})) {
+                this.wavesurfer.drawer.updateSelection(selection);
+                this.wavesurfer.drawer.updateDisplayState({
+                    displayStart    : this.displayRange.start,
+                    displayDuration : this.displayRange.duration
+                });
+                this.wavesurfer.drawBuffer();
+            }
         }
+    }
+
+    updateSelectionZones(selectionZones, fitSelf = true) {
+        let {self, ...zones} = this.selectionZones;
+        Object.entries(selectionZones).forEach(([key, val]) => {
+            if (key === 'self' || key === this.id) {
+                self = val;
+            } else {
+                zones[key] = val;
+            }
+        });
+        if (self && fitSelf) {
+            const {start, end} = this.getFirstFreeZone(zones, self.start, self.end);
+            if (start !== self.start || end !== self.end) {
+                this.displayRange.start = this.region.start - start;
+                this.region.update({end : this.region.start + end - start});
+                return false;
+            }
+        }
+        this.selectionZones = {...zones, self};
+        return true;
+    }
+
+    // given an object of existing zones, returns an ordered array of available zones
+    getFreeZones(zones) {
+        if (!this.region) {return [];}
+        const minGap = this.region.minLength;
+        // sorted list of zones
+        let usedZones = Object.values(zones).sort((a, b) => (a.start - b.start) );
+        // add contructed 'end' zone
+        usedZones.push({start: this.displayRange.duration});
+
+        let freeZones = [];
+        let index = 0;
+        usedZones.forEach((zone) => {
+            const range = zone.start - index;
+            // if the difference between the current index and the start of the range is larger
+            // than the minimum selection size, then it's a valid available zone
+            if (range > minGap) {
+                freeZones.push({start: index, end: zone.start});
+            }
+            index = zone.end;
+        });
+        return freeZones;
+    }
+    // given a list of zones, finds the first range that a new zone can fit in
+    getFirstFreeZone(zones, targetStart = 0, targetEnd = this.displayRange.duration) {
+        const freeZones = this.getFreeZones(zones);
+        let start = targetStart;
+        let end = targetEnd;
+
+        for (const zone of freeZones.values()) {
+            // targetStart is beyond this zone
+            if (start > zone.end) {
+                break;
+            }
+            // adapt start if it is not within the zone
+            if (start < zone.start) {
+                start = zone.start;
+            }
+            // adapt end if it is not within the zone
+            if (end > zone.end) {
+                end = zone.end;
+            }
+        }
+        return { start, end };
     }
 
     _getDisplayRange() {

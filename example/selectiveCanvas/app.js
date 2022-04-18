@@ -25,7 +25,18 @@ document.addEventListener('DOMContentLoaded', function() {
         plugins       : [WaveSurfer.selection.create({
             selection : [{}],
             displayDuration : 20,
-            displayStart : -5
+            displayStart : -5,
+            zoneId : "ws1",
+            selectionZones :  {
+                ws2 : {
+                    start : 0,
+                    end : 5
+                },
+                ws3 : {
+                    start : 14,
+                    end : 20
+                }
+            }
         })],
         renderer      : SelectionPlugin.SelectiveCanvas
     });
