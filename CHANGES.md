@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+6.1.1 (unreleased)
+------------------
+- Respect mute state when changing volume during mute (#2502)
+
 6.1.0 (31.03.2022)
 ------------------
 - Fix many calls to `setSinkId` resulting in no sound (#2481)
