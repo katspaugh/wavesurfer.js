@@ -26,17 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
             selection : [{}],
             displayDuration : 20,
             displayStart : -5,
-            zoneId : "ws1",
-            selectionZones :  {
-                ws2 : {
-                    start : 0,
-                    end : 5
-                },
-                ws3 : {
-                    start : 14,
-                    end : 20
-                }
-            }
+            zoneId : "ws1"
         })],
         renderer      : SelectionPlugin.SelectiveCanvas
     });
@@ -111,5 +101,23 @@ document.addEventListener('DOMContentLoaded', function() {
         wavesurfer.updateDisplayRange({start:-10});
         region.update({ start : 0 });
         region.update({ end : 6 });
+    });
+
+    document.querySelector(
+        '[data-action="zones"]'
+    ).addEventListener('click', function() {
+        document.querySelector('#zone1').style.visibility = 'visible';
+        document.querySelector('#zone2').style.visibility = 'visible';
+        wavesurfer.updateSelectionZones({
+            ws2 : {
+                start : 0,
+                end : 5
+            },
+            ws3 : {
+                start : 14,
+                end : 20
+            }
+        }
+        );
     });
 });

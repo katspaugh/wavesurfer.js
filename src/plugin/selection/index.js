@@ -125,6 +125,10 @@ export default class SelectionPlugin {
                     this.selection.displayRange.duration = duration || this.selection.displayRange.duration;
                 },
 
+                updateSelectionZones(selectionZones){
+                    return this.selection._updateSelectionZones(selectionZones);
+                },
+
                 isOverlapping(start, end) {
                     return this.selection._isOverlapping(start, end);
                 }
@@ -152,7 +156,7 @@ export default class SelectionPlugin {
         };
         this.id = params.zoneId;
         this.selectionZones = {};
-        this.updateSelectionZones(params.selectionZones || {});
+        this._updateSelectionZones(params.selectionZones || {});
 
         // turn the plugin instance into an observer
         const observerPrototypeKeys = Object.getOwnPropertyNames(
@@ -227,7 +231,7 @@ export default class SelectionPlugin {
         if (this.wavesurfer.drawer instanceof SelectiveCanvas) {
             const {start, end} = selection;
 
-            if (this.updateSelectionZones({self: this.getVisualRange({ start, end })})) {
+            if (this._updateSelectionZones({self: this.getVisualRange({ start, end })})) {
                 this.wavesurfer.drawer.updateSelection(selection);
                 this.wavesurfer.drawer.updateDisplayState({
                     displayStart    : this.displayRange.start,
@@ -238,7 +242,7 @@ export default class SelectionPlugin {
         }
     }
 
-    updateSelectionZones(selectionZones, fitSelf = true) {
+    _updateSelectionZones(selectionZones) {
         let {self, ...zones} = this.selectionZones;
         Object.entries(selectionZones).forEach(([key, val]) => {
             if (key === 'self' || key === this.id) {
@@ -247,7 +251,8 @@ export default class SelectionPlugin {
                 zones[key] = val;
             }
         });
-        if (self && fitSelf) {
+        this.selectionZones = {...zones};
+        if (self) {
             const {start, end} = this.getFirstFreeZone(zones, self.start, self.end);
             if (start !== self.start || end !== self.end) {
                 this.displayRange.start = this.region.start - start;
@@ -255,7 +260,7 @@ export default class SelectionPlugin {
                 return false;
             }
         }
-        this.selectionZones = {...zones, self};
+        this.selectionZones.self = self;
         return true;
     }
 
@@ -286,20 +291,24 @@ export default class SelectionPlugin {
         const freeZones = this.getFreeZones(zones);
         let start = targetStart;
         let end = targetEnd;
+        const duration = end - start;
 
         for (const zone of freeZones.values()) {
             // targetStart is beyond this zone
             if (start > zone.end) {
                 break;
             }
-            // adapt start if it is not within the zone
+            // adapt start if it is not within the zone (prefer retaining duration)
             if (start < zone.start) {
                 start = zone.start;
+                end = start + duration;
             }
             // adapt end if it is not within the zone
             if (end > zone.end) {
                 end = zone.end;
             }
+            // if we get this far, we've found our zone
+            break;
         }
         return { start, end };
     }
