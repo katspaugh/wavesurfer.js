@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-6.1.1 (unreleased)
+6.2.0 (unreleased)
 ------------------
 - Respect mute state when changing volume during mute (#2502)
 
