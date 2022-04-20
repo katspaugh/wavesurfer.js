@@ -544,6 +544,13 @@ export class Region {
                 return;
             }
 
+            if (drag && updated && lastGoodRange.start !== startRange.start && lastGoodRange.end !== startRange.end) {
+                this.wavesurfer.updateDisplayRange({
+                    start :     this.start - lastGoodRange.start
+                });
+                this.updateRender();
+            }
+
             if (drag || resize) {
                 this.isDragging = false;
                 this.isResizing = false;
@@ -606,6 +613,7 @@ export class Region {
 
             if (drag) {
                 newRange = {start: time - regionLeftHalfTime, end : time + regionRightHalfTime};
+                const minStart = 0;
 
                 // To maintain relative cursor start point while dragging
                 const maxEnd = this.wavesurfer.getDisplayRange().duration;
@@ -613,13 +621,18 @@ export class Region {
                     time = maxEnd - regionRightHalfTime;
                 }
 
-                const minStart = 0;
                 if (time - regionLeftHalfTime < minStart) {
                     time = minStart + regionLeftHalfTime;
                 }
 
-                if (this.wavesurfer.isOverlapping(newRange.start, newRange.end)) {
-                    time = startTime;
+                const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
+                if (overlapZone) {
+                    // we're dragging right
+                    if (time > startTime) {
+                        time = overlapZone.start - regionRightHalfTime;
+                    } else {
+                        time = overlapZone.end + regionLeftHalfTime;
+                    }
                 }
             }
 
@@ -632,24 +645,27 @@ export class Region {
                     time = minStart;
                 }
 
-                if (this.wavesurfer.isOverlapping(newRange.start, newRange.end)) {
-                    time = startTime;
+                const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
+                if (overlapZone) {
+                    time = overlapZone.end - regionLeftHalfTime;
+
                 }
             }
 
             if (resize === 'end') {
                 newRange = {...startRange, end : time + regionRightHalfTime};
 
-                if (this.wavesurfer.isOverlapping(newRange.start, newRange.end)) {
-                    time = startTime;
+                const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
+                if (overlapZone) {
+                    time = overlapZone.start - regionRightHalfTime;
                 }
             }
 
 
             let delta = time - startTime;
             startTime = time;
-            startRange = newRange;
             if (delta) {
+                startRange = Object.entries(startRange).map(({key, val}) => ( {key: val + delta} ));
                 lastGoodRange = startRange;
             }
 

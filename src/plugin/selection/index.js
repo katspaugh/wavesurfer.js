@@ -129,8 +129,8 @@ export default class SelectionPlugin {
                     return this.selection._updateSelectionZones(selectionZones);
                 },
 
-                isOverlapping(start, end) {
-                    return this.selection._isOverlapping(start, end);
+                getOverlapZone(start, end) {
+                    return this.selection._getOverlapZone(start, end);
                 }
             },
             instance: SelectionPlugin
@@ -322,16 +322,29 @@ export default class SelectionPlugin {
         return dead;
     }
 
-    _isOverlapping(start, end = start) {
+    /**
+     * Gets any zones, except self that overlap with the given point or range
+     *
+     * @param {number} start - start of selection range
+     * @param {number?} end - end of selection range
+     * @returns bounds of zone that is overlapped, if any
+     */
+    _getOverlapZone(start, end = start) {
         const zones = this.getDeadZones();
-        return Object.values(zones).some(({start: zoneStart, end: zoneEnd}) => (
-            // selection overlaps the right side of a zone
-            (zoneStart <= start && zoneEnd >= start) ||
-            // selection overlaps the left side of a zone
-            (zoneStart <= end && zoneEnd >= end) ||
-            // zone is entirely within selection
-            (zoneStart >= start && zoneEnd <= end)
-        ));
+        const zoneIds = Object.keys(zones);
+        for (let i = 0; i < zoneIds.length; i += 1){
+            if (
+                // selection overlaps the right side of a zone
+                (zones[zoneIds[i]].start <= start && zones[zoneIds[i]].end >= start) ||
+                // selection overlaps the left side of a zone
+                (zones[zoneIds[i]].start <= end && zones[zoneIds[i]].end >= end) ||
+                // zone is entirely within selection
+                (zones[zoneIds[i]].start >= start && zones[zoneIds[i]].end <= end)
+            ) {
+                return zones[zoneIds[i]];
+            }
+        }
+        return null;
     }
 
     /**
