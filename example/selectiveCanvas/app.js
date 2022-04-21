@@ -25,7 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
         plugins       : [WaveSurfer.selection.create({
             selection : [{}],
             displayDuration : 20,
-            displayStart : -5
+            displayStart : -5,
+            zoneId : "ws1",
+            dragThruZones : false
         })],
         renderer      : SelectionPlugin.SelectiveCanvas
     });
@@ -36,7 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
             start : 5,
             end   : 10,
             color : 'rgba(0, 28, 142, 1)',
-            minLength : 0.2,
+            minLength : 1,
+            cssColor : true,
             regionStyle : {
                 "border-radius": '13px'
             },
@@ -74,6 +77,14 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn(e);
     });
 
+    wavesurfer.on('region-overlap-change', function(zone) {
+        if (zone) {
+            document.getElementsByClassName('wavesurfer-region')[0].classList.add("overlapped");
+        } else {
+            document.getElementsByClassName('wavesurfer-region')[0].classList.remove("overlapped");
+        }
+    });
+
     // Load audio from URL
     wavesurfer.load('../media/count.wav');
 
@@ -100,5 +111,23 @@ document.addEventListener('DOMContentLoaded', function() {
         wavesurfer.updateDisplayRange({start:-10});
         region.update({ start : 0 });
         region.update({ end : 6 });
+    });
+
+    document.querySelector(
+        '[data-action="zones"]'
+    ).addEventListener('click', function() {
+        document.querySelector('#zone1').style.visibility = 'visible';
+        document.querySelector('#zone2').style.visibility = 'visible';
+        wavesurfer.updateSelectionZones({
+            ws2 : {
+                start : 3,
+                end : 5
+            },
+            ws3 : {
+                start : 12,
+                end : 14
+            }
+        }
+        );
     });
 });

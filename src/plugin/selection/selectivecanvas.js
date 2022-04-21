@@ -141,7 +141,7 @@ export default class SelectiveCanvas extends Drawer {
         displayDuration
     }) {
         this.displayDuration = displayDuration || this.displayDuration,
-        this.displayStart = displayStart || this.displayStart;
+        this.displayStart = displayStart !== undefined ? displayStart : this.displayStart;
     }
 
     /**

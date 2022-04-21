@@ -123,6 +123,14 @@ export default class SelectionPlugin {
                     this.selection.displayRange.start = start || this.selection.displayRange.start;
                     this.selection.displayRange.end = end || this.selection.displayRange.end;
                     this.selection.displayRange.duration = duration || this.selection.displayRange.duration;
+                },
+
+                updateSelectionZones(selectionZones){
+                    return this.selection._updateSelectionZones(selectionZones);
+                },
+
+                getOverlapZone(start, end) {
+                    return this.selection._getOverlapZone(start, end);
                 }
             },
             instance: SelectionPlugin
@@ -146,6 +154,10 @@ export default class SelectionPlugin {
             duration : this.params.displayDuration,
             end : this.params.displayDuration + this.params.displayStart
         };
+        this.id = params.zoneId;
+        this.selectionZones = {};
+        this._updateSelectionZones(params.selectionZones || {});
+        this.dragThruZones = params.dragThruZones || false;
 
         // turn the plugin instance into an observer
         const observerPrototypeKeys = Object.getOwnPropertyNames(
@@ -209,19 +221,132 @@ export default class SelectionPlugin {
         this.clear();
     }
 
-    updateCanvasSelection(selection) {
+    getVisualRange({start, end}) {
+        return {
+            start: start - this.displayRange.start,
+            end: end - this.displayRange.start
+        };
+    }
+
+    updateCanvasSelection(selection, fitSelf = true) {
         if (this.wavesurfer.drawer instanceof SelectiveCanvas) {
-            this.wavesurfer.drawer.updateSelection(selection);
-            this.wavesurfer.drawer.updateDisplayState({
-                displayStart    : this.displayRange.start,
-                displayEnd : this.displayRange.duration + this.displayRange.start
-            });
-            this.wavesurfer.drawBuffer();
+            const {start, end} = selection;
+
+            if (!fitSelf || this._updateSelectionZones({self: this.getVisualRange({ start, end })})) {
+                this.wavesurfer.drawer.updateSelection(selection);
+                this.wavesurfer.drawer.updateDisplayState({
+                    displayStart    : this.displayRange.start,
+                    displayDuration : this.displayRange.duration
+                });
+                this.wavesurfer.drawBuffer();
+            }
         }
+    }
+
+    _updateSelectionZones(selectionZones) {
+        let {self, ...zones} = this.selectionZones;
+        Object.entries(selectionZones).forEach(([key, val]) => {
+            if (key === 'self' || key === this.id) {
+                self = val;
+            } else {
+                zones[key] = val;
+            }
+        });
+        this.selectionZones = {...zones};
+        if (self) {
+            const {start, end} = this.getFirstFreeZone(zones, self.start, self.end);
+            if (start !== self.start || end !== self.end) {
+                this.displayRange.start = this.region.start - start;
+                this.region.update({end : this.region.start + end - start});
+                return false;
+            }
+        }
+        this.selectionZones.self = self;
+        return true;
+    }
+
+    // given an object of existing zones, returns an ordered array of available zones
+    getFreeZones(zones) {
+        if (!this.region) {return [];}
+        const minGap = this.region.minLength;
+        // sorted list of zones
+        let usedZones = Object.values(zones).sort((a, b) => (a.start - b.start) );
+        // add contructed 'end' zone
+        usedZones.push({start: this.displayRange.duration});
+
+        let freeZones = [];
+        let index = 0;
+        usedZones.forEach((zone) => {
+            const range = zone.start - index;
+            // if the difference between the current index and the start of the range is larger
+            // than the minimum selection size, then it's a valid available zone
+            if (range > minGap) {
+                freeZones.push({start: index, end: zone.start});
+            }
+            index = zone.end;
+        });
+        return freeZones;
+    }
+    // given a list of zones, finds the first range that a new zone can fit in
+    getFirstFreeZone(zones, targetStart = 0, targetEnd = this.displayRange.duration) {
+        const freeZones = this.getFreeZones(zones);
+        let start = targetStart;
+        let end = targetEnd;
+        const duration = end - start;
+
+        for (const zone of freeZones.values()) {
+            // targetStart is beyond this zone
+            if (start > zone.end) {
+                continue;
+            }
+            // adapt start if it is not within the zone (prefer retaining duration)
+            if (start < zone.start) {
+                start = zone.start;
+                end = start + duration;
+            }
+            // adapt end if it is not within the zone
+            if (end > zone.end) {
+                end = zone.end;
+            }
+            // if we get this far, we've found our zone
+            break;
+        }
+        return { start, end };
     }
 
     _getDisplayRange() {
         return this.displayRange;
+    }
+
+    getDeadZones() {
+        const {self, ...dead} = this.selectionZones;
+        return dead;
+    }
+
+    /**
+     * Gets any zones, except self that overlap with the given point or range
+     *
+     * @param {number} start - start of selection range
+     * @param {number?} end - end of selection range
+     * @returns bounds of zone that is overlapped, if any
+     */
+    _getOverlapZone(start, end = start) {
+        const zones = this.getDeadZones();
+        const zoneIds = Object.keys(zones);
+        for (let i = 0; i < zoneIds.length; i += 1){
+            const id = zoneIds[i];
+            if (
+                // selection overlaps the right side of a zone
+                (zones[id].start <= start && zones[id].end >= start) ||
+                // selection overlaps the left side of a zone
+                (zones[id].start <= end && zones[id].end >= end) ||
+                // zone is entirely within selection
+                (zones[id].start >= start && zones[id].end <= end)
+            ) {
+                return {...zones[id], id: id};
+            }
+        }
+        return null;
     }
 
     /**

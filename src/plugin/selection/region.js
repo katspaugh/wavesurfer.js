@@ -486,6 +486,11 @@ export class Region {
         let regionLeftHalfTime;
         let regionRightHalfTime;
         let startProportion;
+        let startRange;
+        let lastGoodRange;
+        let zoneOverlap = null;
+        const bufferPx = 1;
+        const buffer = bufferPx / this.wavesurfer.params.minPxPerSec;
 
         const onDown = (event) => {
             const duration = this.wavesurfer.getDisplayRange().duration;
@@ -533,10 +538,20 @@ export class Region {
                 regionRightHalfTime = this.end - this.start - regionLeftHalfTime;
                 this.wavesurfer.fireEvent('region-move-start', drag, event);
             }
+
+            startRange = {start: startTime - regionLeftHalfTime + buffer, end : startTime + regionRightHalfTime - buffer};
+            lastGoodRange = startRange;
         };
         const onUp = (event) => {
             if (event.touches && event.touches.length > 1) {
                 return;
+            }
+
+            if (drag && updated && lastGoodRange.start !== startRange.start && lastGoodRange.end !== startRange.end) {
+                this.wavesurfer.updateDisplayRange({
+                    start :     this.start - lastGoodRange.start
+                });
+                this.updateRender();
             }
 
             if (drag || resize) {
@@ -577,6 +592,12 @@ export class Region {
             }
             this.wavesurfer.fireEvent('region-move-end', event);
         };
+        const setZoneOverlap = (zone) => {
+            if (zone?.id !== zoneOverlap?.id) {
+                this.wavesurfer.fireEvent('region-overlap-change', zone);
+                zoneOverlap = zone;
+            }
+        };
         const onMove = (event) => {
             const duration = this.wavesurfer.getDisplayRange().duration;
             let orientedEvent = this.util.withOrientation(event, this.vertical);
@@ -591,33 +612,73 @@ export class Region {
                 return;
             }
 
-            const oldTime = startTime;
             const timeProportion = this.wavesurfer.drawer.handleEvent(event, true);
             const displayStart = this.wavesurfer.getDisplayRange().start;
 
             let time = this.regionsUtil.getRegionSnapToGridValue(
                 timeProportion * duration
             );
+            if (startTime === time) {
+                return;
+            }
+
+            let newRange;
+
             if (drag) {
+                newRange = {start: time - regionLeftHalfTime, end : time + regionRightHalfTime};
+                const minStart = 0;
+
                 // To maintain relative cursor start point while dragging
                 const maxEnd = this.wavesurfer.getDisplayRange().duration;
                 if (time > maxEnd - regionRightHalfTime) {
                     time = maxEnd - regionRightHalfTime;
                 }
 
-                const minStart = 0;
                 if (time - regionLeftHalfTime < minStart) {
                     time = minStart + regionLeftHalfTime;
+                }
+
+                const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
+
+                if (this.wavesurfer.selection.dragThruZones) {
+                    setZoneOverlap(overlapZone);
+                }
+                if (overlapZone) {
+                    if (!this.wavesurfer.selection.dragThruZones) {
+                        // we're dragging right
+                        if (time > startTime) {
+                            time = overlapZone.start - regionRightHalfTime - buffer;
+                        } else {
+                            time = overlapZone.end + regionLeftHalfTime + buffer;
+                        }
+                    }
                 }
             }
 
             if (resize === 'start') {
+                newRange = {...startRange, start: time - regionLeftHalfTime};
+
                 // Avoid resizing off the start by allowing a buffer
                 const minStart = 0.01 + regionLeftHalfTime;
                 if (time <= minStart) {
                     time = minStart;
                 }
+
+                const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
+                if (overlapZone) {
+                    time = overlapZone.end + regionLeftHalfTime + buffer;
+                }
             }
+
+            if (resize === 'end') {
+                newRange = {...startRange, end : time + regionRightHalfTime};
+
+                const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
+                if (overlapZone) {
+                    time = overlapZone.start - regionRightHalfTime + buffer;
+                }
+            }
+
 
             let delta = time - startTime;
             startTime = time;
@@ -626,6 +687,10 @@ export class Region {
             if (this.drag && drag) {
                 updated = updated || !!delta;
                 this.onDrag(delta);
+                if (!zoneOverlap && delta) {
+                    Object.entries(startRange).forEach(([k, v]) => ( startRange[k] = v + delta ));
+                    lastGoodRange = startRange;
+                }
             }
 
             // Resize
@@ -658,16 +723,6 @@ export class Region {
     }
 
     onDrag(delta) {
-        const maxEnd = this.wavesurfer.getDisplayRange().duration;
-        // if (this.end + delta > maxEnd) {
-        //     delta = maxEnd - this.end;
-        // }
-
-        // const minStart = this.wavesurfer.getDisplayRange().start;
-        // if (this.start + delta < minStart) {
-        //     delta = minStart + this.start;
-        // }
-
         const eventParams = {
             direction: this._getDragDirection(delta),
             action: 'drag'
@@ -677,8 +732,8 @@ export class Region {
             start :     this.wavesurfer.getDisplayRange().start - delta
         });
         this.update({
-            start: this.start, // - delta,
-            end: this.end// - delta
+            start: this.start,
+            end: this.end
         }, eventParams);
     }
 
