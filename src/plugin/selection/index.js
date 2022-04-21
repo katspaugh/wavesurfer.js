@@ -157,6 +157,7 @@ export default class SelectionPlugin {
         this.id = params.zoneId;
         this.selectionZones = {};
         this._updateSelectionZones(params.selectionZones || {});
+        this.dragThruZones = params.dragThruZones || false;
 
         // turn the plugin instance into an observer
         const observerPrototypeKeys = Object.getOwnPropertyNames(
@@ -227,11 +228,11 @@ export default class SelectionPlugin {
         };
     }
 
-    updateCanvasSelection(selection) {
+    updateCanvasSelection(selection, fitSelf = true) {
         if (this.wavesurfer.drawer instanceof SelectiveCanvas) {
             const {start, end} = selection;
 
-            if (this._updateSelectionZones({self: this.getVisualRange({ start, end })})) {
+            if (!fitSelf || this._updateSelectionZones({self: this.getVisualRange({ start, end })})) {
                 this.wavesurfer.drawer.updateSelection(selection);
                 this.wavesurfer.drawer.updateDisplayState({
                     displayStart    : this.displayRange.start,
@@ -296,7 +297,7 @@ export default class SelectionPlugin {
         for (const zone of freeZones.values()) {
             // targetStart is beyond this zone
             if (start > zone.end) {
-                break;
+                continue;
             }
             // adapt start if it is not within the zone (prefer retaining duration)
             if (start < zone.start) {
@@ -333,15 +334,16 @@ export default class SelectionPlugin {
         const zones = this.getDeadZones();
         const zoneIds = Object.keys(zones);
         for (let i = 0; i < zoneIds.length; i += 1){
+            const id = zoneIds[i];
             if (
                 // selection overlaps the right side of a zone
-                (zones[zoneIds[i]].start <= start && zones[zoneIds[i]].end >= start) ||
+                (zones[id].start <= start && zones[id].end >= start) ||
                 // selection overlaps the left side of a zone
-                (zones[zoneIds[i]].start <= end && zones[zoneIds[i]].end >= end) ||
+                (zones[id].start <= end && zones[id].end >= end) ||
                 // zone is entirely within selection
-                (zones[zoneIds[i]].start >= start && zones[zoneIds[i]].end <= end)
+                (zones[id].start >= start && zones[id].end <= end)
             ) {
-                return zones[zoneIds[i]];
+                return {...zones[id], id: id};
             }
         }
         return null;

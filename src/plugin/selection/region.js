@@ -488,6 +488,9 @@ export class Region {
         let startProportion;
         let startRange;
         let lastGoodRange;
+        let zoneOverlap = null;
+        const bufferPx = 1;
+        const buffer = bufferPx / this.wavesurfer.params.minPxPerSec;
 
         const onDown = (event) => {
             const duration = this.wavesurfer.getDisplayRange().duration;
@@ -536,7 +539,7 @@ export class Region {
                 this.wavesurfer.fireEvent('region-move-start', drag, event);
             }
 
-            startRange = {start: startTime - regionLeftHalfTime, end : startTime + regionRightHalfTime};
+            startRange = {start: startTime - regionLeftHalfTime + buffer, end : startTime + regionRightHalfTime - buffer};
             lastGoodRange = startRange;
         };
         const onUp = (event) => {
@@ -589,6 +592,12 @@ export class Region {
             }
             this.wavesurfer.fireEvent('region-move-end', event);
         };
+        const setZoneOverlap = (zone) => {
+            if (zone?.id !== zoneOverlap?.id) {
+                this.wavesurfer.fireEvent('region-overlap-change', zone);
+                zoneOverlap = zone;
+            }
+        };
         const onMove = (event) => {
             const duration = this.wavesurfer.getDisplayRange().duration;
             let orientedEvent = this.util.withOrientation(event, this.vertical);
@@ -609,6 +618,10 @@ export class Region {
             let time = this.regionsUtil.getRegionSnapToGridValue(
                 timeProportion * duration
             );
+            if (startTime === time) {
+                return;
+            }
+
             let newRange;
 
             if (drag) {
@@ -626,12 +639,18 @@ export class Region {
                 }
 
                 const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
+
+                if (this.wavesurfer.selection.dragThruZones) {
+                    setZoneOverlap(overlapZone);
+                }
                 if (overlapZone) {
-                    // we're dragging right
-                    if (time > startTime) {
-                        time = overlapZone.start - regionRightHalfTime;
-                    } else {
-                        time = overlapZone.end + regionLeftHalfTime;
+                    if (!this.wavesurfer.selection.dragThruZones) {
+                        // we're dragging right
+                        if (time > startTime) {
+                            time = overlapZone.start - regionRightHalfTime - buffer;
+                        } else {
+                            time = overlapZone.end + regionLeftHalfTime + buffer;
+                        }
                     }
                 }
             }
@@ -647,8 +666,7 @@ export class Region {
 
                 const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
                 if (overlapZone) {
-                    time = overlapZone.end - regionLeftHalfTime;
-
+                    time = overlapZone.end + regionLeftHalfTime + buffer;
                 }
             }
 
@@ -657,22 +675,22 @@ export class Region {
 
                 const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
                 if (overlapZone) {
-                    time = overlapZone.start - regionRightHalfTime;
+                    time = overlapZone.start - regionRightHalfTime + buffer;
                 }
             }
 
 
             let delta = time - startTime;
             startTime = time;
-            if (delta) {
-                startRange = Object.entries(startRange).map(({key, val}) => ( {key: val + delta} ));
-                lastGoodRange = startRange;
-            }
 
             // Drag
             if (this.drag && drag) {
                 updated = updated || !!delta;
                 this.onDrag(delta);
+                if (!zoneOverlap && delta) {
+                    Object.entries(startRange).forEach(([k, v]) => ( startRange[k] = v + delta ));
+                    lastGoodRange = startRange;
+                }
             }
 
             // Resize
