@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+6.2.0 (unreleased)
+------------------
+- Fix `clientWidth` error in responsive mode (#2498)
+
 6.1.0 (31.03.2022)
 ------------------
 - Fix many calls to `setSinkId` resulting in no sound (#2481)
