@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', function() {
             selection : [{}],
             displayDuration : 20,
             displayStart : -5,
-            zoneId : "ws1"
+            zoneId : "ws1",
+            dragThruZones : false
         })],
         renderer      : SelectionPlugin.SelectiveCanvas
     });
@@ -38,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
             end   : 10,
             color : 'rgba(0, 28, 142, 1)',
             minLength : 1,
+            cssColor : true,
             regionStyle : {
                 "border-radius": '13px'
             },
@@ -75,6 +77,14 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn(e);
     });
 
+    wavesurfer.on('region-overlap-change', function(zone) {
+        if (zone) {
+            document.getElementsByClassName('wavesurfer-region')[0].classList.add("overlapped");
+        } else {
+            document.getElementsByClassName('wavesurfer-region')[0].classList.remove("overlapped");
+        }
+    });
+
     // Load audio from URL
     wavesurfer.load('../media/count.wav');
 
@@ -110,12 +120,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#zone2').style.visibility = 'visible';
         wavesurfer.updateSelectionZones({
             ws2 : {
-                start : 0,
+                start : 3,
                 end : 5
             },
             ws3 : {
-                start : 14,
-                end : 20
+                start : 12,
+                end : 14
             }
         }
         );
