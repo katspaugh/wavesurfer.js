@@ -77,6 +77,11 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn(e);
     });
 
+    wavesurfer.on('region-update-end', function() {
+        const zones = wavesurfer.getZones();
+        console.log(JSON.stringify(zones));
+    });
+
     wavesurfer.on('region-overlap-change', function(zone) {
         if (zone) {
             document.getElementsByClassName('wavesurfer-region')[0].classList.add("overlapped");

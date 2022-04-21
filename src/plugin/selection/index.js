@@ -131,6 +131,10 @@ export default class SelectionPlugin {
 
                 getOverlapZone(start, end) {
                     return this.selection._getOverlapZone(start, end);
+                },
+
+                getZones(){
+                    return this.selection._getZones();
                 }
             },
             instance: SelectionPlugin
@@ -263,6 +267,15 @@ export default class SelectionPlugin {
         }
         this.selectionZones.self = self;
         return true;
+    }
+
+    // return all zones
+    _getZones() {
+        const {self, ...zones} = this.selectionZones;
+        return {
+            ...zones,
+            [this.id] : self
+        };
     }
 
     // given an object of existing zones, returns an ordered array of available zones
