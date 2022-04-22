@@ -3,6 +3,7 @@ wavesurfer.js changelog
 
 6.2.0 (unreleased)
 ------------------
+- Fix `clientWidth` error in responsive mode (#2498)
 - Respect mute state when changing volume during mute (#2502)
 
 6.1.0 (31.03.2022)
