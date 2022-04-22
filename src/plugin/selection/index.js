@@ -404,7 +404,7 @@ export default class SelectionPlugin {
 
         this.wavesurfer.on('region-updated', (regionData) => {
 
-            this.updateCanvasSelection(regionData, !regionData.drag);
+            this.updateCanvasSelection(regionData, !regionData.isDragging);
         });
 
         selection.on('remove', () => {
