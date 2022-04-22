@@ -643,7 +643,8 @@ export class Region {
                 const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
 
                 if (this.wavesurfer.selection.dragThruZones) {
-                    setZoneOverlap(overlapZone);
+                    const isFakeZone = ['startZone', 'endZone'].includes(overlapZone?.id);
+                    setZoneOverlap( isFakeZone ? null : overlapZone);
                 }
                 if (overlapZone) {
                     if (!this.wavesurfer.selection.dragThruZones) {
