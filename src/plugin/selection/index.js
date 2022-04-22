@@ -232,11 +232,13 @@ export default class SelectionPlugin {
         };
     }
 
-    updateCanvasSelection(selection, fitSelf = true) {
+    updateCanvasSelection(selection) {
         if (this.wavesurfer.drawer instanceof SelectiveCanvas) {
             const {start, end} = selection;
 
-            if (!fitSelf || this._updateSelectionZones({self: this.getVisualRange({ start, end })})) {
+            const fitSelf = !(this.dragThruZones && selection.isDragging);
+
+            if (this._updateSelectionZones({self: this.getVisualRange({ start, end })}, fitSelf)) {
                 this.wavesurfer.drawer.updateSelection(selection);
                 this.wavesurfer.drawer.updateDisplayState({
                     displayStart    : this.displayRange.start,
@@ -247,7 +249,7 @@ export default class SelectionPlugin {
         }
     }
 
-    _updateSelectionZones(selectionZones) {
+    _updateSelectionZones(selectionZones, fitSelf = true) {
         let {self, ...zones} = this.selectionZones;
         Object.entries(selectionZones).forEach(([key, val]) => {
             if (key === 'self' || key === this.id) {
@@ -257,7 +259,7 @@ export default class SelectionPlugin {
             }
         });
         this.selectionZones = {...zones};
-        if (self) {
+        if (self && fitSelf) {
             const {start, end} = this.getFirstFreeZone(zones, self.start, self.end);
             if (start !== self.start || end !== self.end) {
                 this.displayRange.start = this.region.start - start;
@@ -404,7 +406,7 @@ export default class SelectionPlugin {
 
         this.wavesurfer.on('region-updated', (regionData) => {
 
-            this.updateCanvasSelection(regionData, !regionData.isDragging);
+            this.updateCanvasSelection(regionData);
         });
 
         selection.on('remove', () => {
