@@ -625,8 +625,6 @@ export class Region {
             let newRange;
 
             if (drag) {
-                newRange = {start: time - regionLeftHalfTime, end : time + regionRightHalfTime};
-                const minStart = 0;
 
                 // To maintain relative cursor start point while dragging
                 const maxEnd = this.wavesurfer.getDisplayRange().duration;
@@ -634,10 +632,12 @@ export class Region {
                     time = maxEnd - regionRightHalfTime;
                 }
 
+                const minStart = 0;
                 if (time - regionLeftHalfTime < minStart) {
                     time = minStart + regionLeftHalfTime;
                 }
 
+                newRange = {start: time - regionLeftHalfTime, end : time + regionRightHalfTime};
                 const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
 
                 if (this.wavesurfer.selection.dragThruZones) {
@@ -656,7 +656,6 @@ export class Region {
             }
 
             if (resize === 'start') {
-                newRange = {...startRange, start: time - regionLeftHalfTime};
 
                 // Avoid resizing off the start by allowing a buffer
                 const minStart = 0.01 + regionLeftHalfTime;
@@ -664,6 +663,7 @@ export class Region {
                     time = minStart;
                 }
 
+                newRange = {...startRange, start: time - regionLeftHalfTime};
                 const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
                 if (overlapZone) {
                     time = overlapZone.end + regionLeftHalfTime + buffer;

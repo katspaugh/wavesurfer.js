@@ -332,8 +332,20 @@ export default class SelectionPlugin {
     }
 
     getDeadZones() {
-        const {self, ...dead} = this.selectionZones;
-        return dead;
+        let {self, ...deadZones} = this.selectionZones;
+
+        // add contructed 'start' zone
+        deadZones.startZone = {
+            start : 0,
+            end   : 0
+        };
+        // add contructed 'end' zone
+        deadZones.endZone = {
+            start : this.displayRange.duration,
+            end   : this.displayRange.duration
+        };
+
+        return deadZones;
     }
 
     /**
@@ -392,7 +404,7 @@ export default class SelectionPlugin {
 
         this.wavesurfer.on('region-updated', (regionData) => {
 
-            this.updateCanvasSelection(regionData);
+            this.updateCanvasSelection(regionData, !regionData.drag);
         });
 
         selection.on('remove', () => {
