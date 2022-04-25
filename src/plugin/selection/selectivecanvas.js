@@ -1,6 +1,6 @@
-import Drawer from '../../drawer';
 import * as util from '../../util';
 import CanvasEntry from '../../drawer.canvasentry';
+import MultiCanvas from '../../drawer.multicanvas';
 
 /**
  * SelectiveCanvas renderer for wavesurfer. Is currently the default and sole
@@ -9,7 +9,7 @@ import CanvasEntry from '../../drawer.canvasentry';
  * A `SelectiveCanvas` consists of one or more `CanvasEntry` instances, depending
  * on the zoom level.
  */
-export default class SelectiveCanvas extends Drawer {
+export default class SelectiveCanvas extends MultiCanvas {
     /**
      * @param {HTMLElement} container The container node of the wavesurfer instance
      * @param {WavesurferParams} params The wavesurfer initialisation options
@@ -194,103 +194,6 @@ export default class SelectiveCanvas extends Drawer {
     }
 
     /**
-     * Add a canvas to the canvas list
-     *
-     */
-    addCanvas() {
-        const entry = new this.EntryClass();
-        entry.canvasContextAttributes = this.canvasContextAttributes;
-        entry.hasProgressCanvas = this.hasProgressCanvas;
-        entry.halfPixel = this.halfPixel;
-        const leftOffset = this.maxCanvasElementWidth * this.canvases.length;
-
-        // wave
-        let wave = util.withOrientation(
-            this.wrapper.appendChild(document.createElement('canvas')),
-            this.params.vertical
-        );
-        this.style(wave, {
-            position: 'absolute',
-            zIndex: 2,
-            left: leftOffset + 'px',
-            top: 0,
-            bottom: 0,
-            height: '100%',
-            pointerEvents: 'none'
-        });
-        entry.initWave(wave);
-
-        // progress
-        if (this.hasProgressCanvas) {
-            let progress = util.withOrientation(
-                this.progressWave.appendChild(document.createElement('canvas')),
-                this.params.vertical
-            );
-            this.style(progress, {
-                position: 'absolute',
-                left: leftOffset + 'px',
-                top: 0,
-                bottom: 0,
-                height: '100%'
-            });
-            entry.initProgress(progress);
-        }
-
-        this.canvases.push(entry);
-    }
-
-    /**
-     * Pop single canvas from the list
-     *
-     */
-    removeCanvas() {
-        let lastEntry = this.canvases[this.canvases.length - 1];
-
-        // wave
-        lastEntry.wave.parentElement.removeChild(lastEntry.wave.domElement);
-
-        // progress
-        if (this.hasProgressCanvas) {
-            lastEntry.progress.parentElement.removeChild(lastEntry.progress.domElement);
-        }
-
-        // cleanup
-        if (lastEntry) {
-            lastEntry.destroy();
-            lastEntry = null;
-        }
-
-        this.canvases.pop();
-    }
-
-    /**
-     * Update the dimensions of a canvas element
-     *
-     * @param {CanvasEntry} entry Target entry
-     * @param {number} width The new width of the element
-     * @param {number} height The new height of the element
-     */
-    updateDimensions(entry, width, height) {
-        const elementWidth = Math.round(width / this.params.pixelRatio);
-        const totalWidth = Math.round(this.width / this.params.pixelRatio);
-
-        // update canvas dimensions
-        entry.updateDimensions(elementWidth, totalWidth, width, height);
-
-        // style element
-        this.style(this.progressWave, { display: 'block' });
-    }
-
-    /**
-     * Clear the whole multi-canvas
-     */
-    clearWave() {
-        util.frame(() => {
-            this.canvases.forEach(entry => entry.clearWave());
-        })();
-    }
-
-    /**
      * Draw a waveform with bars
      *
      * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays
@@ -385,78 +288,6 @@ export default class SelectiveCanvas extends Drawer {
     }
 
     /**
-     * Draw a waveform
-     *
-     * @param {number[]|Number.<Array[]>} peaks Can also be an array of arrays
-     * for split channel rendering
-     * @param {number} channelIndex The index of the current channel. Normally
-     * should be 0
-     * @param {number?} start The x-offset of the beginning of the area that
-     * should be rendered (If this isn't set only a flat line is rendered)
-     * @param {number?} end The x-offset of the end of the area that should be
-     * rendered
-     * @returns {void}
-     */
-    drawWave(peaks, channelIndex, start, end) {
-        return this.prepareDraw(
-            peaks,
-            channelIndex,
-            start,
-            end,
-            ({ absmax, hasMinVals, height, offsetY, halfH, peaks, channelIndex }) => {
-                if (!hasMinVals) {
-                    const reflectedPeaks = [];
-                    const len = peaks.length;
-                    let i = 0;
-                    for (i; i < len; i++) {
-                        reflectedPeaks[2 * i] = peaks[i];
-                        reflectedPeaks[2 * i + 1] = -peaks[i];
-                    }
-                    peaks = reflectedPeaks;
-                }
-
-                // if drawWave was called within ws.empty we don't pass a start and
-                // end and simply want a flat line
-                if (start !== undefined) {
-                    this.drawLine(peaks, absmax, halfH, offsetY, start, end, channelIndex);
-                }
-
-                // always draw a median line
-                this.fillRect(
-                    0,
-                    halfH + offsetY - this.halfPixel,
-                    this.width,
-                    this.halfPixel,
-                    this.barRadius,
-                    channelIndex
-                );
-            }
-        );
-    }
-
-    /**
-     * Tell the canvas entries to render their portion of the waveform
-     *
-     * @param {number[]} peaks Peaks data
-     * @param {number} absmax Maximum peak value (absolute)
-     * @param {number} halfH Half the height of the waveform
-     * @param {number} offsetY Offset to the top
-     * @param {number} start The x-offset of the beginning of the area that
-     * should be rendered
-     * @param {number} end The x-offset of the end of the area that
-     * should be rendered
-     * @param {channelIndex} channelIndex The channel index of the line drawn
-     */
-    drawLine(peaks, absmax, halfH, offsetY, start, end, channelIndex) {
-        const { waveColor, progressColor } = this.params.splitChannelsOptions.channelColors[channelIndex] || {};
-        this.canvases.forEach((entry, i) => {
-            this.setFillStyles(entry, waveColor, progressColor);
-            this.applyCanvasTransforms(entry, this.params.vertical);
-            entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
-        });
-    }
-
-    /**
      * Draw a rectangle on the multi-canvas
      *
      * @param {number} x X-position of the rectangle
@@ -504,16 +335,6 @@ export default class SelectiveCanvas extends Drawer {
                 );
             }
         }
-    }
-
-    /**
-     * Returns whether to hide the channel from being drawn based on params.
-     *
-     * @param {number} channelIndex The index of the current channel.
-     * @returns {bool} True to hide the channel, false to draw.
-     */
-    hideChannel(channelIndex) {
-        return this.params.splitChannels && this.params.splitChannelsOptions.filterChannels.includes(channelIndex);
     }
 
     /**
@@ -610,56 +431,6 @@ export default class SelectiveCanvas extends Drawer {
                 channelIndex: channelIndex
             });
         })();
-    }
-
-    /**
-     * Set the fill styles for a certain entry (wave and progress)
-     *
-     * @param {CanvasEntry} entry Target entry
-     * @param {string} waveColor Wave color to draw this entry
-     * @param {string} progressColor Progress color to draw this entry
-     */
-    setFillStyles(entry, waveColor = this.params.waveColor, progressColor = this.params.progressColor) {
-        entry.setFillStyles(waveColor, progressColor);
-    }
-
-    /**
-     * Set the canvas transforms for a certain entry (wave and progress)
-     *
-     * @param {CanvasEntry} entry Target entry
-     * @param {boolean} vertical Whether to render the waveform vertically
-     */
-    applyCanvasTransforms(entry, vertical = false) {
-        entry.applyCanvasTransforms(vertical);
-    }
-
-    /**
-     * Return image data of the multi-canvas
-     *
-     * When using a `type` of `'blob'`, this will return a `Promise`.
-     *
-     * @param {string} format='image/png' An optional value of a format type.
-     * @param {number} quality=0.92 An optional value between 0 and 1.
-     * @param {string} type='dataURL' Either 'dataURL' or 'blob'.
-     * @return {string|string[]|Promise} When using the default `'dataURL'`
-     * `type` this returns a single data URL or an array of data URLs,
-     * one for each canvas. When using the `'blob'` `type` this returns a
-     * `Promise` that resolves with an array of `Blob` instances, one for each
-     * canvas.
-     */
-    getImage(format, quality, type) {
-        if (type === 'blob') {
-            return Promise.all(
-                this.canvases.map(entry => {
-                    return entry.getImage(format, quality, type);
-                })
-            );
-        } else if (type === 'dataURL') {
-            let images = this.canvases.map(entry =>
-                entry.getImage(format, quality, type)
-            );
-            return images.length > 1 ? images : images[0];
-        }
     }
 
     /**
