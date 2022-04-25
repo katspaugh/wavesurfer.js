@@ -540,7 +540,7 @@ export class Region {
             }
 
             startRange = {start: startTime - regionLeftHalfTime + buffer, end : startTime + regionRightHalfTime - buffer};
-            lastGoodRange = startRange;
+            lastGoodRange = {...startRange};
         };
         const onUp = (event) => {
             if (event.touches && event.touches.length > 1) {
@@ -551,7 +551,9 @@ export class Region {
                 this.wavesurfer.updateDisplayRange({
                     start :     this.start - lastGoodRange.start
                 });
+                this.update({});
                 this.updateRender();
+                setZoneOverlap(null);
             }
 
             if (drag || resize) {
@@ -641,7 +643,8 @@ export class Region {
                 const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
 
                 if (this.wavesurfer.selection.dragThruZones) {
-                    setZoneOverlap(overlapZone);
+                    const isFakeZone = ['startZone', 'endZone'].includes(overlapZone?.id);
+                    setZoneOverlap( isFakeZone ? null : overlapZone);
                 }
                 if (overlapZone) {
                     if (!this.wavesurfer.selection.dragThruZones) {
@@ -687,9 +690,9 @@ export class Region {
             if (this.drag && drag) {
                 updated = updated || !!delta;
                 this.onDrag(delta);
+                Object.entries(startRange).forEach(([k, v]) => ( startRange[k] = v + delta ));
                 if (!zoneOverlap && delta) {
-                    Object.entries(startRange).forEach(([k, v]) => ( startRange[k] = v + delta ));
-                    lastGoodRange = startRange;
+                    lastGoodRange = {...startRange};
                 }
             }
 
