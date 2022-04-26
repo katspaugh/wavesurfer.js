@@ -117,11 +117,9 @@ export default class SelectionPlugin {
 
                 updateBoundary({
                     start,
-                    end,
                     duration
                 }) {
                     this.selection.boundary.offset = start || this.selection.boundary.offset;
-                    this.selection.boundary.end = end || this.selection.boundary.end;
                     this.selection.boundary.duration = duration || this.selection.boundary.duration;
                 },
 
