@@ -98,18 +98,39 @@
 
             <div class="row marketing">
                 <p>
-<pre><code>    wavesurfer = WaveSurfer.create({
-    barGap        : 2,
-    barHeight     : 0.8,
-    barMinHeight  : 2,
-    barWidth      : 2,
-    height        : '72',
+                    Selection Plugin holds the customized code for a "selection" region. It should be combined with the 
+                    SelectiveCanvas renderer as shown below.
+                </p><p>
+                    The SelectiveCanvas renderer inherits from MultiCanvas. Most of the selection code is based on the Region plugin,
+                    with the following updates:
+                </p>
+                <ul>
+                    <li>There is a single region allowed - the 'selection'</li>
+                    <li>The duration of the wave is not the same as the duration of the audio clip, 
+                        instead it is an arbitrary length container within which we want to move and
+                        edit the clip. As an example usage, we have a video of 60seconds and we want to use
+                        this interface to place the audio clip to start at 10 seconds in, playing just the last
+                        5seconds of audio as an overlay - in this case the container duration is 60seconds and 
+                        we keep a value that indicates how much the audio is offset from the start of the container.
+                    </li>
+                    <li>selection can take an object representing multiple 'zones' within the duration, and a zone id.
+                        The zoneId represents the zone region of this instance of wavesurfer, within that zone object.
+                    </li>
+
+                </ul>
+                <p>
+<pre><code>        wavesurfer = WaveSurfer.create({
+    barGap        : 1,
+    barHeight     : 0.9,
+    barMinHeight  : 1,
+    barWidth      : 1,
+    height        : '40',
     container: document.querySelector('#waveform'),
-    cursorColor   : '#ff47d7',
-    cursorWidth   : 2,
-    progressColor : '#ffb2be80',
+    cursorColor   : '#000000',
+    cursorWidth   : 1,
+    progressColor : '#9BA9DF',
     responsive    : false,
-    waveColor     : '#afb2be',
+    waveColor     : '#9BA9DF',
     scrollParent  : false,
     hideScrollbar : false,
     fillParent    : false,
@@ -121,8 +142,10 @@
                 color : 'rgba(155, 169, 223, 0.3)'
             }
         ],
-        displayDuration : 5,
-        displayStart : 0
+        displayDuration : 20,
+        displayStart : -5,
+        zoneId : "ws1",
+        dragThruZones : false
     })],
     renderer      : SelectionPlugin.SelectiveCanvas
 });

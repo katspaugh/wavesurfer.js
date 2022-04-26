@@ -106,8 +106,8 @@ export default class SelectionPlugin {
                     this.selection.disableDragSelection();
                 },
 
-                getDisplayRange() {
-                    return this.selection._getDisplayRange();
+                getBoundary() {
+                    return this.selection._getBoundary();
                 },
 
                 seekTo(progress) {
@@ -115,14 +115,14 @@ export default class SelectionPlugin {
                     // the selection area
                 },
 
-                updateDisplayRange({
+                updateBoundary({
                     start,
                     end,
                     duration
                 }) {
-                    this.selection.displayRange.start = start || this.selection.displayRange.start;
-                    this.selection.displayRange.end = end || this.selection.displayRange.end;
-                    this.selection.displayRange.duration = duration || this.selection.displayRange.duration;
+                    this.selection.boundary.start = start || this.selection.boundary.start;
+                    this.selection.boundary.end = end || this.selection.boundary.end;
+                    this.selection.boundary.duration = duration || this.selection.boundary.duration;
                 },
 
                 updateSelectionZones(selectionZones){
@@ -153,7 +153,7 @@ export default class SelectionPlugin {
         this.maxSelections = 1;
         this.selectionsMinLength = params.selectionsMinLength || null;
 
-        this.displayRange = {
+        this.boundary = {
             start : this.params.displayStart,
             duration : this.params.displayDuration,
             end : this.params.displayDuration + this.params.displayStart
@@ -227,8 +227,8 @@ export default class SelectionPlugin {
 
     getVisualRange({start, end}) {
         return {
-            start: start - this.displayRange.start,
-            end: end - this.displayRange.start
+            start: start - this.boundary.start,
+            end: end - this.boundary.start
         };
     }
 
@@ -241,8 +241,8 @@ export default class SelectionPlugin {
             if (this._updateSelectionZones({self: this.getVisualRange({ start, end })}, fitSelf)) {
                 this.wavesurfer.drawer.updateSelection(selection);
                 this.wavesurfer.drawer.updateDisplayState({
-                    displayStart    : this.displayRange.start,
-                    displayDuration : this.displayRange.duration
+                    displayStart    : this.boundary.start,
+                    displayDuration : this.boundary.duration
                 });
                 this.wavesurfer.drawBuffer();
             }
@@ -262,7 +262,7 @@ export default class SelectionPlugin {
         if (self && fitSelf) {
             const {start, end} = this.getFirstFreeZone(zones, self.start, self.end);
             if (start !== self.start || end !== self.end) {
-                this.displayRange.start = this.region.start - start;
+                this.boundary.start = this.region.start - start;
                 this.region.update({end : this.region.start + end - start});
                 return false;
             }
@@ -287,7 +287,7 @@ export default class SelectionPlugin {
         // sorted list of zones
         let usedZones = Object.values(zones).sort((a, b) => (a.start - b.start) );
         // add contructed 'end' zone
-        usedZones.push({start: this.displayRange.duration});
+        usedZones.push({start: this.boundary.duration});
 
         let freeZones = [];
         let index = 0;
@@ -303,7 +303,7 @@ export default class SelectionPlugin {
         return freeZones;
     }
     // given a list of zones, finds the first range that a new zone can fit in
-    getFirstFreeZone(zones, targetStart = 0, targetEnd = this.displayRange.duration) {
+    getFirstFreeZone(zones, targetStart = 0, targetEnd = this.boundary.duration) {
         const freeZones = this.getFreeZones(zones);
         let start = targetStart;
         let end = targetEnd;
@@ -329,8 +329,8 @@ export default class SelectionPlugin {
         return { start, end };
     }
 
-    _getDisplayRange() {
-        return this.displayRange;
+    _getBoundary() {
+        return this.boundary;
     }
 
     getDeadZones() {
@@ -343,8 +343,8 @@ export default class SelectionPlugin {
         };
         // add contructed 'end' zone
         deadZones.endZone = {
-            start : this.displayRange.duration,
-            end   : this.displayRange.duration
+            start : this.boundary.duration,
+            end   : this.boundary.duration
         };
 
         return deadZones;

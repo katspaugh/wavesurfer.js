@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ).addEventListener('click', function() {
         let region = wavesurfer.selection.region;
 
-        wavesurfer.updateDisplayRange({start:-10});
+        wavesurfer.updateBoundary({start:-10});
         region.update({ start : 0 });
         region.update({ end : 6 });
     });

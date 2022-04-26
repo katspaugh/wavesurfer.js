@@ -163,7 +163,7 @@ export default class SelectiveCanvas extends MultiCanvas {
             totalWidth / (this.maxCanvasElementWidth + this.overlap)
         );
         const displayPixelWidth = (
-            (this.selection?.wavesurfer.getDisplayRange().duration || 0)
+            (this.selection?.wavesurfer.getBoundary().duration || 0)
             * this.params.minPxPerSec
             * this.params.pixelRatio
         );
