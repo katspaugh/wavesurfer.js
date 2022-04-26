@@ -93,11 +93,11 @@ export class Region {
         this.wavesurfer.fireEvent('region-created', this);
     }
 
-    /* Returns this, with added displayStart */
+    /* Returns this, with added boundaryOffset */
     withDisplay() {
         return {
             ...this,
-            displayStart : this.wavesurfer.getBoundary().start
+            boundaryOffset : this.wavesurfer.getBoundary().offset
         };
     }
 
@@ -330,25 +330,25 @@ export class Region {
         if (!this.wavesurfer.backend ) {return;}
         // duration varies during loading process, so don't overwrite important data
         const dur = this.wavesurfer.getDuration();
-        const displayDuration = this.wavesurfer.getBoundary().duration;
+        const boundaryDuration = this.wavesurfer.getBoundary().duration;
         const width = this.getWidth();
 
         const drawerWidth = this.wavesurfer.drawer.getWidth();
         // if we cannot get drawerWidth, we shouldn't set minPxPerSec using it.
         if (drawerWidth !== 0) {
-            const pxPerSec = drawerWidth / (displayDuration * this.wavesurfer.params.pixelRatio);
+            const pxPerSec = drawerWidth / (boundaryDuration * this.wavesurfer.params.pixelRatio);
             this.wavesurfer.params.minPxPerSec = pxPerSec;
         }
 
-        let startLimited = this.start - this.wavesurfer.getBoundary().start;
-        let endLimited = this.end - this.wavesurfer.getBoundary().start;
+        let startLimited = this.start - this.wavesurfer.getBoundary().offset;
+        let endLimited = this.end - this.wavesurfer.getBoundary().offset;
         if (startLimited < 0) {
             startLimited = 0;
             endLimited = endLimited - startLimited;
         }
-        if (endLimited > displayDuration) {
-            endLimited = displayDuration;
-            startLimited = displayDuration - (endLimited - startLimited);
+        if (endLimited > boundaryDuration) {
+            endLimited = boundaryDuration;
+            startLimited = boundaryDuration - (endLimited - startLimited);
         }
 
         if (this.minLength != null) {
@@ -506,7 +506,7 @@ export class Region {
             }
 
             startProportion = this.wavesurfer.drawer.handleEvent(event, true);
-            const displayStart = this.wavesurfer.getBoundary().start;
+            const boundaryOffset = this.wavesurfer.getBoundary().offset;
             // Store the selected startTime we begun dragging or resizing
             startTime = this.regionsUtil.getRegionSnapToGridValue(
                 startProportion * duration
@@ -615,7 +615,7 @@ export class Region {
             }
 
             const timeProportion = this.wavesurfer.drawer.handleEvent(event, true);
-            const displayStart = this.wavesurfer.getBoundary().start;
+            const boundaryOffset = this.wavesurfer.getBoundary().offset;
 
             let time = this.regionsUtil.getRegionSnapToGridValue(
                 timeProportion * duration
@@ -732,7 +732,7 @@ export class Region {
         };
 
         this.wavesurfer.updateBoundary({
-            start :     this.wavesurfer.getBoundary().start - delta
+            start :     this.wavesurfer.getBoundary().offset - delta
         });
         this.update({
             start: this.start,
@@ -768,7 +768,7 @@ export class Region {
      */
     onResize(delta, direction) {
         const audioDuration = this.wavesurfer.getDuration();
-        const displayDuration = this.wavesurfer.getBoundary().duration;
+        const boundaryDuration = this.wavesurfer.getBoundary().duration;
         const eventParams = {
             action: 'resize',
             direction: direction === 'start' ? 'left' : 'right'

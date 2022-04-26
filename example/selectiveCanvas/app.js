@@ -24,8 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
         fillParent    : false,
         plugins       : [WaveSurfer.selection.create({
             selection : [{}],
-            displayDuration : 20,
-            displayStart : -5,
+            boundaryDuration : 20,
+            boundaryOffset : -5,
             zoneId : "ws1",
             dragThruZones : false
         })],

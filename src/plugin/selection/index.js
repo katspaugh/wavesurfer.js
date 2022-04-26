@@ -120,7 +120,7 @@ export default class SelectionPlugin {
                     end,
                     duration
                 }) {
-                    this.selection.boundary.start = start || this.selection.boundary.start;
+                    this.selection.boundary.offset = start || this.selection.boundary.offset;
                     this.selection.boundary.end = end || this.selection.boundary.end;
                     this.selection.boundary.duration = duration || this.selection.boundary.duration;
                 },
@@ -154,9 +154,9 @@ export default class SelectionPlugin {
         this.selectionsMinLength = params.selectionsMinLength || null;
 
         this.boundary = {
-            start : this.params.displayStart,
-            duration : this.params.displayDuration,
-            end : this.params.displayDuration + this.params.displayStart
+            offset : this.params.boundaryOffset,
+            duration : this.params.boundaryDuration,
+            end : this.params.boundaryDuration + this.params.boundaryOffset
         };
         this.id = params.zoneId;
         this.selectionZones = {};
@@ -227,8 +227,8 @@ export default class SelectionPlugin {
 
     getVisualRange({start, end}) {
         return {
-            start: start - this.boundary.start,
-            end: end - this.boundary.start
+            start: start - this.boundary.offset,
+            end: end - this.boundary.offset
         };
     }
 
@@ -240,9 +240,9 @@ export default class SelectionPlugin {
 
             if (this._updateSelectionZones({self: this.getVisualRange({ start, end })}, fitSelf)) {
                 this.wavesurfer.drawer.updateSelection(selection);
-                this.wavesurfer.drawer.updateDisplayState({
-                    displayStart    : this.boundary.start,
-                    displayDuration : this.boundary.duration
+                this.wavesurfer.drawer.updateBoundaryState({
+                    boundaryOffset    : this.boundary.offset,
+                    boundaryDuration : this.boundary.duration
                 });
                 this.wavesurfer.drawBuffer();
             }
@@ -262,7 +262,7 @@ export default class SelectionPlugin {
         if (self && fitSelf) {
             const {start, end} = this.getFirstFreeZone(zones, self.start, self.end);
             if (start !== self.start || end !== self.end) {
-                this.boundary.start = this.region.start - start;
+                this.boundary.offset = this.region.start - start;
                 this.region.update({end : this.region.start + end - start});
                 return false;
             }

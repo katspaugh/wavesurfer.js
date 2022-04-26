@@ -57,8 +57,8 @@ export default class SelectiveCanvas extends MultiCanvas {
         // selection reference
         this.selection = null;
 
-        this.displayStart = 0;
-        this.displayDuration = 0;
+        this.boundaryOffset = 0;
+        this.boundaryDuration = 0;
 
         /**
          * Class used to generate entries.
@@ -136,12 +136,12 @@ export default class SelectiveCanvas extends MultiCanvas {
         this.selection = selection;
     }
 
-    updateDisplayState({
-        displayStart,
-        displayDuration
+    updateBoundaryState({
+        boundaryOffset,
+        boundaryDuration
     }) {
-        this.displayDuration = displayDuration || this.displayDuration,
-        this.displayStart = displayStart !== undefined ? displayStart : this.displayStart;
+        this.boundaryDuration = boundaryDuration || this.boundaryDuration,
+        this.boundaryOffset = boundaryOffset !== undefined ? boundaryOffset : this.boundaryOffset;
     }
 
     /**
@@ -240,7 +240,7 @@ export default class SelectiveCanvas extends MultiCanvas {
                     last = Math.floor(this.selection.end * this.params.minPxPerSec * this.params.pixelRatio);
                     peakIndex = Math.floor(this.selection.start * this.params.minPxPerSec * this.params.pixelRatio);
                 }
-                const displayOffset = this.displayStart * this.params.minPxPerSec * this.params.pixelRatio;
+                const displayOffset = this.boundaryOffset * this.params.minPxPerSec * this.params.pixelRatio;
 
                 const hideBarEnds = 1;
                 const adjustedDrawStart = peakIndex + step * hideBarEnds;
@@ -466,7 +466,7 @@ export default class SelectiveCanvas extends MultiCanvas {
      * @param {number} position X-offset of progress position in pixels
      */
     updateProgress(position) {
-        const displayOffset = this.displayStart * this.params.minPxPerSec;
+        const displayOffset = this.boundaryOffset * this.params.minPxPerSec;
         const offsetPosition = position - displayOffset;
         this.style(this.progressWave, { width: offsetPosition + 'px' });
     }
