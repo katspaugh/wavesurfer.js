@@ -77,9 +77,22 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn(e);
     });
 
-    wavesurfer.on('region-update-end', function() {
+    wavesurfer.on('region-update-end', function(data) {
         const zones = wavesurfer.getSelectionZones();
-        console.log(JSON.stringify(zones));
+        const {audioEnd, audioStart, boundaryDuration, selectionStart} = data;
+
+        console.log(JSON.stringify({
+            zones,
+            audioEnd,
+            audioStart,
+            boundaryDuration,
+            selectionStart
+        }));
+
+    });
+
+    wavesurfer.on('region-updated', function(data) {
+        console.log(data.selectionStart);
     });
 
     wavesurfer.on('region-overlap-change', function(zone) {

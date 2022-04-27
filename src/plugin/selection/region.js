@@ -93,11 +93,12 @@ export class Region {
         this.wavesurfer.fireEvent('region-created', this);
     }
 
-    /* Returns this, with added boundaryOffset */
-    withDisplay() {
+    /* Returns this, with added SelectionData */
+    withSelectionData() {
+        const selectionData = this.wavesurfer.getSelectionData();
         return {
             ...this,
-            boundaryOffset : this.wavesurfer.getBoundary().offset
+            ...selectionData
         };
     }
 
@@ -143,7 +144,7 @@ export class Region {
 
         this.updateRender();
         this.fireEvent('update');
-        this.wavesurfer.fireEvent('region-updated', this.withDisplay(), eventParams);
+        this.wavesurfer.fireEvent('region-updated', this.withSelectionData(), eventParams);
     }
 
     /* Remove a single region. */
@@ -568,7 +569,7 @@ export class Region {
                 updated = false;
                 this.util.preventClick();
                 this.fireEvent('update-end', event);
-                this.wavesurfer.fireEvent('region-update-end', this.withDisplay(), event);
+                this.wavesurfer.fireEvent('region-update-end', this.withSelectionData(), event);
             }
 
             if (this.element.isEqualNode(event.srcElement)) {
