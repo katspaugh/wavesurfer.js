@@ -1,5 +1,19 @@
 'use strict';
 
+// vars for zone demo
+const duration = 20;
+const zones = {
+    ws2 : {
+        start : 3,
+        end : 5
+    },
+    ws3 : {
+        start : 12,
+        end : 14
+    }
+};
+
+
 // Create an instance
 var wavesurfer;
 
@@ -24,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fillParent    : false,
         plugins       : [WaveSurfer.selection.create({
             selection : [{}],
-            boundaryDuration : 20,
+            boundaryDuration : duration,
             zoneId : "ws1",
             dragThruZones : false
         })],
@@ -136,18 +150,25 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector(
         '[data-action="zones"]'
     ).addEventListener('click', function() {
-        document.querySelector('#zone1').style.visibility = 'visible';
-        document.querySelector('#zone2').style.visibility = 'visible';
-        wavesurfer.updateSelectionZones({
-            ws2 : {
-                start : 3,
-                end : 5
-            },
-            ws3 : {
-                start : 12,
-                end : 14
-            }
-        }
-        );
+        Object.entries(zones).forEach(([id, val]) => {
+            const zoneDiv = document.createElement('div');
+            const container = document.getElementById('zoneContainer');
+            const containerWidth = container.clientWidth;
+            zoneDiv.id = id;
+
+            const width = (val.end - val.start) * (containerWidth / duration);
+            const left = val.start * (containerWidth / duration);
+
+            zoneDiv.style.height = "60px";
+            zoneDiv.style.top = 0;
+            zoneDiv.style.background = "rgba(200, 100, 100, 0.5)";
+            zoneDiv.style.position = "absolute";
+            zoneDiv.style.zIndex = "4";
+            zoneDiv.style.width = `${width}px`;
+            zoneDiv.style.marginLeft = `${left}px`;
+
+            container.append(zoneDiv);
+        });
+        wavesurfer.updateSelectionZones(zones);
     });
 });
