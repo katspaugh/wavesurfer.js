@@ -153,8 +153,7 @@ export default class SelectionPlugin {
 
         this.boundary = {
             offset : this.params.boundaryOffset,
-            duration : this.params.boundaryDuration,
-            end : this.params.boundaryDuration + this.params.boundaryOffset
+            duration : this.params.boundaryDuration
         };
         this.id = params.zoneId;
         this.selectionZones = {};
