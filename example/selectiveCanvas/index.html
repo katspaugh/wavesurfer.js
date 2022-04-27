@@ -88,11 +88,11 @@
                 </p>
                 <ul>
                     <li>There is a single region allowed - the 'selection'</li>
-                    <li>The duration of the wave is not the same as the duration of the audio clip, 
+                    <li>The duration of the boundary container is not the same as the duration of the audio clip, 
                         instead it is an arbitrary length container within which we want to move and
-                        edit the clip. As an example usage, we have a video of 60seconds and we want to use
+                        edit the clip. As an example usage, we have a video of 20seconds and we want to use
                         this interface to place the audio clip to start at 10 seconds in, playing just the last
-                        5seconds of audio as an overlay - in this case the container duration is 60seconds and 
+                        5seconds of audio as an overlay - in this case the container duration is 20seconds and 
                         we keep a value that indicates how much the audio is offset from the start of the container.
                     </li>
                     <li>selection can take an object representing multiple 'zones' within the duration, and a zone id.
@@ -101,7 +101,8 @@
 
                 </ul>
                 <p>
-<pre><code>        wavesurfer = WaveSurfer.create({
+<pre><code>            
+    wavesurfer = WaveSurfer.create({
     barGap        : 1,
     barHeight     : 0.9,
     barMinHeight  : 1,
@@ -117,20 +118,52 @@
     hideScrollbar : false,
     fillParent    : false,
     plugins       : [WaveSurfer.selection.create({
-        selection : [
-            {
-                start : 0,
-                end   : 5,
-                color : 'rgba(155, 169, 223, 0.3)'
-            }
-        ],
+        selection : [{}],
         boundaryDuration : 20,
-        boundaryOffset : -5,
         zoneId : "ws1",
         dragThruZones : false
     })],
     renderer      : SelectionPlugin.SelectiveCanvas
 });
+
+
+wavesurfer.on('ready', () => {
+    wavesurfer.addSelection({
+        selectionStart : 10,
+        start : 5,
+        end   : 10,
+        color : 'rgba(0, 28, 142, 1)',
+        minLength : 1,
+        cssColor : true,
+        regionStyle : {
+            "border-radius": '13px'
+        },
+        decoratorStyle : {
+            'border-width' : '3px',
+            'border-color' : '#de0010',
+            'border-style' : 'solid',
+            left:'0px',
+            top: '0px',
+            'border-radius': 'inherit'
+        },
+        handleStyle : {
+            left : {
+                left : '12px',
+                width : '3px',
+                'background-color':'#FFFFFF',
+                top: '8px',
+                height: '60%'
+            },
+            right : {
+                right : '12px',
+                width : '3px',
+                top: '8px',
+                height: '60%',
+                'background-color':'#FFFFFF'
+            }
+        }
+
+    });
 </code></pre>
                 </p>
 
