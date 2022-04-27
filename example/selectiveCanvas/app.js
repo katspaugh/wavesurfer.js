@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     wavesurfer.on('region-update-end', function() {
-        const zones = wavesurfer.getZones();
+        const zones = wavesurfer.getSelectionZones();
         console.log(JSON.stringify(zones));
     });
 

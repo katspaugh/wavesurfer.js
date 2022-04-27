@@ -131,8 +131,8 @@ export default class SelectionPlugin {
                     return this.selection._getOverlapZone(start, end);
                 },
 
-                getZones(){
-                    return this.selection._getZones();
+                getSelectionZones(){
+                    return this.selection._getSelectionZones();
                 }
             },
             instance: SelectionPlugin
@@ -270,7 +270,7 @@ export default class SelectionPlugin {
     }
 
     // return all zones
-    _getZones() {
+    _getSelectionZones() {
         const {self, ...zones} = this.selectionZones;
         return {
             ...zones,
