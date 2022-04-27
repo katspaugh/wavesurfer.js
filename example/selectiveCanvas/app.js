@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
         plugins       : [WaveSurfer.selection.create({
             selection : [{}],
             boundaryDuration : 20,
-            boundaryOffset : -5,
             zoneId : "ws1",
             dragThruZones : false
         })],
@@ -35,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     wavesurfer.on('ready', () => {
         wavesurfer.addSelection({
+            selectionStart : 10,
             start : 5,
             end   : 10,
             color : 'rgba(0, 28, 142, 1)',
@@ -113,9 +113,11 @@ document.addEventListener('DOMContentLoaded', function() {
     ).addEventListener('click', function() {
         let region = wavesurfer.selection.region;
 
-        wavesurfer.updateBoundary({offset:-10});
-        region.update({ start : 0 });
-        region.update({ end : 6 });
+        wavesurfer.updateSelectionData({
+            selectionStart : 10,
+            audioStart : 0,
+            audioEnd : 6
+        });
     });
 
     document.querySelector(

@@ -106,21 +106,40 @@ export default class SelectionPlugin {
                     this.selection.disableDragSelection();
                 },
 
-                getBoundary() {
-                    return this.selection._getBoundary();
-                },
-
                 seekTo(progress) {
                     // no-op. Overides seek so that it can be handled by
                     // the selection area
                 },
 
-                updateBoundary({
-                    offset,
-                    duration
-                }) {
-                    this.selection.boundary.offset = offset || this.selection.boundary.offset;
-                    this.selection.boundary.duration = duration || this.selection.boundary.duration;
+                /*
+                boundary represents the arbitrary container within which the audio region is displayed
+                It is largely used for internal calculations of how to render the region and wave.
+                values:
+                * duration - the duration of the container, from which we derive the scale of the wave
+                * offset - the start point of the full audio wave, relative to the container.
+                  This can be negative if the wave starts after the beginning of the boundary.
+                  e.g. A selection region that starts at 3sec (relative to the audio), which is displayed at 5sec (relative to the boundary container)
+                  would have an offset of -2. i.e. when rendering the wave, we start at -2sec relative to the
+                  audio and 0sec relative to the container. So: 0sec of the audio is 2sec _into_ the boundary container
+                */
+                getBoundary() {
+                    return this.selection._getBoundary();
+                },
+
+                updateBoundary(args) {
+                    this.selection._updateBoundary(args);
+                },
+
+                /*
+                selectionZones is an object representing THIS audio region and any other regions that are
+                represented in the same container boundary.
+                values:
+                * id - unique id for each zone. Internally the id that matches this.selection.zoneId is stored as 'self'
+                * start - start time in seconds (relative to the boundary container) that the zone starts
+                * end - end time in seconds (relative to the boundary container) that the zone ends
+                */
+                getSelectionZones(){
+                    return this.selection._getSelectionZones();
                 },
 
                 updateSelectionZones(selectionZones){
@@ -131,8 +150,21 @@ export default class SelectionPlugin {
                     return this.selection._getOverlapZone(start, end);
                 },
 
-                getSelectionZones(){
-                    return this.selection._getSelectionZones();
+                /*
+                selectionData is an interface, largely for external use, to region and boundary data
+                eliding data that should only be used internally.
+                values:
+                * boundaryDuration - boundary duration
+                * selectionStart - start of selection region, relative to the boundary
+                * audioStart - start of audio, relative to the audio clip
+                * audioEnd - end of audio, relative to the audio clip
+                */
+                getSelectionData() {
+                    return this.selection._getSelectionData();
+                },
+
+                updateSelectionData(args) {
+                    return this.selection._updateSelectionData(args);
                 }
             },
             instance: SelectionPlugin
@@ -152,7 +184,7 @@ export default class SelectionPlugin {
         this.selectionsMinLength = params.selectionsMinLength || null;
 
         this.boundary = {
-            offset : this.params.boundaryOffset,
+            offset : this.params.boundaryOffset || 0,
             duration : this.params.boundaryDuration
         };
         this.id = params.zoneId;
@@ -220,6 +252,46 @@ export default class SelectionPlugin {
         this.wavesurfer.setDisabledEventEmissions(['selection-removed']);
         this.disableDragSelection();
         this.clear();
+    }
+
+    _updateBoundary({
+        offset,
+        duration
+    }) {
+        this.boundary.offset = offset || this.boundary.offset;
+        this.boundary.duration = duration || this.boundary.duration;
+    }
+
+    _getSelectionData() {
+        const { duration, offset} = this.boundary;
+        const {start, end} = this.region;
+
+        return {
+            boundaryDuration : duration,
+            selectionStart : start - offset,
+            audioStart : start,
+            audioEnd : end
+        };
+
+    }
+
+    _updateSelectionData({
+        boundaryDuration,
+        selectionStart,
+        audioStart,
+        audioEnd
+    }) {
+        this.boundary.duration = boundaryDuration || this.boundary.duration;
+        if (selectionStart !== undefined) {
+            this.boundary.offset = (audioStart !== undefined ? audioStart : this.region?.start || 0) - selectionStart;
+        }
+
+        if (this.region && (audioStart !== undefined || audioEnd !== undefined)) {
+            this.region.update({
+                start : audioStart,
+                end: audioEnd
+            });
+        }
     }
 
     getVisualRange({start, end}) {
@@ -385,6 +457,11 @@ export default class SelectionPlugin {
             ...params
         };
 
+        const {
+            selectionStart,
+            start
+        } = params;
+
         // Take formatTimeCallback from plugin params if not already set
         if (!params.formatTimeCallback && this.params.formatTimeCallback) {
             params = {...params, formatTimeCallback: this.params.formatTimeCallback};
@@ -395,6 +472,10 @@ export default class SelectionPlugin {
         }
 
         this.clear();
+        this._updateSelectionData({
+            selectionStart,
+            audioStart : start
+        });
         const selection = new this.wavesurfer.Selection(params, this.util, this.wavesurfer);
 
         // replace region with new selection area
