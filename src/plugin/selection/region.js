@@ -507,7 +507,6 @@ export class Region {
             }
 
             startProportion = this.wavesurfer.drawer.handleEvent(event, true);
-            const boundaryOffset = this.wavesurfer.getBoundary().offset;
             // Store the selected startTime we begun dragging or resizing
             startTime = this.regionsUtil.getRegionSnapToGridValue(
                 startProportion * duration
@@ -616,7 +615,6 @@ export class Region {
             }
 
             const timeProportion = this.wavesurfer.drawer.handleEvent(event, true);
-            const boundaryOffset = this.wavesurfer.getBoundary().offset;
 
             let time = this.regionsUtil.getRegionSnapToGridValue(
                 timeProportion * duration
@@ -769,7 +767,6 @@ export class Region {
      */
     onResize(delta, direction) {
         const audioDuration = this.wavesurfer.getDuration();
-        const boundaryDuration = this.wavesurfer.getBoundary().duration;
         const eventParams = {
             action: 'resize',
             direction: direction === 'start' ? 'left' : 'right'
