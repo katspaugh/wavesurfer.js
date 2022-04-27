@@ -153,19 +153,18 @@ document.addEventListener('DOMContentLoaded', function() {
         Object.entries(zones).forEach(([id, val]) => {
             const zoneDiv = document.createElement('div');
             const container = document.getElementById('zoneContainer');
-            const containerWidth = container.clientWidth;
             zoneDiv.id = id;
 
-            const width = (val.end - val.start) * (containerWidth / duration);
-            const left = val.start * (containerWidth / duration);
+            const width = (val.end - val.start) / duration;
+            const left = val.start / duration;
 
             zoneDiv.style.height = "60px";
             zoneDiv.style.top = 0;
             zoneDiv.style.background = "rgba(200, 100, 100, 0.5)";
             zoneDiv.style.position = "absolute";
             zoneDiv.style.zIndex = "4";
-            zoneDiv.style.width = `${width}px`;
-            zoneDiv.style.marginLeft = `${left}px`;
+            zoneDiv.style.width = `${width * 100}%`;
+            zoneDiv.style.marginLeft = `${left * 100 }%`;
 
             container.append(zoneDiv);
         });
