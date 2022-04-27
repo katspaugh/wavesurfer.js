@@ -549,7 +549,7 @@ export class Region {
 
             if (drag && updated && lastGoodRange.start !== startRange.start && lastGoodRange.end !== startRange.end) {
                 this.wavesurfer.updateBoundary({
-                    start :     this.start - lastGoodRange.start
+                    offset :     this.start - lastGoodRange.start
                 });
                 this.update({});
                 this.updateRender();
@@ -732,7 +732,7 @@ export class Region {
         };
 
         this.wavesurfer.updateBoundary({
-            start :     this.wavesurfer.getBoundary().offset - delta
+            offset :     this.wavesurfer.getBoundary().offset - delta
         });
         this.update({
             start: this.start,
