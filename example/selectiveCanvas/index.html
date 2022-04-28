@@ -166,6 +166,56 @@ wavesurfer.on('ready', () => {
     });
 </code></pre>
                 </p>
+                <h3>
+                    Events
+                </h3>
+                <p>
+                    New or augmented events for this plugin:
+                </p>
+                <p>
+                    <pre><code>
+    wavesurfer.on('region-update-end', function(data) {
+        const {audioEnd, audioStart, boundaryDuration, selectionStart} = data;
+        console.log(JSON.stringify({
+            audioEnd,
+            audioStart,
+            boundaryDuration,
+            selectionStart
+        }));
+    });
+
+    wavesurfer.on('region-updated', function(data) {
+        const {audioEnd, audioStart, boundaryDuration, selectionStart} = data;
+        console.log(JSON.stringify({
+            audioEnd,
+            audioStart,
+            boundaryDuration,
+            selectionStart
+        }));
+    });
+
+    wavesurfer.on('region-move-start', function(isDrag) {
+        console.log(`started ${isDrag ? 'dragging' : 'resizing'}`);
+    });
+    
+    wavesurfer.on('region-move-end', function() {
+        console.log('stopped moving');
+    });
+    
+    var currentZones = null;
+    wavesurfer.on('region-overlap-change', function(zone) {
+        if (zone !== currentZones) {
+            if (zone === null) {
+                console.log('not overlapping any zone');
+            } else {
+                console.log(`Overlapping zone ${zone.id} (${zone.start} -> ${zone.end})`);
+            }
+            currentZones = zones;
+        }
+    });
+
+                    </code></pre>
+                </p>
 
             </div>
 
