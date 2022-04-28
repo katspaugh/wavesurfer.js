@@ -263,6 +263,8 @@ export default class SelectionPlugin {
     }
 
     _getSelectionData() {
+        if (!this.region || !this.boundary) {return {}; }
+
         const { duration, offset} = this.boundary;
         const {start, end} = this.region;
 
