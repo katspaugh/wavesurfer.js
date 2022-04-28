@@ -14,6 +14,11 @@
  * `initPlugin('selections')`
  * @property {function} formatTimeCallback Allows custom formating for selection tooltip.
  * @property {?number} edgeScrollWidth='5% from container edges' Optional width for edgeScroll to start
+ * @property {number} boundaryDuration Duration of the boundary container in seconds.
+ * @property {?string} zoneId If passing a selectionZones object, this is the id of the zone in that object that represents this selection
+ * @property {?object} selectionZones object representing all selections within this boundary
+ * @property {boolean} dragThruZones If false, dragging logic stops the selection from being dragged through other zones.
+
  */
 
 /**
@@ -31,6 +36,7 @@
  * @property {?object} handleStyle A set of CSS properties used to style the left and right handle.
  * @property {?boolean} preventContextMenu=false Determines whether the context menu is prevented from being opened.
  * @property {boolean} showTooltip=true Enable/disable tooltip displaying start and end times when hovering over selection.
+ * @property {number} selectionStart start point of the selection regions, relative to the boundary container
  */
 
 import {Region} from "./region";
@@ -122,10 +128,26 @@ export default class SelectionPlugin {
                   would have an offset of -2. i.e. when rendering the wave, we start at -2sec relative to the
                   audio and 0sec relative to the container. So: 0sec of the audio is 2sec _into_ the boundary container
                 */
+
+                /**
+                 * getBoundary
+                 *
+                 * @typedef {object} returnObj
+                 * @property {number} returnObj.boundaryDuration duration of boundary container in seconds
+                 * @property {number} returnObj.offset start point of audio wave, relative to boundary start, in seconds
+                 * @returns {returnObj} return object
+                 */
                 getBoundary() {
                     return this.selection._getBoundary();
                 },
 
+                /**
+                 * updateBoundary
+                 *
+                 * @param {object} args args
+                 * @param {number} args.boundaryDuration duration of boundary container in seconds
+                 * @param {number} args.offset start point of audio wave, relative to boundary start, in seconds
+                 */
                 updateBoundary(args) {
                     this.selection._updateBoundary(args);
                 },
@@ -138,10 +160,29 @@ export default class SelectionPlugin {
                 * start - start time in seconds (relative to the boundary container) that the zone starts
                 * end - end time in seconds (relative to the boundary container) that the zone ends
                 */
+
+                /**
+                 * getSelectionZones
+                 *
+                 * @typedef {object} zone
+                 * @property {number} zone.start start point of selection zone, relative to boundary start, in seconds
+                 * @property {number} zone.end end point of selection zone, relative to boundary start, in seconds
+                 * @returns {Record<string, zone>} return object
+                 */
                 getSelectionZones(){
                     return this.selection._getSelectionZones();
                 },
 
+                /**
+                 * updateSelectionZones
+                 *
+                 * @typedef {object} zone
+                 * @property {number} zone.start start point of selection zone, relative to boundary start, in seconds
+                 * @property {number} zone.end end point of selection zone, relative to boundary start, in seconds
+                 *
+                 * @param {Record<string, zone>} selectionZones object of selection zones
+                 * @returns {boolean} return object
+                 */
                 updateSelectionZones(selectionZones){
                     return this.selection._updateSelectionZones(selectionZones);
                 },
@@ -159,12 +200,33 @@ export default class SelectionPlugin {
                 * audioStart - start of audio, relative to the audio clip
                 * audioEnd - end of audio, relative to the audio clip
                 */
+
+                /**
+                 * getSelectionData
+                 *
+                 * @typedef {object} selectionData
+                 * @property {number} selectionData.boundaryDuration duration of boundary container in seconds
+                 * @property {number} selectionData.selectionStart start point of selection zone, relative to boundary start, in seconds
+                 * @property {number} selectionData.audioStart start point of selection audio region, relative to the audio itself, in seconds
+                 * @property {number} selectionData.audioEnd end point of selection audio region, relative to the audio itself, in seconds
+                 *
+                 * @returns {selectionData} return object
+                 */
                 getSelectionData() {
                     return this.selection._getSelectionData();
                 },
 
+                /**
+                 * updateSelectionData
+                 *
+                 * @param {object} args args
+                 * @param {?number} args.boundaryDuration duration of boundary container in seconds
+                 * @param {?number} args.selectionStart start point of selection zone, relative to boundary start, in seconds
+                 * @param {?number} args.audioStart start point of selection audio region, relative to the audio itself, in seconds
+                 * @param {?number} args.audioEnd end point of selection audio region, relative to the audio itself, in seconds
+                 */
                 updateSelectionData(args) {
-                    return this.selection._updateSelectionData(args);
+                    this.selection._updateSelectionData(args);
                 }
             },
             instance: SelectionPlugin

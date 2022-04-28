@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
         hideScrollbar : false,
         fillParent    : false,
         plugins       : [WaveSurfer.selection.create({
-            selection : [{}],
+            selections : [{}],
             boundaryDuration : duration,
             zoneId : "ws1",
             dragThruZones : false
