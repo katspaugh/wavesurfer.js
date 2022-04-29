@@ -29,6 +29,8 @@ export class Region {
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
         this.drag = params.drag === undefined ? true : Boolean(params.drag);
+        // stop event propagation in this region
+        this.stopPropagationHere = params.stopPropagationHere === undefined ? true : Boolean(params.stopPropagationHere);
         // reflect resize and drag state of region for region-updated listener
         this.isResizing = false;
         this.isDragging = false;
@@ -502,7 +504,7 @@ export class Region {
 
             // stop the event propagation, if this region is resizable or draggable
             // and the event is therefore handled here.
-            if (this.drag || this.resize) {
+            if (this.stopPropagationHere && (this.drag || this.resize)) {
                 event.stopPropagation();
             }
 

@@ -542,6 +542,8 @@ export default class SelectionPlugin {
         });
         const selection = new this.wavesurfer.Selection(params, this.util, this.wavesurfer);
 
+        selection.elementRef = selection.element.parentElement.lastChild;
+
         // replace region with new selection area
         this.region = selection;
         this.updateCanvasSelection(selection);
