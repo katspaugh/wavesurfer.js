@@ -1,4 +1,12 @@
-# Animoto fork of..
+# Animoto fork of wavesurfer. 
+Adds all functionality to the Selection plugin. 
+
+To develop on this fork: 
+* run `yarn start:htmlinit` in a console
+* run `yarn start:plugins` in another console - these together will watch changes in any files you're likely to be changing
+* open http://localhost:8080/example/selectiveCanvas/ - this is the live test page for the Selection plugin. Also includes some documentation.
+* To debug in vscode, debug start the launch config: `Launch Chrome against localhost`. That should allow you to add breakpoints directly in vscode.
+
 # [wavesurfer.js](https://wavesurfer-js.org)
 
 [![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)

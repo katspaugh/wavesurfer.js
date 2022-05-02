@@ -1,5 +1,19 @@
 'use strict';
 
+// vars for zone demo
+const duration = 20;
+const zones = {
+    ws2 : {
+        start : 3,
+        end : 5
+    },
+    ws3 : {
+        start : 12,
+        end : 14
+    }
+};
+
+
 // Create an instance
 var wavesurfer;
 
@@ -23,9 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
         hideScrollbar : false,
         fillParent    : false,
         plugins       : [WaveSurfer.selection.create({
-            selection : [{}],
-            displayDuration : 20,
-            displayStart : -5,
+            selections : [{}],
+            boundaryDuration : duration,
             zoneId : "ws1",
             dragThruZones : false
         })],
@@ -35,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     wavesurfer.on('ready', () => {
         wavesurfer.addSelection({
+            selectionStart : 10,
             start : 5,
             end   : 10,
             color : 'rgba(0, 28, 142, 1)',
@@ -77,9 +91,22 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn(e);
     });
 
-    wavesurfer.on('region-update-end', function() {
-        const zones = wavesurfer.getZones();
-        console.log(JSON.stringify(zones));
+    wavesurfer.on('region-update-end', function(data) {
+        const zones = wavesurfer.getSelectionZones();
+        const {audioEnd, audioStart, boundaryDuration, selectionStart} = data;
+
+        console.log(JSON.stringify({
+            zones,
+            audioEnd,
+            audioStart,
+            boundaryDuration,
+            selectionStart
+        }));
+
+    });
+
+    wavesurfer.on('region-updated', function(data) {
+        console.log(data.selectionStart);
     });
 
     wavesurfer.on('region-overlap-change', function(zone) {
@@ -113,26 +140,34 @@ document.addEventListener('DOMContentLoaded', function() {
     ).addEventListener('click', function() {
         let region = wavesurfer.selection.region;
 
-        wavesurfer.updateDisplayRange({start:-10});
-        region.update({ start : 0 });
-        region.update({ end : 6 });
+        wavesurfer.updateSelectionData({
+            selectionStart : 10,
+            audioStart : 0,
+            audioEnd : 6
+        });
     });
 
     document.querySelector(
         '[data-action="zones"]'
     ).addEventListener('click', function() {
-        document.querySelector('#zone1').style.visibility = 'visible';
-        document.querySelector('#zone2').style.visibility = 'visible';
-        wavesurfer.updateSelectionZones({
-            ws2 : {
-                start : 3,
-                end : 5
-            },
-            ws3 : {
-                start : 12,
-                end : 14
-            }
-        }
-        );
+        Object.entries(zones).forEach(([id, val]) => {
+            const zoneDiv = document.createElement('div');
+            const container = document.getElementById('zoneContainer');
+            zoneDiv.id = id;
+
+            const width = (val.end - val.start) / duration;
+            const left = val.start / duration;
+
+            zoneDiv.style.height = "60px";
+            zoneDiv.style.top = 0;
+            zoneDiv.style.background = "rgba(200, 100, 100, 0.5)";
+            zoneDiv.style.position = "absolute";
+            zoneDiv.style.zIndex = "4";
+            zoneDiv.style.width = `${width * 100}%`;
+            zoneDiv.style.marginLeft = `${left * 100 }%`;
+
+            container.append(zoneDiv);
+        });
+        wavesurfer.updateSelectionZones(zones);
     });
 });

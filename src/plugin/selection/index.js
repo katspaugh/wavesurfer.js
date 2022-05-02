@@ -14,6 +14,11 @@
  * `initPlugin('selections')`
  * @property {function} formatTimeCallback Allows custom formating for selection tooltip.
  * @property {?number} edgeScrollWidth='5% from container edges' Optional width for edgeScroll to start
+ * @property {number} boundaryDuration Duration of the boundary container in seconds.
+ * @property {?string} zoneId If passing a selectionZones object, this is the id of the zone in that object that represents this selection
+ * @property {?object} selectionZones object representing all selections within this boundary
+ * @property {boolean} dragThruZones If false, dragging logic stops the selection from being dragged through other zones.
+
  */
 
 /**
@@ -31,6 +36,7 @@
  * @property {?object} handleStyle A set of CSS properties used to style the left and right handle.
  * @property {?boolean} preventContextMenu=false Determines whether the context menu is prevented from being opened.
  * @property {boolean} showTooltip=true Enable/disable tooltip displaying start and end times when hovering over selection.
+ * @property {number} selectionStart start point of the selection regions, relative to the boundary container
  */
 
 import {Region} from "./region";
@@ -106,25 +112,77 @@ export default class SelectionPlugin {
                     this.selection.disableDragSelection();
                 },
 
-                getDisplayRange() {
-                    return this.selection._getDisplayRange();
-                },
-
                 seekTo(progress) {
                     // no-op. Overides seek so that it can be handled by
                     // the selection area
                 },
 
-                updateDisplayRange({
-                    start,
-                    end,
-                    duration
-                }) {
-                    this.selection.displayRange.start = start || this.selection.displayRange.start;
-                    this.selection.displayRange.end = end || this.selection.displayRange.end;
-                    this.selection.displayRange.duration = duration || this.selection.displayRange.duration;
+                /*
+                boundary represents the arbitrary container within which the audio region is displayed
+                It is largely used for internal calculations of how to render the region and wave.
+                values:
+                * duration - the duration of the container, from which we derive the scale of the wave
+                * offset - the start point of the full audio wave, relative to the container.
+                  This can be negative if the wave starts after the beginning of the boundary.
+                  e.g. A selection region that starts at 3sec (relative to the audio), which is displayed at 5sec (relative to the boundary container)
+                  would have an offset of -2. i.e. when rendering the wave, we start at -2sec relative to the
+                  audio and 0sec relative to the container. So: 0sec of the audio is 2sec _into_ the boundary container
+                */
+
+                /**
+                 * getBoundary
+                 *
+                 * @typedef {object} returnObj
+                 * @property {number} returnObj.boundaryDuration duration of boundary container in seconds
+                 * @property {number} returnObj.offset start point of audio wave, relative to boundary start, in seconds
+                 * @returns {returnObj} return object
+                 */
+                getBoundary() {
+                    return this.selection._getBoundary();
                 },
 
+                /**
+                 * updateBoundary
+                 *
+                 * @param {object} args args
+                 * @param {number} args.boundaryDuration duration of boundary container in seconds
+                 * @param {number} args.offset start point of audio wave, relative to boundary start, in seconds
+                 */
+                updateBoundary(args) {
+                    this.selection._updateBoundary(args);
+                },
+
+                /*
+                selectionZones is an object representing THIS audio region and any other regions that are
+                represented in the same container boundary.
+                values:
+                * id - unique id for each zone. Internally the id that matches this.selection.zoneId is stored as 'self'
+                * start - start time in seconds (relative to the boundary container) that the zone starts
+                * end - end time in seconds (relative to the boundary container) that the zone ends
+                */
+
+                /**
+                 * getSelectionZones
+                 *
+                 * @typedef {object} zone
+                 * @property {number} zone.start start point of selection zone, relative to boundary start, in seconds
+                 * @property {number} zone.end end point of selection zone, relative to boundary start, in seconds
+                 * @returns {Record<string, zone>} return object
+                 */
+                getSelectionZones(){
+                    return this.selection._getSelectionZones();
+                },
+
+                /**
+                 * updateSelectionZones
+                 *
+                 * @typedef {object} zone
+                 * @property {number} zone.start start point of selection zone, relative to boundary start, in seconds
+                 * @property {number} zone.end end point of selection zone, relative to boundary start, in seconds
+                 *
+                 * @param {Record<string, zone>} selectionZones object of selection zones
+                 * @returns {boolean} return object
+                 */
                 updateSelectionZones(selectionZones){
                     return this.selection._updateSelectionZones(selectionZones);
                 },
@@ -133,8 +191,42 @@ export default class SelectionPlugin {
                     return this.selection._getOverlapZone(start, end);
                 },
 
-                getZones(){
-                    return this.selection._getZones();
+                /*
+                selectionData is an interface, largely for external use, to region and boundary data
+                eliding data that should only be used internally.
+                values:
+                * boundaryDuration - boundary duration
+                * selectionStart - start of selection region, relative to the boundary
+                * audioStart - start of audio, relative to the audio clip
+                * audioEnd - end of audio, relative to the audio clip
+                */
+
+                /**
+                 * getSelectionData
+                 *
+                 * @typedef {object} selectionData
+                 * @property {number} selectionData.boundaryDuration duration of boundary container in seconds
+                 * @property {number} selectionData.selectionStart start point of selection zone, relative to boundary start, in seconds
+                 * @property {number} selectionData.audioStart start point of selection audio region, relative to the audio itself, in seconds
+                 * @property {number} selectionData.audioEnd end point of selection audio region, relative to the audio itself, in seconds
+                 *
+                 * @returns {selectionData} return object
+                 */
+                getSelectionData() {
+                    return this.selection._getSelectionData();
+                },
+
+                /**
+                 * updateSelectionData
+                 *
+                 * @param {object} args args
+                 * @param {?number} args.boundaryDuration duration of boundary container in seconds
+                 * @param {?number} args.selectionStart start point of selection zone, relative to boundary start, in seconds
+                 * @param {?number} args.audioStart start point of selection audio region, relative to the audio itself, in seconds
+                 * @param {?number} args.audioEnd end point of selection audio region, relative to the audio itself, in seconds
+                 */
+                updateSelectionData(args) {
+                    this.selection._updateSelectionData(args);
                 }
             },
             instance: SelectionPlugin
@@ -153,10 +245,9 @@ export default class SelectionPlugin {
         this.maxSelections = 1;
         this.selectionsMinLength = params.selectionsMinLength || null;
 
-        this.displayRange = {
-            start : this.params.displayStart,
-            duration : this.params.displayDuration,
-            end : this.params.displayDuration + this.params.displayStart
+        this.boundary = {
+            offset : this.params.boundaryOffset || 0,
+            duration : this.params.boundaryDuration
         };
         this.id = params.zoneId;
         this.selectionZones = {};
@@ -225,10 +316,52 @@ export default class SelectionPlugin {
         this.clear();
     }
 
+    _updateBoundary({
+        offset,
+        duration
+    }) {
+        this.boundary.offset = offset || this.boundary.offset;
+        this.boundary.duration = duration || this.boundary.duration;
+    }
+
+    _getSelectionData() {
+        if (!this.region || !this.boundary) {return {}; }
+
+        const { duration, offset} = this.boundary;
+        const {start, end} = this.region;
+
+        return {
+            boundaryDuration : duration,
+            selectionStart : start - offset,
+            audioStart : start,
+            audioEnd : end
+        };
+
+    }
+
+    _updateSelectionData({
+        boundaryDuration,
+        selectionStart,
+        audioStart,
+        audioEnd
+    }) {
+        this.boundary.duration = boundaryDuration || this.boundary.duration;
+        if (selectionStart !== undefined) {
+            this.boundary.offset = (audioStart !== undefined ? audioStart : this.region?.start || 0) - selectionStart;
+        }
+
+        if (this.region && (audioStart !== undefined || audioEnd !== undefined)) {
+            this.region.update({
+                start : audioStart,
+                end: audioEnd
+            });
+        }
+    }
+
     getVisualRange({start, end}) {
         return {
-            start: start - this.displayRange.start,
-            end: end - this.displayRange.start
+            start: start - this.boundary.offset,
+            end: end - this.boundary.offset
         };
     }
 
@@ -240,9 +373,9 @@ export default class SelectionPlugin {
 
             if (this._updateSelectionZones({self: this.getVisualRange({ start, end })}, fitSelf)) {
                 this.wavesurfer.drawer.updateSelection(selection);
-                this.wavesurfer.drawer.updateDisplayState({
-                    displayStart    : this.displayRange.start,
-                    displayDuration : this.displayRange.duration
+                this.wavesurfer.drawer.updateBoundaryState({
+                    boundaryOffset    : this.boundary.offset,
+                    boundaryDuration : this.boundary.duration
                 });
                 this.wavesurfer.drawBuffer();
             }
@@ -262,7 +395,7 @@ export default class SelectionPlugin {
         if (self && fitSelf) {
             const {start, end} = this.getFirstFreeZone(zones, self.start, self.end);
             if (start !== self.start || end !== self.end) {
-                this.displayRange.start = this.region.start - start;
+                this.boundary.offset = this.region.start - start;
                 this.region.update({end : this.region.start + end - start});
                 return false;
             }
@@ -272,7 +405,7 @@ export default class SelectionPlugin {
     }
 
     // return all zones
-    _getZones() {
+    _getSelectionZones() {
         const {self, ...zones} = this.selectionZones;
         return {
             ...zones,
@@ -287,7 +420,7 @@ export default class SelectionPlugin {
         // sorted list of zones
         let usedZones = Object.values(zones).sort((a, b) => (a.start - b.start) );
         // add contructed 'end' zone
-        usedZones.push({start: this.displayRange.duration});
+        usedZones.push({start: this.boundary.duration});
 
         let freeZones = [];
         let index = 0;
@@ -303,7 +436,7 @@ export default class SelectionPlugin {
         return freeZones;
     }
     // given a list of zones, finds the first range that a new zone can fit in
-    getFirstFreeZone(zones, targetStart = 0, targetEnd = this.displayRange.duration) {
+    getFirstFreeZone(zones, targetStart = 0, targetEnd = this.boundary.duration) {
         const freeZones = this.getFreeZones(zones);
         let start = targetStart;
         let end = targetEnd;
@@ -329,8 +462,8 @@ export default class SelectionPlugin {
         return { start, end };
     }
 
-    _getDisplayRange() {
-        return this.displayRange;
+    _getBoundary() {
+        return this.boundary;
     }
 
     getDeadZones() {
@@ -343,8 +476,8 @@ export default class SelectionPlugin {
         };
         // add contructed 'end' zone
         deadZones.endZone = {
-            start : this.displayRange.duration,
-            end   : this.displayRange.duration
+            start : this.boundary.duration,
+            end   : this.boundary.duration
         };
 
         return deadZones;
@@ -388,6 +521,11 @@ export default class SelectionPlugin {
             ...params
         };
 
+        const {
+            selectionStart,
+            start
+        } = params;
+
         // Take formatTimeCallback from plugin params if not already set
         if (!params.formatTimeCallback && this.params.formatTimeCallback) {
             params = {...params, formatTimeCallback: this.params.formatTimeCallback};
@@ -398,7 +536,13 @@ export default class SelectionPlugin {
         }
 
         this.clear();
+        this._updateSelectionData({
+            selectionStart,
+            audioStart : start
+        });
         const selection = new this.wavesurfer.Selection(params, this.util, this.wavesurfer);
+
+        selection.elementRef = selection.element.parentElement.lastChild;
 
         // replace region with new selection area
         this.region = selection;

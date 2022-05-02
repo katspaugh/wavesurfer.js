@@ -29,6 +29,8 @@ export class Region {
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
         this.drag = params.drag === undefined ? true : Boolean(params.drag);
+        // stop event propagation in this region
+        this.stopPropagationHere = params.stopPropagationHere === undefined ? true : Boolean(params.stopPropagationHere);
         // reflect resize and drag state of region for region-updated listener
         this.isResizing = false;
         this.isDragging = false;
@@ -93,11 +95,12 @@ export class Region {
         this.wavesurfer.fireEvent('region-created', this);
     }
 
-    /* Returns this, with added displayStart */
-    withDisplay() {
+    /* Returns this, with added SelectionData */
+    withSelectionData() {
+        const selectionData = this.wavesurfer.getSelectionData();
         return {
             ...this,
-            displayStart : this.wavesurfer.getDisplayRange().start
+            ...selectionData
         };
     }
 
@@ -143,7 +146,7 @@ export class Region {
 
         this.updateRender();
         this.fireEvent('update');
-        this.wavesurfer.fireEvent('region-updated', this.withDisplay(), eventParams);
+        this.wavesurfer.fireEvent('region-updated', this.withSelectionData(), eventParams);
     }
 
     /* Remove a single region. */
@@ -330,25 +333,25 @@ export class Region {
         if (!this.wavesurfer.backend ) {return;}
         // duration varies during loading process, so don't overwrite important data
         const dur = this.wavesurfer.getDuration();
-        const displayDuration = this.wavesurfer.getDisplayRange().duration;
+        const boundaryDuration = this.wavesurfer.getBoundary().duration;
         const width = this.getWidth();
 
         const drawerWidth = this.wavesurfer.drawer.getWidth();
         // if we cannot get drawerWidth, we shouldn't set minPxPerSec using it.
         if (drawerWidth !== 0) {
-            const pxPerSec = drawerWidth / (displayDuration * this.wavesurfer.params.pixelRatio);
+            const pxPerSec = drawerWidth / (boundaryDuration * this.wavesurfer.params.pixelRatio);
             this.wavesurfer.params.minPxPerSec = pxPerSec;
         }
 
-        let startLimited = this.start - this.wavesurfer.getDisplayRange().start;
-        let endLimited = this.end - this.wavesurfer.getDisplayRange().start;
+        let startLimited = this.start - this.wavesurfer.getBoundary().offset;
+        let endLimited = this.end - this.wavesurfer.getBoundary().offset;
         if (startLimited < 0) {
             startLimited = 0;
             endLimited = endLimited - startLimited;
         }
-        if (endLimited > displayDuration) {
-            endLimited = displayDuration;
-            startLimited = displayDuration - (endLimited - startLimited);
+        if (endLimited > boundaryDuration) {
+            endLimited = boundaryDuration;
+            startLimited = boundaryDuration - (endLimited - startLimited);
         }
 
         if (this.minLength != null) {
@@ -493,7 +496,7 @@ export class Region {
         const buffer = bufferPx / this.wavesurfer.params.minPxPerSec;
 
         const onDown = (event) => {
-            const duration = this.wavesurfer.getDisplayRange().duration;
+            const duration = this.wavesurfer.getBoundary().duration;
             if (event.touches && event.touches.length > 1) {
                 return;
             }
@@ -501,12 +504,11 @@ export class Region {
 
             // stop the event propagation, if this region is resizable or draggable
             // and the event is therefore handled here.
-            if (this.drag || this.resize) {
+            if (this.stopPropagationHere && (this.drag || this.resize)) {
                 event.stopPropagation();
             }
 
             startProportion = this.wavesurfer.drawer.handleEvent(event, true);
-            const displayStart = this.wavesurfer.getDisplayRange().start;
             // Store the selected startTime we begun dragging or resizing
             startTime = this.regionsUtil.getRegionSnapToGridValue(
                 startProportion * duration
@@ -548,8 +550,8 @@ export class Region {
             }
 
             if (drag && updated && lastGoodRange.start !== startRange.start && lastGoodRange.end !== startRange.end) {
-                this.wavesurfer.updateDisplayRange({
-                    start :     this.start - lastGoodRange.start
+                this.wavesurfer.updateBoundary({
+                    offset :     this.start - lastGoodRange.start
                 });
                 this.update({});
                 this.updateRender();
@@ -568,7 +570,7 @@ export class Region {
                 updated = false;
                 this.util.preventClick();
                 this.fireEvent('update-end', event);
-                this.wavesurfer.fireEvent('region-update-end', this.withDisplay(), event);
+                this.wavesurfer.fireEvent('region-update-end', this.withSelectionData(), event);
             }
 
             if (this.element.isEqualNode(event.srcElement)) {
@@ -601,7 +603,7 @@ export class Region {
             }
         };
         const onMove = (event) => {
-            const duration = this.wavesurfer.getDisplayRange().duration;
+            const duration = this.wavesurfer.getBoundary().duration;
             let orientedEvent = this.util.withOrientation(event, this.vertical);
 
             if (event.touches && event.touches.length > 1) {
@@ -615,7 +617,6 @@ export class Region {
             }
 
             const timeProportion = this.wavesurfer.drawer.handleEvent(event, true);
-            const displayStart = this.wavesurfer.getDisplayRange().start;
 
             let time = this.regionsUtil.getRegionSnapToGridValue(
                 timeProportion * duration
@@ -629,7 +630,7 @@ export class Region {
             if (drag) {
 
                 // To maintain relative cursor start point while dragging
-                const maxEnd = this.wavesurfer.getDisplayRange().duration;
+                const maxEnd = this.wavesurfer.getBoundary().duration;
                 if (time > maxEnd - regionRightHalfTime) {
                     time = maxEnd - regionRightHalfTime;
                 }
@@ -731,8 +732,8 @@ export class Region {
             action: 'drag'
         };
 
-        this.wavesurfer.updateDisplayRange({
-            start :     this.wavesurfer.getDisplayRange().start - delta
+        this.wavesurfer.updateBoundary({
+            offset :     this.wavesurfer.getBoundary().offset - delta
         });
         this.update({
             start: this.start,
@@ -768,7 +769,6 @@ export class Region {
      */
     onResize(delta, direction) {
         const audioDuration = this.wavesurfer.getDuration();
-        const displayDuration = this.wavesurfer.getDisplayRange().duration;
         const eventParams = {
             action: 'resize',
             direction: direction === 'start' ? 'left' : 'right'
