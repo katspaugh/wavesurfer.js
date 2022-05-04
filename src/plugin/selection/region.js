@@ -717,24 +717,59 @@ export class Region {
             }
 
             if (resize === 'start') {
-
+                const tempDelta = time - startTime;
                 // Avoid resizing off the start by allowing a buffer
                 const minStart = 0.01 + regionLeftHalfTime;
                 if (time <= minStart) {
                     time = minStart;
+
                 }
 
+                // Check if changing the start by the given delta would result in the region being smaller than minLength
+                if (tempDelta > 0 && this.end - (this.start + tempDelta) < this.minLength) {
+                    time = startRange.end - this.minLength + regionLeftHalfTime;
+
+                }
+
+                // Check if changing the start by the given tempDelta would result in the region being larger than maxLength
+                if (tempDelta < 0 && this.end - (this.start + tempDelta) > this.maxLength) {
+                    time = startRange.end - this.maxLength + regionLeftHalfTime;
+
+                }
+
+                // check if start would be less than 0
+                if (tempDelta < 0 && (this.start + tempDelta) < 0) {
+                    time = startRange.end - this.end + regionLeftHalfTime;
+                }
+
+                // Check if we're resizing into another zone
                 newRange = {...startRange, start: time - regionLeftHalfTime};
                 const overlapZones = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
                 if (overlapZones) {
                     const bumperValue = nextZoneBoundary(overlapZones, startTime, -1); // the overlapzone that we're bumping up against
                     time = bumperValue + regionLeftHalfTime + buffer;
                 }
+
             }
 
             if (resize === 'end') {
-                newRange = {...startRange, end : time + regionRightHalfTime};
+                const tempDelta = time - startTime;
+                // Check if changing the end by the given tempDelta would result in the region being smaller than minLength
+                if (tempDelta < 0 && this.end + tempDelta - this.start < this.minLength) {
+                    time = startRange.start + this.minLength - regionRightHalfTime;
+                }
 
+                // Check if changing the end by the given tempDelta would result in the region being larger than maxLength
+                if (tempDelta > 0 && this.end + tempDelta - this.start > this.maxLength) {
+                    time = startRange.start + this.maxLength - regionRightHalfTime;
+                }
+
+                const audioDuration = this.wavesurfer.getDuration();
+                if (tempDelta > 0 && (this.end + tempDelta) > audioDuration) {
+                    time = startRange.start + audioDuration - this.start - regionRightHalfTime;
+                }
+
+                newRange = {...startRange, end : time + regionRightHalfTime};
                 const overlapZones = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
                 if (overlapZones) {
                     const bumperValue = nextZoneBoundary(overlapZones, startTime, 1); // the overlapzone that we're bumping up against
@@ -834,16 +869,7 @@ export class Region {
         };
 
         if (direction === 'start') {
-            // Check if changing the start by the given delta would result in the region being smaller than minLength
-            if (delta > 0 && this.end - (this.start + delta) < this.minLength) {
-                delta = this.end - this.minLength - this.start;
-            }
-
-            // Check if changing the start by the given delta would result in the region being larger than maxLength
-            if (delta < 0 && this.end - (this.start + delta) > this.maxLength) {
-                delta = this.end - this.start - this.maxLength;
-            }
-
+            // catch rounding errors that might let this go out of bounds
             if (delta < 0 && (this.start + delta) < 0) {
                 delta = this.start * -1;
             }
@@ -853,16 +879,7 @@ export class Region {
                 end: Math.max(this.start + delta, this.end)
             }, eventParams);
         } else {
-            // Check if changing the end by the given delta would result in the region being smaller than minLength
-            if (delta < 0 && this.end + delta - this.start < this.minLength) {
-                delta = this.start + this.minLength - this.end;
-            }
-
-            // Check if changing the end by the given delta would result in the region being larger than maxLength
-            if (delta > 0 && this.end + delta - this.start > this.maxLength) {
-                delta = this.maxLength - (this.end - this.start);
-            }
-
+            // catch rounding errors that might let this go out of bounds
             if (delta > 0 && (this.end + delta) > audioDuration) {
                 delta = audioDuration - this.end;
             }
