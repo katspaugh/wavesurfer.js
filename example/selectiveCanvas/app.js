@@ -10,6 +10,10 @@ const zones = {
     ws3 : {
         start : 12,
         end : 14
+    },
+    ws4 : {
+        start : 8,
+        end : 10
     }
 };
 
@@ -106,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     wavesurfer.on('region-updated', function(data) {
-        console.log(data.selectionStart);
+        //console.log(data.selectionStart);
     });
 
     wavesurfer.on('region-overlap-change', function(zone) {

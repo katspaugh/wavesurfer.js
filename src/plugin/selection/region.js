@@ -549,16 +549,20 @@ export class Region {
                 return;
             }
 
-            if (drag && updated && lastGoodRange.start !== startRange.start && lastGoodRange.end !== startRange.end) {
+            if (drag && updated
+                && this.wavesurfer.selection.dragThruZones
+                && lastGoodRange.start !== startRange.start
+                && lastGoodRange.end !== startRange.end) {
                 this.wavesurfer.updateBoundary({
                     offset :     this.start - lastGoodRange.start
                 });
                 this.update({});
                 this.updateRender();
-                setZoneOverlap(null);
+
             }
 
             if (drag || resize) {
+                setZoneOverlap(null);
                 this.isDragging = false;
                 this.isResizing = false;
                 drag = false;
@@ -596,11 +600,66 @@ export class Region {
             }
             this.wavesurfer.fireEvent('region-move-end', event);
         };
-        const setZoneOverlap = (zone) => {
-            if (zone?.id !== zoneOverlap?.id) {
-                this.wavesurfer.fireEvent('region-overlap-change', zone);
-                zoneOverlap = zone;
+        const setZoneOverlap = (zones) => {
+            if (zones == null) {
+                if ( zoneOverlap == null) {
+                    return;
+                }
+                if (this.wavesurfer.selection.dragThruZones) {
+                    this.wavesurfer.fireEvent('region-overlap-change', null);
+                }
+                zoneOverlap = null;
+                return;
             }
+
+            let updateFlag = false;
+            let updateZones = {...zoneOverlap};
+
+            Object.entries(zones).forEach(([id, zone]) => {
+                if (['startZone', 'endZone'].includes(id)) { return;}
+
+                if (!updateZones[id]) {
+                    updateZones[id] = {...zone};
+                    updateFlag = true;
+                }
+            });
+
+            if (updateFlag) {
+                if (this.wavesurfer.selection.dragThruZones) {
+                    this.wavesurfer.fireEvent('region-overlap-change', updateZones);
+                }
+                zoneOverlap = updateZones;
+            }
+        };
+        // given a list of zones, and a point, what is the value at the edge of the next zone
+        // from the point, moving in the given direction?
+        const nextZoneBoundary = (zones, point, direction) => {
+            // based on direction, we either care about the start or end boundaries of the zones
+            let boundaryKey;
+            let sorter;
+            let comparison;
+
+            if (direction > 0) {
+                boundaryKey = 'start';
+                sorter = (a, b) => (a - b);
+                comparison = (a, b) => (a < b);
+            } else {
+                boundaryKey = 'end';
+                sorter = (a, b) => (b - a);
+                comparison = (a, b) => (a > b);
+            }
+            let workingArray = Object.values(zones).map((zone) => zone[boundaryKey]);
+            if (workingArray.length == 1) {
+                return workingArray[0];
+            }
+
+            workingArray.sort(sorter);
+            for (let i = 0; i < workingArray.length; i += 1) {
+                if (comparison(point, workingArray[i])) {
+                    return workingArray[i];
+                }
+            }
+
         };
         const onMove = (event) => {
             const duration = this.wavesurfer.getBoundary().duration;
@@ -641,45 +700,80 @@ export class Region {
                 }
 
                 newRange = {start: time - regionLeftHalfTime, end : time + regionRightHalfTime};
-                const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
+                const overlapZones = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
+                setZoneOverlap( overlapZones);
 
-                if (this.wavesurfer.selection.dragThruZones) {
-                    const isFakeZone = ['startZone', 'endZone'].includes(overlapZone?.id);
-                    setZoneOverlap( isFakeZone ? null : overlapZone);
-                }
-                if (overlapZone) {
+                if (overlapZones) {
                     if (!this.wavesurfer.selection.dragThruZones) {
+                        const bumperValue = nextZoneBoundary({...zoneOverlap, ...overlapZones}, startTime, time - startTime); // the overlapzone that we're bumping up against
                         // we're dragging right
                         if (time > startTime) {
-                            time = overlapZone.start - regionRightHalfTime - buffer;
+                            time = bumperValue - regionRightHalfTime - buffer;
                         } else {
-                            time = overlapZone.end + regionLeftHalfTime + buffer;
+                            time = bumperValue + regionLeftHalfTime + buffer;
                         }
                     }
                 }
             }
 
             if (resize === 'start') {
-
+                const tempDelta = time - startTime;
                 // Avoid resizing off the start by allowing a buffer
                 const minStart = 0.01 + regionLeftHalfTime;
                 if (time <= minStart) {
                     time = minStart;
+
                 }
 
-                newRange = {...startRange, start: time - regionLeftHalfTime};
-                const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
-                if (overlapZone) {
-                    time = overlapZone.end + regionLeftHalfTime + buffer;
+                // Check if changing the start by the given delta would result in the region being smaller than minLength
+                if (tempDelta > 0 && this.end - (this.start + tempDelta) < this.minLength) {
+                    time = startRange.end - this.minLength + regionLeftHalfTime;
+
                 }
+
+                // Check if changing the start by the given tempDelta would result in the region being larger than maxLength
+                if (tempDelta < 0 && this.end - (this.start + tempDelta) > this.maxLength) {
+                    time = startRange.end - this.maxLength + regionLeftHalfTime;
+
+                }
+
+                // check if start would be less than 0
+                if (tempDelta < 0 && (this.start + tempDelta) < 0) {
+                    time = startRange.end - this.end + regionLeftHalfTime;
+                }
+
+                // Check if we're resizing into another zone
+                newRange = {...startRange, start: time - regionLeftHalfTime};
+                const overlapZones = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
+                if (overlapZones) {
+                    const bumperValue = nextZoneBoundary(overlapZones, startTime, -1); // the overlapzone that we're bumping up against
+                    time = bumperValue + regionLeftHalfTime + buffer;
+                }
+
             }
 
             if (resize === 'end') {
-                newRange = {...startRange, end : time + regionRightHalfTime};
+                const tempDelta = time - startTime;
+                // Check if changing the end by the given tempDelta would result in the region being smaller than minLength
+                if (tempDelta < 0 && this.end + tempDelta - this.start < this.minLength) {
+                    time = startRange.start + this.minLength - regionRightHalfTime;
+                }
 
-                const overlapZone = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
-                if (overlapZone) {
-                    time = overlapZone.start - regionRightHalfTime + buffer;
+                // Check if changing the end by the given tempDelta would result in the region being larger than maxLength
+                if (tempDelta > 0 && this.end + tempDelta - this.start > this.maxLength) {
+                    time = startRange.start + this.maxLength - regionRightHalfTime;
+                }
+
+                const audioDuration = this.wavesurfer.getDuration();
+                if (tempDelta > 0 && (this.end + tempDelta) > audioDuration) {
+                    time = startRange.start + audioDuration - this.start - regionRightHalfTime;
+                }
+
+                newRange = {...startRange, end : time + regionRightHalfTime};
+                const overlapZones = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
+                if (overlapZones) {
+                    const bumperValue = nextZoneBoundary(overlapZones, startTime, 1); // the overlapzone that we're bumping up against
+                    time = bumperValue - regionRightHalfTime + buffer;
                 }
             }
 
@@ -775,16 +869,7 @@ export class Region {
         };
 
         if (direction === 'start') {
-            // Check if changing the start by the given delta would result in the region being smaller than minLength
-            if (delta > 0 && this.end - (this.start + delta) < this.minLength) {
-                delta = this.end - this.minLength - this.start;
-            }
-
-            // Check if changing the start by the given delta would result in the region being larger than maxLength
-            if (delta < 0 && this.end - (this.start + delta) > this.maxLength) {
-                delta = this.end - this.start - this.maxLength;
-            }
-
+            // catch rounding errors that might let this go out of bounds
             if (delta < 0 && (this.start + delta) < 0) {
                 delta = this.start * -1;
             }
@@ -794,16 +879,7 @@ export class Region {
                 end: Math.max(this.start + delta, this.end)
             }, eventParams);
         } else {
-            // Check if changing the end by the given delta would result in the region being smaller than minLength
-            if (delta < 0 && this.end + delta - this.start < this.minLength) {
-                delta = this.start + this.minLength - this.end;
-            }
-
-            // Check if changing the end by the given delta would result in the region being larger than maxLength
-            if (delta > 0 && this.end + delta - this.start > this.maxLength) {
-                delta = this.maxLength - (this.end - this.start);
-            }
-
+            // catch rounding errors that might let this go out of bounds
             if (delta > 0 && (this.end + delta) > audioDuration) {
                 delta = audioDuration - this.end;
             }
