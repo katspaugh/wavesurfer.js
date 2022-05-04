@@ -493,6 +493,7 @@ export default class SelectionPlugin {
     _getOverlapZone(start, end = start) {
         const zones = this.getDeadZones();
         const zoneIds = Object.keys(zones);
+        let overlapZones = {};
         for (let i = 0; i < zoneIds.length; i += 1){
             const id = zoneIds[i];
             if (
@@ -503,10 +504,13 @@ export default class SelectionPlugin {
                 // zone is entirely within selection
                 (zones[id].start >= start && zones[id].end <= end)
             ) {
-                return {...zones[id], id: id};
+                overlapZones[id] = {...zones[id]};
             }
         }
-        return null;
+        if (Object.keys(overlapZones).length === 0) {
+            return null;
+        }
+        return overlapZones;
     }
 
     /**
