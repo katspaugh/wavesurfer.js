@@ -240,6 +240,9 @@ export default class SelectionPlugin {
             ...ws.util,
             getRegionSnapToGridValue: value => {
                 return this.getRegionSnapToGridValue(value, params);
+            },
+            msRound: num => {
+                return Math.round(num * 1000) / 1000;
             }
         };
         this.maxSelections = 1;
@@ -320,8 +323,8 @@ export default class SelectionPlugin {
         offset,
         duration
     }) {
-        this.boundary.offset = offset || this.boundary.offset;
-        this.boundary.duration = duration || this.boundary.duration;
+        this.boundary.offset = offset !== undefined ? this.util.msRound(offset) : this.boundary.offset;
+        this.boundary.duration = duration !== undefined ? this.util.msRound(duration) : this.boundary.duration;
     }
 
     _getSelectionData() {
@@ -345,15 +348,20 @@ export default class SelectionPlugin {
         audioStart,
         audioEnd
     }) {
-        this.boundary.duration = boundaryDuration || this.boundary.duration;
+        const duration = boundaryDuration || this.boundary.duration;
+        let offset;
         if (selectionStart !== undefined) {
-            this.boundary.offset = (audioStart !== undefined ? audioStart : this.region?.start || 0) - selectionStart;
+            offset = (audioStart !== undefined ? audioStart : this.region?.start || 0) - selectionStart;
         }
+        this._updateBoundary({ offset, duration });
 
         if (this.region && (audioStart !== undefined || audioEnd !== undefined)) {
+            const start = audioStart !== undefined ? this.util.msRound(audioStart) : undefined;
+            const end = audioEnd !== undefined ? this.util.msRound(audioEnd) : undefined;
+
             this.region.update({
-                start : audioStart,
-                end: audioEnd
+                start,
+                end
             });
         }
     }
@@ -395,8 +403,10 @@ export default class SelectionPlugin {
         if (self && fitSelf) {
             const {start, end} = this.getFirstFreeZone(zones, self.start, self.end);
             if (start !== self.start || end !== self.end) {
-                this.boundary.offset = this.region.start - start;
-                this.region.update({end : this.region.start + end - start});
+                this._updateSelectionData({
+                    selectionStart: start,
+                    audioEnd: this.region.start + end - start
+                });
                 return false;
             }
         }
@@ -418,7 +428,7 @@ export default class SelectionPlugin {
         if (!this.region) {return [];}
         const minGap = this.region.minLength;
         // sorted list of zones
-        let usedZones = Object.values(zones).sort((a, b) => (a.start - b.start) );
+        let usedZones = Object.values(zones).filter((v) => (v)).sort((a, b) => (a.start - b.start) );
         // add contructed 'end' zone
         usedZones.push({start: this.boundary.duration});
 
@@ -442,7 +452,7 @@ export default class SelectionPlugin {
         let end = targetEnd;
         const duration = end - start;
 
-        for (const zone of freeZones.values()) {
+        for (const zone of freeZones) {
             // targetStart is beyond this zone
             if (start > zone.end) {
                 continue;
@@ -498,11 +508,13 @@ export default class SelectionPlugin {
             const id = zoneIds[i];
             if (
                 // selection overlaps the right side of a zone
-                (zones[id].start <= start && zones[id].end >= start) ||
+                (zones[id].start < start && zones[id].end >= start) ||
                 // selection overlaps the left side of a zone
-                (zones[id].start <= end && zones[id].end >= end) ||
+                (zones[id].start <= end && zones[id].end > end) ||
                 // zone is entirely within selection
-                (zones[id].start >= start && zones[id].end <= end)
+                (zones[id].start > start && zones[id].end < end) ||
+                // zone exactly equals the selection
+                (zones[id].start === start && zones[id].end === end)
             ) {
                 overlapZones[id] = {...zones[id]};
             }
@@ -527,7 +539,8 @@ export default class SelectionPlugin {
 
         const {
             selectionStart,
-            start
+            start,
+            end
         } = params;
 
         // Take formatTimeCallback from plugin params if not already set
@@ -544,6 +557,10 @@ export default class SelectionPlugin {
             selectionStart,
             audioStart : start
         });
+        this._updateSelectionZones({
+            self: this.getVisualRange({ start, end })
+        });
+
         const selection = new this.wavesurfer.Selection(params, this.util, this.wavesurfer);
 
         selection.elementRef = selection.element.parentElement.lastChild;

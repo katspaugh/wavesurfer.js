@@ -107,10 +107,10 @@ export class Region {
     /* Update region params. */
     update(params, eventParams) {
         if (params.start != null) {
-            this.start = Number(params.start);
+            this.start = this.wavesurfer.selection.util.msRound(Number(params.start));
         }
         if (params.end != null) {
-            this.end = Number(params.end);
+            this.end = this.wavesurfer.selection.util.msRound(Number(params.end));
         }
         if (params.loop != null) {
             this.loop = Boolean(params.loop);
@@ -574,6 +574,7 @@ export class Region {
                 updated = false;
                 this.util.preventClick();
                 this.fireEvent('update-end', event);
+                const rt = this.withSelectionData();
                 this.wavesurfer.fireEvent('region-update-end', this.withSelectionData(), event);
             }
 
