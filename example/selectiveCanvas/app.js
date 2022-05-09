@@ -21,6 +21,10 @@ const zones = {
 // Create an instance
 var wavesurfer;
 
+function format(num) {
+    return Math.round(num * 10) / 10;
+}
+
 // Init & load audio file
 document.addEventListener('DOMContentLoaded', function() {
     const SelectionPlugin = WaveSurfer.selection;
@@ -94,6 +98,17 @@ document.addEventListener('DOMContentLoaded', function() {
     wavesurfer.on('error', function(e) {
         console.warn(e);
     });
+
+    wavesurfer.on('seek', () => {
+        document.getElementById("regionTime").innerHTML = `Region Time = ${format(wavesurfer.getCurrentTime())}`;
+        document.getElementById("boundaryTime").innerHTML = `Boundary Time = ${format(wavesurfer.getBoundaryTime())}`;
+    });
+
+    wavesurfer.on('audioprocess', () => {
+        document.getElementById("regionTime").innerHTML = `Region Time = ${format(wavesurfer.getCurrentTime())}`;
+        document.getElementById("boundaryTime").innerHTML = `Boundary Time = ${format(wavesurfer.getBoundaryTime())}`;
+    });
+
 
     wavesurfer.on('region-update-end', function(data) {
         const zones = wavesurfer.getSelectionZones();
@@ -172,6 +187,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
             container.append(zoneDiv);
         });
-        wavesurfer.updateSelectionZones(zones);
+        wavesurfer.updateSelectionZones(zones, true);
+    });
+
+    document.querySelector(
+        '[data-action="zones2"]'
+    ).addEventListener('click', function() {
+        const id = Object.keys(zones).pop();
+        const el = document.getElementById(id);
+        if (el) {
+            el.remove();
+            delete zones[id];
+        }
+        wavesurfer.updateSelectionZones(zones, true, true);
     });
 });

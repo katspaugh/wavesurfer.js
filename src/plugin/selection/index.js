@@ -151,6 +151,10 @@ export default class SelectionPlugin {
                 updateBoundary(args) {
                     this.selection._updateBoundary(args);
                 },
+                // get wavesurfer current time, relative to the boundary
+                getBoundaryTime() {
+                    return this.selection._getBoundaryTime();
+                },
 
                 /*
                 selectionZones is an object representing THIS audio region and any other regions that are
@@ -181,10 +185,12 @@ export default class SelectionPlugin {
                  * @property {number} zone.end end point of selection zone, relative to boundary start, in seconds
                  *
                  * @param {Record<string, zone>} selectionZones object of selection zones
+                 * @param {?boolean} fitSelf attempt to fit self zone
+                 * @param {?force} force overwrite existing zones
                  * @returns {boolean} return object
                  */
-                updateSelectionZones(selectionZones){
-                    return this.selection._updateSelectionZones(selectionZones);
+                updateSelectionZones(selectionZones, fitSelf, force){
+                    return this.selection._updateSelectionZones(selectionZones, fitSelf, force);
                 },
 
                 getOverlapZone(start, end) {
@@ -366,6 +372,15 @@ export default class SelectionPlugin {
         }
     }
 
+    _getBoundaryTime() {
+        const { selectionStart, audioStart} = this._getSelectionData();
+        const audioTime = this.wavesurfer.getCurrentTime();
+        if (selectionStart === undefined || audioStart === undefined) {
+            return audioTime;
+        }
+        return audioTime - audioStart + selectionStart;
+    }
+
     getVisualRange({start, end}) {
         return {
             start: start - this.boundary.offset,
@@ -390,8 +405,8 @@ export default class SelectionPlugin {
         }
     }
 
-    _updateSelectionZones(selectionZones, fitSelf = true) {
-        let {self, ...zones} = this.selectionZones;
+    _updateSelectionZones(selectionZones, fitSelf = true, force = false) {
+        let {self, ...zones} = force ? {} : this.selectionZones;
         Object.entries(selectionZones).forEach(([key, val]) => {
             if (key === 'self' || key === this.id) {
                 self = val;
