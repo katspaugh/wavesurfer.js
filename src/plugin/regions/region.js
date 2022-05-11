@@ -248,7 +248,7 @@ export class Region {
         return (start == end ? [start] : [start, end])
             .map((time) =>
                 [
-                    // ** CUSTOMIZATION **
+                    // ** PDFTRON CUSTOMIZATION **
                     // To show HH:MM:SS instead of just MM:SS
                     new Date(Math.round(time) * 1000).toISOString().substr(11, 8)
                     // Math.floor((time % 3600) / 60), // minutes
@@ -562,7 +562,7 @@ export class Region {
 
             if (updated) {
                 updated = false;
-                // ** CUSTOMIZATION **
+                // ** PDFTRON CUSTOMIZATION **
                 this.fireEvent('update-end', e);
                 this.wavesurfer.fireEvent('region-update-end', this, e);
             }
@@ -677,7 +677,7 @@ export class Region {
         this.element.addEventListener('mousedown', onDown);
         this.element.addEventListener('touchstart', onDown);
 
-        // ** CUSTOMIZATION **
+        // ** PDFTRON CUSTOMIZATION **
         this.wavesurfer.params.doc.body.addEventListener('mousemove', onMove);
         this.wavesurfer.params.doc.body.addEventListener('touchmove', onMove);
 

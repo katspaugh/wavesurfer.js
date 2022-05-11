@@ -302,7 +302,7 @@ export default class RegionsPlugin {
         this.wrapper.addEventListener('mouseup', eventUp);
         this.wrapper.addEventListener('touchend', eventUp);
 
-        // ** CUSTOMIZATION **
+        // ** PDFTRON CUSTOMIZATION **
         this.wavesurfer.params.doc.body.addEventListener('mouseup', eventUp);
         this.wavesurfer.params.doc.body.addEventListener('touchend', eventUp);
         this.on('disable-drag-selection', () => {

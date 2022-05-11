@@ -1,3 +1,5 @@
+
+/* eslint-disable */
 /**
  * Stops propagation of click event and removes event listener
  *
@@ -9,7 +11,7 @@ function preventClickHandler(event, doc, handler) {
     doc.body.removeEventListener('click', handler, true);
 }
 
-// ** CUSTOMIZATION **
+// ** PDFTRON CUSTOMIZATION **
 const wrappedPreventClickHandler = function( doc ) {
     const handler = function(event) {
         preventClickHandler(event, doc, handler);

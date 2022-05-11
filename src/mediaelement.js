@@ -138,6 +138,9 @@ export default class MediaElement extends WebAudio {
         media.controls = this.params.mediaControls;
         media.autoplay = this.params.autoplay || false;
         media.preload = preload == null ? 'auto' : preload;
+        // ** PDFTRON CUSTOMIZATION **
+        // Set crossOrigin to anonymous to avoid CORS restrictions
+        media.crossOrigin = 'anonymous';
         media.src = url;
         media.style.width = '100%';
 
