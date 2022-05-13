@@ -253,6 +253,7 @@ export default class WebAudio extends util.Observer {
                 this.fireEvent('pause');
             } else if (time >= this.scheduledPause) {
                 this.pause();
+                this.play();
             } else if (this.state === this.states[PLAYING]) {
                 this.fireEvent('audioprocess', time);
             }
