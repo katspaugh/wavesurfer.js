@@ -251,10 +251,8 @@ export default class WebAudio extends util.Observer {
             if (time >= this.getDuration()) {
                 this.setState(FINISHED);
                 this.fireEvent('pause');
-            // ** PDFTRON CUSTOMIZATION **
-            // Removing this case stops audio pausing on seeking
-            // } else if (time >= this.scheduledPause) {
-            //     this.pause();
+            } else if (time >= this.scheduledPause) {
+                this.pause();
             } else if (this.state === this.states[PLAYING]) {
                 this.fireEvent('audioprocess', time);
             }
