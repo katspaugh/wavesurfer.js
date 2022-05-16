@@ -90,7 +90,8 @@ export default class CursorPlugin {
         const bbox = this.wrapper.getBoundingClientRect();
         let y = 0;
         let x = this.wrapper.scrollLeft + event.clientX - bbox.left;
-        let flip = bbox.right < event.clientX + this.displayTime.getBoundingClientRect().width;
+        const displayTimeWidth = this.displayTime ? this.displayTime.getBoundingClientRect().width : 0;
+        let flip = bbox.right < event.clientX + displayTimeWidth;
 
         if (this.params.showTime && this.params.followCursorY) {
             // follow y-position of the mouse

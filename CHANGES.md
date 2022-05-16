@@ -4,10 +4,14 @@ wavesurfer.js changelog
 6.2.0 (unreleased)
 ------------------
 - Fix `clientWidth` error in responsive mode (#2498)
-- In Spectrogram plugin, fix to have consistent CSS height regardless of device pixel ratio. (#2507)
+- Cursor plugin:
+  - Fix `TypeError` when `showTime: undefined` (#2501)
 - Spectrogram plugin:
-  - Added `height` configuration option to control CSS height of the view, which will scale to fill.
-  - Frequency label display is `fixed` instead of `absolute`, and have consistent size on hi-dpi displays
+  - Fix to have consistent CSS height regardless of device pixel ratio (#2507)
+  - Added `height` configuration option to control CSS height of the view,
+    which will scale to fill
+  - Frequency label display is `fixed` instead of `absolute` to enable
+    consistent size on hi-dpi displays
 
 6.1.0 (31.03.2022)
 ------------------
