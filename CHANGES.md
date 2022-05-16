@@ -4,7 +4,14 @@ wavesurfer.js changelog
 6.2.0 (unreleased)
 ------------------
 - Fix `clientWidth` error in responsive mode (#2498)
-- Fix `TypeError` when `showTime: undefined` in cursor plugin (#2501)
+- Cursor plugin:
+  - Fix `TypeError` when `showTime: undefined` (#2501)
+- Spectrogram plugin:
+  - Fix to have consistent CSS height regardless of device pixel ratio (#2507)
+  - Added `height` configuration option to control CSS height of the view,
+    which will scale to fill
+  - Frequency label display is `fixed` instead of `absolute` to enable
+    consistent size on hi-dpi displays
 
 6.1.0 (31.03.2022)
 ------------------
