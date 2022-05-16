@@ -4,6 +4,7 @@ wavesurfer.js changelog
 6.2.0 (unreleased)
 ------------------
 - Fix `clientWidth` error in responsive mode (#2498)
+- Fix `TypeError` when `showTime: undefined` in cursor plugin (#2501)
 
 6.1.0 (31.03.2022)
 ------------------
