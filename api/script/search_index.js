@@ -1878,6 +1878,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/plugin/minimap/index.js~minimapplugin#cleared",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-cleared",
+    "src/plugin/minimap/index.js~MinimapPlugin#cleared",
+    "member"
+  ],
+  [
     "src/plugin/minimap/index.js~minimapplugin#constructor",
     "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-constructor-constructor",
     "src/plugin/minimap/index.js~MinimapPlugin#constructor",
@@ -1900,6 +1906,12 @@ window.esdocSearchIndex = [
     "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-draggingOverview",
     "src/plugin/minimap/index.js~MinimapPlugin#draggingOverview",
     "member"
+  ],
+  [
+    "src/plugin/minimap/index.js~minimapplugin#drawregions",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-drawRegions",
+    "src/plugin/minimap/index.js~MinimapPlugin#drawRegions",
+    "method"
   ],
   [
     "src/plugin/minimap/index.js~minimapplugin#drawer",
@@ -1957,9 +1969,9 @@ window.esdocSearchIndex = [
   ],
   [
     "src/plugin/minimap/index.js~minimapplugin#regions",
-    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-method-regions",
+    "class/src/plugin/minimap/index.js~MinimapPlugin.html#instance-member-regions",
     "src/plugin/minimap/index.js~MinimapPlugin#regions",
-    "method"
+    "member"
   ],
   [
     "src/plugin/minimap/index.js~minimapplugin#regionsplugin",
@@ -2367,6 +2379,18 @@ window.esdocSearchIndex = [
     "src/plugin/spectrogram/index.js~spectrogramplugin#frequenciesdataurl",
     "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-frequenciesDataUrl",
     "src/plugin/spectrogram/index.js~SpectrogramPlugin#frequenciesDataUrl",
+    "member"
+  ],
+  [
+    "src/plugin/spectrogram/index.js~spectrogramplugin#frequencymax",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-frequencyMax",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#frequencyMax",
+    "member"
+  ],
+  [
+    "src/plugin/spectrogram/index.js~spectrogramplugin#frequencymin",
+    "class/src/plugin/spectrogram/index.js~SpectrogramPlugin.html#instance-member-frequencyMin",
+    "src/plugin/spectrogram/index.js~SpectrogramPlugin#frequencyMin",
     "member"
   ],
   [

@@ -189,6 +189,7 @@ export default class MinimapPlugin {
         this.drawer = new ws.Drawer(this.params.container, this.params);
         this.wavesurfer = ws;
         this.util = ws.util;
+        this.cleared = false;
         this.renderEvent = &apos;redraw&apos;;
         this.overviewRegion = null;
         this.regionsPlugin = this.wavesurfer[this.params.regionsPluginName];
@@ -212,7 +213,7 @@ export default class MinimapPlugin {
             }
 
             if (this.regionsPlugin &amp;&amp; this.params.showRegions) {
-                this.regions();
+                this.drawRegions();
             }
             this.render();
         };
@@ -247,6 +248,18 @@ export default class MinimapPlugin {
                 );
             }
         });
+        this._onLoading = percent =&gt; {
+            if (percent &gt;= 100) {
+                this.cleared = false;
+                return;
+            }
+            if (this.cleared === true) {
+                return;
+            }
+            const len = this.drawer.getWidth();
+            this.drawer.drawPeaks([0], len, 0, len);
+            this.cleared = true;
+        };
         this._onZoom = e =&gt; {
             this.render();
         };
@@ -272,12 +285,13 @@ export default class MinimapPlugin {
         this.wavesurfer.un(&apos;scroll&apos;, this._onScroll);
         this.wavesurfer.un(&apos;audioprocess&apos;, this._onAudioprocess);
         this.wavesurfer.un(&apos;zoom&apos;, this._onZoom);
+        this.wavesurfer.un(&apos;loading&apos;, this._onLoading);
         this.drawer.destroy();
         this.overviewRegion = null;
         this.unAll();
     }
 
-    regions() {
+    drawRegions() {
         this.regions = {};
 
         this.wavesurfer.on(&apos;region-created&apos;, region =&gt; {
@@ -360,6 +374,7 @@ export default class MinimapPlugin {
         window.addEventListener(&apos;orientationchange&apos;, this._onResize, true);
         this.wavesurfer.on(&apos;audioprocess&apos;, this._onAudioprocess);
         this.wavesurfer.on(&apos;seek&apos;, this._onSeek);
+        this.wavesurfer.on(&apos;loading&apos;, this._onLoading);
         if (this.params.showOverview) {
             this.wavesurfer.on(&apos;scroll&apos;, this._onScroll);
             this.wavesurfer.drawer.wrapper.addEventListener(

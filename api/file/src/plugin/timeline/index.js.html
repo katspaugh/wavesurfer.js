@@ -464,7 +464,13 @@ export default class TimelinePlugin {
         // build an array of position data with index, second and pixel data,
         // this is then used multiple times below
         const positioning = [];
-        for (i = 0; i &lt; totalSeconds / timeInterval; i++) {
+
+        // render until end in case we have a negative offset
+        const renderSeconds = (this.params.offset &lt; 0)
+            ? totalSeconds - this.params.offset
+            : totalSeconds;
+
+        for (i = 0; i &lt; renderSeconds / timeInterval; i++) {
             positioning.push([i, curSeconds, curPixel]);
             curSeconds += timeInterval;
             curPixel += pixelsPerSecond * timeInterval;

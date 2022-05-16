@@ -1860,6 +1860,14 @@ the channels of the audio</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">height</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>default: fftSamples/2</li></ul></td>
+      <td data-ice="description"><p>Height of the spectrogram view in CSS
+pixels</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
       <td data-ice="name" class="code" data-depth="0">labels</td>
       <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></td>
       <td data-ice="appendix"></td>
@@ -1898,6 +1906,21 @@ these: <code>&apos;bartlett&apos;</code>, <code>&apos;bartlettHann&apos;</code>,
       <td data-ice="description"><p>to control the
 size of the spectrogram in relation with its canvas. 1 = Draw on the whole
 canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">frequencyMin</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>default: 0</li></ul></td>
+      <td data-ice="description"><p>Min frequency to scale spectrogram.</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">frequencyMax</td>
+      <td data-ice="type" class="code"><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></td>
+      <td data-ice="appendix"><ul><li>default: 12000</li></ul></td>
+      <td data-ice="description"><p>Max frequency to scale spectrogram.
+Set this to samplerate/2 to draw whole range of spectrogram.</p>
 </td>
     </tr>
 <tr data-ice="property" data-depth="0">
