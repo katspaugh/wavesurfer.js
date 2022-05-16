@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-6.2.0 (unreleased)
+6.2.0 (16.05.2022)
 ------------------
 - Fix `clientWidth` error in responsive mode (#2498)
 - Cursor plugin:
