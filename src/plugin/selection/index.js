@@ -37,6 +37,8 @@
  * @property {?boolean} preventContextMenu=false Determines whether the context menu is prevented from being opened.
  * @property {boolean} showTooltip=true Enable/disable tooltip displaying start and end times when hovering over selection.
  * @property {number} selectionStart start point of the selection regions, relative to the boundary container
+ * @property {number} hideBarEnds number of bars of the waveform to hide at the beginning and end of a region
+ * @property {number} regionGap spacer to apply to regions to allow a visual gap without having an actual gap
  */
 
 import {Region} from "./region";
@@ -253,6 +255,9 @@ export default class SelectionPlugin {
         };
         this.maxSelections = 1;
         this.selectionsMinLength = params.selectionsMinLength || null;
+
+        this.wavesurfer.params.hideBarEnds = params.hideBarEnds || 1;
+        this.regionGap = params.regionGap || 0;
 
         this.boundary = {
             offset : this.params.boundaryOffset || 0,

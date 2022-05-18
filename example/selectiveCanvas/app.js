@@ -48,7 +48,9 @@ document.addEventListener('DOMContentLoaded', function() {
             selections : [{}],
             boundaryDuration : duration,
             zoneId : "ws1",
-            dragThruZones : false
+            dragThruZones : false,
+            hideBarEnds: 2,
+            regionGap: 2
         })],
         renderer      : SelectionPlugin.SelectiveCanvas
     });
