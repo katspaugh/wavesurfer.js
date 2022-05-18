@@ -617,8 +617,6 @@ export class Region {
             let updateZones = {...zoneOverlap};
 
             Object.entries(zones).forEach(([id, zone]) => {
-                if (['startZone', 'endZone'].includes(id)) { return;}
-
                 if (!updateZones[id]) {
                     updateZones[id] = {...zone};
                     updateFlag = true;
@@ -650,9 +648,6 @@ export class Region {
                 comparison = (a, b) => (a > b);
             }
             let workingArray = Object.values(zones).map((zone) => zone[boundaryKey]);
-            if (workingArray.length == 1) {
-                return workingArray[0];
-            }
 
             workingArray.sort(sorter);
             for (let i = 0; i < workingArray.length; i += 1) {
@@ -660,7 +655,7 @@ export class Region {
                     return workingArray[i];
                 }
             }
-
+            return null;
         };
         const onMove = (event) => {
             const duration = this.wavesurfer.getBoundary().duration;
@@ -700,7 +695,10 @@ export class Region {
                     time = minStart + regionLeftHalfTime;
                 }
 
-                newRange = {start: time - regionLeftHalfTime, end : time + regionRightHalfTime};
+                newRange = {
+                    start: this.wavesurfer.selection.util.msRound(time - regionLeftHalfTime),
+                    end : this.wavesurfer.selection.util.msRound(time + regionRightHalfTime)
+                };
                 const overlapZones = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
                 setZoneOverlap( overlapZones);
 
@@ -709,9 +707,9 @@ export class Region {
                         const bumperValue = nextZoneBoundary({...zoneOverlap, ...overlapZones}, startTime, time - startTime); // the overlapzone that we're bumping up against
                         // we're dragging right
                         if (time > startTime) {
-                            time = bumperValue - regionRightHalfTime - buffer;
+                            time = bumperValue !== null ? bumperValue - regionRightHalfTime - buffer : time;
                         } else {
-                            time = bumperValue + regionLeftHalfTime + buffer;
+                            time = bumperValue !== null ? bumperValue + regionLeftHalfTime + buffer : time;
                         }
                     }
                 }
@@ -744,7 +742,10 @@ export class Region {
                 }
 
                 // Check if we're resizing into another zone
-                newRange = {...startRange, start: time - regionLeftHalfTime};
+                newRange = {
+                    ...startRange,
+                    start: this.wavesurfer.selection.util.msRound(time - regionLeftHalfTime)
+                };
                 const overlapZones = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
                 if (overlapZones) {
                     const bumperValue = nextZoneBoundary(overlapZones, startTime, -1); // the overlapzone that we're bumping up against
@@ -770,7 +771,10 @@ export class Region {
                     time = startRange.start + audioDuration - this.start - regionRightHalfTime;
                 }
 
-                newRange = {...startRange, end : time + regionRightHalfTime};
+                newRange = {
+                    ...startRange,
+                    end : this.wavesurfer.selection.util.msRound(time + regionRightHalfTime)
+                };
                 const overlapZones = this.wavesurfer.getOverlapZone(newRange.start, newRange.end);
                 if (overlapZones) {
                     const bumperValue = nextZoneBoundary(overlapZones, startTime, 1); // the overlapzone that we're bumping up against

@@ -341,7 +341,7 @@ export default class SelectionPlugin {
 
         return {
             boundaryDuration : duration,
-            selectionStart : start - offset,
+            selectionStart : this.util.msRound(start - offset),
             audioStart : start,
             audioEnd : end
         };
@@ -383,8 +383,8 @@ export default class SelectionPlugin {
 
     getVisualRange({start, end}) {
         return {
-            start: start - this.boundary.offset,
-            end: end - this.boundary.offset
+            start: this.util.msRound(start - this.boundary.offset),
+            end: this.util.msRound(end - this.boundary.offset)
         };
     }
 
@@ -493,18 +493,6 @@ export default class SelectionPlugin {
 
     getDeadZones() {
         let {self, ...deadZones} = this.selectionZones;
-
-        // add contructed 'start' zone
-        deadZones.startZone = {
-            start : 0,
-            end   : 0
-        };
-        // add contructed 'end' zone
-        deadZones.endZone = {
-            start : this.boundary.duration,
-            end   : this.boundary.duration
-        };
-
         return deadZones;
     }
 
@@ -526,8 +514,8 @@ export default class SelectionPlugin {
                 (zones[id].start < start && zones[id].end >= start) ||
                 // selection overlaps the left side of a zone
                 (zones[id].start <= end && zones[id].end > end) ||
-                // zone is entirely within selection
-                (zones[id].start > start && zones[id].end < end) ||
+                // zone is entirely within selection (not start or end zone)
+                (zones[id].start >= start && zones[id].end <= end) ||
                 // zone exactly equals the selection
                 (zones[id].start === start && zones[id].end === end)
             ) {
