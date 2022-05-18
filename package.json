@@ -1,6 +1,6 @@
 {
   "name": "@animoto/wavesurfer.js",
-  "version": "6.1.11",
+  "version": "6.1.12",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "directories": {
