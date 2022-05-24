@@ -1,5 +1,7 @@
 import MediaElement from './mediaelement';
 
+const MediaElementMap = new WeakMap();
+
 /**
  * MediaElementWebAudio backend: load audio via an HTML5 audio tag, but playback with the WebAudio API.
  * The advantage here is that the html5 <audio> tag can perform range requests on the server and not
@@ -54,9 +56,14 @@ export default class MediaElementWebAudio extends MediaElement {
      * @param {HTMLMediaElement} mediaElement HTML5 Audio to load
      */
     createMediaElementSource(mediaElement) {
-        this.sourceMediaElement = this.ac.createMediaElementSource(
-            mediaElement
-        );
+        if (MediaElementMap.has(mediaElement)) {
+            this.sourceMediaElement = MediaElementMap.get(mediaElement);
+        } else {
+            this.sourceMediaElement = this.ac.createMediaElementSource(
+                mediaElement
+            );
+            MediaElementMap.set(mediaElement, this.sourceMediaElement);
+        }
         this.sourceMediaElement.connect(this.analyser);
     }
 
