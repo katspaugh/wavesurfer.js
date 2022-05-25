@@ -28,6 +28,8 @@ export class Region {
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
         this.drag = params.drag === undefined ? true : Boolean(params.drag);
+        this.contentEditable = Boolean(params.contentEditable);
+        this.removeButton = Boolean(params.removeButton);
         // reflect resize and drag state of region for region-updated listener
         this.isResizing = false;
         this.isDragging = false;
@@ -195,6 +197,40 @@ export class Region {
             height: this.regionHeight,
             top: this.marginTop
         });
+
+        /* Button Remove Region */
+        if (this.removeButton){
+            const removeButtonEl = document.createElement('div');
+            removeButtonEl.className = 'remove-region-button';
+            removeButtonEl.innerText = 'x';
+            this.removeButtonEl = this.element.appendChild(removeButtonEl);
+            const css = {
+                zIndex: 4,
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                cursor:'pointer',
+                marginRight: '3px',
+                fontSize: '80%',
+                color: 'grey',
+                height: '14px'
+            };
+            this.style(this.removeButtonEl, css);
+        }
+
+        /* Edit content */
+        if (this.contentEditable){
+            const contentEl = document.createElement('div');
+            contentEl.className = 'region-content';
+            contentEl.contentEditable = true;
+            contentEl.innerText = this.data.text || '';
+            this.contentEl = this.element.appendChild(contentEl);
+            const css = {
+                zIndex: 4,
+                padding: '2px 5px',
+                cursor:'text'};
+            this.style(this.contentEl, css);
+        }
 
         /* Resize handles */
         if (this.resize) {
@@ -399,6 +435,15 @@ export class Region {
             this.fireEvent('contextmenu', e);
             this.wavesurfer.fireEvent('region-contextmenu', this, e);
         });
+        /* Edit content */
+        if (this.contentEditable){
+            this.contentEl.addEventListener('blur', this.onContentEdit.bind(this));
+            this.contentEl.addEventListener('click', e => e.stopPropagation());
+        }
+        /* Edit content */
+        if (this.removeButton){
+            this.removeButtonEl.addEventListener('click', this.onRemove.bind(this));
+        }
 
         /* Drag or resize on mousemove. */
         if (this.drag || this.resize) {
@@ -792,6 +837,19 @@ export class Region {
                 end: Math.max(this.end + delta, this.start)
             }, eventParams);
         }
+    }
+
+    onContentEdit(event){
+        const {text: oldText} = this.data || {};
+        const text = event.target.innerText;
+        const data = {...this.data, text };
+        const eventParams = {action: 'contentEdited', oldText, text};
+        this.update({data}, eventParams);
+    }
+
+    onRemove(event){
+        event.stopPropagation();
+        this.remove();
     }
 
     updateHandlesResize(resize) {
