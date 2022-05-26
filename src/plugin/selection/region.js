@@ -291,7 +291,7 @@ export class Region {
                 width: 'inherit',
                 height: 'inherit',
                 'pointer-events': 'none',
-                'z-index':6
+                'z-index': 6
             };
 
             // Merge defaultDecoratorCSS properties.
@@ -365,8 +365,9 @@ export class Region {
         if (this.element != null) {
             // Calculate the left and width values of the region such that
             // no gaps appear between regions.
-            const left = Math.round((startLimited / dur) * width);
-            const regionWidth = Math.round((endLimited / dur) * width) - left;
+            const regionGapHalf = this.wavesurfer.selection.regionGap / 2;
+            const left = Math.round((startLimited / dur) * width + regionGapHalf);
+            const regionWidth = Math.round((endLimited / dur) * width - regionGapHalf) - left;
 
             this.style(this.element, {
                 left: left + 'px',

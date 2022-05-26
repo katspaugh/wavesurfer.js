@@ -242,7 +242,7 @@ export default class SelectiveCanvas extends MultiCanvas {
                 }
                 const displayOffset = this.boundaryOffset * this.params.minPxPerSec * this.params.pixelRatio;
 
-                const hideBarEnds = 1;
+                const hideBarEnds = this.params.hideBarEnds;
                 const adjustedDrawStart = peakIndex + step * hideBarEnds;
                 const adjustedDrawEnd = last - step * hideBarEnds;
 
