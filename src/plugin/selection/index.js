@@ -570,7 +570,6 @@ export default class SelectionPlugin {
 
         // replace region with new selection area
         this.region = selection;
-        this.updateCanvasSelection(selection);
 
         this.wavesurfer.on('region-updated', (regionData) => {
 
@@ -581,6 +580,7 @@ export default class SelectionPlugin {
             this.region = null;
         });
 
+        this.updateCanvasSelection(selection);
         return selection;
     }
 
