@@ -1,6 +1,13 @@
 wavesurfer.js changelog
 =======================
 
+6.3.0 (29.05.2022)
+- Regions plugin: 
+  - 2 new params:
+    - `{contentEditable: true}` allows to display/add/edit text in regions upon the waveform
+    - `{removeButton: true}` displays remove button in regions
+  - New example -- video annotation using `{contentEditable: true}` and `{removeButton: true}`
+
 6.2.0 (16.05.2022)
 ------------------
 - Fix `clientWidth` error in responsive mode (#2498)

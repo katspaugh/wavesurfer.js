@@ -4,8 +4,8 @@
  * @typedef {Object} RegionsPluginParams
  * @property {?boolean} dragSelection Enable creating regions by dragging with
  * the mouse
- * @property {boolean} contentEditable=false Allow/disallow editing content of the region.
- * @property {boolean} removeButton=false adds remove region button.
+ * @property {?boolean} contentEditable=false Allow/disallow editing content of the region
+ * @property {?boolean} removeButton=false adds remove region button
  * @property {?RegionParams[]} regions Regions that should be added upon
  * initialisation
  * @property {number} slop=2 The sensitivity of the mouse dragging
