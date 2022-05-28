@@ -2,6 +2,7 @@ wavesurfer.js changelog
 =======================
 
 6.3.0 (29.05.2022)
+------------------
 - Regions plugin: 
   - 2 new params:
     - `{contentEditable: true}` allows to display/add/edit text in regions upon the waveform

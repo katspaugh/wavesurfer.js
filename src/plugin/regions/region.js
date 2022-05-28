@@ -435,20 +435,27 @@ export class Region {
             this.fireEvent('contextmenu', e);
             this.wavesurfer.fireEvent('region-contextmenu', this, e);
         });
-        /* Edit content */
-        if (this.contentEditable){
-            this.contentEl.addEventListener('blur', this.onContentEdit.bind(this));
-            this.contentEl.addEventListener('click', e => e.stopPropagation());
-        }
-        /* Edit content */
-        if (this.removeButton){
-            this.removeButtonEl.addEventListener('click', this.onRemove.bind(this));
-        }
 
         /* Drag or resize on mousemove. */
         if (this.drag || this.resize) {
             this.bindDragEvents();
         }
+
+        /* Edit content */
+        if (this.contentEditable){
+            this.contentEl.addEventListener('blur', this.onContentBlur.bind(this));
+            this.contentEl.addEventListener('click', this.onContentClick.bind(this));
+        }
+        /* Remove button */
+        if (this.removeButton){
+            this.removeButtonEl.addEventListener('click', this.onRemove.bind(this));
+        }
+
+        this.on('remove', () => {
+            this.contentEl.removeEventListener('blur', this.onContentBlur.bind(this));
+            this.contentEl.removeEventListener('click', this.onContentClick.bind(this));
+            this.removeButtonEl.removeEventListener('click', this.onRemove.bind(this));
+        });
     }
 
     bindDragEvents() {
@@ -839,12 +846,16 @@ export class Region {
         }
     }
 
-    onContentEdit(event){
+    onContentBlur(event){
         const {text: oldText} = this.data || {};
         const text = event.target.innerText;
         const data = {...this.data, text };
         const eventParams = {action: 'contentEdited', oldText, text};
         this.update({data}, eventParams);
+    }
+
+    onContentClick(event){
+        event.stopPropagation();
     }
 
     onRemove(event){
