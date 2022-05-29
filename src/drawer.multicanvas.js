@@ -325,8 +325,8 @@ export default class MultiCanvas extends Drawer {
 
                     // in case of silences, allow the user to specify that we
                     // always draw *something* (normally a 1px high bar)
-                    if (h == 0 && this.params.barMinHeight) {
-                        h = this.params.barMinHeight;
+                    if (this.params.barMinHeight) {
+                        h = Math.max(h, this.params.barMinHeight);
                     }
 
                     this.fillRect(
