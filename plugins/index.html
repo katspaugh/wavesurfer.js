@@ -6,7 +6,7 @@ layout: default
 
   <h2>How to configure a plugin</h2>
 
-  <p>To start using a plugin, you need to insert the plugin library into your HTML page, alongside <code>wavesurfur.js</code>, like this:</p>
+  <p>To start using a plugin, you need to insert the plugin library into your HTML page, alongside <code>wavesurfer.js</code>, like this:</p>
   <pre><code>&lt;script src=&quot;https://unpkg.com/wavesurfer.js&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.min.js&quot;&gt;&lt;/script&gt;</code></pre>
   <p>You need to include the plugin's configuration when creating an instance of <code>WaveSurfer</code>:</p>
@@ -17,6 +17,19 @@ layout: default
     ]
 });</code></pre>
 
+  <p>When using NPM, the plugins are installed
+  in <code>node_modules</code> with the package but must be imported or required
+  locally in order to use them:
+    <pre><code class="javascript">
+# ES6: import RegionsPlugin from "wavesurfer.js/dist/plugin/wavesurfer.regions.min.js";
+const RegionsPlugin = require("wavesurfer.js/dist/plugin/wavesurfer.regions.min.js");
+var wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    plugins: [
+        RegionsPlugin.create({})
+    ]
+});</code></pre>
+  </p>
 
   <h2>Plugins</h2>
   <ul>
