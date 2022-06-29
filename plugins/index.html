@@ -17,12 +17,13 @@ layout: default
     ]
 });</code></pre>
 
-  <p>When using NPM, the plugins are installed
-  in <code>node_modules</code> with the package but must be imported or required
-  locally in order to use them:
+  <p>If you are using the NPM package with Webpack or another bundler,
+    the plugins are installed in <code>node_modules</code> with
+    the <b>wavesurfer.js</b> package, but they must first be imported
+    or required locally in order to use them:
     <pre><code class="javascript">
-# ES6: import RegionsPlugin from "wavesurfer.js/dist/plugin/wavesurfer.regions.min.js";
-const RegionsPlugin = require("wavesurfer.js/dist/plugin/wavesurfer.regions.min.js");
+// ES6: import RegionsPlugin from "wavesurfer.js/dist/plugin/wavesurfer.regions.min.js";
+var RegionsPlugin = require("wavesurfer.js/dist/plugin/wavesurfer.regions.min.js");
 var wavesurfer = WaveSurfer.create({
     container: '#waveform',
     plugins: [
