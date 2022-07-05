@@ -8,6 +8,7 @@
  * @property {?position} string "top" or "bottom", defaults to "bottom"
  * @property {?markerElement} element An HTML element to display instead of the default marker image
  * @property {?draggable} boolean Set marker as draggable, defaults to false
+ * @property {?boolean} preventContextMenu Determines whether the context menu is prevented from being opened, defaults to false
  */
 
 
@@ -159,7 +160,8 @@ export default class MarkersPlugin {
             label: params.label,
             color: params.color || DEFAULT_FILL_COLOR,
             position: params.position || DEFAULT_POSITION,
-            draggable: !!params.draggable
+            draggable: !!params.draggable,
+            preventContextMenu: !!params.preventContextMenu
         };
 
         marker.el = this._createMarkerElement(marker, params.markerElement);
@@ -275,6 +277,13 @@ export default class MarkersPlugin {
             }
             this.wavesurfer.setCurrentTime(marker.time);
             this.wavesurfer.fireEvent("marker-click", marker, e);
+        });
+
+        labelDiv.addEventListener("contextmenu", (e) => {
+            if (marker.preventContextMenu) {
+                e.preventDefault();
+            }
+            this.wavesurfer.fireEvent("marker-contextmenu", marker, e);
         });
 
         if (marker.draggable) {

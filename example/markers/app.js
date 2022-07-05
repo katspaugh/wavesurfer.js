@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     {
                         time: 0,
                         label: "BEGIN",
-                        color: '#ff990a'
+                        color: '#ff990a',
+                        preventContextMenu: true
                     },
                     {
                         time: 5.5,
@@ -58,6 +59,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     wavesurfer.on('marker-drop', function(marker) {
         console.log("marker drop", marker.label);
+    });
+
+    wavesurfer.on('marker-contextmenu', function(marker) {
+        console.log("marker context menu", marker.label);
     });
 
     // Load audio from URL
