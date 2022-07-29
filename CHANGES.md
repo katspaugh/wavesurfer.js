@@ -1,10 +1,44 @@
 wavesurfer.js changelog
 =======================
 
-6.1.0 (unreleased)
+x.x.x (unreleased)
 ------------------
 - Add `setWaveStyle` and `setProgressStyle` methods, which enable specifying a
   canvas image source to use as the waveform background (#2348)
+
+6.2.0 (16.05.2022)
+------------------
+- Fix `clientWidth` error in responsive mode (#2498)
+- Cursor plugin:
+  - Fix `TypeError` when `showTime: undefined` (#2501)
+- Spectrogram plugin:
+  - Fix to have consistent CSS height regardless of device pixel ratio (#2507)
+  - Added `height` configuration option to control CSS height of the view,
+    which will scale to fill
+  - Frequency label display is `fixed` instead of `absolute` to enable
+    consistent size on hi-dpi displays
+
+6.1.0 (31.03.2022)
+------------------
+- Fix many calls to `setSinkId` resulting in no sound (#2481)
+- Optimize responsive resize to avoid unnecessarily firing redraw on unpainted waveforms (#2485)
+- Minimap plugin:
+  - Remove waveform of previous audio when starting to load new audio (#2479)
+  - Changed regions function name to resolve ambiguities (#2482)
+
+6.0.4 (09.03.2022)
+------------------
+- Spectrogram plugin:
+  - Add `frequencyMin`, `frequencyMax` option to scale frequency axis. 
+    And set default 12kHz range to draw spectrogram like 5.x (#2455)
+- Timeline plugin:
+  - Fix rendering issue for negative `offset` values (#2463)
+
+6.0.3 (01.03.2022)
+------------------
+- Cursor plugin:
+  - Fix type documentation for `followCursorY` and `opacity` options (#2459)
+  - Fix destroying cursor and showTime dom nodes (#2460)
 
 6.0.2 (20.02.2022)
 ------------------

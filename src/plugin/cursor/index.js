@@ -5,7 +5,7 @@
  * waveform
  * @property {string} width='1px' The width of the cursor
  * @property {string} color='black' The color of the cursor
- * @property {string} opacity='0.25' The opacity of the cursor
+ * @property {number|string} opacity='0.25' The opacity of the cursor
  * @property {string} style='solid' The border style of the cursor
  * @property {number} zIndex=3 The z-index of the cursor element
  * @property {object} customStyle An object with custom styles which are applied
@@ -13,7 +13,7 @@
  * @property {boolean} showTime=false Show the time on the cursor.
  * @property {object} customShowTimeStyle An object with custom styles which are
  * applied to the cursor time element.
- * @property {string} followCursorY=false Use `true` to make the time on
+ * @property {boolean} followCursorY=false Use `true` to make the time on
  * the cursor follow the x and the y-position of the mouse. Use `false` to make the
  * it only follow the x-position of the mouse.
  * @property {function} formatTimeCallback Formats the timestamp on the cursor.
@@ -90,7 +90,8 @@ export default class CursorPlugin {
         const bbox = this.wrapper.getBoundingClientRect();
         let y = 0;
         let x = this.wrapper.scrollLeft + event.clientX - bbox.left;
-        let flip = bbox.right < event.clientX + this.displayTime.getBoundingClientRect().width;
+        const displayTimeWidth = this.displayTime ? this.displayTime.getBoundingClientRect().width : 0;
+        let flip = bbox.right < event.clientX + displayTimeWidth;
 
         if (this.params.showTime && this.params.followCursorY) {
             // follow y-position of the mouse
@@ -237,9 +238,9 @@ export default class CursorPlugin {
      */
     destroy() {
         if (this.params.showTime) {
-            this.cursor.parentNode.removeChild(this.showTime);
+            this.showTime.remove();
         }
-        this.cursor.parentNode.removeChild(this.cursor);
+        this.cursor.remove();
         this.wrapper.removeEventListener('mousemove', this._onMousemove);
         if (this.params.hideOnBlur) {
             this.wrapper.removeEventListener('mouseenter', this._onMouseenter);
