@@ -299,7 +299,7 @@ export default class RegionsPlugin {
             );
 
             // set the region channel index based on the clicked area
-            if (this.wavesurfer.params.splitChannels) {
+            if (this.wavesurfer.params.splitChannels && this.wavesurfer.params.splitChannelsOptions.splitDragSelection) {
                 const y = (e.touches ? e.touches[0].clientY : e.clientY) - wrapperRect.top;
                 const channelCount = this.wavesurfer.backend.buffer != null ? this.wavesurfer.backend.buffer.numberOfChannels : 1;
                 const channelHeight = this.wrapper.clientHeight / channelCount;
