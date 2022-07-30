@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+6.2.1 (30.07.2022)
+------------------
+- Fix `barMinHeight` option not setting the minimum bar height properly
+
 6.2.0 (16.05.2022)
 ------------------
 - Fix `clientWidth` error in responsive mode (#2498)

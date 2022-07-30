@@ -323,8 +323,8 @@ export default class MultiCanvas extends Drawer {
                     // calculate the height of this bar according to the highest peak found
                     let h = Math.round((peak / absmax) * halfH);
 
-                    // in case of silences, allow the user to specify that we
-                    // always draw *something* (normally a 1px high bar)
+                    // raise the bar height to the specified minimum height
+                    // Math.max is used to replace any value smaller than barMinHeight (not just 0) with barMinHeight
                     if (this.params.barMinHeight) {
                         h = Math.max(h, this.params.barMinHeight);
                     }
