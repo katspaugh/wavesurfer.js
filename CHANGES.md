@@ -1,6 +1,9 @@
 wavesurfer.js changelog
 =======================
 
+6.3.0 (unreleased)
+- Regions plugin: restore support for one drag selection for all channels (#2551)
+
 6.2.0 (16.05.2022)
 ------------------
 - Fix `clientWidth` error in responsive mode (#2498)
