@@ -174,7 +174,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {boolean} relativeNormalization=false determines whether
  * normalization is done per channel or maintains proportionality between
  * channels. Only applied when normalize and splitChannels are both true.
- * @property {boolean} splitDragSelection=false determines if drag selection in regions plugin works separately on each channel or only one selection for all channels
+ * @property {boolean} splitDragSelection=false determines if drag selection in regions
+ * plugin works separately on each channel or only one selection for all channels
  * @since 4.3.0
  */
 
