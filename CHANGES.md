@@ -5,7 +5,8 @@ wavesurfer.js changelog
 ------------------
 - Fix `barMinHeight` option not setting the minimum bar height properly (#2522)
 - Regions plugin: restore support for one drag selection for all channels (#2529)
-- Add support for a context menu event on a marker (#2546)
+- Markers plugin: 
+    - Add support for a context menu event on a marker (#2546)
 
 6.2.0 (16.05.2022)
 ------------------
