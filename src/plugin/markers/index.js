@@ -8,7 +8,8 @@
  * @property {?position} string "top" or "bottom", defaults to "bottom"
  * @property {?markerElement} element An HTML element to display instead of the default marker image
  * @property {?draggable} boolean Set marker as draggable, defaults to false
- * @property {?boolean} preventContextMenu Determines whether the context menu is prevented from being opened, defaults to false
+ * @property {?boolean} preventContextMenu Determines whether the context menu
+ * is prevented from being opened, defaults to false
  */
 
 
