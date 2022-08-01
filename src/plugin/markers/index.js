@@ -184,6 +184,18 @@ export default class MarkersPlugin {
         if (!marker) {
             return;
         }
+        let label = marker.el.getElementsByClassName("marker-label")[0];
+        if (label) {
+            if (label._onContextMenu) {
+                label.removeEventListener("contextmenu", label._onContextMenu);
+            }
+            if (label._onClick) {
+                label.removeEventListener("click", label._onClick);
+            }
+            if (label._onMouseDown) {
+                label.removeEventListener("mousedown", label._onMouseDown);
+            }
+        }
 
         this.wrapper.removeChild(marker.el);
         this.markers.splice(index, 1);
@@ -265,10 +277,11 @@ export default class MarkersPlugin {
             "align-items": "center",
             cursor: "pointer"
         });
+        labelDiv.classList.add("marker-label");
 
         el.appendChild(labelDiv);
 
-        labelDiv.addEventListener("click", e => {
+        labelDiv._onClick = (e) => {
             e.stopPropagation();
             // Click event is caught when the marker-drop event was dispatched.
             // Drop event was dispatched at this moment, but this.dragging
@@ -278,19 +291,22 @@ export default class MarkersPlugin {
             }
             this.wavesurfer.setCurrentTime(marker.time);
             this.wavesurfer.fireEvent("marker-click", marker, e);
-        });
+        };
+        labelDiv.addEventListener("click", labelDiv._onClick);
 
-        labelDiv.addEventListener("contextmenu", (e) => {
+        labelDiv._onContextMenu = (e) => {
             if (marker.preventContextMenu) {
                 e.preventDefault();
             }
             this.wavesurfer.fireEvent("marker-contextmenu", marker, e);
-        });
+        };
+        labelDiv.addEventListener("contextmenu", labelDiv._onContextMenu);
 
         if (marker.draggable) {
-            labelDiv.addEventListener("mousedown", e => {
+            labelDiv._onMouseDown = () => {
                 this.selectedMarker = marker;
-            });
+            };
+            labelDiv.addEventListener("mousedown", labelDiv._onMouseDown);
         }
         return el;
     }
