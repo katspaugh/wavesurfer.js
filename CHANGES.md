@@ -7,6 +7,7 @@ wavesurfer.js changelog
 - Regions plugin: restore support for one drag selection for all channels (#2529)
 - Markers plugin: 
   - Add support for a context menu event on a marker (#2546)
+- Spectrogram plugin: Make labels have position: absolute instead of fixed (#2542)
 
 6.2.0 (16.05.2022)
 ------------------
