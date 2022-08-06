@@ -1,10 +1,26 @@
 wavesurfer.js changelog
 =======================
 
-6.2.0 (unreleased)
+6.3.0 (unreleased)
+------------------
+- Fix `barMinHeight` option not setting the minimum bar height properly (#2522)
+- Respect mute state when changing volume during mute (#2502)
+- Regions plugin: restore support for one drag selection for all channels (#2529)
+- Markers plugin: 
+  - Add support for a context menu event on a marker (#2546)
+- Spectrogram plugin: Make labels have position: absolute instead of fixed (#2542)
+
+6.2.0 (16.05.2022)
 ------------------
 - Fix `clientWidth` error in responsive mode (#2498)
-- Respect mute state when changing volume during mute (#2502)
+- Cursor plugin:
+  - Fix `TypeError` when `showTime: undefined` (#2501)
+- Spectrogram plugin:
+  - Fix to have consistent CSS height regardless of device pixel ratio (#2507)
+  - Added `height` configuration option to control CSS height of the view,
+    which will scale to fill
+  - Frequency label display is `fixed` instead of `absolute` to enable
+    consistent size on hi-dpi displays
 
 6.1.0 (31.03.2022)
 ------------------

@@ -10,6 +10,8 @@ import FFT from './fft';
  * a power of 2.
  * @property {boolean} splitChannels=false Render with separate spectrograms for
  * the channels of the audio
+ * @property {number} height=fftSamples/2 Height of the spectrogram view in CSS
+ * pixels
  * @property {boolean} labels Set to true to display frequency labels.
  * @property {number} noverlap Size of the overlapping window. Must be <
  * fftSamples. Auto deduced from canvas size by default.
@@ -128,7 +130,7 @@ export default class SpectrogramPlugin {
             this.pixelRatio = this.params.pixelRatio || ws.params.pixelRatio;
             this.fftSamples =
                 this.params.fftSamples || ws.params.fftSamples || 512;
-            this.height = this.fftSamples / 2;
+            this.height = this.params.height || this.fftSamples / 2;
             this.noverlap = params.noverlap;
             this.windowFunc = params.windowFunc;
             this.alpha = params.alpha;
@@ -185,11 +187,10 @@ export default class SpectrogramPlugin {
             const labelsEl = (this.labelsEl = document.createElement('canvas'));
             labelsEl.classList.add('spec-labels');
             this.drawer.style(labelsEl, {
-                left: 0,
                 position: 'absolute',
                 zIndex: 9,
-                height: `${this.height * this.channels / this.pixelRatio}px`,
-                width: `${55 / this.pixelRatio}px`
+                height: `${this.height * this.channels}px`,
+                width: `55px`
             });
             this.wrapper.appendChild(labelsEl);
             this.loadLabels(
@@ -209,7 +210,7 @@ export default class SpectrogramPlugin {
             position: 'relative',
             userSelect: 'none',
             webkitUserSelect: 'none',
-            height: `${this.height * this.channels / this.pixelRatio}px`
+            height: `${this.height * this.channels}px`
         });
 
         if (wsParams.fillParent || wsParams.scrollParent) {
@@ -256,8 +257,9 @@ export default class SpectrogramPlugin {
     updateCanvasStyle() {
         const width = Math.round(this.width / this.pixelRatio) + 'px';
         this.canvas.width = this.width;
-        this.canvas.height = this.height * this.channels;
+        this.canvas.height = this.fftSamples / 2 * this.channels;
         this.canvas.style.width = width;
+        this.canvas.style.height = this.height + 'px';
     }
 
     drawSpectrogram(frequenciesData, my) {
@@ -267,7 +269,7 @@ export default class SpectrogramPlugin {
         }
 
         const spectrCc = my.spectrCc;
-        const height = my.height;
+        const height = my.fftSamples / 2;
         const width = my.width;
         const freqFrom = my.buffer.sampleRate / 2;
         const freqMin = my.frequencyMin;
@@ -404,8 +406,10 @@ export default class SpectrogramPlugin {
 
         // prepare canvas element for labels
         const ctx = this.labelsEl.getContext('2d');
-        this.labelsEl.height = this.height * this.channels;
-        this.labelsEl.width = bgWidth;
+        const dispScale = window.devicePixelRatio;
+        this.labelsEl.height = this.height * this.channels * dispScale;
+        this.labelsEl.width = bgWidth * dispScale;
+        ctx.scale(dispScale, dispScale);
 
         if (!ctx) {
             return;
