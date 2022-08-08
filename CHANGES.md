@@ -1,13 +1,18 @@
 wavesurfer.js changelog
 =======================
 
-6.3.0 (29.05.2022)
+6.3.0 (unreleased)
 ------------------
-- Regions plugin: 
-  - 2 new params:
+- Fix `barMinHeight` option not setting the minimum bar height properly (#2522)
+- Regions plugin:
+  - Restore support for one drag selection for all channels (#2529)
+  - 2 new params (#2521):
     - `{contentEditable: true}` allows to display/add/edit text in regions upon the waveform
     - `{removeButton: true}` displays remove button in regions
   - New example -- video annotation using `{contentEditable: true}` and `{removeButton: true}`
+- Markers plugin: 
+  - Add support for a context menu event on a marker (#2546)
+- Spectrogram plugin: Make labels have position: absolute instead of fixed (#2542)
 
 6.2.0 (16.05.2022)
 ------------------
