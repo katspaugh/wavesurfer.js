@@ -37,12 +37,7 @@ navigation:
   - title: FAQ
     url: /faq/
   - title: Upgrade
-    url: /upgrade/v2/
-    subnav:
-      - title: Changes
-        url: /upgrade/v2/changes.html
-      - title: Upgrading
-        url: /upgrade/v2/upgrading.html
+    url: https://github.com/katspaugh/wavesurfer.js/blob/master/UPGRADE.md
   - title: Plugins
     url: /plugins/
     subnav:
