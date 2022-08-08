@@ -64,7 +64,6 @@
     "babel-loader": "^8.2.5",
     "babel-plugin-add-module-exports": "^1.0.4",
     "babel-plugin-istanbul": "^6.1.1",
-    "babel-plugin-proxy": "^1.1.0",
     "date-fns": "^2.29.1",
     "debounce": "^1.2.1",
     "esdoc": "^1.1.0",
