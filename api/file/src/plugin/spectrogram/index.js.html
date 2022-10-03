@@ -280,7 +280,7 @@ export default class SpectrogramPlugin {
             const labelsEl = (this.labelsEl = document.createElement(&apos;canvas&apos;));
             labelsEl.classList.add(&apos;spec-labels&apos;);
             this.drawer.style(labelsEl, {
-                position: &apos;fixed&apos;,
+                position: &apos;absolute&apos;,
                 zIndex: 9,
                 height: `${this.height * this.channels}px`,
                 width: `55px`

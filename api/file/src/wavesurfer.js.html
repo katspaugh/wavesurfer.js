@@ -267,6 +267,8 @@ import MediaElementWebAudio from &apos;./mediaelement-webaudio&apos;;
  * @property {boolean} relativeNormalization=false determines whether
  * normalization is done per channel or maintains proportionality between
  * channels. Only applied when normalize and splitChannels are both true.
+ * @property {boolean} splitDragSelection=false determines if drag selection in regions
+ * plugin works separately on each channel or only one selection for all channels
  * @since 4.3.0
  */
 
@@ -391,7 +393,8 @@ export default class WaveSurfer extends util.Observer {
             overlay: false,
             channelColors: {},
             filterChannels: [],
-            relativeNormalization: false
+            relativeNormalization: false,
+            splitDragSelection: false
         },
         vertical: false,
         waveColor: &apos;#999&apos;,
@@ -1777,19 +1780,19 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Save waveform image as data URI.
      *
-     * The default format is `&apos;image/png&apos;`. Other supported types are
-     * `&apos;image/jpeg&apos;` and `&apos;image/webp&apos;`.
+     * The default format is `image/png`. Other supported types are
+     * `image/jpeg` and `image/webp`.
      *
      * @param {string} format=&apos;image/png&apos; A string indicating the image format.
-     * The default format type is `&apos;image/png&apos;`.
+     * The default format type is `image/png`.
      * @param {number} quality=1 A number between 0 and 1 indicating the image
      * quality to use for image formats that use lossy compression such as
-     * `&apos;image/jpeg&apos;`` and `&apos;image/webp&apos;`.
-     * @param {string} type Image data type to return. Either &apos;dataURL&apos; (default)
-     * or &apos;blob&apos;.
-     * @return {string|string[]|Promise} When using `&apos;dataURL&apos;` type this returns
+     * `image/jpeg` and `image/webp`.
+     * @param {string} type Image data type to return. Either `dataURL` (default)
+     * or `blob`.
+     * @return {string|string[]|Promise} When using `dataURL` type this returns
      * a single data URL or an array of data URLs, one for each canvas. When using
-     * `&apos;blob&apos;` type this returns a `Promise` resolving with an array of `Blob`
+     * `blob` type this returns a `Promise` resolving with an array of `Blob`
      * instances, one for each canvas.
      */
     exportImage(format, quality, type) {
