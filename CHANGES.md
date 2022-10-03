@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-6.3.0 (unreleased)
+6.3.0 (03.10.2022)
 ------------------
 - Fix `barMinHeight` option not setting the minimum bar height properly (#2522)
 - Regions plugin: restore support for one drag selection for all channels (#2529)
