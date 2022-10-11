@@ -4,6 +4,7 @@
  * @example wavesurfer.addMarker(regionParams);
  * @property {number} time The time to set the marker at
  * @property {?label} string An optional marker label
+ * @property {?tooltip} string An optional marker tooltip
  * @property {?color} string Background color for marker
  * @property {?position} string "top" or "bottom", defaults to "bottom"
  * @property {?markerElement} element An HTML element to display instead of the default marker image
@@ -159,6 +160,7 @@ export default class MarkersPlugin {
         let marker = {
             time: params.time,
             label: params.label,
+            tooltip: params.tooltip,
             color: params.color || DEFAULT_FILL_COLOR,
             position: params.position || DEFAULT_POSITION,
             draggable: !!params.draggable,
@@ -231,6 +233,7 @@ export default class MarkersPlugin {
 
     _createMarkerElement(marker, markerElement) {
         let label = marker.label;
+        let tooltip = marker.tooltip
 
         const el = document.createElement('marker');
         el.className = "wavesurfer-marker";
@@ -265,6 +268,7 @@ export default class MarkersPlugin {
         if ( label ) {
             const labelEl = document.createElement('span');
             labelEl.innerText = label;
+            labelEl.setAttribute('title', tooltip);
             this.style(labelEl, {
                 "font-family": "monospace",
                 "font-size": "90%"
