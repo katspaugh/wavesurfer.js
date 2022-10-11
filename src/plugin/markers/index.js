@@ -233,7 +233,7 @@ export default class MarkersPlugin {
 
     _createMarkerElement(marker, markerElement) {
         let label = marker.label;
-        let tooltip = marker.tooltip
+        let tooltip = marker.tooltip;
 
         const el = document.createElement('marker');
         el.className = "wavesurfer-marker";
