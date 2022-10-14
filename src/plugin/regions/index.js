@@ -91,6 +91,13 @@ export default class RegionsPlugin {
                     this.regions && this.regions.clear();
                 },
 
+                setIsClickCreationEnabled(isClickCreationEnabled) {
+                    if (!this.initialisedPluginList.regions) {
+                        this.initPlugin('regions');
+                    }
+                    this.regions.setIsClickCreationEnabled(isClickCreationEnabled);
+                },
+
                 enableDragSelection(options) {
                     if (!this.initialisedPluginList.regions) {
                         this.initPlugin('regions');
@@ -117,6 +124,7 @@ export default class RegionsPlugin {
         };
         this.maxRegions = params.maxRegions;
         this.regionsMinLength = params.regionsMinLength || null;
+        this.isClickCreationEnabled = false;
 
         // turn the plugin instance into an observer
         const observerPrototypeKeys = Object.getOwnPropertyNames(
@@ -212,6 +220,10 @@ export default class RegionsPlugin {
         });
     }
 
+    setIsClickCreationEnabled(isClickCreationEnabled) {
+        this.isClickCreationEnabled = isClickCreationEnabled;
+    }
+
     enableDragSelection(params) {
         this.disableDragSelection();
 
@@ -273,7 +285,22 @@ export default class RegionsPlugin {
 
             drag = true;
             start = this.wavesurfer.drawer.handleEvent(e, true);
-            region = null;
+            region = this.isClickCreationEnabled ? this.add(params || {}) : null;
+
+            if (this.isClickCreationEnabled) {
+                const end = this.wavesurfer.drawer.handleEvent(e);
+                const startUpdate = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+                    start * duration
+                );
+                const endUpdate = this.wavesurfer.regions.util.getRegionSnapToGridValue(
+                    end * duration
+                );
+                region.update({
+                    start: Math.min(endUpdate, startUpdate),
+                    end: Math.max(endUpdate, startUpdate)
+                });
+            }
+
             scrollDirection = null;
         };
         this.wrapper.addEventListener('mousedown', eventDown);
