@@ -395,23 +395,23 @@ export default class MarkersPlugin {
     }
 
     _registerEvents() {
-        if (!this.markers.find(marker => marker.draggable)){
+        if (!this.markers.find(marker => marker.draggable)) {
             return;
         }
         //we have some draggable markers, check for listeners
-        if(!this.onMouseMove) {
+        if (!this.onMouseMove) {
             this.onMouseMove = (e) => this._onMouseMove(e);
             window.addEventListener('mousemove', this.onMouseMove);
         }
 
-        if(!this.onMouseUp) {
+        if (!this.onMouseUp) {
             this.onMouseUp = (e) => this._onMouseUp(e);
             window.addEventListener("mouseup", this.onMouseUp);
         }
     }
 
     _unregisterEvents() {
-        if (this.markers.find(marker => marker.draggable)){
+        if (this.markers.find(marker => marker.draggable)) {
             return;
         }
         //we don't have any draggable markers, unregister listeners
@@ -423,7 +423,7 @@ export default class MarkersPlugin {
             this.onMouseUp = null;
             window.removeEventListener("mouseup", this.onMouseUp);
         }
-    }    
+    }
 
     /**
      * Remove all markers
