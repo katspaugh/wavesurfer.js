@@ -416,12 +416,12 @@ export default class MarkersPlugin {
         }
         //we don't have any draggable markers, unregister listeners
         if (this.onMouseMove) {
-            this.onMouseMove = null;
             window.removeEventListener('mousemove', this.onMouseMove);
+            this.onMouseMove = null;
         }
         if (this.onMouseUp) {
-            this.onMouseUp = null;
             window.removeEventListener("mouseup", this.onMouseUp);
+            this.onMouseUp = null;
         }
     }
 
