@@ -1,6 +1,10 @@
 wavesurfer.js changelog
 =======================
 
+6.4.0 (unreleased)
+------------------
+- Markers plugin: check for event after every add/remove (#2560)
+
 6.3.0 (03.10.2022)
 ------------------
 - Fix `barMinHeight` option not setting the minimum bar height properly (#2522)
