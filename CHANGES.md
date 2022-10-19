@@ -3,7 +3,9 @@ wavesurfer.js changelog
 
 6.4.0 (unreleased)
 ------------------
-- Markers plugin: check for event after every add/remove (#2560)
+- Markers plugin:
+  - Check for event after every add/remove (#2560)
+  - Add tooltip (#2595)
 
 6.3.0 (03.10.2022)
 ------------------
