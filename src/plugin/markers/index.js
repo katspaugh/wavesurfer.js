@@ -173,6 +173,8 @@ export default class MarkersPlugin {
         this.markers.push(marker);
         this._updateMarkerPositions();
 
+        this._registerEvents();
+
         return marker;
     }
 
@@ -201,6 +203,8 @@ export default class MarkersPlugin {
 
         this.wrapper.removeChild(marker.el);
         this.markers.splice(index, 1);
+
+        this._unregisterEvents();
     }
 
     _createPointerSVG(color, position) {
@@ -388,6 +392,37 @@ export default class MarkersPlugin {
         this.selectedMarker.time = this.wavesurfer.drawer.handleEvent(event) * duration;
         this._updateMarkerPositions();
         this.wavesurfer.fireEvent("marker-drop", this.selectedMarker, event);
+    }
+
+    _registerEvents() {
+        if (!this.markers.find(marker => marker.draggable)) {
+            return;
+        }
+        //we have some draggable markers, check for listeners
+        if (!this.onMouseMove) {
+            this.onMouseMove = (e) => this._onMouseMove(e);
+            window.addEventListener('mousemove', this.onMouseMove);
+        }
+
+        if (!this.onMouseUp) {
+            this.onMouseUp = (e) => this._onMouseUp(e);
+            window.addEventListener("mouseup", this.onMouseUp);
+        }
+    }
+
+    _unregisterEvents() {
+        if (this.markers.find(marker => marker.draggable)) {
+            return;
+        }
+        //we don't have any draggable markers, unregister listeners
+        if (this.onMouseMove) {
+            window.removeEventListener('mousemove', this.onMouseMove);
+            this.onMouseMove = null;
+        }
+        if (this.onMouseUp) {
+            window.removeEventListener("mouseup", this.onMouseUp);
+            this.onMouseUp = null;
+        }
     }
 
     /**
