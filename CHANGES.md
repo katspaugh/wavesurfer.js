@@ -7,7 +7,7 @@ wavesurfer.js changelog
   - Check for event after every add/remove (#2560)
   - Add tooltip (#2595)
 - Cursor plugin:
-  - Fix crash when `destroy` is called before `ready` event fired #2606
+  - Fix crash when `destroy` is called before `ready` event fired (#2606)
 
 6.3.0 (03.10.2022)
 ------------------
