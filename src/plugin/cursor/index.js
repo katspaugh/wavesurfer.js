@@ -17,7 +17,7 @@
  * the cursor follow the x and the y-position of the mouse. Use `false` to make the
  * it only follow the x-position of the mouse.
  * @property {function} formatTimeCallback Formats the timestamp on the cursor.
- * @property {boolean} isDestroyCalled  true if call destory before ready event
+ * @property {boolean} isDestroyCalled  true if called destroy before the ready event fired
  */
 
 /**
@@ -151,7 +151,9 @@ export default class CursorPlugin {
     }
 
     _onReady() {
-        if (this.isDestroyCalled) {return;}
+        if (this.isDestroyCalled) {
+            return;
+        }
         this.wrapper = this.wavesurfer.drawer.wrapper;
         this.cursor = this.util.withOrientation(this.wrapper.appendChild(
             document.createElement('cursor'),
@@ -333,7 +335,7 @@ export default class CursorPlugin {
      * @returns {string} Formatted timestamp
      */
     formatTime(cursorTime) {
-        cursorTime = isNaN( cursorTime ) ? 0 : cursorTime;
+        cursorTime = isNaN(cursorTime) ? 0 : cursorTime;
         if (this.params.formatTimeCallback) {
             return this.params.formatTimeCallback(cursorTime);
         }
