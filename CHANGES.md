@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-6.4.0 (unreleased)
+6.4.0 (05.11.2022)
 ------------------
 - Markers plugin:
   - Check for event after every add/remove (#2560)
