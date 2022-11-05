@@ -97,6 +97,7 @@
  * @example wavesurfer.addMarker(regionParams);
  * @property {number} time The time to set the marker at
  * @property {?label} string An optional marker label
+ * @property {?tooltip} string An optional marker tooltip
  * @property {?color} string Background color for marker
  * @property {?position} string &quot;top&quot; or &quot;bottom&quot;, defaults to &quot;bottom&quot;
  * @property {?markerElement} element An HTML element to display instead of the default marker image
@@ -252,6 +253,7 @@ export default class MarkersPlugin {
         let marker = {
             time: params.time,
             label: params.label,
+            tooltip: params.tooltip,
             color: params.color || DEFAULT_FILL_COLOR,
             position: params.position || DEFAULT_POSITION,
             draggable: !!params.draggable,
@@ -263,6 +265,8 @@ export default class MarkersPlugin {
         this.wrapper.appendChild(marker.el);
         this.markers.push(marker);
         this._updateMarkerPositions();
+
+        this._registerEvents();
 
         return marker;
     }
@@ -292,6 +296,8 @@ export default class MarkersPlugin {
 
         this.wrapper.removeChild(marker.el);
         this.markers.splice(index, 1);
+
+        this._unregisterEvents();
     }
 
     _createPointerSVG(color, position) {
@@ -324,6 +330,7 @@ export default class MarkersPlugin {
 
     _createMarkerElement(marker, markerElement) {
         let label = marker.label;
+        let tooltip = marker.tooltip;
 
         const el = document.createElement(&apos;marker&apos;);
         el.className = &quot;wavesurfer-marker&quot;;
@@ -358,6 +365,7 @@ export default class MarkersPlugin {
         if ( label ) {
             const labelEl = document.createElement(&apos;span&apos;);
             labelEl.innerText = label;
+            labelEl.setAttribute(&apos;title&apos;, tooltip);
             this.style(labelEl, {
                 &quot;font-family&quot;: &quot;monospace&quot;,
                 &quot;font-size&quot;: &quot;90%&quot;
@@ -477,6 +485,37 @@ export default class MarkersPlugin {
         this.selectedMarker.time = this.wavesurfer.drawer.handleEvent(event) * duration;
         this._updateMarkerPositions();
         this.wavesurfer.fireEvent(&quot;marker-drop&quot;, this.selectedMarker, event);
+    }
+
+    _registerEvents() {
+        if (!this.markers.find(marker =&gt; marker.draggable)) {
+            return;
+        }
+        //we have some draggable markers, check for listeners
+        if (!this.onMouseMove) {
+            this.onMouseMove = (e) =&gt; this._onMouseMove(e);
+            window.addEventListener(&apos;mousemove&apos;, this.onMouseMove);
+        }
+
+        if (!this.onMouseUp) {
+            this.onMouseUp = (e) =&gt; this._onMouseUp(e);
+            window.addEventListener(&quot;mouseup&quot;, this.onMouseUp);
+        }
+    }
+
+    _unregisterEvents() {
+        if (this.markers.find(marker =&gt; marker.draggable)) {
+            return;
+        }
+        //we don&apos;t have any draggable markers, unregister listeners
+        if (this.onMouseMove) {
+            window.removeEventListener(&apos;mousemove&apos;, this.onMouseMove);
+            this.onMouseMove = null;
+        }
+        if (this.onMouseUp) {
+            window.removeEventListener(&quot;mouseup&quot;, this.onMouseUp);
+            this.onMouseUp = null;
+        }
     }
 
     /**

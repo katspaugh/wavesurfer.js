@@ -1284,6 +1284,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/plugin/cursor/index.js~cursorplugin#isdestroycalled",
+    "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-isDestroyCalled",
+    "src/plugin/cursor/index.js~CursorPlugin#isDestroyCalled",
+    "member"
+  ],
+  [
     "src/plugin/cursor/index.js~cursorplugin#params",
     "class/src/plugin/cursor/index.js~CursorPlugin.html#instance-member-params",
     "src/plugin/cursor/index.js~CursorPlugin#params",

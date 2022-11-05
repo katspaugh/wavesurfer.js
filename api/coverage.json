@@ -1,7 +1,7 @@
 {
-  "coverage": "64.73%",
-  "expectCount": 621,
-  "actualCount": 402,
+  "coverage": "64.58%",
+  "expectCount": 624,
+  "actualCount": 403,
   "files": {
     "src/drawer.canvasentry.js": {
       "expectCount": 24,
@@ -51,15 +51,15 @@
       "undocumentLines": []
     },
     "src/plugin/cursor/index.js": {
-      "expectCount": 22,
-      "actualCount": 16,
+      "expectCount": 23,
+      "actualCount": 17,
       "undocumentLines": [
-        122,
         123,
         124,
-        144,
-        147,
-        148
+        125,
+        150,
+        153,
+        157
       ]
     },
     "src/plugin/elan/index.js": {
@@ -85,13 +85,12 @@
       ]
     },
     "src/plugin/markers/index.js": {
-      "expectCount": 33,
+      "expectCount": 35,
       "actualCount": 8,
       "undocumentLines": [
-        39,
-        41,
-        73,
-        80,
+        40,
+        42,
+        74,
         81,
         82,
         83,
@@ -100,19 +99,22 @@
         86,
         87,
         88,
-        91,
-        95,
+        89,
+        92,
         96,
-        108,
-        111,
-        115,
+        97,
+        109,
+        112,
         116,
-        122,
-        133,
-        204,
-        232,
-        307,
-        314
+        117,
+        123,
+        134,
+        210,
+        238,
+        315,
+        322,
+        397,
+        413
       ]
     },
     "src/plugin/mediasession/index.js": {
