@@ -410,7 +410,8 @@ export default class MultiCanvas extends Drawer {
         this.canvases.forEach((entry, i) => {
             this.setFillStyles(entry, waveColor, progressColor);
             this.applyCanvasTransforms(entry, this.params.vertical);
-            entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
+            clearTimeout(entry.drawTimeout);
+            entry.drawTimeout = setTimeout(function(){entry.drawLines(peaks, absmax, halfH, offsetY, start, end);}, 100 * i);
         });
     }
 

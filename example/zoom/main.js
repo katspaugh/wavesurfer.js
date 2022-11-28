@@ -55,6 +55,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // set initial zoom to match slider value
     wavesurfer.zoom(slider.value);
 
+    function display_png() {
+
+        let waveSnapElement = document.getElementById('wavesnap');
+        let sections = waveSnapElement.querySelectorAll("img");
+        for (var i = 0; i < sections.length; i++) {
+            sections[i].remove();
+        }
+
+        let wavesnapImages = wavesurfer.exportImage();
+
+        if (wavesnapImages.constructor === Array) {
+            wavesnapImages.forEach(element => {
+                var image = `<img src = "${element}" alt = "wave_segment" width=100% height=128>`;
+                document.getElementById('wavesnap').innerHTML += image;
+            });
+        } else {
+            var image = `<img src = "${wavesnapImages}" alt = wave" width=100% height=128 position>`;
+            document.getElementById('wavesnap').innerHTML += image;
+        }
+    }
+    setInterval(display_png, 5000);
+
     // Play button
     let button = document.querySelector('[data-action="play"]');
 

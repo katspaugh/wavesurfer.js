@@ -66,6 +66,10 @@ export default class CanvasEntry {
          * @type {object}
          */
         this.canvasContextAttributes = {};
+        /**
+         * The Timeout id used to track this canvas entry.
+         */
+        this.drawTimeout = null;
     }
 
     /**

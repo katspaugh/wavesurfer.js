@@ -137,6 +137,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  *         }
  *     ]
  * };`
+ * @property {number} peakTimeout=null
  */
 
 /**
@@ -305,7 +306,8 @@ export default class WaveSurfer extends util.Observer {
         },
         vertical: false,
         waveColor: '#999',
-        xhr: {}
+        xhr: {},
+        peakTimeout: null
     };
 
     /** @private */
@@ -1272,6 +1274,22 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Calls getPeaks() and drawPeaks()
+     * @param {WaveSurfer} wavesurfer the Wavesurfer to get/draw peaks from/to
+     * @param {number} width The width of the area that should be drawn
+     * @param {number} start The x-offset of the beginning of the area that
+     * should be rendered
+     * @param {number} end The x-offset of the end of the area that should be
+     * rendered
+     */
+    getAndDrawPeaks(wavesurfer, width, start, end) {
+        let peaks;
+        peaks = wavesurfer.backend.getPeaks(width, start, end);
+        wavesurfer.drawer.drawPeaks(peaks, width, start, end);
+        wavesurfer.fireEvent('redraw', peaks, width);
+    }
+
+    /**
      * Get the correct peaks for current wave view-port and render wave
      *
      * @private
@@ -1297,8 +1315,6 @@ export default class WaveSurfer extends util.Observer {
             start = 0;
             end = width;
         }
-
-        let peaks;
         if (this.params.partialRender) {
             const newRanges = this.peakCache.addRangeToPeakCache(
                 width,
@@ -1307,23 +1323,16 @@ export default class WaveSurfer extends util.Observer {
             );
             let i;
             for (i = 0; i < newRanges.length; i++) {
-                peaks = this.backend.getPeaks(
-                    width,
-                    newRanges[i][0],
-                    newRanges[i][1]
-                );
-                this.drawer.drawPeaks(
-                    peaks,
+                this.getAndDrawPeaks(
                     width,
                     newRanges[i][0],
                     newRanges[i][1]
                 );
             }
         } else {
-            peaks = this.backend.getPeaks(width, start, end);
-            this.drawer.drawPeaks(peaks, width, start, end);
+            clearTimeout(this.params.peakTimeout);
+            this.params.peakTimeout = setTimeout(this.getAndDrawPeaks, 10, this, width, start, end);
         }
-        this.fireEvent('redraw', peaks, width);
     }
 
     /**
