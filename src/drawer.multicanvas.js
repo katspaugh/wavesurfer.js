@@ -1,6 +1,7 @@
 import Drawer from './drawer';
 import * as util from './util';
 import CanvasEntry from './drawer.canvasentry';
+import { parseISO } from 'date-fns';
 
 /**
  * MultiCanvas renderer for wavesurfer. Is currently the default and sole
@@ -606,6 +607,35 @@ export default class MultiCanvas extends Drawer {
             return images.length > 1 ? images : images[0];
         }
     }
+
+    /**
+     * Creates the background image for mimicking zoom
+     */
+    setPNG() {
+        let wavesnapImage = this.getImage('image/png', 1, 'dataURL');
+        let image = document.createElement('img');
+        image.id = "backimage";
+        image.src = wavesnapImage;
+        image.style.position = "absolute";
+        image.style.zIndex = 1;
+        image.style.height = '100%';
+        image.style.width = '100%';
+
+        this.wrapper.appendChild(image);
+    }
+
+    /**
+     * Stretches the backimage to mimic zoom without calculation
+     *
+     * @param {*} minPxPerSec baseline minimum zoom value
+     * @param {*} zoomLevel current zoom value
+     */
+    stretchPNG(minPxPerSec, zoomLevel) {
+        const totalWidth = Math.round(this.width / this.params.pixelRatio);
+        let image = this.wrapper.children.namedItem("backimage");
+        image.style.width = `${ 50 * zoomLevel / minPxPerSec + 50 }%`;
+    }
+
 
     /**
      * Render the new progress

@@ -48,13 +48,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Allow extreme zoom-in, to see individual samples
     slider.max = 1000;
 
+
     slider.addEventListener('input', function() {
-        wavesurfer.zoom(Number(this.value));
+        //wavesurfer.zoom(Number(this.value));
+        wavesurfer.drawer.stretchPNG(slider.min, slider.value);
+    });
+    slider.addEventListener('mouseup', function() {
+        wavesurfer.zoom(slider.value);
     });
 
     // set initial zoom to match slider value
     wavesurfer.zoom(slider.value);
+    setTimeout(function(){wavesurfer.drawer.setPNG();}, 2000);
 
+    /**
     function display_png() {
 
         let waveSnapElement = document.getElementById('wavesnap');
@@ -75,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('wavesnap').innerHTML += image;
         }
     }
-    setInterval(display_png, 5000);
+    */
 
     // Play button
     let button = document.querySelector('[data-action="play"]');
