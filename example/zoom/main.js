@@ -51,15 +51,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     slider.addEventListener('input', function() {
         //wavesurfer.zoom(Number(this.value));
-        wavesurfer.drawer.stretchPNG(slider.min, slider.value);
+        wavesurfer.drawer.stretchBackimage(slider.min, slider.value);
+        wavesurfer.drawer.hideCanvases();
     });
     slider.addEventListener('mouseup', function() {
         wavesurfer.zoom(slider.value);
+        wavesurfer.drawer.showCanvases();
+        wavesurfer.drawer.hideBackimage();
     });
 
     // set initial zoom to match slider value
     wavesurfer.zoom(slider.value);
-    setTimeout(function(){wavesurfer.drawer.setPNG();}, 2000);
+    setTimeout(function(){wavesurfer.drawer.setBackimage();}, 2000);
 
     /**
     function display_png() {

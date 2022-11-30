@@ -611,7 +611,7 @@ export default class MultiCanvas extends Drawer {
     /**
      * Creates the background image for mimicking zoom
      */
-    setPNG() {
+    setBackimage() {
         let wavesnapImage = this.getImage('image/png', 1, 'dataURL');
         let image = document.createElement('img');
         image.id = "backimage";
@@ -630,10 +630,28 @@ export default class MultiCanvas extends Drawer {
      * @param {*} minPxPerSec baseline minimum zoom value
      * @param {*} zoomLevel current zoom value
      */
-    stretchPNG(minPxPerSec, zoomLevel) {
+    stretchBackimage(minPxPerSec, zoomLevel) {
         const totalWidth = Math.round(this.width / this.params.pixelRatio);
         let image = this.wrapper.children.namedItem("backimage");
-        image.style.width = `${ 50 * zoomLevel / minPxPerSec + 50 }%`;
+        image.style.width = `${ 49 * zoomLevel / minPxPerSec + 51 }%`;
+        image.style.display = "block";
+    }
+
+    hideBackimage() {
+        let image = this.wrapper.children.namedItem("backimage");
+        image.style.display = "none";
+    }
+
+    hideCanvases() {
+        this.canvases.forEach(function(item, index) {
+            item.wave.domElement.style.display = "none";
+        });
+    }
+
+    showCanvases() {
+        this.canvases.forEach(function(item, index) {
+            item.wave.domElement.style.display = "block";
+        });
     }
 
 
