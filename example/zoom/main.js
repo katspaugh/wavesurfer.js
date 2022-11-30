@@ -50,42 +50,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     slider.addEventListener('input', function() {
-        //wavesurfer.zoom(Number(this.value));
-        wavesurfer.drawer.stretchBackimage(slider.min, slider.value);
-        wavesurfer.drawer.hideCanvases();
+        wavesurfer.zooming(slider.value);
     });
     slider.addEventListener('mouseup', function() {
         wavesurfer.zoom(slider.value);
-        wavesurfer.drawer.showCanvases();
-        wavesurfer.drawer.hideBackimage();
+        console.log(slider.value);
     });
 
     // set initial zoom to match slider value
     wavesurfer.zoom(slider.value);
-    setTimeout(function(){wavesurfer.drawer.setBackimage();}, 2000);
-
-    /**
-    function display_png() {
-
-        let waveSnapElement = document.getElementById('wavesnap');
-        let sections = waveSnapElement.querySelectorAll("img");
-        for (var i = 0; i < sections.length; i++) {
-            sections[i].remove();
-        }
-
-        let wavesnapImages = wavesurfer.exportImage();
-
-        if (wavesnapImages.constructor === Array) {
-            wavesnapImages.forEach(element => {
-                var image = `<img src = "${element}" alt = "wave_segment" width=100% height=128>`;
-                document.getElementById('wavesnap').innerHTML += image;
-            });
-        } else {
-            var image = `<img src = "${wavesnapImages}" alt = wave" width=100% height=128 position>`;
-            document.getElementById('wavesnap').innerHTML += image;
-        }
-    }
-    */
 
     // Play button
     let button = document.querySelector('[data-action="play"]');

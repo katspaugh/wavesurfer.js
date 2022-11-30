@@ -90,6 +90,7 @@ export default class MultiCanvas extends Drawer {
          * @type {boolean}
          */
         this.vertical = params.vertical;
+
     }
 
     /**
@@ -411,8 +412,13 @@ export default class MultiCanvas extends Drawer {
         this.canvases.forEach((entry, i) => {
             this.setFillStyles(entry, waveColor, progressColor);
             this.applyCanvasTransforms(entry, this.params.vertical);
+
+            //This staggers the drawing of canvases so they don't all draw at once
             clearTimeout(entry.drawTimeout);
-            entry.drawTimeout = setTimeout(function(){entry.drawLines(peaks, absmax, halfH, offsetY, start, end);}, 100 * i);
+            entry.drawTimeout = setTimeout(function(){
+                entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
+                entry.setBackimage(); //Create canvas backimage
+            }, 20 * i);
         });
     }
 
@@ -609,51 +615,17 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
-     * Creates the background image for mimicking zoom
-     */
-    setBackimage() {
-        let wavesnapImage = this.getImage('image/png', 1, 'dataURL');
-        let image = document.createElement('img');
-        image.id = "backimage";
-        image.src = wavesnapImage;
-        image.style.position = "absolute";
-        image.style.zIndex = 1;
-        image.style.height = '100%';
-        image.style.width = '100%';
-
-        this.wrapper.appendChild(image);
-    }
-
-    /**
      * Stretches the backimage to mimic zoom without calculation
      *
-     * @param {*} minPxPerSec baseline minimum zoom value
-     * @param {*} zoomLevel current zoom value
+     * @param {Number} desiredWidth width of new wave
      */
-    stretchBackimage(minPxPerSec, zoomLevel) {
-        const totalWidth = Math.round(this.width / this.params.pixelRatio);
-        let image = this.wrapper.children.namedItem("backimage");
-        image.style.width = `${ 49 * zoomLevel / minPxPerSec + 51 }%`;
-        image.style.display = "block";
-    }
-
-    hideBackimage() {
-        let image = this.wrapper.children.namedItem("backimage");
-        image.style.display = "none";
-    }
-
-    hideCanvases() {
-        this.canvases.forEach(function(item, index) {
-            item.wave.domElement.style.display = "none";
+    stretchBackimage(desiredWidth) {
+        let ratio = desiredWidth / this.width;
+        //console.log(`Current width: ${this.width}`);
+        this.canvases.forEach((entry, i) => {
+            entry.stretchBackimage(ratio);
         });
     }
-
-    showCanvases() {
-        this.canvases.forEach(function(item, index) {
-            item.wave.domElement.style.display = "block";
-        });
-    }
-
 
     /**
      * Render the new progress

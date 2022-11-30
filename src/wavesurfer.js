@@ -1330,8 +1330,9 @@ export default class WaveSurfer extends util.Observer {
                 );
             }
         } else {
-            clearTimeout(this.params.peakTimeout);
-            this.params.peakTimeout = setTimeout(this.getAndDrawPeaks, 10, this, width, start, end);
+            this.getAndDrawPeaks(this, width, start, end);
+            //clearTimeout(this.params.peakTimeout);
+            //this.params.peakTimeout = setTimeout(this.getAndDrawPeaks, 10, this, width, start, end);
         }
     }
 
@@ -1357,6 +1358,18 @@ export default class WaveSurfer extends util.Observer {
         this.drawBuffer();
         this.drawer.progress(this.backend.getPlayedPercents());
 
+        this.drawer.recenter(this.getCurrentTime() / this.getDuration());
+        this.fireEvent('zoom', pxPerSec);
+    }
+
+    zooming(pxPerSec) {
+        let desiredWidth = Math.round(this.getDuration() * pxPerSec * this.params.pixelRatio);
+        let parentWidth = this.drawer.getWidth();
+        desiredWidth = Math.max(parentWidth, desiredWidth);
+        //console.log(`Desired width: ${desiredWidth}`);
+
+        this.drawer.stretchBackimage(desiredWidth);
+        this.drawer.progress(this.backend.getPlayedPercents());
         this.drawer.recenter(this.getCurrentTime() / this.getDuration());
         this.fireEvent('zoom', pxPerSec);
     }

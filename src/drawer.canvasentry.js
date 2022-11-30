@@ -428,4 +428,31 @@ export default class CanvasEntry {
             return this.wave.toDataURL(format, quality);
         }
     }
+
+    /**
+     * Creates the background image for mimicking zoom
+     */
+    setBackimage() {
+        let backImage = this.getImage('image/png', 1, 'dataURL');
+
+        if (this.wave.querySelector("#backimage") != null) {
+            let image = this.wave.querySelector("#backimage");
+            image.src = backImage;
+        } else {
+            let image = document.createElement('img');
+            image.id = "backimage";
+            image.src = backImage;
+            image.style.position = "absolute";
+            image.style.zIndex = 1;
+            this.wave.appendChild(image);
+        }
+    }
+
+    stretchBackimage(ratio) {
+        let image = this.wave.querySelector("#backimage");
+        //let zoomScale = (49 * zoomLevel / minPxPerSec + 51)/100;
+        this.waveCtx.clearRect(0, 0, this.wave.width, this.wave.height);
+        //console.log(`Start: ${ratio * this.wave.offsetLeft} End:${ratio * (this.wave.width + this.wave.offsetLeft)} Size: ${ratio * this.wave.width}`);
+        this.waveCtx.drawImage(image, ratio * this.wave.offsetLeft, 0, ratio * this.wave.width, image.height);
+    }
 }
