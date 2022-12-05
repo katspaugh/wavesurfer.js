@@ -54,7 +54,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     slider.addEventListener('mouseup', function() {
         wavesurfer.zoom(slider.value);
-        console.log(slider.value);
     });
 
     // set initial zoom to match slider value

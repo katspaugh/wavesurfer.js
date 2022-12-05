@@ -430,9 +430,33 @@ export default class CanvasEntry {
     }
 
     /**
-     * Creates the background image for mimicking zoom
+     * Return image data of the wave `canvas` element progress overlay
+     *
+     * When using a `type` of `'blob'`, this will return a `Promise` that
+     * resolves with a `Blob` instance.
+     *
+     * @param {string} format='image/png' An optional value of a format type.
+     * @param {number} quality=0.92 An optional value between 0 and 1.
+     * @param {string} type='dataURL' Either 'dataURL' or 'blob'.
+     * @return {string|Promise} When using the default `'dataURL'` `type` this
+     * returns a data URL. When using the `'blob'` `type` this returns a
+     * `Promise` that resolves with a `Blob` instance.
+     */
+    getProgressImage(format, quality, type) {
+        if (type === 'blob') {
+            return new Promise(resolve => {
+                this.progress.toBlob(resolve, format, quality);
+            });
+        } else if (type === 'dataURL') {
+            return this.progress.toDataURL(format, quality);
+        }
+    }
+
+    /**
+     * Creates the background images of wave and progress for mimicking zoom
      */
     setBackimage() {
+        //For the wave
         let backImage = this.getImage('image/png', 1, 'dataURL');
 
         if (this.wave.querySelector("#backimage") != null) {
@@ -446,13 +470,52 @@ export default class CanvasEntry {
             image.style.zIndex = 1;
             this.wave.appendChild(image);
         }
+
+        //For the progress
+        let progBackImage = this.getProgressImage('image/png', 1, 'dataURL');
+
+        if (this.progress.querySelector("#backimage") != null) {
+            let progImage = this.progress.querySelector("#backimage");
+            progImage.src = progBackImage;
+        } else {
+            let progImage = document.createElement('img');
+            progImage.id = "backimage";
+            progImage.src = progBackImage;
+            progImage.style.position = "absolute";
+            progImage.style.zIndex = 1;
+            this.progress.appendChild(progImage);
+        }
     }
 
-    stretchBackimage(ratio) {
+    /**
+     * Stretches and displays the background images
+     * @param {*} start The start position of this canvas
+     * @param {*} ratio The ratio to stretch the width by
+     * @param {*} totalWidth The desired width of the entire element
+     * @param {*} pixelRatio Pixel ratio of the screen being displayed to
+     * @returns the end position of the canvas
+     */
+    stretchBackimage(start, ratio, totalWidth, pixelRatio) {
+        //Variables
+        let newWidth = ratio * this.wave.width;
+        let canvasWidth = Math.round(newWidth / pixelRatio);
+
+        //Stretch canvases
+        this.updateDimensions(canvasWidth, totalWidth, this.wave.width, this.wave.height);
+
+        //Wave
         let image = this.wave.querySelector("#backimage");
-        //let zoomScale = (49 * zoomLevel / minPxPerSec + 51)/100;
+        let end = start + newWidth;
+
         this.waveCtx.clearRect(0, 0, this.wave.width, this.wave.height);
-        //console.log(`Start: ${ratio * this.wave.offsetLeft} End:${ratio * (this.wave.width + this.wave.offsetLeft)} Size: ${ratio * this.wave.width}`);
-        this.waveCtx.drawImage(image, ratio * this.wave.offsetLeft, 0, ratio * this.wave.width, image.height);
+        this.waveCtx.drawImage(image, start, 0, this.wave.width, image.height);
+
+        //Progress
+        let progImage = this.progress.querySelector("#backimage");
+
+        this.progressCtx.clearRect(0, 0, this.progress.width, this.progress.height);
+        this.progressCtx.drawImage(progImage, start, 0, this.progress.width, progImage.height);
+
+        return end;
     }
 }

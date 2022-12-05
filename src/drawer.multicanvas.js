@@ -415,10 +415,10 @@ export default class MultiCanvas extends Drawer {
 
             //This staggers the drawing of canvases so they don't all draw at once
             clearTimeout(entry.drawTimeout);
+            entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
             entry.drawTimeout = setTimeout(function(){
-                entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
                 entry.setBackimage(); //Create canvas backimage
-            }, 20 * i);
+            }, 10 * i);
         });
     }
 
@@ -618,13 +618,19 @@ export default class MultiCanvas extends Drawer {
      * Stretches the backimage to mimic zoom without calculation
      *
      * @param {Number} desiredWidth width of new wave
+     * @param {Number} progress Value between 0 and 1 for wave progress
      */
-    stretchBackimage(desiredWidth) {
-        let ratio = desiredWidth / this.width;
-        //console.log(`Current width: ${this.width}`);
+    stretchBackimage(desiredWidth, progress) {
+        let ratio = (desiredWidth / this.width);
+        //this.width = desiredWidth;
+
+        //Start tracks the starting point of each canvas
+        let start = 0;
         this.canvases.forEach((entry, i) => {
-            entry.stretchBackimage(ratio);
+            start = entry.stretchBackimage(start, ratio, desiredWidth, this.params.pixelRatio);
         });
+        this.progress(progress * ratio);
+        this.recenter(progress);
     }
 
     /**

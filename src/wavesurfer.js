@@ -1362,15 +1362,18 @@ export default class WaveSurfer extends util.Observer {
         this.fireEvent('zoom', pxPerSec);
     }
 
+    /**
+     * Call this function while moving the zoom slider to stretch a backiamge
+     * of the wave without recalculating for each new value
+     *
+     * @param {Number} pxPerSec value returned from the zoom slider
+     */
     zooming(pxPerSec) {
-        let desiredWidth = Math.round(this.getDuration() * pxPerSec * this.params.pixelRatio);
+        let desiredWidth = this.getDuration() * pxPerSec * this.params.pixelRatio;
         let parentWidth = this.drawer.getWidth();
         desiredWidth = Math.max(parentWidth, desiredWidth);
-        //console.log(`Desired width: ${desiredWidth}`);
+        this.drawer.stretchBackimage(desiredWidth, this.backend.getPlayedPercents());
 
-        this.drawer.stretchBackimage(desiredWidth);
-        this.drawer.progress(this.backend.getPlayedPercents());
-        this.drawer.recenter(this.getCurrentTime() / this.getDuration());
         this.fireEvent('zoom', pxPerSec);
     }
 
