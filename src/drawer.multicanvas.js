@@ -91,6 +91,14 @@ export default class MultiCanvas extends Drawer {
          */
         this.vertical = params.vertical;
 
+        /**
+         * Backup copy of a low-resolution backup image for zoom-out
+         * Default value is blank URL
+         *
+         * @type {DataURL}
+         */
+        this.backupBackImage = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
     }
 
     /**
@@ -159,11 +167,14 @@ export default class MultiCanvas extends Drawer {
 
         let canvasWidth = this.maxCanvasWidth + this.overlap;
         const lastCanvas = this.canvases.length - 1;
+        let leftOffest = 0;
         this.canvases.forEach((entry, i) => {
             if (i == lastCanvas) {
                 canvasWidth = this.width - this.maxCanvasWidth * lastCanvas;
             }
+            entry.setLeft(leftOffest);
             this.updateDimensions(entry, canvasWidth, this.height);
+            leftOffest += canvasWidth / this.params.pixelRatio;
 
             entry.clearWave();
         });
@@ -416,9 +427,9 @@ export default class MultiCanvas extends Drawer {
             //This staggers the drawing of canvases so they don't all draw at once
             clearTimeout(entry.drawTimeout);
             entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
-            entry.drawTimeout = setTimeout(function(){
-                entry.setBackimage(); //Create canvas backimage
-            }, 10 * i);
+            //entry.drawTimeout = setTimeout(function(){
+            entry.setBackimage(entry.getImage('image/png', 1, 'dataURL'), entry.getProgressImage('image/png', 1, 'dataURL'));
+            //}, 10 * i);
         });
     }
 
@@ -621,16 +632,19 @@ export default class MultiCanvas extends Drawer {
      * @param {Number} progress Value between 0 and 1 for wave progress
      */
     stretchBackimage(desiredWidth, progress) {
-        let ratio = (desiredWidth / this.width);
-        //this.width = desiredWidth;
+        let totalCanvasWidth = Math.round(desiredWidth / this.params.pixelRatio);
 
         //Start tracks the starting point of each canvas
         let start = 0;
         this.canvases.forEach((entry, i) => {
-            start = entry.stretchBackimage(start, ratio, desiredWidth, this.params.pixelRatio);
+            start = entry.stretchBackimage(start, totalCanvasWidth, this.params.pixelRatio, [0, 1000]);
         });
-        this.progress(progress * ratio);
-        this.recenter(progress);
+
+        this.width = desiredWidth;
+
+        //Update progresss
+        this.updateProgress(progress * totalCanvasWidth);
+        this.recenterOnPosition(progress * totalCanvasWidth, true);
     }
 
     /**
@@ -641,4 +655,5 @@ export default class MultiCanvas extends Drawer {
     updateProgress(position) {
         this.style(this.progressWave, { width: position + 'px' });
     }
+
 }
