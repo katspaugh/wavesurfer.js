@@ -493,19 +493,33 @@ export default class CanvasEntry {
      * @param {Number} totalWidth The desired width of the entire element (in pixels)
      * @param {Number} pixelRatio Pixel ratio of the screen being displayed to
      * @param {[Number, Number]} viewBounds the [left,right] boundaries of the viewable area
-     * @returns the end position of the canvas
+     * @returns the end position of the canvas if it were fully rendered
      */
     stretchBackimage(start, totalWidth, pixelRatio, viewBounds) {
-        //Variables
+        //Adjust end
         let end = this.end * totalWidth;
-        let newWidth = end - start;
+
+        //Limit to viewbounds
+        if (start > viewBounds[1] || end < viewBounds[0]) {
+            //Canvas is not in frame
+            this.waveCtx.clearRect(0, 0, this.waveCtx.canvas.width, this.waveCtx.canvas.height);
+            this.progressCtx.clearRect(0, 0, this.progressCtx.canvas.width, this.progressCtx.canvas.height);
+            return end;
+        }
+        let viewStart = Math.max(start, viewBounds[0]);
+        let viewEnd = Math.min(end, viewBounds[1]);
+        let viewOffset = (start - viewStart) * pixelRatio; //Move the image left to account for new canvas start
+
+        //Calculation widths
+        let newWidth = viewEnd - viewStart;
         let waveWidth = Math.round(newWidth);
         let canvasWidth = Math.round(newWidth * pixelRatio);
+        let imageWidth = Math.round((end - start) * pixelRatio);
 
         //Stretch canvases
         this.wave.width = canvasWidth;
         let elementSize = { width: waveWidth + 'px' };
-        let elementStart = {left: start + 'px'};
+        let elementStart = {left: viewStart + 'px'};
         style(this.wave, elementSize);
         style(this.wave, elementStart);
 
@@ -518,12 +532,12 @@ export default class CanvasEntry {
         //Wave
         let image = this.wave.querySelector("#backimage");
         this.waveCtx.clearRect(0, 0, canvasWidth, this.wave.height);
-        this.waveCtx.drawImage(image, 0, 0, canvasWidth, image.height);
+        this.waveCtx.drawImage(image, viewOffset, 0, imageWidth, image.height);
 
         //Progress
         let progImage = this.progress.querySelector("#backimage");
         this.progressCtx.clearRect(0, 0, canvasWidth, this.progress.height);
-        this.progressCtx.drawImage(progImage, 0, 0, canvasWidth, progImage.height);
+        this.progressCtx.drawImage(progImage, viewOffset, 0, imageWidth, progImage.height);
 
         return end;
     }
