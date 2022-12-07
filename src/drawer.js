@@ -412,4 +412,18 @@ export default class Drawer extends util.Observer {
      * @param {number} position X-Offset of progress position in pixels
      */
     updateProgress(position) {}
+
+    /**
+     * Stretches the backimage to mimic zoom without calculation
+     *
+     * @abstract
+     * @param {Number} desiredWidth width of new wave
+     * @param {Number} progress Value between 0 and 1 for wave progress
+     */
+    stretchBackImage(desiredWidth, progress) {}
+
+    /**
+     * @abstract
+     */
+    isFinished() {}
 }

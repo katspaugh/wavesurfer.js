@@ -443,7 +443,8 @@ export default class MultiCanvas extends Drawer {
             entry.drawTimeout = setTimeout(function(){
                 entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
                 entry.setBackimage(entry.getImage('image/png', 1, 'dataURL'), entry.getProgressImage('image/png', 1, 'dataURL'));
-            }, 100 * (i + 1) * priority);
+                entry.drawTimeout = null;
+            }, 50 * (i + 1) * priority);
         });
     }
 
@@ -670,5 +671,15 @@ export default class MultiCanvas extends Drawer {
      */
     updateProgress(position) {
         this.style(this.progressWave, { width: position + 'px' });
+    }
+
+    isFinished() {
+        let finished = true;
+        this.canvases.forEach((entry, i) => {
+            if (entry.drawTimeout != null) {
+                finished = false;
+            }
+        });
+        return finished;
     }
 }
