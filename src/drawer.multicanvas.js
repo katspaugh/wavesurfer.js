@@ -167,15 +167,19 @@ export default class MultiCanvas extends Drawer {
 
         let canvasWidth = this.maxCanvasWidth + this.overlap;
         const lastCanvas = this.canvases.length - 1;
-        let leftOffest = 0;
+
+        let leftOffset = 0;
         this.canvases.forEach((entry, i) => {
+            //Last canvas gets custom width, all others are max
             if (i == lastCanvas) {
                 canvasWidth = this.width - this.maxCanvasWidth * lastCanvas;
             }
-            entry.setLeft(leftOffest);
-            this.updateDimensions(entry, canvasWidth, this.height);
-            leftOffest += canvasWidth / this.params.pixelRatio;
 
+            //Set left offset and add to next entry
+            entry.setLeft(leftOffset);
+            leftOffset += canvasWidth / this.params.pixelRatio;
+
+            this.updateDimensions(entry, canvasWidth, this.height);
             entry.clearWave();
         });
     }
@@ -424,12 +428,22 @@ export default class MultiCanvas extends Drawer {
             this.setFillStyles(entry, waveColor, progressColor);
             this.applyCanvasTransforms(entry, this.params.vertical);
 
+            let canvasRect = entry.wave.getBoundingClientRect();
+            let wrapperRect = this.wrapper.getBoundingClientRect();
+
+            //Determine whether canvas is in viewframe or not and assign priority
+            let priority = 0;
+            if (Math.floor(canvasRect['left']) > Math.ceil(wrapperRect['right'])
+                    || Math.ceil(canvasRect['right']) < Math.floor(wrapperRect['left'])) {
+                priority = 1; //low priority, not visible
+            }
+
             //This staggers the drawing of canvases so they don't all draw at once
             clearTimeout(entry.drawTimeout);
-            entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
-            //entry.drawTimeout = setTimeout(function(){
-            entry.setBackimage(entry.getImage('image/png', 1, 'dataURL'), entry.getProgressImage('image/png', 1, 'dataURL'));
-            //}, 10 * i);
+            entry.drawTimeout = setTimeout(function(){
+                entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
+                entry.setBackimage(entry.getImage('image/png', 1, 'dataURL'), entry.getProgressImage('image/png', 1, 'dataURL'));
+            }, 100 * (i + 1) * priority);
         });
     }
 
@@ -641,6 +655,7 @@ export default class MultiCanvas extends Drawer {
         //Start tracks the starting point of each canvas
         let start = 0;
         this.canvases.forEach((entry, i) => {
+            clearTimeout(entry.drawTimeout);
             start = entry.stretchBackimage(start, totalCanvasWidth, this.params.pixelRatio, view);
         });
         //Update progress
@@ -656,5 +671,4 @@ export default class MultiCanvas extends Drawer {
     updateProgress(position) {
         this.style(this.progressWave, { width: position + 'px' });
     }
-
 }

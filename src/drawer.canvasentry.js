@@ -70,6 +70,7 @@ export default class CanvasEntry {
          * The Timeout id used to track this canvas entry.
          */
         this.drawTimeout = null;
+
     }
 
     /**
