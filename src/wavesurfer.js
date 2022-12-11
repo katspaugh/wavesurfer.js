@@ -87,6 +87,7 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * this enables the native controls for the media element
  * @property {string} mediaType='audio' (Use with backend `MediaElement` or `MediaElementWebAudio`)
  * `'audio'|'video'` ('video' only for `MediaElement`)
+ * @property {number} maxPxPerSec=300 Maximum number of pixels per second of audio
  * @property {number} minPxPerSec=20 Minimum number of pixels per second of
  * audio.
  * @property {boolean} normalize=false If true, normalize by the maximum peak
@@ -282,6 +283,7 @@ export default class WaveSurfer extends util.Observer {
         mediaContainer: null,
         mediaControls: false,
         mediaType: 'audio',
+        maxPxPerSec: 300,
         minPxPerSec: 20,
         normalize: false,
         partialRender: false,
@@ -1333,10 +1335,12 @@ export default class WaveSurfer extends util.Observer {
      *
      * @param {?number} pxPerSec Number of horizontal pixels per second of
      * audio, if none is set the waveform returns to unzoomed state
+     * @param {?number} heightScale Factor to scale the y-axis by, 
+     * if none is set the waveform is scaled back to its original height
      * @emits WaveSurfer#zoom
-     * @example wavesurfer.zoom(20);
+     * @example wavesurfer.zoom(20, 1);
      */
-    zoom(pxPerSec) {
+    zoom(pxPerSec, heightScale) {
         if (!pxPerSec) {
             this.params.minPxPerSec = this.defaultParams.minPxPerSec;
             this.params.scrollParent = false;
@@ -1345,10 +1349,10 @@ export default class WaveSurfer extends util.Observer {
             this.params.scrollParent = true;
         }
 
-        this.drawBuffer();
+        this.drawer.updateZoom(this.params, heightScale);
         this.drawer.progress(this.backend.getPlayedPercents());
-
         this.drawer.recenter(this.getCurrentTime() / this.getDuration());
+        
         this.fireEvent('zoom', pxPerSec);
     }
 

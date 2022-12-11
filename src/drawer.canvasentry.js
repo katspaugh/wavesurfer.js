@@ -86,10 +86,7 @@ export default class CanvasEntry {
      */
     initProgress(element) {
         this.progress = element;
-        this.progressCtx = this.progress.getContext(
-            '2d',
-            this.canvasContextAttributes
-        );
+        this.progressCtx = this.progress.getContext('2d', this.canvasContextAttributes);
     }
 
     /**

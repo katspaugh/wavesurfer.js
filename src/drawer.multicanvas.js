@@ -177,12 +177,16 @@ export default class MultiCanvas extends Drawer {
         entry.hasProgressCanvas = this.hasProgressCanvas;
         entry.halfPixel = this.halfPixel;
         const leftOffset = this.maxCanvasElementWidth * this.canvases.length;
+        const numCanvases = this.canvases.length;
 
         // wave
         let wave = util.withOrientation(
             this.wrapper.appendChild(document.createElement('canvas')),
             this.params.vertical
         );
+        
+        // wave.dataset.index = numCanvases;
+
         this.style(wave, {
             position: 'absolute',
             zIndex: 2,
@@ -200,6 +204,9 @@ export default class MultiCanvas extends Drawer {
                 this.progressWave.appendChild(document.createElement('canvas')),
                 this.params.vertical
             );
+
+            // progress.dataset.index = numCanvases;
+
             this.style(progress, {
                 position: 'absolute',
                 left: leftOffset + 'px',
@@ -613,5 +620,35 @@ export default class MultiCanvas extends Drawer {
      */
     updateProgress(position) {
         this.style(this.progressWave, { width: position + 'px' });
+    }
+
+    /**
+     * Update the zoom levels
+     *
+     * @param {Object} params The wavesurfer parameters
+     * @param {number} heightScale Factor to scale the y-axis by
+     */
+    updateZoom(params, heightScale) {
+        const width = this.maxCanvasWidth * (params.minPxPerSec / params.maxPxPerSec) * .5;
+
+        this.canvases.forEach(entry => {
+            const index = this.canvases.indexOf(entry);
+
+            const leftStyle = `${width * index}px`;
+            const widthStyle = `${width}px`;
+            const transformStyle = `scaleY(${heightScale})`;
+
+            entry.wave.style.left = leftStyle;
+            entry.wave.style.width = widthStyle;
+            entry.wave.style.transform = transformStyle;
+
+            if(this.hasProgressCanvas){
+                entry.progress.style.left = leftStyle;
+                entry.progress.style.width = widthStyle;
+                entry.progress.style.transform = transformStyle;
+            }
+        });
+
+        this.width = this.wrapper.scrollWidth * 2;
     }
 }

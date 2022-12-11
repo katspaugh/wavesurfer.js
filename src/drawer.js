@@ -118,26 +118,25 @@ export default class Drawer extends util.Observer {
         }
     }
 
-    setupWrapperEvents() {
-        this.wrapper.addEventListener('click', e => {
-            const orientedEvent = util.withOrientation(e, this.params.vertical);
-            const scrollbarHeight = this.wrapper.offsetHeight -
-                  this.wrapper.clientHeight;
-
+    setupScrollbarAwareWrapperEvent(eventName){
+        this.wrapper.addEventListener(eventName, e => {
+            var orientedEvent = util.withOrientation(e, this.params.vertical);
+            var scrollbarHeight = this.wrapper.offsetHeight - this.wrapper.clientHeight;
             if (scrollbarHeight !== 0) {
-                // scrollbar is visible.  Check if click was on it
-                const bbox = this.wrapper.getBoundingClientRect();
-                if (orientedEvent.clientY >= bbox.bottom - scrollbarHeight) {
-                    // ignore mousedown as it was on the scrollbar
-                    return;
-                }
+            // scrollbar is visible.  Check if click was on it
+            var bbox = this.wrapper.getBoundingClientRect();
+            if (orientedEvent.clientY >= bbox.bottom - scrollbarHeight) {
+                // ignore mousedown as it was on the scrollbar
+                return;
             }
-
+            }
             if (this.params.interact) {
-                this.fireEvent('click', e, this.handleEvent(e));
+            this.fireEvent(eventName, e, this.handleEvent(e));
             }
         });
+    }
 
+    setupWrapperEvents() {
         this.wrapper.addEventListener('dblclick', e => {
             if (this.params.interact) {
                 this.fireEvent('dblclick', e, this.handleEvent(e));
@@ -147,6 +146,11 @@ export default class Drawer extends util.Observer {
         this.wrapper.addEventListener('scroll', e =>
             this.fireEvent('scroll', e)
         );
+    
+        this.setupScrollbarAwareWrapperEvent('click');
+        this.setupScrollbarAwareWrapperEvent('mousedown');
+        this.setupScrollbarAwareWrapperEvent('mousemove');
+        this.setupScrollbarAwareWrapperEvent('mouseup');
     }
 
     /**

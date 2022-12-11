@@ -11,7 +11,7 @@
     "src/"
   ],
   "scripts": {
-    "start": "npm run build:plugins && npm run build:htmlinit && webpack serve --config ./build-config/webpack.dev.main.js",
+    "start": "npm run build:plugins && npm run build:htmlinit && nodemon --watch src --exec \"npm run build:normal && cp ./dist/wavesurfer.js ~/Projects/Secare/external/wavesurfer.js\"",
     "start:htmlinit": "npm run build:main && npm run build:plugins && webpack serve --config ./build-config/webpack.dev.htmlinit.js",
     "start:plugins": "npm run build:main && npm run build:htmlinit && webpack serve --config ./build-config/webpack.dev.plugins.js",
     "build": "npm run build:normal && npm run build:minified",
