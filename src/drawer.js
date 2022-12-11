@@ -414,4 +414,13 @@ export default class Drawer extends util.Observer {
      * @param {number} position X-Offset of progress position in pixels
      */
     updateProgress(position) {}
+
+    /**
+     * Update the zoom levels
+     *
+     * @abstract
+     * @param {Object} params The wavesurfer parameters
+     * @param {number} heightScale Factor to scale the y-axis by
+     */
+     updateZoom(params, heightScale) {}
 }
