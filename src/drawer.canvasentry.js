@@ -129,22 +129,32 @@ export default class CanvasEntry {
      * Clear the wave and progress rendering contexts
      */
     clearWave() {
+
         // wave
+        this.waveCtx.save();
+        this.waveCtx.setTransform(1, 0, 0, 1, 0, 0);
         this.waveCtx.clearRect(
             0,
             0,
-            this.waveCtx.canvas.width,
-            this.waveCtx.canvas.height
+            this.wave.width,
+            this.wave.height
         );
+        this.waveCtx.restore();
 
         // progress
         if (this.hasProgressCanvas) {
+            this.progressCtx.save();
+            this.progressCtx.setTransform(1, 0, 0, 1, 0, 0);
             this.progressCtx.clearRect(
                 0,
                 0,
-                this.progressCtx.canvas.width,
-                this.progressCtx.canvas.height
+                this.progress.width,
+                this.progress.height
             );
+            this.progressCtx.restore();
+            this.setBackimage("", "");
+        } else {
+            this.setBackimage("");
         }
     }
 
@@ -532,14 +542,17 @@ export default class CanvasEntry {
 
         //Wave
         let image = this.wave.querySelector("#backimage");
-        this.waveCtx.clearRect(0, 0, canvasWidth, this.wave.height);
-        this.waveCtx.drawImage(image, viewOffset, 0, imageWidth, image.height);
+        if (image !== null) {
+            this.waveCtx.clearRect(0, 0, canvasWidth, this.wave.height);
+            this.waveCtx.drawImage(image, viewOffset, 0, imageWidth, image.height);
+        }
 
         //Progress
         let progImage = this.progress.querySelector("#backimage");
-        this.progressCtx.clearRect(0, 0, canvasWidth, this.progress.height);
-        this.progressCtx.drawImage(progImage, viewOffset, 0, imageWidth, progImage.height);
-
+        if (progImage !== null) {
+            this.progressCtx.clearRect(0, 0, canvasWidth, this.progress.height);
+            this.progressCtx.drawImage(progImage, viewOffset, 0, imageWidth, progImage.height);
+        }
         return end;
     }
 

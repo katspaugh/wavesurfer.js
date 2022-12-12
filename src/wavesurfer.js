@@ -1369,13 +1369,11 @@ export default class WaveSurfer extends util.Observer {
      * @param {Number} pxPerSec value returned from the zoom slider
      */
     zooming(pxPerSec) {
-        if (this.drawer.isFinished()) {
-            let desiredWidth = this.getDuration() * pxPerSec * this.params.pixelRatio;
-            let parentWidth = this.drawer.getWidth();
-            desiredWidth = Math.max(parentWidth, desiredWidth);
-            this.drawer.stretchBackimage(desiredWidth, this.backend.getPlayedPercents());
-            this.fireEvent('zoom', pxPerSec);
-        }
+        let desiredWidth = this.getDuration() * pxPerSec * this.params.pixelRatio;
+        let parentWidth = this.drawer.getWidth();
+        desiredWidth = Math.max(parentWidth, desiredWidth);
+        this.drawer.stretchBackimage(desiredWidth, this.backend.getPlayedPercents());
+        this.fireEvent('zoom', pxPerSec);
     }
 
     /**

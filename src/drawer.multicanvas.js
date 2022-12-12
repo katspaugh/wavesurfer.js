@@ -433,18 +433,24 @@ export default class MultiCanvas extends Drawer {
 
             //Determine whether canvas is in viewframe or not and assign priority
             let priority = 0;
-            if (Math.floor(canvasRect['left']) > Math.ceil(wrapperRect['right'])
-                    || Math.ceil(canvasRect['right']) < Math.floor(wrapperRect['left'])) {
-                priority = 1; //low priority, not visible
+            if (Math.floor(canvasRect['left']) > Math.ceil(wrapperRect['right'])) {
+                //Canvas is to the right of view window
+                let distance = canvasRect['left'] - wrapperRect['right'];
+                priority = Math.ceil(distance / wrapperRect['width']);
+            } else if (Math.ceil(canvasRect['right']) < Math.floor(wrapperRect['left'])) {
+                //Canvas is to the left of the view window
+                let distance = wrapperRect['left'] - canvasRect['right'];
+                priority = Math.ceil(distance / wrapperRect['width']);
             }
 
             //This staggers the drawing of canvases so they don't all draw at once
+            entry.clearWave();
             clearTimeout(entry.drawTimeout);
             entry.drawTimeout = setTimeout(function(){
                 entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
                 entry.setBackimage(entry.getImage('image/png', 1, 'dataURL'), entry.getProgressImage('image/png', 1, 'dataURL'));
                 entry.drawTimeout = null;
-            }, 50 * (i + 1) * priority);
+            }, 50 * priority);
         });
     }
 
@@ -671,15 +677,5 @@ export default class MultiCanvas extends Drawer {
      */
     updateProgress(position) {
         this.style(this.progressWave, { width: position + 'px' });
-    }
-
-    isFinished() {
-        let finished = true;
-        this.canvases.forEach((entry, i) => {
-            if (entry.drawTimeout != null) {
-                finished = false;
-            }
-        });
-        return finished;
     }
 }
