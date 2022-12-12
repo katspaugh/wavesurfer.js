@@ -74,7 +74,7 @@ export default class MultiCanvas extends Drawer {
          *
          * @type {number}
          */
-        this.overlap = 2 * Math.ceil(params.pixelRatio / 2);
+        this.overlap = 0;//2 * Math.ceil(params.pixelRatio / 2);
 
         /**
          * The radius of the wave bars. Makes bars rounded
@@ -629,26 +629,34 @@ export default class MultiCanvas extends Drawer {
      * @param {number} heightScale Factor to scale the y-axis by
      */
     updateZoom(params, heightScale) {
-        const width = this.maxCanvasWidth * (params.minPxPerSec / params.maxPxPerSec) * .5;
+        const scaleFactor = (params.minPxPerSec / params.maxPxPerSec) * .5;
 
+        let totalWidth = 0;
+        let totalOffset = 0;
+        
         this.canvases.forEach(entry => {
-            const index = this.canvases.indexOf(entry);
-
-            const leftStyle = `${width * index}px`;
+            const width = entry.wave.width * scaleFactor;
+        
+            const leftStyle = `${totalOffset}px`;
             const widthStyle = `${width}px`;
             const transformStyle = `scaleY(${heightScale})`;
-
+            
             entry.wave.style.left = leftStyle;
             entry.wave.style.width = widthStyle;
             entry.wave.style.transform = transformStyle;
-
+            entry.wave.style.transformOrigin = 'left';
+            
             if(this.hasProgressCanvas){
                 entry.progress.style.left = leftStyle;
                 entry.progress.style.width = widthStyle;
                 entry.progress.style.transform = transformStyle;
+                entry.progress.style.transformOrigin = 'left';
             }
-        });
 
-        this.width = this.wrapper.scrollWidth * 2;
+            totalWidth += width;
+            totalOffset += width;
+        });
+        
+        this.width = totalWidth * 2;
     }
 }
