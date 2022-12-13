@@ -426,19 +426,24 @@ export default class MultiCanvas extends Drawer {
             this.setFillStyles(entry, waveColor, progressColor);
             this.applyCanvasTransforms(entry, this.params.vertical);
 
-            let canvasRect = entry.wave.getBoundingClientRect();
-            let wrapperRect = this.wrapper.getBoundingClientRect();
-
-            //Determine whether canvas is in viewframe or not and assign priority
+            //If there's a wrapper, optimise for the view
             let priority = 0;
-            if (Math.floor(canvasRect['left']) > Math.ceil(wrapperRect['right'])) {
-                //Canvas is to the right of view window
-                let distance = canvasRect['left'] - wrapperRect['right'];
-                priority = Math.ceil(distance / wrapperRect['width']);
-            } else if (Math.ceil(canvasRect['right']) < Math.floor(wrapperRect['left'])) {
-                //Canvas is to the left of the view window
-                let distance = wrapperRect['left'] - canvasRect['right'];
-                priority = Math.ceil(distance / wrapperRect['width']);
+            if (this.wrapper) {
+                let canvasRect = entry.wave.getBoundingClientRect();
+                let wrapperRect = this.wrapper.getBoundingClientRect();
+
+                //Determine whether canvas is in viewframe or not and assign priority
+                if (Math.floor(canvasRect['left']) > Math.ceil(wrapperRect['right'])) {
+                    //Canvas is to the right of view window
+                    let distance = canvasRect['left'] - wrapperRect['right'];
+                    priority = Math.ceil(distance / wrapperRect['width']);
+                } else if (Math.ceil(canvasRect['right']) < Math.floor(wrapperRect['left'])) {
+                    //Canvas is to the left of the view window
+                    let distance = wrapperRect['left'] - canvasRect['right'];
+                    priority = Math.ceil(distance / wrapperRect['width']);
+                }
+            } else {
+                //Everything is equal priority
             }
 
             //This staggers the drawing of canvases so they don't all draw at once
