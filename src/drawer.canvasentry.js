@@ -70,6 +70,10 @@ export default class CanvasEntry {
          * The Timeout id used to track this canvas entry.
          */
         this.drawTimeout = null;
+        /**
+         * Track whether the canvas has been drawn
+         */
+        this.drawn = false;
 
     }
 
@@ -156,6 +160,7 @@ export default class CanvasEntry {
         } else {
             this.setBackimage("");
         }
+        this.drawn = false;
     }
 
     /**
@@ -337,6 +342,7 @@ export default class CanvasEntry {
                 end
             );
         }
+        this.drawn = true;
     }
 
     /**
@@ -470,29 +476,25 @@ export default class CanvasEntry {
      */
     setBackimage(backImage, progBackImage = null) {
         //For the wave
-        if (this.wave.querySelector("#backimage") != null) {
-            let image = this.wave.querySelector("#backimage");
+        if (this.wave.querySelector(".backimage") != null) {
+            let image = this.wave.querySelector(".backimage");
             image.src = backImage;
         } else {
             let image = document.createElement('img');
-            image.id = "backimage";
+            image.className = "backimage";
             image.src = backImage;
-            image.style.position = "absolute";
-            image.style.zIndex = 1;
             this.wave.appendChild(image);
         }
 
         //For the progress
         if (progBackImage != null) {
-            if (this.progress.querySelector("#backimage") != null) {
-                let progImage = this.progress.querySelector("#backimage");
+            if (this.progress.querySelector(".progbackimage") != null) {
+                let progImage = this.progress.querySelector(".progbackimage");
                 progImage.src = progBackImage;
             } else {
                 let progImage = document.createElement('img');
-                progImage.id = "backimage";
+                progImage.className = "progbackimage";
                 progImage.src = progBackImage;
-                progImage.style.position = "absolute";
-                progImage.style.zIndex = 1;
                 this.progress.appendChild(progImage);
             }
         }
@@ -504,9 +506,10 @@ export default class CanvasEntry {
      * @param {Number} totalWidth The desired width of the entire element (in pixels)
      * @param {Number} pixelRatio Pixel ratio of the screen being displayed to
      * @param {[Number, Number]} viewBounds the [left,right] boundaries of the viewable area
+     * @param {HTMLImageElement|Array.<HTMLImageElement>} backupImg backimg image(s) loaded on first zoom
      * @returns the end position of the canvas if it were fully rendered
      */
-    stretchBackimage(start, totalWidth, pixelRatio, viewBounds) {
+    stretchBackimage(start, totalWidth, pixelRatio, viewBounds, backupImg) {
         //Adjust end
         let end = this.end * totalWidth;
 
@@ -541,14 +544,40 @@ export default class CanvasEntry {
         }
 
         //Wave
-        let image = this.wave.querySelector("#backimage");
-        if (image !== null) {
-            this.waveCtx.clearRect(0, 0, canvasWidth, this.wave.height);
+        let image = this.wave.querySelector(".backimage");
+        this.waveCtx.clearRect(0, 0, canvasWidth, this.wave.height);
+        if (image.getAttribute('src') == "") {
+            if (Array.isArray(backupImg)) {
+                //Backup is more than 1 canvas
+                //Find a ratio of backup positions to new positions
+                let newWidth = totalWidth * pixelRatio;
+                let backupWidth = 0;
+                for (let i = 0; i < backupImg.length; i++) {
+                    backupWidth += backupImg[i].width;
+                }
+                let backupScale = newWidth / backupWidth;
+
+                //Check if backup is in range and then draw scaled version
+                let backupOffset = 0; //Track left offset
+                for (let i = 0; i < backupImg.length; i++) {
+                    let dWidth = Math.ceil(backupImg[i].width * backupScale);
+                    let dx = Math.floor(backupOffset - (this.wave.offsetLeft * pixelRatio) + viewOffset);
+
+                    //This could be optimised to only draw images on the canvas
+                    this.waveCtx.drawImage(backupImg[i], 0, 0, backupImg[i].width, backupImg[i].height, dx, 0, dWidth, backupImg[i].height);
+
+                    //Setup next item
+                    backupOffset += dWidth;
+                }
+            } else {
+                this.waveCtx.drawImage(backupImg, image.width * this.start, 0, (image.width * this.end) - (image.width * this.start), image.height, viewOffset, 0, imageWidth, image.height);
+            }
+        } else {
             this.waveCtx.drawImage(image, viewOffset, 0, imageWidth, image.height);
         }
 
         //Progress
-        let progImage = this.progress.querySelector("#backimage");
+        let progImage = this.progress.querySelector(".progbackimage");
         if (progImage !== null) {
             this.progressCtx.clearRect(0, 0, canvasWidth, this.progress.height);
             this.progressCtx.drawImage(progImage, viewOffset, 0, imageWidth, progImage.height);

@@ -421,9 +421,4 @@ export default class Drawer extends util.Observer {
      * @param {Number} progress Value between 0 and 1 for wave progress
      */
     stretchBackImage(desiredWidth, progress) {}
-
-    /**
-     * @abstract
-     */
-    isFinished() {}
 }

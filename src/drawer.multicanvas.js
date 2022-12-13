@@ -92,13 +92,11 @@ export default class MultiCanvas extends Drawer {
         this.vertical = params.vertical;
 
         /**
-         * Backup copy of a low-resolution backup image for zoom-out
-         * Default value is blank URL
+         * Image generated on first load as a backup for unloaded sections
          *
-         * @type {DataURL}
+         * @type {HTMLImageElement}
          */
-        this.backupBackImage = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-
+        this.backupImage = null;
     }
 
     /**
@@ -663,7 +661,7 @@ export default class MultiCanvas extends Drawer {
         let start = 0;
         this.canvases.forEach((entry, i) => {
             clearTimeout(entry.drawTimeout);
-            start = entry.stretchBackimage(start, totalCanvasWidth, this.params.pixelRatio, view);
+            start = entry.stretchBackimage(start, totalCanvasWidth, this.params.pixelRatio, view, this.backupImage);
         });
         //Update progress
         this.updateProgress(progressPos);
@@ -677,5 +675,43 @@ export default class MultiCanvas extends Drawer {
      */
     updateProgress(position) {
         this.style(this.progressWave, { width: position + 'px' });
+    }
+
+    /**
+     * Called at startup to set backup image once all images have loaded
+     */
+    setBackupImage() {
+        //Check image doesn't already exist
+        if (this.backupImage !== null) {return;}
+
+        //Check drawer is not in progress
+        let ready = true;
+        this.canvases.forEach((entry, i) => {
+            if (entry.drawn == false) {
+                ready = false;
+            }
+        });
+        if (ready == false || this.canvases.length < 1) {
+            //Wait 100ms and come back
+            setTimeout(() => this.setBackupImage(), 100);
+            return;
+        } else {
+            //Make sure to get valid dataURL for all images
+            let dataURLS = [];
+            for (let i = 0; i < this.canvases.length; i++) {
+                dataURLS[i] = this.canvases[i].getImage('image/png', 1, 'dataURL');
+                if (dataURLS[i] == "") {
+                    setTimeout(() => this.setBackupImage(), 100);
+                    return;
+                }
+            }
+            //Create images from URLS
+            this.backupImage = [];
+            for (let i = 0; i < dataURLS.length; i++) {
+                this.backupImage[i] = document.createElement('img');
+                this.backupImage[i].src = dataURLS[i];
+            }
+
+        }
     }
 }
