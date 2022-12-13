@@ -142,7 +142,7 @@ export default class CursorPlugin {
          */
         this.displayTime = null;
         /**
-         * true if call destory before ready event
+         * true when `destroy` was called before `ready` event
          * @type {boolean}
          */
         this.isDestroyCalled = false;
