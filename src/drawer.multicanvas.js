@@ -689,14 +689,19 @@ export default class MultiCanvas extends Drawer {
         //Check image doesn't already exist
         if (this.backupImage !== null) {return;}
 
+        if (this.canvases.length == 0) {
+            setTimeout(() => this.setBackupImage(), 100);
+            return;
+        }
+
         //Check drawer is not in progress
         let ready = true;
         this.canvases.forEach((entry, i) => {
-            if (entry.drawn == false) {
+            if (entry.drawn == false || entry.drawTimeout !== null) {
                 ready = false;
             }
         });
-        if (ready == false || this.canvases.length < 1) {
+        if (ready == false) {
             //Wait 100ms and come back
             setTimeout(() => this.setBackupImage(), 100);
             return;
@@ -716,7 +721,6 @@ export default class MultiCanvas extends Drawer {
                 this.backupImage[i] = document.createElement('img');
                 this.backupImage[i].src = dataURLS[i];
             }
-
         }
     }
 }

@@ -342,7 +342,6 @@ export default class CanvasEntry {
                 end
             );
         }
-        this.drawn = true;
     }
 
     /**
@@ -362,6 +361,7 @@ export default class CanvasEntry {
         if (!ctx) {
             return;
         }
+        this.drawn = false;
 
         const length = peaks.length / 2;
         const first = Math.round(length * this.start);
@@ -498,6 +498,10 @@ export default class CanvasEntry {
                 this.progress.appendChild(progImage);
             }
         }
+
+        if (backImage !== "") {
+            this.drawn = true;
+        }
     }
 
     /**
@@ -511,7 +515,7 @@ export default class CanvasEntry {
      */
     stretchBackimage(start, totalWidth, pixelRatio, viewBounds, backupImg) {
         //Adjust end
-        let end = this.end * totalWidth;
+        let end = Math.round(this.end * totalWidth);
 
         //Limit to viewbounds
         if (start > viewBounds[1] || end < viewBounds[0]) {
@@ -560,14 +564,16 @@ export default class CanvasEntry {
                 //Check if backup is in range and then draw scaled version
                 let backupOffset = 0; //Track left offset
                 for (let i = 0; i < backupImg.length; i++) {
-                    let dWidth = Math.ceil(backupImg[i].width * backupScale);
-                    let dx = Math.floor(backupOffset - (this.wave.offsetLeft * pixelRatio) + viewOffset);
-
+                    let sx = Math.round(((start * pixelRatio) - backupOffset) / backupScale);
+                    let sWidth = Math.min(Math.round(canvasWidth / backupScale), backupImg[i].width - sx);
+                    let dWidth = Math.round(sWidth * backupScale);
+                    //let dx = Math.floor(backupOffset - (this.wave.offsetLeft * pixelRatio) + viewOffset);
                     //This could be optimised to only draw images on the canvas
-                    this.waveCtx.drawImage(backupImg[i], 0, 0, backupImg[i].width, backupImg[i].height, dx, 0, dWidth, backupImg[i].height);
-
+                    if (sWidth > 0) {
+                        this.waveCtx.drawImage(backupImg[i], sx, 0, sWidth, backupImg[i].height, viewOffset, 0, dWidth, backupImg[i].height);
+                    }
                     //Setup next item
-                    backupOffset += dWidth;
+                    backupOffset += backupImg[i].width * backupScale;
                 }
             } else {
                 this.waveCtx.drawImage(backupImg, image.width * this.start, 0, (image.width * this.end) - (image.width * this.start), image.height, viewOffset, 0, imageWidth, image.height);

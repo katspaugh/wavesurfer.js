@@ -1357,7 +1357,6 @@ export default class WaveSurfer extends util.Observer {
 
         this.drawBuffer();
         this.drawer.progress(this.backend.getPlayedPercents());
-        this.drawer.setBackupImage();
 
         //this.drawer.recenter(this.backend.getPlayedPercents());
         this.fireEvent('zoom', pxPerSec);
@@ -1370,7 +1369,7 @@ export default class WaveSurfer extends util.Observer {
      * @param {Number} pxPerSec value returned from the zoom slider
      */
     zooming(pxPerSec) {
-        let desiredWidth = this.getDuration() * pxPerSec * this.params.pixelRatio;
+        let desiredWidth = Math.round(this.getDuration() * pxPerSec * this.params.pixelRatio);
         let parentWidth = this.drawer.getWidth();
         desiredWidth = Math.max(parentWidth, desiredWidth);
         this.drawer.stretchBackimage(desiredWidth, this.backend.getPlayedPercents());
@@ -1521,6 +1520,7 @@ export default class WaveSurfer extends util.Observer {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
             this.fireEvent('waveform-ready');
+            this.drawer.setBackupImage();
             this.tmpEvents.push(this.once('interaction', load));
         } else {
             return load();
@@ -1571,6 +1571,7 @@ export default class WaveSurfer extends util.Observer {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
             this.fireEvent('waveform-ready');
+            this.drawer.setBackupImage();
         }
 
         // If no pre-decoded peaks are provided, or are provided with
@@ -1586,6 +1587,7 @@ export default class WaveSurfer extends util.Observer {
                     this.backend.setPeaks(null);
                     this.drawBuffer();
                     this.fireEvent('waveform-ready');
+                    this.drawer.setBackupImage();
                 });
             });
         }
