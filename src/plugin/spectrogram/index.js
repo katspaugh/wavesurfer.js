@@ -136,6 +136,7 @@ export default class SpectrogramPlugin {
             this.alpha = params.alpha;
             this.splitChannels = params.splitChannels;
             this.channels = this.splitChannels ? ws.backend.buffer.numberOfChannels : 1;
+            this.canvases = [];
 
             // Getting file's original samplerate is difficult(#1248).
             // So set 12kHz default to render like wavesurfer.js 5.x.
@@ -232,16 +233,24 @@ export default class SpectrogramPlugin {
     }
 
     createCanvas() {
-        const canvas = (this.canvas = this.wrapper.appendChild(
+        const canvas1 = this.wrapper.appendChild(
             document.createElement('canvas')
-        ));
+        );
+        const canvas2 = this.wrapper.appendChild(
+            document.createElement('canvas')
+        );
 
-        this.spectrCc = canvas.getContext('2d');
-
-        this.util.style(canvas, {
+        this.util.style(canvas1, {
             position: 'absolute',
             zIndex: 4
         });
+        this.util.style(canvas2, {
+            position: 'absolute',
+            zIndex: 4
+        });
+
+        this.canvases.push(canvas1);
+        this.canvases.push(canvas2);
     }
 
     render() {
@@ -255,11 +264,14 @@ export default class SpectrogramPlugin {
     }
 
     updateCanvasStyle() {
-        const width = Math.round(this.width / this.pixelRatio) + 'px';
-        this.canvas.width = this.width;
-        this.canvas.height = this.fftSamples / 2 * this.channels;
-        this.canvas.style.width = width;
-        this.canvas.style.height = this.height + 'px';
+        //width per canvas
+        const width = Math.round(this.width / this.pixelRatio / this.canvases.length) + 'px';
+        for (let i = 0; i < this.canvases.length; i++) {
+            this.canvases[i].width = this.width;
+            this.canvases[i].height = this.fftSamples / 2 * this.channels;
+            this.canvases[i].style.width = width;
+            this.canvases[i].style.height = this.height + 'px';
+        }
     }
 
     drawSpectrogram(frequenciesData, my) {
@@ -268,7 +280,7 @@ export default class SpectrogramPlugin {
             frequenciesData = [frequenciesData];
         }
 
-        const spectrCc = my.spectrCc;
+        const spectrCc = my.canvases[0].getContext('2d');
         const height = my.fftSamples / 2;
         const width = my.width;
         const freqFrom = my.buffer.sampleRate / 2;
@@ -295,14 +307,19 @@ export default class SpectrogramPlugin {
             }
 
             // scale and stack spectrograms
-            createImageBitmap(imageData).then(renderer =>
-                spectrCc.drawImage(renderer,
-                    0, height * (1 - freqMax / freqFrom), // source x, y
-                    width, height * (freqMax - freqMin) / freqFrom, // source width, height
-                    0, height * c, // destination x, y
-                    width, height // destination width, height
-                )
-            );
+            createImageBitmap(imageData).then(renderer => {
+                let start = 0;
+                for (let i = 0; i < my.canvases.length; i++) {
+                    my.canvases[i].style['left'] = start / my.pixelRatio + 'px';
+                    my.canvases[i].getContext('2d').drawImage(renderer,
+                        start, height * (1 - freqMax / freqFrom), // source x, y
+                        width / my.canvases.length, height * (freqMax - freqMin) / freqFrom, // source width, height
+                        0, height * c, // destination x, y
+                        my.canvases[i].width, height // destination width, height
+                    );
+                    start += width / my.canvases.length;
+                }
+            });
         }
     }
 
@@ -322,7 +339,7 @@ export default class SpectrogramPlugin {
 
         let noverlap = this.noverlap;
         if (!noverlap) {
-            const uniqueSamplesPerPx = buffer.length / this.canvas.width;
+            const uniqueSamplesPerPx = buffer.length / this.width;
             noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
         }
 
