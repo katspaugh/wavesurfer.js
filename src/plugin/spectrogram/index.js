@@ -144,7 +144,8 @@ export default class SpectrogramPlugin {
             this.frequencyMax = params.frequencyMax || 12000;
 
             this.createWrapper();
-            this.createCanvas();
+            this.addCanvas();
+            this.addCanvas();
             this.render();
 
             drawer.wrapper.addEventListener('scroll', this._onScroll);
@@ -232,25 +233,27 @@ export default class SpectrogramPlugin {
         this.fireEvent('click', relX / this.width || 0);
     }
 
-    createCanvas() {
-        const canvas1 = this.wrapper.appendChild(
-            document.createElement('canvas')
-        );
-        const canvas2 = this.wrapper.appendChild(
+    addCanvas() {
+        const canvas = this.wrapper.appendChild(
             document.createElement('canvas')
         );
 
-        this.util.style(canvas1, {
-            position: 'absolute',
-            zIndex: 4
-        });
-        this.util.style(canvas2, {
+        this.util.style(canvas, {
             position: 'absolute',
             zIndex: 4
         });
 
-        this.canvases.push(canvas1);
-        this.canvases.push(canvas2);
+        this.canvases.push(canvas);
+    }
+
+    removeCanvas() {
+        let lastEntry = this.canvases[this.canvases.length - 1];
+        console.log(lastEntry);
+
+        // wave
+        lastEntry.parentElement.removeChild(lastEntry);
+
+        this.canvases.pop();
     }
 
     render() {
@@ -264,12 +267,24 @@ export default class SpectrogramPlugin {
     }
 
     updateCanvasStyle() {
+        //generate correct number of canvases
+        let canvasesRequired = Math.ceil(this.width / 4000);
+        console.log(`I have ${this.canvases.length} canvases, I need ${canvasesRequired} canvases`);
+        while (this.canvases.length < canvasesRequired) {
+            this.addCanvas();
+            console.log(`I added a canvas`);
+        }
+        while (this.canvases.length > canvasesRequired) {
+            this.removeCanvas();
+            console.log(`I removed a canvas`);
+        }
+        console.log(`I now have ${this.canvases.length} canvases`);
         //width per canvas
-        const width = Math.round(this.width / this.pixelRatio / this.canvases.length) + 'px';
+        const width = Math.round(this.width / this.pixelRatio) + 'px';
         for (let i = 0; i < this.canvases.length; i++) {
-            this.canvases[i].width = this.width;
+            this.canvases[i].width = this.width / this.canvases.length;
             this.canvases[i].height = this.fftSamples / 2 * this.channels;
-            this.canvases[i].style.width = width;
+            this.canvases[i].style.width = width / this.canvases.length;
             this.canvases[i].style.height = this.height + 'px';
         }
     }
@@ -280,16 +295,11 @@ export default class SpectrogramPlugin {
             frequenciesData = [frequenciesData];
         }
 
-        const spectrCc = my.canvases[0].getContext('2d');
         const height = my.fftSamples / 2;
         const width = my.width;
         const freqFrom = my.buffer.sampleRate / 2;
         const freqMin = my.frequencyMin;
         const freqMax = my.frequencyMax;
-
-        if (!spectrCc) {
-            return;
-        }
 
         for (let c = 0; c < frequenciesData.length; c++) { // for each channel
             const pixels = my.resample(frequenciesData[c]);
@@ -310,14 +320,14 @@ export default class SpectrogramPlugin {
             createImageBitmap(imageData).then(renderer => {
                 let start = 0;
                 for (let i = 0; i < my.canvases.length; i++) {
-                    my.canvases[i].style['left'] = start / my.pixelRatio + 'px';
+                    my.canvases[i].style['left'] = Math.floor(start / my.pixelRatio) + 'px';
                     my.canvases[i].getContext('2d').drawImage(renderer,
                         start, height * (1 - freqMax / freqFrom), // source x, y
                         width / my.canvases.length, height * (freqMax - freqMin) / freqFrom, // source width, height
                         0, height * c, // destination x, y
                         my.canvases[i].width, height // destination width, height
                     );
-                    start += width / my.canvases.length;
+                    start += Math.round(width / my.canvases.length);
                 }
             });
         }
