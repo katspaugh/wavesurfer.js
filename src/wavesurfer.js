@@ -1286,7 +1286,6 @@ export default class WaveSurfer extends util.Observer {
         let peaks;
         peaks = wavesurfer.backend.getPeaks(width, start, end);
         wavesurfer.drawer.drawPeaks(peaks, width, start, end);
-        wavesurfer.fireEvent('redraw', peaks, width);
     }
 
     /**
