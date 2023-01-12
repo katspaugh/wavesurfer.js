@@ -586,8 +586,7 @@ export class Region {
         const onMove = (event) => {
             const duration = this.wavesurfer.getDuration();
             let orientedEvent = this.util.withOrientation(event, this.vertical);
-            
-            let delta = null
+            let delta = null;
 
             if (event.touches && event.touches.length > 1) {
                 return;
@@ -636,7 +635,6 @@ export class Region {
                     if (time < this.start + minLength) {
                         // Calculate the end time based on the min length of the region.
                         time = this.start + minLength;
-                    
                         delta = time - (this.end + (time - startTime));
                     }
 
@@ -646,9 +644,11 @@ export class Region {
                 }
             }
 
-             if (!delta) delta = time - startTime;
-            startTime = time;
+            if (!delta) {
+                delta = time - startTime;
+            }
 
+            startTime = time;
 
             // Drag
             if (this.drag && drag) {
