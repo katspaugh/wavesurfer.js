@@ -1,7 +1,7 @@
 wavesurfer.js changelog
 =======================
 
-6.5.0 (unreleased) (12.01.2023)
+6.5.0 (unreleased)
 ------------------
 - Regions plugin:
   - Improved delta calculation (resize end) (#2641)
