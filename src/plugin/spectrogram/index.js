@@ -84,6 +84,7 @@ export default class SpectrogramPlugin {
         this.params = params;
         this.wavesurfer = ws;
         this.util = ws.util;
+        this.renderZoom = ws.defaultParams.minPxPerSec;
 
         this.frequenciesDataUrl = params.frequenciesDataUrl;
         this._onScroll = e => {
@@ -91,6 +92,12 @@ export default class SpectrogramPlugin {
         };
         this._onRender = () => {
             this.render();
+        };
+        this._onZoom = e => {
+            this.renderZoom = e;
+        };
+        this._onZooming = e => {
+            this.stretchCanvases(e / this.renderZoom);
         };
         this._onWrapperClick = e => {
             this._wrapperClickHandler(e);
@@ -137,6 +144,7 @@ export default class SpectrogramPlugin {
             this.splitChannels = params.splitChannels;
             this.channels = this.splitChannels ? ws.backend.buffer.numberOfChannels : 1;
             this.canvases = [];
+            this.backimages = [];
             this.scrollLeftTracker = 0; //Tracks the desired scrollLeft value
 
             // Getting file's original samplerate is difficult(#1248).
@@ -149,6 +157,8 @@ export default class SpectrogramPlugin {
             this.render();
 
             drawer.wrapper.addEventListener('scroll', this._onScroll);
+            ws.on('zooming', this._onZooming);
+            ws.on(`zoom`, this._onZoom);
             ws.on('redraw', this._onRender);
         };
     }
@@ -563,5 +573,13 @@ export default class SpectrogramPlugin {
         }
 
         return newMatrix;
+    }
+
+    stretchCanvases(scale) {
+        for (let i = 0; i < this.canvases.length; i++) {
+            this.canvases[i].style.width = Math.round(scale * this.canvases[i].width / this.pixelRatio) + 'px';
+            const canvasLeft = i * Math.floor(scale * this.canvases[i].width / this.pixelRatio);
+            this.canvases[i].style['left'] = canvasLeft + 'px';
+        }
     }
 }
