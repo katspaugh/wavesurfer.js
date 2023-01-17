@@ -137,7 +137,6 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  *         }
  *     ]
  * };`
- * @property {number} peakTimeout=null
  */
 
 /**
@@ -306,8 +305,7 @@ export default class WaveSurfer extends util.Observer {
         },
         vertical: false,
         waveColor: '#999',
-        xhr: {},
-        peakTimeout: null
+        xhr: {}
     };
 
     /** @private */
@@ -1314,6 +1312,7 @@ export default class WaveSurfer extends util.Observer {
             start = 0;
             end = width;
         }
+        let peaks;
         if (this.params.partialRender) {
             const newRanges = this.peakCache.addRangeToPeakCache(
                 width,
@@ -1322,17 +1321,14 @@ export default class WaveSurfer extends util.Observer {
             );
             let i;
             for (i = 0; i < newRanges.length; i++) {
-                this.getAndDrawPeaks(
-                    width,
-                    newRanges[i][0],
-                    newRanges[i][1]
-                );
+                peaks = this.backend.getPeaks(width, start, end);
+                this.drawer.drawPeaks(peaks, width, start, end);
             }
         } else {
-            this.getAndDrawPeaks(this, width, start, end);
-            //clearTimeout(this.params.peakTimeout);
-            //this.params.peakTimeout = setTimeout(this.getAndDrawPeaks, 10, this, width, start, end);
+            peaks = this.backend.getPeaks(width, start, end);
+            this.drawer.drawPeaks(peaks, width, start, end);
         }
+        this.fireEvent('redraw', peaks, width);
     }
 
     /**
@@ -1356,6 +1352,7 @@ export default class WaveSurfer extends util.Observer {
 
         this.drawBuffer();
         this.drawer.progress(this.backend.getPlayedPercents());
+        this.drawer.recenter(this.getCurrentTime() / this.getDuration());
         this.fireEvent('zoom', pxPerSec);
     }
 

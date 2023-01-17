@@ -136,8 +136,8 @@ export default class CanvasEntry {
         this.waveCtx.clearRect(
             0,
             0,
-            this.wave.width,
-            this.wave.height
+            this.waveCtx.canvas.width,
+            this.waveCtx.canvas.height
         );
         this.waveCtx.restore();
 
@@ -148,8 +148,8 @@ export default class CanvasEntry {
             this.progressCtx.clearRect(
                 0,
                 0,
-                this.progress.width,
-                this.progress.height
+                this.progressCtx.canvas.width,
+                this.progressCtx.canvas.height
             );
             this.progressCtx.restore();
         }
@@ -353,6 +353,7 @@ export default class CanvasEntry {
         if (!ctx) {
             return;
         }
+
         const length = peaks.length / 2;
         const first = Math.round(length * this.start);
 
@@ -433,29 +434,6 @@ export default class CanvasEntry {
             });
         } else if (type === 'dataURL') {
             return this.wave.toDataURL(format, quality);
-        }
-    }
-
-    /**
-     * Return image data of the wave `canvas` element progress overlay
-     *
-     * When using a `type` of `'blob'`, this will return a `Promise` that
-     * resolves with a `Blob` instance.
-     *
-     * @param {string} format='image/png' An optional value of a format type.
-     * @param {number} quality=0.92 An optional value between 0 and 1.
-     * @param {string} type='dataURL' Either 'dataURL' or 'blob'.
-     * @return {string|Promise} When using the default `'dataURL'` `type` this
-     * returns a data URL. When using the `'blob'` `type` this returns a
-     * `Promise` that resolves with a `Blob` instance.
-     */
-    getProgressImage(format, quality, type) {
-        if (type === 'blob') {
-            return new Promise(resolve => {
-                this.progress.toBlob(resolve, format, quality);
-            });
-        } else if (type === 'dataURL') {
-            return this.progress.toDataURL(format, quality);
         }
     }
 

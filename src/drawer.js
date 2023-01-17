@@ -272,12 +272,6 @@ export default class Drawer extends util.Observer {
      * @return {boolean} Whether the width of the container was updated or not
      */
     setWidth(width) {
-        /*
-        if (this.width == width) {
-            return false;
-        }
-        */
-
         this.width = width;
 
         if (this.params.fillParent || this.params.scrollParent) {
@@ -412,13 +406,4 @@ export default class Drawer extends util.Observer {
      * @param {number} position X-Offset of progress position in pixels
      */
     updateProgress(position) {}
-
-    /**
-     * Stretches the backimage to mimic zoom without calculation
-     *
-     * @abstract
-     * @param {Number} desiredWidth width of new wave
-     * @param {Number} progress Value between 0 and 1 for wave progress
-     */
-    stretchBackImage(desiredWidth, progress) {}
 }

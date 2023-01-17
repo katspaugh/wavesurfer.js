@@ -84,7 +84,6 @@ export default class SpectrogramPlugin {
         this.params = params;
         this.wavesurfer = ws;
         this.util = ws.util;
-        this.renderZoom = ws.defaultParams.minPxPerSec;
 
         this.frequenciesDataUrl = params.frequenciesDataUrl;
         this._onScroll = e => {
@@ -243,9 +242,9 @@ export default class SpectrogramPlugin {
      * Add a canvas to this.canvases
      */
     addCanvas() {
-        const canvas = this.wrapper.appendChild(
+        const canvas = (this.wrapper.appendChild(
             document.createElement('canvas')
-        );
+        ));
 
         this.util.style(canvas, {
             position: 'absolute',

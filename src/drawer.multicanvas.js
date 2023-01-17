@@ -1,7 +1,6 @@
 import Drawer from './drawer';
 import * as util from './util';
 import CanvasEntry from './drawer.canvasentry';
-import { parseISO } from 'date-fns';
 
 /**
  * MultiCanvas renderer for wavesurfer. Is currently the default and sole
@@ -179,6 +178,7 @@ export default class MultiCanvas extends Drawer {
             leftOffset += canvasWidth / this.params.pixelRatio;
 
             this.updateDimensions(entry, canvasWidth, this.height);
+
             entry.clearWave();
         });
     }
