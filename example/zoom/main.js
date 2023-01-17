@@ -48,12 +48,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Allow extreme zoom-in, to see individual samples
     slider.max = 1000;
 
-
     slider.addEventListener('input', function() {
-        wavesurfer.zooming(slider.value);
+        wavesurfer.zooming(Number(this.value));
     });
     slider.addEventListener('mouseup', function() {
-        wavesurfer.zoom(slider.value);
+        wavesurfer.zoom(Number(this.value));
     });
 
     // set initial zoom to match slider value

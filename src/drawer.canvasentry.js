@@ -129,7 +129,6 @@ export default class CanvasEntry {
      * Clear the wave and progress rendering contexts
      */
     clearWave() {
-
         // wave
         this.waveCtx.save();
         this.waveCtx.setTransform(1, 0, 0, 1, 0, 0);

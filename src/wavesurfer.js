@@ -1312,6 +1312,7 @@ export default class WaveSurfer extends util.Observer {
             start = 0;
             end = width;
         }
+
         let peaks;
         if (this.params.partialRender) {
             const newRanges = this.peakCache.addRangeToPeakCache(
@@ -1321,8 +1322,17 @@ export default class WaveSurfer extends util.Observer {
             );
             let i;
             for (i = 0; i < newRanges.length; i++) {
-                peaks = this.backend.getPeaks(width, start, end);
-                this.drawer.drawPeaks(peaks, width, start, end);
+                peaks = this.backend.getPeaks(
+                    width,
+                    newRanges[i][0],
+                    newRanges[i][1]
+                );
+                this.drawer.drawPeaks(
+                    peaks,
+                    width,
+                    newRanges[i][0],
+                    newRanges[i][1]
+                );
             }
         } else {
             peaks = this.backend.getPeaks(width, start, end);
@@ -1352,6 +1362,7 @@ export default class WaveSurfer extends util.Observer {
 
         this.drawBuffer();
         this.drawer.progress(this.backend.getPlayedPercents());
+
         this.drawer.recenter(this.getCurrentTime() / this.getDuration());
         this.fireEvent('zoom', pxPerSec);
     }
