@@ -70,10 +70,6 @@ export default class CanvasEntry {
          * The Timeout id used to track this canvas entry.
          */
         this.drawTimeout = null;
-        /**
-         * Track whether the canvas has been drawn
-         */
-        this.drawn = false;
 
     }
 
@@ -157,7 +153,6 @@ export default class CanvasEntry {
             );
             this.progressCtx.restore();
         }
-        this.drawn = false;
     }
 
     /**
@@ -358,8 +353,6 @@ export default class CanvasEntry {
         if (!ctx) {
             return;
         }
-        this.drawn = false;
-
         const length = peaks.length / 2;
         const first = Math.round(length * this.start);
 

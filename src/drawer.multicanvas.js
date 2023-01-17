@@ -90,13 +90,6 @@ export default class MultiCanvas extends Drawer {
          * @type {boolean}
          */
         this.vertical = params.vertical;
-
-        /**
-         * Image generated on first load as a backup for unloaded sections
-         *
-         * @type {HTMLImageElement}
-         */
-        this.backupImage = null;
     }
 
     /**
