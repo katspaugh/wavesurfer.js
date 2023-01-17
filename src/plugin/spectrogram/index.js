@@ -93,11 +93,8 @@ export default class SpectrogramPlugin {
         this._onRender = () => {
             this.render();
         };
-        this._onZoom = e => {
-            this.renderZoom = e;
-        };
-        this._onZooming = e => {
-            this.stretchCanvases(e / this.renderZoom);
+        this._onZoom = () => {
+            this.stretchCanvases();
         };
         this._onWrapperClick = e => {
             this._wrapperClickHandler(e);
@@ -157,8 +154,7 @@ export default class SpectrogramPlugin {
             this.render();
 
             drawer.wrapper.addEventListener('scroll', this._onScroll);
-            ws.on('zooming', this._onZooming);
-            ws.on(`zoom`, this._onZoom);
+            ws.on('zoom', this._onZoom);
             ws.on('redraw', this._onRender);
         };
     }
@@ -575,7 +571,8 @@ export default class SpectrogramPlugin {
         return newMatrix;
     }
 
-    stretchCanvases(scale) {
+    stretchCanvases() {
+        let scale = this.drawer.width / this.width;
         for (let i = 0; i < this.canvases.length; i++) {
             this.canvases[i].style.width = Math.round(scale * this.canvases[i].width / this.pixelRatio) + 'px';
             const canvasLeft = i * Math.floor(scale * this.canvases[i].width / this.pixelRatio);
