@@ -467,18 +467,19 @@ export default class CanvasEntry {
     }
 
     /**
-     * Stretches and displays the background images
+     * Stretches existing canvas
      * @param {Number} newTotalWidth total width of wave in pixels
      */
-    stretchBackimage(newTotalWidth) {
-        let start = this.start * newTotalWidth;
-        let width = this.end * newTotalWidth - start;
-        //Stretch canvases
+    stretchCanvas(newTotalWidth) {
+        //Calculate the start and width of this canvas
+        let start = Math.round(this.start * newTotalWidth);
+        let width = Math.round(this.end * newTotalWidth - start);
+
+        //Stretch canvas
         let elementSize = { width: width + 'px' };
         let elementStart = {left: start + 'px'};
         style(this.wave, elementSize);
         style(this.wave, elementStart);
-
         if (this.hasProgressCanvas) {
             style(this.progress, elementSize);
             style(this.progress, elementStart);

@@ -304,21 +304,27 @@ export default class SpectrogramPlugin {
 
         const view = [my.scrollLeftTracker, my.scrollLeftTracker + my.wrapper.clientWidth];
 
-        let delay = 50;
         for (let canvasNum = 0; canvasNum < my.canvases.length; canvasNum++) {
             const canvasLeft = canvasNum * Math.floor(my.width / my.canvases.length / my.pixelRatio);
             const canvasRight = (canvasNum + 1) * Math.floor(my.width / my.canvases.length / my.pixelRatio);
             const canvasBound = [canvasLeft, canvasRight];
             my.canvases[canvasNum].style['left'] = canvasLeft + 'px';
-            for (let channelNum = 0; channelNum < frequenciesData.length; channelNum++) { // for each channel
-                if (canvasBound[0] < view[1] && canvasBound[1] > view[0]) {
-                    //High priority, draw ASAP
-                    setTimeout(my.drawToCanvas, 0, frequenciesData, my, canvasNum, channelNum);
-                } else {
-                    //Low priority, schedule and increment delay
-                    setTimeout(my.drawToCanvas, delay, frequenciesData, my, canvasNum, channelNum);
-                    delay += 50;
-                }
+
+            //Optimise drawing for the view
+            let priority = 0;
+            if (canvasBound[0] > view[1]) {
+                //Canvas is to the right of view window
+                let distance = canvasBound[0] - view[1];
+                priority = Math.ceil(distance / (view[1] - view[0]));
+            } else if (canvasBound[1] < view[0]) {
+                //Canvas is to the left of the view window
+                let distance = view[0] - canvasBound[1];
+                priority = Math.ceil(distance / (view[1] - view[0]));
+            }
+
+            for (let channelNum = 0; channelNum < frequenciesData.length; channelNum++) {
+                //delay = 25ms * number of viewport widths away the canvas is
+                setTimeout(my.drawToCanvas, 25 * priority, frequenciesData, my, canvasNum, channelNum);
             }
         }
     }

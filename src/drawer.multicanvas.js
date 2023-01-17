@@ -452,7 +452,7 @@ export default class MultiCanvas extends Drawer {
             entry.drawTimeout = setTimeout(function(){
                 entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
                 entry.drawTimeout = null;
-            }, 50 * priority);
+            }, 25 * priority);
         });
     }
 
@@ -649,21 +649,21 @@ export default class MultiCanvas extends Drawer {
     }
 
     /**
-     * Stretches the backimage to mimic zoom without calculation
+     * Stretches the canvases to mimic zoom without recalculation
      *
-     * @param {Number} desiredWidth width of new wave
+     * @param {Number} desiredWidth new width of the wave display
      * @param {Number} progress Value between 0 and 1 for wave progress
      */
-    stretchBackimage(desiredWidth, progress) {
+    stretchCanvases(desiredWidth, progress) {
         let totalCanvasWidth = Math.round(desiredWidth / this.params.pixelRatio);
-        let progressPos = progress * totalCanvasWidth;
         this.width = desiredWidth;
 
-        //Start tracks the starting point of each canvas
         for (let i = 0; i < this.canvases.length; i++) {
-            this.canvases[i].stretchBackimage(totalCanvasWidth);
+            this.canvases[i].stretchCanvas(totalCanvasWidth);
         }
+
         //Update progress
+        let progressPos = progress * totalCanvasWidth;
         this.updateProgress(progressPos);
         this.recenterOnPosition(progressPos, true);
     }
