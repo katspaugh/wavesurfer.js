@@ -90,6 +90,14 @@ export default class MultiCanvas extends Drawer {
          * @type {boolean}
          */
         this.vertical = params.vertical;
+
+        /**
+         * Whether to use the optimsized zoom rendering
+         * Automatically toggles to true if stretchCanvases() function is called
+         *
+         * @type {boolean}
+         */
+        this.optimiseZoom = false;
     }
 
     /**
@@ -419,33 +427,38 @@ export default class MultiCanvas extends Drawer {
             this.setFillStyles(entry, waveColor, progressColor);
             this.applyCanvasTransforms(entry, this.params.vertical);
 
-            //If there's a wrapper, optimise for the view
-            let priority = 0;
-            if (this.wrapper) {
-                let canvasRect = entry.wave.getBoundingClientRect();
-                let wrapperRect = this.wrapper.getBoundingClientRect();
+            if (this.optimiseZoom) {
+                //Optimising zoom functionality
+                //If there's a wrapper, optimise for the view
+                let priority = 0;
+                if (this.wrapper) {
+                    let canvasRect = entry.wave.getBoundingClientRect();
+                    let wrapperRect = this.wrapper.getBoundingClientRect();
 
-                //Determine whether canvas is in viewframe or not and assign priority
-                if (Math.floor(canvasRect['left']) > Math.ceil(wrapperRect['right'])) {
-                    //Canvas is to the right of view window
-                    let distance = canvasRect['left'] - wrapperRect['right'];
-                    priority = Math.ceil(distance / wrapperRect['width']);
-                } else if (Math.ceil(canvasRect['right']) < Math.floor(wrapperRect['left'])) {
-                    //Canvas is to the left of the view window
-                    let distance = wrapperRect['left'] - canvasRect['right'];
-                    priority = Math.ceil(distance / wrapperRect['width']);
+                    //Determine whether canvas is in viewframe or not and assign priority
+                    if (Math.floor(canvasRect['left']) > Math.ceil(wrapperRect['right'])) {
+                        //Canvas is to the right of view window
+                        let distance = canvasRect['left'] - wrapperRect['right'];
+                        priority = Math.ceil(distance / wrapperRect['width']);
+                    } else if (Math.ceil(canvasRect['right']) < Math.floor(wrapperRect['left'])) {
+                        //Canvas is to the left of the view window
+                        let distance = wrapperRect['left'] - canvasRect['right'];
+                        priority = Math.ceil(distance / wrapperRect['width']);
+                    }
+                } else {
+                    //Everything is equal priority
                 }
-            } else {
-                //Everything is equal priority
-            }
 
-            //This staggers the drawing of canvases so they don't all draw at once
-            entry.clearWave();
-            clearTimeout(entry.drawTimeout);
-            entry.drawTimeout = setTimeout(function(){
+                //This staggers the drawing of canvases so they don't all draw at once
+                entry.clearWave();
+                clearTimeout(entry.drawTimeout);
+                entry.drawTimeout = setTimeout(function(){
+                    entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
+                    entry.drawTimeout = null;
+                }, 25 * priority);
+            } else {
                 entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
-                entry.drawTimeout = null;
-            }, 25 * priority);
+            }
         });
     }
 
@@ -648,6 +661,10 @@ export default class MultiCanvas extends Drawer {
      * @param {Number} progress Value between 0 and 1 for wave progress
      */
     stretchCanvases(desiredWidth, progress) {
+        if (!this.optimiseZoom) {
+            //Enable optimsed zooming
+            this.optimiseZoom = true;
+        }
         let totalCanvasWidth = Math.round(desiredWidth / this.params.pixelRatio);
         this.width = desiredWidth;
 

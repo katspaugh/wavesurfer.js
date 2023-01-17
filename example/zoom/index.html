@@ -82,9 +82,13 @@
     backend: 'MediaElement'
 });
 
-document.querySelector('#slider').oninput = function () {
-    wavesurfer.zoom(Number(this.value));
-};
+let slider = document.querySelector('[data-action="zoom"]');
+slider.addEventListener('input', function() {
+    wavesurfer.zooming(slider.value);
+});
+slider.addEventListener('mouseup', function() {
+    wavesurfer.zoom(slider.value);
+});
 </code></pre>
                 </p>
             </div>

@@ -22,15 +22,6 @@ function initAndLoadSpectrogram(colorMap) {
         ]
     };
 
-    if (location.search.match('scroll')) {
-        options.minPxPerSec = 100;
-        options.scrollParent = true;
-    }
-
-    if (location.search.match('normalize')) {
-        options.normalize = true;
-    }
-
     wavesurfer = WaveSurfer.create(options);
 
     /* Progress bar */
@@ -60,8 +51,7 @@ function initAndLoadSpectrogram(colorMap) {
 
     slider.value = wavesurfer.params.minPxPerSec;
     slider.min = wavesurfer.params.minPxPerSec;
-    // Allow extreme zoom-in, to see individual samples
-    slider.max = 1000;
+    slider.max = 250;
 
 
     slider.addEventListener('input', function() {
