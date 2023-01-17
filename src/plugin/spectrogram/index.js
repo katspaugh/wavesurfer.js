@@ -572,10 +572,9 @@ export default class SpectrogramPlugin {
     }
 
     stretchCanvases() {
-        let scale = this.drawer.width / this.width;
         for (let i = 0; i < this.canvases.length; i++) {
-            this.canvases[i].style.width = Math.round(scale * this.canvases[i].width / this.pixelRatio) + 'px';
-            const canvasLeft = i * Math.floor(scale * this.canvases[i].width / this.pixelRatio);
+            this.canvases[i].style.width = Math.round(this.drawer.width / this.canvases.length / this.pixelRatio) + 'px';
+            const canvasLeft = i * Math.floor(this.drawer.width / this.canvases.length / this.pixelRatio);
             this.canvases[i].style['left'] = canvasLeft + 'px';
         }
     }

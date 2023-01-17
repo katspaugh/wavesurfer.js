@@ -1519,7 +1519,6 @@ export default class WaveSurfer extends util.Observer {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
             this.fireEvent('waveform-ready');
-            this.drawer.setBackupImage();
             this.tmpEvents.push(this.once('interaction', load));
         } else {
             return load();
@@ -1570,7 +1569,6 @@ export default class WaveSurfer extends util.Observer {
             this.backend.setPeaks(peaks, duration);
             this.drawBuffer();
             this.fireEvent('waveform-ready');
-            this.drawer.setBackupImage();
         }
 
         // If no pre-decoded peaks are provided, or are provided with
@@ -1586,7 +1584,6 @@ export default class WaveSurfer extends util.Observer {
                     this.backend.setPeaks(null);
                     this.drawBuffer();
                     this.fireEvent('waveform-ready');
-                    this.drawer.setBackupImage();
                 });
             });
         }

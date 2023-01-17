@@ -451,7 +451,6 @@ export default class MultiCanvas extends Drawer {
             clearTimeout(entry.drawTimeout);
             entry.drawTimeout = setTimeout(function(){
                 entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
-                entry.setBackimage(entry.getImage('image/png', 1, 'dataURL'), entry.getProgressImage('image/png', 1, 'dataURL'));
                 entry.drawTimeout = null;
             }, 50 * priority);
         });
@@ -660,14 +659,10 @@ export default class MultiCanvas extends Drawer {
         let progressPos = progress * totalCanvasWidth;
         this.width = desiredWidth;
 
-        let view = [Math.max(progressPos - this.wrapper.clientWidth, 0), progressPos + this.wrapper.clientWidth];
-
         //Start tracks the starting point of each canvas
-        let start = 0;
-        this.canvases.forEach((entry, i) => {
-            clearTimeout(entry.drawTimeout);
-            start = entry.stretchBackimage(start, totalCanvasWidth, this.params.pixelRatio, view, this.backupImage);
-        });
+        for (let i = 0; i < this.canvases.length; i++) {
+            this.canvases[i].stretchBackimage(totalCanvasWidth);
+        }
         //Update progress
         this.updateProgress(progressPos);
         this.recenterOnPosition(progressPos, true);
@@ -680,47 +675,5 @@ export default class MultiCanvas extends Drawer {
      */
     updateProgress(position) {
         this.style(this.progressWave, { width: position + 'px' });
-    }
-
-    /**
-     * Called at startup to set backup image once all images have loaded
-     */
-    setBackupImage() {
-        //Check image doesn't already exist
-        if (this.backupImage !== null) {return;}
-
-        if (this.canvases.length == 0) {
-            setTimeout(() => this.setBackupImage(), 100);
-            return;
-        }
-
-        //Check drawer is not in progress
-        let ready = true;
-        this.canvases.forEach((entry, i) => {
-            if (entry.drawn == false || entry.drawTimeout !== null) {
-                ready = false;
-            }
-        });
-        if (ready == false) {
-            //Wait 100ms and come back
-            setTimeout(() => this.setBackupImage(), 100);
-            return;
-        } else {
-            //Make sure to get valid dataURL for all images
-            let dataURLS = [];
-            for (let i = 0; i < this.canvases.length; i++) {
-                dataURLS[i] = this.canvases[i].getImage('image/png', 1, 'dataURL');
-                if (dataURLS[i] == "") {
-                    setTimeout(() => this.setBackupImage(), 100);
-                    return;
-                }
-            }
-            //Create images from URLS
-            this.backupImage = [];
-            for (let i = 0; i < dataURLS.length; i++) {
-                this.backupImage[i] = document.createElement('img');
-                this.backupImage[i].src = dataURLS[i];
-            }
-        }
     }
 }

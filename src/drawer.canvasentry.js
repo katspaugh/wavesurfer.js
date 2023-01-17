@@ -156,9 +156,6 @@ export default class CanvasEntry {
                 this.progress.height
             );
             this.progressCtx.restore();
-            this.setBackimage("", "");
-        } else {
-            this.setBackimage("");
         }
         this.drawn = false;
     }
@@ -470,125 +467,22 @@ export default class CanvasEntry {
     }
 
     /**
-     * Creates the background images of wave and progress for mimicking zoom
-     * @param {DataURL} backImage the image of the wave for the background
-     * @param {DataURL} progBackImage=null the image of the progress for the background
-     */
-    setBackimage(backImage, progBackImage = null) {
-        //For the wave
-        if (this.wave.querySelector(".backimage") != null) {
-            let image = this.wave.querySelector(".backimage");
-            image.src = backImage;
-        } else {
-            let image = document.createElement('img');
-            image.className = "backimage";
-            image.src = backImage;
-            this.wave.appendChild(image);
-        }
-
-        //For the progress
-        if (progBackImage != null) {
-            if (this.progress.querySelector(".progbackimage") != null) {
-                let progImage = this.progress.querySelector(".progbackimage");
-                progImage.src = progBackImage;
-            } else {
-                let progImage = document.createElement('img');
-                progImage.className = "progbackimage";
-                progImage.src = progBackImage;
-                this.progress.appendChild(progImage);
-            }
-        }
-
-        if (backImage !== "") {
-            this.drawn = true;
-        }
-    }
-
-    /**
      * Stretches and displays the background images
-     * @param {Number} start The start position of this canvas
-     * @param {Number} totalWidth The desired width of the entire element (in pixels)
-     * @param {Number} pixelRatio Pixel ratio of the screen being displayed to
-     * @param {[Number, Number]} viewBounds the [left,right] boundaries of the viewable area
-     * @param {HTMLImageElement|Array.<HTMLImageElement>} backupImg backimg image(s) loaded on first zoom
-     * @returns the end position of the canvas if it were fully rendered
+     * @param {Number} newTotalWidth total width of wave in pixels
      */
-    stretchBackimage(start, totalWidth, pixelRatio, viewBounds, backupImg) {
-        //Adjust end
-        let end = Math.round(this.end * totalWidth);
-
-        //Limit to viewbounds
-        if (start > viewBounds[1] || end < viewBounds[0]) {
-            //Canvas is not in frame
-            this.waveCtx.clearRect(0, 0, this.waveCtx.canvas.width, this.waveCtx.canvas.height);
-            this.progressCtx.clearRect(0, 0, this.progressCtx.canvas.width, this.progressCtx.canvas.height);
-            return end;
-        }
-        let viewStart = Math.max(start, viewBounds[0]);
-        let viewEnd = Math.min(end, viewBounds[1]);
-        let viewOffset = (start - viewStart) * pixelRatio; //Move the image left to account for new canvas start
-
-        //Calculation widths
-        let newWidth = viewEnd - viewStart;
-        let waveWidth = Math.round(newWidth);
-        let canvasWidth = Math.round(newWidth * pixelRatio);
-        let imageWidth = Math.round((end - start) * pixelRatio);
-
+    stretchBackimage(newTotalWidth) {
+        let start = this.start * newTotalWidth;
+        let width = this.end * newTotalWidth - start;
         //Stretch canvases
-        this.wave.width = canvasWidth;
-        let elementSize = { width: waveWidth + 'px' };
-        let elementStart = {left: viewStart + 'px'};
+        let elementSize = { width: width + 'px' };
+        let elementStart = {left: start + 'px'};
         style(this.wave, elementSize);
         style(this.wave, elementStart);
 
         if (this.hasProgressCanvas) {
-            this.progress.width = canvasWidth;
             style(this.progress, elementSize);
             style(this.progress, elementStart);
         }
-
-        //Wave
-        let image = this.wave.querySelector(".backimage");
-        this.waveCtx.clearRect(0, 0, canvasWidth, this.wave.height);
-        if (image.getAttribute('src') == "") {
-            if (Array.isArray(backupImg)) {
-                //Backup is more than 1 canvas
-                //Find a ratio of backup positions to new positions
-                let newWidth = totalWidth * pixelRatio;
-                let backupWidth = 0;
-                for (let i = 0; i < backupImg.length; i++) {
-                    backupWidth += backupImg[i].width;
-                }
-                let backupScale = newWidth / backupWidth;
-
-                //Check if backup is in range and then draw scaled version
-                let backupOffset = 0; //Track left offset
-                for (let i = 0; i < backupImg.length; i++) {
-                    let sx = Math.round(((start * pixelRatio) - backupOffset) / backupScale);
-                    let sWidth = Math.min(Math.round(canvasWidth / backupScale), backupImg[i].width - sx);
-                    let dWidth = Math.round(sWidth * backupScale);
-                    //let dx = Math.floor(backupOffset - (this.wave.offsetLeft * pixelRatio) + viewOffset);
-                    //This could be optimised to only draw images on the canvas
-                    if (sWidth > 0) {
-                        this.waveCtx.drawImage(backupImg[i], sx, 0, sWidth, backupImg[i].height, viewOffset, 0, dWidth, backupImg[i].height);
-                    }
-                    //Setup next item
-                    backupOffset += backupImg[i].width * backupScale;
-                }
-            } else {
-                this.waveCtx.drawImage(backupImg, image.width * this.start, 0, (image.width * this.end) - (image.width * this.start), image.height, viewOffset, 0, imageWidth, image.height);
-            }
-        } else {
-            this.waveCtx.drawImage(image, viewOffset, 0, imageWidth, image.height);
-        }
-
-        //Progress
-        let progImage = this.progress.querySelector(".progbackimage");
-        if (progImage !== null) {
-            this.progressCtx.clearRect(0, 0, canvasWidth, this.progress.height);
-            this.progressCtx.drawImage(progImage, viewOffset, 0, imageWidth, progImage.height);
-        }
-        return end;
     }
 
     /**
