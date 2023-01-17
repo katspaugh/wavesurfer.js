@@ -141,7 +141,7 @@ export default class SpectrogramPlugin {
             this.splitChannels = params.splitChannels;
             this.channels = this.splitChannels ? ws.backend.buffer.numberOfChannels : 1;
             this.canvases = [];
-            this.backimages = [];
+            this.canvasesTimeouts = [];
             this.scrollLeftTracker = 0; //Tracks the desired scrollLeft value
 
             // Getting file's original samplerate is difficult(#1248).
@@ -239,6 +239,9 @@ export default class SpectrogramPlugin {
         this.fireEvent('click', relX / this.width || 0);
     }
 
+    /**
+     * Add a canvas to this.canvases
+     */
     addCanvas() {
         const canvas = this.wrapper.appendChild(
             document.createElement('canvas')
@@ -250,19 +253,27 @@ export default class SpectrogramPlugin {
         });
 
         this.canvases.push(canvas);
+        this.canvasesTimeouts.push(null);
     }
 
+    /**
+     * Remove a canvas from this.canvases
+     */
     removeCanvas() {
-        let lastEntry = this.canvases[this.canvases.length - 1];
+        //Stop drawing (if drawing)
+        clearTimeout(this.canvasesTimeouts[this.canvasesTimeouts.length - 1]);
 
-        // wave
+        let lastEntry = this.canvases[this.canvases.length - 1];
         lastEntry.parentElement.removeChild(lastEntry);
 
         this.canvases.pop();
+        this.canvasesTimeouts.pop();
     }
 
+    /**
+     * Ensure the correct number of canvases for the size of the spectrogram
+     */
     updateCanvases() {
-        //generate correct number of canvases
         let canvasesRequired = Math.ceil(this.width / 4000);
 
         while (this.canvases.length < canvasesRequired) {
@@ -302,6 +313,11 @@ export default class SpectrogramPlugin {
 
         my.updateCanvasStyle();
 
+        //Stop canvases still being drawn
+        for (let i = 0; i < my.canvasesTimeouts.length; i++) {
+            clearTimeout(my.canvasesTimeouts[i]);
+        }
+
         const view = [my.scrollLeftTracker, my.scrollLeftTracker + my.wrapper.clientWidth];
 
         for (let canvasNum = 0; canvasNum < my.canvases.length; canvasNum++) {
@@ -322,44 +338,55 @@ export default class SpectrogramPlugin {
                 priority = Math.ceil(distance / (view[1] - view[0]));
             }
 
-            for (let channelNum = 0; channelNum < frequenciesData.length; channelNum++) {
-                //delay = 25ms * number of viewport widths away the canvas is
-                setTimeout(my.drawToCanvas, 25 * priority, frequenciesData, my, canvasNum, channelNum);
-            }
+            //delay = 25ms * number of viewport widths away the canvas is
+            my.canvasesTimeouts[canvasNum] = setTimeout(my.drawToCanvas, 25 * priority, frequenciesData, my, canvasNum);
         }
     }
 
-    drawToCanvas(frequenciesData, my, canvasNum, channel) {
+    /**
+     * Draw spectrogram channel to a specific canvas
+     * @param {[Number, Number, Number]} frequenciesData spectrogram data in [channel, sample, freq] format
+     * @param {SpectrogramPlugin} my variable with 'this' in it
+     * @param {Number} canvasNum Canvas to draw to
+     */
+    drawToCanvas(frequenciesData, my, canvasNum) {
         const height = my.fftSamples / 2;
         const freqFrom = my.buffer.sampleRate / 2;
         const freqMin = my.frequencyMin;
         const freqMax = my.frequencyMax;
 
-        //Get pixels from frequency data and apply to image
-        const relevantFreqs = frequenciesData[channel].slice(canvasNum * Math.round(frequenciesData[channel].length / my.canvases.length), (canvasNum + 1) * Math.round(frequenciesData[channel].length / my.canvases.length));
-        const pixels = my.resample(relevantFreqs);
-        const imageData = new ImageData(pixels.length, height);
+        for (let channel = 0; channel < frequenciesData.length; channel++) {
 
-        for (let i = 0; i < pixels.length; i++) {
-            for (let j = 0; j < pixels[i].length; j++) {
-                const colorMap = my.colorMap[pixels[i][j]];
-                const redIndex = ((height - j) * imageData.width + i) * 4;
-                imageData.data[redIndex] = colorMap[0] * 255;
-                imageData.data[redIndex + 1] = colorMap[1] * 255;
-                imageData.data[redIndex + 2] = colorMap[2] * 255;
-                imageData.data[redIndex + 3] = colorMap[3] * 255;
+            //Get pixels from frequency data and apply to image
+            const relevantFreqs = frequenciesData[channel].slice(canvasNum * Math.round(frequenciesData[channel].length / my.canvases.length), (canvasNum + 1) * Math.round(frequenciesData[channel].length / my.canvases.length));
+            const pixels = my.resample(relevantFreqs);
+            const imageData = new ImageData(pixels.length, height);
+
+            for (let i = 0; i < pixels.length; i++) {
+                for (let j = 0; j < pixels[i].length; j++) {
+                    const colorMap = my.colorMap[pixels[i][j]];
+                    const redIndex = ((height - j) * imageData.width + i) * 4;
+                    imageData.data[redIndex] = colorMap[0] * 255;
+                    imageData.data[redIndex + 1] = colorMap[1] * 255;
+                    imageData.data[redIndex + 2] = colorMap[2] * 255;
+                    imageData.data[redIndex + 3] = colorMap[3] * 255;
+                }
             }
-        }
 
-        //Draw image to canvas
-        createImageBitmap(imageData).then(renderer => {
-            my.canvases[canvasNum].getContext('2d').drawImage(renderer,
-                0, height * (1 - freqMax / freqFrom), // source x, y
-                imageData.width, height * (freqMax - freqMin) / freqFrom, // source width, height
-                0, height * channel, // destination x, y
-                my.canvases[canvasNum].width, height // destination width, height
-            );
-        });
+            //Draw image to canvas
+            createImageBitmap(imageData).then(renderer => {
+                if (my.canvases[canvasNum]) { //Check canvas still exists after creating image
+                    my.canvases[canvasNum].getContext('2d').drawImage(renderer,
+                        0, height * (1 - freqMax / freqFrom), // source x, y
+                        imageData.width, height * (freqMax - freqMin) / freqFrom, // source width, height
+                        0, height * channel, // destination x, y
+                        my.canvases[canvasNum].width, height // destination width, height
+                    );
+                }
+            });
+        }
+        //Drawing is finished
+        my.canvasesTimeouts[canvasNum] = null;
     }
 
     getFrequencies(callback) {
