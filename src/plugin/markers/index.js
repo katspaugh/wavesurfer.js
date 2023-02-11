@@ -274,7 +274,7 @@ export default class MarkersPlugin {
             labelEl.innerText = label;
             labelEl.setAttribute('title', tooltip);
             this.style(labelEl, {
-                "font-family": "monospace",
+                "font-family": "inherit",
                 "font-size": "90%"
             });
             labelDiv.appendChild(labelEl);
