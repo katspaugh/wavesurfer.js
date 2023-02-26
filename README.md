@@ -10,25 +10,29 @@ Interactive navigable audio visualization using Web Audio and Canvas.
 
 See a [tutorial](https://wavesurfer-js.org/docs) and [examples](https://wavesurfer-js.org/examples) on [wavesurfer-js.org](https://wavesurfer-js.org).
 
-## Browser support
-wavesurfer.js works only in [modern browsers supporting Web Audio](http://caniuse.com/audio-api).
+## Questions
+Have a question about integrating wavesurfer.js on your website? Feel free to ask in our forum: https://github.com/wavesurfer-js/wavesurfer.js/discussions/categories/q-a
 
-It will fallback to Audio Element without graphics in other browsers (IE 11 and lower).
+## Quick start
 
-## FAQ
-### Can the audio start playing before the waveform is drawn?
-Yes, if you use the `backend: 'MediaElement'` option. See here: https://wavesurfer-js.org/example/audio-element/. The audio will start playing as you press play. A thin line will be displayed until the whole audio file is downloaded and decoded to draw the waveform.
+```
+npm install wavesurfer.js --save
 
-### Can drawing be done as file loads?
-No. Web Audio needs the whole file to decode it in the browser. You can however load pre-decoded waveform data to draw the waveform immediately. See here: https://wavesurfer-js.org/example/audio-element/ (the "Pre-recoded Peaks" section).
+# or
 
-## API in examples
+yarn add wavesurfer.js
 
-Choose a container:
+# or
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/6.4.0/wavesurfer.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+```
+
+Create a container in your HTML:
 ```html
 <div id="waveform"></div>
 ```
-Create an instance, passing the container selector and [options](https://wavesurfer-js.org/docs/options.html):
+
+Create an instance of wavesufer.js, passing the container selector and a few [options](https://wavesurfer-js.org/docs/options.html):
 
 ```javascript
 var wavesurfer = WaveSurfer.create({
@@ -56,40 +60,17 @@ wavesurfer.load('example/media/demo.wav');
 
 See the documentation on all available [methods](https://wavesurfer-js.org/docs/methods.html), [options](https://wavesurfer-js.org/docs/options.html) and [events](https://wavesurfer-js.org/docs/events.html) on the [homepage](https://wavesurfer-js.org/docs/).
 
-## Upgrade
+## Pojects using wavesurfer.js
 
-See the [upgrade](https://github.com/katspaugh/wavesurfer.js/blob/master/UPGRADE.md) document if you're upgrading from a previous version of wavesurfer.js.
-
-## Using with a module bundler
-
-Install Wavesurfer:
-```bash
-npm install wavesurfer.js --save
-# or
-yarn add wavesurfer.js
-```
-
-Use it with a module system like this:
-```javascript
-// import
-import WaveSurfer from 'wavesurfer.js';
-
-// commonjs/requirejs
-var WaveSurfer = require('wavesurfer.js');
-
-// amd
-define(['WaveSurfer'], function(WaveSurfer) {
-  // ... code
-});
-
-```
-
-## Related projects
-
-For a list of  projects using wavesurfer.js, check out
+For the list of projects using wavesurfer.js, check out
 [the projects page](https://wavesurfer-js.org/projects/).
 
-## Development
+## Contributing
+
+Have an idea and want to contribute to wavesurfer.js?
+Please first start a discussion in the [Ideas section of our forum](https://github.com/wavesurfer-js/wavesurfer.js/discussions/categories/ideas) to coordinate with the maintainers.
+
+### Development
 
 [![Build Status](https://github.com/katspaugh/wavesurfer.js/workflows/wavesurfer.js/badge.svg?branch=master)](https://github.com/katspaugh/wavesurfer.js/actions?workflow=wavesurfer.js)
 [![Coverage Status](https://coveralls.io/repos/github/katspaugh/wavesurfer.js/badge.svg)](https://coveralls.io/github/katspaugh/wavesurfer.js)
