@@ -10,7 +10,7 @@
  * @since 5.2.0
  */
 export default function ignoreSilenceMode() {
-    // Set webaudio context with 1 second silent audio 44100 bit rate buffer to allow playing audio even if silent switch is on the device 
+    // Set webaudio context with 1 second silent audio 44100 bit rate buffer to allow playing audio even if silent switch is on the device
     let silentAC = new AudioContext();
     let silentBS = silentAC.createBufferSource();
     silentBS.buffer = silentAC.createBuffer(1, 1, 44100);
