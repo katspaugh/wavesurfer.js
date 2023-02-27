@@ -736,6 +736,15 @@ export default class WaveSurfer extends util.Observer {
         this.fireEvent('backend-created', this.backend);
 
         this.backend.on('finish', () => {
+            if (this.params.fadeInAudio) {
+                // reset start time to 0 if fadeInAudio is active
+                util.audioEffect({
+                    'wavesurfer': this,
+                    'type': 'fadeIn'
+                    'start': 0
+                });
+            }
+            
             this.drawer.progress(this.backend.getPlayedPercents());
             this.fireEvent('finish');
         });
@@ -833,7 +842,13 @@ export default class WaveSurfer extends util.Observer {
 
         if (this.params.fadeInAudio) {
             // fade in the audio when starting to play with default 5 seconds
-            util.fadeInMode(this.params.fadeInAudioTime||5000);
+            this.setVolume(0);
+            util.audioEffect({
+                'wavesurfer': this,
+                'type': 'fadeIn'
+                'start': 0,
+                'length': this.params.fadeInLength||5000
+            });
         }
 
         this.fireEvent('interaction', () => this.play(start, end));
