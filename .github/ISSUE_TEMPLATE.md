@@ -16,7 +16,7 @@ Consider sharing it in the forum: https://github.com/wavesurfer-js/wavesurfer.js
 
 - [ ] I have checked [the FAQ](https://wavesurfer-js.org/faq/) and it doesn't solve my problem.
 - [ ] I have checked [the documentation](https://wavesurfer-js.org/docs/) and it doesn't solve my problem
-- [ ] I have searched for [already open issues](https://github.com/katspaugh/wavesurfer.js/issues) which desribe my problem.
+- [ ] I have searched for [already open issues](https://github.com/wavesurfer-js/wavesurfer.js/issues) which desribe my problem.
 
 ## Please make sure to provide the following information (if applicable):
 

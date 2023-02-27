@@ -1,12 +1,12 @@
 # [wavesurfer.js](https://wavesurfer-js.org)
 
 [![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
-![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg) [![Join the chat at https://gitter.im/katspaugh/wavesurfer.js](https://badges.gitter.im/katspaugh/wavesurfer.js.svg)](https://gitter.im/katspaugh/wavesurfer.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/katspaugh/wavesurfer.js/badge)](https://www.gitpoap.io/gh/katspaugh/wavesurfer.js)
+![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg) [![Join the chat at https://gitter.im/wavesurfer-js/wavesurfer.js](https://badges.gitter.im/wavesurfer-js/wavesurfer.js.svg)](https://gitter.im/wavesurfer-js/wavesurfer.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/wavesurfer-js/wavesurfer.js/badge)](https://www.gitpoap.io/gh/wavesurfer-js/wavesurfer.js)
 
 Interactive navigable audio visualization using Web Audio and Canvas.
 
-[![Screenshot](https://raw.githubusercontent.com/katspaugh/wavesurfer.js/gh-pages/example/screenshot.png "Screenshot")](https://wavesurfer-js.org)
+[![Screenshot](https://raw.githubusercontent.com/wavesurfer-js/wavesurfer.js/gh-pages/example/screenshot.png "Screenshot")](https://wavesurfer-js.org)
 
 See a [tutorial](https://wavesurfer-js.org/docs) and [examples](https://wavesurfer-js.org/examples) on [wavesurfer-js.org](https://wavesurfer-js.org).
 
@@ -24,7 +24,7 @@ yarn add wavesurfer.js
 
 # or
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/6.4.0/wavesurfer.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://unpkg.com/wavesurfer.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 ```
 
 Create a container in your HTML:
@@ -72,8 +72,8 @@ Please first start a discussion in the [Ideas section of our forum](https://gith
 
 ### Development
 
-[![Build Status](https://github.com/katspaugh/wavesurfer.js/workflows/wavesurfer.js/badge.svg?branch=master)](https://github.com/katspaugh/wavesurfer.js/actions?workflow=wavesurfer.js)
-[![Coverage Status](https://coveralls.io/repos/github/katspaugh/wavesurfer.js/badge.svg)](https://coveralls.io/github/katspaugh/wavesurfer.js)
+[![Build Status](https://github.com/wavesurfer-js/wavesurfer.js/workflows/wavesurfer.js/badge.svg?branch=master)](https://github.com/wavesurfer-js/wavesurfer.js/actions?workflow=wavesurfer.js)
+[![Coverage Status](https://coveralls.io/repos/github/wavesurfer-js/wavesurfer.js/badge.svg)](https://coveralls.io/github/wavesurfer-js/wavesurfer.js)
 ![Size](https://img.shields.io/bundlephobia/minzip/wavesurfer.js.svg?style=flat)
 
 Install development dependencies:
@@ -115,7 +115,7 @@ npm run doc
 If you want to use [the VS Code - Debugger for Chrome](https://github.com/Microsoft/vscode-chrome-debug), there is already a [launch.json](.vscode/launch.json) with a properly configured ``sourceMapPathOverrides`` for you.
 
 ## Editing documentation
-The homepage and documentation files are maintained in the [`gh-pages` branch](https://github.com/katspaugh/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
+The homepage and documentation files are maintained in the [`gh-pages` branch](https://github.com/wavesurfer-js/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
 
 ## Updating the NPM package
 When preparing a new release, update the version in the `package.json` and have it merged to master. The new version of the package will be published to NPM automatically via GitHub Actions.
@@ -124,7 +124,7 @@ When preparing a new release, update the version in the `package.json` and have 
 
 The main maintainer: <img src="https://avatars.githubusercontent.com/u/305679" width="16" height="16" /> [Thijs Triemstra](https://github.com/thijstriemstra)
 
-Many thanks to [all the awesome contributors](https://github.com/katspaugh/wavesurfer.js/contributors)!
+Many thanks to [all the awesome contributors](https://github.com/wavesurfer-js/wavesurfer.js/contributors)!
 
 ## License
 
