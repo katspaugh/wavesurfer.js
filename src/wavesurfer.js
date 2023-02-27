@@ -740,7 +740,7 @@ export default class WaveSurfer extends util.Observer {
                 // reset start time to 0 if fadeInAudio is active
                 util.audioEffect({
                     'wavesurfer': this,
-                    'type': 'fadeIn'
+                    'type': 'fadeIn',
                     'start': 0
                 });
             }
@@ -845,7 +845,7 @@ export default class WaveSurfer extends util.Observer {
             this.setVolume(0);
             util.audioEffect({
                 'wavesurfer': this,
-                'type': 'fadeIn'
+                'type': 'fadeIn',
                 'start': 0,
                 'length': this.params.fadeInLength||5000
             });
