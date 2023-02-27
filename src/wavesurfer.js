@@ -831,6 +831,11 @@ export default class WaveSurfer extends util.Observer {
             util.ignoreSilenceMode();
         }
 
+        if (this.params.fadeInAudio) {
+            // fade in the audio when starting to play with default 5 seconds
+            util.fadeInMode(this.params.fadeInAudioTime||5000);
+        }
+
         this.fireEvent('interaction', () => this.play(start, end));
         return this.backend.play(start, end);
     }
