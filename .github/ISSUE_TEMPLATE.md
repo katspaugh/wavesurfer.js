@@ -1,17 +1,26 @@
-# Hey, thank you for testing and contributing to wavesurfer.js!
+# Hey, thank you for using and contributing to wavesurfer.js!
 
-## Please make sure you can check all of these points below before opening an issue:
+## Need help with wavesurfer.js in your app?
+
+Please start a Q&A dicussion in our forum: https://github.com/wavesurfer-js/wavesurfer.js/discussions/new?category=q-a
+
+## Have an idea for a feature?
+
+Consider sharing it in the forum: https://github.com/wavesurfer-js/wavesurfer.js/discussions/new?category=ideas
+
+## You think you found a bug?
+
+### Please make sure you can check all of these points below before opening an issue:
 
 (You don't have to post this section)
 
 - [ ] I have checked [the FAQ](https://wavesurfer-js.org/faq/) and it doesn't solve my problem.
 - [ ] I have checked [the documentation](https://wavesurfer-js.org/docs/) and it doesn't solve my problem
-- [ ] I have searched for [already open issues](https://github.com/katspaugh/wavesurfer.js/issues) which desribe my problem.
-- [ ] The issue I'm having is related to and caused by wavesurfer.js, not by other software (which maybe packages and uses wavesurfer incorrectly) – In that case you should open the issue on the respective project pages.
+- [ ] I have searched for [already open issues](https://github.com/wavesurfer-js/wavesurfer.js/issues) which desribe my problem.
 
-## Please make sure you provide the following information (if applicable):
+## Please make sure to provide the following information (if applicable):
 
-### Wavesurfer.js version(s):
+### wavesurfer.js version(s):
 
 
 ### Browser and operating system version(s):
@@ -22,5 +31,5 @@
 (Please reduce your code as much as possible and only post the minimum code needed to reproduce the issue. [A Code pen](http://codepen.io/) is an excellent way to share such code)
 
 
-### Use behaviour needed to reproduce the issue:
+### (Optional) Steps in the UI to reproduce the issue:
 
