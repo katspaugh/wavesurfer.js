@@ -66,6 +66,9 @@ export default class MediaElement extends WebAudio {
             this.fireEvent('error', 'Error loading media element');
         };
         this.mediaListeners.canplay = () => {
+            this.fireEvent('waiting');
+        };
+        this.mediaListeners.canplay = () => {
             this.fireEvent('canplay');
         };
         this.mediaListeners.ended = () => {
