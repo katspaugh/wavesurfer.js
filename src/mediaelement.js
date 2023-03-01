@@ -65,6 +65,36 @@ export default class MediaElement extends WebAudio {
         this.mediaListeners.error = () => {
             this.fireEvent('error', 'Error loading media element');
         };
+        this.mediaListeners.abort = () => {
+            this.fireEvent('abort');
+        };
+        this.mediaListeners.emptied = () => {
+            this.fireEvent('emptied');
+        };
+        this.mediaListeners.canplaythrough = () => {
+            this.fireEvent('canplaythrough');
+        };
+        this.mediaListeners.loadeddata = () => {
+            this.fireEvent('loadeddata');
+        };
+        this.mediaListeners.loadedmetadata = () => {
+            this.fireEvent('loadedmetadata');
+        };
+        this.mediaListeners.loadstart = () => {
+            this.fireEvent('loadstart');
+        };
+        this.mediaListeners.ratechange = () => {
+            this.fireEvent('ratechange');
+        };
+        this.mediaListeners.stalled = () => {
+            this.fireEvent('stalled');
+        };
+        this.mediaListeners.suspend = () => {
+            this.fireEvent('suspend');
+        };
+        this.mediaListeners.timeupdate = () => {
+            this.fireEvent('timeupdate');
+        };
         this.mediaListeners.waiting = () => {
             this.fireEvent('waiting');
         };
