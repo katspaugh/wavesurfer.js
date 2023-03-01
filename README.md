@@ -60,7 +60,7 @@ wavesurfer.load('example/media/demo.wav');
 
 See the documentation on all available [methods](https://wavesurfer-js.org/docs/methods.html), [options](https://wavesurfer-js.org/docs/options.html) and [events](https://wavesurfer-js.org/docs/events.html) on the [homepage](https://wavesurfer-js.org/docs/).
 
-## Pojects using wavesurfer.js
+## Projects using wavesurfer.js
 
 For the list of projects using wavesurfer.js, check out
 [the projects page](https://wavesurfer-js.org/projects/).
