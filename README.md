@@ -14,6 +14,7 @@ See a [tutorial](https://wavesurfer-js.org/docs) and [examples](https://wavesurf
 Have a question about integrating wavesurfer.js on your website? Feel free to ask in our forum: https://github.com/wavesurfer-js/wavesurfer.js/discussions/categories/q-a
 
 ## Quick start
+Install the package:
 
 ```
 npm install wavesurfer.js --save
@@ -21,10 +22,16 @@ npm install wavesurfer.js --save
 # or
 
 yarn add wavesurfer.js
+```
 
-# or
+And import it like so:
+```
+import WaveSurfer from 'wavesurfer.js'
+```
 
-<script src="https://unpkg.com/wavesurfer.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+If you're not using a package manager, simply insert the script from a CDN:
+```
+<script src="https://unpkg.com/wavesurfer.js"></script>
 ```
 
 Create a container in your HTML:
