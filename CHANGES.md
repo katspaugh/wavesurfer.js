@@ -6,7 +6,9 @@ wavesurfer.js changelog
 - Regions plugin:
   - Improved delta calculation (resize end) (#2641)
 - Fix iphone silent switch webaudio mute (#2667)
-- Add remaining mediaelement events (#2691, #2694)
+- Add the following mediaelement events (#2691, #2694)
+  - https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement
+  - abort, emptied, canplaythrough, loadeddata, loadedmetadata, loadstart, ratechange, stalled, suspend, timeupdate
 
 6.4.0 (05.11.2022)
 ------------------
