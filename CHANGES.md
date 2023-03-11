@@ -1,11 +1,30 @@
 wavesurfer.js changelog
 =======================
 
-6.3.0 (unreleased)
+6.5.0 (unreleased)
+------------------
+- Regions plugin:
+  - Improved delta calculation (resize end) (#2641)
+- Fix iphone silent switch webaudio mute (#2667)
+- Respect mute state when changing volume during mute (#2502)
+
+6.4.0 (05.11.2022)
+------------------
+- Markers plugin:
+  - Check for event after every add/remove (#2560)
+  - Add tooltip (#2595)
+- Cursor plugin:
+  - Fix crash when `destroy` is called before `ready` event fired (#2606)
+
+6.3.0 (03.10.2022)
 ------------------
 - Fix `barMinHeight` option not setting the minimum bar height properly (#2522)
-- Respect mute state when changing volume during mute (#2502)
-- Regions plugin: restore support for one drag selection for all channels (#2529)
+- Regions plugin:
+  - Restore support for one drag selection for all channels (#2529)
+  - 2 new params (#2521):
+    - `{contentEditable: true}` allows to display/add/edit text in regions upon the waveform
+    - `{removeButton: true}` displays remove button in regions
+  - New example -- video annotation using `{contentEditable: true}` and `{removeButton: true}`
 - Markers plugin: 
   - Add support for a context menu event on a marker (#2546)
 - Spectrogram plugin: Make labels have position: absolute instead of fixed (#2542)

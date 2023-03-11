@@ -17,6 +17,7 @@
  * the cursor follow the x and the y-position of the mouse. Use `false` to make the
  * it only follow the x-position of the mouse.
  * @property {function} formatTimeCallback Formats the timestamp on the cursor.
+ * @property {boolean} isDestroyCalled  true if called destroy before the ready event fired
  */
 
 /**
@@ -140,11 +141,19 @@ export default class CursorPlugin {
          * @type {?HTMLElement}
          */
         this.displayTime = null;
+        /**
+         * true when `destroy` was called before `ready` event
+         * @type {boolean}
+         */
+        this.isDestroyCalled = false;
 
         this.params = Object.assign({}, this.defaultParams, params);
     }
 
     _onReady() {
+        if (this.isDestroyCalled) {
+            return;
+        }
         this.wrapper = this.wavesurfer.drawer.wrapper;
         this.cursor = this.util.withOrientation(this.wrapper.appendChild(
             document.createElement('cursor'),
@@ -237,10 +246,14 @@ export default class CursorPlugin {
      * Destroy the plugin (used by the Plugin API)
      */
     destroy() {
-        if (this.params.showTime) {
-            this.showTime.remove();
+        if (!this.cursorTime || !this.showTime){
+            this.isDestroyCalled = true;
+            return;
         }
-        this.cursor.remove();
+        if (this.params.showTime) {
+            this.showTime && this.showTime.remove();
+        }
+        this.cursor && this.cursor.remove();
         this.wrapper.removeEventListener('mousemove', this._onMousemove);
         if (this.params.hideOnBlur) {
             this.wrapper.removeEventListener('mouseenter', this._onMouseenter);
@@ -323,7 +336,6 @@ export default class CursorPlugin {
      */
     formatTime(cursorTime) {
         cursorTime = isNaN(cursorTime) ? 0 : cursorTime;
-
         if (this.params.formatTimeCallback) {
             return this.params.formatTimeCallback(cursorTime);
         }

@@ -1,5 +1,5 @@
 Logo is free to use with this project, link back to the official github page to support the project.
-https://github.com/katspaugh/wavesurfer.js 
+https://github.com/wavesurfer-js/wavesurfer.js 
 
 Available Logo Versions:
 - svg text logo (black/white)
