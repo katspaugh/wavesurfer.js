@@ -1,8 +1,9 @@
-name: NPM Package
+name: Release
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - production
 
 permissions:
   contents: write
@@ -11,57 +12,45 @@ jobs:
   publish-npm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v2
         with:
-          node-version: 16
-          registry-url: https://registry.npmjs.org/
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
-            ${{ runner.OS }}-
-      - run: npm install
+          fetch-depth: 0
+
       - name: Extract version
+        id: version
         run: |
           OLD_VERSION=$(npm show wavesurfer.js version)
           NEW_VERSION=$(node -p 'require("./package.json").version')
           if [ $NEW_VERSION != $OLD_VERSION ]; then
-            echo $NEW_VERSION > version.txt
             echo "New version $NEW_VERSION detected"
+            echo "::set-output name=version::$NEW_VERSION"
+            git log "$OLD_VERSION"..HEAD --pretty=format:"* %s" > TEMP_CHANGELOG.md
           else
             echo "Version $OLD_VERSION hasn't changed, skipping the release"
+            exit 1
           fi
+
       - name: Create a git tag
-        run: |
-          if [ -f version.txt ]; then
-            echo "Creating a git tag"
-            git tag $(cat version.txt)
-            git push --tags
-          fi
+        if: success()
+        run: git tag $NEW_VERSION && git push --tags
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+
+      - name: GitHub release
+        if: success()
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          body_path: TEMP_CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
       - name: Publish to NPM
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
-        run: |
-          if [ -f version.txt ]; then
-            echo "Publishing to NPM"
-            npm publish
-          fi
-      - name: Release on GitHub
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ -f version.txt ]; then
-            NEW_VERSION=$(cat version.txt)
-            echo "Releasing $NEW_VERSION on GitHub"
-            curl \
-              -X POST \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              'https://api.github.com/repos/wavesurfer-js/wavesurfer.js/releases' \
-              -d "{\"tag_name\":\"$NEW_VERSION\", \"name\": \"$NEW_VERSION\"}"
-          fi
+        run: npm publish

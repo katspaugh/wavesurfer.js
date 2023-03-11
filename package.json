@@ -31,7 +31,8 @@
     "test": "karma start karma.conf.js",
     "test:chrome": "karma start karma.conf.js --browsers=Chrome --single-run=false",
     "prepublishOnly": "not-in-install && npm run build || in-install",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "release": "./scripts/release.sh"
   },
   "repository": {
     "type": "git",
