@@ -66,6 +66,11 @@ export default class CanvasEntry {
          * @type {object}
          */
         this.canvasContextAttributes = {};
+        /**
+         * The Timeout id used to track this canvas entry.
+         */
+        this.drawTimeout = null;
+
     }
 
     /**
@@ -125,21 +130,27 @@ export default class CanvasEntry {
      */
     clearWave() {
         // wave
+        this.waveCtx.save();
+        this.waveCtx.setTransform(1, 0, 0, 1, 0, 0);
         this.waveCtx.clearRect(
             0,
             0,
             this.waveCtx.canvas.width,
             this.waveCtx.canvas.height
         );
+        this.waveCtx.restore();
 
         // progress
         if (this.hasProgressCanvas) {
+            this.progressCtx.save();
+            this.progressCtx.setTransform(1, 0, 0, 1, 0, 0);
             this.progressCtx.clearRect(
                 0,
                 0,
                 this.progressCtx.canvas.width,
                 this.progressCtx.canvas.height
             );
+            this.progressCtx.restore();
         }
     }
 
@@ -422,6 +433,38 @@ export default class CanvasEntry {
             });
         } else if (type === 'dataURL') {
             return this.wave.toDataURL(format, quality);
+        }
+    }
+
+    /**
+     * Stretches existing canvas
+     * @param {Number} newTotalWidth total width of wave in pixels
+     */
+    stretchCanvas(newTotalWidth) {
+        //Calculate the start and width of this canvas
+        let start = Math.round(this.start * newTotalWidth);
+        let width = Math.round(this.end * newTotalWidth - start);
+
+        //Stretch canvas
+        let elementSize = { width: width + 'px' };
+        let elementStart = {left: start + 'px'};
+        style(this.wave, elementSize);
+        style(this.wave, elementStart);
+        if (this.hasProgressCanvas) {
+            style(this.progress, elementSize);
+            style(this.progress, elementStart);
+        }
+    }
+
+    /**
+     * Set the left offset of the canvas
+     * @param {Number} position in px for the canvas to start
+     */
+    setLeft(position) {
+        let elementStart = {left: position + 'px'};
+        style(this.wave, elementStart);
+        if (this.hasProgressCanvas) {
+            style(this.progress, elementStart);
         }
     }
 }

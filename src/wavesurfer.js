@@ -1276,6 +1276,21 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Calls getPeaks() and drawPeaks()
+     * @param {WaveSurfer} wavesurfer the Wavesurfer to get/draw peaks from/to
+     * @param {number} width The width of the area that should be drawn
+     * @param {number} start The x-offset of the beginning of the area that
+     * should be rendered
+     * @param {number} end The x-offset of the end of the area that should be
+     * rendered
+     */
+    getAndDrawPeaks(wavesurfer, width, start, end) {
+        let peaks;
+        peaks = wavesurfer.backend.getPeaks(width, start, end);
+        wavesurfer.drawer.drawPeaks(peaks, width, start, end);
+    }
+
+    /**
      * Get the correct peaks for current wave view-port and render wave
      *
      * @private
@@ -1353,6 +1368,24 @@ export default class WaveSurfer extends util.Observer {
         this.drawer.progress(this.backend.getPlayedPercents());
 
         this.drawer.recenter(this.getCurrentTime() / this.getDuration());
+        this.fireEvent('zoom', pxPerSec);
+    }
+
+    /**
+     * Call this function while moving the zoom slider to stretch the canvases
+     * of the wave without recalculating
+     *
+     * @param {Number} pxPerSec value returned from the zoom slider
+     */
+    zooming(pxPerSec) {
+        //Calculate the new width, this cannot be smaller than the parent container width
+        let desiredWidth = Math.round(this.getDuration() * pxPerSec * this.params.pixelRatio);
+        let parentWidth = this.drawer.getWidth();
+        desiredWidth = Math.max(parentWidth, desiredWidth);
+
+        //Stretch canvases
+        this.drawer.stretchCanvases(desiredWidth, this.backend.getPlayedPercents());
+
         this.fireEvent('zoom', pxPerSec);
     }
 
