@@ -6,6 +6,7 @@ wavesurfer.js changelog
 - Regions plugin:
   - Improved delta calculation (resize end) (#2641)
 - Fix iphone silent switch webaudio mute (#2667)
+- Respect mute state when changing volume during mute (#2502)
 
 6.4.0 (05.11.2022)
 ------------------

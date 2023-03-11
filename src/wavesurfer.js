@@ -1004,6 +1004,10 @@ export default class WaveSurfer extends util.Observer {
      * @emits WaveSurfer#volume
      */
     setVolume(newVolume) {
+        if (this.isMuted === true) {
+            this.savedVolume = newVolume;
+            return;
+        }
         this.backend.setVolume(newVolume);
         this.fireEvent('volume', newVolume);
     }
