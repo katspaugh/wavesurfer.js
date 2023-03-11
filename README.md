@@ -139,15 +139,7 @@ yarn release
 ```
 This will update the version, generate a changelog, and push everything to a new branch called `release/X.X.X`.
 
-A browser window will open to create a PR from this new branch to the production branch. Once this PR is approved, it needs to be merged to production w/o squashing the commits (to keep the original commits). The release automation will then kick in and publish a release both on GitHub and NPM.
-
-Finally, pull the changes from production to master and push.
-
-```
-git reset --hard origin/master
-git pull origin production
-git push origin master
-```
+A browser window will open to create a PR from this new branch to the master branch. Once the PR is approved and merged, an automated workflow will kick in and publish a release both on GitHub and NPM.
 
 ## Credits
 

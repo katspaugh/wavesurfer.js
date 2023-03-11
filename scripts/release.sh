@@ -34,6 +34,6 @@ git push origin $(git branch --show-current):release/$NEW_VERSION -f
 
 # Open a pull request via the browser
 echo "Opening a pull request for release/$NEW_VERSION"
-open "https://github.com/wavesurfer-js/wavesurfer.js/compare/production...release/$NEW_VERSION?expand=1"
+open "https://github.com/wavesurfer-js/wavesurfer.js/compare/master...release/$NEW_VERSION?expand=1"
 
 
