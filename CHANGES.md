@@ -5,6 +5,11 @@ wavesurfer.js changelog
 ------------------
 - Regions plugin:
   - Improved delta calculation (resize end) (#2641)
+  - Editable text in regions (#2521):
+    - 2 new params:
+    - `{contentEditable: true}` allows to display/add/edit text in regions upon the waveform
+    - `{removeButton: true}` displays remove button in regions
+    - New example -- video annotation using `{contentEditable: true}` and `{removeButton: true}`
 - Fix iphone silent switch webaudio mute (#2667)
 - Respect mute state when changing volume during mute (#2502)
 - Proxy HTMLMediaElement's 'waiting' event through MediaElement backend. (#2691)
@@ -26,10 +31,6 @@ wavesurfer.js changelog
 - Fix `barMinHeight` option not setting the minimum bar height properly (#2522)
 - Regions plugin:
   - Restore support for one drag selection for all channels (#2529)
-  - 2 new params (#2521):
-    - `{contentEditable: true}` allows to display/add/edit text in regions upon the waveform
-    - `{removeButton: true}` displays remove button in regions
-  - New example -- video annotation using `{contentEditable: true}` and `{removeButton: true}`
 - Markers plugin:
   - Add support for a context menu event on a marker (#2546)
 - Spectrogram plugin: Make labels have position: absolute instead of fixed (#2542)
