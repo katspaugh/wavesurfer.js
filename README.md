@@ -124,8 +124,22 @@ If you want to use [the VS Code - Debugger for Chrome](https://github.com/Micros
 ## Editing documentation
 The homepage and documentation files are maintained in the [`gh-pages` branch](https://github.com/wavesurfer-js/wavesurfer.js/tree/gh-pages). Contributions to the documentation are especially welcome.
 
-## Updating the NPM package
-When preparing a new release, update the version in the `package.json` and have it merged to master. The new version of the package will be published to NPM automatically via GitHub Actions.
+## Releasing a new version
+To release a new version and publish it to NPM, follow the steps below.
+
+ Switch to the master branch and make sure it's up-to-date
+ ```
+ git checkout master
+ git fetch --all; git reset --hard origin/master
+```
+
+Run the release script:
+```
+yarn release
+```
+This will update the version, generate a changelog, and push everything to a new branch called `relase/X.X.X`.
+
+A browser window will open to create a PR from this new branch to the production branch. Once this PR is approved, it needs to be merged to production w/o squashing the commits (to keep the original commits). The release automation will then kick in and publish a release both on GitHub and NPM.
 
 ## Credits
 
