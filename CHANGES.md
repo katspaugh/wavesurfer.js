@@ -1,12 +1,17 @@
 wavesurfer.js changelog
 =======================
 
-6.5.0 (unreleased)
+6.5.0 (11.03.2023)
 ------------------
 - Regions plugin:
   - Improved delta calculation (resize end) (#2641)
 - Fix iphone silent switch webaudio mute (#2667)
 - Respect mute state when changing volume during mute (#2502)
+- Proxy HTMLMediaElement's 'waiting' event through MediaElement backend. (Proxy HTMLMediaElement's 'waiting' event through MediaElement backend. #2691)
+- Chores:
+  - Docs: update the issue template and wavesurfer links (Docs: update the issue template and wavesurfer links #2671)
+  - Create FUNDING.yml (Create FUNDING.yml #2668)
+  - update dev dependencies
 
 6.4.0 (05.11.2022)
 ------------------
@@ -25,7 +30,7 @@ wavesurfer.js changelog
     - `{contentEditable: true}` allows to display/add/edit text in regions upon the waveform
     - `{removeButton: true}` displays remove button in regions
   - New example -- video annotation using `{contentEditable: true}` and `{removeButton: true}`
-- Markers plugin: 
+- Markers plugin:
   - Add support for a context menu event on a marker (#2546)
 - Spectrogram plugin: Make labels have position: absolute instead of fixed (#2542)
 
@@ -52,7 +57,7 @@ wavesurfer.js changelog
 6.0.4 (09.03.2022)
 ------------------
 - Spectrogram plugin:
-  - Add `frequencyMin`, `frequencyMax` option to scale frequency axis. 
+  - Add `frequencyMin`, `frequencyMax` option to scale frequency axis.
     And set default 12kHz range to draw spectrogram like 5.x (#2455)
 - Timeline plugin:
   - Fix rendering issue for negative `offset` values (#2463)
