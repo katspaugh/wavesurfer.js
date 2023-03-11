@@ -35,7 +35,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/wavesurfer-js/wavesurfer.js.git"
+    "url": "git@github.com:wavesurfer-js/wavesurfer.js.git"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
