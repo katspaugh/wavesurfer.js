@@ -11,7 +11,7 @@ wavesurfer.js changelog
 - Chores:
   - Docs: update the issue template and wavesurfer links (#2671)
   - Add FUNDING.yml to enable GitHub Sponsors (#2668)
-  - update dev dependencies
+  - Update development dependencies
 
 6.4.0 (05.11.2022)
 ------------------
