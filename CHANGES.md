@@ -10,7 +10,7 @@ wavesurfer.js changelog
 - Proxy HTMLMediaElement's 'waiting' event through MediaElement backend. (#2691)
 - Chores:
   - Docs: update the issue template and wavesurfer links (#2671)
-  - Create FUNDING.yml (#2668)
+  - Add FUNDING.yml to enable GitHub Sponsors (#2668)
   - update dev dependencies
 
 6.4.0 (05.11.2022)
