@@ -2,7 +2,7 @@ name: NPM Package
 
 on:
   push:
-    branches: [ workflow ]
+    branches: [ master ]
 
 permissions:
   contents: write
