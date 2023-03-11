@@ -7,10 +7,10 @@ wavesurfer.js changelog
   - Improved delta calculation (resize end) (#2641)
 - Fix iphone silent switch webaudio mute (#2667)
 - Respect mute state when changing volume during mute (#2502)
-- Proxy HTMLMediaElement's 'waiting' event through MediaElement backend. (Proxy HTMLMediaElement's 'waiting' event through MediaElement backend. #2691)
+- Proxy HTMLMediaElement's 'waiting' event through MediaElement backend. (#2691)
 - Chores:
-  - Docs: update the issue template and wavesurfer links (Docs: update the issue template and wavesurfer links #2671)
-  - Create FUNDING.yml (Create FUNDING.yml #2668)
+  - Docs: update the issue template and wavesurfer links (#2671)
+  - Create FUNDING.yml (#2668)
   - update dev dependencies
 
 6.4.0 (05.11.2022)
