@@ -29,7 +29,7 @@ sed -i "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" package.json
 # Commit the changes
 echo "Pushing the changes to release/$NEW_VERSION"
 git add CHANGES.md package.json
-git commit -m "Update the version to $NEW_VERSION"
+git commit -m "Release $NEW_VERSION"
 git push origin $(git branch --show-current):release/$NEW_VERSION -f
 
 # Open a pull request via the browser
