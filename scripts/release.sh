@@ -24,11 +24,12 @@ rm tmp
 
 # Update the version in the package.json file
 echo 'Updating package.json...'
-sed -i "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" package.json
+sed -i '' -e "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" package.json
+sed -i '' -e "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" bower.json
 
 # Commit the changes
 echo "Pushing the changes to release/$NEW_VERSION"
-git add CHANGES.md package.json
+git add CHANGES.md package.json bower.json
 git commit -m "Release $NEW_VERSION"
 git push origin $(git branch --show-current):release/$NEW_VERSION -f
 
