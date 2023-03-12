@@ -16,7 +16,7 @@ echo 'Updating CHANGES.md...'
 head -n 3 CHANGES.md > tmp
 echo "$NEW_VERSION ($(date '+%d.%m.%Y'))" >> tmp
 echo "------------------" >> tmp
-git log "$OLD_VERSION"..HEAD --pretty=format:"* %s" >> tmp
+git log "$OLD_VERSION"..HEAD --pretty=format:"- %s" >> tmp
 echo '' >> tmp
 tail -n +3 CHANGES.md >> tmp
 cat tmp > CHANGES.md
