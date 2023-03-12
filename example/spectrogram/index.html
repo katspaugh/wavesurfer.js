@@ -31,13 +31,6 @@
     <body itemscope itemtype="http://schema.org/WebApplication">
         <div class="container">
             <div class="header">
-                <noindex>
-                <ul class="nav nav-pills pull-right">
-                    <li><a href="?fill">Fill</a></li>
-                    <li><a href="?scroll">Scroll</a></li>
-                </ul>
-                </noindex>
-
                 <h1 itemprop="name"><a href="http://wavesurfer-js.org">wavesurfer.js</a><noindex> + Spectrogram</noindex></h1>
             </div>
 
@@ -59,6 +52,17 @@
                         <i class="glyphicon glyphicon-pause"></i>
                         Pause
                     </button>
+                    <div class="col-sm-1">
+                        <i class="glyphicon glyphicon-zoom-in"></i>
+                    </div>
+    
+                    <div class="col-sm-3">
+                      <input data-action="zoom" type="range" min="1" max="200" value="0" style="width: 100%" />
+                    </div>
+    
+                    <div class="col-sm-1">
+                        <i class="glyphicon glyphicon-zoom-out"></i>
+                    </div>
                 </div>
             </div>
 

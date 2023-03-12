@@ -272,10 +272,6 @@ export default class Drawer extends util.Observer {
      * @return {boolean} Whether the width of the container was updated or not
      */
     setWidth(width) {
-        if (this.width == width) {
-            return false;
-        }
-
         this.width = width;
 
         if (this.params.fillParent || this.params.scrollParent) {
