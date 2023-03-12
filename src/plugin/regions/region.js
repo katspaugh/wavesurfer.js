@@ -134,7 +134,7 @@ export class Region {
     /* Remove a single region. */
     remove() {
         if (this.element) {
-            this.wrapper.removeChild(this.element.domElement);
+            this.element.remove();
             this.element = null;
             this.fireEvent('remove');
             this.wavesurfer.un('zoom', this._onRedraw);
@@ -202,18 +202,17 @@ export class Region {
         if (this.removeButton){
             const removeButtonEl = document.createElement('div');
             removeButtonEl.className = 'remove-region-button';
-            removeButtonEl.innerText = 'x';
+            removeButtonEl.textContent = '⨯';
             this.removeButtonEl = this.element.appendChild(removeButtonEl);
             const css = {
                 zIndex: 4,
                 position: 'absolute',
                 bottom: 0,
-                right: 0,
+                right: '4px',
                 cursor:'pointer',
-                marginRight: '3px',
-                fontSize: '80%',
-                color: 'grey',
-                height: '14px'
+                fontSize: '20px',
+                lineHeight: '21px',
+                color: 'grey'
             };
             this.style(this.removeButtonEl, css);
         }
@@ -222,7 +221,7 @@ export class Region {
         if (this.contentEditable){
             const contentEl = document.createElement('div');
             contentEl.className = 'region-content';
-            contentEl.contentEditable = true;
+            contentEl.contentEditable = 'true';
             contentEl.innerText = this.data.text || '';
             this.contentEl = this.element.appendChild(contentEl);
             const css = {
@@ -450,18 +449,11 @@ export class Region {
         if (this.removeButton){
             this.removeButtonEl.addEventListener('click', this.onRemove.bind(this));
         }
-
-        this.on('remove', () => {
-            this.contentEl.removeEventListener('blur', this.onContentBlur.bind(this));
-            this.contentEl.removeEventListener('click', this.onContentClick.bind(this));
-            this.removeButtonEl.removeEventListener('click', this.onRemove.bind(this));
-        });
     }
 
     bindDragEvents() {
         const container = this.wavesurfer.drawer.container;
         const scrollSpeed = this.scrollSpeed;
-        const scrollThreshold = this.scrollThreshold;
         let startTime;
         let touchId;
         let drag;
