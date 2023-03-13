@@ -7,7 +7,7 @@
   "author": "",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/katspaugh/wavesurfer.js/issues"
+    "url": "https://github.com/wavesurfer-js/wavesurfer.js/issues"
   },
   "keywords": [
     "waveform",
@@ -23,7 +23,7 @@
     "example": "examples"
   },
   "dependencies": {
-    "wavesurfer.js": "^6.4.0"
+    "wavesurfer.js": "^6.5.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
