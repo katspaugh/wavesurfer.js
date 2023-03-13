@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# exit when any command fails
+set -e
+
 echo "Before proceeding, please make sure you're on a clean branch with the commits you want to release (typically the master branch)."
 echo ''
 
