@@ -19,7 +19,7 @@ layout: default
   <h2>How to generate waveform data on the server?</h2>
 
   <p>
-    You can use the <a href="https://github.com/bbcrd/audiowaveform">audiowaveform</a> program. For example, let's generate peaks for a MP3 file called 'long_clip.mp3'.
+    You can use the <a href="https://github.com/bbc/audiowaveform">audiowaveform</a> program. For example, let's generate peaks for a MP3 file called 'long_clip.mp3'.
   <p>Generate JSON-formatted peaks data from the file <code>long_clip.mp3</code>:</p>
   <pre><code>audiowaveform -i long_clip.mp3 -o long_clip.json --pixels-per-second 20 --bits 8</code></pre>
   <p>To generate waveforms for each audio channel separately, add the '--split-channels' flag <code>long_clip.mp3</code>:</p>
@@ -38,7 +38,7 @@ var wavesurfer = WaveSurfer.create({
 </code></pre>
   <h4>Server-side</h4>
   <p>You can also pre-normalize the peak data instead of letting the client do it on every load. This could improve performance somewhat, which might be important for large audio files.<p>
-  <p>You can do this normalization with the pyhon script below:</p>
+  <p>You can do this normalization with the following Python script:</p>
   <pre><code>python scale-json.py long_clip.json</code></pre>
   <pre><code>
 import sys
