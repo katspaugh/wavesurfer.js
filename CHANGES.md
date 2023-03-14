@@ -1,6 +1,16 @@
 wavesurfer.js changelog
 =======================
 
+6.6.0 (14.03.2023)
+------------------
+- Zoom optimisation for Waves and matching implementation for Spectrograms (#2646)
+- Fix: release workflow permissions (#2709)
+
+6.5.2 (12.03.2023)
+------------------
+- Regions plugin:
+  - Fix undefined content element on remove (#2713)
+
 6.5.0 (11.03.2023)
 ------------------
 - Regions plugin:
