@@ -50,7 +50,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      - uses: actions/setup-node@v3
+        if: success()
+        with:
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
+
       - name: Publish to NPM
+        if: success()
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
         run: npm publish
