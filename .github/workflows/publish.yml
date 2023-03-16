@@ -51,6 +51,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Install dependencies
+        if: success()
         run: npm install
 
       - name: Publish to NPM
