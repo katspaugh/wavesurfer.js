@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - fix-publish
+      - master
 
 permissions:
   contents: write
@@ -31,24 +31,24 @@ jobs:
             exit 1
           fi
 
-      # - name: Create a git tag
-      #   if: success()
-      #   run: git tag $NEW_VERSION && git push --tags
-      #   env:
-      #     NEW_VERSION: ${{ steps.version.outputs.version }}
+      - name: Create a git tag
+        if: success()
+        run: git tag $NEW_VERSION && git push --tags
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
 
-      # - name: GitHub release
-      #   if: success()
-      #   uses: actions/create-release@v1
-      #   id: create_release
-      #   with:
-      #     draft: false
-      #     prerelease: false
-      #     release_name: ${{ steps.version.outputs.version }}
-      #     tag_name: ${{ steps.version.outputs.version }}
-      #     body_path: TEMP_CHANGELOG.md
-      #   env:
-      #     GITHUB_TOKEN: ${{ github.token }}
+      - name: GitHub release
+        if: success()
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          body_path: TEMP_CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Install dependencies
         run: npm install
@@ -57,4 +57,4 @@ jobs:
         if: success()
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
-        run: npm publish --dry-run
+        run: npm publish
