@@ -30,24 +30,30 @@ jobs:
             echo "Version $OLD_VERSION hasn't changed, skipping the release"
           fi
 
-      - name: Create a git tag
-        if: ${{ steps.version.outputs.version }}
-        run: git tag $NEW_VERSION && git push --tags
-        env:
-          NEW_VERSION: ${{ steps.version.outputs.version }}
+      # - name: Create a git tag
+      #   if: ${{ steps.version.outputs.version }}
+      #   run: git tag $NEW_VERSION && git push --tags
+      #   env:
+      #     NEW_VERSION: ${{ steps.version.outputs.version }}
 
-      - name: GitHub release
+      # - name: GitHub release
+      #   if: ${{ steps.version.outputs.version }}
+      #   uses: actions/create-release@v1
+      #   id: create_release
+      #   with:
+      #     draft: false
+      #     prerelease: false
+      #     release_name: ${{ steps.version.outputs.version }}
+      #     tag_name: ${{ steps.version.outputs.version }}
+      #     body_path: TEMP_CHANGELOG.md
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}
+
+      - uses: actions/setup-node@v3
         if: ${{ steps.version.outputs.version }}
-        uses: actions/create-release@v1
-        id: create_release
         with:
-          draft: false
-          prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}
-          body_path: TEMP_CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+          node-version: '16.x'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         if: ${{ steps.version.outputs.version }}

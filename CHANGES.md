@@ -3,9 +3,8 @@ wavesurfer.js changelog
 
 6.6.1 (18.03.2023)
 ------------------
-- Temp: test on this branch
-- Fix: avoid exit 1 in CI script
 - Fix: NPM publish in the CI job (#2727)
+  - Fix: avoid exit 1 in CI script (#2734)
 - Docs: add a video tutorial link to the readme (#2724)
 
 6.6.0 (14.03.2023)
