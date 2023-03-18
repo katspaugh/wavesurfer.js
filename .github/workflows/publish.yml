@@ -28,7 +28,6 @@ jobs:
             git log "$OLD_VERSION"..HEAD --pretty=format:"* %s" > TEMP_CHANGELOG.md
           else
             echo "Version $OLD_VERSION hasn't changed, skipping the release"
-            exit 0
           fi
 
       - name: Create a git tag
