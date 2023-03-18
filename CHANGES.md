@@ -1,6 +1,12 @@
 wavesurfer.js changelog
 =======================
 
+6.6.1 (18.03.2023)
+------------------
+- Fix: NPM publish in the CI job (#2727)
+  - Fix: avoid exit 1 in CI script (#2734)
+- Docs: add a video tutorial link to the readme (#2724)
+
 6.6.0 (14.03.2023)
 ------------------
 - Zoom optimisation for Waves and matching implementation for Spectrograms (#2646)
