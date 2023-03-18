@@ -24,21 +24,21 @@ jobs:
           NEW_VERSION=$(node -p 'require("./package.json").version')
           if [ $NEW_VERSION != $OLD_VERSION ]; then
             echo "New version $NEW_VERSION detected"
-            echo "::set-output name=version::$NEW_VERSION"
+            echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
             git log "$OLD_VERSION"..HEAD --pretty=format:"* %s" > TEMP_CHANGELOG.md
           else
             echo "Version $OLD_VERSION hasn't changed, skipping the release"
-            exit 1
+            exit 0
           fi
 
       - name: Create a git tag
-        if: success()
+        if: ${{ steps.version.outputs.version }}
         run: git tag $NEW_VERSION && git push --tags
         env:
           NEW_VERSION: ${{ steps.version.outputs.version }}
 
       - name: GitHub release
-        if: success()
+        if: ${{ steps.version.outputs.version }}
         uses: actions/create-release@v1
         id: create_release
         with:
@@ -51,11 +51,11 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Install dependencies
-        if: success()
+        if: ${{ steps.version.outputs.version }}
         run: npm install
 
       - name: Publish to NPM
-        if: success()
+        if: ${{ steps.version.outputs.version }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
         run: npm publish
