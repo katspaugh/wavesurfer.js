@@ -50,7 +50,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      - name: Install dependencies
+        if: success()
+        run: npm install
+
       - name: Publish to NPM
+        if: success()
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
         run: npm publish
