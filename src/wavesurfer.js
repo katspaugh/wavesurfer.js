@@ -69,6 +69,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * pixels.
  * @property {boolean} hideScrollbar=false Whether to hide the horizontal
  * scrollbar when one would normally be shown.
+ * @property {boolean} hideCursor=false Whether to hide the mouse cursor
+ * when one would normally be shown by default.
  * @property {boolean} ignoreSilenceMode=false If true, ignores device silence mode
  * when using the `WebAudio` backend.
  * @property {boolean} interact=true Whether the mouse interaction will be
@@ -172,6 +174,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {boolean} relativeNormalization=false determines whether
  * normalization is done per channel or maintains proportionality between
  * channels. Only applied when normalize and splitChannels are both true.
+ * @property {boolean} splitDragSelection=false determines if drag selection in regions
+ * plugin works separately on each channel or only one selection for all channels
  * @since 4.3.0
  */
 
@@ -270,6 +274,7 @@ export default class WaveSurfer extends util.Observer {
         forceDecode: false,
         height: 128,
         hideScrollbar: false,
+        hideCursor: false,
         ignoreSilenceMode: false,
         interact: true,
         loopSelection: true,
@@ -295,7 +300,8 @@ export default class WaveSurfer extends util.Observer {
             overlay: false,
             channelColors: {},
             filterChannels: [],
-            relativeNormalization: false
+            relativeNormalization: false,
+            splitDragSelection: false
         },
         vertical: false,
         waveColor: '#999',
@@ -498,11 +504,15 @@ export default class WaveSurfer extends util.Observer {
         this._onResize = util.debounce(
             () => {
                 if (
+                    this.drawer.wrapper &&
                     prevWidth != this.drawer.wrapper.clientWidth &&
                     !this.params.scrollParent
                 ) {
                     prevWidth = this.drawer.wrapper.clientWidth;
-                    this.drawer.fireEvent('redraw');
+                    if (prevWidth) {
+                        // redraw only if waveform container is rendered and has a width
+                        this.drawer.fireEvent('redraw');
+                    }
                 }
             },
             typeof this.params.responsive === 'number'
@@ -994,6 +1004,10 @@ export default class WaveSurfer extends util.Observer {
      * @emits WaveSurfer#volume
      */
     setVolume(newVolume) {
+        if (this.isMuted === true) {
+            this.savedVolume = newVolume;
+            return;
+        }
         this.backend.setVolume(newVolume);
         this.fireEvent('volume', newVolume);
     }
@@ -1125,40 +1139,58 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Get the fill color of the waveform after the cursor.
      *
-     * @return {string} A CSS color string.
+     * @param {?number} channelIdx Optional index of the channel to get its wave color if splitChannels is true
+     * @return {string|object} A CSS color string, or an array of CSS color strings.
      */
-    getWaveColor() {
+    getWaveColor(channelIdx = null) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            return this.params.splitChannelsOptions.channelColors[channelIdx].waveColor;
+        }
         return this.params.waveColor;
     }
 
     /**
      * Set the fill color of the waveform after the cursor.
      *
-     * @param {string} color A CSS color string.
+     * @param {string|object} color A CSS color string, or an array of CSS color strings.
+     * @param {?number} channelIdx Optional index of the channel to set its wave color if splitChannels is true
      * @example wavesurfer.setWaveColor('#ddd');
      */
-    setWaveColor(color) {
-        this.params.waveColor = color;
+    setWaveColor(color, channelIdx = null) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            this.params.splitChannelsOptions.channelColors[channelIdx].waveColor = color;
+        } else {
+            this.params.waveColor = color;
+        }
         this.drawBuffer();
     }
 
     /**
      * Get the fill color of the waveform behind the cursor.
      *
-     * @return {string} A CSS color string.
+     * @param {?number} channelIdx Optional index of the channel to get its progress color if splitChannels is true
+     * @return {string|object} A CSS color string, or an array of CSS color strings.
      */
-    getProgressColor() {
+    getProgressColor(channelIdx = null) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            return this.params.splitChannelsOptions.channelColors[channelIdx].progressColor;
+        }
         return this.params.progressColor;
     }
 
     /**
      * Set the fill color of the waveform behind the cursor.
      *
-     * @param {string} color A CSS color string.
+     * @param {string|object} color A CSS color string, or an array of CSS color strings.
+     * @param {?number} channelIdx Optional index of the channel to set its progress color if splitChannels is true
      * @example wavesurfer.setProgressColor('#400');
      */
-    setProgressColor(color) {
-        this.params.progressColor = color;
+    setProgressColor(color, channelIdx) {
+        if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
+            this.params.splitChannelsOptions.channelColors[channelIdx].progressColor = color;
+        } else {
+            this.params.progressColor = color;
+        }
         this.drawBuffer();
     }
 
@@ -1244,6 +1276,21 @@ export default class WaveSurfer extends util.Observer {
     }
 
     /**
+     * Calls getPeaks() and drawPeaks()
+     * @param {WaveSurfer} wavesurfer the Wavesurfer to get/draw peaks from/to
+     * @param {number} width The width of the area that should be drawn
+     * @param {number} start The x-offset of the beginning of the area that
+     * should be rendered
+     * @param {number} end The x-offset of the end of the area that should be
+     * rendered
+     */
+    getAndDrawPeaks(wavesurfer, width, start, end) {
+        let peaks;
+        peaks = wavesurfer.backend.getPeaks(width, start, end);
+        wavesurfer.drawer.drawPeaks(peaks, width, start, end);
+    }
+
+    /**
      * Get the correct peaks for current wave view-port and render wave
      *
      * @private
@@ -1321,6 +1368,24 @@ export default class WaveSurfer extends util.Observer {
         this.drawer.progress(this.backend.getPlayedPercents());
 
         this.drawer.recenter(this.getCurrentTime() / this.getDuration());
+        this.fireEvent('zoom', pxPerSec);
+    }
+
+    /**
+     * Call this function while moving the zoom slider to stretch the canvases
+     * of the wave without recalculating
+     *
+     * @param {Number} pxPerSec value returned from the zoom slider
+     */
+    zooming(pxPerSec) {
+        //Calculate the new width, this cannot be smaller than the parent container width
+        let desiredWidth = Math.round(this.getDuration() * pxPerSec * this.params.pixelRatio);
+        let parentWidth = this.drawer.getWidth();
+        desiredWidth = Math.max(parentWidth, desiredWidth);
+
+        //Stretch canvases
+        this.drawer.stretchCanvases(desiredWidth, this.backend.getPlayedPercents());
+
         this.fireEvent('zoom', pxPerSec);
     }
 
@@ -1659,19 +1724,19 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Save waveform image as data URI.
      *
-     * The default format is `'image/png'`. Other supported types are
-     * `'image/jpeg'` and `'image/webp'`.
+     * The default format is `image/png`. Other supported types are
+     * `image/jpeg` and `image/webp`.
      *
      * @param {string} format='image/png' A string indicating the image format.
-     * The default format type is `'image/png'`.
+     * The default format type is `image/png`.
      * @param {number} quality=1 A number between 0 and 1 indicating the image
      * quality to use for image formats that use lossy compression such as
-     * `'image/jpeg'`` and `'image/webp'`.
-     * @param {string} type Image data type to return. Either 'dataURL' (default)
-     * or 'blob'.
-     * @return {string|string[]|Promise} When using `'dataURL'` type this returns
+     * `image/jpeg` and `image/webp`.
+     * @param {string} type Image data type to return. Either `dataURL` (default)
+     * or `blob`.
+     * @return {string|string[]|Promise} When using `dataURL` type this returns
      * a single data URL or an array of data URLs, one for each canvas. When using
-     * `'blob'` type this returns a `Promise` resolving with an array of `Blob`
+     * `blob` type this returns a `Promise` resolving with an array of `Blob`
      * instances, one for each canvas.
      */
     exportImage(format, quality, type) {

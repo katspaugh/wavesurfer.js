@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         end: 7,
                         loop: false,
                         color: 'hsla(200, 50%, 70%, 0.4)',
-                        minLength: 1
+                        minLength: 1,
+                        maxLength: 5
                     }
                 ],
                 dragSelection: {

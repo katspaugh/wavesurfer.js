@@ -69,6 +69,7 @@ export default class Drawer extends util.Observer {
         if (this.params.fillParent || this.params.scrollParent) {
             this.style(this.wrapper, {
                 width: '100%',
+                cursor: this.params.hideCursor ? 'none' : 'auto',
                 overflowX: this.params.hideScrollbar ? 'hidden' : 'auto',
                 overflowY: 'hidden'
             });
@@ -271,10 +272,6 @@ export default class Drawer extends util.Observer {
      * @return {boolean} Whether the width of the container was updated or not
      */
     setWidth(width) {
-        if (this.width == width) {
-            return false;
-        }
-
         this.width = width;
 
         if (this.params.fillParent || this.params.scrollParent) {

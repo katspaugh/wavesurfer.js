@@ -65,6 +65,9 @@ export default class MediaElement extends WebAudio {
         this.mediaListeners.error = () => {
             this.fireEvent('error', 'Error loading media element');
         };
+        this.mediaListeners.waiting = () => {
+            this.fireEvent('waiting');
+        };
         this.mediaListeners.canplay = () => {
             this.fireEvent('canplay');
         };
@@ -275,7 +278,7 @@ export default class MediaElement extends WebAudio {
      * @param {number} start Position to start at in seconds
      */
     seekTo(start) {
-        if (start != null) {
+        if (start != null && !isNaN(start)) {
             this.media.currentTime = start;
         }
         this.clearPlayEnd();

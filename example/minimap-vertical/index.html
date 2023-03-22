@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>wavesurfer.js | Equalizer Example</title>
+        <title>wavesurfer.js | Vertical waveform</title>
 
         <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -15,9 +15,21 @@
 
         <!-- wavesurfer.js -->
         <script src="../../dist/wavesurfer.js"></script>
+        <script src="../../dist/plugin/wavesurfer.minimap.js"></script>
 
         <!-- Demo -->
         <script src="main.js"></script>
+
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script>
+        <style>
+            #wave-minimap, #waveform {
+                display: inline-flex;
+                height: 400px;
+            }
+        </style>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
@@ -27,30 +39,73 @@
                     <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
                 </ul>
 
-                <h1 itemprop="name">Equalizer Example</h1>
+                <h1 itemprop="name">Minimap vertical</h1>
             </div>
 
-            <div id="demo">
-                <div id="waveform">
-                    <div class="progress progress-striped active" id="progress-bar">
-                        <div class="progress-bar progress-bar-info"></div>
+            <div>
+                <div id="demo">
+
+                    <div id="waveform" class="vertical">
+                        <!-- Here be the waveform -->
                     </div>
 
-                    <!-- Here be the waveform -->
+                    <div id="wave-minimap" class="vertical">
+                        <!-- Here be the waveform -->
+                    </div>
+                    <div class="controls">
+                        <button class="btn btn-primary" data-action="play">
+                            <i class="glyphicon glyphicon-play"></i>
+                            Play
+                            /
+                            <i class="glyphicon glyphicon-pause"></i>
+                            Pause
+                        </button>
+                    </div>
+
                 </div>
 
-                <div class="controls">
-                    <button class="btn btn-primary" data-action="play">
-                        <i class="glyphicon glyphicon-play"></i>
-                        Play
-                        /
-                        <i class="glyphicon glyphicon-pause"></i>
-                        Pause
-                    </button>
+                <div class="row marketing">
+                    <h3>How to use minimap in vertical mode</h3>
 
-                    <div id="equalizer">
-                        <!-- Here be equalizer sliders -->
-                    </div>
+                    <hr />
+
+                    <p>
+                        Simply set the <code>vertical</code>
+                        option to <code>true</code>.
+                    </p>
+
+                    <p>
+<pre><code>var wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'violet',
+        progressColor: 'purple',
+        loaderColor: 'purple',
+        cursorColor: 'navy',
+        vertical: true,
+        plugins: [
+            WaveSurfer.minimap.create({
+                container: '#wave-minimap',
+                waveColor: '#777',
+                progressColor: '#222',
+                height: 50
+            })
+        ]
+    });
+</code></pre>
+                    </p>
+
+                    <p>
+                        You probably want to set an explicit height
+                        and use <code>display: inline-flex</code>
+                        on the container to ensure that the wave expands vertically and the waveform and minimap align well horizontally:
+<pre><code>#waveform {
+    display: inline-flex;
+    height: 400px;
+}
+</code></pre>
+                    </p>
+
+
                 </div>
             </div>
 
@@ -66,7 +121,7 @@
                 <div class="col-sm-5">
                     <div class="pull-right">
                         <noindex>
-                        Demo music track is <a href="http://www.jamendo.com/en/track/661578/trou" rel="nofollow"><b>Trou</b> <span class="muted">by</span>&nbsp;<b>czskamaarù</b></a>. Thanks!
+                            The audio file is from <a rel="nofollow" href="http://spokencorpora.ru/">spokencorpora.ru</a>, used with permission.
                         </noindex>
                     </div>
                 </div>

@@ -1,5 +1,3 @@
-/*global MediaMetadata*/
-
 /**
  * @typedef {Object} MediaSessionPluginParams
  * @property {MediaMetadata} metadata A MediaMetadata object: a representation

@@ -10,6 +10,13 @@
  * @since 5.2.0
  */
 export default function ignoreSilenceMode() {
+    // Set webaudio context with 1 second silent audio 44100 bit rate buffer to allow playing audio even if silent switch is on the device
+    const silentAC = new AudioContext();
+    const silentBS = silentAC.createBufferSource();
+    silentBS.buffer = silentAC.createBuffer(1, 1, 44100);
+    silentBS.connect(silentAC.destination);
+    silentBS.start();
+
     // Set the src to a short bit of url encoded as a silent mp3
     // NOTE The silence MP3 must be high quality, when web audio sounds are played
     // in parallel the web audio sound is mixed to match the bitrate of the html sound

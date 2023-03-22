@@ -4,13 +4,15 @@
  * @typedef {Object} RegionsPluginParams
  * @property {?boolean} dragSelection Enable creating regions by dragging with
  * the mouse
+ * @property {?boolean} contentEditable=false Allow/disallow editing content of the region
+ * @property {?boolean} removeButton=false adds remove region button
  * @property {?RegionParams[]} regions Regions that should be added upon
  * initialisation
  * @property {number} slop=2 The sensitivity of the mouse dragging
  * @property {?number} snapToGridInterval Snap the regions to a grid of the specified multiples in seconds
  * @property {?number} snapToGridOffset Shift the snap-to-grid by the specified seconds. May also be negative.
  * @property {?boolean} deferInit Set to true to manually call
- * @property {number[]} maxRegions Maximum number of regions that may be created by the user at one time.
+ * @property {number} maxRegions Maximum number of regions that may be created by the user at one time.
  * `initPlugin('regions')`
  * @property {function} formatTimeCallback Allows custom formating for region tooltip.
  * @property {?number} edgeScrollWidth='5% from container edges' Optional width for edgeScroll to start
@@ -129,15 +131,14 @@ export default class RegionsPlugin {
         this.wavesurfer.Region = Region;
 
         // By default, scroll the container if the user drags a region
-        // within 5% of its edge
+        // within 5% (based on its initial size) of its edge
         const scrollWidthProportion = 0.05;
         this._onBackendCreated = () => {
             this.wrapper = this.wavesurfer.drawer.wrapper;
             this.orientation = this.wavesurfer.drawer.orientation;
+            this.defaultEdgeScrollWidth = this.wrapper.clientWidth * scrollWidthProportion;
             if (this.params.regions) {
                 this.params.regions.forEach(region => {
-                    region.edgeScrollWidth = this.params.edgeScrollWidth ||
-                        this.wrapper.clientWidth * scrollWidthProportion;
                     this.add(region);
                 });
             }
@@ -171,6 +172,11 @@ export default class RegionsPlugin {
     destroy() {
         this.wavesurfer.un('ready', this._onReady);
         this.wavesurfer.un('backend-created', this._onBackendCreated);
+        // Disabling `region-removed' because destroying the plugin calls
+        // the Region.remove() method that is also used to remove regions based
+        // on user input. This can cause confusion since teardown is not a
+        // user event, but would emit `region-removed` as if it was.
+        this.wavesurfer.setDisabledEventEmissions(['region-removed']);
         this.disableDragSelection();
         this.clear();
     }
@@ -195,6 +201,18 @@ export default class RegionsPlugin {
     add(params) {
         if (this.wouldExceedMaxRegions()) {
             return null;
+        }
+
+        params = {
+            edgeScrollWidth: this.params.edgeScrollWidth || this.defaultEdgeScrollWidth,
+            contentEditable: this.params.contentEditable,
+            removeButton: this.params.removeButton,
+            ...params
+        };
+
+        // Take formatTimeCallback from plugin params if not already set
+        if (!params.formatTimeCallback && this.params.formatTimeCallback) {
+            params = {...params, formatTimeCallback: this.params.formatTimeCallback};
         }
 
         if (!params.minLength && this.regionsMinLength) {
@@ -283,6 +301,19 @@ export default class RegionsPlugin {
                 this.wrapper.getBoundingClientRect(),
                 this.vertical
             );
+
+            // set the region channel index based on the clicked area
+            if (this.wavesurfer.params.splitChannels && this.wavesurfer.params.splitChannelsOptions.splitDragSelection) {
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - wrapperRect.top;
+                const channelCount = this.wavesurfer.backend.buffer != null ? this.wavesurfer.backend.buffer.numberOfChannels : 1;
+                const channelHeight = this.wrapper.clientHeight / channelCount;
+                const channelIdx = Math.floor(y / channelHeight);
+                params.channelIdx = channelIdx;
+                const channelColors = this.wavesurfer.params.splitChannelsOptions.channelColors[channelIdx];
+                if (channelColors && channelColors.dragColor) {
+                    params.color = channelColors.dragColor;
+                }
+            }
 
             drag = true;
             start = this.wavesurfer.drawer.handleEvent(e, true);

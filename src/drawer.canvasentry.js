@@ -66,6 +66,11 @@ export default class CanvasEntry {
          * @type {object}
          */
         this.canvasContextAttributes = {};
+        /**
+         * The Timeout id used to track this canvas entry.
+         */
+        this.drawTimeout = null;
+
     }
 
     /**
@@ -125,36 +130,69 @@ export default class CanvasEntry {
      */
     clearWave() {
         // wave
+        this.waveCtx.save();
+        this.waveCtx.setTransform(1, 0, 0, 1, 0, 0);
         this.waveCtx.clearRect(
             0,
             0,
             this.waveCtx.canvas.width,
             this.waveCtx.canvas.height
         );
+        this.waveCtx.restore();
 
         // progress
         if (this.hasProgressCanvas) {
+            this.progressCtx.save();
+            this.progressCtx.setTransform(1, 0, 0, 1, 0, 0);
             this.progressCtx.clearRect(
                 0,
                 0,
                 this.progressCtx.canvas.width,
                 this.progressCtx.canvas.height
             );
+            this.progressCtx.restore();
         }
     }
 
     /**
      * Set the fill styles for wave and progress
-     *
-     * @param {string} waveColor Fill color for the wave canvas
-     * @param {?string} progressColor Fill color for the progress canvas
+     * @param {string|string[]} waveColor Fill color for the wave canvas,
+     * or an array of colors to apply as a gradient
+     * @param {?string|string[]} progressColor Fill color for the progress canvas,
+     * or an array of colors to apply as a gradient
      */
     setFillStyles(waveColor, progressColor) {
-        this.waveCtx.fillStyle = waveColor;
+        this.waveCtx.fillStyle = this.getFillStyle(this.waveCtx, waveColor);
 
         if (this.hasProgressCanvas) {
-            this.progressCtx.fillStyle = progressColor;
+            this.progressCtx.fillStyle = this.getFillStyle(this.progressCtx, progressColor);
         }
+    }
+
+    /**
+     * Utility function to handle wave color arguments
+     *
+     * When the color argument type is a string or CanvasGradient instance,
+     * it will be returned as is. Otherwise, it will be treated as an array,
+     * and a new CanvasGradient will be returned
+     *
+     * @since 6.0.0
+     * @param {CanvasRenderingContext2D} ctx Rendering context of target canvas
+     * @param {string|string[]|CanvasGradient} color Either a single fill color
+     *     for the wave canvas, an existing CanvasGradient instance, or an array
+     *     of colors to apply as a gradient
+     * @returns {string|CanvasGradient} Returns a string fillstyle value, or a
+     *     canvas gradient
+     */
+    getFillStyle(ctx, color) {
+        if (typeof color == 'string' || color instanceof CanvasGradient) {
+            return color;
+        }
+
+        const waveGradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+        color.forEach((value, index) => waveGradient.addColorStop((index / color.length), value));
+
+        return waveGradient;
     }
 
     /**
@@ -357,7 +395,7 @@ export default class CanvasEntry {
         ctx.lineTo(
             (canvasStart - first) * scale,
             halfOffset -
-                Math.round((peaks[2 * canvasStart + 1] || 0) / absmaxHalf)
+            Math.round((peaks[2 * canvasStart + 1] || 0) / absmaxHalf)
         );
 
         ctx.closePath();
@@ -395,6 +433,38 @@ export default class CanvasEntry {
             });
         } else if (type === 'dataURL') {
             return this.wave.toDataURL(format, quality);
+        }
+    }
+
+    /**
+     * Stretches existing canvas
+     * @param {Number} newTotalWidth total width of wave in pixels
+     */
+    stretchCanvas(newTotalWidth) {
+        //Calculate the start and width of this canvas
+        let start = Math.round(this.start * newTotalWidth);
+        let width = Math.round(this.end * newTotalWidth - start);
+
+        //Stretch canvas
+        let elementSize = { width: width + 'px' };
+        let elementStart = {left: start + 'px'};
+        style(this.wave, elementSize);
+        style(this.wave, elementStart);
+        if (this.hasProgressCanvas) {
+            style(this.progress, elementSize);
+            style(this.progress, elementStart);
+        }
+    }
+
+    /**
+     * Set the left offset of the canvas
+     * @param {Number} position in px for the canvas to start
+     */
+    setLeft(position) {
+        let elementStart = {left: position + 'px'};
+        style(this.wave, elementStart);
+        if (this.hasProgressCanvas) {
+            style(this.progress, elementStart);
         }
     }
 }

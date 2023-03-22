@@ -8,6 +8,10 @@ import FFT from './fft';
  * which to render
  * @property {number} fftSamples=512 Number of samples to fetch to FFT. Must be
  * a power of 2.
+ * @property {boolean} splitChannels=false Render with separate spectrograms for
+ * the channels of the audio
+ * @property {number} height=fftSamples/2 Height of the spectrogram view in CSS
+ * pixels
  * @property {boolean} labels Set to true to display frequency labels.
  * @property {number} noverlap Size of the overlapping window. Must be <
  * fftSamples. Auto deduced from canvas size by default.
@@ -19,6 +23,9 @@ import FFT from './fft';
  * @property {number} pixelRatio=wavesurfer.params.pixelRatio to control the
  * size of the spectrogram in relation with its canvas. 1 = Draw on the whole
  * canvas. 2 = Draw on a quarter (1/2 the length and 1/2 the width)
+ * @property {number} frequencyMin=0 Min frequency to scale spectrogram.
+ * @property {number} frequencyMax=12000 Max frequency to scale spectrogram.
+ * Set this to samplerate/2 to draw whole range of spectrogram.
  * @property {?boolean} deferInit Set to true to manually call
  * `initPlugin('spectrogram')`
  * @property {?number[][]} colorMap A 256 long array of 4-element arrays.
@@ -85,6 +92,9 @@ export default class SpectrogramPlugin {
         this._onRender = () => {
             this.render();
         };
+        this._onZoom = () => {
+            this.stretchCanvases();
+        };
         this._onWrapperClick = e => {
             this._wrapperClickHandler(e);
         };
@@ -123,16 +133,27 @@ export default class SpectrogramPlugin {
             this.pixelRatio = this.params.pixelRatio || ws.params.pixelRatio;
             this.fftSamples =
                 this.params.fftSamples || ws.params.fftSamples || 512;
-            this.height = this.fftSamples / 2;
+            this.height = this.params.height || this.fftSamples / 2;
             this.noverlap = params.noverlap;
             this.windowFunc = params.windowFunc;
             this.alpha = params.alpha;
+            this.splitChannels = params.splitChannels;
+            this.channels = this.splitChannels ? ws.backend.buffer.numberOfChannels : 1;
+            this.canvases = [];
+            this.canvasesTimeouts = [];
+            this.scrollLeftTracker = 0; //Tracks the desired scrollLeft value
+
+            // Getting file's original samplerate is difficult(#1248).
+            // So set 12kHz default to render like wavesurfer.js 5.x.
+            this.frequencyMin = params.frequencyMin || 0;
+            this.frequencyMax = params.frequencyMax || 12000;
 
             this.createWrapper();
-            this.createCanvas();
+            this.addCanvas();
             this.render();
 
             drawer.wrapper.addEventListener('scroll', this._onScroll);
+            ws.on('zoom', this._onZoom);
             ws.on('redraw', this._onRender);
         };
     }
@@ -173,11 +194,10 @@ export default class SpectrogramPlugin {
             const labelsEl = (this.labelsEl = document.createElement('canvas'));
             labelsEl.classList.add('spec-labels');
             this.drawer.style(labelsEl, {
-                left: 0,
                 position: 'absolute',
                 zIndex: 9,
-                height: `${this.height / this.pixelRatio}px`,
-                width: `${55 / this.pixelRatio}px`
+                height: `${this.height * this.channels}px`,
+                width: `55px`
             });
             this.wrapper.appendChild(labelsEl);
             this.loadLabels(
@@ -197,7 +217,7 @@ export default class SpectrogramPlugin {
             position: 'relative',
             userSelect: 'none',
             webkitUserSelect: 'none',
-            height: `${this.height / this.pixelRatio}px`
+            height: `${this.height * this.channels}px`
         });
 
         if (wsParams.fillParent || wsParams.scrollParent) {
@@ -218,17 +238,49 @@ export default class SpectrogramPlugin {
         this.fireEvent('click', relX / this.width || 0);
     }
 
-    createCanvas() {
-        const canvas = (this.canvas = this.wrapper.appendChild(
+    /**
+     * Add a canvas to this.canvases
+     */
+    addCanvas() {
+        const canvas = (this.wrapper.appendChild(
             document.createElement('canvas')
         ));
-
-        this.spectrCc = canvas.getContext('2d');
 
         this.util.style(canvas, {
             position: 'absolute',
             zIndex: 4
         });
+
+        this.canvases.push(canvas);
+        this.canvasesTimeouts.push(null);
+    }
+
+    /**
+     * Remove a canvas from this.canvases
+     */
+    removeCanvas() {
+        //Stop drawing (if drawing)
+        clearTimeout(this.canvasesTimeouts[this.canvasesTimeouts.length - 1]);
+
+        let lastEntry = this.canvases[this.canvases.length - 1];
+        lastEntry.parentElement.removeChild(lastEntry);
+
+        this.canvases.pop();
+        this.canvasesTimeouts.pop();
+    }
+
+    /**
+     * Ensure the correct number of canvases for the size of the spectrogram
+     */
+    updateCanvases() {
+        let canvasesRequired = Math.ceil(this.width / 4000);
+
+        while (this.canvases.length < canvasesRequired) {
+            this.addCanvas();
+        }
+        while (this.canvases.length > canvasesRequired) {
+            this.removeCanvas();
+        }
     }
 
     render() {
@@ -242,62 +294,117 @@ export default class SpectrogramPlugin {
     }
 
     updateCanvasStyle() {
-        const width = Math.round(this.width / this.pixelRatio) + 'px';
-        this.canvas.width = this.width;
-        this.canvas.height = this.height;
-        this.canvas.style.width = width;
+        this.updateCanvases();
+        //width per canvas
+        for (let i = 0; i < this.canvases.length; i++) {
+            this.canvases[i].width = Math.round(this.width / this.canvases.length);
+            this.canvases[i].height = this.fftSamples / 2 * this.channels;
+            this.canvases[i].style.width = Math.round(this.canvases[i].width / this.pixelRatio) + 'px';
+            this.canvases[i].style.height = this.height + 'px';
+        }
     }
 
     drawSpectrogram(frequenciesData, my) {
-        const spectrCc = my.spectrCc;
-        const height = my.height;
-        const width = my.width;
-        const pixels = my.resample(frequenciesData);
-        const heightFactor = my.buffer ? 2 / my.buffer.numberOfChannels : 1;
-        if (spectrCc) {
-            const imageData = spectrCc.createImageData(width, height);
-            let i;
-            let j;
-            let k;
+        if (!isNaN(frequenciesData[0][0])) { // data is 1ch [sample, freq] format
+            // to [channel, sample, freq] format
+            frequenciesData = [frequenciesData];
+        }
 
-            for (i = 0; i < pixels.length; i++) {
-                for (j = 0; j < pixels[i].length; j++) {
+        my.updateCanvasStyle();
+
+        //Stop canvases still being drawn
+        for (let i = 0; i < my.canvasesTimeouts.length; i++) {
+            clearTimeout(my.canvasesTimeouts[i]);
+        }
+
+        const view = [my.scrollLeftTracker, my.scrollLeftTracker + my.wrapper.clientWidth];
+
+        for (let canvasNum = 0; canvasNum < my.canvases.length; canvasNum++) {
+            const canvasLeft = canvasNum * Math.floor(my.width / my.canvases.length / my.pixelRatio);
+            const canvasRight = (canvasNum + 1) * Math.floor(my.width / my.canvases.length / my.pixelRatio);
+            const canvasBound = [canvasLeft, canvasRight];
+            my.canvases[canvasNum].style['left'] = canvasLeft + 'px';
+
+            //Optimise drawing for the view
+            let priority = 0;
+            if (canvasBound[0] > view[1]) {
+                //Canvas is to the right of view window
+                let distance = canvasBound[0] - view[1];
+                priority = Math.ceil(distance / (view[1] - view[0]));
+            } else if (canvasBound[1] < view[0]) {
+                //Canvas is to the left of the view window
+                let distance = view[0] - canvasBound[1];
+                priority = Math.ceil(distance / (view[1] - view[0]));
+            }
+
+            //delay = 25ms * number of viewport widths away the canvas is
+            my.canvasesTimeouts[canvasNum] = setTimeout(my.drawToCanvas, 25 * priority, frequenciesData, my, canvasNum);
+        }
+    }
+
+    /**
+     * Draw spectrogram channel to a specific canvas
+     * @param {[Number, Number, Number]} frequenciesData spectrogram data in [channel, sample, freq] format
+     * @param {SpectrogramPlugin} my variable with 'this' in it
+     * @param {Number} canvasNum Canvas to draw to
+     */
+    drawToCanvas(frequenciesData, my, canvasNum) {
+        const height = my.fftSamples / 2;
+        const freqFrom = my.buffer.sampleRate / 2;
+        const freqMin = my.frequencyMin;
+        const freqMax = my.frequencyMax;
+
+        for (let channel = 0; channel < frequenciesData.length; channel++) {
+
+            //Get pixels from frequency data and apply to image
+            const relevantFreqs = frequenciesData[channel].slice(canvasNum * Math.round(frequenciesData[channel].length / my.canvases.length), (canvasNum + 1) * Math.round(frequenciesData[channel].length / my.canvases.length));
+            const pixels = my.resample(relevantFreqs);
+            const imageData = new ImageData(pixels.length, height);
+
+            for (let i = 0; i < pixels.length; i++) {
+                for (let j = 0; j < pixels[i].length; j++) {
                     const colorMap = my.colorMap[pixels[i][j]];
-                    /* eslint-disable max-depth */
-                    for (k = 0; k < heightFactor; k++) {
-                        let y = height - j * heightFactor;
-                        if (heightFactor === 2 && k === 1) {
-                            y--;
-                        }
-                        const redIndex = y * (width * 4) + i * 4;
-                        imageData.data[redIndex] = colorMap[0] * 255;
-                        imageData.data[redIndex + 1] = colorMap[1] * 255;
-                        imageData.data[redIndex + 2] = colorMap[2] * 255;
-                        imageData.data[redIndex + 3] = colorMap[3] * 255;
-                    }
-                    /* eslint-enable max-depth */
+                    const redIndex = ((height - j) * imageData.width + i) * 4;
+                    imageData.data[redIndex] = colorMap[0] * 255;
+                    imageData.data[redIndex + 1] = colorMap[1] * 255;
+                    imageData.data[redIndex + 2] = colorMap[2] * 255;
+                    imageData.data[redIndex + 3] = colorMap[3] * 255;
                 }
             }
-            spectrCc.putImageData(imageData, 0, 0);
+
+            //Draw image to canvas
+            createImageBitmap(imageData).then(renderer => {
+                if (my.canvases[canvasNum]) { //Check canvas still exists after creating image
+                    my.canvases[canvasNum].getContext('2d').drawImage(renderer,
+                        0, height * (1 - freqMax / freqFrom), // source x, y
+                        imageData.width, height * (freqMax - freqMin) / freqFrom, // source width, height
+                        0, height * channel, // destination x, y
+                        my.canvases[canvasNum].width, height // destination width, height
+                    );
+                }
+            });
         }
+        //Drawing is finished
+        my.canvasesTimeouts[canvasNum] = null;
     }
 
     getFrequencies(callback) {
         const fftSamples = this.fftSamples;
         const buffer = (this.buffer = this.wavesurfer.backend.buffer);
-        const channelOne = buffer.getChannelData(0);
-        const bufferLength = buffer.length;
-        const sampleRate = buffer.sampleRate;
-        const frequencies = [];
+        const channels = this.channels;
 
         if (!buffer) {
             this.fireEvent('error', 'Web Audio buffer is not available');
             return;
         }
 
+        // This may differ from file samplerate. Browser resamples audio.
+        const sampleRate = buffer.sampleRate;
+        const frequencies = [];
+
         let noverlap = this.noverlap;
         if (!noverlap) {
-            const uniqueSamplesPerPx = buffer.length / this.canvas.width;
+            const uniqueSamplesPerPx = buffer.length / this.width;
             noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx));
         }
 
@@ -307,24 +414,30 @@ export default class SpectrogramPlugin {
             this.windowFunc,
             this.alpha
         );
-        const maxSlicesCount = Math.floor(
-            bufferLength / (fftSamples - noverlap)
-        );
-        let currentOffset = 0;
 
-        while (currentOffset + fftSamples < channelOne.length) {
-            const segment = channelOne.slice(
-                currentOffset,
-                currentOffset + fftSamples
-            );
-            const spectrum = fft.calculateSpectrum(segment);
-            const array = new Uint8Array(fftSamples / 2);
-            let j;
-            for (j = 0; j < fftSamples / 2; j++) {
-                array[j] = Math.max(-255, Math.log10(spectrum[j]) * 45);
+        for (let c = 0; c < channels; c++) { // for each channel
+            const channelData = buffer.getChannelData(c);
+            const channelFreq = [];
+            let currentOffset = 0;
+
+            while (currentOffset + fftSamples < channelData.length) {
+                const segment = channelData.slice(
+                    currentOffset,
+                    currentOffset + fftSamples
+                );
+                const spectrum = fft.calculateSpectrum(segment);
+                const array = new Uint8Array(fftSamples / 2);
+                let j;
+                for (j = 0; j < fftSamples / 2; j++) {
+                    array[j] = Math.max(-255, Math.log10(spectrum[j]) * 45);
+                }
+                channelFreq.push(array);
+                // channelFreq: [sample, freq]
+
+                currentOffset += fftSamples - noverlap;
             }
-            frequencies.push(array);
-            currentOffset += fftSamples - noverlap;
+            frequencies.push(channelFreq);
+            // frequencies: [channel, sample, freq]
         }
         callback(frequencies, this);
     }
@@ -370,20 +483,24 @@ export default class SpectrogramPlugin {
         const bgWidth = 55;
         const getMaxY = frequenciesHeight || 512;
         const labelIndex = 5 * (getMaxY / 256);
-        const freqStart = 0;
-        const step =
-            (this.wavesurfer.backend.ac.sampleRate / 2 - freqStart) /
-            labelIndex;
+        const freqStart = this.frequencyMin;
+        const step = (this.frequencyMax - freqStart) / labelIndex;
 
         // prepare canvas element for labels
         const ctx = this.labelsEl.getContext('2d');
-        this.labelsEl.height = this.height;
-        this.labelsEl.width = bgWidth;
+        const dispScale = window.devicePixelRatio;
+        this.labelsEl.height = this.height * this.channels * dispScale;
+        this.labelsEl.width = bgWidth * dispScale;
+        ctx.scale(dispScale, dispScale);
 
-        if (ctx) {
+        if (!ctx) {
+            return;
+        }
+
+        for (let c = 0; c < this.channels; c++) { // for each channel
             // fill background
             ctx.fillStyle = bgFill;
-            ctx.fillRect(0, 0, bgWidth, getMaxY);
+            ctx.fillRect(0, c * getMaxY, bgWidth, (1 + c) * getMaxY);
             ctx.fill();
             let i;
 
@@ -393,9 +510,6 @@ export default class SpectrogramPlugin {
                 ctx.textBaseline = 'middle';
 
                 const freq = freqStart + step * i;
-                const index = Math.round(
-                    (freq / (this.sampleRate / 2)) * this.fftSamples
-                );
                 const label = this.freqType(freq);
                 const units = this.unitType(freq);
                 const yLabelOffset = 2;
@@ -403,7 +517,7 @@ export default class SpectrogramPlugin {
                 let y;
 
                 if (i == 0) {
-                    y = getMaxY + i - 10;
+                    y = (1 + c) * getMaxY + i - 10;
                     // unit label
                     ctx.fillStyle = textColorUnit;
                     ctx.font = fontSizeUnit + ' ' + fontType;
@@ -413,7 +527,7 @@ export default class SpectrogramPlugin {
                     ctx.font = fontSizeFreq + ' ' + fontType;
                     ctx.fillText(label, x, y);
                 } else {
-                    y = getMaxY - i * 50 + yLabelOffset;
+                    y = (1 + c) * getMaxY - i * 50 + yLabelOffset;
                     // unit label
                     ctx.fillStyle = textColorUnit;
                     ctx.font = fontSizeUnit + ' ' + fontType;
@@ -429,12 +543,13 @@ export default class SpectrogramPlugin {
 
     updateScroll(e) {
         if (this.wrapper) {
+            this.scrollLeftTracker = e.target.scrollLeft;
             this.wrapper.scrollLeft = e.target.scrollLeft;
         }
     }
 
     resample(oldMatrix) {
-        const columnsNumber = this.width;
+        const columnsNumber = oldMatrix.length;
         const newMatrix = [];
 
         const oldPiece = 1 / oldMatrix.length;
@@ -486,5 +601,13 @@ export default class SpectrogramPlugin {
         }
 
         return newMatrix;
+    }
+
+    stretchCanvases() {
+        for (let i = 0; i < this.canvases.length; i++) {
+            this.canvases[i].style.width = Math.round(this.drawer.width / this.canvases.length / this.pixelRatio) + 'px';
+            const canvasLeft = i * Math.floor(this.drawer.width / this.canvases.length / this.pixelRatio);
+            this.canvases[i].style['left'] = canvasLeft + 'px';
+        }
     }
 }

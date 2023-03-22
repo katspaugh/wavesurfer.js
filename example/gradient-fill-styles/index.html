@@ -3,7 +3,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>wavesurfer.js | Cursor Example</title>
+    <title>wavesurfer.js | Gradient Fill Styles Example</title>
 
     <link href="data:image/gif;" rel="icon" type="image/x-icon" />
 
@@ -16,7 +16,6 @@
 
     <!-- wavesurfer.js -->
     <script src="../../dist/wavesurfer.js"></script>
-    <script src="../../dist/plugin/wavesurfer.cursor.js"></script>
 
     <!-- Demo -->
     <script src="main.js"></script>
@@ -34,7 +33,7 @@
                 <li><a href="/"><i class="glyphicon glyphicon-home"></i></a></li>
             </ul>
 
-            <h1 itemprop="name">Cursor Plugin Example</h1>
+            <h1 itemprop="name">Gradient Fill Styles Example</h1>
         </div>
 
         <div id="demo">
@@ -57,29 +56,87 @@
         </div>
 
         <div class="row marketing">
-            <h3>Cursor plugin</h3>
+            <h3>Gradient Fill Styles example</h3>
             <hr />
-            <p>Shows a cursor on the waveform.</p>
+            <p>Draws a waveform with a gradient fill.</p>
 
             <p>
-                <pre><code>let wavesurfer = WaveSurfer.create({
+                <pre><code>wavesurfer = WaveSurfer.create({
     container: document.querySelector('#waveform'),
-    plugins: [
-        WaveSurfer.cursor.create({
-            showTime: true,
-            opacity: 1,
-            customShowTimeStyle: {
-                'background-color': '#000',
-                color: '#fff',
-                padding: '2px',
-                'font-size': '10px'
-            }
-        })
+    waveColor: [ // an array of colors, to be applied as gradient color stops to the waveform.
+        "red",
+        "green",
+        "purple",
+        "yellow",
+        "rgba(0,255,255,.5)",
+    ],
+    progressColor: [ // the gradient fill styles are also available on the progressColor option
+        "orange",
+        "blue",
+        "cyan",
+        "black",
+        "rgba(0,255,255,.5)",
     ]
 });
 </code></pre>
             </p>
         </div>
+
+
+        <div class="row marketing">
+            <h3>Gradient Fill Styles with Bars example</h3>
+            <hr />
+            <p>Draws a waveform using bars with a gradient fill.</p>
+
+            <div id="demo-with-bars">
+                <div id="waveform-with-bars">
+                    <!-- Here be the waveform -->
+                </div>
+
+                <div class="controls">
+                    <button id="play-button" class="btn btn-primary">
+                        <i class="glyphicon glyphicon-play"></i>
+                        Play
+                        /
+                        <i class="glyphicon glyphicon-pause"></i>
+                        Pause
+                    </button>
+                </div>
+            </div>
+            <p>
+                <pre><code>wavesurferWithBars = WaveSurfer.create({
+    container: document.querySelector('#waveform-with-bars'),
+    barGap: 6,
+    barHeight: 1,
+    barMinHeight: 1,
+    barRadius: 6,
+    barWidth: 12,
+    waveColor: [ // an array of colors, to be applied as gradient color stops to the waveform barsr
+        "red",
+        "green",
+        "purple",
+        "yellow",
+        "rgba(0,255,255,.5)",
+    ],
+    progressColor: [ // the gradient fill styles are also available on the progressColor option
+        "orange",
+        "blue",
+        "cyan",
+        "black",
+        "rgba(0,255,255,.5)",
+    ]
+});
+</code></pre>
+            </p>
+        </div>
+
+        <h4>WaveSurfer Options</h4>
+        <p>
+            <code>waveColor</code> - string | array - Can be a string referencing a color value, or an array of strings referencing color values.
+        </p>
+        <p>
+            <code>progressColor</code> - string | array - Can be a string referencing a color value, or an array of strings referencing color values.
+        </p>
 
         <div class="footer row">
             <div class="col-sm-12">

@@ -28,6 +28,8 @@ export class Region {
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
         this.drag = params.drag === undefined ? true : Boolean(params.drag);
+        this.contentEditable = Boolean(params.contentEditable);
+        this.removeButton = Boolean(params.removeButton);
         // reflect resize and drag state of region for region-updated listener
         this.isResizing = false;
         this.isDragging = false;
@@ -62,6 +64,7 @@ export class Region {
         // select channel ID to set region
         let channelIdx =
             params.channelIdx == null ? -1 : parseInt(params.channelIdx);
+        this.channelIdx = channelIdx;
         this.regionHeight = '100%';
         this.marginTop = '0px';
 
@@ -87,7 +90,7 @@ export class Region {
     }
 
     /* Update region params. */
-    update(params) {
+    update(params, eventParams) {
         if (params.start != null) {
             this.start = Number(params.start);
         }
@@ -125,13 +128,13 @@ export class Region {
 
         this.updateRender();
         this.fireEvent('update');
-        this.wavesurfer.fireEvent('region-updated', this);
+        this.wavesurfer.fireEvent('region-updated', this, eventParams);
     }
 
     /* Remove a single region. */
     remove() {
         if (this.element) {
-            this.wrapper.removeChild(this.element.domElement);
+            this.element.remove();
             this.element = null;
             this.fireEvent('remove');
             this.wavesurfer.un('zoom', this._onRedraw);
@@ -190,10 +193,43 @@ export class Region {
 
         this.style(this.element, {
             position: 'absolute',
-            zIndex: 2,
+            zIndex: 3,
             height: this.regionHeight,
             top: this.marginTop
         });
+
+        /* Button Remove Region */
+        if (this.removeButton){
+            const removeButtonEl = document.createElement('div');
+            removeButtonEl.className = 'remove-region-button';
+            removeButtonEl.textContent = '⨯';
+            this.removeButtonEl = this.element.appendChild(removeButtonEl);
+            const css = {
+                zIndex: 4,
+                position: 'absolute',
+                bottom: 0,
+                right: '4px',
+                cursor:'pointer',
+                fontSize: '20px',
+                lineHeight: '21px',
+                color: 'grey'
+            };
+            this.style(this.removeButtonEl, css);
+        }
+
+        /* Edit content */
+        if (this.contentEditable){
+            const contentEl = document.createElement('div');
+            contentEl.className = 'region-content';
+            contentEl.contentEditable = 'true';
+            contentEl.innerText = this.data.text || '';
+            this.contentEl = this.element.appendChild(contentEl);
+            const css = {
+                zIndex: 4,
+                padding: '2px 5px',
+                cursor:'text'};
+            this.style(this.contentEl, css);
+        }
 
         /* Resize handles */
         if (this.resize) {
@@ -403,12 +439,21 @@ export class Region {
         if (this.drag || this.resize) {
             this.bindDragEvents();
         }
+
+        /* Edit content */
+        if (this.contentEditable){
+            this.contentEl.addEventListener('blur', this.onContentBlur.bind(this));
+            this.contentEl.addEventListener('click', this.onContentClick.bind(this));
+        }
+        /* Remove button */
+        if (this.removeButton){
+            this.removeButtonEl.addEventListener('click', this.onRemove.bind(this));
+        }
     }
 
     bindDragEvents() {
         const container = this.wavesurfer.drawer.container;
         const scrollSpeed = this.scrollSpeed;
-        const scrollThreshold = this.scrollThreshold;
         let startTime;
         let touchId;
         let drag;
@@ -585,6 +630,7 @@ export class Region {
         const onMove = (event) => {
             const duration = this.wavesurfer.getDuration();
             let orientedEvent = this.util.withOrientation(event, this.vertical);
+            let delta = null;
 
             if (event.touches && event.touches.length > 1) {
                 return;
@@ -631,7 +677,9 @@ export class Region {
                     }
                 } else if (resize === 'end') {
                     if (time < this.start + minLength) {
+                        // Calculate the end time based on the min length of the region.
                         time = this.start + minLength;
+                        delta = time - (this.end + (time - startTime));
                     }
 
                     if (time > duration) {
@@ -640,7 +688,10 @@ export class Region {
                 }
             }
 
-            let delta = time - startTime;
+            if (!delta) {
+                delta = time - startTime;
+            }
+
             startTime = time;
 
             // Drag
@@ -708,10 +759,33 @@ export class Region {
             delta = this.start * -1;
         }
 
+        const eventParams = {
+            direction: this._getDragDirection(delta),
+            action: 'drag'
+        };
+
         this.update({
             start: this.start + delta,
             end: this.end + delta
-        });
+        }, eventParams);
+    }
+
+    /**
+     * Returns the direction of dragging region based on delta
+     * Negative delta means region is moving to the left
+     * Positive - to the right
+     * For zero delta the direction is not defined
+     * @param {number} delta Drag offset
+     * @returns {string|null} Direction 'left', 'right' or null
+     */
+    _getDragDirection(delta) {
+        if (delta < 0) {
+            return 'left';
+        }
+        if (delta > 0) {
+            return 'right';
+        }
+        return null;
     }
 
     /**
@@ -724,11 +798,20 @@ export class Region {
      */
     onResize(delta, direction) {
         const duration = this.wavesurfer.getDuration();
+        const eventParams = {
+            action: 'resize',
+            direction: direction === 'start' ? 'left' : 'right'
+        };
+
         if (direction === 'start') {
             // Check if changing the start by the given delta would result in the region being smaller than minLength
-            // Ignore cases where we are making the region wider rather than shrinking it
             if (delta > 0 && this.end - (this.start + delta) < this.minLength) {
                 delta = this.end - this.minLength - this.start;
+            }
+
+            // Check if changing the start by the given delta would result in the region being larger than maxLength
+            if (delta < 0 && this.end - (this.start + delta) > this.maxLength) {
+                delta = this.end - this.start - this.maxLength;
             }
 
             if (delta < 0 && (this.start + delta) < 0) {
@@ -738,12 +821,16 @@ export class Region {
             this.update({
                 start: Math.min(this.start + delta, this.end),
                 end: Math.max(this.start + delta, this.end)
-            });
+            }, eventParams);
         } else {
             // Check if changing the end by the given delta would result in the region being smaller than minLength
-            // Ignore cases where we are making the region wider rather than shrinking it
             if (delta < 0 && this.end + delta - this.start < this.minLength) {
                 delta = this.start + this.minLength - this.end;
+            }
+
+            // Check if changing the end by the given delta would result in the region being larger than maxLength
+            if (delta > 0 && this.end + delta - this.start > this.maxLength) {
+                delta = this.maxLength - (this.end - this.start);
             }
 
             if (delta > 0 && (this.end + delta) > duration) {
@@ -753,8 +840,25 @@ export class Region {
             this.update({
                 start: Math.min(this.end + delta, this.start),
                 end: Math.max(this.end + delta, this.start)
-            });
+            }, eventParams);
         }
+    }
+
+    onContentBlur(event){
+        const {text: oldText} = this.data || {};
+        const text = event.target.innerText;
+        const data = {...this.data, text };
+        const eventParams = {action: 'contentEdited', oldText, text};
+        this.update({data}, eventParams);
+    }
+
+    onContentClick(event){
+        event.stopPropagation();
+    }
+
+    onRemove(event){
+        event.stopPropagation();
+        this.remove();
     }
 
     updateHandlesResize(resize) {

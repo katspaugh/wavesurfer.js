@@ -371,7 +371,13 @@ export default class TimelinePlugin {
         // build an array of position data with index, second and pixel data,
         // this is then used multiple times below
         const positioning = [];
-        for (i = 0; i < totalSeconds / timeInterval; i++) {
+
+        // render until end in case we have a negative offset
+        const renderSeconds = (this.params.offset < 0)
+            ? totalSeconds - this.params.offset
+            : totalSeconds;
+
+        for (i = 0; i < renderSeconds / timeInterval; i++) {
             positioning.push([i, curSeconds, curPixel]);
             curSeconds += timeInterval;
             curPixel += pixelsPerSecond * timeInterval;
@@ -505,18 +511,20 @@ export default class TimelinePlugin {
 
         this.canvases.forEach(canvas => {
             const context = canvas.getContext('2d');
-            const canvasWidth = context.canvas.width;
+            if (context) {
+                const canvasWidth = context.canvas.width;
 
-            if (xOffset > x + textWidth) {
-                return;
+                if (xOffset > x + textWidth) {
+                    return;
+                }
+
+                if (xOffset + canvasWidth > x && context) {
+                    textWidth = context.measureText(text).width;
+                    context.fillText(text, x - xOffset, y);
+                }
+
+                xOffset += canvasWidth;
             }
-
-            if (xOffset + canvasWidth > x && context) {
-                textWidth = context.measureText(text).width;
-                context.fillText(text, x - xOffset, y);
-            }
-
-            xOffset += canvasWidth;
         });
     }
 

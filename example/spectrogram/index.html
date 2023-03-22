@@ -23,21 +23,14 @@
         <script src="../trivia.js"></script>
         
         <!-- highlight.js for syntax highlighting in this example -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
-        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
-        <script>hljs.initHighlightingOnLoad();</script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script>
     </head>
 
     <body itemscope itemtype="http://schema.org/WebApplication">
         <div class="container">
             <div class="header">
-                <noindex>
-                <ul class="nav nav-pills pull-right">
-                    <li><a href="?fill">Fill</a></li>
-                    <li><a href="?scroll">Scroll</a></li>
-                </ul>
-                </noindex>
-
                 <h1 itemprop="name"><a href="http://wavesurfer-js.org">wavesurfer.js</a><noindex> + Spectrogram</noindex></h1>
             </div>
 
@@ -59,6 +52,17 @@
                         <i class="glyphicon glyphicon-pause"></i>
                         Pause
                     </button>
+                    <div class="col-sm-1">
+                        <i class="glyphicon glyphicon-zoom-in"></i>
+                    </div>
+    
+                    <div class="col-sm-3">
+                      <input data-action="zoom" type="range" min="1" max="200" value="0" style="width: 100%" />
+                    </div>
+    
+                    <div class="col-sm-1">
+                        <i class="glyphicon glyphicon-zoom-out"></i>
+                    </div>
                 </div>
             </div>
 
@@ -80,7 +84,8 @@
         WaveSurfer.spectrogram.create({
             wavesurfer: wavesurfer,
             container: "#wave-spectrogram",
-            labels: true
+            labels: true,
+            height: 256,
         })
     ]
 });
@@ -95,7 +100,11 @@ wavesurfer.load('../media/demo.wav');</code></pre>
                     <ul class="markdown-body">
                       <li><code>wavesurfer</code> - <em>required</em> - a WaveSurfer instance.</li>
                       <li><code>container</code> - <em>required</em> - the element in which to place the spectrogram, or a CSS selector to find it.</li>
-                      <li><code>fftSamples</code> - number of FFT samples (<code>512</code> by default). Number of spectral lines and height of the spectrogram will be a half of this parameter.</li>
+                      <li><code>fftSamples</code> - number of FFT samples (<code>512</code> by default). Number of spectral lines and default height of the spectrogram will be a half of this parameter.</li>
+                      <li><code>height</code> - height of the spectrogram view in CSS pixels (<code>fftSamples/2</code> by default).</li>
+                      <li><code>frequencyMin</code> - Min frequency to scale spectrogram(<code>0</code> by default).</li>
+                      <li><code>frequencyMax</code> - Max frequency to scale spectrogram(<code>12000</code> by default). Set this to samplerate/2 to draw whole range of spectrogram.</li>
+                      <li><code>splitChannels</code> - Render with separate spectrograms for the channels of the audio</li>
                       <li><code>frequenciesDataUrl</code> - URL to load spectral data from.</li>
                       <li><code>labels</code> - Whether or not to display frequency labels.</li>
                       <li><code>colorMap</code> - Specifies the colormap to be used when rendering the spectrogram.</li>
@@ -126,14 +135,14 @@ fs.writeFile('hot-colormap.json', JSON.stringify(colors));
                 </div>
 
                 <div class="col-sm-12">
-                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/katspaugh/wavesurfer.js">katspaugh</a> is licensed under a <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">wavesurfer.js</span> by <a href="https://github.com/wavesurfer-js/wavesurfer.js">katspaugh</a> is licensed under a <a rel="license" href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause License</a>.
                 </div>
             </div>
         </div>
 
         <div class="github-fork-ribbon-wrapper right">
             <div class="github-fork-ribbon">
-                <a itemprop="isBasedOnUrl" href="https://github.com/katspaugh/wavesurfer.js">Fork me on GitHub</a>
+                <a itemprop="isBasedOnUrl" href="https://github.com/wavesurfer-js/wavesurfer.js">Fork me on GitHub</a>
             </div>
         </div>
 

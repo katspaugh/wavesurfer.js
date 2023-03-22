@@ -1,13 +1,140 @@
 wavesurfer.js changelog
 =======================
 
-5.2.0 (unreleased)
+6.6.2
+------------------
+- Fix `setVolume` not working with the `MediaElementWebAudio` backend on iOS Safari (#2211)
+
+6.6.1 (18.03.2023)
+------------------
+- Fix: NPM publish in the CI job (#2727)
+  - Fix: avoid exit 1 in CI script (#2734)
+- Docs: add a video tutorial link to the readme (#2724)
+
+6.6.0 (14.03.2023)
+------------------
+- Zoom optimisation for Waves and matching implementation for Spectrograms (#2646)
+- Fix: release workflow permissions (#2709)
+
+6.5.2 (12.03.2023)
+------------------
+- Regions plugin:
+  - Fix undefined content element on remove (#2713)
+
+6.5.0 (11.03.2023)
+------------------
+- Regions plugin:
+  - Improved delta calculation (resize end) (#2641)
+  - Editable text in regions (#2521):
+    - 2 new params:
+    - `{contentEditable: true}` allows to display/add/edit text in regions upon the waveform
+    - `{removeButton: true}` displays remove button in regions
+    - New example -- video annotation using `{contentEditable: true}` and `{removeButton: true}`
+- Fix iphone silent switch webaudio mute (#2667)
+- Respect mute state when changing volume during mute (#2502)
+- Proxy HTMLMediaElement's 'waiting' event through MediaElement backend. (#2691)
+- Chores:
+  - Docs: update the issue template and wavesurfer links (#2671)
+  - Add FUNDING.yml to enable GitHub Sponsors (#2668)
+  - Update development dependencies
+
+6.4.0 (05.11.2022)
+------------------
+- Markers plugin:
+  - Check for event after every add/remove (#2560)
+  - Add tooltip (#2595)
+- Cursor plugin:
+  - Fix crash when `destroy` is called before `ready` event fired (#2606)
+
+6.3.0 (03.10.2022)
+------------------
+- Fix `barMinHeight` option not setting the minimum bar height properly (#2522)
+- Regions plugin:
+  - Restore support for one drag selection for all channels (#2529)
+- Markers plugin:
+  - Add support for a context menu event on a marker (#2546)
+- Spectrogram plugin: Make labels have position: absolute instead of fixed (#2542)
+
+6.2.0 (16.05.2022)
+------------------
+- Fix `clientWidth` error in responsive mode (#2498)
+- Cursor plugin:
+  - Fix `TypeError` when `showTime: undefined` (#2501)
+- Spectrogram plugin:
+  - Fix to have consistent CSS height regardless of device pixel ratio (#2507)
+  - Added `height` configuration option to control CSS height of the view,
+    which will scale to fill
+  - Frequency label display is `fixed` instead of `absolute` to enable
+    consistent size on hi-dpi displays
+
+6.1.0 (31.03.2022)
+------------------
+- Fix many calls to `setSinkId` resulting in no sound (#2481)
+- Optimize responsive resize to avoid unnecessarily firing redraw on unpainted waveforms (#2485)
+- Minimap plugin:
+  - Remove waveform of previous audio when starting to load new audio (#2479)
+  - Changed regions function name to resolve ambiguities (#2482)
+
+6.0.4 (09.03.2022)
+------------------
+- Spectrogram plugin:
+  - Add `frequencyMin`, `frequencyMax` option to scale frequency axis.
+    And set default 12kHz range to draw spectrogram like 5.x (#2455)
+- Timeline plugin:
+  - Fix rendering issue for negative `offset` values (#2463)
+
+6.0.3 (01.03.2022)
+------------------
+- Cursor plugin:
+  - Fix type documentation for `followCursorY` and `opacity` options (#2459)
+  - Fix destroying cursor and showTime dom nodes (#2460)
+
+6.0.2 (20.02.2022)
+------------------
+- Fix regression and restore support for passing a `CanvasGradient` to
+  `setWaveColor()` (#2448)
+- Regions plugin:
+  - Fixed the type annotation of `maxRegions` in the regions plugin (#2454)
+
+6.0.1 (13.02.2022)
+------------------
+- Fixed a regression that broke bars rendering when using a certain format for
+  the peaks array (#2439)
+
+6.0.0 (07.02.2022)
+------------------
+- Add additional type to `waveColor` and `progressColor` parameters to support linear
+  gradients (#2345)
+- Add `hideCursor` option to hide the mouse cursor when hovering over the waveform (#2367)
+- Add optional `channelIdx` parameter to `setWaveColor`, `getWaveColor`, `setProgressColor`
+  and `getProgressColor` methods (#2391)
+- Improved drawing waveform with bars, now bars height is the maximum peak value in
+  range (#2428)
+- Workaround for `seekTo` occasionally crashing on Firefox (#1228, #2431)
+- Markers plugin: Add the ability to set markers as draggable using param `draggable=true`,
+  `marker-drag` and `marker-drop` events will be triggered (#2398)
+- Regions plugin:
+  - Increase region z-index to fix stacking inconsistencies (#2353)
+  - Check `maxLength` before resizing region (#2374)
+  - Add support for drag selection to be separated for each channel (#2380)
+  - Allow `formatTimeCallback` from plugin params to be used (#2294)
+  - Use of default `edgeScrollWidth` value no longer dependent on regions being created via
+    plugin params (#2401)
+  - Disable `region-remove` event emission during plugin teardown (#2403)
+- Spectrogram plugin:
+  - Remove inaccurate frequency doubling of spectrogram (#2232)
+  - Support for `splitChannels` option to draw spectrogram for each channel (#2424)
+
+5.2.0 (16.08.2021)
 ------------------
 - Add `ignoreSilenceMode` option to ignore iOS hardware silence switch when using the
   `WebAudio` backend (#1864)
 - Fixed unhandled `Failed to execute 'stop' on 'AudioScheduledSourceNode'` error (#1473)
 - Fixed unhandled `Cannot read property 'decodeArrayBuffer' of null` error (#2279)
-- Fix `setVolume` not working with the `MediaElementWebAudio` backend on iOS Safari (#2211)
+- Timeline plugin: fixed unhandled `null is not an object (evaluating context.canvas)`
+  error in Safari v14 (#2333)
+- Regions plugin: add `direction` and `action` fields to the `region-updated` event
+  params (#2339)
 
 5.1.0 (20.06.2021)
 ------------------
