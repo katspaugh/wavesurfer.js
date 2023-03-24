@@ -22,6 +22,15 @@ function initAndLoadSpectrogram(colorMap) {
         ]
     };
 
+    if (location.search.match('scroll')) {
+        options.minPxPerSec = 100;
+        options.scrollParent = true;
+    }
+
+    if (location.search.match('normalize')) {
+        options.normalize = true;
+    }
+
     wavesurfer = WaveSurfer.create(options);
 
     /* Progress bar */
@@ -45,29 +54,6 @@ function initAndLoadSpectrogram(colorMap) {
     })();
 
     wavesurfer.load('../media/demo.wav');
-
-    // Zoom slider
-    let slider = document.querySelector('[data-action="zoom"]');
-
-    slider.value = wavesurfer.params.minPxPerSec;
-    slider.min = wavesurfer.params.minPxPerSec;
-    slider.max = 250;
-
-
-    slider.addEventListener('input', function() {
-        wavesurfer.zooming(slider.value);
-    });
-    slider.addEventListener('mouseup', function() {
-        wavesurfer.zoom(slider.value);
-
-        let desiredWidth = Math.max(parseInt(wavesurfer.container.offsetWidth * window.devicePixelRatio),
-            parseInt(wavesurfer.getDuration() * slider.value * window.devicePixelRatio));
-        wavesurfer.spectrogram.width = desiredWidth;
-        wavesurfer.spectrogram.render();
-    });
-
-    // set initial zoom to match slider value
-    wavesurfer.zoom(slider.value);
 }
 
 document.addEventListener('DOMContentLoaded', function() {

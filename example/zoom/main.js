@@ -49,9 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
     slider.max = 1000;
 
     slider.addEventListener('input', function() {
-        wavesurfer.zooming(Number(this.value));
-    });
-    slider.addEventListener('mouseup', function() {
         wavesurfer.zoom(Number(this.value));
     });
 
