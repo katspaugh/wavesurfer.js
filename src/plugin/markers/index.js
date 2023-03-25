@@ -70,6 +70,9 @@ export default class MarkersPlugin {
                     }
                     return this.markers.add(options);
                 },
+                getMarkers() {
+                    return this.markers;
+                },
                 clearMarkers() {
                     this.markers && this.markers.clear();
                 }
