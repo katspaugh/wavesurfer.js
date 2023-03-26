@@ -33,7 +33,7 @@ import WaveSurfer from 'wavesurfer.js'
 
 If you're not using a package manager, simply insert the script from a CDN:
 ```
-<script src="https://unpkg.com/wavesurfer.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@6.6"></script>
 ```
 
 Create a container in your HTML:
