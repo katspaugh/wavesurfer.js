@@ -181,7 +181,6 @@ export default class MarkersPlugin {
         return marker;
     }
 
-
     /**
      * Remove a marker
      *
