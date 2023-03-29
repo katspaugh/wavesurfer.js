@@ -167,8 +167,7 @@ export default class MarkersPlugin {
             color: params.color || DEFAULT_FILL_COLOR,
             position: params.position || DEFAULT_POSITION,
             draggable: !!params.draggable,
-            preventContextMenu: !!params.preventContextMenu,
-            id: params.id || this.util.getId("marker-")
+            preventContextMenu: !!params.preventContextMenu
         };
 
         marker.el = this._createMarkerElement(marker, params.markerElement);
@@ -184,23 +183,15 @@ export default class MarkersPlugin {
 
 
     /**
-     * Removes a marker by ID
-     * Uses remove(index) internally
-     *
-     * @param {string} id Id of the marker to remove
-     */
-
-    removeById(id) {
-        let markerIndex = this.markers.findIndex(marker => marker.id === id);
-        this.remove(markerIndex);
-    }
-
-    /**
      * Remove a marker
      *
-     * @param {number} index Index of the marker to remove
+     * @param {number|Object} indexOrMarker Index of the marker to remove or the marker object itself
      */
-    remove(index) {
+    remove(indexOrMarker) {
+        let index = indexOrMarker;
+        if (isNaN(index)) {
+            index = this.markers.findIndex(marker => marker === indexOrMarker);
+        }
         let marker = this.markers[index];
         if (!marker) {
             return;
