@@ -184,9 +184,13 @@ export default class MarkersPlugin {
     /**
      * Remove a marker
      *
-     * @param {number} index Index of the marker to remove
+     * @param {number|Object} indexOrMarker Index of the marker to remove or the marker object itself
      */
-    remove(index) {
+    remove(indexOrMarker) {
+        let index = indexOrMarker;
+        if (isNaN(index)) {
+            index = this.markers.findIndex(marker => marker === indexOrMarker);
+        }
         let marker = this.markers[index];
         if (!marker) {
             return;
