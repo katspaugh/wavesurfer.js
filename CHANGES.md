@@ -1,6 +1,14 @@
 wavesurfer.js changelog
 =======================
 
+6.6.3 (04.04.2023)
+------------------
+- Markers plugin:
+  - allow removing markers by passing a marker object (#2749)
+  - add getMarkers function (#2743)
+- Docs: version the unpkg script in readme (#2746)
+- Refactor: remove scriptNode (#2706)
+
 6.6.2 (24.03.2023)
 ------------------
 - Revert "Zoom optimisation for Waves and matching implementation for Spectrograms (#2646)"
