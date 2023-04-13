@@ -1,5 +1,11 @@
 # [wavesurfer.js](https://wavesurfer-js.org)
 
+---
+
+✨ We're excited to introduce version 7.0.0-alpha codenamed **wavesurfer.ts**, a TypeScript rewrite of wavesurfer.js with better performance and new plugins. Give the alpha version a spin and let us know what you think! Check out the [wavesurfer.ts README](https://github.com/katspaugh/wavesurfer.ts) to get started. Happy coding! ✨
+
+---
+
 [![npm version](https://img.shields.io/npm/v/wavesurfer.js.svg?style=flat)](https://www.npmjs.com/package/wavesurfer.js)
 ![npm](https://img.shields.io/npm/dm/wavesurfer.js.svg) [![Join the chat at https://gitter.im/wavesurfer-js/wavesurfer.js](https://badges.gitter.im/wavesurfer-js/wavesurfer.js.svg)](https://gitter.im/wavesurfer-js/wavesurfer.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/wavesurfer-js/wavesurfer.js/badge)](https://www.gitpoap.io/gh/wavesurfer-js/wavesurfer.js)
