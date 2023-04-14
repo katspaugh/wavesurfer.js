@@ -718,6 +718,12 @@ export default class WaveSurfer extends util.Observer {
             }
             this.fireEvent('scroll', e);
         });
+
+        // Relay the dblclick event from the drawer
+        this.drawer.on('dblclick', (e, progress) => {
+            this.fireEvent('dblclick', e, progress);
+        });
+
     }
 
     /**
