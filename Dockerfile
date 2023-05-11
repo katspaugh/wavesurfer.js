@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/node:14.17.5
+FROM public.ecr.aws/docker/library/node:16.14.0
 
 ENV WORKDIR /wavesurfer.js
 ENV NODE_ENV production

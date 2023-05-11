@@ -174,6 +174,8 @@ import MediaElementWebAudio from './mediaelement-webaudio';
  * @property {boolean} relativeNormalization=false determines whether
  * normalization is done per channel or maintains proportionality between
  * channels. Only applied when normalize and splitChannels are both true.
+ * @property {boolean} splitDragSelection=false determines if drag selection in regions
+ * plugin works separately on each channel or only one selection for all channels
  * @since 4.3.0
  */
 
@@ -298,7 +300,8 @@ export default class WaveSurfer extends util.Observer {
             overlay: false,
             channelColors: {},
             filterChannels: [],
-            relativeNormalization: false
+            relativeNormalization: false,
+            splitDragSelection: false
         },
         vertical: false,
         waveColor: '#999',
@@ -501,6 +504,7 @@ export default class WaveSurfer extends util.Observer {
         this._onResize = util.debounce(
             () => {
                 if (
+                    this.drawer.wrapper &&
                     prevWidth != this.drawer.wrapper.clientWidth &&
                     !this.params.scrollParent
                 ) {
@@ -714,6 +718,12 @@ export default class WaveSurfer extends util.Observer {
             }
             this.fireEvent('scroll', e);
         });
+
+        // Relay the dblclick event from the drawer
+        this.drawer.on('dblclick', (e, progress) => {
+            this.fireEvent('dblclick', e, progress);
+        });
+
     }
 
     /**
@@ -1000,6 +1010,10 @@ export default class WaveSurfer extends util.Observer {
      * @emits WaveSurfer#volume
      */
     setVolume(newVolume) {
+        if (this.isMuted === true) {
+            this.savedVolume = newVolume;
+            return;
+        }
         this.backend.setVolume(newVolume);
         this.fireEvent('volume', newVolume);
     }
@@ -1683,19 +1697,19 @@ export default class WaveSurfer extends util.Observer {
     /**
      * Save waveform image as data URI.
      *
-     * The default format is `'image/png'`. Other supported types are
-     * `'image/jpeg'` and `'image/webp'`.
+     * The default format is `image/png`. Other supported types are
+     * `image/jpeg` and `image/webp`.
      *
      * @param {string} format='image/png' A string indicating the image format.
-     * The default format type is `'image/png'`.
+     * The default format type is `image/png`.
      * @param {number} quality=1 A number between 0 and 1 indicating the image
      * quality to use for image formats that use lossy compression such as
-     * `'image/jpeg'`` and `'image/webp'`.
-     * @param {string} type Image data type to return. Either 'dataURL' (default)
-     * or 'blob'.
-     * @return {string|string[]|Promise} When using `'dataURL'` type this returns
+     * `image/jpeg` and `image/webp`.
+     * @param {string} type Image data type to return. Either `dataURL` (default)
+     * or `blob`.
+     * @return {string|string[]|Promise} When using `dataURL` type this returns
      * a single data URL or an array of data URLs, one for each canvas. When using
-     * `'blob'` type this returns a `Promise` resolving with an array of `Blob`
+     * `blob` type this returns a `Promise` resolving with an array of `Blob`
      * instances, one for each canvas.
      */
     exportImage(format, quality, type) {

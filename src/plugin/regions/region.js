@@ -28,6 +28,8 @@ export class Region {
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
         this.drag = params.drag === undefined ? true : Boolean(params.drag);
+        this.contentEditable = Boolean(params.contentEditable);
+        this.removeButton = Boolean(params.removeButton);
         // reflect resize and drag state of region for region-updated listener
         this.isResizing = false;
         this.isDragging = false;
@@ -132,7 +134,7 @@ export class Region {
     /* Remove a single region. */
     remove() {
         if (this.element) {
-            this.wrapper.removeChild(this.element.domElement);
+            this.element.remove();
             this.element = null;
             this.fireEvent('remove');
             this.wavesurfer.un('zoom', this._onRedraw);
@@ -195,6 +197,39 @@ export class Region {
             height: this.regionHeight,
             top: this.marginTop
         });
+
+        /* Button Remove Region */
+        if (this.removeButton){
+            const removeButtonEl = document.createElement('div');
+            removeButtonEl.className = 'remove-region-button';
+            removeButtonEl.textContent = '⨯';
+            this.removeButtonEl = this.element.appendChild(removeButtonEl);
+            const css = {
+                zIndex: 4,
+                position: 'absolute',
+                bottom: 0,
+                right: '4px',
+                cursor:'pointer',
+                fontSize: '20px',
+                lineHeight: '21px',
+                color: 'grey'
+            };
+            this.style(this.removeButtonEl, css);
+        }
+
+        /* Edit content */
+        if (this.contentEditable){
+            const contentEl = document.createElement('div');
+            contentEl.className = 'region-content';
+            contentEl.contentEditable = 'true';
+            contentEl.innerText = this.data.text || '';
+            this.contentEl = this.element.appendChild(contentEl);
+            const css = {
+                zIndex: 4,
+                padding: '2px 5px',
+                cursor:'text'};
+            this.style(this.contentEl, css);
+        }
 
         /* Resize handles */
         if (this.resize) {
@@ -404,12 +439,21 @@ export class Region {
         if (this.drag || this.resize) {
             this.bindDragEvents();
         }
+
+        /* Edit content */
+        if (this.contentEditable){
+            this.contentEl.addEventListener('blur', this.onContentBlur.bind(this));
+            this.contentEl.addEventListener('click', this.onContentClick.bind(this));
+        }
+        /* Remove button */
+        if (this.removeButton){
+            this.removeButtonEl.addEventListener('click', this.onRemove.bind(this));
+        }
     }
 
     bindDragEvents() {
         const container = this.wavesurfer.drawer.container;
         const scrollSpeed = this.scrollSpeed;
-        const scrollThreshold = this.scrollThreshold;
         let startTime;
         let touchId;
         let drag;
@@ -586,6 +630,7 @@ export class Region {
         const onMove = (event) => {
             const duration = this.wavesurfer.getDuration();
             let orientedEvent = this.util.withOrientation(event, this.vertical);
+            let delta = null;
 
             if (event.touches && event.touches.length > 1) {
                 return;
@@ -632,7 +677,9 @@ export class Region {
                     }
                 } else if (resize === 'end') {
                     if (time < this.start + minLength) {
+                        // Calculate the end time based on the min length of the region.
                         time = this.start + minLength;
+                        delta = time - (this.end + (time - startTime));
                     }
 
                     if (time > duration) {
@@ -641,7 +688,10 @@ export class Region {
                 }
             }
 
-            let delta = time - startTime;
+            if (!delta) {
+                delta = time - startTime;
+            }
+
             startTime = time;
 
             // Drag
@@ -792,6 +842,23 @@ export class Region {
                 end: Math.max(this.end + delta, this.start)
             }, eventParams);
         }
+    }
+
+    onContentBlur(event){
+        const {text: oldText} = this.data || {};
+        const text = event.target.innerText;
+        const data = {...this.data, text };
+        const eventParams = {action: 'contentEdited', oldText, text};
+        this.update({data}, eventParams);
+    }
+
+    onContentClick(event){
+        event.stopPropagation();
+    }
+
+    onRemove(event){
+        event.stopPropagation();
+        this.remove();
     }
 
     updateHandlesResize(resize) {

@@ -1,6 +1,81 @@
 wavesurfer.js changelog
 =======================
 
+6.6.3 (04.04.2023)
+------------------
+- Markers plugin:
+  - allow removing markers by passing a marker object (#2749)
+  - add getMarkers function (#2743)
+- Docs: version the unpkg script in readme (#2746)
+- Refactor: remove scriptNode (#2706)
+
+6.6.2 (24.03.2023)
+------------------
+- Revert "Zoom optimisation for Waves and matching implementation for Spectrograms (#2646)"
+- Fix: avoid exit 1 in CI script (#2734)
+
+6.6.1 (18.03.2023)
+------------------
+- Fix: NPM publish in the CI job (#2727)
+  - Fix: avoid exit 1 in CI script (#2734)
+- Docs: add a video tutorial link to the readme (#2724)
+
+6.6.0 (14.03.2023)
+------------------
+- Zoom optimisation for Waves and matching implementation for Spectrograms (#2646)
+- Fix: release workflow permissions (#2709)
+
+6.5.2 (12.03.2023)
+------------------
+- Regions plugin:
+  - Fix undefined content element on remove (#2713)
+
+6.5.0 (11.03.2023)
+------------------
+- Regions plugin:
+  - Improved delta calculation (resize end) (#2641)
+  - Editable text in regions (#2521):
+    - 2 new params:
+    - `{contentEditable: true}` allows to display/add/edit text in regions upon the waveform
+    - `{removeButton: true}` displays remove button in regions
+    - New example -- video annotation using `{contentEditable: true}` and `{removeButton: true}`
+- Fix iphone silent switch webaudio mute (#2667)
+- Respect mute state when changing volume during mute (#2502)
+- Proxy HTMLMediaElement's 'waiting' event through MediaElement backend. (#2691)
+- Chores:
+  - Docs: update the issue template and wavesurfer links (#2671)
+  - Add FUNDING.yml to enable GitHub Sponsors (#2668)
+  - Update development dependencies
+
+6.4.0 (05.11.2022)
+------------------
+- Markers plugin:
+  - Check for event after every add/remove (#2560)
+  - Add tooltip (#2595)
+- Cursor plugin:
+  - Fix crash when `destroy` is called before `ready` event fired (#2606)
+
+6.3.0 (03.10.2022)
+------------------
+- Fix `barMinHeight` option not setting the minimum bar height properly (#2522)
+- Regions plugin:
+  - Restore support for one drag selection for all channels (#2529)
+- Markers plugin:
+  - Add support for a context menu event on a marker (#2546)
+- Spectrogram plugin: Make labels have position: absolute instead of fixed (#2542)
+
+6.2.0 (16.05.2022)
+------------------
+- Fix `clientWidth` error in responsive mode (#2498)
+- Cursor plugin:
+  - Fix `TypeError` when `showTime: undefined` (#2501)
+- Spectrogram plugin:
+  - Fix to have consistent CSS height regardless of device pixel ratio (#2507)
+  - Added `height` configuration option to control CSS height of the view,
+    which will scale to fill
+  - Frequency label display is `fixed` instead of `absolute` to enable
+    consistent size on hi-dpi displays
+
 6.1.0 (31.03.2022)
 ------------------
 - Fix many calls to `setSinkId` resulting in no sound (#2481)
@@ -12,7 +87,7 @@ wavesurfer.js changelog
 6.0.4 (09.03.2022)
 ------------------
 - Spectrogram plugin:
-  - Add `frequencyMin`, `frequencyMax` option to scale frequency axis. 
+  - Add `frequencyMin`, `frequencyMax` option to scale frequency axis.
     And set default 12kHz range to draw spectrogram like 5.x (#2455)
 - Timeline plugin:
   - Fix rendering issue for negative `offset` values (#2463)

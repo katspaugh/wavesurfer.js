@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Video Annotation System</title>
+
+        <link href="data:image/gif;" rel="icon" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="../css/ribbon.css" />
+        <link rel="screenshot" itemprop="screenshot" href="https://katspaugh.github.io/wavesurfer.js/example/screenshot.png" />
+
+        <!-- wavesurfer.js -->
+        <script src="../../dist/wavesurfer.js"></script>
+
+        <!-- plugins -->
+        <script src="../../dist/plugin/wavesurfer.timeline.js"></script>
+        <script src="../../dist/plugin/wavesurfer.regions.js"></script>
+        <script src="../../dist/plugin/wavesurfer.minimap.js"></script>
+        <script src="../../dist/plugin/wavesurfer.cursor.js"></script>
+
+        <!-- highlight.js for syntax highlighting in this example -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script>
+    </head>
+
+    <body itemscope itemtype="http://schema.org/WebApplication">
+        <div class="container">
+            <div class="header">
+                <h1 itemprop="name">Editable and removable regions</h1>
+            </div>
+            <p>
+                This example is based on <a href="/example/video-annotation/index.html">Video Annotation System</a>. 
+                Instead of additional forms and buttons we do everything right in the wavefor 
+                by using region plugin params: <code>{contentEditable: true}</code> and <code>{removeButton: true}</code>. 
+            </p>
+            <p>
+                Region plugin param <code>{contentEditable: true}</code> adds an editable <code>div</code> on top of each region. 
+            </p>
+            <p>
+                When editing is finished (<code>onBlur</code>) it fires event: 
+                <pre><code>{action: 'contentEdited', oldText, text}</code></pre>
+            </p>
+               <p>You can handle it with: 
+                   <pre><code>wavesurfer.on('region-updated', (region, event) => callback)</code></pre></p> 
+               <p>
+                   New text will be saved in <code>region.data.text</code>. 
+                </p>   
+                <p>
+                   To fill regions with text on initialization, provide them with a property <code>data.text</code>. 
+                </p>
+                <p>
+                    The whole region will be looking like: 
+                    <pre><code>{
+    start: 1, 
+    end: 2, 
+    data: {
+        text: 'some text'
+        }
+}</code></pre>
+                </p>
+            <p>
+              Region plugin param <code>removeButton</code> adds a little <code>x</code> to right bottom corner of each region.       
+            </p>
+            <h2>Demo</h2>
+            <div id="demo">
+                <!-- This video comes from NASA Video Gallery https://www.youtube.com/watch?v=Zg7i4q_EX9E -->
+                <video style="display:block; margin: 0 auto;" src="../media/nasa.mp4" type="video/mpeg" width="800">
+                    <!-- Here be the video -->
+                </video>
+
+                
+
+                <div id="wave-timeline"></div>
+                
+                <div id="waveform">
+                    <!-- Here be the waveform -->
+                </div>
+
+                <div class="row" style="margin: 30px 0">
+                    <div class="col-sm-2 col-xs-3">
+                        <button class="btn btn-primary btn-block" data-action="play" onclick="window.wavesurfer.playPause();">
+                            <span id="play">
+                                <i class="glyphicon glyphicon-play"></i>
+                                Play
+                            </span>
+    
+                            <span id="pause" style="display: none">
+                                <i class="glyphicon glyphicon-pause"></i>
+                                Pause
+                            </span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+            <h2>Output: <small>text representation of regions</small></h2>
+            <div style="white-space: pre;" id="output"></div>
+
+            <div>
+                <pre><code>// Init
+var wavesurfer = WaveSurfer.create({
+    container: document.querySelector('#waveform'),
+    height: 100,
+    pixelRatio: 1,
+    minPxPerSec: 100,
+    scrollParent: true,
+    normalize: true,
+    splitChannels: false,
+    backend: 'MediaElement',
+    plugins: [
+        WaveSurfer.regions.create({
+            contentEditable: true,
+            dragSelection: true,
+            regions: [
+                {
+                    "start": 2.51,
+                    "end": 3.62,
+                    "data": {
+                        "text": "Hello down there " }
+                },
+                {
+                    "start": 3.67,
+                    "end": 4.72,
+                    "data": {
+                        "text": "on the good Earth"
+                    }
+                }
+            ]
+        }),
+        WaveSurfer.minimap.create({
+            height: 30,
+            waveColor: '#ddd',
+            progressColor: '#999'
+        }),
+        WaveSurfer.timeline.create({
+            container: '#wave-timeline'
+        }),
+        WaveSurfer.cursor.create()
+    ]
+});
+                    </code></pre>
+            </div>
+        </div>
+        <!-- Demo -->
+        <script src="main.js"></script>
+    </body>
+</html>

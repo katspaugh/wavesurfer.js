@@ -15,7 +15,9 @@ function initAndLoadSpectrogram(colorMap) {
             WaveSurfer.spectrogram.create({
                 container: '#wave-spectrogram',
                 labels: true,
-                colorMap: colorMap
+                colorMap: colorMap,
+                fftSamples: 1024,
+                height: 256
             })
         ]
     };

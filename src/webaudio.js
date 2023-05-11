@@ -8,15 +8,11 @@ const FINISHED = 'finished';
 /**
  * WebAudio backend
  *
- * @extends {Observer}
+ * @extends {util.Observer}
  */
 export default class WebAudio extends util.Observer {
-    /** scriptBufferSize: size of the processing buffer */
-    static scriptBufferSize = 256;
     /** audioContext: allows to process audio with WebAudio API */
     audioContext = null;
-    /** @private */
-    offlineAudioContext = null;
     /** @private */
     stateBehaviors = {
         [PLAYING]: {
@@ -33,7 +29,6 @@ export default class WebAudio extends util.Observer {
         },
         [PAUSED]: {
             init() {
-                this.removeOnAudioProcess();
             },
             getPlayedPercents() {
                 const duration = this.getDuration();
@@ -45,7 +40,6 @@ export default class WebAudio extends util.Observer {
         },
         [FINISHED]: {
             init() {
-                this.removeOnAudioProcess();
                 this.fireEvent('finish');
             },
             getPlayedPercents() {
@@ -233,40 +227,29 @@ export default class WebAudio extends util.Observer {
     createScriptNode() {
         if (this.params.audioScriptProcessor) {
             this.scriptNode = this.params.audioScriptProcessor;
-        } else {
-            if (this.ac.createScriptProcessor) {
-                this.scriptNode = this.ac.createScriptProcessor(
-                    WebAudio.scriptBufferSize
-                );
-            } else {
-                this.scriptNode = this.ac.createJavaScriptNode(
-                    WebAudio.scriptBufferSize
-                );
-            }
+            this.scriptNode.connect(this.ac.destination);
         }
-        this.scriptNode.connect(this.ac.destination);
     }
 
     /** @private */
     addOnAudioProcess() {
-        this.scriptNode.onaudioprocess = () => {
+        const loop = () => {
             const time = this.getCurrentTime();
 
-            if (time >= this.getDuration()) {
+            if (time >= this.getDuration() && this.state !== this.states[FINISHED]) {
                 this.setState(FINISHED);
                 this.fireEvent('pause');
-            } else if (time >= this.scheduledPause) {
+            } else if (time >= this.scheduledPause && this.state !== this.states[PAUSED]) {
                 this.pause();
             } else if (this.state === this.states[PLAYING]) {
                 this.fireEvent('audioprocess', time);
+                util.frame(loop)();
             }
         };
+
+        loop();
     }
 
-    /** @private */
-    removeOnAudioProcess() {
-        this.scriptNode.onaudioprocess = null;
-    }
     /** Create analyser node to perform audio analysis */
     createAnalyserNode() {
         this.analyser = this.ac.createAnalyser();
@@ -526,7 +509,7 @@ export default class WebAudio extends util.Observer {
         this.disconnectFilters();
         this.disconnectSource();
         this.gainNode.disconnect();
-        this.scriptNode.disconnect();
+        this.scriptNode && this.scriptNode.disconnect();
         this.analyser.disconnect();
 
         // close the audioContext if closeAudioContext option is set to true
