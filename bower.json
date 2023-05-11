@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "6.6.3",
+  "version": "6.6.4",
   "homepage": "https://wavesurfer-js.org",
   "authors": [
     "katspaugh <katspaugh@gmail.com>"
@@ -8,7 +8,10 @@
   "description": "Navigable waveform built on Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "keywords": [
-    "waveform", "audio", "music", "player"
+    "waveform",
+    "audio",
+    "music",
+    "player"
   ],
   "license": "BSD-3-Clause"
 }

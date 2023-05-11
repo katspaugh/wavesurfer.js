@@ -1,6 +1,6 @@
 {
   "name": "@animoto/wavesurfer.js",
-  "version": "6.6.3",
+  "version": "6.6.4",
   "description": "Interactive navigable audio visualization using Web Audio and Canvas",
   "main": "dist/wavesurfer.js",
   "directories": {
@@ -81,7 +81,7 @@
     "karma-chrome-launcher": "3.1.1",
     "karma-coverage": "^2.2.0",
     "karma-firefox-launcher": "^2.1.2",
-   "karma-junit-reporter": "^2.0.1",
+    "karma-junit-reporter": "^2.0.1",
     "karma-jasmine": "5.1.0",
     "karma-jasmine-matchers": "5.0.0",
     "karma-verbose-reporter": "0.0.8",
