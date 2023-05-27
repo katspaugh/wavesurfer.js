@@ -2,7 +2,7 @@
 
 ---
 
-✨ We're excited to introduce version 7.0.0-alpha codenamed **wavesurfer.ts**, a TypeScript rewrite of wavesurfer.js with better performance and new plugins. Give the alpha version a spin and let us know what you think! Check out the [wavesurfer.ts README](https://github.com/katspaugh/wavesurfer.ts) to get started. Happy coding! ✨
+✨ We're excited to introduce version 7.0.0-beta, a TypeScript rewrite of wavesurfer.js with better performance and new plugins. Give the beta version a spin and let us know what you think! Check out the [wavesurfer.ts README](https://github.com/katspaugh/wavesurfer.ts) to get started. Happy coding! ✨
 
 ---
 
