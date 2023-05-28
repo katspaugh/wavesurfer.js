@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - main
+      - beta
 
 permissions:
   contents: write
