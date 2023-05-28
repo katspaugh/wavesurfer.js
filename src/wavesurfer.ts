@@ -52,6 +52,8 @@ export type WaveSurferOptions = {
   autoCenter?: boolean
   /** Decoding sample rate. Doesn't affect the playback. Defaults to 8000 */
   sampleRate?: number
+  /** Render each audio channel as a separate waveform */
+  splitChannels?: RendererStyleOptions[]
   /** The list of plugins to initialize on start */
   plugins?: GenericPlugin[]
 }

@@ -231,6 +231,51 @@ describe('WaveSurfer', () => {
     })
   })
 
+  it('should split channels', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/stereo.mp3',
+          splitChannels: true,
+          waveColor: 'rgb(200, 0, 200)',
+          progressColor: 'rgb(100, 0, 100)',
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('split-channels')
+          resolve()
+        })
+      })
+    })
+  })
+
+  it('should split channels with options', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/stereo.mp3',
+          splitChannels: [
+            {
+              waveColor: 'rgb(200, 0, 200)',
+              progressColor: 'rgb(100, 0, 100)',
+            },
+            {
+              waveColor: 'rgb(0, 200, 200)',
+              progressColor: 'rgb(0, 100, 100)',
+            },
+          ],
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('split-channels-options')
+          resolve()
+        })
+      })
+    })
+  })
+
   it('should use plugins with Regions', () => {
     cy.window().then((win) => {
       return new Promise((resolve) => {

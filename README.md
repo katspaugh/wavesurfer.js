@@ -92,10 +92,25 @@ See [this example](https://wavesurfer.pages.dev/examples/#styling.js) for play a
 Most options, events, and methods are similar to those in previous versions.
 
 ### Notable differences
- * The `backend` option is removed – HTML5 audio (or video) is the only playback mechanism. However, you can still connect wavesurfer to Web Audio via `MediaElementSourceNode`. See this [example](https://wavesurfer.pages.dev/examples/#webaudio.js).
+ * The `backend` option is removed – [HTML5 audio (or video) is the only playback mechanism](https://github.com/katspaugh/wavesurfer.js/discussions/2762#discussioncomment-5669347). However, you can still connect wavesurfer to Web Audio via `MediaElementSourceNode`. See this [example](https://wavesurfer.pages.dev/examples/#webaudio.js).
  * The Markers plugin is removed – use the Regions plugin with just a `startTime`.
  * No Microphone plugn – superseded by the new Record plugin with more features.
  * No Cursor and Playhead plugins yet – to be done.
+
+### Removed options
+ * `backend`, `audioContext`, `closeAudioContext', 'audioScriptProcessor` – there's no Web Audio backend, so no AudioContext
+ * `autoCenterImmediately` – `autoCenter` is now always immediate unless the audio is playing
+ * `backgroundColor`, `hideCursor` – this can be easily set via CSS
+ * `mediaType`, `mediaControls` – you should instead pass an entire media element in the `media` option. [Example](https://wavesurfer-js.org/examples/#video.js).
+ * `normalize` – peaks are normalized to -1..1 by default
+ * `partialRender` – done by default
+ * `pixelRatio` – `window.devicePixelRatio` is used by default
+ * `renderer` – there's just one renderer for now, so no need for this option
+ * `responsive` – responsiveness is enabled by default
+ * `scrollParent` – the container will scroll if `minPxPerSec` is set to a higher value
+ * `skipLength` – there's no `skipForward` and `skipBackward` methods anymore
+ * `splitChannelsOptions` – you should now use `splitChannels` to pass the channel options. Pass `height: 0` to hide a channel. See [this example](https://wavesurfer-js.org/examples/#split-channels.js).
+ * `xhr`, `drawingContextAttributes`, `maxCanvasWidth`, `forceDecode` – removed to reduce code complexity
 
 ### Removed methods
  * `getFilters`, `setFilter` – as there's no Web Audio "backend"

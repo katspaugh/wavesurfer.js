@@ -15,6 +15,7 @@ export type RendererStyleOptions = {
   hideScrollbar?: boolean
   autoCenter?: boolean
   autoScroll?: boolean
+  splitChannels?: RendererStyleOptions[]
 }
 
 type RendererEvents = {
@@ -26,9 +27,7 @@ type RendererEvents = {
 
 class Renderer extends EventEmitter<RendererEvents> {
   private static MAX_CANVAS_WIDTH = 4000
-  private options: Partial<RendererStyleOptions> & { height: number } = {
-    height: 0,
-  }
+  private options: RendererStyleOptions
   private container: HTMLElement
   private scrollContainer: HTMLElement
   private wrapper: HTMLElement
@@ -145,16 +144,14 @@ class Renderer extends EventEmitter<RendererEvents> {
           overflow: visible;
           z-index: 2;
         }
-        :host .canvases {
+        :host .canvases > div {
           position: relative;
-          height: ${this.options.height}px;
         }
         :host canvas {
           display: block;
           position: absolute;
           top: 0;
           image-rendering: pixelated;
-          height: ${this.options.height}px;
         }
         :host .progress {
           pointer-events: none;
@@ -166,6 +163,9 @@ class Renderer extends EventEmitter<RendererEvents> {
           height: 100%;
           overflow: hidden;
         }
+        :host .progress > div {
+          position: relative;
+        }
         :host .cursor {
           pointer-events: none;
           position: absolute;
@@ -174,8 +174,6 @@ class Renderer extends EventEmitter<RendererEvents> {
           left: 0;
           height: 100%;
           border-radius: 2px;
-          width: ${this.options.cursorWidth}px;
-          background-color: ${this.options.cursorColor || this.options.progressColor};
         }
       </style>
 
@@ -221,26 +219,41 @@ class Renderer extends EventEmitter<RendererEvents> {
     })
   }
 
-  private async renderPeaks(audioData: AudioBuffer, width: number, height: number, pixelRatio: number) {
-    const barWidth =
-      this.options.barWidth != null && !isNaN(this.options.barWidth) ? this.options.barWidth * pixelRatio : 1
+  private async renderPeaks(
+    channelData: Array<Float32Array | number[]>,
+    options: RendererStyleOptions,
+    width: number,
+    height: number,
+    pixelRatio: number,
+  ) {
+    const barWidth = options.barWidth != null && !isNaN(options.barWidth) ? options.barWidth * pixelRatio : 1
     const barGap =
-      this.options.barGap != null && !isNaN(this.options.barGap)
-        ? this.options.barGap * pixelRatio
-        : this.options.barWidth
+      options.barGap != null && !isNaN(options.barGap)
+        ? options.barGap * pixelRatio
+        : options.barWidth
         ? barWidth / 2
         : 0
-    const barRadius = this.options.barRadius || 0
-    const scaleY = this.options.barHeight || 1
+    const barRadius = options.barRadius || 0
+    const scaleY = options.barHeight || 1
 
-    const leftChannel = audioData.getChannelData(0)
+    const leftChannel = channelData[0]
     const len = leftChannel.length
     const barCount = Math.floor(width / (barWidth + barGap))
     const barIndexScale = barCount / len
     const halfHeight = height / 2
-    const isMono = audioData.numberOfChannels === 1
-    const rightChannel = isMono ? leftChannel : audioData.getChannelData(1)
+    const isMono = channelData.length === 1
+    const rightChannel = isMono ? leftChannel : channelData[1]
     const useNegative = isMono && rightChannel.some((v: number) => v < 0)
+
+    // A container for all canvases
+    const canvasContainer = document.createElement('div')
+    canvasContainer.style.height = `${options.height}px`
+    this.canvasWrapper.appendChild(canvasContainer)
+
+    // A container for progress canvases
+    const progressContainer = document.createElement('div')
+    progressContainer.style.height = `${options.height}px`
+    this.progressWrapper.appendChild(progressContainer)
 
     const draw = (start: number, end: number) => {
       let prevX = 0
@@ -249,18 +262,18 @@ class Renderer extends EventEmitter<RendererEvents> {
 
       const canvas = document.createElement('canvas')
       canvas.width = Math.round((width * (end - start)) / len)
-      canvas.height = this.options.height
+      canvas.height = options.height
       canvas.style.width = `${Math.floor(canvas.width / pixelRatio)}px`
-      canvas.style.height = `${this.options.height}px`
+      canvas.style.height = `${options.height}px`
       canvas.style.left = `${Math.floor((start * width) / pixelRatio / len)}px`
-      this.canvasWrapper.appendChild(canvas)
+      canvasContainer.appendChild(canvas)
 
       const ctx = canvas.getContext('2d', {
         desynchronized: true,
       }) as CanvasRenderingContext2D
 
       ctx.beginPath()
-      ctx.fillStyle = this.options.waveColor ?? ''
+      ctx.fillStyle = options.waveColor ?? ''
 
       // Firefox shim until 2023.04.11
       if (!ctx.roundRect) ctx.roundRect = ctx.fillRect
@@ -303,7 +316,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
       // Draw a progress canvas
       const progressCanvas = canvas.cloneNode() as HTMLCanvasElement
-      this.progressWrapper.appendChild(progressCanvas)
+      progressContainer.appendChild(progressCanvas)
       const progressCtx = progressCanvas.getContext('2d', {
         desynchronized: true,
       }) as CanvasRenderingContext2D
@@ -312,14 +325,10 @@ class Renderer extends EventEmitter<RendererEvents> {
       }
       // Set the composition method to draw only where the waveform is drawn
       progressCtx.globalCompositeOperation = 'source-in'
-      progressCtx.fillStyle = this.options.progressColor ?? ''
+      progressCtx.fillStyle = options.progressColor ?? ''
       // This rectangle acts as a mask thanks to the composition method
       progressCtx.fillRect(0, 0, canvas.width, canvas.height)
     }
-
-    // Clear the canvas
-    this.canvasWrapper.innerHTML = ''
-    this.progressWrapper.innerHTML = ''
 
     // Determine the currently visible part of the waveform
     const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
@@ -368,10 +377,25 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.scrollContainer.classList.toggle('noScrollbar', !!this.options.hideScrollbar)
     this.cursor.style.backgroundColor = `${this.options.cursorColor || this.options.progressColor}`
     this.cursor.style.width = `${this.options.cursorWidth}px`
-    this.canvasWrapper.style.height = `${this.options.height}px`
+
+    // Clear the canvases
+    this.canvasWrapper.innerHTML = ''
+    this.progressWrapper.innerHTML = ''
 
     // Render the waveform
-    this.renderPeaks(audioData, width, height, pixelRatio)
+    if (this.options.splitChannels) {
+      // Render a waveform for each channel
+      for (let i = 0; i < audioData.numberOfChannels; i++) {
+        const options = { ...this.options, ...this.options.splitChannels[i] }
+        this.renderPeaks([audioData.getChannelData(i)], options, width, height, pixelRatio)
+      }
+    } else {
+      // Render a single waveform for the first two channels (left and right)
+      const channels = [audioData.getChannelData(0)]
+      if (audioData.numberOfChannels > 1) channels.push(audioData.getChannelData(1))
+      this.renderPeaks(channels, this.options, width, height, pixelRatio)
+    }
+
     this.audioData = audioData
 
     this.emit('render')
