@@ -218,7 +218,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
   }
 
-  private renderCanvas(
+  private renderSingleCanvas(
     channelData: Array<Float32Array | number[]>,
     options: RendererStyleOptions,
     width: number,
@@ -322,7 +322,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     progressCtx.fillRect(0, 0, canvas.width, canvas.height)
   }
 
-  private async renderPeaks(channelData: Array<Float32Array | number[]>, options: RendererStyleOptions, width: number) {
+  private renderWaveform(channelData: Array<Float32Array | number[]>, options: RendererStyleOptions, width: number) {
     // A container for canvases
     const canvasContainer = document.createElement('div')
     canvasContainer.style.height = `${options.height}px`
@@ -332,10 +332,18 @@ class Renderer extends EventEmitter<RendererEvents> {
     const progressContainer = canvasContainer.cloneNode() as HTMLElement
     this.progressWrapper.appendChild(progressContainer)
 
+    // Determine the currently visible part of the waveform
+    const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
     const len = channelData[0].length
+    const scale = len / scrollWidth
+    const viewportWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth)
+    const start = Math.floor(Math.abs(scrollLeft) * scale)
+    const end = Math.ceil(start + viewportWidth * scale)
+    const viewportLen = end - start
 
+    // Draw a portion of the waveform from start peak to end peak
     const draw = (start: number, end: number) => {
-      this.renderCanvas(
+      this.renderSingleCanvas(
         channelData,
         options,
         width,
@@ -346,15 +354,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       )
     }
 
-    // Determine the currently visible part of the waveform
-    const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
-    const scale = len / scrollWidth
-    const viewportWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth)
-    const start = Math.floor(Math.abs(scrollLeft) * scale)
-    const end = Math.ceil(start + viewportWidth * scale)
-    const viewportLen = end - start
-
-    // Draw the waveform in viewport chunks with a delay
+    // Draw the waveform in viewport chunks, each with a delay
     const headDelay = this.createDelay()
     const tailDelay = this.createDelay()
     const renderHead = (fromIndex: number, toIndex: number) => {
@@ -415,13 +415,13 @@ class Renderer extends EventEmitter<RendererEvents> {
       // Render a waveform for each channel
       for (let i = 0; i < audioData.numberOfChannels; i++) {
         const options = { ...this.options, ...this.options.splitChannels[i] }
-        this.renderPeaks([audioData.getChannelData(i)], options, width)
+        this.renderWaveform([audioData.getChannelData(i)], options, width)
       }
     } else {
       // Render a single waveform for the first two channels (left and right)
       const channels = [audioData.getChannelData(0)]
       if (audioData.numberOfChannels > 1) channels.push(audioData.getChannelData(1))
-      this.renderPeaks(channels, this.options, width)
+      this.renderWaveform(channels, this.options, width)
     }
 
     this.audioData = audioData

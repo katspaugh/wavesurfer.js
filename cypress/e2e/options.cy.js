@@ -243,6 +243,8 @@ describe('WaveSurfer', () => {
         })
 
         win.wavesurfer.once('ready', () => {
+          win.wavesurfer.setTime(2)
+          cy.wait(100)
           cy.get(id).matchImageSnapshot('split-channels')
           resolve()
         })
