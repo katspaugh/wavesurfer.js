@@ -1,6 +1,6 @@
 # <img src="https://user-images.githubusercontent.com/381895/226091100-f5567a28-7736-4d37-8f84-e08f297b7e1a.png" alt="logo" height="60" valign="middle" /> wavesurfer.js
 
-![npm](https://img.shields.io/npm/v/wavesurfer.js/beta)
+[![npm](https://img.shields.io/npm/v/wavesurfer.js/beta)](https://www.npmjs.com/package/wavesurfer.js)
 
 ## New TypeScript version
 
