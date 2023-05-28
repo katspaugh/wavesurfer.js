@@ -58,7 +58,7 @@ recButton.onclick = () => {
 }
 
 // Play/pause
-wavesurfer.once('canplay', () => {
+wavesurfer.once('ready', () => {
   playButton.onclick = () => {
     wavesurfer.playPause()
   }

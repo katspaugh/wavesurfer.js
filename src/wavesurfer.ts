@@ -74,8 +74,6 @@ export type WaveSurferEvents = {
   load: [url: string]
   /** When the audio has been decoded */
   decode: [duration: number]
-  /** When the media element has loaded enough to play */
-  canplay: [duration: number]
   /** When the audio is both decoded and can play */
   ready: [duration: number]
   /** When a waveform is drawn */
@@ -112,7 +110,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private timer: Timer
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
-  private canPlay = false
   protected subscriptions: Array<() => void> = []
 
   /** Create a new WaveSurfer instance */
@@ -137,7 +134,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initPlayerEvents()
     this.initRendererEvents()
     this.initTimerEvents()
-    this.initReadyEvent()
     this.initPlugins()
 
     const url = this.options.url || this.options.media?.currentSrc || this.options.media?.src
@@ -177,11 +173,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.emit('finish')
       }),
 
-      this.onMediaEvent('canplay', () => {
-        this.canPlay = true
-        this.emit('canplay', this.getDuration())
-      }),
-
       this.onMediaEvent('seeking', () => {
         this.emit('seeking', this.getCurrentTime())
       }),
@@ -193,7 +184,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       // Seek on click
       this.renderer.on('click', (relativeX) => {
         if (this.options.interact) {
-          this.canPlay && this.seekTo(relativeX)
+          this.seekTo(relativeX)
           this.emit('interaction')
           this.emit('click', relativeX)
         }
@@ -219,19 +210,17 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.renderer.on('drag', (relativeX) => {
           if (!this.options.interact) return
 
-          if (this.canPlay) {
-            // Update the visual position
-            this.renderer.renderProgress(relativeX)
+          // Update the visual position
+          this.renderer.renderProgress(relativeX)
 
-            // Set the audio position with a debounce
-            clearTimeout(debounce)
-            debounce = setTimeout(
-              () => {
-                this.seekTo(relativeX)
-              },
-              this.isPlaying() ? 0 : 200,
-            )
-          }
+          // Set the audio position with a debounce
+          clearTimeout(debounce)
+          debounce = setTimeout(
+            () => {
+              this.seekTo(relativeX)
+            },
+            this.isPlaying() ? 0 : 200,
+          )
 
           this.emit('interaction')
           this.emit('drag', relativeX)
@@ -250,15 +239,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.emit('audioprocess', currentTime)
       }),
     )
-  }
-
-  private initReadyEvent() {
-    const emitReady = () => {
-      if (this.decodedData && this.canPlay) {
-        this.emit('ready', this.getDuration())
-      }
-    }
-    this.subscriptions.push(this.on('decode', emitReady), this.on('canplay', emitReady))
   }
 
   private initPlugins() {
@@ -294,7 +274,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   /** Load an audio file by URL, with optional pre-decoded audio data */
   public async load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number) {
     this.decodedData = null
-    this.canPlay = false
 
     this.emit('load', url)
 
@@ -319,6 +298,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     }
 
     this.emit('decode', this.getDuration())
+    this.emit('ready', this.getDuration())
 
     this.renderer.render(this.decodedData)
   }

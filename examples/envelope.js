@@ -47,7 +47,7 @@ wavesurfer.on('timeupdate', () => {
 
 // Play/pause button
 const button = document.querySelector('button')
-wavesurfer.once('canplay', () => {
+wavesurfer.once('ready', () => {
   button.onclick = () => {
     wavesurfer.isPlaying() ? wavesurfer.pause() : wavesurfer.play()
   }

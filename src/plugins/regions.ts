@@ -438,7 +438,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
     if (!duration) {
       this.subscriptions.push(
-        this.wavesurfer.once('canplay', (duration) => {
+        this.wavesurfer.once('ready', (duration) => {
           region._setTotalDuration(duration)
           this.saveRegion(region)
         }),
