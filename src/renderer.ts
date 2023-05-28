@@ -222,7 +222,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   // Convert array of color values to linear gradient
-	private convertColorValues(color: string | string[] | undefined = "") {
+	private convertColorValues(color: string | string[] = "") {
 		if (!Array.isArray(color)) return color;
     if (color.length < 2) return color.length === 1 ? color[0] : "";
     
