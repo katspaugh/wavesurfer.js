@@ -222,11 +222,12 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   // Convert array of color values to linear gradient
-	private convertColorValues(color: string | string[] | undefined) {
-		if (!Array.isArray(color)) return color || "";
-
-		const canvasElement = this.canvasWrapper.children[0] as HTMLCanvasElement;
-		const gradient = canvasElement.getContext('2d')?.createLinearGradient(0, 0, canvasElement.width, canvasElement.height) || "";
+	private convertColorValues(color: string | string[] | undefined = "") {
+		if (!Array.isArray(color)) return color;
+    if (color.length < 2) return color.length === 1 ? color[0] : "";
+    
+    const canvasElement = this.canvasWrapper.children[0] as HTMLCanvasElement;
+		const gradient = canvasElement.getContext('2d')?.createLinearGradient(0, 0, 0, canvasElement.height) || "";
 
 		if (gradient) {
 			const colorStopPercentage = 1 / (color.length - 1);
