@@ -14,7 +14,7 @@ wavesurfer.js v7 beta is a TypeScript rewrite of wavesurfer.js that brings sever
 
 ---
 
-ℹ️ Looking for the old stable version? V6 is here: https://github.com/katspaugh/wavesurfer.js/tree/master
+ℹ️ Looking for the old stable version? V6 is here: https://github.com/katspaugh/wavesurfer.js/tree/v6
 
 ---
 
@@ -87,13 +87,13 @@ You can see which elements you can style in the DOM inspector – they will have
 
 See [this example](https://wavesurfer.pages.dev/examples/#styling.js) for play around with styling.
 
-## Migrating from v6
+## Upgrading from v6
 
 Most options, events, and methods are similar to those in previous versions.
 
 ### Notable differences
  * The `backend` option is removed – HTML5 audio (or video) is the only playback mechanism. However, you can still connect wavesurfer to Web Audio via `MediaElementSourceNode`. See this [example](https://wavesurfer.pages.dev/examples/#webaudio.js).
- * The Markers plugin is removed – use the Regions plugin with `startTime` equal to `endTime`.
+ * The Markers plugin is removed – use the Regions plugin with just a `startTime`.
  * No Microphone plugn – superseded by the new Record plugin with more features.
  * No Cursor and Playhead plugins yet – to be done.
 
