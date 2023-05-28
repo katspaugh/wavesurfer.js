@@ -1,0 +1,16 @@
+name: 'Yarn'
+
+description: 'Install node modules'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Yarn cache
+      uses: actions/cache@v3
+      with:
+        path: '**/node_modules'
+        key: node-modules-${{ hashFiles('**/yarn.lock') }}
+
+    - name: Yarn install
+      shell: bash
+      run: yarn install --immutable

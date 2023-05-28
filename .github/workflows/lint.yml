@@ -1,0 +1,14 @@
+name: Lint
+on: [pull_request]
+
+jobs:
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/workflows/yarn
+
+      - uses: Maggi64/eslint-plus-action@master
+        with:
+          npmInstall: false

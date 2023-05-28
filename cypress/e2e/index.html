@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WaveSurfer Test</title>
+  </head>
+  <body>
+    <div id="waveform" style="width: 600px"></div>
+
+    <script type="module">
+      import WaveSurfer from '../../dist/wavesurfer.js'
+      import Regions from '../../dist/plugins/regions.js'
+      import Timeline from '../../dist/plugins/timeline.js'
+
+      window.WaveSurfer = WaveSurfer
+      window.Regions = Regions
+      window.Timeline = Timeline
+    </script>
+  </body>
+</html>

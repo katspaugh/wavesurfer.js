@@ -1,0 +1,31 @@
+name: e2e
+
+on:
+  pull_request:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    name: E2E tests
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/workflows/yarn
+
+      - name: Install Cypress
+        run: |
+          ./node_modules/.bin/cypress install
+
+      - uses: ./.github/workflows/build
+
+      - uses: cypress-io/github-action@v4
+        with:
+          spec: cypress/e2e/*.cy.js
+          browser: chrome
+          record: false
+
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots

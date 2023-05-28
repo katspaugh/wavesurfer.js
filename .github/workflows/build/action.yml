@@ -1,0 +1,10 @@
+name: 'Build'
+
+description: 'Build the app'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Build
+      shell: bash
+      run: yarn build

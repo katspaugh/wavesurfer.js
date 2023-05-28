@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Extract version
+        id: version
+        run: |
+          OLD_VERSION=$(npm show wavesurfer.js@beta version)
+          NEW_VERSION=$(node -p 'require("./package.json").version')
+          if [ $NEW_VERSION != $OLD_VERSION ]; then
+            echo "New version $NEW_VERSION detected"
+            echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            git log "$OLD_VERSION"..HEAD --pretty=format:"* %s" > TEMP_CHANGELOG.md
+          else
+            echo "Version $OLD_VERSION hasn't changed, skipping the release"
+          fi
+
+      - name: Create a git tag
+        if: ${{ steps.version.outputs.version }}
+        run: git tag $NEW_VERSION && git push --tags
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+
+      - name: GitHub release
+        if: ${{ steps.version.outputs.version }}
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          body_path: TEMP_CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - uses: actions/setup-node@v3
+        if: ${{ steps.version.outputs.version }}
+        with:
+          node-version: '16.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        if: ${{ steps.version.outputs.version }}
+        run: npm install
+
+      - name: Publish to NPM
+        if: ${{ steps.version.outputs.version }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+        run: npm publish --tag beta
