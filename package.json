@@ -3,6 +3,7 @@
   "version": "7.0.0-beta.4",
   "license": "BSD-3-Clause",
   "author": "katspaugh",
+  "description": "Navigable audio waveform player",
   "homepage": "https://wavesurfer-js.org",
   "keywords": [
     "waveform",
@@ -12,6 +13,10 @@
     "music",
     "linguistics"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:wavesurfer-js/wavesurfer.js.git"
+  },
   "type": "module",
   "files": [ "dist" ],
   "main": "dist/wavesurfer.js",
