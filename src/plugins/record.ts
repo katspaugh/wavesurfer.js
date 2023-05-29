@@ -5,7 +5,7 @@
 import BasePlugin from '../base-plugin.js'
 
 export type RecordPluginOptions = {
-  waveColor?: string
+  realtimeWaveColor?: string
   lineWidth?: number
 }
 
@@ -54,7 +54,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       analyser.getByteTimeDomainData(dataArray)
 
       canvasCtx.lineWidth = this.options.lineWidth || 2
-      canvasCtx.strokeStyle = this.options.waveColor || this.wavesurfer?.options.waveColor || ''
+      const color = this.options.realtimeWaveColor || this.wavesurfer?.options.waveColor || ''
+      canvasCtx.strokeStyle = Array.isArray(color) ? color[0] : color
       canvasCtx.beginPath()
 
       const sliceWidth = (canvas.width * 1.0) / bufferLength
