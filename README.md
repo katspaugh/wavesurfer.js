@@ -10,7 +10,7 @@ wavesurfer.js v7 beta is a TypeScript rewrite of wavesurfer.js that brings sever
  * Enhanced decoding and rendering performance
  * New and improved plugins
 
-<img width="674" alt="Screenshot" src="https://github.com/katspaugh/wavesurfer.ts/assets/381895/cde5fe51-be8a-46ff-934e-1d76a827b8bc">
+<img width="626" alt="waveform screenshot" src="https://github.com/katspaugh/wavesurfer.js/assets/381895/05f03bed-800e-4fa1-b09a-82a39a1c62ce">
 
 ---
 
@@ -82,9 +82,6 @@ For example:
 ```
 
 You can see which elements you can style in the DOM inspector – they will have a `part` attribute.
-
-<img width="466" alt="DOM inspector screenshot" src="https://github.com/katspaugh/wavesurfer.ts/assets/381895/fcfb4e4d-9572-4931-811f-9615b7e3aa85">
-
 See [this example](https://wavesurfer.pages.dev/examples/#styling.js) for play around with styling.
 
 ## Upgrading from v6
