@@ -273,7 +273,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     }) as CanvasRenderingContext2D
 
     ctx.beginPath()
-    ctx.fillStyle = this.convertColorValues(this.options.waveColor)
+    ctx.fillStyle = this.convertColorValues(options.waveColor)
 
     // Firefox shim until 2023.04.11
     if (!ctx.roundRect) ctx.roundRect = ctx.fillRect

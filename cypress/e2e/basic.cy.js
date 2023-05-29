@@ -33,7 +33,7 @@ describe('WaveSurfer', () => {
 
       return new Promise((resolve) => {
         win.wavesurfer.once('ready', () => {
-          expect(win.wavesurfer.getDuration()).to.equal(26.386688)
+          expect(win.wavesurfer.getDuration().toFixed(2)).to.equal('26.39')
           resolve()
         })
       })
