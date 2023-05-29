@@ -34,7 +34,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private canvasWrapper: HTMLElement
   private progressWrapper: HTMLElement
   private cursor: HTMLElement
-  private timeouts: Array<ReturnType<typeof setTimeout>> = []
+  private timeouts: Array<{ timeout?: ReturnType<typeof setTimeout> }> = []
   private isScrolling = false
   private audioData: AudioBuffer | null = null
   private resizeObserver: ResizeObserver | null = null
@@ -145,6 +145,9 @@ class Renderer extends EventEmitter<RendererEvents> {
           overflow: visible;
           z-index: 2;
         }
+        :host .canvases {
+          min-height: ${this.options.height}px;
+        }
         :host .canvases > div {
           position: relative;
         }
@@ -210,11 +213,11 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   private createDelay(delayMs = 10): (fn: () => void) => void {
-    let timeout: ReturnType<typeof setTimeout>
+    const context: { timeout?: ReturnType<typeof setTimeout> } = {}
+    this.timeouts.push(context)
     return (callback: () => void) => {
-      timeout && clearTimeout(timeout)
-      timeout = setTimeout(callback, delayMs)
-      this.timeouts.push(timeout)
+      context.timeout && clearTimeout(context.timeout)
+      context.timeout = setTimeout(callback, delayMs)
     }
   }
 
@@ -382,7 +385,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   render(audioData: AudioBuffer) {
     // Clear previous timeouts
-    this.timeouts.forEach((timeout) => clearTimeout(timeout))
+    this.timeouts.forEach((context) => context.timeout && clearTimeout(context.timeout))
     this.timeouts = []
 
     // Determine the width of the waveform
