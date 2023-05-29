@@ -221,6 +221,25 @@ class Renderer extends EventEmitter<RendererEvents> {
     })
   }
 
+  // Convert array of color values to linear gradient
+	private convertColorValues(color: string | string[] = "") {
+		if (!Array.isArray(color)) return color;
+    if (color.length < 2) return color.length === 1 ? color[0] : "";
+    
+    const canvasElement = this.canvasWrapper.children[0] as HTMLCanvasElement;
+		const gradient = canvasElement.getContext('2d')?.createLinearGradient(0, 0, 0, canvasElement.height) || "";
+
+		if (gradient) {
+			const colorStopPercentage = 1 / (color.length - 1);
+			color.forEach((color, index) => {
+				const offset = index * colorStopPercentage;
+				gradient.addColorStop(offset, color);
+			});
+		}
+
+		return gradient;
+	}
+
   private async renderPeaks(audioData: AudioBuffer, width: number, height: number, pixelRatio: number) {
     const barWidth =
       this.options.barWidth != null && !isNaN(this.options.barWidth) ? this.options.barWidth * pixelRatio : 1
@@ -260,7 +279,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       }) as CanvasRenderingContext2D
 
       ctx.beginPath()
-      ctx.fillStyle = this.options.waveColor ?? ''
+      ctx.fillStyle = this.convertColorValues(this.options.waveColor)
 
       // Firefox shim until 2023.04.11
       if (!ctx.roundRect) ctx.roundRect = ctx.fillRect
