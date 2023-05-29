@@ -27,13 +27,13 @@ describe('WaveSurfer', () => {
 
   it('should load an audio file without errors', () => {
     cy.window().then((win) => {
-      expect(win.wavesurfer.getDuration()).to.equal(21.773878)
+      expect(win.wavesurfer.getDuration().toFixed(2)).to.equal('21.77')
 
       win.wavesurfer.load('../../examples/audio/audio.wav')
 
       return new Promise((resolve) => {
         win.wavesurfer.once('ready', () => {
-          expect(win.wavesurfer.getDuration()).to.equal(26.386688)
+          expect(win.wavesurfer.getDuration().toFixed(2)).to.equal('26.39')
           resolve()
         })
       })
@@ -101,7 +101,6 @@ describe('WaveSurfer', () => {
 
   it('should scroll on seek if zoomed in', () => {
     cy.window().then((win) => {
-      const initialWidth = win.wavesurfer.getWrapper().clientWidth
       win.wavesurfer.zoom(300)
       const zoomedWidth = win.wavesurfer.getWrapper().clientWidth
       win.wavesurfer.zoom(600)

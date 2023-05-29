@@ -12,6 +12,8 @@ const options = {
   container: 'body',
   /** The height of the waveform in pixels */
   height: 128,
+  /** Render each audio channel as a separate waveform */
+  splitChannels: false,
   /** The color of the waveform */
   waveColor: '#ff4e00',
   /** The color of the progress mask */

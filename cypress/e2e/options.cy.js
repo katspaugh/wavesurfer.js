@@ -105,12 +105,7 @@ describe('WaveSurfer', () => {
         win.wavesurfer = win.WaveSurfer.create({
           container: id,
           url: '../../examples/audio/demo.wav',
-          waveColor: [
-            "rgb(200, 165, 49)",
-            "rgb(211, 194, 138)",
-            "rgb(205, 124, 49)",
-            "rgb(205, 98, 49)",
-          ],
+          waveColor: ['rgb(200, 165, 49)', 'rgb(211, 194, 138)', 'rgb(205, 124, 49)', 'rgb(205, 98, 49)'],
           progressColor: 'rgba(0, 0, 0, 0.25)',
           cursorColor: 'blue',
         })
@@ -252,6 +247,53 @@ describe('WaveSurfer', () => {
 
         win.wavesurfer.once('ready', () => {
           cy.get(id).matchImageSnapshot('media')
+          resolve()
+        })
+      })
+    })
+  })
+
+  it('should split channels', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/stereo.mp3',
+          splitChannels: true,
+          waveColor: 'rgb(200, 0, 200)',
+          progressColor: 'rgb(100, 0, 100)',
+        })
+
+        win.wavesurfer.once('ready', () => {
+          win.wavesurfer.setTime(2)
+          cy.wait(100)
+          cy.get(id).matchImageSnapshot('split-channels')
+          resolve()
+        })
+      })
+    })
+  })
+
+  it('should split channels with options', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/stereo.mp3',
+          splitChannels: [
+            {
+              waveColor: 'rgb(200, 0, 200)',
+              progressColor: 'rgb(100, 0, 100)',
+            },
+            {
+              waveColor: 'rgb(0, 200, 200)',
+              progressColor: 'rgb(0, 100, 100)',
+            },
+          ],
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('split-channels-options')
           resolve()
         })
       })

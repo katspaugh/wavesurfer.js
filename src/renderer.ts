@@ -1,21 +1,5 @@
 import EventEmitter from './event-emitter.js'
-
-export type RendererStyleOptions = {
-  height: number
-  waveColor: string
-  progressColor: string
-  cursorColor?: string
-  cursorWidth: number
-  minPxPerSec: number
-  fillParent: boolean
-  barWidth?: number
-  barGap?: number
-  barRadius?: number
-  barHeight?: number
-  hideScrollbar?: boolean
-  autoCenter?: boolean
-  autoScroll?: boolean
-}
+import type { WaveSurferColor, WaveSurferOptions } from './wavesurfer.js'
 
 type RendererEvents = {
   click: [relativeX: number]
@@ -26,28 +10,29 @@ type RendererEvents = {
 
 class Renderer extends EventEmitter<RendererEvents> {
   private static MAX_CANVAS_WIDTH = 4000
-  private options: Partial<RendererStyleOptions> & { height: number } = {
-    height: 0,
-  }
+  private options: WaveSurferOptions
   private container: HTMLElement
   private scrollContainer: HTMLElement
   private wrapper: HTMLElement
   private canvasWrapper: HTMLElement
   private progressWrapper: HTMLElement
   private cursor: HTMLElement
-  private timeout: ReturnType<typeof setTimeout> | null = null
+  private timeouts: Array<{ timeout?: ReturnType<typeof setTimeout> }> = []
   private isScrolling = false
   private audioData: AudioBuffer | null = null
   private resizeObserver: ResizeObserver | null = null
   private isDragging = false
 
-  constructor(container: HTMLElement | string | null, options: RendererStyleOptions) {
+  constructor(options: WaveSurferOptions) {
     super()
 
-    this.options = { ...options }
+    this.options = options
 
-    if (typeof container === 'string') {
-      container = document.querySelector(container) as HTMLElement | null
+    let container
+    if (typeof options.container === 'string') {
+      container = document.querySelector(options.container) as HTMLElement | null
+    } else if (options.container instanceof HTMLElement) {
+      container = options.container
     }
     if (!container) {
       throw new Error('Container not found')
@@ -86,8 +71,9 @@ class Renderer extends EventEmitter<RendererEvents> {
     })
 
     // Re-render the waveform on container resize
+    const delay = this.createDelay(100)
     this.resizeObserver = new ResizeObserver(() => {
-      this.delay(() => this.reRender(), 100)
+      delay(() => this.reRender())
     })
     this.resizeObserver.observe(this.scrollContainer)
   }
@@ -146,15 +132,16 @@ class Renderer extends EventEmitter<RendererEvents> {
           z-index: 2;
         }
         :host .canvases {
+          min-height: ${this.options.height}px;
+        }
+        :host .canvases > div {
           position: relative;
-          height: ${this.options.height}px;
         }
         :host canvas {
           display: block;
           position: absolute;
           top: 0;
           image-rendering: pixelated;
-          height: ${this.options.height}px;
         }
         :host .progress {
           pointer-events: none;
@@ -166,6 +153,9 @@ class Renderer extends EventEmitter<RendererEvents> {
           height: 100%;
           overflow: hidden;
         }
+        :host .progress > div {
+          position: relative;
+        }
         :host .cursor {
           pointer-events: none;
           position: absolute;
@@ -174,8 +164,6 @@ class Renderer extends EventEmitter<RendererEvents> {
           left: 0;
           height: 100%;
           border-radius: 2px;
-          width: ${this.options.cursorWidth}px;
-          background-color: ${this.options.cursorColor || this.options.progressColor};
         }
       </style>
 
@@ -191,7 +179,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     return [div, shadow]
   }
 
-  setOptions(options: RendererStyleOptions) {
+  setOptions(options: WaveSurferOptions) {
     this.options = options
     // Re-render the waveform
     this.reRender()
@@ -210,162 +198,201 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.resizeObserver?.disconnect()
   }
 
-  private delay(fn: () => void, delayMs = 10): Promise<void> {
-    if (this.timeout) {
-      clearTimeout(this.timeout)
+  private createDelay(delayMs = 10): (fn: () => void) => void {
+    const context: { timeout?: ReturnType<typeof setTimeout> } = {}
+    this.timeouts.push(context)
+    return (callback: () => void) => {
+      context.timeout && clearTimeout(context.timeout)
+      context.timeout = setTimeout(callback, delayMs)
     }
-    return new Promise((resolve) => {
-      this.timeout = setTimeout(() => {
-        resolve(fn())
-      }, delayMs)
-    })
   }
 
   // Convert array of color values to linear gradient
-	private convertColorValues(color: string | string[] = "") {
-		if (!Array.isArray(color)) return color;
-    if (color.length < 2) return color.length === 1 ? color[0] : "";
-    
-    const canvasElement = this.canvasWrapper.children[0] as HTMLCanvasElement;
-		const gradient = canvasElement.getContext('2d')?.createLinearGradient(0, 0, 0, canvasElement.height) || "";
+  private convertColorValues(color?: WaveSurferColor): string | CanvasGradient {
+    if (!Array.isArray(color)) return color || ''
+    if (color.length < 2) return color.length === 1 ? color[0] : ''
 
-		if (gradient) {
-			const colorStopPercentage = 1 / (color.length - 1);
-			color.forEach((color, index) => {
-				const offset = index * colorStopPercentage;
-				gradient.addColorStop(offset, color);
-			});
-		}
+    const canvasElement = document.createElement('canvas')
+    const ctx = canvasElement.getContext('2d') as CanvasRenderingContext2D
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvasElement.height)
 
-		return gradient;
-	}
+    const colorStopPercentage = 1 / (color.length - 1)
+    color.forEach((color, index) => {
+      const offset = index * colorStopPercentage
+      gradient.addColorStop(offset, color)
+    })
 
-  private async renderPeaks(audioData: AudioBuffer, width: number, height: number, pixelRatio: number) {
-    const barWidth =
-      this.options.barWidth != null && !isNaN(this.options.barWidth) ? this.options.barWidth * pixelRatio : 1
+    return gradient
+  }
+
+  private renderSingleCanvas(
+    channelData: Array<Float32Array | number[]>,
+    options: WaveSurferOptions,
+    width: number,
+    start: number,
+    end: number,
+    canvasContainer: HTMLElement,
+    progressContainer: HTMLElement,
+  ) {
+    const pixelRatio = window.devicePixelRatio || 1
+    const height = options.height || 0
+    const barWidth = options.barWidth != null && !isNaN(options.barWidth) ? options.barWidth * pixelRatio : 1
     const barGap =
-      this.options.barGap != null && !isNaN(this.options.barGap)
-        ? this.options.barGap * pixelRatio
-        : this.options.barWidth
+      options.barGap != null && !isNaN(options.barGap)
+        ? options.barGap * pixelRatio
+        : options.barWidth
         ? barWidth / 2
         : 0
-    const barRadius = this.options.barRadius || 0
-    const scaleY = this.options.barHeight || 1
+    const barRadius = options.barRadius || 0
+    const barScale = options.barHeight || 1
 
-    const leftChannel = audioData.getChannelData(0)
-    const len = leftChannel.length
-    const barCount = Math.floor(width / (barWidth + barGap))
-    const barIndexScale = barCount / len
-    const halfHeight = height / 2
-    const isMono = audioData.numberOfChannels === 1
-    const rightChannel = isMono ? leftChannel : audioData.getChannelData(1)
+    const isMono = channelData.length === 1
+    const leftChannel = channelData[0]
+    const rightChannel = isMono ? leftChannel : channelData[1]
     const useNegative = isMono && rightChannel.some((v: number) => v < 0)
+    const length = leftChannel.length
 
-    const draw = (start: number, end: number) => {
-      let prevX = 0
-      let prevLeft = 0
-      let prevRight = 0
+    const barCount = Math.floor(width / (barWidth + barGap))
+    const barIndexScale = barCount / length
+    const halfHeight = height / 2
 
-      const canvas = document.createElement('canvas')
-      canvas.width = Math.round((width * (end - start)) / len)
-      canvas.height = this.options.height
-      canvas.style.width = `${Math.floor(canvas.width / pixelRatio)}px`
-      canvas.style.height = `${this.options.height}px`
-      canvas.style.left = `${Math.floor((start * width) / pixelRatio / len)}px`
-      this.canvasWrapper.appendChild(canvas)
+    let prevX = 0
+    let prevLeft = 0
+    let prevRight = 0
 
-      const ctx = canvas.getContext('2d', {
-        desynchronized: true,
-      }) as CanvasRenderingContext2D
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round((width * (end - start)) / length)
+    canvas.height = height
+    canvas.style.width = `${Math.floor(canvas.width / pixelRatio)}px`
+    canvas.style.height = `${options.height}px`
+    canvas.style.left = `${Math.floor((start * width) / pixelRatio / length)}px`
+    canvasContainer.appendChild(canvas)
 
-      ctx.beginPath()
-      ctx.fillStyle = this.convertColorValues(this.options.waveColor)
+    const ctx = canvas.getContext('2d', {
+      desynchronized: true,
+    }) as CanvasRenderingContext2D
 
-      // Firefox shim until 2023.04.11
-      if (!ctx.roundRect) ctx.roundRect = ctx.fillRect
+    ctx.beginPath()
+    ctx.fillStyle = this.convertColorValues(options.waveColor)
 
-      for (let i = start; i < end; i++) {
-        const barIndex = Math.round((i - start) * barIndexScale)
+    // Firefox shim until 2023.04.11
+    if (!ctx.roundRect) ctx.roundRect = ctx.fillRect
 
-        if (barIndex > prevX) {
-          const leftBarHeight = Math.round(prevLeft * halfHeight * scaleY)
-          const rightBarHeight = Math.round(prevRight * halfHeight * scaleY)
+    for (let i = start; i < end; i++) {
+      const barIndex = Math.round((i - start) * barIndexScale)
 
-          ctx.roundRect(
-            prevX * (barWidth + barGap),
-            halfHeight - leftBarHeight,
-            barWidth,
-            leftBarHeight + (rightBarHeight || 1),
-            barRadius,
-          )
+      if (barIndex > prevX) {
+        const leftBarHeight = Math.round(prevLeft * halfHeight * barScale)
+        const rightBarHeight = Math.round(prevRight * halfHeight * barScale)
 
-          prevX = barIndex
-          prevLeft = 0
-          prevRight = 0
-        }
+        ctx.roundRect(
+          prevX * (barWidth + barGap),
+          halfHeight - leftBarHeight,
+          barWidth,
+          leftBarHeight + (rightBarHeight || 1),
+          barRadius,
+        )
 
-        const leftValue = useNegative ? leftChannel[i] : Math.abs(leftChannel[i])
-        const rightValue = useNegative ? rightChannel[i] : Math.abs(rightChannel[i])
-
-        if (leftValue > prevLeft) {
-          prevLeft = leftValue
-        }
-        // If stereo, both channels are drawn as max values
-        // If mono with negative values, the bottom channel will be the min negative values
-        if (useNegative ? rightValue < -prevRight : rightValue > prevRight) {
-          prevRight = rightValue < 0 ? -rightValue : rightValue
-        }
+        prevX = barIndex
+        prevLeft = 0
+        prevRight = 0
       }
 
-      ctx.fill()
-      ctx.closePath()
+      const leftValue = useNegative ? leftChannel[i] : Math.abs(leftChannel[i])
+      const rightValue = useNegative ? rightChannel[i] : Math.abs(rightChannel[i])
 
-      // Draw a progress canvas
-      const progressCanvas = canvas.cloneNode() as HTMLCanvasElement
-      this.progressWrapper.appendChild(progressCanvas)
-      const progressCtx = progressCanvas.getContext('2d', {
-        desynchronized: true,
-      }) as CanvasRenderingContext2D
-      if (canvas.width > 0 && canvas.height > 0) {
-        progressCtx.drawImage(canvas, 0, 0)
+      if (leftValue > prevLeft) {
+        prevLeft = leftValue
       }
-      // Set the composition method to draw only where the waveform is drawn
-      progressCtx.globalCompositeOperation = 'source-in'
-      progressCtx.fillStyle = this.options.progressColor ?? ''
-      // This rectangle acts as a mask thanks to the composition method
-      progressCtx.fillRect(0, 0, canvas.width, canvas.height)
+      // If stereo, both channels are drawn as max values
+      // If mono with negative values, the bottom channel will be the min negative values
+      if (useNegative ? rightValue < -prevRight : rightValue > prevRight) {
+        prevRight = rightValue < 0 ? -rightValue : rightValue
+      }
     }
 
-    // Clear the canvas
-    this.canvasWrapper.innerHTML = ''
-    this.progressWrapper.innerHTML = ''
+    ctx.fill()
+    ctx.closePath()
+
+    // Draw a progress canvas
+    const progressCanvas = canvas.cloneNode() as HTMLCanvasElement
+    progressContainer.appendChild(progressCanvas)
+    const progressCtx = progressCanvas.getContext('2d', {
+      desynchronized: true,
+    }) as CanvasRenderingContext2D
+    if (canvas.width > 0 && canvas.height > 0) {
+      progressCtx.drawImage(canvas, 0, 0)
+    }
+    // Set the composition method to draw only where the waveform is drawn
+    progressCtx.globalCompositeOperation = 'source-in'
+    progressCtx.fillStyle = this.convertColorValues(options.progressColor)
+    // This rectangle acts as a mask thanks to the composition method
+    progressCtx.fillRect(0, 0, canvas.width, canvas.height)
+  }
+
+  private renderWaveform(channelData: Array<Float32Array | number[]>, options: WaveSurferOptions, width: number) {
+    // A container for canvases
+    const canvasContainer = document.createElement('div')
+    canvasContainer.style.height = `${options.height}px`
+    this.canvasWrapper.appendChild(canvasContainer)
+
+    // A container for progress canvases
+    const progressContainer = canvasContainer.cloneNode() as HTMLElement
+    this.progressWrapper.appendChild(progressContainer)
 
     // Determine the currently visible part of the waveform
     const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
+    const len = channelData[0].length
     const scale = len / scrollWidth
-    let viewportWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth)
-    viewportWidth -= viewportWidth % ((barWidth + barGap) / pixelRatio)
+    const viewportWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth)
     const start = Math.floor(Math.abs(scrollLeft) * scale)
     const end = Math.ceil(start + viewportWidth * scale)
+    const viewportLen = end - start
 
-    // Draw the visible portion of the waveform
-    draw(start, end)
-
-    // Draw the rest of the waveform with a timeout for better performance
-    const step = end - start
-    for (let i = end; i < len; i += step) {
-      await this.delay(() => {
-        draw(i, Math.min(len, i + step))
-      })
+    // Draw a portion of the waveform from start peak to end peak
+    const draw = (start: number, end: number) => {
+      this.renderSingleCanvas(
+        channelData,
+        options,
+        width,
+        Math.max(0, start),
+        Math.min(end, len),
+        canvasContainer,
+        progressContainer,
+      )
     }
-    for (let i = start - 1; i >= 0; i -= step) {
-      await this.delay(() => {
-        draw(Math.max(0, i - step), i)
-      })
+
+    // Draw the waveform in viewport chunks, each with a delay
+    const headDelay = this.createDelay()
+    const tailDelay = this.createDelay()
+    const renderHead = (fromIndex: number, toIndex: number) => {
+      draw(fromIndex, toIndex)
+      if (fromIndex > 0) {
+        headDelay(() => {
+          renderHead(fromIndex - viewportLen, toIndex - viewportLen)
+        })
+      }
+    }
+    const renderTail = (fromIndex: number, toIndex: number) => {
+      draw(fromIndex, toIndex)
+      if (toIndex < len) {
+        tailDelay(() => {
+          renderTail(fromIndex + viewportLen, toIndex + viewportLen)
+        })
+      }
+    }
+
+    renderHead(start, end)
+    if (end < len) {
+      renderTail(end, end + viewportLen)
     }
   }
 
   render(audioData: AudioBuffer) {
+    // Clear previous timeouts
+    this.timeouts.forEach((context) => context.timeout && clearTimeout(context.timeout))
+    this.timeouts = []
+
     // Determine the width of the waveform
     const pixelRatio = window.devicePixelRatio || 1
     const parentWidth = this.scrollContainer.clientWidth
@@ -377,7 +404,6 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Width and height of the waveform in pixels
     const width = (useParentWidth ? parentWidth : scrollWidth) * pixelRatio
-    const { height } = this.options
 
     // Set the width of the wrapper
     this.wrapper.style.width = useParentWidth ? '100%' : `${scrollWidth}px`
@@ -387,10 +413,25 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.scrollContainer.classList.toggle('noScrollbar', !!this.options.hideScrollbar)
     this.cursor.style.backgroundColor = `${this.options.cursorColor || this.options.progressColor}`
     this.cursor.style.width = `${this.options.cursorWidth}px`
-    this.canvasWrapper.style.height = `${this.options.height}px`
+
+    // Clear the canvases
+    this.canvasWrapper.innerHTML = ''
+    this.progressWrapper.innerHTML = ''
 
     // Render the waveform
-    this.renderPeaks(audioData, width, height, pixelRatio)
+    if (this.options.splitChannels) {
+      // Render a waveform for each channel
+      for (let i = 0; i < audioData.numberOfChannels; i++) {
+        const options = { ...this.options, ...this.options.splitChannels[i] }
+        this.renderWaveform([audioData.getChannelData(i)], options, width)
+      }
+    } else {
+      // Render a single waveform for the first two channels (left and right)
+      const channels = [audioData.getChannelData(0)]
+      if (audioData.numberOfChannels > 1) channels.push(audioData.getChannelData(1))
+      this.renderWaveform(channels, this.options, width)
+    }
+
     this.audioData = audioData
 
     this.emit('render')

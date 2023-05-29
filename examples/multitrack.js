@@ -121,7 +121,7 @@ multitrack.on('intro-end-change', ({ id, endTime }) => {
 multitrack.on('drop', ({ id }) => {
   multitrack.addTrack({
     id,
-    url: '/examples/demo.wav',
+    url: '/examples/audio/demo.wav',
     startPosition: 0,
     draggable: true,
     options: {
