@@ -126,7 +126,12 @@ See the complete [documentation of the new API](https://wavesurfer-ts.pages.dev/
 
 ## Questions
 
-Have a question about integrating wavesurfer.js on your website? Feel free to ask in our forum: https://github.com/wavesurfer-js/wavesurfer.js/discussions/categories/q-a
+Have a question about integrating wavesurfer.js on your website? Feel free to ask in our [Discussions forum](https://github.com/wavesurfer-js/wavesurfer.js/discussions/categories/q-a).
+
+### FAQ
+
+* **Q**: Does wavesurfer support large files?
+* **A**: Since wavesurfer decodes audio entirely in the browser, large files may fail to decode due to memory constrains. We recommend using pre-decoded peaks for large files (see [this example](https://wavesurfer-js.org/examples/#predecoded.js)). You can use a tool like [bbc/audiowaveform](https://github.com/bbc/audiowaveform) to generate peaks.
 
 ## Development
 
