@@ -1,22 +1,5 @@
 import EventEmitter from './event-emitter.js'
-
-export type RendererStyleOptions = {
-  height: number
-  waveColor: string
-  progressColor: string
-  cursorColor?: string
-  cursorWidth: number
-  minPxPerSec: number
-  fillParent: boolean
-  barWidth?: number
-  barGap?: number
-  barRadius?: number
-  barHeight?: number
-  hideScrollbar?: boolean
-  autoCenter?: boolean
-  autoScroll?: boolean
-  splitChannels?: RendererStyleOptions[]
-}
+import type { WaveSurferColor, WaveSurferOptions } from './wavesurfer.js'
 
 type RendererEvents = {
   click: [relativeX: number]
@@ -27,7 +10,7 @@ type RendererEvents = {
 
 class Renderer extends EventEmitter<RendererEvents> {
   private static MAX_CANVAS_WIDTH = 4000
-  private options: RendererStyleOptions
+  private options: WaveSurferOptions
   private container: HTMLElement
   private scrollContainer: HTMLElement
   private wrapper: HTMLElement
@@ -40,13 +23,16 @@ class Renderer extends EventEmitter<RendererEvents> {
   private resizeObserver: ResizeObserver | null = null
   private isDragging = false
 
-  constructor(container: HTMLElement | string | null, options: RendererStyleOptions) {
+  constructor(options: WaveSurferOptions) {
     super()
 
-    this.options = { ...options }
+    this.options = options
 
-    if (typeof container === 'string') {
-      container = document.querySelector(container) as HTMLElement | null
+    let container
+    if (typeof options.container === 'string') {
+      container = document.querySelector(options.container) as HTMLElement | null
+    } else if (options.container instanceof HTMLElement) {
+      container = options.container
     }
     if (!container) {
       throw new Error('Container not found')
@@ -193,7 +179,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     return [div, shadow]
   }
 
-  setOptions(options: RendererStyleOptions) {
+  setOptions(options: WaveSurferOptions) {
     this.options = options
     // Re-render the waveform
     this.reRender()
@@ -221,9 +207,27 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
   }
 
+  // Convert array of color values to linear gradient
+  private convertColorValues(color?: WaveSurferColor): string | CanvasGradient {
+    if (!Array.isArray(color)) return color || ''
+    if (color.length < 2) return color.length === 1 ? color[0] : ''
+
+    const canvasElement = document.createElement('canvas')
+    const ctx = canvasElement.getContext('2d') as CanvasRenderingContext2D
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvasElement.height)
+
+    const colorStopPercentage = 1 / (color.length - 1)
+    color.forEach((color, index) => {
+      const offset = index * colorStopPercentage
+      gradient.addColorStop(offset, color)
+    })
+
+    return gradient
+  }
+
   private renderSingleCanvas(
     channelData: Array<Float32Array | number[]>,
-    options: RendererStyleOptions,
+    options: WaveSurferOptions,
     width: number,
     start: number,
     end: number,
@@ -231,6 +235,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     progressContainer: HTMLElement,
   ) {
     const pixelRatio = window.devicePixelRatio || 1
+    const height = options.height || 0
     const barWidth = options.barWidth != null && !isNaN(options.barWidth) ? options.barWidth * pixelRatio : 1
     const barGap =
       options.barGap != null && !isNaN(options.barGap)
@@ -249,7 +254,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     const barCount = Math.floor(width / (barWidth + barGap))
     const barIndexScale = barCount / length
-    const halfHeight = options.height / 2
+    const halfHeight = height / 2
 
     let prevX = 0
     let prevLeft = 0
@@ -257,7 +262,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     const canvas = document.createElement('canvas')
     canvas.width = Math.round((width * (end - start)) / length)
-    canvas.height = options.height
+    canvas.height = height
     canvas.style.width = `${Math.floor(canvas.width / pixelRatio)}px`
     canvas.style.height = `${options.height}px`
     canvas.style.left = `${Math.floor((start * width) / pixelRatio / length)}px`
@@ -268,7 +273,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     }) as CanvasRenderingContext2D
 
     ctx.beginPath()
-    ctx.fillStyle = options.waveColor ?? ''
+    ctx.fillStyle = this.convertColorValues(this.options.waveColor)
 
     // Firefox shim until 2023.04.11
     if (!ctx.roundRect) ctx.roundRect = ctx.fillRect
@@ -320,12 +325,12 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
     // Set the composition method to draw only where the waveform is drawn
     progressCtx.globalCompositeOperation = 'source-in'
-    progressCtx.fillStyle = options.progressColor ?? ''
+    progressCtx.fillStyle = this.convertColorValues(options.progressColor)
     // This rectangle acts as a mask thanks to the composition method
     progressCtx.fillRect(0, 0, canvas.width, canvas.height)
   }
 
-  private renderWaveform(channelData: Array<Float32Array | number[]>, options: RendererStyleOptions, width: number) {
+  private renderWaveform(channelData: Array<Float32Array | number[]>, options: WaveSurferOptions, width: number) {
     // A container for canvases
     const canvasContainer = document.createElement('div')
     canvasContainer.style.height = `${options.height}px`

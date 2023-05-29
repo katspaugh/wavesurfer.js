@@ -2,8 +2,10 @@ import type { GenericPlugin } from './base-plugin.js'
 import Decoder from './decoder.js'
 import Fetcher from './fetcher.js'
 import Player from './player.js'
-import Renderer, { type RendererStyleOptions } from './renderer.js'
+import Renderer from './renderer.js'
 import Timer from './timer.js'
+
+export type WaveSurferColor = string | string[] | CanvasGradient
 
 export type WaveSurferOptions = {
   /** HTML element or CSS selector */
@@ -11,9 +13,9 @@ export type WaveSurferOptions = {
   /** The height of the waveform in pixels */
   height?: number
   /** The color of the waveform */
-  waveColor?: string
+  waveColor?: WaveSurferColor
   /** The color of the progress mask */
-  progressColor?: string
+  progressColor?: WaveSurferColor
   /** The color of the playpack cursor */
   cursorColor?: string
   /** The cursor width */
@@ -53,15 +55,15 @@ export type WaveSurferOptions = {
   /** Decoding sample rate. Doesn't affect the playback. Defaults to 8000 */
   sampleRate?: number
   /** Render each audio channel as a separate waveform */
-  splitChannels?: RendererStyleOptions[]
+  splitChannels?: WaveSurferOptions[]
   /** The list of plugins to initialize on start */
   plugins?: GenericPlugin[]
 }
 
 const defaultOptions = {
   height: 128,
-  waveColor: '#999',
-  progressColor: '#555',
+  waveColor: '#999' as WaveSurferColor,
+  progressColor: '#555' as WaveSurferColor,
   cursorWidth: 1,
   minPxPerSec: 0,
   fillParent: true,
@@ -131,7 +133,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     this.timer = new Timer()
 
-    this.renderer = new Renderer(this.options.container, this.options)
+    this.renderer = new Renderer(this.options)
 
     this.initPlayerEvents()
     this.initRendererEvents()
@@ -144,7 +146,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     }
   }
 
-  public setOptions(options: Partial<RendererStyleOptions> & Pick<WaveSurferOptions, 'interact' | 'audioRate'>) {
+  public setOptions(options: Partial<WaveSurferOptions>) {
     this.options = { ...this.options, ...options }
     this.renderer.setOptions(this.options)
 

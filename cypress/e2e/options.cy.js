@@ -99,6 +99,28 @@ describe('WaveSurfer', () => {
     })
   })
 
+  it('should use gradient color options', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/demo.wav',
+          waveColor: ['rgb(200, 165, 49)', 'rgb(211, 194, 138)', 'rgb(205, 124, 49)', 'rgb(205, 98, 49)'],
+          progressColor: 'rgba(0, 0, 0, 0.25)',
+          cursorColor: 'blue',
+        })
+
+        win.wavesurfer.once('ready', () => {
+          win.wavesurfer.setTime(10)
+          cy.wait(100)
+          cy.snap
+          cy.get(id).matchImageSnapshot('colors-gradient')
+          resolve()
+        })
+      })
+    })
+  })
+
   it('should use cursor options', () => {
     cy.window().then((win) => {
       return new Promise((resolve) => {
