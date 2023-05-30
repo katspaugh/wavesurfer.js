@@ -3,16 +3,17 @@
  * Individual tracks are synced and played together. They can be dragged to set their start position.
  */
 
+import EventEmitter from '../event-emitter.js'
 import WaveSurfer, { type WaveSurferOptions } from '../wavesurfer.js'
+import EnvelopePlugin, { type EnvelopePluginOptions } from './envelope.js'
 import RegionsPlugin from './regions.js'
 import TimelinePlugin, { type TimelinePluginOptions } from './timeline.js'
-import EnvelopePlugin, { type EnvelopePluginOptions } from './envelope.js'
-import EventEmitter from '../event-emitter.js'
 
 export type TrackId = string | number
 
 export type TrackOptions = {
   id: TrackId
+  container?: HTMLElement
   url?: string
   peaks?: WaveSurferOptions['peaks']
   draggable?: boolean
@@ -60,6 +61,8 @@ export type MultitrackEvents = {
 
 export type MultitrackTracks = Array<TrackOptions>
 
+type MultiTrackContainer = {container: HTMLElement, scroll: HTMLElement, cursor: HTMLElement, wrapper: HTMLElement}
+
 class MultiTrack extends EventEmitter<MultitrackEvents> {
   private tracks: MultitrackTracks
   private options: MultitrackOptions
@@ -100,14 +103,26 @@ class MultiTrack extends EventEmitter<MultitrackEvents> {
 
       this.initAllWavesurfers()
 
-      this.rendering.containers.forEach((container, index) => {
-        const drag = initDragging(container, (delta: number) => this.onDrag(index, delta), options.rightButtonDrag)
+      this.rendering.containers.forEach(({container, wrapper}, index) => {
+        const drag = initDragging(wrapper, (delta: number) => this.onDrag(index, delta), options.rightButtonDrag)
         this.wavesurfers[index].once('destroy', () => drag?.destroy())
-      })
 
-      this.rendering.addClickHandler((position) => {
-        if (this.isDragging) return
-        this.seekTo(position)
+        // Click to seek
+        container.addEventListener('click', (e) => {
+          if (this.isDragging) return
+
+          // determine poisition for current track
+          const rect = container.getBoundingClientRect()
+          const x = e.clientX - rect.left
+          const position = x / container.offsetWidth
+          const time = (position * durations[index]) + tracks[index].startPosition
+
+          // seek to absolute time for other tracks based on position of clicked track
+          this.wavesurfers.forEach((wavesurfer, i) => {    
+            if (!durations[i]) return    
+            wavesurfer.seekTo((time - tracks[i].startPosition) / durations[i])
+          })
+        })
       })
 
       this.emit('canplay')
@@ -140,7 +155,7 @@ class MultiTrack extends EventEmitter<MultitrackEvents> {
   }
 
   private initWavesurfer(track: TrackOptions, index: number): WaveSurfer {
-    const container = this.rendering.containers[index]
+    const {container} = this.rendering.containers[index]
 
     // Create a wavesurfer instance
     const ws = WaveSurfer.create({
@@ -289,21 +304,23 @@ class MultiTrack extends EventEmitter<MultitrackEvents> {
   private initTimeline() {
     if (this.timeline) this.timeline.destroy()
 
-    this.timeline = this.wavesurfers[0].registerPlugin(
-      TimelinePlugin.create({
-        duration: this.maxDuration,
-        container: this.rendering.containers[0].parentElement,
-      } as TimelinePluginOptions),
-    )
+    // this.timeline = this.wavesurfers[0].registerPlugin(
+    //   TimelinePlugin.create({
+    //     duration: this.maxDuration,
+    //     container: this.rendering.containers[0].parentElement,
+    //   } as TimelinePluginOptions),
+    // )
   }
 
   private updatePosition(time: number, autoCenter = false) {
     const precisionSeconds = 0.3
     const isPaused = !this.isPlaying()
-
+  
     if (time !== this.currentTime) {
       this.currentTime = time
-      this.rendering.updateCursor(time / this.maxDuration, autoCenter)
+      this.rendering.containers.forEach((container, i) => {
+        this.rendering.updateCursor(container, (time - this.tracks[i].startPosition) / this.durations[i], autoCenter)
+      })
     }
 
     // Update the current time of each audio
@@ -438,7 +455,6 @@ class MultiTrack extends EventEmitter<MultitrackEvents> {
     this.options.minPxPerSec = pxPerSec
     this.wavesurfers.forEach((ws, index) => this.tracks[index].url && ws.zoom(pxPerSec))
     this.rendering.setMainWidth(this.durations, this.maxDuration)
-    this.rendering.setContainerOffsets()
   }
 
   public addTrack(track: TrackOptions) {
@@ -451,7 +467,7 @@ class MultiTrack extends EventEmitter<MultitrackEvents> {
         this.durations[index] = audio.duration
         this.initDurations(this.durations)
 
-        const container = this.rendering.containers[index]
+        const {container} = this.rendering.containers[index]
         container.innerHTML = ''
 
         this.wavesurfers[index].destroy()
@@ -493,26 +509,27 @@ function initRendering(tracks: MultitrackTracks, options: MultitrackOptions) {
   let durations: number[] = []
   let mainWidth = 0
 
-  // Create a common container for all tracks
-  const scroll = document.createElement('div')
-  scroll.setAttribute('style', 'width: 100%; overflow-x: scroll; overflow-y: hidden; user-select: none;')
-  const wrapper = document.createElement('div')
-  wrapper.style.position = 'relative'
-  scroll.appendChild(wrapper)
-  options.container.appendChild(scroll)
-
-  // Create a common cursor
-  const cursor = document.createElement('div')
-  cursor.setAttribute('style', 'height: 100%; position: absolute; z-index: 10; top: 0; left: 0')
-  cursor.style.backgroundColor = options.cursorColor || '#000'
-  cursor.style.width = `${options.cursorWidth ?? 1}px`
-  wrapper.appendChild(cursor)
-  const { clientWidth } = wrapper
-
   // Create containers for each track
   const containers = tracks.map((track, index) => {
-    const container = document.createElement('div')
-    container.style.position = 'relative'
+    const container = track.container
+    if (!container) throw new Error(`There was a problem accessing ${track.container}`)
+
+    // Create the scrollbar for each track
+    const scroll = document.createElement('div')
+    scroll.setAttribute('style', 'width: 100%; overflow-x: scroll; overflow-y: hidden; user-select: none; position: relative;')
+    
+    const wrapper = document.createElement('div')
+    wrapper.style.position = 'relative'
+
+    scroll.appendChild(wrapper)
+    container.appendChild(scroll)
+
+    // Create a cursor for each track
+    const cursor = document.createElement('div')
+    cursor.setAttribute('style', 'height: 100%; position: absolute; z-index: 10; top: 0; left: 0')
+    cursor.style.backgroundColor = options.cursorColor || '#000'
+    cursor.style.width = `${options.cursorWidth ?? 1}px`
+    container.appendChild(cursor)
 
     if (options.trackBorderColor && index > 0) {
       const borderDiv = document.createElement('div')
@@ -546,14 +563,12 @@ function initRendering(tracks: MultitrackTracks, options: MultitrackOptions) {
       container.appendChild(dropArea)
     }
 
-    wrapper.appendChild(container)
-
-    return container
+    return {container, scroll, cursor, wrapper}
   })
 
   // Set the positions of each container
   const setContainerOffsets = () => {
-    containers.forEach((container, i) => {
+    containers.forEach(({container}, i) => {
       const offset = tracks[i].startPosition * pxPerSec
       if (durations[i]) {
         container.style.width = `${durations[i] * pxPerSec}px`
@@ -571,14 +586,17 @@ function initRendering(tracks: MultitrackTracks, options: MultitrackOptions) {
     // Set the container width
     setMainWidth: (trackDurations: number[], maxDuration: number) => {
       durations = trackDurations
-      pxPerSec = Math.max(options.minPxPerSec || 0, clientWidth / maxDuration)
-      mainWidth = pxPerSec * maxDuration
-      wrapper.style.width = `${mainWidth}px`
+      durations.forEach((_, i) => {
+        pxPerSec = Math.max(options.minPxPerSec || 0, containers[i].wrapper.clientWidth / maxDuration)
+        mainWidth = pxPerSec * maxDuration
+        containers[i].container.style.width = `${mainWidth}px`
+      })
+      
       setContainerOffsets()
     },
 
     // Update cursor position
-    updateCursor: (position: number, autoCenter: boolean) => {
+    updateCursor: ({ cursor, scroll }: MultiTrackContainer, position: number, autoCenter: boolean) => {
       cursor.style.left = `${Math.min(100, position * 100)}%`
 
       // Update scroll
@@ -592,26 +610,16 @@ function initRendering(tracks: MultitrackTracks, options: MultitrackOptions) {
       }
     },
 
-    // Click to seek
-    addClickHandler: (onClick: (position: number) => void) => {
-      wrapper.addEventListener('click', (e) => {
-        const rect = wrapper.getBoundingClientRect()
-        const x = e.clientX - rect.left
-        const position = x / wrapper.offsetWidth
-        onClick(position)
-      })
-    },
-
     // Destroy the container
     destroy: () => {
-      scroll.remove()
+      containers.forEach(({scroll}) => scroll.remove())
     },
 
     // Do something on drop
     addDropHandler: (onDrop: (trackId: TrackId) => void) => {
       tracks.forEach((track, index) => {
         if (!track.url) {
-          const droppable = containers[index].querySelector('div')
+          const droppable = containers[index].wrapper.querySelector('div')
           droppable?.addEventListener('drop', (e) => {
             e.preventDefault()
             onDrop(track.id)

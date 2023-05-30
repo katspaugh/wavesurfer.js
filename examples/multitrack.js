@@ -20,9 +20,11 @@ const multitrack = Multitrack.create(
   [
     {
       id: 0,
+      container: document.querySelector('#track0'),
     },
     {
       id: 1,
+      container: document.querySelector('#track1'),
       draggable: false,
       startPosition: 14, // start time relative to the entire multitrack
       url: '/examples/audio/librivox.mp3',
@@ -64,6 +66,7 @@ const multitrack = Multitrack.create(
     },
     {
       id: 2,
+      container: document.querySelector('#track2'),
       draggable: true,
       startPosition: 1,
       startCue: 2.1,
@@ -79,7 +82,6 @@ const multitrack = Multitrack.create(
     },
   ],
   {
-    container: document.body, // required!
     minPxPerSec: 10, // zoom level
     rightButtonDrag: true, // drag tracks with the right mouse button
     cursorWidth: 2,
@@ -140,6 +142,9 @@ document.body.style.color = '#fff'
   <label>
     Zoom: <input type="range" min="10" max="100" value="10" />
   </label>
+  <div id="track0"></div>
+  <div id="track1"></div>
+  <div id="track2"></div>
 
   <div style="margin: 1em 0 2em;">
     <button id="play">Play</button>
