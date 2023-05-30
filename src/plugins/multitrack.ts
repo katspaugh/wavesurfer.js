@@ -16,6 +16,7 @@ export type TrackOptions = {
   container?: HTMLElement
   url?: string
   peaks?: WaveSurferOptions['peaks']
+  hideScrollbar: boolean
   draggable?: boolean
   startPosition: number
   startCue?: number
@@ -37,7 +38,7 @@ export type TrackOptions = {
 }
 
 export type MultitrackOptions = {
-  container: HTMLElement
+  container?: HTMLElement
   minPxPerSec?: number
   cursorColor?: string
   cursorWidth?: number
@@ -117,11 +118,7 @@ class MultiTrack extends EventEmitter<MultitrackEvents> {
           const position = x / container.offsetWidth
           const time = (position * durations[index]) + tracks[index].startPosition
 
-          // seek to absolute time for other tracks based on position of clicked track
-          this.wavesurfers.forEach((wavesurfer, i) => {    
-            if (!durations[i]) return    
-            wavesurfer.seekTo((time - tracks[i].startPosition) / durations[i])
-          })
+          this.seekTo(time)
         })
       })
 
@@ -166,8 +163,7 @@ class MultiTrack extends EventEmitter<MultitrackEvents> {
       peaks: track.peaks,
       cursorColor: 'transparent',
       cursorWidth: 0,
-      interact: false,
-      hideScrollbar: true,
+      interact: false
     })
 
     // Regions and markers
@@ -304,18 +300,19 @@ class MultiTrack extends EventEmitter<MultitrackEvents> {
   private initTimeline() {
     if (this.timeline) this.timeline.destroy()
 
-    // this.timeline = this.wavesurfers[0].registerPlugin(
-    //   TimelinePlugin.create({
-    //     duration: this.maxDuration,
-    //     container: this.rendering.containers[0].parentElement,
-    //   } as TimelinePluginOptions),
-    // )
+    this.timeline = this.wavesurfers[0].registerPlugin(
+      
+      TimelinePlugin.create({
+        duration: this.maxDuration,
+        container: this.rendering.containers[0].container.parentElement,
+      } as TimelinePluginOptions),
+    )
   }
 
   private updatePosition(time: number, autoCenter = false) {
     const precisionSeconds = 0.3
     const isPaused = !this.isPlaying()
-  
+
     if (time !== this.currentTime) {
       this.currentTime = time
       this.rendering.containers.forEach((container, i) => {
@@ -399,15 +396,15 @@ class MultiTrack extends EventEmitter<MultitrackEvents> {
 
   private startSync() {
     const onFrame = () => {
-      const position = this.audios.reduce<number>((pos, audio, index) => {
+      const syncTime = this.audios.reduce<number>((pos, audio, index) => {
         if (!audio.paused) {
           pos = Math.max(pos, audio.currentTime + this.tracks[index].startPosition)
         }
         return pos
       }, this.currentTime)
 
-      if (position > this.currentTime) {
-        this.updatePosition(position, true)
+      if (syncTime > this.currentTime) {
+        this.updatePosition(syncTime, true)
       }
 
       this.frameRequest = requestAnimationFrame(onFrame)
@@ -437,10 +434,10 @@ class MultiTrack extends EventEmitter<MultitrackEvents> {
     return this.currentTime
   }
 
-  /** Position percentage from 0 to 1 */
-  public seekTo(position: number) {
+  // Seek to absolute time for other tracks based on position of clicked track
+  public seekTo(time: number) {
     const wasPlaying = this.isPlaying()
-    this.updatePosition(position * this.maxDuration)
+    this.wavesurfers.forEach(() => this.updatePosition(time))
     if (wasPlaying) this.play()
   }
 
@@ -509,14 +506,15 @@ function initRendering(tracks: MultitrackTracks, options: MultitrackOptions) {
   let durations: number[] = []
   let mainWidth = 0
 
+  const multiWrapper = options.container || document.body
+
   // Create containers for each track
   const containers = tracks.map((track, index) => {
-    const container = track.container
-    if (!container) throw new Error(`There was a problem accessing ${track.container}`)
+    const container = track.container || document.createElement('div')
 
     // Create the scrollbar for each track
     const scroll = document.createElement('div')
-    scroll.setAttribute('style', 'width: 100%; overflow-x: scroll; overflow-y: hidden; user-select: none; position: relative;')
+    scroll.setAttribute('style', `width: 100%; overflow-x: ${track.hideScrollbar ? 'hidden' : 'scroll'}; overflow-y: hidden; user-select: none; position: relative;`)
     
     const wrapper = document.createElement('div')
     wrapper.style.position = 'relative'
@@ -562,6 +560,8 @@ function initRendering(tracks: MultitrackTracks, options: MultitrackOptions) {
       })
       container.appendChild(dropArea)
     }
+
+    if (multiWrapper) multiWrapper.appendChild(container)
 
     return {container, scroll, cursor, wrapper}
   })

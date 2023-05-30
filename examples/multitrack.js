@@ -20,12 +20,14 @@ const multitrack = Multitrack.create(
   [
     {
       id: 0,
+      hideScrollbar: true,
       container: document.querySelector('#track0'),
     },
     {
       id: 1,
       container: document.querySelector('#track1'),
       draggable: false,
+      hideScrollbar: true,
       startPosition: 14, // start time relative to the entire multitrack
       url: '/examples/audio/librivox.mp3',
       fadeInEnd: 5,
@@ -67,6 +69,7 @@ const multitrack = Multitrack.create(
     {
       id: 2,
       container: document.querySelector('#track2'),
+      hideScrollbar: true,
       draggable: true,
       startPosition: 1,
       startCue: 2.1,
