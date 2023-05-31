@@ -1,21 +1,29 @@
-// Multi-track mixer
+/**
+ * Multi-track mixer
+ *
+ * @see https://github.com/katspaugh/wavesurfer-multitrack
+ */
 
-// Import wavesurfer and plugins
-import Multitrack from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/multitrack.js'
-
-// If you prefer a script tag, use this instead:
 /*
-  <script>
-    window.WaveSurfer = {}
-  </script>
-  <script src="https://unpkg.com/wavesurfer.js@beta/dist/wavesurfer.Multitrack.min.js"></script>
-  <script>
-    window.Multitrack = window.WaveSurfer.Multitrack
-  </script>
+<html>
+  <label>
+    Zoom: <input type="range" min="10" max="100" value="10" />
+  </label>
+
+  <div style="margin: 2em 0">
+    <button id="play">Play</button>
+    <button id="forward">Forward 30s</button>
+    <button id="backward">Back 30s</button>
+  </div>
+
+  <div id="multitrack" style="background: #2d2d2d; color: #fff"></div>
+
+  <script src="https://unpkg.com/wavesurfer-multitrack/dist/multitrack.min.js"></script>
+</html>
 */
 
-// Call Multitrack.create to initialize the multitrack mixer
-// Pass the tracks array and WaveSurfer options with a container element
+// Call Multitrack.create to initialize a multitrack mixer
+// Pass a tracks array and WaveSurfer options with a container element
 const multitrack = Multitrack.create(
   [
     {
@@ -79,7 +87,7 @@ const multitrack = Multitrack.create(
     },
   ],
   {
-    container: document.body, // required!
+    container: document.querySelector('#multitrack'), // required!
     minPxPerSec: 10, // zoom level
     rightButtonDrag: true, // drag tracks with the right mouse button
     cursorWidth: 2,
@@ -118,6 +126,8 @@ multitrack.on('fade-out-change', ({ id, fadeOutStart }) => {
 multitrack.on('intro-end-change', ({ id, endTime }) => {
   console.log(`Track ${id} intro end updated to ${endTime}`)
 })
+
+// Drag'n'drop a track object (not an audio file!)
 multitrack.on('drop', ({ id }) => {
   multitrack.addTrack({
     id,
@@ -130,24 +140,6 @@ multitrack.on('drop', ({ id }) => {
     },
   })
 })
-
-// Page styles
-document.body.style.background = '#161313'
-document.body.style.color = '#fff'
-
-/*
-<html>
-  <label>
-    Zoom: <input type="range" min="10" max="100" value="10" />
-  </label>
-
-  <div style="margin: 1em 0 2em;">
-    <button id="play">Play</button>
-    <button id="forward">Forward 30s</button>
-    <button id="backward">Back 30s</button>
-  </div>
-</html>
-*/
 
 // Play/pause button
 const button = document.querySelector('#play')
@@ -176,7 +168,7 @@ slider.oninput = () => {
   multitrack.zoom(slider.valueAsNumber)
 }
 
-// Destroy all wavesurfer instances on unmount
+// Destroy the plugin on unmount
 // This should be called before calling initMultiTrack again to properly clean up
 window.onbeforeunload = () => {
   multitrack.destroy()
