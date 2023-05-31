@@ -35,7 +35,7 @@ export type WaveSurferOptions = {
   /** Audio URL */
   url?: string
   /** Pre-computed audio data */
-  peaks?: Float32Array[] | Array<number[]>
+  peaks?: Array<Float32Array | number[]>
   /** Pre-computed duration */
   duration?: number
   /** Use an existing media element instead of creating one */
@@ -58,6 +58,8 @@ export type WaveSurferOptions = {
   splitChannels?: WaveSurferOptions[]
   /** The list of plugins to initialize on start */
   plugins?: GenericPlugin[]
+  /** Custom render function */
+  renderFunction?: (peaks: Array<Float32Array | number[]>, ctx: CanvasRenderingContext2D) => void
 }
 
 const defaultOptions = {

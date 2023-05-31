@@ -225,6 +225,68 @@ class Renderer extends EventEmitter<RendererEvents> {
     return gradient
   }
 
+  private renderBars(
+    channelData: Array<Float32Array | number[]>,
+    options: WaveSurferOptions,
+    ctx: CanvasRenderingContext2D,
+  ) {
+    ctx.fillStyle = this.convertColorValues(options.waveColor)
+
+    // Custom rendering function
+    if (options.renderFunction) {
+      options.renderFunction(channelData, ctx)
+      return
+    }
+
+    const topChannel = channelData[0]
+    const bottomChannel = channelData[1] || channelData[0]
+    const length = topChannel.length
+
+    const pixelRatio = window.devicePixelRatio || 1
+    const { width, height } = ctx.canvas
+    const halfHeight = height / 2
+    const vScale = options.barHeight || 1
+
+    const barWidth = options.barWidth ? options.barWidth * pixelRatio : 1
+    const barGap = options.barGap ? options.barGap * pixelRatio : options.barWidth ? barWidth / 2 : 0
+    const barRadius = options.barRadius || 0
+    const barIndexScale = width / (barWidth + barGap) / length
+
+    ctx.beginPath()
+
+    let prevX = 0
+    let maxTop = 0
+    let maxBottom = 0
+    for (let i = 0; i <= length; i++) {
+      const x = Math.round(i * barIndexScale)
+
+      if (x > prevX) {
+        const leftBarHeight = Math.round(halfHeight * maxTop * vScale)
+        const rightBarHeight = Math.round(halfHeight * maxBottom * vScale)
+
+        ctx.roundRect(
+          prevX * (barWidth + barGap),
+          halfHeight - leftBarHeight,
+          barWidth,
+          leftBarHeight + rightBarHeight || 1,
+          barRadius,
+        )
+
+        prevX = x
+        maxTop = 0
+        maxBottom = 0
+      }
+
+      const magnitudeTop = Math.abs(topChannel[i] || 0)
+      const magnitudeBottom = Math.abs(bottomChannel[i] || 0)
+      if (magnitudeTop > maxTop) maxTop = magnitudeTop
+      if (magnitudeBottom > maxBottom) maxBottom = magnitudeBottom
+    }
+
+    ctx.fill()
+    ctx.closePath()
+  }
+
   private renderSingleCanvas(
     channelData: Array<Float32Array | number[]>,
     options: WaveSurferOptions,
@@ -236,31 +298,8 @@ class Renderer extends EventEmitter<RendererEvents> {
   ) {
     const pixelRatio = window.devicePixelRatio || 1
     const height = options.height || 0
-    const barWidth = options.barWidth != null && !isNaN(options.barWidth) ? options.barWidth * pixelRatio : 1
-    const barGap =
-      options.barGap != null && !isNaN(options.barGap)
-        ? options.barGap * pixelRatio
-        : options.barWidth
-        ? barWidth / 2
-        : 0
-    const barRadius = options.barRadius || 0
-    const barScale = options.barHeight || 1
-
-    const isMono = channelData.length === 1
-    const leftChannel = channelData[0]
-    const rightChannel = isMono ? leftChannel : channelData[1]
-    const useNegative = isMono && rightChannel.some((v: number) => v < 0)
-    const length = leftChannel.length
-
-    const barCount = Math.floor(width / (barWidth + barGap))
-    const barIndexScale = barCount / length
-    const halfHeight = height / 2
-
-    let prevX = 0
-    let prevLeft = 0
-    let prevRight = 0
-
     const canvas = document.createElement('canvas')
+    const length = channelData[0].length
     canvas.width = Math.round((width * (end - start)) / length)
     canvas.height = height
     canvas.style.width = `${Math.floor(canvas.width / pixelRatio)}px`
@@ -272,47 +311,11 @@ class Renderer extends EventEmitter<RendererEvents> {
       desynchronized: true,
     }) as CanvasRenderingContext2D
 
-    ctx.beginPath()
-    ctx.fillStyle = this.convertColorValues(options.waveColor)
-
-    // Firefox shim until 2023.04.11
-    if (!ctx.roundRect) ctx.roundRect = ctx.fillRect
-
-    for (let i = start; i < end; i++) {
-      const barIndex = Math.round((i - start) * barIndexScale)
-
-      if (barIndex > prevX) {
-        const leftBarHeight = Math.round(prevLeft * halfHeight * barScale)
-        const rightBarHeight = Math.round(prevRight * halfHeight * barScale)
-
-        ctx.roundRect(
-          prevX * (barWidth + barGap),
-          halfHeight - leftBarHeight,
-          barWidth,
-          leftBarHeight + (rightBarHeight || 1),
-          barRadius,
-        )
-
-        prevX = barIndex
-        prevLeft = 0
-        prevRight = 0
-      }
-
-      const leftValue = useNegative ? leftChannel[i] : Math.abs(leftChannel[i])
-      const rightValue = useNegative ? rightChannel[i] : Math.abs(rightChannel[i])
-
-      if (leftValue > prevLeft) {
-        prevLeft = leftValue
-      }
-      // If stereo, both channels are drawn as max values
-      // If mono with negative values, the bottom channel will be the min negative values
-      if (useNegative ? rightValue < -prevRight : rightValue > prevRight) {
-        prevRight = rightValue < 0 ? -rightValue : rightValue
-      }
-    }
-
-    ctx.fill()
-    ctx.closePath()
+    this.renderBars(
+      channelData.map((channel) => channel.slice(start, end)),
+      options,
+      ctx,
+    )
 
     // Draw a progress canvas
     const progressCanvas = canvas.cloneNode() as HTMLCanvasElement
