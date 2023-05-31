@@ -4,9 +4,20 @@
  * @see https://github.com/katspaugh/wavesurfer-multitrack
  */
 
-
 /*
 <html>
+  <label>
+    Zoom: <input type="range" min="10" max="100" value="10" />
+  </label>
+
+  <div style="margin: 2em 0">
+    <button id="play">Play</button>
+    <button id="forward">Forward 30s</button>
+    <button id="backward">Back 30s</button>
+  </div>
+
+  <div id="multitrack" style="background: #2d2d2d; color: #fff"></div>
+
   <script src="https://unpkg.com/wavesurfer-multitrack/dist/multitrack.min.js"></script>
 </html>
 */
@@ -76,7 +87,7 @@ const multitrack = Multitrack.create(
     },
   ],
   {
-    container: document.body, // required!
+    container: document.querySelector('#multitrack'), // required!
     minPxPerSec: 10, // zoom level
     rightButtonDrag: true, // drag tracks with the right mouse button
     cursorWidth: 2,
@@ -129,24 +140,6 @@ multitrack.on('drop', ({ id }) => {
     },
   })
 })
-
-// Page styles
-document.body.style.background = '#161313'
-document.body.style.color = '#fff'
-
-/*
-<html>
-  <label>
-    Zoom: <input type="range" min="10" max="100" value="10" />
-  </label>
-
-  <div style="margin: 1em 0 2em;">
-    <button id="play">Play</button>
-    <button id="forward">Forward 30s</button>
-    <button id="backward">Back 30s</button>
-  </div>
-</html>
-*/
 
 // Play/pause button
 const button = document.querySelector('#play')
