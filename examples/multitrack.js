@@ -1,21 +1,18 @@
-// Multi-track mixer
+/**
+ * Multi-track mixer
+ *
+ * @see https://github.com/katspaugh/wavesurfer-multitrack
+ */
 
-// Import wavesurfer and plugins
-import Multitrack from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/multitrack.js'
 
-// If you prefer a script tag, use this instead:
 /*
-  <script>
-    window.WaveSurfer = {}
-  </script>
-  <script src="https://unpkg.com/wavesurfer.js@beta/dist/wavesurfer.Multitrack.min.js"></script>
-  <script>
-    window.Multitrack = window.WaveSurfer.Multitrack
-  </script>
+<html>
+  <script src="https://unpkg.com/wavesurfer-multitrack/dist/multitrack.min.js"></script>
+</html>
 */
 
-// Call Multitrack.create to initialize the multitrack mixer
-// Pass the tracks array and WaveSurfer options with a container element
+// Call Multitrack.create to initialize a multitrack mixer
+// Pass a tracks array and WaveSurfer options with a container element
 const multitrack = Multitrack.create(
   [
     {
@@ -118,6 +115,8 @@ multitrack.on('fade-out-change', ({ id, fadeOutStart }) => {
 multitrack.on('intro-end-change', ({ id, endTime }) => {
   console.log(`Track ${id} intro end updated to ${endTime}`)
 })
+
+// Drag'n'drop a track object (not an audio file!)
 multitrack.on('drop', ({ id }) => {
   multitrack.addTrack({
     id,
@@ -176,7 +175,7 @@ slider.oninput = () => {
   multitrack.zoom(slider.valueAsNumber)
 }
 
-// Destroy all wavesurfer instances on unmount
+// Destroy the plugin on unmount
 // This should be called before calling initMultiTrack again to properly clean up
 window.onbeforeunload = () => {
   multitrack.destroy()

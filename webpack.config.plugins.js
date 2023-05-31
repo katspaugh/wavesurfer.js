@@ -7,7 +7,6 @@ export default {
   entry: {
     Envelope: './src/plugins/envelope.ts',
     Minimap: './src/plugins/minimap.ts',
-    Multitrack: './src/plugins/multitrack.ts',
     Record: './src/plugins/record.ts',
     Regions: './src/plugins/regions.ts',
     Spectrogram: './src/plugins/spectrogram.ts',
