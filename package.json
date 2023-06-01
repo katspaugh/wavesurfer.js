@@ -28,8 +28,8 @@
       "import": "./dist/wavesurfer.js",
       "require": "./dist/wavesurfer.min.js"
     },
-    "./dist/event-emitter.js": {
-      "import": "./dist/event-emitter.js"
+    "./dist/*": {
+      "import": "./dist/*"
     },
     "./dist/plugins/*": {
       "import": "./dist/plugins/*.js",
