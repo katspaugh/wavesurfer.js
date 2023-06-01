@@ -7,7 +7,7 @@ async function decode(audioData: ArrayBuffer, sampleRate: number): Promise<Audio
 }
 
 /** Normalize peaks to -1..1 */
-function normalize<T extends Float32Array[] | Array<number[]>>(channelData: T): T {
+function normalize<T extends Array<Float32Array | number[]>>(channelData: T): T {
   const firstChannel = channelData[0]
   if (firstChannel.some((n) => n > 1 || n < -1)) {
     const length = firstChannel.length
@@ -26,7 +26,7 @@ function normalize<T extends Float32Array[] | Array<number[]>>(channelData: T): 
 }
 
 /** Create an audio buffer from pre-decoded audio data */
-function createBuffer(channelData: Float32Array[] | Array<number[]>, duration: number): AudioBuffer {
+function createBuffer(channelData: Array<Float32Array | number[]>, duration: number): AudioBuffer {
   // If a single array of numbers is passed, make it an array of arrays
   if (typeof channelData[0] === 'number') channelData = [channelData as unknown as number[]]
 
