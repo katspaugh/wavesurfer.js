@@ -235,12 +235,22 @@ class Renderer extends EventEmitter<RendererEvents> {
     const pixelRatio = window.devicePixelRatio || 1
     const { width, height } = ctx.canvas
     const halfHeight = height / 2
-    const vScale = options.barHeight || 1
+    const barHeight = options.barHeight || 1
 
     const barWidth = options.barWidth ? options.barWidth * pixelRatio : 1
     const barGap = options.barGap ? options.barGap * pixelRatio : options.barWidth ? barWidth / 2 : 0
     const barRadius = options.barRadius || 0
     const barIndexScale = width / (barWidth + barGap) / length
+
+    let max = 1
+    if (options.normalize) {
+      max = 0
+      for (let i = 0; i < length; i++) {
+        const value = Math.abs(topChannel[i])
+        if (value > max) max = value
+      }
+    }
+    const vScale = (halfHeight / max) * barHeight
 
     ctx.beginPath()
 
@@ -251,8 +261,8 @@ class Renderer extends EventEmitter<RendererEvents> {
       const x = Math.round(i * barIndexScale)
 
       if (x > prevX) {
-        const leftBarHeight = Math.round(halfHeight * maxTop * vScale)
-        const rightBarHeight = Math.round(halfHeight * maxBottom * vScale)
+        const leftBarHeight = Math.round(maxTop * vScale)
+        const rightBarHeight = Math.round(maxBottom * vScale)
 
         ctx.roundRect(
           prevX * (barWidth + barGap),

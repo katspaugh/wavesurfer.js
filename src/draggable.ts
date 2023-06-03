@@ -5,7 +5,9 @@ export function makeDraggable(
   onEnd?: () => void,
   threshold = 5,
 ): () => void {
-  let unsub = () => undefined
+  let unsub = () => {
+    return
+  }
 
   if (!element) return unsub
 
@@ -44,7 +46,7 @@ export function makeDraggable(
       }
     }
 
-    const unsub = () => {
+    unsub = () => {
       document.removeEventListener('pointermove', move)
       document.removeEventListener('pointerup', up)
       setTimeout(() => {
