@@ -11,7 +11,7 @@
         display: flex;
         flex-direction: column;
         gap: 1rem;
-        padding: 1rem;
+        padding: 0;
         margin: 0;
         min-height: 100vh;
         font-size: 16px;
@@ -23,27 +23,16 @@
       header {
         width: 100%;
         text-align: center;
-        position: relative;
-      }
-      header a {
-        position: absolute;
-        right: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
+        padding: 1rem 1rem 0;
       }
       header h1 {
         margin: 0;
         font-size: 1.3em;
       }
-      flex {
-        flex: 1;
-        display: flex;
-        gap: 1rem;
-      }
       aside {
-        padding: 1rem;
         max-height: 100%;
         overflow-y: auto;
+        overflow-x: hidden;
         min-width: 130px;
       }
       aside ul {
@@ -72,7 +61,7 @@
       }
       textarea {
         display: block;
-        width: 50%;
+        width: 40%;
         font-family: 'Menlo', monospace;
         font-size: 13px;
         padding: 1em;
@@ -80,17 +69,19 @@
         border-radius: 4px;
       }
       footer {
-        text-align: center;
+        padding: 0 1rem 1rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        align-items: center;
       }
 
       @media (max-width: 768px) {
-        flex {
-          flex-direction: column;
-        }
         aside {
           padding-bottom: 0;
         }
         aside ul {
+          width: 100%;
           display: flex;
           flex-wrap: nowrap;
           overflow-x: auto;
@@ -138,10 +129,9 @@
   <body>
     <header>
       <h1>wavesurfer.js examples</h1>
-      <a href="/docs/modules/wavesurfer.html">Docs</a>
     </header>
 
-    <flex>
+    <main>
       <aside>
         <ul>
           <li><a href="#basic.js">Basic</a></li>
@@ -172,14 +162,13 @@
         </ul>
       </aside>
 
-      <main>
-        <textarea spellcheck="false"></textarea>
-        <iframe id="preview" sandbox="allow-scripts allow-same-origin" title="wavesurfer.js example preview"></iframe>
-      </main>
-    </flex>
+      <textarea spellcheck="false"></textarea>
+      <iframe id="preview" sandbox="allow-scripts allow-same-origin" title="wavesurfer.js example preview"></iframe>
+    </main>
 
     <footer>
-      <a class="github" href="https://github.com/katspaugh/wavesurfer.ts">katspaugh/wavesurfer.ts</a>
+      <a href="https://github.com/katspaugh/wavesurfer.js">GitHub</a>
+      <a href="/docs">Docs</a>
     </footer>
 
     <script type="module" src="/examples/_preview.js"></script>

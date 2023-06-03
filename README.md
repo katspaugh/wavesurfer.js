@@ -99,7 +99,6 @@ Most options, events, and methods are similar to those in previous versions.
  * `autoCenterImmediately` – `autoCenter` is now always immediate unless the audio is playing
  * `backgroundColor`, `hideCursor` – this can be easily set via CSS
  * `mediaType`, `mediaControls` – you should instead pass an entire media element in the `media` option. [Example](https://wavesurfer-js.org/examples/#video.js).
- * `normalize` – peaks are normalized to -1..1 by default
  * `partialRender` – done by default
  * `pixelRatio` – `window.devicePixelRatio` is used by default
  * `renderer` – there's just one renderer for now, so no need for this option

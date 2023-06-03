@@ -349,4 +349,21 @@ describe('WaveSurfer', () => {
       })
     })
   })
+
+  it('should normalize', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/demo.wav',
+          normalize: true,
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('normalize')
+          resolve()
+        })
+      })
+    })
+  })
 })
