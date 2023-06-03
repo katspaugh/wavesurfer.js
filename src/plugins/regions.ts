@@ -5,6 +5,7 @@
  */
 
 import BasePlugin from '../base-plugin.js'
+import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 
 export type RegionsPluginOptions = undefined
@@ -49,63 +50,6 @@ export type RegionParams = {
   color?: string
   // Content string
   content?: string | HTMLElement
-}
-
-function makeDraggable(
-  element: HTMLElement | null | undefined,
-  onStart: (x: number) => void,
-  onMove: (dx: number) => void,
-  onEnd: () => void,
-  threshold = 5,
-): () => void {
-  if (!element) return () => undefined
-
-  let isDragging = false
-
-  const onClick = (e: MouseEvent) => {
-    isDragging && e.stopPropagation()
-  }
-
-  const onMouseDown = (e: MouseEvent) => {
-    e.stopPropagation()
-    let x = e.clientX
-    let sumDx = 0
-
-    onStart(x)
-
-    const onMouseMove = (e: MouseEvent) => {
-      const newX = e.clientX
-      const dx = newX - x
-      sumDx += dx
-      x = newX
-
-      if (isDragging || Math.abs(sumDx) >= threshold) {
-        onMove(isDragging ? dx : sumDx)
-        isDragging = true
-      }
-    }
-
-    const onMouseUp = () => {
-      if (isDragging) {
-        onEnd()
-        setTimeout(() => (isDragging = false), 10)
-      }
-
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }
-
-  element.addEventListener('click', onClick)
-  element.addEventListener('mousedown', onMouseDown)
-
-  return () => {
-    element.removeEventListener('click', onClick)
-    element.removeEventListener('mousedown', onMouseDown)
-  }
 }
 
 export class Region extends EventEmitter<RegionEvents> {
@@ -212,6 +156,7 @@ export class Region extends EventEmitter<RegionEvents> {
 
   private initMouseEvents() {
     const { element } = this
+    if (!element) return
 
     element.addEventListener('click', (e) => this.emit('click', e))
     element.addEventListener('mouseenter', (e) => this.emit('over', e))
@@ -221,8 +166,8 @@ export class Region extends EventEmitter<RegionEvents> {
     // Drag
     makeDraggable(
       element,
-      () => this.onStartMoving(),
       (dx) => this.onMove(dx),
+      () => this.onStartMoving(),
       () => this.onEndMoving(),
     )
 
@@ -230,15 +175,15 @@ export class Region extends EventEmitter<RegionEvents> {
     const resizeThreshold = 1
     makeDraggable(
       element.querySelector('[data-resize="left"]') as HTMLElement,
-      () => null,
       (dx) => this.onResize(dx, 'start'),
+      () => null,
       () => this.onEndResizing(),
       resizeThreshold,
     )
     makeDraggable(
       element.querySelector('[data-resize="right"]') as HTMLElement,
-      () => null,
       (dx) => this.onResize(dx, 'end'),
+      () => null,
       () => this.onEndResizing(),
       resizeThreshold,
     )
@@ -459,24 +404,20 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     if (!wrapper) return () => undefined
 
     let region: Region | null = null
-    let startX = 0
     let sumDx = 0
 
     return makeDraggable(
       wrapper,
 
-      // On mousedown
-      (x) => (startX = x),
-
-      // On mousemove
-      (dx) => {
+      // On drag move
+      (dx, _, x) => {
         if (!this.wavesurfer) return
 
         if (!region) {
           const duration = this.wavesurfer.getDuration()
           const box = wrapper.getBoundingClientRect()
-          let start = ((startX - box.left) / box.width) * duration
-          let end = ((startX + dx - box.left) / box.width) * duration
+          let start = (x / box.width) * duration
+          let end = ((x - box.left) / box.width) * duration
           if (start > end) [start, end] = [end, start]
 
           region = new Region(
@@ -498,7 +439,10 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         }
       },
 
-      // On mouseup
+      // On drag start
+      () => null,
+
+      // On drag end
       () => {
         if (region) {
           this.saveRegion(region)

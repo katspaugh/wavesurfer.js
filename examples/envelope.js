@@ -36,20 +36,18 @@ const envelope = wavesurfer.registerPlugin(
 
 // Show the current volume
 const volumeLabel = document.querySelector('label')
-volumeLabel.textContent = envelope.getCurrentVolume()
-envelope.on('volume-change', (volume) => {
-  volumeLabel.textContent = volume.toFixed(2)
-})
-wavesurfer.on('timeupdate', () => {
-  const volume = envelope.getCurrentVolume()
-  volumeLabel.textContent = volume.toFixed(2)
-})
+const showVolume = () => {
+  volumeLabel.textContent = envelope.getCurrentVolume().toFixed(2)
+}
+envelope.on('volume-change', showVolume)
+wavesurfer.on('timeupdate', showVolume)
+wavesurfer.on('ready', showVolume)
 
 // Play/pause button
 const button = document.querySelector('button')
 wavesurfer.once('ready', () => {
   button.onclick = () => {
-    wavesurfer.isPlaying() ? wavesurfer.pause() : wavesurfer.play()
+    wavesurfer.playPause()
   }
 })
 wavesurfer.on('play', () => {

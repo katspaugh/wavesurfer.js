@@ -3,6 +3,7 @@
  */
 
 import BasePlugin from '../base-plugin.js'
+import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 
 export type EnvelopePluginOptions = {
@@ -114,45 +115,18 @@ class Polyline extends EventEmitter<{
       }
 
       // Draggable top line of the polyline
-      this.makeDraggable(line, (_, dy) => onDragY(dy))
+      this.makeDraggable(line, (_, y) => onDragY(y))
 
       // Make each point draggable
       const draggables = this.svg.querySelectorAll('circle')
       Array.from(draggables).forEach((draggable, index) => {
-        this.makeDraggable(draggable, (dx) => onDragX(index + 1, dx))
+        this.makeDraggable(draggable, (x) => onDragX(index + 1, x))
       })
     }
   }
 
-  private makeDraggable(draggable: SVGElement, onDrag: (dx: number, dy: number) => void) {
-    draggable.addEventListener('click', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-    })
-
-    draggable.addEventListener('mousedown', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-
-      let x = e.clientX
-      let y = e.clientY
-
-      const move = (e: MouseEvent) => {
-        const dx = e.clientX - x
-        const dy = e.clientY - y
-        x = e.clientX
-        y = e.clientY
-        onDrag(dx, dy)
-      }
-
-      const up = () => {
-        document.removeEventListener('mousemove', move)
-        document.removeEventListener('mouseup', up)
-      }
-
-      document.addEventListener('mousemove', move)
-      document.addEventListener('mouseup', up)
-    })
+  private makeDraggable(draggable: SVGElement, onDrag: (x: number, y: number) => void) {
+    makeDraggable(draggable as unknown as HTMLElement, onDrag)
   }
 
   update({ x1, x2, x3, x4, y }: { x1: number; x2: number; x3: number; x4: number; y: number }) {

@@ -1,3 +1,4 @@
+import { makeDraggable } from './draggable.js'
 import EventEmitter from './event-emitter.js'
 import type { WaveSurferColor, WaveSurferOptions } from './wavesurfer.js'
 
@@ -79,28 +80,17 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   private initDrag() {
-    this.wrapper.addEventListener('mousedown', (e) => {
-      const minDx = 5
-      const x = e.clientX
-
-      const move = (e: MouseEvent) => {
-        const diff = Math.abs(e.clientX - x)
-        if (diff >= minDx) {
-          this.isDragging = true
-          const rect = this.wrapper.getBoundingClientRect()
-          this.emit('drag', Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)))
-        }
-      }
-
-      const up = () => {
-        document.removeEventListener('mousemove', move)
-        document.removeEventListener('mouseup', up)
-        this.isDragging = false
-      }
-
-      document.addEventListener('mousemove', move)
-      document.addEventListener('mouseup', up)
-    })
+    makeDraggable(
+      this.wrapper,
+      // On drag
+      (_, __, x) => {
+        this.emit('drag', Math.max(0, Math.min(1, x / this.wrapper.clientWidth)))
+      },
+      // On start drag
+      () => (this.isDragging = true),
+      // On end drag
+      () => (this.isDragging = false),
+    )
   }
 
   private initHtml(): [HTMLElement, ShadowRoot] {

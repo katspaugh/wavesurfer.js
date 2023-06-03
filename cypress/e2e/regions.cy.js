@@ -77,21 +77,21 @@ describe('WaveSurfer plugins', () => {
       expect(region.start).to.equal(3)
 
       // Drag the region
-      const mouseDownEvent = new MouseEvent('mousedown', {
+      const pointerDownEvent = new PointerEvent('pointerdown', {
         clientX: 90,
         clientY: 1,
       })
-      const mouseMoveEvent = new MouseEvent('mousemove', {
+      const pointerMoveEvent = new PointerEvent('pointermove', {
         clientX: 200,
         clientY: 10,
       })
-      const mouseUpEvent = new MouseEvent('mouseup', {
+      const pointerUpEvent = new PointerEvent('pointerup', {
         clientX: 200,
         clientY: 10,
       })
-      region.element.dispatchEvent(mouseDownEvent)
-      win.document.dispatchEvent(mouseMoveEvent)
-      win.document.dispatchEvent(mouseUpEvent)
+      region.element.dispatchEvent(pointerDownEvent)
+      win.document.dispatchEvent(pointerMoveEvent)
+      win.document.dispatchEvent(pointerUpEvent)
 
       expect(region.start).to.be.greaterThan(3)
     })
@@ -174,21 +174,21 @@ describe('WaveSurfer plugins', () => {
       expect(regions.getRegions().length).to.equal(1)
 
       // Drag the region
-      const mouseDownEvent = new MouseEvent('mousedown', {
+      const pointerDownEvent = new PointerEvent('pointerdown', {
         clientX: 40,
         clientY: 1,
       })
-      const mouseMoveEvent = new MouseEvent('mousemove', {
+      const pointerMoveEvent = new PointerEvent('pointermove', {
         clientX: 100,
         clientY: 10,
       })
-      const mouseUpEvent = new MouseEvent('mouseup', {
+      const pointerUpEvent = new PointerEvent('pointerup', {
         clientX: 100,
         clientY: 10,
       })
-      win.wavesurfer.getWrapper().querySelector('div').dispatchEvent(mouseDownEvent)
-      win.document.dispatchEvent(mouseMoveEvent)
-      win.document.dispatchEvent(mouseUpEvent)
+      win.wavesurfer.getWrapper().querySelector('div').dispatchEvent(pointerDownEvent)
+      win.document.dispatchEvent(pointerMoveEvent)
+      win.document.dispatchEvent(pointerUpEvent)
 
       // It shouldn't trigger a click
       expect(win.wavesurfer.getCurrentTime()).to.equal(0)
@@ -201,9 +201,9 @@ describe('WaveSurfer plugins', () => {
       // Disable drag selection
       disableDragSelection()
 
-      win.wavesurfer.getWrapper().querySelector('div').dispatchEvent(mouseDownEvent)
-      win.document.dispatchEvent(mouseMoveEvent)
-      win.document.dispatchEvent(mouseUpEvent)
+      win.wavesurfer.getWrapper().querySelector('div').dispatchEvent(pointerDownEvent)
+      win.document.dispatchEvent(pointerMoveEvent)
+      win.document.dispatchEvent(pointerUpEvent)
 
       // It should not create any regions because drag selection is disabled
       expect(regions.getRegions().length).to.equal(0)
@@ -238,7 +238,7 @@ describe('WaveSurfer plugins', () => {
         expect(false).to.be.true
       })
 
-      const clickEvent = new MouseEvent('click')
+      const clickEvent = new Event('click')
 
       region.element.dispatchEvent(clickEvent)
 
