@@ -38,16 +38,13 @@ jobs:
 
       - name: GitHub release
         if: ${{ steps.version.outputs.version }}
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1
         id: create_release
         with:
-          draft: false
-          prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}
-          body_path: TEMP_CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+          name: ${{ steps.version.outputs.version }}
+          tag: ${{ steps.version.outputs.version }}
+          bodyFile: TEMP_CHANGELOG.md
+          token: ${{ github.token }}
 
       - uses: actions/setup-node@v3
         if: ${{ steps.version.outputs.version }}
