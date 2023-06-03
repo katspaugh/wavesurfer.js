@@ -5,6 +5,11 @@ import Player from './player.js'
 import Renderer from './renderer.js'
 import Timer from './timer.js'
 
+export enum WaveSurferBarAlign {
+  TOP = 'top',
+  BOTTOM = 'bottom',
+}
+
 export type WaveSurferColor = string | string[] | CanvasGradient
 
 export type WaveSurferOptions = {
@@ -28,6 +33,8 @@ export type WaveSurferOptions = {
   barRadius?: number
   /** A vertical scaling factor for the waveform */
   barHeight?: number
+  /** A vertical bar alignment **/
+  barAlign?: WaveSurferBarAlign
   /** Minimum pixels per second of audio (i.e. zoom level) */
   minPxPerSec?: number
   /** Stretch the waveform to fill the container, true by default */
