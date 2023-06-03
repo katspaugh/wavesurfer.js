@@ -5,6 +5,7 @@
  */
 
 import BasePlugin from '../base-plugin.js'
+import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 
 export type RegionsPluginOptions = undefined
@@ -49,63 +50,6 @@ export type RegionParams = {
   color?: string
   // Content string
   content?: string | HTMLElement
-}
-
-function makeDraggable(
-  element: HTMLElement | null | undefined,
-  onStart: (x: number) => void,
-  onMove: (dx: number) => void,
-  onEnd: () => void,
-  threshold = 5,
-): () => void {
-  if (!element) return () => undefined
-
-  let isDragging = false
-
-  const onClick = (e: MouseEvent) => {
-    isDragging && e.stopPropagation()
-  }
-
-  const onMouseDown = (e: MouseEvent) => {
-    e.stopPropagation()
-    let x = e.clientX
-    let sumDx = 0
-
-    onStart(x)
-
-    const onMouseMove = (e: MouseEvent) => {
-      const newX = e.clientX
-      const dx = newX - x
-      sumDx += dx
-      x = newX
-
-      if (isDragging || Math.abs(sumDx) >= threshold) {
-        onMove(isDragging ? dx : sumDx)
-        isDragging = true
-      }
-    }
-
-    const onMouseUp = () => {
-      if (isDragging) {
-        onEnd()
-        setTimeout(() => (isDragging = false), 10)
-      }
-
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }
-
-  element.addEventListener('click', onClick)
-  element.addEventListener('mousedown', onMouseDown)
-
-  return () => {
-    element.removeEventListener('click', onClick)
-    element.removeEventListener('mousedown', onMouseDown)
-  }
 }
 
 export class Region extends EventEmitter<RegionEvents> {
@@ -221,8 +165,8 @@ export class Region extends EventEmitter<RegionEvents> {
     // Drag
     makeDraggable(
       element,
-      () => this.onStartMoving(),
       (dx) => this.onMove(dx),
+      () => this.onStartMoving(),
       () => this.onEndMoving(),
     )
 
@@ -230,15 +174,15 @@ export class Region extends EventEmitter<RegionEvents> {
     const resizeThreshold = 1
     makeDraggable(
       element.querySelector('[data-resize="left"]') as HTMLElement,
-      () => null,
       (dx) => this.onResize(dx, 'start'),
+      () => null,
       () => this.onEndResizing(),
       resizeThreshold,
     )
     makeDraggable(
       element.querySelector('[data-resize="right"]') as HTMLElement,
-      () => null,
       (dx) => this.onResize(dx, 'end'),
+      () => null,
       () => this.onEndResizing(),
       resizeThreshold,
     )
@@ -465,10 +409,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     return makeDraggable(
       wrapper,
 
-      // On mousedown
-      (x) => (startX = x),
-
-      // On mousemove
+      // On drag move
       (dx) => {
         if (!this.wavesurfer) return
 
@@ -498,7 +439,10 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         }
       },
 
-      // On mouseup
+      // On drag start
+      (x) => (startX = x),
+
+      // On drag end
       () => {
         if (region) {
           this.saveRegion(region)

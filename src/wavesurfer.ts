@@ -211,7 +211,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // Drag
     {
       let debounce: ReturnType<typeof setTimeout>
-
       this.subscriptions.push(
         this.renderer.on('drag', (relativeX) => {
           if (!this.options.interact) return
@@ -341,13 +340,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   /** Play or pause the audio */
-  public playPause(): Promise<void> {
-    if (this.isPlaying()) {
-      this.pause()
-      return Promise.resolve()
-    } else {
-      return this.play()
-    }
+  public async playPause(): Promise<void> {
+    return this.isPlaying() ? this.pause() : this.play()
   }
 
   /** Stop the audio and go to the beginning */
