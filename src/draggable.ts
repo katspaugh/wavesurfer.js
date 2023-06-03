@@ -4,25 +4,25 @@ export function makeDraggable(
   onStart?: (x: number, y: number) => void,
   onEnd?: () => void,
   threshold = 5,
-) {
-  if (!element) return
+): () => void {
+  let unsub = () => undefined
 
-  let unsub: () => void
+  if (!element) return unsub
 
   const down = (e: PointerEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
-    let startX = e.offsetX
-    let startY = e.offsetY
+    let startX = e.clientX
+    let startY = e.clientY
     let isDragging = false
 
     const move = (e: PointerEvent) => {
       e.preventDefault()
       e.stopPropagation()
 
-      const x = e.offsetX
-      const y = e.offsetY
+      const x = e.clientX
+      const y = e.clientY
 
       if (isDragging || Math.abs(x - startX) >= threshold || Math.abs(y - startY) >= threshold) {
         if (!isDragging) {
@@ -30,7 +30,8 @@ export function makeDraggable(
           onStart?.(startX, startY)
         }
 
-        onDrag(x - startX, y - startY, x, y)
+        const { left, top } = element.getBoundingClientRect()
+        onDrag(x - startX, y - startY, x - left, y - top)
         startX = x
         startY = y
       }

@@ -156,6 +156,7 @@ export class Region extends EventEmitter<RegionEvents> {
 
   private initMouseEvents() {
     const { element } = this
+    if (!element) return
 
     element.addEventListener('click', (e) => this.emit('click', e))
     element.addEventListener('mouseenter', (e) => this.emit('over', e))
@@ -403,21 +404,20 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     if (!wrapper) return () => undefined
 
     let region: Region | null = null
-    let startX = 0
     let sumDx = 0
 
     return makeDraggable(
       wrapper,
 
       // On drag move
-      (dx) => {
+      (dx, _, x) => {
         if (!this.wavesurfer) return
 
         if (!region) {
           const duration = this.wavesurfer.getDuration()
           const box = wrapper.getBoundingClientRect()
-          let start = ((startX - box.left) / box.width) * duration
-          let end = ((startX + dx - box.left) / box.width) * duration
+          let start = (x / box.width) * duration
+          let end = ((x - box.left) / box.width) * duration
           if (start > end) [start, end] = [end, start]
 
           region = new Region(
@@ -440,7 +440,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       },
 
       // On drag start
-      (x) => (startX = x),
+      () => null,
 
       // On drag end
       () => {
