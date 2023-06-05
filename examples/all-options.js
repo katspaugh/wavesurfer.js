@@ -32,6 +32,8 @@ const options = {
   barRadius: NaN,
   /** A vertical scaling factor for the waveform */
   barHeight: NaN,
+  /** Vertical bar alignment **/
+  barAlign: '',
   /** Minimum pixels per second of audio (i.e. zoom level) */
   minPxPerSec: 1,
   /** Stretch the waveform to fill the container, true by default */

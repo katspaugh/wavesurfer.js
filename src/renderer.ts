@@ -1,7 +1,6 @@
 import { makeDraggable } from './draggable.js'
 import EventEmitter from './event-emitter.js'
 import type { WaveSurferColor, WaveSurferOptions } from './wavesurfer.js'
-import { WaveSurferBarAlign } from './wavesurfer.js'
 
 type RendererEvents = {
   click: [relativeX: number]
@@ -216,19 +215,6 @@ class Renderer extends EventEmitter<RendererEvents> {
     return gradient
   }
 
-  private getPointYbyBarAlign(barHeight: number, height: number): number {
-    const { barAlign } = this.options
-
-    switch (barAlign) {
-      case WaveSurferBarAlign.TOP:
-        return 0
-      case WaveSurferBarAlign.BOTTOM:
-        return height - barHeight
-      default:
-        throw new TypeError(`Invalid bar alignment '${barAlign}'`)
-    }
-  }
-
   private renderBars(
     channelData: Array<Float32Array | number[]>,
     options: WaveSurferOptions,
@@ -278,7 +264,11 @@ class Renderer extends EventEmitter<RendererEvents> {
         const leftBarHeight = Math.round(maxTop * vScale)
         const rightBarHeight = Math.round(maxBottom * vScale)
         const barHeight = leftBarHeight + rightBarHeight || 1
-        const y = options.barAlign ? this.getPointYbyBarAlign(barHeight, height) : halfHeight - leftBarHeight
+
+        // Vertical alignment
+        let y = halfHeight - leftBarHeight
+        if (options.barAlign === 'top') y = 0
+        else if (options.barAlign === 'bottom') y = height - barHeight
 
         ctx.roundRect(prevX * (barWidth + barGap), y, barWidth, barHeight, barRadius)
 
