@@ -12,6 +12,7 @@ type RendererEvents = {
 class Renderer extends EventEmitter<RendererEvents> {
   private static MAX_CANVAS_WIDTH = 4000
   private options: WaveSurferOptions
+  private parent: HTMLElement
   private container: HTMLElement
   private scrollContainer: HTMLElement
   private wrapper: HTMLElement
@@ -29,18 +30,19 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     this.options = options
 
-    let container
+    let parent
     if (typeof options.container === 'string') {
-      container = document.querySelector(options.container) as HTMLElement | null
+      parent = document.querySelector(options.container) as HTMLElement | null
     } else if (options.container instanceof HTMLElement) {
-      container = options.container
+      parent = options.container
     }
-    if (!container) {
+    if (!parent) {
       throw new Error('Container not found')
     }
+    this.parent = parent
 
     const [div, shadow] = this.initHtml()
-    container.appendChild(div)
+    parent.appendChild(div)
     this.container = div
     this.scrollContainer = shadow.querySelector('.scroll') as HTMLElement
     this.wrapper = shadow.querySelector('.wrapper') as HTMLElement
@@ -93,6 +95,11 @@ class Renderer extends EventEmitter<RendererEvents> {
     )
   }
 
+  private getHeight(): number {
+    const defaultHeight = 128
+    return this.options.height ?? (this.parent.clientHeight || defaultHeight)
+  }
+
   private initHtml(): [HTMLElement, ShadowRoot] {
     const div = document.createElement('div')
     const shadow = div.attachShadow({ mode: 'open' })
@@ -122,7 +129,7 @@ class Renderer extends EventEmitter<RendererEvents> {
           z-index: 2;
         }
         :host .canvases {
-          min-height: ${this.options.height}px;
+          min-height: ${this.getHeight()}px;
         }
         :host .canvases > div {
           position: relative;
@@ -291,19 +298,19 @@ class Renderer extends EventEmitter<RendererEvents> {
     channelData: Array<Float32Array | number[]>,
     options: WaveSurferOptions,
     width: number,
+    height: number,
     start: number,
     end: number,
     canvasContainer: HTMLElement,
     progressContainer: HTMLElement,
   ) {
     const pixelRatio = window.devicePixelRatio || 1
-    const height = options.height || 0
     const canvas = document.createElement('canvas')
     const length = channelData[0].length
     canvas.width = Math.round((width * (end - start)) / length)
     canvas.height = height
     canvas.style.width = `${Math.floor(canvas.width / pixelRatio)}px`
-    canvas.style.height = `${options.height}px`
+    canvas.style.height = `${height}px`
     canvas.style.left = `${Math.floor((start * width) / pixelRatio / length)}px`
     canvasContainer.appendChild(canvas)
 
@@ -334,7 +341,8 @@ class Renderer extends EventEmitter<RendererEvents> {
   private renderWaveform(channelData: Array<Float32Array | number[]>, options: WaveSurferOptions, width: number) {
     // A container for canvases
     const canvasContainer = document.createElement('div')
-    canvasContainer.style.height = `${options.height}px`
+    const height = this.getHeight()
+    canvasContainer.style.height = `${height}px`
     this.canvasWrapper.appendChild(canvasContainer)
 
     // A container for progress canvases
@@ -356,6 +364,7 @@ class Renderer extends EventEmitter<RendererEvents> {
         channelData,
         options,
         width,
+        height,
         Math.max(0, start),
         Math.min(end, len),
         canvasContainer,

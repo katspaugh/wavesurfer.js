@@ -418,4 +418,23 @@ describe('WaveSurfer', () => {
       })
     })
   })
+
+  it('should use parent height if height is not set', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.document.querySelector(id).style.height = '200px'
+
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/demo.wav',
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('parent-height')
+          win.document.querySelector(id).style.height = ''
+          resolve()
+        })
+      })
+    })
+  })
 })
