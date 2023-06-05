@@ -15,10 +15,12 @@ const loadPreview = (code) => {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>wavesurfer.js examples</title>
     <style>
-      body {
-        margin: 0;
+      html {
         padding: 1rem;
         font-family: sans-serif;
+      }
+      body {
+        margin: 0;
       }
       @media (prefers-color-scheme: dark) {
         body {
