@@ -23,7 +23,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   private loadBlob(data: Blob[]) {
-    const blob = new Blob(data, { type: 'audio/webm' })
+    const blob = new Blob(data, { type: 'audio/wav' })
     this.recordedUrl = URL.createObjectURL(blob)
     this.wavesurfer?.load(this.recordedUrl)
   }
