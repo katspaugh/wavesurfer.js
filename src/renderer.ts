@@ -317,9 +317,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     canvas.style.left = `${Math.floor((start * width) / pixelRatio / length)}px`
     canvasContainer.appendChild(canvas)
 
-    const ctx = canvas.getContext('2d', {
-      desynchronized: true,
-    }) as CanvasRenderingContext2D
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
     this.renderBars(
       channelData.map((channel) => channel.slice(start, end)),
