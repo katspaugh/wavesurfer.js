@@ -61,6 +61,58 @@ describe('WaveSurfer', () => {
     })
   })
 
+  it('should use barAlign=top to align the waveform vertically', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/demo.wav',
+          barAlign: 'top',
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('barAlign-top')
+          resolve()
+        })
+      })
+    })
+  })
+
+  it('should use barAlign=bottom to align the waveform vertically', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/demo.wav',
+          barAlign: 'bottom',
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('barAlign-bottom')
+          resolve()
+        })
+      })
+    })
+  })
+
+  it('should use barAlign and barWidth together', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/demo.wav',
+          barAlign: 'bottom',
+          barWidth: 4,
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('barAlign-barWidth')
+          resolve()
+        })
+      })
+    })
+  })
+
   it('should use barHeight to scale the waveform vertically', () => {
     cy.window().then((win) => {
       return new Promise((resolve) => {
