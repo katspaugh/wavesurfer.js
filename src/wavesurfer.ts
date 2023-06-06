@@ -67,7 +67,6 @@ export type WaveSurferOptions = {
 }
 
 const defaultOptions = {
-  height: 128,
   waveColor: '#999' as WaveSurferColor,
   progressColor: '#555' as WaveSurferColor,
   cursorWidth: 1,
