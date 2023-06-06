@@ -14,6 +14,7 @@ export type RegionsPluginEvents = {
   'region-created': [region: Region]
   'region-updated': [region: Region]
   'region-clicked': [region: Region, e: MouseEvent]
+  'region-double-clicked': [region: Region, e: MouseEvent]
 }
 
 export type RegionEvents = {
@@ -360,6 +361,10 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
       region.on('click', (e) => {
         this.emit('region-clicked', region, e)
+      }),
+
+      region.on('dblclick', (e) => {
+        this.emit('region-double-clicked', region, e)
       }),
 
       // Remove the region from the list when it's removed
