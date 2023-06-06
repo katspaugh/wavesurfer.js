@@ -57,7 +57,7 @@ jobs:
 
       - name: Install dependencies
         if: ${{ steps.version.outputs.version }}
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Publish to NPM
         if: ${{ steps.version.outputs.version }}
