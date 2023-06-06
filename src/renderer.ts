@@ -325,9 +325,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Draw a progress canvas
     const progressCanvas = canvas.cloneNode() as HTMLCanvasElement
     progressContainer.appendChild(progressCanvas)
-    const progressCtx = progressCanvas.getContext('2d', {
-      desynchronized: true,
-    }) as CanvasRenderingContext2D
+    const progressCtx = progressCanvas.getContext('2d') as CanvasRenderingContext2D
     if (canvas.width > 0 && canvas.height > 0) {
       progressCtx.drawImage(canvas, 0, 0)
     }
