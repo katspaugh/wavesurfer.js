@@ -1,6 +1,6 @@
 import { makeDraggable } from './draggable.js'
 import EventEmitter from './event-emitter.js'
-import type { WaveSurferColor, WaveSurferOptions } from './wavesurfer.js'
+import type { WaveSurferOptions } from './wavesurfer.js'
 
 type RendererEvents = {
   click: [relativeX: number]
@@ -205,9 +205,9 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   // Convert array of color values to linear gradient
-  private convertColorValues(color?: WaveSurferColor): string | CanvasGradient {
+  private convertColorValues(color?: WaveSurferOptions['waveColor']): string | CanvasGradient {
     if (!Array.isArray(color)) return color || ''
-    if (color.length < 2) return color.length === 1 ? color[0] : ''
+    if (color.length < 2) return color[0] || ''
 
     const canvasElement = document.createElement('canvas')
     const ctx = canvasElement.getContext('2d') as CanvasRenderingContext2D

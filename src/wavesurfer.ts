@@ -5,17 +5,15 @@ import Player from './player.js'
 import Renderer from './renderer.js'
 import Timer from './timer.js'
 
-export type WaveSurferColor = string | string[] | CanvasGradient
-
 export type WaveSurferOptions = {
   /** HTML element or CSS selector */
   container: HTMLElement | string
   /** The height of the waveform in pixels */
   height?: number
   /** The color of the waveform */
-  waveColor?: WaveSurferColor
+  waveColor?: string | string[] | CanvasGradient
   /** The color of the progress mask */
-  progressColor?: WaveSurferColor
+  progressColor?: string | string[] | CanvasGradient
   /** The color of the playpack cursor */
   cursorColor?: string
   /** The cursor width */
@@ -28,7 +26,7 @@ export type WaveSurferOptions = {
   barRadius?: number
   /** A vertical scaling factor for the waveform */
   barHeight?: number
-  /** Vertical bar alignment **/
+  /** Vertical bar alignment */
   barAlign?: 'top' | 'bottom'
   /** Minimum pixels per second of audio (i.e. zoom level) */
   minPxPerSec?: number
@@ -67,8 +65,8 @@ export type WaveSurferOptions = {
 }
 
 const defaultOptions = {
-  waveColor: '#999' as WaveSurferColor,
-  progressColor: '#555' as WaveSurferColor,
+  waveColor: '#999',
+  progressColor: '#555',
   cursorWidth: 1,
   minPxPerSec: 0,
   fillParent: true,
@@ -152,7 +150,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   public setOptions(options: Partial<WaveSurferOptions>) {
-    this.options = { ...this.options, ...options }
+    this.options = Object.assign({}, this.options, options)
     this.renderer.setOptions(this.options)
 
     if (options.audioRate) {

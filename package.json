@@ -28,16 +28,12 @@
       "import": "./dist/wavesurfer.js",
       "require": "./dist/wavesurfer.min.js"
     },
-    "./dist/*": {
-      "import": "./dist/*"
-    },
-    "./dist/plugins/*": {
-      "import": "./dist/plugins/*.js",
-      "require": "./dist/plugins/*.min.js"
-    },
     "./dist/plugins/*.js": {
       "import": "./dist/plugins/*.js",
       "require": "./dist/plugins/*.min.js"
+    },
+    "./dist/*": {
+      "import": "./dist/*"
     }
   },
   "scripts": {
