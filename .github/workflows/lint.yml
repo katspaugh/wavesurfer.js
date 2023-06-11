@@ -9,6 +9,6 @@ jobs:
 
       - uses: ./.github/workflows/yarn
 
-      - uses: bradennapier/eslint-plus-action@v3.4.2
+      - uses: Maggi64/eslint-plus-action@master
         with:
           npmInstall: false
