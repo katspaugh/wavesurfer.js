@@ -100,7 +100,7 @@ export type WaveSurferEvents = {
   /** When the user seeks to a new position */
   seeking: [currentTime: number]
   /** When the user interacts with the waveform (i.g. clicks or drags on it) */
-  interaction: []
+  interaction: [newTime: number]
   /** When the user clicks on the waveform */
   click: [relativeX: number]
   /** When the user drags the cursor */
@@ -194,7 +194,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.renderer.on('click', (relativeX) => {
         if (this.options.interact) {
           this.seekTo(relativeX)
-          this.emit('interaction')
+          this.emit('interaction', this.getCurrentTime())
           this.emit('click', relativeX)
         }
       }),
@@ -230,7 +230,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
             this.isPlaying() ? 0 : 200,
           )
 
-          this.emit('interaction')
+          this.emit('interaction', relativeX * this.getDuration())
           this.emit('drag', relativeX)
         }),
       )
