@@ -127,7 +127,7 @@ Have a question about integrating wavesurfer.js on your website? Feel free to as
 ### FAQ
 
 * **Q**: Does wavesurfer support large files?
-* **A**: Since wavesurfer decodes audio entirely in the browser, large files may fail to decode due to memory constrains. We recommend using pre-decoded peaks for large files (see [this example](https://wavesurfer-js.org/examples/#predecoded.js)). You can use a tool like [bbc/audiowaveform](https://github.com/bbc/audiowaveform) to generate peaks.
+* **A**: Since wavesurfer decodes audio entirely in the browser, large files may fail to decode due to memory constraints. We recommend using pre-decoded peaks for large files (see [this example](https://wavesurfer-js.org/examples/#predecoded.js)). You can use a tool like [bbc/audiowaveform](https://github.com/bbc/audiowaveform) to generate peaks.
 
 ## Development
 
