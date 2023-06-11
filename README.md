@@ -44,7 +44,7 @@ Or, as a UMD script tag which exports the library as a global `WaveSurfer` varia
 
 To import a plugin, e.g. the Timeline plugin:
 ```js
-import Timeline from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/timeline.js'
+import Timeline from 'https://unpkg.com/wavesurfer.js@beta/plugins/timeline.js'
 ```
 
 TypeScript types are included in the package, so there's no need to install `@types/wavesurfer.js`.

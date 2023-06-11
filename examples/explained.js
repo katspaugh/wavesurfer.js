@@ -1,28 +1,31 @@
-// This is the same basic example, but with comments
-// explaining what's going on.
+// Wavesurfer configuration explained
 
 // First, import the library.
 import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
 
-// Or, as a script tag which exposes `WaveSurfer` as a global variable:
+// Alternatively, insert a script tag that exposes `WaveSurfer` as a global variable:
 // <script src="https://unpkg.com/wavesurfer.js@beta"></script>
 
 // Create a wavesurfer instance and pass different parameters
+// See the full list of options here: https://wavesurfer-js.org/docs/options.html
 const wavesurfer = WaveSurfer.create({
   // The container is where the waveform will be drawn.
   // This is the only required parameter.
-  // We're passing `document.body` here, but you can pass any DOM element or CSS selector.
+  // We're passing `document.body` here, but you can pass any DOM element or a CSS selector.
   container: document.body,
 
-  // The main waveform.
-  // It can be any CSS color, e.g. hex colors or rgba, or even a Canvas gradient.
+  // The height is optional. If not set, it will default to 128 pixels.
+  height: 150,
+
+  // The main waveform color.
+  // It can be any CSS color, e.g. a hex or rgba, or even a Canvas gradient.
   waveColor: 'rgb(200, 0, 200)',
 
-  // This is color of the progress mask
+  // This is the color of the progress mask
   progressColor: 'rgb(100, 0, 100)',
 
   // Finally, pass the URL of an audio file
-  // Note: this URL has to support CORS
+  // Note: this URL must support CORS
   url: '/examples/audio/audio.wav',
 })
 

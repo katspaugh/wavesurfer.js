@@ -6,6 +6,8 @@
 
 /*
 <html>
+  <script src="https://unpkg.com/wavesurfer-multitrack/dist/multitrack.min.js"></script>
+
   <label>
     Zoom: <input type="range" min="10" max="100" value="10" />
   </label>
@@ -17,8 +19,6 @@
   </div>
 
   <div id="multitrack" style="background: #2d2d2d; color: #fff"></div>
-
-  <script src="https://unpkg.com/wavesurfer-multitrack/dist/multitrack.min.js"></script>
 </html>
 */
 
