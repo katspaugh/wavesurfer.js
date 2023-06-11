@@ -8,8 +8,8 @@ import Timer from './timer.js'
 export type WaveSurferOptions = {
   /** HTML element or CSS selector */
   container: HTMLElement | string
-  /** The height of the waveform in pixels */
-  height?: number
+  /** The height of the waveform in pixels, or "auto" to fill the container height */
+  height?: number | 'auto'
   /** The color of the waveform */
   waveColor?: string | string[] | CanvasGradient
   /** The color of the progress mask */

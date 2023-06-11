@@ -21,7 +21,6 @@ WaveSurfer.create({
 WaveSurfer.create({
   container: document.body,
   waveColor: gradient,
-  height: 200,
   barWidth: 2,
   progressColor: 'rgba(0, 0, 100, 0.5)',
   url: '/examples/audio/audio.wav',
