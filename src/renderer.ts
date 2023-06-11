@@ -98,8 +98,9 @@ class Renderer extends EventEmitter<RendererEvents> {
   private getHeight(): number {
     const defaultHeight = 128
     if (this.options.height == null) return defaultHeight
-    if (!isNaN(this.options.height)) return Number(this.options.height)
-    return this.parent.clientHeight || 128
+    if (!isNaN(Number(this.options.height))) return Number(this.options.height)
+    if (this.options.height === 'auto') return this.parent.clientHeight || defaultHeight
+    return defaultHeight
   }
 
   private initHtml(): [HTMLElement, ShadowRoot] {

@@ -235,23 +235,6 @@ describe('WaveSurfer', () => {
     })
   })
 
-  it('should use height', () => {
-    cy.window().then((win) => {
-      return new Promise((resolve) => {
-        win.wavesurfer = win.WaveSurfer.create({
-          container: id,
-          url: '../../examples/audio/demo.wav',
-          height: 10,
-        })
-
-        win.wavesurfer.once('ready', () => {
-          cy.get(id).matchImageSnapshot('height-10')
-          resolve()
-        })
-      })
-    })
-  })
-
   it('should use peaks', () => {
     cy.window().then((win) => {
       return new Promise((resolve) => {
@@ -419,7 +402,24 @@ describe('WaveSurfer', () => {
     })
   })
 
-  it('should use parent height if height is not set', () => {
+  it('should use height', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/demo.wav',
+          height: 10,
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('height-10')
+          resolve()
+        })
+      })
+    })
+  })
+
+  it('should use parent height if height is auto', () => {
     cy.window().then((win) => {
       return new Promise((resolve) => {
         win.document.querySelector(id).style.height = '200px'
@@ -427,11 +427,29 @@ describe('WaveSurfer', () => {
         win.wavesurfer = win.WaveSurfer.create({
           container: id,
           url: '../../examples/audio/demo.wav',
+          height: 'auto',
         })
 
         win.wavesurfer.once('ready', () => {
-          cy.get(id).matchImageSnapshot('parent-height')
+          cy.get(id).matchImageSnapshot('height-auto')
           win.document.querySelector(id).style.height = ''
+          resolve()
+        })
+      })
+    })
+  })
+
+  it('should fall back to 128 if container height is not set', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/demo.wav',
+          height: 'auto',
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('height-auto-0')
           resolve()
         })
       })
