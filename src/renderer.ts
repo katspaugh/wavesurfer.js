@@ -344,6 +344,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     const canvasContainer = document.createElement('div')
     const height = this.getHeight()
     canvasContainer.style.height = `${height}px`
+    this.canvasWrapper.style.minHeight = `${height}px`
     this.canvasWrapper.appendChild(canvasContainer)
 
     // A container for progress canvases
