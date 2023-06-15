@@ -129,7 +129,6 @@ class Renderer extends EventEmitter<RendererEvents> {
         :host .wrapper {
           position: relative;
           overflow: visible;
-          z-index: 2;
         }
         :host .canvases {
           min-height: ${this.getHeight()}px;
