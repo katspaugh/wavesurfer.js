@@ -298,9 +298,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.decodedData = Decoder.createBuffer(channelData, duration)
     } else {
       // Fetch and decode the audio of no pre-computed audio data is provided
-      const audio = await Fetcher.fetchArrayBuffer(url)
-      this.setSrc(url, audio)
-      this.decodedData = await Decoder.decode(audio, this.options.sampleRate)
+      const blob = await Fetcher.fetchBlob(url)
+      this.setSrc(url, blob)
+
+      const arrayBuffer = await blob.arrayBuffer()
+      this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
     }
 
     this.emit('decode', this.getDuration())

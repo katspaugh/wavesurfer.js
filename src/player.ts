@@ -50,11 +50,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     }
   }
 
-  protected setSrc(url: string, arrayBuffer?: ArrayBuffer) {
+  protected setSrc(url: string, blob?: Blob) {
     const src = this.media.currentSrc || this.media.src || ''
     if (src === url) return
     this.revokeSrc()
-    const newSrc = arrayBuffer ? URL.createObjectURL(new Blob([arrayBuffer], { type: 'audio/wav' })) : url
+    const newSrc = blob instanceof Blob ? URL.createObjectURL(blob) : url
     this.media.src = newSrc
   }
 

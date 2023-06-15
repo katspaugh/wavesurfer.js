@@ -7,12 +7,17 @@ import BasePlugin from '../base-plugin.js'
 export type RecordPluginOptions = {
   realtimeWaveColor?: string
   lineWidth?: number
+  mimeType?: MediaRecorderOptions['mimeType']
+  audioBitsPerSecond?: MediaRecorderOptions['audioBitsPerSecond']
 }
 
 export type RecordPluginEvents = {
   startRecording: []
   stopRecording: []
 }
+
+const MIME_TYPES = ['audio/webm', 'audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/mp3']
+const findSupportedMimeType = () => MIME_TYPES.find((mimeType) => MediaRecorder.isTypeSupported(mimeType))
 
 class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private mediaRecorder: MediaRecorder | null = null
@@ -22,8 +27,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     return new RecordPlugin(options || {})
   }
 
-  private loadBlob(data: Blob[]) {
-    const blob = new Blob(data, { type: 'audio/webm' })
+  private loadBlob(data: Blob[], type: string) {
+    const blob = new Blob(data, { type })
     this.recordedUrl = URL.createObjectURL(blob)
     this.wavesurfer?.load(this.recordedUrl)
   }
@@ -119,7 +124,10 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     }
 
     const onStop = this.render(stream)
-    const mediaRecorder = new MediaRecorder(stream)
+    const mediaRecorder = new MediaRecorder(stream, {
+      mimeType: this.options.mimeType || findSupportedMimeType(),
+      audioBitsPerSecond: this.options.audioBitsPerSecond,
+    })
     const recordedChunks: Blob[] = []
 
     mediaRecorder.addEventListener('dataavailable', (event) => {
@@ -130,7 +138,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
     mediaRecorder.addEventListener('stop', () => {
       onStop()
-      this.loadBlob(recordedChunks)
+      this.loadBlob(recordedChunks, mediaRecorder.mimeType)
       this.emit('stopRecording')
     })
 
