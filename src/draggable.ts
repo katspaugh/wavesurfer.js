@@ -46,14 +46,6 @@ export function makeDraggable(
       }
     }
 
-    unsub = () => {
-      document.removeEventListener('pointermove', move)
-      document.removeEventListener('pointerup', up)
-      setTimeout(() => {
-        document.removeEventListener('click', click, true)
-      }, 10)
-    }
-
     const up = () => {
       if (isDragging) {
         onEnd?.()
@@ -61,8 +53,18 @@ export function makeDraggable(
       unsub()
     }
 
+    unsub = () => {
+      document.removeEventListener('pointermove', move)
+      document.removeEventListener('pointerup', up)
+      document.removeEventListener('pointerleave', up)
+      setTimeout(() => {
+        document.removeEventListener('click', click, true)
+      }, 10)
+    }
+
     document.addEventListener('pointermove', move)
     document.addEventListener('pointerup', up)
+    document.addEventListener('pointerleave', up)
     document.addEventListener('click', click, true)
   }
 
