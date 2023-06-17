@@ -117,6 +117,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private timer: Timer
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
+  private duration: number | null = null
   protected subscriptions: Array<() => void> = []
 
   /** Create a new WaveSurfer instance */
@@ -156,6 +157,18 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     if (options.audioRate) {
       this.setPlaybackRate(options.audioRate)
     }
+  }
+
+  private initTimerEvents() {
+    // The timer fires every 16ms for a smooth progress animation
+    this.subscriptions.push(
+      this.timer.on('tick', () => {
+        const currentTime = this.getCurrentTime()
+        this.renderer.renderProgress(currentTime / this.getDuration(), true)
+        this.emit('timeupdate', currentTime)
+        this.emit('audioprocess', currentTime)
+      }),
+    )
   }
 
   private initPlayerEvents() {
@@ -235,18 +248,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     }
   }
 
-  private initTimerEvents() {
-    // The timer fires every 16ms for a smooth progress animation
-    this.subscriptions.push(
-      this.timer.on('tick', () => {
-        const currentTime = this.getCurrentTime()
-        this.renderer.renderProgress(currentTime / this.getDuration(), true)
-        this.emit('timeupdate', currentTime)
-        this.emit('audioprocess', currentTime)
-      }),
-    )
-  }
-
   private initPlugins() {
     if (!this.options.plugins?.length) return
 
@@ -280,37 +281,46 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   /** Load an audio file by URL, with optional pre-decoded audio data */
   public async load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number) {
     this.decodedData = null
+    this.duration = null
 
     this.emit('load', url)
 
+    // Fetch the entire audio as a blob if pre-decoded data is not provided
+    const blob = channelData ? undefined : await Fetcher.fetchBlob(url)
+
+    // Set the mediaelement source to the URL
+    this.setSrc(url, blob)
+
+    // Wait for the audio duration
+    this.duration =
+      duration ||
+      this.getDuration() ||
+      (await new Promise((resolve) => {
+        this.onceMediaEvent('loadedmetadata', () => resolve(this.getDuration()))
+      })) ||
+      0
+
+    // Decode the audio data or use user-provided peaks
     if (channelData) {
-      // Set the mediaelement source to the URL
-      this.setSrc(url)
-
-      // Pre-decoded audio data
-      if (!duration) {
-        // Wait for the audio duration
-        duration =
-          this.getDuration() ||
-          (await new Promise((resolve) => {
-            this.onceMediaEvent('loadedmetadata', () => resolve(this.getMediaElement().duration))
-          })) ||
-          0
-      }
-      this.decodedData = Decoder.createBuffer(channelData, duration)
-    } else {
-      // Fetch and decode the audio of no pre-computed audio data is provided
-      const blob = await Fetcher.fetchBlob(url)
-      this.setSrc(url, blob)
-
+      this.decodedData = Decoder.createBuffer(channelData, this.duration)
+    } else if (blob) {
       const arrayBuffer = await blob.arrayBuffer()
       this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
+
+      // Fall back to the decoded data duration if the media duration is incorrect
+      if (this.duration === 0 || this.duration === Infinity) {
+        this.duration = this.decodedData.duration
+      }
     }
 
-    this.emit('decode', this.getDuration())
-    this.emit('ready', this.getDuration())
+    this.emit('decode', this.duration)
 
-    this.renderer.render(this.decodedData)
+    // Render the waveform
+    if (this.decodedData) {
+      this.renderer.render(this.decodedData)
+    }
+
+    this.emit('ready', this.duration)
   }
 
   /** Zoom in or out */
@@ -329,8 +339,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Get the duration of the audio in seconds */
   public getDuration(): number {
-    const audioDuration = super.getDuration()
-    return audioDuration > 0 && audioDuration < Infinity ? audioDuration : this.decodedData?.duration || 0
+    if (this.duration !== null) return this.duration
+    return super.getDuration()
   }
 
   /** Toggle if the waveform should react to clicks */
