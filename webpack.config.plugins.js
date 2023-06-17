@@ -18,7 +18,7 @@ export default {
     library: '[name]',
     libraryTarget: 'umd',
     libraryExport: 'default',
-    filename: (entry) => `${entry.runtime.toLowerCase()}.min.js`,
+    filename: (entry) => `${entry.runtime.toLowerCase()}.min.cjs`,
     path: path.resolve('./dist/plugins'),
   },
 }

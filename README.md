@@ -39,7 +39,7 @@ Alternatively, import it from a CDN as a ES6 module directly in the browser:
 
 Or, as a UMD script tag which exports the library as a global `WaveSurfer` variable:
 ```html
-<script src="https://unpkg.com/wavesurfer.js@beta/dist/wavesurfer.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@beta/dist/wavesurfer.min.cjs"></script>
 ```
 
 To import a plugin, e.g. the Timeline plugin:

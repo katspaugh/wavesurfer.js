@@ -26,15 +26,15 @@
   "exports": {
     ".": {
       "import": "./dist/wavesurfer.js",
-      "require": "./dist/wavesurfer.min.js"
+      "require": "./dist/wavesurfer.min.cjs"
     },
     "./plugins/*.js": {
       "import": "./dist/plugins/*.js",
-      "require": "./dist/plugins/*.min.js"
+      "require": "./dist/plugins/*.min.cjs"
     },
     "./dist/plugins/*.js": {
       "import": "./dist/plugins/*.js",
-      "require": "./dist/plugins/*.min.js"
+      "require": "./dist/plugins/*.min.cjs"
     },
     "./dist/*": {
       "import": "./dist/*"

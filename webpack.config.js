@@ -30,7 +30,7 @@ export default {
     libraryTarget: 'umd',
     libraryExport: 'default',
     globalObject: 'this',
-    filename: '[name].min.js',
+    filename: '[name].min.cjs',
     path: path.resolve('./dist'),
   },
 }
