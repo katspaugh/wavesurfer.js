@@ -291,9 +291,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       if (!duration) {
         // Wait for the audio duration
         duration =
+          this.getDuration() ||
           (await new Promise((resolve) => {
             this.onceMediaEvent('loadedmetadata', () => resolve(this.getMediaElement().duration))
-          })) || 0
+          })) ||
+          0
       }
       this.decodedData = Decoder.createBuffer(channelData, duration)
     } else {
