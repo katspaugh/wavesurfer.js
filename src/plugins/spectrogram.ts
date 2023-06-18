@@ -32,6 +32,9 @@ export type SpectrogramPluginOptions = {
   height?: number
   /** Set to true to display frequency labels. */
   labels?: boolean
+  labelsBackground?: string
+  labelsColor?: string
+  labelsHzColor?: string
   /** Size of the overlapping window. Must be < fftSamples. Auto deduced from canvas size by default. */
   noverlap?: number
   /** The window function to be used. */
@@ -159,6 +162,7 @@ export default class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvent
     // if labels are active
     if (this.options.labels) {
       const labelsEl = document.createElement('canvas')
+      labelsEl.setAttribute('part', 'spec-labels')
       labelsEl.classList.add('spec-labels')
       this.utils.style(labelsEl, {
         position: 'absolute',
@@ -206,7 +210,16 @@ export default class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvent
       this.getFrequencies(this.drawSpectrogram)
     }
 
-    this.loadLabels('rgba(68,68,68,0.5)', '12px', '10px', '', '#fff', '#f7f7f7', 'center', '#specLabels')
+    this.loadLabels(
+      this.options.labelsBackground || 'rgba(68,68,68,0.5)',
+      '12px',
+      '10px',
+      '',
+      this.options.labelsColor || '#fff',
+      this.options.labelsHzColor || this.options.labelsColor || '#f7f7f7',
+      'center',
+      '#specLabels',
+    )
   }
 
   drawSpectrogram = (frequenciesData) => {
