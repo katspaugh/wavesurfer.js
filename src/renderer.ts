@@ -207,13 +207,6 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
   }
 
-  private closestInteger(a: number, b: number): number {
-    const c1: number = a - (a % b)
-    const c2: number = a + b - (a % b)
-
-    return Number.isInteger(c1) ? c1 : c2
-  }
-
   // Convert array of color values to linear gradient
   private convertColorValues(color?: WaveSurferOptions['waveColor']): string | CanvasGradient {
     if (!Array.isArray(color)) return color || ''
@@ -362,18 +355,21 @@ class Renderer extends EventEmitter<RendererEvents> {
     const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
     const len = channelData[0].length
     const scale = len / scrollWidth
+
     let viewportWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth)
 
+    // Adjust width to avoid gaps between canvases when using bars
     if (options.barWidth || options.barGap) {
-      const barWidth = options.barWidth ?? 1
-      const barGap = options.barGap ?? barWidth / 2
-      viewportWidth = this.closestInteger(
-        Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth) + barWidth / barGap,
-        barWidth + barGap,
-      )
+      const barWidth = options.barWidth || 0.5
+      const barGap = options.barGap || barWidth / 2
+      const totalBarWidth = barWidth + barGap
+      if (viewportWidth % totalBarWidth !== 0) {
+        viewportWidth = Math.floor(viewportWidth / totalBarWidth) * totalBarWidth
+      }
     }
+
     const start = Math.floor(Math.abs(scrollLeft) * scale)
-    const end = Math.ceil(start + viewportWidth * scale)
+    const end = Math.floor(start + viewportWidth * scale)
     const viewportLen = end - start
 
     // Draw a portion of the waveform from start peak to end peak
