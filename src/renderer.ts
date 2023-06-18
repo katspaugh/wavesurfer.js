@@ -170,7 +170,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       <div class="scroll" part="scroll">
         <div class="wrapper">
           <div class="canvases"></div>
-          <div class="progress"></div>
+          <div class="progress" part="progress"></div>
           <div class="cursor" part="cursor"></div>
         </div>
       </div>
