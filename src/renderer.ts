@@ -311,7 +311,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     const canvas = document.createElement('canvas')
     const length = channelData[0].length
     canvas.width = Math.round((width * (end - start)) / length)
-    canvas.height = height
+    canvas.height = height * pixelRatio
     canvas.style.width = `${Math.floor(canvas.width / pixelRatio)}px`
     canvas.style.height = `${height}px`
     canvas.style.left = `${Math.floor((start * width) / pixelRatio / length)}px`
