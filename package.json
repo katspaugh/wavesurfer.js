@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "7.0.0-beta.8",
+  "version": "7.0.0-beta.9",
   "license": "BSD-3-Clause",
   "author": "katspaugh",
   "description": "Navigable audio waveform player",
@@ -26,15 +26,15 @@
   "exports": {
     ".": {
       "import": "./dist/wavesurfer.js",
-      "require": "./dist/wavesurfer.min.js"
+      "require": "./dist/wavesurfer.min.cjs"
     },
     "./plugins/*.js": {
       "import": "./dist/plugins/*.js",
-      "require": "./dist/plugins/*.min.js"
+      "require": "./dist/plugins/*.min.cjs"
     },
     "./dist/plugins/*.js": {
       "import": "./dist/plugins/*.js",
-      "require": "./dist/plugins/*.min.js"
+      "require": "./dist/plugins/*.min.cjs"
     },
     "./dist/*": {
       "import": "./dist/*"
