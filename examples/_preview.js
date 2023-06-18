@@ -36,7 +36,6 @@ const loadPreview = (code) => {
       {
         "imports": {
           "https://unpkg.com/wavesurfer.js@beta": "../dist/wavesurfer.js",
-          "https://unpkg.com/wavesurfer.js@beta/plugins/": "../dist/plugins/",
           "https://unpkg.com/wavesurfer.js@beta/dist/": "../dist/"
         }
       }

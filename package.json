@@ -28,10 +28,6 @@
       "import": "./dist/wavesurfer.js",
       "require": "./dist/wavesurfer.min.cjs"
     },
-    "./plugins/*.js": {
-      "import": "./dist/plugins/*.js",
-      "require": "./dist/plugins/*.min.cjs"
-    },
     "./dist/plugins/*.js": {
       "import": "./dist/plugins/*.js",
       "require": "./dist/plugins/*.min.cjs"
