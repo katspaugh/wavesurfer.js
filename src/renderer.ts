@@ -207,6 +207,13 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
   }
 
+  private closestInteger(a: number, b: number): number {
+    const c1: number = a - (a % b)
+    const c2: number = a + b - (a % b)
+
+    return Number.isInteger(c1) ? c1 : c2
+  }
+
   // Convert array of color values to linear gradient
   private convertColorValues(color?: WaveSurferOptions['waveColor']): string | CanvasGradient {
     if (!Array.isArray(color)) return color || ''
@@ -355,7 +362,16 @@ class Renderer extends EventEmitter<RendererEvents> {
     const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
     const len = channelData[0].length
     const scale = len / scrollWidth
-    const viewportWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth)
+    let viewportWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth)
+
+    if (options.barWidth || options.barGap) {
+      const barWidth = options.barWidth ?? 1
+      const barGap = options.barGap ?? barWidth / 2
+      viewportWidth = this.closestInteger(
+        Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth) + barWidth / barGap,
+        barWidth + barGap,
+      )
+    }
     const start = Math.floor(Math.abs(scrollLeft) * scale)
     const end = Math.ceil(start + viewportWidth * scale)
     const viewportLen = end - start
