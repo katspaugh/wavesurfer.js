@@ -1,11 +1,13 @@
 ---
 name: Bug report
-about: Create an issue to fix a bug
+about: Report a bug you found in wavesurfer.js
 labels: ["bug"]
 ---
 
 <!--
-BEFORE SUBMITTING: Please search in the existing issues to make sure this issue hasn't been reported already
+BEFORE SUBMITTING:
+ * Please search in the existing issues to make sure this issue hasn't been reported already
+ * Consider starting a discussion in the forum if you're not 100% certain it's a bug. Forum link: https://github.com/katspaugh/wavesurfer.js/discussions/categories/q-a
 -->
 
 ## Bug description
