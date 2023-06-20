@@ -1,7 +1,10 @@
 ---
 name: Bug report
 about: Report a bug you found in wavesurfer.js
-labels: ["bug"]
+title: ''
+labels: bug
+assignees: ''
+
 ---
 
 <!--
