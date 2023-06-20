@@ -27,7 +27,7 @@ npm install --save wavesurfer.js@beta
 import WaveSurfer from 'wavesurfer.js'
 ```
 
-Alternatively, import it from a CDN as a ES6 module directly in the browser:
+Alternatively, import it from a CDN as a ES6 module:
 
 ```html
 <script type="module">
@@ -42,8 +42,12 @@ Or, as a UMD script tag which exports the library as a global `WaveSurfer` varia
 <script src="https://unpkg.com/wavesurfer.js@beta/dist/wavesurfer.min.cjs"></script>
 ```
 
-To import a plugin, e.g. the Timeline plugin:
+To import one of the plugins, e.g. the Timeline plugin:
 ```js
+import Timeline from 'wavesurfer.js/dist/plugins/timeline.js'
+
+// or, with a CDN:
+
 import Timeline from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/timeline.js'
 ```
 
@@ -64,12 +68,12 @@ The "official" plugins have been completely rewritten and enhanced:
  * [Minimap](https://wavesurfer-js.org/examples/#minimap.js) – a small waveform that serves as a scrollbar for the main waveform
  * [Envelope](https://wavesurfer-js.org/examples/#envelope.js) – a graphical interface to add fade-in and -out effects and control volume
  * [Record](https://wavesurfer-js.org/examples/#record.js) – records audio from the microphone and renders a waveform
- * [Spectrogram](https://wavesurfer-js.org/examples/#spectrogram.js) – visualization of an audio frequency spectrum
+ * [Spectrogram](https://wavesurfer-js.org/examples/#spectrogram.js) – visualization of an audio frequency spectrum (written by @akreal)
 
 ## CSS styling
 
 wavesurfer.js v7 is rendered into a Shadow DOM tree. This isolates its CSS from the rest of the web page.
-However, it's still possible to style various wavesurfer.js elements via CSS using the `::part()` pseudo-selector.
+However, it's still possible to style various wavesurfer.js elements with CSS via the `::part()` pseudo-selector.
 For example:
 
 ```css
@@ -127,7 +131,12 @@ Have a question about integrating wavesurfer.js on your website? Feel free to as
 ### FAQ
 
 * **Q**: Does wavesurfer support large files?
-* **A**: Since wavesurfer decodes audio entirely in the browser, large files may fail to decode due to memory constraints. We recommend using pre-decoded peaks for large files (see [this example](https://wavesurfer-js.org/examples/#predecoded.js)). You can use a tool like [bbc/audiowaveform](https://github.com/bbc/audiowaveform) to generate peaks.
+* **A**: Since wavesurfer decodes audio entirely in the browser using Web Audio, large clips may result in an innacurately timed waveform or fail to decode at all due to memory constraints. We recommend using pre-decoded peaks for large files (see [this example](https://wavesurfer-js.org/examples/#predecoded.js)). You can use a tool like [bbc/audiowaveform](https://github.com/bbc/audiowaveform) to generate peaks.
+
+---
+
+* **Q**: What about streaming audio?
+* **A**: Streaming isn't supported because wavesurfer needs to download the entire audio file to decode and render it.
 
 ## Development
 

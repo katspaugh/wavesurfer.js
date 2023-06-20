@@ -22,7 +22,7 @@ containers.forEach((vowelDiv, idx) => {
     waveColor: 'rgb(200, 0, 200)',
     progressColor: 'rgb(100, 0, 100)',
     url: `/examples/audio/${files[idx]}.mp4`,
-    sampleRate: 15e3,
+    sampleRate: 14600,
     interact: false,
     plugins: [
       Spectrogram.create({
@@ -49,14 +49,14 @@ containers.forEach((vowelDiv, idx) => {
   .grid {
     display: flex;
     flex-flow: row wrap;
-    border: 1px solid #333;
+    gap: 2px;
   }
   .grid > div {
-    flex: 1;
     min-width: 120px;
     padding: 0.5rem;
     text-align: center;
     border: 1px solid #333;
+    border-radius: 4px;
     cursor: pointer;
   }
   ::part(spec-labels) {
