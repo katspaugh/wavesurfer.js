@@ -201,7 +201,7 @@ export class Region extends EventEmitter<RegionEvents> {
     this.emit('update-end')
   }
 
-  private onUpdate(dx: number, sides: Array<'start' | 'end'>) {
+  public _onUpdate(dx: number, sides: Array<'start' | 'end'>) {
     if (!this.element.parentElement) return
     const deltaSeconds = (dx / this.element.parentElement.clientWidth) * this.totalDuration
     sides.forEach((side) => {
@@ -219,12 +219,12 @@ export class Region extends EventEmitter<RegionEvents> {
 
   private onMove(dx: number) {
     if (!this.drag) return
-    this.onUpdate(dx, ['start', 'end'])
+    this._onUpdate(dx, ['start', 'end'])
   }
 
   private onResize(dx: number, side: 'start' | 'end') {
     if (!this.resize) return
-    this.onUpdate(dx, [side])
+    this._onUpdate(dx, [side])
   }
 
   private onEndResizing() {
@@ -408,60 +408,51 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     const wrapper = this.wavesurfer?.getWrapper()?.querySelector('div')
     if (!wrapper) return () => undefined
 
+    const initialSize = 5
     let region: Region | null = null
-    let sumDx = 0
+    let startX = 0
 
     return makeDraggable(
       wrapper,
 
       // On drag move
-      (dx, _, x) => {
-        if (!this.wavesurfer) return
-
-        if (!region) {
-          const duration = this.wavesurfer.getDuration()
-          const box = wrapper.getBoundingClientRect()
-          let start = (x / box.width) * duration
-          let end = ((x - box.left) / box.width) * duration
-          if (start > end) [start, end] = [end, start]
-
-          region = new Region(
-            {
-              ...options,
-              start,
-              end,
-            },
-            duration,
-          )
-
-          this.regionsContainer.appendChild(region.element)
-        }
-
-        sumDx += dx
+      (dx, _dy, x) => {
         if (region) {
-          const privateRegion = region as unknown as { onUpdate: (dx: number, sides: Array<'start' | 'end'>) => void }
-          privateRegion.onUpdate(dx, [sumDx > 0 ? 'end' : 'start'])
+          // Update the end position of the region
+          // If we're dragging to the left, we need to update the start instead
+          region._onUpdate(dx, [x > startX ? 'end' : 'start'])
         }
       },
 
       // On drag start
-      () => null,
+      (x) => {
+        startX = x
+        if (!this.wavesurfer) return
+        const duration = this.wavesurfer.getDuration()
+        const width = this.wavesurfer.getWrapper().clientWidth
+        // Calculate the start time of the region
+        const start = (x / width) * duration
+        // Give the region a small initial size
+        const end = ((x + initialSize) / width) * duration
+
+        // Create a region but don't save it until the drag ends
+        region = new Region(
+          {
+            ...options,
+            start,
+            end,
+          },
+          duration,
+        )
+        // Just add it to the DOM for now
+        this.regionsContainer.appendChild(region.element)
+      },
 
       // On drag end
       () => {
         if (region) {
           this.saveRegion(region)
           region = null
-          sumDx = 0
-
-          // Prevent a click event on the waveform
-          if (this.wavesurfer) {
-            const { interact } = this.wavesurfer.options
-            if (interact) {
-              this.wavesurfer.toggleInteraction(false)
-              setTimeout(() => this.wavesurfer?.toggleInteraction(interact), 10)
-            }
-          }
         }
       },
     )
