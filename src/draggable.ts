@@ -27,12 +27,13 @@ export function makeDraggable(
       const y = e.clientY
 
       if (isDragging || Math.abs(x - startX) >= threshold || Math.abs(y - startY) >= threshold) {
+        const { left, top } = element.getBoundingClientRect()
+
         if (!isDragging) {
           isDragging = true
-          onStart?.(startX, startY)
+          onStart?.(startX - left, startY - top)
         }
 
-        const { left, top } = element.getBoundingClientRect()
         onDrag(x - startX, y - startY, x - left, y - top)
         startX = x
         startY = y
