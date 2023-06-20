@@ -211,12 +211,12 @@ export default class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvent
     }
 
     this.loadLabels(
-      this.options.labelsBackground || 'rgba(68,68,68,0.5)',
+      this.options.labelsBackground,
       '12px',
-      '10px',
+      '12px',
       '',
-      this.options.labelsColor || '#fff',
-      this.options.labelsHzColor || this.options.labelsColor || '#f7f7f7',
+      this.options.labelsColor,
+      this.options.labelsHzColor || this.options.labelsColor,
       'center',
       '#specLabels',
     )
@@ -341,7 +341,7 @@ export default class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvent
     const frequenciesHeight = this.height
     bgFill = bgFill || 'rgba(68,68,68,0)'
     fontSizeFreq = fontSizeFreq || '12px'
-    fontSizeUnit = fontSizeUnit || '10px'
+    fontSizeUnit = fontSizeUnit || '12px'
     fontType = fontType || 'Helvetica'
     textColorFreq = textColorFreq || '#fff'
     textColorUnit = textColorUnit || '#fff'
@@ -386,25 +386,17 @@ export default class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvent
 
         if (i == 0) {
           y = (1 + c) * getMaxY + i - 10
-          // unit label
-          ctx.fillStyle = textColorUnit
-          ctx.font = fontSizeUnit + ' ' + fontType
-          ctx.fillText(units, x + 24, y)
-          // freq label
-          ctx.fillStyle = textColorFreq
-          ctx.font = fontSizeFreq + ' ' + fontType
-          ctx.fillText(label, x, y)
         } else {
           y = (1 + c) * getMaxY - i * 50 + yLabelOffset
-          // unit label
-          ctx.fillStyle = textColorUnit
-          ctx.font = fontSizeUnit + ' ' + fontType
-          ctx.fillText(units, x + 24, y)
-          // freq label
-          ctx.fillStyle = textColorFreq
-          ctx.font = fontSizeFreq + ' ' + fontType
-          ctx.fillText(label, x, y)
         }
+        // unit label
+        ctx.fillStyle = textColorUnit
+        ctx.font = fontSizeUnit + ' ' + fontType
+        ctx.fillText(units, x + 24, y)
+        // freq label
+        ctx.fillStyle = textColorFreq
+        ctx.font = fontSizeFreq + ' ' + fontType
+        ctx.fillText(label, x, y)
       }
     }
   }
