@@ -111,6 +111,7 @@ Most options, events, and methods are similar to those in previous versions.
  * `skipLength` – there's no `skipForward` and `skipBackward` methods anymore
  * `splitChannelsOptions` – you should now use `splitChannels` to pass the channel options. Pass `height: 0` to hide a channel. See [this example](https://wavesurfer-js.org/examples/#split-channels.js).
  * `xhr`, `drawingContextAttributes`, `maxCanvasWidth`, `forceDecode` – removed to reduce code complexity
+ * `barMinHeight` - the minimum bar height is now 1 pixel by default
 
 ### Removed methods
  * `getFilters`, `setFilter` – as there's no Web Audio "backend"
