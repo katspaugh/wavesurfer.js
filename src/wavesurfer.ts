@@ -62,6 +62,8 @@ export type WaveSurferOptions = {
   plugins?: GenericPlugin[]
   /** Custom render function */
   renderFunction?: (peaks: Array<Float32Array | number[]>, ctx: CanvasRenderingContext2D) => void
+  /** Options to pass to the fetch method */
+  fetchParams?: RequestInit
 }
 
 const defaultOptions = {
@@ -286,7 +288,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.emit('load', url)
 
     // Fetch the entire audio as a blob if pre-decoded data is not provided
-    const blob = channelData ? undefined : await Fetcher.fetchBlob(url)
+    const blob = channelData ? undefined : await Fetcher.fetchBlob(url, this.options.fetchParams)
 
     // Set the mediaelement source to the URL
     this.setSrc(url, blob)
