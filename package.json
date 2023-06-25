@@ -42,7 +42,7 @@
     "build:dev": "tsc -w --target ESNext",
     "build:umd": "webpack",
     "build:umd:plugins": "webpack --config webpack.config.plugins.js",
-    "build": "tsc && npm run build:umd && npm run build:umd:plugins",
+    "build": "rm -rf dist && tsc && npm run build:umd && npm run build:umd:plugins",
     "deploy": "yarn build && yarn docs",
     "prepublishOnly": "npm run build",
     "docs": "typedoc src/wavesurfer.ts src/plugins/*.ts --out docs",

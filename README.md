@@ -160,8 +160,13 @@ This command will open http://localhost:9090 in your browser with live reload, a
 ## Tests
 
 The tests are written in the Cypress framework. They are a mix of e2e and visual regression tests.
-To run the test suite locally:
 
+To run the test suite locally, first build the project:
+```
+yarn build
+```
+
+Then launch the tests:
 ```
 yarn cypress
 ```
