@@ -275,7 +275,7 @@ export class Region extends EventEmitter<RegionEvents> {
   }
 }
 
-class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions> {
+export class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions> {
   private regions: Region[] = []
   private regionsContainer: HTMLElement
 

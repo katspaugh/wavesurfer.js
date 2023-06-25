@@ -24,6 +24,10 @@
   "types": "./dist/wavesurfer.d.ts",
   "browser": "./dist/wavesurfer.js",
   "exports": {
+    "./ts": {
+      "import": "./ts.ts",
+      "types": "./ts.ts"
+    },
     ".": {
       "import": "./dist/wavesurfer.js",
       "types": "./dist/wavesurfer.d.ts",
