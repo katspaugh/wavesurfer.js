@@ -6,3 +6,4 @@ yarn-error.log
 public/docs
 cypress/screenshots
 cypress/downloads
+cypress/videos
