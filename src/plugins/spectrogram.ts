@@ -67,7 +67,7 @@ export type SpectrogramPluginEvents = {
   click: [relativeX: number]
 }
 
-export default class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramPluginOptions> {
+export class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramPluginOptions> {
   static create(options?: SpectrogramPluginOptions) {
     return new SpectrogramPlugin(options || {})
   }
@@ -450,3 +450,5 @@ export default class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvent
     return newMatrix
   }
 }
+
+export default SpectrogramPlugin

@@ -169,7 +169,7 @@ class Polyline extends EventEmitter<{
   }
 }
 
-class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOptions> {
+export class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOptions> {
   protected options: Options
   private polyline: Polyline | null = null
   private audioContext: AudioContext | null = null
