@@ -8,14 +8,12 @@ type PlayerOptions = {
 
 class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   protected media: HTMLMediaElement
-  private isExternalMedia = false
 
   constructor(options: PlayerOptions) {
     super()
 
     if (options.media) {
       this.media = options.media
-      this.isExternalMedia = true
     } else {
       this.media = document.createElement('audio')
     }
@@ -43,28 +41,32 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     return this.onMediaEvent(event, callback, { once: true })
   }
 
+  private getSrc() {
+    return this.media.currentSrc || this.media.src || ''
+  }
+
   private revokeSrc() {
-    const src = this.media.currentSrc || this.media.src || ''
+    const src = this.getSrc()
     if (src.startsWith('blob:')) {
-      URL.revokeObjectURL(this.media.currentSrc)
+      URL.revokeObjectURL(src)
     }
   }
 
   protected setSrc(url: string, blob?: Blob) {
-    const src = this.media.currentSrc || this.media.src || ''
+    const src = this.getSrc()
     if (src === url) return
     this.revokeSrc()
     const newSrc = blob instanceof Blob ? URL.createObjectURL(blob) : url
     this.media.src = newSrc
+    this.media.load()
   }
 
-  public destroy() {
+  protected destroy() {
     this.media.pause()
     this.revokeSrc()
-
-    if (!this.isExternalMedia) {
-      this.media.remove()
-    }
+    this.media.src = ''
+    // Load resets the media element to its initial state
+    this.media.load()
   }
 
   /** Start playing the audio */
