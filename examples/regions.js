@@ -5,7 +5,7 @@ import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/reg
 
 // Create an instance of WaveSurfer
 const ws = WaveSurfer.create({
-  container: document.body,
+  container: '#waveform',
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
   url: '/examples/audio/audio.wav',
@@ -88,21 +88,6 @@ ws.on('timeupdate', (currentTime) => {
 
 ws.on('interaction', () => (activeRegion = null))
 
-/*
-  <html>
-    <div style="margin-bottom: 2em">
-      <label>
-        <input type="checkbox" checked="${loop}" />
-        Loop regions on click
-      </label>
-
-      <label style="margin-left: 2em">
-        Zoom: <input type="range" min="10" max="1000" value="10" />
-      </label>
-    </div>
-  </html>
-*/
-
 // Toggle looping with a checkbox
 document.querySelector('input[type="checkbox"]').onclick = (e) => {
   loop = e.target.checked
@@ -115,3 +100,24 @@ ws.once('decode', () => {
     ws.zoom(minPxPerSec)
   }
 })
+
+/*
+  <html>
+    <div id="waveform"></div>
+
+    <p>
+      <label>
+        <input type="checkbox" checked="${loop}" />
+        Loop regions on click
+      </label>
+
+      <label style="margin-left: 2em">
+        Zoom: <input type="range" min="10" max="1000" value="10" />
+      </label>
+    </p>
+
+    <p>
+      📖 <a href="https://wavesurfer-js.org/docs/classes/plugins_regions.RegionsPlugin">Regions plugin docs</a>
+    </p>
+  </html>
+*/

@@ -45,7 +45,7 @@
     "build": "rm -rf dist && tsc && npm run build:umd && npm run build:umd:plugins",
     "deploy": "yarn build && yarn docs",
     "prepublishOnly": "npm run build",
-    "docs": "typedoc src/wavesurfer.ts src/plugins/*.ts --out docs",
+    "docs": "typedoc --titleLink '/' src/wavesurfer.ts src/plugins/*.ts --out docs",
     "lint": "eslint --ext .ts src --fix",
     "prettier": "prettier -w '**/*.{js,ts,css}' --ignore-path .gitignore",
     "cypress": "cypress open --e2e",

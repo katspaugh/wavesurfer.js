@@ -5,7 +5,7 @@ import RecordPlugin from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/reco
 
 // Create an instance of WaveSurfer
 const wavesurfer = WaveSurfer.create({
-  container: document.body,
+  container: '#waveform',
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
 })
@@ -26,10 +26,19 @@ const record = wavesurfer.registerPlugin(RecordPlugin.create())
       margin-top: 0;
     }
   </style>
+
   <h1>Press Record to start recording 🎙️</h1>
+
   <button id="record">Record</button>
   <button id="play" disabled>Play</button>
+
   <a style="display: none">Download audio</a>
+
+  <div id="waveform" style="border: 1px solid #ddd; border-radius: 4px"></div>
+
+  <p>
+    📖 <a href="https://wavesurfer-js.org/docs/classes/plugins_record.RecordPlugin">Record plugin docs</a>
+  </p>
 </html>
 */
 
