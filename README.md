@@ -39,16 +39,20 @@ Alternatively, import it from a CDN as a ES6 module:
 
 Or, as a UMD script tag which exports the library as a global `WaveSurfer` variable:
 ```html
-<script src="https://unpkg.com/wavesurfer.js@beta/dist/wavesurfer.min.cjs"></script>
+<script type="text/javascript" src="https://unpkg.com/wavesurfer.js@beta/dist/wavesurfer.min.cjs"></script>
 ```
 
 To import one of the plugins, e.g. the Timeline plugin:
 ```js
 import Timeline from 'wavesurfer.js/dist/plugins/timeline.js'
 
-// or, with a CDN:
+// or with a CDN:
 
 import Timeline from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/timeline.js'
+
+// or as a script tag
+
+<script type="text/javascript" src="https://unpkg.com/wavesurfer.js@beta/dist/plugins/timeline.min.cjs"></script>
 ```
 
 TypeScript types are included in the package, so there's no need to install `@types/wavesurfer.js`.
