@@ -54,8 +54,20 @@ export class Region {
         this.showTooltip = params.showTooltip ?? true;
 
         this.maxLength = params.maxLength;
-        // It assumes the minLength parameter value, or the regionsMinLength parameter value, if the first one not provided
+
+        // It assumes the minLength parameter value, or the selectionsMinLength parameter value, if the first one not provided
         this.minLength = params.minLength;
+        // minDisplayLength is an second optional minimum length which only affects rendering
+        this.minDisplayLength = params.minDisplayLength;
+
+        // if we're not given either of these values, default to the other
+        if (!this.minLength) {
+            this.minLength = this.this.minDisplayLength;
+        }
+        if (!this.minDisplayLength) {
+            this.minDisplayLength = this.this.minLength;
+        }
+
         this._onRedraw = () => this.updateRender();
 
         this.scroll = params.scroll !== false && ws.params.scrollParent;
@@ -354,8 +366,13 @@ export class Region {
             startLimited = boundaryDuration - (endLimited - startLimited);
         }
 
-        if (this.minLength != null) {
-            endLimited = Math.max(startLimited + this.minLength, endLimited);
+        if (this.minDisplayLength != null) {
+            endLimited = Math.max(startLimited + this.minDisplayLength, endLimited);
+            if (endLimited - startLimited < this.minLength) {
+                this.attributes['small-bar'] = true;
+            } else {
+                this.attributes['small-bar'] = false;
+            }
         }
 
         if (this.maxLength != null) {
@@ -381,6 +398,9 @@ export class Region {
                     'data-region-' + attrname,
                     this.attributes[attrname]
                 );
+                if (this.attributes[attrname] === false) {
+                    this.element.removeAttribute('data-region-' + attrname);
+                }
             }
 
             if (this.showTooltip) {
@@ -388,7 +408,6 @@ export class Region {
             }
         }
     }
-
     /* Bind audio events. */
     bindInOut() {
         this.firedIn = false;
@@ -805,7 +824,7 @@ export class Region {
         };
 
         this.element.addEventListener('mousedown', onDown);
-        this.element.addEventListener('touchstart', onDown);
+        this.element.addEventListener('touchstart', onDown, {passive: true});
 
         document.body.addEventListener('mousemove', onMove);
         document.body.addEventListener('touchmove', onMove, {passive: false});

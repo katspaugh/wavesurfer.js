@@ -63,7 +63,8 @@ document.addEventListener('DOMContentLoaded', function() {
             end   : 10,
             color : 'rgba(0, 28, 142, 1)',
             minLength : 1,
-            cssColor : true,
+            minDisplayLength : 0.3,
+            cssColor : false,
             regionStyle : {
                 "border-radius": '13px'
             },
@@ -102,13 +103,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     wavesurfer.on('seek', () => {
-        document.getElementById("regionTime").innerHTML = `Region Time = ${format(wavesurfer.getCurrentTime())}`;
-        document.getElementById("boundaryTime").innerHTML = `Boundary Time = ${format(wavesurfer.getBoundaryTime())}`;
+        document.getElementById("regionTime").innerHTML = `Cursor Time within Region = ${format(wavesurfer.getCurrentTime())}`;
+        document.getElementById("boundaryTime").innerHTML = `Cursor Time within Boundary = ${format(wavesurfer.getBoundaryTime())}`;
     });
 
     wavesurfer.on('audioprocess', () => {
-        document.getElementById("regionTime").innerHTML = `Region Time = ${format(wavesurfer.getCurrentTime())}`;
-        document.getElementById("boundaryTime").innerHTML = `Boundary Time = ${format(wavesurfer.getBoundaryTime())}`;
+        document.getElementById("regionTime").innerHTML = `Cursor Time within Region = ${format(wavesurfer.getCurrentTime())}`;
+        document.getElementById("boundaryTime").innerHTML = `Cursor Time within Boundary = ${format(wavesurfer.getBoundaryTime())}`;
     });
 
 
@@ -159,12 +160,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector(
         '[data-action="update"]'
     ).addEventListener('click', function() {
-        let region = wavesurfer.selection.region;
+        const selectionStart = document.getElementById('selectionStart').value;
+        const audioStart = document.getElementById('audioStart').value;
+        const audioEnd = document.getElementById('audioEnd').value;
 
         wavesurfer.updateSelectionData({
-            selectionStart : 0,
-            audioStart : 0,
-            audioEnd : 4
+            selectionStart,
+            audioStart,
+            audioEnd
         });
     });
 

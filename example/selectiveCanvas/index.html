@@ -36,6 +36,25 @@
             .overlapped {
               background-color: brown;
             }
+            .btn {
+                height : 30px;
+            }
+            .controls {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-evenly;
+            }
+            .valButton {
+                display: flex;
+                flex-direction: column;
+                width: 170px;
+            }
+            [data-region-small-bar] > .wavesurfer-handle {
+                display : none
+            }
+            [data-region-small-bar] > .wavesurfer-selection-decorator {
+                display : none
+            }
             </style>
     </head>
 
@@ -57,10 +76,10 @@
                     </div>
                 </div>
                 <div id="regionTime">
-                    Region Time = 0.00
+                    Cursor Time within Region = 0.00
                 </div>
                 <div id="boundaryTime">
-                    Boundary Time = 0.00
+                    Cursor Time within Boundary = 0.00
                 </div>
 
                 <div class="controls">
@@ -74,9 +93,14 @@
                         Pause
                     </button>
 
-                    <button class="btn btn-primary" data-action="update">
-                        Update with new values
-                    </button>
+                    <div class="valButton">
+                        <button class="btn btn-primary" data-action="update">
+                            Update with new values
+                        </button>
+                        <input id="selectionStart" value=0 title="selectionStart" />
+                        <input id="audioStart" value=0 title="audioStart" />
+                        <input id="audioEnd" value=4 title="audioEnd" />
+                    </div>
 
                     <button class="btn btn-primary" data-action="zones">
                         Add zones
