@@ -29,7 +29,7 @@ const bottomTimline = TimelinePlugin.create({
 
 // Create an instance of WaveSurfer
 const wavesurfer = WaveSurfer.create({
-  container: document.body,
+  container: '#waveform',
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
   url: '/examples/audio/audio.wav',
@@ -41,3 +41,12 @@ const wavesurfer = WaveSurfer.create({
 wavesurfer.once('interaction', () => {
   wavesurfer.play()
 })
+
+/*
+<html>
+  <div id="waveform"></div>
+  <p>
+    📖 <a href="https://wavesurfer-js.org/docs/classes/plugins_timeline.TimelinePlugin">Timeline plugin docs</a>
+  </p>
+</html>
+*/
