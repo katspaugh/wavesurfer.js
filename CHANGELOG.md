@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.6.5](https://github.com/animoto/wavesurfer.js/compare/v6.6.4...v6.6.5) (2023-06-28)
+
 ### [6.6.4](https://github.com/animoto/wavesurfer.js/compare/v6.1.13...v6.6.4) (2023-05-11)
 
 ### [6.1.13](https://github.com/animoto/wavesurfer.js/compare/v6.1.12...v6.1.13) (2022-05-26)
