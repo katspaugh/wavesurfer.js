@@ -33,7 +33,12 @@ Alternatively, import it from a CDN as a ES6 module:
 <script type="module">
   import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
 
-  const wavesurfer = WaveSurfer.create({ ... })
+  const wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: '#4F4A85',
+    progressColor: '#383351',
+    url: '/audio.mp3',
+  })
 </script>
 ```
 
