@@ -1,6 +1,6 @@
 const id = '#waveform'
 
-describe('WaveSurfer', () => {
+describe('WaveSurfer options tests', () => {
   beforeEach(() => {
     cy.visit('cypress/e2e/index.html')
 

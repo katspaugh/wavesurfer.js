@@ -1,4 +1,4 @@
-describe('WaveSurfer plugins', () => {
+describe('WaveSurfer Regions plugin tests', () => {
   beforeEach((done) => {
     cy.visit('cypress/e2e/index.html')
 
