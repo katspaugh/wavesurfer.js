@@ -1,10 +1,7 @@
 describe('WaveSurfer UMD module tests', () => {
-  beforeEach((done) => {
+  beforeEach(() => {
     cy.visit('cypress/e2e/umd.html')
-
     cy.window().its('WaveSurfer').should('exist')
-    cy.window().its('WaveSurfer.Regions').should('exist')
-    cy.window().its('WaveSurfer.Timeline').should('exist')
   })
 
   it('should instantiate WaveSurfer with two plugins', () => {
@@ -16,6 +13,7 @@ describe('WaveSurfer UMD module tests', () => {
           url: '../../examples/audio/demo.wav',
           plugins: [WaveSurfer.Regions.create(), WaveSurfer.Timeline.create()],
         })
+        resolve()
       })
     })
   })
