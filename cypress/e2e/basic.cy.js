@@ -1,4 +1,4 @@
-describe('WaveSurfer', () => {
+describe('WaveSurfer basic tests', () => {
   beforeEach((done) => {
     cy.visit('cypress/e2e/index.html')
 

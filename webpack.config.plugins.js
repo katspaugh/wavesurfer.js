@@ -14,7 +14,7 @@ export default {
   },
 
   output: {
-    globalObject: 'WaveSurfer',
+    globalObject: `typeof WaveSurfer !== 'undefined' ? WaveSurfer : this`,
     library: '[name]',
     libraryTarget: 'umd',
     libraryExport: 'default',
