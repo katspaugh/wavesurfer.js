@@ -417,6 +417,11 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.timeouts.forEach((context) => context.timeout && clearTimeout(context.timeout))
     this.timeouts = []
 
+    // Clear the canvases
+    this.canvasWrapper.innerHTML = ''
+    this.progressWrapper.innerHTML = ''
+    this.wrapper.style.width = ''
+
     // Determine the width of the waveform
     const pixelRatio = window.devicePixelRatio || 1
     const parentWidth = this.scrollContainer.clientWidth
@@ -425,8 +430,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Whether the container should scroll
     this.isScrolling = scrollWidth > parentWidth
     const useParentWidth = this.options.fillParent && !this.isScrolling
-
-    // Width and height of the waveform in pixels
+    // Width of the waveform in pixels
     const width = (useParentWidth ? parentWidth : scrollWidth) * pixelRatio
 
     // Set the width of the wrapper
@@ -437,10 +441,6 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.scrollContainer.classList.toggle('noScrollbar', !!this.options.hideScrollbar)
     this.cursor.style.backgroundColor = `${this.options.cursorColor || this.options.progressColor}`
     this.cursor.style.width = `${this.options.cursorWidth}px`
-
-    // Clear the canvases
-    this.canvasWrapper.innerHTML = ''
-    this.progressWrapper.innerHTML = ''
 
     // Render the waveform
     if (this.options.splitChannels) {
