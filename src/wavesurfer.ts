@@ -282,6 +282,8 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Load an audio file by URL, with optional pre-decoded audio data */
   public async load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+    if (this.isPlaying()) this.pause()
+
     this.decodedData = null
     this.duration = null
 
