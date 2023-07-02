@@ -18,39 +18,43 @@ export type RegionsPluginEvents = {
 }
 
 export type RegionEvents = {
-  // Before the region is removed
+  /** Before the region is removed */
   remove: []
-  // When the region's parameters are being updated
+  /** When the region's parameters are being updated */
   update: []
-  // When dragging or resizing is finished
+  /** When dragging or resizing is finished */
   'update-end': []
-  // On play
+  /** On play */
   play: []
-  // On mouse click
+  /** On mouse click */
   click: [event: MouseEvent]
-  // Double click
+  /** Double click */
   dblclick: [event: MouseEvent]
-  // Mouse over
+  /** Mouse over */
   over: [event: MouseEvent]
-  // Mouse leave
+  /** Mouse leave */
   leave: [event: MouseEvent]
 }
 
 export type RegionParams = {
-  // The id of the region
+  /** The id of the region, any string */
   id?: string
-  // The start position of the region (in seconds)
+  /** The start position of the region (in seconds) */
   start: number
-  // The end position of the region (in seconds)
+  /** The end position of the region (in seconds) */
   end?: number
-  // Allow/dissallow dragging the region
+  /** Allow/dissallow dragging the region */
   drag?: boolean
-  // Allow/dissallow resizing the region
+  /** Allow/dissallow resizing the region */
   resize?: boolean
-  // The color of the region (CSS color)
+  /** The color of the region (CSS color) */
   color?: string
-  // Content string
+  /** Content string or HTML element */
   content?: string | HTMLElement
+  /** Min length when resizing (in seconds) */
+  minLength?: number
+  /** Max length when resizing (in seconds) */
+  maxLength?: number
 }
 
 export class Region extends EventEmitter<RegionEvents> {
@@ -62,6 +66,8 @@ export class Region extends EventEmitter<RegionEvents> {
   public resize: boolean
   public color: string
   public content?: HTMLElement
+  public minLength = 0.01
+  public maxLength = Infinity
 
   constructor(params: RegionParams, private totalDuration: number) {
     super()
@@ -72,6 +78,8 @@ export class Region extends EventEmitter<RegionEvents> {
     this.drag = params.drag ?? true
     this.resize = params.resize ?? true
     this.color = params.color ?? 'rgba(0, 0, 0, 0.1)'
+    this.minLength = params.minLength ?? this.minLength
+    this.maxLength = params.maxLength ?? this.maxLength
     this.element = this.initElement(params.content)
     this.renderPosition()
     this.initMouseEvents()
@@ -205,14 +213,21 @@ export class Region extends EventEmitter<RegionEvents> {
     const deltaSeconds = (dx / this.element.parentElement.clientWidth) * this.totalDuration
     const newStart = !side || side === 'start' ? this.start + deltaSeconds : this.start
     const newEnd = !side || side === 'end' ? this.end + deltaSeconds : this.end
+    const length = newEnd - newStart
 
-    if (newStart > 0 && newEnd < this.totalDuration && newStart < newEnd) {
+    if (
+      newStart > 0 &&
+      newEnd < this.totalDuration &&
+      newStart < newEnd &&
+      length >= this.minLength &&
+      length <= this.maxLength
+    ) {
       this.start = newStart
       this.end = newEnd
-    }
 
-    this.renderPosition()
-    this.emit('update')
+      this.renderPosition()
+      this.emit('update')
+    }
   }
 
   private onMove(dx: number) {

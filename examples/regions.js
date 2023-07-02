@@ -34,6 +34,8 @@ ws.on('decode', () => {
     end: 10,
     content: 'Cramped region',
     color: randomColor(),
+    minLength: 1,
+    maxLength: 10,
   })
   wsRegions.addRegion({
     start: 12,
