@@ -50,6 +50,7 @@
     "docs": "typedoc --titleLink '/' src/wavesurfer.ts src/plugins/*.ts --out docs",
     "lint": "eslint --ext .ts src --fix",
     "prettier": "prettier -w '**/*.{js,ts,css}' --ignore-path .gitignore",
+    "make-plugin": "./scripts/plugin.sh",
     "cypress": "cypress open --e2e",
     "cypress:canary": "cypress open --e2e -b chrome:canary",
     "test": "cypress run",

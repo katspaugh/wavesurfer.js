@@ -6,6 +6,7 @@ export default {
 
   entry: {
     Envelope: './src/plugins/envelope.ts',
+    Hover: './src/plugins/hover.ts',
     Minimap: './src/plugins/minimap.ts',
     Record: './src/plugins/record.ts',
     Regions: './src/plugins/regions.ts',
