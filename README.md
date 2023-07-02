@@ -104,9 +104,9 @@ Most options, events, and methods are similar to those in previous versions.
 
 ### Notable differences
  * The `backend` option is removed – [HTML5 audio (or video) is the only playback mechanism](https://github.com/katspaugh/wavesurfer.js/discussions/2762#discussioncomment-5669347). However, you can still connect wavesurfer to Web Audio via `MediaElementSourceNode`. See this [example](https://wavesurfer-js.org/examples/#webaudio.js).
- * The Markers plugin is removed – use the Regions plugin with just a `startTime`.
+ * The Markers plugin is removed – you should use the Regions plugin with just a `startTime`.
  * No Microphone plugin – superseded by the new Record plugin with more features.
- * The Cursor plugin is replaced by the Hover plugin
+ * The Cursor plugin is replaced by the Hover plugin.
 
 ### Removed options
  * `backend`, `audioContext`, `closeAudioContext', 'audioScriptProcessor` – there's no Web Audio backend, so no AudioContext
@@ -120,20 +120,21 @@ Most options, events, and methods are similar to those in previous versions.
  * `scrollParent` – the container will scroll if `minPxPerSec` is set to a higher value
  * `skipLength` – there's no `skipForward` and `skipBackward` methods anymore
  * `splitChannelsOptions` – you should now use `splitChannels` to pass the channel options. Pass `height: 0` to hide a channel. See [this example](https://wavesurfer-js.org/examples/#split-channels.js).
- * `xhr`, `drawingContextAttributes`, `maxCanvasWidth`, `forceDecode` – removed to reduce code complexity
+ * `drawingContextAttributes`, `maxCanvasWidth`, `forceDecode` – removed to reduce code complexity
+ * `xhr` - please use `fetchParams` instead
  * `barMinHeight` - the minimum bar height is now 1 pixel by default
 
 ### Removed methods
  * `getFilters`, `setFilter` – as there's no Web Audio "backend"
  * `drawBuffer` – to redraw the waveform, use `setOptions` instead and pass new rendering options
- * `cancelAjax` – ajax is replaced by `fetch`
+ * `cancelAjax` – you can pass an [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) in `fetchParams`
  * `loadBlob` – use `URL.createObjectURL()` to convert a blob to a URL and call `load(url)` instead
  * `skipForward`, `skipBackward`, `setPlayEnd` – can be implemented using `setTime(time)`
- * `exportPCM` is renamed to `getDecodedData` and doesn't take any params
+ * `exportPCM` is replaced with `getDecodedData` that returns a decoded audio buffer
  * `toggleMute` is now called `setMuted(true | false)`
  * `setHeight`, `setWaveColor`, `setCursorColor`, etc. – use `setOptions` with the corresponding params instead. E.g., `wavesurfer.setOptions({ height: 300, waveColor: '#abc' })`
 
-See the complete [documentation of the new API](http://wavesurfer-js.org/docs/methods).
+See the complete [documentation of the new API](http://wavesurfer-js.org/docs).
 
 ## Questions
 
