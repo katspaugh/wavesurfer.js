@@ -1,7 +1,7 @@
 // Silence detection example
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
-import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/regions.js'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
+import RegionsPlugin from 'https://unpkg.com/wavesurfer.js/dist/plugins/regions.js'
 
 // Create an instance of WaveSurfer
 const ws = WaveSurfer.create({

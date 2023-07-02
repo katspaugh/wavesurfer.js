@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - beta
+      - main
 
 permissions:
   contents: write
@@ -20,7 +20,7 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          OLD_VERSION=$(npm show wavesurfer.js@beta version)
+          OLD_VERSION=$(npm show wavesurfer.js version)
           NEW_VERSION=$(node -p 'require("./package.json").version')
           if [ $NEW_VERSION != $OLD_VERSION ]; then
             echo "New version $NEW_VERSION detected"
@@ -63,4 +63,4 @@ jobs:
         if: ${{ steps.version.outputs.version }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
-        run: npm publish --tag beta
+        run: npm publish

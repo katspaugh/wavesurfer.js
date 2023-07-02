@@ -1,4 +1,4 @@
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
 
 const pitchWorker = new Worker('/examples/pitch-worker.js', { type: 'module' })
 

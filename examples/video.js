@@ -12,7 +12,7 @@
 </html>
 */
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
 
 // Initialize wavesurfer.js
 const ws = WaveSurfer.create({

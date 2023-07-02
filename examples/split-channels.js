@@ -1,6 +1,6 @@
 // Split channels
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
 
 const wavesurfer = WaveSurfer.create({
   container: document.body,

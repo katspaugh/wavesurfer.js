@@ -1,7 +1,7 @@
 // Spectrogram plugin
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
-import Spectrogram from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/spectrogram.js'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
+import Spectrogram from 'https://unpkg.com/wavesurfer.js/dist/plugins/spectrogram.js'
 
 // Create an instance of WaveSurfer
 const ws = WaveSurfer.create({

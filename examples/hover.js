@@ -1,7 +1,7 @@
 // Hover plugin
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
-import Hover from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/hover.js'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
+import Hover from 'https://unpkg.com/wavesurfer.js/dist/plugins/hover.js'
 
 // Create an instance of WaveSurfer
 const ws = WaveSurfer.create({
