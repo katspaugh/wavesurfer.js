@@ -78,6 +78,7 @@ The "official" plugins have been completely rewritten and enhanced:
  * [Envelope](https://wavesurfer-js.org/examples/#envelope.js) – a graphical interface to add fade-in and -out effects and control volume
  * [Record](https://wavesurfer-js.org/examples/#record.js) – records audio from the microphone and renders a waveform
  * [Spectrogram](https://wavesurfer-js.org/examples/#spectrogram.js) – visualization of an audio frequency spectrum (written by @akreal)
+  * [Hover](https://wavesurfer-js.org/examples/#hover.js) – shows a vertical line and timestmap on waveform hover
 
 ## CSS styling
 
@@ -104,8 +105,8 @@ Most options, events, and methods are similar to those in previous versions.
 ### Notable differences
  * The `backend` option is removed – [HTML5 audio (or video) is the only playback mechanism](https://github.com/katspaugh/wavesurfer.js/discussions/2762#discussioncomment-5669347). However, you can still connect wavesurfer to Web Audio via `MediaElementSourceNode`. See this [example](https://wavesurfer-js.org/examples/#webaudio.js).
  * The Markers plugin is removed – use the Regions plugin with just a `startTime`.
- * No Microphone plugn – superseded by the new Record plugin with more features.
- * No Cursor and Playhead plugins yet – to be done.
+ * No Microphone plugin – superseded by the new Record plugin with more features.
+ * The Cursor plugin is replaced by the Hover plugin
 
 ### Removed options
  * `backend`, `audioContext`, `closeAudioContext', 'audioScriptProcessor` – there's no Web Audio backend, so no AudioContext

@@ -1,0 +1,42 @@
+/**
+ * The PluginName plugin
+ */
+
+import BasePlugin from '../base-plugin.js'
+
+export type PluginNamePluginOptions = {
+}
+
+const defaultOptions = {
+}
+
+export type PluginNamePluginEvents = {
+}
+
+export class PluginNamePlugin extends BasePlugin<PluginNamePluginEvents, PluginNamePluginOptions> {
+  protected options: PluginNamePluginOptions & typeof defaultOptions
+
+  constructor(options?: PluginNamePluginOptions) {
+    super(options || {})
+
+    this.options = Object.assign({}, defaultOptions, options)
+  }
+
+  public static create(options?: PluginNamePluginOptions) {
+    return new PluginNamePlugin(options)
+  }
+
+  /** Called by wavesurfer, don't call manually */
+  onInit() {
+    if (!this.wavesurfer) {
+      throw Error('WaveSurfer is not initialized')
+    }
+  }
+
+  /** Unmount */
+  public destroy() {
+    super.destroy()
+  }
+}
+
+export default PluginNamePlugin
