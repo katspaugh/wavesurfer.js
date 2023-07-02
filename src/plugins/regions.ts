@@ -18,39 +18,43 @@ export type RegionsPluginEvents = {
 }
 
 export type RegionEvents = {
-  // Before the region is removed
+  /** Before the region is removed */
   remove: []
-  // When the region's parameters are being updated
+  /** When the region's parameters are being updated */
   update: []
-  // When dragging or resizing is finished
+  /** When dragging or resizing is finished */
   'update-end': []
-  // On play
+  /** On play */
   play: []
-  // On mouse click
+  /** On mouse click */
   click: [event: MouseEvent]
-  // Double click
+  /** Double click */
   dblclick: [event: MouseEvent]
-  // Mouse over
+  /** Mouse over */
   over: [event: MouseEvent]
-  // Mouse leave
+  /** Mouse leave */
   leave: [event: MouseEvent]
 }
 
 export type RegionParams = {
-  // The id of the region
+  /** The id of the region, any string */
   id?: string
-  // The start position of the region (in seconds)
+  /** The start position of the region (in seconds) */
   start: number
-  // The end position of the region (in seconds)
+  /** The end position of the region (in seconds) */
   end?: number
-  // Allow/dissallow dragging the region
+  /** Allow/dissallow dragging the region */
   drag?: boolean
-  // Allow/dissallow resizing the region
+  /** Allow/dissallow resizing the region */
   resize?: boolean
-  // The color of the region (CSS color)
+  /** The color of the region (CSS color) */
   color?: string
-  // Content string
+  /** Content string or HTML element */
   content?: string | HTMLElement
+  /** Min length when resizing (in seconds) */
+  minLength?: number
+  /** Max length when resizing (in seconds) */
+  maxLength?: number
 }
 
 export class Region extends EventEmitter<RegionEvents> {
@@ -62,6 +66,8 @@ export class Region extends EventEmitter<RegionEvents> {
   public resize: boolean
   public color: string
   public content?: HTMLElement
+  public minLength = 0.01
+  public maxLength = Infinity
 
   constructor(params: RegionParams, private totalDuration: number) {
     super()
@@ -72,6 +78,8 @@ export class Region extends EventEmitter<RegionEvents> {
     this.drag = params.drag ?? true
     this.resize = params.resize ?? true
     this.color = params.color ?? 'rgba(0, 0, 0, 0.1)'
+    this.minLength = params.minLength ?? this.minLength
+    this.maxLength = params.maxLength ?? this.maxLength
     this.element = this.initElement(params.content)
     this.renderPosition()
     this.initMouseEvents()
@@ -94,8 +102,6 @@ export class Region extends EventEmitter<RegionEvents> {
       transition: background-color 0.2s ease;
       cursor: ${this.drag ? 'grab' : 'default'};
       pointer-events: all;
-      padding: 0.2em ${isMarker ? 0.2 : 0.4}em;
-      pointer-events: all;
     `,
     )
 
@@ -103,6 +109,7 @@ export class Region extends EventEmitter<RegionEvents> {
     if (content) {
       if (typeof content === 'string') {
         this.content = document.createElement('div')
+        this.content.style.padding = `0.2em ${isMarker ? 0.2 : 0.4}em`
         this.content.textContent = content
       } else {
         this.content = content
@@ -150,9 +157,9 @@ export class Region extends EventEmitter<RegionEvents> {
 
   private renderPosition() {
     const start = this.start / this.totalDuration
-    const end = this.end / this.totalDuration
+    const end = (this.totalDuration - this.end) / this.totalDuration
     this.element.style.left = `${start * 100}%`
-    this.element.style.width = `${(end - start) * 100}%`
+    this.element.style.right = `${end * 100}%`
   }
 
   private initMouseEvents() {
@@ -201,30 +208,36 @@ export class Region extends EventEmitter<RegionEvents> {
     this.emit('update-end')
   }
 
-  public _onUpdate(dx: number, sides: Array<'start' | 'end'>) {
+  public _onUpdate(dx: number, side?: 'start' | 'end') {
     if (!this.element.parentElement) return
     const deltaSeconds = (dx / this.element.parentElement.clientWidth) * this.totalDuration
-    sides.forEach((side) => {
-      this[side] += deltaSeconds
-      if (side === 'start') {
-        this.start = Math.max(0, Math.min(this.start, this.end))
-      } else {
-        this.end = Math.max(this.start, Math.min(this.end, this.totalDuration))
-      }
-    })
+    const newStart = !side || side === 'start' ? this.start + deltaSeconds : this.start
+    const newEnd = !side || side === 'end' ? this.end + deltaSeconds : this.end
+    const length = newEnd - newStart
 
-    this.renderPosition()
-    this.emit('update')
+    if (
+      newStart > 0 &&
+      newEnd < this.totalDuration &&
+      newStart < newEnd &&
+      length >= this.minLength &&
+      length <= this.maxLength
+    ) {
+      this.start = newStart
+      this.end = newEnd
+
+      this.renderPosition()
+      this.emit('update')
+    }
   }
 
   private onMove(dx: number) {
     if (!this.drag) return
-    this._onUpdate(dx, ['start', 'end'])
+    this._onUpdate(dx)
   }
 
   private onResize(dx: number, side: 'start' | 'end') {
     if (!this.resize) return
-    this._onUpdate(dx, [side])
+    this._onUpdate(dx, side)
   }
 
   private onEndResizing() {
@@ -420,7 +433,7 @@ export class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPlugin
         if (region) {
           // Update the end position of the region
           // If we're dragging to the left, we need to update the start instead
-          region._onUpdate(dx, [x > startX ? 'end' : 'start'])
+          region._onUpdate(dx, x > startX ? 'end' : 'start')
         }
       },
 
