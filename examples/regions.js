@@ -23,21 +23,24 @@ ws.on('decode', () => {
   // Regions
   wsRegions.addRegion({
     start: 4,
-    end: 7,
-    content: 'First region',
+    end: 8,
+    content: 'Immovable',
     color: randomColor(),
+    drag: false,
+    resize: false,
   })
   wsRegions.addRegion({
     start: 9,
     end: 10,
-    content: 'Middle region',
+    content: 'Cramped region',
     color: randomColor(),
   })
   wsRegions.addRegion({
     start: 12,
     end: 17,
-    content: 'Last region',
+    content: 'Fixed-size region',
     color: randomColor(),
+    resize: false,
   })
 
   // Markers (zero-length regions)
