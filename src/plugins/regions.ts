@@ -94,7 +94,6 @@ export class Region extends EventEmitter<RegionEvents> {
       transition: background-color 0.2s ease;
       cursor: ${this.drag ? 'grab' : 'default'};
       pointer-events: all;
-      pointer-events: all;
     `,
     )
 
