@@ -54,7 +54,18 @@ export function makeDraggable(
       unsub()
     }
 
+    // Prevent scrolling on touch devices
+    const touchMove = (e: Event) => e.preventDefault()
+
+    const touchOptions = { passive: false } as EventListenerOptions
+    document.addEventListener('touchmove', touchMove, touchOptions)
+    document.addEventListener('pointermove', move)
+    document.addEventListener('pointerup', up)
+    document.addEventListener('pointerleave', up)
+    document.addEventListener('click', click, true)
+
     unsub = () => {
+      document.removeEventListener('touchmove', touchMove, touchOptions)
       document.removeEventListener('pointermove', move)
       document.removeEventListener('pointerup', up)
       document.removeEventListener('pointerleave', up)
@@ -62,11 +73,6 @@ export function makeDraggable(
         document.removeEventListener('click', click, true)
       }, 10)
     }
-
-    document.addEventListener('pointermove', move)
-    document.addEventListener('pointerup', up)
-    document.addEventListener('pointerleave', up)
-    document.addEventListener('click', click, true)
   }
 
   element.addEventListener('pointerdown', down)
