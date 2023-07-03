@@ -1,4 +1,4 @@
-name: Code Review
+name: AI code review
 
 permissions:
   contents: read
