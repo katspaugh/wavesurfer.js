@@ -393,8 +393,8 @@ export class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePlu
     this.renderPolyline()
   }
 
-  /** Set the fade-in end time.
-   * @param time The time (in seconds) to set the fade-in end time to
+  /** Set the fade-out end time.
+   * @param time The time (in seconds) to set the fade-out end time to
    * @param moveFadeOutStart Whether to move the drag point to the new time (default: false)
    */
   public setEndTime(time: number, moveFadeOutStart = false) {
@@ -405,6 +405,22 @@ export class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePlu
 
     this.options.fadeOutEnd = time
 
+    this.renderPolyline()
+  }
+
+  /** Set the fade-in end time.
+   * @param time The time (in seconds) to set the fade-in end time to
+   */
+  public setFadeInEnd(time: number) {
+    this.options.fadeInEnd = time
+    this.renderPolyline()
+  }
+
+  /** Set the fade-out start time.
+   * @param time The time (in seconds) to set the fade-out start time to
+   */
+  public setFadeOutStart(time: number) {
+    this.options.fadeOutStart = time
     this.renderPolyline()
   }
 
