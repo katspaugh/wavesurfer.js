@@ -327,7 +327,7 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
     this.emit('ready', this.duration)
   }
 
-  /** Zoom in or out */
+  /** Zoom the waveform by a given pixels-per-second factor */
   public zoom(minPxPerSec: number) {
     if (!this.decodedData) {
       throw new Error('No audio loaded')
@@ -352,7 +352,7 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
     this.options.interact = isInteractive
   }
 
-  /** Seeks to a percentage of audio as [0..1] (0 = beginning, 1 = end) */
+  /** Seek to a percentage of audio as [0..1] (0 = beginning, 1 = end) */
   public seekTo(progress: number) {
     const time = this.getDuration() * progress
     this.setTime(time)
@@ -369,7 +369,7 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
     this.setTime(0)
   }
 
-  /** Skip N or -N seconds from the current positions */
+  /** Skip N or -N seconds from the current position */
   public skip(seconds: number) {
     this.setTime(this.getCurrentTime() + seconds)
   }
