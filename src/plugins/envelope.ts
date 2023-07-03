@@ -2,7 +2,7 @@
  * Envelope is a visual UI for controlling the audio volume and add fade-in and fade-out effects.
  */
 
-import BasePlugin from '../base-plugin.js'
+import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 
@@ -33,7 +33,7 @@ const defaultOptions = {
 
 type Options = EnvelopePluginOptions & typeof defaultOptions
 
-export type EnvelopePluginEvents = {
+export type EnvelopePluginEvents = BasePluginEvents & {
   'fade-in-change': [time: number]
   'fade-out-change': [time: number]
   'volume-change': [volume: number]
