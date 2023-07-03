@@ -1,9 +1,13 @@
 import EventEmitter, { type GeneralEventTypes } from './event-emitter.js'
 import type WaveSurfer from './wavesurfer.js'
 
-export type GenericPlugin = BasePlugin<GeneralEventTypes, unknown>
+type BasePluginEvents = GeneralEventTypes & {
+  destroy: []
+}
 
-export class BasePlugin<EventTypes extends GeneralEventTypes, Options> extends EventEmitter<EventTypes> {
+export type GenericPlugin = BasePlugin<BasePluginEvents, unknown>
+
+export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends EventEmitter<EventTypes> {
   protected wavesurfer?: WaveSurfer
   protected subscriptions: (() => void)[] = []
   protected options: Options
@@ -24,6 +28,7 @@ export class BasePlugin<EventTypes extends GeneralEventTypes, Options> extends E
   }
 
   destroy() {
+    this.emit('destroy')
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
   }
 }

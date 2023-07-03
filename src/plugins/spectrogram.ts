@@ -344,6 +344,7 @@ export class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, Spect
       this.wrapper.remove()
       this.wrapper = null
     }
+    super.destroy()
   }
 
   createWrapper() {

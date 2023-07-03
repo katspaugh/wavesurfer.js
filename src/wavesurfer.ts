@@ -262,6 +262,14 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
   public registerPlugin<T extends GenericPlugin>(plugin: T): T {
     plugin.init(this)
     this.plugins.push(plugin)
+
+    // Unregister plugin on destroy
+    this.subscriptions.push(
+      plugin.once('destroy', () => {
+        this.plugins = this.plugins.filter((p) => p !== plugin)
+      }),
+    )
+
     return plugin
   }
 
@@ -382,8 +390,8 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
   /** Unmount wavesurfer */
   public destroy() {
     this.emit('destroy')
-    this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.plugins.forEach((plugin) => plugin.destroy())
+    this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.timer.destroy()
     this.renderer.destroy()
     super.destroy()
