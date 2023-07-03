@@ -1,9 +1,9 @@
 import EventEmitter, { type GeneralEventTypes } from './event-emitter.js'
 import type WaveSurfer from './wavesurfer.js'
 
-export type BasePluginEvents = GeneralEventTypes & {
+export type BasePluginEvents = {
   destroy: []
-}
+} & GeneralEventTypes
 
 export type GenericPlugin = BasePlugin<BasePluginEvents, unknown>
 

@@ -10,14 +10,14 @@ import EventEmitter from '../event-emitter.js'
 
 export type RegionsPluginOptions = undefined
 
-export type RegionsPluginEvents = {
+export type RegionsPluginEvents = BasePluginEvents & {
   'region-created': [region: Region]
   'region-updated': [region: Region]
   'region-clicked': [region: Region, e: MouseEvent]
   'region-double-clicked': [region: Region, e: MouseEvent]
 }
 
-export type RegionEvents = BasePluginEvents & {
+export type RegionEvents = {
   /** Before the region is removed */
   remove: []
   /** When the region's parameters are being updated */
