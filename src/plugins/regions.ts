@@ -4,13 +4,13 @@
  * You can set the color and content of each region, as well as their HTML content.
  */
 
-import BasePlugin from '../base-plugin.js'
+import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 
 export type RegionsPluginOptions = undefined
 
-export type RegionsPluginEvents = {
+export type RegionsPluginEvents = BasePluginEvents & {
   'region-created': [region: Region]
   'region-updated': [region: Region]
   'region-clicked': [region: Region, e: MouseEvent]

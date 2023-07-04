@@ -2,7 +2,7 @@
  * Record audio from the microphone, render a waveform and download the audio.
  */
 
-import BasePlugin from '../base-plugin.js'
+import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 
 export type RecordPluginOptions = {
   realtimeWaveColor?: string
@@ -11,7 +11,7 @@ export type RecordPluginOptions = {
   audioBitsPerSecond?: MediaRecorderOptions['audioBitsPerSecond']
 }
 
-export type RecordPluginEvents = {
+export type RecordPluginEvents = BasePluginEvents & {
   startRecording: []
   stopRecording: []
 }

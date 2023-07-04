@@ -219,7 +219,7 @@ function FFT(bufferSize, sampleRate, windowFunc, alpha) {
 /**
  * Spectrogram plugin for wavesurfer.
  */
-import BasePlugin from '../base-plugin.js'
+import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 
 export type SpectrogramPluginOptions = {
   /** Selector of element or element in which to render */
@@ -260,7 +260,7 @@ export type SpectrogramPluginOptions = {
   colorMap?: number[][]
 }
 
-export type SpectrogramPluginEvents = {
+export type SpectrogramPluginEvents = BasePluginEvents & {
   ready: []
   click: [relativeX: number]
 }
@@ -344,6 +344,7 @@ export class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, Spect
       this.wrapper.remove()
       this.wrapper = null
     }
+    super.destroy()
   }
 
   createWrapper() {

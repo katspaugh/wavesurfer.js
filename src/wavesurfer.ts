@@ -262,6 +262,14 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
   public registerPlugin<T extends GenericPlugin>(plugin: T): T {
     plugin.init(this)
     this.plugins.push(plugin)
+
+    // Unregister plugin on destroy
+    this.subscriptions.push(
+      plugin.once('destroy', () => {
+        this.plugins = this.plugins.filter((p) => p !== plugin)
+      }),
+    )
+
     return plugin
   }
 
@@ -282,6 +290,8 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Load an audio file by URL, with optional pre-decoded audio data */
   public async load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+    if (this.isPlaying()) this.pause()
+
     this.decodedData = null
     this.duration = null
 
@@ -325,7 +335,7 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
     this.emit('ready', this.duration)
   }
 
-  /** Zoom in or out */
+  /** Zoom the waveform by a given pixels-per-second factor */
   public zoom(minPxPerSec: number) {
     if (!this.decodedData) {
       throw new Error('No audio loaded')
@@ -350,7 +360,7 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
     this.options.interact = isInteractive
   }
 
-  /** Seeks to a percentage of audio as [0..1] (0 = beginning, 1 = end) */
+  /** Seek to a percentage of audio as [0..1] (0 = beginning, 1 = end) */
   public seekTo(progress: number) {
     const time = this.getDuration() * progress
     this.setTime(time)
@@ -367,7 +377,7 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
     this.setTime(0)
   }
 
-  /** Skip N or -N seconds from the current positions */
+  /** Skip N or -N seconds from the current position */
   public skip(seconds: number) {
     this.setTime(this.getCurrentTime() + seconds)
   }
@@ -380,8 +390,8 @@ export class WaveSurfer extends Player<WaveSurferEvents> {
   /** Unmount wavesurfer */
   public destroy() {
     this.emit('destroy')
-    this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.plugins.forEach((plugin) => plugin.destroy())
+    this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.timer.destroy()
     this.renderer.destroy()
     super.destroy()

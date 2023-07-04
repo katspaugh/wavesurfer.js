@@ -2,7 +2,7 @@
  * The Timeline plugin adds timestamps and notches under the waveform.
  */
 
-import BasePlugin from '../base-plugin.js'
+import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 
 export type TimelinePluginOptions = {
   /** The height of the timeline in pixels, defaults to 20 */
@@ -27,7 +27,7 @@ const defaultOptions = {
   height: 20,
 }
 
-export type TimelinePluginEvents = {
+export type TimelinePluginEvents = BasePluginEvents & {
   ready: []
 }
 

@@ -2,7 +2,7 @@
  * Minimap is a tiny copy of the main waveform serving as a navigation tool.
  */
 
-import BasePlugin from '../base-plugin.js'
+import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import WaveSurfer, { type WaveSurferOptions } from '../wavesurfer.js'
 
 export type MinimapPluginOptions = {
@@ -16,7 +16,7 @@ const defaultOptions = {
   insertPosition: 'afterend',
 }
 
-export type MinimapPluginEvents = {
+export type MinimapPluginEvents = BasePluginEvents & {
   ready: []
   interaction: []
 }

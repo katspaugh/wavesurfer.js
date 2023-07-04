@@ -2,7 +2,7 @@
  * The PluginName plugin
  */
 
-import BasePlugin from '../base-plugin.js'
+import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 
 export type PluginNamePluginOptions = {
 }
@@ -10,7 +10,7 @@ export type PluginNamePluginOptions = {
 const defaultOptions = {
 }
 
-export type PluginNamePluginEvents = {
+export type PluginNamePluginEvents = BasePluginEvents & {
 }
 
 export class PluginNamePlugin extends BasePlugin<PluginNamePluginEvents, PluginNamePluginOptions> {

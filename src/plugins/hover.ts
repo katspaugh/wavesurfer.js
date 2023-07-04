@@ -2,7 +2,7 @@
  * The Hover plugin follows the mouse and shows a timestamp
  */
 
-import BasePlugin from '../base-plugin.js'
+import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 
 export type HoverPluginOptions = {
   lineColor?: string
@@ -17,7 +17,7 @@ const defaultOptions = {
   labelSize: 11,
 }
 
-export type HoverPluginEvents = {
+export type HoverPluginEvents = BasePluginEvents & {
   hover: [relX: number]
 }
 
