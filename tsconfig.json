@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "target": "ES2021",
+    "target": "ES6",
     "lib": [
       "ESNext",
       "DOM"
     ],
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "nodenext",
     "allowUmdGlobalAccess": false,
     "declaration": true,
     "outDir": "./dist",
