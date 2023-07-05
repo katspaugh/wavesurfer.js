@@ -66,7 +66,7 @@ export class Region extends EventEmitter<RegionEvents> {
   public resize: boolean
   public color: string
   public content?: HTMLElement
-  public minLength = 0.01
+  public minLength = 0
   public maxLength = Infinity
 
   constructor(params: RegionParams, private totalDuration: number) {
@@ -218,7 +218,7 @@ export class Region extends EventEmitter<RegionEvents> {
     if (
       newStart > 0 &&
       newEnd < this.totalDuration &&
-      newStart < newEnd &&
+      newStart <= newEnd &&
       length >= this.minLength &&
       length <= this.maxLength
     ) {
