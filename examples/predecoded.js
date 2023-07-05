@@ -7,7 +7,7 @@ const wavesurfer = WaveSurfer.create({
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
   barWidth: 10,
-  barRadius: 4,
+  barRadius: 10,
   barGap: 2,
   url: '/examples/audio/demo.wav',
   peaks: [

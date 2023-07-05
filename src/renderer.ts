@@ -262,6 +262,8 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
     const vScale = (halfHeight / max) * barHeight
 
+    const rectFn = barRadius && 'roundRect' in ctx ? 'roundRect' : 'rect'
+
     ctx.beginPath()
 
     let prevX = 0
@@ -280,7 +282,7 @@ class Renderer extends EventEmitter<RendererEvents> {
         if (options.barAlign === 'top') y = 0
         else if (options.barAlign === 'bottom') y = height - barHeight
 
-        ctx.roundRect(prevX * (barWidth + barGap), y, barWidth, barHeight, barRadius)
+        ctx[rectFn](prevX * (barWidth + barGap), y, barWidth, barHeight, barRadius)
 
         prevX = x
         maxTop = 0
