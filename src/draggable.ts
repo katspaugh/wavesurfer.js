@@ -12,6 +12,9 @@ export function makeDraggable(
   if (!element) return unsub
 
   const down = (e: PointerEvent) => {
+    // Ignore the right mouse button
+    if (e.button === 2) return
+
     e.preventDefault()
     e.stopPropagation()
 
