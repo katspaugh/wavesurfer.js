@@ -21,10 +21,13 @@ export type TimelinePluginOptions = {
   secondaryLabelInterval?: number
   /** Custom inline style to apply to the container */
   style?: Partial<CSSStyleDeclaration> | string
+  /** Turn the time into a suitable label for the time. */
+  formatTimeCallback?: (seconds: number) => string
 }
 
 const defaultOptions = {
   height: 20,
+  formatTimeCallback: Function(),
 }
 
 export type TimelinePluginEvents = BasePluginEvents & {
@@ -37,6 +40,7 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
 
   constructor(options?: TimelinePluginOptions) {
     super(options || {})
+    defaultOptions.formatTimeCallback = this.defaultFormatTime
 
     this.options = Object.assign({}, defaultOptions, options)
     this.timelineWrapper = this.initTimelineWrapper()
@@ -85,7 +89,7 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
     return div
   }
 
-  private formatTime(seconds: number): string {
+  private defaultFormatTime(seconds: number): string {
     if (seconds / 60 > 1) {
       // calculate minutes and seconds from seconds count
       const minutes = Math.floor(seconds / 60)
@@ -194,7 +198,7 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
       if (isPrimary || isSecondary) {
         notch.style.height = '100%'
         notch.style.textIndent = '3px'
-        notch.textContent = this.formatTime(i)
+        notch.textContent = this.options.formatTimeCallback(i)
         if (isPrimary) notch.style.opacity = '1'
       }
 
