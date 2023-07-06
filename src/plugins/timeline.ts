@@ -27,7 +27,17 @@ export type TimelinePluginOptions = {
 
 const defaultOptions = {
   height: 20,
-  formatTimeCallback: Function(),
+  formatTimeCallback: (seconds: number) => {
+    if (seconds / 60 > 1) {
+      // calculate minutes and seconds from seconds count
+      const minutes = Math.floor(seconds / 60)
+      seconds = Math.round(seconds % 60)
+      const paddedSeconds = `${seconds < 10 ? '0' : ''}${seconds}`
+      return `${minutes}:${paddedSeconds}`
+    }
+    const rounded = Math.round(seconds * 1000) / 1000
+    return `${rounded}`
+  },
 }
 
 export type TimelinePluginEvents = BasePluginEvents & {
@@ -40,7 +50,6 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
 
   constructor(options?: TimelinePluginOptions) {
     super(options || {})
-    defaultOptions.formatTimeCallback = this.defaultFormatTime
 
     this.options = Object.assign({}, defaultOptions, options)
     this.timelineWrapper = this.initTimelineWrapper()
@@ -87,18 +96,6 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
     const div = document.createElement('div')
     div.setAttribute('part', 'timeline')
     return div
-  }
-
-  private defaultFormatTime(seconds: number): string {
-    if (seconds / 60 > 1) {
-      // calculate minutes and seconds from seconds count
-      const minutes = Math.floor(seconds / 60)
-      seconds = Math.round(seconds % 60)
-      const paddedSeconds = `${seconds < 10 ? '0' : ''}${seconds}`
-      return `${minutes}:${paddedSeconds}`
-    }
-    const rounded = Math.round(seconds * 1000) / 1000
-    return `${rounded}`
   }
 
   // Return how many seconds should be between each notch
