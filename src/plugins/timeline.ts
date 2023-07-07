@@ -21,10 +21,23 @@ export type TimelinePluginOptions = {
   secondaryLabelInterval?: number
   /** Custom inline style to apply to the container */
   style?: Partial<CSSStyleDeclaration> | string
+  /** Turn the time into a suitable label for the time. */
+  formatTimeCallback?: (seconds: number) => string
 }
 
 const defaultOptions = {
   height: 20,
+  formatTimeCallback: (seconds: number) => {
+    if (seconds / 60 > 1) {
+      // calculate minutes and seconds from seconds count
+      const minutes = Math.floor(seconds / 60)
+      seconds = Math.round(seconds % 60)
+      const paddedSeconds = `${seconds < 10 ? '0' : ''}${seconds}`
+      return `${minutes}:${paddedSeconds}`
+    }
+    const rounded = Math.round(seconds * 1000) / 1000
+    return `${rounded}`
+  },
 }
 
 export type TimelinePluginEvents = BasePluginEvents & {
@@ -83,18 +96,6 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
     const div = document.createElement('div')
     div.setAttribute('part', 'timeline')
     return div
-  }
-
-  private formatTime(seconds: number): string {
-    if (seconds / 60 > 1) {
-      // calculate minutes and seconds from seconds count
-      const minutes = Math.floor(seconds / 60)
-      seconds = Math.round(seconds % 60)
-      const paddedSeconds = `${seconds < 10 ? '0' : ''}${seconds}`
-      return `${minutes}:${paddedSeconds}`
-    }
-    const rounded = Math.round(seconds * 1000) / 1000
-    return `${rounded}`
   }
 
   // Return how many seconds should be between each notch
@@ -194,7 +195,7 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
       if (isPrimary || isSecondary) {
         notch.style.height = '100%'
         notch.style.textIndent = '3px'
-        notch.textContent = this.formatTime(i)
+        notch.textContent = this.options.formatTimeCallback(i)
         if (isPrimary) notch.style.opacity = '1'
       }
 
