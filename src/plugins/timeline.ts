@@ -147,11 +147,9 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
       `
       height: ${this.options.height}px;
       overflow: hidden;
-      display: flex;
-      justify-content: space-between;
-      align-items: ${isTop ? 'flex-start' : 'flex-end'};
       font-size: ${this.options.height / 2}px;
       white-space: nowrap;
+      position: relative;
     `,
     )
 
@@ -173,10 +171,11 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
     }
 
     const notchEl = document.createElement('div')
+    notchEl.setAttribute('part', 'timeline-notch')
     notchEl.setAttribute(
       'style',
       `
-      width: 1px;
+      width: 0;
       height: 50%;
       display: flex;
       flex-direction: column;
@@ -184,6 +183,9 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
       overflow: visible;
       border-left: 1px solid currentColor;
       opacity: 0.25;
+      position: absolute;
+      ${isTop ? 'top: 0;' : 'bottom: 0;'}
+      z-index: 1;
     `,
     )
 
@@ -199,6 +201,7 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
         if (isPrimary) notch.style.opacity = '1'
       }
 
+      notch.style.left = `${i * pxPerSec}px`
       timeline.appendChild(notch)
     }
 
