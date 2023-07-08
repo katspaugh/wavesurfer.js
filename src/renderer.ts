@@ -117,6 +117,7 @@ class Renderer extends EventEmitter<RendererEvents> {
           overflow-y: hidden;
           width: 100%;
           position: relative;
+          touch-action: none;
         }
         :host .noScrollbar {
           scrollbar-color: transparent;
