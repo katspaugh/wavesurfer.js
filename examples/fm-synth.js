@@ -196,7 +196,7 @@ function drawWaveform() {
   // Get the waveform data from the analyser
   analyser.getFloatTimeDomainData(dataArray)
   const duration = document.getElementById('duration').valueAsNumber
-  waveform && wavesurfer.load('', [dataArray], duration)
+  wavesurfer && wavesurfer.load('', [dataArray], duration)
 }
 
 function animate() {

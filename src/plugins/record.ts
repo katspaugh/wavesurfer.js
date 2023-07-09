@@ -5,8 +5,6 @@
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 
 export type RecordPluginOptions = {
-  realtimeWaveColor?: string
-  lineWidth?: number
   mimeType?: MediaRecorderOptions['mimeType']
   audioBitsPerSecond?: MediaRecorderOptions['audioBitsPerSecond']
 }
@@ -22,66 +20,53 @@ const findSupportedMimeType = () => MIME_TYPES.find((mimeType) => MediaRecorder.
 class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private mediaRecorder: MediaRecorder | null = null
   private recordedUrl = ''
+  private cursorWidth = 0
 
   public static create(options?: RecordPluginOptions) {
     return new RecordPlugin(options || {})
   }
 
+  private hideCursor() {
+    if (this.wavesurfer) {
+      this.cursorWidth = this.wavesurfer.options.cursorWidth || 1
+      this.wavesurfer.options.cursorWidth = 0
+    }
+  }
+
+  onInit() {
+    this.hideCursor()
+  }
+
   private loadBlob(data: Blob[], type: string) {
     const blob = new Blob(data, { type })
     this.recordedUrl = URL.createObjectURL(blob)
-    this.wavesurfer?.load(this.recordedUrl)
+    if (this.wavesurfer) {
+      this.wavesurfer.options.cursorWidth = this.cursorWidth
+      this.wavesurfer.load(this.recordedUrl)
+    }
   }
 
   render(stream: MediaStream): () => void {
-    if (!this.wavesurfer) return () => undefined
-
-    const container = this.wavesurfer.getWrapper()
-    const canvas = document.createElement('canvas')
-    canvas.width = container.clientWidth
-    canvas.height = container.clientHeight
-    canvas.style.zIndex = '10'
-    container.appendChild(canvas)
-
-    const canvasCtx = canvas.getContext('2d')
-    const audioContext = new AudioContext()
+    const audioContext = new AudioContext({ sampleRate: 8000 })
     const source = audioContext.createMediaStreamSource(stream)
     const analyser = audioContext.createAnalyser()
     source.connect(analyser)
+
+    const bufferLength = analyser.frequencyBinCount
+    const dataArray = new Float32Array(bufferLength)
+    const sampleDuration = bufferLength / audioContext.sampleRate
+
     let animationId: number
 
     const drawWaveform = () => {
-      if (!canvasCtx) return
-
-      canvasCtx.clearRect(0, 0, canvas.width, canvas.height)
-      const bufferLength = analyser.frequencyBinCount
-      const dataArray = new Uint8Array(bufferLength)
-      analyser.getByteTimeDomainData(dataArray)
-
-      canvasCtx.lineWidth = this.options.lineWidth || 2
-      const color = this.options.realtimeWaveColor || this.wavesurfer?.options.waveColor || ''
-      canvasCtx.strokeStyle = Array.isArray(color) ? color[0] : color
-      canvasCtx.beginPath()
-
-      const sliceWidth = (canvas.width * 1.0) / bufferLength
-      let x = 0
-
-      for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0
-        const y = (v * canvas.height) / 2
-
-        if (i === 0) {
-          canvasCtx.moveTo(x, y)
-        } else {
-          canvasCtx.lineTo(x, y)
-        }
-
-        x += sliceWidth
-      }
-
-      canvasCtx.lineTo(canvas.width, canvas.height / 2)
-      canvasCtx.stroke()
+      analyser.getFloatTimeDomainData(dataArray)
+      this.wavesurfer?.load('', [dataArray], sampleDuration)
       animationId = requestAnimationFrame(drawWaveform)
+    }
+
+    if (this.wavesurfer) {
+      this.cursorWidth = this.wavesurfer.options.cursorWidth || 1
+      this.wavesurfer.options.cursorWidth = 0
     }
 
     drawWaveform()
@@ -99,8 +84,6 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       if (audioContext) {
         audioContext.close()
       }
-
-      canvas?.remove()
     }
   }
 
@@ -114,6 +97,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   public async startRecording() {
+    this.hideCursor()
     this.cleanUp()
 
     let stream: MediaStream

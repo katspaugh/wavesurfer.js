@@ -61,7 +61,7 @@ recButton.onclick = () => {
   recButton.disabled = true
 
   record.startRecording().then(() => {
-    recButton.textContent = '⏺ Stop'
+    recButton.textContent = 'Stop'
     recButton.disabled = false
   })
 }
