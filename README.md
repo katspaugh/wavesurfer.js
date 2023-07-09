@@ -109,7 +109,7 @@ Most options, events, and methods are similar to those in previous versions.
  * The Cursor plugin is replaced by the Hover plugin.
 
 ### Removed options
- * `backend`, `audioContext`, `closeAudioContext', 'audioScriptProcessor` – there's no Web Audio backend, so no AudioContext
+ * `backend`, `audioContext`, `closeAudioContext`, `audioScriptProcessor` – there's no Web Audio backend, so no AudioContext
  * `autoCenterImmediately` – `autoCenter` is now always immediate unless the audio is playing
  * `backgroundColor`, `hideCursor` – this can be easily set via CSS
  * `mediaType`, `mediaControls` – you should instead pass an entire media element in the `media` option. [Example](https://wavesurfer-js.org/examples/#video.js).
@@ -143,12 +143,18 @@ Have a question about integrating wavesurfer.js on your website? Feel free to as
 ### FAQ
 
 * **Q**: Does wavesurfer support large files?
-* **A**: Since wavesurfer decodes audio entirely in the browser using Web Audio, large clips may result in an innacurately timed waveform or fail to decode at all due to memory constraints. We recommend using pre-decoded peaks for large files (see [this example](https://wavesurfer-js.org/examples/#predecoded.js)). You can use a tool like [bbc/audiowaveform](https://github.com/bbc/audiowaveform) to generate peaks.
+* **A**: Since wavesurfer decodes audio entirely in the browser using Web Audio, large clips may fail to decode due to memory constraints. We recommend using pre-decoded peaks for large files (see [this example](https://wavesurfer-js.org/examples/#predecoded.js)). You can use a tool like [bbc/audiowaveform](https://github.com/bbc/audiowaveform) to generate peaks.
 
 ---
 
 * **Q**: What about streaming audio?
 * **A**: Streaming isn't supported because wavesurfer needs to download the entire audio file to decode and render it.
+
+---
+
+* **Q**: There is a mismatch between my audio and the waveform.
+* **A**: If you're using a VBR (variable bit rate) mp3 file, there might be a mismatch between the audio and the waveform. This can be fixed by converting your file to CBR (constant bit rate). See [this issue](https://github.com/katspaugh/wavesurfer.js/issues/2890#issuecomment-1601067822) for details.
+
 
 ## Development
 
@@ -184,8 +190,8 @@ yarn cypress
 
 ## Feedback
 
-We appreciate your feedback and contributions! Join the conversation and share your thoughts here: https://github.com/wavesurfer-js/wavesurfer.js/discussions/2789
+We appreciate your feedback and contributions!
 
-If you encounter any issues or have suggestions for improvements, please don't hesitate to open an issue or submit a pull request on the GitHub repository.
+If you encounter any issues or have suggestions for improvements, please don't hesitate to post in our [forum](https://github.com/wavesurfer-js/wavesurfer.js/discussions/categories/q-a).
 
 We hope you enjoy using wavesurfer.ts and look forward to hearing about your experiences with the library!
