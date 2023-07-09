@@ -265,7 +265,7 @@ export type SpectrogramPluginEvents = BasePluginEvents & {
   click: [relativeX: number]
 }
 
-export class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramPluginOptions> {
+class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramPluginOptions> {
   static create(options?: SpectrogramPluginOptions) {
     return new SpectrogramPlugin(options || {})
   }

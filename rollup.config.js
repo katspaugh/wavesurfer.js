@@ -20,7 +20,7 @@ export default [
     output: {
       file: 'dist/wavesurfer.cjs',
       format: 'cjs',
-      exports: 'named',
+      exports: 'default',
     },
     plugins,
   },
@@ -31,7 +31,7 @@ export default [
       name: 'WaveSurfer',
       file: 'dist/wavesurfer.min.js',
       format: 'umd',
-      exports: 'named',
+      exports: 'default',
     },
     plugins,
   },
@@ -56,7 +56,7 @@ export default [
           name: plugin.replace('src/plugins/', '').replace('.ts', ''),
           file: plugin.replace('src/', 'dist/').replace('.ts', '.cjs'),
           format: 'cjs',
-          exports: 'named',
+          exports: 'default',
         },
         plugins,
       },
@@ -64,13 +64,17 @@ export default [
       {
         input: plugin,
         output: {
-          name: plugin.replace('src/plugins/', '').replace('.ts', ''),
+          name: plugin
+            .replace('src/plugins/', '')
+            .replace('.ts', '')
+            .replace(/^./, (c) => `WaveSurfer.${c.toUpperCase()}`),
           file: plugin.replace('src/', 'dist/').replace('.ts', '.min.js'),
           format: 'umd',
+          extend: true,
           globals: {
             WaveSurfer: 'WaveSurfer',
           },
-          exports: 'named',
+          exports: 'default',
         },
         external: ['WaveSurfer'],
         plugins,

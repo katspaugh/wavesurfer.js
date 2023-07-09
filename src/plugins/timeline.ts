@@ -44,7 +44,7 @@ export type TimelinePluginEvents = BasePluginEvents & {
   ready: []
 }
 
-export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOptions> {
+class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOptions> {
   private timelineWrapper: HTMLElement
   protected options: TimelinePluginOptions & typeof defaultOptions
 
@@ -180,11 +180,11 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
       display: flex;
       flex-direction: column;
       justify-content: ${isTop ? 'flex-start' : 'flex-end'};
+      ${isTop ? 'top: 0;' : 'bottom: 0;'}
       overflow: visible;
       border-left: 1px solid currentColor;
       opacity: 0.25;
       position: absolute;
-      ${isTop ? 'top: 0;' : 'bottom: 0;'}
       z-index: 1;
     `,
     )
