@@ -21,7 +21,7 @@ export type MinimapPluginEvents = BasePluginEvents & {
   interaction: []
 }
 
-export class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions> {
+class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions> {
   protected options: MinimapPluginOptions & typeof defaultOptions
   private minimapWrapper: HTMLElement
   private miniWavesurfer: WaveSurfer | null = null

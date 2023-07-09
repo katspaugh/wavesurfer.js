@@ -21,7 +21,7 @@ export type HoverPluginEvents = BasePluginEvents & {
   hover: [relX: number]
 }
 
-export class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
+class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
   protected options: HoverPluginOptions & typeof defaultOptions
   private wrapper: HTMLElement
   private label: HTMLElement

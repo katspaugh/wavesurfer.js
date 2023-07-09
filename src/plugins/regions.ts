@@ -57,7 +57,7 @@ export type RegionParams = {
   maxLength?: number
 }
 
-export class Region extends EventEmitter<RegionEvents> {
+class Region extends EventEmitter<RegionEvents> {
   public element: HTMLElement
   public id: string
   public start: number
@@ -288,7 +288,7 @@ export class Region extends EventEmitter<RegionEvents> {
   }
 }
 
-export class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions> {
+class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions> {
   private regions: Region[] = []
   private regionsContainer: HTMLElement
 

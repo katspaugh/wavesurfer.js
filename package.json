@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "7.0.0-beta.15",
+  "version": "7.0.0-beta.16",
   "license": "BSD-3-Clause",
   "author": "katspaugh",
   "description": "Navigable audio waveform player",
@@ -21,20 +21,20 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/wavesurfer.js",
-  "module": "./dist/wavesurfer.js",
+  "main": "./dist/wavesurfer.esm.js",
+  "module": "./dist/wavesurfer.esm.js",
+  "browser": "./dist/wavesurfer.esm.js",
   "types": "./dist/wavesurfer.d.ts",
-  "browser": "./dist/wavesurfer.js",
   "exports": {
     ".": {
-      "import": "./dist/wavesurfer.js",
+      "import": "./dist/wavesurfer.esm.js",
       "types": "./dist/wavesurfer.d.ts",
-      "require": "./dist/wavesurfer.min.cjs"
+      "require": "./dist/wavesurfer.cjs"
     },
     "./dist/plugins/*.js": {
-      "import": "./dist/plugins/*.js",
+      "import": "./dist/plugins/*.esm.js",
       "types": "./dist/plugins/*.d.ts",
-      "require": "./dist/plugins/*.min.cjs"
+      "require": "./dist/plugins/*.cjs"
     },
     "./dist/*": {
       "import": "./dist/*"
@@ -42,9 +42,7 @@
   },
   "scripts": {
     "build:dev": "tsc -w --target ESNext",
-    "build:umd": "webpack",
-    "build:umd:plugins": "webpack --config webpack.config.plugins.js",
-    "build": "rm -rf dist && tsc && npm run build:umd && npm run build:umd:plugins",
+    "build": "rm -rf dist && tsc && rollup -c",
     "deploy": "yarn build && yarn docs",
     "prepublishOnly": "npm run build",
     "docs": "typedoc --titleLink '/' src/wavesurfer.ts src/plugins/*.ts --out docs",
@@ -58,6 +56,8 @@
     "start": "npm run build:dev & npm run serve"
   },
   "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.1.2",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.57.0",
     "cypress": "^12.9.0",
@@ -66,10 +66,9 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.7",
+    "rollup": "^3.26.2",
     "ts-loader": "^9.4.2",
     "typedoc": "^0.24.6",
-    "typescript": "^5.0.4",
-    "webpack": "^5.77.0",
-    "webpack-cli": "^5.0.1"
+    "typescript": "^5.0.4"
   }
 }

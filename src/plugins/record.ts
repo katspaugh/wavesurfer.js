@@ -19,7 +19,7 @@ export type RecordPluginEvents = BasePluginEvents & {
 const MIME_TYPES = ['audio/webm', 'audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/mp3']
 const findSupportedMimeType = () => MIME_TYPES.find((mimeType) => MediaRecorder.isTypeSupported(mimeType))
 
-export class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
+class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private mediaRecorder: MediaRecorder | null = null
   private recordedUrl = ''
 
