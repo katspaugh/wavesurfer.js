@@ -20,30 +20,38 @@ const findSupportedMimeType = () => MIME_TYPES.find((mimeType) => MediaRecorder.
 class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private mediaRecorder: MediaRecorder | null = null
   private recordedUrl = ''
-  private cursorWidth = 0
+  private savedCursorWidth = 1
+  private savedInteractive = true
 
   public static create(options?: RecordPluginOptions) {
     return new RecordPlugin(options || {})
   }
 
-  private hideCursor() {
+  private preventInteraction() {
     if (this.wavesurfer) {
-      this.cursorWidth = this.wavesurfer.options.cursorWidth || 1
+      this.savedCursorWidth = this.wavesurfer.options.cursorWidth || 1
+      this.savedInteractive = this.wavesurfer.options.interact || true
       this.wavesurfer.options.cursorWidth = 0
+      this.wavesurfer.options.interact = false
+    }
+  }
+
+  private restoreInteraction() {
+    if (this.wavesurfer) {
+      this.wavesurfer.options.cursorWidth = this.savedCursorWidth
+      this.wavesurfer.options.interact = this.savedInteractive
     }
   }
 
   onInit() {
-    this.hideCursor()
+    this.preventInteraction()
   }
 
   private loadBlob(data: Blob[], type: string) {
     const blob = new Blob(data, { type })
     this.recordedUrl = URL.createObjectURL(blob)
-    if (this.wavesurfer) {
-      this.wavesurfer.options.cursorWidth = this.cursorWidth
-      this.wavesurfer.load(this.recordedUrl)
-    }
+    this.restoreInteraction()
+    this.wavesurfer?.load(this.recordedUrl)
   }
 
   render(stream: MediaStream): () => void {
@@ -62,11 +70,6 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       analyser.getFloatTimeDomainData(dataArray)
       this.wavesurfer?.load('', [dataArray], sampleDuration)
       animationId = requestAnimationFrame(drawWaveform)
-    }
-
-    if (this.wavesurfer) {
-      this.cursorWidth = this.wavesurfer.options.cursorWidth || 1
-      this.wavesurfer.options.cursorWidth = 0
     }
 
     drawWaveform()
@@ -97,7 +100,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   public async startRecording() {
-    this.hideCursor()
+    this.preventInteraction()
     this.cleanUp()
 
     let stream: MediaStream
