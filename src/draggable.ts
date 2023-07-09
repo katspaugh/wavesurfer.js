@@ -12,6 +12,9 @@ export function makeDraggable(
   if (!element) return unsub
 
   const down = (e: PointerEvent) => {
+    // Ignore the right mouse button
+    if (e.button === 2) return
+
     e.preventDefault()
     e.stopPropagation()
 
@@ -54,18 +57,12 @@ export function makeDraggable(
       unsub()
     }
 
-    // Prevent scrolling on touch devices
-    const touchMove = (e: Event) => e.preventDefault()
-
-    const touchOptions = { passive: false } as EventListenerOptions
-    document.addEventListener('touchmove', touchMove, touchOptions)
     document.addEventListener('pointermove', move)
     document.addEventListener('pointerup', up)
     document.addEventListener('pointerleave', up)
     document.addEventListener('click', click, true)
 
     unsub = () => {
-      document.removeEventListener('touchmove', touchMove, touchOptions)
       document.removeEventListener('pointermove', move)
       document.removeEventListener('pointerup', up)
       document.removeEventListener('pointerleave', up)

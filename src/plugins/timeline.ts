@@ -21,17 +21,30 @@ export type TimelinePluginOptions = {
   secondaryLabelInterval?: number
   /** Custom inline style to apply to the container */
   style?: Partial<CSSStyleDeclaration> | string
+  /** Turn the time into a suitable label for the time. */
+  formatTimeCallback?: (seconds: number) => string
 }
 
 const defaultOptions = {
   height: 20,
+  formatTimeCallback: (seconds: number) => {
+    if (seconds / 60 > 1) {
+      // calculate minutes and seconds from seconds count
+      const minutes = Math.floor(seconds / 60)
+      seconds = Math.round(seconds % 60)
+      const paddedSeconds = `${seconds < 10 ? '0' : ''}${seconds}`
+      return `${minutes}:${paddedSeconds}`
+    }
+    const rounded = Math.round(seconds * 1000) / 1000
+    return `${rounded}`
+  },
 }
 
 export type TimelinePluginEvents = BasePluginEvents & {
   ready: []
 }
 
-export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOptions> {
+class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOptions> {
   private timelineWrapper: HTMLElement
   protected options: TimelinePluginOptions & typeof defaultOptions
 
@@ -85,18 +98,6 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
     return div
   }
 
-  private formatTime(seconds: number): string {
-    if (seconds / 60 > 1) {
-      // calculate minutes and seconds from seconds count
-      const minutes = Math.floor(seconds / 60)
-      seconds = Math.round(seconds % 60)
-      const paddedSeconds = `${seconds < 10 ? '0' : ''}${seconds}`
-      return `${minutes}:${paddedSeconds}`
-    }
-    const rounded = Math.round(seconds * 1000) / 1000
-    return `${rounded}`
-  }
-
   // Return how many seconds should be between each notch
   private defaultTimeInterval(pxPerSec: number): number {
     if (pxPerSec >= 25) {
@@ -146,11 +147,9 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
       `
       height: ${this.options.height}px;
       overflow: hidden;
-      display: flex;
-      justify-content: space-between;
-      align-items: ${isTop ? 'flex-start' : 'flex-end'};
       font-size: ${this.options.height / 2}px;
       white-space: nowrap;
+      position: relative;
     `,
     )
 
@@ -172,17 +171,21 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
     }
 
     const notchEl = document.createElement('div')
+    notchEl.setAttribute('part', 'timeline-notch')
     notchEl.setAttribute(
       'style',
       `
-      width: 1px;
+      width: 0;
       height: 50%;
       display: flex;
       flex-direction: column;
       justify-content: ${isTop ? 'flex-start' : 'flex-end'};
+      ${isTop ? 'top: 0;' : 'bottom: 0;'}
       overflow: visible;
       border-left: 1px solid currentColor;
       opacity: 0.25;
+      position: absolute;
+      z-index: 1;
     `,
     )
 
@@ -194,10 +197,11 @@ export class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePlu
       if (isPrimary || isSecondary) {
         notch.style.height = '100%'
         notch.style.textIndent = '3px'
-        notch.textContent = this.formatTime(i)
+        notch.textContent = this.options.formatTimeCallback(i)
         if (isPrimary) notch.style.opacity = '1'
       }
 
+      notch.style.left = `${i * pxPerSec}px`
       timeline.appendChild(notch)
     }
 

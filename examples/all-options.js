@@ -106,6 +106,12 @@ const schema = {
     max: 30,
     step: 1,
   },
+  barRadius: {
+    value: 0,
+    min: 1,
+    max: 30,
+    step: 1,
+  },
   peaks: {
     type: 'json',
   },

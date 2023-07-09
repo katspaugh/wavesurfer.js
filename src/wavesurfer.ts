@@ -113,7 +113,7 @@ export type WaveSurferEvents = {
   destroy: []
 }
 
-export class WaveSurfer extends Player<WaveSurferEvents> {
+class WaveSurfer extends Player<WaveSurferEvents> {
   public options: WaveSurferOptions & typeof defaultOptions
   private renderer: Renderer
   private timer: Timer
