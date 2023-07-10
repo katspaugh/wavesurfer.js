@@ -1,10 +1,10 @@
 # <img src="https://user-images.githubusercontent.com/381895/226091100-f5567a28-7736-4d37-8f84-e08f297b7e1a.png" alt="logo" height="60" valign="middle" /> wavesurfer.js
 
-[![npm](https://img.shields.io/npm/v/wavesurfer.js/beta)](https://www.npmjs.com/package/wavesurfer.js)
+[![npm](https://img.shields.io/npm/v/wavesurfer.js)](https://www.npmjs.com/package/wavesurfer.js)
 
 ## New TypeScript version
 
-wavesurfer.js v7 beta is a TypeScript rewrite of wavesurfer.js that brings several improvements:
+wavesurfer.js v7 is a TypeScript rewrite of wavesurfer.js that brings several improvements:
 
  * Typed API for better development experience
  * Enhanced decoding and rendering performance
@@ -21,7 +21,7 @@ wavesurfer.js v7 beta is a TypeScript rewrite of wavesurfer.js that brings sever
 Try it out:
 
 ```bash
-npm install --save wavesurfer.js@beta
+npm install --save wavesurfer.js
 ```
 ```js
 import WaveSurfer from 'wavesurfer.js'
@@ -31,7 +31,7 @@ Alternatively, import it from a CDN as a ES6 module:
 
 ```html
 <script type="module">
-  import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
+  import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
 
   const wavesurfer = WaveSurfer.create({
     container: '#waveform',
@@ -44,7 +44,7 @@ Alternatively, import it from a CDN as a ES6 module:
 
 Or, as a UMD script tag which exports the library as a global `WaveSurfer` variable:
 ```html
-<script type="text/javascript" src="https://unpkg.com/wavesurfer.js@beta/dist/wavesurfer.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/wavesurfer.js/dist/wavesurfer.min.js"></script>
 ```
 
 To import one of the plugins, e.g. the Timeline plugin:
@@ -53,11 +53,11 @@ import Timeline from 'wavesurfer.js/dist/plugins/timeline.js'
 
 // or with a CDN:
 
-import Timeline from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/timeline.js'
+import Timeline from 'https://unpkg.com/wavesurfer.js/dist/plugins/timeline.js'
 
 // or as a script tag
 
-<script type="text/javascript" src="https://unpkg.com/wavesurfer.js@beta/dist/plugins/timeline.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/wavesurfer.js/dist/plugins/timeline.min.js"></script>
 ```
 
 TypeScript types are included in the package, so there's no need to install `@types/wavesurfer.js`.
@@ -104,12 +104,12 @@ Most options, events, and methods are similar to those in previous versions.
 
 ### Notable differences
  * The `backend` option is removed – [HTML5 audio (or video) is the only playback mechanism](https://github.com/katspaugh/wavesurfer.js/discussions/2762#discussioncomment-5669347). However, you can still connect wavesurfer to Web Audio via `MediaElementSourceNode`. See this [example](https://wavesurfer-js.org/examples/#webaudio.js).
- * The Markers plugin is removed – use the Regions plugin with just a `startTime`.
+ * The Markers plugin is removed – you should use the Regions plugin with just a `startTime`.
  * No Microphone plugin – superseded by the new Record plugin with more features.
- * The Cursor plugin is replaced by the Hover plugin
+ * The Cursor plugin is replaced by the Hover plugin.
 
 ### Removed options
- * `backend`, `audioContext`, `closeAudioContext', 'audioScriptProcessor` – there's no Web Audio backend, so no AudioContext
+ * `backend`, `audioContext`, `closeAudioContext`, `audioScriptProcessor` – there's no Web Audio backend, so no AudioContext
  * `autoCenterImmediately` – `autoCenter` is now always immediate unless the audio is playing
  * `backgroundColor`, `hideCursor` – this can be easily set via CSS
  * `mediaType`, `mediaControls` – you should instead pass an entire media element in the `media` option. [Example](https://wavesurfer-js.org/examples/#video.js).
@@ -120,20 +120,21 @@ Most options, events, and methods are similar to those in previous versions.
  * `scrollParent` – the container will scroll if `minPxPerSec` is set to a higher value
  * `skipLength` – there's no `skipForward` and `skipBackward` methods anymore
  * `splitChannelsOptions` – you should now use `splitChannels` to pass the channel options. Pass `height: 0` to hide a channel. See [this example](https://wavesurfer-js.org/examples/#split-channels.js).
- * `xhr`, `drawingContextAttributes`, `maxCanvasWidth`, `forceDecode` – removed to reduce code complexity
+ * `drawingContextAttributes`, `maxCanvasWidth`, `forceDecode` – removed to reduce code complexity
+ * `xhr` - please use `fetchParams` instead
  * `barMinHeight` - the minimum bar height is now 1 pixel by default
 
 ### Removed methods
  * `getFilters`, `setFilter` – as there's no Web Audio "backend"
  * `drawBuffer` – to redraw the waveform, use `setOptions` instead and pass new rendering options
- * `cancelAjax` – ajax is replaced by `fetch`
+ * `cancelAjax` – you can pass an [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) in `fetchParams`
  * `loadBlob` – use `URL.createObjectURL()` to convert a blob to a URL and call `load(url)` instead
  * `skipForward`, `skipBackward`, `setPlayEnd` – can be implemented using `setTime(time)`
- * `exportPCM` is renamed to `getDecodedData` and doesn't take any params
+ * `exportPCM` is replaced with `getDecodedData` that returns a decoded audio buffer
  * `toggleMute` is now called `setMuted(true | false)`
  * `setHeight`, `setWaveColor`, `setCursorColor`, etc. – use `setOptions` with the corresponding params instead. E.g., `wavesurfer.setOptions({ height: 300, waveColor: '#abc' })`
 
-See the complete [documentation of the new API](http://wavesurfer-js.org/docs/methods).
+See the complete [documentation of the new API](http://wavesurfer-js.org/docs).
 
 ## Questions
 
@@ -142,12 +143,18 @@ Have a question about integrating wavesurfer.js on your website? Feel free to as
 ### FAQ
 
 * **Q**: Does wavesurfer support large files?
-* **A**: Since wavesurfer decodes audio entirely in the browser using Web Audio, large clips may result in an innacurately timed waveform or fail to decode at all due to memory constraints. We recommend using pre-decoded peaks for large files (see [this example](https://wavesurfer-js.org/examples/#predecoded.js)). You can use a tool like [bbc/audiowaveform](https://github.com/bbc/audiowaveform) to generate peaks.
+* **A**: Since wavesurfer decodes audio entirely in the browser using Web Audio, large clips may fail to decode due to memory constraints. We recommend using pre-decoded peaks for large files (see [this example](https://wavesurfer-js.org/examples/#predecoded.js)). You can use a tool like [bbc/audiowaveform](https://github.com/bbc/audiowaveform) to generate peaks.
 
 ---
 
 * **Q**: What about streaming audio?
 * **A**: Streaming isn't supported because wavesurfer needs to download the entire audio file to decode and render it.
+
+---
+
+* **Q**: There is a mismatch between my audio and the waveform.
+* **A**: If you're using a VBR (variable bit rate) mp3 file, there might be a mismatch between the audio and the waveform. This can be fixed by converting your file to CBR (constant bit rate). See [this issue](https://github.com/katspaugh/wavesurfer.js/issues/2890#issuecomment-1601067822) for details.
+
 
 ## Development
 
@@ -183,8 +190,8 @@ yarn cypress
 
 ## Feedback
 
-We appreciate your feedback and contributions! Join the conversation and share your thoughts here: https://github.com/wavesurfer-js/wavesurfer.js/discussions/2789
+We appreciate your feedback and contributions!
 
-If you encounter any issues or have suggestions for improvements, please don't hesitate to open an issue or submit a pull request on the GitHub repository.
+If you encounter any issues or have suggestions for improvements, please don't hesitate to post in our [forum](https://github.com/wavesurfer-js/wavesurfer.js/discussions/categories/q-a).
 
 We hope you enjoy using wavesurfer.ts and look forward to hearing about your experiences with the library!

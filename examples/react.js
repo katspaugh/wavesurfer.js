@@ -12,8 +12,8 @@
 const { useRef, useState, useEffect, useCallback } = React
 
 // Import WaveSurfer
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
-import Timeline from 'https://unpkg.com/wavesurfer.js@beta/dist/plugins/timeline.js'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
+import Timeline from 'https://unpkg.com/wavesurfer.js/dist/plugins/timeline.js'
 
 // WaveSurfer hook
 const useWavesurfer = (containerRef, options) => {

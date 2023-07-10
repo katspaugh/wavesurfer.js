@@ -1,6 +1,6 @@
 // A two-operator FM synth with a real-time waveform
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
 
 const wavesurfer = WaveSurfer.create({
   container: '#waveform',

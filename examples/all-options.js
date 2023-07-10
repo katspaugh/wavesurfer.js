@@ -1,6 +1,6 @@
 // All wavesurfer options in one place
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@beta'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
 
 const audio = new Audio()
 audio.controls = true
