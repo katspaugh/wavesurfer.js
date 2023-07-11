@@ -16,16 +16,19 @@ const loadPreview = (code) => {
     <title>wavesurfer.js examples</title>
     <style>
       html {
-        padding: 1rem;
         font-family: sans-serif;
       }
       body {
         margin: 0;
+        padding: 1rem;
       }
       @media (prefers-color-scheme: dark) {
         body {
           background: #333;
           color: #eee;
+        }
+        a {
+          color: #fff;
         }
       }
       input {

@@ -57,7 +57,7 @@ export type RegionParams = {
   maxLength?: number
 }
 
-class Region extends EventEmitter<RegionEvents> {
+export class Region extends EventEmitter<RegionEvents> {
   public element: HTMLElement
   public id: string
   public start: number
@@ -216,8 +216,8 @@ class Region extends EventEmitter<RegionEvents> {
     const length = newEnd - newStart
 
     if (
-      newStart > 0 &&
-      newEnd < this.totalDuration &&
+      newStart >= 0 &&
+      newEnd <= this.totalDuration &&
       newStart <= newEnd &&
       length >= this.minLength &&
       length <= this.maxLength
