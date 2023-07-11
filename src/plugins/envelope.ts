@@ -210,7 +210,14 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     this.initSvg()
     this.initFadeEffects()
 
+    // Sync the plugin's volume with the media element volume
+    const media = this.wavesurfer.getMediaElement()
+    const onMediaVolumeChange = () => this.setVolume(media.volume)
+    media.addEventListener('volumechange', onMediaVolumeChange)
+
     this.subscriptions.push(
+      () => media.removeEventListener('volumechange', onMediaVolumeChange),
+
       this.wavesurfer.on('redraw', () => {
         const duration = this.wavesurfer?.getDuration()
         if (!duration) return
