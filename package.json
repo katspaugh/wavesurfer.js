@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "license": "BSD-3-Clause",
   "author": "katspaugh",
   "description": "Navigable audio waveform player",
@@ -21,7 +21,7 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/wavesurfer.esm.js",
+  "main": "./dist/wavesurfer.min.js",
   "module": "./dist/wavesurfer.esm.js",
   "browser": "./dist/wavesurfer.esm.js",
   "types": "./dist/wavesurfer.d.ts",
