@@ -29,46 +29,87 @@ npm install --save wavesurfer.js
 import WaveSurfer from 'wavesurfer.js'
 ```
 
-Alternatively, import it from a CDN as an ES6 module:
-
-```html
-<script type="module">
-  import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
-
-  const wavesurfer = WaveSurfer.create({
-    container: '#waveform',
-    waveColor: '#4F4A85',
-    progressColor: '#383351',
-    url: '/audio.mp3',
-  })
-</script>
-```
-
-Or, as a UMD script tag which exports the library as a global `WaveSurfer` variable:
+Alternatively, insert a UMD script tag which exports the library as a global `WaveSurfer` variable:
 ```html
 <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
 ```
 
-To import one of the plugins, e.g. the Timeline plugin:
+Create a wavesurfer instance and pass various [options](#wavesurfer-options):
 ```js
-import Timeline from 'wavesurfer.js/dist/plugins/timeline.js'
+const wavesurfer = WaveSurfer.create({
+  container: '#waveform',
+  waveColor: '#4F4A85',
+  progressColor: '#383351',
+  url: '/audio.mp3',
+})
+```
 
-// or from a CDN:
+To import one of the plugins, e.g. the [Regions plugin](https://wavesurfer-js.org/examples/#regions.js):
+```js
+import Regions from 'wavesurfer.js/dist/plugins/regions.js'
+```
 
-import Timeline from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/timeline.esm.js'
-
-// or as a script tag
-
-<script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/timeline.min.js"></script>
+Or as a script tag:
+```html
+<script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.min.js"></script>
 ```
 
 TypeScript types are included in the package, so there's no need to install `@types/wavesurfer.js`.
 
 See more [examples](https://wavesurfer-js.org/examples).
 
-## Documentation
+## API reference
 
-See the documentation on wavesurfer.js [methods](http://wavesurfer-js.org/docs/methods), [options](http://wavesurfer-js.org/docs/options) and [events](http://wavesurfer-js.org/docs/events) on our website.
+See the documentation on wavesurfer [methods](http://wavesurfer-js.org/docs/methods), [options](http://wavesurfer-js.org/docs/options) and [events](http://wavesurfer-js.org/docs/events).
+
+### Wavesurfer options
+- `container`: `HTMLElement | string` - Required: an HTML element or selector where the waveform will be rendered.
+- `height`: `number | 'auto'` - The height of the waveform in pixels, or "auto" to fill the container height
+- `waveColor`: `string | string[] | CanvasGradient` - The color of the waveform
+- `progressColor`: `string | string[] | CanvasGradient` - The color of the progress mask
+- `cursorColor`: `string` - The color of the playpack cursor
+- `cursorWidth`: `number` - The cursor width
+- `barWidth`: `number` - Render the waveform with bars like this: ▁ ▂ ▇ ▃ ▅ ▂
+- `barGap`: `number` - Spacing between bars in pixels
+- `barRadius`: `number` - Rounded borders for bars
+- `barHeight`: `number` - A vertical scaling factor for the waveform
+- `barAlign`: `'top' | 'bottom'` - Vertical bar alignment
+- `minPxPerSec`: `number` - Minimum pixels per second of audio (i.e. zoom level)
+- `fillParent`: `boolean` - Stretch the waveform to fill the container, true by default
+- `url`: `string` - Audio URL
+- `peaks`: `Array<Float32Array | number[]>` - Pre-computed audio data
+- `duration`: `number` - Pre-computed duration
+- `media`: `HTMLMediaElement` - Use an existing media element instead of creating one
+- `autoplay`: `boolean` - Play the audio on load
+- `interact`: `boolean` - Pass false to disable clicks on the waveform
+- `hideScrollbar`: `boolean` - Hide the scrollbar
+- `audioRate`: `number` - Audio rate
+- `autoScroll`: `boolean` - Automatically scroll the container to keep the current position in viewport
+- `autoCenter`: `boolean` - If autoScroll is enabled, keep the cursor in the center of the waveform during playback
+- `sampleRate`: `number` - Decoding sample rate. Doesn't affect the playback. Defaults to 8000
+- `splitChannels`: `WaveSurferOptions[]` - Render each audio channel as a separate waveform
+- `normalize`: `boolean` - Stretch the waveform to the full height
+- `plugins`: `GenericPlugin[]` - The list of plugins to initialize on start
+- `renderFunction`: `(peaks: Array<Float32Array | number[]>, ctx: CanvasRenderingContext2D) => void` - Custom render function
+- `fetchParams`: `RequestInit` - Options to pass to the fetch method
+
+### Wavesurfer events
+- `load`: `[url: string]` - When audio starts loading
+- `decode`: `[duration: number]` - When the audio has been decoded
+- `ready`: `[duration: number]` - When the audio is both decoded and can play
+- `redraw`: `[]` - When a waveform is drawn
+- `play`: `[]` - When the audio starts playing
+- `pause`: `[]` - When the audio pauses
+- `finish`: `[]` - When the audio finishes playing
+- `timeupdate`: `[currentTime: number]` - On audio position change, fires continuously during playback
+- `audioprocess`: `[currentTime: number]` - An alias of timeupdate but only when the audio is playing
+- `seeking`: `[currentTime: number]` - When the user seeks to a new position
+- `interaction`: `[newTime: number]` - When the user interacts with the waveform (i.g. clicks or drags on it)
+- `click`: `[relativeX: number]` - When the user clicks on the waveform
+- `drag`: `[relativeX: number]` - When the user drags the cursor
+- `scroll`: `[visibleStartTime: number, visibleEndTime: number]` - When the waveform is scrolled (panned)
+- `zoom`: `[minPxPerSec: number]` - When the zoom level changes
+- `destroy`: `[]` - Just before the waveform is destroyed so you can clean up your events
 
 ## Plugins
 

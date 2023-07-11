@@ -6,7 +6,7 @@ import Renderer from './renderer.js'
 import Timer from './timer.js'
 
 export type WaveSurferOptions = {
-  /** HTML element or CSS selector */
+  /** Required: an HTML element or selector where the waveform will be rendered. */
   container: HTMLElement | string
   /** The height of the waveform in pixels, or "auto" to fill the container height */
   height?: number | 'auto'
@@ -18,7 +18,7 @@ export type WaveSurferOptions = {
   cursorColor?: string
   /** The cursor width */
   cursorWidth?: number
-  /** Render the waveform with bars like this: ▁ ▂ ▇ ▃ ▅ ▂ */
+  /** If set, the waveform will be rendered with bars like this: ▁ ▂ ▇ ▃ ▅ ▂ */
   barWidth?: number
   /** Spacing between bars in pixels */
   barGap?: number
@@ -28,15 +28,15 @@ export type WaveSurferOptions = {
   barHeight?: number
   /** Vertical bar alignment */
   barAlign?: 'top' | 'bottom'
-  /** Minimum pixels per second of audio (i.e. zoom level) */
+  /** Minimum pixels per second of audio (i.e. the zoom level) */
   minPxPerSec?: number
   /** Stretch the waveform to fill the container, true by default */
   fillParent?: boolean
   /** Audio URL */
   url?: string
-  /** Pre-computed audio data */
+  /** Pre-computed audio data, arrays of floats for each channel */
   peaks?: Array<Float32Array | number[]>
-  /** Pre-computed duration */
+  /** Pre-computed audio duration in seconds */
   duration?: number
   /** Use an existing media element instead of creating one */
   media?: HTMLMediaElement
@@ -46,7 +46,7 @@ export type WaveSurferOptions = {
   interact?: boolean
   /** Hide the scrollbar */
   hideScrollbar?: boolean
-  /** Audio rate */
+  /** Audio rate, i.e. the playback speed */
   audioRate?: number
   /** Automatically scroll the container to keep the current position in viewport */
   autoScroll?: boolean
