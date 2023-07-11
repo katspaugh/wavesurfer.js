@@ -1,7 +1,7 @@
 // American English vowels
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
-import Spectrogram from 'https://unpkg.com/wavesurfer.js/dist/plugins/spectrogram.js'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
+import Spectrogram from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/spectrogram.esm.js'
 
 // Sounds generated with `say -v 'Reed (English (US))' word`
 const vowels = ['i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'o', 'ʊ', 'u', 'ʌ', 'ə', 'ɝ']

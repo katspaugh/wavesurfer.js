@@ -1,6 +1,6 @@
 // Fancy gradients
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
 
 // Create a canvas gradient
 const ctx = document.createElement('canvas').getContext('2d')
