@@ -15,6 +15,8 @@ export type RegionsPluginEvents = BasePluginEvents & {
   'region-updated': [region: Region]
   'region-clicked': [region: Region, e: MouseEvent]
   'region-double-clicked': [region: Region, e: MouseEvent]
+  'region-in': [region: Region]
+  'region-out': [region: Region]
 }
 
 export type RegionEvents = {
@@ -309,6 +311,25 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       throw Error('WaveSurfer is not initialized')
     }
     this.wavesurfer.getWrapper().appendChild(this.regionsContainer)
+
+    // Detect when a region is being played
+    let activeRegion: Region | null = null
+
+    this.subscriptions.push(
+      this.wavesurfer.on('timeupdate', (currentTime) => {
+        const playedRegion = this.regions.find((region) => region.start <= currentTime && region.end >= currentTime)
+
+        if (activeRegion && activeRegion !== playedRegion) {
+          this.emit('region-out', activeRegion)
+          activeRegion = null
+        }
+
+        if (playedRegion && playedRegion !== activeRegion) {
+          activeRegion = playedRegion
+          this.emit('region-in', playedRegion)
+        }
+      }),
+    )
   }
 
   private initRegionsContainer(): HTMLElement {

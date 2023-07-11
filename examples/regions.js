@@ -68,34 +68,35 @@ wsRegions.on('region-updated', (region) => {
 
 // Loop a region on click
 let loop = true
-let activeRegion = null
-
-wsRegions.on('region-clicked', (region, e) => {
-  e.stopPropagation() // prevent triggering a click on the waveform
-  activeRegion = region
-  region.play()
-  region.setOptions({ color: randomColor() })
-})
-
-// Track the time
-ws.on('timeupdate', (currentTime) => {
-  // When the end of the region is reached
-  if (activeRegion && ws.isPlaying() && currentTime >= activeRegion.end) {
-    if (loop) {
-      // If looping, jump to the start of the region
-      ws.setTime(activeRegion.start)
-    } else {
-      // Otherwise, exit the region
-      activeRegion = null
-    }
-  }
-})
-
-ws.on('interaction', () => (activeRegion = null))
-
 // Toggle looping with a checkbox
 document.querySelector('input[type="checkbox"]').onclick = (e) => {
   loop = e.target.checked
+}
+
+{
+  let activeRegion = null
+  wsRegions.on('region-in', (region) => {
+    activeRegion = region
+  })
+  wsRegions.on('region-out', (region) => {
+    if (activeRegion === region) {
+      if (loop) {
+        region.play()
+      } else {
+        activeRegion = null
+      }
+    }
+  })
+  wsRegions.on('region-clicked', (region, e) => {
+    e.stopPropagation() // prevent triggering a click on the waveform
+    activeRegion = region
+    region.play()
+    region.setOptions({ color: randomColor() })
+  })
+  // Reset the active region when the user clicks anywhere in the waveform
+  ws.on('interaction', () => {
+    activeRegion = null
+  })
 }
 
 // Update the zoom level on slider change
@@ -113,7 +114,7 @@ ws.once('decode', () => {
     <p>
       <label>
         <input type="checkbox" checked="${loop}" />
-        Loop regions on click
+        Loop regions
       </label>
 
       <label style="margin-left: 2em">
