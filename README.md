@@ -69,7 +69,7 @@ See more [examples](https://wavesurfer-js.org/examples).
 See the documentation on wavesurfer [methods](http://wavesurfer-js.org/docs/methods), [options](http://wavesurfer-js.org/docs/options) and [events](http://wavesurfer-js.org/docs/events).
 
 ### Wavesurfer options
-- `container`: `HTMLElement | string` - HTML element or CSS selector
+- `container`: `HTMLElement | string` - Required: an HTML element or selector where the waveform will be rendered.
 - `height`: `number | 'auto'` - The height of the waveform in pixels, or "auto" to fill the container height
 - `waveColor`: `string | string[] | CanvasGradient` - The color of the waveform
 - `progressColor`: `string | string[] | CanvasGradient` - The color of the progress mask
