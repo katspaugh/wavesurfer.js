@@ -1,6 +1,6 @@
 // Soundcloud-style player
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
 
 const canvas = document.createElement('canvas')
 const ctx = canvas.getContext('2d')
