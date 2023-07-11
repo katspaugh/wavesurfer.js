@@ -349,6 +349,28 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.decodedData
   }
 
+  /** Get decoded peaks */
+  public exportPeaks({ channels = 1, maxLength = 8000, precision = 10_000 } = {}): Array<number[]> {
+    if (!this.decodedData) {
+      throw new Error('The audio has not been decoded yet')
+    }
+    const channelsLen = Math.min(channels, this.decodedData.numberOfChannels)
+    const peaks = []
+    for (let i = 0; i < channelsLen; i++) {
+      const data = this.decodedData.getChannelData(i)
+      const length = Math.min(data.length, maxLength)
+      const scale = data.length / length
+      const sampledData = []
+      for (let j = 0; j < length; j++) {
+        const n = Math.round(j * scale)
+        const val = data[n]
+        sampledData.push(Math.round(val * precision) / precision)
+      }
+      peaks.push(sampledData)
+    }
+    return peaks
+  }
+
   /** Get the duration of the audio in seconds */
   public getDuration(): number {
     if (this.duration !== null) return this.duration
