@@ -57,7 +57,7 @@ export type RegionParams = {
   maxLength?: number
 }
 
-class Region extends EventEmitter<RegionEvents> {
+class SingleRegion extends EventEmitter<RegionEvents> {
   public element: HTMLElement
   public id: string
   public start: number
@@ -216,8 +216,8 @@ class Region extends EventEmitter<RegionEvents> {
     const length = newEnd - newStart
 
     if (
-      newStart > 0 &&
-      newEnd < this.totalDuration &&
+      newStart >= 0 &&
+      newEnd <= this.totalDuration &&
       newStart <= newEnd &&
       length >= this.minLength &&
       length <= this.maxLength
@@ -397,7 +397,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     }
 
     const duration = this.wavesurfer.getDuration()
-    const region = new Region(options, duration)
+    const region = new SingleRegion(options, duration)
 
     if (!duration) {
       this.subscriptions.push(
@@ -449,7 +449,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         const end = ((x + initialSize) / width) * duration
 
         // Create a region but don't save it until the drag ends
-        region = new Region(
+        region = new SingleRegion(
           {
             ...options,
             start,
@@ -484,3 +484,4 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 }
 
 export default RegionsPlugin
+export type Region = SingleRegion

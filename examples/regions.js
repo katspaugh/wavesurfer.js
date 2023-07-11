@@ -22,12 +22,12 @@ const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0
 ws.on('decode', () => {
   // Regions
   wsRegions.addRegion({
-    start: 4,
+    start: 0,
     end: 8,
-    content: 'Immovable',
+    content: 'Resize me',
     color: randomColor(),
     drag: false,
-    resize: false,
+    resize: true,
   })
   wsRegions.addRegion({
     start: 9,
@@ -40,7 +40,7 @@ ws.on('decode', () => {
   wsRegions.addRegion({
     start: 12,
     end: 17,
-    content: 'Fixed-size region',
+    content: 'Drag me',
     color: randomColor(),
     resize: false,
   })
