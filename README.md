@@ -18,7 +18,9 @@ wavesurfer.js v7 is a TypeScript rewrite of wavesurfer.js that brings several im
 
 ---
 
-Try it out:
+## Getting started
+
+Install and import the package:
 
 ```bash
 npm install --save wavesurfer.js
@@ -27,37 +29,29 @@ npm install --save wavesurfer.js
 import WaveSurfer from 'wavesurfer.js'
 ```
 
-Alternatively, import it from a CDN as a ES6 module:
-
+Alternatively, insert a UMD script tag which exports the library as a global `WaveSurfer` variable:
 ```html
-<script type="module">
-  import WaveSurfer from 'https://unpkg.com/wavesurfer.js'
-
-  const wavesurfer = WaveSurfer.create({
-    container: '#waveform',
-    waveColor: '#4F4A85',
-    progressColor: '#383351',
-    url: '/audio.mp3',
-  })
-</script>
+<script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
 ```
 
-Or, as a UMD script tag which exports the library as a global `WaveSurfer` variable:
-```html
-<script type="text/javascript" src="https://unpkg.com/wavesurfer.js/dist/wavesurfer.min.js"></script>
-```
-
-To import one of the plugins, e.g. the Timeline plugin:
+Create a wavesurfer instance and pass various [options](#wavesurfer-options):
 ```js
-import Timeline from 'wavesurfer.js/dist/plugins/timeline.js'
+const wavesurfer = WaveSurfer.create({
+  container: '#waveform',
+  waveColor: '#4F4A85',
+  progressColor: '#383351',
+  url: '/audio.mp3',
+})
+```
 
-// or with a CDN:
+To import one of the plugins, e.g. the [Regions plugin](https://wavesurfer-js.org/examples/#regions.js):
+```js
+import Regions from 'wavesurfer.js/dist/plugins/regions.js'
+```
 
-import Timeline from 'https://unpkg.com/wavesurfer.js/dist/plugins/timeline.js'
-
-// or as a script tag
-
-<script type="text/javascript" src="https://unpkg.com/wavesurfer.js/dist/plugins/timeline.min.js"></script>
+Or as a script tag:
+```html
+<script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.min.js"></script>
 ```
 
 TypeScript types are included in the package, so there's no need to install `@types/wavesurfer.js`.
