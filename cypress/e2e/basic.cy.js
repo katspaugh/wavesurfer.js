@@ -139,6 +139,38 @@ describe('WaveSurfer basic tests', () => {
     })
   })
 
+  it('should export peaks', () => {
+    cy.window().then((win) => {
+      const peaks = win.wavesurfer.exportPeaks({
+        channels: 2,
+        maxLength: 1000,
+        precision: 100,
+      })
+      expect(peaks.length).to.equal(1) // the file is mono
+      expect(peaks[0].length).to.equal(1000)
+      expect(peaks[0][0]).to.equal(0)
+      expect(peaks[0][99]).to.equal(0.07)
+      expect(peaks[0][100]).to.equal(-0.15)
+
+      const peaksB = win.wavesurfer.exportPeaks({
+        maxLength: 1000,
+        precision: 1000,
+      })
+      expect(peaksB.length).to.equal(1)
+      expect(peaksB[0].length).to.equal(1000)
+      expect(peaksB[0][0]).to.equal(0)
+      expect(peaksB[0][99]).to.equal(0.072)
+      expect(peaksB[0][100]).to.equal(-0.151)
+
+      const peaksC = win.wavesurfer.exportPeaks()
+      expect(peaksC.length).to.equal(1)
+      expect(peaksC[0].length).to.equal(8000)
+      expect(peaksC[0][0]).to.equal(0)
+      expect(peaksC[0][99]).to.equal(-0.0024)
+      expect(peaksC[0][100]).to.equal(0.0048)
+    })
+  })
+
   it('should destroy wavesurfer', () => {
     cy.window().then((win) => {
       win.wavesurfer.destroy()

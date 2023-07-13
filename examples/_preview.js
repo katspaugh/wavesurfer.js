@@ -3,9 +3,10 @@ const textarea = document.querySelector('textarea')
 
 const loadPreview = (code) => {
   const html = code.replace(/\n/g, '').match(/<html>(.+?)<\/html>/gm) || []
-  const script = code.replace(/<\/script>/g, '')
-        .replace(/https:\/\/unpkg\.com\/wavesurfer.js@7/g, '..')
-        .replace(/\.esm\.js/g, '.js')
+  const script = code
+    .replace(/<\/script>/g, '')
+    .replace(/https:\/\/unpkg\.com\/wavesurfer.js@7/g, '..')
+    .replace(/\.esm\.js/g, '.js')
   const isBabel = script.includes('@babel')
 
   // Start of iframe template
