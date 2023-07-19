@@ -40,6 +40,8 @@ export type WaveSurferOptions = {
   duration?: number
   /** Use an existing media element instead of creating one */
   media?: HTMLMediaElement
+  /** Whether to show default audio element controls */
+  mediaControls?: boolean
   /** Play the audio on load */
   autoplay?: boolean
   /** Pass false to disable clicks on the waveform */
@@ -131,33 +133,26 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   constructor(options: WaveSurferOptions) {
     super({
       media: options.media,
+      mediaControls: options.mediaControls,
       autoplay: options.autoplay,
       playbackRate: options.audioRate,
     })
 
     this.options = Object.assign({}, defaultOptions, options)
-
     this.timer = new Timer()
 
-    this.renderer = new Renderer(this.options)
+    const audioElement = !options.media ? this.getMediaElement() : undefined
+    this.renderer = new Renderer(this.options, audioElement)
 
     this.initPlayerEvents()
     this.initRendererEvents()
     this.initTimerEvents()
     this.initPlugins()
 
+    // Load audio if URL is passed or an external media with an src
     const url = this.options.url || this.options.media?.currentSrc || this.options.media?.src
     if (url) {
       this.load(url, this.options.peaks, this.options.duration)
-    }
-  }
-
-  public setOptions(options: Partial<WaveSurferOptions>) {
-    this.options = Object.assign({}, this.options, options)
-    this.renderer.setOptions(this.options)
-
-    if (options.audioRate) {
-      this.setPlaybackRate(options.audioRate)
     }
   }
 
@@ -256,6 +251,19 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.options.plugins.forEach((plugin) => {
       this.registerPlugin(plugin)
     })
+  }
+
+  /** Set new wavesurfer options and re-render it */
+  public setOptions(options: Partial<WaveSurferOptions>) {
+    this.options = Object.assign({}, this.options, options)
+    this.renderer.setOptions(this.options)
+
+    if (options.audioRate) {
+      this.setPlaybackRate(options.audioRate)
+    }
+    if (options.mediaControls != null) {
+      this.getMediaElement().controls = options.mediaControls
+    }
   }
 
   /** Register a wavesurfer.js plugin */
