@@ -14,8 +14,8 @@ export type RecordPluginOptions = {
 }
 
 export type RecordPluginEvents = BasePluginEvents & {
-  startRecording: []
-  stopRecording: [blob: Blob]
+  'record-start': []
+  'record-end': [blob: Blob]
 }
 
 const MIME_TYPES = ['audio/webm', 'audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/mp3']
@@ -110,7 +110,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     mediaRecorder.onstop = () => {
       const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType })
 
-      this.emit('stopRecording', blob)
+      this.emit('record-end', blob)
 
       if (this.options.renderRecordedAudio !== false) {
         this.wavesurfer?.load(URL.createObjectURL(blob))
@@ -119,7 +119,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
     mediaRecorder.start()
 
-    this.emit('startRecording')
+    this.emit('record-start')
   }
 
   /** Check if the audio is being recorded */

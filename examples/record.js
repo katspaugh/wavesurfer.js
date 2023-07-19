@@ -14,7 +14,7 @@ const wavesurfer = WaveSurfer.create({
 const record = wavesurfer.registerPlugin(RecordPlugin.create())
 
 // Render recorded audio
-record.on('stopRecording', (blob) => {
+record.on('record-end', (blob) => {
   const recordedUrl = URL.createObjectURL(blob)
   const container = document.querySelector('#recordings')
 
