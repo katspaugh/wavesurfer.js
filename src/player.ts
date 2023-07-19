@@ -2,6 +2,7 @@ import EventEmitter, { type GeneralEventTypes } from './event-emitter.js'
 
 type PlayerOptions = {
   media?: HTMLMediaElement
+  mediaControls?: boolean
   autoplay?: boolean
   playbackRate?: number
 }
@@ -18,6 +19,10 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
       this.media = document.createElement('audio')
     }
 
+    // Controls
+    if (options.mediaControls) {
+      this.media.controls = true
+    }
     // Autoplay
     if (options.autoplay) {
       this.media.autoplay = true

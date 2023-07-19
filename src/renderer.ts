@@ -25,7 +25,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private resizeObserver: ResizeObserver | null = null
   private isDragging = false
 
-  constructor(options: WaveSurferOptions) {
+  constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
 
     this.options = options
@@ -49,6 +49,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.canvasWrapper = shadow.querySelector('.canvases') as HTMLElement
     this.progressWrapper = shadow.querySelector('.progress') as HTMLElement
     this.cursor = shadow.querySelector('.cursor') as HTMLElement
+
+    if (audioElement) {
+      shadow.appendChild(audioElement)
+    }
 
     this.initEvents()
   }
@@ -111,6 +115,10 @@ class Renderer extends EventEmitter<RendererEvents> {
       <style>
         :host {
           user-select: none;
+        }
+        :host audio {
+          display: block;
+          width: 100%;
         }
         :host .scroll {
           overflow-x: auto;

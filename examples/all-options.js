@@ -2,11 +2,6 @@
 
 import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
 
-const audio = new Audio()
-audio.controls = true
-audio.style.width = '100%'
-document.body.appendChild(audio)
-
 const options = {
   /** HTML element or CSS selector (required) */
   container: 'body',
@@ -40,12 +35,8 @@ const options = {
   fillParent: true,
   /** Audio URL */
   url: '/examples/audio/audio.wav',
-  /** Pre-computed audio data */
-  peaks: undefined,
-  /** Pre-computed duration */
-  duration: undefined,
-  /** Use an existing media element instead of creating one */
-  media: audio,
+  /** Whether to show default audio element controls */
+  mediaControls: true,
   /** Play the audio on load */
   autoplay: false,
   /** Pass false to disable clicks on the waveform */
