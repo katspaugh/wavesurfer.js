@@ -320,13 +320,13 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         const nowActiveRegions = this.regions.filter(region => region.start <= currentTime && region.end >= currentTime)
 
         for (const newRegion of prevActiveRegions.filter(region => !nowActiveRegions.includes(region))) {
-            this.emit('region-out', newRegion)
-            prevActiveRegions = prevActiveRegions.filter(region => region != newRegion)
+          this.emit('region-out', newRegion)
+          prevActiveRegions = prevActiveRegions.filter(region => region != newRegion)
         }
 
         for (const newRegion of nowActiveRegions.filter(region => !prevActiveRegions.includes(region))) {
-            this.emit('region-in', newRegion)
-            prevActiveRegions.push(newRegion)
+          this.emit('region-in', newRegion)
+          prevActiveRegions.push(newRegion)
         }
       }),
     )
