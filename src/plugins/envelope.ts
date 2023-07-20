@@ -301,6 +301,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
   }
 
   private invertNaturalVolume(value: number): number {
+    if (value === 0) return value
     const minValue = 0.0001
     const maxValue = 1
     const interpolatedValue = Math.pow((value - minValue) / (maxValue - minValue), 1 / this.naturalVolumeExponent)
