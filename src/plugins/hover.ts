@@ -65,6 +65,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
       height: '100%',
       pointerEvents: 'none',
       borderLeft: `${this.addUnits(this.options.lineWidth)} solid ${lineColor}`,
+      opacity: '0',
       transition: 'opacity .1s ease-in',
     })
 
