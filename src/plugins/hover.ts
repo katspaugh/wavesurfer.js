@@ -65,6 +65,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
       height: '100%',
       pointerEvents: 'none',
       borderLeft: `${this.addUnits(this.options.lineWidth)} solid ${lineColor}`,
+      opacity: '0',
       transition: 'opacity .1s ease-in',
     })
 
@@ -103,8 +104,9 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     if (!this.wavesurfer) return
 
     // Position
-    const width = this.wavesurfer.getWrapper().clientWidth
-    const { offsetX } = e
+    const bbox = this.wavesurfer.getWrapper().getBoundingClientRect()
+    const { width } = bbox
+    const offsetX = e.clientX - bbox.left
     const relX = Math.min(1, Math.max(0, offsetX / width))
     const posX = Math.min(width - this.options.lineWidth - 1, offsetX)
     this.wrapper.style.transform = `translateX(${posX}px)`
