@@ -258,6 +258,8 @@ export type SpectrogramPluginOptions = {
    * Each entry should contain a float between 0 and 1 and specify r, g, b, and alpha.
    */
   colorMap?: number[][]
+  /** Render a spectrogram for each channel independently when true. */
+  splitChannels?: boolean
 }
 
 export type SpectrogramPluginEvents = BasePluginEvents & {
@@ -305,7 +307,6 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.noverlap = options.noverlap
     this.windowFunc = options.windowFunc
     this.alpha = options.alpha
-    this.channels = 1
 
     // Getting file's original samplerate is difficult(#1248).
     // So set 12kHz default to render like wavesurfer.js 5.x.
@@ -354,15 +355,12 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       display: 'block',
       position: 'relative',
       userSelect: 'none',
-      webkitUserSelect: 'none',
-      height: `${this.height * this.channels}px`,
     })
 
     // if labels are active
     if (this.options.labels) {
       const labelsEl = document.createElement('canvas')
       labelsEl.setAttribute('part', 'spec-labels')
-      labelsEl.classList.add('spec-labels')
       this.utils.style(labelsEl, {
         position: 'absolute',
         zIndex: 9,
@@ -400,25 +398,11 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   }
 
   render() {
-    this.canvas.width = this.width
-    this.canvas.height = this.height
-
     if (this.frequenciesDataUrl) {
       this.loadFrequenciesData(this.frequenciesDataUrl)
     } else {
-      this.getFrequencies(this.drawSpectrogram)
+      this.drawSpectrogram(this.getFrequencies(this.wavesurfer?.getDecodedData()))
     }
-
-    this.loadLabels(
-      this.options.labelsBackground,
-      '12px',
-      '12px',
-      '',
-      this.options.labelsColor,
-      this.options.labelsHzColor || this.options.labelsColor,
-      'center',
-      '#specLabels',
-    )
   }
 
   drawSpectrogram = (frequenciesData) => {
@@ -427,6 +411,12 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       // to [channel, sample, freq] format
       frequenciesData = [frequenciesData]
     }
+
+    // Set the height to fit all channels
+    this.wrapper.style.height = this.height * frequenciesData.length + 'px'
+
+    this.canvas.width = this.width
+    this.canvas.height = this.height * frequenciesData.length
 
     const spectrCc = this.spectrCc
     const height = this.height
@@ -471,13 +461,24 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       })
     }
 
+    this.loadLabels(
+      this.options.labelsBackground,
+      '12px',
+      '12px',
+      '',
+      this.options.labelsColor,
+      this.options.labelsHzColor || this.options.labelsColor,
+      'center',
+      '#specLabels',
+      frequenciesData.length,
+    )
+
     this.emit('ready')
   }
 
-  getFrequencies(callback) {
+  getFrequencies(buffer: AudioBuffer): number[] {
     const fftSamples = this.fftSamples
-    const buffer = this.wavesurfer.getDecodedData()
-    const channels = this.channels
+    const channels = this.options.splitChannels ?? this.wavesurfer?.options.splitChannels ? buffer.numberOfChannels : 1
 
     this.frequencyMax = this.frequencyMax || buffer.sampleRate / 2
 
@@ -507,8 +508,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         const segment = channelData.slice(currentOffset, currentOffset + fftSamples)
         const spectrum = fft.calculateSpectrum(segment)
         const array = new Uint8Array(fftSamples / 2)
-        let j
-        for (j = 0; j < fftSamples / 2; j++) {
+        for (let j = 0; j < fftSamples / 2; j++) {
           array[j] = Math.max(-255, Math.log10(spectrum[j]) * 45)
         }
         channelFreq.push(array)
@@ -519,7 +519,8 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       frequencies.push(channelFreq)
       // frequencies: [channel, sample, freq]
     }
-    callback(frequencies, this)
+
+    return frequencies
   }
 
   loadFrequenciesData(url) {
@@ -536,7 +537,17 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     return freq >= 1000 ? 'KHz' : 'Hz'
   }
 
-  loadLabels(bgFill, fontSizeFreq, fontSizeUnit, fontType, textColorFreq, textColorUnit, textAlign, container) {
+  loadLabels(
+    bgFill,
+    fontSizeFreq,
+    fontSizeUnit,
+    fontType,
+    textColorFreq,
+    textColorUnit,
+    textAlign,
+    container,
+    channels,
+  ) {
     const frequenciesHeight = this.height
     bgFill = bgFill || 'rgba(68,68,68,0)'
     fontSizeFreq = fontSizeFreq || '12px'
@@ -555,7 +566,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     // prepare canvas element for labels
     const ctx = this.labelsEl.getContext('2d')
     const dispScale = window.devicePixelRatio
-    this.labelsEl.height = this.height * this.channels * dispScale
+    this.labelsEl.height = this.height * channels * dispScale
     this.labelsEl.width = bgWidth * dispScale
     ctx.scale(dispScale, dispScale)
 
@@ -563,7 +574,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       return
     }
 
-    for (let c = 0; c < this.channels; c++) {
+    for (let c = 0; c < channels; c++) {
       // for each channel
       // fill background
       ctx.fillStyle = bgFill

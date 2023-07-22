@@ -8,7 +8,7 @@ const ws = WaveSurfer.create({
   container: '#waveform',
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
-  url: '/examples/audio/demo.wav',
+  url: '/examples/audio/audio.wav',
   sampleRate: 22050,
 })
 
@@ -16,7 +16,8 @@ const ws = WaveSurfer.create({
 ws.registerPlugin(
   Spectrogram.create({
     labels: true,
-    height: 256,
+    height: 200,
+    splitChannels: true,
   }),
 )
 
