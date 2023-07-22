@@ -11,7 +11,9 @@ const wavesurfer = WaveSurfer.create({
 })
 
 // Initialize the Record plugin
-const record = wavesurfer.registerPlugin(RecordPlugin.create())
+const record = wavesurfer.registerPlugin(RecordPlugin.create({
+  mimeType: 'audio/mp4',
+}))
 
 // Render recorded audio
 record.on('record-end', (blob) => {
@@ -29,7 +31,7 @@ record.on('record-end', (blob) => {
   const link = container.appendChild(document.createElement('a'))
   Object.assign(link, {
     href: recordedUrl,
-    download: 'recording.wav',
+    download: 'recording.mp4',
     textContent: 'Download recording',
     style: 'display: block; margin: 1rem 0 2rem',
   })
