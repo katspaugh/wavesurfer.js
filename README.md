@@ -12,12 +12,6 @@ wavesurfer.js v7 is a TypeScript rewrite of wavesurfer.js that brings several im
 
 <img width="626" alt="waveform screenshot" src="https://github.com/katspaugh/wavesurfer.js/assets/381895/05f03bed-800e-4fa1-b09a-82a39a1c62ce">
 
----
-
-ℹ️ Looking for the old stable version? V6 is here: https://github.com/katspaugh/wavesurfer.js/tree/v6
-
----
-
 ## Getting started
 
 Install and import the package:
