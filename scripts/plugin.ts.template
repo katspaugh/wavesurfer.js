@@ -1,29 +1,29 @@
 /**
- * The PluginName plugin
+ * The Template plugin
  */
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 
-export type PluginNamePluginOptions = {
+export type TemplatePluginOptions = {
 }
 
 const defaultOptions = {
 }
 
-export type PluginNamePluginEvents = BasePluginEvents & {
+export type TemplatePluginEvents = BasePluginEvents & {
 }
 
-export class PluginNamePlugin extends BasePlugin<PluginNamePluginEvents, PluginNamePluginOptions> {
-  protected options: PluginNamePluginOptions & typeof defaultOptions
+export class TemplatePlugin extends BasePlugin<TemplatePluginEvents, TemplatePluginOptions> {
+  protected options: TemplatePluginOptions & typeof defaultOptions
 
-  constructor(options?: PluginNamePluginOptions) {
+  constructor(options?: TemplatePluginOptions) {
     super(options || {})
 
     this.options = Object.assign({}, defaultOptions, options)
   }
 
-  public static create(options?: PluginNamePluginOptions) {
-    return new PluginNamePlugin(options)
+  public static create(options?: TemplatePluginOptions) {
+    return new TemplatePlugin(options)
   }
 
   /** Called by wavesurfer, don't call manually */
@@ -39,4 +39,4 @@ export class PluginNamePlugin extends BasePlugin<PluginNamePluginEvents, PluginN
   }
 }
 
-export default PluginNamePlugin
+export default TemplatePlugin

@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "7.0.7",
+  "version": "7.1.0",
   "license": "BSD-3-Clause",
   "author": "katspaugh",
   "description": "Navigable audio waveform player",
@@ -46,7 +46,7 @@
     "build": "rm -rf dist && tsc && rollup -c",
     "deploy": "yarn build && yarn docs",
     "prepublishOnly": "npm run build",
-    "docs": "typedoc --titleLink '/' src/wavesurfer.ts src/plugins/*.ts --out docs",
+    "docs": "npx typedoc --titleLink '/' src/wavesurfer.ts src/plugins/*.ts --out docs",
     "gpt-docs": "node ./scripts/gpt-docs.js",
     "lint": "eslint --ext .ts src --fix",
     "prettier": "prettier -w '**/*.{js,ts,css}' --ignore-path .gitignore",
@@ -64,14 +64,11 @@
     "@typescript-eslint/parser": "^5.57.0",
     "cypress": "^12.9.0",
     "cypress-image-snapshot": "^4.0.1",
-    "dotenv": "^16.3.1",
     "eslint": "^8.37.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.7",
     "rollup": "^3.26.2",
-    "ts-loader": "^9.4.2",
-    "typedoc": "^0.24.6",
     "typescript": "^5.0.4"
   }
 }
