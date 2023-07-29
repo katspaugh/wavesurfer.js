@@ -165,7 +165,6 @@ Most options, events, and methods are similar to those in previous versions.
  * `getFilters`, `setFilter` – as there's no Web Audio "backend"
  * `drawBuffer` – to redraw the waveform, use `setOptions` instead and pass new rendering options
  * `cancelAjax` – you can pass an [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) in `fetchParams`
- * `loadBlob` – use `URL.createObjectURL()` to convert a blob to a URL and call `load(url)` instead
  * `skipForward`, `skipBackward`, `setPlayEnd` – can be implemented using `setTime(time)`
  * `exportPCM` is replaced with `exportPeaks` that returns arrays of floats
  * `toggleMute` is now called `setMuted(true | false)`
