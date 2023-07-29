@@ -29,7 +29,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     }
     // Speed
     if (options.playbackRate != null) {
-      this.media.playbackRate = options.playbackRate
+      this.onceMediaEvent('canplay', () => {
+        if (options.playbackRate != null) {
+          this.media.playbackRate = options.playbackRate
+        }
+      })
     }
   }
 
