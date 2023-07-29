@@ -8,7 +8,7 @@
     </button>
 
     <label>
-      Playback rate: <span id="rate">1.00</span>x
+      Playback rate: <span id="rate">2.00</span>x
     </label>
 
     <label>
@@ -30,6 +30,7 @@ const wavesurfer = WaveSurfer.create({
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
   url: '/examples/audio/librivox.mp3',
+  audioRate: 2, // set the initial playback rate
 })
 
 let preservePitch = true
