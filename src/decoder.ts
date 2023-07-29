@@ -1,7 +1,6 @@
 /** Decode an array buffer into an audio buffer */
 async function decode(audioData: ArrayBuffer, sampleRate: number): Promise<AudioBuffer> {
   const audioCtx = new AudioContext({ sampleRate })
-  if (audioCtx.state === 'suspended') await audioCtx.resume()
   const decode = audioCtx.decodeAudioData(audioData)
   decode.finally(() => audioCtx.close())
   return decode
