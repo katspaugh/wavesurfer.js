@@ -296,19 +296,20 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.plugins
   }
 
-  /** Load an audio file by URL, with optional pre-decoded audio data */
-  public async load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+  public async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+    this.emit('load', url)
+
     if (this.isPlaying()) this.pause()
 
     this.decodedData = null
     this.duration = null
 
-    this.emit('load', url)
-
     // Fetch the entire audio as a blob if pre-decoded data is not provided
-    const blob = channelData ? undefined : await Fetcher.fetchBlob(url, this.options.fetchParams)
+    if (!blob && !channelData) {
+      blob = await Fetcher.fetchBlob(url, this.options.fetchParams)
+    }
 
-    // Set the mediaelement source to the URL
+    // Set the mediaelement source
     this.setSrc(url, blob)
 
     // Wait for the audio duration
@@ -341,6 +342,16 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     }
 
     this.emit('ready', this.duration)
+  }
+
+  /** Load an audio file by URL, with optional pre-decoded audio data */
+  public async load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+    this.loadAudio(url, undefined, channelData, duration)
+  }
+
+  /** Load an audio blob */
+  public async loadBlob(blob: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+    this.loadAudio('blob', blob, channelData, duration)
   }
 
   /** Zoom the waveform by a given pixels-per-second factor */
