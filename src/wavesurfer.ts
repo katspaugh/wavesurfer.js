@@ -83,6 +83,8 @@ const defaultOptions = {
 export type WaveSurferEvents = {
   /** When audio starts loading */
   load: [url: string]
+  /** During audio loading */
+  loading: [percent: number]
   /** When the audio has been decoded */
   decode: [duration: number]
   /** When the audio is both decoded and can play */
@@ -306,7 +308,15 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.emit('load', url)
 
     // Fetch the entire audio as a blob if pre-decoded data is not provided
-    const blob = channelData ? undefined : await Fetcher.fetchBlob(url, this.options.fetchParams)
+    const blob = channelData
+      ? undefined
+      : await Fetcher.fetchBlob(
+          url,
+          (percentage) => {
+            this.emit('loading', percentage)
+          },
+          this.options.fetchParams,
+        )
 
     // Set the mediaelement source to the URL
     this.setSrc(url, blob)
