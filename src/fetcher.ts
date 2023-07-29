@@ -8,8 +8,8 @@ async function fetchBlob(
 
   // Read the data to track progress
   {
-    const reader = response.clone().body!.getReader()
-    const contentLength = +response.headers.get('Content-Length')!
+    const reader = response.clone().body?.getReader()
+    const contentLength = Number(response.headers?.get('Content-Length'))
     let receivedLength = 0
 
     // Process the data
@@ -23,10 +23,10 @@ async function fetchBlob(
       progressCallback(percentage)
 
       // Continue reading data
-      return reader.read().then(({ done, value }) => processChunk(done, value))
+      return reader?.read().then(({ done, value }) => processChunk(done, value))
     }
 
-    reader.read().then(({ done, value }) => processChunk(done, value))
+    reader?.read().then(({ done, value }) => processChunk(done, value))
   }
 
   return response.blob()
