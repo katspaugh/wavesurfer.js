@@ -274,8 +274,9 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       })
     }
     if (options.start !== undefined || options.end !== undefined) {
+      const isMarker = this.start === this.end
       this.start = options.start ?? this.start
-      this.end = options.end ?? this.end
+      this.end = options.end ?? (isMarker ? this.start : this.end)
       this.renderPosition()
     }
   }
