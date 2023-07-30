@@ -46,7 +46,6 @@
     "build": "rm -rf dist && tsc && rollup -c",
     "deploy": "yarn build && yarn docs",
     "prepublishOnly": "npm run build",
-    "docs": "typedoc --titleLink '/' src/wavesurfer.ts src/plugins/*.ts --out docs",
     "lint": "eslint --ext .ts src --fix",
     "prettier": "prettier -w '**/*.{js,ts,css}' --ignore-path .gitignore",
     "make-plugin": "./scripts/plugin.sh",
@@ -68,7 +67,6 @@
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.7",
     "rollup": "^3.26.2",
-    "typedoc": "^0.24.8",
     "typescript": "^5.0.4"
   }
 }
