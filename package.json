@@ -44,7 +44,6 @@
   "scripts": {
     "build:dev": "tsc -w --target ESNext",
     "build": "rm -rf dist && tsc && rollup -c",
-    "deploy": "yarn build && yarn docs",
     "prepublishOnly": "npm run build",
     "lint": "eslint --ext .ts src --fix",
     "prettier": "prettier -w '**/*.{js,ts,css}' --ignore-path .gitignore",
