@@ -89,6 +89,7 @@ See the documentation on wavesurfer [methods](http://wavesurfer-js.org/docs/meth
 
 ### Wavesurfer events
 - `load`: `[url: string]` - When audio starts loading
+- `loading`: `[percentage: number]` - When audio is being loaded
 - `decode`: `[duration: number]` - When the audio has been decoded
 - `ready`: `[duration: number]` - When the audio is both decoded and can play
 - `redraw`: `[]` - When a waveform is drawn
