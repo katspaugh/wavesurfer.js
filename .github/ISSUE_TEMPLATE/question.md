@@ -6,6 +6,10 @@ labels: question
 assignees: ''
 ---
 
-Please do NOT create an issue if it's a question. We use issues only for things that will be definitely worked on by the devs.
+⚠️ READ CAREFULLY: ⚠️
 
-## Post questions [👉 in the Q&A forum](https://github.com/katspaugh/wavesurfer.js/discussions/categories/q-a)
+Do NOT create an ISSUE if it's a question. Post it IN THE Q&A FORUM instead.
+
+👉 https://github.com/katspaugh/wavesurfer.js/discussions/categories/q-a
+
+Thank you.
