@@ -40,7 +40,7 @@ const wavesurfer = WaveSurfer.create({
 
 To import one of the plugins, e.g. the [Regions plugin](https://wavesurfer-js.org/examples/#regions.js):
 ```js
-import Regions from 'wavesurfer.js/dist/plugins/regions.js'
+import Regions from 'wavesurfer.js/plugins/regions'
 ```
 
 Or as a script tag:

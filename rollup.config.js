@@ -44,12 +44,21 @@ export default [
       {
         input: plugin,
         output: {
+          file: plugin.replace('src/', 'dist/').replace('.ts', '.js'),
+          format: 'esm',
+        },
+        plugins,
+      },
+      // ES module again but with an .esm.js extension
+      {
+        input: plugin,
+        output: {
           file: plugin.replace('src/', 'dist/').replace('.ts', '.esm.js'),
           format: 'esm',
         },
         plugins,
       },
-      // CommonJS module (Node.js
+      // CommonJS module (Node.js)
       {
         input: plugin,
         output: {
