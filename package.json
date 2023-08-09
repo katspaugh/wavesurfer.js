@@ -32,6 +32,11 @@
       "types": "./dist/wavesurfer.d.ts",
       "require": "./dist/wavesurfer.cjs"
     },
+    "./dist/plugins/*.js": {
+      "import": "./dist/plugins/*.esm.js",
+      "types": "./dist/plugins/*.d.ts",
+      "require": "./dist/plugins/*.cjs"
+    },
     "./plugins/*": {
       "import": "./dist/plugins/*.esm.js",
       "types": "./dist/plugins/*.d.ts",
@@ -40,7 +45,7 @@
     "./dist/*": {
       "import": "./dist/*"
     }
-  },  
+  },
   "scripts": {
     "build:dev": "tsc -w --target ESNext",
     "build": "rm -rf dist && tsc && rollup -c",
