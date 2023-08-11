@@ -15,10 +15,14 @@ export type TimelinePluginOptions = {
   duration?: number
   /** Interval between ticks in seconds */
   timeInterval?: number
-  /** Interval between numeric labels */
+  /** Interval between numeric labels in seconds */
   primaryLabelInterval?: number
-  /** Interval between secondary numeric labels */
+  /** Interval between secondary numeric labels in seconds */
   secondaryLabelInterval?: number
+  /** Interval between numeric labels in timeIntervals (i.e notch count) */
+  primaryLabelSpacing?: number
+  /** Interval between secondary numeric labels  in timeIntervals (i.e notch count) */
+  secondaryLabelSpacing?: number
   /** Custom inline style to apply to the container */
   style?: Partial<CSSStyleDeclaration> | string
   /** Turn the time into a suitable label for the time. */
@@ -138,7 +142,9 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     const pxPerSec = this.timelineWrapper.scrollWidth / duration
     const timeInterval = this.options.timeInterval ?? this.defaultTimeInterval(pxPerSec)
     const primaryLabelInterval = this.options.primaryLabelInterval ?? this.defaultPrimaryLabelInterval(pxPerSec)
+    const primaryLabelSpacing = this.options.primaryLabelSpacing
     const secondaryLabelInterval = this.options.secondaryLabelInterval ?? this.defaultSecondaryLabelInterval(pxPerSec)
+    const secondaryLabelSpacing = this.options.secondaryLabelSpacing
     const isTop = this.options.insertPosition === 'beforebegin'
 
     const timeline = document.createElement('div')
@@ -189,10 +195,14 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     `,
     )
 
-    for (let i = 0; i < duration; i += timeInterval) {
+    for (let i = 0, notches = 0; i < duration; i += timeInterval, notches++) {
       const notch = notchEl.cloneNode() as HTMLElement
-      const isPrimary = (Math.round(i * 100) / 100) % primaryLabelInterval === 0
-      const isSecondary = (Math.round(i * 100) / 100) % secondaryLabelInterval === 0
+      const isPrimary =
+        (Math.round(i * 100) / 100) % primaryLabelInterval === 0 ||
+        (primaryLabelSpacing && notches % primaryLabelSpacing === 0)
+      const isSecondary =
+        (Math.round(i * 100) / 100) % secondaryLabelInterval === 0 ||
+        (secondaryLabelSpacing && notches % secondaryLabelSpacing === 0)
 
       if (isPrimary || isSecondary) {
         notch.style.height = '100%'
