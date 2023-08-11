@@ -322,7 +322,6 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         // Trigger region-in when activeRegions doesn't include a played regions
         playedRegions.forEach((region) => {
           if (!activeRegions.includes(region)) {
-            activeRegions = [...activeRegions, region]
             this.emit('region-in', region)
           }
         })
@@ -335,7 +334,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         })
 
         // Update activeRegions only played regions
-        activeRegions = playedRegions.filter((region) => playedRegions.includes(region))
+        activeRegions = playedRegions
       }),
     )
   }
