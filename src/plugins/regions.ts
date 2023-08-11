@@ -313,22 +313,29 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     }
     this.wavesurfer.getWrapper().appendChild(this.regionsContainer)
 
-    // Detect when a region is being played
-    let activeRegion: Region | null = null
-
+    let activeRegions: Region[] = []
     this.subscriptions.push(
       this.wavesurfer.on('timeupdate', (currentTime) => {
-        const playedRegion = this.regions.find((region) => region.start <= currentTime && region.end >= currentTime)
+        // Detect when regions are being played
+        const playedRegions = this.regions.filter((region) => region.start <= currentTime && region.end >= currentTime)
 
-        if (activeRegion && activeRegion !== playedRegion) {
-          this.emit('region-out', activeRegion)
-          activeRegion = null
-        }
+        // Trigger region-in when activeRegions doesn't include a played regions
+        playedRegions.forEach((region) => {
+          if (!activeRegions.includes(region)) {
+            activeRegions = [...activeRegions, region]
+            this.emit('region-in', region)
+          }
+        })
 
-        if (playedRegion && playedRegion !== activeRegion) {
-          activeRegion = playedRegion
-          this.emit('region-in', playedRegion)
-        }
+        // Trigger region-out when activeRegions include a un-played regions
+        activeRegions.forEach((region) => {
+          if (!playedRegions.includes(region)) {
+            this.emit('region-out', region)
+          }
+        })
+
+        // Update activeRegions only played regions
+        activeRegions = playedRegions.filter((region) => playedRegions.includes(region))
       }),
     )
   }
