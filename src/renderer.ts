@@ -234,42 +234,24 @@ class Renderer extends EventEmitter<RendererEvents> {
     return gradient
   }
 
-  private renderBars(
+  private renderBarWaveform(
     channelData: Array<Float32Array | number[]>,
     options: WaveSurferOptions,
     ctx: CanvasRenderingContext2D,
+    vScale: number,
   ) {
-    ctx.fillStyle = this.convertColorValues(options.waveColor)
-
-    // Custom rendering function
-    if (options.renderFunction) {
-      options.renderFunction(channelData, ctx)
-      return
-    }
-
     const topChannel = channelData[0]
     const bottomChannel = channelData[1] || channelData[0]
     const length = topChannel.length
 
-    const pixelRatio = window.devicePixelRatio || 1
     const { width, height } = ctx.canvas
     const halfHeight = height / 2
-    const barHeight = options.barHeight || 1
+    const pixelRatio = window.devicePixelRatio || 1
 
     const barWidth = options.barWidth ? options.barWidth * pixelRatio : 1
     const barGap = options.barGap ? options.barGap * pixelRatio : options.barWidth ? barWidth / 2 : 0
     const barRadius = options.barRadius || 0
     const barIndexScale = width / (barWidth + barGap) / length
-
-    let max = 1
-    if (options.normalize) {
-      max = 0
-      for (let i = 0; i < length; i++) {
-        const value = Math.abs(topChannel[i])
-        if (value > max) max = value
-      }
-    }
-    const vScale = (halfHeight / max) * barHeight
 
     const rectFn = barRadius && 'roundRect' in ctx ? 'roundRect' : 'rect'
 
@@ -282,14 +264,17 @@ class Renderer extends EventEmitter<RendererEvents> {
       const x = Math.round(i * barIndexScale)
 
       if (x > prevX) {
-        const leftBarHeight = Math.round(maxTop * vScale)
-        const rightBarHeight = Math.round(maxBottom * vScale)
-        const barHeight = leftBarHeight + rightBarHeight || 1
+        const topBarHeight = Math.round(maxTop * halfHeight * vScale)
+        const bottomBarHeight = Math.round(maxBottom * halfHeight * vScale)
+        const barHeight = topBarHeight + bottomBarHeight || 1
 
         // Vertical alignment
-        let y = halfHeight - leftBarHeight
-        if (options.barAlign === 'top') y = 0
-        else if (options.barAlign === 'bottom') y = height - barHeight
+        let y = halfHeight - topBarHeight
+        if (options.barAlign === 'top') {
+          y = 0
+        } else if (options.barAlign === 'bottom') {
+          y = height - barHeight
+        }
 
         ctx[rectFn](prevX * (barWidth + barGap), y, barWidth, barHeight, barRadius)
 
@@ -306,6 +291,80 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     ctx.fill()
     ctx.closePath()
+  }
+
+  private renderLineWaveform(
+    channelData: Array<Float32Array | number[]>,
+    _options: WaveSurferOptions,
+    ctx: CanvasRenderingContext2D,
+    vScale: number,
+  ) {
+    const drawChannel = (index: number) => {
+      const channel = channelData[index] || channelData[0]
+      const length = channel.length
+      const { height } = ctx.canvas
+      const halfHeight = height / 2
+      const hScale = ctx.canvas.width / length
+
+      ctx.moveTo(0, halfHeight)
+
+      let prevX = 0
+      let max = 0
+      for (let i = 0; i <= length; i++) {
+        const x = Math.round(i * hScale)
+
+        if (x > prevX) {
+          const h = Math.round(max * halfHeight * vScale) || 1
+          const y = halfHeight + h * (index === 0 ? -1 : 1)
+          ctx.lineTo(prevX, y)
+          prevX = x
+          max = 0
+        }
+
+        const value = Math.abs(channel[i] || 0)
+        if (value > max) max = value
+      }
+
+      ctx.lineTo(prevX, halfHeight)
+    }
+
+    ctx.beginPath()
+
+    drawChannel(0)
+    drawChannel(1)
+
+    ctx.fill()
+    ctx.closePath()
+  }
+
+  private renderWaveform(
+    channelData: Array<Float32Array | number[]>,
+    options: WaveSurferOptions,
+    ctx: CanvasRenderingContext2D,
+  ) {
+    ctx.fillStyle = this.convertColorValues(options.waveColor)
+
+    // Custom rendering function
+    if (options.renderFunction) {
+      options.renderFunction(channelData, ctx)
+      return
+    }
+
+    // Vertical scaling
+    let vScale = options.barHeight || 1
+    if (options.normalize) {
+      const max = Array.from(channelData[0]).reduce((max, value) => Math.max(max, Math.abs(value)), 0)
+      vScale = max ? 1 / max : 1
+    }
+
+    // Render waveform as bars
+    if (options.barWidth || options.barGap || options.barAlign) {
+      this.renderBarWaveform(channelData, options, ctx, vScale)
+      return
+    }
+
+    // Render waveform as a polyline
+    this.renderLineWaveform(channelData, options, ctx, vScale)
   }
 
   private renderSingleCanvas(
@@ -330,7 +389,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
-    this.renderBars(
+    this.renderWaveform(
       channelData.map((channel) => channel.slice(start, end)),
       options,
       ctx,
@@ -350,7 +409,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     progressCtx.fillRect(0, 0, canvas.width, canvas.height)
   }
 
-  private renderWaveform(channelData: Array<Float32Array | number[]>, options: WaveSurferOptions, width: number) {
+  private renderChannel(channelData: Array<Float32Array | number[]>, options: WaveSurferOptions, width: number) {
     // A container for canvases
     const canvasContainer = document.createElement('div')
     const height = this.getHeight()
@@ -458,13 +517,13 @@ class Renderer extends EventEmitter<RendererEvents> {
       // Render a waveform for each channel
       for (let i = 0; i < audioData.numberOfChannels; i++) {
         const options = { ...this.options, ...this.options.splitChannels[i] }
-        this.renderWaveform([audioData.getChannelData(i)], options, width)
+        this.renderChannel([audioData.getChannelData(i)], options, width)
       }
     } else {
       // Render a single waveform for the first two channels (left and right)
       const channels = [audioData.getChannelData(0)]
       if (audioData.numberOfChannels > 1) channels.push(audioData.getChannelData(1))
-      this.renderWaveform(channels, this.options, width)
+      this.renderChannel(channels, this.options, width)
     }
 
     this.audioData = audioData
