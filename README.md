@@ -25,7 +25,7 @@ import WaveSurfer from 'wavesurfer.js'
 
 Alternatively, insert a UMD script tag which exports the library as a global `WaveSurfer` variable:
 ```html
-<script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@7"></script>
 ```
 
 Create a wavesurfer instance and pass various [options](#wavesurfer-options):
@@ -43,7 +43,7 @@ To import one of the plugins, e.g. the [Regions plugin](https://wavesurfer-js.or
 import Regions from 'wavesurfer.js/plugins/regions'
 ```
 
-Or as a script tag:
+Or as a script tag that will export `WaveSurfer.Regions`:
 ```html
 <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.min.js"></script>
 ```
