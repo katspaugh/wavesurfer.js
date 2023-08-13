@@ -187,6 +187,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.timer.stop()
       }),
 
+      this.onMediaEvent('emptied', () => {
+        this.timer.stop()
+      }),
+
       this.onMediaEvent('ended', () => {
         this.emit('finish')
       }),
