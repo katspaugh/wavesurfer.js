@@ -7,8 +7,8 @@ import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 export type TimelinePluginOptions = {
   /** The height of the timeline in pixels, defaults to 20 */
   height?: number
-  /** HTML container for the timeline, defaults to wavesufer's container */
-  container?: HTMLElement
+  /** HTML element or selector for a timeline container, defaults to wavesufer's container */
+  container?: HTMLElement | string
   /** Pass 'beforebegin' to insert the timeline on top of the waveform */
   insertPosition?: InsertPosition
   /** The duration of the timeline in seconds, defaults to wavesurfer's duration */
@@ -69,7 +69,15 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       throw Error('WaveSurfer is not initialized')
     }
 
-    const container = this.options.container ?? this.wavesurfer.getWrapper()
+    let container = this.wavesurfer.getWrapper()
+    if (this.options.container instanceof HTMLElement) {
+      container = this.options.container
+    } else if (typeof this.options.container === 'string') {
+      const el = document.querySelector(this.options.container)
+      if (!el) throw Error(`No Timeline container found matching ${this.options.container}`)
+      container = el as HTMLElement
+    }
+
     if (this.options.insertPosition) {
       ;(container.firstElementChild || container).insertAdjacentElement(
         this.options.insertPosition,
