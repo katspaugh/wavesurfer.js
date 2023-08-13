@@ -252,7 +252,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     this.renderPosition()
   }
 
-  /** Play the region from start to end */
+  /** Play the region from the start */
   public play() {
     this.emit('play')
   }
