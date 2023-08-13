@@ -123,7 +123,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private timer: Timer
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
-  private duration: number | null = null
   protected subscriptions: Array<() => void> = []
 
   /** Create a new WaveSurfer instance */
@@ -204,7 +203,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.renderer.on('click', (relativeX) => {
         if (this.options.interact) {
           this.seekTo(relativeX)
-          this.emit('interaction', this.getCurrentTime())
+          this.emit('interaction', relativeX * this.getDuration())
           this.emit('click', relativeX)
         }
       }),
@@ -304,7 +303,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     if (this.isPlaying()) this.pause()
 
     this.decodedData = null
-    this.duration = null
 
     // Fetch the entire audio as a blob if pre-decoded data is not provided
     if (!blob && !channelData) {
@@ -315,36 +313,31 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // Set the mediaelement source
     this.setSrc(url, blob)
 
-    // Wait for the audio duration
-    // It should be a promise to allow event listeners to subscribe to the ready and decode events
-    this.duration =
-      (await Promise.resolve(duration || this.getDuration())) ||
-      (await new Promise((resolve) => {
-        this.onceMediaEvent('loadedmetadata', () => resolve(this.getDuration()))
-      })) ||
-      (await Promise.resolve(0))
-
     // Decode the audio data or use user-provided peaks
     if (channelData) {
-      this.decodedData = Decoder.createBuffer(channelData, this.duration)
+      // Wait for the audio duration
+      // It should be a promise to allow event listeners to subscribe to the ready and decode events
+      duration =
+        (await Promise.resolve(duration || this.getDuration())) ||
+        (await new Promise((resolve) => {
+          this.onceMediaEvent('loadedmetadata', () => resolve(this.getDuration()))
+        })) ||
+        (await Promise.resolve(0))
+
+      this.decodedData = Decoder.createBuffer(channelData, duration)
     } else if (blob) {
       const arrayBuffer = await blob.arrayBuffer()
       this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
-
-      // Fall back to the decoded data duration if the media duration is incorrect
-      if (this.duration === 0 || this.duration === Infinity) {
-        this.duration = this.decodedData.duration
-      }
     }
 
-    this.emit('decode', this.duration)
+    this.emit('decode', this.getDuration())
 
     // Render the waveform
     if (this.decodedData) {
       this.renderer.render(this.decodedData)
     }
 
-    this.emit('ready', this.duration)
+    this.emit('ready', this.getDuration())
   }
 
   /** Load an audio file by URL, with optional pre-decoded audio data */
@@ -395,8 +388,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Get the duration of the audio in seconds */
   public getDuration(): number {
-    if (this.duration !== null) return this.duration
-    return super.getDuration()
+    let duration = super.getDuration() || 0
+    // Fall back to the decoded data duration if the media duration is incorrect
+    if ((duration === 0 || duration === Infinity) && this.decodedData) {
+      duration = this.decodedData.duration
+    }
+    return duration
   }
 
   /** Toggle if the waveform should react to clicks */
