@@ -387,7 +387,6 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     this.regionsContainer.appendChild(region.element)
     this.avoidOverlapping(region)
     this.regions.push(region)
-    this.emit('region-created', region)
 
     const regionSubscriptions = [
       region.on('update-end', () => {
@@ -416,6 +415,8 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     ]
 
     this.subscriptions.push(...regionSubscriptions)
+
+    this.emit('region-created', region)
   }
 
   /** Create a region with given parameters */
