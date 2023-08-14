@@ -724,7 +724,14 @@ export class Region {
 
                 if (overlapZones) {
                     if (!this.wavesurfer.selection.dragThruZones) {
-                        const bumperValue = nextZoneBoundary({...zoneOverlap, ...overlapZones}, startTime, time - startTime); // the overlapzone that we're bumping up against
+                        /*
+                        * IF the region is larger than the wave (due to minimum region size) then it is possible for the
+                        * startTime to be greater than the end value of the wave.
+                        * Normalize this by adding regionRightHalfTime so that the point used to
+                        * find nextZoneBoundary is always the right edge of the wave itself
+                        */
+                        const point = startTime + regionRightHalfTime;
+                        const bumperValue = nextZoneBoundary({...zoneOverlap, ...overlapZones}, point, time - startTime); // the overlapzone that we're bumping up against
                         // we're dragging right
                         if (time > startTime) {
                             time = bumperValue !== null ? bumperValue - regionRightHalfTime - buffer : time;
