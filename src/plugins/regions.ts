@@ -258,7 +258,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   }
 
   /** Update the region's options */
-  public setOptions(options: { color?: string; drag?: boolean; resize?: boolean; start?: number; end?: number }) {
+   public setOptions(options: { color?: string; drag?: boolean; resize?: boolean; start?: number; end?: number; id?: string; content?: string | HTMLElement }) {
     if (options.color) {
       this.color = options.color
       this.element.style.backgroundColor = this.color
@@ -278,6 +278,18 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       this.start = options.start ?? this.start
       this.end = options.end ?? (isMarker ? this.start : this.end)
       this.renderPosition()
+    }
+    if (options.id && options.start !== undefined && options.end !== undefined) {
+      this.id = options.id;
+      const isMarker = this.start === this.end;
+      this.element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`);
+    }
+    if (options.content) {
+      if (typeof options.content === 'string') {
+        this.element.innerHTML = options.content;
+      } else {
+        this.element.appendChild(options.content);
+      }
     }
   }
 
