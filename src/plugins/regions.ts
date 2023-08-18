@@ -73,7 +73,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
 
   constructor(params: RegionParams, private totalDuration: number) {
     super()
-    if (typeof params.id === 'string) {
+    if (typeof params.id === 'string') {
       this.id = params.id
     } else if (Array.isArray(params.id)) {
       this.id = params.id.join(' ')
@@ -95,7 +95,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   private initElement(content?: string | HTMLElement) {
     const element = document.createElement('div')
     const isMarker = this.start === this.end
-  
+
     element.setAttribute('part', `${isMarker ? 'marker' : 'region'}`)
     element.setAttribute('id', Array.isArray(this.id) ? this.id.join(' ') : this.id)
     element.setAttribute(
@@ -112,7 +112,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       pointer-events: all;
     `,
     )
-  
+
     // Init content
     if (content) {
       if (typeof content === 'string') {
@@ -125,7 +125,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       this.content.setAttribute('part', 'region-content')
       element.appendChild(this.content)
     }
-  
+
     // Add resize handles
     if (!isMarker) {
       const leftHandle = document.createElement('div')
@@ -146,7 +146,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       `,
       )
       leftHandle.setAttribute('part', 'region-handle region-handle-left')
-  
+
       const rightHandle = leftHandle.cloneNode() as HTMLElement
       rightHandle.setAttribute('data-resize', 'right')
       rightHandle.style.left = ''
@@ -155,11 +155,11 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       rightHandle.style.borderLeft = ''
       rightHandle.style.borderRadius = '0 2px 2px 0'
       rightHandle.setAttribute('part', 'region-handle region-handle-right')
-  
+
       element.appendChild(leftHandle)
       element.appendChild(rightHandle)
     }
-  
+
     return element
   }
 
@@ -264,7 +264,15 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   }
 
   /** Update the region's options */
-  public setOptions(options: {color?: string; drag?: boolean; resize?: boolean; start?: number; end?: number; id?: string | string[]; content?: string | HTMLElement}) {
+  public setOptions(options: {
+    color?: string
+    drag?: boolean
+    resize?: boolean
+    start?: number
+    end?: number
+    id?: string | string[]
+    content?: string
+  }) {
     if (options.color) {
       this.color = options.color
       this.element.style.backgroundColor = this.color
@@ -285,21 +293,20 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       this.end = options.end ?? (isMarker ? this.start : this.end)
       this.renderPosition()
     }
-    if (options.id !== undefined && this.start !== undefined && this.end !== undefined) {
-      this.id = options.id
-      const isMarker = this.start === this.end
-      if (Array.isArray(this.id)) {
-        this.element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id.join(' ')}`)
-      } else {
-        this.element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
+    if (this.start !== undefined && this.end !== undefined) {
+      if (options.id !== undefined) {
+        this.id = options.id
+        const isMarker = this.start === this.end
+        if (Array.isArray(this.id)) {
+          this.element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id.join(' ')}`)
+        } else {
+          this.element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
+        }
       }
     }
     if (options.content) {
       if (typeof options.content === 'string') {
         this.element.innerHTML = options.content
-      } else {
-        this.element.innerHTML = ''
-        this.element.appendChild(options.content)
       }
     }
   }
