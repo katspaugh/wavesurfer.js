@@ -73,9 +73,12 @@ class SingleRegion extends EventEmitter<RegionEvents> {
 
   constructor(params: RegionParams, private totalDuration: number) {
     super()
-    this.id = params.id || `region-${Math.random().toString(32).slice(2)}`
-    if (Array.isArray(this.id)) {
-      this.id = this.id.join(' ')
+    if (typeof params.id === 'string) {
+      this.id = params.id
+    } else if (Array.isArray(params.id)) {
+      this.id = params.id.join(' ')
+    } else {
+      this.id = `region-${Math.random().toString(32).slice(2)}`
     }
     this.start = params.start
     this.end = params.end ?? params.start
