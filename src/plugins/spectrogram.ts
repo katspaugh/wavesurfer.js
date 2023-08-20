@@ -223,7 +223,7 @@ import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 
 export type SpectrogramPluginOptions = {
   /** Selector of element or element in which to render */
-  container: string | HTMLElement
+  container?: string | HTMLElement
   /** Number of samples to fetch to FFT. Must be a power of 2. */
   fftSamples?: number
   /** Height of the spectrogram view in CSS pixels */
