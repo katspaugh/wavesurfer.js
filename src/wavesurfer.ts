@@ -346,12 +346,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Load an audio file by URL, with optional pre-decoded audio data */
   public async load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number) {
-    this.loadAudio(url, undefined, channelData, duration)
+    await this.loadAudio(url, undefined, channelData, duration)
   }
 
   /** Load an audio blob */
   public async loadBlob(blob: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
-    this.loadAudio('blob', blob, channelData, duration)
+    await this.loadAudio('blob', blob, channelData, duration)
   }
 
   /** Zoom the waveform by a given pixels-per-second factor */

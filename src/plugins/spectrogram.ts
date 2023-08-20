@@ -328,9 +328,6 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         overflowY: 'hidden',
       })
     }
-
-    this.width = this.wavesurfer.getWrapper().offsetWidth
-
     this.subscriptions.push(this.wavesurfer.on('redraw', () => this.render()))
   }
 
@@ -415,6 +412,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     // Set the height to fit all channels
     this.wrapper.style.height = this.height * frequenciesData.length + 'px'
 
+    this.width = this.wavesurfer.getWrapper().offsetWidth
     this.canvas.width = this.width
     this.canvas.height = this.height * frequenciesData.length
 
