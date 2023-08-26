@@ -26,14 +26,17 @@ const wavesurfer = WaveSurfer.create({
 // Initialize the Envelope plugin
 const envelope = wavesurfer.registerPlugin(
   EnvelopePlugin.create({
-    fadeInEnd: 5,
-    fadeOutStart: 15,
     volume: 0.8,
     lineColor: 'rgba(255, 0, 0, 0.5)',
     lineWidth: 4,
     dragPointSize: 8,
     dragPointFill: 'rgba(0, 255, 255, 0.8)',
     dragPointStroke: 'rgba(0, 0, 0, 0.5)',
+
+    points: [
+      { time: 11.2, volume: 0.5 },
+      { time: 15.5, volume: 0.9 },
+    ],
   }),
 )
 
