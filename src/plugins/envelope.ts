@@ -44,7 +44,6 @@ class Polyline extends EventEmitter<{
   private svg: SVGSVGElement
   private options: Options
   private padding: number
-  private top = 0
 
   constructor(options: Options, wrapper: HTMLElement) {
     super()
@@ -220,6 +219,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
         const newTime = relativeX * duration
         const point = this.options.points[index]
         if (point) {
+          this.resetRamps()
           point.time = newTime
           point.volume = relativeY
         }
@@ -236,7 +236,10 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
   }
 
   private initWebAudio() {
-    const audio = this.wavesurfer?.getMediaElement()
+    const { wavesurfer } = this
+    if (!wavesurfer) return
+
+    const audio = wavesurfer.getMediaElement()
     if (!audio) return null
 
     // Create an AudioContext
@@ -244,7 +247,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
 
     // Create a GainNode for controlling the volume
     this.gainNode = audioContext.createGain()
-    this.setGainValue(this.options.volume ?? audio.volume)
+    this.setGainValue(this.options.volume ?? (audio.volume || 1))
 
     // Create a MediaElementAudioSourceNode using the audio element
     const source = audioContext.createMediaElementSource(audio)
@@ -254,6 +257,14 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     this.gainNode.connect(audioContext.destination)
 
     this.audioContext = audioContext
+
+    this.subscriptions.push(
+      wavesurfer.on('play', () => {
+        if (audioContext.state === 'suspended') {
+          audioContext.resume()
+        }
+      }),
+    )
   }
 
   private invertNaturalVolume(value: number): number {
@@ -277,16 +288,17 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     }
   }
 
-  private cancelRamp(currentTime: number, startTime: number) {
+  private resetRamps() {
     if (!this.audioContext || !this.gainNode) return
-    this.gainNode.gain.cancelScheduledValues(this.audioContext.currentTime + (startTime - currentTime))
+    const time = this.audioContext.currentTime
+    this.gainNode.gain.cancelScheduledValues(time)
   }
 
   private addRamp(currentTime: number, startTime: number, startVolume: number, endTime: number, endVolume: number) {
     if (!this.audioContext || !this.gainNode) return
-    console.log(startVolume, endVolume)
-    this.gainNode.gain.setValueAtTime(startVolume, this.audioContext.currentTime + (startTime - currentTime))
-    this.gainNode.gain.linearRampToValueAtTime(endVolume, this.audioContext.currentTime + (endTime - currentTime))
+    const time = this.audioContext.currentTime
+    this.gainNode.gain.setValueAtTime(startVolume, time + (startTime - currentTime))
+    this.gainNode.gain.linearRampToValueAtTime(endVolume, time + (endTime - currentTime))
   }
 
   private initRamps() {
@@ -297,17 +309,11 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
       wavesurfer.on('play', () => {
         const currentTime = wavesurfer.getCurrentTime() || 0
 
+        this.resetRamps()
+
         this.options.points.forEach((point, index) => {
           const prevPoint = this.options.points[index - 1] || { time: 0, volume: 0 }
           this.addRamp(currentTime, prevPoint.time, prevPoint.volume, point.time, point.volume)
-        })
-      }),
-
-      wavesurfer.on('pause', () => {
-        const currentTime = wavesurfer.getCurrentTime() || 0
-
-        this.options.points.forEach((point) => {
-          this.cancelRamp(currentTime, point.time)
         })
       }),
     )
@@ -321,7 +327,6 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
   /** Set the volume of the audio */
   public setVolume(volume: number) {
     this.setGainValue(volume)
-    this.renderPolyline()
     this.emit('volume-change', volume)
   }
 }

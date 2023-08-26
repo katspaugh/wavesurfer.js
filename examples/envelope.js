@@ -62,11 +62,3 @@ wavesurfer.on('play', () => {
 wavesurfer.on('pause', () => {
   button.textContent = 'Play'
 })
-
-// Fade-in and fade-out change
-envelope.on('fade-in-change', (time) => {
-  console.log('Fade-in end time changed to', time)
-})
-envelope.on('fade-out-change', (time) => {
-  console.log('Fade-out start time changed to', time)
-})
