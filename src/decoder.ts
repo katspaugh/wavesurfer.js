@@ -2,8 +2,7 @@
 async function decode(audioData: ArrayBuffer, sampleRate: number): Promise<AudioBuffer> {
   const audioCtx = new AudioContext({ sampleRate })
   const decode = audioCtx.decodeAudioData(audioData)
-  decode.finally(() => audioCtx.close())
-  return decode
+  return decode.finally(() => audioCtx.close())
 }
 
 /** Normalize peaks to -1..1 */
