@@ -19,6 +19,15 @@ export type EnvelopePluginOptions = {
   dragPointSize?: number
   dragPointFill?: string
   dragPointStroke?: string
+
+  /** Deprecated. Use `points` instead. */
+  fadeInStart?: number
+  /** Deprecated. Use `points` instead. */
+  fadeInEnd?: number
+  /** Deprecated. Use `points` instead. */
+  fadeOutStart?: number
+  /** Deprecated. Use `points` instead. */
+  fadeOutEnd?: number
 }
 
 const defaultOptions = {
@@ -40,16 +49,24 @@ export type EnvelopePluginEvents = BasePluginEvents & {
 class Polyline extends EventEmitter<{
   'point-move': [point: EnvelopePoint, relativeX: number, relativeY: number]
   'point-dragout': [point: EnvelopePoint]
+  'point-create': [relativeX: number, relativeY: number]
   'line-move': [relativeY: number]
 }> {
   private svg: SVGSVGElement
   private options: Options
-  static dragOutThreshold = 10
+  private polyPoints: Map<
+    EnvelopePoint,
+    {
+      polyPoint: SVGPoint
+      circle: SVGEllipseElement
+    }
+  >
 
   constructor(options: Options, wrapper: HTMLElement) {
     super()
 
     this.options = options
+    this.polyPoints = new Map()
 
     const width = wrapper.clientWidth
     const height = wrapper.clientHeight
@@ -60,7 +77,7 @@ class Polyline extends EventEmitter<{
     svg.setAttribute('height', '100%')
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
     svg.setAttribute('preserveAspectRatio', 'none')
-    svg.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none;')
+    svg.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 4; cursor: row-resize;')
     svg.setAttribute('part', 'envelope')
     this.svg = svg
 
@@ -70,7 +87,6 @@ class Polyline extends EventEmitter<{
     polyline.setAttribute('stroke', options.lineColor)
     polyline.setAttribute('stroke-width', options.lineWidth)
     polyline.setAttribute('fill', 'none')
-    polyline.setAttribute('style', 'cursor: row-resize; pointer-events: all;')
     polyline.setAttribute('part', 'polyline')
     svg.appendChild(polyline)
 
@@ -78,7 +94,7 @@ class Polyline extends EventEmitter<{
 
     // Make the polyline draggable along the Y axis
     {
-      makeDraggable(polyline as unknown as HTMLElement, (_, dy) => {
+      makeDraggable(svg as unknown as HTMLElement, (_, dy) => {
         const { height } = svg.viewBox.baseVal
         const { points } = polyline
         for (let i = 1; i < points.numberOfItems - 1; i++) {
@@ -94,6 +110,14 @@ class Polyline extends EventEmitter<{
         this.emit('line-move', dy / height)
       })
     }
+
+    // Listen to double click to add a new point
+    svg.addEventListener('dblclick', (e) => {
+      const rect = svg.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      this.emit('point-create', x / rect.width, y / rect.height)
+    })
   }
 
   private makeDraggable(draggable: SVGElement, onDrag: (x: number, y: number) => void) {
@@ -113,12 +137,23 @@ class Polyline extends EventEmitter<{
     circle.setAttribute('fill', this.options.dragPointFill)
     circle.setAttribute('stroke', this.options.dragPointStroke || this.options.dragPointFill)
     circle.setAttribute('stroke-width', '2')
-    circle.setAttribute('style', 'cursor: grab; pointer-events: all;')
-    circle.setAttribute('part', 'circle')
+    circle.setAttribute('style', 'cursor: grab;')
+    circle.setAttribute('part', 'envelope-circle')
     circle.setAttribute('cx', x.toString())
     circle.setAttribute('cy', y.toString())
     this.svg.appendChild(circle)
     return circle
+  }
+
+  removePolyPoint(point: EnvelopePoint) {
+    const item = this.polyPoints.get(point)
+    if (!item) return
+    const { polyPoint, circle } = item
+    const { points } = this.svg.querySelector('polyline') as SVGPolylineElement
+    const index = Array.from(points).findIndex((p) => p.x === polyPoint.x && p.y === polyPoint.y)
+    points.removeItem(index)
+    circle.remove()
+    this.polyPoints.delete(point)
   }
 
   addPolyPoint(relX: number, relY: number, refPoint: EnvelopePoint) {
@@ -126,28 +161,25 @@ class Polyline extends EventEmitter<{
     const { width, height } = svg.viewBox.baseVal
     const x = relX * width
     const y = height - relY * height
+    const threshold = this.options.dragPointSize / 2
 
     const newPoint = svg.createSVGPoint()
     newPoint.x = relX * width
     newPoint.y = height - relY * height
 
-    const polyline = svg.querySelector('polyline') as SVGPolylineElement
-    const { points } = polyline
-
+    const circle = this.createCircle(x, y)
+    const { points } = svg.querySelector('polyline') as SVGPolylineElement
     const newIndex = Array.from(points).findIndex((point) => point.x >= x)
     points.insertItemBefore(newPoint, Math.max(newIndex, 1))
 
-    const circle = this.createCircle(x, y)
+    this.polyPoints.set(refPoint, { polyPoint: newPoint, circle })
 
     this.makeDraggable(circle, (dx, dy) => {
       const newX = newPoint.x + dx
       const newY = newPoint.y + dy
 
       // Remove the point if it's dragged out of the SVG
-      if (newX < 0 || newY < 0 || newX > width || newY > height) {
-        const pointIndex = Array.from(points).findIndex((point) => point.x === newPoint.x && point.y === newPoint.y)
-        points.removeItem(pointIndex)
-        circle.remove()
+      if (newX < -threshold || newY < -threshold || newX > width + threshold || newY > height + threshold) {
         this.emit('point-dragout', refPoint)
         return
       }
@@ -165,7 +197,7 @@ class Polyline extends EventEmitter<{
       circle.setAttribute('cx', newX.toString())
       circle.setAttribute('cy', newY.toString())
 
-      // Emit the event passing the relative coordinates
+      // Emit the event passing the point and new relative coordinates
       this.emit('point-move', refPoint, newX / width, newY / height)
     })
   }
@@ -186,6 +218,7 @@ class Polyline extends EventEmitter<{
   }
 
   destroy() {
+    this.polyPoints.clear()
     this.svg.remove()
   }
 }
@@ -193,6 +226,8 @@ class Polyline extends EventEmitter<{
 class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOptions> {
   protected options: Options
   private polyline: Polyline | null = null
+  private points: EnvelopePoint[]
+  private throttleTimeout: ReturnType<typeof setTimeout> | null = null
 
   /**
    * Create a new Envelope plugin.
@@ -200,10 +235,30 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
   constructor(options: EnvelopePluginOptions) {
     super(options)
 
+    this.points = options.points || []
+
     this.options = Object.assign({}, defaultOptions, options)
     this.options.lineColor = this.options.lineColor || defaultOptions.lineColor
     this.options.dragPointFill = this.options.dragPointFill || defaultOptions.dragPointFill
     this.options.dragPointStroke = this.options.dragPointStroke || defaultOptions.dragPointStroke
+
+    // Deprecated options
+    if (options.fadeInStart != null) {
+      console.warn('[wavesurfer.js envelope plugin] `fadeInStart` is deprecated. Use `points` instead.')
+      this.points.push({ time: options.fadeInStart, volume: 0 })
+    }
+    if (options.fadeInEnd != null) {
+      console.warn('[wavesurfer.js envelope plugin] `fadeInEnd` is deprecated. Use `points` instead.')
+      this.points.push({ time: options.fadeInEnd, volume: this.options.volume ?? 1 })
+    }
+    if (options.fadeOutStart != null) {
+      console.warn('[wavesurfer.js envelope plugin] `fadeOutStart` is deprecated. Use `points` instead.')
+      this.points.push({ time: options.fadeOutStart, volume: this.options.volume ?? 1 })
+    }
+    if (options.fadeOutEnd != null) {
+      console.warn('[wavesurfer.js envelope plugin] `fadeOutEnd` is deprecated. Use `points` instead.')
+      this.points.push({ time: options.fadeOutEnd, volume: 0 })
+    }
   }
 
   public static create(options: EnvelopePluginOptions) {
@@ -214,20 +269,16 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
    * Add an envelope point with a given time and volume.
    */
   public addPoint(point: EnvelopePoint) {
-    // Insert the point in the correct position
-    const index = this.options.points.findLastIndex((p) => p.time < point.time)
-    if (index === -1) {
-      this.options.points.unshift(point)
-    } else {
-      this.options.points.splice(index + 1, 0, point)
-    }
+    // Insert the point in the correct position to keep the array sorted
+    const index = this.points.findLastIndex((p) => p.time < point.time)
+    this.points.splice(index + 1, 0, point)
 
-    this.emit('points-change', this.options.points)
+    this.emitPoints()
 
     // Add the point to the polyline if the duration is available
     const duration = this.wavesurfer?.getDuration()
     if (duration) {
-      this.polyline?.addPolyPoint(point.time / duration, point.volume, point)
+      this.addPolyPoint(point, duration)
     }
   }
 
@@ -235,11 +286,24 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
    * Remove an envelope point.
    */
   public removePoint(point: EnvelopePoint) {
-    const index = this.options.points.findIndex((p) => p === point)
-    if (index !== -1) {
-      this.options.points.splice(index, 1)
-      this.emit('points-change', this.options.points)
-    }
+    this.points.splice(this.points.indexOf(point), 1)
+    this.polyline?.removePolyPoint(point)
+    this.emitPoints()
+  }
+
+  /**
+   * Set new envelope points.
+   */
+  public setPoints(newPoints: EnvelopePoint[]) {
+    this.points.slice().forEach((point) => this.removePoint(point))
+    newPoints.forEach((point) => this.addPoint(point))
+  }
+
+  /**
+   * Get the current audio volume
+   */
+  public getCurrentVolume() {
+    return this.wavesurfer?.getVolume() || 1
   }
 
   /**
@@ -256,35 +320,38 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
       throw Error('WaveSurfer is not initialized')
     }
 
-    this.initVolumeRamps()
+    const { options } = this
+
+    if (options.volume) {
+      this.wavesurfer.setVolume(options.volume)
+    }
 
     this.subscriptions.push(
       this.wavesurfer.on('decode', (duration) => {
         this.initPolyline()
 
-        // Add initial points
-        if (this.options.points.length === 0) {
-          const initialVolume = this.wavesurfer?.getVolume() || 1
-          this.options.points.push({ time: 0, volume: initialVolume })
-          this.options.points.push({ time: duration, volume: initialVolume })
-        }
-
-        this.options.points.forEach((point) => {
-          this.polyline?.addPolyPoint(point.time / duration, point.volume, point)
-        })
-      }),
-
-      this.wavesurfer.on('dblclick', (relativeX, relativeY) => {
-        this.addPoint({
-          time: relativeX * (this.wavesurfer?.getDuration() || 0),
-          volume: 1 - relativeY,
+        this.points.forEach((point) => {
+          this.addPolyPoint(point, duration)
         })
       }),
 
       this.wavesurfer.on('redraw', () => {
         this.polyline?.update()
       }),
+
+      this.wavesurfer.on('timeupdate', (time) => {
+        this.onTimeUpdate(time)
+      }),
     )
+  }
+
+  private emitPoints() {
+    if (this.throttleTimeout) {
+      clearTimeout(this.throttleTimeout)
+    }
+    this.throttleTimeout = setTimeout(() => {
+      this.emit('points-change', this.points)
+    }, 200)
   }
 
   private initPolyline() {
@@ -301,39 +368,79 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
         point.time = relativeX * duration
         point.volume = 1 - relativeY
 
-        this.emit('points-change', this.options.points)
+        this.emitPoints()
       }),
 
       this.polyline.on('point-dragout', (point) => {
         this.removePoint(point)
       }),
 
+      this.polyline.on('point-create', (relativeX, relativeY) => {
+        this.addPoint({
+          time: relativeX * (this.wavesurfer?.getDuration() || 0),
+          volume: 1 - relativeY,
+        })
+      }),
+
       this.polyline.on('line-move', (relativeY) => {
-        this.options.points.forEach((point) => {
+        this.points.forEach((point) => {
           point.volume = Math.min(1, Math.max(0, point.volume - relativeY))
         })
 
-        this.emit('points-change', this.options.points)
+        this.emitPoints()
       }),
     )
   }
 
-  private initVolumeRamps() {
-    const { wavesurfer } = this
-    if (!wavesurfer) return
+  private addPolyPoint(point: EnvelopePoint, duration: number) {
+    this.polyline?.addPolyPoint(point.time / duration, point.volume, point)
+  }
 
-    this.subscriptions.push(
-      wavesurfer.on('timeupdate', (time) => {
-        const duration = this.wavesurfer?.getDuration() || 0
-        const nextPoint = this.options.points.find((point) => point.time > time) || { time: duration, volume: 0 }
-        const prevPoint = this.options.points.findLast((point) => point.time <= time) || { time: 0, volume: 0 }
-        const timeDiff = nextPoint.time - prevPoint.time
-        const volumeDiff = nextPoint.volume - prevPoint.volume
-        const newVolume = prevPoint.volume + (time - prevPoint.time) * (volumeDiff / timeDiff)
-        wavesurfer.setVolume(newVolume)
-        this.emit('volume-change', newVolume)
-      }),
-    )
+  private onTimeUpdate(time: number) {
+    if (!this.wavesurfer) return
+    let nextPoint = this.points.find((point) => point.time > time)
+    if (!nextPoint) {
+      nextPoint = { time: this.wavesurfer.getDuration() || 0, volume: 0 }
+    }
+    let prevPoint = this.points.findLast((point) => point.time <= time)
+    if (!prevPoint) {
+      prevPoint = { time: 0, volume: 0 }
+    }
+    const timeDiff = nextPoint.time - prevPoint.time
+    const volumeDiff = nextPoint.volume - prevPoint.volume
+    const newVolume = prevPoint.volume + (time - prevPoint.time) * (volumeDiff / timeDiff)
+    this.wavesurfer.setVolume(Math.min(1, Math.max(0, newVolume)))
+    this.emit('volume-change', newVolume)
+  }
+
+  // Deprecated methods
+
+  /**
+   * Deprecated: use `setPoints` instead.
+   */
+  public setStartTime() {
+    console.warn('[wavesurfer.js envelope plugin] `setStartTime` is deprecated, use `setPoints` instead.')
+  }
+
+  /**
+   * Deprecated: use `setPoints` instead.
+   */
+  public setEndTime() {
+    console.warn('[wavesurfer.js envelope plugin] `setEndTime` is deprecated, use `setPoints` instead.')
+  }
+
+  /**
+   * Deprecated: use `setPoints` instead.
+   */
+  public setFadeInEnd() {
+    console.warn('[wavesurfer.js envelope plugin] `setFadeInEnd` is deprecated, use `setPoints` instead.')
+  }
+
+  /**
+   * Deprecated: use `setPoints` instead.
+   */
+  public setFadeOutStart() {
+    console.warn('[wavesurfer.js envelope plugin] `setFadeOutStart` is deprecated, use `setPoints` instead.')
   }
 }
 
