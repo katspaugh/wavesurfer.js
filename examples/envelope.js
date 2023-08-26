@@ -29,7 +29,7 @@ const envelope = wavesurfer.registerPlugin(
     volume: 0.8,
     lineColor: 'rgba(255, 0, 0, 0.5)',
     lineWidth: 4,
-    dragPointSize: 8,
+    dragPointSize: top.innerWidth > 900 ? 8 : 20,
     dragPointFill: 'rgba(0, 255, 255, 0.8)',
     dragPointStroke: 'rgba(0, 0, 0, 0.5)',
 
@@ -48,7 +48,6 @@ const showVolume = () => {
   volumeLabel.textContent = wavesurfer.getVolume().toFixed(2)
 }
 envelope.on('volume-change', showVolume)
-wavesurfer.on('timeupdate', showVolume)
 wavesurfer.on('ready', showVolume)
 
 // Play/pause button

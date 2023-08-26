@@ -8,7 +8,7 @@ import EventEmitter from '../event-emitter.js'
 
 export type EnvelopePoint = {
   time: number // in seconds
-  volume: number // 0 to 1 (will distort if > 1)
+  volume: number // 0 to 1
 }
 
 export type EnvelopePluginOptions = {
@@ -40,6 +40,7 @@ export type EnvelopePluginEvents = BasePluginEvents & {
 class Polyline extends EventEmitter<{
   'point-move': [point: EnvelopePoint, relativeX: number, relativeY: number]
   'point-dragout': [point: EnvelopePoint]
+  'line-move': [relativeY: number]
 }> {
   private svg: SVGSVGElement
   private options: Options
@@ -69,11 +70,30 @@ class Polyline extends EventEmitter<{
     polyline.setAttribute('stroke', options.lineColor)
     polyline.setAttribute('stroke-width', options.lineWidth)
     polyline.setAttribute('fill', 'none')
-    polyline.setAttribute('style', 'pointer-events: none;')
+    polyline.setAttribute('style', 'cursor: row-resize; pointer-events: all;')
     polyline.setAttribute('part', 'polyline')
     svg.appendChild(polyline)
 
     wrapper.appendChild(svg)
+
+    // Make the polyline draggable along the Y axis
+    {
+      makeDraggable(polyline as unknown as HTMLElement, (_, dy) => {
+        const { height } = svg.viewBox.baseVal
+        const { points } = polyline
+        for (let i = 1; i < points.numberOfItems - 1; i++) {
+          const point = points.getItem(i)
+          point.y = Math.min(height, Math.max(0, point.y + dy))
+        }
+        const circles = svg.querySelectorAll('ellipse')
+        Array.from(circles).forEach((circle) => {
+          const newY = Math.min(height, Math.max(0, Number(circle.getAttribute('cy')) + dy))
+          circle.setAttribute('cy', newY.toString())
+        })
+
+        this.emit('line-move', dy / height)
+      })
+    }
   }
 
   private makeDraggable(draggable: SVGElement, onDrag: (x: number, y: number) => void) {
@@ -126,12 +146,9 @@ class Polyline extends EventEmitter<{
       // Remove the point if it's dragged out of the SVG
       if (newX < 0 || newY < 0 || newX > width || newY > height) {
         const pointIndex = Array.from(points).findIndex((point) => point.x === newPoint.x && point.y === newPoint.y)
-        // Don't allow to drag out the first and last points
-        if (pointIndex > 0 && pointIndex < points.numberOfItems - 1) {
-          points.removeItem(pointIndex)
-          circle.remove()
-          this.emit('point-dragout', refPoint)
-        }
+        points.removeItem(pointIndex)
+        circle.remove()
+        this.emit('point-dragout', refPoint)
         return
       }
 
@@ -246,11 +263,9 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
         this.initPolyline()
 
         // Add initial points
-        const initialVolume = this.options.points.length > 0 ? 0 : this.wavesurfer?.getVolume() || 0
-        if (!this.options.points.some((p) => p.time === 0)) {
-          this.options.points.unshift({ time: 0, volume: initialVolume })
-        }
-        if (!this.options.points.some((p) => p.time === duration)) {
+        if (this.options.points.length === 0) {
+          const initialVolume = this.wavesurfer?.getVolume() || 1
+          this.options.points.push({ time: 0, volume: initialVolume })
           this.options.points.push({ time: duration, volume: initialVolume })
         }
 
@@ -292,6 +307,14 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
       this.polyline.on('point-dragout', (point) => {
         this.removePoint(point)
       }),
+
+      this.polyline.on('line-move', (relativeY) => {
+        this.options.points.forEach((point) => {
+          point.volume = Math.min(1, Math.max(0, point.volume - relativeY))
+        })
+
+        this.emit('points-change', this.options.points)
+      }),
     )
   }
 
@@ -301,13 +324,14 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
 
     this.subscriptions.push(
       wavesurfer.on('timeupdate', (time) => {
-        const nextPoint = this.options.points.find((point) => point.time > time)
-        const prevPoint = this.options.points.findLast((point) => point.time <= time)
-        if (!nextPoint || !prevPoint) return
+        const duration = this.wavesurfer?.getDuration() || 0
+        const nextPoint = this.options.points.find((point) => point.time > time) || { time: duration, volume: 0 }
+        const prevPoint = this.options.points.findLast((point) => point.time <= time) || { time: 0, volume: 0 }
         const timeDiff = nextPoint.time - prevPoint.time
         const volumeDiff = nextPoint.volume - prevPoint.volume
         const newVolume = prevPoint.volume + (time - prevPoint.time) * (volumeDiff / timeDiff)
         wavesurfer.setVolume(newVolume)
+        this.emit('volume-change', newVolume)
       }),
     )
   }
