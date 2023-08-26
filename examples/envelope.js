@@ -35,15 +35,17 @@ const envelope = wavesurfer.registerPlugin(
 
     points: [
       { time: 11.2, volume: 0.5 },
-      { time: 15.5, volume: 0.9 },
+      { time: 15.5, volume: 0.8 },
     ],
   }),
 )
 
+envelope.addPoint({ time: 1, volume: 0.9 })
+
 // Show the current volume
 const volumeLabel = document.querySelector('label')
 const showVolume = () => {
-  volumeLabel.textContent = envelope.getCurrentVolume().toFixed(2)
+  volumeLabel.textContent = wavesurfer.getVolume().toFixed(2)
 }
 envelope.on('volume-change', showVolume)
 wavesurfer.on('timeupdate', showVolume)

@@ -6,7 +6,7 @@ import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 
-type EnvelopePoint = {
+export type EnvelopePoint = {
   time: number // in seconds
   volume: number // 0 to 1 (will distort if > 1)
 }
@@ -33,25 +33,22 @@ const defaultOptions = {
 type Options = EnvelopePluginOptions & typeof defaultOptions
 
 export type EnvelopePluginEvents = BasePluginEvents & {
-  'fade-in-change': [time: number]
-  'fade-out-change': [time: number]
+  'points-change': [newPoints: EnvelopePoint[]]
   'volume-change': [volume: number]
 }
 
 class Polyline extends EventEmitter<{
-  'point-move': [index: number, relativeX: number, relativeY: number]
+  'point-move': [point: EnvelopePoint, relativeX: number, relativeY: number]
+  'point-dragout': [point: EnvelopePoint]
 }> {
   private svg: SVGSVGElement
   private options: Options
-  private padding: number
+  static dragOutThreshold = 10
 
   constructor(options: Options, wrapper: HTMLElement) {
     super()
 
     this.options = options
-
-    // An padding to make the envelope fit into the SVG
-    this.padding = options.dragPointSize / 2 + 1
 
     const width = wrapper.clientWidth
     const height = wrapper.clientHeight
@@ -88,19 +85,7 @@ class Polyline extends EventEmitter<{
     )
   }
 
-  addPoint(relX: number, relY: number) {
-    const { svg } = this
-    const { width, height } = svg.viewBox.baseVal
-    const polyline = svg.querySelector('polyline') as SVGPolylineElement
-    const newPoint = svg.createSVGPoint()
-    newPoint.x = relX * width
-    newPoint.y = height - relY * height
-    const { points } = polyline
-    const lastPoint = points.getItem(points.length - 1)
-    points.removeItem(points.length - 1)
-    points.appendItem(newPoint)
-    points.appendItem(lastPoint)
-
+  private createCircle(x: number, y: number) {
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse')
     const radius = this.options.dragPointSize / 2
     circle.setAttribute('rx', radius.toString())
@@ -110,21 +95,61 @@ class Polyline extends EventEmitter<{
     circle.setAttribute('stroke-width', '2')
     circle.setAttribute('style', 'cursor: grab; pointer-events: all;')
     circle.setAttribute('part', 'circle')
-    circle.setAttribute('cx', newPoint.x.toString())
-    circle.setAttribute('cy', newPoint.y.toString())
-    svg.appendChild(circle)
+    circle.setAttribute('cx', x.toString())
+    circle.setAttribute('cy', y.toString())
+    this.svg.appendChild(circle)
+    return circle
+  }
 
-    const index = points.length - 1
+  addPolyPoint(relX: number, relY: number, refPoint: EnvelopePoint) {
+    const { svg } = this
+    const { width, height } = svg.viewBox.baseVal
+    const x = relX * width
+    const y = height - relY * height
+
+    const newPoint = svg.createSVGPoint()
+    newPoint.x = relX * width
+    newPoint.y = height - relY * height
+
+    const polyline = svg.querySelector('polyline') as SVGPolylineElement
+    const { points } = polyline
+
+    const newIndex = Array.from(points).findIndex((point) => point.x >= x)
+    points.insertItemBefore(newPoint, Math.max(newIndex, 1))
+
+    const circle = this.createCircle(x, y)
 
     this.makeDraggable(circle, (dx, dy) => {
       const newX = newPoint.x + dx
       const newY = newPoint.y + dy
+
+      // Remove the point if it's dragged out of the SVG
+      if (newX < 0 || newY < 0 || newX > width || newY > height) {
+        const pointIndex = Array.from(points).findIndex((point) => point.x === newPoint.x && point.y === newPoint.y)
+        // Don't allow to drag out the first and last points
+        if (pointIndex > 0 && pointIndex < points.numberOfItems - 1) {
+          points.removeItem(pointIndex)
+          circle.remove()
+          this.emit('point-dragout', refPoint)
+        }
+        return
+      }
+
+      // Don't allow to drag past the next or previous point
+      const next = Array.from(points).find((point) => point.x > newPoint.x)
+      const prev = Array.from(points).findLast((point) => point.x < newPoint.x)
+      if ((next && newX >= next.x) || (prev && newX <= prev.x)) {
+        return
+      }
+
+      // Update the point and the circle position
       newPoint.x = newX
       newPoint.y = newY
       circle.setAttribute('cx', newX.toString())
       circle.setAttribute('cy', newY.toString())
-      const { width, height } = svg.viewBox.baseVal
-      this.emit('point-move', index, newX / width, newY / height)
+
+      // Emit the event passing the relative coordinates
+      this.emit('point-move', refPoint, newX / width, newY / height)
     })
   }
 
@@ -151,11 +176,10 @@ class Polyline extends EventEmitter<{
 class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOptions> {
   protected options: Options
   private polyline: Polyline | null = null
-  private audioContext: AudioContext | null = null
-  private gainNode: GainNode | null = null
-  // Adjust the exponent to change the curve of the volume control
-  private readonly naturalVolumeExponent = 1.5
 
+  /**
+   * Create a new Envelope plugin.
+   */
   constructor(options: EnvelopePluginOptions) {
     super(options)
 
@@ -169,6 +193,41 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     return new EnvelopePlugin(options)
   }
 
+  /**
+   * Add an envelope point with a given time and volume.
+   */
+  public addPoint(point: EnvelopePoint) {
+    // Insert the point in the correct position
+    const index = this.options.points.findLastIndex((p) => p.time < point.time)
+    if (index === -1) {
+      this.options.points.unshift(point)
+    } else {
+      this.options.points.splice(index + 1, 0, point)
+    }
+
+    this.emit('points-change', this.options.points)
+
+    // Add the point to the polyline if the duration is available
+    const duration = this.wavesurfer?.getDuration()
+    if (duration) {
+      this.polyline?.addPolyPoint(point.time / duration, point.volume, point)
+    }
+  }
+
+  /**
+   * Remove an envelope point.
+   */
+  public removePoint(point: EnvelopePoint) {
+    const index = this.options.points.findIndex((p) => p === point)
+    if (index !== -1) {
+      this.options.points.splice(index, 1)
+      this.emit('points-change', this.options.points)
+    }
+  }
+
+  /**
+   * Destroy the plugin instance.
+   */
   public destroy() {
     this.polyline?.destroy()
     super.destroy()
@@ -180,27 +239,41 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
       throw Error('WaveSurfer is not initialized')
     }
 
+    this.initVolumeRamps()
+
     this.subscriptions.push(
       this.wavesurfer.on('decode', (duration) => {
+        this.initPolyline()
+
         // Add initial points
-        const initialVolume = this.options.points.length > 0 ? 0 : this.getCurrentVolume()
-        this.options.points.unshift({ time: 0, volume: initialVolume })
-        this.options.points.push({ time: duration, volume: initialVolume })
+        const initialVolume = this.options.points.length > 0 ? 0 : this.wavesurfer?.getVolume() || 0
+        if (!this.options.points.some((p) => p.time === 0)) {
+          this.options.points.unshift({ time: 0, volume: initialVolume })
+        }
+        if (!this.options.points.some((p) => p.time === duration)) {
+          this.options.points.push({ time: duration, volume: initialVolume })
+        }
+
+        this.options.points.forEach((point) => {
+          this.polyline?.addPolyPoint(point.time / duration, point.volume, point)
+        })
+      }),
+
+      this.wavesurfer.on('dblclick', (relativeX, relativeY) => {
+        this.addPoint({
+          time: relativeX * (this.wavesurfer?.getDuration() || 0),
+          volume: 1 - relativeY,
+        })
       }),
 
       this.wavesurfer.on('redraw', () => {
-        const duration = this.wavesurfer?.getDuration()
-        if (!duration) return
-        this.renderPolyline()
+        this.polyline?.update()
       }),
     )
-
-    this.initWebAudio()
-    this.initSvg()
-    this.initRamps()
   }
 
-  private initSvg() {
+  private initPolyline() {
+    if (this.polyline) this.polyline.destroy()
     if (!this.wavesurfer) return
 
     const wrapper = this.wavesurfer.getWrapper()
@@ -208,126 +281,35 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     this.polyline = new Polyline(this.options, wrapper)
 
     this.subscriptions.push(
-      this.wavesurfer.on('decode', (duration) => {
-        this.options.points.forEach((point) => {
-          this.polyline?.addPoint(point.time / duration, point.volume)
-        })
-      }),
-
-      this.polyline.on('point-move', (index, relativeX, relativeY) => {
+      this.polyline.on('point-move', (point, relativeX, relativeY) => {
         const duration = this.wavesurfer?.getDuration() || 0
-        const newTime = relativeX * duration
-        const point = this.options.points[index]
-        if (point) {
-          this.resetRamps()
-          point.time = newTime
-          point.volume = relativeY
-        }
+        point.time = relativeX * duration
+        point.volume = 1 - relativeY
+
+        this.emit('points-change', this.options.points)
+      }),
+
+      this.polyline.on('point-dragout', (point) => {
+        this.removePoint(point)
       }),
     )
   }
 
-  private renderPolyline() {
-    if (!this.polyline || !this.wavesurfer) return
-    const duration = this.wavesurfer.getDuration()
-    if (!duration) return
-
-    this.polyline.update()
-  }
-
-  private initWebAudio() {
-    const { wavesurfer } = this
-    if (!wavesurfer) return
-
-    const audio = wavesurfer.getMediaElement()
-    if (!audio) return null
-
-    // Create an AudioContext
-    const audioContext = new window.AudioContext()
-
-    // Create a GainNode for controlling the volume
-    this.gainNode = audioContext.createGain()
-    this.setGainValue(this.options.volume ?? (audio.volume || 1))
-
-    // Create a MediaElementAudioSourceNode using the audio element
-    const source = audioContext.createMediaElementSource(audio)
-
-    // Connect the source to the GainNode, and the GainNode to the destination (speakers)
-    source.connect(this.gainNode)
-    this.gainNode.connect(audioContext.destination)
-
-    this.audioContext = audioContext
-
-    this.subscriptions.push(
-      wavesurfer.on('play', () => {
-        if (audioContext.state === 'suspended') {
-          audioContext.resume()
-        }
-      }),
-    )
-  }
-
-  private invertNaturalVolume(value: number): number {
-    if (value === 0) return value
-    const minValue = 0.0001
-    const maxValue = 1
-    const interpolatedValue = Math.pow((value - minValue) / (maxValue - minValue), 1 / this.naturalVolumeExponent)
-    return interpolatedValue
-  }
-
-  private naturalVolume(value: number): number {
-    const minValue = 0.0001
-    const maxValue = 1
-    const interpolatedValue = minValue + (maxValue - minValue) * Math.pow(value, this.naturalVolumeExponent)
-    return interpolatedValue
-  }
-
-  private setGainValue(volume: number) {
-    if (this.gainNode) {
-      this.gainNode.gain.value = volume
-    }
-  }
-
-  private resetRamps() {
-    if (!this.audioContext || !this.gainNode) return
-    const time = this.audioContext.currentTime
-    this.gainNode.gain.cancelScheduledValues(time)
-  }
-
-  private addRamp(currentTime: number, startTime: number, startVolume: number, endTime: number, endVolume: number) {
-    if (!this.audioContext || !this.gainNode) return
-    const time = this.audioContext.currentTime
-    this.gainNode.gain.setValueAtTime(startVolume, time + (startTime - currentTime))
-    this.gainNode.gain.linearRampToValueAtTime(endVolume, time + (endTime - currentTime))
-  }
-
-  private initRamps() {
+  private initVolumeRamps() {
     const { wavesurfer } = this
     if (!wavesurfer) return
 
     this.subscriptions.push(
-      wavesurfer.on('play', () => {
-        const currentTime = wavesurfer.getCurrentTime() || 0
-
-        this.resetRamps()
-
-        this.options.points.forEach((point, index) => {
-          const prevPoint = this.options.points[index - 1] || { time: 0, volume: 0 }
-          this.addRamp(currentTime, prevPoint.time, prevPoint.volume, point.time, point.volume)
-        })
+      wavesurfer.on('timeupdate', (time) => {
+        const nextPoint = this.options.points.find((point) => point.time > time)
+        const prevPoint = this.options.points.findLast((point) => point.time <= time)
+        if (!nextPoint || !prevPoint) return
+        const timeDiff = nextPoint.time - prevPoint.time
+        const volumeDiff = nextPoint.volume - prevPoint.volume
+        const newVolume = prevPoint.volume + (time - prevPoint.time) * (volumeDiff / timeDiff)
+        wavesurfer.setVolume(newVolume)
       }),
     )
-  }
-
-  /** Get the current audio volume */
-  public getCurrentVolume() {
-    return this.gainNode ? this.gainNode.gain.value : 0
-  }
-
-  /** Set the volume of the audio */
-  public setVolume(volume: number) {
-    this.setGainValue(volume)
-    this.emit('volume-change', volume)
   }
 }
 

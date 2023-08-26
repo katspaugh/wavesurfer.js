@@ -3,7 +3,8 @@ import EventEmitter from './event-emitter.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
 
 type RendererEvents = {
-  click: [relativeX: number]
+  click: [relativeX: number, relativeY: number]
+  dblclick: [relativeX: number, relativeY: number]
   drag: [relativeX: number]
   scroll: [relativeStart: number, relativeEnd: number]
   render: []
@@ -58,12 +59,23 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   private initEvents() {
-    // Add a click listener
-    this.wrapper.addEventListener('click', (e) => {
+    const getRelativeXY = (e: MouseEvent) => {
       const rect = this.wrapper.getBoundingClientRect()
       const x = e.clientX - rect.left
-      const relativeX = x / rect.width
-      this.emit('click', relativeX)
+      const y = e.clientY - rect.top
+      return [x / rect.width, y / rect.height] as const
+    }
+
+    // Add a click listener
+    this.wrapper.addEventListener('click', (e) => {
+      const [relativeX, relativeY] = getRelativeXY(e)
+      this.emit('click', relativeX, relativeY)
+    })
+
+    // Add a double click listener
+    this.wrapper.addEventListener('dblclick', (e) => {
+      const [relativeX, relativeY] = getRelativeXY(e)
+      this.emit('dblclick', relativeX, relativeY)
     })
 
     // Drag
