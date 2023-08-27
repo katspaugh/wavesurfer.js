@@ -3,7 +3,9 @@
 
 /*
 <html>
-  <button style="margin: 0 2em 2em 0">Play</button>
+  <button style="min-width: 5em" id="play">Play</button>
+  <button style="margin: 0 1em 2em" id="randomize">Randomize points</button>
+
   Volume: <label>0</label>
   <div id="container" style="border: 1px solid #ddd;"></div>
   <p>
@@ -26,28 +28,51 @@ const wavesurfer = WaveSurfer.create({
 // Initialize the Envelope plugin
 const envelope = wavesurfer.registerPlugin(
   EnvelopePlugin.create({
-    fadeInEnd: 5,
-    fadeOutStart: 15,
     volume: 0.8,
     lineColor: 'rgba(255, 0, 0, 0.5)',
     lineWidth: 4,
-    dragPointSize: 8,
+    dragPointSize: top.innerWidth > 900 ? 10 : 20,
     dragPointFill: 'rgba(0, 255, 255, 0.8)',
     dragPointStroke: 'rgba(0, 0, 0, 0.5)',
+
+    points: [
+      { time: 11.2, volume: 0.5 },
+      { time: 15.5, volume: 0.8 },
+    ],
   }),
 )
+
+envelope.on('points-change', (points) => {
+  console.log('Envelope points changed', points)
+})
+
+envelope.addPoint({ time: 1, volume: 0.9 })
+
+// Randomize points
+const randomizePoints = () => {
+  const points = []
+  const len = 5 * Math.random()
+  for (let i = 0; i < len; i++) {
+    points.push({
+      time: Math.random() * wavesurfer.getDuration(),
+      volume: Math.random(),
+    })
+  }
+  envelope.setPoints(points)
+}
+
+document.querySelector('#randomize').onclick = randomizePoints
 
 // Show the current volume
 const volumeLabel = document.querySelector('label')
 const showVolume = () => {
-  volumeLabel.textContent = envelope.getCurrentVolume().toFixed(2)
+  volumeLabel.textContent = wavesurfer.getVolume().toFixed(2)
 }
 envelope.on('volume-change', showVolume)
-wavesurfer.on('timeupdate', showVolume)
 wavesurfer.on('ready', showVolume)
 
 // Play/pause button
-const button = document.querySelector('button')
+const button = document.querySelector('#play')
 wavesurfer.once('ready', () => {
   button.onclick = () => {
     wavesurfer.playPause()
@@ -58,12 +83,4 @@ wavesurfer.on('play', () => {
 })
 wavesurfer.on('pause', () => {
   button.textContent = 'Play'
-})
-
-// Fade-in and fade-out change
-envelope.on('fade-in-change', (time) => {
-  console.log('Fade-in end time changed to', time)
-})
-envelope.on('fade-out-change', (time) => {
-  console.log('Fade-out start time changed to', time)
 })
