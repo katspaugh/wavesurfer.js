@@ -41,6 +41,8 @@ const options = {
   autoplay: false,
   /** Pass false to disable clicks on the waveform */
   interact: true,
+  /** Allow to drag the cursor to seek to a new position */
+  dragToSeek: false,
   /** Hide the scrollbar */
   hideScrollbar: false,
   /** Audio rate */

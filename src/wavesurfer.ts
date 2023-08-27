@@ -46,6 +46,8 @@ export type WaveSurferOptions = {
   autoplay?: boolean
   /** Pass false to disable clicks on the waveform */
   interact?: boolean
+  /** Allow to drag the cursor to seek to a new position */
+  dragToSeek?: boolean
   /** Hide the scrollbar */
   hideScrollbar?: boolean
   /** Audio rate, i.e. the playback speed */
@@ -75,6 +77,7 @@ const defaultOptions = {
   minPxPerSec: 0,
   fillParent: true,
   interact: true,
+  dragToSeek: false,
   autoScroll: true,
   autoCenter: true,
   sampleRate: 8000,

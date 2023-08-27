@@ -67,7 +67,9 @@ class Renderer extends EventEmitter<RendererEvents> {
     })
 
     // Drag
-    this.initDrag()
+    if (this.options.dragToSeek) {
+      this.initDrag()
+    }
 
     // Add a scroll listener
     this.scrollContainer.addEventListener('scroll', () => {
