@@ -304,7 +304,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.plugins
   }
 
-  public async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+  private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
     this.emit('load', url)
 
     if (this.isPlaying()) this.pause()
