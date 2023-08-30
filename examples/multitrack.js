@@ -6,7 +6,7 @@
 
 /*
 <html>
-  <script src="https://unpkg.com/wavesurfer-multitrack/dist/multitrack.min.js"></script>
+  <script src="https://unpkg.com/wavesurfer-multitrack@0.2/dist/multitrack.min.js"></script>
 
   <label>
     Zoom: <input type="range" min="10" max="100" value="10" />
@@ -18,7 +18,7 @@
     <button id="backward">Back 30s</button>
   </div>
 
-  <div id="multitrack" style="background: #2d2d2d; color: #fff"></div>
+  <div id="container" style="background: #2d2d2d; color: #fff"></div>
 </html>
 */
 
@@ -36,6 +36,7 @@ const multitrack = Multitrack.create(
       url: '/examples/audio/librivox.mp3',
       fadeInEnd: 5,
       fadeOutStart: 250,
+      envelope: true,
       volume: 1,
       options: {
         waveColor: 'hsl(46, 87%, 49%)',
@@ -77,7 +78,11 @@ const multitrack = Multitrack.create(
       startCue: 2.1,
       endCue: 20,
       fadeInEnd: 8,
-      fadeOutStart: 11,
+      fadeOutStart: 18,
+      envelope: [
+        { time: 11.2, volume: 0.5 },
+        { time: 13.5, volume: 0.8 },
+      ],
       volume: 0.8,
       options: {
         waveColor: 'hsl(161, 87%, 49%)',
@@ -87,13 +92,14 @@ const multitrack = Multitrack.create(
     },
   ],
   {
-    container: document.querySelector('#multitrack'), // required!
+    container: document.querySelector('#container'), // required!
     minPxPerSec: 10, // zoom level
-    rightButtonDrag: true, // drag tracks with the right mouse button
+    rightButtonDrag: false, // set to true to drag with right mouse button
     cursorWidth: 2,
     cursorColor: '#D72F21',
     trackBackground: '#2D2D2D',
     trackBorderColor: '#7C7C7C',
+    dragBounds: true,
     envelopeOptions: {
       lineColor: 'rgba(255, 0, 0, 0.7)',
       lineWidth: 4,
@@ -108,26 +114,35 @@ const multitrack = Multitrack.create(
 multitrack.on('start-position-change', ({ id, startPosition }) => {
   console.log(`Track ${id} start position updated to ${startPosition}`)
 })
+
 multitrack.on('start-cue-change', ({ id, startCue }) => {
   console.log(`Track ${id} start cue updated to ${startCue}`)
 })
+
 multitrack.on('end-cue-change', ({ id, endCue }) => {
   console.log(`Track ${id} end cue updated to ${endCue}`)
 })
+
 multitrack.on('volume-change', ({ id, volume }) => {
   console.log(`Track ${id} volume updated to ${volume}`)
 })
+
 multitrack.on('fade-in-change', ({ id, fadeInEnd }) => {
   console.log(`Track ${id} fade-in updated to ${fadeInEnd}`)
 })
+
 multitrack.on('fade-out-change', ({ id, fadeOutStart }) => {
   console.log(`Track ${id} fade-out updated to ${fadeOutStart}`)
 })
+
 multitrack.on('intro-end-change', ({ id, endTime }) => {
   console.log(`Track ${id} intro end updated to ${endTime}`)
 })
 
-// Drag'n'drop a track object (not an audio file!)
+multitrack.on('envelope-points-change', ({ id, points }) => {
+  console.log(`Track ${id} envelope points updated to`, points)
+})
+
 multitrack.on('drop', ({ id }) => {
   multitrack.addTrack({
     id,
@@ -168,8 +183,25 @@ slider.oninput = () => {
   multitrack.zoom(slider.valueAsNumber)
 }
 
-// Destroy the plugin on unmount
+// Destroy all wavesurfer instances on unmount
 // This should be called before calling initMultiTrack again to properly clean up
 window.onbeforeunload = () => {
   multitrack.destroy()
 }
+
+// Set sinkId
+multitrack.once('canplay', async () => {
+  await multitrack.setSinkId('default')
+  console.log('Set sinkId to default')
+})
+
+// Set new points for 3rd track
+setTimeout(() => {
+  const track = 2
+
+  // Get existing points
+  const points = multitrack.getEnvelopePoints(track)
+
+  // Add a new point
+  multitrack.setEnvelopePoints(track, [...points, { time: 19, volume: 0.5 }])
+}, 2000)
