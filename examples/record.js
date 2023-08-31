@@ -15,30 +15,37 @@ const record = wavesurfer.registerPlugin(RecordPlugin.create())
 
 // Render recorded audio
 record.on('record-end', (blob) => {
-  const recordedUrl = URL.createObjectURL(blob)
   const container = document.querySelector('#recordings')
+  const recordedUrl = URL.createObjectURL(blob)
 
+  // Create wavesurfer from the recorded audio
   const wavesurfer = WaveSurfer.create({
     container,
     waveColor: 'rgb(200, 100, 0)',
     progressColor: 'rgb(100, 50, 0)',
     url: recordedUrl,
   })
-  wavesurfer.on('interaction', () => wavesurfer.playPause())
 
+  // Play button
+  const button = container.appendChild(document.createElement('button'))
+  button.textContent = 'Play'
+  button.onclick = () => wavesurfer.playPause()
+  wavesurfer.on('pause', () => (button.textContent = 'Play'))
+  wavesurfer.on('play', () => (button.textContent = 'Pause'))
+
+  // Download link
   const link = container.appendChild(document.createElement('a'))
   Object.assign(link, {
     href: recordedUrl,
     download: 'recording.' + blob.type.split(';')[0].split('/')[1] || 'webm',
     textContent: 'Download recording',
-    style: 'display: block; margin: 1rem 0 2rem',
   })
 })
 
-// Buttons
 {
-  // Start recording
+  // Record button
   const recButton = document.querySelector('#record')
+
   recButton.onclick = () => {
     if (record.isRecording()) {
       record.stopRecording()
@@ -68,5 +75,12 @@ record.on('record-end', (blob) => {
   <div id="mic" style="border: 1px solid #ddd; border-radius: 4px; margin-top: 1rem"></div>
 
   <div id="recordings" style="margin: 1rem 0"></div>
+
+  <style>
+    button {
+      min-width: 5rem;
+      margin: 1rem 1rem 1rem 0;
+    }
+  </style>
 </html>
 */
