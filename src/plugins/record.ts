@@ -7,7 +7,7 @@ import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 export type RecordPluginOptions = {
   /** The MIME type to use when recording audio */
   mimeType?: MediaRecorderOptions['mimeType']
-  /** The audio bitrate to use when recording audio */
+  /** The audio bitrate to use when recording audio, defaults to 128000 to avoid a VBR encoding. */
   audioBitsPerSecond?: MediaRecorderOptions['audioBitsPerSecond']
   /** Whether to render the recorded audio, true by default */
   renderRecordedAudio?: boolean
@@ -18,12 +18,22 @@ export type RecordPluginEvents = BasePluginEvents & {
   'record-end': [blob: Blob]
 }
 
+const DEFAULT_BITS_PER_SECOND = 128000
+
 const MIME_TYPES = ['audio/webm', 'audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/mp3']
 const findSupportedMimeType = () => MIME_TYPES.find((mimeType) => MediaRecorder.isTypeSupported(mimeType))
 
 class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private stream: MediaStream | null = null
   private mediaRecorder: MediaRecorder | null = null
+
+  /** Create an instance of the Record plugin */
+  constructor(options: RecordPluginOptions) {
+    super({
+      ...options,
+      audioBitsPerSecond: options.audioBitsPerSecond ?? DEFAULT_BITS_PER_SECOND,
+    })
+  }
 
   /** Create an instance of the Record plugin */
   public static create(options?: RecordPluginOptions) {
