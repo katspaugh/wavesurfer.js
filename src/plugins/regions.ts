@@ -82,16 +82,23 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     this.color = params.color ?? 'rgba(0, 0, 0, 0.1)'
     this.minLength = params.minLength ?? this.minLength
     this.maxLength = params.maxLength ?? this.maxLength
-    this.element = this.initElement(params.content)
+    this.element = this.initElement()
+    this.setContent(params.content)
+    this.setPart()
+
     this.renderPosition()
     this.initMouseEvents()
   }
 
-  private initElement(content?: string | HTMLElement) {
+  private setPart() {
+    const isMarker = this.start === this.end
+    this.element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
+  }
+
+  private initElement() {
     const element = document.createElement('div')
     const isMarker = this.start === this.end
 
-    element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
     element.setAttribute(
       'style',
       `
@@ -106,19 +113,6 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       pointer-events: all;
     `,
     )
-
-    // Init content
-    if (content) {
-      if (typeof content === 'string') {
-        this.content = document.createElement('div')
-        this.content.style.padding = `0.2em ${isMarker ? 0.2 : 0.4}em`
-        this.content.textContent = content
-      } else {
-        this.content = content
-      }
-      this.content.setAttribute('part', 'region-content')
-      element.appendChild(this.content)
-    }
 
     // Add resize handles
     if (!isMarker) {
@@ -257,8 +251,27 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     this.emit('play')
   }
 
+  /** Set the HTML content of the region */
+  public setContent(content: RegionParams['content']) {
+    this.content?.remove()
+    if (!content) {
+      this.content = undefined
+      return
+    }
+    if (typeof content === 'string') {
+      this.content = document.createElement('div')
+      const isMarker = this.start === this.end
+      this.content.style.padding = `0.2em ${isMarker ? 0.2 : 0.4}em`
+      this.content.textContent = content
+    } else {
+      this.content = content
+    }
+    this.content.setAttribute('part', 'region-content')
+    this.element.appendChild(this.content)
+  }
+
   /** Update the region's options */
-  public setOptions(options: { color?: string; drag?: boolean; resize?: boolean; start?: number; end?: number }) {
+  public setOptions(options: Omit<RegionParams, 'minLength' | 'maxLength'>) {
     if (options.color) {
       this.color = options.color
       this.element.style.backgroundColor = this.color
@@ -278,6 +291,14 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       this.start = options.start ?? this.start
       this.end = options.end ?? (isMarker ? this.start : this.end)
       this.renderPosition()
+      this.setPart()
+    }
+    if (options.content) {
+      this.setContent(options.content)
+    }
+    if (options.id) {
+      this.id = options.id
+      this.setPart()
     }
   }
 

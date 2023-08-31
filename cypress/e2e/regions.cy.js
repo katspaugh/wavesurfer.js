@@ -248,4 +248,64 @@ describe('WaveSurfer Regions plugin tests', () => {
       win.wavesurfer.destroy()
     })
   })
+
+  it('should set region content', () => {
+    cy.window().then((win) => {
+      const regionsPlugin = win.wavesurfer.getActivePlugins()[0]
+
+      const region = regionsPlugin.addRegion({
+        start: 1,
+        end: 5,
+        content: 'Click me',
+        color: 'rgba(0, 100, 0, 0.2)',
+      })
+
+      expect(region.element.textContent).to.equal('Click me')
+
+      region.setOptions({ content: 'Updated' })
+
+      expect(region.element.textContent).to.equal('Updated')
+
+      region.setContent('Updated again')
+
+      expect(region.element.textContent).to.equal('Updated again')
+
+      // HTML content
+      const div = document.createElement('div')
+      div.innerHTML = '<p>HTML content</p>'
+      region.setContent(div)
+
+      expect(region.element.textContent).to.equal('HTML content')
+
+      win.wavesurfer.destroy()
+    })
+  })
+
+  it('should set region id', () => {
+    cy.window().then((win) => {
+      const regionsPlugin = win.wavesurfer.getActivePlugins()[0]
+
+      const region = regionsPlugin.addRegion({
+        id: 'my-region',
+        start: 1,
+        end: 5,
+      })
+
+      expect(region.element.getAttribute('part')).to.equal('region my-region')
+
+      // Make it a marker
+      region.setOptions({ start: 3, end: 3 })
+
+      expect(region.element.getAttribute('part')).to.equal('marker my-region')
+
+      // Set the id
+      region.setOptions({ id: 'my-marker' })
+
+      expect(region.id).to.equal('my-marker')
+
+      expect(region.element.getAttribute('part')).to.equal('marker my-marker')
+
+      win.wavesurfer.destroy()
+    })
+  })
 })
