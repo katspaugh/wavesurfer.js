@@ -386,6 +386,8 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
         })
 
         this.emitPoints()
+
+        this.onTimeUpdate(this.wavesurfer?.getCurrentTime() || 0)
       }),
     )
   }
