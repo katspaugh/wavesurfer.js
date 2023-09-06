@@ -92,7 +92,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.wrapper,
       // On drag
       (_, __, x) => {
-        this.emit('drag', Math.max(0, Math.min(1, x / this.wrapper.clientWidth)))
+        this.emit('drag', Math.max(0, Math.min(1, x / this.wrapper.getBoundingClientRect().width)))
       },
       // On start drag
       () => (this.isDragging = true),
