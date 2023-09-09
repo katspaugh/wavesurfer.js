@@ -17,6 +17,7 @@ export type EnvelopePluginOptions = {
   volume?: number
   lineWidth?: string
   lineColor?: string
+  dragLine?: boolean
   dragPointSize?: number
   dragPointSizeMobile?: number
   dragPointFill?: string
@@ -37,7 +38,7 @@ const defaultOptions = {
   lineWidth: 4,
   lineColor: 'rgba(0, 0, 255, 0.5)',
   dragPointSize: 10,
-  dragPointSizeMobile: 20,
+  dragPointSizeMobile: 30,
   dragPointFill: 'rgba(255, 255, 255, 0.8)',
   dragPointStroke: 'rgba(255, 255, 255, 0.8)',
 }
@@ -91,13 +92,13 @@ class Polyline extends EventEmitter<{
     polyline.setAttribute('stroke-width', options.lineWidth)
     polyline.setAttribute('fill', 'none')
     polyline.setAttribute('part', 'polyline')
-    polyline.setAttribute('style', 'cursor: row-resize; pointer-events: stroke;')
+    polyline.setAttribute('style', options.dragLine ? 'cursor: row-resize; pointer-events: stroke;' : '')
     svg.appendChild(polyline)
 
     wrapper.appendChild(svg)
 
     // Make the polyline draggable along the Y axis
-    {
+    if (options.dragLine) {
       makeDraggable(polyline as unknown as HTMLElement, (_, dy) => {
         const { height } = svg.viewBox.baseVal
         const { points } = polyline
@@ -140,8 +141,10 @@ class Polyline extends EventEmitter<{
     circle.setAttribute('rx', radius.toString())
     circle.setAttribute('ry', radius.toString())
     circle.setAttribute('fill', this.options.dragPointFill)
-    circle.setAttribute('stroke', this.options.dragPointStroke || this.options.dragPointFill)
-    circle.setAttribute('stroke-width', '2')
+    if (this.options.dragPointStroke) {
+      circle.setAttribute('stroke', this.options.dragPointStroke)
+      circle.setAttribute('stroke-width', '2')
+    }
     circle.setAttribute('style', 'cursor: grab; pointer-events: all;')
     circle.setAttribute('part', 'envelope-circle')
     circle.setAttribute('cx', x.toString())
@@ -235,6 +238,8 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
   private polyline: Polyline | null = null
   private points: EnvelopePoint[]
   private throttleTimeout: ReturnType<typeof setTimeout> | null = null
+  private ac: AudioContext | null = null
+  private gain: GainNode['gain'] | null = null
 
   /**
    * Create a new Envelope plugin.
@@ -298,18 +303,28 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
   }
 
   /**
-   * Get the current audio volume
-   */
-  public getCurrentVolume() {
-    return this.wavesurfer?.getVolume() || 1
-  }
-
-  /**
    * Destroy the plugin instance.
    */
   public destroy() {
     this.polyline?.destroy()
+    this.ac?.close()
     super.destroy()
+  }
+
+  /**
+   * Get the envelope volume.
+   */
+  public getCurrentVolume(): number {
+    return this.gain?.value || 0
+  }
+
+  /**
+   * Set the envelope volume. 0..1 (more than 1 will boost the volume).
+   */
+  public setVolume(floatValue: number) {
+    if (this.gain) {
+      this.gain.value = floatValue
+    }
   }
 
   /** Called by wavesurfer, don't call manually */
@@ -319,10 +334,9 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     }
 
     const { options } = this
+    options.volume = options.volume ?? this.wavesurfer.getVolume()
 
-    if (options.volume) {
-      this.wavesurfer.setVolume(options.volume)
-    }
+    this.initAudioContext(this.wavesurfer.getMediaElement())
 
     this.subscriptions.push(
       this.wavesurfer.on('decode', (duration) => {
@@ -340,7 +354,27 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
       this.wavesurfer.on('timeupdate', (time) => {
         this.onTimeUpdate(time)
       }),
+
+      this.wavesurfer.on('play', () => {
+        if (this.ac?.state === 'suspended') {
+          this.ac.resume()
+        }
+      }),
     )
+  }
+
+  private initAudioContext(mediaElement: HTMLMediaElement) {
+    const ac = new AudioContext()
+    const gainNode = ac.createGain()
+    gainNode.gain.value = this.options.volume ?? 1
+    gainNode.connect(ac.destination)
+
+    // Create a media element source
+    const source = ac.createMediaElementSource(mediaElement)
+    source.connect(gainNode)
+
+    this.ac = ac
+    this.gain = gainNode.gain
   }
 
   private emitPoints() {
@@ -409,18 +443,16 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     const timeDiff = nextPoint.time - prevPoint.time
     const volumeDiff = nextPoint.volume - prevPoint.volume
     const newVolume = prevPoint.volume + (time - prevPoint.time) * (volumeDiff / timeDiff)
-    this.wavesurfer.setVolume(Math.min(1, Math.max(0, newVolume)))
-    this.emit('volume-change', newVolume)
+    const clampedVolume = Math.min(1, Math.max(0, newVolume))
+    const roundedVolume = Math.round(clampedVolume * 100) / 100
+
+    if (roundedVolume !== this.getCurrentVolume()) {
+      this.setVolume(roundedVolume)
+      this.emit('volume-change', newVolume)
+    }
   }
 
   // Deprecated methods
-
-  /**
-   * Deprecated: use `wavesurfer.setVolume` instead.
-   */
-  public setVolume() {
-    console.warn('[wavesurfer.js envelope plugin] `setVolume` is deprecated, use `wavesurfer.setVolume` instead.')
-  }
 
   /**
    * Deprecated: use `setPoints` instead.

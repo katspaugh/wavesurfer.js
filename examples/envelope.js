@@ -66,7 +66,7 @@ document.querySelector('#randomize').onclick = randomizePoints
 // Show the current volume
 const volumeLabel = document.querySelector('label')
 const showVolume = () => {
-  volumeLabel.textContent = wavesurfer.getVolume().toFixed(2)
+  volumeLabel.textContent = envelope.getCurrentVolume().toFixed(2)
 }
 envelope.on('volume-change', showVolume)
 wavesurfer.on('ready', showVolume)
