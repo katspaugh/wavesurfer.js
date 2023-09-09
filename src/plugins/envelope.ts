@@ -255,6 +255,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
   private throttleTimeout: ReturnType<typeof setTimeout> | null = null
   private ac: AudioContext | null = null
   private gain: GainNode['gain'] | null = null
+  private volume = 1
 
   /**
    * Create a new Envelope plugin.
@@ -336,15 +337,16 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
    * Get the envelope volume.
    */
   public getCurrentVolume(): number {
-    return this.gain?.value || 0
+    return this.volume
   }
 
   /**
    * Set the envelope volume. 0..1 (more than 1 will boost the volume).
    */
   public setVolume(floatValue: number) {
+    this.volume = floatValue
     if (this.gain) {
-      this.gain.value = floatValue
+      this.gain.value = this.volume
     }
   }
 
@@ -358,6 +360,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     options.volume = options.volume ?? this.wavesurfer.getVolume()
 
     this.initAudioContext(this.wavesurfer.getMediaElement())
+    this.setVolume(options.volume)
 
     this.subscriptions.push(
       this.wavesurfer.on('decode', (duration) => {
@@ -469,7 +472,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
 
     if (roundedVolume !== this.getCurrentVolume()) {
       this.setVolume(roundedVolume)
-      this.emit('volume-change', newVolume)
+      this.emit('volume-change', roundedVolume)
     }
   }
 }
