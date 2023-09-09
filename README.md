@@ -54,57 +54,11 @@ See more [examples](https://wavesurfer-js.org/examples).
 
 ## API reference
 
-See the documentation on wavesurfer [methods](http://wavesurfer-js.org/docs/methods), [options](http://wavesurfer-js.org/docs/options) and [events](http://wavesurfer-js.org/docs/events).
+See the wavesurfer.js documentation on our website:
 
-### Wavesurfer options
-- `container`: `HTMLElement | string` - Required: an HTML element or selector where the waveform will be rendered.
-- `height`: `number | 'auto'` - The height of the waveform in pixels, or "auto" to fill the container height
-- `waveColor`: `string | string[] | CanvasGradient` - The color of the waveform
-- `progressColor`: `string | string[] | CanvasGradient` - The color of the progress mask
-- `cursorColor`: `string` - The color of the playpack cursor
-- `cursorWidth`: `number` - The cursor width
-- `barWidth`: `number` - Render the waveform with bars like this: ▁ ▂ ▇ ▃ ▅ ▂
-- `barGap`: `number` - Spacing between bars in pixels
-- `barRadius`: `number` - Rounded borders for bars
-- `barHeight`: `number` - A vertical scaling factor for the waveform
-- `barAlign`: `'top' | 'bottom'` - Vertical bar alignment
-- `minPxPerSec`: `number` - Minimum pixels per second of audio (i.e. zoom level)
-- `fillParent`: `boolean` - Stretch the waveform to fill the container, true by default
-- `url`: `string` - Audio URL
-- `peaks`: `Array<Float32Array | number[]>` - Pre-computed audio data
-- `duration`: `number` - Pre-computed duration
-- `media`: `HTMLMediaElement` - Use an existing media element instead of creating one
-- `autoplay`: `boolean` - Play the audio on load
-- `interact`: `boolean` - Pass false to disable clicks on the waveform
-- `hideScrollbar`: `boolean` - Hide the scrollbar
-- `audioRate`: `number` - Audio rate
-- `autoScroll`: `boolean` - Automatically scroll the container to keep the current position in viewport
-- `autoCenter`: `boolean` - If autoScroll is enabled, keep the cursor in the center of the waveform during playback
-- `sampleRate`: `number` - Decoding sample rate. Doesn't affect the playback. Defaults to 8000
-- `splitChannels`: `WaveSurferOptions[]` - Render each audio channel as a separate waveform
-- `normalize`: `boolean` - Stretch the waveform to the full height
-- `plugins`: `GenericPlugin[]` - The list of plugins to initialize on start
-- `renderFunction`: `(peaks: Array<Float32Array | number[]>, ctx: CanvasRenderingContext2D) => void` - Custom render function
-- `fetchParams`: `RequestInit` - Options to pass to the fetch method
-
-### Wavesurfer events
-- `load`: `[url: string]` - When audio starts loading
-- `loading`: `[percentage: number]` - When audio is being loaded
-- `decode`: `[duration: number]` - When the audio has been decoded
-- `ready`: `[duration: number]` - When the audio is both decoded and can play
-- `redraw`: `[]` - When a waveform is drawn
-- `play`: `[]` - When the audio starts playing
-- `pause`: `[]` - When the audio pauses
-- `finish`: `[]` - When the audio finishes playing
-- `timeupdate`: `[currentTime: number]` - On audio position change, fires continuously during playback
-- `audioprocess`: `[currentTime: number]` - An alias of timeupdate but only when the audio is playing
-- `seeking`: `[currentTime: number]` - When the user seeks to a new position
-- `interaction`: `[newTime: number]` - When the user interacts with the waveform (i.g. clicks or drags on it)
-- `click`: `[relativeX: number]` - When the user clicks on the waveform
-- `drag`: `[relativeX: number]` - When the user drags the cursor
-- `scroll`: `[visibleStartTime: number, visibleEndTime: number]` - When the waveform is scrolled (panned)
-- `zoom`: `[minPxPerSec: number]` - When the zoom level changes
-- `destroy`: `[]` - Just before the waveform is destroyed so you can clean up your events
+ * [methods](http://wavesurfer-js.org/docs/methods)
+ * [options](http://wavesurfer-js.org/docs/options)
+ * [events](http://wavesurfer-js.org/docs/events)
 
 ## Plugins
 
@@ -116,7 +70,7 @@ The "official" plugins have been completely rewritten and enhanced:
  * [Envelope](https://wavesurfer-js.org/examples/#envelope.js) – a graphical interface to add fade-in and -out effects and control volume
  * [Record](https://wavesurfer-js.org/examples/#record.js) – records audio from the microphone and renders a waveform
  * [Spectrogram](https://wavesurfer-js.org/examples/#spectrogram.js) – visualization of an audio frequency spectrum (written by @akreal)
-  * [Hover](https://wavesurfer-js.org/examples/#hover.js) – shows a vertical line and timestmap on waveform hover
+ * [Hover](https://wavesurfer-js.org/examples/#hover.js) – shows a vertical line and timestmap on waveform hover
 
 ## CSS styling
 
@@ -189,8 +143,8 @@ Have a question about integrating wavesurfer.js on your website? Feel free to as
 
 ---
 
-* **Q**: There is a mismatch between my audio and the waveform.
-* **A**: If you're using a VBR (variable bit rate) mp3 file, there might be a mismatch between the audio and the waveform. This can be fixed by converting your file to CBR (constant bit rate). See [this issue](https://github.com/katspaugh/wavesurfer.js/issues/2890#issuecomment-1601067822) for details.
+* **Q**: There is a mismatch between my audio and the waveform. How do I fix it?
+* **A**: If you're using a VBR (variable bit rate) audio file, there might be a mismatch between the audio and the waveform. This can be fixed by converting your file to CBR (constant bit rate). See [this issue](https://github.com/katspaugh/wavesurfer.js/issues/2890#issuecomment-1601067822) for details.
 
 
 ## Development
@@ -231,4 +185,4 @@ We appreciate your feedback and contributions!
 
 If you encounter any issues or have suggestions for improvements, please don't hesitate to post in our [forum](https://github.com/wavesurfer-js/wavesurfer.js/discussions/categories/q-a).
 
-We hope you enjoy using wavesurfer.ts and look forward to hearing about your experiences with the library!
+We hope you enjoy using wavesurfer.js and look forward to hearing about your experiences with the library!

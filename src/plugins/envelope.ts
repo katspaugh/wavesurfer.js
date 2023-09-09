@@ -19,18 +19,8 @@ export type EnvelopePluginOptions = {
   lineColor?: string
   dragLine?: boolean
   dragPointSize?: number
-  dragPointSizeMobile?: number
   dragPointFill?: string
   dragPointStroke?: string
-
-  /** Deprecated. Use `points` instead. */
-  fadeInStart?: number
-  /** Deprecated. Use `points` instead. */
-  fadeInEnd?: number
-  /** Deprecated. Use `points` instead. */
-  fadeOutStart?: number
-  /** Deprecated. Use `points` instead. */
-  fadeOutEnd?: number
 }
 
 const defaultOptions = {
@@ -38,7 +28,6 @@ const defaultOptions = {
   lineWidth: 4,
   lineColor: 'rgba(0, 0, 255, 0.5)',
   dragPointSize: 10,
-  dragPointSizeMobile: 30,
   dragPointFill: 'rgba(255, 255, 255, 0.8)',
   dragPointStroke: 'rgba(255, 255, 255, 0.8)',
 }
@@ -81,7 +70,7 @@ class Polyline extends EventEmitter<{
     svg.setAttribute('height', '100%')
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
     svg.setAttribute('preserveAspectRatio', 'none')
-    svg.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none;')
+    svg.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 4;')
     svg.setAttribute('part', 'envelope')
     this.svg = svg
 
@@ -123,6 +112,31 @@ class Polyline extends EventEmitter<{
       const y = e.clientY - rect.top
       this.emit('point-create', x / rect.width, y / rect.height)
     })
+
+    // Long press on touch devices
+    {
+      let pressTimer: number
+
+      const clearTimer = () => clearTimeout(pressTimer)
+
+      svg.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          pressTimer = window.setTimeout(() => {
+            e.preventDefault()
+            const rect = svg.getBoundingClientRect()
+            const x = e.touches[0].clientX - rect.left
+            const y = e.touches[0].clientY - rect.top
+            this.emit('point-create', x / rect.width, y / rect.height)
+          }, 500)
+        } else {
+          clearTimer()
+        }
+      })
+
+      svg.addEventListener('touchmove', clearTimer)
+
+      svg.addEventListener('touchend', clearTimer)
+    }
   }
 
   private makeDraggable(draggable: SVGElement, onDrag: (x: number, y: number) => void) {
@@ -136,7 +150,7 @@ class Polyline extends EventEmitter<{
 
   private createCircle(x: number, y: number) {
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse')
-    const size = Number(window.top?.innerWidth) > 900 ? this.options.dragPointSize : this.options.dragPointSizeMobile
+    const size = this.options.dragPointSize
     const radius = size / 2
     circle.setAttribute('rx', radius.toString())
     circle.setAttribute('ry', radius.toString())
@@ -253,6 +267,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     this.options.lineColor = this.options.lineColor || defaultOptions.lineColor
     this.options.dragPointFill = this.options.dragPointFill || defaultOptions.dragPointFill
     this.options.dragPointStroke = this.options.dragPointStroke || defaultOptions.dragPointStroke
+    this.options.dragPointSize = this.options.dragPointSize || defaultOptions.dragPointSize
   }
 
   public static create(options: EnvelopePluginOptions) {
@@ -453,36 +468,6 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
       this.setVolume(roundedVolume)
       this.emit('volume-change', newVolume)
     }
-  }
-
-  // Deprecated methods
-
-  /**
-   * Deprecated: use `setPoints` instead.
-   */
-  public setStartTime() {
-    console.warn('[wavesurfer.js envelope plugin] `setStartTime` is deprecated, use `setPoints` instead.')
-  }
-
-  /**
-   * Deprecated: use `setPoints` instead.
-   */
-  public setEndTime() {
-    console.warn('[wavesurfer.js envelope plugin] `setEndTime` is deprecated, use `setPoints` instead.')
-  }
-
-  /**
-   * Deprecated: use `setPoints` instead.
-   */
-  public setFadeInEnd() {
-    console.warn('[wavesurfer.js envelope plugin] `setFadeInEnd` is deprecated, use `setPoints` instead.')
-  }
-
-  /**
-   * Deprecated: use `setPoints` instead.
-   */
-  public setFadeOutStart() {
-    console.warn('[wavesurfer.js envelope plugin] `setFadeOutStart` is deprecated, use `setPoints` instead.')
   }
 }
 
