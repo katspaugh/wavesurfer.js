@@ -56,7 +56,7 @@ See more [examples](https://wavesurfer-js.org/examples).
 
 See the wavesurfer.js documentation on our website:
 
- * [methods](http://wavesurfer-js.org/docs/methods)
+ * [methods](https://wavesurfer-js.org/docs/classes/wavesurfer.default)
  * [options](http://wavesurfer-js.org/docs/options)
  * [events](http://wavesurfer-js.org/docs/events)
 
