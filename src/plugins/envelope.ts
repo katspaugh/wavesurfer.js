@@ -21,6 +21,7 @@ export type EnvelopePluginOptions = {
   dragPointSize?: number
   dragPointFill?: string
   dragPointStroke?: string
+  audioContext?: AudioContext
 }
 
 const defaultOptions = {
@@ -324,8 +325,10 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
    * Destroy the plugin instance.
    */
   public destroy() {
+    if (this.ac && this.ac !== this.options.audioContext) {
+      this.ac.close()
+    }
     this.polyline?.destroy()
-    this.ac?.close()
     super.destroy()
   }
 
@@ -382,7 +385,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
   }
 
   private initAudioContext(mediaElement: HTMLMediaElement) {
-    const ac = new AudioContext()
+    const ac = this.options.audioContext || new AudioContext()
     const gainNode = ac.createGain()
     gainNode.gain.value = this.options.volume ?? 1
     gainNode.connect(ac.destination)
