@@ -282,9 +282,12 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
    * Remove an envelope point.
    */
   public removePoint(point: EnvelopePoint) {
-    this.points.splice(this.points.indexOf(point), 1)
-    this.polyline?.removePolyPoint(point)
-    this.emitPoints()
+    const index = this.points.indexOf(point)
+    if (index > -1) {
+      this.points.splice(index, 1)
+      this.polyline?.removePolyPoint(point)
+      this.emitPoints()
+    }
   }
 
   /**
