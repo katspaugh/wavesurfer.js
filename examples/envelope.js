@@ -25,13 +25,16 @@ const wavesurfer = WaveSurfer.create({
   url: '/examples/audio/audio.wav',
 })
 
+const isMobile = top.matchMedia('(max-width: 900px)').matches
+
 // Initialize the Envelope plugin
 const envelope = wavesurfer.registerPlugin(
   EnvelopePlugin.create({
     volume: 0.8,
     lineColor: 'rgba(255, 0, 0, 0.5)',
     lineWidth: 4,
-    dragPointSize: top.innerWidth > 900 ? 10 : 20,
+    dragPointSize: isMobile ? 20 : 12,
+    dragLine: !isMobile,
     dragPointFill: 'rgba(0, 255, 255, 0.8)',
     dragPointStroke: 'rgba(0, 0, 0, 0.5)',
 
