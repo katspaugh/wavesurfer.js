@@ -69,6 +69,7 @@ const ws = WaveSurfer.create({
   progressColor: 'paleturquoise',
   cursorColor: '#57BAB6',
   cursorWidth: 4,
+  minPxPerSec: 100,
   url: '/examples/audio/audio.wav',
   plugins: [wsRegions],
 })
