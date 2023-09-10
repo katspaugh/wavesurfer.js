@@ -3,6 +3,14 @@
 /*
   <html>
     <style>
+      #waveform ::part(wrapper) {
+        --box-size: 10px;
+        background-image: 
+          linear-gradient(transparent calc(var(--box-size) - 1px), blue var(--box-size), transparent var(--box-size)), 
+          linear-gradient(90deg, transparent calc(var(--box-size) - 1px), blue var(--box-size), transparent var(--box-size));
+        background-size: 100% var(--box-size), var(--box-size) 100%;
+      }
+
       #waveform ::part(cursor) {
         height: 100px;
         top: 28px;
