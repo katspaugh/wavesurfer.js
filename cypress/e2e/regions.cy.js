@@ -308,4 +308,23 @@ describe('WaveSurfer Regions plugin tests', () => {
       win.wavesurfer.destroy()
     })
   })
+
+  it('should not add resize handles if resize is set to false', () => {
+    cy.window().then((win) => {
+      const regionsPlugin = win.wavesurfer.getActivePlugins()[0]
+
+      const region = regionsPlugin.addRegion({
+        id: 'no-resize-region',
+        start: 1,
+        end: 5,
+        resize: false,
+      })
+
+      expect(region).to.be.an('object')
+      expect(region.element).to.be.an('HTMLDivElement')
+      expect(region.element.children).to.have.length(0)
+
+      win.wavesurfer.destroy()
+    })
+  })
 })

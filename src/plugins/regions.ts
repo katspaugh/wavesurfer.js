@@ -115,7 +115,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     )
 
     // Add resize handles
-    if (!isMarker) {
+    if (!isMarker && this.resize) {
       const leftHandle = document.createElement('div')
       leftHandle.setAttribute('data-resize', 'left')
       leftHandle.setAttribute(
