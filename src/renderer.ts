@@ -31,15 +31,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     this.options = options
 
-    let parent
-    if (typeof options.container === 'string') {
-      parent = document.querySelector(options.container) as HTMLElement | null
-    } else if (options.container instanceof HTMLElement) {
-      parent = options.container
-    }
-    if (!parent) {
-      throw new Error('Container not found')
-    }
+    const parent = this.parentFromOptionsContainer(options.container)
     this.parent = parent
 
     const [div, shadow] = this.initHtml()
@@ -56,6 +48,21 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
 
     this.initEvents()
+  }
+
+  private parentFromOptionsContainer(container: WaveSurferOptions['container']) {
+    let parent
+    if (typeof container === 'string') {
+      parent = document.querySelector(container) satisfies HTMLElement | null
+    } else if (container instanceof HTMLElement) {
+      parent = container
+    }
+
+    if (!parent) {
+      throw new Error('Container not found')
+    }
+
+    return parent
   }
 
   private initEvents() {
@@ -204,8 +211,17 @@ class Renderer extends EventEmitter<RendererEvents> {
     return [div, shadow]
   }
 
+  /** Wavesurfer itself calls this method. Do not call it manually. */
   setOptions(options: WaveSurferOptions) {
+    if (this.options.container !== options.container) {
+      const newParent = this.parentFromOptionsContainer(options.container)
+      newParent.appendChild(this.container)
+
+      this.parent = newParent
+    }
+
     this.options = options
+
     // Re-render the waveform
     this.reRender()
   }

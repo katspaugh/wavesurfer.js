@@ -1,4 +1,5 @@
 const id = '#waveform'
+const otherId = `#otherWaveform`
 
 describe('WaveSurfer options tests', () => {
   beforeEach(() => {
@@ -518,6 +519,28 @@ describe('WaveSurfer options tests', () => {
 
         win.wavesurfer.once('ready', () => {
           cy.get(id).matchImageSnapshot('fetch-options')
+          resolve()
+        })
+      })
+    })
+  })
+
+  it('should remount the container when set via setOptions', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve, reject) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/demo.wav',
+          barWidth: 4,
+          barGap: 3,
+          barRadius: 4,
+        })
+
+        win.wavesurfer.once('ready', () => {
+          win.wavesurfer.setOptions({ container: otherId })
+          cy.get(id).children().should('have.length', 0)
+          cy.get(otherId).children().should('have.length', 1)
+          cy.get(otherId).matchImageSnapshot('bars')
           resolve()
         })
       })
