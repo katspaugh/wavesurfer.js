@@ -21,7 +21,6 @@ export type EnvelopePluginOptions = {
   dragPointSize?: number
   dragPointFill?: string
   dragPointStroke?: string
-  audioContext?: AudioContext
 }
 
 const defaultOptions = {
@@ -253,8 +252,6 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
   private polyline: Polyline | null = null
   private points: EnvelopePoint[]
   private throttleTimeout: ReturnType<typeof setTimeout> | null = null
-  private ac: AudioContext | null = null
-  private gain: GainNode['gain'] | null = null
   private volume = 1
 
   /**
@@ -326,9 +323,6 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
    * Destroy the plugin instance.
    */
   public destroy() {
-    if (this.ac && this.ac !== this.options.audioContext) {
-      this.ac.close()
-    }
     this.polyline?.destroy()
     super.destroy()
   }
@@ -345,9 +339,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
    */
   public setVolume(floatValue: number) {
     this.volume = floatValue
-    if (this.gain) {
-      this.gain.value = this.volume
-    }
+    this.wavesurfer?.setVolume(floatValue)
   }
 
   /** Called by wavesurfer, don't call manually */
@@ -359,7 +351,6 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     const { options } = this
     options.volume = options.volume ?? this.wavesurfer.getVolume()
 
-    this.initAudioContext(this.wavesurfer.getMediaElement())
     this.setVolume(options.volume)
 
     this.subscriptions.push(
@@ -378,27 +369,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
       this.wavesurfer.on('timeupdate', (time) => {
         this.onTimeUpdate(time)
       }),
-
-      this.wavesurfer.on('play', () => {
-        if (this.ac?.state === 'suspended') {
-          this.ac.resume()
-        }
-      }),
     )
-  }
-
-  private initAudioContext(mediaElement: HTMLMediaElement) {
-    const ac = this.options.audioContext || new AudioContext()
-    const gainNode = ac.createGain()
-    gainNode.gain.value = this.options.volume ?? 1
-    gainNode.connect(ac.destination)
-
-    // Create a media element source
-    const source = ac.createMediaElementSource(mediaElement)
-    source.connect(gainNode)
-
-    this.ac = ac
-    this.gain = gainNode.gain
   }
 
   private emitPoints() {
