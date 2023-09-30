@@ -67,7 +67,7 @@ record.on('record-end', (blob) => {
   <h1 style="margin-top: 0">Press Record to start recording 🎙️</h1>
 
   <p>
-    📖 <a href="https://wavesurfer-js.org/docs/classes/plugins_record.RecordPlugin">Record plugin docs</a>
+    📖 <a href="https://wavesurfer.xyz/docs/classes/plugins_record.RecordPlugin">Record plugin docs</a>
   </p>
 
   <button id="record">Record</button>

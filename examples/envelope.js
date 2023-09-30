@@ -9,7 +9,7 @@
   Volume: <label>0</label>
   <div id="container" style="border: 1px solid #ddd;"></div>
   <p>
-    📖 <a href="https://wavesurfer-js.org/docs/classes/plugins_envelope.EnvelopePlugin">Envelope plugin docs</a>
+    📖 <a href="https://wavesurfer.xyz/docs/classes/plugins_envelope.EnvelopePlugin">Envelope plugin docs</a>
   </p>
 </html>
 */
