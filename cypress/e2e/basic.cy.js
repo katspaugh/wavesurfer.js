@@ -176,4 +176,13 @@ describe('WaveSurfer basic tests', () => {
       win.wavesurfer.destroy()
     })
   })
+
+  it('should set media without errors', () => {
+    cy.window().then((win) => {
+      const media = document.createElement('audio')
+      media.id = "new-media"
+      win.wavesurfer.setMediaElement(media)
+      expect(win.wavesurfer.getMediaElement().id).to.equal("new-media")
+    })
+  })
 })
