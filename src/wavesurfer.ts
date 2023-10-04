@@ -314,7 +314,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
     this.emit('load', url)
 
-    if (this.isPlaying()) this.pause()
+    if (!this.options.media && this.isPlaying()) this.pause()
 
     this.decodedData = null
 
@@ -379,23 +379,22 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   /** Get decoded peaks */
-  public exportPeaks({ channels = 1, maxLength = 8000, precision = 10_000 } = {}): Array<number[]> {
+  public exportPeaks({ channels = 2, maxLength = 8000, precision = 10_000 } = {}): Array<number[]> {
     if (!this.decodedData) {
       throw new Error('The audio has not been decoded yet')
     }
-    const channelsLen = Math.min(channels, this.decodedData.numberOfChannels)
+    const maxChannels = Math.min(channels, this.decodedData.numberOfChannels)
     const peaks = []
-    for (let i = 0; i < channelsLen; i++) {
-      const data = this.decodedData.getChannelData(i)
-      const length = Math.min(data.length, maxLength)
-      const scale = data.length / length
-      const sampledData = []
-      for (let j = 0; j < length; j++) {
-        const n = Math.round(j * scale)
-        const val = data[n]
-        sampledData.push(Math.round(val * precision) / precision)
+    for (let i = 0; i < maxChannels; i++) {
+      const channel = this.decodedData.getChannelData(i)
+      const data = []
+      const sampleSize = Math.round(channel.length / maxLength)
+      for (let i = 0; i < channel.length; i += sampleSize) {
+        const sample = channel.slice(i, i + sampleSize)
+        const max = Math.max.apply(Math, Array.from(sample))
+        data.push(Math.round(max * precision) / precision)
       }
-      peaks.push(sampledData)
+      peaks.push(data)
     }
     return peaks
   }

@@ -9,12 +9,14 @@ type PlayerOptions = {
 
 class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   protected media: HTMLMediaElement
+  private isExternalMedia: boolean = false
 
   constructor(options: PlayerOptions) {
     super()
 
     if (options.media) {
       this.media = options.media
+      this.isExternalMedia = true
     } else {
       this.media = document.createElement('audio')
     }
@@ -50,7 +52,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     return this.onMediaEvent(event, callback, { once: true })
   }
 
-  private getSrc() {
+  protected getSrc() {
     return this.media.currentSrc || this.media.src || ''
   }
 
@@ -72,6 +74,9 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   protected destroy() {
     this.media.pause()
+
+    if (this.isExternalMedia) return
+    this.media.remove()
     this.revokeSrc()
     this.media.src = ''
     // Load resets the media element to its initial state
