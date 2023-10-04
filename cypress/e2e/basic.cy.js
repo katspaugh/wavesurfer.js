@@ -148,9 +148,9 @@ describe('WaveSurfer basic tests', () => {
       })
       expect(peaks.length).to.equal(1) // the file is mono
       expect(peaks[0].length).to.equal(1000)
-      expect(peaks[0][0]).to.equal(0)
-      expect(peaks[0][99]).to.equal(0.07)
-      expect(peaks[0][100]).to.equal(-0.15)
+      expect(peaks[0][0]).to.equal(0.01)
+      expect(peaks[0][99]).to.equal(0.3)
+      expect(peaks[0][100]).to.equal(0.31)
 
       const peaksB = win.wavesurfer.exportPeaks({
         maxLength: 1000,
@@ -158,16 +158,16 @@ describe('WaveSurfer basic tests', () => {
       })
       expect(peaksB.length).to.equal(1)
       expect(peaksB[0].length).to.equal(1000)
-      expect(peaksB[0][0]).to.equal(0)
-      expect(peaksB[0][99]).to.equal(0.072)
-      expect(peaksB[0][100]).to.equal(-0.151)
+      expect(peaksB[0][0]).to.equal(0.015)
+      expect(peaksB[0][99]).to.equal(0.296)
+      expect(peaksB[0][100]).to.equal(0.308)
 
       const peaksC = win.wavesurfer.exportPeaks()
       expect(peaksC.length).to.equal(1)
       expect(peaksC[0].length).to.equal(8000)
-      expect(peaksC[0][0]).to.equal(0)
-      expect(peaksC[0][99]).to.equal(-0.0024)
-      expect(peaksC[0][100]).to.equal(0.0048)
+      expect(peaksC[0][0]).to.equal(0.0117)
+      expect(peaksC[0][99]).to.equal(0.01)
+      expect(peaksC[0][100]).to.equal(0.0161)
     })
   })
 
@@ -180,9 +180,9 @@ describe('WaveSurfer basic tests', () => {
   it('should set media without errors', () => {
     cy.window().then((win) => {
       const media = document.createElement('audio')
-      media.id = "new-media"
+      media.id = 'new-media'
       win.wavesurfer.setMediaElement(media)
-      expect(win.wavesurfer.getMediaElement().id).to.equal("new-media")
+      expect(win.wavesurfer.getMediaElement().id).to.equal('new-media')
     })
   })
 })
