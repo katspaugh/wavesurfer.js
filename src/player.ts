@@ -152,6 +152,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     return this.media
   }
 
+  /** Set HTML media element */
+  public setMediaElement(element: HTMLMediaElement) {
+    this.media = element
+  }
+
   /** Set a sink id to change the audio output device */
   public setSinkId(sinkId: string): Promise<void> {
     // See https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/setSinkId

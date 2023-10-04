@@ -29,7 +29,7 @@ const eqBands = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 // Create a biquad filter for each band
 const filters = eqBands.map((band) => {
   const filter = audioContext.createBiquadFilter()
-  filter.type = band <= 32 ? 'lowshelf' : band >= 16000 ? 'hishelf' : 'peaking'
+  filter.type = band <= 32 ? 'lowshelf' : band >= 16000 ? 'highshelf' : 'peaking'
   filter.gain.value = Math.random() * 40 - 20
   filter.Q.value = 1 // resonance
   filter.frequency.value = band // the cut-off frequency
