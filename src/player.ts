@@ -9,7 +9,7 @@ type PlayerOptions = {
 
 class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   protected media: HTMLMediaElement
-  private isExternalMedia: boolean = false
+  private isExternalMedia = false
 
   constructor(options: PlayerOptions) {
     super()

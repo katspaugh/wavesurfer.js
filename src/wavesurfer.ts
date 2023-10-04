@@ -389,9 +389,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       const channel = this.decodedData.getChannelData(i)
       const data = []
       const sampleSize = Math.round(channel.length / maxLength)
-      for (let i = 0; i < channel.length; i += sampleSize) {
-        const sample = channel.slice(i, i + sampleSize)
-        const max = Math.max.apply(Math, Array.from(sample))
+      for (let i = 0; i < maxLength; i++) {
+        const sample = channel.slice(i * sampleSize, (i + 1) * sampleSize)
+        const max = Math.max(...sample)
         data.push(Math.round(max * precision) / precision)
       }
       peaks.push(data)
