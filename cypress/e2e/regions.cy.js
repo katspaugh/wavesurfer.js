@@ -11,7 +11,8 @@ describe('WaveSurfer Regions plugin tests', () => {
           height: 200,
           waveColor: 'rgb(200, 200, 0)',
           progressColor: 'rgb(100, 100, 0)',
-          url: '../../examples/audio/demo.wav',
+          url: '../../examples/audio/stereo.mp3',
+          splitChannels: true,
           plugins: [win.Regions.create()],
         })
 
@@ -325,6 +326,20 @@ describe('WaveSurfer Regions plugin tests', () => {
       expect(region.element.children).to.have.length(0)
 
       win.wavesurfer.destroy()
+    })
+  })
+
+  it('should be able to add region to a specific channel', () => {
+    cy.window().then((win) => {
+      const regionsPlugin = win.wavesurfer.getActivePlugins()[0]
+
+      regionsPlugin.addRegion({
+        start: 25,
+        end: 100,
+        channelIdx: 1,
+      })
+
+      cy.get('#waveform').matchImageSnapshot('region-with-split-channels')
     })
   })
 })
