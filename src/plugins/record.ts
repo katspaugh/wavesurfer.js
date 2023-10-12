@@ -15,6 +15,8 @@ export type RecordPluginOptions = {
 
 export type RecordPluginEvents = BasePluginEvents & {
   'record-start': []
+  'record-pause': []
+  'record-resume': []
   'record-end': [blob: Blob]
 }
 
@@ -137,10 +139,31 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     return this.mediaRecorder?.state === 'recording'
   }
 
+  public isPaused(): boolean {
+    return this.mediaRecorder?.state === 'paused'
+  }
+
   /** Stop the recording */
   public stopRecording() {
     if (this.isRecording()) {
       this.mediaRecorder?.stop()
+      this.stream?.getTracks().forEach((track) => track.stop())
+    }
+  }
+
+  /** Pause the recording */
+  public pauseRecording() {
+    if (this.isRecording()) {
+      this.mediaRecorder?.pause()
+      this.emit('record-pause')
+    }
+  }
+
+  /** Resume the recording */
+  public resumeRecording() {
+    if (this.isPaused()) {
+      this.mediaRecorder?.resume()
+      this.emit('record-resume')
     }
   }
 
