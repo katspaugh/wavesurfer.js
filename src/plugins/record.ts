@@ -147,6 +147,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   public stopRecording() {
     if (this.isRecording()) {
       this.mediaRecorder?.stop()
+      this.stream?.getTracks().forEach((track) => track.stop())
     }
   }
 
