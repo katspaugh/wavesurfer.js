@@ -13,6 +13,11 @@ export type RecordPluginOptions = {
   renderRecordedAudio?: boolean
 }
 
+export type RecordPluginDeviceOptions = {
+  /** The device ID of the microphone to use */
+  deviceId?: string | { exact: string }
+}
+
 export type RecordPluginEvents = BasePluginEvents & {
   'record-start': []
   'record-pause': []
@@ -74,10 +79,12 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   /** Request access to the microphone and start monitoring incoming audio */
-  public async startMic(): Promise<MediaStream> {
+  public async startMic(options?: RecordPluginDeviceOptions): Promise<MediaStream> {
     let stream: MediaStream
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: options?.deviceId ? { deviceId: options.deviceId } : true,
+      })
     } catch (err) {
       throw new Error('Error accessing the microphone: ' + (err as Error).message)
     }
@@ -99,8 +106,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   /** Start recording audio from the microphone */
-  public async startRecording() {
-    const stream = this.stream || (await this.startMic())
+  public async startRecording(options?: RecordPluginDeviceOptions) {
+    const stream = this.stream || (await this.startMic(options))
 
     const mediaRecorder =
       this.mediaRecorder ||
