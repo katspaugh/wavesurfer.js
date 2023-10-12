@@ -41,7 +41,7 @@ record.on('record-end', (blob) => {
     textContent: 'Download recording',
   })
 })
-const pauseButton = document.querySelector('#pause');
+const pauseButton = document.querySelector('#pause')
 pauseButton.onclick = () => {
   if (record.isPaused()) {
     record.resumeRecording()
@@ -49,8 +49,21 @@ pauseButton.onclick = () => {
     return
   }
 
-  record.pauseRecording();
+  record.pauseRecording()
   pauseButton.textContent = 'Resume'
+}
+
+const micSelect = document.querySelector('#mic-select')
+{
+  // Mic selection
+  record.getAvailableAudioDevices().then((devices) => {
+    devices.forEach((device) => {
+      const option = document.createElement('option')
+      option.value = device.deviceId
+      option.text = device.label || device.deviceId
+      micSelect.appendChild(option)
+    })
+  })
 }
 {
   // Record button
@@ -60,16 +73,17 @@ pauseButton.onclick = () => {
     if (record.isRecording()) {
       record.stopRecording()
       recButton.textContent = 'Record'
-      pauseButton.style.display = 'none';
+      pauseButton.style.display = 'none'
       return
     }
 
     recButton.disabled = true
-
-    record.startRecording().then(() => {
+    // get selected device
+    const deviceId = micSelect.value
+    record.startRecording({ deviceId }).then(() => {
       recButton.textContent = 'Stop'
       recButton.disabled = false
-      pauseButton.style.display = 'inline';
+      pauseButton.style.display = 'inline'
     })
   }
 }
@@ -85,6 +99,9 @@ pauseButton.onclick = () => {
   <button id="record">Record</button>
   <button id="pause" style="display: none;">Pause</button>
 
+  <select id="mic-select">
+    <option value="" hidden>Select mic</option>
+  </select>
   <div id="mic" style="border: 1px solid #ddd; border-radius: 4px; margin-top: 1rem"></div>
 
   <div id="recordings" style="margin: 1rem 0"></div>
