@@ -175,19 +175,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   /** Get a list of available audio devices */
-  public async getAvailableAudioDevices() {
-    // Request access to the microphone before enumerating devices, otherwise
-    // the browser will not return any device IDs
-    let stream: MediaStream
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      })
-    } catch (err) {
-      throw new Error('Error getting audio devices: ' + (err as Error).message)
-    }
-    this.stream = stream
-    this.stopMic()
+  public static async getAvailableAudioDevices() {
     return navigator.mediaDevices
       .enumerateDevices()
       .then((devices) => devices.filter((device) => device.kind === 'audioinput'))
