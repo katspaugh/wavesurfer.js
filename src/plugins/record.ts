@@ -174,7 +174,11 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     }
   }
 
-  /** Get a list of available audio devices */
+  /** Get a list of available audio devices
+   * You can use this to get the device ID of the microphone to use with the startMic and startRecording methods
+   * Will return an empty array if the browser doesn't support the MediaDevices API or if the user has not granted access to the microphone
+   * You can ask for permission to the microphone by calling startMic
+   */
   public static async getAvailableAudioDevices() {
     return navigator.mediaDevices
       .enumerateDevices()
