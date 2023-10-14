@@ -13,6 +13,11 @@ export type RecordPluginOptions = {
   renderRecordedAudio?: boolean
 }
 
+export type RecordPluginDeviceOptions = {
+  /** The device ID of the microphone to use */
+  deviceId?: string | { exact: string }
+}
+
 export type RecordPluginEvents = BasePluginEvents & {
   'record-start': []
   'record-pause': []
@@ -74,10 +79,12 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   /** Request access to the microphone and start monitoring incoming audio */
-  public async startMic(): Promise<MediaStream> {
+  public async startMic(options?: RecordPluginDeviceOptions): Promise<MediaStream> {
     let stream: MediaStream
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: options?.deviceId ? { deviceId: options.deviceId } : true,
+      })
     } catch (err) {
       throw new Error('Error accessing the microphone: ' + (err as Error).message)
     }
@@ -100,8 +107,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   /** Start recording audio from the microphone */
-  public async startRecording() {
-    const stream = this.stream || (await this.startMic())
+  public async startRecording(options?: RecordPluginDeviceOptions) {
+    const stream = this.stream || (await this.startMic(options))
 
     const mediaRecorder =
       this.mediaRecorder ||
@@ -165,6 +172,17 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       this.mediaRecorder?.resume()
       this.emit('record-resume')
     }
+  }
+
+  /** Get a list of available audio devices
+   * You can use this to get the device ID of the microphone to use with the startMic and startRecording methods
+   * Will return an empty array if the browser doesn't support the MediaDevices API or if the user has not granted access to the microphone
+   * You can ask for permission to the microphone by calling startMic
+   */
+  public static async getAvailableAudioDevices() {
+    return navigator.mediaDevices
+      .enumerateDevices()
+      .then((devices) => devices.filter((device) => device.kind === 'audioinput'))
   }
 
   /** Destroy the plugin */
