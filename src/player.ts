@@ -95,7 +95,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Check if the audio is playing */
   public isPlaying(): boolean {
-    return this.media.currentTime > 0 && !this.media.paused && !this.media.ended
+    return !this.media.paused && !this.media.ended
   }
 
   /** Jumpt to a specific time in the audio (in seconds) */

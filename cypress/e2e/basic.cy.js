@@ -185,4 +185,18 @@ describe('WaveSurfer basic tests', () => {
       expect(win.wavesurfer.getMediaElement().id).to.equal('new-media')
     })
   })
+
+  it('should return true when calling isPlaying() after play()', (done) => {
+    cy.window().then((win) => {
+      expect(win.wavesurfer.isPlaying()).to.be.false
+      win.wavesurfer.play()
+      expect(win.wavesurfer.isPlaying()).to.be.true
+      win.wavesurfer.once('play', () => {
+        expect(win.wavesurfer.isPlaying()).to.be.true
+        win.wavesurfer.pause()
+        expect(win.wavesurfer.isPlaying()).to.be.false
+        done()
+      })
+    })
+  })
 })
