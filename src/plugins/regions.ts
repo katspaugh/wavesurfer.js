@@ -575,4 +575,5 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 }
 
 export default RegionsPlugin
-export type Region = SingleRegion
+
+export type Region = InstanceType<typeof SingleRegion>
