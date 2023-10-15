@@ -149,7 +149,6 @@ class Renderer extends EventEmitter<RendererEvents> {
           overflow-y: hidden;
           width: 100%;
           position: relative;
-          touch-action: none;
         }
         :host .noScrollbar {
           scrollbar-color: transparent;
@@ -219,6 +218,10 @@ class Renderer extends EventEmitter<RendererEvents> {
       newParent.appendChild(this.container)
 
       this.parent = newParent
+    }
+
+    if (options.dragToSeek && !this.options.dragToSeek) {
+      this.initDrag()
     }
 
     this.options = options
