@@ -6,10 +6,12 @@ import Renderer from './renderer.js'
 import Timer from './timer.js'
 
 export type WaveSurferOptions = {
-  /** Required: an HTML element or selector where the waveform will be rendered. */
+  /** Required: an HTML element or selector where the waveform will be rendered */
   container: HTMLElement | string
   /** The height of the waveform in pixels, or "auto" to fill the container height */
   height?: number | 'auto'
+  /** The width of the waveform in pixels or any CSS value; defaults to 100% */
+  width?: number | string
   /** The color of the waveform */
   waveColor?: string | string[] | CanvasGradient
   /** The color of the progress mask */

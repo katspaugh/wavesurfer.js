@@ -546,4 +546,42 @@ describe('WaveSurfer options tests', () => {
       })
     })
   })
+
+  it('should accept a numeric width option', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve, reject) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/demo.wav',
+          width: 100,
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('width-100')
+          win.wavesurfer.setOptions({ width: 300 })
+          cy.get(id).matchImageSnapshot('width-300')
+          resolve()
+        })
+      })
+    })
+  })
+
+  it('should accept a CSS value for the width option', () => {
+    cy.window().then((win) => {
+      return new Promise((resolve, reject) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          url: '../../examples/audio/demo.wav',
+          width: '10rem',
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('width-10rem')
+          win.wavesurfer.setOptions({ width: '200px' })
+          cy.get(id).matchImageSnapshot('width-200px')
+          resolve()
+        })
+      })
+    })
+  })
 })
