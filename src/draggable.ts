@@ -17,6 +17,7 @@ export function makeDraggable(
 
     e.preventDefault()
     e.stopPropagation()
+    element.style.touchAction = 'none'
 
     let startX = e.clientX
     let startY = e.clientY
@@ -51,6 +52,8 @@ export function makeDraggable(
     }
 
     const up = () => {
+      element.style.touchAction = ''
+
       if (isDragging) {
         onEnd?.()
       }
