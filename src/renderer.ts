@@ -138,6 +138,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       <style>
         :host {
           user-select: none;
+          min-width: 1px;
         }
         :host audio {
           display: block;
@@ -523,6 +524,12 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.canvasWrapper.innerHTML = ''
     this.progressWrapper.innerHTML = ''
     this.wrapper.style.width = ''
+
+    // Width
+    if (this.options.width != null) {
+      this.scrollContainer.style.width =
+        typeof this.options.width === 'number' ? `${this.options.width}px` : this.options.width
+    }
 
     // Determine the width of the waveform
     const pixelRatio = window.devicePixelRatio || 1
