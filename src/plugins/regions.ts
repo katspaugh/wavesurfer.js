@@ -73,27 +73,29 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   public minLength = 0
   public maxLength = Infinity
   public channelIdx: number
-  public numberOfChannels: number
 
-  constructor(params: RegionParams, private totalDuration: number, numberOfChannels?: number) {
+  constructor(params: RegionParams, private totalDuration: number, private numberOfChannels = 0) {
     super()
 
     this.id = params.id || `region-${Math.random().toString(32).slice(2)}`
-    this.start = params.start
-    this.end = params.end ?? params.start
+    this.start = this.clampPosition(params.start)
+    this.end = this.clampPosition(params.end ?? params.start)
     this.drag = params.drag ?? true
     this.resize = params.resize ?? true
     this.color = params.color ?? 'rgba(0, 0, 0, 0.1)'
     this.minLength = params.minLength ?? this.minLength
     this.maxLength = params.maxLength ?? this.maxLength
     this.channelIdx = params.channelIdx ?? -1
-    this.numberOfChannels = numberOfChannels ?? 0
     this.element = this.initElement()
     this.setContent(params.content)
     this.setPart()
 
     this.renderPosition()
     this.initMouseEvents()
+  }
+
+  private clampPosition(time: number): number {
+    return Math.max(0, Math.min(this.totalDuration, time))
   }
 
   private setPart() {
@@ -314,8 +316,8 @@ class SingleRegion extends EventEmitter<RegionEvents> {
 
     if (options.start !== undefined || options.end !== undefined) {
       const isMarker = this.start === this.end
-      this.start = options.start ?? this.start
-      this.end = options.end ?? (isMarker ? this.start : this.end)
+      this.start = this.clampPosition(options.start ?? this.start)
+      this.end = this.clampPosition(options.end ?? (isMarker ? this.start : this.end))
       this.renderPosition()
       this.setPart()
     }
