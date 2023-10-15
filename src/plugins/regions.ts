@@ -61,7 +61,7 @@ export type RegionParams = {
   channelIdx?: number
 }
 
-export class Region extends EventEmitter<RegionEvents> {
+class SingleRegion extends EventEmitter<RegionEvents> {
   public element: HTMLElement
   public id: string
   public start: number
@@ -101,6 +101,67 @@ export class Region extends EventEmitter<RegionEvents> {
     this.element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
   }
 
+  private addResizeHandles(element: HTMLElement) {
+    const leftHandle = document.createElement('div')
+    leftHandle.setAttribute('data-resize', 'left')
+    leftHandle.setAttribute(
+      'style',
+      `
+        position: absolute;
+        z-index: 2;
+        width: 6px;
+        height: 100%;
+        top: 0;
+        left: 0;
+        border-left: 2px solid rgba(0, 0, 0, 0.5);
+        border-radius: 2px 0 0 2px;
+        cursor: ew-resize;
+        word-break: keep-all;
+      `,
+    )
+    leftHandle.setAttribute('part', 'region-handle region-handle-left')
+
+    const rightHandle = leftHandle.cloneNode() as HTMLElement
+    rightHandle.setAttribute('data-resize', 'right')
+    rightHandle.style.left = ''
+    rightHandle.style.right = '0'
+    rightHandle.style.borderRight = rightHandle.style.borderLeft
+    rightHandle.style.borderLeft = ''
+    rightHandle.style.borderRadius = '0 2px 2px 0'
+    rightHandle.setAttribute('part', 'region-handle region-handle-right')
+
+    element.appendChild(leftHandle)
+    element.appendChild(rightHandle)
+
+    // Resize
+    const resizeThreshold = 1
+    makeDraggable(
+      leftHandle,
+      (dx) => this.onResize(dx, 'start'),
+      () => null,
+      () => this.onEndResizing(),
+      resizeThreshold,
+    )
+    makeDraggable(
+      rightHandle,
+      (dx) => this.onResize(dx, 'end'),
+      () => null,
+      () => this.onEndResizing(),
+      resizeThreshold,
+    )
+  }
+
+  private removeResizeHandles(element: HTMLElement) {
+    const leftHandle = element.querySelector('[data-resize="left"]')
+    const rightHandle = element.querySelector('[data-resize="right"]')
+    if (leftHandle) {
+      element.removeChild(leftHandle)
+    }
+    if (rightHandle) {
+      element.removeChild(rightHandle)
+    }
+  }
+
   private initElement() {
     const element = document.createElement('div')
     const isMarker = this.start === this.end
@@ -117,7 +178,7 @@ export class Region extends EventEmitter<RegionEvents> {
       'style',
       `
       position: absolute;
-      top: ${elementTop}%;	
+      top: ${elementTop}%;
       height: ${elementHeight}%;
       background-color: ${isMarker ? 'none' : this.color};
       border-left: ${isMarker ? '2px solid ' + this.color : 'none'};
@@ -131,36 +192,7 @@ export class Region extends EventEmitter<RegionEvents> {
 
     // Add resize handles
     if (!isMarker && this.resize) {
-      const leftHandle = document.createElement('div')
-      leftHandle.setAttribute('data-resize', 'left')
-      leftHandle.setAttribute(
-        'style',
-        `
-        position: absolute;
-        z-index: 2;
-        width: 6px;
-        height: 100%;
-        top: 0;
-        left: 0;
-        border-left: 2px solid rgba(0, 0, 0, 0.5);
-        border-radius: 2px 0 0 2px;
-        cursor: ${this.resize ? 'ew-resize' : 'default'};
-        word-break: keep-all;
-      `,
-      )
-      leftHandle.setAttribute('part', 'region-handle region-handle-left')
-
-      const rightHandle = leftHandle.cloneNode() as HTMLElement
-      rightHandle.setAttribute('data-resize', 'right')
-      rightHandle.style.left = ''
-      rightHandle.style.right = '0'
-      rightHandle.style.borderRight = rightHandle.style.borderLeft
-      rightHandle.style.borderLeft = ''
-      rightHandle.style.borderRadius = '0 2px 2px 0'
-      rightHandle.setAttribute('part', 'region-handle region-handle-right')
-
-      element.appendChild(leftHandle)
-      element.appendChild(rightHandle)
+      this.addResizeHandles(element)
     }
 
     return element
@@ -188,23 +220,6 @@ export class Region extends EventEmitter<RegionEvents> {
       (dx) => this.onMove(dx),
       () => this.onStartMoving(),
       () => this.onEndMoving(),
-    )
-
-    // Resize
-    const resizeThreshold = 1
-    makeDraggable(
-      element.querySelector('[data-resize="left"]') as HTMLElement,
-      (dx) => this.onResize(dx, 'start'),
-      () => null,
-      () => this.onEndResizing(),
-      resizeThreshold,
-    )
-    makeDraggable(
-      element.querySelector('[data-resize="right"]') as HTMLElement,
-      (dx) => this.onResize(dx, 'end'),
-      () => null,
-      () => this.onEndResizing(),
-      resizeThreshold,
     )
   }
 
@@ -291,16 +306,12 @@ export class Region extends EventEmitter<RegionEvents> {
       this.color = options.color
       this.element.style.backgroundColor = this.color
     }
+
     if (options.drag !== undefined) {
       this.drag = options.drag
       this.element.style.cursor = this.drag ? 'grab' : 'default'
     }
-    if (options.resize !== undefined) {
-      this.resize = options.resize
-      this.element.querySelectorAll('[data-resize]').forEach((handle) => {
-        ;(handle as HTMLElement).style.cursor = this.resize ? 'ew-resize' : 'default'
-      })
-    }
+
     if (options.start !== undefined || options.end !== undefined) {
       const isMarker = this.start === this.end
       this.start = options.start ?? this.start
@@ -308,12 +319,24 @@ export class Region extends EventEmitter<RegionEvents> {
       this.renderPosition()
       this.setPart()
     }
+
     if (options.content) {
       this.setContent(options.content)
     }
+
     if (options.id) {
       this.id = options.id
       this.setPart()
+    }
+
+    if (options.resize !== undefined && options.resize !== this.resize) {
+      const isMarker = this.start === this.end
+      this.resize = options.resize
+      if (this.resize && !isMarker) {
+        this.addResizeHandles(this.element)
+      } else {
+        this.removeResizeHandles(this.element)
+      }
     }
   }
 
@@ -463,7 +486,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
     const duration = this.wavesurfer.getDuration()
     const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
-    const region = new Region(options, duration, numberOfChannels)
+    const region = new SingleRegion(options, duration, numberOfChannels)
 
     if (!duration) {
       this.subscriptions.push(
@@ -516,7 +539,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         const end = ((x + initialSize) / width) * duration
 
         // Create a region but don't save it until the drag ends
-        region = new Region(
+        region = new SingleRegion(
           {
             ...options,
             start,
@@ -552,3 +575,5 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 }
 
 export default RegionsPlugin
+
+export type Region = InstanceType<typeof SingleRegion>
