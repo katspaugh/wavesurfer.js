@@ -57,6 +57,8 @@ export type RegionParams = {
   minLength?: number
   /** Max length when resizing (in seconds) */
   maxLength?: number
+  /** The index of the channel */
+  channelIdx?: number
 }
 
 class SingleRegion extends EventEmitter<RegionEvents> {
@@ -70,8 +72,10 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   public content?: HTMLElement
   public minLength = 0
   public maxLength = Infinity
+  public channelIdx: number
+  public numberOfChannels: number
 
-  constructor(params: RegionParams, private totalDuration: number) {
+  constructor(params: RegionParams, private totalDuration: number, numberOfChannels?: number) {
     super()
 
     this.id = params.id || `region-${Math.random().toString(32).slice(2)}`
@@ -82,6 +86,8 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     this.color = params.color ?? 'rgba(0, 0, 0, 0.1)'
     this.minLength = params.minLength ?? this.minLength
     this.maxLength = params.maxLength ?? this.maxLength
+    this.channelIdx = params.channelIdx ?? -1
+    this.numberOfChannels = numberOfChannels ?? 0
     this.element = this.initElement()
     this.setContent(params.content)
     this.setPart()
@@ -99,11 +105,20 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     const element = document.createElement('div')
     const isMarker = this.start === this.end
 
+    let elementTop = 0
+    let elementHeight = 100
+
+    if (this.channelIdx >= 0 && this.channelIdx < this.numberOfChannels) {
+      elementHeight = 100 / this.numberOfChannels
+      elementTop = elementHeight * this.channelIdx
+    }
+
     element.setAttribute(
       'style',
       `
       position: absolute;
-      height: 100%;
+      top: ${elementTop}%;	
+      height: ${elementHeight}%;
       background-color: ${isMarker ? 'none' : this.color};
       border-left: ${isMarker ? '2px solid ' + this.color : 'none'};
       border-radius: 2px;
@@ -447,7 +462,8 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     }
 
     const duration = this.wavesurfer.getDuration()
-    const region = new SingleRegion(options, duration)
+    const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
+    const region = new SingleRegion(options, duration, numberOfChannels)
 
     if (!duration) {
       this.subscriptions.push(
@@ -492,6 +508,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         startX = x
         if (!this.wavesurfer) return
         const duration = this.wavesurfer.getDuration()
+        const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
         const width = this.wavesurfer.getWrapper().clientWidth
         // Calculate the start time of the region
         const start = (x / width) * duration
@@ -506,6 +523,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
             end,
           },
           duration,
+          numberOfChannels,
         )
         // Just add it to the DOM for now
         this.regionsContainer.appendChild(region.element)
