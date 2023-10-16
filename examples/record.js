@@ -56,7 +56,7 @@ pauseButton.onclick = () => {
 const micSelect = document.querySelector('#mic-select')
 {
   // Mic selection
-  record.getAvailableAudioDevices().then((devices) => {
+  RecordPlugin.getAvailableAudioDevices().then((devices) => {
     devices.forEach((device) => {
       const option = document.createElement('option')
       option.value = device.deviceId
