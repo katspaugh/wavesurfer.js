@@ -1,7 +1,7 @@
 /**
  * Zoom plugin
  *
- * zoom player when mouse wheel
+ * Zoom in or out on the waveform when scrolling the mouse wheel
  *
  * @author HoodyHuo (https://github.com/HoodyHuo)
  *
@@ -20,7 +20,7 @@
 import { BasePlugin, BasePluginEvents } from '../base-plugin.js'
 
 export type ZoomPluginOptions = {
-  scale?: number // every wheel step zoom  0.1 means 10%
+  scale?: number // the amount of zoom per wheel step, e.g. 0.1 means a 10% magnification per scroll
 }
 const defaultOptions = {
   scale: 0.2,
@@ -47,16 +47,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     if (!this.wrapper) {
       return
     }
-    if (this.wavesurfer?.options.container) {
-      const containerParam = this.wavesurfer?.options.container
-      if (typeof containerParam === 'string') {
-        this.container = document.querySelector(containerParam) as HTMLElement
-      } else if (containerParam instanceof HTMLElement) {
-        this.container = containerParam
-      } else {
-        this.container = this.wavesurfer?.getWrapper().parentElement as HTMLElement
-      }
-    }
+    this.container = this.wrapper.parentElement as HTMLElement
     this.wrapper.addEventListener('wheel', this.onWheel)
   }
 
@@ -64,7 +55,6 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     if (!this.wavesurfer?.options.minPxPerSec || !this.container) {
       return
     }
-    const scrollEl = this.wrapper?.parentElement as HTMLElement
     const duration = this.wavesurfer.getDuration()
     const oldMinPxPerSec = this.wavesurfer.options.minPxPerSec
     const x = e.clientX
@@ -75,10 +65,10 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     const newLeftSec = (width / newMinPxPerSec) * (x / width)
     if (newMinPxPerSec * duration < width) {
       this.wavesurfer.zoom(width / duration)
-      scrollEl.scrollLeft = 0
+      this.container.scrollLeft = 0
     } else {
       this.wavesurfer.zoom(newMinPxPerSec)
-      scrollEl.scrollLeft = (pointerTime - newLeftSec) * newMinPxPerSec
+      this.container.scrollLeft = (pointerTime - newLeftSec) * newMinPxPerSec
     }
   }
 
