@@ -131,6 +131,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
   protected subscriptions: Array<() => void> = []
+  protected mediaSubscriptions: Array<() => void> = []
 
   /** Create a new WaveSurfer instance */
   public static create(options: WaveSurferOptions) {
@@ -177,7 +178,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private initPlayerEvents() {
-    this.subscriptions.push(
+    this.mediaSubscriptions.push(
       this.onMediaEvent('timeupdate', () => {
         const currentTime = this.getCurrentTime()
         this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())
@@ -268,6 +269,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.options.plugins.forEach((plugin) => {
       this.registerPlugin(plugin)
     })
+  }
+
+  private unsubscribePlayerEvents() {
+    this.mediaSubscriptions.forEach((unsubscribe) => unsubscribe())
+    this.mediaSubscriptions = []
   }
 
   /** Set new wavesurfer options and re-render it */
@@ -443,11 +449,19 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.load('', [[0]], 0.001)
   }
 
+  /** Set HTML media element */
+  public setMediaElement(element: HTMLMediaElement) {
+    this.unsubscribePlayerEvents()
+    super.setMediaElement(element)
+    this.initPlayerEvents()
+  }
+
   /** Unmount wavesurfer */
   public destroy() {
     this.emit('destroy')
     this.plugins.forEach((plugin) => plugin.destroy())
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
+    this.unsubscribePlayerEvents()
     this.timer.destroy()
     this.renderer.destroy()
     super.destroy()
