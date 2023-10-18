@@ -185,9 +185,9 @@ describe('WaveSurfer basic tests', () => {
     const attachMockListeners = (el) => {
       el.eventListenerList = {}
       el.addEventListener = (eventName, callback, options) => {
-        if (!el.eventListenerList[eventName]) el.eventListenerList[eventName] = [];
-        el.eventListenerList[eventName].push(callback);
-      };
+        if (!el.eventListenerList[eventName]) el.eventListenerList[eventName] = []
+        el.eventListenerList[eventName].push(callback)
+      }
 
       el.removeEventListener = (eventName, callback) => {
         if (el.eventListenerList[eventName]) delete el.eventListenerList[eventName]
@@ -205,7 +205,7 @@ describe('WaveSurfer basic tests', () => {
           win.wavesurfer = win.WaveSurfer.create({
             container: '#waveform',
             url: '../../examples/audio/demo.wav',
-            media: orignalMedia
+            media: orignalMedia,
           })
 
           win.wavesurfer.once('ready', () => resolve())
@@ -250,7 +250,6 @@ describe('WaveSurfer basic tests', () => {
         })
       })
     })
-
   })
 
   it('should return true when calling isPlaying() after play()', (done) => {

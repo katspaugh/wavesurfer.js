@@ -17,10 +17,12 @@ const wavesurfer = WaveSurfer.create({
 })
 
 // Initialize the Zoom plugin
-wavesurfer.registerPlugin(ZoomPlugin.create({
-  // the amount of zoom per wheel step, e.g. 0.1 means a 10% magnification per scroll
-  scale : 0.2
-}))
+wavesurfer.registerPlugin(
+  ZoomPlugin.create({
+    // the amount of zoom per wheel step, e.g. 0.1 means a 10% magnification per scroll
+    scale: 0.2,
+  }),
+)
 
 //  show the current minPxPerSec value
 const minPxPerSecSpan = document.querySelector('#minPxPerSec')
@@ -40,9 +42,6 @@ wavesurfer.on('zoom', (minPxPerSec) => {
  *
  */
 
-
-
-
 // A few more controls
 /*
 <html>
@@ -58,7 +57,6 @@ wavesurfer.on('zoom', (minPxPerSec) => {
 const playButton = document.querySelector('#play')
 const forwardButton = document.querySelector('#forward')
 const backButton = document.querySelector('#backward')
-
 
 playButton.onclick = () => {
   wavesurfer.playPause()
