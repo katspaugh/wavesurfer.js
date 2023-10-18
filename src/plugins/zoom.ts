@@ -55,6 +55,9 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     if (!this.wavesurfer?.options.minPxPerSec || !this.container) {
       return
     }
+    // prevent scrolling the sidebar while zooming
+    e.preventDefault()
+
     const duration = this.wavesurfer.getDuration()
     const oldMinPxPerSec = this.wavesurfer.options.minPxPerSec
     const x = e.clientX
