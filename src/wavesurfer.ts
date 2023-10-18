@@ -4,6 +4,7 @@ import Fetcher from './fetcher.js'
 import Player from './player.js'
 import Renderer from './renderer.js'
 import Timer from './timer.js'
+import WebAudioPlayer from './webaudio.js'
 
 export type WaveSurferOptions = {
   /** Required: an HTML element or selector where the waveform will be rendered */
@@ -70,6 +71,8 @@ export type WaveSurferOptions = {
   renderFunction?: (peaks: Array<Float32Array | number[]>, ctx: CanvasRenderingContext2D) => void
   /** Options to pass to the fetch method */
   fetchParams?: RequestInit
+  /** Playback "backend" to use, defaults to MediaElement */
+  backend: 'WebAudio' | 'MediaElement'
 }
 
 const defaultOptions = {
@@ -140,8 +143,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Create a new WaveSurfer instance */
   constructor(options: WaveSurferOptions) {
+    const useWebAudio = !options.media && options.backend === 'WebAudio'
+    const media = options.media || useWebAudio ? (new WebAudioPlayer() as unknown as HTMLAudioElement) : undefined
+
     super({
-      media: options.media,
+      media,
       mediaControls: options.mediaControls,
       autoplay: options.autoplay,
       playbackRate: options.audioRate,
@@ -150,7 +156,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.options = Object.assign({}, defaultOptions, options)
     this.timer = new Timer()
 
-    const audioElement = !options.media ? this.getMediaElement() : undefined
+    const audioElement = !options.media && !useWebAudio ? this.getMediaElement() : undefined
     this.renderer = new Renderer(this.options, audioElement)
 
     this.initPlayerEvents()

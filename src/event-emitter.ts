@@ -1,7 +1,7 @@
 export type GeneralEventTypes = {
   // the name of the event and the data it dispatches with
   // e.g. 'entryCreated': [count: 1]
-  [EventName: string]: any[] // eslint-disable-line @typescript-eslint/no-explicit-any
+  [EventName: string]: unknown[] // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 type EventListener<EventTypes extends GeneralEventTypes, EventName extends keyof EventTypes> = (
@@ -16,48 +16,48 @@ type EventMap<EventTypes extends GeneralEventTypes> = {
 class EventEmitter<EventTypes extends GeneralEventTypes> {
   private listeners = {} as EventMap<EventTypes>
 
-  /** Subscribe to an event. Returns an unsubscribe function. */
-  public on<EventName extends keyof EventTypes>(
-    eventName: EventName,
+  /** Add an event listener */
+  public addEventListener<EventName extends keyof EventTypes>(
+    event: EventName,
     listener: EventListener<EventTypes, EventName>,
+    options?: { once?: boolean },
   ): () => void {
-    if (!this.listeners[eventName]) {
-      this.listeners[eventName] = new Set()
+    if (!this.listeners[event]) {
+      this.listeners[event] = new Set()
     }
-    this.listeners[eventName].add(listener)
+    this.listeners[event].add(listener)
 
-    return () => this.un(eventName, listener)
+    if (options?.once) {
+      const unsubscribeOnce = () => {
+        this.removeEventListener(event, unsubscribeOnce)
+        this.removeEventListener(event, listener)
+      }
+      this.addEventListener(event, unsubscribeOnce)
+      return unsubscribeOnce
+    }
+
+    return () => this.removeEventListener(event, listener)
   }
+
+  public removeEventListener<EventName extends keyof EventTypes>(
+    event: EventName,
+    listener: EventListener<EventTypes, EventName>,
+  ): void {
+    this.listeners[event]?.delete(listener)
+  }
+
+  /** Subscribe to an event. Returns an unsubscribe function. */
+  public on = this.addEventListener
+
+  /** Unsubscribe from an event */
+  public un = this.removeEventListener
 
   /** Subscribe to an event only once */
   public once<EventName extends keyof EventTypes>(
-    eventName: EventName,
+    event: EventName,
     listener: EventListener<EventTypes, EventName>,
   ): () => void {
-    // The actual subscription
-    const unsubscribe = this.on(eventName, listener)
-
-    // Another subscription that will unsubscribe the actual subscription and itself after the first event
-    const unsubscribeOnce = this.on(eventName, () => {
-      unsubscribe()
-      unsubscribeOnce()
-    })
-
-    return unsubscribe
-  }
-
-  /** Unsubscribe from an event */
-  public un<EventName extends keyof EventTypes>(
-    eventName: EventName,
-    listener: EventListener<EventTypes, EventName>,
-  ): void {
-    if (this.listeners[eventName]) {
-      if (listener) {
-        this.listeners[eventName].delete(listener)
-      } else {
-        delete this.listeners[eventName]
-      }
-    }
+    return this.on(event, listener, { once: true })
   }
 
   /** Clear all events */
