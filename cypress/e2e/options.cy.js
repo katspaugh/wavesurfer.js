@@ -530,7 +530,7 @@ describe('WaveSurfer options tests', () => {
     })
   })
 
-  it('should support web audio playback', (done) => {
+  it('should support Web Audio playback', (done) => {
     cy.window().then((win) => {
       const wavesurfer = win.WaveSurfer.create({
         container: id,

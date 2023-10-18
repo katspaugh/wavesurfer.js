@@ -95,16 +95,15 @@ See [this example](https://wavesurfer.xyz/examples/?styling.js) for play around 
 Most options, events, and methods are similar to those in previous versions.
 
 ### Notable differences
- * The `backend` option is removed – [HTML5 audio (or video) is the only playback mechanism](https://github.com/katspaugh/wavesurfer.js/discussions/2762#discussioncomment-5669347). However, you can still connect wavesurfer to Web Audio via `MediaElementSourceNode`. See this [example](https://wavesurfer.xyz/examples/?webaudio.js).
  * The Markers plugin is removed – you should use the Regions plugin with just a `startTime`.
  * No Microphone plugin – superseded by the new Record plugin with more features.
  * The Cursor plugin is replaced by the Hover plugin.
 
 ### Removed options
- * `backend`, `audioContext`, `closeAudioContext`, `audioScriptProcessor` – there's no Web Audio backend, so no AudioContext
+ * `audioContext`, `closeAudioContext`, `audioScriptProcessor`
  * `autoCenterImmediately` – `autoCenter` is now always immediate unless the audio is playing
  * `backgroundColor`, `hideCursor` – this can be easily set via CSS
- * `mediaType`, `mediaControls` – you should instead pass an entire media element in the `media` option. [Example](https://wavesurfer.xyz/examples/?video.js).
+ * `mediaType` – you should instead pass an entire media element in the `media` option. [Example](https://wavesurfer.xyz/examples/?video.js).
  * `partialRender` – done by default
  * `pixelRatio` – `window.devicePixelRatio` is used by default
  * `renderer` – there's just one renderer for now, so no need for this option
@@ -117,7 +116,7 @@ Most options, events, and methods are similar to those in previous versions.
  * `barMinHeight` - the minimum bar height is now 1 pixel by default
 
 ### Removed methods
- * `getFilters`, `setFilter` – as there's no Web Audio "backend"
+ * `getFilters`, `setFilter` – see the [Web Audio example](https://wavesurfer.xyz/examples/?webaudio.js)
  * `drawBuffer` – to redraw the waveform, use `setOptions` instead and pass new rendering options
  * `cancelAjax` – you can pass an [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) in `fetchParams`
  * `skipForward`, `skipBackward`, `setPlayEnd` – can be implemented using `setTime(time)`

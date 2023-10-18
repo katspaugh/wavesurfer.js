@@ -22,9 +22,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   private autoplay = false
   private playStartTime = 0
   private playedDuration = 0
-  private _src = ''
   private _muted = false
   private buffer: AudioBuffer | null = null
+  public currentSrc = ''
   public paused = true
   public crossOrigin: string | null = null
 
@@ -40,11 +40,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   get src() {
-    return this._src
+    return this.currentSrc
   }
 
   set src(value: string) {
-    this._src = value
+    this.currentSrc = value
 
     fetch(value)
       .then((response) => response.arrayBuffer())
@@ -155,6 +155,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     } else {
       this.gainNode.connect(this.audioContext.destination)
     }
+  }
+
+  /** Get the GainNode used to play the audio. Can be used to attach filters. */
+  public getGainNode(): GainNode {
+    return this.gainNode
   }
 }
 
