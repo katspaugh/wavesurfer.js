@@ -143,8 +143,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Create a new WaveSurfer instance */
   constructor(options: WaveSurferOptions) {
-    const useWebAudio = !options.media && options.backend === 'WebAudio'
-    const media = options.media || useWebAudio ? (new WebAudioPlayer() as unknown as HTMLAudioElement) : undefined
+    const media =
+      options.media ||
+      (options.backend === 'WebAudio' ? (new WebAudioPlayer() as unknown as HTMLAudioElement) : undefined)
 
     super({
       media,
@@ -156,7 +157,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.options = Object.assign({}, defaultOptions, options)
     this.timer = new Timer()
 
-    const audioElement = !options.media && !useWebAudio ? this.getMediaElement() : undefined
+    const audioElement = media ? undefined : this.getMediaElement()
     this.renderer = new Renderer(this.options, audioElement)
 
     this.initPlayerEvents()
@@ -165,7 +166,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initPlugins()
 
     // Load audio if URL is passed or an external media with an src
-    const url = this.options.url || this.options.media?.currentSrc || this.options.media?.src
+    const url = this.options.url || this.getSrc()
     if (url) {
       this.load(url, this.options.peaks, this.options.duration)
     }
