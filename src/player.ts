@@ -83,6 +83,10 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.media.load()
   }
 
+  protected setMediaElement(element: HTMLMediaElement) {
+    this.media = element
+  }
+
   /** Start playing the audio */
   public play(): Promise<void> {
     return this.media.play()
@@ -150,11 +154,6 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   /** Get the HTML media element */
   public getMediaElement(): HTMLMediaElement {
     return this.media
-  }
-
-  /** Set HTML media element */
-  public setMediaElement(element: HTMLMediaElement) {
-    this.media = element
   }
 
   /** Set a sink id to change the audio output device */
