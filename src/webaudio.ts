@@ -55,13 +55,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
         this.emit('loadedmetadata')
         this.emit('canplay')
 
-        if (this.autoplay) {
-          this.play()
-        }
+        if (this.autoplay) this.play()
       })
   }
 
-  async play() {
+  private _play() {
     if (!this.paused) return
     this.paused = false
 
@@ -70,27 +68,35 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.bufferNode.buffer = this.buffer
     this.bufferNode.connect(this.gainNode)
 
-    const offset = this.playedDuration > 0 ? this.playedDuration : 0
-    const start =
-      this.playedDuration > 0 ? this.audioContext.currentTime : this.audioContext.currentTime - this.playedDuration
+    if (this.playedDuration >= this.duration) {
+      this.playedDuration = 0
+    }
 
-    this.bufferNode.start(start, offset)
+    this.bufferNode.start(this.audioContext.currentTime, this.playedDuration)
     this.playStartTime = this.audioContext.currentTime
-    this.emit('play')
 
     this.bufferNode.onended = () => {
       if (this.currentTime >= this.duration) {
-        this.emit('pause')
+        this.pause()
         this.emit('ended')
       }
     }
   }
 
-  pause() {
+  private _pause() {
     if (this.paused) return
     this.paused = true
     this.bufferNode?.stop()
     this.playedDuration += this.audioContext.currentTime - this.playStartTime
+  }
+
+  async play() {
+    this._play()
+    this.emit('play')
+  }
+
+  pause() {
+    this._pause()
     this.emit('pause')
   }
 
@@ -117,9 +123,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     if (this.paused) {
       this.playedDuration = value
     } else {
-      this.pause()
+      this._pause()
       this.playedDuration = value
-      this.play()
+      this._play()
     }
 
     this.emit('timeupdate')
