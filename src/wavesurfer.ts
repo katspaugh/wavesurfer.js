@@ -4,6 +4,7 @@ import Fetcher from './fetcher.js'
 import Player from './player.js'
 import Renderer from './renderer.js'
 import Timer from './timer.js'
+import WebAudioPlayer from './webaudio.js'
 
 export type WaveSurferOptions = {
   /** Required: an HTML element or selector where the waveform will be rendered */
@@ -70,6 +71,8 @@ export type WaveSurferOptions = {
   renderFunction?: (peaks: Array<Float32Array | number[]>, ctx: CanvasRenderingContext2D) => void
   /** Options to pass to the fetch method */
   fetchParams?: RequestInit
+  /** Playback "backend" to use, defaults to MediaElement */
+  backend: 'WebAudio' | 'MediaElement'
 }
 
 const defaultOptions = {
@@ -140,8 +143,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Create a new WaveSurfer instance */
   constructor(options: WaveSurferOptions) {
+    const media =
+      options.media ||
+      (options.backend === 'WebAudio' ? (new WebAudioPlayer() as unknown as HTMLAudioElement) : undefined)
+
     super({
-      media: options.media,
+      media,
       mediaControls: options.mediaControls,
       autoplay: options.autoplay,
       playbackRate: options.audioRate,
@@ -150,7 +157,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.options = Object.assign({}, defaultOptions, options)
     this.timer = new Timer()
 
-    const audioElement = !options.media ? this.getMediaElement() : undefined
+    const audioElement = media ? undefined : this.getMediaElement()
     this.renderer = new Renderer(this.options, audioElement)
 
     this.initPlayerEvents()
@@ -159,7 +166,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initPlugins()
 
     // Load audio if URL is passed or an external media with an src
-    const url = this.options.url || this.options.media?.currentSrc || this.options.media?.src
+    const url = this.options.url || this.getSrc()
     if (url) {
       this.load(url, this.options.peaks, this.options.duration)
     }
@@ -335,17 +342,17 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // Set the mediaelement source
     this.setSrc(url, blob)
 
+    // Wait for the audio duration
+    // It should be a promise to allow event listeners to subscribe to the ready and decode events
+    duration =
+      (await Promise.resolve(duration || this.getDuration())) ||
+      (await new Promise((resolve) => {
+        this.onceMediaEvent('loadedmetadata', () => resolve(this.getDuration()))
+      })) ||
+      (await Promise.resolve(0))
+
     // Decode the audio data or use user-provided peaks
     if (channelData) {
-      // Wait for the audio duration
-      // It should be a promise to allow event listeners to subscribe to the ready and decode events
-      duration =
-        (await Promise.resolve(duration || this.getDuration())) ||
-        (await new Promise((resolve) => {
-          this.onceMediaEvent('loadedmetadata', () => resolve(this.getDuration()))
-        })) ||
-        (await Promise.resolve(0))
-
       this.decodedData = Decoder.createBuffer(channelData, duration)
     } else if (blob) {
       const arrayBuffer = await blob.arrayBuffer()

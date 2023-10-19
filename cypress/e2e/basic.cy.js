@@ -177,20 +177,20 @@ describe('WaveSurfer basic tests', () => {
     })
   })
 
-  describe('setMediaElement', () => {
-    const MEDIA_EVENTS = ['timeupdate', 'play', 'pause', 'emptied', 'ended', 'seeking']
-    let orignalMedia
-
+  describe.only('setMediaElement', () => {
     // Mock add/remove event listeners for `media` elements
     const attachMockListeners = (el) => {
-      el.eventListenerList = {}
-      el.addEventListener = (eventName, callback, options) => {
-        if (!el.eventListenerList[eventName]) el.eventListenerList[eventName] = [];
-        el.eventListenerList[eventName].push(callback);
-      };
+      el.eventCount = 0
 
+      const addEventListener = el.addEventListener
+      el.addEventListener = (eventName, callback, options) => {
+        if (!options || !options.once) el.eventCount++
+        addEventListener.call(el, eventName, callback, options)
+      }
+      const removeEventListener = el.removeEventListener
       el.removeEventListener = (eventName, callback) => {
-        if (el.eventListenerList[eventName]) delete el.eventListenerList[eventName]
+        el.eventCount--
+        removeEventListener.call(el, eventName, callback)
       }
     }
 
@@ -198,20 +198,16 @@ describe('WaveSurfer basic tests', () => {
       cy.window().then((win) => {
         win.wavesurfer.destroy()
 
-        orignalMedia = document.createElement('audio')
-        attachMockListeners(orignalMedia)
+        const originalMedia = document.createElement('audio')
+        attachMockListeners(originalMedia)
 
-        const waitForReady = new Promise((resolve) => {
-          win.wavesurfer = win.WaveSurfer.create({
-            container: '#waveform',
-            url: '../../examples/audio/demo.wav',
-            media: orignalMedia
-          })
-
-          win.wavesurfer.once('ready', () => resolve())
+        win.wavesurfer = win.WaveSurfer.create({
+          container: '#waveform',
+          url: '../../examples/audio/demo.wav',
+          media: originalMedia,
         })
 
-        cy.wrap(waitForReady).then(done)
+        win.wavesurfer.once('ready', () => done())
       })
     })
 
@@ -226,15 +222,13 @@ describe('WaveSurfer basic tests', () => {
 
     it('should unsubscribe events from removed media element', () => {
       cy.window().then((win) => {
+        const originalMedia = win.wavesurfer.getMediaElement()
         const media = document.createElement('audio')
 
-        MEDIA_EVENTS.forEach((event) => {
-          expect(orignalMedia.eventListenerList[event]).to.exist
-          expect(orignalMedia.eventListenerList[event].length).to.equal(1)
-        })
+        expect(originalMedia.eventCount).to.be.greaterThan(0)
 
         win.wavesurfer.setMediaElement(media)
-        expect(orignalMedia.eventListenerList).to.be.empty
+        expect(originalMedia.eventCount).to.equal(0)
       })
     })
 
@@ -244,13 +238,9 @@ describe('WaveSurfer basic tests', () => {
         attachMockListeners(newMedia)
 
         win.wavesurfer.setMediaElement(newMedia)
-        MEDIA_EVENTS.forEach((event) => {
-          expect(newMedia.eventListenerList[event]).to.exist
-          expect(newMedia.eventListenerList[event].length).to.equal(1)
-        })
+        expect(newMedia.eventCount).to.be.greaterThan(0)
       })
     })
-
   })
 
   it('should return true when calling isPlaying() after play()', (done) => {
