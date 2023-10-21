@@ -56,7 +56,7 @@
     "cypress": "cypress open --e2e",
     "cypress:canary": "cypress open --e2e -b chrome:canary",
     "test": "cypress run",
-    "serve": "npx live-server --port=9090 --no-browser",
+    "serve": "npx live-server --port=9090 --no-browser --ignore='.*'",
     "start": "npm run build:dev & npm run serve"
   },
   "devDependencies": {

@@ -5,8 +5,6 @@
       "ESNext",
       "DOM"
     ],
-    "module": "ESNext",
-    "moduleResolution": "nodenext",
     "allowUmdGlobalAccess": false,
     "declaration": true,
     "outDir": "./dist",

@@ -6,4 +6,5 @@ yarn-error.log
 cypress/screenshots
 cypress/downloads
 cypress/videos
+cypress/**/__diff_output__/
 .env
