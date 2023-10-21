@@ -432,17 +432,17 @@ class Renderer extends EventEmitter<RendererEvents> {
     )
 
     // Draw a progress canvas
-    const progressCanvas = canvas.cloneNode() as HTMLCanvasElement
-    progressContainer.appendChild(progressCanvas)
-    const progressCtx = progressCanvas.getContext('2d') as CanvasRenderingContext2D
     if (canvas.width > 0 && canvas.height > 0) {
+      const progressCanvas = canvas.cloneNode() as HTMLCanvasElement
+      const progressCtx = progressCanvas.getContext('2d') as CanvasRenderingContext2D
       progressCtx.drawImage(canvas, 0, 0)
+      // Set the composition method to draw only where the waveform is drawn
+      progressCtx.globalCompositeOperation = 'source-in'
+      progressCtx.fillStyle = this.convertColorValues(options.progressColor)
+      // This rectangle acts as a mask thanks to the composition method
+      progressCtx.fillRect(0, 0, canvas.width, canvas.height)
+      progressContainer.appendChild(progressCanvas)
     }
-    // Set the composition method to draw only where the waveform is drawn
-    progressCtx.globalCompositeOperation = 'source-in'
-    progressCtx.fillStyle = this.convertColorValues(options.progressColor)
-    // This rectangle acts as a mask thanks to the composition method
-    progressCtx.fillRect(0, 0, canvas.width, canvas.height)
   }
 
   private renderChannel(channelData: Array<Float32Array | number[]>, options: WaveSurferOptions, width: number) {
@@ -632,9 +632,11 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   renderProgress(progress: number, isPlaying?: boolean) {
     if (isNaN(progress)) return
-    this.progressWrapper.style.width = `${progress * 100}%`
-    this.cursor.style.left = `${progress * 100}%`
-    this.cursor.style.marginLeft = Math.round(progress * 100) === 100 ? `-${this.options.cursorWidth}px` : ''
+    const percents = progress * 100
+    this.canvasWrapper.style.clipPath = `polygon(${percents}% 0, 100% 0, 100% 100%, ${percents}% 100%)`
+    this.progressWrapper.style.width = `${percents}%`
+    this.cursor.style.left = `${percents}%`
+    this.cursor.style.marginLeft = Math.round(percents) === 100 ? `-${this.options.cursorWidth}px` : ''
 
     if (this.isScrolling && this.options.autoScroll) {
       this.scrollIntoView(progress, isPlaying)
