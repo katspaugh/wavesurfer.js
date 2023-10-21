@@ -169,6 +169,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     const url = this.options.url || this.getSrc()
     if (url) {
       this.load(url, this.options.peaks, this.options.duration)
+    } else if (this.options.peaks && this.options.duration) {
+      // If pre-decoded peaks and duration are provided, render a waveform w/o loading audio
+      this.loadPredecoded()
     }
   }
 
@@ -326,6 +329,21 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.plugins
   }
 
+  private async loadPredecoded() {
+    if (this.options.peaks && this.options.duration) {
+      this.decodedData = Decoder.createBuffer(this.options.peaks, this.options.duration)
+      await Promise.resolve() // wait for event listeners to subscribe
+      this.renderDecoded()
+    }
+  }
+
+  private async renderDecoded() {
+    if (this.decodedData) {
+      this.emit('decode', this.getDuration())
+      this.renderer.render(this.decodedData)
+    }
+  }
+
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
     this.emit('load', url)
 
@@ -359,12 +377,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
     }
 
-    this.emit('decode', this.getDuration())
-
-    // Render the waveform
-    if (this.decodedData) {
-      this.renderer.render(this.decodedData)
-    }
+    this.renderDecoded()
 
     this.emit('ready', this.getDuration())
   }

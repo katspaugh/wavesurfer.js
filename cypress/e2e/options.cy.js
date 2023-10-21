@@ -4,7 +4,7 @@ const otherId = `#otherWaveform`
 describe('WaveSurfer options tests', () => {
   beforeEach(() => {
     cy.visit('cypress/e2e/index.html')
-
+    cy.viewport(600, 600)
     cy.window().its('WaveSurfer').should('exist')
   })
 
@@ -530,6 +530,23 @@ describe('WaveSurfer options tests', () => {
     })
   })
 
+  it('should render pre-decoded waveform w/o audio', (done) => {
+    cy.window().then((win) => {
+      const wavesurfer = win.WaveSurfer.create({
+        container: id,
+        peaks: new Array(512).fill(0.5).map((v, i) => v * Math.sin(i / 16)),
+        duration: 12.5,
+      })
+
+      expect(wavesurfer.getDuration().toFixed(2)).to.equal('12.50')
+
+      wavesurfer.once('redraw', () => {
+        cy.get(id).matchImageSnapshot('pre-decoded-no-audio')
+        done()
+      })
+    })
+  })
+
   it('should support Web Audio playback', (done) => {
     cy.window().then((win) => {
       const wavesurfer = win.WaveSurfer.create({
@@ -544,10 +561,6 @@ describe('WaveSurfer options tests', () => {
         expect(wavesurfer.getCurrentTime().toFixed(2)).to.equal('10.00')
         wavesurfer.setTime(21.6)
         wavesurfer.play()
-      })
-
-      wavesurfer.on('timeupdate', () => {
-        console.log(wavesurfer.getCurrentTime())
       })
 
       wavesurfer.once('finish', () => {
