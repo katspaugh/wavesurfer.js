@@ -1,10 +1,16 @@
 const id = '#waveform'
-const otherId = `#otherWaveform`
+const otherId = '#otherWaveform'
+
+const wrapReady = (wavesurfer, event = 'ready') => {
+  const waitForReady = new Promise((resolve) => {
+    wavesurfer.once(event, resolve)
+  })
+  return cy.wrap(waitForReady)
+}
 
 describe('WaveSurfer options tests', () => {
   beforeEach(() => {
     cy.visit('cypress/e2e/index.html')
-    cy.viewport(600, 600)
     cy.window().its('WaveSurfer').should('exist')
   })
 
@@ -17,7 +23,7 @@ describe('WaveSurfer options tests', () => {
         hideScrollbar: true,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('minPxPerSec-hideScrollbar')
         done()
       })
@@ -32,7 +38,7 @@ describe('WaveSurfer options tests', () => {
         barWidth: 3,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('barWidth')
         done()
       })
@@ -64,7 +70,7 @@ describe('WaveSurfer options tests', () => {
         barAlign: 'top',
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('barAlign-top')
         done()
       })
@@ -79,7 +85,7 @@ describe('WaveSurfer options tests', () => {
         barAlign: 'bottom',
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('barAlign-bottom')
         done()
       })
@@ -95,7 +101,7 @@ describe('WaveSurfer options tests', () => {
         barWidth: 4,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('barAlign-barWidth')
         done()
       })
@@ -110,7 +116,7 @@ describe('WaveSurfer options tests', () => {
         barHeight: 2,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('barHeight')
         done()
       })
@@ -127,7 +133,7 @@ describe('WaveSurfer options tests', () => {
         cursorColor: 'blue',
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         wavesurfer.setTime(10)
         cy.wait(100)
         cy.get(id).matchImageSnapshot('colors')
@@ -146,7 +152,7 @@ describe('WaveSurfer options tests', () => {
         cursorColor: 'blue',
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         wavesurfer.setTime(10)
         cy.wait(100)
         cy.snap
@@ -165,7 +171,7 @@ describe('WaveSurfer options tests', () => {
         cursorWidth: 4,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         wavesurfer.setTime(10)
         cy.wait(100)
         cy.get(id).matchImageSnapshot('cursor')
@@ -184,7 +190,7 @@ describe('WaveSurfer options tests', () => {
         hideScrollbar: true,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         wavesurfer.setTime(10)
         cy.wait(100)
         cy.get(id).matchImageSnapshot('autoScroll-false')
@@ -203,7 +209,7 @@ describe('WaveSurfer options tests', () => {
         hideScrollbar: true,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         wavesurfer.setTime(10)
         cy.wait(100)
         cy.get(id).matchImageSnapshot('autoCenter-false')
@@ -237,7 +243,7 @@ describe('WaveSurfer options tests', () => {
         ],
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('peaks')
         done()
       })
@@ -253,7 +259,7 @@ describe('WaveSurfer options tests', () => {
         media: audio,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('media')
         done()
       })
@@ -270,7 +276,7 @@ describe('WaveSurfer options tests', () => {
         progressColor: 'rgb(100, 0, 100)',
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         wavesurfer.setTime(2)
         cy.wait(100)
         cy.get(id).matchImageSnapshot('split-channels')
@@ -296,7 +302,7 @@ describe('WaveSurfer options tests', () => {
         ],
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('split-channels-options')
         done()
       })
@@ -313,7 +319,7 @@ describe('WaveSurfer options tests', () => {
         plugins: [regions],
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         regions.addRegion({
           start: 1,
           end: 3,
@@ -336,7 +342,7 @@ describe('WaveSurfer options tests', () => {
         plugins: [regions, win.Timeline.create()],
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         regions.addRegion({
           start: 1,
           end: 3,
@@ -357,7 +363,7 @@ describe('WaveSurfer options tests', () => {
         normalize: true,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('normalize')
         done()
       })
@@ -372,7 +378,7 @@ describe('WaveSurfer options tests', () => {
         height: 10,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('height-10')
         done()
       })
@@ -389,7 +395,7 @@ describe('WaveSurfer options tests', () => {
         height: 'auto',
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('height-auto')
         win.document.querySelector(id).style.height = ''
         done()
@@ -405,7 +411,7 @@ describe('WaveSurfer options tests', () => {
         height: 'auto',
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('height-auto-0')
         done()
       })
@@ -450,7 +456,7 @@ describe('WaveSurfer options tests', () => {
         },
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('custom-render')
         done()
       })
@@ -469,7 +475,7 @@ describe('WaveSurfer options tests', () => {
         },
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('fetch-options')
         done()
       })
@@ -486,7 +492,7 @@ describe('WaveSurfer options tests', () => {
         barRadius: 4,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         wavesurfer.setOptions({ container: otherId })
         cy.get(id).children().should('have.length', 0)
         cy.get(otherId).children().should('have.length', 1)
@@ -504,7 +510,7 @@ describe('WaveSurfer options tests', () => {
         width: 100,
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('width-100')
         wavesurfer.setOptions({ width: 300 })
         cy.get(id).matchImageSnapshot('width-300')
@@ -521,7 +527,7 @@ describe('WaveSurfer options tests', () => {
         width: '10rem',
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         cy.get(id).matchImageSnapshot('width-10rem')
         wavesurfer.setOptions({ width: '200px' })
         cy.get(id).matchImageSnapshot('width-200px')
@@ -540,7 +546,7 @@ describe('WaveSurfer options tests', () => {
 
       expect(wavesurfer.getDuration().toFixed(2)).to.equal('12.50')
 
-      wavesurfer.once('redraw', () => {
+      wrapReady(wavesurfer, 'redraw').then(() => {
         cy.get(id).matchImageSnapshot('pre-decoded-no-audio')
         done()
       })
@@ -555,7 +561,7 @@ describe('WaveSurfer options tests', () => {
         backend: 'WebAudio',
       })
 
-      wavesurfer.once('ready', () => {
+      wrapReady(wavesurfer).then(() => {
         expect(wavesurfer.getDuration().toFixed(2)).to.equal('21.77')
         wavesurfer.setTime(10)
         expect(wavesurfer.getCurrentTime().toFixed(2)).to.equal('10.00')
