@@ -334,6 +334,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.decodedData = Decoder.createBuffer(this.options.peaks, this.options.duration)
       await Promise.resolve() // wait for event listeners to subscribe
       this.renderDecoded()
+      this.emit('ready', this.getDuration())
     }
   }
 
