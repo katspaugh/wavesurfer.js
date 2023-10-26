@@ -47,7 +47,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     return new RecordPlugin(options || {})
   }
 
-  private renderMicStream(stream: MediaStream): () => void {
+  public renderMicStream(stream: MediaStream): () => void {
     const audioContext = new AudioContext()
     const source = audioContext.createMediaStreamSource(stream)
     const analyser = audioContext.createAnalyser()
