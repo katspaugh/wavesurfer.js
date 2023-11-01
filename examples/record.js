@@ -18,7 +18,7 @@ const createWaveSurfer = () => {
   })
 
   // Initialize the Record plugin
-  record = wavesurfer.registerPlugin(RecordPlugin.create({ scrollingWaveform }))
+  record = wavesurfer.registerPlugin(RecordPlugin.create({ scrollingWaveform, renderRecordedAudio: false }))
   // Render recorded audio
   record.on('record-end', (blob) => {
     const container = document.querySelector('#recordings')

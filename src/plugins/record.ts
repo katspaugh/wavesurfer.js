@@ -11,7 +11,7 @@ export type RecordPluginOptions = {
   audioBitsPerSecond?: MediaRecorderOptions['audioBitsPerSecond']
   /** Whether to render the recorded audio, true by default */
   renderRecordedAudio?: boolean
-  /** Whether to render the scrolling waveform, true by default */
+  /** Whether to render the scrolling waveform, false by default */
   scrollingWaveform?: boolean
   /** The duration of the scrolling waveform window, defaults to 5 seconds */
   scrollingWaveformWindow?: number
@@ -53,7 +53,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       audioBitsPerSecond: options.audioBitsPerSecond ?? DEFAULT_BITS_PER_SECOND,
       scrollingWaveform: options.scrollingWaveform ?? false,
       scrollingWaveformWindow: options.scrollingWaveformWindow ?? DEFAULT_SCROLLING_WAVEFORM_WINDOW,
-      renderRecordedAudio: options.renderRecordedAudio ?? false,
+      renderRecordedAudio: options.renderRecordedAudio ?? true,
     })
   }
 
@@ -178,7 +178,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
       this.emit('record-end', blob)
 
-      if (this.options.renderRecordedAudio !== false) {
+      if (this.options.renderRecordedAudio) {
         this.wavesurfer?.load(URL.createObjectURL(blob))
       }
     }
