@@ -11,6 +11,10 @@ export type RecordPluginOptions = {
   audioBitsPerSecond?: MediaRecorderOptions['audioBitsPerSecond']
   /** Whether to render the recorded audio, true by default */
   renderRecordedAudio?: boolean
+  /** Whether to render the scrolling waveform, false by default */
+  scrollingWaveform?: boolean
+  /** The duration of the scrolling waveform window, defaults to 5 seconds */
+  scrollingWaveformWindow?: number
 }
 
 export type RecordPluginDeviceOptions = {
@@ -25,7 +29,13 @@ export type RecordPluginEvents = BasePluginEvents & {
   'record-end': [blob: Blob]
 }
 
+type MicStream = {
+  onDestroy: () => void
+  onEnd: () => void
+}
+
 const DEFAULT_BITS_PER_SECOND = 128000
+const DEFAULT_SCROLLING_WAVEFORM_WINDOW = 5
 
 const MIME_TYPES = ['audio/webm', 'audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/mp3']
 const findSupportedMimeType = () => MIME_TYPES.find((mimeType) => MediaRecorder.isTypeSupported(mimeType))
@@ -33,12 +43,17 @@ const findSupportedMimeType = () => MIME_TYPES.find((mimeType) => MediaRecorder.
 class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private stream: MediaStream | null = null
   private mediaRecorder: MediaRecorder | null = null
+  private dataWindow: Float32Array | null = null
+  private isWaveformPaused = false
 
   /** Create an instance of the Record plugin */
   constructor(options: RecordPluginOptions) {
     super({
       ...options,
       audioBitsPerSecond: options.audioBitsPerSecond ?? DEFAULT_BITS_PER_SECOND,
+      scrollingWaveform: options.scrollingWaveform ?? false,
+      scrollingWaveformWindow: options.scrollingWaveformWindow ?? DEFAULT_SCROLLING_WAVEFORM_WINDOW,
+      renderRecordedAudio: options.renderRecordedAudio ?? true,
     })
   }
 
@@ -47,7 +62,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     return new RecordPlugin(options || {})
   }
 
-  public renderMicStream(stream: MediaStream): () => void {
+  public renderMicStream(stream: MediaStream): MicStream {
     const audioContext = new AudioContext()
     const source = audioContext.createMediaStreamSource(stream)
     const analyser = audioContext.createAnalyser()
@@ -55,26 +70,58 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
     const bufferLength = analyser.frequencyBinCount
     const dataArray = new Float32Array(bufferLength)
-    const sampleDuration = bufferLength / audioContext.sampleRate
 
     let animationId: number
 
+    const windowSize = Math.floor(this.options.scrollingWaveformWindow! * audioContext.sampleRate)
+
     const drawWaveform = () => {
+      if (this.isWaveformPaused) {
+        animationId = requestAnimationFrame(drawWaveform)
+        return
+      }
+
       analyser.getFloatTimeDomainData(dataArray)
+
+      if (this.options.scrollingWaveform) {
+        const newLength = Math.min(windowSize, this.dataWindow ? this.dataWindow.length + bufferLength : bufferLength)
+        const tempArray = new Float32Array(windowSize) // Always make it the size of the window, filling with zeros by default
+
+        if (this.dataWindow) {
+          const startIdx = Math.max(0, windowSize - this.dataWindow.length)
+          tempArray.set(this.dataWindow.slice(-newLength + bufferLength), startIdx)
+        }
+
+        tempArray.set(dataArray, windowSize - bufferLength)
+        this.dataWindow = tempArray
+      } else {
+        this.dataWindow = dataArray
+      }
+
+      const duration = this.options.scrollingWaveformWindow
+
       if (this.wavesurfer) {
         this.wavesurfer.options.cursorWidth = 0
         this.wavesurfer.options.interact = false
-        this.wavesurfer.load('', [dataArray], sampleDuration)
+        this.wavesurfer.load('', [this.dataWindow], duration)
       }
+
       animationId = requestAnimationFrame(drawWaveform)
     }
 
     drawWaveform()
 
-    return () => {
-      cancelAnimationFrame(animationId)
-      source?.disconnect()
-      audioContext?.close()
+    return {
+      onDestroy: () => {
+        cancelAnimationFrame(animationId)
+        source?.disconnect()
+        audioContext?.close()
+      },
+      onEnd: () => {
+        this.isWaveformPaused = true
+        cancelAnimationFrame(animationId)
+        this.stopMic()
+      },
     }
   }
 
@@ -89,10 +136,9 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       throw new Error('Error accessing the microphone: ' + (err as Error).message)
     }
 
-    const onDestroy = this.renderMicStream(stream)
-
+    const { onDestroy, onEnd } = this.renderMicStream(stream)
     this.subscriptions.push(this.once('destroy', onDestroy))
-
+    this.subscriptions.push(this.once('record-end', onEnd))
     this.stream = stream
 
     return stream
@@ -109,7 +155,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   /** Start recording audio from the microphone */
   public async startRecording(options?: RecordPluginDeviceOptions) {
     const stream = this.stream || (await this.startMic(options))
-
+    this.dataWindow = null
     const mediaRecorder =
       this.mediaRecorder ||
       new MediaRecorder(stream, {
@@ -132,12 +178,13 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
       this.emit('record-end', blob)
 
-      if (this.options.renderRecordedAudio !== false) {
+      if (this.options.renderRecordedAudio) {
         this.wavesurfer?.load(URL.createObjectURL(blob))
       }
     }
 
     mediaRecorder.start()
+    this.isWaveformPaused = false
 
     this.emit('record-start')
   }
@@ -151,9 +198,13 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     return this.mediaRecorder?.state === 'paused'
   }
 
+  public isActive(): boolean {
+    return this.mediaRecorder?.state !== 'inactive'
+  }
+
   /** Stop the recording */
   public stopRecording() {
-    if (this.isRecording()) {
+    if (this.isActive()) {
       this.mediaRecorder?.stop()
     }
   }
@@ -161,6 +212,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   /** Pause the recording */
   public pauseRecording() {
     if (this.isRecording()) {
+      this.isWaveformPaused = true
       this.mediaRecorder?.pause()
       this.emit('record-pause')
     }
@@ -169,6 +221,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   /** Resume the recording */
   public resumeRecording() {
     if (this.isPaused()) {
+      this.isWaveformPaused = false
       this.mediaRecorder?.resume()
       this.emit('record-resume')
     }
