@@ -1,3 +1,37 @@
+async function watchProgress(response: Response, progressCallback: (percentage: number) => void) {
+  if (!response.body || !response.headers) return
+  const reader = response.body.getReader()
+
+  const contentLength = Number(response.headers.get('Content-Length')) || 0
+  let receivedLength = 0
+
+  // Process the data
+  const processChunk = async (value: Uint8Array | undefined) => {
+    // Add to the received length
+    receivedLength += value?.length || 0
+    const percentage = Math.round((receivedLength / contentLength) * 100)
+    progressCallback(percentage)
+  }
+
+  const read = async () => {
+    let data
+    try {
+      data = await reader.read()
+    } catch {
+      // Ignore errors because we can only handle the main response
+      return
+    }
+
+    // Continue reading data until done
+    if (!data.done) {
+      processChunk(data.value)
+      await read()
+    }
+  }
+
+  read()
+}
+
 async function fetchBlob(
   url: string,
   progressCallback: (percentage: number) => void,
@@ -7,27 +41,7 @@ async function fetchBlob(
   const response = await fetch(url, requestInit)
 
   // Read the data to track progress
-  {
-    const reader = response.clone().body?.getReader()
-    const contentLength = Number(response.headers?.get('Content-Length'))
-    let receivedLength = 0
-
-    // Process the data
-    const processChunk = async (done: boolean | undefined, value: Uint8Array | undefined): Promise<void> => {
-      if (done) return
-
-      // Add to the received length
-      receivedLength += value?.length || 0
-
-      const percentage = Math.round((receivedLength / contentLength) * 100)
-      progressCallback(percentage)
-
-      // Continue reading data
-      return reader?.read().then(({ done, value }) => processChunk(done, value))
-    }
-
-    reader?.read().then(({ done, value }) => processChunk(done, value))
-  }
+  watchProgress(response.clone(), progressCallback)
 
   return response.blob()
 }

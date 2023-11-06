@@ -73,7 +73,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
     let animationId: number
 
-    const windowSize = Math.floor(this.options.scrollingWaveformWindow! * audioContext.sampleRate)
+    const windowSize = Math.floor((this.options.scrollingWaveformWindow || 0) * audioContext.sampleRate)
 
     const drawWaveform = () => {
       if (this.isWaveformPaused) {
