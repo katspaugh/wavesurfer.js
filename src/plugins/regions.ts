@@ -573,6 +573,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
   public destroy() {
     this.clearRegions()
     super.destroy()
+    this.regionsContainer.remove()
   }
 }
 
