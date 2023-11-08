@@ -345,7 +345,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     // Wait for the audio duration
     // It should be a promise to allow event listeners to subscribe to the ready and decode events
-    duration =
+    const audioDuration =
       (await Promise.resolve(duration || this.getDuration())) ||
       (await new Promise((resolve) => {
         this.onceMediaEvent('loadedmetadata', () => resolve(this.getDuration()))
@@ -353,7 +353,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     // Decode the audio data or use user-provided peaks
     if (channelData) {
-      this.decodedData = Decoder.createBuffer(channelData, duration || 0)
+      this.decodedData = Decoder.createBuffer(channelData, audioDuration || 0)
     } else if (blob) {
       const arrayBuffer = await blob.arrayBuffer()
       this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
