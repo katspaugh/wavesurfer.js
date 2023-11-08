@@ -87,14 +87,10 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       container.appendChild(this.timelineWrapper)
     }
 
-    if (this.options.duration) {
-      this.initTimeline(this.options.duration)
-    } else {
-      this.subscriptions.push(
-        this.wavesurfer.on('redraw', () => {
-          this.initTimeline(this.wavesurfer?.getDuration() || 0)
-        }),
-      )
+    this.subscriptions.push(this.wavesurfer.on('redraw', () => this.initTimeline()))
+
+    if (this.wavesurfer?.getDuration() || this.options.duration) {
+      this.initTimeline()
     }
   }
 
@@ -146,7 +142,8 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     return 2
   }
 
-  private initTimeline(duration: number) {
+  private initTimeline() {
+    const duration = this.wavesurfer?.getDuration() ?? this.options.duration ?? 0
     const pxPerSec = this.timelineWrapper.scrollWidth / duration
     const timeInterval = this.options.timeInterval ?? this.defaultTimeInterval(pxPerSec)
     const primaryLabelInterval = this.options.primaryLabelInterval ?? this.defaultPrimaryLabelInterval(pxPerSec)
