@@ -544,9 +544,8 @@ describe('WaveSurfer options tests', () => {
         duration: 12.5,
       })
 
-      expect(wavesurfer.getDuration().toFixed(2)).to.equal('12.50')
-
       wrapReady(wavesurfer, 'redraw').then(() => {
+        expect(wavesurfer.getDuration().toFixed(2)).to.equal('12.50')
         cy.get(id).matchImageSnapshot('pre-decoded-no-audio')
         done()
       })

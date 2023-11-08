@@ -91,9 +91,9 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
     const media = this.wavesurfer.getMediaElement()
     if (!data || !media) return
 
-    const peaks = [];
+    const peaks = []
     for (let i = 0; i < data.numberOfChannels; i++) {
-      peaks.push(data.getChannelData(i));
+      peaks.push(data.getChannelData(i))
     }
 
     this.miniWavesurfer = WaveSurfer.create({
