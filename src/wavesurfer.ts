@@ -165,13 +165,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initTimerEvents()
     this.initPlugins()
 
-    // Load audio if URL is passed or an external media with an src
-    const url = this.options.url || this.getSrc()
-    if (url) {
+    // Load audio if URL or an external media with an src is passed,
+    // of render w/o audio if pre-decoded peaks and duration are provided
+    const url = this.options.url || this.getSrc() || ''
+    if (url || (this.options.peaks && this.options.duration)) {
       this.load(url, this.options.peaks, this.options.duration)
-    } else if (this.options.peaks && this.options.duration) {
-      // If pre-decoded peaks and duration are provided, render a waveform w/o loading audio
-      this.loadPredecoded()
     }
   }
 
@@ -329,21 +327,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.plugins
   }
 
-  private async loadPredecoded() {
-    if (this.options.peaks && this.options.duration) {
-      this.decodedData = Decoder.createBuffer(this.options.peaks, this.options.duration)
-      await Promise.resolve() // wait for event listeners to subscribe
-      this.renderDecoded()
-    }
-  }
-
-  private async renderDecoded() {
-    if (this.decodedData) {
-      this.emit('decode', this.getDuration())
-      this.renderer.render(this.decodedData)
-    }
-  }
-
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
     this.emit('load', url)
 
@@ -366,18 +349,20 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       (await Promise.resolve(duration || this.getDuration())) ||
       (await new Promise((resolve) => {
         this.onceMediaEvent('loadedmetadata', () => resolve(this.getDuration()))
-      })) ||
-      (await Promise.resolve(0))
+      }))
 
     // Decode the audio data or use user-provided peaks
     if (channelData) {
-      this.decodedData = Decoder.createBuffer(channelData, duration)
+      this.decodedData = Decoder.createBuffer(channelData, duration || 0)
     } else if (blob) {
       const arrayBuffer = await blob.arrayBuffer()
       this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
     }
 
-    this.renderDecoded()
+    if (this.decodedData) {
+      this.emit('decode', this.getDuration())
+      this.renderer.render(this.decodedData)
+    }
 
     this.emit('ready', this.getDuration())
   }
@@ -464,7 +449,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.setTime(this.getCurrentTime() + seconds)
   }
 
-  /** Empty the waveform by loading a tiny silent audio */
+  /** Empty the waveform */
   public empty() {
     this.load('', [[0]], 0.001)
   }
