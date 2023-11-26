@@ -46,7 +46,6 @@ export function makeDraggable(
 
     const onPointerUp = () => {
       if (isDragging) {
-        isDragging = false
         onEnd?.()
       }
       unsubscribeDocument()
@@ -69,7 +68,7 @@ export function makeDraggable(
     document.addEventListener('pointerup', onPointerUp)
     document.addEventListener('pointercancel', onPointerUp)
     document.addEventListener('touchmove', onTouchMove, { passive: false })
-    element.addEventListener('click', onClick, { capture: true })
+    document.addEventListener('click', onClick, { capture: true })
 
     unsubscribeDocument = () => {
       document.removeEventListener('pointermove', onPointerMove)
@@ -77,7 +76,7 @@ export function makeDraggable(
       document.removeEventListener('pointercancel', onPointerUp)
       document.removeEventListener('touchmove', onTouchMove)
       setTimeout(() => {
-        element.removeEventListener('click', onClick, { capture: true })
+        document.removeEventListener('click', onClick, { capture: true })
       }, 10)
     }
   }
