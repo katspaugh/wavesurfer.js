@@ -5,80 +5,76 @@ export function makeDraggable(
   onEnd?: () => void,
   threshold = 5,
 ): () => void {
-  let unsub = () => {
-    return
-  }
+  if (!element) return () => void 0
 
-  if (!element) return unsub
+  let unsubscribeDocument = () => void 0
 
-  const down = (e: PointerEvent) => {
-    // Ignore the right mouse button
-    if (e.button === 2) return
+  const onPointerDown = (event: PointerEvent) => {
+    if (event.button !== 0) return
 
-    e.preventDefault()
-    e.stopPropagation()
-    element.style.touchAction = 'none'
-
-    let startX = e.clientX
-    let startY = e.clientY
+    let startX = event.clientX
+    let startY = event.clientY
     let isDragging = false
 
-    const move = (e: PointerEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
+    const onPointerMove = (event: PointerEvent) => {
+      const x = event.clientX
+      const y = event.clientY
+      const dx = x - startX
+      const dy = y - startY
+      startX = x
+      startY = y
 
-      const x = e.clientX
-      const y = e.clientY
-
-      if (isDragging || Math.abs(x - startX) >= threshold || Math.abs(y - startY) >= threshold) {
-        const { left, top } = element.getBoundingClientRect()
+      if (isDragging || Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
+        const rect = element.getBoundingClientRect()
+        const { left, top } = rect
 
         if (!isDragging) {
-          isDragging = true
           onStart?.(startX - left, startY - top)
+          isDragging = true
         }
 
-        onDrag(x - startX, y - startY, x - left, y - top)
-        startX = x
-        startY = y
+        onDrag(dx, dy, x - left, y - top)
       }
     }
 
-    const click = (e: Event) => {
+    const onPointerUp = () => {
       if (isDragging) {
-        e.preventDefault()
-        e.stopPropagation()
-      }
-    }
-
-    const up = () => {
-      element.style.touchAction = ''
-
-      if (isDragging) {
+        isDragging = false
         onEnd?.()
       }
-      unsub()
+      unsubscribeDocument()
     }
 
-    document.addEventListener('pointermove', move)
-    document.addEventListener('pointerup', up)
-    document.addEventListener('pointerleave', up)
-    document.addEventListener('click', click, true)
+    const onClick = (event: MouseEvent) => {
+      event.stopPropagation()
+      event.preventDefault()
+    }
 
-    unsub = () => {
-      document.removeEventListener('pointermove', move)
-      document.removeEventListener('pointerup', up)
-      document.removeEventListener('pointerleave', up)
-      setTimeout(() => {
-        document.removeEventListener('click', click, true)
-      }, 10)
+    const onTouchMove = (event: TouchEvent) => {
+      if (isDragging) {
+        event.preventDefault()
+      }
+    }
+
+    document.addEventListener('pointermove', onPointerMove)
+    document.addEventListener('pointerup', onPointerUp)
+    document.addEventListener('pointercancel', onPointerUp)
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    element.addEventListener('click', onClick, { capture: true })
+
+    unsubscribeDocument = () => {
+      document.removeEventListener('pointermove', onPointerMove)
+      document.removeEventListener('pointerup', onPointerUp)
+      document.removeEventListener('pointercancel', onPointerUp)
+      document.removeEventListener('touchmove', onTouchMove)
+      element.removeEventListener('click', onClick, { capture: true })
     }
   }
 
-  element.addEventListener('pointerdown', down)
+  element.addEventListener('pointerdown', onPointerDown)
 
   return () => {
-    unsub()
-    element.removeEventListener('pointerdown', down)
+    unsubscribeDocument()
+    element.removeEventListener('pointerdown', onPointerDown)
   }
 }
