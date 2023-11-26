@@ -40,6 +40,14 @@ describe('WaveSurfer basic tests', () => {
     })
   })
 
+  it('should catch fetch errors', () => {
+    cy.window().then((win) => {
+      return win.wavesurfer.load('../../examples/audio/audio.w1av').catch((e) => {
+        expect(e.message).to.equal('Failed to fetch ../../examples/audio/audio.w1av: 404 (Not Found)')
+      })
+    })
+  })
+
   it('should play and pause audio', () => {
     cy.window().then((win) => {
       expect(win.wavesurfer.getCurrentTime()).to.equal(0)
@@ -177,7 +185,7 @@ describe('WaveSurfer basic tests', () => {
     })
   })
 
-  describe.only('setMediaElement', () => {
+  describe('setMediaElement', () => {
     // Mock add/remove event listeners for `media` elements
     const attachMockListeners = (el) => {
       el.eventCount = 0
