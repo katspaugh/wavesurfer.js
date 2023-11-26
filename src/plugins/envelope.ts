@@ -145,6 +145,7 @@ class Polyline extends EventEmitter<{
       onDrag,
       () => (draggable.style.cursor = 'grabbing'),
       () => (draggable.style.cursor = 'grab'),
+      1,
     )
   }
 
