@@ -40,6 +40,10 @@ async function fetchBlob(
   // Fetch the resource
   const response = await fetch(url, requestInit)
 
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${url}: ${response.status} (${response.statusText})`)
+  }
+
   // Read the data to track progress
   watchProgress(response.clone(), progressCallback)
 
