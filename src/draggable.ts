@@ -4,19 +4,26 @@ export function makeDraggable(
   onStart?: (x: number, y: number) => void,
   onEnd?: () => void,
   threshold = 5,
+  mouseButton = 0,
 ): () => void {
   if (!element) return () => void 0
 
   let unsubscribeDocument = () => void 0
 
   const onPointerDown = (event: PointerEvent) => {
-    if (event.button !== 0) return
+    if (event.button !== mouseButton) return
+
+    event.preventDefault()
+    event.stopPropagation()
 
     let startX = event.clientX
     let startY = event.clientY
     let isDragging = false
 
     const onPointerMove = (event: PointerEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
+
       const x = event.clientX
       const y = event.clientY
       const dx = x - startX
