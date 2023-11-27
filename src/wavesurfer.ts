@@ -197,6 +197,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())
         this.emit('timeupdate', currentTime)
       }),
+      
       this.onMediaEvent('play', () => {
         this.emit('play')
         this.timer.start()
