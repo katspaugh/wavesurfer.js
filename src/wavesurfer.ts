@@ -186,12 +186,15 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private initPlayerEvents() {
+    const timeUpdateRerender = () => {
+      const currentTime = this.getCurrentTime()
+      this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())
+      this.emit('timeupdate', currentTime)
+      requestAnimationFrame(timeUpdateRerender)
+    }
+
     this.mediaSubscriptions.push(
-      this.onMediaEvent('timeupdate', () => {
-        const currentTime = this.getCurrentTime()
-        this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())
-        this.emit('timeupdate', currentTime)
-      }),
+      this.onMediaEvent('timeupdate', timeUpdateRerender),
 
       this.onMediaEvent('play', () => {
         this.emit('play')
@@ -404,11 +407,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       const sampleSize = Math.round(channel.length / maxLength)
       for (let i = 0; i < maxLength; i++) {
         const sample = channel.slice(i * sampleSize, (i + 1) * sampleSize)
-        let max = 0
-        for (let x = 0; x < sample.length; x++) {
-          const n = sample[x]
-          if (Math.abs(n) > Math.abs(max)) max = n
-        }
+        const max = Math.max(...sample)
         data.push(Math.round(max * precision) / precision)
       }
       peaks.push(data)
