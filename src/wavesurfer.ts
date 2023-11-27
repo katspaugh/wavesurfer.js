@@ -187,7 +187,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   private initPlayerEvents() {
     if(this.isPlaying()){
-      this.emit('play');
+      this.emit('play')
       this.timer.start()
     }
 
