@@ -186,19 +186,17 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private initPlayerEvents() {
-    const timeUpdateRerender = () => {
-      const currentTime = this.getCurrentTime()
-      this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())
-      this.emit('timeupdate', currentTime)
-
-      if(this.isPlaying()){
-        requestAnimationFrame(timeUpdateRerender)
-      }
+    if(this.isPlaying()){
+      this.emit('play');
+      this.timer.start()
     }
 
     this.mediaSubscriptions.push(
-      this.onMediaEvent('timeupdate', timeUpdateRerender),
-
+      this.onMediaEvent('timeupdate', () => {
+        const currentTime = this.getCurrentTime()
+        this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())
+        this.emit('timeupdate', currentTime)
+      }),
       this.onMediaEvent('play', () => {
         this.emit('play')
         this.timer.start()
