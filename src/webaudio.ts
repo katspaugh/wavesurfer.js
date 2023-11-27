@@ -100,14 +100,18 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.emit('pause')
   }
 
- stopAt(timeSeconds: number) {
+  stopAt(timeSeconds: number) {
     const delay = timeSeconds - this.currentTime
     this.bufferNode?.stop(this.audioContext.currentTime + delay)
-  
-    this.bufferNode?.addEventListener('ended', () => {
-      this.bufferNode = null
-      this.pause()
-    }, { once: true })
+
+    this.bufferNode?.addEventListener(
+      'ended',
+      () => {
+        this.bufferNode = null
+        this.pause()
+      },
+      { once: true },
+    )
   }
 
   async setSinkId(deviceId: string) {
