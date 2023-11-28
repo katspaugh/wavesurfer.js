@@ -186,6 +186,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private initPlayerEvents() {
+    if (this.isPlaying()) {
+      this.emit('play')
+      this.timer.start()
+    }
+
     this.mediaSubscriptions.push(
       this.onMediaEvent('timeupdate', () => {
         const currentTime = this.getCurrentTime()
