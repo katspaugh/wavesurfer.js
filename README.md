@@ -88,7 +88,7 @@ For example:
 ```
 
 You can see which elements you can style in the DOM inspector – they will have a `part` attribute.
-See [this example](https://wavesurfer.xyz/examples/?styling.js) for play around with styling.
+See [this example](https://wavesurfer.xyz/examples/?styling.js) to play around with styling.
 
 ## Upgrading from v6
 
