@@ -402,6 +402,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
   private initRegionsContainer(): HTMLElement {
     const div = document.createElement('div')
+    div.setAttribute('part', 'regions')
     div.setAttribute(
       'style',
       `
@@ -509,8 +510,8 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
    * Returns a function to disable the drag selection.
    */
   public enableDragSelection(options: Omit<RegionParams, 'start' | 'end'>): () => void {
-    const wrapper = this.wavesurfer?.getWrapper()?.querySelector('div')
-    if (!wrapper) return () => undefined
+    const wrapper = this.wavesurfer?.getWrapper()?.querySelector('div.canvases')
+    if (!wrapper || !(wrapper instanceof HTMLElement)) return () => undefined
 
     const initialSize = 5
     let region: Region | null = null

@@ -49,7 +49,7 @@ export type TimelinePluginEvents = BasePluginEvents & {
 }
 
 class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOptions> {
-  private timelineWrapper: HTMLElement
+  public timelineWrapper: HTMLElement
   protected options: TimelinePluginOptions & typeof defaultOptions
 
   constructor(options?: TimelinePluginOptions) {
@@ -103,6 +103,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   private initTimelineWrapper(): HTMLElement {
     const div = document.createElement('div')
     div.setAttribute('part', 'timeline')
+    div.setAttribute('style', 'pointer-events: none;')
     return div
   }
 
