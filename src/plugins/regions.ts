@@ -402,7 +402,6 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
   private initRegionsContainer(): HTMLElement {
     const div = document.createElement('div')
-    div.setAttribute('part', 'regions')
     div.setAttribute(
       'style',
       `
