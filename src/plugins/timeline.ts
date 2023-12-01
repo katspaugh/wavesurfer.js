@@ -49,7 +49,7 @@ export type TimelinePluginEvents = BasePluginEvents & {
 }
 
 class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOptions> {
-  public timelineWrapper: HTMLElement
+  private timelineWrapper: HTMLElement
   protected options: TimelinePluginOptions & typeof defaultOptions
 
   constructor(options?: TimelinePluginOptions) {
