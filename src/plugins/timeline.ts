@@ -103,6 +103,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   private initTimelineWrapper(): HTMLElement {
     const div = document.createElement('div')
     div.setAttribute('part', 'timeline')
+    div.setAttribute('style', 'pointer-events: none;')
     return div
   }
 
