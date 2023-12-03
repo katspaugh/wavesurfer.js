@@ -470,6 +470,24 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initPlayerEvents()
   }
 
+  /**
+   * Export the waveform image as a data-URI or a blob.
+   *
+   * @param format The format of the exported image, can be `image/png`, `image/jpeg`, `image/webp` or any other format supported by the browser.
+   * @param quality The quality of the exported image, for `image/jpeg` or `image/webp`. Must be between 0 and 1.
+   * @param type The type of the exported image, can be `dataURL` (default) or `blob`.
+   * @returns A promise that resolves with an array of data-URLs or blobs, one for each canvas element.
+   */
+  public async exportImage(format: string, quality: number, type: 'dataURL'): Promise<string[]>
+  public async exportImage(format: string, quality: number, type: 'blob'): Promise<Blob[]>
+  public async exportImage(
+    format = 'image/png',
+    quality = 1,
+    type: 'dataURL' | 'blob' = 'dataURL',
+  ): Promise<string[] | Blob[]> {
+    return this.renderer.exportImage(format, quality, type)
+  }
+
   /** Unmount wavesurfer */
   public destroy() {
     this.emit('destroy')

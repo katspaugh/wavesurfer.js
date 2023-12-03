@@ -644,6 +644,34 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.scrollIntoView(progress, isPlaying)
     }
   }
+
+  async exportImage(format: string, quality: number, type: 'dataURL' | 'blob'): Promise<string[] | Blob[]> {
+    const canvases = this.canvasWrapper.querySelectorAll('canvas')
+    if (!canvases.length) {
+      throw new Error('No waveform data')
+    }
+
+    // Data URLs
+    if (type === 'dataURL') {
+      const images = Array.from(canvases).map((canvas) => canvas.toDataURL(format, quality))
+      return Promise.resolve(images)
+    }
+
+    // Blobs
+    return Promise.all(
+      Array.from(canvases).map((canvas) => {
+        return new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob(
+            (blob) => {
+              blob ? resolve(blob) : reject(new Error('Could not export image'))
+            },
+            format,
+            quality,
+          )
+        })
+      }),
+    )
+  }
 }
 
 export default Renderer
