@@ -45,6 +45,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private mediaRecorder: MediaRecorder | null = null
   private dataWindow: Float32Array | null = null
   private isWaveformPaused = false
+  private originalOptions = { cursorWidth: 1, interact: true }
 
   /** Create an instance of the Record plugin */
   constructor(options: RecordPluginOptions) {
@@ -101,6 +102,10 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       const duration = this.options.scrollingWaveformWindow
 
       if (this.wavesurfer) {
+        this.originalOptions = {
+          cursorWidth: this.wavesurfer.options.cursorWidth,
+          interact: this.wavesurfer.options.interact,
+        }
         this.wavesurfer.options.cursorWidth = 0
         this.wavesurfer.options.interact = false
         this.wavesurfer.load('', [this.dataWindow], duration)
@@ -240,6 +245,11 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
   /** Destroy the plugin */
   public destroy() {
+    if (this.wavesurfer) {
+      this.wavesurfer.options.cursorWidth = this.originalOptions.cursorWidth
+      this.wavesurfer.options.interact = this.originalOptions.interact
+    }
+
     super.destroy()
     this.stopRecording()
     this.stopMic()
