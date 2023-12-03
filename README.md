@@ -132,19 +132,21 @@ Have a question about integrating wavesurfer.js on your website? Feel free to as
 
 ### FAQ
 
-* **Q**: Does wavesurfer support large files?
-* **A**: Since wavesurfer decodes audio entirely in the browser using Web Audio, large clips may fail to decode due to memory constraints. We recommend using pre-decoded peaks for large files (see [this example](https://wavesurfer.xyz/examples/?predecoded.js)). You can use a tool like [bbc/audiowaveform](https://github.com/bbc/audiowaveform) to generate peaks.
+<details>
+  <summary>Does wavesurfer support large files?</summary>
+  Since wavesurfer decodes audio entirely in the browser using Web Audio, large clips may fail to decode due to memory constraints. We recommend using pre-decoded peaks for large files (see <a href="https://wavesurfer.xyz/examples/?predecoded.js">this example</a>). You can use a tool like <a href="https://github.com/bbc/audiowaveform">bbc/audiowaveform</a> to generate peaks.
+</details>
 
----
+<details>
+  <summary>What about streaming audio?</summary>
+  Streaming audio is supported only with <a href="https://wavesurfer.xyz/examples/?predecoded.js">pre-decoded peaks and duration</a>.
+</details>
 
-* **Q**: What about streaming audio?
-* **A**: Streaming isn't supported because wavesurfer needs to download the entire audio file to decode and render it.
-
----
-
-* **Q**: There is a mismatch between my audio and the waveform. How do I fix it?
-* **A**: If you're using a VBR (variable bit rate) audio file, there might be a mismatch between the audio and the waveform. This can be fixed by converting your file to CBR (constant bit rate). See [this issue](https://github.com/katspaugh/wavesurfer.js/issues/2890#issuecomment-1601067822) for details.
-
+<details>
+  <summary>There is a mismatch between my audio and the waveform. How do I fix it?</summary>
+  If you're using a VBR (variable bit rate) audio file, there might be a mismatch between the audio and the waveform. This can be fixed by converting your file to CBR (constant bit rate).
+  <p>Alternatively, you can use the <a href="https://wavesurfer.xyz/examples/?webaudio-shim.js">Web Audio shim</a> which is more accurate.</p>
+</details>
 
 ## Development
 
