@@ -379,7 +379,11 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     this.subscriptions.push(
       this.wavesurfer.on('timeupdate', (currentTime) => {
         // Detect when regions are being played
-        const playedRegions = this.regions.filter((region) => region.start <= currentTime && region.end >= currentTime)
+        const playedRegions = this.regions.filter(
+          (region) =>
+            region.start <= currentTime &&
+            (region.end === region.start ? region.start + 0.05 : region.end) >= currentTime,
+        )
 
         // Trigger region-in when activeRegions doesn't include a played regions
         playedRegions.forEach((region) => {

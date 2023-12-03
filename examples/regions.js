@@ -76,9 +76,11 @@ document.querySelector('input[type="checkbox"]').onclick = (e) => {
 {
   let activeRegion = null
   wsRegions.on('region-in', (region) => {
+    console.log('region-in', region)
     activeRegion = region
   })
   wsRegions.on('region-out', (region) => {
+    console.log('region-out', region)
     if (activeRegion === region) {
       if (loop) {
         region.play()
