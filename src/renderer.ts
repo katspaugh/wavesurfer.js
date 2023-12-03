@@ -21,7 +21,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private progressWrapper: HTMLElement
   private cursor: HTMLElement
   private timeouts: Array<{ timeout?: ReturnType<typeof setTimeout> }> = []
-  private isScrolling = false
+  private isScrollable = false
   private audioData: AudioBuffer | null = null
   private resizeObserver: ResizeObserver | null = null
   private isDragging = false
@@ -526,7 +526,6 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Clear the canvases
     this.canvasWrapper.innerHTML = ''
     this.progressWrapper.innerHTML = ''
-    this.wrapper.style.width = ''
 
     // Width
     if (this.options.width != null) {
@@ -540,8 +539,8 @@ class Renderer extends EventEmitter<RendererEvents> {
     const scrollWidth = Math.ceil(audioData.duration * (this.options.minPxPerSec || 0))
 
     // Whether the container should scroll
-    this.isScrolling = scrollWidth > parentWidth
-    const useParentWidth = this.options.fillParent && !this.isScrolling
+    this.isScrollable = scrollWidth > parentWidth
+    const useParentWidth = this.options.fillParent && !this.isScrollable
     // Width of the waveform in pixels
     const width = (useParentWidth ? parentWidth : scrollWidth) * pixelRatio
 
@@ -549,7 +548,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.wrapper.style.width = useParentWidth ? '100%' : `${scrollWidth}px`
 
     // Set additional styles
-    this.scrollContainer.style.overflowX = this.isScrolling ? 'auto' : 'hidden'
+    this.scrollContainer.style.overflowX = this.isScrollable ? 'auto' : 'hidden'
     this.scrollContainer.classList.toggle('noScrollbar', !!this.options.hideScrollbar)
     this.cursor.style.backgroundColor = `${this.options.cursorColor || this.options.progressColor}`
     this.cursor.style.width = `${this.options.cursorWidth}px`
@@ -578,14 +577,17 @@ class Renderer extends EventEmitter<RendererEvents> {
     if (!this.audioData) return
 
     // Remember the current cursor position
+    const { scrollWidth } = this.scrollContainer
     const oldCursorPosition = this.progressWrapper.clientWidth
 
-    // Set the new zoom level and re-render the waveform
+    // Re-render the waveform
     this.render(this.audioData)
 
     // Adjust the scroll position so that the cursor stays in the same place
-    const newCursortPosition = this.progressWrapper.clientWidth
-    this.scrollContainer.scrollLeft += newCursortPosition - oldCursorPosition
+    if (this.isScrollable && scrollWidth !== this.scrollContainer.scrollWidth) {
+      const newCursorPosition = this.progressWrapper.clientWidth
+      this.scrollContainer.scrollLeft += newCursorPosition - oldCursorPosition
+    }
   }
 
   zoom(minPxPerSec: number) {
@@ -638,7 +640,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.cursor.style.left = `${percents}%`
     this.cursor.style.marginLeft = Math.round(percents) === 100 ? `-${this.options.cursorWidth}px` : ''
 
-    if (this.isScrolling && this.options.autoScroll) {
+    if (this.isScrollable && this.options.autoScroll) {
       this.scrollIntoView(progress, isPlaying)
     }
   }
