@@ -429,15 +429,18 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     // Check that the label doesn't overlap with other labels
     // If it does, push it down until it doesn't
     const div = region.content as HTMLElement
-    const { left: labelLeft, width: labelWidth } = div.getBoundingClientRect()
+    const box = div.getBoundingClientRect()
 
     const overlap = this.regions
-      .filter((reg) => {
-        if (reg === region || !reg.content) return false
-        const { left, width } = reg.content.getBoundingClientRect()
-        return labelLeft < left + width && left < labelLeft + labelWidth
+      .map((reg) => {
+        if (reg === region || !reg.content) return 0
+
+        const otherBox = reg.content.getBoundingClientRect()
+        if (box.left < otherBox.left + otherBox.width && otherBox.left < box.left + box.width) {
+          return otherBox.height
+        }
+        return 0
       })
-      .map((reg) => reg.content?.getBoundingClientRect().height || 0)
       .reduce((sum, val) => sum + val, 0)
 
     div.style.marginTop = `${overlap}px`
