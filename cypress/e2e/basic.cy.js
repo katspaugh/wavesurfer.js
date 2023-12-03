@@ -179,6 +179,38 @@ describe('WaveSurfer basic tests', () => {
     })
   })
 
+  describe('exportImage', () => {
+    it('should export an image as a data-URI', () => {
+      cy.window()
+        .then((win) => {
+          return win.wavesurfer.exportImage()
+        })
+        .then((data) => {
+          expect(data[0]).to.match(/^data:image\/png;base64,/)
+        })
+    })
+
+    it('should export an image as a JPEG data-URI', () => {
+      cy.window()
+        .then((win) => {
+          return win.wavesurfer.exportImage('image/jpeg', 0.75)
+        })
+        .then((data) => {
+          expect(data[0]).to.match(/^data:image\/jpeg;base64,/)
+        })
+    })
+
+    it('should export an image as a blob', () => {
+      cy.window()
+        .then((win) => {
+          return win.wavesurfer.exportImage('image/webp', 0.75, 'blob')
+        })
+        .then((data) => {
+          expect(data[0]).to.be.a('blob')
+        })
+    })
+  })
+
   it('should destroy wavesurfer', () => {
     cy.window().then((win) => {
       win.wavesurfer.destroy()
