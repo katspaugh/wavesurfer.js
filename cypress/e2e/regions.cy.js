@@ -187,7 +187,7 @@ describe('WaveSurfer Regions plugin tests', () => {
         clientX: 100,
         clientY: 10,
       })
-      win.wavesurfer.getWrapper().querySelector('div').dispatchEvent(pointerDownEvent)
+      win.wavesurfer.getWrapper().dispatchEvent(pointerDownEvent)
       win.document.dispatchEvent(pointerMoveEvent)
       win.document.dispatchEvent(pointerUpEvent)
 

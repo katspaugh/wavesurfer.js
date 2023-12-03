@@ -66,6 +66,7 @@ export function makeDraggable(
 
     document.addEventListener('pointermove', onPointerMove)
     document.addEventListener('pointerup', onPointerUp)
+    document.addEventListener('pointerout', onPointerUp)
     document.addEventListener('pointercancel', onPointerUp)
     document.addEventListener('touchmove', onTouchMove, { passive: false })
     document.addEventListener('click', onClick, { capture: true })
@@ -73,6 +74,7 @@ export function makeDraggable(
     unsubscribeDocument = () => {
       document.removeEventListener('pointermove', onPointerMove)
       document.removeEventListener('pointerup', onPointerUp)
+      document.removeEventListener('pointerout', onPointerUp)
       document.removeEventListener('pointercancel', onPointerUp)
       document.removeEventListener('touchmove', onTouchMove)
       setTimeout(() => {

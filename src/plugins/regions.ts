@@ -509,7 +509,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
    * Returns a function to disable the drag selection.
    */
   public enableDragSelection(options: Omit<RegionParams, 'start' | 'end'>): () => void {
-    const wrapper = this.wavesurfer?.getWrapper()?.querySelector('div.canvases')
+    const wrapper = this.wavesurfer?.getWrapper()
     if (!wrapper || !(wrapper instanceof HTMLElement)) return () => undefined
 
     const initialSize = 5
