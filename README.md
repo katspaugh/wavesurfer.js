@@ -2,13 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/wavesurfer.js)](https://www.npmjs.com/package/wavesurfer.js)
 
-## New TypeScript version
-
-wavesurfer.js v7 is a TypeScript rewrite of wavesurfer.js that brings several improvements:
-
- * Typed API for better development experience
- * Enhanced decoding and rendering performance
- * New and improved plugins
+**Wavesurfer.js** is an interactive waveform rendering and audio playback library, perfect for web applications. It leverages modern web technologies to provide a robust and visually engaging audio experience.
 
 <img width="626" alt="waveform screenshot" src="https://github.com/katspaugh/wavesurfer.js/assets/381895/05f03bed-800e-4fa1-b09a-82a39a1c62ce">
 
@@ -62,7 +56,7 @@ See the wavesurfer.js documentation on our website:
 
 ## Plugins
 
-The "official" plugins have been completely rewritten and enhanced:
+We maintain a number of official plugins that add various extra features:
 
  * [Regions](https://wavesurfer.xyz/examples/?regions.js) – visual overlays and markers for regions of audio
  * [Timeline](https://wavesurfer.xyz/examples/?timeline.js) – displays notches and time labels below the waveform
@@ -90,7 +84,17 @@ For example:
 You can see which elements you can style in the DOM inspector – they will have a `part` attribute.
 See [this example](https://wavesurfer.xyz/examples/?styling.js) to play around with styling.
 
-## Upgrading from v6
+## v7 – a new TypeScript version
+
+Wavesurfer.js v7 is a TypeScript rewrite of wavesurfer.js that brings several improvements:
+
+ * Typed API for better development experience
+ * Enhanced decoding and rendering performance
+ * New and improved plugins
+
+<img width="749" alt="Screenshot 2023-12-06 at 09 06 30" src="https://github.com/katspaugh/wavesurfer.js/assets/381895/21eca2d9-47c7-461f-82bb-f23993818458">
+
+### Upgrading from v6
 
 Most options, events, and methods are similar to those in previous versions.
 
