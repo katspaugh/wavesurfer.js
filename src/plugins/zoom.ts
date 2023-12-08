@@ -20,10 +20,11 @@
 import { BasePlugin, BasePluginEvents } from '../base-plugin.js'
 
 export type ZoomPluginOptions = {
-  scale?: number // the amount of zoom per wheel step, e.g. 0.1 means a 10% magnification per scroll
+  scale?: number // the amount of zoom per wheel step, e.g. 0.5 means a 50% magnification per scroll
+  maxZoom?: number // the maximum pixels-per-second factor while zooming
 }
 const defaultOptions = {
-  scale: 0.2,
+  scale: 0.5,
 }
 
 export type ZoomPluginEvents = BasePluginEvents
@@ -52,7 +53,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   }
 
   private onWheel = (e: WheelEvent) => {
-    if (!this.wavesurfer?.options.minPxPerSec || !this.container) {
+    if (!this.wavesurfer || !this.container || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) {
       return
     }
     // prevent scrolling the sidebar while zooming
@@ -64,7 +65,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     const width = this.container.clientWidth
     const scrollX = this.wavesurfer.getScroll()
     const pointerTime = (scrollX + x) / oldMinPxPerSec
-    const newMinPxPerSec = oldMinPxPerSec * (e.deltaY > 0 ? 1 - this.options.scale : 1 + this.options.scale)
+    const newMinPxPerSec = this.calculateNewZoom(oldMinPxPerSec, -e.deltaY)
     const newLeftSec = (width / newMinPxPerSec) * (x / width)
     if (newMinPxPerSec * duration < width) {
       this.wavesurfer.zoom(width / duration)
@@ -73,6 +74,11 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
       this.wavesurfer.zoom(newMinPxPerSec)
       this.container.scrollLeft = (pointerTime - newLeftSec) * newMinPxPerSec
     }
+  }
+
+  private calculateNewZoom = (oldZoom: number, delta: number) => {
+    const newZoom = Math.max(0, oldZoom + delta * this.options.scale)
+    return typeof this.options.maxZoom === 'undefined' ? newZoom : Math.min(newZoom, this.options.maxZoom)
   }
 
   destroy() {
