@@ -52,7 +52,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   }
 
   private onWheel = (e: WheelEvent) => {
-    if (!this.wavesurfer?.options.minPxPerSec || !this.container || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) {
+    if (!this.wavesurfer || !this.container || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) {
       return
     }
     // prevent scrolling the sidebar while zooming
