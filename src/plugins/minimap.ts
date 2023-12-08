@@ -8,7 +8,7 @@ import WaveSurfer, { type WaveSurferOptions } from '../wavesurfer.js'
 export type MinimapPluginOptions = {
   overlayColor?: string
   insertPosition?: InsertPosition
-} & WaveSurferOptions
+} & Partial<WaveSurferOptions>
 
 const defaultOptions = {
   height: 50,
