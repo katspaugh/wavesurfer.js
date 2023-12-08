@@ -61,7 +61,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     const duration = this.wavesurfer.getDuration()
     const oldMinPxPerSec = this.wavesurfer.options.minPxPerSec
     const width = this.container.clientWidth
-    const newMinPxPerSec = oldMinPxPerSec * (e.deltaY > 0 ? 1 - this.options.scale : 1 + this.options.scale)
+    const newMinPxPerSec = Math.max(0, oldMinPxPerSec - e.deltaY * this.options.scale)
     if (newMinPxPerSec * duration < width) {
       this.wavesurfer.zoom(width / duration)
     } else {
