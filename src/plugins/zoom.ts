@@ -21,6 +21,7 @@ import { BasePlugin, BasePluginEvents } from '../base-plugin.js'
 
 export type ZoomPluginOptions = {
   scale?: number // the amount of zoom per wheel step, e.g. 0.5 means a 50% magnification per scroll
+  maxZoom?: number // the maximum pixels-per-second factor while zooming
 }
 const defaultOptions = {
   scale: 0.5,
@@ -61,12 +62,17 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     const duration = this.wavesurfer.getDuration()
     const oldMinPxPerSec = this.wavesurfer.options.minPxPerSec
     const width = this.container.clientWidth
-    const newMinPxPerSec = Math.max(0, oldMinPxPerSec - e.deltaY * this.options.scale)
+    const newMinPxPerSec = this.calculateNewZoom(oldMinPxPerSec, -e.deltaY)
     if (newMinPxPerSec * duration < width) {
       this.wavesurfer.zoom(width / duration)
     } else {
       this.wavesurfer.zoom(newMinPxPerSec)
     }
+  }
+
+  private calculateNewZoom = (oldZoom: number, delta: number) => {
+    const newZoom = Math.max(0, oldZoom + delta * this.options.scale)
+    return typeof this.options.maxZoom === 'undefined' ? newZoom : Math.min(newZoom, this.options.maxZoom)
   }
 
   destroy() {
