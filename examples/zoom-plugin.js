@@ -19,8 +19,8 @@ const wavesurfer = WaveSurfer.create({
 // Initialize the Zoom plugin
 wavesurfer.registerPlugin(
   ZoomPlugin.create({
-    // the amount of zoom per wheel step, e.g. 0.1 means a 10% magnification per scroll
-    scale: 0.2,
+    // the amount of zoom per wheel step, e.g. 0.5 means a 50% magnification per scroll
+    scale: 0.5,
   }),
 )
 
