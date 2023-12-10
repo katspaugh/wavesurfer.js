@@ -259,7 +259,8 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     const canvasElement = document.createElement('canvas')
     const ctx = canvasElement.getContext('2d') as CanvasRenderingContext2D
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvasElement.height)
+    const gradientHeight = canvasElement.height * (window.devicePixelRatio || 1)
+    const gradient = ctx.createLinearGradient(0, 0, 0, gradientHeight)
 
     const colorStopPercentage = 1 / (color.length - 1)
     color.forEach((color, index) => {
