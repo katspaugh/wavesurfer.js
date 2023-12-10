@@ -27,6 +27,8 @@ export type TimelinePluginOptions = {
   style?: Partial<CSSStyleDeclaration> | string
   /** Turn the time into a suitable label for the time. */
   formatTimeCallback?: (seconds: number) => string
+  /** Opacity of the secondary labels, defaults to 0.25 */
+  secondaryLabelOpacity?: number
 }
 
 const defaultOptions = {
@@ -195,7 +197,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       ${isTop ? 'top: 0;' : 'bottom: 0;'}
       overflow: visible;
       border-left: 1px solid currentColor;
-      opacity: 0.25;
+      opacity: ${this.options.secondaryLabelOpacity ?? 0.25};
       position: absolute;
       z-index: 1;
     `,
