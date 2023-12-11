@@ -101,7 +101,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
       }
 
       // Reset the accumulated delta
-      this.accumulatedDelta %= this.options.deltaThreshold
+      this.accumulatedDelta = 0
     }
   }
 
