@@ -86,10 +86,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
       const width = this.container.clientWidth
       const scrollX = this.wavesurfer.getScroll()
       const pointerTime = (scrollX + x) / oldMinPxPerSec
-      const newMinPxPerSec = this.calculateNewZoom(
-        oldMinPxPerSec,
-        this.options.deltaThreshold > 0 ? this.accumulatedDelta : -e.deltaY,
-      )
+      const newMinPxPerSec = this.calculateNewZoom(oldMinPxPerSec, this.accumulatedDelta)
       const newLeftSec = (width / newMinPxPerSec) * (x / width)
 
       if (newMinPxPerSec * duration < width) {
