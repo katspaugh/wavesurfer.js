@@ -309,6 +309,30 @@ describe('WaveSurfer options tests', () => {
     })
   })
 
+  it('should split channels with individual channel heights', (done) => {
+    cy.window().then((win) => {
+      const wavesurfer = win.WaveSurfer.create({
+        container: id,
+        url: '../../examples/audio/stereo.mp3',
+        splitChannels: [
+          {
+            waveColor: 'red',
+            height: 60,
+          },
+          {
+            waveColor: 'blue',
+            height: 30,
+          },
+        ],
+      })
+
+      wrapReady(wavesurfer).then(() => {
+        cy.get(id).matchImageSnapshot('split-channels-heights')
+        done()
+      })
+    })
+  })
+
   it('should use plugins with Regions', (done) => {
     cy.window().then((win) => {
       const regions = win.Regions.create()
