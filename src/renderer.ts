@@ -122,11 +122,11 @@ class Renderer extends EventEmitter<RendererEvents> {
     )
   }
 
-  private getHeight(): number {
+  private getHeight(optionsHeight?: WaveSurferOptions['height']): number {
     const defaultHeight = 128
-    if (this.options.height == null) return defaultHeight
-    if (!isNaN(Number(this.options.height))) return Number(this.options.height)
-    if (this.options.height === 'auto') return this.parent.clientHeight || defaultHeight
+    if (optionsHeight == null) return defaultHeight
+    if (!isNaN(Number(optionsHeight))) return Number(optionsHeight)
+    if (optionsHeight === 'auto') return this.parent.clientHeight || defaultHeight
     return defaultHeight
   }
 
@@ -164,7 +164,7 @@ class Renderer extends EventEmitter<RendererEvents> {
           z-index: 2;
         }
         :host .canvases {
-          min-height: ${this.getHeight()}px;
+          min-height: ${this.getHeight(this.options.height)}px;
         }
         :host .canvases > div {
           position: relative;
@@ -449,7 +449,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private renderChannel(channelData: Array<Float32Array | number[]>, options: WaveSurferOptions, width: number) {
     // A container for canvases
     const canvasContainer = document.createElement('div')
-    const height = this.getHeight()
+    const height = this.getHeight(options.height)
     canvasContainer.style.height = `${height}px`
     this.canvasWrapper.style.minHeight = `${height}px`
     this.canvasWrapper.appendChild(canvasContainer)
