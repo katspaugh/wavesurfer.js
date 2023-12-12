@@ -185,7 +185,6 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     }
 
     const notchEl = document.createElement('div')
-    notchEl.setAttribute('part', 'timeline-notch')
     notchEl.setAttribute(
       'style',
       `
@@ -218,6 +217,9 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
         notch.textContent = this.options.formatTimeCallback(i)
         if (isPrimary) notch.style.opacity = '1'
       }
+
+      const mode = isPrimary ? 'primary' : isSecondary ? 'secondary' : 'tick'
+      notch.setAttribute('part', `timeline-notch timeline-notch-${mode}`)
 
       notch.style.left = `${i * pxPerSec}px`
       timeline.appendChild(notch)
