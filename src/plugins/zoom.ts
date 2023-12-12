@@ -33,13 +33,13 @@ export type ZoomPluginOptions = {
    * The amount the wheel or trackpad needs to be moved before zooming the waveform. Set this value to 0 to have totally
    * fluid zooming (this has a high CPU cost).
    *
-   * @default 10
+   * @default 5
    */
   deltaThreshold?: number
 }
 const defaultOptions = {
   scale: 0.5,
-  deltaThreshold: 10,
+  deltaThreshold: 5,
 }
 
 export type ZoomPluginEvents = BasePluginEvents
