@@ -24,7 +24,7 @@ export type RecordPluginDeviceOptions = {
 
 export type RecordPluginEvents = BasePluginEvents & {
   'record-start': []
-  'record-pause': []
+  'record-pause': [blob: Blob]
   'record-resume': []
   'record-end': [blob: Blob]
 }
@@ -170,7 +170,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     this.mediaRecorder = mediaRecorder
     this.stopRecording()
 
-    const recordedChunks: Blob[] = []
+    const recordedChunks: BlobPart[] = []
 
     mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
@@ -178,15 +178,17 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       }
     }
 
-    mediaRecorder.onstop = () => {
+    const emitWithBlob = (ev: 'record-pause' | 'record-end') => {
       const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType })
-
-      this.emit('record-end', blob)
-
+      this.emit(ev, blob)
       if (this.options.renderRecordedAudio) {
         this.wavesurfer?.load(URL.createObjectURL(blob))
       }
-    }
+    };
+
+    mediaRecorder.onpause = () => emitWithBlob('record-pause')
+
+    mediaRecorder.onstop = () => emitWithBlob('record-end')
 
     mediaRecorder.start()
     this.isWaveformPaused = false
@@ -218,8 +220,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   public pauseRecording() {
     if (this.isRecording()) {
       this.isWaveformPaused = true
+      this.mediaRecorder?.requestData()
       this.mediaRecorder?.pause()
-      this.emit('record-pause')
     }
   }
 
