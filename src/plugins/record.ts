@@ -45,7 +45,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private mediaRecorder: MediaRecorder | null = null
   private dataWindow: Float32Array | null = null
   private isWaveformPaused = false
-  private originalOptions = { cursorWidth: 1, interact: true }
+  private originalOptions: { cursorWidth: number; interact: boolean } | undefined
 
   /** Create an instance of the Record plugin */
   constructor(options: RecordPluginOptions) {
@@ -102,12 +102,14 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       const duration = this.options.scrollingWaveformWindow
 
       if (this.wavesurfer) {
-        this.originalOptions = {
-          cursorWidth: this.wavesurfer.options.cursorWidth,
-          interact: this.wavesurfer.options.interact,
+        if (!this.originalOptions) {
+          this.originalOptions ??= {
+            cursorWidth: this.wavesurfer.options.cursorWidth,
+            interact: this.wavesurfer.options.interact
+          }
+          this.wavesurfer.options.cursorWidth = 0
+          this.wavesurfer.options.interact = false
         }
-        this.wavesurfer.options.cursorWidth = 0
-        this.wavesurfer.options.interact = false
         this.wavesurfer.load('', [this.dataWindow], duration)
       }
 
@@ -182,9 +184,10 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType })
       this.emit(ev, blob)
       if (this.options.renderRecordedAudio) {
+        this.applyOriginalOptionsIfNeeded()
         this.wavesurfer?.load(URL.createObjectURL(blob))
       }
-    };
+    }
 
     mediaRecorder.onpause = () => emitWithBlob('record-pause')
 
@@ -247,14 +250,18 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
   /** Destroy the plugin */
   public destroy() {
-    if (this.wavesurfer) {
-      this.wavesurfer.options.cursorWidth = this.originalOptions.cursorWidth
-      this.wavesurfer.options.interact = this.originalOptions.interact
-    }
-
+    this.applyOriginalOptionsIfNeeded()
     super.destroy()
     this.stopRecording()
     this.stopMic()
+  }
+
+  private applyOriginalOptionsIfNeeded() {
+    if (this.wavesurfer && this.originalOptions) {
+      this.wavesurfer.options.cursorWidth = this.originalOptions.cursorWidth
+      this.wavesurfer.options.interact = this.originalOptions.interact
+      delete this.originalOptions
+    }
   }
 }
 
