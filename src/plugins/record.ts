@@ -102,14 +102,12 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       const duration = this.options.scrollingWaveformWindow
 
       if (this.wavesurfer) {
-        if (!this.originalOptions) {
-          this.originalOptions ??= {
-            cursorWidth: this.wavesurfer.options.cursorWidth,
-            interact: this.wavesurfer.options.interact
-          }
-          this.wavesurfer.options.cursorWidth = 0
-          this.wavesurfer.options.interact = false
+        this.originalOptions ??= {
+          cursorWidth: this.wavesurfer.options.cursorWidth,
+          interact: this.wavesurfer.options.interact
         }
+        this.wavesurfer.options.cursorWidth = 0
+        this.wavesurfer.options.interact = false
         this.wavesurfer.load('', [this.dataWindow], duration)
       }
 
