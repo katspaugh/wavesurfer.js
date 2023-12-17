@@ -24,7 +24,7 @@ export type RecordPluginDeviceOptions = {
 
 export type RecordPluginEvents = BasePluginEvents & {
   'record-start': []
-  'record-pause': []
+  'record-pause': [blob: Blob]
   'record-resume': []
   'record-end': [blob: Blob]
 }
@@ -45,7 +45,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private mediaRecorder: MediaRecorder | null = null
   private dataWindow: Float32Array | null = null
   private isWaveformPaused = false
-  private originalOptions = { cursorWidth: 1, interact: true }
+  private originalOptions: { cursorWidth: number; interact: boolean } | undefined
 
   /** Create an instance of the Record plugin */
   constructor(options: RecordPluginOptions) {
@@ -102,9 +102,9 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       const duration = this.options.scrollingWaveformWindow
 
       if (this.wavesurfer) {
-        this.originalOptions = {
+        this.originalOptions ??= {
           cursorWidth: this.wavesurfer.options.cursorWidth,
-          interact: this.wavesurfer.options.interact,
+          interact: this.wavesurfer.options.interact
         }
         this.wavesurfer.options.cursorWidth = 0
         this.wavesurfer.options.interact = false
@@ -170,7 +170,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     this.mediaRecorder = mediaRecorder
     this.stopRecording()
 
-    const recordedChunks: Blob[] = []
+    const recordedChunks: BlobPart[] = []
 
     mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
@@ -178,15 +178,18 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       }
     }
 
-    mediaRecorder.onstop = () => {
+    const emitWithBlob = (ev: 'record-pause' | 'record-end') => {
       const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType })
-
-      this.emit('record-end', blob)
-
+      this.emit(ev, blob)
       if (this.options.renderRecordedAudio) {
+        this.applyOriginalOptionsIfNeeded()
         this.wavesurfer?.load(URL.createObjectURL(blob))
       }
     }
+
+    mediaRecorder.onpause = () => emitWithBlob('record-pause')
+
+    mediaRecorder.onstop = () => emitWithBlob('record-end')
 
     mediaRecorder.start()
     this.isWaveformPaused = false
@@ -218,8 +221,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   public pauseRecording() {
     if (this.isRecording()) {
       this.isWaveformPaused = true
+      this.mediaRecorder?.requestData()
       this.mediaRecorder?.pause()
-      this.emit('record-pause')
     }
   }
 
@@ -245,14 +248,18 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
   /** Destroy the plugin */
   public destroy() {
-    if (this.wavesurfer) {
-      this.wavesurfer.options.cursorWidth = this.originalOptions.cursorWidth
-      this.wavesurfer.options.interact = this.originalOptions.interact
-    }
-
+    this.applyOriginalOptionsIfNeeded()
     super.destroy()
     this.stopRecording()
     this.stopMic()
+  }
+
+  private applyOriginalOptionsIfNeeded() {
+    if (this.wavesurfer && this.originalOptions) {
+      this.wavesurfer.options.cursorWidth = this.originalOptions.cursorWidth
+      this.wavesurfer.options.interact = this.originalOptions.interact
+      delete this.originalOptions
+    }
   }
 }
 
