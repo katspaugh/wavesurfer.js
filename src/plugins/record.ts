@@ -104,7 +104,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       if (this.wavesurfer) {
         this.originalOptions ??= {
           cursorWidth: this.wavesurfer.options.cursorWidth,
-          interact: this.wavesurfer.options.interact
+          interact: this.wavesurfer.options.interact,
         }
         this.wavesurfer.options.cursorWidth = 0
         this.wavesurfer.options.interact = false

@@ -8,6 +8,7 @@ const wavesurfer = WaveSurfer.create({
   progressColor: 'rgb(100, 0, 100)',
   url: '/examples/audio/audio.wav',
   minPxPerSec: 100,
+  dragToSeek: true,
 })
 
 // Create a simple slider
