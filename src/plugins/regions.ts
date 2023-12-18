@@ -450,12 +450,32 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     div.style.marginTop = `${overlap}px`
   }
 
+  private adjustScroll(region: Region) {
+    const scrollContainer = this.wavesurfer?.getWrapper()?.parentElement
+    if (!scrollContainer) return
+    const { clientWidth, scrollWidth } = scrollContainer
+    if (scrollWidth <= clientWidth) return
+    const scrollBbox = scrollContainer.getBoundingClientRect()
+    const bbox = region.element.getBoundingClientRect()
+    const left = bbox.left - scrollBbox.left
+    const right = bbox.right - scrollBbox.left
+    if (left < 0) {
+      scrollContainer.scrollLeft += left
+    } else if (right > clientWidth) {
+      scrollContainer.scrollLeft += right - clientWidth
+    }
+  }
+
   private saveRegion(region: Region) {
     this.regionsContainer.appendChild(region.element)
     this.avoidOverlapping(region)
     this.regions.push(region)
 
     const regionSubscriptions = [
+      region.on('update', () => {
+        this.adjustScroll(region)
+      }),
+
       region.on('update-end', () => {
         this.avoidOverlapping(region)
         this.emit('region-updated', region)
