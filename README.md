@@ -107,6 +107,7 @@ However, please keep in mind that this forum is dedicated to wavesurfer-specific
   If you're using a VBR (variable bit rate) audio file, there might be a mismatch between the audio and the waveform. This can be fixed by converting your file to CBR (constant bit rate).
   <p>Alternatively, you can use the <a href="https://wavesurfer.xyz/examples/?webaudio-shim.js">Web Audio shim</a> which is more accurate.</p>
 </details>
+
 ## v7 – a new TypeScript version
 
 Wavesurfer.js v7 is a TypeScript rewrite of wavesurfer.js that brings several improvements:

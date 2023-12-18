@@ -208,6 +208,11 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     this.element.style.right = `${end * 100}%`
   }
 
+  private toggleCursor(toggle: boolean) {
+    if (!this.drag) return
+    this.element.style.cursor = toggle ? 'grabbing' : 'grab'
+  }
+
   private initMouseEvents() {
     const { element } = this
     if (!element) return
@@ -216,25 +221,19 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     element.addEventListener('mouseenter', (e) => this.emit('over', e))
     element.addEventListener('mouseleave', (e) => this.emit('leave', e))
     element.addEventListener('dblclick', (e) => this.emit('dblclick', e))
+    element.addEventListener('pointerdown', () => this.toggleCursor(true))
+    element.addEventListener('pointerup', () => this.toggleCursor(false))
 
     // Drag
     makeDraggable(
       element,
       (dx) => this.onMove(dx),
-      () => this.onStartMoving(),
-      () => this.onEndMoving(),
+      () => this.toggleCursor(true),
+      () => {
+        this.toggleCursor(false)
+        this.drag && this.emit('update-end')
+      },
     )
-  }
-
-  private onStartMoving() {
-    if (!this.drag) return
-    this.element.style.cursor = 'grabbing'
-  }
-
-  private onEndMoving() {
-    if (!this.drag) return
-    this.element.style.cursor = 'grab'
-    this.emit('update-end')
   }
 
   public _onUpdate(dx: number, side?: 'start' | 'end') {
