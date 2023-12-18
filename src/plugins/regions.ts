@@ -13,6 +13,7 @@ export type RegionsPluginOptions = undefined
 export type RegionsPluginEvents = BasePluginEvents & {
   'region-created': [region: Region]
   'region-updated': [region: Region]
+  'region-removed': [region: Region]
   'region-clicked': [region: Region, e: MouseEvent]
   'region-double-clicked': [region: Region, e: MouseEvent]
   'region-in': [region: Region]
@@ -478,6 +479,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       region.once('remove', () => {
         regionSubscriptions.forEach((unsubscribe) => unsubscribe())
         this.regions = this.regions.filter((reg) => reg !== region)
+        this.emit('region-removed', region)
       }),
     ]
 
