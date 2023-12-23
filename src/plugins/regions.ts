@@ -535,7 +535,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
    * Enable creation of regions by dragging on an empty space on the waveform.
    * Returns a function to disable the drag selection.
    */
-  public enableDragSelection(options: Omit<RegionParams, 'start' | 'end'>): () => void {
+  public enableDragSelection(options: Omit<RegionParams, 'start' | 'end'>, threshold = 3): () => void {
     const wrapper = this.wavesurfer?.getWrapper()
     if (!wrapper || !(wrapper instanceof HTMLElement)) return () => undefined
 
@@ -588,6 +588,8 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
           region = null
         }
       },
+
+      threshold,
     )
   }
 
