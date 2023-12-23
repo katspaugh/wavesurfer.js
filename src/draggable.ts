@@ -28,8 +28,6 @@ export function makeDraggable(
       const y = event.clientY
       const dx = x - startX
       const dy = y - startY
-      startX = x
-      startY = y
 
       if (isDragging || Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
         const rect = element.getBoundingClientRect()
@@ -41,6 +39,9 @@ export function makeDraggable(
         }
 
         onDrag(dx, dy, x - left, y - top)
+
+        startX = x
+        startY = y
       }
     }
 
