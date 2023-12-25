@@ -1,6 +1,6 @@
 // All wavesurfer options in one place
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
+import WaveSurfer from 'wavesurfer.js'
 
 const options = {
   /** HTML element or CSS selector (required) */

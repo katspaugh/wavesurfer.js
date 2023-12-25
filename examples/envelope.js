@@ -14,8 +14,8 @@
 </html>
 */
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
-import EnvelopePlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/envelope.esm.js'
+import WaveSurfer from 'wavesurfer.js'
+import EnvelopePlugin from 'wavesurfer.js/dist/plugins/envelope.esm.js'
 
 // Create an instance of WaveSurfer
 const wavesurfer = WaveSurfer.create({

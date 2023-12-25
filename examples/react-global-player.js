@@ -12,7 +12,7 @@
 const { useRef, useState, useEffect, useCallback, memo } = React
 
 // Import WaveSurfer
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
+import WaveSurfer from 'wavesurfer.js'
 
 // WaveSurfer hook
 const useWavesurfer = (containerRef, options) => {

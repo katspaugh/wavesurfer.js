@@ -4,8 +4,8 @@
  * Zoom in or out on the waveform when scrolling the mouse wheel
  */
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
-import ZoomPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/zoom.esm.js'
+import WaveSurfer from 'wavesurfer.js'
+import ZoomPlugin from 'wavesurfer.js/dist/plugins/zoom.esm.js'
 
 // Create an instance of WaveSurfer
 const wavesurfer = WaveSurfer.create({

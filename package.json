@@ -28,17 +28,17 @@
   "types": "./dist/wavesurfer.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/wavesurfer.js",
+      "import": "./dist/wavesurfer.esm.js",
       "types": "./dist/wavesurfer.d.ts",
       "require": "./dist/wavesurfer.cjs"
     },
     "./dist/plugins/*.js": {
-      "import": "./dist/plugins/*.js",
+      "import": "./dist/plugins/*.esm.js",
       "types": "./dist/plugins/*.d.ts",
       "require": "./dist/plugins/*.cjs"
     },
     "./plugins/*": {
-      "import": "./dist/plugins/*.js",
+      "import": "./dist/plugins/*.esm.js",
       "types": "./dist/plugins/*.d.ts",
       "require": "./dist/plugins/*.cjs"
     },
