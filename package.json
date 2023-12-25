@@ -56,7 +56,7 @@
     "cypress": "cypress open --e2e",
     "cypress:canary": "cypress open --e2e -b chrome:canary",
     "test": "cypress run",
-    "serve": "npx live-server --port=9090 --no-browser --ignore='.*'",
+    "serve": "npx live-server --port=9090 --no-browser --ignore='.*,src'",
     "start": "npm run build:dev & npm run serve"
   },
   "devDependencies": {
@@ -71,6 +71,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.7",
     "rollup": "^3.26.2",
+    "rollup-plugin-dts": "^6.1.0",
     "typescript": "^5.0.4"
   }
 }
