@@ -75,7 +75,11 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   public maxLength = Infinity
   public channelIdx: number
 
-  constructor(params: RegionParams, private totalDuration: number, private numberOfChannels = 0) {
+  constructor(
+    params: RegionParams,
+    private totalDuration: number,
+    private numberOfChannels = 0,
+  ) {
     super()
 
     this.id = params.id || `region-${Math.random().toString(32).slice(2)}`
@@ -238,7 +242,8 @@ class SingleRegion extends EventEmitter<RegionEvents> {
 
   public _onUpdate(dx: number, side?: 'start' | 'end') {
     if (!this.element.parentElement) return
-    const deltaSeconds = (dx / this.element.parentElement.clientWidth) * this.totalDuration
+    const { width } = this.element.parentElement.getBoundingClientRect()
+    const deltaSeconds = (dx / width) * this.totalDuration
     const newStart = !side || side === 'start' ? this.start + deltaSeconds : this.start
     const newEnd = !side || side === 'end' ? this.end + deltaSeconds : this.end
     const length = newEnd - newStart
@@ -561,7 +566,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         if (!this.wavesurfer) return
         const duration = this.wavesurfer.getDuration()
         const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
-        const width = this.wavesurfer.getWrapper().clientWidth
+        const { width } = this.wavesurfer.getWrapper().getBoundingClientRect()
         // Calculate the start time of the region
         const start = (x / width) * duration
         // Give the region a small initial size
