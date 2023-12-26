@@ -329,7 +329,7 @@ describe('WaveSurfer Regions plugin tests', () => {
     })
   })
 
-  it('should be able to add region to a specific channel', () => {
+  it('should add a region to a specific channel by index', () => {
     cy.window().then((win) => {
       const regionsPlugin = win.wavesurfer.getActivePlugins()[0]
 
@@ -339,7 +339,7 @@ describe('WaveSurfer Regions plugin tests', () => {
         channelIdx: 1,
       })
 
-      cy.get('#waveform').matchImageSnapshot('region-with-split-channels')
+      cy.get('#waveform').matchImageSnapshot('regions-channelIdx')
     })
   })
 })
