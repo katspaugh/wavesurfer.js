@@ -459,17 +459,19 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       })
     }
 
-    this.loadLabels(
-      this.options.labelsBackground,
-      '12px',
-      '12px',
-      '',
-      this.options.labelsColor,
-      this.options.labelsHzColor || this.options.labelsColor,
-      'center',
-      '#specLabels',
-      frequenciesData.length,
-    )
+    if (this.options.labels) {
+      this.loadLabels(
+        this.options.labelsBackground,
+        '12px',
+        '12px',
+        '',
+        this.options.labelsColor,
+        this.options.labelsHzColor || this.options.labelsColor,
+        'center',
+        '#specLabels',
+        frequenciesData.length,
+      )
+    }
 
     this.emit('ready')
   }
