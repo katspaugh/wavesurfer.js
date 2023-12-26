@@ -75,11 +75,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   public maxLength = Infinity
   public channelIdx: number
 
-  constructor(
-    params: RegionParams,
-    private totalDuration: number,
-    private numberOfChannels = 0,
-  ) {
+  constructor(params: RegionParams, private totalDuration: number, private numberOfChannels = 0) {
     super()
 
     this.id = params.id || `region-${Math.random().toString(32).slice(2)}`
