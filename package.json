@@ -55,7 +55,7 @@
     "make-plugin": "./scripts/plugin.sh",
     "cypress": "cypress open --e2e",
     "cypress:canary": "cypress open --e2e -b chrome:canary",
-    "test": "cypress run",
+    "test": "cypress run --browser chrome",
     "serve": "npx live-server --port=9090 --no-browser --ignore='.*,src'",
     "start": "npm run build:dev & npm run serve"
   },

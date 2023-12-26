@@ -25,6 +25,30 @@ describe('WaveSurfer Spectrogram plugin tests', () => {
     })
   })
 
+  it('should render a spectrogram without labels', () => {
+    cy.visit('cypress/e2e/index.html')
+    cy.window().then((win) => {
+      return new Promise((resolve) => {
+        win.wavesurfer = win.WaveSurfer.create({
+          container: id,
+          height: 200,
+          url: '../../examples/audio/demo.wav',
+          plugins: [
+            win.Spectrogram.create({
+              height: 200,
+              labels: false,
+            }),
+          ],
+        })
+
+        win.wavesurfer.once('ready', () => {
+          cy.get(id).matchImageSnapshot('spectrogram-no-labels')
+          resolve()
+        })
+      })
+    })
+  })
+
   it('should render a spectrogram when initialised into a hidden div', () => {
     cy.visit('cypress/e2e/index.html')
     cy.window().then((win) => {
