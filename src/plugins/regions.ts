@@ -1,3 +1,4 @@
+0
 /**
  * Regions are visual overlays on the waveform that can be used to mark segments of audio.
  * Regions can be clicked on, dragged and resized.
@@ -59,6 +60,8 @@ export type RegionParams = {
   maxLength?: number
   /** The index of the channel */
   channelIdx?: number
+  /** Allow/Disallow contenteditable property for content */
+  contentEditable?: boolean
 }
 
 class SingleRegion extends EventEmitter<RegionEvents> {
@@ -73,6 +76,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   public minLength = 0
   public maxLength = Infinity
   public channelIdx: number
+  public contentEditable = false
 
   constructor(params: RegionParams, private totalDuration: number, private numberOfChannels = 0) {
     super()
@@ -86,6 +90,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     this.minLength = params.minLength ?? this.minLength
     this.maxLength = params.maxLength ?? this.maxLength
     this.channelIdx = params.channelIdx ?? -1
+    this.contentEditable = params.contentEditable ?? this.contentEditable
     this.element = this.initElement()
     this.setContent(params.content)
     this.setPart()
@@ -223,6 +228,13 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       () => this.onStartMoving(),
       () => this.onEndMoving(),
     )
+
+    if (this.contentEditable && this.content) {
+      this.content.addEventListener('click', (e) => this.onContentClick(e))
+    }
+    if (this.contentEditable && this.content) {
+      this.content.addEventListener('blur', (e) => this.onContentBlur(e))
+    }
   }
 
   private onStartMoving() {
@@ -273,6 +285,16 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     this.emit('update-end')
   }
 
+  private onContentClick(event: MouseEvent) {
+    event.stopPropagation()
+    const contentContainer = event.target as HTMLDivElement
+    contentContainer.focus()
+  }
+
+  public onContentBlur(event: FocusEvent) {
+    this.emit('update')
+  }
+
   public _setTotalDuration(totalDuration: number) {
     this.totalDuration = totalDuration
     this.renderPosition()
@@ -296,6 +318,9 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       this.content.style.padding = `0.2em ${isMarker ? 0.2 : 0.4}em`
       this.content.style.display = 'inline-block'
       this.content.textContent = content
+      if (this.contentEditable) {
+        this.content.contentEditable = 'true'
+      }
     } else {
       this.content = content
     }
