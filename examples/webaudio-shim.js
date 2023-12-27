@@ -1,5 +1,5 @@
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
-import WebAudio from 'https://unpkg.com/wavesurfer.js@7/dist/webaudio.js'
+import WaveSurfer from 'wavesurfer.js'
+import WebAudio from 'wavesurfer.js/dist/webaudio.js'
 
 const media = new WebAudio()
 media.src = '/examples/audio/audio.wav'

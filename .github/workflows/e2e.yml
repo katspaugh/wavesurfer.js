@@ -12,6 +12,8 @@ jobs:
 
       - uses: ./.github/workflows/yarn
 
+      - uses: browser-actions/setup-chrome@v1
+
       - name: Install Cypress
         run: |
           ./node_modules/.bin/cypress install

@@ -22,13 +22,8 @@
 
 /**
  * Calculate FFT - Based on https://github.com/corbanbrook/dsp.js
- *
- * @param {Number} bufferSize Buffer size
- * @param {Number} sampleRate Sample rate
- * @param {Function} windowFunc Window function
- * @param {Number} alpha Alpha channel
  */
-function FFT(bufferSize, sampleRate, windowFunc, alpha) {
+function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: number) {
   this.bufferSize = bufferSize
   this.sampleRate = sampleRate
   this.bandwidth = (2 / bufferSize) * (sampleRate / 2)
@@ -267,13 +262,11 @@ export type SpectrogramPluginEvents = BasePluginEvents & {
   click: [relativeX: number]
 }
 
+const style = (el: HTMLElement, styles: Record<string, string>) => Object.assign(el.style, styles)
+
 class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramPluginOptions> {
   static create(options?: SpectrogramPluginOptions) {
     return new SpectrogramPlugin(options || {})
-  }
-
-  utils = {
-    style: (el: HTMLElement, styles: Record<string, string>) => Object.assign(el.style, styles),
   }
 
   constructor(options: SpectrogramPluginOptions) {
@@ -322,7 +315,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.container.appendChild(this.wrapper)
 
     if (this.wavesurfer.options.fillParent) {
-      this.utils.style(this.wrapper, {
+      style(this.wrapper, {
         width: '100%',
         overflowX: 'hidden',
         overflowY: 'hidden',
@@ -331,7 +324,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.subscriptions.push(this.wavesurfer.on('redraw', () => this.render()))
   }
 
-  destroy() {
+  public destroy() {
     this.unAll()
     this.wavesurfer.un('ready', this._onReady)
     this.wavesurfer.un('redraw', this._onRender)
@@ -345,10 +338,19 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     super.destroy()
   }
 
-  createWrapper() {
+  public async loadFrequenciesData(url: string | URL) {
+    const resp = await fetch(url)
+    if (!resp.ok) {
+      throw new Error('Unable to fetch frequencies data')
+    }
+    const data = await resp.json()
+    this.drawSpectrogram(data)
+  }
+
+  private createWrapper() {
     this.wrapper = document.createElement('div')
 
-    this.utils.style(this.wrapper, {
+    style(this.wrapper, {
       display: 'block',
       position: 'relative',
       userSelect: 'none',
@@ -358,7 +360,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     if (this.options.labels) {
       const labelsEl = document.createElement('canvas')
       labelsEl.setAttribute('part', 'spec-labels')
-      this.utils.style(labelsEl, {
+      style(labelsEl, {
         position: 'absolute',
         zIndex: 9,
         width: '55px',
@@ -371,18 +373,12 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.wrapper.addEventListener('click', this._onWrapperClick)
   }
 
-  _wrapperClickHandler(event) {
-    event.preventDefault()
-    const relX = 'offsetX' in event ? event.offsetX : event.layerX
-    this.emit('click', relX / this.width || 0)
-  }
-
-  createCanvas() {
+  private createCanvas() {
     const canvas = document.createElement('canvas')
     this.wrapper.appendChild(canvas)
     this.spectrCc = canvas.getContext('2d')
 
-    this.utils.style(canvas, {
+    style(canvas, {
       position: 'absolute',
       left: 0,
       top: 0,
@@ -394,15 +390,18 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.canvas = canvas
   }
 
-  render() {
+  private render() {
     if (this.frequenciesDataUrl) {
       this.loadFrequenciesData(this.frequenciesDataUrl)
     } else {
-      this.drawSpectrogram(this.getFrequencies(this.wavesurfer?.getDecodedData()))
+      const decodedData = this.wavesurfer?.getDecodedData()
+      if (decodedData) {
+        this.drawSpectrogram(this.getFrequencies(decodedData))
+      }
     }
   }
 
-  drawSpectrogram = (frequenciesData) => {
+  private drawSpectrogram(frequenciesData) {
     if (!isNaN(frequenciesData[0][0])) {
       // data is 1ch [sample, freq] format
       // to [channel, sample, freq] format
@@ -459,22 +458,24 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       })
     }
 
-    this.loadLabels(
-      this.options.labelsBackground,
-      '12px',
-      '12px',
-      '',
-      this.options.labelsColor,
-      this.options.labelsHzColor || this.options.labelsColor,
-      'center',
-      '#specLabels',
-      frequenciesData.length,
-    )
+    if (this.options.labels) {
+      this.loadLabels(
+        this.options.labelsBackground,
+        '12px',
+        '12px',
+        '',
+        this.options.labelsColor,
+        this.options.labelsHzColor || this.options.labelsColor,
+        'center',
+        '#specLabels',
+        frequenciesData.length,
+      )
+    }
 
     this.emit('ready')
   }
 
-  getFrequencies(buffer: AudioBuffer): number[] {
+  private getFrequencies(buffer: AudioBuffer): number[] {
     const fftSamples = this.fftSamples
     const channels = this.options.splitChannels ?? this.wavesurfer?.options.splitChannels ? buffer.numberOfChannels : 1
 
@@ -521,21 +522,15 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     return frequencies
   }
 
-  loadFrequenciesData(url) {
-    return fetch(url)
-      .then((response) => response.json())
-      .then(this.drawSpectrogram)
-  }
-
-  freqType(freq) {
+  private freqType(freq) {
     return freq >= 1000 ? (freq / 1000).toFixed(1) : Math.round(freq)
   }
 
-  unitType(freq) {
+  private unitType(freq) {
     return freq >= 1000 ? 'KHz' : 'Hz'
   }
 
-  loadLabels(
+  private loadLabels(
     bgFill,
     fontSizeFreq,
     fontSizeUnit,
@@ -609,7 +604,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     }
   }
 
-  resample(oldMatrix) {
+  private resample(oldMatrix) {
     const columnsNumber = this.width
     const newMatrix = []
 

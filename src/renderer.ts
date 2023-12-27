@@ -597,38 +597,37 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   private scrollIntoView(progress: number, isPlaying = false) {
-    const { clientWidth, scrollLeft, scrollWidth } = this.scrollContainer
-    const progressWidth = scrollWidth * progress
-    const center = clientWidth / 2
-    const minScroll = isPlaying && this.options.autoCenter && !this.isDragging ? center : clientWidth
+    const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
+    const progressWidth = progress * scrollWidth
+    const startEdge = scrollLeft
+    const endEdge = scrollLeft + clientWidth
+    const middle = clientWidth / 2
 
-    if (progressWidth > scrollLeft + minScroll || progressWidth < scrollLeft) {
-      // Scroll to the center
-      if (this.options.autoCenter && !this.isDragging) {
-        // If the cursor is in viewport but not centered, scroll to the center slowly
-        const minDiff = center / 20
-        if (progressWidth - (scrollLeft + center) >= minDiff && progressWidth < scrollLeft + clientWidth) {
-          this.scrollContainer.scrollLeft += minDiff
-        } else {
-          // Otherwise, scroll to the center immediately
-          this.scrollContainer.scrollLeft = progressWidth - center
-        }
-      } else if (this.isDragging) {
-        // Scroll just a little bit to allow for some space between the cursor and the edge
-        const gap = 10
-        this.scrollContainer.scrollLeft =
-          progressWidth < scrollLeft ? progressWidth - gap : progressWidth - clientWidth + gap
-      } else {
-        // Scroll to the beginning
-        this.scrollContainer.scrollLeft = progressWidth
+    if (this.isDragging) {
+      // Scroll when dragging close to the edge of the viewport
+      const minGap = 30
+      if (progressWidth + minGap > endEdge) {
+        this.scrollContainer.scrollLeft += minGap
+      } else if (progressWidth - minGap < startEdge) {
+        this.scrollContainer.scrollLeft -= minGap
+      }
+    } else {
+      if (progressWidth < startEdge || progressWidth > endEdge) {
+        this.scrollContainer.scrollLeft = progressWidth - (this.options.autoCenter ? middle : 0)
+      }
+
+      // Keep the cursor centered when playing
+      const center = progressWidth - scrollLeft - middle
+      if (isPlaying && this.options.autoCenter && center > 0) {
+        this.scrollContainer.scrollLeft += Math.min(center, 10)
       }
     }
 
     // Emit the scroll event
     {
-      const { scrollLeft } = this.scrollContainer
-      const startX = scrollLeft / scrollWidth
-      const endX = (scrollLeft + clientWidth) / scrollWidth
+      const newScroll = this.scrollContainer.scrollLeft
+      const startX = newScroll / scrollWidth
+      const endX = (newScroll + clientWidth) / scrollWidth
       this.emit('scroll', startX, endX)
     }
   }
