@@ -215,6 +215,7 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
  * Spectrogram plugin for wavesurfer.
  */
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
+import render from '../dom.js'
 
 export type SpectrogramPluginOptions = {
   /** Selector of element or element in which to render */
@@ -261,8 +262,6 @@ export type SpectrogramPluginEvents = BasePluginEvents & {
   ready: []
   click: [relativeX: number]
 }
-
-const style = (el: HTMLElement, styles: Record<string, string>) => Object.assign(el.style, styles)
 
 class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramPluginOptions> {
   static create(options?: SpectrogramPluginOptions) {
@@ -315,7 +314,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.container.appendChild(this.wrapper)
 
     if (this.wavesurfer.options.fillParent) {
-      style(this.wrapper, {
+      Object.assign(this.wrapper.style, {
         width: '100%',
         overflowX: 'hidden',
         overflowY: 'hidden',
@@ -348,46 +347,50 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   }
 
   private createWrapper() {
-    this.wrapper = document.createElement('div')
-
-    style(this.wrapper, {
-      display: 'block',
-      position: 'relative',
-      userSelect: 'none',
+    this.wrapper = render('div', {
+      style: {
+        display: 'block',
+        position: 'relative',
+        userSelect: 'none',
+      },
     })
 
     // if labels are active
     if (this.options.labels) {
-      const labelsEl = document.createElement('canvas')
-      labelsEl.setAttribute('part', 'spec-labels')
-      style(labelsEl, {
-        position: 'absolute',
-        zIndex: 9,
-        width: '55px',
-        height: '100%',
-      })
-      this.wrapper.appendChild(labelsEl)
-      this.labelsEl = labelsEl
+      this.labelsEl = render(
+        'canvas',
+        {
+          part: 'spec-labels',
+          style: {
+            position: 'absolute',
+            zIndex: 9,
+            width: '55px',
+            height: '100%',
+          },
+        },
+        this.wrapper,
+      )
     }
 
     this.wrapper.addEventListener('click', this._onWrapperClick)
   }
 
   private createCanvas() {
-    const canvas = document.createElement('canvas')
-    this.wrapper.appendChild(canvas)
-    this.spectrCc = canvas.getContext('2d')
-
-    style(canvas, {
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      width: '100%',
-      height: '100%',
-      zIndex: 4,
-    })
-
-    this.canvas = canvas
+    this.canvas = render(
+      'canvas',
+      {
+        style: {
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 4,
+        },
+      },
+      this.wrapper,
+    )
+    this.spectrCc = this.canvas.getContext('2d')
   }
 
   private render() {

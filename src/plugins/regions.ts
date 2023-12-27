@@ -7,6 +7,7 @@
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
+import render from '../dom.js'
 
 export type RegionsPluginOptions = undefined
 
@@ -105,36 +106,43 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   }
 
   private addResizeHandles(element: HTMLElement) {
-    const leftHandle = document.createElement('div')
-    leftHandle.setAttribute('data-resize', 'left')
-    leftHandle.setAttribute(
-      'style',
-      `
-        position: absolute;
-        z-index: 2;
-        width: 6px;
-        height: 100%;
-        top: 0;
-        left: 0;
-        border-left: 2px solid rgba(0, 0, 0, 0.5);
-        border-radius: 2px 0 0 2px;
-        cursor: ew-resize;
-        word-break: keep-all;
-      `,
+    const handleStyle = {
+      position: 'absolute',
+      zIndex: '2',
+      width: '6px',
+      height: '100%',
+      top: '0',
+      cursor: 'ew-resize',
+      wordBreak: 'keep-all',
+    }
+
+    const leftHandle = render(
+      'div',
+      {
+        part: 'region-handle region-handle-left',
+        style: {
+          ...handleStyle,
+          left: '0',
+          borderLeft: '2px solid rgba(0, 0, 0, 0.5)',
+          borderRadius: '2px 0 0 2px',
+        },
+      },
+      element,
     )
-    leftHandle.setAttribute('part', 'region-handle region-handle-left')
 
-    const rightHandle = leftHandle.cloneNode() as HTMLElement
-    rightHandle.setAttribute('data-resize', 'right')
-    rightHandle.style.left = ''
-    rightHandle.style.right = '0'
-    rightHandle.style.borderRight = rightHandle.style.borderLeft
-    rightHandle.style.borderLeft = ''
-    rightHandle.style.borderRadius = '0 2px 2px 0'
-    rightHandle.setAttribute('part', 'region-handle region-handle-right')
-
-    element.appendChild(leftHandle)
-    element.appendChild(rightHandle)
+    const rightHandle = render(
+      'div',
+      {
+        part: 'region-handle region-handle-right',
+        style: {
+          ...handleStyle,
+          right: '0',
+          borderRight: '2px solid rgba(0, 0, 0, 0.5)',
+          borderRadius: '0 2px 2px 0',
+        },
+      },
+      element,
+    )
 
     // Resize
     const resizeThreshold = 1
@@ -155,8 +163,8 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   }
 
   private removeResizeHandles(element: HTMLElement) {
-    const leftHandle = element.querySelector('[data-resize="left"]')
-    const rightHandle = element.querySelector('[data-resize="right"]')
+    const leftHandle = element.querySelector('[part*="region-handle-left"]')
+    const rightHandle = element.querySelector('[part*="region-handle-right"]')
     if (leftHandle) {
       element.removeChild(leftHandle)
     }
@@ -166,7 +174,6 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   }
 
   private initElement() {
-    const element = document.createElement('div')
     const isMarker = this.start === this.end
 
     let elementTop = 0
@@ -177,21 +184,20 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       elementTop = elementHeight * this.channelIdx
     }
 
-    element.setAttribute(
-      'style',
-      `
-      position: absolute;
-      top: ${elementTop}%;
-      height: ${elementHeight}%;
-      background-color: ${isMarker ? 'none' : this.color};
-      border-left: ${isMarker ? '2px solid ' + this.color : 'none'};
-      border-radius: 2px;
-      box-sizing: border-box;
-      transition: background-color 0.2s ease;
-      cursor: ${this.drag ? 'grab' : 'default'};
-      pointer-events: all;
-    `,
-    )
+    const element = render('div', {
+      style: {
+        position: 'absolute',
+        top: `${elementTop}%`,
+        height: `${elementHeight}%`,
+        backgroundColor: isMarker ? 'none' : this.color,
+        borderLeft: isMarker ? '2px solid ' + this.color : 'none',
+        borderRadius: '2px',
+        boxSizing: 'border-box',
+        transition: 'background-color 0.2s ease',
+        cursor: this.drag ? 'grab' : 'default',
+        pointerEvents: 'all',
+      },
+    })
 
     // Add resize handles
     if (!isMarker && this.resize) {
@@ -292,11 +298,14 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       return
     }
     if (typeof content === 'string') {
-      this.content = document.createElement('div')
       const isMarker = this.start === this.end
-      this.content.style.padding = `0.2em ${isMarker ? 0.2 : 0.4}em`
-      this.content.style.display = 'inline-block'
-      this.content.textContent = content
+      this.content = render('div', {
+        style: {
+          padding: `0.2em ${isMarker ? 0.2 : 0.4}em`,
+          display: 'inline-block',
+        },
+        textContent: content,
+      })
     } else {
       this.content = content
     }
@@ -407,20 +416,17 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
   }
 
   private initRegionsContainer(): HTMLElement {
-    const div = document.createElement('div')
-    div.setAttribute(
-      'style',
-      `
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 3;
-      pointer-events: none;
-    `,
-    )
-    return div
+    return render('div', {
+      style: {
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        zIndex: '3',
+        pointerEvents: 'none',
+      },
+    })
   }
 
   /** Get all created regions */
