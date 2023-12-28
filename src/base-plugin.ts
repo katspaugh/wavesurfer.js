@@ -17,17 +17,15 @@ export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends Ev
     this.options = options
   }
 
-  onInit() {
-    // Overridden in plugin definition
-    return
-  }
+  protected onInit() {}
 
-  init(wavesurfer: WaveSurfer) {
+  /** Do not call directly, only called by WavesSurfer internally */
+  public _init(wavesurfer: WaveSurfer) {
     this.wavesurfer = wavesurfer
     this.onInit()
   }
 
-  destroy() {
+  public destroy() {
     this.emit('destroy')
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
   }

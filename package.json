@@ -71,6 +71,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.7",
     "rollup": "^3.26.2",
+    "rollup-plugin-dts": "^6.1.0",
     "typescript": "^5.0.4"
   }
 }

@@ -16,8 +16,8 @@ type EventMap<EventTypes extends GeneralEventTypes> = {
 class EventEmitter<EventTypes extends GeneralEventTypes> {
   private listeners = {} as EventMap<EventTypes>
 
-  /** Add an event listener */
-  public addEventListener<EventName extends keyof EventTypes>(
+  /** Subscribe to an event. Returns an unsubscribe function. */
+  public on<EventName extends keyof EventTypes>(
     event: EventName,
     listener: EventListener<EventTypes, EventName>,
     options?: { once?: boolean },
@@ -29,28 +29,23 @@ class EventEmitter<EventTypes extends GeneralEventTypes> {
 
     if (options?.once) {
       const unsubscribeOnce = () => {
-        this.removeEventListener(event, unsubscribeOnce)
-        this.removeEventListener(event, listener)
+        this.un(event, unsubscribeOnce)
+        this.un(event, listener)
       }
-      this.addEventListener(event, unsubscribeOnce)
+      this.on(event, unsubscribeOnce)
       return unsubscribeOnce
     }
 
-    return () => this.removeEventListener(event, listener)
+    return () => this.un(event, listener)
   }
 
-  public removeEventListener<EventName extends keyof EventTypes>(
+  /** Unsubscribe from an event */
+  public un<EventName extends keyof EventTypes>(
     event: EventName,
     listener: EventListener<EventTypes, EventName>,
   ): void {
     this.listeners[event]?.delete(listener)
   }
-
-  /** Subscribe to an event. Returns an unsubscribe function. */
-  public on = this.addEventListener
-
-  /** Unsubscribe from an event */
-  public un = this.removeEventListener
 
   /** Subscribe to an event only once */
   public once<EventName extends keyof EventTypes>(

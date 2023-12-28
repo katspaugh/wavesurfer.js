@@ -304,7 +304,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Register a wavesurfer.js plugin */
   public registerPlugin<T extends GenericPlugin>(plugin: T): T {
-    plugin.init(this)
+    plugin._init(this)
     this.plugins.push(plugin)
 
     // Unregister plugin on destroy
