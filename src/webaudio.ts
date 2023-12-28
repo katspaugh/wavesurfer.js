@@ -52,10 +52,21 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   set src(value: string) {
     this.currentSrc = value
 
+    if (!value) {
+      this.buffer = null
+      this.emit('emptied')
+      return
+    }
+
     fetch(value)
       .then((response) => response.arrayBuffer())
-      .then((arrayBuffer) => this.audioContext.decodeAudioData(arrayBuffer))
+      .then((arrayBuffer) => {
+        if (this.currentSrc !== value) return null
+        return this.audioContext.decodeAudioData(arrayBuffer)
+      })
       .then((audioBuffer) => {
+        if (this.currentSrc !== value) return
+
         this.buffer = audioBuffer
 
         this.emit('loadedmetadata')
