@@ -35,6 +35,12 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.gainNode.connect(this.audioContext.destination)
   }
 
+  /** Subscribe to an event. Returns an unsubscribe function. */
+  addEventListener = this.on
+
+  /** Unsubscribe from an event */
+  removeEventListener = this.un
+
   async load() {
     return
   }
@@ -174,6 +180,17 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   /** Get the GainNode used to play the audio. Can be used to attach filters. */
   public getGainNode(): GainNode {
     return this.gainNode
+  }
+
+  /** Get decoded audio */
+  public getChannelData(): Float32Array[] {
+    const channels: Float32Array[] = []
+    if (!this.buffer) return channels
+    const numChannels = this.buffer.numberOfChannels
+    for (let i = 0; i < numChannels; i++) {
+      channels.push(this.buffer.getChannelData(i))
+    }
+    return channels
   }
 }
 
