@@ -292,7 +292,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   }
 
   public onContentBlur(event: FocusEvent) {
-    this.emit('update')
+    this.emit('update-end')
   }
 
   public _setTotalDuration(totalDuration: number) {
