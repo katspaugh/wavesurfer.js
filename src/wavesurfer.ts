@@ -89,6 +89,8 @@ const defaultOptions = {
 }
 
 export type WaveSurferEvents = {
+  /** After wavesurfer is created */
+  init: []
   /** When audio starts loading */
   load: [url: string]
   /** During audio loading */
@@ -165,12 +167,17 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initTimerEvents()
     this.initPlugins()
 
-    // Load audio if URL or an external media with an src is passed,
-    // of render w/o audio if pre-decoded peaks and duration are provided
-    const url = this.options.url || this.getSrc() || ''
-    if (url || (this.options.peaks && this.options.duration)) {
-      this.load(url, this.options.peaks, this.options.duration)
-    }
+    // Init and load async to allow external events to be registered
+    Promise.resolve().then(() => {
+      this.emit('init')
+
+      // Load audio if URL or an external media with an src is passed,
+      // of render w/o audio if pre-decoded peaks and duration are provided
+      const url = this.options.url || this.getSrc() || ''
+      if (url || (this.options.peaks && this.options.duration)) {
+        this.load(url, this.options.peaks, this.options.duration)
+      }
+    })
   }
 
   private initTimerEvents() {
@@ -349,9 +356,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.setSrc(url, blob)
 
     // Wait for the audio duration
-    // It should be a promise to allow event listeners to subscribe to the ready and decode events
     const audioDuration =
-      (await Promise.resolve(duration || this.getDuration())) ||
+      duration ||
+      this.getDuration() ||
       (await new Promise((resolve) => {
         this.onceMediaEvent('loadedmetadata', () => resolve(this.getDuration()))
       }))

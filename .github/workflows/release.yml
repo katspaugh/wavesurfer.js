@@ -20,7 +20,7 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          OLD_VERSION=$(npm show wavesurfer.js version)
+          OLD_VERSION=$(npm show . version)
           NEW_VERSION=$(node -p 'require("./package.json").version')
           if [ $NEW_VERSION != $OLD_VERSION ]; then
             echo "New version $NEW_VERSION detected"
@@ -55,9 +55,8 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
+      - uses: ./.github/workflows/yarn
         if: ${{ steps.version.outputs.version }}
-        run: npm install --legacy-peer-deps
 
       - name: Publish to NPM
         if: ${{ steps.version.outputs.version }}

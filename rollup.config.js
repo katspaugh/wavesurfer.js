@@ -13,7 +13,7 @@ export default [
       file: 'dist/wavesurfer.esm.js',
       format: 'esm',
     },
-    plugins: [typescript(), terser()],
+    plugins,
   },
   // CommonJS module (Node.js)
   {
