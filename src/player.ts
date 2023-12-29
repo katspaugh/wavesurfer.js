@@ -69,7 +69,6 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.revokeSrc()
     const newSrc = blob instanceof Blob ? URL.createObjectURL(blob) : url
     this.media.src = newSrc
-    this.media.load()
   }
 
   protected destroy() {

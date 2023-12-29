@@ -1,7 +1,7 @@
 // Record plugin
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
-import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js'
+import WaveSurfer from 'wavesurfer.js'
+import RecordPlugin from 'wavesurfer.js/dist/plugins/record.esm.js'
 
 let wavesurfer, record
 let scrollingWaveform = false

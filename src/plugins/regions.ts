@@ -14,6 +14,7 @@ export type RegionsPluginOptions = undefined
 export type RegionsPluginEvents = BasePluginEvents & {
   'region-created': [region: Region]
   'region-updated': [region: Region]
+  'region-removed': [region: Region]
   'region-clicked': [region: Region, e: MouseEvent]
   'region-double-clicked': [region: Region, e: MouseEvent]
   'region-in': [region: Region]
@@ -212,6 +213,11 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     this.element.style.right = `${end * 100}%`
   }
 
+  private toggleCursor(toggle: boolean) {
+    if (!this.drag) return
+    this.element.style.cursor = toggle ? 'grabbing' : 'grab'
+  }
+
   private initMouseEvents() {
     const { element } = this
     if (!element) return
@@ -220,13 +226,18 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     element.addEventListener('mouseenter', (e) => this.emit('over', e))
     element.addEventListener('mouseleave', (e) => this.emit('leave', e))
     element.addEventListener('dblclick', (e) => this.emit('dblclick', e))
+    element.addEventListener('pointerdown', () => this.toggleCursor(true))
+    element.addEventListener('pointerup', () => this.toggleCursor(false))
 
     // Drag
     makeDraggable(
       element,
       (dx) => this.onMove(dx),
-      () => this.onStartMoving(),
-      () => this.onEndMoving(),
+      () => this.toggleCursor(true),
+      () => {
+        this.toggleCursor(false)
+        this.drag && this.emit('update-end')
+      },
     )
 
     if (this.contentEditable && this.content) {
@@ -237,20 +248,10 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     }
   }
 
-  private onStartMoving() {
-    if (!this.drag) return
-    this.element.style.cursor = 'grabbing'
-  }
-
-  private onEndMoving() {
-    if (!this.drag) return
-    this.element.style.cursor = 'grab'
-    this.emit('update-end')
-  }
-
   public _onUpdate(dx: number, side?: 'start' | 'end') {
     if (!this.element.parentElement) return
-    const deltaSeconds = (dx / this.element.parentElement.clientWidth) * this.totalDuration
+    const { width } = this.element.parentElement.getBoundingClientRect()
+    const deltaSeconds = (dx / width) * this.totalDuration
     const newStart = !side || side === 'start' ? this.start + deltaSeconds : this.start
     const newEnd = !side || side === 'end' ? this.end + deltaSeconds : this.end
     const length = newEnd - newStart
@@ -475,12 +476,32 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     div.style.marginTop = `${overlap}px`
   }
 
+  private adjustScroll(region: Region) {
+    const scrollContainer = this.wavesurfer?.getWrapper()?.parentElement
+    if (!scrollContainer) return
+    const { clientWidth, scrollWidth } = scrollContainer
+    if (scrollWidth <= clientWidth) return
+    const scrollBbox = scrollContainer.getBoundingClientRect()
+    const bbox = region.element.getBoundingClientRect()
+    const left = bbox.left - scrollBbox.left
+    const right = bbox.right - scrollBbox.left
+    if (left < 0) {
+      scrollContainer.scrollLeft += left
+    } else if (right > clientWidth) {
+      scrollContainer.scrollLeft += right - clientWidth
+    }
+  }
+
   private saveRegion(region: Region) {
     this.regionsContainer.appendChild(region.element)
     this.avoidOverlapping(region)
     this.regions.push(region)
 
     const regionSubscriptions = [
+      region.on('update', () => {
+        this.adjustScroll(region)
+      }),
+
       region.on('update-end', () => {
         this.avoidOverlapping(region)
         this.emit('region-updated', region)
@@ -503,6 +524,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       region.once('remove', () => {
         regionSubscriptions.forEach((unsubscribe) => unsubscribe())
         this.regions = this.regions.filter((reg) => reg !== region)
+        this.emit('region-removed', region)
       }),
     ]
 
@@ -539,7 +561,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
    * Enable creation of regions by dragging on an empty space on the waveform.
    * Returns a function to disable the drag selection.
    */
-  public enableDragSelection(options: Omit<RegionParams, 'start' | 'end'>): () => void {
+  public enableDragSelection(options: Omit<RegionParams, 'start' | 'end'>, threshold = 3): () => void {
     const wrapper = this.wavesurfer?.getWrapper()
     if (!wrapper || !(wrapper instanceof HTMLElement)) return () => undefined
 
@@ -565,7 +587,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         if (!this.wavesurfer) return
         const duration = this.wavesurfer.getDuration()
         const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
-        const width = this.wavesurfer.getWrapper().clientWidth
+        const { width } = this.wavesurfer.getWrapper().getBoundingClientRect()
         // Calculate the start time of the region
         const start = (x / width) * duration
         // Give the region a small initial size
@@ -592,6 +614,8 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
           region = null
         }
       },
+
+      threshold,
     )
   }
 

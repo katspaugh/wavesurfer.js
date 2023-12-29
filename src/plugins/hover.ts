@@ -87,9 +87,11 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     // Attach pointer events
     container.addEventListener('pointermove', this.onPointerMove)
     container.addEventListener('pointerleave', this.onPointerLeave)
+    container.addEventListener('wheel', this.onPointerMove)
     this.unsubscribe = () => {
       container.removeEventListener('pointermove', this.onPointerMove)
       container.removeEventListener('pointerleave', this.onPointerLeave)
+      container.removeEventListener('wheel', this.onPointerLeave)
     }
   }
 
@@ -100,7 +102,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     return `${minutes}:${paddedSeconds}`
   }
 
-  private onPointerMove = (e: PointerEvent) => {
+  private onPointerMove = (e: PointerEvent | WheelEvent) => {
     if (!this.wavesurfer) return
 
     // Position
