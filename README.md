@@ -1,6 +1,6 @@
 # <img src="https://user-images.githubusercontent.com/381895/226091100-f5567a28-7736-4d37-8f84-e08f297b7e1a.png" alt="logo" height="60" valign="middle" /> wavesurfer.js
 
-[![npm](https://img.shields.io/npm/v/wavesurfer.js)](https://www.npmjs.com/package/wavesurfer.js)
+[![npm](https://img.shields.io/npm/v/wavesurfer.js)](https://www.npmjs.com/package/wavesurfer.js) [![sponsor](https://img.shields.io/badge/sponsor_us-🤍-%23B14586)](https://github.com/sponsors/katspaugh)
 
 **Wavesurfer.js** is an interactive waveform rendering and audio playback library, perfect for web applications. It leverages modern web technologies to provide a robust and visually engaging audio experience.
 
@@ -116,13 +116,12 @@ Wavesurfer.js v7 is a TypeScript rewrite of wavesurfer.js that brings several im
  * Enhanced decoding and rendering performance
  * New and improved plugins
 
-<img width="749" alt="Screenshot 2023-12-06 at 09 06 30" src="https://github.com/katspaugh/wavesurfer.js/assets/381895/21eca2d9-47c7-461f-82bb-f23993818458">
-
 ### Upgrading from v6
 
 Most options, events, and methods are similar to those in previous versions.
 
 ### Notable differences
+ * HTML audio playback by default (used to be an opt-in via `backend: "MediaElement"`)
  * The Markers plugin is removed – you should use the Regions plugin with just a `startTime`.
  * No Microphone plugin – superseded by the new Record plugin with more features.
  * The Cursor plugin is replaced by the Hover plugin.
@@ -148,7 +147,7 @@ Most options, events, and methods are similar to those in previous versions.
  * `drawBuffer` – to redraw the waveform, use `setOptions` instead and pass new rendering options
  * `cancelAjax` – you can pass an [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) in `fetchParams`
  * `skipForward`, `skipBackward`, `setPlayEnd` – can be implemented using `setTime(time)`
- * `exportPCM` is replaced with `exportPeaks` that returns arrays of floats
+ * `exportPCM` is replaced with `exportPeaks` which returns arrays of floats
  * `toggleMute` is now called `setMuted(true | false)`
  * `setHeight`, `setWaveColor`, `setCursorColor`, etc. – use `setOptions` with the corresponding params instead. E.g., `wavesurfer.setOptions({ height: 300, waveColor: '#abc' })`
 

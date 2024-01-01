@@ -13,7 +13,7 @@ export default [
       file: 'dist/wavesurfer.esm.js',
       format: 'esm',
     },
-    plugins: [typescript(), terser()],
+    plugins,
   },
   // CommonJS module (Node.js)
   {
@@ -37,10 +37,10 @@ export default [
     plugins,
   },
 
-  // Type definitions
+  // Compiled type definitions
   {
     input: './dist/wavesurfer.d.ts',
-    output: [{ file: 'dist/wavesurfer.d.ts', format: 'es' }],
+    output: [{ file: 'dist/types.d.ts', format: 'es' }],
     plugins: [dts()],
   },
 

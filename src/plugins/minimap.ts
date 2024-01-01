@@ -4,6 +4,7 @@
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import WaveSurfer, { type WaveSurferOptions } from '../wavesurfer.js'
+import render from '../dom.js'
 
 export type MinimapPluginOptions = {
   overlayColor?: string
@@ -62,21 +63,31 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   }
 
   private initMinimapWrapper(): HTMLElement {
-    const div = document.createElement('div')
-    div.style.position = 'relative'
-    div.setAttribute('part', 'minimap')
-    return div
+    return render('div', {
+      part: 'minimap',
+      style: {
+        position: 'relative',
+      },
+    })
   }
 
   private initOverlay(): HTMLElement {
-    const div = document.createElement('div')
-    div.setAttribute(
-      'style',
-      'position: absolute; z-index: 2; left: 0; top: 0; bottom: 0; transition: left 100ms ease-out; pointer-events: none;',
+    return render(
+      'div',
+      {
+        style: {
+          position: 'absolute',
+          zIndex: '2',
+          left: '0',
+          top: '0',
+          bottom: '0',
+          transition: 'left 100ms ease-out',
+          pointerEvents: 'none',
+          backgroundColor: this.options.overlayColor,
+        },
+      },
+      this.minimapWrapper,
     )
-    div.style.backgroundColor = this.options.overlayColor
-    this.minimapWrapper.appendChild(div)
-    return div
   }
 
   private initMinimap() {

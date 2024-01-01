@@ -1,117 +1,81 @@
 // React example
+// See https://github.com/katspaugh/wavesurfer-react
 
-/*
-  <html>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  </html>
-*/
-
-// Import React hooks
-const { useRef, useState, useEffect, useCallback } = React
-
-// Import WaveSurfer
-import WaveSurfer from 'wavesurfer.js'
+import * as React from 'react'
+const { useMemo, useState, useCallback, useRef } = React
+import { createRoot } from 'react-dom/client'
+import { useWavesurfer } from '@wavesurfer/react'
 import Timeline from 'wavesurfer.js/dist/plugins/timeline.esm.js'
 
-// WaveSurfer hook
-const useWavesurfer = (containerRef, options) => {
-  const [wavesurfer, setWavesurfer] = useState(null)
+const audioUrls = [
+  '/examples/audio/audio.wav',
+  '/examples/audio/stereo.mp3',
+  '/examples/audio/mono.mp3',
+  '/examples/audio/librivox.mp3',
+]
 
-  // Initialize wavesurfer when the container mounts
-  // or any of the props change
-  useEffect(() => {
-    if (!containerRef.current) return
+const formatTime = (seconds) => [seconds / 60, seconds % 60].map((v) => `0${Math.floor(v)}`.slice(-2)).join(':')
 
-    const ws = WaveSurfer.create({
-      ...options,
-      container: containerRef.current,
-    })
-
-    setWavesurfer(ws)
-
-    return () => {
-      ws.destroy()
-    }
-  }, [options, containerRef])
-
-  return wavesurfer
-}
-
-// Create a React component that will render wavesurfer.
-// Props are wavesurfer options.
-const WaveSurferPlayer = (props) => {
-  const containerRef = useRef()
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const wavesurfer = useWavesurfer(containerRef, props)
-
-  // On play button click
-  const onPlayClick = useCallback(() => {
-    wavesurfer.isPlaying() ? wavesurfer.pause() : wavesurfer.play()
-  }, [wavesurfer])
-
-  // Initialize wavesurfer when the container mounts
-  // or any of the props change
-  useEffect(() => {
-    if (!wavesurfer) return
-
-    setCurrentTime(0)
-    setIsPlaying(false)
-
-    const subscriptions = [
-      wavesurfer.on('play', () => setIsPlaying(true)),
-      wavesurfer.on('pause', () => setIsPlaying(false)),
-      wavesurfer.on('timeupdate', (currentTime) => setCurrentTime(currentTime)),
-    ]
-
-    return () => {
-      subscriptions.forEach((unsub) => unsub())
-    }
-  }, [wavesurfer])
-
-  return (
-    <>
-      <div ref={containerRef} style={{ minHeight: '120px' }} />
-
-      <button onClick={onPlayClick} style={{ marginTop: '1em' }}>
-        {isPlaying ? 'Pause' : 'Play'}
-      </button>
-
-      <p>Seconds played: {currentTime}</p>
-    </>
-  )
-}
-
-// Another React component that will render two wavesurfers
+// A React component that will render wavesurfer
 const App = () => {
-  const urls = ['/examples/audio/audio.wav', '/examples/audio/stereo.mp3']
-  const [audioUrl, setAudioUrl] = useState(urls[0])
+  const containerRef = useRef(null)
+  const [urlIndex, setUrlIndex] = useState(0)
 
-  // Swap the audio URL
+  const { wavesurfer, isPlaying, currentTime } = useWavesurfer({
+    container: containerRef,
+    height: 100,
+    waveColor: 'rgb(200, 0, 200)',
+    progressColor: 'rgb(100, 0, 100)',
+    url: audioUrls[urlIndex],
+    plugins: useMemo(() => [Timeline.create()], []),
+  })
+
   const onUrlChange = useCallback(() => {
-    urls.reverse()
-    setAudioUrl(urls[0])
+    setUrlIndex((index) => (index + 1) % audioUrls.length)
   }, [])
 
-  // Render the wavesurfer component
-  // and a button to load a different audio file
+  const onPlayPause = useCallback(() => {
+    wavesurfer && wavesurfer.playPause()
+  }, [wavesurfer])
+
   return (
     <>
-      <WaveSurferPlayer
-        height={100}
-        waveColor="rgb(200, 0, 200)"
-        progressColor="rgb(100, 0, 100)"
-        url={audioUrl}
-        plugins={[Timeline.create()]}
-      />
+      <div ref={containerRef} />
 
-      <button onClick={onUrlChange}>Change audio</button>
+      <p>Current audio: {audioUrls[urlIndex]}</p>
+
+      <p>Current time: {formatTime(currentTime)}</p>
+
+      <div style={{ margin: '1em 0', display: 'flex', gap: '1em' }}>
+        <button onClick={onUrlChange}>Change audio</button>
+
+        <button onClick={onPlayPause} style={{ minWidth: '5em' }}>
+          {isPlaying ? 'Pause' : 'Play'}
+        </button>
+      </div>
     </>
   )
 }
 
 // Create a React root and render the app
-const root = ReactDOM.createRoot(document.body)
+const root = createRoot(document.body)
 root.render(<App />)
+
+/*
+  <html>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react",
+          "react/jsx-runtime": "https://esm.sh/react/jsx-runtime",
+          "react-dom/client": "https://esm.sh/react-dom/client",
+          "wavesurfer.js": "../dist/wavesurfer.esm.js",
+          "wavesurfer.js/dist": "../dist",
+          "@wavesurfer/react": "https://unpkg.com/@wavesurfer/react"
+        }
+      }
+    </script>
+  </html>
+*/

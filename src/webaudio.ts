@@ -35,6 +35,12 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.gainNode.connect(this.audioContext.destination)
   }
 
+  /** Subscribe to an event. Returns an unsubscribe function. */
+  addEventListener = this.on
+
+  /** Unsubscribe from an event */
+  removeEventListener = this.un
+
   async load() {
     return
   }
@@ -46,10 +52,21 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   set src(value: string) {
     this.currentSrc = value
 
+    if (!value) {
+      this.buffer = null
+      this.emit('emptied')
+      return
+    }
+
     fetch(value)
       .then((response) => response.arrayBuffer())
-      .then((arrayBuffer) => this.audioContext.decodeAudioData(arrayBuffer))
+      .then((arrayBuffer) => {
+        if (this.currentSrc !== value) return null
+        return this.audioContext.decodeAudioData(arrayBuffer)
+      })
       .then((audioBuffer) => {
+        if (this.currentSrc !== value) return
+
         this.buffer = audioBuffer
 
         this.emit('loadedmetadata')
@@ -174,6 +191,17 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   /** Get the GainNode used to play the audio. Can be used to attach filters. */
   public getGainNode(): GainNode {
     return this.gainNode
+  }
+
+  /** Get decoded audio */
+  public getChannelData(): Float32Array[] {
+    const channels: Float32Array[] = []
+    if (!this.buffer) return channels
+    const numChannels = this.buffer.numberOfChannels
+    for (let i = 0; i < numChannels; i++) {
+      channels.push(this.buffer.getChannelData(i))
+    }
+    return channels
   }
 }
 
