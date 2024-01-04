@@ -24,6 +24,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private isScrollable = false
   private audioData: AudioBuffer | null = null
   private resizeObserver: ResizeObserver | null = null
+  private lastContainerWidth = 0
   private isDragging = false
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
@@ -103,9 +104,16 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Re-render the waveform on container resize
     const delay = this.createDelay(100)
     this.resizeObserver = new ResizeObserver(() => {
-      delay(() => this.reRender())
+      delay(() => this.onContainerResize())
     })
     this.resizeObserver.observe(this.scrollContainer)
+  }
+
+  private onContainerResize() {
+    const width = this.parent.clientWidth
+    if (width === this.lastContainerWidth && this.options.height !== 'auto') return
+    this.lastContainerWidth = width
+    this.reRender()
   }
 
   private initDrag() {
