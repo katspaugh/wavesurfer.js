@@ -63,11 +63,15 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     }
   }
 
+  private canPlayType(type: string): boolean {
+    return this.media.canPlayType(type) !== ''
+  }
+
   protected setSrc(url: string, blob?: Blob) {
     const src = this.getSrc()
     if (src === url) return
     this.revokeSrc()
-    const newSrc = blob instanceof Blob ? URL.createObjectURL(blob) : url
+    const newSrc = blob instanceof Blob && this.canPlayType(blob.type) ? URL.createObjectURL(blob) : url
     this.media.src = newSrc
   }
 
