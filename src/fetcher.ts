@@ -40,7 +40,7 @@ async function fetchBlob(
   // Fetch the resource
   const response = await fetch(url, requestInit)
 
-  if (!response.ok) {
+  if (response.status >= 400) {
     throw new Error(`Failed to fetch ${url}: ${response.status} (${response.statusText})`)
   }
 
