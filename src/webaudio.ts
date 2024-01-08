@@ -188,6 +188,10 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     }
   }
 
+  public canPlayType(mimeType: string) {
+    return /^(audio|video)\//.test(mimeType)
+  }
+
   /** Get the GainNode used to play the audio. Can be used to attach filters. */
   public getGainNode(): GainNode {
     return this.gainNode
