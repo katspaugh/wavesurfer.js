@@ -3,6 +3,7 @@
  */
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
+import { Clock } from '../clock.js'
 
 export type RecordPluginOptions = {
   /** The MIME type to use when recording audio */
@@ -27,6 +28,8 @@ export type RecordPluginEvents = BasePluginEvents & {
   'record-pause': [blob: Blob]
   'record-resume': []
   'record-end': [blob: Blob]
+  /** Fires continuously while recording */
+  'record-progress': [currentTime: number]
 }
 
 type MicStream = {
@@ -46,6 +49,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private dataWindow: Float32Array | null = null
   private isWaveformPaused = false
   private originalOptions: { cursorWidth: number; interact: boolean } | undefined
+  private clock: Clock
+  protected subscriptions: Array<() => void> = []
 
   /** Create an instance of the Record plugin */
   constructor(options: RecordPluginOptions) {
@@ -56,6 +61,14 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       scrollingWaveformWindow: options.scrollingWaveformWindow ?? DEFAULT_SCROLLING_WAVEFORM_WINDOW,
       renderRecordedAudio: options.renderRecordedAudio ?? true,
     })
+
+    this.clock = new Clock()
+
+    this.subscriptions.push(
+      this.clock.on('tick', () => {
+        this.emit('record-progress', this.clock.getCurrentTime())
+      }),
+    )
   }
 
   /** Create an instance of the Record plugin */
@@ -192,9 +205,15 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     mediaRecorder.onstop = () => emitWithBlob('record-end')
 
     mediaRecorder.start()
+    this.clock.start()
     this.isWaveformPaused = false
 
     this.emit('record-start')
+  }
+
+  /** Get the duration of the recording */
+  public getDuration(): number {
+    return this.clock.getCurrentTime()
   }
 
   /** Check if the audio is being recorded */
@@ -214,6 +233,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   public stopRecording() {
     if (this.isActive()) {
       this.mediaRecorder?.stop()
+      this.clock.pause()
     }
   }
 
@@ -223,6 +243,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       this.isWaveformPaused = true
       this.mediaRecorder?.requestData()
       this.mediaRecorder?.pause()
+      this.clock.pause()
     }
   }
 
@@ -231,6 +252,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     if (this.isPaused()) {
       this.isWaveformPaused = false
       this.mediaRecorder?.resume()
+      this.clock.resume()
       this.emit('record-resume')
     }
   }
@@ -248,6 +270,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
   /** Destroy the plugin */
   public destroy() {
+    this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.applyOriginalOptionsIfNeeded()
     super.destroy()
     this.stopRecording()

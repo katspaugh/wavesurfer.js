@@ -49,6 +49,22 @@ const createWaveSurfer = () => {
   })
   pauseButton.style.display = 'none'
   recButton.textContent = 'Record'
+
+  record.on('record-progress', (time) => {
+    updateProgress(time)
+  })
+}
+
+const progress = document.querySelector('#progress')
+const updateProgress = (time) => {
+  // time will be in milliseconds, convert it to mm:ss format
+  const formattedTime = [
+    Math.floor((time % 3600000) / 60000), // minutes
+    Math.floor((time % 60000) / 1000), // seconds
+  ]
+    .map((v) => (v < 10 ? '0' + v : v))
+    .join(':')
+  progress.textContent = formattedTime
 }
 
 const pauseButton = document.querySelector('#pause')
@@ -79,7 +95,7 @@ const micSelect = document.querySelector('#mic-select')
 const recButton = document.querySelector('#record')
 
 recButton.onclick = () => {
-  if (record.isRecording()) {
+  if (record.isRecording() || record.isPaused()) {
     record.stopRecording()
     recButton.textContent = 'Record'
     pauseButton.style.display = 'none'
@@ -120,6 +136,7 @@ createWaveSurfer()
     <option value="" hidden>Select mic</option>
   </select>
   <label style="display:inline-block;"><input type="checkbox"  /> Scrolling waveform</label>
+  <p id="progress">00:00</p>
 
   <div id="mic" style="border: 1px solid #ddd; border-radius: 4px; margin-top: 1rem"></div>
 
