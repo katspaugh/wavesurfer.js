@@ -177,9 +177,10 @@ class Polyline extends EventEmitter<{
       'ellipse',
       {
         xmlns: 'http://www.w3.org/2000/svg',
-        cx: x.toString(),
-        cy: y.toString(),
-        r: radius.toString(),
+        cx: x,
+        cy: y,
+        rx: radius,
+        ry: radius,
         fill: this.options.dragPointFill,
         stroke: this.options.dragPointStroke,
         'stroke-width': '2',
