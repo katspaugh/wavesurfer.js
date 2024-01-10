@@ -99,8 +99,10 @@ export type WaveSurferEvents = {
   decode: [duration: number]
   /** When the audio is both decoded and can play */
   ready: [duration: number]
-  /** When a waveform is drawn */
+  /** When visible waveform is drawn */
   redraw: []
+  /** When all audio channel chunks of the waveform have drawn */
+  redrawcomplete: []
   /** When the audio starts playing */
   play: []
   /** When the audio pauses */
@@ -254,6 +256,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       // Redraw
       this.renderer.on('render', () => {
         this.emit('redraw')
+      }),
+
+      // RedrawComplete
+      this.renderer.on('rendered', () => {
+        this.emit('redrawcomplete')
       }),
     )
 
