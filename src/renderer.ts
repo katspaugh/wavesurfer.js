@@ -8,6 +8,7 @@ type RendererEvents = {
   drag: [relativeX: number]
   scroll: [relativeStart: number, relativeEnd: number]
   render: []
+  rendered: []
 }
 
 class Renderer extends EventEmitter<RendererEvents> {
@@ -454,7 +455,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
   }
 
-  private renderChannel(channelData: Array<Float32Array | number[]>, options: WaveSurferOptions, width: number) {
+  private renderChannel(channelData: Array<Float32Array | number[]>, options: WaveSurferOptions, width: number, done: () => void) {
     // A container for canvases
     const canvasContainer = document.createElement('div')
     const height = this.getHeight(options.height)
@@ -501,6 +502,14 @@ class Renderer extends EventEmitter<RendererEvents> {
       )
     }
 
+    const status: { [k:string]: boolean } = { head: false, tail: end >= len }
+    const complete = (type: string) => {
+      status[type] = true
+      if (status.head && status.tail) {
+        done()
+      }
+    }
+
     // Draw the waveform in viewport chunks, each with a delay
     const headDelay = this.createDelay()
     const tailDelay = this.createDelay()
@@ -510,6 +519,8 @@ class Renderer extends EventEmitter<RendererEvents> {
         headDelay(() => {
           renderHead(fromIndex - viewportLen, toIndex - viewportLen)
         })
+      } else {
+        complete('head')
       }
     }
     const renderTail = (fromIndex: number, toIndex: number) => {
@@ -518,6 +529,8 @@ class Renderer extends EventEmitter<RendererEvents> {
         tailDelay(() => {
           renderTail(fromIndex + viewportLen, toIndex + viewportLen)
         })
+      } else {
+        complete('tail')
       }
     }
 
@@ -564,16 +577,24 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Render the waveform
     if (this.options.splitChannels) {
+      let counter = 0
+      const done = () => {
+        counter++
+        if (counter === audioData.numberOfChannels) {
+          this.emit('rendered')
+        }
+      }
+
       // Render a waveform for each channel
       for (let i = 0; i < audioData.numberOfChannels; i++) {
         const options = { ...this.options, ...this.options.splitChannels[i] }
-        this.renderChannel([audioData.getChannelData(i)], options, width)
+        this.renderChannel([audioData.getChannelData(i)], options, width, done)
       }
     } else {
       // Render a single waveform for the first two channels (left and right)
       const channels = [audioData.getChannelData(0)]
       if (audioData.numberOfChannels > 1) channels.push(audioData.getChannelData(1))
-      this.renderChannel(channels, this.options, width)
+      this.renderChannel(channels, this.options, width, () => this.emit('rendered'))
     }
 
     this.audioData = audioData
