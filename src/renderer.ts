@@ -534,7 +534,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     draw(start, end)
 
     // Draw the waveform in chunks equal to the size of the viewport, starting from the position of the viewport
-    await Promise.allSettled([
+    await Promise.all([
       // Draw the chunks to the left of the viewport
       (async () => {
         if (start === 0) return
@@ -599,7 +599,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     try {
       if (this.options.splitChannels) {
         // Render a waveform for each channel
-        await Promise.allSettled(
+        await Promise.all(
           Array.from({ length: audioData.numberOfChannels }).map((_, i) => {
             const options = { ...this.options, ...this.options.splitChannels?.[i] }
             return this.renderChannel([audioData.getChannelData(i)], options, width)
