@@ -107,7 +107,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.resizeObserver = new ResizeObserver(() => {
       delay()
         .then(() => this.onContainerResize())
-        .catch(() => {})
+        .catch(() => undefined)
     })
     this.resizeObserver.observe(this.scrollContainer)
   }
