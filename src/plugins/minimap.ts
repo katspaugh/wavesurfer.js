@@ -75,6 +75,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
     return render(
       'div',
       {
+        part: 'minimap-overlay',
         style: {
           position: 'absolute',
           zIndex: '2',
