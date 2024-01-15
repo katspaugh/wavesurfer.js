@@ -25,7 +25,7 @@ jobs:
           if [ $NEW_VERSION != $OLD_VERSION ]; then
             echo "New version $NEW_VERSION detected"
             echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-            git log "$OLD_VERSION"..HEAD --pretty=format:"* %s" > TEMP_CHANGELOG.md
+            git log "$OLD_VERSION"..HEAD --pretty=format:"* %s by %ae" | sed -E 's/by [0-9]+\+(.+)@users.noreply.github.com/by @\1/g' | sed -E 's/ by @?katspaugh.*//g' > TEMP_CHANGELOG.md
           else
             echo "Version $OLD_VERSION hasn't changed, skipping the release"
           fi
