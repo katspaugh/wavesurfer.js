@@ -515,3 +515,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 }
 
 export default WaveSurfer
+
+export { default as BasePlugin } from './base-plugin.js'
+export { default as render } from './dom.js'
