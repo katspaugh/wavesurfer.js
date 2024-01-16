@@ -5,7 +5,7 @@
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
-import render from '../dom.js'
+import createElement from '../dom.js'
 
 export type EnvelopePoint = {
   id?: string
@@ -66,7 +66,7 @@ class Polyline extends EventEmitter<{
     const height = wrapper.clientHeight
 
     // SVG element
-    const svg = render(
+    const svg = createElement(
       'svg',
       {
         xmlns: 'http://www.w3.org/2000/svg',
@@ -88,7 +88,7 @@ class Polyline extends EventEmitter<{
     this.svg = svg
 
     // A polyline representing the envelope
-    const polyline = render(
+    const polyline = createElement(
       'polyline',
       {
         xmlns: 'http://www.w3.org/2000/svg',
@@ -173,7 +173,7 @@ class Polyline extends EventEmitter<{
   private createCircle(x: number, y: number) {
     const size = this.options.dragPointSize
     const radius = size / 2
-    return render(
+    return createElement(
       'ellipse',
       {
         xmlns: 'http://www.w3.org/2000/svg',

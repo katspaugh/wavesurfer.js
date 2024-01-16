@@ -215,7 +215,7 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
  * Spectrogram plugin for wavesurfer.
  */
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
-import render from '../dom.js'
+import createElement from '../dom.js'
 
 export type SpectrogramPluginOptions = {
   /** Selector of element or element in which to render */
@@ -347,7 +347,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   }
 
   private createWrapper() {
-    this.wrapper = render('div', {
+    this.wrapper = createElement('div', {
       style: {
         display: 'block',
         position: 'relative',
@@ -357,7 +357,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
     // if labels are active
     if (this.options.labels) {
-      this.labelsEl = render(
+      this.labelsEl = createElement(
         'canvas',
         {
           part: 'spec-labels',
@@ -376,7 +376,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   }
 
   private createCanvas() {
-    this.canvas = render(
+    this.canvas = createElement(
       'canvas',
       {
         style: {
