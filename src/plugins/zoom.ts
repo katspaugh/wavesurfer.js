@@ -19,7 +19,7 @@
  * });
  */
 
-import { BasePlugin, BasePluginEvents } from '../base-plugin.js'
+import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 
 export type ZoomPluginOptions = {
   /**
