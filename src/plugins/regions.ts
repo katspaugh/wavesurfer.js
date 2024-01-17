@@ -25,7 +25,7 @@ export type RegionEvents = {
   /** Before the region is removed */
   remove: []
   /** When the region's parameters are being updated */
-  update: []
+  update: [side?: 'start' | 'end']
   /** When dragging or resizing is finished */
   'update-end': []
   /** On play */
@@ -270,7 +270,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       this.end = newEnd
 
       this.renderPosition()
-      this.emit('update')
+      this.emit('update', side)
     }
   }
 
@@ -502,8 +502,11 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     this.regions.push(region)
 
     const regionSubscriptions = [
-      region.on('update', () => {
-        this.adjustScroll(region)
+      region.on('update', (side) => {
+        // Undefined side indicates that we are dragging not resizing
+        if (!side) {
+          this.adjustScroll(region)
+        }
       }),
 
       region.on('update-end', () => {
