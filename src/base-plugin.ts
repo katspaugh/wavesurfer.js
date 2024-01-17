@@ -8,7 +8,7 @@ export type BasePluginEvents = {
 export type GenericPlugin = BasePlugin<BasePluginEvents, unknown>
 
 /** Base class for wavesurfer plugins */
-class BasePlugin<EventTypes extends BasePluginEvents, Options> extends EventEmitter<EventTypes> {
+export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends EventEmitter<EventTypes> {
   protected wavesurfer?: WaveSurfer
   protected subscriptions: (() => void)[] = []
   protected options: Options

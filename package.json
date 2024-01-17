@@ -42,16 +42,6 @@
       "types": "./dist/plugins/*.d.ts",
       "require": "./dist/plugins/*.cjs"
     },
-    "./dist/base-plugin.js": {
-      "import": "./dist/base-plugin.esm.js",
-      "types": "./dist/base-plugin.d.ts",
-      "require": "./dist/base-plugin.cjs"
-    },
-    "./dist/dom.js": {
-      "import": "./dist/dom.esm.js",
-      "types": "./dist/dom.d.ts",
-      "require": "./dist/dom.cjs"
-    },
     "./dist/*": {
       "import": "./dist/*"
     }
