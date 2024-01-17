@@ -1,5 +1,6 @@
-import type { GenericPlugin } from './base-plugin.js'
+import BasePlugin, { type GenericPlugin } from './base-plugin.js'
 import Decoder from './decoder.js'
+import createElement from './dom.js'
 import Fetcher from './fetcher.js'
 import Player from './player.js'
 import Renderer from './renderer.js'
@@ -139,6 +140,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private decodedData: AudioBuffer | null = null
   protected subscriptions: Array<() => void> = []
   protected mediaSubscriptions: Array<() => void> = []
+
+  public static readonly BasePlugin = BasePlugin
+  public static readonly createElement = createElement
 
   /** Create a new WaveSurfer instance */
   public static create(options: WaveSurferOptions) {
