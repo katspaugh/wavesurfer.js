@@ -21,7 +21,7 @@ export default [
     output: {
       file: 'dist/wavesurfer.cjs',
       format: 'cjs',
-      exports: 'named',
+      exports: 'default',
     },
     plugins,
   },
@@ -32,7 +32,7 @@ export default [
       name: 'WaveSurfer',
       file: 'dist/wavesurfer.min.js',
       format: 'umd',
-      exports: 'named',
+      exports: 'default',
     },
     plugins,
   },
