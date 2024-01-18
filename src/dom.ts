@@ -31,9 +31,9 @@ function renderNode(tagName: string, content: TreeNode): HTMLElement | SVGElemen
   return element
 }
 
-function createElement(tagName: string, content: TreeNode & { xmlns: string }, container?: Node): SVGElement
-function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement
-function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement | SVGElement {
+export function createElement(tagName: string, content: TreeNode & { xmlns: string }, container?: Node): SVGElement
+export function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement
+export function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement | SVGElement {
   const el = renderNode(tagName, content || {})
   container?.appendChild(el)
   return el
