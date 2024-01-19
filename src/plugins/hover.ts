@@ -3,7 +3,7 @@
  */
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
-import render from '../dom.js'
+import createElement from '../dom.js'
 
 export type HoverPluginOptions = {
   lineColor?: string
@@ -33,8 +33,8 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     this.options = Object.assign({}, defaultOptions, options)
 
     // Create the plugin elements
-    this.wrapper = render('div', { part: 'hover' })
-    this.label = render('span', { part: 'hover-label' }, this.wrapper)
+    this.wrapper = createElement('div', { part: 'hover' })
+    this.label = createElement('span', { part: 'hover-label' }, this.wrapper)
   }
 
   public static create(options?: HoverPluginOptions) {
