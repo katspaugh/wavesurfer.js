@@ -219,7 +219,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   }
 
   private toggleCursor(toggle: boolean) {
-    if (!this.drag) return
+    if (!this.drag || !this.element?.style) return
     this.element.style.cursor = toggle ? 'grabbing' : 'grab'
   }
 
