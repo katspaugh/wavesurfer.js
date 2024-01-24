@@ -186,14 +186,20 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     })
   }
 
+  private updateProgress(currentTime = this.getCurrentTime()): number {
+    this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())
+    return currentTime
+  }
+
   private initTimerEvents() {
     // The timer fires every 16ms for a smooth progress animation
     this.subscriptions.push(
       this.timer.on('tick', () => {
-        const currentTime = this.getCurrentTime()
-        this.renderer.renderProgress(currentTime / this.getDuration(), true)
-        this.emit('timeupdate', currentTime)
-        this.emit('audioprocess', currentTime)
+        if (!this.isSeeking()) {
+          const currentTime = this.updateProgress()
+          this.emit('timeupdate', currentTime)
+          this.emit('audioprocess', currentTime)
+        }
       }),
     )
   }
@@ -206,8 +212,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     this.mediaSubscriptions.push(
       this.onMediaEvent('timeupdate', () => {
-        const currentTime = this.getCurrentTime()
-        this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())
+        const currentTime = this.updateProgress()
         this.emit('timeupdate', currentTime)
       }),
 
@@ -452,6 +457,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   /** Toggle if the waveform should react to clicks */
   public toggleInteraction(isInteractive: boolean) {
     this.options.interact = isInteractive
+  }
+
+  /** Jumpt to a specific time in the audio (in seconds) */
+  public setTime(time: number) {
+    super.setTime(time)
+    this.updateProgress(time)
   }
 
   /** Seek to a percentage of audio as [0..1] (0 = beginning, 1 = end) */
