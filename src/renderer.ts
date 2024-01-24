@@ -684,7 +684,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.canvasWrapper.style.clipPath = `polygon(${percents}% 0, 100% 0, 100% 100%, ${percents}% 100%)`
     this.progressWrapper.style.width = `${percents}%`
     this.cursor.style.left = `${percents}%`
-    this.cursor.style.marginLeft = Math.round(percents) === 100 ? `-${this.options.cursorWidth}px` : ''
+    this.cursor.style.transform = `translateX(-${Math.round(percents) === 100 ? this.options.cursorWidth : 0}px)`
 
     if (this.isScrollable && this.options.autoScroll) {
       this.scrollIntoView(progress, isPlaying)

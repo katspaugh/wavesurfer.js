@@ -91,7 +91,8 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   /** Start playing the audio */
-  public play(): Promise<void> {
+  public async play(): Promise<void> {
+    if (!this.media.src) return
     return this.media.play()
   }
 
@@ -143,6 +144,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   /** Get the playback speed */
   public getPlaybackRate(): number {
     return this.media.playbackRate
+  }
+
+  /** Check if the audio is seeking */
+  public isSeeking(): boolean {
+    return this.media.seeking
   }
 
   /** Set the playback speed, pass an optional false to NOT preserve the pitch */
