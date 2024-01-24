@@ -8,6 +8,7 @@ type RendererEvents = {
   drag: [relativeX: number]
   scroll: [relativeStart: number, relativeEnd: number]
   render: []
+  rendered: []
 }
 
 class Renderer extends EventEmitter<RendererEvents> {
@@ -20,7 +21,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private canvasWrapper: HTMLElement
   private progressWrapper: HTMLElement
   private cursor: HTMLElement
-  private timeouts: Array<{ timeout?: ReturnType<typeof setTimeout> }> = []
+  private timeouts: Array<() => void> = []
   private isScrollable = false
   private audioData: AudioBuffer | null = null
   private resizeObserver: ResizeObserver | null = null
@@ -104,7 +105,9 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Re-render the waveform on container resize
     const delay = this.createDelay(100)
     this.resizeObserver = new ResizeObserver(() => {
-      delay(() => this.onContainerResize())
+      delay()
+        .then(() => this.onContainerResize())
+        .catch(() => undefined)
     })
     this.resizeObserver.observe(this.scrollContainer)
   }
@@ -251,12 +254,27 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.resizeObserver?.disconnect()
   }
 
-  private createDelay(delayMs = 10): (fn: () => void) => void {
-    const context: { timeout?: ReturnType<typeof setTimeout> } = {}
-    this.timeouts.push(context)
-    return (callback: () => void) => {
-      context.timeout && clearTimeout(context.timeout)
-      context.timeout = setTimeout(callback, delayMs)
+  private createDelay(delayMs = 10): () => Promise<void> {
+    let timeout: ReturnType<typeof setTimeout> | undefined
+    let reject: (() => void) | undefined
+
+    const onClear = () => {
+      if (timeout) clearTimeout(timeout)
+      if (reject) reject()
+    }
+
+    this.timeouts.push(onClear)
+
+    return () => {
+      return new Promise((resolveFn, rejectFn) => {
+        onClear()
+        reject = rejectFn
+        timeout = setTimeout(() => {
+          timeout = undefined
+          reject = undefined
+          resolveFn()
+        }, delayMs)
+      })
     }
   }
 
@@ -456,7 +474,11 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
   }
 
-  private renderChannel(channelData: Array<Float32Array | number[]>, options: WaveSurferOptions, width: number) {
+  private async renderChannel(
+    channelData: Array<Float32Array | number[]>,
+    options: WaveSurferOptions,
+    width: number,
+  ): Promise<void> {
     // A container for canvases
     const canvasContainer = document.createElement('div')
     canvasContainer.setAttribute('part', 'canvas-container')
@@ -470,10 +492,31 @@ class Renderer extends EventEmitter<RendererEvents> {
     progressContainer.setAttribute('part', 'progress-container')
     this.progressWrapper.appendChild(progressContainer)
 
+    const dataLength = channelData[0].length
+
+    // Draw a portion of the waveform from start peak to end peak
+    const draw = (start: number, end: number) => {
+      this.renderSingleCanvas(
+        channelData,
+        options,
+        width,
+        height,
+        Math.max(0, start),
+        Math.min(end, dataLength),
+        canvasContainer,
+        progressContainer,
+      )
+    }
+
+    // Draw the entire waveform
+    if (!this.isScrollable) {
+      draw(0, dataLength)
+      return
+    }
+
     // Determine the currently visible part of the waveform
     const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
-    const len = channelData[0].length
-    const scale = len / scrollWidth
+    const scale = dataLength / scrollWidth
 
     let viewportWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth)
 
@@ -491,49 +534,35 @@ class Renderer extends EventEmitter<RendererEvents> {
     const end = Math.floor(start + viewportWidth * scale)
     const viewportLen = end - start
 
-    // Draw a portion of the waveform from start peak to end peak
-    const draw = (start: number, end: number) => {
-      this.renderSingleCanvas(
-        channelData,
-        options,
-        width,
-        height,
-        Math.max(0, start),
-        Math.min(end, len),
-        canvasContainer,
-        progressContainer,
-      )
-    }
+    // Draw the visible part of the waveform
+    draw(start, end)
 
-    // Draw the waveform in viewport chunks, each with a delay
-    const headDelay = this.createDelay()
-    const tailDelay = this.createDelay()
-    const renderHead = (fromIndex: number, toIndex: number) => {
-      draw(fromIndex, toIndex)
-      if (fromIndex > 0) {
-        headDelay(() => {
-          renderHead(fromIndex - viewportLen, toIndex - viewportLen)
-        })
-      }
-    }
-    const renderTail = (fromIndex: number, toIndex: number) => {
-      draw(fromIndex, toIndex)
-      if (toIndex < len) {
-        tailDelay(() => {
-          renderTail(fromIndex + viewportLen, toIndex + viewportLen)
-        })
-      }
-    }
-
-    renderHead(start, end)
-    if (end < len) {
-      renderTail(end, end + viewportLen)
-    }
+    // Draw the waveform in chunks equal to the size of the viewport, starting from the position of the viewport
+    await Promise.all([
+      // Draw the chunks to the left of the viewport
+      (async () => {
+        if (start === 0) return
+        const delay = this.createDelay()
+        for (let i = start; i >= 0; i -= viewportLen) {
+          await delay()
+          draw(Math.max(0, i - viewportLen), i)
+        }
+      })(),
+      // Draw the chunks to the right of the viewport
+      (async () => {
+        if (end === dataLength) return
+        const delay = this.createDelay()
+        for (let i = end; i < dataLength; i += viewportLen) {
+          await delay()
+          draw(i, Math.min(dataLength, i + viewportLen))
+        }
+      })(),
+    ])
   }
 
-  render(audioData: AudioBuffer) {
+  async render(audioData: AudioBuffer) {
     // Clear previous timeouts
-    this.timeouts.forEach((context) => context.timeout && clearTimeout(context.timeout))
+    this.timeouts.forEach((clear) => clear())
     this.timeouts = []
 
     // Clear the canvases
@@ -566,23 +595,32 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.cursor.style.backgroundColor = `${this.options.cursorColor || this.options.progressColor}`
     this.cursor.style.width = `${this.options.cursorWidth}px`
 
-    // Render the waveform
-    if (this.options.splitChannels) {
-      // Render a waveform for each channel
-      for (let i = 0; i < audioData.numberOfChannels; i++) {
-        const options = { ...this.options, ...this.options.splitChannels[i] }
-        this.renderChannel([audioData.getChannelData(i)], options, width)
-      }
-    } else {
-      // Render a single waveform for the first two channels (left and right)
-      const channels = [audioData.getChannelData(0)]
-      if (audioData.numberOfChannels > 1) channels.push(audioData.getChannelData(1))
-      this.renderChannel(channels, this.options, width)
-    }
-
     this.audioData = audioData
 
     this.emit('render')
+
+    // Render the waveform
+    try {
+      if (this.options.splitChannels) {
+        // Render a waveform for each channel
+        await Promise.all(
+          Array.from({ length: audioData.numberOfChannels }).map((_, i) => {
+            const options = { ...this.options, ...this.options.splitChannels?.[i] }
+            return this.renderChannel([audioData.getChannelData(i)], options, width)
+          }),
+        )
+      } else {
+        // Render a single waveform for the first two channels (left and right)
+        const channels = [audioData.getChannelData(0)]
+        if (audioData.numberOfChannels > 1) channels.push(audioData.getChannelData(1))
+        await this.renderChannel(channels, this.options, width)
+      }
+    } catch {
+      // Render cancelled due to another render
+      return
+    }
+
+    this.emit('rendered')
   }
 
   reRender() {
@@ -650,7 +688,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.canvasWrapper.style.clipPath = `polygon(${percents}% 0, 100% 0, 100% 100%, ${percents}% 100%)`
     this.progressWrapper.style.width = `${percents}%`
     this.cursor.style.left = `${percents}%`
-    this.cursor.style.marginLeft = Math.round(percents) === 100 ? `-${this.options.cursorWidth}px` : ''
+    this.cursor.style.transform = `translateX(-${Math.round(percents) === 100 ? this.options.cursorWidth : 0}px)`
 
     if (this.isScrollable && this.options.autoScroll) {
       this.scrollIntoView(progress, isPlaying)

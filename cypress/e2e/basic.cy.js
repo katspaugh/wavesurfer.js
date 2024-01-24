@@ -25,6 +25,25 @@ describe('WaveSurfer basic tests', () => {
     cy.window().its('wavesurfer').should('be.an', 'object')
   })
 
+  it('should emit a redrawcomplete event', () => {
+    cy.window().then((win) => {
+      const { wavesurfer } = win
+      expect(wavesurfer.getDuration().toFixed(2)).to.equal('21.77')
+
+      wavesurfer.options.minPxPerSec = 200
+      wavesurfer.load('../../examples/audio/audio.wav')
+
+      return new Promise((resolve) => {
+        wavesurfer.once('redrawcomplete', () => {
+          wavesurfer.zoom(100)
+          wavesurfer.once('redrawcomplete', () => {
+            resolve()
+          })
+        })
+      })
+    })
+  })
+
   it('should load an audio file without errors', () => {
     cy.window().then((win) => {
       expect(win.wavesurfer.getDuration().toFixed(2)).to.equal('21.77')

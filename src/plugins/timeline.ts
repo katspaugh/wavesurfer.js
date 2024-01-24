@@ -3,7 +3,7 @@
  */
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
-import render from '../dom.js'
+import createElement from '../dom.js'
 
 export type TimelinePluginOptions = {
   /** The height of the timeline in pixels, defaults to 20 */
@@ -104,7 +104,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   }
 
   private initTimelineWrapper(): HTMLElement {
-    return render('div', { part: 'timeline-wrapper', style: { pointerEvents: 'none' } })
+    return createElement('div', { part: 'timeline-wrapper', style: { pointerEvents: 'none' } })
   }
 
   // Return how many seconds should be between each notch
@@ -153,7 +153,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     const secondaryLabelSpacing = this.options.secondaryLabelSpacing
     const isTop = this.options.insertPosition === 'beforebegin'
 
-    const timeline = render('div', {
+    const timeline = createElement('div', {
       style: {
         height: `${this.options.height}px`,
         overflow: 'hidden',
@@ -181,7 +181,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       Object.assign(timeline.style, this.options.style)
     }
 
-    const notchEl = render('div', {
+    const notchEl = createElement('div', {
       style: {
         width: '0',
         height: '50%',

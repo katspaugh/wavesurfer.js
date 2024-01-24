@@ -7,7 +7,7 @@
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
-import render from '../dom.js'
+import createElement from '../dom.js'
 
 export type RegionsPluginOptions = undefined
 
@@ -25,7 +25,7 @@ export type RegionEvents = {
   /** Before the region is removed */
   remove: []
   /** When the region's parameters are being updated */
-  update: []
+  update: [side?: 'start' | 'end']
   /** When dragging or resizing is finished */
   'update-end': []
   /** On play */
@@ -120,7 +120,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       wordBreak: 'keep-all',
     }
 
-    const leftHandle = render(
+    const leftHandle = createElement(
       'div',
       {
         part: 'region-handle region-handle-left',
@@ -134,7 +134,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       element,
     )
 
-    const rightHandle = render(
+    const rightHandle = createElement(
       'div',
       {
         part: 'region-handle region-handle-right',
@@ -188,7 +188,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       elementTop = elementHeight * this.channelIdx
     }
 
-    const element = render('div', {
+    const element = createElement('div', {
       style: {
         position: 'absolute',
         top: `${elementTop}%`,
@@ -219,7 +219,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   }
 
   private toggleCursor(toggle: boolean) {
-    if (!this.drag) return
+    if (!this.drag || !this.element?.style) return
     this.element.style.cursor = toggle ? 'grabbing' : 'grab'
   }
 
@@ -270,7 +270,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       this.end = newEnd
 
       this.renderPosition()
-      this.emit('update')
+      this.emit('update', side)
     }
   }
 
@@ -319,7 +319,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     }
     if (typeof content === 'string') {
       const isMarker = this.start === this.end
-      this.content = render('div', {
+      this.content = createElement('div', {
         style: {
           padding: `0.2em ${isMarker ? 0.2 : 0.4}em`,
           display: 'inline-block',
@@ -439,7 +439,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
   }
 
   private initRegionsContainer(): HTMLElement {
-    return render('div', {
+    return createElement('div', {
       style: {
         position: 'absolute',
         top: '0',
@@ -502,8 +502,11 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     this.regions.push(region)
 
     const regionSubscriptions = [
-      region.on('update', () => {
-        this.adjustScroll(region)
+      region.on('update', (side) => {
+        // Undefined side indicates that we are dragging not resizing
+        if (!side) {
+          this.adjustScroll(region)
+        }
       }),
 
       region.on('update-end', () => {

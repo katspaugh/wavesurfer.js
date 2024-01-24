@@ -1,5 +1,6 @@
-import type { GenericPlugin } from './base-plugin.js'
+import BasePlugin, { type GenericPlugin } from './base-plugin.js'
 import Decoder from './decoder.js'
+import * as dom from './dom.js'
 import Fetcher from './fetcher.js'
 import Player from './player.js'
 import Renderer from './renderer.js'
@@ -99,8 +100,10 @@ export type WaveSurferEvents = {
   decode: [duration: number]
   /** When the audio is both decoded and can play */
   ready: [duration: number]
-  /** When a waveform is drawn */
+  /** When visible waveform is drawn */
   redraw: []
+  /** When all audio channel chunks of the waveform have drawn */
+  redrawcomplete: []
   /** When the audio starts playing */
   play: []
   /** When the audio pauses */
@@ -137,6 +140,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private decodedData: AudioBuffer | null = null
   protected subscriptions: Array<() => void> = []
   protected mediaSubscriptions: Array<() => void> = []
+
+  public static readonly BasePlugin = BasePlugin
+  public static readonly dom = dom
 
   /** Create a new WaveSurfer instance */
   public static create(options: WaveSurferOptions) {
@@ -180,14 +186,20 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     })
   }
 
+  private updateProgress(currentTime = this.getCurrentTime()): number {
+    this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())
+    return currentTime
+  }
+
   private initTimerEvents() {
     // The timer fires every 16ms for a smooth progress animation
     this.subscriptions.push(
       this.timer.on('tick', () => {
-        const currentTime = this.getCurrentTime()
-        this.renderer.renderProgress(currentTime / this.getDuration(), true)
-        this.emit('timeupdate', currentTime)
-        this.emit('audioprocess', currentTime)
+        if (!this.isSeeking()) {
+          const currentTime = this.updateProgress()
+          this.emit('timeupdate', currentTime)
+          this.emit('audioprocess', currentTime)
+        }
       }),
     )
   }
@@ -200,8 +212,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     this.mediaSubscriptions.push(
       this.onMediaEvent('timeupdate', () => {
-        const currentTime = this.getCurrentTime()
-        this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())
+        const currentTime = this.updateProgress()
         this.emit('timeupdate', currentTime)
       }),
 
@@ -254,6 +265,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       // Redraw
       this.renderer.on('render', () => {
         this.emit('redraw')
+      }),
+
+      // RedrawComplete
+      this.renderer.on('rendered', () => {
+        this.emit('redrawcomplete')
       }),
     )
 
@@ -441,6 +457,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   /** Toggle if the waveform should react to clicks */
   public toggleInteraction(isInteractive: boolean) {
     this.options.interact = isInteractive
+  }
+
+  /** Jumpt to a specific time in the audio (in seconds) */
+  public setTime(time: number) {
+    super.setTime(time)
+    this.updateProgress(time)
   }
 
   /** Seek to a percentage of audio as [0..1] (0 = beginning, 1 = end) */
