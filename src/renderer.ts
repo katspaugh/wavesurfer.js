@@ -212,7 +212,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
       <div class="scroll" part="scroll">
         <div class="wrapper" part="wrapper">
-          <div class="canvases" part="canvases"></div>
+          <div class="canvases"></div>
           <div class="progress" part="progress"></div>
           <div class="cursor" part="cursor"></div>
         </div>
@@ -442,7 +442,6 @@ class Renderer extends EventEmitter<RendererEvents> {
   ) {
     const pixelRatio = window.devicePixelRatio || 1
     const canvas = document.createElement('canvas')
-    canvas.setAttribute('part', 'canvas canvas-wave')
     const length = channelData[0].length
     canvas.width = Math.round((width * (end - start)) / length)
     canvas.height = height * pixelRatio
@@ -462,7 +461,6 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Draw a progress canvas
     if (canvas.width > 0 && canvas.height > 0) {
       const progressCanvas = canvas.cloneNode() as HTMLCanvasElement
-      progressCanvas.setAttribute('part', 'canvas canvas-progress');
       const progressCtx = progressCanvas.getContext('2d') as CanvasRenderingContext2D
       progressCtx.drawImage(canvas, 0, 0)
       // Set the composition method to draw only where the waveform is drawn
@@ -481,7 +479,6 @@ class Renderer extends EventEmitter<RendererEvents> {
   ): Promise<void> {
     // A container for canvases
     const canvasContainer = document.createElement('div')
-    canvasContainer.setAttribute('part', 'canvas-container')
     const height = this.getHeight(options.height)
     canvasContainer.style.height = `${height}px`
     this.canvasWrapper.style.minHeight = `${height}px`
@@ -489,7 +486,6 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // A container for progress canvases
     const progressContainer = canvasContainer.cloneNode() as HTMLElement
-    progressContainer.setAttribute('part', 'progress-container')
     this.progressWrapper.appendChild(progressContainer)
 
     const dataLength = channelData[0].length
