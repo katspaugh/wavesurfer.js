@@ -625,15 +625,15 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Remember the current cursor position
     const { scrollWidth } = this.scrollContainer
-    const oldCursorPosition = this.progressWrapper.clientWidth
+    const before = this.progressWrapper.getBoundingClientRect()
 
     // Re-render the waveform
     this.render(this.audioData)
 
     // Adjust the scroll position so that the cursor stays in the same place
     if (this.isScrollable && scrollWidth !== this.scrollContainer.scrollWidth) {
-      const newCursorPosition = this.progressWrapper.clientWidth
-      this.scrollContainer.scrollLeft += newCursorPosition - oldCursorPosition
+      const after = this.progressWrapper.getBoundingClientRect()
+      this.scrollContainer.scrollLeft += Math.floor(after.right - before.right)
     }
   }
 
