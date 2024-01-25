@@ -173,6 +173,8 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       },
     })
 
+    timeline.setAttribute('part', 'timeline')
+
     if (typeof this.options.style === 'string') {
       timeline.setAttribute('style', timeline.getAttribute('style') + this.options.style)
     } else if (typeof this.options.style === 'object') {
