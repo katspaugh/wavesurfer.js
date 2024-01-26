@@ -558,7 +558,6 @@ class Renderer extends EventEmitter<RendererEvents> {
         }
       })(),
     ])
-
   }
 
   async render(audioData: AudioBuffer) {
