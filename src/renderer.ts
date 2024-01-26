@@ -534,7 +534,10 @@ class Renderer extends EventEmitter<RendererEvents> {
       return
     }
 
+    // Draw the visible part of the waveform
     draw(start, end)
+
+    // Draw the waveform in chunks equal to the size of the viewport, starting from the position of the viewport
     await Promise.all([
       // Draw the chunks to the left of the viewport
       (async () => {
@@ -555,6 +558,7 @@ class Renderer extends EventEmitter<RendererEvents> {
         }
       })(),
     ])
+
   }
 
   async render(audioData: AudioBuffer) {
