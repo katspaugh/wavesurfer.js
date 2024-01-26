@@ -530,30 +530,32 @@ class Renderer extends EventEmitter<RendererEvents> {
     const end = Math.floor(start + viewportWidth * scale)
     const viewportLen = end - start
 
-    // Draw the visible part of the waveform
-    draw(start, end)
+    if (viewportLen > 0) {
+      // Draw the visible part of the waveform
+      draw(start, end)
 
-    // Draw the waveform in chunks equal to the size of the viewport, starting from the position of the viewport
-    await Promise.all([
-      // Draw the chunks to the left of the viewport
-      (async () => {
-        if (start === 0) return
-        const delay = this.createDelay()
-        for (let i = start; i >= 0; i -= viewportLen) {
-          await delay()
-          draw(Math.max(0, i - viewportLen), i)
-        }
-      })(),
-      // Draw the chunks to the right of the viewport
-      (async () => {
-        if (end === dataLength) return
-        const delay = this.createDelay()
-        for (let i = end; i < dataLength; i += viewportLen) {
-          await delay()
-          draw(i, Math.min(dataLength, i + viewportLen))
-        }
-      })(),
-    ])
+      // Draw the waveform in chunks equal to the size of the viewport, starting from the position of the viewport
+      await Promise.all([
+        // Draw the chunks to the left of the viewport
+        (async () => {
+          if (start === 0) return
+          const delay = this.createDelay()
+          for (let i = start; i >= 0; i -= viewportLen) {
+            await delay()
+            draw(Math.max(0, i - viewportLen), i)
+          }
+        })(),
+        // Draw the chunks to the right of the viewport
+        (async () => {
+          if (end === dataLength) return
+          const delay = this.createDelay()
+          for (let i = end; i < dataLength; i += viewportLen) {
+            await delay()
+            draw(i, Math.min(dataLength, i + viewportLen))
+          }
+        })(),
+      ])
+    }
   }
 
   async render(audioData: AudioBuffer) {
