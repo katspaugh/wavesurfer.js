@@ -530,6 +530,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     const end = Math.floor(start + viewportWidth * scale)
     const viewportLen = end - start
 
+    if (viewportLen <= 0) {
+      return
+    }
+
     // Draw the visible part of the waveform
     draw(start, end)
 
