@@ -27,6 +27,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   public currentSrc = ''
   public paused = true
   public crossOrigin: string | null = null
+  public seeking = false
 
   constructor(audioContext = new AudioContext()) {
     super()
@@ -59,7 +60,12 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     }
 
     fetch(value)
-      .then((response) => response.arrayBuffer())
+      .then((response) => {
+        if (response.status >= 400) {
+          throw new Error(`Failed to fetch ${value}: ${response.status} (${response.statusText})`)
+        }
+        return response.arrayBuffer()
+      })
       .then((arrayBuffer) => {
         if (this.currentSrc !== value) return null
         return this.audioContext.decodeAudioData(arrayBuffer)
@@ -101,18 +107,19 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   private _pause() {
-    if (this.paused) return
     this.paused = true
     this.bufferNode?.stop()
     this.playedDuration += this.audioContext.currentTime - this.playStartTime
   }
 
   async play() {
+    if (!this.paused) return
     this._play()
     this.emit('play')
   }
 
   pause() {
+    if (this.paused) return
     this._pause()
     this.emit('pause')
   }
