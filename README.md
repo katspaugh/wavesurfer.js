@@ -108,6 +108,11 @@ However, please keep in mind that this forum is dedicated to wavesurfer-specific
   <p>Alternatively, you can use the <a href="https://wavesurfer.xyz/examples/?webaudio-shim.js">Web Audio shim</a> which is more accurate.</p>
 </details>
 
+<details>
+  <summary>How do I connect wavesurfer.js to Web Audio effects?</summary>
+Generally, wavesurfer.js doesn't aim to be a wrapper for all things Web Audio. It's just a player with a waveform visualization. It _does_ allow connecting itself to a Web Audio graph by exporting its audio element (see [this example](https://wavesurfer.xyz/examples/?4436ec40a2ab943243755e659ae32196)) but nothign more than that. Please don't expect wavesurfer to be able to cut, add effects, or process your audio in any way.
+</details>
+
 ## v7 – a new TypeScript version
 
 Wavesurfer.js v7 is a TypeScript rewrite of wavesurfer.js that brings several improvements:
