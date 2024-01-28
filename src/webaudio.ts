@@ -23,6 +23,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   private playStartTime = 0
   private playedDuration = 0
   private _muted = false
+  private _playbackRate = 1
   private buffer: AudioBuffer | null = null
   public currentSrc = ''
   public paused = true
@@ -89,13 +90,16 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.bufferNode?.disconnect()
     this.bufferNode = this.audioContext.createBufferSource()
     this.bufferNode.buffer = this.buffer
+    this.bufferNode.playbackRate.value = this._playbackRate
     this.bufferNode.connect(this.gainNode)
 
-    if (this.playedDuration >= this.duration) {
+    let currentPos = this.playedDuration * this._playbackRate
+    if (currentPos >= this.duration) {
+      currentPos = 0
       this.playedDuration = 0
     }
 
-    this.bufferNode.start(this.audioContext.currentTime, this.playedDuration)
+    this.bufferNode.start(this.audioContext.currentTime, currentPos)
     this.playStartTime = this.audioContext.currentTime
 
     this.bufferNode.onended = () => {
@@ -144,27 +148,28 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   get playbackRate() {
-    return this.bufferNode?.playbackRate.value ?? 1
+    return this._playbackRate
   }
   set playbackRate(value) {
+    this._playbackRate = value
     if (this.bufferNode) {
       this.bufferNode.playbackRate.value = value
     }
   }
 
   get currentTime() {
-    return this.paused ? this.playedDuration : this.playedDuration + this.audioContext.currentTime - this.playStartTime
+    const time = this.paused
+      ? this.playedDuration
+      : this.playedDuration + (this.audioContext.currentTime - this.playStartTime)
+    return time * this._playbackRate
   }
   set currentTime(value) {
     this.emit('seeking')
+    const wasPlaying = !this.paused
 
-    if (this.paused) {
-      this.playedDuration = value
-    } else {
-      this._pause()
-      this.playedDuration = value
-      this._play()
-    }
+    wasPlaying && this._pause()
+    this.playedDuration = value / this._playbackRate
+    wasPlaying && this._play()
 
     this.emit('timeupdate')
   }
