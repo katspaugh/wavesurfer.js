@@ -44,7 +44,12 @@
     },
     "./dist/*": {
       "import": "./dist/*"
-    }
+    },
+    "./dist/plugins/*.esm.js": {
+      "import": "./dist/plugins/*.esm.js",
+      "types": "./dist/plugins/*.d.ts",
+      "require": "./dist/plugins/*.cjs"
+    },
   },
   "scripts": {
     "build:dev": "tsc -w --target ESNext",
