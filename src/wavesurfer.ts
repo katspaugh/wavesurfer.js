@@ -130,7 +130,7 @@ export type WaveSurferEvents = {
   zoom: [minPxPerSec: number]
   /** Just before the waveform is destroyed so you can clean up your events */
   destroy: []
-  /** When browser is unable to fetch media file */
+  /** When source file is unable to be fetched, decoded, or an error is thrown by media element */
   error: []
 }
 
