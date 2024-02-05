@@ -400,6 +400,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     } else if (blob) {
       const arrayBuffer = await blob.arrayBuffer()
       this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
+        .then((buffer) => buffer)
+        .catch(() => {
+          this.emit('error')
+          return null
+        })
     }
 
     if (this.decodedData) {
