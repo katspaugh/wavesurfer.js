@@ -93,6 +93,11 @@ However, please keep in mind that this forum is dedicated to wavesurfer-specific
 ### FAQ
 
 <details>
+  <summary>I'm having CORS issues</summary>
+  Wavesurfer fetches audio from the URL you specify in order to decode it. Make sure this URL allows fetching data from your domain. In browser JavaScript, you can only fetch data eithetr from <b>the same domain</b> or another domain if and only if that domain enables <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">CORS</a>. So if your audio file is on an external domain, make sure that domain sends the right Access-Control-Allow-Origin headers. There's nothing you can do about it from the requesting side (i.e. your JS code).
+</details>
+
+<details>
   <summary>Does wavesurfer support large files?</summary>
   Since wavesurfer decodes audio entirely in the browser using Web Audio, large clips may fail to decode due to memory constraints. We recommend using pre-decoded peaks for large files (see <a href="https://wavesurfer.xyz/examples/?predecoded.js">this example</a>). You can use a tool like <a href="https://github.com/bbc/audiowaveform">bbc/audiowaveform</a> to generate peaks.
 </details>
