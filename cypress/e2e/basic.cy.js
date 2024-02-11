@@ -143,6 +143,23 @@ describe('WaveSurfer basic tests', () => {
     })
   })
 
+  it('should scroll on setScrollTime if zoomed in', () => {
+    cy.window().then((win) => {
+      win.wavesurfer.zoom(300)
+      const zoomedWidth = win.wavesurfer.getWrapper().clientWidth
+      win.wavesurfer.zoom(600)
+      const newWidth = win.wavesurfer.getWrapper().clientWidth
+
+      expect(Math.round(newWidth / zoomedWidth)).to.equal(2)
+
+      win.wavesurfer.setScrollTime(20)
+
+      cy.wait(1000).then(() => {
+        expect(win.wavesurfer.getScroll()).to.be.greaterThan(100)
+      })
+    })
+  })
+
   it('should export decoded audio data', () => {
     cy.window().then((win) => {
       const data = win.wavesurfer.getDecodedData()
