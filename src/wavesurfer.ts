@@ -350,7 +350,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.renderer.getScroll()
   }
 
-  /** Move the viewing window to a specific time in the audio (in seconds) */
+  /** Move the start of the viewing window to a specific time in the audio (in seconds) */
   public setScrollTime(time: number) {
     let percentage = time / this.getDuration()
     this.renderer.setScrollPercentage(percentage)
