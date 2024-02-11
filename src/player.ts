@@ -106,7 +106,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     return !this.media.paused && !this.media.ended
   }
 
-  /** Jumpt to a specific time in the audio (in seconds) */
+  /** Jump to a specific time in the audio (in seconds) */
   public setTime(time: number) {
     this.media.currentTime = time
   }
