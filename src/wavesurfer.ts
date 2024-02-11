@@ -350,6 +350,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.renderer.getScroll()
   }
 
+  /** Move the start of the viewing window to a specific time in the audio (in seconds) */
+  public setScrollTime(time: number) {
+    const percentage = time / this.getDuration()
+    this.renderer.setScrollPercentage(percentage)
+  }
+
   /** Get all registered plugins */
   public getActivePlugins() {
     return this.plugins
@@ -459,7 +465,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.options.interact = isInteractive
   }
 
-  /** Jumpt to a specific time in the audio (in seconds) */
+  /** Jump to a specific time in the audio (in seconds) */
   public setTime(time: number) {
     super.setTime(time)
     this.updateProgress(time)

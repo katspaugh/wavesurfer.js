@@ -249,6 +249,16 @@ class Renderer extends EventEmitter<RendererEvents> {
     return this.scrollContainer.scrollLeft
   }
 
+  private setScroll(pixels: number) {
+    this.scrollContainer.scrollLeft = pixels
+  }
+
+  setScrollPercentage(percent: number) {
+    const { scrollWidth } = this.scrollContainer
+    const scrollStart =  scrollWidth * percent
+    this.setScroll(scrollStart)
+  }
+
   destroy() {
     this.container.remove()
     this.resizeObserver?.disconnect()
