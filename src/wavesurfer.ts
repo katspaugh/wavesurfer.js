@@ -48,6 +48,8 @@ export type WaveSurferOptions = {
   mediaControls?: boolean
   /** Play the audio on load */
   autoplay?: boolean
+  /** Indicating what data should be preloaded. */
+  preload?: 'none' | 'metadata' | 'auto' | ''
   /** Pass false to disable clicks on the waveform */
   interact?: boolean
   /** Allow to drag the cursor to seek to a new position */
@@ -160,6 +162,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       mediaControls: options.mediaControls,
       autoplay: options.autoplay,
       playbackRate: options.audioRate,
+      preload: options.preload,
     })
 
     this.options = Object.assign({}, defaultOptions, options)

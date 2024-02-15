@@ -5,6 +5,7 @@ type PlayerOptions = {
   mediaControls?: boolean
   autoplay?: boolean
   playbackRate?: number
+  preload?: 'none' | 'metadata' | 'auto' | ''
 }
 
 class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
@@ -29,6 +30,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     if (options.autoplay) {
       this.media.autoplay = true
     }
+    // Preload
+    if (options.preload) {
+      this.media.preload = options.preload
+    }
+
     // Speed
     if (options.playbackRate != null) {
       this.onceMediaEvent('canplay', () => {
