@@ -124,6 +124,10 @@ export type WaveSurferEvents = {
   dblclick: [relativeX: number, relativeY: number]
   /** When the user drags the cursor */
   drag: [relativeX: number]
+  /** When the user starts dragging the cursor */
+  dragstart: [relativeX: number]
+  /** When the user ends dragging the cursor */
+  dragend: [relativeX: number]
   /** When the waveform is scrolled (panned) */
   scroll: [visibleStartTime: number, visibleEndTime: number]
   /** When the zoom level changes */
@@ -270,6 +274,16 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       // RedrawComplete
       this.renderer.on('rendered', () => {
         this.emit('redrawcomplete')
+      }),
+
+      // DragStart
+      this.renderer.on('dragstart', (relativeX) => {
+        this.emit('dragstart', relativeX)
+      }),
+
+      // DragEnd
+      this.renderer.on('dragend', (relativeX) => {
+        this.emit('dragend', relativeX)
       }),
     )
 
