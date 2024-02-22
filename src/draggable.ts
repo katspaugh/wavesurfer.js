@@ -2,7 +2,7 @@ export function makeDraggable(
   element: HTMLElement | null,
   onDrag: (dx: number, dy: number, x: number, y: number) => void,
   onStart?: (x: number, y: number) => void,
-  onEnd?: () => void,
+  onEnd?: (x: number, y: number) => void,
   threshold = 3,
   mouseButton = 0,
 ): () => void {
@@ -45,9 +45,14 @@ export function makeDraggable(
       }
     }
 
-    const onPointerUp = () => {
+    const onPointerUp = (event: PointerEvent) => {
       if (isDragging) {
-        onEnd?.()
+        const x = event.clientX
+        const y = event.clientY
+        const rect = element.getBoundingClientRect()
+        const { left, top } = rect
+
+        onEnd?.(x - left, y - top)
       }
       unsubscribeDocument()
     }
@@ -55,7 +60,7 @@ export function makeDraggable(
     const onPointerLeave = (e: PointerEvent) => {
       // Listen to events only on the document and not on inner elements
       if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
-        onPointerUp()
+        onPointerUp(e)
       }
     }
 

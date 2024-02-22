@@ -6,6 +6,8 @@ type RendererEvents = {
   click: [relativeX: number, relativeY: number]
   dblclick: [relativeX: number, relativeY: number]
   drag: [relativeX: number]
+  dragstart: [relativeX: number]
+  dragend: [relativeX: number]
   scroll: [relativeStart: number, relativeEnd: number]
   render: []
   rendered: []
@@ -127,9 +129,15 @@ class Renderer extends EventEmitter<RendererEvents> {
         this.emit('drag', Math.max(0, Math.min(1, x / this.wrapper.getBoundingClientRect().width)))
       },
       // On start drag
-      () => (this.isDragging = true),
+      (x) => {
+        this.isDragging = true
+        this.emit('dragstart', Math.max(0, Math.min(1, x / this.wrapper.getBoundingClientRect().width)))
+      },
       // On end drag
-      () => (this.isDragging = false),
+      (x) => {
+        this.isDragging = false
+        this.emit('dragend', Math.max(0, Math.min(1, x / this.wrapper.getBoundingClientRect().width)))
+      },
     )
   }
 
@@ -255,7 +263,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   setScrollPercentage(percent: number) {
     const { scrollWidth } = this.scrollContainer
-    const scrollStart =  scrollWidth * percent
+    const scrollStart = scrollWidth * percent
     this.setScroll(scrollStart)
   }
 
