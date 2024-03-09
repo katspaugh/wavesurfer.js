@@ -92,7 +92,6 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Start playing the audio */
   public async play(): Promise<void> {
-    if (!this.media.src) return
     return this.media.play()
   }
 

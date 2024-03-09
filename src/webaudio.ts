@@ -19,16 +19,17 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   private audioContext: AudioContext
   private gainNode: GainNode
   private bufferNode: AudioBufferSourceNode | null = null
-  private autoplay = false
   private playStartTime = 0
   private playedDuration = 0
   private _muted = false
   private _playbackRate = 1
+  private _duration: number | undefined = undefined
   private buffer: AudioBuffer | null = null
   public currentSrc = ''
   public paused = true
   public crossOrigin: string | null = null
   public seeking = false
+  public autoplay = false
 
   constructor(audioContext = new AudioContext()) {
     super()
@@ -53,6 +54,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
   set src(value: string) {
     this.currentSrc = value
+    this._duration = undefined
 
     if (!value) {
       this.buffer = null
@@ -89,7 +91,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
     this.bufferNode?.disconnect()
     this.bufferNode = this.audioContext.createBufferSource()
-    this.bufferNode.buffer = this.buffer
+    if (this.buffer) {
+      this.bufferNode.buffer = this.buffer
+    }
     this.bufferNode.playbackRate.value = this._playbackRate
     this.bufferNode.connect(this.gainNode)
 
@@ -164,18 +168,21 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     return time * this._playbackRate
   }
   set currentTime(value) {
-    this.emit('seeking')
     const wasPlaying = !this.paused
 
     wasPlaying && this._pause()
     this.playedDuration = value / this._playbackRate
     wasPlaying && this._play()
 
+    this.emit('seeking')
     this.emit('timeupdate')
   }
 
   get duration() {
-    return this.buffer?.duration || 0
+    return this._duration ?? (this.buffer?.duration || 0)
+  }
+  set duration(value: number) {
+    this._duration = value
   }
 
   get volume() {
