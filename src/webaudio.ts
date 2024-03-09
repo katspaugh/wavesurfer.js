@@ -54,6 +54,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
   set src(value: string) {
     this.currentSrc = value
+    this._duration = undefined
 
     if (!value) {
       this.buffer = null
