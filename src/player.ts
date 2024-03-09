@@ -31,25 +31,25 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     }
     // Speed
     if (options.playbackRate != null) {
-      this.onceMediaEvent('canplay', () => {
-        if (options.playbackRate != null) {
-          this.media.playbackRate = options.playbackRate
-        }
-      })
+      this.onMediaEvent(
+        'canplay',
+        () => {
+          if (options.playbackRate != null) {
+            this.media.playbackRate = options.playbackRate
+          }
+        },
+        { once: true },
+      )
     }
   }
 
-  protected onMediaEvent(
-    event: keyof HTMLMediaElementEventMap,
-    callback: () => void,
-    options?: AddEventListenerOptions,
+  protected onMediaEvent<K extends keyof HTMLElementEventMap>(
+    event: K,
+    callback: (ev: HTMLElementEventMap[K]) => void,
+    options?: boolean | AddEventListenerOptions,
   ): () => void {
     this.media.addEventListener(event, callback, options)
-    return () => this.media.removeEventListener(event, callback)
-  }
-
-  protected onceMediaEvent(event: keyof HTMLMediaElementEventMap, callback: () => void): () => void {
-    return this.onMediaEvent(event, callback, { once: true })
+    return () => this.media.removeEventListener(event, callback, options)
   }
 
   protected getSrc() {

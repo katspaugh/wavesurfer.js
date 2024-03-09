@@ -187,9 +187,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       // of render w/o audio if pre-decoded peaks and duration are provided
       const url = this.options.url || this.getSrc() || ''
       if (url || (this.options.peaks && this.options.duration)) {
-        this.loadAudio(url, undefined, this.options.peaks, this.options.duration).catch((err) =>
-          this.emit('error', err),
-        )
+        // Swallow async errors because they cannot be caught from a constructor call.
+        // Subscribe to the wavesurfer's error event to handle them.
+        this.load(url, this.options.peaks, this.options.duration).catch(() => null)
       }
     })
   }
@@ -247,7 +247,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }),
 
       this.onMediaEvent('error', (err) => {
-        this.emit('error', err)
+        this.emit('error', err.error)
       }),
     )
   }
@@ -408,7 +408,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       duration ||
       this.getDuration() ||
       (await new Promise((resolve) => {
-        this.onceMediaEvent('loadedmetadata', () => resolve(this.getDuration()))
+        this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true })
       }))
 
     // Set the duration if the player is a WebAudioPlayer without a URL
