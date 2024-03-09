@@ -396,10 +396,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       blob = await Fetcher.fetchBlob(url, onProgress, this.options.fetchParams)
     }
 
-    if (!blob) {
-      return
-    }
-
     // Set the mediaelement source
     this.setSrc(url, blob)
 
