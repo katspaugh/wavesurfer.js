@@ -135,7 +135,7 @@ export type WaveSurferEvents = {
   /** Just before the waveform is destroyed so you can clean up your events */
   destroy: []
   /** When source file is unable to be fetched, decoded, or an error is thrown by media element */
-  error: []
+  error: [error: Error]
 }
 
 class WaveSurfer extends Player<WaveSurferEvents> {
@@ -187,7 +187,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       // of render w/o audio if pre-decoded peaks and duration are provided
       const url = this.options.url || this.getSrc() || ''
       if (url || (this.options.peaks && this.options.duration)) {
-        this.load(url, this.options.peaks, this.options.duration)
+        // Swallow async errors because they cannot be caught from a constructor call.
+        // Subscribe to the wavesurfer's error event to handle them.
+        this.load(url, this.options.peaks, this.options.duration).catch(() => null)
       }
     })
   }
@@ -244,8 +246,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.emit('seeking', this.getCurrentTime())
       }),
 
-      this.onMediaEvent('error', () => {
-        this.emit('error')
+      this.onMediaEvent('error', (err) => {
+        this.emit('error', err.error)
       }),
     )
   }
@@ -392,15 +394,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     if (!blob && !channelData) {
       const onProgress = (percentage: number) => this.emit('loading', percentage)
       blob = await Fetcher.fetchBlob(url, onProgress, this.options.fetchParams)
-        .then((blob) => blob)
-        .catch(() => {
-          this.emit('error')
-          return undefined
-        })
-    }
-
-    if (!blob) {
-      return
     }
 
     // Set the mediaelement source
@@ -411,7 +404,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       duration ||
       this.getDuration() ||
       (await new Promise((resolve) => {
-        this.onceMediaEvent('loadedmetadata', () => resolve(this.getDuration()))
+        this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true })
       }))
 
     // Set the duration if the player is a WebAudioPlayer without a URL
@@ -428,11 +421,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     } else if (blob) {
       const arrayBuffer = await blob.arrayBuffer()
       this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
-        .then((buffer) => buffer)
-        .catch(() => {
-          this.emit('error')
-          return null
-        })
     }
 
     if (this.decodedData) {
@@ -445,12 +433,22 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Load an audio file by URL, with optional pre-decoded audio data */
   public async load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number) {
-    await this.loadAudio(url, undefined, channelData, duration)
+    try {
+      return await this.loadAudio(url, undefined, channelData, duration)
+    } catch (err) {
+      this.emit('error', err as Error)
+      throw err
+    }
   }
 
   /** Load an audio blob */
   public async loadBlob(blob: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
-    await this.loadAudio('blob', blob, channelData, duration)
+    try {
+      return await this.loadAudio('blob', blob, channelData, duration)
+    } catch (err) {
+      this.emit('error', err as Error)
+      throw err
+    }
   }
 
   /** Zoom the waveform by a given pixels-per-second factor */

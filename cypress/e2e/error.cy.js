@@ -5,7 +5,7 @@ describe('WaveSurfer error handling tests', () => {
     cy.window().its('WaveSurfer').should('exist')
 
     cy.window().then((win) => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         win.wavesurfer = win.WaveSurfer.create({
           container: '#waveform',
           height: 200,
