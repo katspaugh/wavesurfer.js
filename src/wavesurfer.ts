@@ -134,6 +134,8 @@ export type WaveSurferEvents = {
   zoom: [minPxPerSec: number]
   /** Just before the waveform is destroyed so you can clean up your events */
   destroy: []
+  /** When source file is unable to be fetched, decoded, or an error is thrown by media element */
+  error: []
 }
 
 class WaveSurfer extends Player<WaveSurferEvents> {
@@ -240,6 +242,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
       this.onMediaEvent('seeking', () => {
         this.emit('seeking', this.getCurrentTime())
+      }),
+
+      this.onMediaEvent('error', () => {
+        this.emit('error')
       }),
     )
   }
@@ -386,6 +392,15 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     if (!blob && !channelData) {
       const onProgress = (percentage: number) => this.emit('loading', percentage)
       blob = await Fetcher.fetchBlob(url, onProgress, this.options.fetchParams)
+        .then((blob) => blob)
+        .catch(() => {
+          this.emit('error')
+          return undefined
+        })
+    }
+
+    if (!blob) {
+      return
     }
 
     // Set the mediaelement source
@@ -413,6 +428,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     } else if (blob) {
       const arrayBuffer = await blob.arrayBuffer()
       this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
+        .then((buffer) => buffer)
+        .catch(() => {
+          this.emit('error')
+          return null
+        })
     }
 
     if (this.decodedData) {
