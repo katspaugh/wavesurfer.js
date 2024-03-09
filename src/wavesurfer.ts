@@ -399,6 +399,14 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.onceMediaEvent('loadedmetadata', () => resolve(this.getDuration()))
       }))
 
+    // Set the duration if the player is a WebAudioPlayer without a URL
+    if (!url && !blob) {
+      const media = this.getMediaElement()
+      if (media instanceof WebAudioPlayer) {
+        media.duration = audioDuration
+      }
+    }
+
     // Decode the audio data or use user-provided peaks
     if (channelData) {
       this.decodedData = Decoder.createBuffer(channelData, audioDuration || 0)
