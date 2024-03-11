@@ -53,7 +53,7 @@ export type WaveSurferOptions = {
   /** Allow to drag the cursor to seek to a new position. If an object with `debounceTime` is provided instead
    * then `dragToSeek` will also be true. If `true` the default is 200ms
    */
-  dragToSeek?: boolean | DragToSeekOptions
+  dragToSeek?: boolean | { debounceTime: number }
   /** Hide the scrollbar */
   hideScrollbar?: boolean
   /** Audio rate, i.e. the playback speed */
@@ -76,10 +76,6 @@ export type WaveSurferOptions = {
   fetchParams?: RequestInit
   /** Playback "backend" to use, defaults to MediaElement */
   backend?: 'WebAudio' | 'MediaElement'
-}
-
-export type DragToSeekOptions = {
-  debounceTime?: number;
 }
 
 const defaultOptions = {
@@ -313,22 +309,19 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
           // Set the audio position with a debounce
           clearTimeout(debounce)
-          let debounceTime;
+          let debounceTime
 
           if (this.isPlaying()) {
-            debounceTime = 0;
+            debounceTime = 0
           } else if (this.options.dragToSeek === true) {
-            debounceTime = 200;
+            debounceTime = 200
           } else if (typeof this.options.dragToSeek === 'object' && this.options.dragToSeek !== undefined) {
-            debounceTime = this.options.dragToSeek['debounceTime'];
+            debounceTime = this.options.dragToSeek['debounceTime']
           }
 
-          debounce = setTimeout(
-            () => {
-              this.seekTo(relativeX)
-            },
-            debounceTime,
-          )
+          debounce = setTimeout(() => {
+            this.seekTo(relativeX)
+          }, debounceTime)
 
           this.emit('interaction', relativeX * this.getDuration())
           this.emit('drag', relativeX)
