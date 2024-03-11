@@ -92,7 +92,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     })
 
     // Drag
-    if (this.options.dragToSeek) {
+    if (this.options.dragToSeek === true || typeof this.options.dragToSeek === 'object') {
       this.initDrag()
     }
 
@@ -239,7 +239,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.parent = newParent
     }
 
-    if (options.dragToSeek && !this.options.dragToSeek) {
+    if (options.dragToSeek === true || typeof this.options.dragToSeek === 'object') {
       this.initDrag()
     }
 
