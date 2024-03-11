@@ -74,6 +74,8 @@ export type WaveSurferOptions = {
   fetchParams?: RequestInit
   /** Playback "backend" to use, defaults to MediaElement */
   backend?: 'WebAudio' | 'MediaElement'
+  /** Number of ms to debounce dragging when `dragToSeek` is true; defaults to 200ms */
+  dragDebounceTime?: number
 }
 
 const defaultOptions = {
@@ -87,6 +89,7 @@ const defaultOptions = {
   autoScroll: true,
   autoCenter: true,
   sampleRate: 8000,
+  dragDebounceTime: 200,
 }
 
 export type WaveSurferEvents = {
@@ -311,7 +314,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
             () => {
               this.seekTo(relativeX)
             },
-            this.isPlaying() ? 0 : 200,
+            this.isPlaying() ? 0 : this.options.dragDebounceTime,
           )
 
           this.emit('interaction', relativeX * this.getDuration())
