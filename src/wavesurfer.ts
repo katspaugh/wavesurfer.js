@@ -518,6 +518,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   public setTime(time: number) {
     super.setTime(time)
     this.updateProgress(time)
+    this.emit('timeupdate', time)
   }
 
   /** Seek to a percentage of audio as [0..1] (0 = beginning, 1 = end) */
