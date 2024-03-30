@@ -148,6 +148,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private decodedData: AudioBuffer | null = null
   protected subscriptions: Array<() => void> = []
   protected mediaSubscriptions: Array<() => void> = []
+  protected abortController: AbortController | null = null
 
   public static readonly BasePlugin = BasePlugin
   public static readonly dom = dom
@@ -170,6 +171,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       playbackRate: options.audioRate,
     })
 
+    this.abortController = new AbortController()
     this.options = Object.assign({}, defaultOptions, options)
     this.timer = new Timer()
 
@@ -402,7 +404,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // Fetch the entire audio as a blob if pre-decoded data is not provided
     if (!blob && !channelData) {
       const onProgress = (percentage: number) => this.emit('loading', percentage)
-      blob = await Fetcher.fetchBlob(url, onProgress, this.options.fetchParams)
+      const fetchParams = { signal: this.abortController?.signal, ...(this.options.fetchParams || {}) }
+      blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
     }
 
     // Set the mediaelement source
@@ -576,6 +579,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   /** Unmount wavesurfer */
   public destroy() {
     this.emit('destroy')
+    this.abortController?.abort()
     this.plugins.forEach((plugin) => plugin.destroy())
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.unsubscribePlayerEvents()
