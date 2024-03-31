@@ -82,7 +82,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     }
 
     if (this.options.insertPosition) {
-      ;(container.firstElementChild || container).insertAdjacentElement(
+      ; (container.firstElementChild || container).insertAdjacentElement(
         this.options.insertPosition,
         this.timelineWrapper,
       )
@@ -104,7 +104,10 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   }
 
   private initTimelineWrapper(): HTMLElement {
-    return createElement('div', { part: 'timeline-wrapper', style: { pointerEvents: 'none' } })
+    return createElement('div', {
+      part: 'timeline-wrapper',
+      style: { pointerEvents: 'none', height: `${this.options.height}px` },
+    })
   }
 
   // Return how many seconds should be between each notch
@@ -161,15 +164,15 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
         whiteSpace: 'nowrap',
         ...(isTop
           ? {
-              position: 'absolute',
-              top: '0',
-              left: '0',
-              right: '0',
-              zIndex: '2',
-            }
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            zIndex: '2',
+          }
           : {
-              position: 'relative',
-            }),
+            position: 'relative',
+          }),
       },
     })
 
