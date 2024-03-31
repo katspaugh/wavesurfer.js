@@ -60,6 +60,10 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
     }
 
     this.initWaveSurferEvents()
+
+    Promise.resolve().then(() => {
+      this.initMinimap()
+    })
   }
 
   private initMinimapWrapper(): HTMLElement {
