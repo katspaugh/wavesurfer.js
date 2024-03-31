@@ -65,7 +65,7 @@ export type WaveSurferOptions = {
   /** Decoding sample rate. Doesn't affect the playback. Defaults to 8000 */
   sampleRate?: number
   /** Render each audio channel as a separate waveform */
-  splitChannels?: Partial<WaveSurferOptions>[]
+  splitChannels?: Array<Partial<WaveSurferOptions> & { overlay?: boolean }>
   /** Stretch the waveform to the full height */
   normalize?: boolean
   /** The list of plugins to initialize on start */
