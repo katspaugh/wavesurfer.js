@@ -492,13 +492,17 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   private async renderChannel(
     channelData: Array<Float32Array | number[]>,
-    options: WaveSurferOptions,
+    { overlay, ...options }: WaveSurferOptions & { overlay?: boolean },
     width: number,
+    channelIndex: number,
   ): Promise<void> {
     // A container for canvases
     const canvasContainer = document.createElement('div')
     const height = this.getHeight(options.height)
     canvasContainer.style.height = `${height}px`
+    if (overlay && channelIndex > 0) {
+      canvasContainer.style.marginTop = `-${height}px`
+    }
     this.canvasWrapper.style.minHeight = `${height}px`
     this.canvasWrapper.appendChild(canvasContainer)
 
@@ -624,14 +628,14 @@ class Renderer extends EventEmitter<RendererEvents> {
         await Promise.all(
           Array.from({ length: audioData.numberOfChannels }).map((_, i) => {
             const options = { ...this.options, ...this.options.splitChannels?.[i] }
-            return this.renderChannel([audioData.getChannelData(i)], options, width)
+            return this.renderChannel([audioData.getChannelData(i)], options, width, i)
           }),
         )
       } else {
         // Render a single waveform for the first two channels (left and right)
         const channels = [audioData.getChannelData(0)]
         if (audioData.numberOfChannels > 1) channels.push(audioData.getChannelData(1))
-        await this.renderChannel(channels, this.options, width)
+        await this.renderChannel(channels, this.options, width, 0)
       }
     } catch {
       // Render cancelled due to another render
