@@ -29,10 +29,12 @@ class Renderer extends EventEmitter<RendererEvents> {
   private resizeObserver: ResizeObserver | null = null
   private lastContainerWidth = 0
   private isDragging = false
+  private subscriptions: (() => void)[] = []
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
 
+    this.subscriptions = []
     this.options = options
 
     const parent = this.parentFromOptionsContainer(options.container)
@@ -122,22 +124,24 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   private initDrag() {
-    makeDraggable(
-      this.wrapper,
-      // On drag
-      (_, __, x) => {
-        this.emit('drag', Math.max(0, Math.min(1, x / this.wrapper.getBoundingClientRect().width)))
-      },
-      // On start drag
-      (x) => {
-        this.isDragging = true
-        this.emit('dragstart', Math.max(0, Math.min(1, x / this.wrapper.getBoundingClientRect().width)))
-      },
-      // On end drag
-      (x) => {
-        this.isDragging = false
-        this.emit('dragend', Math.max(0, Math.min(1, x / this.wrapper.getBoundingClientRect().width)))
-      },
+    this.subscriptions.push(
+      makeDraggable(
+        this.wrapper,
+        // On drag
+        (_, __, x) => {
+          this.emit('drag', Math.max(0, Math.min(1, x / this.wrapper.getBoundingClientRect().width)))
+        },
+        // On start drag
+        (x) => {
+          this.isDragging = true
+          this.emit('dragstart', Math.max(0, Math.min(1, x / this.wrapper.getBoundingClientRect().width)))
+        },
+        // On end drag
+        (x) => {
+          this.isDragging = false
+          this.emit('dragend', Math.max(0, Math.min(1, x / this.wrapper.getBoundingClientRect().width)))
+        },
+      ),
     )
   }
 
@@ -268,6 +272,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   destroy() {
+    this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.container.remove()
     this.resizeObserver?.disconnect()
   }
