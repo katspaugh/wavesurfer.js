@@ -78,10 +78,12 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   public maxLength = Infinity
   public channelIdx: number
   public contentEditable = false
+  public subscriptions: (() => void)[] = []
 
   constructor(params: RegionParams, private totalDuration: number, private numberOfChannels = 0) {
     super()
 
+    this.subscriptions = []
     this.id = params.id || `region-${Math.random().toString(32).slice(2)}`
     this.start = this.clampPosition(params.start)
     this.end = this.clampPosition(params.end ?? params.start)
@@ -150,19 +152,21 @@ class SingleRegion extends EventEmitter<RegionEvents> {
 
     // Resize
     const resizeThreshold = 1
-    makeDraggable(
-      leftHandle,
-      (dx) => this.onResize(dx, 'start'),
-      () => null,
-      () => this.onEndResizing(),
-      resizeThreshold,
-    )
-    makeDraggable(
-      rightHandle,
-      (dx) => this.onResize(dx, 'end'),
-      () => null,
-      () => this.onEndResizing(),
-      resizeThreshold,
+    this.subscriptions.push(
+      makeDraggable(
+        leftHandle,
+        (dx) => this.onResize(dx, 'start'),
+        () => null,
+        () => this.onEndResizing(),
+        resizeThreshold,
+      ),
+      makeDraggable(
+        rightHandle,
+        (dx) => this.onResize(dx, 'end'),
+        () => null,
+        () => this.onEndResizing(),
+        resizeThreshold,
+      ),
     )
   }
 
@@ -235,14 +239,16 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     element.addEventListener('pointerup', () => this.toggleCursor(false))
 
     // Drag
-    makeDraggable(
-      element,
-      (dx) => this.onMove(dx),
-      () => this.toggleCursor(true),
-      () => {
-        this.toggleCursor(false)
-        this.drag && this.emit('update-end')
-      },
+    this.subscriptions.push(
+      makeDraggable(
+        element,
+        (dx) => this.onMove(dx),
+        () => this.toggleCursor(true),
+        () => {
+          this.toggleCursor(false)
+          this.drag && this.emit('update-end')
+        },
+      ),
     )
 
     if (this.contentEditable && this.content) {
@@ -379,6 +385,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   /** Remove the region */
   public remove() {
     this.emit('remove')
+    this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.element.remove()
     // This violates the type but we want to clean up the DOM reference
     // w/o having to have a nullable type of the element

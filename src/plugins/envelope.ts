@@ -55,10 +55,12 @@ class Polyline extends EventEmitter<{
       circle: SVGEllipseElement
     }
   >
+  private subscriptions: (() => void)[] = []
 
   constructor(options: Options, wrapper: HTMLElement) {
     super()
 
+    this.subscriptions = []
     this.options = options
     this.polyPoints = new Map()
 
@@ -109,21 +111,23 @@ class Polyline extends EventEmitter<{
 
     // Make the polyline draggable along the Y axis
     if (options.dragLine) {
-      makeDraggable(polyline as unknown as HTMLElement, (_, dy) => {
-        const { height } = svg.viewBox.baseVal
-        const { points } = polyline
-        for (let i = 1; i < points.numberOfItems - 1; i++) {
-          const point = points.getItem(i)
-          point.y = Math.min(height, Math.max(0, point.y + dy))
-        }
-        const circles = svg.querySelectorAll('ellipse')
-        Array.from(circles).forEach((circle) => {
-          const newY = Math.min(height, Math.max(0, Number(circle.getAttribute('cy')) + dy))
-          circle.setAttribute('cy', newY.toString())
-        })
+      this.subscriptions.push(
+        makeDraggable(polyline as unknown as HTMLElement, (_, dy) => {
+          const { height } = svg.viewBox.baseVal
+          const { points } = polyline
+          for (let i = 1; i < points.numberOfItems - 1; i++) {
+            const point = points.getItem(i)
+            point.y = Math.min(height, Math.max(0, point.y + dy))
+          }
+          const circles = svg.querySelectorAll('ellipse')
+          Array.from(circles).forEach((circle) => {
+            const newY = Math.min(height, Math.max(0, Number(circle.getAttribute('cy')) + dy))
+            circle.setAttribute('cy', newY.toString())
+          })
 
-        this.emit('line-move', dy / height)
-      })
+          this.emit('line-move', dy / height)
+        }),
+      )
     }
 
     // Listen to double click to add a new point
@@ -161,12 +165,14 @@ class Polyline extends EventEmitter<{
   }
 
   private makeDraggable(draggable: SVGElement, onDrag: (x: number, y: number) => void) {
-    makeDraggable(
-      draggable as unknown as HTMLElement,
-      onDrag,
-      () => (draggable.style.cursor = 'grabbing'),
-      () => (draggable.style.cursor = 'grab'),
-      1,
+    this.subscriptions.push(
+      makeDraggable(
+        draggable as unknown as HTMLElement,
+        onDrag,
+        () => (draggable.style.cursor = 'grabbing'),
+        () => (draggable.style.cursor = 'grab'),
+        1,
+      ),
     )
   }
 
@@ -267,6 +273,7 @@ class Polyline extends EventEmitter<{
   }
 
   destroy() {
+    this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.polyPoints.clear()
     this.svg.remove()
   }
