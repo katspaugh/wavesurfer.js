@@ -11,11 +11,19 @@ export type HoverPluginOptions = {
   labelColor?: string
   labelSize?: string | number
   labelBackground?: string
+  /* Allows to customize time label */
+  formatTimeCallback?: (seconds: number) => string
 }
 
 const defaultOptions = {
   lineWidth: 1,
   labelSize: 11,
+  formatTimeCallback(seconds: number) {
+    const minutes = Math.floor(seconds / 60)
+    const secondsRemainder = Math.floor(seconds) % 60
+    const paddedSeconds = `0${secondsRemainder}`.slice(-2)
+    return `${minutes}:${paddedSeconds}`
+  },
 }
 
 export type HoverPluginEvents = BasePluginEvents & {
@@ -93,13 +101,6 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     }
   }
 
-  private formatTime(seconds: number): string {
-    const minutes = Math.floor(seconds / 60)
-    const secondsRemainder = Math.floor(seconds) % 60
-    const paddedSeconds = `0${secondsRemainder}`.slice(-2)
-    return `${minutes}:${paddedSeconds}`
-  }
-
   private onPointerMove = (e: PointerEvent | WheelEvent) => {
     if (!this.wavesurfer) return
 
@@ -114,7 +115,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
 
     // Timestamp
     const duration = this.wavesurfer.getDuration() || 0
-    this.label.textContent = this.formatTime(duration * relX)
+    this.label.textContent = this.options.formatTimeCallback(duration * relX)
     const labelWidth = this.label.offsetWidth
     this.label.style.transform =
       posX + labelWidth > width ? `translateX(-${labelWidth + this.options.lineWidth}px)` : ''
