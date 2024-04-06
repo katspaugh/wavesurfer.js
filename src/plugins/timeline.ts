@@ -104,10 +104,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   }
 
   private initTimelineWrapper(): HTMLElement {
-    return createElement('div', {
-      part: 'timeline-wrapper',
-      style: { pointerEvents: 'none', height: `${this.options.height}px` },
-    })
+    return createElement('div', { part: 'timeline-wrapper', style: { pointerEvents: 'none' } })
   }
 
   // Return how many seconds should be between each notch
