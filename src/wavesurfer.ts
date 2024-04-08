@@ -171,7 +171,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       playbackRate: options.audioRate,
     })
 
-    this.abortController = new AbortController()
     this.options = Object.assign({}, defaultOptions, options)
     this.timer = new Timer()
 
@@ -403,8 +402,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     // Fetch the entire audio as a blob if pre-decoded data is not provided
     if (!blob && !channelData) {
+      const fetchParams = this.options.fetchParams || {}
+      if (window.AbortController && !fetchParams.signal) {
+        this.abortController = new AbortController()
+        fetchParams.signal = this.abortController?.signal;
+      }
       const onProgress = (percentage: number) => this.emit('loading', percentage)
-      const fetchParams = { signal: this.abortController?.signal, ...(this.options.fetchParams || {}) }
       blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
     }
 
