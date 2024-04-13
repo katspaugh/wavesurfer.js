@@ -1,115 +1,111 @@
 export function makeDraggable(
-  element: HTMLElement,
+  element: HTMLElement | null,
   onDrag: (dx: number, dy: number, x: number, y: number) => void,
   onStart?: (x: number, y: number) => void,
   onEnd?: (x: number, y: number) => void,
   threshold = 3,
   mouseButton = 0,
   touchDelay = 100,
-) {
+): () => void {
   if (!element) return () => void 0
 
-  let isPointerDown = false
-  let isDragging = false
-  let startX = 0
-  let startY = 0
-  let touchStart = 0
-  let rect: DOMRect
   const isTouchDevice = matchMedia('(pointer: coarse)').matches
 
-  const onPointerDown = (e: PointerEvent) => {
-    if (e.button !== mouseButton) return
-    e.stopPropagation()
+  let unsubscribeDocument = () => void 0
 
-    isPointerDown = true
-    isDragging = false
-    touchStart = Date.now()
-    rect = element.getBoundingClientRect()
-    startX = e.clientX - rect.left
-    startY = e.clientY - rect.top
-  }
+  const onPointerDown = (event: PointerEvent) => {
+    if (event.button !== mouseButton) return
 
-  const onPointerUp = (e: PointerEvent) => {
-    isPointerDown = false
-    touchStart = 0
+    event.preventDefault()
+    event.stopPropagation()
 
-    if (isDragging) {
-      e.preventDefault()
-      e.stopPropagation()
+    let startX = event.clientX
+    let startY = event.clientY
+    let isDragging = false
+    const touchStartTime = Date.now()
 
-      setTimeout(() => {
-        isDragging = false
-      }, 300)
+    const onPointerMove = (event: PointerEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
 
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
-      onEnd?.(x, y)
-    }
-  }
+      if (isTouchDevice && Date.now() - touchStartTime < touchDelay) return
 
-  const onPointerMove = (e: PointerEvent) => {
-    if (!isPointerDown) return
-    if (isTouchDevice && Date.now() - touchStart < touchDelay) return
+      const x = event.clientX
+      const y = event.clientY
+      const dx = x - startX
+      const dy = y - startY
 
-    e.preventDefault()
-    e.stopPropagation()
+      if (isDragging || Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
+        const rect = element.getBoundingClientRect()
+        const { left, top } = rect
 
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    const dx = x - startX
-    const dy = y - startY
+        if (!isDragging) {
+          onStart?.(startX - left, startY - top)
+          isDragging = true
+        }
 
-    if (isDragging || Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
-      if (!isDragging) {
-        onStart?.(startX, startY)
-        isDragging = true
+        onDrag(dx, dy, x - left, y - top)
+
+        startX = x
+        startY = y
       }
-
-      onDrag(dx, dy, x, y)
-
-      startX = x
-      startY = y
     }
-  }
 
-  const onPointerLeave = (e: PointerEvent) => {
-    // Listen to events only on the document and not on inner elements
-    if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
-      onPointerUp(e)
+    const onPointerUp = (event: PointerEvent) => {
+      if (isDragging) {
+        const x = event.clientX
+        const y = event.clientY
+        const rect = element.getBoundingClientRect()
+        const { left, top } = rect
+
+        onEnd?.(x - left, y - top)
+      }
+      unsubscribeDocument()
     }
-  }
 
-  const onTouchMove = (e: TouchEvent) => {
-    if (isDragging) {
-      e.preventDefault()
+    const onPointerLeave = (e: PointerEvent) => {
+      // Listen to events only on the document and not on inner elements
+      if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
+        onPointerUp(e)
+      }
     }
-  }
 
-  // Prevent clicks after dragging
-  const onClick = (e: MouseEvent) => {
-    if (isDragging) {
-      e.stopPropagation()
-      e.preventDefault()
+    const onClick = (event: MouseEvent) => {
+      if (isDragging) {
+        event.stopPropagation()
+        event.preventDefault()
+      }
+    }
+
+    const onTouchMove = (event: TouchEvent) => {
+      if (isDragging) {
+        event.preventDefault()
+      }
+    }
+
+    document.addEventListener('pointermove', onPointerMove)
+    document.addEventListener('pointerup', onPointerUp)
+    document.addEventListener('pointerout', onPointerLeave)
+    document.addEventListener('pointercancel', onPointerLeave)
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    document.addEventListener('click', onClick, { capture: true })
+
+    unsubscribeDocument = () => {
+      document.removeEventListener('pointermove', onPointerMove)
+      document.removeEventListener('pointerup', onPointerUp)
+      document.removeEventListener('pointerout', onPointerLeave)
+      document.removeEventListener('pointercancel', onPointerLeave)
+      document.removeEventListener('touchmove', onTouchMove)
+      setTimeout(() => {
+        document.removeEventListener('click', onClick, { capture: true })
+      }, 10)
     }
   }
 
   element.addEventListener('pointerdown', onPointerDown)
-  element.addEventListener('click', onClick, true)
-  document.addEventListener('click', onClick, true)
-  document.addEventListener('pointermove', onPointerMove)
-  document.addEventListener('touchmove', onTouchMove, { passive: false })
-  document.addEventListener('pointerup', onPointerUp)
-  document.addEventListener('pointerleave', onPointerLeave)
-  document.addEventListener('pointercancel', onPointerUp)
 
   return () => {
+    unsubscribeDocument()
     element.removeEventListener('pointerdown', onPointerDown)
-    element.removeEventListener('click', onClick, true)
-    document.removeEventListener('click', onClick, true)
-    document.removeEventListener('pointermove', onPointerMove)
-    document.removeEventListener('touchmove', onTouchMove)
-    document.removeEventListener('pointerup', onPointerUp)
-    document.removeEventListener('pointerleave', onPointerLeave)
-    document.removeEventListener('pointercancel', onPointerUp)
   }
 }
