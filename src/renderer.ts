@@ -261,7 +261,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     return this.scrollContainer.scrollLeft
   }
 
-  private setScroll(pixels: number) {
+  setScroll(pixels: number) {
     this.scrollContainer.scrollLeft = pixels
   }
 

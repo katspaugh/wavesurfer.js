@@ -382,6 +382,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.renderer.getScroll()
   }
 
+  /** Set the current scroll position in pixels */
+  public setScroll(pixels: number) {
+    return this.renderer.setScroll(pixels)
+  }
+
   /** Move the start of the viewing window to a specific time in the audio (in seconds) */
   public setScrollTime(time: number) {
     const percentage = time / this.getDuration()
