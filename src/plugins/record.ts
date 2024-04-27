@@ -53,6 +53,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private lastStartTime = 0
   private lastDuration = 0
   private duration = 0
+  private recordedChunks: BlobPart[] = []
 
   /** Create an instance of the Record plugin */
   constructor(options: RecordPluginOptions) {
@@ -187,16 +188,14 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     this.mediaRecorder = mediaRecorder
     this.stopRecording()
 
-    const recordedChunks: BlobPart[] = []
-
     mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
-        recordedChunks.push(event.data)
+        this.recordedChunks.push(event.data)
       }
     }
 
     const emitWithBlob = (ev: 'record-pause' | 'record-end') => {
-      const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType })
+      const blob = new Blob(this.recordedChunks, { type: mediaRecorder.mimeType })
       this.emit(ev, blob)
       if (this.options.renderRecordedAudio) {
         this.applyOriginalOptionsIfNeeded()
@@ -216,6 +215,11 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     this.timer.start()
 
     this.emit('record-start')
+  }
+
+  /** Get the current recorded chunks */
+  public getRecordedChunks(): BlobPart[] {
+    return this.recordedChunks
   }
 
   /** Get the duration of the recording */
