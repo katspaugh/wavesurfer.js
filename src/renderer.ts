@@ -75,7 +75,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     const getClickPosition = (e: MouseEvent): [number, number] => {
       const rect = this.wrapper.getBoundingClientRect()
       const x = e.clientX - rect.left
-      const y = e.clientX - rect.left
+      const y = e.clientY - rect.top
       const relativeX = x / rect.width
       const relativeY = y / rect.height
       return [relativeX, relativeY]
