@@ -3,7 +3,7 @@ import typescript from '@rollup/plugin-typescript'
 import terser from '@rollup/plugin-terser'
 import dts from 'rollup-plugin-dts'
 
-const plugins = [typescript(), terser()]
+const plugins = [typescript(), terser({ format: { comments: false } })]
 
 export default [
   // ES module
