@@ -410,7 +410,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       const fetchParams = this.options.fetchParams || {}
       if (window.AbortController && !fetchParams.signal) {
         this.abortController = new AbortController()
-        fetchParams.signal = this.abortController?.signal;
+        fetchParams.signal = this.abortController?.signal
       }
       const onProgress = (percentage: number) => this.emit('loading', percentage)
       blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
@@ -495,9 +495,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     for (let i = 0; i < maxChannels; i++) {
       const channel = this.decodedData.getChannelData(i)
       const data = []
-      const sampleSize = Math.round(channel.length / maxLength)
+      const sampleSize = channel.length / maxLength
       for (let i = 0; i < maxLength; i++) {
-        const sample = channel.slice(i * sampleSize, (i + 1) * sampleSize)
+        const sample = channel.slice(Math.floor(i * sampleSize), Math.ceil((i + 1) * sampleSize))
         let max = 0
         for (let x = 0; x < sample.length; x++) {
           const n = sample[x]
