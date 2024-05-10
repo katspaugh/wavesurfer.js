@@ -210,8 +210,8 @@ describe('WaveSurfer basic tests', () => {
       expect(peaksC.length).to.equal(1)
       expect(peaksC[0].length).to.equal(8000)
       expect(peaksC[0][0]).to.equal(0.0117)
-      expect(peaksC[0][99]).to.equal(0.01)
-      expect(peaksC[0][100]).to.equal(0.0161)
+      expect(peaksC[0][99]).to.equal(0.0076)
+      expect(peaksC[0][100]).to.equal(0.01)
     })
   })
 

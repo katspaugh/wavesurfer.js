@@ -5,10 +5,16 @@ jobs:
   eslint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: ./.github/workflows/yarn
 
-      - uses: Maggi64/eslint-plus-action@master
+      - name: Run lint
+        run: npm run lint:report
+        continue-on-error: true
+
+      - name: Annotate code with linting results
+        uses: ataylorme/eslint-annotate-action@v3
         with:
-          npmInstall: false
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          report-json: "eslint_report.json"

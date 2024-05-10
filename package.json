@@ -56,6 +56,7 @@
     "build": "rm -rf dist && tsc && rollup -c",
     "prepublishOnly": "npm run build",
     "lint": "eslint --ext .ts src --fix",
+    "lint:report": "eslint --output-file eslint_report.json --format json --ext .ts src",
     "prettier": "prettier -w '**/*.{js,ts,css}' --ignore-path .gitignore",
     "make-plugin": "./scripts/plugin.sh",
     "cypress": "cypress open --e2e",
