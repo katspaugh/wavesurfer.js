@@ -467,24 +467,26 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
   private avoidOverlapping(region: Region) {
     if (!region.content) return
 
-    // Check that the label doesn't overlap with other labels
-    // If it does, push it down until it doesn't
-    const div = region.content as HTMLElement
-    const box = div.getBoundingClientRect()
+    setTimeout(() => {
+      // Check that the label doesn't overlap with other labels
+      // If it does, push it down until it doesn't
+      const div = region.content as HTMLElement
+      const box = div.getBoundingClientRect()
 
-    const overlap = this.regions
-      .map((reg) => {
-        if (reg === region || !reg.content) return 0
+      const overlap = this.regions
+        .map((reg) => {
+          if (reg === region || !reg.content) return 0
 
-        const otherBox = reg.content.getBoundingClientRect()
-        if (box.left < otherBox.left + otherBox.width && otherBox.left < box.left + box.width) {
-          return otherBox.height
-        }
-        return 0
-      })
-      .reduce((sum, val) => sum + val, 0)
+          const otherBox = reg.content.getBoundingClientRect()
+          if (box.left < otherBox.left + otherBox.width && otherBox.left < box.left + box.width) {
+            return otherBox.height
+          }
+          return 0
+        })
+        .reduce((sum, val) => sum + val, 0)
 
-    div.style.marginTop = `${overlap}px`
+      div.style.marginTop = `${overlap}px`
+    }, 10)
   }
 
   private adjustScroll(region: Region) {
