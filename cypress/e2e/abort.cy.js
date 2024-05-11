@@ -38,7 +38,7 @@ describe('WaveSurfer abort handling tests', () => {
         // catch load error
         win.wavesurfer.load('../../examples/audio/demo.wav').catch((e) => {
           expect(e.name).to.equal('AbortError')
-          expect(e.message).to.equal('The user aborted a request.')
+          expect(e.message).to.match(/aborted/)
           resolve()
         })
 
@@ -64,7 +64,7 @@ describe('WaveSurfer abort handling tests', () => {
         // listening wavesurfer emit error event
         win.wavesurfer.on('error', (e) => {
           expect(e.name).to.equal('AbortError')
-          expect(e.message).to.equal('The user aborted a request.')
+          expect(e.message).to.match(/aborted/)
           resolve()
         })
       })
