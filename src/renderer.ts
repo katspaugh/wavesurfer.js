@@ -31,7 +31,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private lastContainerWidth = 0
   private isDragging = false
   private subscriptions: (() => void)[] = []
-  private unsubscribeOnScroll: () => void | undefined
+  private unsubscribeOnScroll?: () => void
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
@@ -511,7 +511,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     const totalWidth = width / pixelRatio
     let singleCanvasWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth)
-    let drawnIndexes = {}
+    let drawnIndexes: Record<number, boolean> = {}
 
     // Adjust width to avoid gaps between canvases when using bars
     if (options.barWidth || options.barGap) {
@@ -652,7 +652,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   reRender() {
     this.unsubscribeOnScroll?.()
-    this.unsubscribeOnScroll = undefined
+    delete this.unsubscribeOnScroll
 
     // Return if the waveform has not been rendered yet
     if (!this.audioData) return
