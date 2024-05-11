@@ -646,7 +646,8 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.renderChannel(channels, this.options, width, 0)
     }
 
-    this.emit('rendered')
+    // Must be emitted asynchronously for backward compatibility
+    Promise.resolve().then(() => this.emit('rendered'))
   }
 
   reRender() {
