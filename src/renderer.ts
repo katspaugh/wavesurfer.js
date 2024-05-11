@@ -454,32 +454,26 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   private renderSingleCanvas(
-    channelData: Array<Float32Array | number[]>,
+    data: Array<Float32Array | number[]>,
     options: WaveSurferOptions,
     width: number,
     height: number,
-    start: number,
-    end: number,
+    offset: number,
     canvasContainer: HTMLElement,
     progressContainer: HTMLElement,
   ) {
     const pixelRatio = window.devicePixelRatio || 1
     const canvas = document.createElement('canvas')
-    const length = channelData[0].length
-    canvas.width = Math.round((width * (end - start)) / length)
-    canvas.height = height * pixelRatio
-    canvas.style.width = `${Math.floor(canvas.width / pixelRatio)}px`
+    canvas.width = Math.round(width * pixelRatio)
+    canvas.height = Math.round(height * pixelRatio)
+    canvas.style.width = `${width}px`
     canvas.style.height = `${height}px`
-    canvas.style.left = `${Math.floor((start * width) / pixelRatio / length)}px`
+    canvas.style.left = `${Math.round(offset)}px`
     canvasContainer.appendChild(canvas)
 
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
-    this.renderWaveform(
-      channelData.map((channel) => channel.slice(start, end)),
-      options,
-      ctx,
-    )
+    this.renderWaveform(data, options, ctx)
 
     // Draw a progress canvas
     if (canvas.width > 0 && canvas.height > 0) {
@@ -495,12 +489,79 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
   }
 
+  private async renderMultiCanvas(
+    channelData: Array<Float32Array | number[]>,
+    options: WaveSurferOptions,
+    width: number,
+    height: number,
+    canvasContainer: HTMLElement,
+    progressContainer: HTMLElement,
+  ) {
+    const pixelRatio = window.devicePixelRatio || 1
+    const totalWidth = width / pixelRatio
+    let singleCanvasWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, this.scrollContainer.clientWidth)
+
+    // Adjust width to avoid gaps between canvases when using bars
+    if (options.barWidth || options.barGap) {
+      const barWidth = options.barWidth || 0.5
+      const barGap = options.barGap || barWidth / 2
+      const totalBarWidth = barWidth + barGap
+      if (singleCanvasWidth % totalBarWidth !== 0) {
+        singleCanvasWidth = Math.floor(singleCanvasWidth / totalBarWidth) * totalBarWidth
+      }
+    }
+
+    const draw = (index: number) => {
+      const offset = index * singleCanvasWidth
+      const clampedWidth = Math.min(totalWidth - offset, singleCanvasWidth)
+      const data = channelData.map((channel) => {
+        const start = Math.floor((offset / totalWidth) * channel.length)
+        const end = Math.floor(((offset + clampedWidth) / totalWidth) * channel.length)
+        return channel.slice(start, end)
+      })
+      this.renderSingleCanvas(data, options, clampedWidth, height, offset, canvasContainer, progressContainer)
+    }
+
+    const numCanvases = Math.ceil(totalWidth / singleCanvasWidth)
+
+    if (numCanvases === 1) {
+      draw(0)
+      return
+    }
+
+    // Draw the canvases in the viewport first
+    const viewPosition = this.scrollContainer.scrollLeft / totalWidth
+    const startCanvas = Math.floor(viewPosition * numCanvases)
+
+    draw(startCanvas)
+    draw(startCanvas + 1)
+
+    await Promise.all([
+      // Render canvases to the left of the viewport
+      (async () => {
+        const delay = this.createDelay()
+        for (let i = startCanvas - 1; i >= 0; i--) {
+          await delay()
+          draw(i)
+        }
+      })(),
+      // Render canvases to the right of the viewport
+      (async () => {
+        const delay = this.createDelay()
+        for (let i = startCanvas + 2; i < numCanvases; i++) {
+          await delay()
+          draw(i)
+        }
+      })(),
+    ])
+  }
+
   private async renderChannel(
     channelData: Array<Float32Array | number[]>,
     { overlay, ...options }: WaveSurferOptions & { overlay?: boolean },
     width: number,
     channelIndex: number,
-  ): Promise<void> {
+  ) {
     // A container for canvases
     const canvasContainer = document.createElement('div')
     const height = this.getHeight(options.height)
@@ -515,78 +576,8 @@ class Renderer extends EventEmitter<RendererEvents> {
     const progressContainer = canvasContainer.cloneNode() as HTMLElement
     this.progressWrapper.appendChild(progressContainer)
 
-    const dataLength = channelData[0].length
-
-    // Draw a portion of the waveform from start peak to end peak
-    const draw = (start: number, end: number) => {
-      this.renderSingleCanvas(
-        channelData,
-        options,
-        width,
-        height,
-        Math.max(0, start),
-        Math.min(end, dataLength),
-        canvasContainer,
-        progressContainer,
-      )
-    }
-
-    // Draw the entire waveform
-    // Note, when the waveform container's width is set to a very large value, then the waveform will not be scrollable.
-    // However, we still want to draw the waveform in chunks for a) performance improvements, and b) so that the canvas never exceeds the browser's maximum canvas width.
-    if (!this.isScrollable && width < Renderer.MAX_CANVAS_WIDTH) {
-      draw(0, dataLength)
-      return
-    }
-
-    // Determine the currently visible part of the waveform
-    const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
-    const scale = dataLength / scrollWidth
-
-    let viewportWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth)
-
-    // Adjust width to avoid gaps between canvases when using bars
-    if (options.barWidth || options.barGap) {
-      const barWidth = options.barWidth || 0.5
-      const barGap = options.barGap || barWidth / 2
-      const totalBarWidth = barWidth + barGap
-      if (viewportWidth % totalBarWidth !== 0) {
-        viewportWidth = Math.floor(viewportWidth / totalBarWidth) * totalBarWidth
-      }
-    }
-
-    const start = Math.floor(Math.abs(scrollLeft) * scale)
-    const end = Math.floor(start + viewportWidth * scale)
-    const viewportLen = end - start
-
-    if (viewportLen <= 0) {
-      return
-    }
-
-    // Draw the visible part of the waveform
-    draw(start, end)
-
-    // Draw the waveform in chunks equal to the size of the viewport, starting from the position of the viewport
-    await Promise.all([
-      // Draw the chunks to the left of the viewport
-      (async () => {
-        if (start === 0) return
-        const delay = this.createDelay()
-        for (let i = start; i >= 0; i -= viewportLen) {
-          await delay()
-          draw(Math.max(0, i - viewportLen), i)
-        }
-      })(),
-      // Draw the chunks to the right of the viewport
-      (async () => {
-        if (end === dataLength) return
-        const delay = this.createDelay()
-        for (let i = end; i < dataLength; i += viewportLen) {
-          await delay()
-          draw(i, Math.min(dataLength, i + viewportLen))
-        }
-      })(),
-    ])
+    // Render the waveform
+    await this.renderMultiCanvas(channelData, options, width, height, canvasContainer, progressContainer)
   }
 
   async render(audioData: AudioBuffer) {
