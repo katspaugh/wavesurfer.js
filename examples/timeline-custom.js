@@ -17,7 +17,7 @@ const topTimeline = TimelinePlugin.create({
 })
 
 // Create a second timeline
-const bottomTimline = TimelinePlugin.create({
+const bottomTimeline = TimelinePlugin.create({
   height: 10,
   timeInterval: 0.1,
   primaryLabelInterval: 1,
@@ -34,7 +34,7 @@ const wavesurfer = WaveSurfer.create({
   progressColor: 'rgb(100, 0, 100)',
   url: '/examples/audio/audio.wav',
   minPxPerSec: 100,
-  plugins: [topTimeline, bottomTimline],
+  plugins: [topTimeline, bottomTimeline],
 })
 
 // Play on click
