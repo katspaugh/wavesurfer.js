@@ -147,11 +147,19 @@ class Renderer extends EventEmitter<RendererEvents> {
     )
   }
 
-  private getHeight(optionsHeight?: WaveSurferOptions['height']): number {
+  private getHeight(
+    optionsHeight?: WaveSurferOptions['height'],
+    optionsSplitChannel?: WaveSurferOptions['splitChannels'],
+  ): number {
     const defaultHeight = 128
+    const numberOfChannels = this.audioData?.numberOfChannels || 1
     if (optionsHeight == null) return defaultHeight
     if (!isNaN(Number(optionsHeight))) return Number(optionsHeight)
-    if (optionsHeight === 'auto') return this.parent.clientHeight || defaultHeight
+    if (optionsHeight === 'auto') {
+      const height = this.parent.clientHeight || defaultHeight
+      if (optionsSplitChannel?.every((channel) => !channel.overlay)) return height / numberOfChannels
+      return height
+    }
     return defaultHeight
   }
 
@@ -189,7 +197,7 @@ class Renderer extends EventEmitter<RendererEvents> {
           z-index: 2;
         }
         :host .canvases {
-          min-height: ${this.getHeight(this.options.height)}px;
+          min-height: ${this.getHeight(this.options.height, this.options.splitChannels)}px;
         }
         :host .canvases > div {
           position: relative;
@@ -577,7 +585,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   ) {
     // A container for canvases
     const canvasContainer = document.createElement('div')
-    const height = this.getHeight(options.height)
+    const height = this.getHeight(options.height, options.splitChannels)
     canvasContainer.style.height = `${height}px`
     if (overlay && channelIndex > 0) {
       canvasContainer.style.marginTop = `-${height}px`
