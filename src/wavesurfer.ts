@@ -182,17 +182,20 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initTimerEvents()
     this.initPlugins()
 
+    // Read the initial URL before load has been called
+    const initialUrl = this.options.url || this.getSrc() || ''
+
     // Init and load async to allow external events to be registered
     Promise.resolve().then(() => {
       this.emit('init')
 
       // Load audio if URL or an external media with an src is passed,
       // of render w/o audio if pre-decoded peaks and duration are provided
-      const url = this.options.url || this.getSrc() || ''
-      if (url || (this.options.peaks && this.options.duration)) {
+      const { peaks, duration } = this.options
+      if (initialUrl || (peaks && duration)) {
         // Swallow async errors because they cannot be caught from a constructor call.
         // Subscribe to the wavesurfer's error event to handle them.
-        this.load(url, this.options.peaks, this.options.duration).catch(() => null)
+        this.load(initialUrl, peaks, duration).catch(() => null)
       }
     })
   }
