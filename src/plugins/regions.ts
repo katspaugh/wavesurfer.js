@@ -80,11 +80,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   public contentEditable = false
   public subscriptions: (() => void)[] = []
 
-  constructor(
-    params: RegionParams,
-    private totalDuration: number,
-    private numberOfChannels = 0,
-  ) {
+  constructor(params: RegionParams, private totalDuration: number, private numberOfChannels = 0) {
     super()
 
     this.subscriptions = []

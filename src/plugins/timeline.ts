@@ -143,6 +143,28 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     return 2
   }
 
+  private virtualAppend(start: number, container: HTMLElement, element: HTMLElement) {
+    const renderIfVisible = () => {
+      if (!this.wavesurfer) return
+      const clientWidth = this.wavesurfer.getWidth()
+      const scrollLeft = this.wavesurfer.getScroll()
+      const width = element.clientWidth
+      const isVisible = start + width > scrollLeft && start < scrollLeft + clientWidth
+
+      if (isVisible) {
+        container.appendChild(element)
+      } else {
+        element.remove()
+      }
+    }
+
+    setTimeout(() => {
+      if (!this.wavesurfer) return
+      renderIfVisible()
+      this.subscriptions.push(this.wavesurfer.on('scroll', renderIfVisible))
+    }, 0)
+  }
+
   private initTimeline() {
     const duration = this.wavesurfer?.getDuration() ?? this.options.duration ?? 0
     const pxPerSec = this.timelineWrapper.scrollWidth / duration
@@ -217,8 +239,9 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       const mode = isPrimary ? 'primary' : isSecondary ? 'secondary' : 'tick'
       notch.setAttribute('part', `timeline-notch timeline-notch-${mode}`)
 
-      notch.style.left = `${i * pxPerSec}px`
-      timeline.appendChild(notch)
+      const offset = i * pxPerSec
+      notch.style.left = `${offset}px`
+      this.virtualAppend(offset, timeline, notch)
     }
 
     this.timelineWrapper.innerHTML = ''
