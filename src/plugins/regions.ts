@@ -505,8 +505,37 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     }
   }
 
+  private virtualAppend(region: Region, container: HTMLElement, element: HTMLElement) {
+    const renderIfVisible = () => {
+      if (!this.wavesurfer) return
+      const clientWidth = this.wavesurfer.getWidth()
+      const scrollLeft = this.wavesurfer.getScroll()
+      const scrollWidth = container.clientWidth
+      const duration = this.wavesurfer.getDuration()
+      const start = Math.round((region.start / duration) * scrollWidth)
+      const width = Math.round(((region.end - region.start) / duration) * scrollWidth) || 1
+
+      // Check if the region is between the scrollLeft and scrollLeft + clientWidth
+      const isVisible = start + width > scrollLeft && start < scrollLeft + clientWidth
+
+      if (isVisible) {
+        container.appendChild(element)
+      } else {
+        element.remove()
+      }
+    }
+
+    setTimeout(() => {
+      if (!this.wavesurfer) return
+      renderIfVisible()
+
+      const unsubscribe = this.wavesurfer.on('scroll', renderIfVisible)
+      this.subscriptions.push(region.once('remove', unsubscribe), unsubscribe)
+    }, 0)
+  }
+
   private saveRegion(region: Region) {
-    this.regionsContainer.appendChild(region.element)
+    this.virtualAppend(region, this.regionsContainer, region.element)
     this.avoidOverlapping(region)
     this.regions.push(region)
 

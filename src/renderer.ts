@@ -267,6 +267,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     return this.wrapper
   }
 
+  getWidth(): number {
+    return this.scrollContainer.clientWidth
+  }
+
   getScroll(): number {
     return this.scrollContainer.scrollLeft
   }

@@ -77,24 +77,26 @@ describe('WaveSurfer Regions plugin tests', () => {
 
       expect(region.start).to.equal(3)
 
-      // Drag the region
-      const pointerDownEvent = new PointerEvent('pointerdown', {
-        clientX: 90,
-        clientY: 1,
-      })
-      const pointerMoveEvent = new PointerEvent('pointermove', {
-        clientX: 200,
-        clientY: 10,
-      })
-      const pointerUpEvent = new PointerEvent('pointerup', {
-        clientX: 200,
-        clientY: 10,
-      })
-      region.element.dispatchEvent(pointerDownEvent)
-      win.document.dispatchEvent(pointerMoveEvent)
-      win.document.dispatchEvent(pointerUpEvent)
+      return cy.wait(10).then(() => {
+        // Drag the region
+        const pointerDownEvent = new PointerEvent('pointerdown', {
+          clientX: 90,
+          clientY: 1,
+        })
+        const pointerMoveEvent = new PointerEvent('pointermove', {
+          clientX: 200,
+          clientY: 10,
+        })
+        const pointerUpEvent = new PointerEvent('pointerup', {
+          clientX: 200,
+          clientY: 10,
+        })
+        region.element.dispatchEvent(pointerDownEvent)
+        win.document.dispatchEvent(pointerMoveEvent)
+        win.document.dispatchEvent(pointerUpEvent)
 
-      expect(region.start).to.be.greaterThan(3)
+        expect(region.start).to.be.greaterThan(3)
+      })
     })
   })
 

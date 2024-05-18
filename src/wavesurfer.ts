@@ -380,6 +380,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.renderer.getWrapper()
   }
 
+  /** For plugins only: get the scroll container client width */
+  public getWidth(): number {
+    return this.renderer.getWidth()
+  }
+
   /** Get the current scroll position in pixels */
   public getScroll(): number {
     return this.renderer.getScroll()
