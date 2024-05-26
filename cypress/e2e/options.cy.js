@@ -597,4 +597,26 @@ describe('WaveSurfer options tests', () => {
       })
     })
   })
+
+  it('should load a blob', () => {
+    cy.window().then((win) => {
+      const wavesurfer = win.WaveSurfer.create({
+        container: id,
+        height: 100,
+      })
+
+      const blob = Cypress.Blob.base64StringToBlob(
+        'UklGRuYAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA=',
+        'audio/wav',
+      )
+
+      wavesurfer.loadBlob(
+        blob,
+        Array.from({ length: 512 }).map((_, i) => Math.sin(i / 16)),
+        10,
+      )
+
+      cy.get(id).matchImageSnapshot('loadBlob')
+    })
+  })
 })
