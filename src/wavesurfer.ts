@@ -472,7 +472,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   /** Load an audio blob */
   public async loadBlob(blob: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
     try {
-      return await this.loadAudio('blob', blob, channelData, duration)
+      return await this.loadAudio('', blob, channelData, duration)
     } catch (err) {
       this.emit('error', err as Error)
       throw err

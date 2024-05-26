@@ -597,4 +597,25 @@ describe('WaveSurfer options tests', () => {
       })
     })
   })
+
+  it('should load a blob', (done) => {
+    cy.window().then((win) => {
+      const wavesurfer = win.WaveSurfer.create({
+        container: id,
+      })
+
+      fetch('../../examples/audio/demo.wav')
+        .then((resp) => {
+          return resp.blob()
+        })
+        .then((blob) => {
+          wavesurfer.loadBlob(blob)
+        })
+
+      wrapReady(wavesurfer).then(() => {
+        cy.get(id).matchImageSnapshot('loadBlob')
+        done()
+      })
+    })
+  })
 })
