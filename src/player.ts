@@ -72,7 +72,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     if (url && src === url) return
     this.revokeSrc()
     const newSrc = blob instanceof Blob && (this.canPlayType(blob.type) || !url) ? URL.createObjectURL(blob) : url
-    this.media.src = newSrc
+    try {
+      this.media.src = newSrc
+    } catch (e) {
+      this.media.src = url
+    }
   }
 
   protected destroy() {
