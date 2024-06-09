@@ -109,13 +109,15 @@ class Renderer extends EventEmitter<RendererEvents> {
     })
 
     // Re-render the waveform on container resize
-    const delay = this.createDelay(100)
-    this.resizeObserver = new ResizeObserver(() => {
-      delay()
-        .then(() => this.onContainerResize())
-        .catch(() => undefined)
-    })
-    this.resizeObserver.observe(this.scrollContainer)
+    if (typeof ResizeObserver === 'function') {
+      const delay = this.createDelay(100)
+      this.resizeObserver = new ResizeObserver(() => {
+        delay()
+          .then(() => this.onContainerResize())
+          .catch(() => undefined)
+      })
+      this.resizeObserver.observe(this.scrollContainer)
+    }
   }
 
   private onContainerResize() {
