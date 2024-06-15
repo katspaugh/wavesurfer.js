@@ -167,7 +167,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
   private initTimeline() {
     const duration = this.wavesurfer?.getDuration() ?? this.options.duration ?? 0
-    const pxPerSec = this.timelineWrapper.scrollWidth / duration
+    const pxPerSec = (this.wavesurfer?.getWrapper().scrollWidth || this.timelineWrapper.scrollWidth) / duration
     const timeInterval = this.options.timeInterval ?? this.defaultTimeInterval(pxPerSec)
     const primaryLabelInterval = this.options.primaryLabelInterval ?? this.defaultPrimaryLabelInterval(pxPerSec)
     const primaryLabelSpacing = this.options.primaryLabelSpacing
