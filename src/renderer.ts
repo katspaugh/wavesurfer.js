@@ -14,7 +14,7 @@ type RendererEvents = {
 }
 
 class Renderer extends EventEmitter<RendererEvents> {
-  private static MAX_CANVAS_WIDTH = 4000
+  private static MAX_CANVAS_WIDTH = 8000
   private static MAX_NODES = 10
   private options: WaveSurferOptions
   private parent: HTMLElement
@@ -524,7 +524,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
 
     const totalWidth = width / pixelRatio
-    let singleCanvasWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth * 2, totalWidth)
+    let singleCanvasWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth, totalWidth)
     let drawnIndexes: Record<number, boolean> = {}
 
     // Adjust width to avoid gaps between canvases when using bars
@@ -568,16 +568,19 @@ class Renderer extends EventEmitter<RendererEvents> {
     const startCanvas = Math.floor(viewPosition * numCanvases)
 
     // Draw the canvases in the viewport first
+    draw(startCanvas - 1)
     draw(startCanvas)
+    draw(startCanvas + 1)
 
     // Subscribe to the scroll event to draw additional canvases
     if (numCanvases > 1) {
       this.unsubscribeOnScroll = this.on('scroll', () => {
         const { scrollLeft } = this.scrollContainer
-        const canvasIndex = Math.ceil((scrollLeft / totalWidth) * numCanvases)
+        const canvasIndex = Math.floor((scrollLeft / totalWidth) * numCanvases)
         clearCanvases()
         draw(canvasIndex - 1)
         draw(canvasIndex)
+        draw(canvasIndex + 1)
       })
     }
   }
