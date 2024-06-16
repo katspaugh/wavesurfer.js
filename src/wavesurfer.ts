@@ -131,7 +131,7 @@ export type WaveSurferEvents = {
   /** When the user ends dragging the cursor */
   dragend: [relativeX: number]
   /** When the waveform is scrolled (panned) */
-  scroll: [visibleStartTime: number, visibleEndTime: number]
+  scroll: [visibleStartTime: number, visibleEndTime: number, scrollLeft: number, scrollRight: number]
   /** When the zoom level changes */
   zoom: [minPxPerSec: number]
   /** Just before the waveform is destroyed so you can clean up your events */
@@ -275,9 +275,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }),
 
       // Scroll
-      this.renderer.on('scroll', (startX, endX) => {
+      this.renderer.on('scroll', (startX, endX, scrollLeft, scrollRight) => {
         const duration = this.getDuration()
-        this.emit('scroll', startX * duration, endX * duration)
+        this.emit('scroll', startX * duration, endX * duration, scrollLeft, scrollRight)
       }),
 
       // Redraw
