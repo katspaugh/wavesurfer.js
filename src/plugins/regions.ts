@@ -63,6 +63,14 @@ export type RegionParams = {
   channelIdx?: number
   /** Allow/Disallow contenteditable property for content */
   contentEditable?: boolean
+  /** Additional CSS styles to be applied to the region div. */
+  styleOverrides?: { [key: string]: string }
+  /** Additional CSS styles to be applied to the region handle divs. */
+  handleStyleOverrides?: { [key: string]: string }
+  /** Additional CSS styles to be applied to the left region handle div. */
+  leftHandleStyleOverrides?: { [key: string]: string }
+  /** Additional CSS styles to be applied to the right region handle div. */
+  rightHandleStyleOverrides?: { [key: string]: string }
 }
 
 class SingleRegion extends EventEmitter<RegionEvents> {
@@ -78,6 +86,10 @@ class SingleRegion extends EventEmitter<RegionEvents> {
   public maxLength = Infinity
   public channelIdx: number
   public contentEditable = false
+  public styleOverrides: { [key: string]: string }
+  public handleStyleOverrides: { [key: string]: string }
+  public leftHandleStyleOverrides: { [key: string]: string }
+  public rightHandleStyleOverrides: { [key: string]: string }
   public subscriptions: (() => void)[] = []
 
   constructor(params: RegionParams, private totalDuration: number, private numberOfChannels = 0) {
@@ -94,6 +106,10 @@ class SingleRegion extends EventEmitter<RegionEvents> {
     this.maxLength = params.maxLength ?? this.maxLength
     this.channelIdx = params.channelIdx ?? -1
     this.contentEditable = params.contentEditable ?? this.contentEditable
+    this.styleOverrides = params.styleOverrides || {}
+    this.handleStyleOverrides = params.handleStyleOverrides || {}
+    this.leftHandleStyleOverrides = params.leftHandleStyleOverrides || {}
+    this.rightHandleStyleOverrides = params.rightHandleStyleOverrides || {}
     this.element = this.initElement()
     this.setContent(params.content)
     this.setPart()
@@ -120,6 +136,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
       top: '0',
       cursor: 'ew-resize',
       wordBreak: 'keep-all',
+      ...this.handleStyleOverrides,
     }
 
     const leftHandle = createElement(
@@ -131,6 +148,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
           left: '0',
           borderLeft: '2px solid rgba(0, 0, 0, 0.5)',
           borderRadius: '2px 0 0 2px',
+          ...this.leftHandleStyleOverrides,
         },
       },
       element,
@@ -145,6 +163,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
           right: '0',
           borderRight: '2px solid rgba(0, 0, 0, 0.5)',
           borderRadius: '0 2px 2px 0',
+          ...this.rightHandleStyleOverrides,
         },
       },
       element,
@@ -204,6 +223,7 @@ class SingleRegion extends EventEmitter<RegionEvents> {
         transition: 'background-color 0.2s ease',
         cursor: this.drag ? 'grab' : 'default',
         pointerEvents: 'all',
+        ...this.styleOverrides,
       },
     })
 
