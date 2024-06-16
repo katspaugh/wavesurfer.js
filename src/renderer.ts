@@ -8,7 +8,7 @@ type RendererEvents = {
   drag: [relativeX: number]
   dragstart: [relativeX: number]
   dragend: [relativeX: number]
-  scroll: [relativeStart: number, relativeEnd: number]
+  scroll: [relativeStart: number, relativeEnd: number, scrollLeft: number, scrollRight: number]
   render: []
   rendered: []
 }
@@ -105,7 +105,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
       const startX = scrollLeft / scrollWidth
       const endX = (scrollLeft + clientWidth) / scrollWidth
-      this.emit('scroll', startX, endX)
+      this.emit('scroll', startX, endX, scrollLeft, scrollLeft + clientWidth)
     })
 
     // Re-render the waveform on container resize
@@ -730,7 +730,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       const newScroll = this.scrollContainer.scrollLeft
       const startX = newScroll / scrollWidth
       const endX = (newScroll + clientWidth) / scrollWidth
-      this.emit('scroll', startX, endX)
+      this.emit('scroll', startX, endX, newScroll, newScroll + clientWidth)
     }
   }
 
