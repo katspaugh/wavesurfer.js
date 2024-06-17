@@ -52,8 +52,9 @@
     }
   },
   "scripts": {
+    "clean": "node ./scripts/clean.cjs",
     "build:dev": "tsc -w --target ESNext",
-    "build": "rm -rf dist && tsc && rollup -c",
+    "build": "npm run clean && tsc && rollup -c",
     "prepublishOnly": "npm run build",
     "lint": "eslint --ext .ts src --fix",
     "lint:report": "eslint --output-file eslint_report.json --format json --ext .ts src",
