@@ -144,12 +144,15 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   }
 
   private virtualAppend(start: number, container: HTMLElement, element: HTMLElement) {
-    const renderIfVisible = () => {
+    let wasVisible = false
+
+    const renderIfVisible = (scrollLeft: number, scrollRight: number) => {
       if (!this.wavesurfer) return
-      const clientWidth = this.wavesurfer.getWidth()
-      const scrollLeft = this.wavesurfer.getScroll()
       const width = element.clientWidth
-      const isVisible = start + width > scrollLeft && start < scrollLeft + clientWidth
+      const isVisible = start > scrollLeft && start + width < scrollRight
+
+      if (isVisible === wasVisible) return
+      wasVisible = isVisible
 
       if (isVisible) {
         container.appendChild(element)
@@ -160,14 +163,18 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
     setTimeout(() => {
       if (!this.wavesurfer) return
-      renderIfVisible()
-      this.subscriptions.push(this.wavesurfer.on('scroll', renderIfVisible))
+      renderIfVisible(0, this.wavesurfer?.getWidth() || 0)
+      this.subscriptions.push(
+        this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
+          renderIfVisible(scrollLeft, scrollRight)
+        }),
+      )
     }, 0)
   }
 
   private initTimeline() {
     const duration = this.wavesurfer?.getDuration() ?? this.options.duration ?? 0
-    const pxPerSec = this.timelineWrapper.scrollWidth / duration
+    const pxPerSec = (this.wavesurfer?.getWrapper().scrollWidth || this.timelineWrapper.scrollWidth) / duration
     const timeInterval = this.options.timeInterval ?? this.defaultTimeInterval(pxPerSec)
     const primaryLabelInterval = this.options.primaryLabelInterval ?? this.defaultPrimaryLabelInterval(pxPerSec)
     const primaryLabelSpacing = this.options.primaryLabelSpacing

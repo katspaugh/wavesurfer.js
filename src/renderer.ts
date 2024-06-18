@@ -8,13 +8,13 @@ type RendererEvents = {
   drag: [relativeX: number]
   dragstart: [relativeX: number]
   dragend: [relativeX: number]
-  scroll: [relativeStart: number, relativeEnd: number]
+  scroll: [relativeStart: number, relativeEnd: number, scrollLeft: number, scrollRight: number]
   render: []
   rendered: []
 }
 
 class Renderer extends EventEmitter<RendererEvents> {
-  private static MAX_CANVAS_WIDTH = 4000
+  private static MAX_CANVAS_WIDTH = 8000
   private static MAX_NODES = 10
   private options: WaveSurferOptions
   private parent: HTMLElement
@@ -105,17 +105,19 @@ class Renderer extends EventEmitter<RendererEvents> {
       const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
       const startX = scrollLeft / scrollWidth
       const endX = (scrollLeft + clientWidth) / scrollWidth
-      this.emit('scroll', startX, endX)
+      this.emit('scroll', startX, endX, scrollLeft, scrollLeft + clientWidth)
     })
 
     // Re-render the waveform on container resize
-    const delay = this.createDelay(100)
-    this.resizeObserver = new ResizeObserver(() => {
-      delay()
-        .then(() => this.onContainerResize())
-        .catch(() => undefined)
-    })
-    this.resizeObserver.observe(this.scrollContainer)
+    if (typeof ResizeObserver === 'function') {
+      const delay = this.createDelay(100)
+      this.resizeObserver = new ResizeObserver(() => {
+        delay()
+          .then(() => this.onContainerResize())
+          .catch(() => undefined)
+      })
+      this.resizeObserver.observe(this.scrollContainer)
+    }
   }
 
   private onContainerResize() {
@@ -522,7 +524,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
 
     const totalWidth = width / pixelRatio
-    let singleCanvasWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth * 2, totalWidth)
+    let singleCanvasWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth, totalWidth)
     let drawnIndexes: Record<number, boolean> = {}
 
     // Adjust width to avoid gaps between canvases when using bars
@@ -566,16 +568,19 @@ class Renderer extends EventEmitter<RendererEvents> {
     const startCanvas = Math.floor(viewPosition * numCanvases)
 
     // Draw the canvases in the viewport first
+    draw(startCanvas - 1)
     draw(startCanvas)
+    draw(startCanvas + 1)
 
     // Subscribe to the scroll event to draw additional canvases
     if (numCanvases > 1) {
       this.unsubscribeOnScroll = this.on('scroll', () => {
         const { scrollLeft } = this.scrollContainer
-        const canvasIndex = Math.ceil((scrollLeft / totalWidth) * numCanvases)
+        const canvasIndex = Math.floor((scrollLeft / totalWidth) * numCanvases)
         clearCanvases()
         draw(canvasIndex - 1)
         draw(canvasIndex)
+        draw(canvasIndex + 1)
       })
     }
   }
@@ -725,7 +730,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       const newScroll = this.scrollContainer.scrollLeft
       const startX = newScroll / scrollWidth
       const endX = (newScroll + clientWidth) / scrollWidth
-      this.emit('scroll', startX, endX)
+      this.emit('scroll', startX, endX, newScroll, newScroll + clientWidth)
     }
   }
 
