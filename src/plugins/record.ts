@@ -16,6 +16,8 @@ export type RecordPluginOptions = {
   scrollingWaveform?: boolean
   /** The duration of the scrolling waveform window, defaults to 5 seconds */
   scrollingWaveformWindow?: number
+  /** The timeslice to use for the media recorder */
+  mediaRecorderTimeslice?: number
 }
 
 export type RecordPluginDeviceOptions = {
@@ -30,6 +32,7 @@ export type RecordPluginEvents = BasePluginEvents & {
   'record-end': [blob: Blob]
   /** Fires continuously while recording */
   'record-progress': [duration: number]
+  'record-data-available': [blob: Blob]
 }
 
 type MicStream = {
@@ -62,6 +65,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       scrollingWaveform: options.scrollingWaveform ?? false,
       scrollingWaveformWindow: options.scrollingWaveformWindow ?? DEFAULT_SCROLLING_WAVEFORM_WINDOW,
       renderRecordedAudio: options.renderRecordedAudio ?? true,
+      mediaRecorderTimeslice: options.mediaRecorderTimeslice ?? undefined,
     })
 
     this.timer = new Timer()
@@ -193,6 +197,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       if (event.data.size > 0) {
         recordedChunks.push(event.data)
       }
+      this.emit('record-data-available', event.data)
     }
 
     const emitWithBlob = (ev: 'record-pause' | 'record-end') => {
@@ -208,7 +213,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
     mediaRecorder.onstop = () => emitWithBlob('record-end')
 
-    mediaRecorder.start()
+    mediaRecorder.start(this.options.mediaRecorderTimeslice)
     this.lastStartTime = performance.now()
     this.lastDuration = 0
     this.duration = 0
