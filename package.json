@@ -43,7 +43,9 @@
       "require": "./dist/plugins/*.cjs"
     },
     "./dist/*": {
-      "import": "./dist/*"
+      "import": "./dist/*",
+      "types": "./dist/*.d.ts",
+      "require": "./dist/*.cjs"
     },
     "./dist/plugins/*.esm.js": {
       "import": "./dist/plugins/*.esm.js",
