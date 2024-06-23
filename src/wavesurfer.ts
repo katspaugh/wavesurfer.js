@@ -428,12 +428,16 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.setSrc(url, blob)
 
     // Wait for the audio duration
-    const audioDuration =
-      duration ||
-      this.getDuration() ||
-      (await new Promise((resolve) => {
-        this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true })
-      }))
+    const audioDuration = await new Promise<number>((resolve) => {
+      const staticDuration = duration || this.getDuration()
+      if (staticDuration) {
+        resolve(staticDuration)
+      } else {
+        this.mediaSubscriptions.push(
+          this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }),
+        )
+      }
+    })
 
     // Set the duration if the player is a WebAudioPlayer without a URL
     if (!url && !blob) {

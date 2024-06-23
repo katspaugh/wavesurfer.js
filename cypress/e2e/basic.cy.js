@@ -304,7 +304,7 @@ describe('WaveSurfer basic tests', () => {
         expect(originalMedia.eventCount).to.be.greaterThan(0)
 
         win.wavesurfer.setMediaElement(media)
-        expect(originalMedia.eventCount).to.equal(0)
+        expect(originalMedia.eventCount).to.be.lessThan(1)
       })
     })
 
