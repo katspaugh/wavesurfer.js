@@ -163,6 +163,14 @@ Most options, events, and methods are similar to those in previous versions.
 
 See the complete [documentation of the new API](http://wavesurfer.xyz/docs).
 
+## Usage Trend
+
+[Usage Trend of wavesurfer.js](https://npm-compare.com/wavesurfer.js#timeRange=FIVE_YEARS)
+  
+<a href="https://npm-compare.com/wavesurfer.js#timeRange=FIVE_YEARS" target="_blank">
+  <img src="https://npm-compare.com/img/npm-trend/FIVE_YEARS/wavesurfer.js.png" width="75%" alt="NPM Usage Trend of wavesurfer.js" />
+</a>
+
 ## Development
 
 To get started with development, follow these steps:
