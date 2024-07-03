@@ -5,6 +5,10 @@ description: 'Install node modules'
 runs:
   using: 'composite'
   steps:
+    - uses: actions/setup-node@v3.6.0
+      with:
+        node-version: 20
+
     - name: Yarn cache
       uses: actions/cache@v3
       with:
