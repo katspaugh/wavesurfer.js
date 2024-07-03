@@ -337,6 +337,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     return gradient
   }
 
+  private getPixelRatio() {
+    return Math.max(1, window.devicePixelRatio || 1)
+  }
+
   private renderBarWaveform(
     channelData: Array<Float32Array | number[]>,
     options: WaveSurferOptions,
@@ -349,7 +353,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     const { width, height } = ctx.canvas
     const halfHeight = height / 2
-    const pixelRatio = window.devicePixelRatio || 1
+    const pixelRatio = this.getPixelRatio()
 
     const barWidth = options.barWidth ? options.barWidth * pixelRatio : 1
     const barGap = options.barGap ? options.barGap * pixelRatio : options.barWidth ? barWidth / 2 : 0
@@ -479,7 +483,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     canvasContainer: HTMLElement,
     progressContainer: HTMLElement,
   ) {
-    const pixelRatio = window.devicePixelRatio || 1
+    const pixelRatio = this.getPixelRatio()
     const canvas = document.createElement('canvas')
     canvas.width = Math.round(width * pixelRatio)
     canvas.height = Math.round(height * pixelRatio)
@@ -514,12 +518,12 @@ class Renderer extends EventEmitter<RendererEvents> {
     canvasContainer: HTMLElement,
     progressContainer: HTMLElement,
   ) {
-    const pixelRatio = window.devicePixelRatio || 1
+    const pixelRatio = this.getPixelRatio()
     const { clientWidth } = this.scrollContainer
 
     // Render a single canvas if it fits in the viewport
     if (clientWidth * pixelRatio >= width) {
-      this.renderSingleCanvas(channelData, options, width, height, 0, canvasContainer, progressContainer)
+      this.renderSingleCanvas(channelData, options, clientWidth, height, 0, canvasContainer, progressContainer)
       return
     }
 
@@ -625,7 +629,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
 
     // Determine the width of the waveform
-    const pixelRatio = window.devicePixelRatio || 1
+    const pixelRatio = this.getPixelRatio()
     const parentWidth = this.scrollContainer.clientWidth
     const scrollWidth = Math.ceil(audioData.duration * (this.options.minPxPerSec || 0))
 
