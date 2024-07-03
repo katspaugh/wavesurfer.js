@@ -6,7 +6,7 @@
 
 <img width="626" alt="waveform screenshot" src="https://github.com/katspaugh/wavesurfer.js/assets/381895/05f03bed-800e-4fa1-b09a-82a39a1c62ce">
 
-**Golden sponsor 💖** [Closed Caption Creator](https://www.closedcaptioncreator.com)
+**Gold sponsor 💖** [Closed Caption Creator](https://www.closedcaptioncreator.com)
 
 ## Getting started
 
