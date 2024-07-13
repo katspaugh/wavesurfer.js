@@ -12,12 +12,21 @@ import createElement from '../dom.js'
 export type RegionsPluginOptions = undefined
 
 export type RegionsPluginEvents = BasePluginEvents & {
+  /** When a region is created */
   'region-created': [region: Region]
+  /** When a region is being updated */
+  'region-update': [region: Region, side?: 'start' | 'end']
+  /** When a region is done updating */
   'region-updated': [region: Region]
+  /** When a region is removed */
   'region-removed': [region: Region]
+  /** When a region is clicked */
   'region-clicked': [region: Region, e: MouseEvent]
+  /** When a region is double-clicked */
   'region-double-clicked': [region: Region, e: MouseEvent]
+  /** When playback enters a region */
   'region-in': [region: Region]
+  /** When playback leaves a region */
   'region-out': [region: Region]
 }
 
@@ -80,7 +89,11 @@ export class Region extends EventEmitter<RegionEvents> {
   public contentEditable = false
   public subscriptions: (() => void)[] = []
 
-  constructor(params: RegionParams, private totalDuration: number, private numberOfChannels = 0) {
+  constructor(
+    params: RegionParams,
+    private totalDuration: number,
+    private numberOfChannels = 0,
+  ) {
     super()
 
     this.subscriptions = []
@@ -545,6 +558,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         if (!side) {
           this.adjustScroll(region)
         }
+        this.emit('region-update', region, side)
       }),
 
       region.on('update-end', () => {
