@@ -12,12 +12,21 @@ import createElement from '../dom.js'
 export type RegionsPluginOptions = undefined
 
 export type RegionsPluginEvents = BasePluginEvents & {
+  /** When a region is created */
   'region-created': [region: Region]
+  /** When a region is being updated */
+  'region-update': [region: Region, side?: 'start' | 'end']
+  /** When a region is done updating */
   'region-updated': [region: Region]
+  /** When a region is removed */
   'region-removed': [region: Region]
+  /** When a region is clicked */
   'region-clicked': [region: Region, e: MouseEvent]
+  /** When a region is double-clicked */
   'region-double-clicked': [region: Region, e: MouseEvent]
+  /** When playback enters a region */
   'region-in': [region: Region]
+  /** When playback leaves a region */
   'region-out': [region: Region]
 }
 
@@ -65,7 +74,7 @@ export type RegionParams = {
   contentEditable?: boolean
 }
 
-export class Region extends EventEmitter<RegionEvents> {
+class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public element: HTMLElement
   public id: string
   public start: number
@@ -545,6 +554,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         if (!side) {
           this.adjustScroll(region)
         }
+        this.emit('region-update', region, side)
       }),
 
       region.on('update-end', () => {
@@ -586,7 +596,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
     const duration = this.wavesurfer.getDuration()
     const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
-    const region = new Region(options, duration, numberOfChannels)
+    const region = new SingleRegion(options, duration, numberOfChannels)
 
     if (!duration) {
       this.subscriptions.push(
@@ -639,7 +649,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         const end = ((x + initialSize) / width) * duration
 
         // Create a region but don't save it until the drag ends
-        region = new Region(
+        region = new SingleRegion(
           {
             ...options,
             start,
@@ -678,3 +688,4 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 }
 
 export default RegionsPlugin
+export type Region = SingleRegion

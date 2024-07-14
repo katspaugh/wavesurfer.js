@@ -3,16 +3,17 @@
 import WaveSurfer from 'wavesurfer.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js'
 
-// Create an instance of WaveSurfer
+// Initialize the Regions plugin
+const regions = RegionsPlugin.create()
+
+// Create a WaveSurfer instance
 const ws = WaveSurfer.create({
   container: '#waveform',
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
   url: '/examples/audio/audio.wav',
+  plugins: [regions],
 })
-
-// Initialize the Regions plugin
-const wsRegions = ws.registerPlugin(RegionsPlugin.create())
 
 // Give regions a random color when they are created
 const random = (min, max) => Math.random() * (max - min) + min
@@ -21,7 +22,7 @@ const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0
 // Create some regions at specific time ranges
 ws.on('decode', () => {
   // Regions
-  wsRegions.addRegion({
+  regions.addRegion({
     start: 0,
     end: 8,
     content: 'Resize me',
@@ -29,7 +30,7 @@ ws.on('decode', () => {
     drag: false,
     resize: true,
   })
-  wsRegions.addRegion({
+  regions.addRegion({
     start: 9,
     end: 10,
     content: 'Cramped region',
@@ -37,7 +38,7 @@ ws.on('decode', () => {
     minLength: 1,
     maxLength: 10,
   })
-  wsRegions.addRegion({
+  regions.addRegion({
     start: 12,
     end: 17,
     content: 'Drag me',
@@ -46,23 +47,23 @@ ws.on('decode', () => {
   })
 
   // Markers (zero-length regions)
-  wsRegions.addRegion({
+  regions.addRegion({
     start: 19,
     content: 'Marker',
     color: randomColor(),
   })
-  wsRegions.addRegion({
+  regions.addRegion({
     start: 20,
     content: 'Second marker',
     color: randomColor(),
   })
 })
 
-wsRegions.enableDragSelection({
+regions.enableDragSelection({
   color: 'rgba(255, 0, 0, 0.1)',
 })
 
-wsRegions.on('region-updated', (region) => {
+regions.on('region-updated', (region) => {
   console.log('Updated region', region)
 })
 
@@ -75,11 +76,11 @@ document.querySelector('input[type="checkbox"]').onclick = (e) => {
 
 {
   let activeRegion = null
-  wsRegions.on('region-in', (region) => {
+  regions.on('region-in', (region) => {
     console.log('region-in', region)
     activeRegion = region
   })
-  wsRegions.on('region-out', (region) => {
+  regions.on('region-out', (region) => {
     console.log('region-out', region)
     if (activeRegion === region) {
       if (loop) {
@@ -89,7 +90,7 @@ document.querySelector('input[type="checkbox"]').onclick = (e) => {
       }
     }
   })
-  wsRegions.on('region-clicked', (region, e) => {
+  regions.on('region-clicked', (region, e) => {
     e.stopPropagation() // prevent triggering a click on the waveform
     activeRegion = region
     region.play()
