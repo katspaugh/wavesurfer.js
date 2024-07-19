@@ -338,6 +338,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
         style: {
           padding: `0.2em ${isMarker ? 0.2 : 0.4}em`,
           display: 'inline-block',
+          whiteSpace: 'nowrap'
         },
         textContent: content,
       })
