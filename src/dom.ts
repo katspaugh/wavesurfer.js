@@ -31,6 +31,7 @@ function renderNode(tagName: string, content: TreeNode): HTMLElement | SVGElemen
   return element
 }
 
+export function createElement<K extends keyof HTMLElementTagNameMap>(tagName: K, content?: TreeNode, container?: Node): HTMLElementTagNameMap[K];
 export function createElement(tagName: string, content: TreeNode & { xmlns: string }, container?: Node): SVGElement
 export function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement
 export function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement | SVGElement {
