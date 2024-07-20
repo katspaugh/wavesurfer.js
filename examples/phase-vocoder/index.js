@@ -1,46 +1,45 @@
 // WebAudio speed control with pitch preservation
 
 import WaveSurfer from 'wavesurfer.js'
-import WebAudioPlayer from 'wavesurfer.js/dist/webaudio.js'
 
-async function init() {
-  const audioContext = new AudioContext()
+// Init wavesurfer
+const wavesurfer = WaveSurfer.create({
+  backend: 'WebAudio',
+  container: document.body,
+  waveColor: 'violet',
+  progressColor: 'purple',
+  url: '/examples/audio/librivox.mp3',
+})
+
+// Wait for the audio to be ready
+wavesurfer.on('ready', async () => {
+  const webAudioPlayer = wavesurfer.getMediaElement()
+  const gainNode = webAudioPlayer.getGainNode()
+  const audioContext = gainNode.context
+
+  // Load the phase vocoder audio worklet
   await audioContext.audioWorklet.addModule('/examples/phase-vocoder/phase-vocoder.min.js')
   const phaseVocoderNode = new AudioWorkletNode(audioContext, 'phase-vocoder-processor')
 
-  const webAudioPlayer = new WebAudioPlayer(audioContext)
-  webAudioPlayer.src = '/examples/audio/librivox.mp3'
+  // Connect the worklet to the wavesurfer audio
+  gainNode.disconnect()
+  gainNode.connect(phaseVocoderNode)
+  phaseVocoderNode.connect(audioContext.destination)
 
-  webAudioPlayer.addEventListener('loadedmetadata', () => {
-    const wavesurfer = WaveSurfer.create({
-      container: document.body,
-      waveColor: 'violet',
-      progressColor: 'purple',
-      media: webAudioPlayer,
-      peaks: webAudioPlayer.getChannelData(),
-      duration: webAudioPlayer.duration,
-    })
-
-    webAudioPlayer.getGainNode().disconnect()
-    webAudioPlayer.getGainNode().connect(phaseVocoderNode)
-    phaseVocoderNode.connect(audioContext.destination)
-
-    // Speed slider
-    document.querySelector('input[type="range"]').addEventListener('input', (e) => {
-      const speed = e.target.valueAsNumber
-      document.querySelector('#rate').textContent = speed.toFixed(2)
-      wavesurfer.setPlaybackRate(speed)
-      const pitchFactorParam = phaseVocoderNode.parameters.get('pitchFactor')
-      pitchFactorParam.value = 1 / speed
-    })
-
-    document.querySelector('button').addEventListener('click', () => {
-      wavesurfer.playPause()
-    })
+  // Speed slider
+  document.querySelector('input[type="range"]').addEventListener('input', (e) => {
+    const speed = e.target.valueAsNumber
+    document.querySelector('#rate').textContent = speed.toFixed(2)
+    wavesurfer.setPlaybackRate(speed)
+    const pitchFactorParam = phaseVocoderNode.parameters.get('pitchFactor')
+    pitchFactorParam.value = 1 / speed
   })
-}
 
-init()
+  // Play/pause button
+  document.querySelector('button').addEventListener('click', () => {
+    wavesurfer.playPause()
+  })
+})
 
 /*
 <html>
