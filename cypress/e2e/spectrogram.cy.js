@@ -13,6 +13,7 @@ describe('WaveSurfer Spectrogram plugin tests', () => {
             win.Spectrogram.create({
               height: 200,
               labels: true,
+              scale: 'linear',
             }),
           ],
         })
@@ -37,6 +38,7 @@ describe('WaveSurfer Spectrogram plugin tests', () => {
             win.Spectrogram.create({
               height: 200,
               labels: false,
+              scale: 'linear',
             }),
           ],
         })
@@ -62,6 +64,7 @@ describe('WaveSurfer Spectrogram plugin tests', () => {
             win.Spectrogram.create({
               height: 200,
               labels: true,
+              scale: 'linear',
             }),
           ],
         })
