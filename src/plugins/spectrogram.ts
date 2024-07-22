@@ -484,12 +484,13 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     for (let c = 0; c < frequenciesData.length; c++) {
       // for each channel
       const pixels = this.resample(frequenciesData[c])
+      const bitmapHeight = pixels[0].length
       const imageData = new ImageData(width, height)
 
       for (let i = 0; i < pixels.length; i++) {
         for (let j = 0; j < pixels[i].length; j++) {
           const colorMap = this.colorMap[pixels[i][j]]
-          const redIndex = ((height - j) * width + i) * 4
+          const redIndex = ((bitmapHeight / 2 - j) * width + i) * 4
           imageData.data[redIndex] = colorMap[0] * 255
           imageData.data[redIndex + 1] = colorMap[1] * 255
           imageData.data[redIndex + 2] = colorMap[2] * 255
@@ -498,17 +499,18 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       }
 
       // scale and stack spectrograms
-      createImageBitmap(imageData).then((renderer) => {
+      createImageBitmap(imageData,
+        0,
+        Math.round(bitmapHeight - bitmapHeight * (freqMax / freqFrom)) / 2,
+        width,
+        Math.round(bitmapHeight * ((freqMax - freqMin) / freqFrom))
+      ).then((bitmap) => {
         spectrCc.drawImage(
-          renderer,
+          bitmap,
           0,
-          height * (1 - freqMax / freqFrom), // source x, y
+          height * c,
           width,
-          (height * (freqMax - freqMin)) / freqFrom, // source width, height
-          0,
-          height * c, // destination x, y
-          width,
-          height, // destination width, height
+          height * 2,
         )
       })
     }
@@ -566,11 +568,17 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     return melSpectrum
   }
 
+  private getWidth() {
+    // ToDo: Allow custom or max width to reduce rendering time.
+    // Note: not hi-dpi, but height behaves the same way (different for labels canvas though).
+    return this.wavesurfer.getWrapper().offsetWidth;
+  }
+
   private getFrequencies(buffer: AudioBuffer): number[] {
     const fftSamples = this.fftSamples
     const channels = this.options.splitChannels ?? this.wavesurfer?.options.splitChannels ? buffer.numberOfChannels : 1
 
-    this.frequencyMax = this.frequencyMax || buffer.sampleRate / 2
+    this.frequencyMax = this.frequencyMax || buffer.sampleRate / 4
 
     if (!buffer) return
 
@@ -712,7 +720,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   }
 
   private resample(oldMatrix) {
-    const columnsNumber = this.width
+    const columnsNumber = this.getWidth()
     const newMatrix = []
 
     const oldPiece = 1 / oldMatrix.length
