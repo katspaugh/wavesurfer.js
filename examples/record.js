@@ -5,12 +5,15 @@ import RecordPlugin from 'wavesurfer.js/dist/plugins/record.esm.js'
 
 let wavesurfer, record
 let scrollingWaveform = false
+let continuousWaveform = true
 
 const createWaveSurfer = () => {
-  // Create an instance of WaveSurfer
+  // Destroy the previous wavesurfer instance
   if (wavesurfer) {
     wavesurfer.destroy()
   }
+
+  // Create a new Wavesurfer instance
   wavesurfer = WaveSurfer.create({
     container: '#mic',
     waveColor: 'rgb(200, 0, 200)',
@@ -18,7 +21,15 @@ const createWaveSurfer = () => {
   })
 
   // Initialize the Record plugin
-  record = wavesurfer.registerPlugin(RecordPlugin.create({ scrollingWaveform, renderRecordedAudio: false }))
+  record = wavesurfer.registerPlugin(
+    RecordPlugin.create({
+      renderRecordedAudio: false,
+      scrollingWaveform,
+      continuousWaveform,
+      continuousWaveformDuration: 30, // optional
+    }),
+  )
+
   // Render recorded audio
   record.on('record-end', (blob) => {
     const container = document.querySelector('#recordings')
@@ -114,8 +125,22 @@ recButton.onclick = () => {
     pauseButton.style.display = 'inline'
   })
 }
-document.querySelector('input[type="checkbox"]').onclick = (e) => {
+
+document.querySelector('#scrollingWaveform').onclick = (e) => {
   scrollingWaveform = e.target.checked
+  if (continuousWaveform && scrollingWaveform) {
+    continuousWaveform = false
+    document.querySelector('#continuousWaveform').checked = false
+  }
+  createWaveSurfer()
+}
+
+document.querySelector('#continuousWaveform').onclick = (e) => {
+  continuousWaveform = e.target.checked
+  if (continuousWaveform && scrollingWaveform) {
+    scrollingWaveform = false
+    document.querySelector('#scrollingWaveform').checked = false
+  }
   createWaveSurfer()
 }
 
@@ -135,7 +160,11 @@ createWaveSurfer()
   <select id="mic-select">
     <option value="" hidden>Select mic</option>
   </select>
-  <label style="display:inline-block;"><input type="checkbox"  /> Scrolling waveform</label>
+
+  <label><input type="checkbox" id="scrollingWaveform" /> Scrolling waveform</label>
+
+  <label><input type="checkbox" id="continuousWaveform" checked="checked" /> Continuous waveform</label>
+
   <p id="progress">00:00</p>
 
   <div id="mic" style="border: 1px solid #ddd; border-radius: 4px; margin-top: 1rem"></div>
