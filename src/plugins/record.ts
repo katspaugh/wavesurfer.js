@@ -165,7 +165,10 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       // Render the waveform
       if (this.wavesurfer) {
         const totalDuration = (this.dataWindow?.length ?? 0) / FPS
-        const position = sampleIdx / this.dataWindow.length
+        let position = sampleIdx / this.dataWindow.length
+        if (this.wavesurfer.options.barWidth) {
+          position += this.wavesurfer.options.barWidth / this.wavesurfer.getWidth()
+        }
 
         this.wavesurfer
           .load(
