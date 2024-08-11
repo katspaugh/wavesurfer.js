@@ -598,7 +598,7 @@ describe('WaveSurfer options tests', () => {
     })
   })
 
-  it('should load a blob', () => {
+  it('should load a blob', (done) => {
     cy.window().then((win) => {
       const wavesurfer = win.WaveSurfer.create({
         container: id,
@@ -616,7 +616,30 @@ describe('WaveSurfer options tests', () => {
         10,
       )
 
-      cy.get(id).matchImageSnapshot('loadBlob')
+      wrapReady(wavesurfer).then(() => {
+        cy.get(id).matchImageSnapshot('loadBlob')
+        done()
+      })
+    })
+  })
+
+  it('should render in a very wide container', (done) => {
+    cy.window().then((win) => {
+      const container = win.document.querySelector(id)
+      container.style.width = '21000px'
+
+      const wavesurfer = win.WaveSurfer.create({
+        container,
+        url: '../../examples/audio/demo.wav',
+        peaks: new Array(512).fill(0.5).map((v, i) => v * Math.sin(i / 16)),
+      })
+
+      cy.get(id).matchImageSnapshot('very-wide-container')
+
+      wrapReady(wavesurfer).then(() => {
+        container.style.width = ''
+        done()
+      })
     })
   })
 })
