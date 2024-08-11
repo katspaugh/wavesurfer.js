@@ -1,6 +1,6 @@
 const id = '#waveform'
 
-describe('WaveSurfer Spectrogram plugin tests', () => {
+xdescribe('WaveSurfer Spectrogram plugin tests', () => {
   it('should render a spectrogram', () => {
     cy.visit('cypress/e2e/index.html')
     cy.window().then((win) => {

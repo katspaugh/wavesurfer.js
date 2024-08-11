@@ -520,14 +520,8 @@ class Renderer extends EventEmitter<RendererEvents> {
   ) {
     const pixelRatio = this.getPixelRatio()
     const { clientWidth } = this.scrollContainer
-
-    // Render a single canvas if it fits in the viewport
-    if (clientWidth * pixelRatio >= width) {
-      this.renderSingleCanvas(channelData, options, clientWidth, height, 0, canvasContainer, progressContainer)
-      return
-    }
-
     const totalWidth = width / pixelRatio
+
     let singleCanvasWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth, totalWidth)
     let drawnIndexes: Record<number, boolean> = {}
 
@@ -568,6 +562,16 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Calculate how many canvases to render
     const numCanvases = Math.ceil(totalWidth / singleCanvasWidth)
+
+    // Render all canvases if the waveform doesn't scroll
+    if (!this.isScrollable) {
+      for (let i = 0; i < numCanvases; i++) {
+        draw(i)
+      }
+      return
+    }
+
+    // Lazy rendering
     const viewPosition = this.scrollContainer.scrollLeft / totalWidth
     const startCanvas = Math.floor(viewPosition * numCanvases)
 
