@@ -165,6 +165,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       // Render the waveform
       if (this.wavesurfer) {
         const totalDuration = (this.dataWindow?.length ?? 0) / FPS
+        const position = sampleIdx / this.dataWindow.length
 
         this.wavesurfer
           .load(
@@ -174,10 +175,12 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
           )
           .then(() => {
             if (this.wavesurfer && this.options.continuousWaveform) {
-              this.wavesurfer.setTime(this.getDuration() / 1000)
+              this.wavesurfer.seekTo(position)
 
               if (!this.wavesurfer.options.minPxPerSec) {
-                this.wavesurfer.options.minPxPerSec = this.wavesurfer.getWidth() / this.wavesurfer.getDuration()
+                this.wavesurfer.setOptions({
+                  minPxPerSec: this.wavesurfer.getWidth() / this.wavesurfer.getDuration(),
+                })
               }
             }
           })
