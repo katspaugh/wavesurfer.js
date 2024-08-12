@@ -4,18 +4,23 @@
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import Timer from '../timer.js'
+import type { WaveSurferOptions } from '../wavesurfer.js'
 
 export type RecordPluginOptions = {
   /** The MIME type to use when recording audio */
   mimeType?: MediaRecorderOptions['mimeType']
   /** The audio bitrate to use when recording audio, defaults to 128000 to avoid a VBR encoding. */
   audioBitsPerSecond?: MediaRecorderOptions['audioBitsPerSecond']
-  /** Whether to render the recorded audio, true by default */
+  /** Whether to render the recorded audio at the end, true by default */
   renderRecordedAudio?: boolean
   /** Whether to render the scrolling waveform, false by default */
   scrollingWaveform?: boolean
   /** The duration of the scrolling waveform window, defaults to 5 seconds */
   scrollingWaveformWindow?: number
+  /** Accumulate and render the waveform data as the audio is being recorded, false by default */
+  continuousWaveform?: boolean
+  /** The duration of the continuous waveform, in seconds */
+  continuousWaveformDuration?: number
   /** The timeslice to use for the media recorder */
   mediaRecorderTimeslice?: number
 }
@@ -26,12 +31,17 @@ export type RecordPluginDeviceOptions = {
 }
 
 export type RecordPluginEvents = BasePluginEvents & {
+  /** Fires when the recording starts */
   'record-start': []
+  /** Fires when the recording is paused */
   'record-pause': [blob: Blob]
+  /** Fires when the recording is resumed */
   'record-resume': []
+  /* When the recording stops, either by calling stopRecording or when the media recorder stops */
   'record-end': [blob: Blob]
   /** Fires continuously while recording */
   'record-progress': [duration: number]
+  /** On every new recorded chunk */
   'record-data-available': [blob: Blob]
 }
 
@@ -42,6 +52,7 @@ type MicStream = {
 
 const DEFAULT_BITS_PER_SECOND = 128000
 const DEFAULT_SCROLLING_WAVEFORM_WINDOW = 5
+const FPS = 60
 
 const MIME_TYPES = ['audio/webm', 'audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/mp3']
 const findSupportedMimeType = () => MIME_TYPES.find((mimeType) => MediaRecorder.isTypeSupported(mimeType))
@@ -51,7 +62,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private mediaRecorder: MediaRecorder | null = null
   private dataWindow: Float32Array | null = null
   private isWaveformPaused = false
-  private originalOptions: { cursorWidth: number; interact: boolean } | undefined
+  private originalOptions?: Partial<WaveSurferOptions>
   private timer: Timer
   private lastStartTime = 0
   private lastDuration = 0
@@ -64,6 +75,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       audioBitsPerSecond: options.audioBitsPerSecond ?? DEFAULT_BITS_PER_SECOND,
       scrollingWaveform: options.scrollingWaveform ?? false,
       scrollingWaveformWindow: options.scrollingWaveformWindow ?? DEFAULT_SCROLLING_WAVEFORM_WINDOW,
+      continuousWaveform: options.continuousWaveform ?? false,
       renderRecordedAudio: options.renderRecordedAudio ?? true,
       mediaRecorderTimeslice: options.mediaRecorderTimeslice ?? undefined,
     })
@@ -94,8 +106,18 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     const dataArray = new Float32Array(bufferLength)
 
     let animationId: number
+    let sampleIdx = 0
 
-    const windowSize = Math.floor((this.options.scrollingWaveformWindow || 0) * audioContext.sampleRate)
+    if (this.wavesurfer) {
+      this.originalOptions ??= {
+        ...this.wavesurfer.options,
+      }
+
+      this.wavesurfer.options.interact = false
+      if (this.options.scrollingWaveform) {
+        this.wavesurfer.options.cursorWidth = 0
+      }
+    }
 
     const drawWaveform = () => {
       if (this.isWaveformPaused) {
@@ -106,6 +128,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       analyser.getFloatTimeDomainData(dataArray)
 
       if (this.options.scrollingWaveform) {
+        const windowSize = Math.floor((this.options.scrollingWaveformWindow || 0) * audioContext.sampleRate)
         const newLength = Math.min(windowSize, this.dataWindow ? this.dataWindow.length + bufferLength : bufferLength)
         const tempArray = new Float32Array(windowSize) // Always make it the size of the window, filling with zeros by default
 
@@ -116,20 +139,57 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
         tempArray.set(dataArray, windowSize - bufferLength)
         this.dataWindow = tempArray
+      } else if (this.options.continuousWaveform) {
+        if (!this.dataWindow) {
+          const size = this.options.continuousWaveformDuration
+            ? Math.round(this.options.continuousWaveformDuration * FPS)
+            : (this.wavesurfer?.getWidth() ?? 0) * window.devicePixelRatio
+          this.dataWindow = new Float32Array(size)
+        }
+
+        const maxValue = Math.max(...dataArray)
+
+        // Append the max value to the data window at the right position
+        if (sampleIdx + 1 > this.dataWindow.length) {
+          const tempArray = new Float32Array(this.dataWindow.length * 2)
+          tempArray.set(this.dataWindow, 0)
+          this.dataWindow = tempArray
+        }
+
+        this.dataWindow.set([maxValue], sampleIdx)
+        sampleIdx++
       } else {
         this.dataWindow = dataArray
       }
 
-      const duration = this.options.scrollingWaveformWindow
-
+      // Render the waveform
       if (this.wavesurfer) {
-        this.originalOptions ??= {
-          cursorWidth: this.wavesurfer.options.cursorWidth,
-          interact: this.wavesurfer.options.interact,
+        const totalDuration = (this.dataWindow?.length ?? 0) / FPS
+        let position = sampleIdx / this.dataWindow.length
+        if (this.wavesurfer.options.barWidth) {
+          position += this.wavesurfer.options.barWidth / this.wavesurfer.getWidth()
         }
-        this.wavesurfer.options.cursorWidth = 0
-        this.wavesurfer.options.interact = false
-        this.wavesurfer.load('', [this.dataWindow], duration)
+
+        this.wavesurfer
+          .load(
+            '',
+            [this.dataWindow],
+            this.options.scrollingWaveform ? this.options.scrollingWaveformWindow : totalDuration,
+          )
+          .then(() => {
+            if (this.wavesurfer && this.options.continuousWaveform) {
+              this.wavesurfer.seekTo(position)
+
+              if (!this.wavesurfer.options.minPxPerSec) {
+                this.wavesurfer.setOptions({
+                  minPxPerSec: this.wavesurfer.getWidth() / this.wavesurfer.getDuration(),
+                })
+              }
+            }
+          })
+          .catch((err) => {
+            console.error('Error rendering real-time recording data:', err)
+          })
       }
 
       animationId = requestAnimationFrame(drawWaveform)
@@ -292,8 +352,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
   private applyOriginalOptionsIfNeeded() {
     if (this.wavesurfer && this.originalOptions) {
-      this.wavesurfer.options.cursorWidth = this.originalOptions.cursorWidth
-      this.wavesurfer.options.interact = this.originalOptions.interact
+      this.wavesurfer.setOptions(this.originalOptions)
       delete this.originalOptions
     }
   }
