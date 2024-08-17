@@ -57,7 +57,7 @@ const FPS = 60
 const MIME_TYPES = ['audio/webm', 'audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/mp3']
 const findSupportedMimeType = () => MIME_TYPES.find((mimeType) => MediaRecorder.isTypeSupported(mimeType))
 
-const requestFrameTimeout = (callback: Function) => {
+const requestFrameTimeout = (callback: () => void) => {
   return setTimeout(callback, 1000 / FPS)
 }
 
@@ -112,7 +112,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     const bufferLength = analyser.frequencyBinCount
     const dataArray = new Float32Array(bufferLength)
 
-    let animationId: number
+    let animationId: ReturnType<typeof requestFrameTimeout>
     let sampleIdx = 0
 
     if (this.wavesurfer) {
