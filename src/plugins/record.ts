@@ -57,6 +57,10 @@ const FPS = 60
 const MIME_TYPES = ['audio/webm', 'audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/mp3']
 const findSupportedMimeType = () => MIME_TYPES.find((mimeType) => MediaRecorder.isTypeSupported(mimeType))
 
+const requestFrameTimeout = (callback: Function) => {
+  return setTimeout(callback, 1000 / FPS)
+}
+
 class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private stream: MediaStream | null = null
   private mediaRecorder: MediaRecorder | null = null
@@ -102,6 +106,9 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     const analyser = audioContext.createAnalyser()
     source.connect(analyser)
 
+    if (this.options.continuousWaveform) {
+      analyser.fftSize = 32
+    }
     const bufferLength = analyser.frequencyBinCount
     const dataArray = new Float32Array(bufferLength)
 
@@ -120,8 +127,10 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     }
 
     const drawWaveform = () => {
+      animationId && clearTimeout(animationId)
+
       if (this.isWaveformPaused) {
-        animationId = requestAnimationFrame(drawWaveform)
+        animationId = requestFrameTimeout(drawWaveform)
         return
       }
 
@@ -147,7 +156,13 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
           this.dataWindow = new Float32Array(size)
         }
 
-        const maxValue = Math.max(...dataArray)
+        let maxValue = 0
+        for (let i = 0; i < bufferLength; i++) {
+          const value = Math.abs(dataArray[i])
+          if (value > maxValue) {
+            maxValue = value
+          }
+        }
 
         // Append the max value to the data window at the right position
         if (sampleIdx + 1 > this.dataWindow.length) {
@@ -165,10 +180,6 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       // Render the waveform
       if (this.wavesurfer) {
         const totalDuration = (this.dataWindow?.length ?? 0) / FPS
-        let position = sampleIdx / this.dataWindow.length
-        if (this.wavesurfer.options.barWidth) {
-          position += this.wavesurfer.options.barWidth / this.wavesurfer.getWidth()
-        }
 
         this.wavesurfer
           .load(
@@ -178,7 +189,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
           )
           .then(() => {
             if (this.wavesurfer && this.options.continuousWaveform) {
-              this.wavesurfer.seekTo(position)
+              this.wavesurfer.setTime(this.getDuration() / 1000)
 
               if (!this.wavesurfer.options.minPxPerSec) {
                 this.wavesurfer.setOptions({
@@ -192,20 +203,20 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
           })
       }
 
-      animationId = requestAnimationFrame(drawWaveform)
+      animationId = requestFrameTimeout(drawWaveform)
     }
 
     drawWaveform()
 
     return {
       onDestroy: () => {
-        cancelAnimationFrame(animationId)
+        clearTimeout(animationId)
         source?.disconnect()
         audioContext?.close()
       },
       onEnd: () => {
         this.isWaveformPaused = true
-        cancelAnimationFrame(animationId)
+        clearTimeout(animationId)
         this.stopMic()
       },
     }
