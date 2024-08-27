@@ -18,8 +18,34 @@ const defaultOptions = {
 }
 
 export type MinimapPluginEvents = BasePluginEvents & {
-  ready: []
+  /** An alias of timeupdate but only when the audio is playing */
+  audioprocess: [currentTime: number]
+  /** When the user clicks on the waveform */
+  click: [relativeX: number, relativeY: number]
+  /** When the user double-clicks on the waveform */
+  dblclick: [relativeX: number, relativeY: number]
+  /** When the audio has been decoded */
+  decode: [duration: number]
+  /** When the user drags the cursor */
+  drag: [relativeX: number]
+  /** When the user ends dragging the cursor */
+  dragend: [relativeX: number]
+  /** When the user starts dragging the cursor */
+  dragstart: [relativeX: number]
+  /** When the user interacts with the waveform (i.g. clicks or drags on it) */
   interaction: []
+  /** After the minimap is created */
+  init: []
+  /** When the audio is both decoded and can play */
+  ready: []
+  /** When visible waveform is drawn */
+  redraw: []
+  /** When all audio channel chunks of the waveform have drawn */
+  redrawcomplete: []
+  /** When the user seeks to a new position */
+  seeking: [currentTime: number]
+  /** On audio position change, fires continuously during playback */
+  timeupdate: [currentTime: number]
 }
 
 class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions> {
@@ -123,12 +149,64 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
     })
 
     this.subscriptions.push(
-      this.miniWavesurfer.on('ready', () => {
-        this.emit('ready')
+      this.miniWavesurfer.on('audioprocess', (currentTime) => {
+        this.emit('audioprocess', currentTime)
+      }),
+
+      this.miniWavesurfer.on('click', (relativeX, relativeY) => {
+        this.emit('click', relativeX, relativeY)
+      }),
+
+      this.miniWavesurfer.on('dblclick', (relativeX, relativeY) => {
+        this.emit('dblclick', relativeX, relativeY)
+      }),
+
+      this.miniWavesurfer.on('decode', (duration) => {
+        this.emit('decode', duration)
+      }),
+
+      this.miniWavesurfer.on('destroy', () => {
+        this.emit('destroy')
+      }),
+
+      this.miniWavesurfer.on('drag', (relativeX) => {
+        this.emit('drag', relativeX)
+      }),
+
+      this.miniWavesurfer.on('dragend', (relativeX) => {
+        this.emit('dragend', relativeX)
+      }),
+
+      this.miniWavesurfer.on('dragstart', (relativeX) => {
+        this.emit('dragstart', relativeX)
       }),
 
       this.miniWavesurfer.on('interaction', () => {
         this.emit('interaction')
+      }),
+
+      this.miniWavesurfer.on('init', () => {
+        this.emit('init')
+      }),
+
+      this.miniWavesurfer.on('ready', () => {
+        this.emit('ready')
+      }),
+
+      this.miniWavesurfer.on('redraw', () => {
+        this.emit('redraw')
+      }),
+
+      this.miniWavesurfer.on('redrawcomplete', () => {
+        this.emit('redrawcomplete')
+      }),
+
+      this.miniWavesurfer.on('seeking', (currentTime) => {
+        this.emit('seeking', currentTime)
+      }),
+
+      this.miniWavesurfer.on('timeupdate', (currentTime) => {
+        this.emit('timeupdate', currentTime)
       }),
     )
   }
