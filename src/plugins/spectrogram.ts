@@ -728,12 +728,8 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         const oldEnd = oldStart + oldPiece
         const newStart = i * newPiece
         const newEnd = newStart + newPiece
+        const overlap = Math.max(0, Math.min(oldEnd, newEnd) - Math.max(oldStart, newStart))
 
-        const overlap =
-          oldEnd <= newStart || newEnd <= oldStart
-            ? 0
-            : Math.min(Math.max(oldEnd, newStart), Math.max(newEnd, oldStart)) -
-              Math.max(Math.min(oldEnd, newStart), Math.min(newEnd, oldStart))
         let k
         /* eslint-disable max-depth */
         if (overlap > 0) {
