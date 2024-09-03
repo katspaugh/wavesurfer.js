@@ -1,9 +1,9 @@
-import glob from 'glob'
+import { glob } from 'glob'
 import typescript from '@rollup/plugin-typescript'
 import terser from '@rollup/plugin-terser'
 import dts from 'rollup-plugin-dts'
 
-const plugins = [typescript(), terser({ format: { comments: false } })]
+const plugins = [typescript({ declaration: false, declarationDir: null }), terser({ format: { comments: false } })]
 
 export default [
   // ES module
