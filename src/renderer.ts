@@ -169,8 +169,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     const div = document.createElement('div')
     const shadow = div.attachShadow({ mode: 'open' })
 
+    const nonce = this.options.nonce;
+
     shadow.innerHTML = `
-      <style>
+      <style ${nonce ? `nonce="${nonce}"` : ''}>
         :host {
           user-select: none;
           min-width: 1px;
