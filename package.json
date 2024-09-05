@@ -66,7 +66,8 @@
     "cypress:canary": "cypress open --e2e -b chrome:canary",
     "test": "cypress run --browser chrome",
     "serve": "npx live-server --port=9090 --no-browser --ignore='.*,src,cypress,scripts'",
-    "start": "npm run build:dev & npm run serve"
+    "start": "npm run build:dev & npm run serve",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
