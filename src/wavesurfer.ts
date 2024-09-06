@@ -76,6 +76,8 @@ export type WaveSurferOptions = {
   fetchParams?: RequestInit
   /** Playback "backend" to use, defaults to MediaElement */
   backend?: 'WebAudio' | 'MediaElement'
+  /** Nonce for CSP if necessary */
+  cspNonce?: string
 }
 
 const defaultOptions = {
