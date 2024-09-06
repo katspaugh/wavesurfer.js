@@ -169,10 +169,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     const div = document.createElement('div')
     const shadow = div.attachShadow({ mode: 'open' })
 
-    const nonce = this.options.nonce;
+    const cspNonce = this.options.cspNonce && typeof this.options.cspNonce === 'string' ? this.options.cspNonce.replace(/"/g, '') : '';
 
     shadow.innerHTML = `
-      <style ${nonce ? `nonce="${nonce}"` : ''}>
+      <style${cspNonce ? ` nonce="${cspNonce}"` : ''}>
         :host {
           user-select: none;
           min-width: 1px;
