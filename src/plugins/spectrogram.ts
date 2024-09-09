@@ -537,20 +537,16 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   private createMelFilterBank(numMelFilters, sampleRate) {
     const melMin = this.hzToMel(0)
     const melMax = this.hzToMel(sampleRate / 2)
-    const melPoints = []
-    for (let i = 0; i <= numMelFilters + 1; i++) {
-      melPoints.push(this.melToHz(melMin + (i / (numMelFilters + 1)) * (melMax - melMin)))
-    }
     const melFilterBank = Array.from({ length: numMelFilters }, () => Array(this.fftSamples / 2 + 1).fill(0))
-    for (let i = 1; i <= numMelFilters; i++) {
-      for (let j = 0; j < this.fftSamples / 2 + 1; j++) {
-        const freq = j * (sampleRate / this.fftSamples)
-        if (freq >= melPoints[i - 1] && freq <= melPoints[i]) {
-          melFilterBank[i - 1][j] = (freq - melPoints[i - 1]) / (melPoints[i] - melPoints[i - 1])
-        } else if (freq >= melPoints[i] && freq <= melPoints[i + 1]) {
-          melFilterBank[i - 1][j] = (melPoints[i + 1] - freq) / (melPoints[i + 1] - melPoints[i])
-        }
-      }
+    const scale = (sampleRate / this.fftSamples)
+    for (let i = 0; i < numMelFilters; i++) {
+        let hz = this.melToHz(melMin + (i / numMelFilters) * (melMax - melMin))
+        let j = Math.floor(hz / scale)
+        let hzLow = j * scale
+        let hzHigh = (j + 1) * scale
+        let r = (hz - hzLow) / (hzHigh - hzLow)
+        melFilterBank[i][j] = 1 - r
+        melFilterBank[i][j + 1] = r
     }
     return melFilterBank
   }
