@@ -592,6 +592,9 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       const channelFreq = []
       let currentOffset = 0
 
+      channelFreq.push(new Uint8Array(fftSamples / 2).fill(0))
+      channelFreq.push(new Uint8Array(fftSamples / 2).fill(0))
+
       while (currentOffset + fftSamples < channelData.length) {
         const segment = channelData.slice(currentOffset, currentOffset + fftSamples)
         const array = new Uint8Array(fftSamples / 2)
@@ -615,6 +618,30 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
         currentOffset += fftSamples - noverlap
       }
+
+    // Add 0 padding to the end of the audio if some data was left out due to window mismatch
+    if( channelData.length - currentOffset != 0) {
+      const segment = new Float32Array(fftSamples)
+      segment.set(channelData.slice(currentOffset, channelData.length))
+      const array = new Uint8Array(fftSamples / 2).fill(0)
+      let spectrum = fft.calculateSpectrum(segment);
+      if (this.scale == 'mel') {
+        spectrum = this.applyMelFilterBank(spectrum, melFilterBank);
+      }
+      for (let j = 0; j < fftSamples / 2; j++) {
+        // Based on: https://manual.audacityteam.org
+        let valueDB = 20 * Math.log10(spectrum[j])
+        if (valueDB < -this.rangeDB) {
+          array[j] = 0
+        } else if (valueDB > -this.gainDB) {
+          array[j] = 255
+        } else {
+          array[j] = (valueDB + this.gainDB) / this.rangeDB * 255 + 256
+        }
+      }
+      channelFreq.push(array)
+    }
+      
       frequencies.push(channelFreq)
       // frequencies: [channel, sample, freq]
     }
