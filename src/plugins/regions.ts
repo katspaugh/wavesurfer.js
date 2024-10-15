@@ -676,7 +676,9 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
   /** Remove all regions */
   public clearRegions() {
-    this.regions.forEach((region) => region.remove())
+    const regions: Region[] = JSON.parse(JSON.stringify(this.regions))
+    regions.forEach((region) => region.remove())
+    this.regions = []
   }
 
   /** Destroy the plugin and clean up */
