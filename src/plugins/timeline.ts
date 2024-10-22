@@ -161,17 +161,17 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       }
     }
 
-    setTimeout(() => {
-      if (!this.wavesurfer) return
-      const scrollLeft = this.wavesurfer.getScroll()
-      const scrollRight = scrollLeft + this.wavesurfer.getWidth()
-      renderIfVisible(scrollLeft, scrollRight)
-      this.subscriptions.push(
-        this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
-          renderIfVisible(scrollLeft, scrollRight)
-        }),
-      )
-    }, 0)
+    if (!this.wavesurfer) return
+    const scrollLeft = this.wavesurfer.getScroll()
+    const scrollRight = scrollLeft + this.wavesurfer.getWidth()
+
+    renderIfVisible(scrollLeft, scrollRight)
+
+    this.subscriptions.push(
+      this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
+        renderIfVisible(scrollLeft, scrollRight)
+      }),
+    )
   }
 
   private initTimeline() {
