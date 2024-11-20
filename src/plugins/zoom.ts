@@ -51,8 +51,6 @@ export type ZoomPluginOptions = {
    * @default 20
    */
   iterations?: number
-
-
 }
 const defaultOptions = {
   scale: 0.5,
@@ -68,14 +66,10 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   private wrapper: HTMLElement | undefined = undefined
   private container: HTMLElement | null = null
   private accumulatedDelta = 0
-  private pointerTime: number = 0;
-  private oldX: number = 0;
-  private endZoom: number = 0;
-  private startZoom: number = 0;
-
-  private preventScroll = (e: WheelEvent) => {
-    e.preventDefault();
-  };
+  private pointerTime: number = 0
+  private oldX: number = 0
+  private endZoom: number = 0
+  private startZoom: number = 0
 
   constructor(options?: ZoomPluginOptions) {
     super(options || {})
@@ -92,14 +86,10 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
       return
     }
     this.container = this.wrapper.parentElement as HTMLElement
-    this.wrapper.addEventListener('wheel', this.onWheel)
+    this.container.addEventListener('wheel', this.onWheel)
 
-    // Prevent native scrolling obstructing the zoom on this waveform
-    document.addEventListener('wheel', this.preventScroll, { passive: false });
-
-    if(typeof this.options.maxZoom === 'undefined'){
+    if (typeof this.options.maxZoom === 'undefined') {
       this.options.maxZoom = this.container.clientWidth
-      console.log("maxZoom", this.options.maxZoom)
     }
     this.endZoom = this.options.maxZoom
   }
@@ -115,25 +105,25 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     this.accumulatedDelta += -e.deltaY
 
     if (this.startZoom === 0 && this.options.exponentialZooming) {
-        this.startZoom = this.wavesurfer.getWrapper().clientWidth / this.wavesurfer.getDuration();
+      this.startZoom = this.wavesurfer.getWrapper().clientWidth / this.wavesurfer.getDuration()
     }
 
     // ...and only scroll once we've hit our threshold
     if (this.options.deltaThreshold === 0 || Math.abs(this.accumulatedDelta) >= this.options.deltaThreshold) {
       const duration = this.wavesurfer.getDuration()
       const oldMinPxPerSec =
-      this.wavesurfer.options.minPxPerSec === 0
-        ? this.wavesurfer.getWrapper().scrollWidth / duration
-        : this.wavesurfer.options.minPxPerSec;
-      const x = e.clientX - this.container.getBoundingClientRect().left;
+        this.wavesurfer.options.minPxPerSec === 0
+          ? this.wavesurfer.getWrapper().scrollWidth / duration
+          : this.wavesurfer.options.minPxPerSec
+      const x = e.clientX - this.container.getBoundingClientRect().left
       const width = this.container.clientWidth
       const scrollX = this.wavesurfer.getScroll()
 
       // Update pointerTime only if the pointer position has changed. This prevents the waveform from drifting during fixed zooming.
       if (x !== this.oldX || this.oldX === 0) {
-        this.pointerTime = (scrollX + x) / oldMinPxPerSec;
+        this.pointerTime = (scrollX + x) / oldMinPxPerSec
       }
-      this.oldX = x;
+      this.oldX = x
 
       const newMinPxPerSec = this.calculateNewZoom(oldMinPxPerSec, this.accumulatedDelta)
       const newLeftSec = (width / newMinPxPerSec) * (x / width)
@@ -152,17 +142,17 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   }
 
   private calculateNewZoom = (oldZoom: number, delta: number) => {
-    let newZoom;
+    let newZoom
     if (this.options.exponentialZooming) {
-        const zoomFactor =
-          delta > 0
-            ? Math.pow(this.endZoom / this.startZoom, 1 / (this.options.iterations - 1))
-            : Math.pow(this.startZoom / this.endZoom, 1 / (this.options.iterations - 1));
-            newZoom = Math.max(0, oldZoom * zoomFactor);
-      } else {
-        // Default linear zooming
-        newZoom = Math.max(0, oldZoom + delta * this.options.scale)
-      }
+      const zoomFactor =
+        delta > 0
+          ? Math.pow(this.endZoom / this.startZoom, 1 / (this.options.iterations - 1))
+          : Math.pow(this.startZoom / this.endZoom, 1 / (this.options.iterations - 1))
+      newZoom = Math.max(0, oldZoom * zoomFactor)
+    } else {
+      // Default linear zooming
+      newZoom = Math.max(0, oldZoom + delta * this.options.scale)
+    }
     return Math.min(newZoom, this.options.maxZoom!)
   }
 
@@ -170,7 +160,6 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     if (this.wrapper) {
       this.wrapper.removeEventListener('wheel', this.onWheel)
     }
-    document.removeEventListener('wheel', this.preventScroll)
     super.destroy()
   }
 }
