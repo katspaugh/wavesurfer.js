@@ -527,9 +527,9 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       // Check if the region is between the scrollLeft and scrollLeft + clientWidth
       const isVisible = start + width > scrollLeft && start < scrollLeft + clientWidth
 
-      if (isVisible) {
+      if (isVisible && !element.parentElement) {
         container.appendChild(element)
-      } else {
+      } else if (!isVisible && element.parentElement) {
         element.remove()
       }
     }
