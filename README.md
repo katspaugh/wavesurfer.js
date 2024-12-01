@@ -24,7 +24,7 @@ Alternatively, insert a UMD script tag which exports the library as a global `Wa
 <script src="https://unpkg.com/wavesurfer.js@7"></script>
 ```
 
-Create a wavesurfer instance and pass various [options](#wavesurfer-options):
+Create a wavesurfer instance and pass various [options](http://wavesurfer.xyz/docs/options):
 ```js
 const wavesurfer = WaveSurfer.create({
   container: '#waveform',
