@@ -30,7 +30,7 @@ ws.once('interaction', () => {
 <html>
   <div id="waveform"></div>
   <p>
-    📖 <a href="https://wavesurfer.xyz/docs/classes/plugins_spectrogram.SpectrogramPlugin">Spectrogram plugin docs</a>
+    📖 <a href="https://wavesurfer.xyz/docs/modules/plugins_spectrogram">Spectrogram plugin docs</a>
   </p>
 </html>
 */
