@@ -272,7 +272,8 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   getWidth(): number {
-    return this.scrollContainer.clientWidth
+    const { paddingLeft, paddingRight } = getComputedStyle(this.scrollContainer)
+    return this.scrollContainer.clientWidth - parseFloat(paddingLeft) - parseFloat(paddingRight)
   }
 
   getScroll(): number {
@@ -636,7 +637,8 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Determine the width of the waveform
     const pixelRatio = this.getPixelRatio()
-    const parentWidth = this.scrollContainer.clientWidth
+    const { paddingLeft, paddingRight } = getComputedStyle(this.scrollContainer)
+    const parentWidth = this.scrollContainer.clientWidth - parseFloat(paddingLeft) - parseFloat(paddingRight)
     const scrollWidth = Math.ceil(audioData.duration * (this.options.minPxPerSec || 0))
 
     // Whether the container should scroll
