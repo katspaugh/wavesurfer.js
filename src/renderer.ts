@@ -31,7 +31,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private lastContainerWidth = 0
   private isDragging = false
   private subscriptions: (() => void)[] = []
-  private unsubscribeOnScroll?: () => void
+  private unsubscribeOnScroll: (() => void)[] = []
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
@@ -293,7 +293,8 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.container.remove()
     this.resizeObserver?.disconnect()
-    this.unsubscribeOnScroll?.()
+    this.unsubscribeOnScroll?.forEach((unsubscribe) => unsubscribe())
+    this.unsubscribeOnScroll = []
   }
 
   private createDelay(delayMs = 10): () => Promise<void> {
@@ -584,7 +585,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Subscribe to the scroll event to draw additional canvases
     if (numCanvases > 1) {
-      this.unsubscribeOnScroll = this.on('scroll', () => {
+      const unsubscribe = this.on('scroll', () => {
         const { scrollLeft } = this.scrollContainer
         const canvasIndex = Math.floor((scrollLeft / totalWidth) * numCanvases)
         clearCanvases()
@@ -592,6 +593,8 @@ class Renderer extends EventEmitter<RendererEvents> {
         draw(canvasIndex)
         draw(canvasIndex + 1)
       })
+
+      this.unsubscribeOnScroll.push(unsubscribe)
     }
   }
 
@@ -677,8 +680,8 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   reRender() {
-    this.unsubscribeOnScroll?.()
-    delete this.unsubscribeOnScroll
+    this.unsubscribeOnScroll.forEach((unsubscribe) => unsubscribe())
+    this.unsubscribeOnScroll = []
 
     // Return if the waveform has not been rendered yet
     if (!this.audioData) return
