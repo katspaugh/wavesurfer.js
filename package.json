@@ -68,6 +68,7 @@
     "serve": "npx live-server --port=9090 --no-browser --ignore='.*,src,cypress,scripts'",
     "start": "npm run build:dev & npm run serve"
   },
+  "packageManager": "yarn@1.22.22",
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.1",
