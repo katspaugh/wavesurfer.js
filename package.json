@@ -70,18 +70,18 @@
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@typescript-eslint/eslint-plugin": "^7.8.0",
-    "@typescript-eslint/parser": "^7.8.0",
-    "cypress": "^13.9.0",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "cypress": "^13.16.1",
     "cypress-image-snapshot": "^4.0.1",
-    "eslint": "^8",
-    "eslint-config-prettier": "^8",
-    "eslint-plugin-prettier": "^4",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
     "glob": "^11.0.0",
-    "prettier": "^2",
-    "rollup": "^4.17.2",
+    "prettier": "^3.4.2",
+    "rollup": "^4.28.1",
     "rollup-plugin-dts": "^6.1.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.7.2"
   }
 }
