@@ -1,5 +1,5 @@
 import { defineConfig } from 'cypress'
-import { addMatchImageSnapshotPlugin } from 'cypress-image-snapshot/plugin'
+import { addMatchImageSnapshotPlugin } from 'cypress-image-snapshot/plugin.js'
 
 export default defineConfig({
   video: false,
