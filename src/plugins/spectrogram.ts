@@ -247,7 +247,7 @@ export type SpectrogramPluginOptions = {
   alpha?: number
   /** Min frequency to scale spectrogram. */
   frequencyMin?: number
-  /** Max frequency to scale spectrogram. Set this to samplerate/2 to draw whole range of spectrogram. */
+  /** Max frequency to scale spectrogram. Set this to samplerate/4 to draw whole range of spectrogram. */
   frequencyMax?: number
   /**
    * Based on: https://manual.audacityteam.org/man/spectrogram_settings.html
@@ -336,7 +336,8 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       }
     }
     this.fftSamples = options.fftSamples || 512
-    this.noverlap = options.noverlap || this.fftSamples * 0.75
+    this.height = options.height || 200
+    this.noverlap = options.noverlap || null // Will be calculated later based on canvas size
     this.windowFunc = options.windowFunc || 'hann'
     this.alpha = options.alpha
 
@@ -348,14 +349,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.gainDB = options.gainDB || 20
     this.rangeDB = options.rangeDB || 80
     this.scale = options.scale || 'mel'
-    this.numMelFilters = options.numMelFilters || this.fftSamples / 8
-    if (this.scale == 'mel') {
-        this.height = options.height || this.numMelFilters
-        this.height = Math.min(this.height, this.numMelFilters)
-    } else {
-        this.height = options.height || this.fftSamples / 2
-        this.height =  Math.min(this.height, this.fftSamples / 2)
-    }
+    this.numMelFilters = this.fftSamples / 4
 
     this.createWrapper()
     this.createCanvas()
@@ -466,14 +460,13 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     // Set the height to fit all channels
     this.wrapper.style.height = this.height * frequenciesData.length + 'px'
 
-    this.width = this.wavesurfer.getWrapper().offsetWidth
-    this.canvas.width = this.width
+    this.canvas.width = this.getWidth()
     this.canvas.height = this.height * frequenciesData.length
 
     const spectrCc = this.spectrCc
     const height = this.height
-    const width = this.width
-    const freqFrom = this.buffer.sampleRate / 2
+    const width = this.getWidth()
+    const freqFrom = this.buffer.sampleRate / 4
     const freqMin = this.frequencyMin
     const freqMax = this.frequencyMax
 
@@ -484,12 +477,13 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     for (let c = 0; c < frequenciesData.length; c++) {
       // for each channel
       const pixels = this.resample(frequenciesData[c])
-      const imageData = new ImageData(width, height)
+      const bitmapHeight = pixels[0].length
+      const imageData = new ImageData(width, bitmapHeight)
 
       for (let i = 0; i < pixels.length; i++) {
         for (let j = 0; j < pixels[i].length; j++) {
           const colorMap = this.colorMap[pixels[i][j]]
-          const redIndex = ((height - j) * width + i) * 4
+          const redIndex = ((bitmapHeight / 2 - j) * width + i) * 4
           imageData.data[redIndex] = colorMap[0] * 255
           imageData.data[redIndex + 1] = colorMap[1] * 255
           imageData.data[redIndex + 2] = colorMap[2] * 255
@@ -498,18 +492,14 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       }
 
       // scale and stack spectrograms
-      createImageBitmap(imageData).then((renderer) => {
-        spectrCc.drawImage(
-          renderer,
-          0,
-          height * (1 - freqMax / freqFrom), // source x, y
-          width,
-          (height * (freqMax - freqMin)) / freqFrom, // source width, height
-          0,
-          height * c, // destination x, y
-          width,
-          height, // destination width, height
-        )
+      createImageBitmap(
+        imageData,
+        0,
+        Math.round(bitmapHeight - bitmapHeight * (freqMax / freqFrom)) / 2,
+        width,
+        Math.round(bitmapHeight * ((freqMax - freqMin) / freqFrom)),
+      ).then((bitmap) => {
+        spectrCc.drawImage(bitmap, 0, height * c, width, height * 2)
       })
     }
 
@@ -562,11 +552,15 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     return melSpectrum
   }
 
+  private getWidth() {
+    return this.wavesurfer.getWrapper().offsetWidth
+  }
+
   private getFrequencies(buffer: AudioBuffer): number[] {
     const fftSamples = this.fftSamples
     const channels = this.options.splitChannels ?? this.wavesurfer?.options.splitChannels ? buffer.numberOfChannels : 1
 
-    this.frequencyMax = this.frequencyMax || buffer.sampleRate / 2
+    this.frequencyMax = this.frequencyMax || buffer.sampleRate / 4
 
     if (!buffer) return
 
@@ -688,13 +682,14 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         let y
 
         if (i == 0) {
-          y = (1 + c) * getMaxY + i - 10
+          y = getMaxY + i - 10
         } else {
-          y = (1 + c) * getMaxY - i * 50 + yLabelOffset
+          y = getMaxY - i * 50 + yLabelOffset
         }
         if (this.scale == 'mel' && freq != 0) {
-          y = y * this.hzToMel(freq) / freq
+          y = (y * this.hzToMel(freq)) / freq
         }
+        y = c * getMaxY + y
         // unit label
         ctx.fillStyle = textColorUnit
         ctx.font = fontSizeUnit + ' ' + fontType
@@ -708,7 +703,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   }
 
   private resample(oldMatrix) {
-    const columnsNumber = this.width
+    const columnsNumber = this.getWidth()
     const newMatrix = []
 
     const oldPiece = 1 / oldMatrix.length

@@ -9,7 +9,7 @@ const ws = WaveSurfer.create({
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
   url: '/examples/audio/audio.wav',
-  sampleRate: 22050,
+  sampleRate: 44100,
 })
 
 // Initialize the Spectrogram plugin
@@ -18,6 +18,11 @@ ws.registerPlugin(
     labels: true,
     height: 200,
     splitChannels: true,
+    scale: 'mel', // or 'linear'
+    frequencyMax: 8000,
+    frequencyMin: 0,
+    fftSamples: 1024,
+    labelsBackground: 'rgba(0, 0, 0, 0.1)',
   }),
 )
 
