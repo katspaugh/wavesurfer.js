@@ -60,6 +60,10 @@ export type RegionParams = {
   drag?: boolean
   /** Allow/dissallow resizing the region */
   resize?: boolean
+  /** Allow/dissallow resizing the start of the region */
+  resizeStart?: boolean
+  /** Allow/dissallow resizing the end of the region */
+  resizeEnd?: boolean
   /** The color of the region (CSS color) */
   color?: string
   /** Content string or HTML element */
@@ -81,6 +85,8 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public end: number
   public drag: boolean
   public resize: boolean
+  public resizeStart: boolean
+  public resizeEnd: boolean
   public color: string
   public content?: HTMLElement
   public minLength = 0
@@ -98,6 +104,8 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     this.end = this.clampPosition(params.end ?? params.start)
     this.drag = params.drag ?? true
     this.resize = params.resize ?? true
+    this.resizeStart = params.resizeStart ?? true
+    this.resizeEnd = params.resizeEnd ?? true
     this.color = params.color ?? 'rgba(0, 0, 0, 0.1)'
     this.minLength = params.minLength ?? this.minLength
     this.maxLength = params.maxLength ?? this.maxLength
@@ -296,6 +304,8 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
   private onResize(dx: number, side: 'start' | 'end') {
     if (!this.resize) return
+    if (!this.resizeStart && side === 'start') return
+    if (!this.resizeEnd && side === 'end') return
     this._onUpdate(dx, side)
   }
 
@@ -388,6 +398,14 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       } else {
         this.removeResizeHandles(this.element)
       }
+    }
+
+    if (options.resizeStart !== undefined) {
+      this.resizeStart = options.resizeStart
+    }
+
+    if (options.resizeEnd !== undefined) {
+      this.resizeEnd = options.resizeEnd
     }
   }
 
