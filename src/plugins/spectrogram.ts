@@ -674,22 +674,23 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         ctx.textAlign = textAlign
         ctx.textBaseline = 'middle'
 
-        const freq = freqStart + step * i
+        let freq
+        if (this.scale == 'mel') {
+          const melMin = this.hzToMel(0)
+          const melMax = this.hzToMel(this.frequencyMax)
+          freq = this.melToHz(melMin + (i / labelIndex) * (melMax - melMin))
+        } else {
+          freq = freqStart + step * i
+        }
+
         const label = this.freqType(freq)
         const units = this.unitType(freq)
-        const yLabelOffset = 2
         const x = 16
-        let y
+        let y = (1 + c) * getMaxY - (i / labelIndex) * getMaxY
 
-        if (i == 0) {
-          y = getMaxY + i - 10
-        } else {
-          y = getMaxY - i * 50 + yLabelOffset
-        }
-        if (this.scale == 'mel' && freq != 0) {
-          y = (y * this.hzToMel(freq)) / freq
-        }
-        y = c * getMaxY + y
+        // Make sure label remains in view
+        y = Math.min(Math.max(y, c * getMaxY + 10), (1 + c) * getMaxY - 10)
+
         // unit label
         ctx.fillStyle = textColorUnit
         ctx.font = fontSizeUnit + ' ' + fontType
