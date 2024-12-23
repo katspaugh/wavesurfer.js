@@ -346,8 +346,8 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.frequencyMin = options.frequencyMin || 0
     this.frequencyMax = options.frequencyMax || 0
 
-    this.gainDB = options.gainDB || 20
-    this.rangeDB = options.rangeDB || 80
+    this.gainDB = options.gainDB ?? 20
+    this.rangeDB = options.rangeDB ?? 80
     this.scale = options.scale || 'mel'
     this.numMelFilters = this.fftSamples / 4
 
@@ -596,7 +596,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         for (let j = 0; j < fftSamples / 2; j++) {
           // Based on: https://manual.audacityteam.org/man/spectrogram_view.html
           let valueDB = 20 * Math.log10(spectrum[j])
-          if (valueDB < -this.rangeDB) {
+          if (valueDB < -this.gainDB - this.rangeDB) {
             array[j] = 0
           } else if (valueDB > -this.gainDB) {
             array[j] = 255
