@@ -256,7 +256,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }),
 
       this.onMediaEvent('error', (err) => {
-        this.emit('error', err.error)
+        this.emit('error', (this.getMediaElement().error ?? new Error('Media error')) as Error)
       }),
     )
   }
