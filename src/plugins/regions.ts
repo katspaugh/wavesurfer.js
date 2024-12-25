@@ -366,7 +366,11 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   }
 
   /** Update the region's options */
-  public setOptions(options: Omit<RegionParams, 'minLength' | 'maxLength'>) {
+  public setOptions(
+    options: Partial<
+      Pick<RegionParams, 'color' | 'start' | 'end' | 'drag' | 'content' | 'id' | 'resize' | 'resizeStart' | 'resizeEnd'>
+    >,
+  ) {
     if (options.color) {
       this.color = options.color
       this.element.style.backgroundColor = this.color
@@ -607,10 +611,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
     this.subscriptions.push(...regionSubscriptions)
 
-    // A small timeout to allow internal events to be emitted first
-    setTimeout(() => {
-      this.emit('region-created', region)
-    }, 0)
+    this.emit('region-created', region)
   }
 
   /** Create a region with given parameters */
