@@ -8,6 +8,18 @@
 
 **Gold sponsor 💖** [Closed Caption Creator](https://www.closedcaptioncreator.com)
 
+# Table of contents
+
+1. [Getting started](#getting-started)
+2. [API reference](#api-reference)
+3. [Plugins](#plugins)
+4. [CSS styling](#css-styling)
+5. [Frequent questions](#questions)
+6. [Upgrading from v6 to v7](#upgrading-from-v6-to-v7)
+7. [Development](#development)
+8. [Tests](#tests)
+9. [Feedback](#feedback)
+
 ## Getting started
 
 Install and import the package:
@@ -120,15 +132,13 @@ However, please keep in mind that this forum is dedicated to wavesurfer-specific
 Generally, wavesurfer.js doesn't aim to be a wrapper for all things Web Audio. It's just a player with a waveform visualization. It does allow connecting itself to a Web Audio graph by exporting its audio element (see <a href="https://wavesurfer.xyz/examples/?4436ec40a2ab943243755e659ae32196">this example</a>) but nothign more than that. Please don't expect wavesurfer to be able to cut, add effects, or process your audio in any way.
 </details>
 
-## v7 – a new TypeScript version
+## Upgrading from v6 to v7
 
 Wavesurfer.js v7 is a TypeScript rewrite of wavesurfer.js that brings several improvements:
 
  * Typed API for better development experience
  * Enhanced decoding and rendering performance
  * New and improved plugins
-
-### Upgrading from v6
 
 Most options, events, and methods are similar to those in previous versions.
 
