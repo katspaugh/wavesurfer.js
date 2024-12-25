@@ -607,7 +607,10 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
     this.subscriptions.push(...regionSubscriptions)
 
-    this.emit('region-created', region)
+    // A small timeout to allow internal events to be emitted first
+    setTimeout(() => {
+      this.emit('region-created', region)
+    }, 0)
   }
 
   /** Create a region with given parameters */
