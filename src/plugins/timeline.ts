@@ -25,7 +25,7 @@ export type TimelinePluginOptions = {
   /** Interval between secondary numeric labels  in timeIntervals (i.e notch count) */
   secondaryLabelSpacing?: number
   /** offset in seconds for the numeric labels */
-  timeOffset?: number  
+  timeOffset?: number
   /** Custom inline style to apply to the container */
   style?: Partial<CSSStyleDeclaration> | string
   /** Turn the time into a suitable label for the time. */
@@ -36,6 +36,7 @@ export type TimelinePluginOptions = {
 
 const defaultOptions = {
   height: 20,
+  timeOffset: 0,
   formatTimeCallback: (seconds: number) => {
     if (seconds / 60 > 1) {
       // calculate minutes and seconds from seconds count
@@ -145,11 +146,6 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     return 2
   }
 
-    // Return how many seconds the labels are offset.
-    private defaultTimeOffset(pxPerSec: number): number {
-      return 0;
-    }
-
   private virtualAppend(start: number, container: HTMLElement, element: HTMLElement) {
     let wasVisible = false
 
@@ -189,7 +185,6 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     const primaryLabelSpacing = this.options.primaryLabelSpacing
     const secondaryLabelInterval = this.options.secondaryLabelInterval ?? this.defaultSecondaryLabelInterval(pxPerSec)
     const secondaryLabelSpacing = this.options.secondaryLabelSpacing
-    const timeOffset = this.options.timeOffset ?? this.defaultTimeOffset(pxPerSec)
     const isTop = this.options.insertPosition === 'beforebegin'
 
     const timeline = createElement('div', {
@@ -256,7 +251,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       const mode = isPrimary ? 'primary' : isSecondary ? 'secondary' : 'tick'
       notch.setAttribute('part', `timeline-notch timeline-notch-${mode}`)
 
-      const offset = (i + timeOffset) * pxPerSec
+      const offset = (i + this.options.timeOffset) * pxPerSec
       notch.style.left = `${offset}px`
       this.virtualAppend(offset, timeline, notch)
     }

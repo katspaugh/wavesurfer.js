@@ -2,62 +2,57 @@
 
 import WaveSurfer from 'wavesurfer.js'
 
-// Create your own media element
-const audio = new Audio()
-audio.controls = true
-audio.src = '/examples/audio/audio.wav'
+// Define the equalizer bands
+const eqBands = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
 // Create a WaveSurfer instance and pass the media element
 const wavesurfer = WaveSurfer.create({
   container: document.body,
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
-  media: audio, // <- this is the important part
+  url: '/examples/audio/audio.wav',
+  mediaControls: true,
 })
 
-// Optionally, add the audio to the page to see the controls
-document.body.appendChild(audio)
+wavesurfer.on('click', () => wavesurfer.playPause())
 
-// Now, create a Web Audio equalizer
+wavesurfer.once('play', () => {
+  // Create Web Audio context
+  const audioContext = new AudioContext()
 
-// Create Web Audio context
-const audioContext = new AudioContext()
+  // Create a biquad filter for each band
+  const filters = eqBands.map((band) => {
+    const filter = audioContext.createBiquadFilter()
+    filter.type = band <= 32 ? 'lowshelf' : band >= 16000 ? 'highshelf' : 'peaking'
+    filter.gain.value = Math.random() * 40 - 20
+    filter.Q.value = 1 // resonance
+    filter.frequency.value = band // the cut-off frequency
+    return filter
+  })
 
-// Define the equalizer bands
-const eqBands = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
+  const audio = wavesurfer.getMediaElement()
+  const mediaNode = audioContext.createMediaElementSource(audio)
 
-// Create a biquad filter for each band
-const filters = eqBands.map((band) => {
-  const filter = audioContext.createBiquadFilter()
-  filter.type = band <= 32 ? 'lowshelf' : band >= 16000 ? 'highshelf' : 'peaking'
-  filter.gain.value = Math.random() * 40 - 20
-  filter.Q.value = 1 // resonance
-  filter.frequency.value = band // the cut-off frequency
-  return filter
+  // Connect the filters and media node sequentially
+  const equalizer = filters.reduce((prev, curr) => {
+    prev.connect(curr)
+    return curr
+  }, mediaNode)
+
+  // Connect the filters to the audio output
+  equalizer.connect(audioContext.destination)
+
+  sliders.forEach((slider, i) => {
+    const filter = filters[i]
+    filter.gain.value = slider.value
+    slider.oninput = (e) => (filter.gain.value = e.target.value)
+  })
 })
 
-// Connect the audio to the equalizer
-audio.addEventListener(
-  'canplay',
-  () => {
-    // Create a MediaElementSourceNode from the audio element
-    const mediaNode = audioContext.createMediaElementSource(audio)
-
-    // Connect the filters and media node sequentially
-    const equalizer = filters.reduce((prev, curr) => {
-      prev.connect(curr)
-      return curr
-    }, mediaNode)
-
-    // Connect the filters to the audio output
-    equalizer.connect(audioContext.destination)
-  },
-  { once: true },
-)
-
+// HTML UI
 // Create a vertical slider for each band
 const container = document.createElement('p')
-filters.forEach((filter) => {
+const sliders = eqBands.map(() => {
   const slider = document.createElement('input')
   slider.type = 'range'
   slider.orient = 'vertical'
@@ -65,9 +60,9 @@ filters.forEach((filter) => {
   slider.style.width = '8%'
   slider.min = -40
   slider.max = 40
-  slider.value = filter.gain.value
+  slider.value = Math.random() * 40 - 20
   slider.step = 0.1
-  slider.oninput = (e) => (filter.gain.value = e.target.value)
   container.appendChild(slider)
+  return slider
 })
 document.body.appendChild(container)

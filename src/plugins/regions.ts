@@ -95,7 +95,11 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public contentEditable = false
   public subscriptions: (() => void)[] = []
 
-  constructor(params: RegionParams, private totalDuration: number, private numberOfChannels = 0) {
+  constructor(
+    params: RegionParams,
+    private totalDuration: number,
+    private numberOfChannels = 0,
+  ) {
     super()
 
     this.subscriptions = []
@@ -263,7 +267,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
         () => this.toggleCursor(true),
         () => {
           this.toggleCursor(false)
-          this.drag && this.emit('update-end')
+          if (this.drag) this.emit('update-end')
         },
       ),
     )
