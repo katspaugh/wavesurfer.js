@@ -18,7 +18,7 @@ ws.registerPlugin(
     labels: true,
     height: 200,
     splitChannels: true,
-    scale: 'mel', // or 'linear'
+    scale: 'mel', // or 'linear', 'logarithmic', 'bark', 'erb'
     frequencyMax: 8000,
     frequencyMin: 0,
     fftSamples: 1024,
