@@ -732,7 +732,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   }
 
   private unitType(freq) {
-    return freq >= 1000 ? 'KHz' : 'Hz'
+    return freq >= 1000 ? 'kHz' : 'Hz'
   }
 
   private getLabelFrequency(
