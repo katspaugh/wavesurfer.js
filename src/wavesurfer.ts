@@ -79,7 +79,7 @@ export type WaveSurferOptions = {
   /** Nonce for CSP if necessary */
   cspNonce?: string
   /** Override the Blob MIME type */
-  mimeType?: string
+  blobMimeType?: string
 }
 
 const defaultOptions = {
@@ -437,9 +437,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
       const onProgress = (percentage: number) => this.emit('loading', percentage)
       blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
-      const overridedMimeType = this.options.mimeType
-      if (overridedMimeType) {
-        blob = new Blob([blob], { type: overridedMimeType })
+      const overridenMimeType = this.options.blobMimeType
+      if (overridenMimeType) {
+        blob = new Blob([blob], { type: overridenMimeType })
       }
     }
 
