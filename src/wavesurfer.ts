@@ -78,6 +78,8 @@ export type WaveSurferOptions = {
   backend?: 'WebAudio' | 'MediaElement'
   /** Nonce for CSP if necessary */
   cspNonce?: string
+  /** Override the Blob MIME type */
+  mimeType?: string
 }
 
 const defaultOptions = {
@@ -435,6 +437,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
       const onProgress = (percentage: number) => this.emit('loading', percentage)
       blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
+      const overridedMimeType = this.options.mimeType
+      if (overridedMimeType) {
+        blob = new Blob([blob], { type: overridedMimeType })
+      }
     }
 
     // Set the mediaelement source
