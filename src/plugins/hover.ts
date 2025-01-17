@@ -12,17 +12,20 @@ export type HoverPluginOptions = {
   labelSize?: string | number
   labelBackground?: string
   /* Allows to customize time label */
-  formatTimeCallback?: (seconds: number) => string
+  formatTimeCallback?: (microseconds: number) => string
 }
 
 const defaultOptions = {
   lineWidth: 1,
   labelSize: 11,
-  formatTimeCallback(seconds: number) {
+  formatTimeCallback(microseconds: number) {
+    const seconds = Math.floor(microseconds / 1000);
     const minutes = Math.floor(seconds / 60)
     const secondsRemainder = Math.floor(seconds) % 60
     const paddedSeconds = `0${secondsRemainder}`.slice(-2)
-    return `${minutes}:${paddedSeconds}`
+    const microSecondsRemainder = Math.floor(microseconds) % 1000;
+    const paddedMicroSeconds = `000${microSecondsRemainder}`.slice(-3);
+    return `${minutes}:${paddedSeconds}:${paddedMicroSeconds}`
   },
 }
 
@@ -115,7 +118,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
 
     // Timestamp
     const duration = this.wavesurfer.getDuration() || 0
-    this.label.textContent = this.options.formatTimeCallback(duration * relX)
+    this.label.textContent = this.options.formatTimeCallback(duration * relX * 1000)
     const labelWidth = this.label.offsetWidth
     this.label.style.transform =
       posX + labelWidth > width ? `translateX(-${labelWidth + this.options.lineWidth}px)` : ''
