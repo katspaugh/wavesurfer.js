@@ -76,7 +76,6 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     // Reset the media element, otherwise it keeps the previous source
     if (src) {
       this.media.src = ''
-      this.media.load()
     }
 
     try {
