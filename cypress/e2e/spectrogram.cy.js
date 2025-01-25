@@ -1,4 +1,5 @@
 const id = '#waveform'
+const scales = ['linear', 'mel', 'log', 'bark', 'erb']
 
 xdescribe('WaveSurfer Spectrogram plugin tests', () => {
   it('should render a spectrogram', () => {
@@ -77,6 +78,36 @@ xdescribe('WaveSurfer Spectrogram plugin tests', () => {
         win.wavesurfer.once('ready', () => {
           cy.get(id).matchImageSnapshot('spectrogram-unhidden')
           resolve()
+        })
+      })
+    })
+  })
+
+  scales.forEach(scale => {
+    it(`should display correct frequency labels with 1kHz tone (${scale})`, () => {
+      cy.visit('cypress/e2e/index.html')
+      cy.window().then((win) => {
+        return new Promise((resolve) => {
+          win.wavesurfer = win.WaveSurfer.create({
+            container: id,
+            height: 200,
+            url: '../../examples/audio/1khz.mp3',
+            plugins: [
+              win.Spectrogram.create({
+                height: 200,
+                labels: true,
+                scale: scale,
+                frequencyMin: 0,
+                frequencyMax: 4000,
+                splitChannels: false
+              }),
+            ],
+          })
+
+          win.wavesurfer.once('ready', () => {
+            cy.get(id).matchImageSnapshot(`spectrogram-1khz-${scale}`)
+            resolve()
+          })
         })
       })
     })
