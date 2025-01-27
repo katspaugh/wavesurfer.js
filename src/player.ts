@@ -86,9 +86,8 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   protected destroy() {
-    this.media.pause()
-
     if (this.isExternalMedia) return
+    this.media.pause()
     this.media.remove()
     this.revokeSrc()
     this.media.src = ''
