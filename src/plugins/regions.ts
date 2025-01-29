@@ -488,7 +488,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         left: '0',
         width: '100%',
         height: '100%',
-        zIndex: '3',
+        zIndex: '5',
         pointerEvents: 'none',
       },
     })
