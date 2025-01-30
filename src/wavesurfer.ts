@@ -266,7 +266,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.emit('seeking', this.getCurrentTime())
       }),
 
-      this.onMediaEvent('error', (err) => {
+      this.onMediaEvent('error', () => {
         this.emit('error', (this.getMediaElement().error ?? new Error('Media error')) as Error)
         this.stopAtPosition = null
       }),
@@ -584,8 +584,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.setTime(start)
     }
 
-    const playPromise = super.play()
-
     if (end != null) {
       if (this.media instanceof WebAudioPlayer) {
         this.media.stopAt(end)
@@ -594,7 +592,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
     }
 
-    return playPromise
+    return super.play()
   }
 
   /** Play or pause the audio */

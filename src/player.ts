@@ -106,7 +106,9 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Pause the audio */
   public pause(): void {
-    this.media.pause()
+    try {
+      this.media.pause()
+    } catch {}
   }
 
   /** Check if the audio is playing */

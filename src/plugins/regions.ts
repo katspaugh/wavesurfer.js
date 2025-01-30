@@ -336,7 +336,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
   /** Play the region from the start, pass `true` to stop at region end */
   public play(stopAtEnd?: boolean) {
-    this.emit('play', stopAtEnd ? this.end : undefined)
+    this.emit('play', stopAtEnd && this.end !== this.start ? this.end : undefined)
   }
 
   /** Set the HTML content of the region */
