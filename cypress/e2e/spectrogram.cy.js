@@ -83,7 +83,7 @@ xdescribe('WaveSurfer Spectrogram plugin tests', () => {
     })
   })
 
-  scales.forEach(scale => {
+  scales.forEach((scale) => {
     it(`should display correct frequency labels with 1kHz tone (${scale})`, () => {
       cy.visit('cypress/e2e/index.html')
       cy.window().then((win) => {
@@ -99,7 +99,7 @@ xdescribe('WaveSurfer Spectrogram plugin tests', () => {
                 scale: scale,
                 frequencyMin: 0,
                 frequencyMax: 4000,
-                splitChannels: false
+                splitChannels: false,
               }),
             ],
           })
