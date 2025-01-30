@@ -284,11 +284,7 @@ export type SpectrogramPluginOptions = {
    * - igray: Inverted gray scale.
    * - roseus: From https://github.com/dofuuz/roseus/blob/main/roseus/cmap/roseus.py
    */
-  colorMap?:
-  | number[][]
-  | 'gray'
-  | 'igray'
-  | 'roseus'
+  colorMap?: number[][] | 'gray' | 'igray' | 'roseus'
   /** Render a spectrogram for each channel independently when true. */
   splitChannels?: boolean
   /** URL with pre-computed spectrogram JSON data, the data must be a Uint8Array[][] **/
@@ -557,13 +553,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         width,
         Math.round(bitmapHeight * (rMax1 - rMin)),
       ).then((bitmap) => {
-        spectrCc.drawImage(
-            bitmap,
-            0,
-            height * (c + 1 - rMax1 / rMax),
-            width,
-            height * rMax1 / rMax,
-        )
+        spectrCc.drawImage(bitmap, 0, height * (c + 1 - rMax1 / rMax), width, (height * rMax1) / rMax)
       })
     }
 
@@ -593,30 +583,38 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     const filterMin = hzToScale(0)
     const filterMax = hzToScale(sampleRate / 2)
     const filterBank = Array.from({ length: numFilters }, () => Array(this.fftSamples / 2 + 1).fill(0))
-    const scale = (sampleRate / this.fftSamples)
+    const scale = sampleRate / this.fftSamples
     for (let i = 0; i < numFilters; i++) {
-        let hz = scaleToHz(filterMin + (i / numFilters) * (filterMax - filterMin))
-        let j = Math.floor(hz / scale)
-        let hzLow = j * scale
-        let hzHigh = (j + 1) * scale
-        let r = (hz - hzLow) / (hzHigh - hzLow)
-        filterBank[i][j] = 1 - r
-        filterBank[i][j + 1] = r
+      let hz = scaleToHz(filterMin + (i / numFilters) * (filterMax - filterMin))
+      let j = Math.floor(hz / scale)
+      let hzLow = j * scale
+      let hzHigh = (j + 1) * scale
+      let r = (hz - hzLow) / (hzHigh - hzLow)
+      filterBank[i][j] = 1 - r
+      filterBank[i][j + 1] = r
     }
     return filterBank
   }
 
-  private hzToMel(hz: number) { return 2595 * Math.log10(1 + hz / 700) }
+  private hzToMel(hz: number) {
+    return 2595 * Math.log10(1 + hz / 700)
+  }
 
-  private melToHz(mel: number) { return 700 * (Math.pow(10, mel / 2595) - 1) }
+  private melToHz(mel: number) {
+    return 700 * (Math.pow(10, mel / 2595) - 1)
+  }
 
   private createMelFilterBank(numMelFilters: number, sampleRate: number): number[][] {
     return this.createFilterBank(numMelFilters, sampleRate, this.hzToMel, this.melToHz)
   }
 
-  private hzToLog(hz: number) { return Math.log10(Math.max(1, hz)) }
+  private hzToLog(hz: number) {
+    return Math.log10(Math.max(1, hz))
+  }
 
-  private logToHz(log: number) { return Math.pow(10, log) }
+  private logToHz(log: number) {
+    return Math.pow(10, log)
+  }
 
   private createLogFilterBank(numLogFilters: number, sampleRate: number): number[][] {
     return this.createFilterBank(numLogFilters, sampleRate, this.hzToLog, this.logToHz)
@@ -708,7 +706,8 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
   private getFrequencies(buffer: AudioBuffer): Uint8Array[][] {
     const fftSamples = this.fftSamples
-    const channels = this.options.splitChannels ?? this.wavesurfer?.options.splitChannels ? buffer.numberOfChannels : 1
+    const channels =
+      (this.options.splitChannels ?? this.wavesurfer?.options.splitChannels) ? buffer.numberOfChannels : 1
 
     this.frequencyMax = this.frequencyMax || buffer.sampleRate / 2
 
@@ -732,16 +731,16 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     switch (this.scale) {
       case 'mel':
         filterBank = this.createFilterBank(this.numMelFilters, sampleRate, this.hzToMel, this.melToHz)
-        break;
+        break
       case 'logarithmic':
         filterBank = this.createFilterBank(this.numLogFilters, sampleRate, this.hzToLog, this.logToHz)
-        break;
+        break
       case 'bark':
         filterBank = this.createFilterBank(this.numBarkFilters, sampleRate, this.hzToBark, this.barkToHz)
-        break;
+        break
       case 'erb':
         filterBank = this.createFilterBank(this.numErbFilters, sampleRate, this.hzToErb, this.erbToHz)
-        break;
+        break
     }
 
     for (let c = 0; c < channels; c++) {
@@ -753,7 +752,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       while (currentOffset + fftSamples < channelData.length) {
         const segment = channelData.slice(currentOffset, currentOffset + fftSamples)
         const array = new Uint8Array(fftSamples / 2)
-        let spectrum = fft.calculateSpectrum(segment);
+        let spectrum = fft.calculateSpectrum(segment)
         if (filterBank) {
           spectrum = this.applyFilterBank(spectrum, filterBank)
         }
@@ -766,7 +765,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
           } else if (valueDB > -this.gainDB) {
             array[j] = 255
           } else {
-            array[j] = (valueDB + this.gainDB) / this.rangeDB * 255 + 256
+            array[j] = ((valueDB + this.gainDB) / this.rangeDB) * 255 + 256
           }
         }
         channelFreq.push(array)
@@ -789,10 +788,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     return freq >= 1000 ? 'kHz' : 'Hz'
   }
 
-  private getLabelFrequency(
-    index: number,
-    labelIndex: number,
-  ) {
+  private getLabelFrequency(index: number, labelIndex: number) {
     const scaleMin = this.hzToScale(this.frequencyMin)
     const scaleMax = this.hzToScale(this.frequencyMax)
     return this.scaleToHz(scaleMin + (index / labelIndex) * (scaleMax - scaleMin))

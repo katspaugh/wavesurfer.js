@@ -21,7 +21,7 @@ const wavesurfer2 = WaveSurfer.create({
   barRadius: 2,
 })
 
-wavesurfer2.on('ready', function() {
+wavesurfer2.on('ready', function () {
   const createWaveSurfer = () => {
     // Destroy the previous wavesurfer instance
     if (wavesurfer) {

@@ -169,7 +169,8 @@ class Renderer extends EventEmitter<RendererEvents> {
     const div = document.createElement('div')
     const shadow = div.attachShadow({ mode: 'open' })
 
-    const cspNonce = this.options.cspNonce && typeof this.options.cspNonce === 'string' ? this.options.cspNonce.replace(/"/g, '') : '';
+    const cspNonce =
+      this.options.cspNonce && typeof this.options.cspNonce === 'string' ? this.options.cspNonce.replace(/"/g, '') : ''
 
     shadow.innerHTML = `
       <style${cspNonce ? ` nonce="${cspNonce}"` : ''}>

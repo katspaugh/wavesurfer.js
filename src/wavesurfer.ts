@@ -360,10 +360,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     }
     if (options.peaks && options.duration) {
       // Create new decoded data buffer from peaks and duration
-      this.decodedData = Decoder.createBuffer(
-        options.peaks,
-        options.duration
-      );
+      this.decodedData = Decoder.createBuffer(options.peaks, options.duration)
     }
     this.renderer.setOptions(this.options)
 
