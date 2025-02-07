@@ -418,7 +418,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.plugins
   }
 
-  private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+  private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number, signal?: AbortSignal) {
     this.emit('load', url)
 
     if (!this.options.media && this.isPlaying()) this.pause()
@@ -434,6 +434,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
       const onProgress = (percentage: number) => this.emit('loading', percentage)
       blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
+      signal?.throwIfAborted()
+
       const overridenMimeType = this.options.blobMimeType
       if (overridenMimeType) {
         blob = new Blob([blob], { type: overridenMimeType })
@@ -454,6 +456,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         )
       }
     })
+    signal?.throwIfAborted()
 
     // Set the duration if the player is a WebAudioPlayer without a URL
     if (!url && !blob) {
@@ -468,7 +471,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.decodedData = Decoder.createBuffer(channelData, audioDuration || 0)
     } else if (blob) {
       const arrayBuffer = await blob.arrayBuffer()
+      signal?.throwIfAborted()
       this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
+      signal?.throwIfAborted()
     }
 
     if (this.decodedData) {
@@ -480,9 +485,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   /** Load an audio file by URL, with optional pre-decoded audio data */
-  public async load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+  public async load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number, signal?: AbortSignal) {
     try {
-      return await this.loadAudio(url, undefined, channelData, duration)
+      return await this.loadAudio(url, undefined, channelData, duration, signal)
     } catch (err) {
       this.emit('error', err as Error)
       throw err
@@ -490,9 +495,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   /** Load an audio blob */
-  public async loadBlob(blob: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+  public async loadBlob(blob: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number, signal?: AbortSignal) {
     try {
-      return await this.loadAudio('', blob, channelData, duration)
+      return await this.loadAudio('', blob, channelData, duration, signal)
     } catch (err) {
       this.emit('error', err as Error)
       throw err
