@@ -1,10 +1,10 @@
 import WebAudioPlayer from '../src/webaudio';
 
 describe('WebAudioPlayer', () => {
-    let player: WebAudioPlayer
-    let mockAudioContext: jest.Mocked<AudioContext>
-    let mockBufferNode: jest.Mocked<AudioBufferSourceNode>
-    let mockGainNode: jest.Mocked<GainNode>
+    let player;
+    let mockAudioContext;
+    let mockBufferNode;
+    let mockGainNode;
     
     beforeEach(() => {
         mockBufferNode = {
@@ -15,24 +15,24 @@ describe('WebAudioPlayer', () => {
             stop: jest.fn(),
             playbackRate: { value: 1 },
             onended: null,
-        } as unknown as jest.Mocked<AudioBufferSourceNode>
+        };
         
         mockGainNode = {
             connect: jest.fn(),
             gain: { value: 1 },
-        } as unknown as jest.Mocked<GainNode>
+        };
         
         mockAudioContext = {
             currentTime: 0,
             createBufferSource: jest.fn().mockReturnValue(mockBufferNode),
             createGain: jest.fn().mockReturnValue(mockGainNode),
-            destination: {} as AudioDestinationNode,
-        } as unknown as jest.Mocked<AudioContext>
+            destination: {},
+        };
         
         player = new WebAudioPlayer(mockAudioContext)
         
         // Set up a buffer to enable playback
-        const mockBuffer = { duration: 10 } as AudioBuffer
+        const mockBuffer = { duration: 10 }
         ;(player as any).buffer = mockBuffer })
         
         describe('_play method', () => { it('should reset position when currentPos is negative', async () => {
