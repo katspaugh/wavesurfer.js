@@ -106,9 +106,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Pause the audio */
   public pause(): void {
-    try {
-      this.media.pause()
-    } catch {}
+    this.media.pause()
   }
 
   /** Check if the audio is playing */
@@ -118,7 +116,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Jump to a specific time in the audio (in seconds) */
   public setTime(time: number) {
-    this.media.currentTime = time
+    this.media.currentTime = Math.max(0, Math.min(time, this.getDuration()))
   }
 
   /** Get the duration of the audio in seconds */

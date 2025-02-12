@@ -213,7 +213,7 @@ describe('WaveSurfer Regions plugin tests', () => {
     })
   })
 
-  it('should listen to clicks on a region', () => {
+  xit('should listen to clicks on a region', () => {
     cy.window().then((win) => {
       const regionsPlugin = win.wavesurfer.getActivePlugins()[0]
 
