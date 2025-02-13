@@ -150,6 +150,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private timer: Timer
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
+  private stopAtPosition: number | null = null
   protected subscriptions: Array<() => void> = []
   protected mediaSubscriptions: Array<() => void> = []
   protected abortController: AbortController | null = null
@@ -217,6 +218,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
           const currentTime = this.updateProgress()
           this.emit('timeupdate', currentTime)
           this.emit('audioprocess', currentTime)
+
+          // Pause audio when it reaches the stopAtPosition
+          if (this.stopAtPosition != null && this.isPlaying() && currentTime >= this.stopAtPosition) {
+            this.pause()
+          }
         }
       }),
     )
@@ -242,23 +248,27 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.onMediaEvent('pause', () => {
         this.emit('pause')
         this.timer.stop()
+        this.stopAtPosition = null
       }),
 
       this.onMediaEvent('emptied', () => {
         this.timer.stop()
+        this.stopAtPosition = null
       }),
 
       this.onMediaEvent('ended', () => {
         this.emit('timeupdate', this.getDuration())
         this.emit('finish')
+        this.stopAtPosition = null
       }),
 
       this.onMediaEvent('seeking', () => {
         this.emit('seeking', this.getCurrentTime())
       }),
 
-      this.onMediaEvent('error', (err) => {
+      this.onMediaEvent('error', () => {
         this.emit('error', (this.getMediaElement().error ?? new Error('Media error')) as Error)
+        this.stopAtPosition = null
       }),
     )
   }
@@ -424,6 +434,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     if (!this.options.media && this.isPlaying()) this.pause()
 
     this.decodedData = null
+    this.stopAtPosition = null
 
     // Fetch the entire audio as a blob if pre-decoded data is not provided
     if (!blob && !channelData) {
@@ -555,6 +566,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Jump to a specific time in the audio (in seconds) */
   public setTime(time: number) {
+    this.stopAtPosition = null
     super.setTime(time)
     this.updateProgress(time)
     this.emit('timeupdate', time)
@@ -564,6 +576,23 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   public seekTo(progress: number) {
     const time = this.getDuration() * progress
     this.setTime(time)
+  }
+
+  /** Start playing the audio */
+  public async play(start?: number, end?: number): Promise<void> {
+    if (start != null) {
+      this.setTime(start)
+    }
+
+    if (end != null) {
+      if (this.media instanceof WebAudioPlayer) {
+        this.media.stopAt(end)
+      } else {
+        this.stopAtPosition = end
+      }
+    }
+
+    return super.play()
   }
 
   /** Play or pause the audio */

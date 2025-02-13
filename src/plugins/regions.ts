@@ -38,7 +38,7 @@ export type RegionEvents = {
   /** When dragging or resizing is finished */
   'update-end': []
   /** On play */
-  play: []
+  play: [end?: number]
   /** On mouse click */
   click: [event: MouseEvent]
   /** Double click */
@@ -334,9 +334,9 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     this.renderPosition()
   }
 
-  /** Play the region from the start */
-  public play() {
-    this.emit('play')
+  /** Play the region from the start, pass `true` to stop at region end */
+  public play(stopAtEnd?: boolean) {
+    this.emit('play', stopAtEnd && this.end !== this.start ? this.end : undefined)
   }
 
   /** Set the HTML content of the region */
@@ -588,9 +588,8 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         this.emit('region-updated', region)
       }),
 
-      region.on('play', () => {
-        this.wavesurfer?.play()
-        this.wavesurfer?.setTime(region.start)
+      region.on('play', (end?: number) => {
+        this.wavesurfer?.play(region.start, end)
       }),
 
       region.on('click', (e) => {

@@ -93,7 +93,7 @@ document.querySelector('input[type="checkbox"]').onclick = (e) => {
   regions.on('region-clicked', (region, e) => {
     e.stopPropagation() // prevent triggering a click on the waveform
     activeRegion = region
-    region.play()
+    region.play(true)
     region.setOptions({ color: randomColor() })
   })
   // Reset the active region when the user clicks anywhere in the waveform
