@@ -126,7 +126,7 @@ ws.once('decode', () => {
     </p>
 
     <p>
-      📖 <a href="https://wavesurfer.xyz/docs/classes/plugins_regions.RegionsPlugin">Regions plugin docs</a>
+      📖 <a href="https://wavesurfer.xyz/docs/classes/plugins_regions.default">Regions plugin docs</a>
     </p>
   </html>
 */
