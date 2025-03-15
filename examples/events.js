@@ -27,7 +27,7 @@ wavesurfer.on('ready', (duration) => {
 })
 
 /** When visible waveform is drawn */
-wavesurfer.on('redrawcomplete', () => {
+wavesurfer.on('redraw', () => {
   console.log('Redraw began')
 })
 
