@@ -235,10 +235,10 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     for (let i = 0, notches = 0; i < duration; i += timeInterval, notches++) {
       const notch = notchEl.cloneNode() as HTMLElement
       const isPrimary =
-        (Math.round(i * 100) / 100) % primaryLabelInterval === 0 ||
+        Math.round(i * 100) % Math.round(primaryLabelInterval * 100) === 0 ||
         (primaryLabelSpacing && notches % primaryLabelSpacing === 0)
       const isSecondary =
-        (Math.round(i * 100) / 100) % secondaryLabelInterval === 0 ||
+        Math.round(i * 100) % Math.round(secondaryLabelInterval * 100) === 0 ||
         (secondaryLabelSpacing && notches % secondaryLabelSpacing === 0)
 
       if (isPrimary || isSecondary) {
@@ -251,7 +251,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       const mode = isPrimary ? 'primary' : isSecondary ? 'secondary' : 'tick'
       notch.setAttribute('part', `timeline-notch timeline-notch-${mode}`)
 
-      const offset = (i + this.options.timeOffset) * pxPerSec
+      const offset = Math.round((i + this.options.timeOffset) * 100) / 100 * pxPerSec
       notch.style.left = `${offset}px`
       this.virtualAppend(offset, timeline, notch)
     }
