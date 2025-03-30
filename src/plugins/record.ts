@@ -25,10 +25,7 @@ export type RecordPluginOptions = {
   mediaRecorderTimeslice?: number
 }
 
-export type RecordPluginDeviceOptions = {
-  /** The device ID of the microphone to use */
-  deviceId?: string | { exact: string }
-}
+export type RecordPluginDeviceOptions = MediaTrackConstraints
 
 export type RecordPluginEvents = BasePluginEvents & {
   /** Fires when the recording starts */
@@ -215,7 +212,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     let stream: MediaStream
     try {
       stream = await navigator.mediaDevices.getUserMedia({
-        audio: options?.deviceId ? { deviceId: options.deviceId } : true,
+        audio: options ?? true,
       })
     } catch (err) {
       throw new Error('Error accessing the microphone: ' + (err as Error).message)
