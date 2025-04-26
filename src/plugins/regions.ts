@@ -29,7 +29,7 @@ export type RegionsPluginEvents = BasePluginEvents & {
   /** When playback leaves a region */
   'region-out': [region: Region]
   /** When region content is changed */
-  'region-content-changed': [previusRegion: Region, region: Region]
+  'region-content-changed': [region: Region]
 }
 
 export type RegionEvents = {
@@ -50,7 +50,7 @@ export type RegionEvents = {
   /** Mouse leave */
   leave: [event: MouseEvent]
   /** content changed */
-  'content-changed': [previusRegion: Region]
+  'content-changed': []
 }
 
 export type RegionParams = {
@@ -356,6 +356,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
   /** Set the HTML content of the region */
   public setContent(content: RegionParams['content']) {
+  
     this.content?.remove()
     if (!content) {
       this.content = undefined
@@ -378,7 +379,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     }
     this.content.setAttribute('part', 'region-content')
     this.element.appendChild(this.content)
-    this.emit('content-changed', this);
+    this.emit('content-changed');
   }
 
   /** Update the region's options */
@@ -615,9 +616,10 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       region.on('dblclick', (e) => {
         this.emit('region-double-clicked', region, e)
       }),
-      region.on('content-changed', (previusRegion: Region) => {
-        this.emit('region-content-changed', previusRegion, region)
+      region.on('content-changed', () => {
+        this.emit('region-content-changed', region)
       }),
+     
       // Remove the region from the list when it's removed
       region.once('remove', () => {
         regionSubscriptions.forEach((unsubscribe) => unsubscribe())
