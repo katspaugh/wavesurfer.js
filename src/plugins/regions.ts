@@ -28,6 +28,8 @@ export type RegionsPluginEvents = BasePluginEvents & {
   'region-in': [region: Region]
   /** When playback leaves a region */
   'region-out': [region: Region]
+  /** When region content is changed */
+  'region-content-changed': [region: Region]
 }
 
 export type RegionEvents = {
@@ -47,6 +49,8 @@ export type RegionEvents = {
   over: [event: MouseEvent]
   /** Mouse leave */
   leave: [event: MouseEvent]
+  /** content changed */
+  'content-changed': []
 }
 
 export type RegionParams = {
@@ -339,8 +343,20 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     this.emit('play', stopAtEnd && this.end !== this.start ? this.end : undefined)
   }
 
+  /** Get Content as html or string */
+  public getContent(asHTML: boolean = false) : string | HTMLElement | undefined {
+    if (asHTML) {
+      return this.content || undefined
+    }
+    if (this.element instanceof HTMLElement) {
+      return this.content?.innerHTML || undefined
+    }
+    return ''
+  }
+
   /** Set the HTML content of the region */
   public setContent(content: RegionParams['content']) {
+  
     this.content?.remove()
     if (!content) {
       this.content = undefined
@@ -363,6 +379,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     }
     this.content.setAttribute('part', 'region-content')
     this.element.appendChild(this.content)
+    this.emit('content-changed');
   }
 
   /** Update the region's options */
@@ -599,7 +616,10 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       region.on('dblclick', (e) => {
         this.emit('region-double-clicked', region, e)
       }),
-
+      region.on('content-changed', () => {
+        this.emit('region-content-changed', region)
+      }),
+     
       // Remove the region from the list when it's removed
       region.once('remove', () => {
         regionSubscriptions.forEach((unsubscribe) => unsubscribe())
