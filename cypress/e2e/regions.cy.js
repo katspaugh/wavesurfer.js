@@ -168,10 +168,15 @@ describe('WaveSurfer Regions plugin tests', () => {
       expect(regions.getRegions().length).to.equal(0)
 
       regions.addRegion({
-        stat: 3,
+        start: 3,
         end: 8,
         content: 'Region',
         color: 'rgba(0, 100, 0, 0.2)',
+      })
+
+      let regionInitializedEventCalled = false
+      regions.on('region-initialized', () => {
+        regionInitializedEventCalled = true
       })
 
       expect(regions.getRegions().length).to.equal(1)
@@ -191,6 +196,7 @@ describe('WaveSurfer Regions plugin tests', () => {
       })
       win.wavesurfer.getWrapper().dispatchEvent(pointerDownEvent)
       win.document.dispatchEvent(pointerMoveEvent)
+      expect(regionInitializedEventCalled).to.be.true
       win.document.dispatchEvent(pointerUpEvent)
 
       // It shouldn't trigger a click

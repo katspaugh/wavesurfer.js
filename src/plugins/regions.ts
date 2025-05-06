@@ -12,6 +12,8 @@ import createElement from '../dom.js'
 export type RegionsPluginOptions = undefined
 
 export type RegionsPluginEvents = BasePluginEvents & {
+  /** When a new region is initialized but not rendered yet */
+  'region-initialized': [region: Region]
   /** When a region is created */
   'region-created': [region: Region]
   /** When a region is being updated */
@@ -356,7 +358,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
   /** Set the HTML content of the region */
   public setContent(content: RegionParams['content']) {
-  
+
     this.content?.remove()
     if (!content) {
       this.content = undefined
@@ -619,7 +621,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       region.on('content-changed', () => {
         this.emit('region-content-changed', region)
       }),
-     
+
       // Remove the region from the list when it's removed
       region.once('remove', () => {
         regionSubscriptions.forEach((unsubscribe) => unsubscribe())
@@ -642,6 +644,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     const duration = this.wavesurfer.getDuration()
     const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
     const region = new SingleRegion(options, duration, numberOfChannels)
+    this.emit('region-initialized', region)
 
     if (!duration) {
       this.subscriptions.push(
@@ -703,6 +706,9 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
           duration,
           numberOfChannels,
         )
+
+        this.emit('region-initialized', region)
+
         // Just add it to the DOM for now
         this.regionsContainer.appendChild(region.element)
       },
