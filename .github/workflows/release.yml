@@ -26,6 +26,7 @@ jobs:
             echo "New version $NEW_VERSION detected"
             echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
             git log "$OLD_VERSION"..HEAD --pretty=format:"* %s by %ae" | sed -E 's/by [0-9]+\+(.+)@users.noreply.github.com/by @\1/g' | sed -E 's/ by @?katspaugh.*//g' > TEMP_CHANGELOG.md
+            echo -e "\n[![npm](https://img.shields.io/npm/v/wavesurfer.js)](https://www.npmjs.com/package/wavesurfer.js/v/$NEW_VERSION)" >> TEMP_CHANGELOG.md
           else
             echo "Version $OLD_VERSION hasn't changed, skipping the release"
           fi
