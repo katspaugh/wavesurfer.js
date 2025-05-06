@@ -12,7 +12,7 @@ import createElement from '../dom.js'
 export type RegionsPluginOptions = undefined
 
 export type RegionsPluginEvents = BasePluginEvents & {
-  /** When a new region is initialized */
+  /** When a new region is initialized but not rendered yet */
   'region-initialized': [region: Region]
   /** When a region is created */
   'region-created': [region: Region]
