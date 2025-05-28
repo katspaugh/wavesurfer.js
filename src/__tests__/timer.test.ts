@@ -5,10 +5,14 @@ describe('Timer', () => {
     const timer = new Timer()
     const tick = jest.fn()
     timer.on('tick', tick)
-    global.requestAnimationFrame = (cb: FrameRequestCallback) => {
-      cb(0)
-      return 1
-    }
+    const raf = jest
+      .fn()
+      .mockImplementationOnce((cb: FrameRequestCallback) => {
+        cb(0)
+        return 1
+      })
+      .mockImplementation(() => 1)
+    global.requestAnimationFrame = raf
     timer.start()
     expect(tick).toHaveBeenCalledTimes(2)
   })

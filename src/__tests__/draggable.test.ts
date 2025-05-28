@@ -1,6 +1,27 @@
 import { makeDraggable } from '../draggable.js'
 
 describe('makeDraggable', () => {
+  beforeAll(() => {
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: jest.fn().mockReturnValue({
+        matches: false,
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+      }),
+    })
+    if (typeof window.PointerEvent === 'undefined') {
+      class FakePointerEvent extends MouseEvent {
+        constructor(type: string, props: any) {
+          super(type, props)
+        }
+      }
+      // @ts-ignore
+      window.PointerEvent = FakePointerEvent
+      // @ts-ignore
+      global.PointerEvent = FakePointerEvent
+    }
+  })
   test('invokes callbacks on drag', () => {
     const el = document.createElement('div')
     document.body.appendChild(el)
