@@ -548,7 +548,16 @@ class Renderer extends EventEmitter<RendererEvents> {
       if (drawnIndexes[index]) return
       drawnIndexes[index] = true
       const offset = index * singleCanvasWidth
-      const clampedWidth = Math.min(totalWidth - offset, singleCanvasWidth)
+      let clampedWidth = Math.min(totalWidth - offset, singleCanvasWidth)
+
+      // Clamp the width to the bar grid to avoid empty canvases at the end
+      if (options.barWidth || options.barGap) {
+        const barWidth = options.barWidth || 0.5
+        const barGap = options.barGap || barWidth / 2
+        const totalBarWidth = barWidth + barGap
+        clampedWidth = Math.floor(clampedWidth / totalBarWidth) * totalBarWidth
+      }
+
       if (clampedWidth <= 0) return
       const data = channelData.map((channel) => {
         const start = Math.floor((offset / totalWidth) * channel.length)

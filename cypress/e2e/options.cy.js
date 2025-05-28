@@ -394,6 +394,23 @@ describe('WaveSurfer options tests', () => {
     })
   })
 
+  it('should not create an extra canvas when using bars with normalize', (done) => {
+    cy.window().then((win) => {
+      const wavesurfer = win.WaveSurfer.create({
+        container: id,
+        url: '../../examples/audio/demo.wav',
+        barWidth: 2,
+        normalize: true,
+      })
+
+      wrapReady(wavesurfer).then(() => {
+        const canvases = wavesurfer.getWrapper().querySelectorAll('canvas')
+        expect(canvases.length).to.equal(2)
+        done()
+      })
+    })
+  })
+
   it('should use height', (done) => {
     cy.window().then((win) => {
       const wavesurfer = win.WaveSurfer.create({
