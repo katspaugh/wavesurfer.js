@@ -7,7 +7,6 @@
 # Programmatic Checks
 
 1. `yarn lint`
-2. `yarn test`
 
 Run these after making changes. If a command fails due to environment limits, note this in the PR.
 
@@ -17,5 +16,6 @@ When opening a PR, use the provided template and include:
 - **Short description**
 - **Implementation details**
 - **How to test it**
-- **Screenshots** (if relevant)
 - **Checklist** with the items from `.github/PULL_REQUEST_TEMPLATE.md`.
+
+The title of the PR should follow the semantic commit convention (e.g. `fix(Regions): remove unused variable`).
