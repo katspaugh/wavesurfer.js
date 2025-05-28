@@ -3,6 +3,7 @@ import EventEmitter from '../event-emitter.js'
 interface Events {
   foo: [number]
   bar: []
+  [key: string]: unknown[]
 }
 
 describe('EventEmitter', () => {
