@@ -1,0 +1,11 @@
+name: Unit Tests
+on: [pull_request]
+
+jobs:
+  jest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/workflows/yarn
+      - name: Run unit tests
+        run: yarn test:unit
