@@ -11,12 +11,14 @@ function renderNode(tagName: string, content: TreeNode): HTMLElement | SVGElemen
     : (document.createElement(tagName) as HTMLElement)
 
   for (const [key, value] of Object.entries(content)) {
-    if (key === 'children') {
-      for (const [key, value] of Object.entries(content)) {
-        if (typeof value === 'string') {
-          element.appendChild(document.createTextNode(value))
+    if (key === 'children' && value) {
+      for (const [childTag, childValue] of Object.entries(value as TreeNode)) {
+        if (childValue instanceof Node) {
+          element.appendChild(childValue)
+        } else if (typeof childValue === 'string') {
+          element.appendChild(document.createTextNode(childValue))
         } else {
-          element.appendChild(renderNode(key, value as TreeNode))
+          element.appendChild(renderNode(childTag, childValue as TreeNode))
         }
       }
     } else if (key === 'style') {
