@@ -1,6 +1,8 @@
 import Player from '../player.js'
 
-interface Events {}
+interface Events {
+  [key: string]: unknown[]
+}
 
 describe('Player', () => {
   const createMedia = () => {
@@ -35,7 +37,7 @@ describe('Player', () => {
 
   test('setTime clamps to duration', () => {
     const media = createMedia()
-    media.duration = 10
+    Object.defineProperty(media, 'duration', { configurable: true, value: 10 })
     const player = new Player<Events>({ media })
     player.setTime(-1)
     expect(player.getCurrentTime()).toBe(0)
