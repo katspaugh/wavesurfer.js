@@ -6,18 +6,36 @@ import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import createElement from '../dom.js'
 
 export type HoverPluginOptions = {
+  /** The hover cursor color (playback cursor and progress mask colors used as falllback in this order)
+   */
   lineColor?: string
+  /**
+   * The hover cursor width (pixels used if no units specified)
+   * @default 1
+   */
   lineWidth?: string | number
+  /** The color of the label text */
   labelColor?: string
+  /**
+   * The font size of the label text (pixels used if no units specified)
+   * @default 11
+   */
   labelSize?: string | number
+  /** The background color of the label */
   labelBackground?: string
-  /* Allows to customize time label */
+  /**
+   * Whether to display the label to the left of the cursor if possible
+   * @default false
+   */
+  labelPreferLeft?: boolean
+  /** Custom function to customize the displayed label text (m:ss used if not specified) */
   formatTimeCallback?: (seconds: number) => string
 }
 
 const defaultOptions = {
   lineWidth: 1,
   labelSize: 11,
+  labelPreferLeft: false,
   formatTimeCallback(seconds: number) {
     const minutes = Math.floor(seconds / 60)
     const secondsRemainder = Math.floor(seconds) % 60
@@ -117,8 +135,8 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     const duration = this.wavesurfer.getDuration() || 0
     this.label.textContent = this.options.formatTimeCallback(duration * relX)
     const labelWidth = this.label.offsetWidth
-    this.label.style.transform =
-      posX + labelWidth > width ? `translateX(-${labelWidth + this.options.lineWidth}px)` : ''
+    const transformCondition = this.options.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
+    this.label.style.transform = transformCondition ? `translateX(-${labelWidth + this.options.lineWidth}px)` : ''
 
     // Emit a hover event with the relative X position
     this.emit('hover', relX)

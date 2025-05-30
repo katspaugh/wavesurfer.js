@@ -16,6 +16,7 @@ const ws = WaveSurfer.create({
       labelBackground: '#555',
       labelColor: '#fff',
       labelSize: '11px',
+      labelPreferLeft: false,
     }),
   ],
 })
