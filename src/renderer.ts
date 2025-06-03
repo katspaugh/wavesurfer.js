@@ -529,9 +529,6 @@ class Renderer extends EventEmitter<RendererEvents> {
     let singleCanvasWidth = Math.min(Renderer.MAX_CANVAS_WIDTH, clientWidth, totalWidth)
     let drawnIndexes: Record<number, boolean> = {}
 
-    // Nothing to render
-    if (singleCanvasWidth === 0) return
-
     // Adjust width to avoid gaps between canvases when using bars
     if (options.barWidth || options.barGap) {
       const barWidth = options.barWidth || 0.5
@@ -541,6 +538,9 @@ class Renderer extends EventEmitter<RendererEvents> {
         singleCanvasWidth = Math.floor(singleCanvasWidth / totalBarWidth) * totalBarWidth
       }
     }
+
+    // Nothing to render
+    if (singleCanvasWidth === 0) return
 
     // Draw a single canvas
     const draw = (index: number) => {
