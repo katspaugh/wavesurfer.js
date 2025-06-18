@@ -34,7 +34,6 @@ export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends Ev
   public destroy() {
     this.emit('destroy')
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
-    this.subscriptions = []
   }
 }
 

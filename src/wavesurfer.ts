@@ -388,11 +388,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.plugins.push(plugin)
 
     // Unregister plugin on destroy
-    this.subscriptions.push(
-      plugin.once('destroy', () => {
-        this.plugins = this.plugins.filter((p) => p !== plugin)
-      }),
-    )
+    plugin.once('destroy', () => {
+      this.plugins = this.plugins.filter((p) => p !== plugin)
+    })
 
     return plugin
   }
