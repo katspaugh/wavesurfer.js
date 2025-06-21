@@ -75,7 +75,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
     // Reset the media element, otherwise it keeps the previous source
     if (src) {
-      this.media.src = ''
+      this.media.removeAttribute('src')
     }
 
     try {
@@ -90,7 +90,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.media.pause()
     this.media.remove()
     this.revokeSrc()
-    this.media.src = ''
+    this.media.removeAttribute('src')
     // Load resets the media element to its initial state
     this.media.load()
   }
