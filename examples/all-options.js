@@ -17,7 +17,7 @@ const options = {
   waveColor: '#ff4e00',
   /** The color of the progress mask */
   progressColor: '#dd5e98',
-  /** The color of the playpack cursor */
+  /** The color of the playback cursor */
   cursorColor: '#ddd5e9',
   /** The cursor width */
   cursorWidth: 2,

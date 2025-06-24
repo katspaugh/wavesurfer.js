@@ -18,7 +18,7 @@ export type WaveSurferOptions = {
   waveColor?: string | string[] | CanvasGradient
   /** The color of the progress mask */
   progressColor?: string | string[] | CanvasGradient
-  /** The color of the playpack cursor */
+  /** The color of the playback cursor */
   cursorColor?: string
   /** The cursor width */
   cursorWidth?: number
