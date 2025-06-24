@@ -318,6 +318,8 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   private numLogFilters: number
   private numBarkFilters: number
   private numErbFilters: number
+  private buffer?: AudioBuffer
+  private frequencies?: Uint8Array[][]
 
   static create(options?: SpectrogramPluginOptions) {
     return new SpectrogramPlugin(options || {})
@@ -402,13 +404,21 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         overflowY: 'hidden',
       })
     }
-    this.subscriptions.push(this.wavesurfer.on('redraw', () => this.render()))
+    this.subscriptions.push(
+      this.wavesurfer.on('decode', () => {
+        this.buffer = undefined
+        this.frequencies = undefined
+      }),
+      this.wavesurfer.on('redraw', () => this.render()),
+    )
   }
 
   public destroy() {
     this.unAll()
     this.wavesurfer.un('ready', this._onReady)
     this.wavesurfer.un('redraw', this._onRender)
+    this.buffer = undefined
+    this.frequencies = undefined
     this.wavesurfer = null
     this.util = null
     this.options = null
@@ -425,6 +435,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       throw new Error('Unable to fetch frequencies data')
     }
     const data = await resp.json()
+    this.frequencies = data
     this.drawSpectrogram(data)
   }
 
@@ -481,7 +492,10 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     } else {
       const decodedData = this.wavesurfer?.getDecodedData()
       if (decodedData) {
-        this.drawSpectrogram(this.getFrequencies(decodedData))
+        if (!this.frequencies || this.buffer !== decodedData) {
+          this.frequencies = this.getFrequencies(decodedData)
+        }
+        this.drawSpectrogram(this.frequencies)
       }
     }
   }
@@ -777,6 +791,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       // frequencies: [channel, sample, freq]
     }
 
+    this.frequencies = frequencies
     return frequencies
   }
 
