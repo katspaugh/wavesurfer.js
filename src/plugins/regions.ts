@@ -85,7 +85,7 @@ export type RegionParams = {
 }
 
 class SingleRegion extends EventEmitter<RegionEvents> implements Region {
-  public element: HTMLElement
+  public element: HTMLElement | null = null // Element is created on init
   public id: string
   public start: number
   public end: number
@@ -100,6 +100,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public channelIdx: number
   public contentEditable = false
   public subscriptions: (() => void)[] = []
+  private isRemoved = false
 
   constructor(
     params: RegionParams,
@@ -135,7 +136,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
   private setPart() {
     const isMarker = this.start === this.end
-    this.element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
+    this.element?.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
   }
 
   private addResizeHandles(element: HTMLElement) {
@@ -208,7 +209,9 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     }
   }
 
-  private initElement() {
+  private initElement(): HTMLElement | null {
+    if (this.isRemoved) return null
+
     const isMarker = this.start === this.end
 
     let elementTop = 0
@@ -243,6 +246,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   }
 
   private renderPosition() {
+    if (!this.element) return
     const start = this.start / this.totalDuration
     const end = (this.totalDuration - this.end) / this.totalDuration
     this.element.style.left = `${start * 100}%`
@@ -285,7 +289,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   }
 
   public _onUpdate(dx: number, side?: 'start' | 'end') {
-    if (!this.element.parentElement) return
+    if (!this.element?.parentElement) return
     const { width } = this.element.parentElement.getBoundingClientRect()
     const deltaSeconds = (dx / width) * this.totalDuration
     const newStart = !side || side === 'start' ? this.start + deltaSeconds : this.start
@@ -346,7 +350,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   }
 
   /** Get Content as html or string */
-  public getContent(asHTML: boolean = false) : string | HTMLElement | undefined {
+  public getContent(asHTML: boolean = false): string | HTMLElement | undefined {
     if (asHTML) {
       return this.content || undefined
     }
@@ -358,6 +362,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
   /** Set the HTML content of the region */
   public setContent(content: RegionParams['content']) {
+    if (!this.element) return
 
     this.content?.remove()
     if (!content) {
@@ -381,7 +386,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     }
     this.content.setAttribute('part', 'region-content')
     this.element.appendChild(this.content)
-    this.emit('content-changed');
+    this.emit('content-changed')
   }
 
   /** Update the region's options */
@@ -390,6 +395,8 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       Pick<RegionParams, 'color' | 'start' | 'end' | 'drag' | 'content' | 'id' | 'resize' | 'resizeStart' | 'resizeEnd'>
     >,
   ) {
+    if (!this.element) return
+
     if (options.color) {
       this.color = options.color
       this.element.style.backgroundColor = this.color
@@ -438,12 +445,13 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
   /** Remove the region */
   public remove() {
+    this.isRemoved = true
     this.emit('remove')
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
-    this.element.remove()
-    // This violates the type but we want to clean up the DOM reference
-    // w/o having to have a nullable type of the element
-    this.element = null as unknown as HTMLElement
+    if (this.element) {
+      this.element.remove()
+      this.element = null
+    }
   }
 }
 
@@ -544,6 +552,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
   }
 
   private adjustScroll(region: Region) {
+    if (!region.element) return
     const scrollContainer = this.wavesurfer?.getWrapper()?.parentElement
     if (!scrollContainer) return
     const { clientWidth, scrollWidth } = scrollContainer
@@ -589,6 +598,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
   }
 
   private saveRegion(region: Region) {
+    if (!region.element) return
     this.virtualAppend(region, this.regionsContainer, region.element)
     this.avoidOverlapping(region)
     this.regions.push(region)
@@ -710,7 +720,9 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         this.emit('region-initialized', region)
 
         // Just add it to the DOM for now
-        this.regionsContainer.appendChild(region.element)
+        if (region.element) {
+          this.regionsContainer.appendChild(region.element)
+        }
       },
 
       // On drag end
