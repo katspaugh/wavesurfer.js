@@ -18,7 +18,7 @@ export type WaveSurferOptions = {
   waveColor?: string | string[] | CanvasGradient
   /** The color of the progress mask */
   progressColor?: string | string[] | CanvasGradient
-  /** The color of the playpack cursor */
+  /** The color of the playback cursor */
   cursorColor?: string
   /** The cursor width */
   cursorWidth?: number
@@ -393,11 +393,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.plugins.push(plugin)
 
     // Unregister plugin on destroy
-    this.subscriptions.push(
-      plugin.once('destroy', () => {
-        this.plugins = this.plugins.filter((p) => p !== plugin)
-      }),
-    )
+    const unsubscribe = plugin.once('destroy', () => {
+      this.plugins = this.plugins.filter((p) => p !== plugin)
+      this.subscriptions = this.subscriptions.filter((fn) => fn !== unsubscribe)
+    })
+    this.subscriptions.push(unsubscribe)
 
     return plugin
   }
@@ -462,8 +462,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
     }
 
-    // Set the mediaelement source
-    this.setSrc(url, blob)
+    if (url == '') {
+      // If no URL is provided, clear the mediaelement source
+      this.getMediaElement().removeAttribute('src')
+    } else {
+      // Set the mediaelement source
+      this.setSrc(url, blob)
+    }
 
     // Wait for the audio duration
     const audioDuration = await new Promise<number>((resolve) => {

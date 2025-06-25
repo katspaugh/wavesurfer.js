@@ -5,29 +5,23 @@ type TimerEvents = {
 }
 
 class Timer extends EventEmitter<TimerEvents> {
-  private rafId: number | null = null
+  private unsubscribe: () => void = () => undefined
 
   start() {
-    if (this.rafId !== null) return // Already running
-    
-    const tick = () => {
-      this.emit('tick')
-      this.rafId = requestAnimationFrame(tick)
-    }
-    
-    this.rafId = requestAnimationFrame(tick)
+    this.unsubscribe = this.on('tick', () => {
+      requestAnimationFrame(() => {
+        this.emit('tick')
+      })
+    })
+    this.emit('tick')
   }
 
   stop() {
-    if (this.rafId !== null) {
-      cancelAnimationFrame(this.rafId)
-      this.rafId = null
-    }
+    this.unsubscribe()
   }
 
   destroy() {
-    this.stop()
-    this.unAll()
+    this.unsubscribe()
   }
 }
 
