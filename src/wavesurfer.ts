@@ -18,7 +18,7 @@ export type WaveSurferOptions = {
   waveColor?: string | string[] | CanvasGradient
   /** The color of the progress mask */
   progressColor?: string | string[] | CanvasGradient
-  /** The color of the playback cursor */
+  /** The color of the playpack cursor */
   cursorColor?: string
   /** The cursor width */
   cursorWidth?: number
@@ -384,17 +384,28 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Register a wavesurfer.js plugin */
   public registerPlugin<T extends GenericPlugin>(plugin: T): T {
+    // Check if the plugin is already registered
+    if (this.plugins.includes(plugin)) {
+      return plugin
+    }
+
     plugin._init(this)
     this.plugins.push(plugin)
 
     // Unregister plugin on destroy
-    const unsubscribe = plugin.once('destroy', () => {
-      this.plugins = this.plugins.filter((p) => p !== plugin)
-      this.subscriptions = this.subscriptions.filter((fn) => fn !== unsubscribe)
-    })
-    this.subscriptions.push(unsubscribe)
+    this.subscriptions.push(
+      plugin.once('destroy', () => {
+        this.plugins = this.plugins.filter((p) => p !== plugin)
+      }),
+    )
 
     return plugin
+  }
+
+  /** Unregister a wavesurfer.js plugin */
+  public unregisterPlugin(plugin: GenericPlugin): void {
+    this.plugins = this.plugins.filter((p) => p !== plugin)
+    plugin.destroy()
   }
 
   /** For plugins only: get the waveform wrapper div */
@@ -451,13 +462,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
     }
 
-    if (url == '') {
-      // If no URL is provided, clear the mediaelement source
-      this.getMediaElement().removeAttribute('src')
-    } else {
-      // Set the mediaelement source
-      this.setSrc(url, blob)
-    }
+    // Set the mediaelement source
+    this.setSrc(url, blob)
 
     // Wait for the audio duration
     const audioDuration = await new Promise<number>((resolve) => {
