@@ -80,7 +80,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
     try {
       this.media.src = newSrc
-    } catch (e) {
+    } catch {
       this.media.src = url
     }
   }

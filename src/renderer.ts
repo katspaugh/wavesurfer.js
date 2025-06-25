@@ -791,7 +791,11 @@ class Renderer extends EventEmitter<RendererEvents> {
         return new Promise<Blob>((resolve, reject) => {
           canvas.toBlob(
             (blob) => {
-              blob ? resolve(blob) : reject(new Error('Could not export image'))
+              if (blob) {
+                resolve(blob)
+              } else {
+                reject(new Error('Could not export image'))
+              }
             },
             format,
             quality,

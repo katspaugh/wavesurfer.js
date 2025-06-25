@@ -173,9 +173,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   set currentTime(value) {
     const wasPlaying = !this.paused
 
-    wasPlaying && this._pause()
+    if (wasPlaying) this._pause()
     this.playedDuration = value / this._playbackRate
-    wasPlaying && this._play()
+    if (wasPlaying) this._play()
 
     this.emit('seeking')
     this.emit('timeupdate')

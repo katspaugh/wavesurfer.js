@@ -16,9 +16,9 @@ describe('makeDraggable', () => {
           super(type, props)
         }
       }
-      // @ts-ignore
+      // @ts-expect-error
       window.PointerEvent = FakePointerEvent
-      // @ts-ignore
+      // @ts-expect-error
       global.PointerEvent = FakePointerEvent
     }
   })
