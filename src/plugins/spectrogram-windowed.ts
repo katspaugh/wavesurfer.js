@@ -322,7 +322,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     // FFT and processing options
     this.fftSamples = options.fftSamples || 512
     this.height = options.height || 200
-    this.noverlap = options.noverlap || Math.floor(this.fftSamples * 0.75)
+    this.noverlap = options.noverlap || null // Will be calculated later based on canvas size, like normal plugin
     this.windowFunc = options.windowFunc || 'hann'
     this.alpha = options.alpha
     this.frequencyMin = options.frequencyMin || 0
@@ -484,7 +484,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
 
   private handleRedraw() {
     const oldPixelsPerSecond = this.pixelsPerSecond
-    this.pixelsPerSecond = this.wavesurfer?.options.minPxPerSec || 1
+    this.pixelsPerSecond = this.getPixelsPerSecond()
     
     // Only update canvas positions if zoom changed, keep frequency data!
     if (oldPixelsPerSecond !== this.pixelsPerSecond && this.segments.size > 0) {
@@ -525,9 +525,23 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     // Clear and redraw at new size
     ctx.clearRect(0, 0, segment.canvas.width, segment.canvas.height)
     
-    // Render frequency data to canvas at new size
+    // Get frequency scaling parameters like the normal plugin
+    const freqFrom = this.buffer?.sampleRate ? this.buffer.sampleRate / 2 : 0
+    const freqMin = this.frequencyMin
+    const freqMax = this.frequencyMax || freqFrom
+    
+    // Render frequency data to canvas at new size with proper scaling
     for (let c = 0; c < segment.frequencies.length; c++) {
-      await this.renderChannelToCanvas(segment.frequencies[c], ctx, segmentWidth, this.height, c * this.height)
+      await this.renderChannelToCanvas(
+        segment.frequencies[c], 
+        ctx, 
+        segmentWidth, 
+        this.height, 
+        c * this.height,
+        freqFrom,
+        freqMin,
+        freqMax
+      )
     }
   }
 
@@ -560,7 +574,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
       // Calculate visible time range
       const scrollLeft = wrapper.scrollLeft || 0
       const containerWidth = wrapper.clientWidth || 0
-      const pixelsPerSec = this.wavesurfer?.options.minPxPerSec || 1
+      const pixelsPerSec = this.getPixelsPerSecond()
 
       const visibleStartTime = scrollLeft / pixelsPerSec
       const visibleEndTime = (scrollLeft + containerWidth) / pixelsPerSec
@@ -585,7 +599,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     if (!this.buffer) return
 
     const segmentDuration = 5 // 5 second segments
-    const pixelsPerSec = this.wavesurfer?.options.minPxPerSec || 1
+    const pixelsPerSec = this.getPixelsPerSecond()
 
     // Create segments covering the time range
     for (let time = startTime; time < endTime; time += segmentDuration) {
@@ -629,8 +643,18 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
       this.fft = new FFT(this.fftSamples, sampleRate, this.windowFunc, this.alpha)
     }
 
+    // Calculate noverlap like the normal plugin
+    let noverlap = this.noverlap
+    if (!noverlap) {
+      const segmentDuration = endTime - startTime
+      const pixelsPerSec = this.getPixelsPerSecond()
+      const segmentWidth = segmentDuration * pixelsPerSec
+      const uniqueSamplesPerPx = (endSample - startSample) / segmentWidth
+      noverlap = Math.max(0, Math.round(this.fftSamples - uniqueSamplesPerPx))
+    }
+
     const frequencies: Uint8Array[][] = []
-    const hopSize = this.fftSamples - this.noverlap
+    const hopSize = this.fftSamples - noverlap
 
     for (let c = 0; c < channels; c++) {
       const channelData = this.buffer.getChannelData(c)
@@ -685,9 +709,23 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Render frequency data to canvas
+    // Get frequency scaling parameters like the normal plugin
+    const freqFrom = this.buffer?.sampleRate ? this.buffer.sampleRate / 2 : 0
+    const freqMin = this.frequencyMin
+    const freqMax = this.frequencyMax || freqFrom
+
+    // Render frequency data to canvas with proper scaling
     for (let c = 0; c < segment.frequencies.length; c++) {
-      await this.renderChannelToCanvas(segment.frequencies[c], ctx, segmentWidth, this.height, c * this.height)
+      await this.renderChannelToCanvas(
+        segment.frequencies[c], 
+        ctx, 
+        segmentWidth, 
+        this.height, 
+        c * this.height,
+        freqFrom,
+        freqMin,
+        freqMax
+      )
     }
 
     // Add canvas to container
@@ -700,7 +738,10 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     ctx: CanvasRenderingContext2D, 
     width: number, 
     height: number, 
-    yOffset: number
+    yOffset: number,
+    freqFrom: number,
+    freqMin: number,
+    freqMax: number
   ) {
     if (channelFreq.length === 0) return
 
@@ -723,9 +764,25 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
       }
     }
 
-    // Create and draw bitmap
-    const bitmap = await createImageBitmap(imageData)
-    ctx.drawImage(bitmap, 0, yOffset, width, height)
+    // Calculate frequency scaling like the normal plugin
+    const rMin = this.hzToScale(freqMin) / this.hzToScale(freqFrom)
+    const rMax = this.hzToScale(freqMax) / this.hzToScale(freqFrom)
+    const rMax1 = Math.min(1, rMax)
+
+    // Create and draw bitmap with proper frequency scaling
+    const bitmap = await createImageBitmap(
+      imageData,
+      0,
+      Math.round(freqBins * (1 - rMax1)),
+      channelFreq.length,
+      Math.round(freqBins * (rMax1 - rMin))
+    )
+    
+    // Draw with proper height scaling
+    const drawHeight = (height * rMax1) / rMax
+    const drawY = yOffset + height * (1 - rMax1 / rMax)
+    
+    ctx.drawImage(bitmap, 0, drawY, width, drawHeight)
     
     // Clean up
     if ('close' in bitmap) {
@@ -945,7 +1002,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
 
   async render(audioData: AudioBuffer) {
     this.buffer = audioData
-    this.pixelsPerSecond = this.wavesurfer?.options.minPxPerSec || 1
+    this.pixelsPerSecond = this.getPixelsPerSecond()
     this.frequencyMax = this.frequencyMax || audioData.sampleRate / 2
 
     // Set wrapper height
@@ -1008,6 +1065,31 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     this.pixelsPerSecond = 0
     
     super.destroy()
+  }
+
+  // Add width calculation methods like the normal plugin
+  private getWidth() {
+    return this.wavesurfer?.getWrapper()?.offsetWidth || 0
+  }
+
+  private getWrapperWidth() {
+    return this.wavesurfer?.getWrapper()?.clientWidth || 0
+  }
+
+  private getPixelsPerSecond() {
+    // Handle default case when no zoom is specified
+    const minPxPerSec = this.wavesurfer?.options.minPxPerSec
+    if (minPxPerSec && minPxPerSec > 0) {
+      return minPxPerSec
+    }
+    
+    // Fallback: calculate based on wrapper width and audio duration
+    if (this.buffer) {
+      const wrapperWidth = this.getWidth()
+      return wrapperWidth > 0 ? wrapperWidth / this.buffer.duration : 100 // Default fallback
+    }
+    
+    return 100 // Default fallback
   }
 }
 
