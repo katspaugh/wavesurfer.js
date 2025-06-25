@@ -1,6 +1,6 @@
 import { BasePlugin } from '../base-plugin.js'
 
-class TestPlugin extends BasePlugin<{destroy: []}, {}> {
+class TestPlugin extends BasePlugin<{ destroy: [] }, {}> {
   initCalled = false
   protected onInit() {
     this.initCalled = true
