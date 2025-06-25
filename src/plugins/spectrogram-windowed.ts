@@ -830,6 +830,119 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     this.emit('click', relativePosition)
   }
 
+  private freqType(freq: number) {
+    return freq >= 1000 ? (freq / 1000).toFixed(1) : Math.round(freq)
+  }
+
+  private unitType(freq: number) {
+    return freq >= 1000 ? 'kHz' : 'Hz'
+  }
+
+  private hzToScale(hz: number) {
+    switch (this.scale) {
+      case 'mel':
+        return this.hzToMel(hz)
+      case 'logarithmic':
+        return this.hzToLog(hz)
+      case 'bark':
+        return this.hzToBark(hz)
+      case 'erb':
+        return this.hzToErb(hz)
+    }
+    return hz
+  }
+
+  private scaleToHz(scale: number) {
+    switch (this.scale) {
+      case 'mel':
+        return this.melToHz(scale)
+      case 'logarithmic':
+        return this.logToHz(scale)
+      case 'bark':
+        return this.barkToHz(scale)
+      case 'erb':
+        return this.erbToHz(scale)
+    }
+    return scale
+  }
+
+  private getLabelFrequency(index: number, labelIndex: number) {
+    const scaleMin = this.hzToScale(this.frequencyMin)
+    const scaleMax = this.hzToScale(this.frequencyMax)
+    return this.scaleToHz(scaleMin + (index / labelIndex) * (scaleMax - scaleMin))
+  }
+
+  private loadLabels(
+    bgFill?: string,
+    fontSizeFreq?: string,
+    fontSizeUnit?: string,
+    fontType?: string,
+    textColorFreq?: string,
+    textColorUnit?: string,
+    textAlign?: string,
+    container?: string,
+    channels?: number,
+  ) {
+    const frequenciesHeight = this.height
+    bgFill = bgFill || 'rgba(68,68,68,0)'
+    fontSizeFreq = fontSizeFreq || '12px'
+    fontSizeUnit = fontSizeUnit || '12px'
+    fontType = fontType || 'Helvetica'
+    textColorFreq = textColorFreq || '#fff'
+    textColorUnit = textColorUnit || '#fff'
+    textAlign = textAlign || 'center'
+    container = container || '#specLabels'
+    const bgWidth = 55
+    const getMaxY = frequenciesHeight || 512
+    const labelIndex = 5 * (getMaxY / 256)
+    const freqStart = this.frequencyMin
+    const step = (this.frequencyMax - freqStart) / labelIndex
+
+    // prepare canvas element for labels
+    const ctx = this.labelsEl.getContext('2d')
+    const dispScale = window.devicePixelRatio
+    this.labelsEl.height = this.height * channels * dispScale
+    this.labelsEl.width = bgWidth * dispScale
+    ctx.scale(dispScale, dispScale)
+
+    if (!ctx) {
+      return
+    }
+
+    for (let c = 0; c < channels; c++) {
+      // for each channel
+      // fill background
+      ctx.fillStyle = bgFill
+      ctx.fillRect(0, c * getMaxY, bgWidth, (1 + c) * getMaxY)
+      ctx.fill()
+      let i
+
+      // render labels
+      for (i = 0; i <= labelIndex; i++) {
+        ctx.textAlign = textAlign as CanvasTextAlign
+        ctx.textBaseline = 'middle'
+
+        const freq = this.getLabelFrequency(i, labelIndex)
+        const label = this.freqType(freq)
+        const units = this.unitType(freq)
+        const x = 16
+        let y = (1 + c) * getMaxY - (i / labelIndex) * getMaxY
+
+        // Make sure label remains in view
+        y = Math.min(Math.max(y, c * getMaxY + 10), (1 + c) * getMaxY - 10)
+
+        // unit label
+        ctx.fillStyle = textColorUnit
+        ctx.font = fontSizeUnit + ' ' + fontType
+        ctx.fillText(units, x + 24, y)
+        // freq label
+        ctx.fillStyle = textColorFreq
+        ctx.font = fontSizeFreq + ' ' + fontType
+        ctx.fillText(label.toString(), x, y)
+      }
+    }
+  }
+
   async render(audioData: AudioBuffer) {
     this.buffer = audioData
     this.pixelsPerSecond = this.wavesurfer?.options.minPxPerSec || 1
@@ -841,6 +954,21 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
 
     // Clear existing data
     this.clearAllSegments()
+
+    // Render frequency labels if enabled
+    if (this.options.labels) {
+      this.loadLabels(
+        this.options.labelsBackground,
+        '12px',
+        '12px',
+        '',
+        this.options.labelsColor,
+        this.options.labelsHzColor || this.options.labelsColor,
+        'center',
+        '#specLabels',
+        channels,
+      )
+    }
 
     // Start initial render
     this.scheduleRender()
