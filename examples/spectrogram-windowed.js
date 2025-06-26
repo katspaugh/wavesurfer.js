@@ -9,9 +9,9 @@ const ws = WaveSurfer.create({
   container: '#waveform',
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
-  url: '/examples/audio/audio.wav',
+  url: '/examples/audio/librivox.mp3',
   sampleRate: 44100,
-  // minPxPerSec: 10, // Comment out to test default zoom handling - windowed plugin should handle this gracefully now
+  minPxPerSec: 100,
 })
 
 // Initialize the Windowed Spectrogram plugin
@@ -20,11 +20,13 @@ ws.registerPlugin(
     labels: true,
     splitChannels: true,
     scale: 'mel', // or 'linear', 'logarithmic', 'bark', 'erb'
-    frequencyMax: 8000,
+    frequencyMax: 18000,
     frequencyMin: 0,
     fftSamples: 1024, // Use a reasonable FFT size (powers of 2: 256, 512, 1024, 2048)
     labelsBackground: 'rgba(0, 0, 0, 0.1)',
     colorMap: 'roseus', // Color scheme optimized for long audio viewing
+    useWebWorker: true,
+    progressiveLoading: true,
   }),
 )
 
