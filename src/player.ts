@@ -68,14 +68,16 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   protected setSrc(url: string, blob?: Blob) {
-    const src = this.getSrc()
-    if (url && src === url) return // no need to change the source
+    const prevSrc = this.getSrc()
+    if (url && prevSrc === url) return // no need to change the source
 
     this.revokeSrc()
     const newSrc = blob instanceof Blob && (this.canPlayType(blob.type) || !url) ? URL.createObjectURL(blob) : url
 
     // Reset the media element, otherwise it keeps the previous source
-    this.media.removeAttribute('src')
+    if (prevSrc) {
+      this.media.removeAttribute('src')
+    }
 
     if (newSrc || url) {
       try {
