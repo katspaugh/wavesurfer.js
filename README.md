@@ -15,10 +15,9 @@
 3. [Plugins](#plugins)
 4. [CSS styling](#css-styling)
 5. [Frequent questions](#questions)
-6. [Upgrading from v6 to v7](#upgrading-from-v6-to-v7)
-7. [Development](#development)
-8. [Tests](#tests)
-9. [Feedback](#feedback)
+6. [Development](#development)
+7. [Tests](#tests)
+8. [Feedback](#feedback)
 
 ## Getting started
 
@@ -131,49 +130,6 @@ However, please keep in mind that this forum is dedicated to wavesurfer-specific
   <summary>How do I connect wavesurfer.js to Web Audio effects?</summary>
 Generally, wavesurfer.js doesn't aim to be a wrapper for all things Web Audio. It's just a player with a waveform visualization. It does allow connecting itself to a Web Audio graph by exporting its audio element (see <a href="https://wavesurfer.xyz/examples/?4436ec40a2ab943243755e659ae32196">this example</a>) but nothign more than that. Please don't expect wavesurfer to be able to cut, add effects, or process your audio in any way.
 </details>
-
-## Upgrading from v6 to v7
-
-Wavesurfer.js v7 is a TypeScript rewrite of wavesurfer.js that brings several improvements:
-
- * Typed API for better development experience
- * Enhanced decoding and rendering performance
- * New and improved plugins
-
-Most options, events, and methods are similar to those in previous versions.
-
-### Notable differences
- * HTML audio playback by default (used to be an opt-in via `backend: "MediaElement"`)
- * The Markers plugin is removed – you should use the Regions plugin with just a `startTime`.
- * No Microphone plugin – superseded by the new Record plugin with more features.
- * The Cursor plugin is replaced by the Hover plugin.
-
-### Removed options
- * `audioContext`, `closeAudioContext`, `audioScriptProcessor`
- * `autoCenterImmediately` – `autoCenter` is now always immediate unless the audio is playing
- * `backgroundColor`, `hideCursor` – this can be easily set via CSS
- * `mediaType` – you should instead pass an entire media element in the `media` option. [Example](https://wavesurfer.xyz/examples/?video.js).
- * `partialRender` – done by default
- * `pixelRatio` – `window.devicePixelRatio` is used by default
- * `renderer` – there's just one renderer for now, so no need for this option
- * `responsive` – responsiveness is enabled by default
- * `scrollParent` – the container will scroll if `minPxPerSec` is set to a higher value
- * `skipLength` – there's no `skipForward` and `skipBackward` methods anymore
- * `splitChannelsOptions` – you should now use `splitChannels` to pass the channel options. Pass `height: 0` to hide a channel. See [this example](https://wavesurfer.xyz/examples/?split-channels.js).
- * `drawingContextAttributes`, `maxCanvasWidth`, `forceDecode` – removed to reduce code complexity
- * `xhr` - please use `fetchParams` instead
- * `barMinHeight` - the minimum bar height is now 1 pixel by default
-
-### Removed methods
- * `getFilters`, `setFilter` – see the [Web Audio example](https://wavesurfer.xyz/examples/?webaudio.js)
- * `drawBuffer` – to redraw the waveform, use `setOptions` instead and pass new rendering options
- * `cancelAjax` – you can pass an [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) in `fetchParams`
- * `skipForward`, `skipBackward`, `setPlayEnd` – can be implemented using `setTime(time)`
- * `exportPCM` is replaced with `exportPeaks` which returns arrays of floats
- * `toggleMute` is now called `setMuted(true | false)`
- * `setHeight`, `setWaveColor`, `setCursorColor`, etc. – use `setOptions` with the corresponding params instead. E.g., `wavesurfer.setOptions({ height: 300, waveColor: '#abc' })`
-
-See the complete [documentation of the new API](http://wavesurfer.xyz/docs).
 
 ## Development
 
