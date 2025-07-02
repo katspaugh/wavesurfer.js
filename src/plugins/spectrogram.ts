@@ -850,7 +850,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.frequencyMax = this.frequencyMax || buffer.sampleRate / 2
     this.buffer = buffer
 
-    if (!buffer) return
+    if (!buffer) return []
 
      // Use worker if enabled and available
      if (this.useWebWorker && this.worker) {
@@ -870,6 +870,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     const sampleRate = buffer.sampleRate
     const frequencies: Uint8Array[][] = []
 
+    // Calculate noverlap and hop size (same logic as worker for consistency)
     let noverlap = this.noverlap
     if (!noverlap) {
       const totalWidth = this.getWidth()
@@ -877,44 +878,53 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx))
     }
 
+    // Calculate hop size (same as worker for consistency)
+    let actualNoverlap = noverlap || Math.max(0, Math.round(fftSamples * 0.5))
+    const maxOverlap = fftSamples * 0.5
+    actualNoverlap = Math.min(actualNoverlap, maxOverlap)
+    const minHopSize = Math.max(64, fftSamples * 0.25)
+    const hopSize = Math.max(minHopSize, fftSamples - actualNoverlap)
+
+    // Create FFT instance (reuse if possible for performance)
     const fft = new FFT(fftSamples, sampleRate, this.windowFunc, this.alpha)
 
-    let filterBank: number[][]
+    // Create filter bank based on scale using centralized function
     const numFilters = this.fftSamples / 2
-    filterBank = createFilterBankForScale(this.scale, numFilters, this.fftSamples, sampleRate)
+    const filterBank = createFilterBankForScale(this.scale, numFilters, this.fftSamples, sampleRate)
 
     for (let c = 0; c < channels; c++) {
       // for each channel
       const channelData = buffer.getChannelData(c)
       const channelFreq: Uint8Array[] = []
-      let currentOffset = 0
 
-      while (currentOffset + fftSamples < channelData.length) {
-        const segment = channelData.slice(currentOffset, currentOffset + fftSamples)
-        const array = new Uint8Array(fftSamples / 2)
+      // Use same hop size calculation as worker for consistency
+      for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
+        const segment = channelData.slice(sample, sample + fftSamples)
         let spectrum = fft.calculateSpectrum(segment)
+        
         if (filterBank) {
           spectrum = applyFilterBank(spectrum, filterBank)
         }
-         // Convert to uint8 color indices
-         const freqBins = new Uint8Array(spectrum.length)
-         const gainPlusRange = this.gainDB + this.rangeDB
-         
-         for (let j = 0; j < spectrum.length; j++) {
-           const magnitude = spectrum[j] > 1e-12 ? spectrum[j] : 1e-12
-           const valueDB = 20 * Math.log10(magnitude)
-           
-           if (valueDB < -gainPlusRange) {
-             freqBins[j] = 0
-           } else if (valueDB > -this.gainDB) {
-             freqBins[j] = 255
-           } else {
-             freqBins[j] = Math.round(((valueDB + this.gainDB) / this.rangeDB) * 255)
-           }
-         }
-         channelFreq.push(freqBins)
-       }
-       frequencies.push(channelFreq)
+        
+        // Convert to uint8 color indices
+        const freqBins = new Uint8Array(spectrum.length)
+        const gainPlusRange = this.gainDB + this.rangeDB
+        
+        for (let j = 0; j < spectrum.length; j++) {
+          const magnitude = spectrum[j] > 1e-12 ? spectrum[j] : 1e-12
+          const valueDB = 20 * Math.log10(magnitude)
+          
+          if (valueDB < -gainPlusRange) {
+            freqBins[j] = 0
+          } else if (valueDB > -this.gainDB) {
+            freqBins[j] = 255
+          } else {
+            freqBins[j] = Math.round(((valueDB + this.gainDB) / this.rangeDB) * 255)
+          }
+        }
+        channelFreq.push(freqBins)
+      }
+      frequencies.push(channelFreq)
     }
 
     return frequencies
@@ -1082,6 +1092,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       }
     }
   }
+
 }
 
 export default SpectrogramPlugin
