@@ -462,13 +462,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
     }
 
-    if (url == '') {
-      // If no URL is provided, clear the mediaelement source
-      this.getMediaElement().removeAttribute('src')
-    } else {
-      // Set the mediaelement source
-      this.setSrc(url, blob)
-    }
+    // Set the mediaelement source
+    this.setSrc(url, blob)
 
     // Wait for the audio duration
     const audioDuration = await new Promise<number>((resolve) => {

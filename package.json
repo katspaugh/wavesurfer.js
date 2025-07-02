@@ -1,6 +1,6 @@
 {
   "name": "wavesurfer.js",
-  "version": "7.9.7",
+  "version": "7.9.9",
   "license": "BSD-3-Clause",
   "author": "katspaugh",
   "description": "Audio waveform player",
@@ -58,8 +58,8 @@
     "build:dev": "tsc -w --target ESNext",
     "build": "npm run clean && tsc && rollup -c",
     "prepublishOnly": "npm run build",
-    "lint": "eslint --ext .ts src --fix",
-    "lint:report": "eslint --output-file eslint_report.json --format json --ext .ts src",
+    "lint": "eslint \"src/**/*.ts\" --fix",
+    "lint:report": "eslint \"src/**/*.ts\" --output-file eslint_report.json --format json",
     "prettier": "prettier -w '**/*.{js,ts,css}' --ignore-path .gitignore",
     "make-plugin": "./scripts/plugin.sh",
     "cypress": "cypress open --e2e",

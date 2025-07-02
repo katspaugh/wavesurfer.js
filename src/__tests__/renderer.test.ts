@@ -44,7 +44,7 @@ describe('Renderer', () => {
     })) as any
 
     window.HTMLCanvasElement.prototype.toDataURL = jest.fn(() => 'data:mock')
-    window.HTMLCanvasElement.prototype.toBlob = jest.fn(cb => cb(new Blob([''])))
+    window.HTMLCanvasElement.prototype.toBlob = jest.fn((cb) => cb(new Blob([''])))
   })
 
   afterAll(() => {
@@ -100,7 +100,7 @@ describe('Renderer', () => {
   test('convertColorValues supports gradients', () => {
     const result = (renderer as any).convertColorValues(['red', 'blue'])
     expect(typeof result).toBe('object')
-    expect(((renderer as any).convertColorValues('red'))).toBe('red')
+    expect((renderer as any).convertColorValues('red')).toBe('red')
   })
 
   test('getPixelRatio returns positive', () => {

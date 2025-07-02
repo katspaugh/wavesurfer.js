@@ -1,7 +1,7 @@
 export type GeneralEventTypes = {
   // the name of the event and the data it dispatches with
   // e.g. 'entryCreated': [count: 1]
-  [EventName: string]: unknown[] // eslint-disable-line @typescript-eslint/no-explicit-any
+  [EventName: string]: unknown[]
 }
 
 type EventListener<EventTypes extends GeneralEventTypes, EventName extends keyof EventTypes> = (
