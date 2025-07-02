@@ -3,6 +3,7 @@
 import WaveSurfer from 'wavesurfer.js'
 import WindowedSpectrogram from 'wavesurfer.js/dist/plugins/spectrogram-windowed.esm.js'
 import ZoomPlugin from 'wavesurfer.js/dist/plugins/zoom.esm.js'
+import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js'
 
 // Create an instance of WaveSurfer
 const ws = WaveSurfer.create({
@@ -27,6 +28,14 @@ ws.registerPlugin(
     colorMap: 'roseus', // Color scheme optimized for long audio viewing
     useWebWorker: true,
     progressiveLoading: true,
+  }),
+)
+
+// Initialize the TimeLabels plugin
+ws.registerPlugin(
+  TimelinePlugin.create({
+    labels: true,
+    labelsBackground: 'rgba(0, 0, 0, 0.1)',
   }),
 )
 
