@@ -139,7 +139,6 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     // Position
     const bbox = this.wavesurfer.getWrapper().getBoundingClientRect()
     const { width } = bbox
-
     const offsetX = e.clientX - bbox.left
     const relX = Math.min(1, Math.max(0, offsetX / width))
     const posX = Math.min(width - this.options.lineWidth - 1, offsetX)
