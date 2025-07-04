@@ -158,6 +158,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
 
   private onPointerLeave = () => {
     this.wrapper.style.opacity = '0'
+    this.lastPointerMove = null
   }
 
   /** Unmount */
