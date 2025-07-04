@@ -52,6 +52,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
   protected options: HoverPluginOptions & typeof defaultOptions
   private wrapper: HTMLElement
   private label: HTMLElement
+  private lastPointerMove: PointerEvent | null = null
   private unsubscribe: () => void = () => undefined
 
   constructor(options?: HoverPluginOptions) {
@@ -109,13 +110,26 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     container.appendChild(this.wrapper)
 
     // Attach pointer events
-    container.addEventListener('pointermove', this.onPointerMove)
+    container.addEventListener('pointermove', (e) => {
+      this.lastPointerMove = e
+      this.onPointerMove(e)
+    })
     container.addEventListener('pointerleave', this.onPointerLeave)
-    container.addEventListener('wheel', this.onPointerMove)
+
+    // When zoom or scroll happens, re-run the pointer move logic
+    // with the last known mouse position
+    const onUpdate = () => {
+      if (this.lastPointerMove) this.onPointerMove(this.lastPointerMove)
+    }
+
+    this.wavesurfer.on('zoom', onUpdate)
+    this.wavesurfer.on('scroll', onUpdate)
     this.unsubscribe = () => {
       container.removeEventListener('pointermove', this.onPointerMove)
       container.removeEventListener('pointerleave', this.onPointerLeave)
       container.removeEventListener('wheel', this.onPointerMove)
+      this.wavesurfer?.un('zoom', onUpdate)
+      this.wavesurfer?.un('scroll', onUpdate)
     }
   }
 
@@ -125,6 +139,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     // Position
     const bbox = this.wavesurfer.getWrapper().getBoundingClientRect()
     const { width } = bbox
+
     const offsetX = e.clientX - bbox.left
     const relX = Math.min(1, Math.max(0, offsetX / width))
     const posX = Math.min(width - this.options.lineWidth - 1, offsetX)
