@@ -593,7 +593,9 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       renderIfVisible()
 
       const unsubscribe = this.wavesurfer.on('scroll', renderIfVisible)
+      const unsubscribeZoom = this.wavesurfer.on('zoom', renderIfVisible)
       this.subscriptions.push(region.once('remove', unsubscribe), unsubscribe)
+      this.subscriptions.push(region.once('remove', unsubscribeZoom), unsubscribeZoom)
     }, 0)
   }
 
