@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="21f15bc1-8e7b-4840-bdd0-4d6067a6750c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/plugins/hover.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/plugins/hover.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/plugins/regions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/plugins/regions.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +64,7 @@
       <workItem from="1752483246188" duration="6559000" />
       <workItem from="1752497986160" duration="2681000" />
       <workItem from="1752568672160" duration="1169000" />
-      <workItem from="1752832852296" duration="1287000" />
+      <workItem from="1752832852296" duration="1305000" />
     </task>
     <servers />
   </component>

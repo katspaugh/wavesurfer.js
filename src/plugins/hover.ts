@@ -110,10 +110,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     container.appendChild(this.wrapper)
 
     // Attach pointer events
-    container.addEventListener('pointermove', (e) => {
-      this.lastPointerMove = e
-      this.onPointerMove(e)
-    })
+    container.addEventListener('pointermove', this.onPointerMove)
     container.addEventListener('pointerleave', this.onPointerLeave)
 
     // When zoom or scroll happens, re-run the pointer move logic
