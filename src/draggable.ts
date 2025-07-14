@@ -1,8 +1,11 @@
+import Wavesurfer from './wavesurfer'
+
 export function makeDraggable(
   element: HTMLElement | null,
   onDrag: (dx: number, dy: number, x: number, y: number) => void,
   onStart?: (x: number, y: number) => void,
   onEnd?: (x: number, y: number) => void,
+  wavesurfer?: Wavesurfer,
   threshold = 3,
   mouseButton = 0,
   touchDelay = 100,
@@ -21,6 +24,9 @@ export function makeDraggable(
 
     let startX = event.clientX
     let startY = event.clientY
+    let lastX = event.clientX
+    let lastScroll = wavesurfer?.getScroll() ?? 0
+
     let isDragging = false
     const touchStartTime = Date.now()
 
@@ -31,9 +37,14 @@ export function makeDraggable(
       if (isTouchDevice && Date.now() - touchStartTime < touchDelay) return
 
       const x = event.clientX
+
       const y = event.clientY
-      const dx = x - startX
+      const currentScroll = wavesurfer?.getScroll() ?? 0
+      const scrollDiff = currentScroll - lastScroll
+      lastScroll = currentScroll
+      const dx = x + scrollDiff - startX
       const dy = y - startY
+      lastX = x
 
       if (isDragging || Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
         const rect = element.getBoundingClientRect()
@@ -63,13 +74,6 @@ export function makeDraggable(
       unsubscribeDocument()
     }
 
-    const onPointerLeave = (e: PointerEvent) => {
-      // Listen to events only on the document and not on inner elements
-      if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
-        onPointerUp(e)
-      }
-    }
-
     const onClick = (event: MouseEvent) => {
       if (isDragging) {
         event.stopPropagation()
@@ -83,19 +87,30 @@ export function makeDraggable(
       }
     }
 
-    document.addEventListener('pointermove', onPointerMove)
-    document.addEventListener('pointerup', onPointerUp)
-    document.addEventListener('pointerout', onPointerLeave)
-    document.addEventListener('pointercancel', onPointerLeave)
+    const onScroll = () => {
+      if (!isDragging || !wavesurfer) {
+        return
+      }
+
+      const currentScroll = wavesurfer.getScroll()
+      const scrollDiff = currentScroll - lastScroll
+      lastScroll = currentScroll
+
+      const { left } = element.getBoundingClientRect()
+
+      onDrag(scrollDiff, 0, lastX - left, 0)
+    }
+
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
     document.addEventListener('touchmove', onTouchMove, { passive: false })
     document.addEventListener('click', onClick, { capture: true })
-
+    wavesurfer?.on('scroll', onScroll)
     unsubscribeDocument = () => {
-      document.removeEventListener('pointermove', onPointerMove)
-      document.removeEventListener('pointerup', onPointerUp)
-      document.removeEventListener('pointerout', onPointerLeave)
-      document.removeEventListener('pointercancel', onPointerLeave)
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
       document.removeEventListener('touchmove', onTouchMove)
+      wavesurfer?.un('scroll', onScroll)
       setTimeout(() => {
         document.removeEventListener('click', onClick, { capture: true })
       }, 10)

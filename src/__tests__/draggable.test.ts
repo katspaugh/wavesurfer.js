@@ -39,7 +39,7 @@ describe('makeDraggable', () => {
     const onDrag = jest.fn()
     const onStart = jest.fn()
     const onEnd = jest.fn()
-    const unsubscribe = makeDraggable(el, onDrag, onStart, onEnd, 0)
+    const unsubscribe = makeDraggable(el, onDrag, onStart, onEnd, undefined, 0)
 
     el.dispatchEvent(new PointerEvent('pointerdown', { clientX: 10, clientY: 10 }))
     document.dispatchEvent(new PointerEvent('pointermove', { clientX: 20, clientY: 20 }))
