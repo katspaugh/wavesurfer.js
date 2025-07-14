@@ -110,10 +110,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     container.appendChild(this.wrapper)
 
     // Attach pointer events
-    container.addEventListener('pointermove', (e) => {
-      this.lastPointerMove = e
-      this.onPointerMove(e)
-    })
+    container.addEventListener('pointermove', this.onPointerMove)
     container.addEventListener('pointerleave', this.onPointerLeave)
 
     // When zoom or scroll happens, re-run the pointer move logic
@@ -127,7 +124,6 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     this.unsubscribe = () => {
       container.removeEventListener('pointermove', this.onPointerMove)
       container.removeEventListener('pointerleave', this.onPointerLeave)
-      container.removeEventListener('wheel', this.onPointerMove)
       this.wavesurfer?.un('zoom', onUpdate)
       this.wavesurfer?.un('scroll', onUpdate)
     }
@@ -135,6 +131,9 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
 
   private onPointerMove = (e: PointerEvent | WheelEvent) => {
     if (!this.wavesurfer) return
+
+    // Used when zooming
+    this.lastPointerMove = e
 
     // Position
     const bbox = this.wavesurfer.getWrapper().getBoundingClientRect()
