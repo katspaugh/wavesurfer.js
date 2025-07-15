@@ -39,7 +39,7 @@ export type RegionEvents = {
   /** Before the region is removed */
   remove: []
   /** When the region's parameters are being updated */
-  update: [side?: 'start' | 'end']
+  update: [side?: 'start' | 'end', autoScrollDirection?: AutoScrollDirection]
   /** When dragging or resizing is finished */
   'update-end': []
   /** On play */
@@ -85,6 +85,8 @@ export type RegionParams = {
   contentEditable?: boolean
 }
 
+type AutoScrollDirection = 'left' | 'right' | 'both' | null
+
 class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public element: HTMLElement | null = null // Element is created on init
   public id: string
@@ -102,6 +104,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public contentEditable = false
   public subscriptions: (() => void)[] = []
   private isRemoved = false
+  private autoScrollDirection: AutoScrollDirection = null
 
   constructor(
     params: RegionParams,
@@ -278,10 +281,33 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     this.subscriptions.push(
       makeDraggable(
         element,
-        (dx) => this.onMove(dx),
-        () => this.toggleCursor(true),
+        (dx) => this.onMove(dx, this.autoScrollDirection),
+        () => {
+          if (!this.element) return
+          const scrollContainer = this.wavesurfer?.getWrapper()?.parentElement
+          if (!scrollContainer) return
+          const { clientWidth, scrollWidth } = scrollContainer
+          if (scrollWidth <= clientWidth) return
+          const scrollBbox = scrollContainer.getBoundingClientRect()
+          const bbox = this.element.getBoundingClientRect()
+          const left = bbox.left - scrollBbox.left
+          const right = bbox.right - scrollBbox.left
+
+          if (left < 0 && right > clientWidth) {
+            this.autoScrollDirection = null
+          } else if (right > clientWidth) {
+            this.autoScrollDirection = 'left'
+          } else if (left < 0) {
+            this.autoScrollDirection = 'right'
+          } else {
+            this.autoScrollDirection = 'both'
+          }
+
+          this.toggleCursor(true)
+        },
         () => {
           this.toggleCursor(false)
+          this.autoScrollDirection = null
           if (this.drag) this.emit('update-end')
         },
         this.wavesurfer,
@@ -294,7 +320,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     }
   }
 
-  public _onUpdate(dx: number, side?: 'start' | 'end') {
+  public _onUpdate(dx: number, side?: 'start' | 'end', autoScrollDirection?: AutoScrollDirection) {
     if (!this.element?.parentElement) return
     const { width } = this.element.parentElement.getBoundingClientRect()
     const deltaSeconds = (dx / width) * this.totalDuration
@@ -312,23 +338,22 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       this.start = newStart
       this.end = newEnd
 
-      console.log({newStart, newEnd})
 
       this.renderPosition()
-      this.emit('update', side)
+      this.emit('update', side, autoScrollDirection)
     }
   }
 
-  private onMove(dx: number) {
+  private onMove(dx: number, autoScrollDirection: AutoScrollDirection) {
     if (!this.drag) return
-    this._onUpdate(dx)
+    this._onUpdate(dx, undefined, autoScrollDirection)
   }
 
   private onResize(dx: number, side: 'start' | 'end') {
     if (!this.resize) return
     if (!this.resizeStart && side === 'start') return
     if (!this.resizeEnd && side === 'end') return
-    this._onUpdate(dx, side)
+    this._onUpdate(dx, side, side === 'start' ? 'left' : 'right')
   }
 
   private onEndResizing() {
@@ -466,11 +491,13 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions> {
   private regions: Region[] = []
   private regionsContainer: HTMLElement
+  private lastScroll: "left" | "right" | null = null
 
   /** Create an instance of RegionsPlugin */
   constructor(options?: RegionsPluginOptions) {
     super(options)
     this.regionsContainer = this.initRegionsContainer()
+    this.lastScroll = null
   }
 
   /** Create an instance of RegionsPlugin */
@@ -559,7 +586,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     }, 10)
   }
 
-  private adjustScroll(region: Region) {
+  private adjustScroll(region: Region, direction?: AutoScrollDirection) {
     if (!region.element) return
     const scrollContainer = this.wavesurfer?.getWrapper()?.parentElement
     if (!scrollContainer) return
@@ -569,9 +596,20 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     const bbox = region.element.getBoundingClientRect()
     const left = bbox.left - scrollBbox.left
     const right = bbox.right - scrollBbox.left
-    if (left < 0) {
+
+    const scrollLeft = left < 0 && (direction === 'both' || direction === 'left')
+    const scrollRight = right > clientWidth && (direction === 'both' || direction === 'right')
+
+    console.log({direction, left, right, clientWidth})
+    if (left < 0 && right > clientWidth && direction == undefined){
+      return
+    }
+
+    if (scrollLeft) {
+      console.log(`SCROLLING LEFT to ${left}`)
       scrollContainer.scrollLeft += left
-    } else if (right > clientWidth) {
+    } else if (scrollRight) {
+      console.log(`SCROLLING RIGHT to ${right - clientWidth}`)
       scrollContainer.scrollLeft += right - clientWidth
     }
   }
@@ -615,14 +653,14 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     this.regions.push(region)
 
     const regionSubscriptions = [
-      region.on('update', (side) => {
+      region.on('update', (side, autoScrollDirection) => {
         // Undefined side indicates that we are dragging not resizing
         // if (!side) {
         //   console.log("Adjusting scroll")
         //   this.adjustScroll(region)
         // }
 
-        this.adjustScroll(region)
+        this.adjustScroll(region, autoScrollDirection)
         this.emit('region-update', region, side)
       }),
 
@@ -705,7 +743,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
           // Update the end position of the region
           // If we're dragging to the left, we need to update the start instead
           region._onUpdate(dx, x > startX ? 'end' : 'start')
-          this.adjustScroll(region)
+          this.adjustScroll(region, x > startX ? 'right' : 'left')
         }
       },
 

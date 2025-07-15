@@ -74,6 +74,8 @@ export function makeDraggable(
     }
 
     const onPointerLeave = (e: PointerEvent) => {
+
+      return
       // Listen to events only on the document and not on inner elements
       if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
         onPointerUp(e)
@@ -103,24 +105,23 @@ export function makeDraggable(
 
       const rect = element.getBoundingClientRect()
       const { left, top } = rect
-      console.log({scrollDiff})
 
       onDrag(scrollDiff, 0, lastX - left, 0)
     }
 
-    document.addEventListener('pointermove', onPointerMove)
-    document.addEventListener('pointerup', onPointerUp)
-    document.addEventListener('pointerout', onPointerLeave)
-    document.addEventListener('pointercancel', onPointerLeave)
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointerout', onPointerLeave)
+    window.addEventListener('pointercancel', onPointerLeave)
     document.addEventListener('touchmove', onTouchMove, { passive: false })
     document.addEventListener('click', onClick, { capture: true })
     wavesurfer?.on('scroll', onScroll)
 
     unsubscribeDocument = () => {
-      document.removeEventListener('pointermove', onPointerMove)
-      document.removeEventListener('pointerup', onPointerUp)
-      document.removeEventListener('pointerout', onPointerLeave)
-      document.removeEventListener('pointercancel', onPointerLeave)
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointerout', onPointerLeave)
+      window.removeEventListener('pointercancel', onPointerLeave)
       document.removeEventListener('touchmove', onTouchMove)
       wavesurfer?.un('scroll', onScroll)
       setTimeout(() => {
