@@ -129,7 +129,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     }
   }
 
-  private onPointerMove = (e: PointerEvent | WheelEvent) => {
+  private onPointerMove = (e: PointerEvent) => {
     if (!this.wavesurfer) return
 
     // Used when zooming
