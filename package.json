@@ -18,22 +18,39 @@
     "url": "git@github.com:katspaugh/wavesurfer.js.git"
   },
   "type": "module",
-  "unpkg": "./dist/wavesurfer.min.js",
-  "browser": "./dist/wavesurfer.js",
   "files": [
-    "src"
+    "dist"
   ],
-  "main": "./src/wavesurfer.ts",
-  "module": "./src/wavesurfer.ts",
-  "types": "./src/wavesurfer.ts",
+  "main": "./dist/wavesurfer.js",
+  "unpkg": "./dist/wavesurfer.min.js",
+  "module": "./dist/wavesurfer.js",
+  "browser": "./dist/wavesurfer.js",
+  "types": "./dist/wavesurfer.d.ts",
   "exports": {
     ".": {
-      "import": "./src/wavesurfer.ts",
-      "types": "./src/wavesurfer.ts"
+      "import": "./dist/wavesurfer.esm.js",
+      "types": "./dist/wavesurfer.d.ts",
+      "require": "./dist/wavesurfer.cjs"
+    },
+    "./dist/plugins/*.js": {
+      "import": "./dist/plugins/*.esm.js",
+      "types": "./dist/plugins/*.d.ts",
+      "require": "./dist/plugins/*.cjs"
     },
     "./plugins/*": {
-      "import": "./src/plugins/*.ts",
-      "types": "./src/plugins/*.ts"
+      "import": "./dist/plugins/*.esm.js",
+      "types": "./dist/plugins/*.d.ts",
+      "require": "./dist/plugins/*.cjs"
+    },
+    "./dist/*": {
+      "import": "./dist/*",
+      "types": "./dist/*.d.ts",
+      "require": "./dist/*.cjs"
+    },
+    "./dist/plugins/*.esm.js": {
+      "import": "./dist/plugins/*.esm.js",
+      "types": "./dist/plugins/*.d.ts",
+      "require": "./dist/plugins/*.cjs"
     }
   },
   "scripts": {
