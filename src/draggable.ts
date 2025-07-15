@@ -1,8 +1,11 @@
+import Wavesurfer from './wavesurfer'
+
 export function makeDraggable(
   element: HTMLElement | null,
   onDrag: (dx: number, dy: number, x: number, y: number) => void,
   onStart?: (x: number, y: number) => void,
   onEnd?: (x: number, y: number) => void,
+  wavesurfer?: Wavesurfer,
   threshold = 3,
   mouseButton = 0,
   touchDelay = 100,
@@ -21,6 +24,9 @@ export function makeDraggable(
 
     let startX = event.clientX
     let startY = event.clientY
+    let lastX = event.clientX
+    let currentScroll = wavesurfer?.getScroll() ?? 0
+
     let isDragging = false
     const touchStartTime = Date.now()
 
@@ -32,8 +38,12 @@ export function makeDraggable(
 
       const x = event.clientX
       const y = event.clientY
-      const dx = x - startX
+      const newScroll = wavesurfer?.getScroll() ?? 0
+      const scrollDiff = newScroll - currentScroll
+      currentScroll = newScroll
+      const dx = x + scrollDiff - startX
       const dy = y - startY
+      lastX = x
 
       if (isDragging || Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
         const rect = element.getBoundingClientRect()
@@ -83,12 +93,28 @@ export function makeDraggable(
       }
     }
 
+    const onScroll = (e: number) => {
+      if (!isDragging) {
+        return
+      }
+
+      const scrollDiff = wavesurfer.getScroll() - currentScroll
+      currentScroll = wavesurfer?.getScroll() ?? 0
+
+      const rect = element.getBoundingClientRect()
+      const { left, top } = rect
+      console.log({scrollDiff})
+
+      onDrag(scrollDiff, 0, lastX - left, 0)
+    }
+
     document.addEventListener('pointermove', onPointerMove)
     document.addEventListener('pointerup', onPointerUp)
     document.addEventListener('pointerout', onPointerLeave)
     document.addEventListener('pointercancel', onPointerLeave)
     document.addEventListener('touchmove', onTouchMove, { passive: false })
     document.addEventListener('click', onClick, { capture: true })
+    wavesurfer?.on('scroll', onScroll)
 
     unsubscribeDocument = () => {
       document.removeEventListener('pointermove', onPointerMove)
@@ -96,6 +122,7 @@ export function makeDraggable(
       document.removeEventListener('pointerout', onPointerLeave)
       document.removeEventListener('pointercancel', onPointerLeave)
       document.removeEventListener('touchmove', onTouchMove)
+      wavesurfer?.un('scroll', onScroll)
       setTimeout(() => {
         document.removeEventListener('click', onClick, { capture: true })
       }, 10)
