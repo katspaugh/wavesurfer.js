@@ -142,6 +142,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public channelIdx: number
   public contentEditable = false
   public subscriptions: (() => void)[] = []
+  public isDragging = false
   private isRemoved = false
   private autoScrollDirection: AutoScrollDirection = 'none'
 
@@ -323,6 +324,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
         (dx) => this.onMove(dx, this.autoScrollDirection),
         () => {
           this.toggleCursor(true)
+          this.isDragging = true
           const sideOverflow = getRegionSideOverflow({ element: this.element, wavesurfer: this.wavesurfer })
 
           if (sideOverflow === undefined) {
@@ -345,6 +347,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
         },
         () => {
           this.toggleCursor(false)
+          this.isDragging = true
           if (this.drag) this.emit('update-end')
           this.autoScrollDirection = 'none'
         },
@@ -634,11 +637,21 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
     const { overflowLeft, overflowRight } = sideOverflow
 
-    if (overflowLeft > 0 && overflowRight > 0 && direction == 'none') return
+    // If both sides overflow, we should only scroll in one direction, determined by the AutoScrollDirection
+    if (overflowLeft > 0 && overflowRight > 0) {
+      if (direction === 'left') {
+        scrollContainer.scrollLeft -= overflowLeft
+      } else if (direction === 'right') {
+        scrollContainer.scrollLeft += overflowRight
+      }
+      return
+    }
 
-    if (overflowLeft > 0) {
+    if (direction === 'left' || direction === 'both') {
       scrollContainer.scrollLeft -= overflowLeft
-    } else if (overflowRight > 0) {
+    }
+
+    if (direction == 'right' || direction === 'both') {
       scrollContainer.scrollLeft += overflowRight
     }
   }
@@ -658,7 +671,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
       if (isVisible && !element.parentElement) {
         container.appendChild(element)
-      } else if (!isVisible && element.parentElement) {
+      } else if (!isVisible && element.parentElement && !region.isDragging) {
         element.remove()
       }
     }
