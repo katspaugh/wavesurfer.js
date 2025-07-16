@@ -85,7 +85,46 @@ export type RegionParams = {
   contentEditable?: boolean
 }
 
-type AutoScrollDirection = 'left' | 'right' | 'both' | null
+/** Which direction should be auto scrolled if region is updated such that it overflows the scroll container */
+type AutoScrollDirection = 'left' | 'right' | 'both' | 'none'
+
+type GetSideOverflowParams = {
+  element: HTMLElement | null
+  wavesurfer: Wavesurfer
+}
+
+function getRegionSideOverflow({
+  element,
+  wavesurfer,
+}: GetSideOverflowParams): { overflowLeft: number; overflowRight: number } | undefined {
+  if (!element) return
+
+  const scrollContainer = wavesurfer.getWrapper()?.parentElement
+
+  if (!scrollContainer) return
+
+  const { clientWidth, scrollWidth } = scrollContainer
+
+  if (scrollWidth <= clientWidth) return
+
+  const scrollBbox = scrollContainer.getBoundingClientRect()
+  const bbox = element.getBoundingClientRect()
+  const left = bbox.left - scrollBbox.left
+  const right = bbox.right - scrollBbox.left
+
+  const boxOverflowsLeft = left < 0
+  const boxOverflowsRight = right > clientWidth
+
+  if (boxOverflowsLeft && boxOverflowsRight) {
+    return { overflowLeft: -left, overflowRight: right - clientWidth }
+  } else if (right > clientWidth) {
+    return { overflowLeft: 0, overflowRight: right - clientWidth }
+  } else if (boxOverflowsLeft) {
+    return { overflowLeft: -left, overflowRight: 0 }
+  } else {
+    return { overflowLeft: 0, overflowRight: 0 }
+  }
+}
 
 class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public element: HTMLElement | null = null // Element is created on init
@@ -104,7 +143,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public contentEditable = false
   public subscriptions: (() => void)[] = []
   private isRemoved = false
-  private autoScrollDirection: AutoScrollDirection = null
+  private autoScrollDirection: AutoScrollDirection = 'none'
 
   constructor(
     params: RegionParams,
@@ -283,32 +322,31 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
         element,
         (dx) => this.onMove(dx, this.autoScrollDirection),
         () => {
-          if (!this.element) return
-          const scrollContainer = this.wavesurfer?.getWrapper()?.parentElement
-          if (!scrollContainer) return
-          const { clientWidth, scrollWidth } = scrollContainer
-          if (scrollWidth <= clientWidth) return
-          const scrollBbox = scrollContainer.getBoundingClientRect()
-          const bbox = this.element.getBoundingClientRect()
-          const left = bbox.left - scrollBbox.left
-          const right = bbox.right - scrollBbox.left
+          this.toggleCursor(true)
+          const sideOverflow = getRegionSideOverflow({ element: this.element, wavesurfer: this.wavesurfer })
 
-          if (left < 0 && right > clientWidth) {
-            this.autoScrollDirection = null
-          } else if (right > clientWidth) {
-            this.autoScrollDirection = 'left'
-          } else if (left < 0) {
+          if (sideOverflow === undefined) {
+            return
+          }
+
+          const { overflowLeft, overflowRight } = sideOverflow
+
+          // If a side of the region has already overflowed the container
+          // then we only auto scroll in that opposite direction
+          if (overflowLeft > 0 && overflowRight > 0) {
+            this.autoScrollDirection = 'none'
+          } else if (overflowLeft > 0) {
             this.autoScrollDirection = 'right'
+          } else if (overflowRight > 0) {
+            this.autoScrollDirection = 'left'
           } else {
             this.autoScrollDirection = 'both'
           }
-
-          this.toggleCursor(true)
         },
         () => {
           this.toggleCursor(false)
-          this.autoScrollDirection = null
           if (this.drag) this.emit('update-end')
+          this.autoScrollDirection = 'none'
         },
         this.wavesurfer,
       ),
@@ -338,7 +376,6 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       this.start = newStart
       this.end = newEnd
 
-
       this.renderPosition()
       this.emit('update', side, autoScrollDirection)
     }
@@ -353,6 +390,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     if (!this.resize) return
     if (!this.resizeStart && side === 'start') return
     if (!this.resizeEnd && side === 'end') return
+
     this._onUpdate(dx, side, side === 'start' ? 'left' : 'right')
   }
 
@@ -491,13 +529,11 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions> {
   private regions: Region[] = []
   private regionsContainer: HTMLElement
-  private lastScroll: "left" | "right" | null = null
 
   /** Create an instance of RegionsPlugin */
   constructor(options?: RegionsPluginOptions) {
     super(options)
     this.regionsContainer = this.initRegionsContainer()
-    this.lastScroll = null
   }
 
   /** Create an instance of RegionsPlugin */
@@ -587,30 +623,23 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
   }
 
   private adjustScroll(region: Region, direction?: AutoScrollDirection) {
-    if (!region.element) return
-    const scrollContainer = this.wavesurfer?.getWrapper()?.parentElement
-    if (!scrollContainer) return
-    const { clientWidth, scrollWidth } = scrollContainer
-    if (scrollWidth <= clientWidth) return
-    const scrollBbox = scrollContainer.getBoundingClientRect()
-    const bbox = region.element.getBoundingClientRect()
-    const left = bbox.left - scrollBbox.left
-    const right = bbox.right - scrollBbox.left
-
-    const scrollLeft = left < 0 && (direction === 'both' || direction === 'left')
-    const scrollRight = right > clientWidth && (direction === 'both' || direction === 'right')
-
-    console.log({direction, left, right, clientWidth})
-    if (left < 0 && right > clientWidth && direction == undefined){
+    if (this.wavesurfer == undefined) {
       return
     }
 
-    if (scrollLeft) {
-      console.log(`SCROLLING LEFT to ${left}`)
-      scrollContainer.scrollLeft += left
-    } else if (scrollRight) {
-      console.log(`SCROLLING RIGHT to ${right - clientWidth}`)
-      scrollContainer.scrollLeft += right - clientWidth
+    const sideOverflow = getRegionSideOverflow({ element: region.element, wavesurfer: this.wavesurfer })
+    const scrollContainer = this.wavesurfer.getWrapper()?.parentElement
+
+    if (!scrollContainer || sideOverflow == undefined) return
+
+    const { overflowLeft, overflowRight } = sideOverflow
+
+    if (overflowLeft > 0 && overflowRight > 0 && direction == 'none') return
+
+    if (overflowLeft > 0) {
+      scrollContainer.scrollLeft -= overflowLeft
+    } else if (overflowRight > 0) {
+      scrollContainer.scrollLeft += overflowRight
     }
   }
 
@@ -654,12 +683,6 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
     const regionSubscriptions = [
       region.on('update', (side, autoScrollDirection) => {
-        // Undefined side indicates that we are dragging not resizing
-        // if (!side) {
-        //   console.log("Adjusting scroll")
-        //   this.adjustScroll(region)
-        // }
-
         this.adjustScroll(region, autoScrollDirection)
         this.emit('region-update', region, side)
       }),
