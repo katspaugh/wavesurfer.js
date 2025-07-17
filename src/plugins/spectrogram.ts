@@ -374,6 +374,24 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.drawSpectrogram(data)
   }
 
+  public async getFrequenciesData(): Uint8Array[][] | null {
+    const decodedData = this.wavesurfer?.getDecodedData();
+    if (!decodedData) {
+      return null;
+    }
+
+    if (this.cachedBuffer === decodedData && this.cachedFrequencies) {
+      // Check if we can use cached frequencies
+      return this.cachedFrequencies;
+    } else {
+      // Calculate new frequencies and cache them
+      const frequencies = await this.getFrequencies(decodedData)
+      this.cachedFrequencies = frequencies
+      this.cachedBuffer = decodedData
+      return frequencies;
+    }
+  }
+
   /** Clear cached frequency data to force recalculation */
   public clearCache() {
     this.cachedFrequencies = null
@@ -501,16 +519,8 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       } else {
         const decodedData = this.wavesurfer?.getDecodedData()
         if (decodedData) {
-          // Check if we can use cached frequencies
-          if (this.cachedBuffer === decodedData && this.cachedFrequencies) {
-            this.drawSpectrogram(this.cachedFrequencies)
-          } else {
-            // Calculate new frequencies and cache them
-            const frequencies = await this.getFrequencies(decodedData)
-            this.cachedFrequencies = frequencies
-            this.cachedBuffer = decodedData
-            this.drawSpectrogram(frequencies)
-          }
+          const frequencies = await this.getFrequenciesData();
+          this.drawSpectrogram(this.cachedFrequencies);
         }
       }
       this.lastZoomLevel = this.wavesurfer?.options.minPxPerSec || 0
