@@ -6,9 +6,7 @@ import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
-import WaveSurfer from "../wavesurfer";
-import wavesurfer from "../wavesurfer";
-import Wavesurfer from "../wavesurfer";
+import WaveSurfer from '../wavesurfer'
 
 export type EnvelopePoint = {
   id?: string
