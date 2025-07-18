@@ -20,7 +20,7 @@ This document gives a condensed view of the project structure and build process 
 
 ## Contribution Notes
 
-- Follow the coding conventions in [`AGENTS.md`](../AGENTS.md).
+- Follow the coding conventions in [`AGENTS.md`](AGENTS.md).
 - Do not commit generated files from `dist/` or `node_modules/`.
 
 This overview should help an AI agent quickly locate relevant source files and scripts without traversing the entire repository.
