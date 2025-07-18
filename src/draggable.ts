@@ -30,8 +30,6 @@ export function makeDraggable(
     let isDragging = false
     const touchStartTime = Date.now()
 
-    const scrollContainer = wavesurfer?.getWrapper().parentElement
-
     const onPointerMove = (event: PointerEvent) => {
       event.preventDefault()
       event.stopPropagation()
@@ -42,7 +40,6 @@ export function makeDraggable(
 
       const y = event.clientY
       const currentScroll = wavesurfer?.getScroll() ?? 0
-
       const scrollDiff = currentScroll - lastScroll
       lastScroll = currentScroll
       const dx = x + scrollDiff - startX
@@ -102,10 +99,6 @@ export function makeDraggable(
       const { left } = element.getBoundingClientRect()
 
       onDrag(scrollDiff, 0, lastX - left, 0)
-    }
-
-    if (!scrollContainer) {
-      return
     }
 
     window.addEventListener('pointermove', onPointerMove)
