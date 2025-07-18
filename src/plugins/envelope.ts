@@ -59,7 +59,7 @@ class Polyline extends EventEmitter<{
   private subscriptions: (() => void)[] = []
   private wavesurfer: WaveSurfer
 
-  constructor(options: Options, wrapper: HTMLElement, wavesurfer: Wavesurfer) {
+  constructor(options: Options, wrapper: HTMLElement, wavesurfer: WaveSurfer) {
     super()
 
     this.subscriptions = []
