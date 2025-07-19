@@ -229,6 +229,32 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     }
     return channels
   }
+
+  /**
+   * Imitate `HTMLElement.removeAttribute` for compatibility with `Player`.
+   */
+  public removeAttribute(attrName: string) {
+    switch (attrName) {
+      case 'src':
+        this.src = ''
+        break
+      case 'playbackRate':
+        this.playbackRate = 0
+        break
+      case 'currentTime':
+        this.currentTime = 0
+        break
+      case 'duration':
+        this.duration = 0
+        break
+      case 'volume':
+        this.volume = 0
+        break
+      case 'muted':
+        this.muted = false
+        break
+    }
+  }
 }
 
 export default WebAudioPlayer
