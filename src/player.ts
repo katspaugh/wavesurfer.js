@@ -107,7 +107,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     try {
       return await this.media.play()
     } catch (err) {
-      if (err && (err as DOMException).name === 'AbortError') {
+      if (err instanceof DOMException && err.name === 'AbortError') {
         return
       }
       throw err
