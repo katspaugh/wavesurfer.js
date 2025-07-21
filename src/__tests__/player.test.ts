@@ -28,7 +28,7 @@ describe('Player', () => {
 
   test('pause before play promise resolves does not reject', async () => {
     const abort = new DOMException('interrupted', 'AbortError')
-    let rejectPlay: (reason?: unknown) => void =() => undefined
+    let rejectPlay: (reason?: unknown) => void = () => undefined
     const media = createMedia()
     media.play = jest.fn(
       () =>

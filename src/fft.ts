@@ -603,10 +603,9 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
       imag = new Float32Array(bufferSize),
       bSi = 2 / this.bufferSize,
       sqrt = Math.sqrt,
-      rval,
-      ival,
-      mag,
       spectrum = new Float32Array(bufferSize / 2)
+
+    let rval, ival, mag
 
     const k = Math.floor(Math.log(bufferSize) / Math.LN2)
 
