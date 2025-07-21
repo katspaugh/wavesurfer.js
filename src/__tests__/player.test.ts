@@ -30,9 +30,12 @@ describe('Player', () => {
     const abort = new DOMException('interrupted', 'AbortError')
     let rejectPlay: (reason?: unknown) => void
     const media = createMedia()
-    media.play = jest.fn(() => new Promise((_, reject) => {
-      rejectPlay = reject
-    }))
+    media.play = jest.fn(
+      () =>
+        new Promise((_, reject) => {
+          rejectPlay = reject
+        }),
+    )
     const player = new Player<Events>({ media })
     const promise = player.play()
     player.pause()

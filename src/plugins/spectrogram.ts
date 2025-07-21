@@ -21,16 +21,16 @@
 // @ts-nocheck
 
 // Import centralized FFT functionality
-import FFT, { 
+import FFT, {
   hzToScale,
   scaleToHz,
   createFilterBankForScale,
   applyFilterBank,
-  setupColorMap, 
-  freqType, 
-  unitType, 
-  getLabelFrequency, 
-  createWrapperClickHandler
+  setupColorMap,
+  freqType,
+  unitType,
+  getLabelFrequency,
+  createWrapperClickHandler,
 } from '../fft.js'
 
 /**
@@ -110,8 +110,8 @@ export type SpectrogramPluginOptions = {
   frequenciesDataUrl?: string
   /** Maximum width of individual canvas elements in pixels (default: 30000) */
   maxCanvasWidth?: number
-   /** Use web worker for FFT calculations (default: false) */
-   useWebWorker?: boolean
+  /** Use web worker for FFT calculations (default: false) */
+  useWebWorker?: boolean
 }
 
 export type SpectrogramPluginEvents = BasePluginEvents & {
@@ -122,7 +122,7 @@ export type SpectrogramPluginEvents = BasePluginEvents & {
 class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramPluginOptions> {
   private static MAX_CANVAS_WIDTH = 30000
   private static MAX_NODES = 10
-  
+
   private frequenciesDataUrl?: string
   private container: HTMLElement
   private wrapper: HTMLElement
@@ -149,7 +149,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   private useWebWorker: boolean = false
   private worker: Worker | null = null
   private workerPromises: Map<string, { resolve: Function; reject: Function }> = new Map()
-  
+
   // Performance optimization properties
   private cachedFrequencies: Uint8Array[][] | null = null
   private cachedResampledData: Uint8Array[][] | null = null
@@ -287,7 +287,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       })
     }
     this.subscriptions.push(this.wavesurfer.on('redraw', () => this.throttledRender()))
-  
+
     // Trigger initial render after re-initialization
     // This ensures the spectrogram appears even if no redraw event is fired
     if (this.wavesurfer.getDecodedData()) {
@@ -300,7 +300,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
   public destroy() {
     this.unAll()
-    
+
     // Clean up any direct event listeners (if they exist)
     if (this.wavesurfer) {
       // Note: _onReady and _onRender methods may not exist, but the original code had these
@@ -312,19 +312,19 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         this.wavesurfer.un('redraw', this._onRender)
       }
     }
-    
+
     // Clean up performance optimization resources
     if (this.renderTimeout) {
       clearTimeout(this.renderTimeout)
       this.renderTimeout = null
     }
-    
+
     // Clean up scroll listener
     if (this.scrollUnsubscribe) {
       this.scrollUnsubscribe()
       this.scrollUnsubscribe = null
     }
-    
+
     // Cancel pending bitmap operations
     this.pendingBitmaps.clear()
 
@@ -333,11 +333,11 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       this.worker.terminate()
       this.worker = null
     }
-    
+
     this.cachedFrequencies = null
     this.cachedResampledData = null
     this.cachedBuffer = null
-    
+
     // Clean up DOM elements properly
     this.clearCanvases()
     if (this.canvasContainer) {
@@ -353,7 +353,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       this.labelsEl.remove()
       this.labelsEl = null
     }
-    
+
     // Reset state for potential re-initialization
     this.container = null
     this.isRendering = false
@@ -361,7 +361,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.wavesurfer = null
     this.util = null
     this.options = null
-    
+
     super.destroy()
   }
 
@@ -375,20 +375,20 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   }
 
   public async getFrequenciesData(): Uint8Array[][] | null {
-    const decodedData = this.wavesurfer?.getDecodedData();
+    const decodedData = this.wavesurfer?.getDecodedData()
     if (!decodedData) {
-      return null;
+      return null
     }
 
     if (this.cachedBuffer === decodedData && this.cachedFrequencies) {
       // Check if we can use cached frequencies
-      return this.cachedFrequencies;
+      return this.cachedFrequencies
     } else {
       // Calculate new frequencies and cache them
       const frequencies = await this.getFrequencies(decodedData)
       this.cachedFrequencies = frequencies
       this.cachedBuffer = decodedData
-      return frequencies;
+      return frequencies
     }
   }
 
@@ -460,16 +460,16 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         zIndex: 4,
       },
     })
-    
+
     canvas.width = Math.round(width)
     canvas.height = Math.round(height)
-    
+
     this.canvasContainer.appendChild(canvas)
     return canvas
   }
 
   private clearCanvases() {
-    this.canvases.forEach(canvas => canvas.remove())
+    this.canvases.forEach((canvas) => canvas.remove())
     this.canvases = []
     this.drawnCanvases = {}
   }
@@ -486,16 +486,16 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     if (this.renderTimeout) {
       clearTimeout(this.renderTimeout)
     }
-    
+
     // Skip if already rendering
     if (this.isRendering) {
       return
     }
-    
+
     // Check if zoom level changed significantly
     const currentZoom = this.wavesurfer?.options.minPxPerSec || 0
     const zoomDiff = Math.abs(currentZoom - this.lastZoomLevel) / Math.max(currentZoom, this.lastZoomLevel, 1)
-    
+
     if (zoomDiff < this.zoomThreshold && this.cachedFrequencies) {
       // Small zoom change - just re-render with cached data
       this.renderTimeout = window.setTimeout(() => {
@@ -512,15 +512,15 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   private async render() {
     if (this.isRendering) return
     this.isRendering = true
-    
+
     try {
       if (this.frequenciesDataUrl) {
         await this.loadFrequenciesData(this.frequenciesDataUrl)
       } else {
         const decodedData = this.wavesurfer?.getDecodedData()
         if (decodedData) {
-          const frequencies = await this.getFrequenciesData();
-          this.drawSpectrogram(this.cachedFrequencies);
+          const frequencies = await this.getFrequenciesData()
+          this.drawSpectrogram(this.cachedFrequencies)
         }
       }
       this.lastZoomLevel = this.wavesurfer?.options.minPxPerSec || 0
@@ -528,11 +528,11 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       this.isRendering = false
     }
   }
-  
+
   private fastRender() {
     if (this.isRendering || !this.cachedFrequencies) return
     this.isRendering = true
-    
+
     try {
       // Use cached frequencies for fast re-render
       this.drawSpectrogram(this.cachedFrequencies)
@@ -542,7 +542,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     }
   }
 
-    private drawSpectrogram(frequenciesData: Uint8Array[][]): void {
+  private drawSpectrogram(frequenciesData: Uint8Array[][]): void {
     if (!isNaN(frequenciesData[0][0])) {
       // data is 1ch [sample, freq] format
       // to [channel, sample, freq] format
@@ -558,7 +558,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
     const totalWidth = this.getWidth()
     const maxCanvasWidth = Math.min(SpectrogramPlugin.MAX_CANVAS_WIDTH, totalWidth)
-    
+
     // Nothing to render
     if (totalWidth === 0 || totalHeight === 0) return
 
@@ -569,7 +569,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     let resampledData: Uint8Array[][]
     const originalDataWidth = frequenciesData[0]?.length || 0
     const needsResampling = totalWidth !== originalDataWidth
-    
+
     if (!needsResampling) {
       // At high zoom levels, use original data directly - much faster!
       resampledData = frequenciesData
@@ -599,7 +599,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     const drawCanvas = (canvasIndex: number) => {
       if (canvasIndex < 0 || canvasIndex >= numCanvases) return
       if (this.drawnCanvases[canvasIndex]) return
-      
+
       this.drawnCanvases[canvasIndex] = true
 
       const offset = canvasIndex * maxCanvasWidth
@@ -619,7 +619,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         ctx.fillRect(0, 0, canvasWidth, totalHeight)
       }
 
-      // Render each channel for this canvas segment  
+      // Render each channel for this canvas segment
       for (let c = 0; c < resampledData.length; c++) {
         this.drawSpectrogramSegment(
           resampledData[c],
@@ -658,12 +658,12 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
         const scrollLeft = wrapper.scrollLeft || 0
         const containerWidth = wrapper.clientWidth || 0
-        
+
         // Calculate visible range with some buffer
         const bufferRatio = 0.5 // Render 50% extra on each side
         const visibleStart = Math.max(0, scrollLeft - containerWidth * bufferRatio)
         const visibleEnd = Math.min(totalWidth, scrollLeft + containerWidth * (1 + bufferRatio))
-        
+
         const startCanvasIndex = Math.floor((visibleStart / totalWidth) * numCanvases)
         const endCanvasIndex = Math.min(Math.ceil((visibleEnd / totalWidth) * numCanvases), numCanvases - 1)
 
@@ -715,7 +715,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.emit('ready')
   }
 
-    private drawSpectrogramSegment(
+  private drawSpectrogramSegment(
     resampledPixels: Uint8Array[],
     ctx: CanvasRenderingContext2D,
     canvasWidth: number,
@@ -732,7 +732,10 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
     // Calculate which portion of the resampled data corresponds to this canvas
     const startIndex = Math.floor((xOffset / totalWidth) * resampledPixels.length)
-    const endIndex = Math.min(Math.ceil(((xOffset + canvasWidth) / totalWidth) * resampledPixels.length), resampledPixels.length)
+    const endIndex = Math.min(
+      Math.ceil(((xOffset + canvasWidth) / totalWidth) * resampledPixels.length),
+      resampledPixels.length,
+    )
     const segmentPixels = resampledPixels.slice(startIndex, endIndex)
 
     if (segmentPixels.length === 0) return
@@ -761,30 +764,30 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
     // Track pending bitmap for cleanup
     this.pendingBitmaps.add(bitmapPromise)
-    
-    bitmapPromise.then((bitmap) => {
-      // Remove from pending set
-      this.pendingBitmaps.delete(bitmapPromise)
-      
-      // Check if canvas is still valid before drawing
-      if (ctx.canvas.parentNode) {
-        const drawHeight = (height * rMax1) / rMax
-        const drawY = yOffset + height * (1 - rMax1 / rMax)
-        
-        ctx.drawImage(bitmap, 0, drawY, canvasWidth, drawHeight)
-        
-        // Clean up bitmap to free memory
-        if ('close' in bitmap) {
-          bitmap.close()
+
+    bitmapPromise
+      .then((bitmap) => {
+        // Remove from pending set
+        this.pendingBitmaps.delete(bitmapPromise)
+
+        // Check if canvas is still valid before drawing
+        if (ctx.canvas.parentNode) {
+          const drawHeight = (height * rMax1) / rMax
+          const drawY = yOffset + height * (1 - rMax1 / rMax)
+
+          ctx.drawImage(bitmap, 0, drawY, canvasWidth, drawHeight)
+
+          // Clean up bitmap to free memory
+          if ('close' in bitmap) {
+            bitmap.close()
+          }
         }
-      }
-    }).catch((error) => {
-      // Clean up on error
-      this.pendingBitmaps.delete(bitmapPromise)
-    })
+      })
+      .catch((error) => {
+        // Clean up on error
+        this.pendingBitmaps.delete(bitmapPromise)
+      })
   }
-
-
 
   private getWidth() {
     return this.wavesurfer.getWrapper().offsetWidth
@@ -802,7 +805,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     const fftSamples = this.fftSamples
     const channels =
       (this.options.splitChannels ?? this.wavesurfer?.options.splitChannels) ? buffer.numberOfChannels : 1
-    
+
     // Calculate noverlap
     let noverlap = this.noverlap
     if (!noverlap) {
@@ -862,8 +865,8 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
     if (!buffer) return []
 
-     // Use worker if enabled and available
-     if (this.useWebWorker && this.worker) {
+    // Use worker if enabled and available
+    if (this.useWebWorker && this.worker) {
       try {
         return await this.calculateFrequenciesWithWorker(buffer)
       } catch (error) {
@@ -911,19 +914,19 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
         const segment = channelData.slice(sample, sample + fftSamples)
         let spectrum = fft.calculateSpectrum(segment)
-        
+
         if (filterBank) {
           spectrum = applyFilterBank(spectrum, filterBank)
         }
-        
+
         // Convert to uint8 color indices
         const freqBins = new Uint8Array(spectrum.length)
         const gainPlusRange = this.gainDB + this.rangeDB
-        
+
         for (let j = 0; j < spectrum.length; j++) {
           const magnitude = spectrum[j] > 1e-12 ? spectrum[j] : 1e-12
           const valueDB = 20 * Math.log10(magnitude)
-          
+
           if (valueDB < -gainPlusRange) {
             freqBins[j] = 0
           } else if (valueDB > -this.gainDB) {
@@ -939,8 +942,6 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
     return frequencies
   }
-
-
 
   private loadLabels(
     bgFill,
@@ -1014,30 +1015,30 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   }
 
   private efficientResample(frequenciesData: Uint8Array[][], targetWidth: number): Uint8Array[][] {
-    return frequenciesData.map(channelFreq => this.resampleChannel(channelFreq, targetWidth))
+    return frequenciesData.map((channelFreq) => this.resampleChannel(channelFreq, targetWidth))
   }
 
   private resampleChannel(oldMatrix: Uint8Array[], targetWidth: number): Uint8Array[] {
     const oldColumns = oldMatrix.length
     const freqBins = oldMatrix[0]?.length || 0
-    
+
     // Fast path for no resampling needed
     if (oldColumns === targetWidth || targetWidth === 0) {
       return oldMatrix
     }
-    
+
     const ratio = oldColumns / targetWidth
-    
+
     // Always use quality resampling for accurate spectrograms
     const newMatrix = new Array(targetWidth)
-    
+
     if (ratio >= 1) {
       // Downsampling with proper averaging
       for (let i = 0; i < targetWidth; i++) {
         const start = Math.floor(i * ratio)
         const end = Math.min(Math.ceil((i + 1) * ratio), oldColumns)
         const count = end - start
-        
+
         // Always create new column to avoid reference issues
         const column = new Uint8Array(freqBins)
         if (count === 1) {
@@ -1062,9 +1063,9 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         const leftIndex = Math.floor(srcIndex)
         const rightIndex = Math.min(leftIndex + 1, oldColumns - 1)
         const weight = srcIndex - leftIndex
-        
+
         const column = new Uint8Array(freqBins)
-        
+
         if (weight === 0 || leftIndex === rightIndex) {
           // Exact match or at boundary - use nearest neighbor
           column.set(oldMatrix[leftIndex])
@@ -1084,7 +1085,12 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     return newMatrix
   }
 
-  private fillImageDataQuality(data: Uint8ClampedArray, segmentPixels: Uint8Array[], segmentWidth: number, bitmapHeight: number): void {
+  private fillImageDataQuality(
+    data: Uint8ClampedArray,
+    segmentPixels: Uint8Array[],
+    segmentWidth: number,
+    bitmapHeight: number,
+  ): void {
     // High quality rendering - process all pixels
     const colorMap = this.colorMap
     for (let i = 0; i < segmentWidth; i++) {
@@ -1093,7 +1099,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         const colorIndex = column[j]
         const color = colorMap[colorIndex]
         const pixelIndex = ((bitmapHeight - j - 1) * segmentWidth + i) * 4
-        
+
         // Write RGBA values
         data[pixelIndex] = color[0] * 255
         data[pixelIndex + 1] = color[1] * 255
@@ -1102,7 +1108,6 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       }
     }
   }
-
 }
 
 export default SpectrogramPlugin

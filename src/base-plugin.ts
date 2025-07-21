@@ -32,7 +32,7 @@ export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends Ev
       this.subscriptions = []
       this.isDestroyed = false
     }
-    
+
     this.wavesurfer = wavesurfer
     this.onInit()
   }

@@ -17,14 +17,14 @@ ws.registerPlugin(
   Spectrogram.create({
     // Display frequency labels on the left side
     labels: true,
-    
+
     // Height of the spectrogram in pixels
     height: 200,
-    
+
     // Render separate spectrograms for each audio channel
     // Set to false to combine all channels into one spectrogram
     splitChannels: true,
-    
+
     // Frequency scale type:
     // - 'linear': Standard linear frequency scale (0-20kHz)
     // - 'logarithmic': Logarithmic scale, better for low frequencies
@@ -32,36 +32,36 @@ ws.registerPlugin(
     // - 'bark': Bark scale for psychoacoustic analysis
     // - 'erb': ERB scale for auditory filter modeling
     scale: 'mel',
-    
+
     // Frequency range to display (in Hz)
-    frequencyMax: 8000,  // Maximum frequency to show
-    frequencyMin: 0,     // Minimum frequency to show
-    
+    frequencyMax: 8000, // Maximum frequency to show
+    frequencyMin: 0, // Minimum frequency to show
+
     // FFT parameters
-    fftSamples: 1024,    // Number of samples for FFT (must be power of 2)
-                        // Higher values = better frequency resolution, slower rendering
-    
+    fftSamples: 1024, // Number of samples for FFT (must be power of 2)
+    // Higher values = better frequency resolution, slower rendering
+
     // Visual styling
-    labelsBackground: 'rgba(0, 0, 0, 0.1)',  // Background for frequency labels
-    
+    labelsBackground: 'rgba(0, 0, 0, 0.1)', // Background for frequency labels
+
     // Performance optimization
-    useWebWorker: true,  // Use web worker for FFT calculations (improves performance)
-    
+    useWebWorker: true, // Use web worker for FFT calculations (improves performance)
+
     // Additional options you can configure:
-    // 
+    //
     // Window function for FFT (affects frequency resolution vs time resolution):
     // windowFunc: 'hann' | 'hamming' | 'blackman' | 'bartlett' | 'cosine' | 'gauss' | 'lanczoz' | 'rectangular' | 'triangular'
-    // 
+    //
     // Color mapping for frequency intensity:
     // colorMap: 'gray' | 'igray' | 'roseus' | custom array
-    // 
+    //
     // Gain and range for color scaling:
     // gainDB: 20,        // Brightness adjustment (default: 20dB)
     // rangeDB: 80,       // Dynamic range (default: 80dB)
-    // 
+    //
     // Overlap between FFT windows:
     // noverlap: null,    // Auto-calculated by default, or set manually
-    // 
+    //
     // Maximum canvas width for performance:
     // maxCanvasWidth: 30000,  // Split large spectrograms into multiple canvases
   }),
