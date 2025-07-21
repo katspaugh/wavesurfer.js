@@ -5,6 +5,7 @@
  * Centralized FFT functionality for spectrogram plugins
  */
 
+// eslint-disable-next-line
 // @ts-nocheck
 
 export const ERB_A = (1000 * Math.log(10)) / (24.7 * 4.37)
@@ -510,22 +511,21 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
   this.peakBand = 0
   this.peak = 0
 
-  var i
   switch (windowFunc) {
     case 'bartlett':
-      for (i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < bufferSize; i++) {
         this.windowValues[i] = (2 / (bufferSize - 1)) * ((bufferSize - 1) / 2 - Math.abs(i - (bufferSize - 1) / 2))
       }
       break
     case 'bartlettHann':
-      for (i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < bufferSize; i++) {
         this.windowValues[i] =
           0.62 - 0.48 * Math.abs(i / (bufferSize - 1) - 0.5) - 0.38 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1))
       }
       break
     case 'blackman':
       alpha = alpha || 0.16
-      for (i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < bufferSize; i++) {
         this.windowValues[i] =
           (1 - alpha) / 2 -
           0.5 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1)) +
@@ -533,13 +533,13 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
       }
       break
     case 'cosine':
-      for (i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < bufferSize; i++) {
         this.windowValues[i] = Math.cos((Math.PI * i) / (bufferSize - 1) - Math.PI / 2)
       }
       break
     case 'gauss':
       alpha = alpha || 0.25
-      for (i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < bufferSize; i++) {
         this.windowValues[i] = Math.pow(
           Math.E,
           -0.5 * Math.pow((i - (bufferSize - 1) / 2) / ((alpha * (bufferSize - 1)) / 2), 2),
@@ -547,29 +547,29 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
       }
       break
     case 'hamming':
-      for (i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < bufferSize; i++) {
         this.windowValues[i] = 0.54 - 0.46 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1))
       }
       break
     case 'hann':
     case undefined:
-      for (i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < bufferSize; i++) {
         this.windowValues[i] = 0.5 * (1 - Math.cos((Math.PI * 2 * i) / (bufferSize - 1)))
       }
       break
     case 'lanczoz':
-      for (i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < bufferSize; i++) {
         this.windowValues[i] =
           Math.sin(Math.PI * ((2 * i) / (bufferSize - 1) - 1)) / (Math.PI * ((2 * i) / (bufferSize - 1) - 1))
       }
       break
     case 'rectangular':
-      for (i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < bufferSize; i++) {
         this.windowValues[i] = 1
       }
       break
     case 'triangular':
-      for (i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < bufferSize; i++) {
         this.windowValues[i] = (2 / bufferSize) * (bufferSize / 2 - Math.abs(i - (bufferSize - 1) / 2))
       }
       break
@@ -579,10 +579,9 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
 
   let limit = 1
   let bit = bufferSize >> 1
-  var i
 
   while (limit < bufferSize) {
-    for (i = 0; i < limit; i++) {
+    for (let i = 0; i < limit; i++) {
       this.reverseTable[i + limit] = this.reverseTable[i] + bit
     }
 
@@ -590,13 +589,13 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
     bit = bit >> 1
   }
 
-  for (i = 0; i < bufferSize; i++) {
+  for (let i = 0; i < bufferSize; i++) {
     this.sinTable[i] = Math.sin(-Math.PI / i)
     this.cosTable[i] = Math.cos(-Math.PI / i)
   }
 
   this.calculateSpectrum = function (buffer: Float32Array): Float32Array {
-    let bufferSize = this.bufferSize,
+    const bufferSize = this.bufferSize,
       cosTable = this.cosTable,
       sinTable = this.sinTable,
       reverseTable = this.reverseTable,
@@ -633,7 +632,7 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
       ti,
       tmpReal
 
-    for (var i = 0; i < bufferSize; i++) {
+    for (let i = 0; i < bufferSize; i++) {
       real[i] = buffer[reverseTable[i]] * this.windowValues[reverseTable[i]]
       imag[i] = 0
     }
@@ -646,7 +645,7 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
       currentPhaseShiftImag = 0
 
       for (let fftStep = 0; fftStep < halfSize; fftStep++) {
-        var i = fftStep
+        let i = fftStep
 
         while (i < bufferSize) {
           off = i + halfSize
@@ -669,7 +668,7 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
       halfSize = halfSize << 1
     }
 
-    for (var i = 0, N = bufferSize / 2; i < N; i++) {
+    for (let i = 0, N = bufferSize / 2; i < N; i++) {
       rval = real[i]
       ival = imag[i]
       mag = bSi * sqrt(rval * rval + ival * ival)
