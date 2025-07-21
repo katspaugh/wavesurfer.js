@@ -26,6 +26,20 @@ describe('Player', () => {
     expect(media.pause).toHaveBeenCalled()
   })
 
+  test('pause before play promise resolves does not reject', async () => {
+    const abort = new DOMException('interrupted', 'AbortError')
+    let rejectPlay: (reason?: unknown) => void
+    const media = createMedia()
+    media.play = jest.fn(() => new Promise((_, reject) => {
+      rejectPlay = reject
+    }))
+    const player = new Player<Events>({ media })
+    const promise = player.play()
+    player.pause()
+    rejectPlay(abort)
+    await expect(promise).resolves.toBeUndefined()
+  })
+
   test('volume and muted', () => {
     const media = createMedia()
     const player = new Player<Events>({ media })
