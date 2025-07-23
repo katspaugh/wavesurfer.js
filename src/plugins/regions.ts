@@ -477,6 +477,13 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     }
     this.wavesurfer.getWrapper().appendChild(this.regionsContainer)
 
+    // Update region durations when a new audio file is loaded
+    this.subscriptions.push(
+      this.wavesurfer.on('ready', (duration) => {
+        this.regions.forEach((region) => region._setTotalDuration(duration))
+      }),
+    )
+
     let activeRegions: Region[] = []
     this.subscriptions.push(
       this.wavesurfer.on('timeupdate', (currentTime) => {
