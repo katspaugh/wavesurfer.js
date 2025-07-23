@@ -56,6 +56,7 @@ export type TimelinePluginEvents = BasePluginEvents & {
 
 class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOptions> {
   private timelineWrapper: HTMLElement
+  private unsubscribeNotches: (() => void)[] = []
   protected options: TimelinePluginOptions & typeof defaultOptions
 
   constructor(options?: TimelinePluginOptions) {
@@ -102,6 +103,8 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
   /** Unmount */
   public destroy() {
+    this.unsubscribeNotches.forEach((unsubscribe) => unsubscribe())
+    this.unsubscribeNotches = []
     this.timelineWrapper.remove()
     super.destroy()
   }
@@ -152,7 +155,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     const renderIfVisible = (scrollLeft: number, scrollRight: number) => {
       if (!this.wavesurfer) return
       const width = element.clientWidth
-      const isVisible = start > scrollLeft && start + width < scrollRight
+      const isVisible = start >= scrollLeft && start + width < scrollRight
 
       if (isVisible === wasVisible) return
       wasVisible = isVisible
@@ -170,7 +173,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
     renderIfVisible(scrollLeft, scrollRight)
 
-    this.subscriptions.push(
+    this.unsubscribeNotches.push(
       this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
         renderIfVisible(scrollLeft, scrollRight)
       }),
@@ -178,6 +181,9 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   }
 
   private initTimeline() {
+    this.unsubscribeNotches.forEach((unsubscribe) => unsubscribe())
+    this.unsubscribeNotches = []
+
     const duration = this.wavesurfer?.getDuration() ?? this.options.duration ?? 0
     const pxPerSec = (this.wavesurfer?.getWrapper().scrollWidth || this.timelineWrapper.scrollWidth) / duration
     const timeInterval = this.options.timeInterval ?? this.defaultTimeInterval(pxPerSec)

@@ -2,8 +2,13 @@ import { glob } from 'glob'
 import typescript from '@rollup/plugin-typescript'
 import terser from '@rollup/plugin-terser'
 import dts from 'rollup-plugin-dts'
+import webWorkerLoader from 'rollup-plugin-web-worker-loader'
 
-const plugins = [typescript({ declaration: false, declarationDir: null }), terser({ format: { comments: false } })]
+const plugins = [
+  webWorkerLoader(),
+  typescript({ declaration: false, declarationDir: null }),
+  terser({ format: { comments: false } }),
+]
 
 export default [
   // ES module
@@ -44,9 +49,10 @@ export default [
     plugins: [dts()],
   },
 
-  // Wavesurfer plugins
+  // Wavesurfer plugins (exclude worker files)
   ...glob
     .sync('src/plugins/*.ts')
+    .filter((plugin) => !plugin.includes('worker'))
     .map((plugin) => [
       // ES module
       {

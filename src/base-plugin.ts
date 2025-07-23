@@ -12,6 +12,7 @@ export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends Ev
   protected wavesurfer?: WaveSurfer
   protected subscriptions: (() => void)[] = []
   protected options: Options
+  private isDestroyed = false
 
   /** Create a plugin instance */
   constructor(options: Options) {
@@ -26,6 +27,12 @@ export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends Ev
 
   /** Do not call directly, only called by WavesSurfer internally */
   public _init(wavesurfer: WaveSurfer) {
+    // Reset state if plugin was previously destroyed
+    if (this.isDestroyed) {
+      this.subscriptions = []
+      this.isDestroyed = false
+    }
+
     this.wavesurfer = wavesurfer
     this.onInit()
   }
@@ -34,6 +41,9 @@ export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends Ev
   public destroy() {
     this.emit('destroy')
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
+    this.subscriptions = []
+    this.isDestroyed = true
+    this.wavesurfer = undefined
   }
 }
 

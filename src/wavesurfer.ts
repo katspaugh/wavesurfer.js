@@ -384,6 +384,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Register a wavesurfer.js plugin */
   public registerPlugin<T extends GenericPlugin>(plugin: T): T {
+    // Check if the plugin is already registered
+    if (this.plugins.includes(plugin)) {
+      return plugin
+    }
+
     plugin._init(this)
     this.plugins.push(plugin)
 
@@ -395,6 +400,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.subscriptions.push(unsubscribe)
 
     return plugin
+  }
+
+  /** Unregister a wavesurfer.js plugin */
+  public unregisterPlugin(plugin: GenericPlugin): void {
+    this.plugins = this.plugins.filter((p) => p !== plugin)
+    plugin.destroy()
   }
 
   /** For plugins only: get the waveform wrapper div */

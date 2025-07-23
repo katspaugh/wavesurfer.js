@@ -677,7 +677,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     }
 
     setTimeout(() => {
-      if (!this.wavesurfer) return
+      if (!this.wavesurfer || !region.element) return
       renderIfVisible()
 
       const unsubscribeScroll = this.wavesurfer.on('scroll', renderIfVisible)

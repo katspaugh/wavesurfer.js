@@ -263,8 +263,14 @@ class Polyline extends EventEmitter<{
 
   update() {
     const { svg } = this
-    const aspectRatioX = svg.viewBox.baseVal.width / svg.clientWidth
-    const aspectRatioY = svg.viewBox.baseVal.height / svg.clientHeight
+    // Skip the update if the container is hidden
+    const { clientWidth, clientHeight } = svg
+    if (!clientWidth || !clientHeight) {
+      return
+    }
+
+    const aspectRatioX = svg.viewBox.baseVal.width / clientWidth
+    const aspectRatioY = svg.viewBox.baseVal.height / clientHeight
     const circles = svg.querySelectorAll('ellipse')
 
     circles.forEach((circle) => {

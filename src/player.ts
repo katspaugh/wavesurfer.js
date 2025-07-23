@@ -104,7 +104,14 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Start playing the audio */
   public async play(): Promise<void> {
-    return this.media.play()
+    try {
+      return await this.media.play()
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return
+      }
+      throw err
+    }
   }
 
   /** Pause the audio */
