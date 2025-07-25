@@ -121,6 +121,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
 
     this.wavesurfer.on('zoom', onUpdate)
     this.wavesurfer.on('scroll', onUpdate)
+
     this.unsubscribe = () => {
       container.removeEventListener('pointermove', this.onPointerMove)
       container.removeEventListener('pointerleave', this.onPointerLeave)
