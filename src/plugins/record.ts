@@ -215,7 +215,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     }
 
     const { onEnd } = this.renderMicStream(stream)
-    this.subscriptions.push(this.once('record-end', onEnd))
+    this.once('record-end', onEnd)
     this.stream = stream
 
     return stream
