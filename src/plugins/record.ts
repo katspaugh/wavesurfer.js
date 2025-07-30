@@ -43,7 +43,6 @@ export type RecordPluginEvents = BasePluginEvents & {
 }
 
 type MicStream = {
-  onDestroy: () => void
   onEnd: () => void
 }
 
@@ -194,14 +193,11 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     const intervalId = setInterval(drawWaveform, 1000 / FPS)
 
     return {
-      onDestroy: () => {
-        clearInterval(intervalId)
-        source?.disconnect()
-        audioContext?.close()
-      },
       onEnd: () => {
         this.isWaveformPaused = true
         clearInterval(intervalId)
+        source?.disconnect()
+        audioContext?.close()
         this.stopMic()
       },
     }
@@ -218,8 +214,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       throw new Error('Error accessing the microphone: ' + (err as Error).message)
     }
 
-    const { onDestroy, onEnd } = this.renderMicStream(stream)
-    this.subscriptions.push(this.once('destroy', onDestroy))
+    const { onEnd } = this.renderMicStream(stream)
     this.subscriptions.push(this.once('record-end', onEnd))
     this.stream = stream
 
