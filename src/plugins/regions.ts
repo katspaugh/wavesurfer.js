@@ -602,8 +602,18 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       const unsubscribeScroll = this.wavesurfer.on('scroll', renderIfVisible)
       const unsubscribeZoom = this.wavesurfer.on('zoom', renderIfVisible)
 
-      this.subscriptions.push(region.once('remove', unsubscribeScroll), unsubscribeScroll)
-      this.subscriptions.push(region.once('remove', unsubscribeZoom), unsubscribeZoom)
+      const unsubscribe = () => {
+        unsubscribeScroll()
+        unsubscribeZoom()
+      }
+
+      this.addRemoveableSubscriptions((remove) => [
+        region.once('remove', () => {
+          remove()
+          unsubscribe()
+        }),
+        unsubscribe,
+      ])
     }, 0)
   }
 
@@ -638,19 +648,23 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       region.on('dblclick', (e) => {
         this.emit('region-double-clicked', region, e)
       }),
+
       region.on('content-changed', () => {
         this.emit('region-content-changed', region)
       }),
+    ]
+
+    this.addRemoveableSubscriptions((remove) => [
+      ...regionSubscriptions,
 
       // Remove the region from the list when it's removed
       region.once('remove', () => {
+        remove()
         regionSubscriptions.forEach((unsubscribe) => unsubscribe())
         this.regions = this.regions.filter((reg) => reg !== region)
         this.emit('region-removed', region)
       }),
-    ]
-
-    this.subscriptions.push(...regionSubscriptions)
+    ])
 
     this.emit('region-created', region)
   }
@@ -667,8 +681,9 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     this.emit('region-initialized', region)
 
     if (!duration) {
-      this.subscriptions.push(
-        this.wavesurfer.once('ready', (duration) => {
+      this.addRemoveableSubscriptions((remove) =>
+        this.wavesurfer!.once('ready', (duration) => {
+          remove()
           region._setTotalDuration(duration)
           this.saveRegion(region)
         }),
