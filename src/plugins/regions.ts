@@ -126,6 +126,23 @@ function getRegionSideOverflow({
   }
 }
 
+// This needs to be in an object, so it can be passed by reference to createScrollHandler
+// This allows us to mutate the scrollState from within the generated function
+type ScrollState = {
+  scrollLeft: number
+}
+
+type ScrollCallback = (scrollDiff: number) => void
+
+function createScrollHandler(scrollState: ScrollState, callback: ScrollCallback) {
+  return (_: number, __: number, scrollLeft: number) => {
+    const scrollDiff = scrollLeft - scrollState.scrollLeft
+
+    scrollState.scrollLeft = scrollLeft
+    callback(scrollDiff)
+  }
+}
+
 class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public element: HTMLElement | null = null // Element is created on init
   public id: string
@@ -224,23 +241,42 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       element,
     )
 
+    const scrollState: ScrollState = {
+      scrollLeft: 0,
+    }
+
+    const leftHandleScrollCallback = createScrollHandler(scrollState, (scrollDiff) =>
+      this.onResize(scrollDiff, 'start'),
+    )
+    const rightHandleScrollCallback = createScrollHandler(scrollState, (scrollDiff) => this.onResize(scrollDiff, 'end'))
+
     // Resize
     const resizeThreshold = 1
     this.subscriptions.push(
       makeDraggable(
         leftHandle,
         (dx) => this.onResize(dx, 'start'),
-        () => null,
-        () => this.onEndResizing(),
-        this.wavesurfer,
+        () => {
+          scrollState.scrollLeft = this.wavesurfer.getScroll()
+          this.wavesurfer.on('scroll', leftHandleScrollCallback)
+        },
+        () => {
+          this.wavesurfer.un('scroll', leftHandleScrollCallback)
+          this.onEndResizing()
+        },
         resizeThreshold,
       ),
       makeDraggable(
         rightHandle,
         (dx) => this.onResize(dx, 'end'),
-        () => null,
-        () => this.onEndResizing(),
-        this.wavesurfer,
+        () => {
+          scrollState.scrollLeft = this.wavesurfer.getScroll()
+          this.wavesurfer.on('scroll', rightHandleScrollCallback)
+        },
+        () => {
+          this.wavesurfer.un('scroll', rightHandleScrollCallback)
+          this.onEndResizing()
+        },
         resizeThreshold,
       ),
     )
@@ -317,16 +353,27 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     element.addEventListener('pointerdown', () => this.toggleCursor(true))
     element.addEventListener('pointerup', () => this.toggleCursor(false))
 
+    const scrollState: ScrollState = {
+      scrollLeft: 0,
+    }
+
+    const onScroll = createScrollHandler(scrollState, (scrollDiff) => this.onMove(scrollDiff, this.autoScrollDirection))
+
     // Drag
     this.subscriptions.push(
       makeDraggable(
         element,
-        (dx) => this.onMove(dx, this.autoScrollDirection),
+        (dx) => {
+          const scrollDiff = this.wavesurfer.getScroll() - scrollState.scrollLeft
+          scrollState.scrollLeft = this.wavesurfer.getScroll()
+          this.onMove(dx + scrollDiff, this.autoScrollDirection)
+        },
         () => {
+          scrollState.scrollLeft = this.wavesurfer.getScroll()
           this.toggleCursor(true)
           this.isDragging = true
           const sideOverflow = getRegionSideOverflow({ element: this.element, wavesurfer: this.wavesurfer })
-
+          this.wavesurfer.on('scroll', onScroll)
           if (sideOverflow === undefined) {
             return
           }
@@ -347,11 +394,11 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
         },
         () => {
           this.toggleCursor(false)
-          this.isDragging = true
+          this.isDragging = false
+          this.wavesurfer.un('scroll', onScroll)
           if (this.drag) this.emit('update-end')
           this.autoScrollDirection = 'none'
         },
-        this.wavesurfer,
       ),
     )
 
@@ -651,7 +698,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       scrollContainer.scrollLeft -= overflowLeft
     }
 
-    if (direction == 'right' || direction === 'both') {
+    if (direction === 'right' || direction === 'both') {
       scrollContainer.scrollLeft += overflowRight
     }
   }
@@ -770,6 +817,17 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     let region: Region | null = null
     let startX = 0
 
+    const scrollState: ScrollState = {
+      scrollLeft: 0,
+    }
+
+    const onScroll = createScrollHandler(scrollState, (scrollDiff) => {
+      if (region) {
+        region._onUpdate(scrollDiff, scrollDiff > 0 ? 'end' : 'start')
+        this.adjustScroll(region, 'both')
+      }
+    })
+
     return makeDraggable(
       wrapper,
 
@@ -787,6 +845,8 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       (x) => {
         startX = x
         if (!this.wavesurfer) return
+        scrollState.scrollLeft = this.wavesurfer.getScroll()
+        this.wavesurfer.on('scroll', onScroll)
         const duration = this.wavesurfer.getDuration()
         const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
         const { width } = this.wavesurfer.getWrapper().getBoundingClientRect()
@@ -817,12 +877,12 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
       // On drag end
       () => {
+        this.wavesurfer?.un('scroll', onScroll)
         if (region) {
           this.saveRegion(region)
           region = null
         }
       },
-      this.wavesurfer,
       threshold,
     )
   }

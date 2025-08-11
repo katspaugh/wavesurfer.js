@@ -174,7 +174,6 @@ class Polyline extends EventEmitter<{
         onDrag,
         () => (draggable.style.cursor = 'grabbing'),
         () => (draggable.style.cursor = 'grab'),
-        this.wavesurfer,
         1,
       ),
     )
