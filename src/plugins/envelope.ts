@@ -6,7 +6,6 @@ import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
-import WaveSurfer from '../wavesurfer'
 
 export type EnvelopePoint = {
   id?: string
@@ -57,15 +56,13 @@ class Polyline extends EventEmitter<{
     }
   >
   private subscriptions: (() => void)[] = []
-  private wavesurfer: WaveSurfer
 
-  constructor(options: Options, wrapper: HTMLElement, wavesurfer: WaveSurfer) {
+  constructor(options: Options, wrapper: HTMLElement) {
     super()
 
     this.subscriptions = []
     this.options = options
     this.polyPoints = new Map()
-    this.wavesurfer = wavesurfer
 
     const width = wrapper.clientWidth
     const height = wrapper.clientHeight
@@ -424,7 +421,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
 
     const wrapper = this.wavesurfer.getWrapper()
 
-    this.polyline = new Polyline(this.options, wrapper, this.wavesurfer)
+    this.polyline = new Polyline(this.options, wrapper)
 
     this.subscriptions.push(
       this.polyline.on('point-move', (point, relativeX, relativeY) => {
