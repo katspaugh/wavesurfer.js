@@ -583,7 +583,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.emit('timeupdate', time)
   }
 
-  /** Seek to a percentage of audio as [0..1] (0 = beginning, 1 = end) */
+  /** Seek to a ratio of audio as [0..1] (0 = beginning, 1 = end) */
   public seekTo(progress: number) {
     const time = this.getDuration() * progress
     this.setTime(time)
