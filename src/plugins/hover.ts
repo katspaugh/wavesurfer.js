@@ -121,6 +121,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
 
     this.wavesurfer.on('zoom', onUpdate)
     this.wavesurfer.on('scroll', onUpdate)
+
     this.unsubscribe = () => {
       container.removeEventListener('pointermove', this.onPointerMove)
       container.removeEventListener('pointerleave', this.onPointerLeave)
@@ -132,7 +133,6 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
   private onPointerMove = (e: PointerEvent) => {
     if (!this.wavesurfer) return
 
-    // Used when zooming
     this.lastPointerMove = e
 
     // Position

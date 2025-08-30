@@ -42,8 +42,8 @@ describe('makeDraggable', () => {
     const unsubscribe = makeDraggable(el, onDrag, onStart, onEnd, 0)
 
     el.dispatchEvent(new PointerEvent('pointerdown', { clientX: 10, clientY: 10 }))
-    document.dispatchEvent(new PointerEvent('pointermove', { clientX: 20, clientY: 20 }))
-    document.dispatchEvent(new PointerEvent('pointerup', { clientX: 20, clientY: 20 }))
+    window.dispatchEvent(new PointerEvent('pointermove', { clientX: 20, clientY: 20 }))
+    window.dispatchEvent(new PointerEvent('pointerup', { clientX: 20, clientY: 20 }))
 
     expect(onStart).toHaveBeenCalled()
     expect(onDrag).toHaveBeenCalled()

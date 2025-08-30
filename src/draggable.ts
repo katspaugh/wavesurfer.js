@@ -21,6 +21,7 @@ export function makeDraggable(
 
     let startX = event.clientX
     let startY = event.clientY
+
     let isDragging = false
     const touchStartTime = Date.now()
 
@@ -63,13 +64,6 @@ export function makeDraggable(
       unsubscribeDocument()
     }
 
-    const onPointerLeave = (e: PointerEvent) => {
-      // Listen to events only on the document and not on inner elements
-      if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
-        onPointerUp(e)
-      }
-    }
-
     const onClick = (event: MouseEvent) => {
       if (isDragging) {
         event.stopPropagation()
@@ -83,18 +77,14 @@ export function makeDraggable(
       }
     }
 
-    document.addEventListener('pointermove', onPointerMove)
-    document.addEventListener('pointerup', onPointerUp)
-    document.addEventListener('pointerout', onPointerLeave)
-    document.addEventListener('pointercancel', onPointerLeave)
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
     document.addEventListener('touchmove', onTouchMove, { passive: false })
     document.addEventListener('click', onClick, { capture: true })
 
     unsubscribeDocument = () => {
-      document.removeEventListener('pointermove', onPointerMove)
-      document.removeEventListener('pointerup', onPointerUp)
-      document.removeEventListener('pointerout', onPointerLeave)
-      document.removeEventListener('pointercancel', onPointerLeave)
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
       document.removeEventListener('touchmove', onTouchMove)
       setTimeout(() => {
         document.removeEventListener('click', onClick, { capture: true })
