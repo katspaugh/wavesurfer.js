@@ -10,14 +10,14 @@ import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
 
 export type RegionsPluginOptions = undefined
-
+export type UpdateSide = 'start' | 'end'
 export type RegionsPluginEvents = BasePluginEvents & {
   /** When a new region is initialized but not rendered yet */
   'region-initialized': [region: Region]
   /** When a region is created */
   'region-created': [region: Region]
   /** When a region is being updated */
-  'region-update': [region: Region, side?: 'start' | 'end']
+  'region-update': [region: Region, side?: UpdateSide]
   /** When a region is done updating */
   'region-updated': [region: Region]
   /** When a region is removed */
@@ -38,7 +38,7 @@ export type RegionEvents = {
   /** Before the region is removed */
   remove: []
   /** When the region's parameters are being updated */
-  update: [side?: 'start' | 'end']
+  update: [side?: UpdateSide]
   /** When dragging or resizing is finished */
   'update-end': []
   /** On play */
@@ -100,7 +100,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public channelIdx: number
   public contentEditable = false
   public subscriptions: (() => void)[] = []
-  public updatingSide?: 'start' | 'end' = undefined
+  public updatingSide?: UpdateSide = undefined
   private isRemoved = false
 
   constructor(
@@ -289,7 +289,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     }
   }
 
-  public _onUpdate(dx: number, side?: 'start' | 'end', startTime?: number) {
+  public _onUpdate(dx: number, side?: UpdateSide, startTime?: number) {
     if (!this.element?.parentElement) return
     const { width } = this.element.parentElement.getBoundingClientRect()
     const deltaSeconds = (dx / width) * this.totalDuration
@@ -327,7 +327,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     this._onUpdate(dx)
   }
 
-  private onResize(dx: number, side: 'start' | 'end') {
+  private onResize(dx: number, side: UpdateSide) {
     if (!this.resize) return
     if (!this.resizeStart && side === 'start') return
     if (!this.resizeEnd && side === 'end') return
