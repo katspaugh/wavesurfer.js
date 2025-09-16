@@ -100,6 +100,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public channelIdx: number
   public contentEditable = false
   public subscriptions: (() => void)[] = []
+  public updatingSide?: 'start' | 'end' = undefined
   private isRemoved = false
 
   constructor(
@@ -288,13 +289,23 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     }
   }
 
-  public _onUpdate(dx: number, side?: 'start' | 'end') {
+  public _onUpdate(dx: number, side?: 'start' | 'end', startTime?: number) {
     if (!this.element?.parentElement) return
     const { width } = this.element.parentElement.getBoundingClientRect()
     const deltaSeconds = (dx / width) * this.totalDuration
-    const newStart = !side || side === 'start' ? this.start + deltaSeconds : this.start
-    const newEnd = !side || side === 'end' ? this.end + deltaSeconds : this.end
+    let newStart = !side || side === 'start' ? this.start + deltaSeconds : this.start
+    let newEnd = !side || side === 'end' ? this.end + deltaSeconds : this.end
     const length = newEnd - newStart
+
+    if (this.updatingSide && this.updatingSide !== side && startTime !== undefined) {
+      if (this.updatingSide === 'start') {
+        newStart = startTime
+      } else {
+        newEnd = startTime
+      }
+    }
+
+    this.updatingSide = side
 
     if (
       newStart >= 0 &&
@@ -326,6 +337,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   private onEndResizing() {
     if (!this.resize) return
     this.emit('update-end')
+    this.updatingSide = undefined
   }
 
   private onContentClick(event: MouseEvent) {
@@ -691,6 +703,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     const initialSize = 5
     let region: Region | null = null
     let startX = 0
+    let startTime = 0
 
     return makeDraggable(
       wrapper,
@@ -700,7 +713,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         if (region) {
           // Update the end position of the region
           // If we're dragging to the left, we need to update the start instead
-          region._onUpdate(dx, x > startX ? 'end' : 'start')
+          region._onUpdate(dx, x > startX ? 'end' : 'start', startTime)
         }
       },
 
@@ -711,6 +724,8 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         const duration = this.wavesurfer.getDuration()
         const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
         const { width } = this.wavesurfer.getWrapper().getBoundingClientRect()
+        startTime = (startX / width) * duration
+
         // Calculate the start time of the region
         const start = (x / width) * duration
         // Give the region a small initial size
@@ -739,6 +754,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       () => {
         if (region) {
           this.saveRegion(region)
+          region.updatingSide = undefined
           region = null
         }
       },
