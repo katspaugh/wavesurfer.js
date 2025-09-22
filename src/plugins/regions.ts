@@ -305,15 +305,12 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       }
     }
 
+    newStart = Math.max(0, newStart)
+    newEnd = Math.min(this.totalDuration, newEnd)
+
     this.updatingSide = side
 
-    if (
-      newStart >= 0 &&
-      newEnd <= this.totalDuration &&
-      newStart <= newEnd &&
-      length >= this.minLength &&
-      length <= this.maxLength
-    ) {
+    if (newStart <= newEnd && length >= this.minLength && length <= this.maxLength) {
       this.start = newStart
       this.end = newEnd
 
