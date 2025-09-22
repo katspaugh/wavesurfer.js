@@ -295,7 +295,6 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     const deltaSeconds = (dx / width) * this.totalDuration
     let newStart = !side || side === 'start' ? this.start + deltaSeconds : this.start
     let newEnd = !side || side === 'end' ? this.end + deltaSeconds : this.end
-    const length = newEnd - newStart
 
     if (this.updatingSide && this.updatingSide !== side && startTime !== undefined) {
       if (this.updatingSide === 'start') {
@@ -307,6 +306,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
     newStart = Math.max(0, newStart)
     newEnd = Math.min(this.totalDuration, newEnd)
+    const length = newEnd - newStart
 
     this.updatingSide = side
 
