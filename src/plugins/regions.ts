@@ -295,7 +295,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     const deltaSeconds = (dx / width) * this.totalDuration
     let newStart = !side || side === 'start' ? this.start + deltaSeconds : this.start
     let newEnd = !side || side === 'end' ? this.end + deltaSeconds : this.end
-    const isRegionCreating = startTime !== undefined // startTime is passed when the region is creating.
+    const isRegionCreating = startTime !== undefined // startTime is passed when the region is being created.
     if (isRegionCreating) {
       if (this.updatingSide && this.updatingSide !== side) {
         if (this.updatingSide === 'start') {
