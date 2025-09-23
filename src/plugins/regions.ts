@@ -295,12 +295,14 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     const deltaSeconds = (dx / width) * this.totalDuration
     let newStart = !side || side === 'start' ? this.start + deltaSeconds : this.start
     let newEnd = !side || side === 'end' ? this.end + deltaSeconds : this.end
-
-    if (this.updatingSide && this.updatingSide !== side && startTime !== undefined) {
-      if (this.updatingSide === 'start') {
-        newStart = startTime
-      } else {
-        newEnd = startTime
+    const isRegionCreating = startTime !== undefined // startTime is passed when the region is creating.
+    if (isRegionCreating) {
+      if (this.updatingSide && this.updatingSide !== side) {
+        if (this.updatingSide === 'start') {
+          newStart = startTime
+        } else {
+          newEnd = startTime
+        }
       }
     }
 
@@ -309,8 +311,8 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     const length = newEnd - newStart
 
     this.updatingSide = side
-
-    if (newStart <= newEnd && length >= this.minLength && length <= this.maxLength) {
+    const resizeValid = length >= this.minLength && length <= this.maxLength
+    if (newStart <= newEnd && (resizeValid || isRegionCreating)) {
       this.start = newStart
       this.end = newEnd
 
