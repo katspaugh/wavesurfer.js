@@ -525,6 +525,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
   private initRegionsContainer(): HTMLElement {
     return createElement('div', {
+      part: 'regions-container',
       style: {
         position: 'absolute',
         top: '0',
