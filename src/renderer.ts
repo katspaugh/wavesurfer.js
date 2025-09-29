@@ -465,7 +465,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     let vScale = options.barHeight || 1
     if (options.normalize) {
       const max = Array.from(channelData[0]).reduce((max, value) => Math.max(max, Math.abs(value)), 0)
-      vScale = max ? 1 / max : 1
+      vScale = max ? vScale / max : vScale
     }
 
     // Render waveform as bars
