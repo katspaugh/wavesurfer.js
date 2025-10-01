@@ -200,7 +200,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       if (initialUrl || (peaks && duration)) {
         // Swallow async errors because they cannot be caught from a constructor call.
         // Subscribe to the wavesurfer's error event to handle them.
-        this.load(initialUrl, peaks, duration).catch(() => null)
+        this.load(initialUrl, peaks, duration).catch((err) => {
+          // Log error for debugging while still emitting error event
+          console.error('WaveSurfer initial load error:', err)
+        })
       }
     })
   }
@@ -318,34 +321,38 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     // Drag
     {
-      let debounce: ReturnType<typeof setTimeout>
-      this.subscriptions.push(
-        this.renderer.on('drag', (relativeX) => {
-          if (!this.options.interact) return
+      let debounce: ReturnType<typeof setTimeout> | undefined
+      const unsubscribeDrag = this.renderer.on('drag', (relativeX) => {
+        if (!this.options.interact) return
 
-          // Update the visual position
-          this.renderer.renderProgress(relativeX)
+        // Update the visual position
+        this.renderer.renderProgress(relativeX)
 
-          // Set the audio position with a debounce
-          clearTimeout(debounce)
-          let debounceTime
+        // Set the audio position with a debounce
+        clearTimeout(debounce)
+        let debounceTime
 
-          if (this.isPlaying()) {
-            debounceTime = 0
-          } else if (this.options.dragToSeek === true) {
-            debounceTime = 200
-          } else if (typeof this.options.dragToSeek === 'object' && this.options.dragToSeek !== undefined) {
-            debounceTime = this.options.dragToSeek['debounceTime']
-          }
+        if (this.isPlaying()) {
+          debounceTime = 0
+        } else if (this.options.dragToSeek === true) {
+          debounceTime = 200
+        } else if (typeof this.options.dragToSeek === 'object' && this.options.dragToSeek !== undefined) {
+          debounceTime = this.options.dragToSeek['debounceTime']
+        }
 
-          debounce = setTimeout(() => {
-            this.seekTo(relativeX)
-          }, debounceTime)
+        debounce = setTimeout(() => {
+          this.seekTo(relativeX)
+        }, debounceTime)
 
-          this.emit('interaction', relativeX * this.getDuration())
-          this.emit('drag', relativeX)
-        }),
-      )
+        this.emit('interaction', relativeX * this.getDuration())
+        this.emit('drag', relativeX)
+      })
+
+      // Clear debounce timeout on destroy
+      this.subscriptions.push(() => {
+        clearTimeout(debounce)
+        unsubscribeDrag()
+      })
     }
   }
 

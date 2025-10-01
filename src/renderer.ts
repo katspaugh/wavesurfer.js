@@ -297,7 +297,10 @@ class Renderer extends EventEmitter<RendererEvents> {
   destroy() {
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.container.remove()
-    this.resizeObserver?.disconnect()
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
     this.unsubscribeOnScroll?.forEach((unsubscribe) => unsubscribe())
     this.unsubscribeOnScroll = []
   }
@@ -329,6 +332,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   // Convert array of color values to linear gradient
   private convertColorValues(color?: WaveSurferOptions['waveColor']): string | CanvasGradient {
     if (!Array.isArray(color)) return color || ''
+    if (color.length === 0) return '#999' // Return default color for empty array
     if (color.length < 2) return color[0] || ''
 
     const canvasElement = document.createElement('canvas')
