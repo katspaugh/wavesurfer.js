@@ -297,7 +297,10 @@ class Renderer extends EventEmitter<RendererEvents> {
   destroy() {
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.container.remove()
-    this.resizeObserver?.disconnect()
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
     this.unsubscribeOnScroll?.forEach((unsubscribe) => unsubscribe())
     this.unsubscribeOnScroll = []
   }
