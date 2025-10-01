@@ -608,14 +608,21 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     }
 
     setTimeout(() => {
+      // Check if region was removed before setTimeout executed
       if (!this.wavesurfer || !region.element) return
       renderIfVisible()
 
       const unsubscribeScroll = this.wavesurfer.on('scroll', renderIfVisible)
       const unsubscribeZoom = this.wavesurfer.on('zoom', renderIfVisible)
 
-      this.subscriptions.push(region.once('remove', unsubscribeScroll), unsubscribeScroll)
-      this.subscriptions.push(region.once('remove', unsubscribeZoom), unsubscribeZoom)
+      // Only push the unsubscribe functions, not the once() return values
+      this.subscriptions.push(unsubscribeScroll, unsubscribeZoom)
+
+      // Clean up subscriptions when region is removed
+      region.once('remove', () => {
+        unsubscribeScroll()
+        unsubscribeZoom()
+      })
     }, 0)
   }
 

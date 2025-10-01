@@ -89,7 +89,12 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     if (!this.paused) return
     this.paused = false
 
-    this.bufferNode?.disconnect()
+    // Clean up old buffer node completely before creating new one
+    if (this.bufferNode) {
+      this.bufferNode.onended = null
+      this.bufferNode.disconnect()
+    }
+
     this.bufferNode = this.audioContext.createBufferSource()
     if (this.buffer) {
       this.bufferNode.buffer = this.buffer

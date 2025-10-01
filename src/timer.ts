@@ -5,23 +5,41 @@ type TimerEvents = {
 }
 
 class Timer extends EventEmitter<TimerEvents> {
-  private unsubscribe: () => void = () => undefined
+  private animationFrameId: number | null = null
+  private isRunning = false
 
   start() {
-    this.unsubscribe = this.on('tick', () => {
-      requestAnimationFrame(() => {
-        this.emit('tick')
-      })
-    })
-    this.emit('tick')
+    // Prevent multiple simultaneous loops
+    if (this.isRunning) return
+
+    this.isRunning = true
+
+    const tick = () => {
+      // Only continue if timer is still running
+      if (!this.isRunning) return
+
+      this.emit('tick')
+
+      // Schedule next frame
+      this.animationFrameId = requestAnimationFrame(tick)
+    }
+
+    // Start the loop
+    tick()
   }
 
   stop() {
-    this.unsubscribe()
+    this.isRunning = false
+
+    // Cancel any pending animation frame
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId)
+      this.animationFrameId = null
+    }
   }
 
   destroy() {
-    this.unsubscribe()
+    this.stop()
   }
 }
 
