@@ -214,6 +214,11 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
   /** Request access to the microphone and start monitoring incoming audio */
   public async startMic(options?: RecordPluginDeviceOptions): Promise<MediaStream> {
+    // Stop previous mic stream if exists to clean up AudioContext
+    if (this.micStream) {
+      this.stopMic()
+    }
+
     let stream: MediaStream
     try {
       stream = await navigator.mediaDevices.getUserMedia({
