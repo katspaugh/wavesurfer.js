@@ -102,6 +102,8 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public subscriptions: (() => void)[] = []
   public updatingSide?: UpdateSide = undefined
   private isRemoved = false
+  private contentClickListener?: (e: MouseEvent) => void
+  private contentBlurListener?: () => void
 
   constructor(
     params: RegionParams,
@@ -284,8 +286,10 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     )
 
     if (this.contentEditable && this.content) {
-      this.content.addEventListener('click', (e) => this.onContentClick(e))
-      this.content.addEventListener('blur', () => this.onContentBlur())
+      this.contentClickListener = (e) => this.onContentClick(e)
+      this.contentBlurListener = () => this.onContentBlur()
+      this.content.addEventListener('click', this.contentClickListener)
+      this.content.addEventListener('blur', this.contentBlurListener)
     }
   }
 
@@ -375,6 +379,16 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public setContent(content: RegionParams['content']) {
     if (!this.element) return
 
+    // Remove event listeners from old content before removing it
+    if (this.content && this.contentEditable) {
+      if (this.contentClickListener) {
+        this.content.removeEventListener('click', this.contentClickListener)
+      }
+      if (this.contentBlurListener) {
+        this.content.removeEventListener('blur', this.contentBlurListener)
+      }
+    }
+
     this.content?.remove()
     if (!content) {
       this.content = undefined
@@ -394,6 +408,11 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     }
     if (this.contentEditable) {
       this.content.contentEditable = 'true'
+      // Re-add event listeners to new content
+      this.contentClickListener = (e) => this.onContentClick(e)
+      this.contentBlurListener = () => this.onContentBlur()
+      this.content.addEventListener('click', this.contentClickListener)
+      this.content.addEventListener('blur', this.contentBlurListener)
     }
     this.content.setAttribute('part', 'region-content')
     this.element.appendChild(this.content)
