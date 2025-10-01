@@ -14,6 +14,10 @@ type WebAudioPlayerEvents = {
 
 /**
  * A Web Audio buffer player emulating the behavior of an HTML5 Audio element.
+ *
+ * Note: This class does not manage blob: URLs. If you pass a blob: URL to setSrc(),
+ * you are responsible for revoking it when done. The Player class (player.ts) handles
+ * blob URL lifecycle management automatically.
  */
 class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   private audioContext: AudioContext
