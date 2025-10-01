@@ -5,6 +5,13 @@
 
 import { BaseStream, Observer, Subscription, type Stream } from './stream.js'
 
+/**
+ * Log error with WaveSurfer prefix
+ */
+function logError(context: string, error: unknown): void {
+  console.error(`[wavesurfer] ${context}:`, error)
+}
+
 class SubscriptionImpl implements Subscription {
   private _closed = false
 
@@ -51,7 +58,7 @@ export class Subject<T> extends BaseStream<T> {
         observer(value)
       } catch (error) {
         // Prevent one observer error from affecting others
-        console.error('Error in stream observer:', error)
+        logError('Error in Subject observer', error)
       }
     })
   }
@@ -99,7 +106,7 @@ export class BehaviorSubject<T> extends BaseStream<T> {
       try {
         observer(this.value)
       } catch (error) {
-        console.error('Error in stream observer:', error)
+        logError('Error in BehaviorSubject initial observer', error)
       }
 
       return new SubscriptionImpl(() => {
@@ -119,7 +126,7 @@ export class BehaviorSubject<T> extends BaseStream<T> {
       try {
         observer(value)
       } catch (error) {
-        console.error('Error in stream observer:', error)
+        logError('Error in BehaviorSubject observer', error)
       }
     })
   }

@@ -101,7 +101,7 @@ class EventEmitter<EventTypes extends GeneralEventTypes> {
         try {
           listener(...args)
         } catch (error) {
-          console.error(`Error in event listener for "${String(eventName)}":`, error)
+          console.error(`[wavesurfer] Error in event listener for "${String(eventName)}":`, error)
         }
       })
     }

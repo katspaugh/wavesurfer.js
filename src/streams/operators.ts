@@ -5,6 +5,13 @@
 import { createStream, type Stream } from './stream.js'
 
 /**
+ * Log error with WaveSurfer prefix
+ */
+function logError(context: string, error: unknown): void {
+  console.error(`[wavesurfer] ${context}:`, error)
+}
+
+/**
  * Combine multiple streams into one
  */
 export function combineStreams<T extends any[]>(
@@ -68,7 +75,7 @@ export function switchMap<T, U>(
         const innerStream = fn(value)
         innerSubscription = innerStream.subscribe(observer)
       } catch (error) {
-        console.error('Error in switchMap:', error)
+        logError('Error in switchMap operator', error)
       }
     })
 
@@ -97,7 +104,7 @@ export function scan<T, U>(
         accumulator = reducer(accumulator, value)
         observer(accumulator)
       } catch (error) {
-        console.error('Error in scan:', error)
+        logError('Error in scan operator', error)
       }
     })
   })
@@ -135,7 +142,7 @@ export function withLatestFrom<T, U, R>(
         try {
           observer(fn(value, latestOther))
         } catch (error) {
-          console.error('Error in withLatestFrom:', error)
+          logError('Error in withLatestFrom operator', error)
         }
       }
     })
@@ -198,7 +205,7 @@ export function tap<T>(stream: Stream<T>, fn: (value: T) => void): Stream<T> {
       try {
         fn(value)
       } catch (error) {
-        console.error('Error in tap:', error)
+        logError('Error in tap operator', error)
       }
       observer(value)
     })

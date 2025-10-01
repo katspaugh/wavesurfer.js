@@ -3,6 +3,13 @@
  * Provides observable pattern with composable operators
  */
 
+/**
+ * Log error with WaveSurfer prefix
+ */
+function logError(context: string, error: unknown): void {
+  console.error(`[wavesurfer] ${context}:`, error)
+}
+
 export interface Subscription {
   unsubscribe(): void
   readonly closed: boolean
@@ -58,8 +65,7 @@ export class BaseStream<T> implements Stream<T> {
         try {
           observer(fn(value))
         } catch (error) {
-          // Silently ignore errors in transformations
-          // Production code should handle this more gracefully
+          logError('Error in stream map operator', error)
         }
       })
     })
@@ -73,7 +79,7 @@ export class BaseStream<T> implements Stream<T> {
             observer(value)
           }
         } catch (error) {
-          // Silently ignore errors in predicates
+          logError('Error in stream filter operator', error)
         }
       })
     })
@@ -174,7 +180,7 @@ export class BaseStream<T> implements Stream<T> {
           try {
             observer(fn(lastA, lastB))
           } catch (error) {
-            // Silently ignore errors
+            logError('Error in stream combine operator', error)
           }
         }
       }
