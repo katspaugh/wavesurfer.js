@@ -37,12 +37,14 @@ function createBuffer(channelData: Array<Float32Array | number[]>, duration: num
   if (duration <= 0) {
     throw new Error('duration must be greater than 0')
   }
-  if (!channelData[0] || channelData[0].length === 0) {
-    throw new Error('channelData must contain non-empty channel arrays')
-  }
 
   // If a single array of numbers is passed, make it an array of arrays
   if (typeof channelData[0] === 'number') channelData = [channelData as unknown as number[]]
+
+  // Validate channel data after conversion
+  if (!channelData[0] || channelData[0].length === 0) {
+    throw new Error('channelData must contain non-empty channel arrays')
+  }
 
   // Normalize to -1..1
   normalize(channelData)
