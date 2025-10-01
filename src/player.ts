@@ -91,11 +91,12 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   protected destroy() {
     if (this.isExternalMedia) return
     this.media.pause()
-    this.media.remove()
     this.revokeSrc()
     this.media.removeAttribute('src')
     // Load resets the media element to its initial state
     this.media.load()
+    // Remove from DOM after cleanup
+    this.media.remove()
   }
 
   protected setMediaElement(element: HTMLMediaElement) {
