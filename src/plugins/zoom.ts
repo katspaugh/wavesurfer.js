@@ -157,8 +157,8 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   }
 
   destroy() {
-    if (this.wrapper) {
-      this.wrapper.removeEventListener('wheel', this.onWheel)
+    if (this.container) {
+      this.container.removeEventListener('wheel', this.onWheel)
     }
     super.destroy()
   }
