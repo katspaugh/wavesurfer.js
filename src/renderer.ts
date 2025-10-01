@@ -332,6 +332,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   // Convert array of color values to linear gradient
   private convertColorValues(color?: WaveSurferOptions['waveColor']): string | CanvasGradient {
     if (!Array.isArray(color)) return color || ''
+    if (color.length === 0) return '#999' // Return default color for empty array
     if (color.length < 2) return color[0] || ''
 
     const canvasElement = document.createElement('canvas')
