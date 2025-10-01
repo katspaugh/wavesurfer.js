@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WaveSurfer.js - Basic Example</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    #waveform {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #4f46e5;
+    }
+
+    button:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .info {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .label {
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .value {
+      color: #6b7280;
+    }
+
+    .loading {
+      text-align: center;
+      color: #6b7280;
+      padding: 40px;
+    }
+  </style>
+</head>
+<body>
+  <h1>WaveSurfer.js - Basic Example</h1>
+  <p class="subtitle">Load and play audio with simple controls</p>
+
+  <div id="waveform">
+    <div class="loading">Loading...</div>
+  </div>
+
+  <div class="controls">
+    <button id="playBtn" disabled>Play</button>
+    <button id="pauseBtn" disabled>Pause</button>
+    <button id="stopBtn" disabled>Stop</button>
+    <button id="rewindBtn" disabled>-5s</button>
+    <button id="forwardBtn" disabled>+5s</button>
+    <label style="display: flex; align-items: center; gap: 8px;">
+      Volume: <input type="range" id="volumeSlider" min="0" max="100" value="50" disabled>
+    </label>
+    <label style="display: flex; align-items: center; gap: 8px;">
+      Speed: <input type="range" id="speedSlider" min="50" max="200" value="100" disabled>
+    </label>
+  </div>
+
+  <div class="info">
+    <div class="info-row">
+      <span class="label">Status:</span>
+      <span class="value" id="status">Loading...</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Duration:</span>
+      <span class="value" id="duration">--:--</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Current Time:</span>
+      <span class="value" id="currentTime">--:--</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Progress:</span>
+      <span class="value" id="progress">0%</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Volume:</span>
+      <span class="value" id="volumeDisplay">50%</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Speed:</span>
+      <span class="value" id="speedDisplay">1.0x</span>
+    </div>
+  </div>
+
+  <script type="module">
+    import WaveSurfer from '../dist/wavesurfer.esm.js'
+
+    // Format time helper
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60)
+      const secs = Math.floor(seconds % 60)
+      return `${mins}:${secs.toString().padStart(2, '0')}`
+    }
+
+    // Create WaveSurfer instance
+    const wavesurfer = WaveSurfer.create({
+      container: '#waveform',
+      waveColor: '#6366f1',
+      progressColor: '#4f46e5',
+      cursorColor: '#1e293b',
+      barWidth: 3,
+      barGap: 2,
+      barRadius: 3,
+      height: 128,
+      normalize: true,
+      backend: 'WebAudio'
+    })
+
+    // Elements
+    const playBtn = document.getElementById('playBtn')
+    const pauseBtn = document.getElementById('pauseBtn')
+    const stopBtn = document.getElementById('stopBtn')
+    const rewindBtn = document.getElementById('rewindBtn')
+    const forwardBtn = document.getElementById('forwardBtn')
+    const volumeSlider = document.getElementById('volumeSlider')
+    const speedSlider = document.getElementById('speedSlider')
+    const statusEl = document.getElementById('status')
+    const durationEl = document.getElementById('duration')
+    const currentTimeEl = document.getElementById('currentTime')
+    const progressEl = document.getElementById('progress')
+    const volumeDisplayEl = document.getElementById('volumeDisplay')
+    const speedDisplayEl = document.getElementById('speedDisplay')
+
+    // Event listeners
+    wavesurfer.on('loading', (percent) => {
+      statusEl.textContent = `Loading... ${percent}%`
+    })
+
+    wavesurfer.on('ready', () => {
+      statusEl.textContent = 'Ready'
+      const duration = wavesurfer.getDuration()
+      durationEl.textContent = formatTime(duration)
+
+      // Enable controls
+      playBtn.disabled = false
+      pauseBtn.disabled = false
+      stopBtn.disabled = false
+      rewindBtn.disabled = false
+      forwardBtn.disabled = false
+      volumeSlider.disabled = false
+      speedSlider.disabled = false
+    })
+
+    wavesurfer.on('play', () => {
+      statusEl.textContent = 'Playing'
+    })
+
+    wavesurfer.on('pause', () => {
+      statusEl.textContent = 'Paused'
+    })
+
+    wavesurfer.on('finish', () => {
+      statusEl.textContent = 'Finished'
+    })
+
+    wavesurfer.on('timeupdate', (currentTime) => {
+      currentTimeEl.textContent = formatTime(currentTime)
+      const duration = wavesurfer.getDuration()
+      const progress = (currentTime / duration) * 100
+      progressEl.textContent = `${progress.toFixed(1)}%`
+    })
+
+    wavesurfer.on('error', (error) => {
+      statusEl.textContent = 'Error'
+      console.error('WaveSurfer error:', error)
+      alert('Error loading audio: ' + error.message)
+    })
+
+    // Button controls
+    playBtn.addEventListener('click', () => {
+      wavesurfer.play()
+    })
+
+    pauseBtn.addEventListener('click', () => {
+      wavesurfer.pause()
+    })
+
+    stopBtn.addEventListener('click', () => {
+      wavesurfer.stop()
+    })
+
+    rewindBtn.addEventListener('click', () => {
+      wavesurfer.skip(-5)
+    })
+
+    forwardBtn.addEventListener('click', () => {
+      wavesurfer.skip(5)
+    })
+
+    volumeSlider.addEventListener('input', (e) => {
+      const volume = e.target.value / 100
+      wavesurfer.setVolume(volume)
+      volumeDisplayEl.textContent = `${e.target.value}%`
+    })
+
+    speedSlider.addEventListener('input', (e) => {
+      const speed = e.target.value / 100
+      wavesurfer.setPlaybackRate(speed)
+      speedDisplayEl.textContent = `${speed.toFixed(1)}x`
+    })
+
+    // Load audio file
+    // Replace with your own audio file URL
+    const audioUrl = 'https://wavesurfer-js.org/example/media/demo.wav'
+    wavesurfer.load(audioUrl)
+  </script>
+</body>
+</html>

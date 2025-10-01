@@ -1,18 +1,31 @@
+/**
+ * Enhanced Player - integrates with state management
+ * Maintains backward compatibility while providing state-based updates
+ */
+
 import EventEmitter, { type GeneralEventTypes } from './event-emitter.js'
+import { ResourcePool } from './utils/resources.js'
+import type { StateStore } from './state/store.js'
+import type { PlaybackState } from './state/state.types.js'
 
 type PlayerOptions = {
   media?: HTMLMediaElement
   mediaControls?: boolean
   autoplay?: boolean
   playbackRate?: number
+  store?: StateStore<any> // Optional state store for integration
 }
 
 class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   protected media: HTMLMediaElement
+  protected resources = new ResourcePool()
   private isExternalMedia = false
+  private store?: StateStore<any>
 
   constructor(options: PlayerOptions) {
     super()
+
+    this.store = options.store
 
     if (options.media) {
       this.media = options.media
@@ -31,7 +44,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     }
     // Speed
     if (options.playbackRate != null) {
-      this.onMediaEvent(
+      const cleanup = this.onMediaEvent(
         'canplay',
         () => {
           if (options.playbackRate != null) {
@@ -40,7 +53,78 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
         },
         { once: true },
       )
+      this.resources.addCleanup(cleanup)
     }
+
+    this.initializeMediaEventSync()
+  }
+
+  /**
+   * Sync media element state with store
+   */
+  private initializeMediaEventSync() {
+    if (!this.store) return
+
+    // Sync playback state changes to store
+    this.resources.addCleanup(
+      this.onMediaEvent('play', () => {
+        this.updatePlaybackState({ isPlaying: true })
+      })
+    )
+
+    this.resources.addCleanup(
+      this.onMediaEvent('pause', () => {
+        this.updatePlaybackState({ isPlaying: false })
+      })
+    )
+
+    this.resources.addCleanup(
+      this.onMediaEvent('seeking', () => {
+        this.updatePlaybackState({ isSeeking: true })
+      })
+    )
+
+    this.resources.addCleanup(
+      this.onMediaEvent('seeked', () => {
+        this.updatePlaybackState({ isSeeking: false })
+      })
+    )
+
+    this.resources.addCleanup(
+      this.onMediaEvent('timeupdate', () => {
+        this.updatePlaybackState({ currentTime: this.media.currentTime })
+      })
+    )
+
+    this.resources.addCleanup(
+      this.onMediaEvent('ratechange', () => {
+        this.updatePlaybackState({ playbackRate: this.media.playbackRate })
+      })
+    )
+
+    this.resources.addCleanup(
+      this.onMediaEvent('volumechange', () => {
+        this.updatePlaybackState({
+          volume: this.media.volume,
+          muted: this.media.muted,
+        })
+      })
+    )
+  }
+
+  /**
+   * Update playback state in store
+   */
+  private updatePlaybackState(updates: Partial<PlaybackState>) {
+    if (!this.store) return
+
+    this.store.update((state) => ({
+      ...state,
+      playback: {
+        ...state.playback,
+        ...updates,
+      },
+    }))
   }
 
   protected onMediaEvent<K extends keyof HTMLElementEventMap>(
@@ -69,12 +153,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   protected setSrc(url: string, blob?: Blob) {
     const prevSrc = this.getSrc()
-    if (url && prevSrc === url) return // no need to change the source
+    if (url && prevSrc === url) return
 
     this.revokeSrc()
     const newSrc = blob instanceof Blob && (this.canPlayType(blob.type) || !url) ? URL.createObjectURL(blob) : url
 
-    // Reset the media element, otherwise it keeps the previous source
     if (prevSrc) {
       this.media.removeAttribute('src')
     }
@@ -89,13 +172,15 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   protected destroy() {
+    this.resources.dispose()
+
     if (this.isExternalMedia) return
+
     this.media.pause()
-    this.media.remove()
     this.revokeSrc()
     this.media.removeAttribute('src')
-    // Load resets the media element to its initial state
     this.media.load()
+    this.media.remove()
   }
 
   protected setMediaElement(element: HTMLMediaElement) {
@@ -171,7 +256,6 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Set the playback speed, pass an optional false to NOT preserve the pitch */
   public setPlaybackRate(rate: number, preservePitch?: boolean) {
-    // preservePitch is true by default in most browsers
     if (preservePitch != null) {
       this.media.preservesPitch = preservePitch
     }
@@ -185,7 +269,6 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Set a sink id to change the audio output device */
   public setSinkId(sinkId: string): Promise<void> {
-    // See https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/setSinkId
     const media = this.media as HTMLAudioElement & { setSinkId: (sinkId: string) => Promise<void> }
     return media.setSinkId(sinkId)
   }

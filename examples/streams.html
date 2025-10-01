@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WaveSurfer.js - Reactive Streams Example</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    #waveform {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #4f46e5;
+    }
+
+    button:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .streams {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stream-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .stream-title {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .stream-value {
+      color: #6366f1;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .stream-description {
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .events-log {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .events-log h3 {
+      margin-top: 0;
+      color: #374151;
+    }
+
+    .event-item {
+      padding: 8px;
+      margin: 5px 0;
+      background: #f3f4f6;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      color: #4b5563;
+    }
+
+    .event-item.new {
+      animation: highlight 0.5s;
+    }
+
+    @keyframes highlight {
+      from { background: #dbeafe; }
+      to { background: #f3f4f6; }
+    }
+  </style>
+</head>
+<body>
+  <h1>WaveSurfer.js - Reactive Streams</h1>
+  <p class="subtitle">Using reactive streams for real-time updates</p>
+
+  <div id="waveform"></div>
+
+  <div class="controls">
+    <button id="playBtn" disabled>Play</button>
+    <button id="pauseBtn" disabled>Pause</button>
+    <button id="clearLogBtn">Clear Log</button>
+  </div>
+
+  <div class="streams">
+    <div class="stream-card">
+      <div class="stream-title">Playing State</div>
+      <div class="stream-value" id="playingValue">false</div>
+      <div class="stream-description">state.select(s => s.playback.isPlaying)</div>
+    </div>
+
+    <div class="stream-card">
+      <div class="stream-title">Current Time</div>
+      <div class="stream-value" id="timeValue">0:00</div>
+      <div class="stream-description">Debounced by 100ms</div>
+    </div>
+
+    <div class="stream-card">
+      <div class="stream-title">Progress</div>
+      <div class="stream-value" id="progressValue">0%</div>
+      <div class="stream-description">Computed from time / duration</div>
+    </div>
+
+    <div class="stream-card">
+      <div class="stream-title">Duration</div>
+      <div class="stream-value" id="durationValue">--</div>
+      <div class="stream-description">state.select(s => s.audio.duration)</div>
+    </div>
+  </div>
+
+  <div class="events-log">
+    <h3>Event Stream Log</h3>
+    <div id="eventsLog"></div>
+  </div>
+
+  <script type="module">
+    import WaveSurfer from '../dist/wavesurfer.esm.js'
+
+    // Format time helper
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60)
+      const secs = Math.floor(seconds % 60)
+      return `${mins}:${secs.toString().padStart(2, '0')}`
+    }
+
+    // Event log
+    const eventsLog = document.getElementById('eventsLog')
+    let eventCount = 0
+
+    function logEvent(source, message) {
+      eventCount++
+      const item = document.createElement('div')
+      item.className = 'event-item new'
+      const timestamp = new Date().toLocaleTimeString()
+      item.textContent = `[${timestamp}] ${source}: ${message}`
+      eventsLog.insertBefore(item, eventsLog.firstChild)
+
+      // Limit to 50 events
+      while (eventsLog.children.length > 50) {
+        eventsLog.removeChild(eventsLog.lastChild)
+      }
+    }
+
+    // Create WaveSurfer instance
+    const wavesurfer = WaveSurfer.create({
+      container: '#waveform',
+      waveColor: '#6366f1',
+      progressColor: '#4f46e5',
+      cursorColor: '#1e293b',
+      barWidth: 3,
+      barGap: 2,
+      barRadius: 3,
+      height: 100,
+      normalize: true
+    })
+
+    // Elements
+    const playBtn = document.getElementById('playBtn')
+    const pauseBtn = document.getElementById('pauseBtn')
+    const clearLogBtn = document.getElementById('clearLogBtn')
+    const playingValueEl = document.getElementById('playingValue')
+    const timeValueEl = document.getElementById('timeValue')
+    const progressValueEl = document.getElementById('progressValue')
+    const durationValueEl = document.getElementById('durationValue')
+
+    // Subscribe to playing state using streams
+    wavesurfer.getEventStream('play')
+      .subscribe(() => {
+        logEvent('play', 'Playback started')
+      })
+
+    wavesurfer.getEventStream('pause')
+      .subscribe(() => {
+        logEvent('pause', 'Playback paused')
+      })
+
+    // Subscribe to ready event (take only first emission)
+    wavesurfer.getEventStream('ready')
+      .take(1)
+      .subscribe(() => {
+        logEvent('ready', 'Waveform ready!')
+        playBtn.disabled = false
+        pauseBtn.disabled = false
+      })
+
+    // Get playing state from reactive state store
+    // This demonstrates the new v8 state management
+    wavesurfer.state
+      .select(s => s.playback.isPlaying)
+      .subscribe(isPlaying => {
+        playingValueEl.textContent = isPlaying ? 'true' : 'false'
+        playingValueEl.style.color = isPlaying ? '#10b981' : '#ef4444'
+        logEvent('state.isPlaying', isPlaying.toString())
+      })
+
+    // Get duration from state
+    wavesurfer.state
+      .select(s => s.audio.duration)
+      .filter(duration => duration > 0)
+      .subscribe(duration => {
+        durationValueEl.textContent = formatTime(duration)
+        logEvent('state.duration', `${duration.toFixed(2)}s`)
+      })
+
+    // Get current time with debounce
+    // This prevents too many updates
+    wavesurfer.state
+      .select(s => s.playback.currentTime)
+      .debounce(100)
+      .subscribe(currentTime => {
+        timeValueEl.textContent = formatTime(currentTime)
+      })
+
+    // Combine time and duration to compute progress
+    // This demonstrates combining multiple streams
+    wavesurfer.state
+      .selectMany(
+        s => s.playback.currentTime,
+        s => s.audio.duration
+      )
+      .debounce(100)
+      .map(([currentTime, duration]) => {
+        if (duration === 0) return 0
+        return (currentTime / duration) * 100
+      })
+      .subscribe(progress => {
+        progressValueEl.textContent = `${progress.toFixed(1)}%`
+      })
+
+    // Subscribe to timeupdate with throttle
+    // Only emit at most once per 500ms
+    wavesurfer.getEventValue('timeupdate')
+      .throttle(500)
+      .subscribe(currentTime => {
+        logEvent('timeupdate', `${currentTime.toFixed(2)}s (throttled)`)
+      })
+
+    // Subscribe to finish event
+    wavesurfer.getEventStream('finish')
+      .subscribe(() => {
+        logEvent('finish', 'Playback finished')
+      })
+
+    // Subscribe to error events
+    wavesurfer.getEventStream('error')
+      .subscribe((error) => {
+        logEvent('error', error.message)
+      })
+
+    // Subscribe to loading progress
+    wavesurfer.getEventValue('loading')
+      .distinct()
+      .subscribe(percent => {
+        logEvent('loading', `${percent}%`)
+      })
+
+    // Button controls
+    playBtn.addEventListener('click', () => {
+      wavesurfer.play()
+    })
+
+    pauseBtn.addEventListener('click', () => {
+      wavesurfer.pause()
+    })
+
+    clearLogBtn.addEventListener('click', () => {
+      eventsLog.innerHTML = ''
+      eventCount = 0
+    })
+
+    // Initial log
+    logEvent('init', 'Loading audio...')
+
+    // Load audio file
+    const audioUrl = 'https://wavesurfer-js.org/example/media/demo.wav'
+    wavesurfer.load(audioUrl)
+  </script>
+</body>
+</html>
