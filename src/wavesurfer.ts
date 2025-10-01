@@ -200,7 +200,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       if (initialUrl || (peaks && duration)) {
         // Swallow async errors because they cannot be caught from a constructor call.
         // Subscribe to the wavesurfer's error event to handle them.
-        this.load(initialUrl, peaks, duration).catch(() => null)
+        this.load(initialUrl, peaks, duration).catch((err) => {
+          // Log error for debugging while still emitting error event
+          console.error('WaveSurfer initial load error:', err)
+        })
       }
     })
   }
