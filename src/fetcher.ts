@@ -4,6 +4,8 @@ async function watchProgress(response: Response, progressCallback: (percentage: 
 
   const contentLength = Number(response.headers.get('Content-Length')) || 0
   let receivedLength = 0
+  const maxIterations = 100000 // Safety limit to prevent infinite loops
+  let iterations = 0
 
   // Process the data
   const processChunk = async (value: Uint8Array | undefined) => {
@@ -14,6 +16,12 @@ async function watchProgress(response: Response, progressCallback: (percentage: 
   }
 
   const read = async () => {
+    // Safety check to prevent infinite recursion
+    if (iterations++ > maxIterations) {
+      console.error('Fetcher: Maximum iterations reached, stopping read loop')
+      return
+    }
+
     let data
     try {
       data = await reader.read()
