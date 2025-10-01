@@ -218,7 +218,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     let elementTop = 0
     let elementHeight = 100
 
-    if (this.channelIdx >= 0 && this.channelIdx < this.numberOfChannels) {
+    if (this.channelIdx >= 0 && this.numberOfChannels > 0 && this.channelIdx < this.numberOfChannels) {
       elementHeight = 100 / this.numberOfChannels
       elementTop = elementHeight * this.channelIdx
     }
