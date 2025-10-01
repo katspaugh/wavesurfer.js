@@ -58,6 +58,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   private timelineWrapper: HTMLElement
   private unsubscribeNotches: (() => void)[] = []
   protected options: TimelinePluginOptions & typeof defaultOptions
+  private notchElements: Map<HTMLElement, { start: number; width: number; wasVisible: boolean }> = new Map()
 
   constructor(options?: TimelinePluginOptions) {
     super(options || {})
@@ -150,39 +151,46 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   }
 
   private virtualAppend(start: number, container: HTMLElement, element: HTMLElement) {
-    let wasVisible = false
+    // Store notch metadata for batch updates
+    this.notchElements.set(element, {
+      start,
+      width: element.clientWidth,
+      wasVisible: false,
+    })
 
-    const renderIfVisible = (scrollLeft: number, scrollRight: number) => {
-      if (!this.wavesurfer) return
-      const width = element.clientWidth
-      const isVisible = start >= scrollLeft && start + width < scrollRight
+    // Initial render check
+    if (!this.wavesurfer) return
+    const scrollLeft = this.wavesurfer.getScroll()
+    const scrollRight = scrollLeft + this.wavesurfer.getWidth()
 
-      if (isVisible === wasVisible) return
-      wasVisible = isVisible
+    const notchData = this.notchElements.get(element)!
+    const isVisible = start >= scrollLeft && start + notchData.width < scrollRight
+    notchData.wasVisible = isVisible
+
+    if (isVisible) {
+      container.appendChild(element)
+    }
+  }
+
+  private updateVisibleNotches(scrollLeft: number, scrollRight: number, container: HTMLElement) {
+    this.notchElements.forEach((notchData, element) => {
+      const isVisible = notchData.start >= scrollLeft && notchData.start + notchData.width < scrollRight
+
+      if (isVisible === notchData.wasVisible) return
+      notchData.wasVisible = isVisible
 
       if (isVisible) {
         container.appendChild(element)
       } else {
         element.remove()
       }
-    }
-
-    if (!this.wavesurfer) return
-    const scrollLeft = this.wavesurfer.getScroll()
-    const scrollRight = scrollLeft + this.wavesurfer.getWidth()
-
-    renderIfVisible(scrollLeft, scrollRight)
-
-    this.unsubscribeNotches.push(
-      this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
-        renderIfVisible(scrollLeft, scrollRight)
-      }),
-    )
+    })
   }
 
   private initTimeline() {
     this.unsubscribeNotches.forEach((unsubscribe) => unsubscribe())
     this.unsubscribeNotches = []
+    this.notchElements.clear()
 
     const duration = this.wavesurfer?.getDuration() ?? this.options.duration ?? 0
     const pxPerSec = (this.wavesurfer?.getWrapper().scrollWidth || this.timelineWrapper.scrollWidth) / duration
@@ -264,6 +272,15 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
     this.timelineWrapper.innerHTML = ''
     this.timelineWrapper.appendChild(timeline)
+
+    // Add single scroll listener for all notches (instead of one per notch)
+    if (this.wavesurfer) {
+      this.unsubscribeNotches.push(
+        this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
+          this.updateVisibleNotches(scrollLeft, scrollRight, timeline)
+        }),
+      )
+    }
 
     this.emit('ready')
   }

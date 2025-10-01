@@ -56,6 +56,11 @@ class Polyline extends EventEmitter<{
     }
   >
   private subscriptions: (() => void)[] = []
+  private dblClickListener?: (e: MouseEvent) => void
+  private touchStartListener?: (e: TouchEvent) => void
+  private touchMoveListener?: () => void
+  private touchEndListener?: () => void
+  private pressTimer?: number
 
   constructor(options: Options, wrapper: HTMLElement) {
     super()
@@ -131,37 +136,42 @@ class Polyline extends EventEmitter<{
     }
 
     // Listen to double click to add a new point
-    svg.addEventListener('dblclick', (e) => {
+    this.dblClickListener = (e) => {
       const rect = svg.getBoundingClientRect()
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
       this.emit('point-create', x / rect.width, y / rect.height)
-    })
+    }
+    svg.addEventListener('dblclick', this.dblClickListener)
 
     // Long press on touch devices
-    {
-      let pressTimer: number
-
-      const clearTimer = () => clearTimeout(pressTimer)
-
-      svg.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 1) {
-          pressTimer = window.setTimeout(() => {
-            e.preventDefault()
-            const rect = svg.getBoundingClientRect()
-            const x = e.touches[0].clientX - rect.left
-            const y = e.touches[0].clientY - rect.top
-            this.emit('point-create', x / rect.width, y / rect.height)
-          }, 500)
-        } else {
-          clearTimer()
-        }
-      })
-
-      svg.addEventListener('touchmove', clearTimer)
-
-      svg.addEventListener('touchend', clearTimer)
+    const clearTimer = () => {
+      if (this.pressTimer !== undefined) {
+        clearTimeout(this.pressTimer)
+        this.pressTimer = undefined
+      }
     }
+
+    this.touchStartListener = (e) => {
+      if (e.touches.length === 1) {
+        this.pressTimer = window.setTimeout(() => {
+          e.preventDefault()
+          const rect = svg.getBoundingClientRect()
+          const x = e.touches[0].clientX - rect.left
+          const y = e.touches[0].clientY - rect.top
+          this.emit('point-create', x / rect.width, y / rect.height)
+        }, 500)
+      } else {
+        clearTimer()
+      }
+    }
+
+    this.touchMoveListener = clearTimer
+    this.touchEndListener = clearTimer
+
+    svg.addEventListener('touchstart', this.touchStartListener)
+    svg.addEventListener('touchmove', this.touchMoveListener)
+    svg.addEventListener('touchend', this.touchEndListener)
   }
 
   private makeDraggable(draggable: SVGElement, onDrag: (x: number, y: number) => void) {
@@ -279,6 +289,30 @@ class Polyline extends EventEmitter<{
   }
 
   destroy() {
+    // Clear pending press timer
+    if (this.pressTimer !== undefined) {
+      clearTimeout(this.pressTimer)
+      this.pressTimer = undefined
+    }
+
+    // Remove event listeners
+    if (this.dblClickListener) {
+      this.svg.removeEventListener('dblclick', this.dblClickListener)
+      this.dblClickListener = undefined
+    }
+    if (this.touchStartListener) {
+      this.svg.removeEventListener('touchstart', this.touchStartListener)
+      this.touchStartListener = undefined
+    }
+    if (this.touchMoveListener) {
+      this.svg.removeEventListener('touchmove', this.touchMoveListener)
+      this.touchMoveListener = undefined
+    }
+    if (this.touchEndListener) {
+      this.svg.removeEventListener('touchend', this.touchEndListener)
+      this.touchEndListener = undefined
+    }
+
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.polyPoints.clear()
     this.svg.remove()
@@ -363,6 +397,12 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
    * Destroy the plugin instance.
    */
   public destroy() {
+    // Clear pending throttle timeout
+    if (this.throttleTimeout) {
+      clearTimeout(this.throttleTimeout)
+      this.throttleTimeout = null
+    }
+
     this.polyline?.destroy()
     super.destroy()
   }

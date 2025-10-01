@@ -54,6 +54,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   private miniWavesurfer: WaveSurfer | null = null
   private overlay: HTMLElement
   private container: HTMLElement | null = null
+  private isInitializing = false
 
   constructor(options: MinimapPluginOptions) {
     super(options)
@@ -122,16 +123,26 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   }
 
   private initMinimap() {
+    // Prevent concurrent initialization
+    if (this.isInitializing) return
+    this.isInitializing = true
+
     if (this.miniWavesurfer) {
       this.miniWavesurfer.destroy()
       this.miniWavesurfer = null
     }
 
-    if (!this.wavesurfer) return
+    if (!this.wavesurfer) {
+      this.isInitializing = false
+      return
+    }
 
     const data = this.wavesurfer.getDecodedData()
     const media = this.wavesurfer.getMediaElement()
-    if (!data || !media) return
+    if (!data || !media) {
+      this.isInitializing = false
+      return
+    }
 
     const peaks = []
     for (let i = 0; i < data.numberOfChannels; i++) {
@@ -209,6 +220,9 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
         this.emit('timeupdate', currentTime)
       }),
     )
+
+    // Reset flag after initialization completes
+    this.isInitializing = false
   }
 
   private getOverlayWidth(): number {
@@ -249,6 +263,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   public destroy() {
     this.miniWavesurfer?.destroy()
     this.minimapWrapper.remove()
+    this.container = null
     super.destroy()
   }
 }

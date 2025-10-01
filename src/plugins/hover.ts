@@ -52,7 +52,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
   protected options: HoverPluginOptions & typeof defaultOptions
   private wrapper: HTMLElement
   private label: HTMLElement
-  private lastPointerMove: PointerEvent | null = null
+  private lastPointerPosition: { clientX: number; clientY: number } | null = null
   private unsubscribe: () => void = () => undefined
 
   constructor(options?: HoverPluginOptions) {
@@ -109,31 +109,36 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     const container = this.wavesurfer.getWrapper()
     container.appendChild(this.wrapper)
 
-    // Attach pointer events
-    container.addEventListener('pointermove', this.onPointerMove)
-    container.addEventListener('pointerleave', this.onPointerLeave)
-
     // When zoom or scroll happens, re-run the pointer move logic
     // with the last known mouse position
     const onUpdate = () => {
-      if (this.lastPointerMove) this.onPointerMove(this.lastPointerMove)
+      if (this.lastPointerPosition) {
+        // Recreate a minimal PointerEvent-like object
+        this.onPointerMove(this.lastPointerPosition as PointerEvent)
+      }
     }
 
-    this.wavesurfer.on('zoom', onUpdate)
-    this.wavesurfer.on('scroll', onUpdate)
+    // Create unsubscribe function for wavesurfer events
+    const unsubscribeZoom = this.wavesurfer.on('zoom', onUpdate)
+    const unsubscribeScroll = this.wavesurfer.on('scroll', onUpdate)
+
+    // Attach pointer events and create complete unsubscribe function
+    container.addEventListener('pointermove', this.onPointerMove)
+    container.addEventListener('pointerleave', this.onPointerLeave)
+
     this.unsubscribe = () => {
       container.removeEventListener('pointermove', this.onPointerMove)
       container.removeEventListener('pointerleave', this.onPointerLeave)
-      this.wavesurfer?.un('zoom', onUpdate)
-      this.wavesurfer?.un('scroll', onUpdate)
+      unsubscribeZoom()
+      unsubscribeScroll()
     }
   }
 
   private onPointerMove = (e: PointerEvent) => {
     if (!this.wavesurfer) return
 
-    // Used when zooming
-    this.lastPointerMove = e
+    // Store only the position data needed for zoom/scroll updates
+    this.lastPointerPosition = { clientX: e.clientX, clientY: e.clientY }
 
     // Position
     const bbox = this.wavesurfer.getWrapper().getBoundingClientRect()
@@ -157,7 +162,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
 
   private onPointerLeave = () => {
     this.wrapper.style.opacity = '0'
-    this.lastPointerMove = null
+    this.lastPointerPosition = null
   }
 
   /** Unmount */

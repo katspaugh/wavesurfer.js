@@ -307,23 +307,32 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   private createDelay(delayMs = 10): () => Promise<void> {
     let timeout: ReturnType<typeof setTimeout> | undefined
-    let reject: (() => void) | undefined
+    let rejectFn: (() => void) | undefined
 
     const onClear = () => {
-      if (timeout) clearTimeout(timeout)
-      if (reject) reject()
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = undefined
+      }
+      if (rejectFn) {
+        rejectFn()
+        rejectFn = undefined
+      }
     }
 
     this.timeouts.push(onClear)
 
     return () => {
-      return new Promise((resolveFn, rejectFn) => {
+      return new Promise<void>((resolve, reject) => {
+        // Clear any pending delay
         onClear()
-        reject = rejectFn
+        // Store reject function for cleanup
+        rejectFn = reject
+        // Set new timeout
         timeout = setTimeout(() => {
           timeout = undefined
-          reject = undefined
-          resolveFn()
+          rejectFn = undefined
+          resolve()
         }, delayMs)
       })
     }
