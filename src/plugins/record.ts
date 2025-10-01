@@ -67,6 +67,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private micStream: MicStream | null = null
   private unsubscribeDestroy?: () => void
   private unsubscribeRecordEnd?: () => void
+  private recordedBlobUrl: string | null = null
 
   /** Create an instance of the Record plugin */
   constructor(options: RecordPluginOptions) {
@@ -272,7 +273,12 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       this.emit(ev, blob)
       if (this.options.renderRecordedAudio) {
         this.applyOriginalOptionsIfNeeded()
-        this.wavesurfer?.load(URL.createObjectURL(blob))
+        // Revoke previous blob URL before creating a new one
+        if (this.recordedBlobUrl) {
+          URL.revokeObjectURL(this.recordedBlobUrl)
+        }
+        this.recordedBlobUrl = URL.createObjectURL(blob)
+        this.wavesurfer?.load(this.recordedBlobUrl)
       }
     }
 
@@ -355,6 +361,11 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     super.destroy()
     this.stopRecording()
     this.stopMic()
+    // Revoke blob URL to free memory
+    if (this.recordedBlobUrl) {
+      URL.revokeObjectURL(this.recordedBlobUrl)
+      this.recordedBlobUrl = null
+    }
   }
 
   private applyOriginalOptionsIfNeeded() {
