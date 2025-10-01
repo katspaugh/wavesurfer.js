@@ -19,7 +19,7 @@ export type RegionsPluginEvents = BasePluginEvents & {
   /** When a region is being updated */
   'region-update': [region: Region, side?: UpdateSide]
   /** When a region is done updating */
-  'region-updated': [region: Region]
+  'region-updated': [region: Region, side?: UpdateSide]
   /** When a region is removed */
   'region-removed': [region: Region]
   /** When a region is clicked */
@@ -40,7 +40,7 @@ export type RegionEvents = {
   /** When the region's parameters are being updated */
   update: [side?: UpdateSide]
   /** When dragging or resizing is finished */
-  'update-end': []
+  'update-end': [side?: UpdateSide]
   /** On play */
   play: [end?: number]
   /** On mouse click */
@@ -188,14 +188,14 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
         leftHandle,
         (dx) => this.onResize(dx, 'start'),
         () => null,
-        () => this.onEndResizing(),
+        () => this.onEndResizing('start'),
         resizeThreshold,
       ),
       makeDraggable(
         rightHandle,
         (dx) => this.onResize(dx, 'end'),
         () => null,
-        () => this.onEndResizing(),
+        () => this.onEndResizing('end'),
         resizeThreshold,
       ),
     )
@@ -337,9 +337,9 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     this._onUpdate(dx, side)
   }
 
-  private onEndResizing() {
+  private onEndResizing(side: UpdateSide) {
     if (!this.resize) return
-    this.emit('update-end')
+    this.emit('update-end', side)
     this.updatingSide = undefined
   }
 
@@ -660,9 +660,9 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         this.emit('region-update', region, side)
       }),
 
-      region.on('update-end', () => {
+      region.on('update-end', (side) => {
         this.avoidOverlapping(region)
-        this.emit('region-updated', region)
+        this.emit('region-updated', region, side)
       }),
 
       region.on('play', (end?: number) => {
