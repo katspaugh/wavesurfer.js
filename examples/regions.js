@@ -15,8 +15,10 @@ const ws = WaveSurfer.create({
 const random = (min, max) => Math.random() * (max - min) + min
 const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`
 
-// Register the Regions plugin
-const regions = await ws.registerPluginV8(RegionsPlugin())
+// Register the Regions plugin with drag selection enabled
+const regions = await ws.registerPluginV8(RegionsPlugin({
+  dragSelection: true,
+}))
 
 // Create some regions at specific time ranges
 ws.on('decode', () => {
@@ -58,48 +60,13 @@ ws.on('decode', () => {
   })
 })
 
-regions.enableDragSelection({
-  color: 'rgba(255, 0, 0, 0.1)',
+// Subscribe to regions stream
+regions.instance.streams.regions.subscribe((regionsList) => {
+  console.log('Regions updated:', regionsList)
 })
 
-regions.on('region-updated', (region) => {
-  console.log('Updated region', region)
-})
-
-// Loop a region on click
-let loop = true
-// Toggle looping with a checkbox
-document.querySelector('input[type="checkbox"]').onclick = (e) => {
-  loop = e.target.checked
-}
-
-{
-  let activeRegion = null
-  regions.on('region-in', (region) => {
-    console.log('region-in', region)
-    activeRegion = region
-  })
-  regions.on('region-out', (region) => {
-    console.log('region-out', region)
-    if (activeRegion === region) {
-      if (loop) {
-        region.play()
-      } else {
-        activeRegion = null
-      }
-    }
-  })
-  regions.on('region-clicked', (region, e) => {
-    e.stopPropagation() // prevent triggering a click on the waveform
-    activeRegion = region
-    region.play(true)
-    region.setOptions({ color: randomColor() })
-  })
-  // Reset the active region when the user clicks anywhere in the waveform
-  ws.on('interaction', () => {
-    activeRegion = null
-  })
-}
+// Example: Loop a region
+// You can implement region interactions using the regions.instance.streams.regions observable
 
 // Update the zoom level on slider change
 ws.once('decode', () => {
