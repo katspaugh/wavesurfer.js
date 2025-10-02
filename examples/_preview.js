@@ -7,7 +7,6 @@ const loadPreview = (code) => {
     .replace(/<\/script>/g, '')
     .replace(/'wavesurfer.js'/g, `'../dist/wavesurfer.esm.js'`)
     .replace(/'wavesurfer.js/g, `'..`)
-    .replace(/\.esm\.js/g, '.js')
   const isBabel = script.includes('@babel')
 
   // Start of iframe template
