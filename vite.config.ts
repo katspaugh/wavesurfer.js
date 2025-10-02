@@ -7,21 +7,22 @@ export default defineConfig({
     lib: {
       entry: {
         wavesurfer: resolve(__dirname, 'src/wavesurfer.ts'),
-        // Plugins (v8 beta only includes regions and timeline for now)
+        // v8 composition-based plugins
         'plugins/regions': resolve(__dirname, 'src/plugins/regions.ts'),
         'plugins/timeline': resolve(__dirname, 'src/plugins/timeline.ts'),
-        // TODO: Port remaining plugins from v7:
-        // 'plugins/minimap': resolve(__dirname, 'src/plugins/minimap.ts'),
-        // 'plugins/envelope': resolve(__dirname, 'src/plugins/envelope.ts'),
-        // 'plugins/record': resolve(__dirname, 'src/plugins/record.ts'),
-        // 'plugins/spectrogram': resolve(__dirname, 'src/plugins/spectrogram.ts'),
-        // 'plugins/hover': resolve(__dirname, 'src/plugins/hover.ts'),
-        // 'plugins/zoom': resolve(__dirname, 'src/plugins/zoom.ts'),
+        // v7 BasePlugin-based plugins (backward compatible)
+        'plugins/minimap': resolve(__dirname, 'src/plugins/minimap.ts'),
+        'plugins/envelope': resolve(__dirname, 'src/plugins/envelope.ts'),
+        'plugins/record': resolve(__dirname, 'src/plugins/record.ts'),
+        'plugins/spectrogram': resolve(__dirname, 'src/plugins/spectrogram.ts'),
+        'plugins/hover': resolve(__dirname, 'src/plugins/hover.ts'),
+        'plugins/zoom': resolve(__dirname, 'src/plugins/zoom.ts'),
       },
       formats: ['es', 'cjs', 'umd'],
       name: 'WaveSurfer',
     },
     rollupOptions: {
+      external: ['web-worker:./spectrogram-worker.ts'],
       output: [
         {
           format: 'es',
