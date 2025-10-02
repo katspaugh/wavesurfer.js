@@ -16,6 +16,7 @@
   "exclude": [
     "node_modules",
     "cypress",
-    "dist"
+    "dist",
+    "vite.config.ts"
   ]
 }
