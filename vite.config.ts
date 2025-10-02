@@ -1,18 +1,16 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'path'
+import { resolve, join } from 'path'
+import { readFileSync, existsSync } from 'fs'
+import { fileURLToPath } from 'url'
 import dts from 'vite-plugin-dts'
 
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
+
 export default defineConfig({
+  publicDir: false,
   server: {
     port: 9090,
     open: false,
-    middlewareMode: false,
-    fs: {
-      strict: false,
-    },
-  },
-  optimizeDeps: {
-    exclude: ['examples/**/*'],
   },
   build: {
     lib: {
@@ -67,13 +65,23 @@ export default defineConfig({
       insertTypesEntry: true,
     }),
     {
-      name: 'raw-examples',
-      enforce: 'pre',
-      transform(code, id) {
-        // Don't transform any files in the examples directory
-        if (id.includes('/examples/') && id.endsWith('.js')) {
-          return { code, map: null }
-        }
+      name: 'serve-pure-examples',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          // Serve example .js files as raw text without transformation
+          if (req.url?.startsWith('/examples/') && req.url.endsWith('.js')) {
+            const filePath = join(__dirname, req.url)
+
+            if (existsSync(filePath)) {
+              const content = readFileSync(filePath, 'utf-8')
+              res.setHeader('Content-Type', 'application/javascript')
+              res.setHeader('Cache-Control', 'no-cache')
+              res.end(content)
+              return
+            }
+          }
+          next()
+        })
       },
     },
   ],
