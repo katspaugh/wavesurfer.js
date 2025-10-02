@@ -9,3 +9,5 @@ cypress/videos
 cypress/**/__diff_output__/
 .env
 coverage/
+playwright-report/
+test-results/
