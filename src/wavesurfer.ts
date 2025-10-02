@@ -6,6 +6,10 @@ import Player from './player.js'
 import Renderer from './renderer.js'
 import Timer from './timer.js'
 import WebAudioPlayer from './webaudio.js'
+import { createStore, createInitialState, type StateStore, type WaveSurferState } from './state/index.js'
+import { PluginManager } from './plugins/plugin-manager.js'
+import type { Plugin, PluginContext, RegisteredPlugin } from './plugins/plugin.types.js'
+import { ResourcePool } from './utils/resources.js'
 
 export type WaveSurferOptions = {
   /** Required: an HTML element or selector where the waveform will be rendered */
@@ -149,11 +153,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private renderer: Renderer
   private timer: Timer
   private plugins: GenericPlugin[] = []
+  private pluginManager: PluginManager
   private decodedData: AudioBuffer | null = null
   private stopAtPosition: number | null = null
   protected subscriptions: Array<() => void> = []
   protected mediaSubscriptions: Array<() => void> = []
   protected abortController: AbortController | null = null
+  public readonly store: StateStore<WaveSurferState>
 
   public static readonly BasePlugin = BasePlugin
   public static readonly dom = dom
@@ -165,6 +171,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Create a new WaveSurfer instance */
   constructor(options: WaveSurferOptions) {
+    // Create state store
+    const store = createStore(createInitialState())
+
     const media =
       options.media ||
       (options.backend === 'WebAudio' ? (new WebAudioPlayer() as unknown as HTMLAudioElement) : undefined)
@@ -174,13 +183,16 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       mediaControls: options.mediaControls,
       autoplay: options.autoplay,
       playbackRate: options.audioRate,
+      store,
     })
 
+    this.store = store
+    this.pluginManager = new PluginManager()
     this.options = Object.assign({}, defaultOptions, options)
     this.timer = new Timer()
 
     const audioElement = media ? undefined : this.getMediaElement()
-    this.renderer = new Renderer(this.options, audioElement)
+    this.renderer = new Renderer(this.options, audioElement, store)
 
     this.initPlayerEvents()
     this.initRendererEvents()
@@ -657,17 +669,100 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.renderer.exportImage(format, quality, type)
   }
 
+  /**
+   * Get the state store for v8 reactive features
+   * Alias for this.store for convenience
+   */
+  public get state(): StateStore<WaveSurferState> {
+    return this.store
+  }
+
+  /**
+   * Create plugin context for the new plugin system
+   */
+  private createPluginContext(): PluginContext {
+    const resources = new ResourcePool()
+
+    // Clean up resources on destroy
+    this.subscriptions.push(() => resources.dispose())
+
+    return {
+      store: this.store,
+      resources,
+      container: this.options.container as HTMLElement,
+      getWrapper: () => this.getWrapper(),
+      getScroll: () => this.getScroll(),
+      setScroll: (pixels: number) => this.setScroll(pixels),
+      getWidth: () => this.getWidth(),
+      getDuration: () => this.getDuration(),
+      getDecodedData: () => this.getDecodedData(),
+      getMediaElement: () => this.getMediaElement(),
+    }
+  }
+
+  /**
+   * Register a plugin using the new v8 plugin system
+   * @param plugin - Plugin created with createPlugin() or a plugin factory
+   */
+  public async registerPluginV8<T extends RegisteredPlugin>(plugin: Plugin): Promise<T> {
+    const context = this.createPluginContext()
+    const registered = await this.pluginManager.register(plugin, context)
+    return registered as T
+  }
+
+  /**
+   * Unregister a v8 plugin by ID
+   */
+  public async unregisterPluginV8(pluginId: string): Promise<void> {
+    return this.pluginManager.unregister(pluginId)
+  }
+
+  /**
+   * Get a registered v8 plugin by ID
+   */
+  public getPluginV8<T extends RegisteredPlugin>(pluginId: string): T | undefined {
+    return this.pluginManager.get<T['instance']>(pluginId) as T | undefined
+  }
+
+  /**
+   * Check if a v8 plugin is registered
+   */
+  public hasPluginV8(pluginId: string): boolean {
+    return this.pluginManager.has(pluginId)
+  }
+
+  /**
+   * Get all registered v8 plugins
+   */
+  public getActivePluginsV8(): RegisteredPlugin[] {
+    return this.pluginManager.getAll()
+  }
+
   /** Unmount wavesurfer */
   public destroy() {
     this.emit('destroy')
     this.abortController?.abort()
     this.plugins.forEach((plugin) => plugin.destroy())
+    this.pluginManager.unregisterAll()
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.unsubscribePlayerEvents()
     this.timer.destroy()
     this.renderer.destroy()
+    this.store.complete()
     super.destroy()
   }
 }
+
+// Export v8 plugin utilities for creating custom plugins
+export { createPlugin, PluginBuilder, createActionPlugin, createStreamPlugin, combinePlugins } from './plugins/create-plugin.js'
+export { PluginManager } from './plugins/plugin-manager.js'
+export type { Plugin, PluginContext, PluginInstance, PluginManifest, RegisteredPlugin, PluginFactory } from './plugins/plugin.types.js'
+
+// Export state management utilities
+export { createStore, type StateStore, type WaveSurferState } from './state/index.js'
+export * as selectors from './state/selectors.js'
+
+// Export stream utilities
+export { Subject, BehaviorSubject, type Stream } from './streams/index.js'
 
 export default WaveSurfer

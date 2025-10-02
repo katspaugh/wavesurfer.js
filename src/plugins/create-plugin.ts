@@ -24,7 +24,7 @@ export function createPlugin<TOptions = void, TInstance extends PluginInstance =
  */
 export class PluginBuilder<TOptions = void> {
   private manifest!: PluginManifest
-  private streams: Record<string, Subject<unknown> | BehaviorSubject<unknown>> = {}
+  private streams: Record<string, Subject<any> | BehaviorSubject<any>> = {}
   private actions: Record<string, (...args: any[]) => any> = {}
   private customProps: Record<string, unknown> = {}
   private onInit?: (context: PluginContext, options: TOptions) => void | Promise<void>
@@ -43,7 +43,7 @@ export class PluginBuilder<TOptions = void> {
    */
   addStream<T>(name: string, initialValue?: T): this {
     if (initialValue !== undefined) {
-      this.streams[name] = new BehaviorSubject(initialValue)
+      this.streams[name] = new BehaviorSubject<T>(initialValue)
     } else {
       this.streams[name] = new Subject<T>()
     }

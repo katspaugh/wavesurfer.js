@@ -16,6 +16,11 @@
   "exclude": [
     "node_modules",
     "cypress",
-    "dist"
+    "dist",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "playwright.config.ts",
+    "vite.config.ts",
+    "vitest.config.ts"
   ]
 }

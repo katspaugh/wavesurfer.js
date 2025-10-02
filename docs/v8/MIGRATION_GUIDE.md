@@ -225,12 +225,11 @@ const regions = wavesurfer.addPlugin(RegionsPlugin.create({
 }))
 ```
 
-### v8 Plugin Structure
+### v8 Plugin Structure (New Composition-Based)
 
 ```javascript
 // v8 plugin
-import { createPlugin } from 'wavesurfer.js/plugins-v8'
-import { BehaviorSubject } from 'wavesurfer.js/streams'
+import { createPlugin, BehaviorSubject } from 'wavesurfer.js'
 
 export const RegionsPlugin = createPlugin(
   {
@@ -278,16 +277,26 @@ export const RegionsPlugin = createPlugin(
   }
 )
 
-// v8 usage
-import { RegionsPlugin } from 'wavesurfer.js/plugins-v8'
+// v8 new plugin system usage
+import { RegionsPlugin } from 'wavesurfer.js/plugins/regions'
 
-const manager = wavesurfer.getPluginManager()
-const regions = await manager.register(
-  RegionsPlugin({ dragSelection: true }),
-  context
+const regionsPlugin = await wavesurfer.registerPluginV8(
+  RegionsPlugin({ dragSelection: true })
 )
 
-// Subscribe to changes
+// Access plugin streams and actions
+regionsPlugin.instance.streams.regions.subscribe(regions => {
+  console.log('Regions updated:', regions)
+})
+
+regionsPlugin.instance.actions.addRegion({ start: 0, end: 10 })
+
+// OR continue using v7 style (backward compatible)
+import RegionsPlugin from 'wavesurfer.js/plugins/regions'
+
+const regions = RegionsPlugin.create({ dragSelection: true })
+wavesurfer.registerPlugin(regions)
+regions.addRegion({ start: 0, end: 10 })
 regions.instance.streams.regions.subscribe(regions => {
   console.log('Regions:', regions)
 })

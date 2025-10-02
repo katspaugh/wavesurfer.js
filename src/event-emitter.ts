@@ -139,8 +139,8 @@ class EventEmitter<EventTypes extends GeneralEventTypes> {
    * Check if an event has any listeners
    */
   public hasListeners<EventName extends keyof EventTypes>(event: EventName): boolean {
-    const hasClassicListeners = this.listeners[event]?.size > 0
-    const hasStreamSubscribers = this.streams[event]?.observerCount ?? 0 > 0
+    const hasClassicListeners = (this.listeners[event]?.size ?? 0) > 0
+    const hasStreamSubscribers = (this.streams[event]?.observerCount ?? 0) > 0
     return hasClassicListeners || hasStreamSubscribers
   }
 
@@ -151,6 +151,21 @@ class EventEmitter<EventTypes extends GeneralEventTypes> {
     const classicCount = this.listeners[event]?.size ?? 0
     const streamCount = this.streams[event]?.observerCount ?? 0
     return classicCount + streamCount
+  }
+
+  /**
+   * Destroy the event emitter and clean up all resources
+   * Completes all streams and removes all listeners
+   */
+  protected destroy(): void {
+    // Complete all streams before clearing
+    Object.values(this.streams).forEach((stream) => {
+      if (stream && !stream.closed) {
+        stream.complete()
+      }
+    })
+    this.streams = {} as StreamMap<EventTypes>
+    this.listeners = {} as EventMap<EventTypes>
   }
 }
 

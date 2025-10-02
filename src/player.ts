@@ -6,21 +6,21 @@
 import EventEmitter, { type GeneralEventTypes } from './event-emitter.js'
 import { ResourcePool } from './utils/resources.js'
 import type { StateStore } from './state/store.js'
-import type { PlaybackState } from './state/state.types.js'
+import type { PlaybackState, WaveSurferState } from './state/state.types.js'
 
 type PlayerOptions = {
   media?: HTMLMediaElement
   mediaControls?: boolean
   autoplay?: boolean
   playbackRate?: number
-  store?: StateStore<any> // Optional state store for integration
+  store?: StateStore<WaveSurferState> // Optional state store for integration
 }
 
 class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   protected media: HTMLMediaElement
   protected resources = new ResourcePool()
   private isExternalMedia = false
-  private store?: StateStore<any>
+  protected store?: StateStore<WaveSurferState>
 
   constructor(options: PlayerOptions) {
     super()
@@ -174,13 +174,15 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   protected destroy() {
     this.resources.dispose()
 
-    if (this.isExternalMedia) return
+    if (!this.isExternalMedia) {
+      this.media.pause()
+      this.revokeSrc()
+      this.media.removeAttribute('src')
+      this.media.load()
+      this.media.remove()
+    }
 
-    this.media.pause()
-    this.revokeSrc()
-    this.media.removeAttribute('src')
-    this.media.load()
-    this.media.remove()
+    super.destroy() // Clean up EventEmitter streams and listeners
   }
 
   protected setMediaElement(element: HTMLMediaElement) {

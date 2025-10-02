@@ -101,5 +101,8 @@
     "vite": "^6.0.7",
     "vite-plugin-dts": "^4.3.0",
     "vitest": "^2.1.8"
+  },
+  "overrides": {
+    "ajv": "^8.12.0"
   }
 }

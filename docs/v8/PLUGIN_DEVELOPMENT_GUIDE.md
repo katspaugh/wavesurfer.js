@@ -17,7 +17,7 @@ WaveSurfer v8 introduces a completely new plugin architecture based on **composi
 ## Basic Plugin Structure
 
 ```typescript
-import { createPlugin } from './plugins-v8/create-plugin'
+import { createPlugin } from 'wavesurfer.js'
 
 export const MyPlugin = createPlugin(
   {
@@ -69,8 +69,7 @@ interface PluginContext {
 ### Method 1: Simple Plugin
 
 ```typescript
-import { createPlugin } from './plugins-v8/create-plugin'
-import { BehaviorSubject } from '../streams'
+import { createPlugin, BehaviorSubject } from 'wavesurfer.js'
 
 export const CounterPlugin = createPlugin<{ initialCount?: number }>(
   {
@@ -102,7 +101,7 @@ const plugin = CounterPlugin({ initialCount: 10 })
 ### Method 2: Plugin Builder
 
 ```typescript
-import { PluginBuilder } from './plugins-v8/create-plugin'
+import { PluginBuilder } from 'wavesurfer.js'
 
 export const MyPlugin = new PluginBuilder()
   .setManifest({
@@ -124,7 +123,7 @@ export const MyPlugin = new PluginBuilder()
 ### Method 3: Action-Only Plugin
 
 ```typescript
-import { createActionPlugin } from './plugins-v8/create-plugin'
+import { createActionPlugin } from 'wavesurfer.js'
 
 export const UtilsPlugin = createActionPlugin(
   { id: 'utils', version: '1.0.0' },
@@ -143,8 +142,7 @@ export const UtilsPlugin = createActionPlugin(
 ### Method 4: Stream-Only Plugin
 
 ```typescript
-import { createStreamPlugin } from './plugins-v8/create-plugin'
-import { Subject } from '../streams'
+import { createStreamPlugin, Subject } from 'wavesurfer.js'
 
 export const AnalyticsPlugin = createStreamPlugin(
   { id: 'analytics', version: '1.0.0' },
@@ -167,7 +165,7 @@ export const AnalyticsPlugin = createStreamPlugin(
 Streams are the primary way to expose reactive data:
 
 ```typescript
-import { BehaviorSubject, Subject } from '../streams'
+import { createPlugin, BehaviorSubject, Subject } from 'wavesurfer.js'
 
 export const MyPlugin = createPlugin(
   { id: 'my-plugin', version: '1.0.0' },
@@ -198,16 +196,15 @@ export const MyPlugin = createPlugin(
 )
 
 // External usage
-const plugin = MyPlugin()
-const instance = await manager.register(plugin, context)
+const plugin = await wavesurfer.registerPluginV8(MyPlugin())
 
 // Subscribe to streams
-instance.instance.streams.currentValue.subscribe(val => {
+plugin.streams.currentValue.subscribe(val => {
   console.log('Value:', val)
 })
 
 // Call actions
-instance.instance.actions.updateValue(42)
+plugin.actions.updateValue(42)
 ```
 
 ## Resource Management
@@ -312,9 +309,7 @@ export const DependentPlugin = createPlugin(
 ## Complete Example: Markers Plugin
 
 ```typescript
-import { createPlugin } from './plugins-v8/create-plugin'
-import { BehaviorSubject } from '../streams'
-import { createElement } from '../dom'
+import { createPlugin, BehaviorSubject, createElement } from 'wavesurfer.js'
 
 interface Marker {
   id: string
@@ -436,48 +431,44 @@ export default MarkersPlugin
 ## Using Plugins
 
 ```typescript
-import { PluginManager } from './plugins-v8/plugin-manager'
-import { RegionsPlugin } from './plugins-v8/regions-v8'
-import { TimelinePlugin } from './plugins-v8/timeline-v8'
+import WaveSurfer from 'wavesurfer.js'
+import { RegionsPlugin } from 'wavesurfer.js/plugins/regions'
+import { TimelinePlugin } from 'wavesurfer.js/plugins/timeline'
 
-// Create plugin manager
-const pluginManager = new PluginManager()
+// Create wavesurfer instance
+const wavesurfer = WaveSurfer.create({
+  container: '#waveform',
+})
 
-// Register plugins
-const regionsInstance = await pluginManager.register(
-  RegionsPlugin({ dragSelection: true }),
-  context
+// Register v8 plugins
+const regions = await wavesurfer.registerPluginV8(
+  RegionsPlugin({ dragSelection: true })
 )
 
-const timelineInstance = await pluginManager.register(
-  TimelinePlugin({ height: 30 }),
-  context
+const timeline = await wavesurfer.registerPluginV8(
+  TimelinePlugin({ height: 30 })
 )
 
 // Access plugin streams
-regionsInstance.instance.streams.regions.subscribe(regions => {
+regions.streams.regions.subscribe(regions => {
   console.log('Regions:', regions)
 })
 
 // Call plugin actions
-regionsInstance.instance.actions.addRegion({
+regions.actions.addRegion({
   start: 10,
   end: 20,
   color: 'rgba(255, 0, 0, 0.3)',
 })
 
-// Or use helper methods
-pluginManager.invoke('regions', 'addRegion', {
-  start: 30,
-  end: 40,
-})
-
-// Get plugin stream
-const regionsStream = pluginManager.getStream('regions', 'regions')
-regionsStream.subscribe(regions => console.log(regions))
+// Get plugin by ID
+const regionsPlugin = wavesurfer.getPluginV8('regions')
+if (regionsPlugin) {
+  regionsPlugin.actions.addRegion({ start: 30, end: 40 })
+}
 
 // Unregister plugin
-await pluginManager.unregister('regions')
+await wavesurfer.unregisterPluginV8('regions')
 ```
 
 ## Testing Plugins
@@ -485,8 +476,7 @@ await pluginManager.unregister('regions')
 ```typescript
 import { describe, it, expect, vi } from 'vitest'
 import { MarkersPlugin } from './markers-plugin'
-import { createStore, createInitialState } from '../state'
-import { ResourcePool } from '../utils/resources'
+import { createStore, createInitialState, ResourcePool } from 'wavesurfer.js'
 
 describe('MarkersPlugin', () => {
   it('should add markers', () => {
