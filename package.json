@@ -69,9 +69,6 @@
     "test:unit": "vitest",
     "test:unit:ui": "vitest --ui",
     "test": "vitest run && playwright test",
-    "cypress": "cypress open --e2e",
-    "cypress:canary": "cypress open --e2e -b chrome:canary",
-    "test:legacy": "cypress run --browser chrome",
     "start": "vite"
   },
   "packageManager": "yarn@1.22.22",
