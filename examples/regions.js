@@ -21,7 +21,7 @@ const regions = await ws.registerPluginV8(RegionsPlugin())
 // Create some regions at specific time ranges
 ws.on('decode', () => {
   // Regions
-  regions.actions.addRegion({
+  regions.instance.actions.addRegion({
     start: 0,
     end: 8,
     content: 'Resize me',
@@ -29,7 +29,7 @@ ws.on('decode', () => {
     drag: false,
     resize: true,
   })
-  regions.actions.addRegion({
+  regions.instance.actions.addRegion({
     start: 9,
     end: 10,
     content: 'Cramped region',
@@ -37,7 +37,7 @@ ws.on('decode', () => {
     minLength: 1,
     maxLength: 10,
   })
-  regions.actions.addRegion({
+  regions.instance.actions.addRegion({
     start: 12,
     end: 17,
     content: 'Drag me',
@@ -46,12 +46,12 @@ ws.on('decode', () => {
   })
 
   // Markers (zero-length regions)
-  regions.actions.addRegion({
+  regions.instance.actions.addRegion({
     start: 19,
     content: 'Marker',
     color: randomColor(),
   })
-  regions.actions.addRegion({
+  regions.instance.actions.addRegion({
     start: 20,
     content: 'Second marker',
     color: randomColor(),
