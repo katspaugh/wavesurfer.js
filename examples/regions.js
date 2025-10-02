@@ -15,15 +15,11 @@ const ws = WaveSurfer.create({
 const random = (min, max) => Math.random() * (max - min) + min
 const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`
 
-// Register the Regions plugin and create regions after decode
-let regions
-ws.registerPluginV8(RegionsPlugin()).then((plugin) => {
-  regions = plugin
-})
+// Register the Regions plugin
+const regions = await ws.registerPluginV8(RegionsPlugin())
 
 // Create some regions at specific time ranges
 ws.on('decode', () => {
-  if (!regions) return
   // Regions
   regions.actions.addRegion({
     start: 0,
