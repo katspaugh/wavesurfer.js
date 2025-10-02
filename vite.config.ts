@@ -3,6 +3,17 @@ import { resolve } from 'path'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
+  server: {
+    port: 9090,
+    open: false,
+    middlewareMode: false,
+    fs: {
+      strict: false,
+    },
+  },
+  optimizeDeps: {
+    exclude: ['examples/**/*'],
+  },
   build: {
     lib: {
       entry: {
@@ -55,9 +66,15 @@ export default defineConfig({
       rollupTypes: true,
       insertTypesEntry: true,
     }),
+    {
+      name: 'raw-examples',
+      enforce: 'pre',
+      transform(code, id) {
+        // Don't transform any files in the examples directory
+        if (id.includes('/examples/') && id.endsWith('.js')) {
+          return { code, map: null }
+        }
+      },
+    },
   ],
-  server: {
-    port: 9090,
-    open: false,
-  },
 })
