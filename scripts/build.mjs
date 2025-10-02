@@ -5,7 +5,7 @@ import { globSync } from 'glob'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fs from 'node:fs'
-import dts from 'rollup-plugin-dts'
+import dts from 'vite-plugin-dts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -34,7 +34,17 @@ const createMainConfigs = () => {
   return [
     // ES module (.js extension for backward compatibility)
     {
-      plugins: [webWorkerPrefixPlugin()],
+      plugins: [
+        webWorkerPrefixPlugin(),
+        dts({
+          include: ['src/**/*.ts'],
+          exclude: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
+          entryRoot: 'src',
+          outDir: 'dist',
+          copyDtsFiles: true,
+          rollupTypes: true, // Bundle types into a single file
+        }),
+      ],
       publicDir: false,
       build: {
         emptyOutDir: false,
@@ -184,21 +194,6 @@ const createPluginConfigs = (pluginPath) => {
   ]
 }
 
-const createTypesBundleConfig = () => {
-  return {
-    plugins: [dts()],
-    publicDir: false,
-    build: {
-      emptyOutDir: false,
-      lib: {
-        entry: path.resolve(distDir, 'wavesurfer.d.ts'),
-        formats: ['es'],
-        fileName: () => 'types.d.ts',
-      },
-    },
-  }
-}
-
 async function buildAll() {
   try {
     console.log('🔨 Building WaveSurfer.js...\n')
@@ -228,11 +223,6 @@ async function buildAll() {
       }
     }
     console.log('✅ Plugins built\n')
-
-    // Build types bundle
-    console.log('📝 Bundling type definitions...')
-    await build(createTypesBundleConfig())
-    console.log('✅ Type definitions bundled\n')
 
     console.log('🎉 Build completed successfully!')
   } catch (error) {
