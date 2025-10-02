@@ -5,117 +5,6 @@ import type { WaveSurferOptions } from './wavesurfer.js'
 
 type ChannelData = utils.ChannelData
 
-function renderBarWaveform({
-  channelData,
-  options,
-  ctx,
-  vScale,
-  pixelRatio,
-}: {
-  channelData: ChannelData
-  options: WaveSurferOptions
-  ctx: CanvasRenderingContext2D
-  vScale: number
-  pixelRatio: number
-}) {
-  const { width, height } = ctx.canvas
-  const { halfHeight, barWidth, barRadius, barIndexScale, barSpacing } = utils.calculateBarRenderConfig({
-    width,
-    height,
-    length: (channelData[0] || []).length,
-    options,
-    pixelRatio,
-  })
-
-  const segments = utils.calculateBarSegments({
-    channelData,
-    barIndexScale,
-    barSpacing,
-    barWidth,
-    halfHeight,
-    vScale,
-    canvasHeight: height,
-    barAlign: options.barAlign,
-  })
-
-  ctx.beginPath()
-
-  for (const segment of segments) {
-    if (barRadius && 'roundRect' in ctx) {
-      ;(
-        ctx as CanvasRenderingContext2D & {
-          roundRect: (
-            x: number,
-            y: number,
-            width: number,
-            height: number,
-            radii?: number | DOMPointInit | DOMPointInit[],
-          ) => void
-        }
-      ).roundRect(segment.x, segment.y, segment.width, segment.height, barRadius)
-    } else {
-      ctx.rect(segment.x, segment.y, segment.width, segment.height)
-    }
-  }
-
-  ctx.fill()
-  ctx.closePath()
-}
-
-function renderLineWaveform({
-  channelData,
-  ctx,
-  vScale,
-}: {
-  channelData: ChannelData
-  ctx: CanvasRenderingContext2D
-  vScale: number
-}) {
-  const { width, height } = ctx.canvas
-  const paths = utils.calculateLinePaths({ channelData, width, height, vScale })
-
-  ctx.beginPath()
-
-  for (const path of paths) {
-    if (!path.length) continue
-    ctx.moveTo(path[0].x, path[0].y)
-    for (let i = 1; i < path.length; i++) {
-      const point = path[i]
-      ctx.lineTo(point.x, point.y)
-    }
-  }
-
-  ctx.fill()
-  ctx.closePath()
-}
-
-function renderWaveform({
-  channelData,
-  options,
-  ctx,
-  pixelRatio,
-}: {
-  channelData: ChannelData
-  options: WaveSurferOptions
-  ctx: CanvasRenderingContext2D
-  pixelRatio: number
-}) {
-  ctx.fillStyle = utils.resolveColorValue(options.waveColor, pixelRatio)
-
-  const vScale = utils.calculateVerticalScale({
-    channelData,
-    barHeight: options.barHeight,
-    normalize: options.normalize,
-  })
-
-  if (utils.shouldRenderBars(options)) {
-    renderBarWaveform({ channelData, options, ctx, vScale, pixelRatio })
-    return
-  }
-
-  renderLineWaveform({ channelData, ctx, vScale })
-}
-
 type RendererEvents = {
   click: [relativeX: number, relativeY: number]
   dblclick: [relativeX: number, relativeY: number]
@@ -301,12 +190,7 @@ class Renderer extends EventEmitter<RendererEvents> {
           z-index: 2;
         }
         :host .canvases {
-          min-height: ${utils.resolveChannelHeight({
-            optionsHeight: this.options.height,
-            optionsSplitChannels: this.options.splitChannels,
-            parentHeight: this.parent.clientHeight,
-            numberOfChannels: this.audioData?.numberOfChannels || 1,
-          })}px;
+          min-height: ${this.getHeight(this.options.height, this.options.splitChannels)}px;
         }
         :host .canvases > div {
           position: relative;
@@ -438,8 +322,126 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
   }
 
+  private getHeight(
+    optionsHeight?: WaveSurferOptions['height'],
+    optionsSplitChannel?: WaveSurferOptions['splitChannels'],
+  ): number {
+    const numberOfChannels = this.audioData?.numberOfChannels || 1
+    return utils.resolveChannelHeight({
+      optionsHeight,
+      optionsSplitChannels: optionsSplitChannel,
+      parentHeight: this.parent.clientHeight,
+      numberOfChannels,
+      defaultHeight: utils.DEFAULT_HEIGHT,
+    })
+  }
+
+  private convertColorValues(color?: WaveSurferOptions['waveColor']): string | CanvasGradient {
+    return utils.resolveColorValue(color, this.getPixelRatio())
+  }
+
+  private getPixelRatio(): number {
+    return utils.getPixelRatio(window.devicePixelRatio)
+  }
+
+  private renderBarWaveform(
+    channelData: ChannelData,
+    options: WaveSurferOptions,
+    ctx: CanvasRenderingContext2D,
+    vScale: number,
+  ) {
+    const { width, height } = ctx.canvas
+    const { halfHeight, barWidth, barRadius, barIndexScale, barSpacing } = utils.calculateBarRenderConfig({
+      width,
+      height,
+      length: (channelData[0] || []).length,
+      options,
+      pixelRatio: this.getPixelRatio(),
+    })
+
+    const segments = utils.calculateBarSegments({
+      channelData,
+      barIndexScale,
+      barSpacing,
+      barWidth,
+      halfHeight,
+      vScale,
+      canvasHeight: height,
+      barAlign: options.barAlign,
+    })
+
+    ctx.beginPath()
+
+    for (const segment of segments) {
+      if (barRadius && 'roundRect' in ctx) {
+        ;(
+          ctx as CanvasRenderingContext2D & {
+            roundRect: (
+              x: number,
+              y: number,
+              width: number,
+              height: number,
+              radii?: number | DOMPointInit | DOMPointInit[],
+            ) => void
+          }
+        ).roundRect(segment.x, segment.y, segment.width, segment.height, barRadius)
+      } else {
+        ctx.rect(segment.x, segment.y, segment.width, segment.height)
+      }
+    }
+
+    ctx.fill()
+    ctx.closePath()
+  }
+
+  private renderLineWaveform(
+    channelData: ChannelData,
+    _options: WaveSurferOptions,
+    ctx: CanvasRenderingContext2D,
+    vScale: number,
+  ) {
+    const { width, height } = ctx.canvas
+    const paths = utils.calculateLinePaths({ channelData, width, height, vScale })
+
+    ctx.beginPath()
+
+    for (const path of paths) {
+      if (!path.length) continue
+      ctx.moveTo(path[0].x, path[0].y)
+      for (let i = 1; i < path.length; i++) {
+        const point = path[i]
+        ctx.lineTo(point.x, point.y)
+      }
+    }
+
+    ctx.fill()
+    ctx.closePath()
+  }
+
+  private renderWaveform(channelData: ChannelData, options: WaveSurferOptions, ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = this.convertColorValues(options.waveColor)
+
+    if (options.renderFunction) {
+      options.renderFunction(channelData, ctx)
+      return
+    }
+
+    const vScale = utils.calculateVerticalScale({
+      channelData,
+      barHeight: options.barHeight,
+      normalize: options.normalize,
+    })
+
+    if (utils.shouldRenderBars(options)) {
+      this.renderBarWaveform(channelData, options, ctx, vScale)
+      return
+    }
+
+    this.renderLineWaveform(channelData, options, ctx, vScale)
+  }
+
   private renderSingleCanvas(
-    data: Array<Float32Array | number[]>,
+    data: ChannelData,
     options: WaveSurferOptions,
     width: number,
     height: number,
@@ -447,7 +449,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     canvasContainer: HTMLElement,
     progressContainer: HTMLElement,
   ) {
-    const pixelRatio = utils.getPixelRatio(window.devicePixelRatio)
+    const pixelRatio = this.getPixelRatio()
     const canvas = document.createElement('canvas')
     canvas.width = Math.round(width * pixelRatio)
     canvas.height = Math.round(height * pixelRatio)
@@ -459,10 +461,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
     if (options.renderFunction) {
-      ctx.fillStyle = utils.resolveColorValue(options.waveColor, pixelRatio)
+      ctx.fillStyle = this.convertColorValues(options.waveColor)
       options.renderFunction(data, ctx)
     } else {
-      renderWaveform({ channelData: data, options, ctx, pixelRatio })
+      this.renderWaveform(data, options, ctx)
     }
 
     // Draw a progress canvas
@@ -472,7 +474,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       progressCtx.drawImage(canvas, 0, 0)
       // Set the composition method to draw only where the waveform is drawn
       progressCtx.globalCompositeOperation = 'source-in'
-      progressCtx.fillStyle = utils.resolveColorValue(options.progressColor, pixelRatio)
+      progressCtx.fillStyle = this.convertColorValues(options.progressColor as WaveSurferOptions['waveColor'])
       // This rectangle acts as a mask thanks to the composition method
       progressCtx.fillRect(0, 0, canvas.width, canvas.height)
       progressContainer.appendChild(progressCanvas)
@@ -480,14 +482,14 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   private renderMultiCanvas(
-    channelData: Array<Float32Array | number[]>,
+    channelData: ChannelData,
     options: WaveSurferOptions,
     width: number,
     height: number,
     canvasContainer: HTMLElement,
     progressContainer: HTMLElement,
   ) {
-    const pixelRatio = utils.getPixelRatio(window.devicePixelRatio)
+    const pixelRatio = this.getPixelRatio()
     const { clientWidth } = this.scrollContainer
     const totalWidth = width / pixelRatio
 
@@ -554,19 +556,14 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   private renderChannel(
-    channelData: Array<Float32Array | number[]>,
+    channelData: ChannelData,
     { overlay, ...options }: WaveSurferOptions & { overlay?: boolean },
     width: number,
     channelIndex: number,
   ) {
     // A container for canvases
     const canvasContainer = document.createElement('div')
-    const height = utils.resolveChannelHeight({
-      optionsHeight: options.height,
-      optionsSplitChannels: options.splitChannels,
-      parentHeight: this.parent.clientHeight,
-      numberOfChannels: this.audioData?.numberOfChannels || 1,
-    })
+    const height = this.getHeight(options.height, options.splitChannels)
     canvasContainer.style.height = `${height}px`
     if (overlay && channelIndex > 0) {
       canvasContainer.style.marginTop = `-${height}px`
@@ -598,7 +595,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
 
     // Determine the width of the waveform
-    const pixelRatio = utils.getPixelRatio(window.devicePixelRatio)
+    const pixelRatio = this.getPixelRatio()
     const parentWidth = this.scrollContainer.clientWidth
     const { scrollWidth, isScrollable, useParentWidth, width } = utils.calculateWaveformLayout({
       duration: audioData.duration,
