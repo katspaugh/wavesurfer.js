@@ -1,10 +1,7 @@
 // Regions plugin
 
 import WaveSurfer from 'wavesurfer.js'
-import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js'
-
-// Initialize the Regions plugin
-const regions = RegionsPlugin.create()
+import { RegionsPlugin } from 'wavesurfer.js/dist/plugins/regions.esm.js'
 
 // Create a WaveSurfer instance
 const ws = WaveSurfer.create({
@@ -12,8 +9,10 @@ const ws = WaveSurfer.create({
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
   url: '/examples/audio/audio.wav',
-  plugins: [regions],
 })
+
+// Register the Regions plugin
+const regions = ws.registerPluginV8(RegionsPlugin())
 
 // Give regions a random color when they are created
 const random = (min, max) => Math.random() * (max - min) + min
@@ -22,7 +21,7 @@ const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0
 // Create some regions at specific time ranges
 ws.on('decode', () => {
   // Regions
-  regions.addRegion({
+  regions.actions.addRegion({
     start: 0,
     end: 8,
     content: 'Resize me',
@@ -30,7 +29,7 @@ ws.on('decode', () => {
     drag: false,
     resize: true,
   })
-  regions.addRegion({
+  regions.actions.addRegion({
     start: 9,
     end: 10,
     content: 'Cramped region',
@@ -38,7 +37,7 @@ ws.on('decode', () => {
     minLength: 1,
     maxLength: 10,
   })
-  regions.addRegion({
+  regions.actions.addRegion({
     start: 12,
     end: 17,
     content: 'Drag me',
@@ -47,12 +46,12 @@ ws.on('decode', () => {
   })
 
   // Markers (zero-length regions)
-  regions.addRegion({
+  regions.actions.addRegion({
     start: 19,
     content: 'Marker',
     color: randomColor(),
   })
-  regions.addRegion({
+  regions.actions.addRegion({
     start: 20,
     content: 'Second marker',
     color: randomColor(),
