@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { globSync } from 'glob'
 import dts from 'rollup-plugin-dts'
 import type { Plugin, UserConfig } from 'vite'
 import { defineConfig } from 'vite'
@@ -15,11 +14,6 @@ const distDir = path.resolve(rootDir, 'dist')
 const examplesDir = path.resolve(rootDir, 'examples')
 
 const mainEntry = path.resolve(srcDir, 'wavesurfer.ts')
-
-const pluginEntries = globSync('src/plugins/*.ts', {
-  cwd: rootDir,
-  windowsPathsNoEscape: true,
-}).filter((pluginPath) => !pluginPath.includes('worker'))
 
 const mimeTypes: Record<string, string> = {
   '.css': 'text/css',
@@ -80,172 +74,13 @@ const webWorkerPrefixPlugin = (): Plugin => ({
   },
 })
 
-const createPluginName = (pluginPath: string) => path.basename(pluginPath, '.ts')
-
-const createGlobalName = (pluginName: string) => `WaveSurfer.${pluginName.replace(/^./, (c) => c.toUpperCase())}`
-
-const createPluginConfigs = (pluginPath: string): UserConfig[] => {
-  const pluginName = createPluginName(pluginPath)
-  const entry = path.resolve(rootDir, pluginPath)
-  const globalName = createGlobalName(pluginName)
-
-  const externalDeps = ['../wavesurfer.js']
-
-  return [
-    {
-      plugins: [webWorkerPrefixPlugin()],
-      publicDir: false,
-      build: {
-        emptyOutDir: false,
-        lib: {
-          entry,
-          formats: ['es'],
-          fileName: () => `plugins/${pluginName}.js`,
-        },
-        rollupOptions: {
-          external: externalDeps,
-        },
-      },
-    },
-    {
-      plugins: [webWorkerPrefixPlugin()],
-      publicDir: false,
-      build: {
-        emptyOutDir: false,
-        lib: {
-          entry,
-          formats: ['es'],
-          fileName: () => `plugins/${pluginName}.esm.js`,
-        },
-        rollupOptions: {
-          external: externalDeps,
-        },
-      },
-    },
-    {
-      plugins: [webWorkerPrefixPlugin()],
-      publicDir: false,
-      build: {
-        emptyOutDir: false,
-        lib: {
-          entry,
-          formats: ['cjs'],
-          fileName: () => `plugins/${pluginName}.cjs`,
-        },
-        rollupOptions: {
-          external: externalDeps,
-          output: {
-            exports: 'default',
-          },
-        },
-      },
-    },
-    {
-      plugins: [webWorkerPrefixPlugin()],
-      publicDir: false,
-      build: {
-        emptyOutDir: false,
-        minify: 'esbuild',
-        lib: {
-          entry,
-          name: globalName,
-          formats: ['umd'],
-          fileName: () => `plugins/${pluginName}.min.js`,
-        },
-        rollupOptions: {
-          external: externalDeps,
-          output: {
-            globals: {
-              '../wavesurfer.js': 'WaveSurfer',
-            },
-            extend: true,
-            exports: 'default',
-          },
-        },
-      },
-    },
-  ]
-}
-
-export default defineConfig(({ command }) => {
-  if (command === 'serve') {
-    return {
-      root: rootDir,
-      publicDir: false,
-      plugins: [examplesStaticPlugin(), webWorkerPrefixPlugin()],
-      server: {
-        port: 9090,
-        host: '0.0.0.0',
-      },
-    }
-  }
-
-  const configs: UserConfig[] = [
-    {
-      plugins: [webWorkerPrefixPlugin()],
-      publicDir: false,
-      build: {
-        emptyOutDir: false,
-        lib: {
-          entry: mainEntry,
-          formats: ['es'],
-          fileName: () => 'wavesurfer.esm.js',
-        },
-      },
-    },
-    {
-      plugins: [webWorkerPrefixPlugin()],
-      publicDir: false,
-      build: {
-        emptyOutDir: false,
-        lib: {
-          entry: mainEntry,
-          formats: ['cjs'],
-          fileName: () => 'wavesurfer.cjs',
-        },
-        rollupOptions: {
-          output: {
-            exports: 'default',
-          },
-        },
-      },
-    },
-    {
-      plugins: [webWorkerPrefixPlugin()],
-      publicDir: false,
-      build: {
-        emptyOutDir: false,
-        minify: 'esbuild',
-        lib: {
-          entry: mainEntry,
-          name: 'WaveSurfer',
-          formats: ['umd'],
-          fileName: () => 'wavesurfer.min.js',
-        },
-        rollupOptions: {
-          output: {
-            exports: 'default',
-          },
-        },
-      },
-    },
-    {
-      plugins: [dts()],
-      publicDir: false,
-      build: {
-        emptyOutDir: false,
-        lib: {
-          entry: path.resolve(distDir, 'wavesurfer.d.ts'),
-          formats: ['es'],
-          fileName: () => 'types.d.ts',
-        },
-      },
-    },
-  ]
-
-  for (const pluginPath of pluginEntries) {
-    configs.push(...createPluginConfigs(pluginPath))
-  }
-
-  return configs
+// Default config for dev server
+export default defineConfig({
+  root: rootDir,
+  publicDir: false,
+  plugins: [examplesStaticPlugin(), webWorkerPrefixPlugin()],
+  server: {
+    port: 9090,
+    host: '0.0.0.0',
+  },
 })

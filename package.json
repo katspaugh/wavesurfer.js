@@ -55,7 +55,7 @@
   },
   "scripts": {
     "clean": "node ./scripts/clean.cjs",
-    "build": "npm run clean && tsc && vite build",
+    "build": "npm run clean && tsc && node ./scripts/build.mjs",
     "prepublishOnly": "npm run build",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "lint:report": "eslint \"src/**/*.ts\" --output-file eslint_report.json --format json",
