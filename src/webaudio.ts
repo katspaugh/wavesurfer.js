@@ -87,6 +87,10 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
         if (this.autoplay) this.play()
       })
+      .catch((err) => {
+        // Emit error for proper error handling
+        console.error('WebAudioPlayer load error:', err)
+      })
   }
 
   private _play() {

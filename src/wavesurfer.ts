@@ -201,8 +201,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         // Swallow async errors because they cannot be caught from a constructor call.
         // Subscribe to the wavesurfer's error event to handle them.
         this.load(initialUrl, peaks, duration).catch((err) => {
-          // Log error for debugging while still emitting error event
-          console.error('WaveSurfer initial load error:', err)
+          // Emit error event for proper error handling
+          this.emit('error', err instanceof Error ? err : new Error(String(err)))
         })
       }
     })
@@ -330,14 +330,15 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
         // Set the audio position with a debounce
         clearTimeout(debounce)
-        let debounceTime
+        let debounceTime = 0
 
+        const dragToSeek = this.options.dragToSeek
         if (this.isPlaying()) {
           debounceTime = 0
-        } else if (this.options.dragToSeek === true) {
+        } else if (dragToSeek === true) {
           debounceTime = 200
-        } else if (typeof this.options.dragToSeek === 'object' && this.options.dragToSeek !== undefined) {
-          debounceTime = this.options.dragToSeek['debounceTime']
+        } else if (dragToSeek && typeof dragToSeek === 'object') {
+          debounceTime = (dragToSeek as { debounceTime: number }).debounceTime ?? 200
         }
 
         debounce = setTimeout(() => {
@@ -557,8 +558,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       const channel = this.decodedData.getChannelData(i)
       const data = []
       const sampleSize = channel.length / maxLength
-      for (let i = 0; i < maxLength; i++) {
-        const sample = channel.slice(Math.floor(i * sampleSize), Math.ceil((i + 1) * sampleSize))
+      for (let j = 0; j < maxLength; j++) {
+        const sample = channel.slice(Math.floor(j * sampleSize), Math.ceil((j + 1) * sampleSize))
         let max = 0
         for (let x = 0; x < sample.length; x++) {
           const n = sample[x]
