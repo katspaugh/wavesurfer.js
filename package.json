@@ -89,6 +89,6 @@
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-web-worker-loader": "^1.7.0",
     "ts-jest": "^29.1.1",
-    "typescript": "^5.7.2"
+    "typescript": "^5.9.2"
   }
 }
