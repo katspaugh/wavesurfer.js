@@ -103,7 +103,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     const analyser = audioContext.createAnalyser()
     source.connect(analyser)
 
-    if (this.options.continuousWaveform) {
+    // Use smaller FFT size for more responsive peak detection
+    if (this.options.continuousWaveform || this.options.scrollingWaveform) {
       analyser.fftSize = 32
     }
     const bufferLength = analyser.frequencyBinCount
@@ -119,6 +120,9 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       this.wavesurfer.options.interact = false
       if (this.options.scrollingWaveform) {
         this.wavesurfer.options.cursorWidth = 0
+        // Use fixed max peak in scrolling mode to prevent "dancing" waveform
+        this.wavesurfer.options.normalize = true
+        this.wavesurfer.options.maxPeak = 1
       }
     }
 
@@ -128,17 +132,33 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       analyser.getFloatTimeDomainData(dataArray)
 
       if (this.options.scrollingWaveform) {
-        // Scrolling waveform
-        const windowSize = Math.floor((this.options.scrollingWaveformWindow || 0) * audioContext.sampleRate)
-        const newLength = Math.min(windowSize, this.dataWindow ? this.dataWindow.length + bufferLength : bufferLength)
-        const tempArray = new Float32Array(windowSize) // Always make it the size of the window, filling with zeros by default
+        // Scrolling waveform - use peak values for smooth rendering
+        const windowSize = Math.floor((this.options.scrollingWaveformWindow || 0) * FPS)
 
-        if (this.dataWindow) {
-          const startIdx = Math.max(0, windowSize - this.dataWindow.length)
-          tempArray.set(this.dataWindow.slice(-newLength + bufferLength), startIdx)
+        // Calculate peak value from the current buffer
+        let maxValue = 0
+        for (let i = 0; i < bufferLength; i++) {
+          const value = Math.abs(dataArray[i])
+          if (value > maxValue) {
+            maxValue = value
+          }
         }
 
-        tempArray.set(dataArray, windowSize - bufferLength)
+        if (!this.dataWindow) {
+          this.dataWindow = new Float32Array(windowSize)
+        }
+
+        const tempArray = new Float32Array(windowSize)
+
+        if (this.dataWindow && this.dataWindow.length > 0) {
+          // Shift old data to the left, dropping the oldest sample
+          const keepLength = windowSize - 1
+          const oldData = this.dataWindow.slice(-keepLength)
+          tempArray.set(oldData, 0)
+        }
+
+        // Add new peak value at the end
+        tempArray[windowSize - 1] = maxValue
         this.dataWindow = tempArray
       } else if (this.options.continuousWaveform) {
         // Continuous waveform

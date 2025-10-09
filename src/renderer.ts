@@ -430,6 +430,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       channelData,
       barHeight: options.barHeight,
       normalize: options.normalize,
+      maxPeak: options.maxPeak,
     })
 
     if (utils.shouldRenderBars(options)) {
