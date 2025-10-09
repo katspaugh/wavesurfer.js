@@ -310,10 +310,12 @@ export function calculateVerticalScale({
   channelData,
   barHeight,
   normalize,
+  maxPeak,
 }: {
   channelData: ChannelData
   barHeight?: WaveSurferOptions['barHeight']
   normalize?: WaveSurferOptions['normalize']
+  maxPeak?: WaveSurferOptions['maxPeak']
 }): number {
   const baseScale = barHeight || 1
   if (!normalize) return baseScale
@@ -321,11 +323,14 @@ export function calculateVerticalScale({
   const firstChannel = channelData[0]
   if (!firstChannel || firstChannel.length === 0) return baseScale
 
-  let max = 0
-  for (let i = 0; i < firstChannel.length; i++) {
-    const value = firstChannel[i] ?? 0
-    const magnitude = Math.abs(value)
-    if (magnitude > max) max = magnitude
+  // Use fixed max peak if provided, otherwise calculate from data
+  let max = maxPeak ?? 0
+  if (!maxPeak) {
+    for (let i = 0; i < firstChannel.length; i++) {
+      const value = firstChannel[i] ?? 0
+      const magnitude = Math.abs(value)
+      if (magnitude > max) max = magnitude
+    }
   }
 
   if (!max) return baseScale

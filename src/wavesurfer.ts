@@ -68,6 +68,8 @@ export type WaveSurferOptions = {
   splitChannels?: Array<Partial<WaveSurferOptions> & { overlay?: boolean }>
   /** Stretch the waveform to the full height */
   normalize?: boolean
+  /** Use a fixed max peak value for normalization instead of calculating from the current data */
+  maxPeak?: number
   /** The list of plugins to initialize on start */
   plugins?: GenericPlugin[]
   /** Custom render function */
