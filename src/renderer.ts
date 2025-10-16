@@ -689,7 +689,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       // Keep the cursor centered when playing
       const center = progressWidth - scrollLeft - middle
       if (isPlaying && this.options.autoCenter && center > 0) {
-        this.scrollContainer.scrollLeft += Math.min(center, 10)
+        this.scrollContainer.scrollLeft += center
       }
     }
 
