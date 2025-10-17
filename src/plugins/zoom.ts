@@ -1,12 +1,13 @@
 /**
  * Zoom plugin
  *
- * Zoom in or out on the waveform when scrolling the mouse wheel
+ * Zoom in or out on the waveform when scrolling the mouse wheel or using pinch-to-zoom
  *
  * @author HoodyHuo (https://github.com/HoodyHuo)
  * @author Chris Morbitzer (https://github.com/cmorbitzer)
  * @author Sam Hulick (https://github.com/ffxsam)
- * @autor Gustav Sollenius (https://github.com/gustavsollenius)
+ * @author Gustav Sollenius (https://github.com/gustavsollenius)
+ * @author Viktor Jevdokimov (https://github.com/vitar)
  *
  * @example
  * // ... initialising wavesurfer with the plugin
@@ -71,6 +72,10 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   private endZoom: number = 0
   private startZoom: number = 0
 
+  // NEW: State for pinch-to-zoom
+  private isPinching = false
+  private lastPinchDistance = 0
+
   constructor(options?: ZoomPluginOptions) {
     super(options || {})
     this.options = Object.assign({}, defaultOptions, options)
@@ -86,7 +91,15 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
       return
     }
     this.container = this.wrapper.parentElement as HTMLElement
+    // Wheel listener
     this.container.addEventListener('wheel', this.onWheel)
+
+    // NEW: Touch listeners for pinch-to-zoom
+    // We use { passive: false } to be able to call e.preventDefault()
+    // and stop the browser's native pinch-to-zoom on the page.
+    this.container.addEventListener('touchstart', this.onTouchStart, { passive: false })
+    this.container.addEventListener('touchmove', this.onTouchMove, { passive: false })
+    this.container.addEventListener('touchend', this.onTouchEnd, { passive: false })
 
     if (typeof this.options.maxZoom === 'undefined') {
       this.options.maxZoom = this.container.clientWidth
@@ -94,6 +107,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     this.endZoom = this.options.maxZoom
   }
 
+  // MODIFIED: onWheel is now a thin wrapper around the new onZoom method
   private onWheel = (e: WheelEvent) => {
     if (!this.wavesurfer || !this.container || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) {
       return
@@ -101,8 +115,70 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     // prevent scrolling the sidebar while zooming
     e.preventDefault()
 
+    // Pass the delta and the anchor point (mouse X) to the shared zoom logic
+    this.onZoom(-e.deltaY, e.clientX)
+  }
+
+  // NEW: Get the distance between two touch points
+  private getTouchDistance(e: TouchEvent): number {
+    const touch1 = e.touches[0]
+    const touch2 = e.touches[1]
+    return Math.sqrt(Math.pow(touch2.clientX - touch1.clientX, 2) + Math.pow(touch2.clientY - touch1.clientY, 2))
+  }
+
+  // NEW: Get the center X coordinate between two touch points
+  private getTouchCenterX(e: TouchEvent): number {
+    const touch1 = e.touches[0]
+    const touch2 = e.touches[1]
+    return (touch1.clientX + touch2.clientX) / 2
+  }
+
+  // NEW: Handle touch start
+  private onTouchStart = (e: TouchEvent) => {
+    // Check if two fingers are used
+    if (e.touches.length === 2) {
+      e.preventDefault() // Prevent text selection, etc.
+      this.isPinching = true
+      this.lastPinchDistance = this.getTouchDistance(e)
+    }
+  }
+
+  // NEW: Handle touch move
+  private onTouchMove = (e: TouchEvent) => {
+    // Only zoom if we're in a pinching state with two fingers
+    if (!this.isPinching || e.touches.length !== 2) {
+      return
+    }
+    e.preventDefault() // CRITICAL: Stop the browser from zooming the whole page
+
+    const newDistance = this.getTouchDistance(e)
+    const newCenterX = this.getTouchCenterX(e)
+    // The delta is the change in distance since the last move event
+    const delta = newDistance - this.lastPinchDistance
+    // Update the last distance for the next event
+    this.lastPinchDistance = newDistance
+
+    // Pass the delta and the anchor point (pinch center X) to the shared zoom logic
+    this.onZoom(delta, newCenterX)
+  }
+
+  // NEW: Handle touch end
+  private onTouchEnd = (e: TouchEvent) => {
+    // If we were pinching and now have less than 2 fingers, stop
+    if (this.isPinching && e.touches.length < 2) {
+      this.isPinching = false
+      this.lastPinchDistance = 0
+      this.accumulatedDelta = 0 // Reset accumulation on gesture end
+    }
+  }
+
+  // NEW: Refactored core zoom logic
+  // This was extracted from the original onWheel method
+  private onZoom = (delta: number, anchorX: number) => {
+    if (!this.wavesurfer || !this.container) return
+
     // Update the accumulated delta...
-    this.accumulatedDelta += -e.deltaY
+    this.accumulatedDelta += delta
 
     if (this.startZoom === 0 && this.options.exponentialZooming) {
       this.startZoom = this.wavesurfer.getWrapper().clientWidth / this.wavesurfer.getDuration()
@@ -115,7 +191,9 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
         this.wavesurfer.options.minPxPerSec === 0
           ? this.wavesurfer.getWrapper().scrollWidth / duration
           : this.wavesurfer.options.minPxPerSec
-      const x = e.clientX - this.container.getBoundingClientRect().left
+
+      // Get X relative to the container
+      const x = anchorX - this.container.getBoundingClientRect().left
       const width = this.container.clientWidth
       const scrollX = this.wavesurfer.getScroll()
 
@@ -159,6 +237,10 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   destroy() {
     if (this.container) {
       this.container.removeEventListener('wheel', this.onWheel)
+      // NEW: Remove touch listeners
+      this.container.removeEventListener('touchstart', this.onTouchStart)
+      this.container.removeEventListener('touchmove', this.onTouchMove)
+      this.container.removeEventListener('touchend', this.onTouchEnd)
     }
     super.destroy()
   }
