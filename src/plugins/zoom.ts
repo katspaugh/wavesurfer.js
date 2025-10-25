@@ -6,7 +6,8 @@
  * @author HoodyHuo (https://github.com/HoodyHuo)
  * @author Chris Morbitzer (https://github.com/cmorbitzer)
  * @author Sam Hulick (https://github.com/ffxsam)
- * @autor Gustav Sollenius (https://github.com/gustavsollenius)
+ * @author Gustav Sollenius (https://github.com/gustavsollenius)
+ * @author Viktor Jevdokimov (https://github.com/vitar)
  *
  * @example
  * // ... initialising wavesurfer with the plugin
@@ -65,11 +66,18 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   protected options: ZoomPluginOptions & typeof defaultOptions
   private wrapper: HTMLElement | undefined = undefined
   private container: HTMLElement | null = null
+  
+  // State for wheel zoom
   private accumulatedDelta = 0
   private pointerTime: number = 0
   private oldX: number = 0
   private endZoom: number = 0
   private startZoom: number = 0
+
+  // NEW: State for proportional pinch-to-zoom
+  private isPinching = false
+  private initialPinchDistance = 0
+  private initialZoom = 0
 
   constructor(options?: ZoomPluginOptions) {
     super(options || {})
@@ -86,7 +94,17 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
       return
     }
     this.container = this.wrapper.parentElement as HTMLElement
+
+    // Original wheel listener
     this.container.addEventListener('wheel', this.onWheel)
+
+    // NEW: Touch listeners for pinch-to-zoom
+    // We use { passive: false } to be able to call e.preventDefault()
+    // and stop the browser's native pinch-to-zoom on the page.
+    this.container.addEventListener('touchstart', this.onTouchStart, { passive: false, capture: true })
+    this.container.addEventListener('touchmove', this.onTouchMove, { passive: false, capture: true })
+    this.container.addEventListener('touchend', this.onTouchEnd, { passive: false, capture: true })
+    this.container.addEventListener('touchcancel', this.onTouchEnd, { passive: false })
 
     if (typeof this.options.maxZoom === 'undefined') {
       this.options.maxZoom = this.container.clientWidth
@@ -94,6 +112,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     this.endZoom = this.options.maxZoom
   }
 
+  // Original wheel logic (unchanged)
   private onWheel = (e: WheelEvent) => {
     if (!this.wavesurfer || !this.container || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) {
       return
@@ -141,6 +160,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     }
   }
 
+  // Original helper for wheel zoom (unchanged)
   private calculateNewZoom = (oldZoom: number, delta: number) => {
     let newZoom
     if (this.options.exponentialZooming) {
@@ -156,9 +176,102 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     return Math.min(newZoom, this.options.maxZoom!)
   }
 
+  // --- NEW: Pinch-to-Zoom Logic ---
+
+  // NEW: Get the distance between two touch points
+  private getTouchDistance(e: TouchEvent): number {
+    const touch1 = e.touches[0]
+    const touch2 = e.touches[1]
+    return Math.sqrt(Math.pow(touch2.clientX - touch1.clientX, 2) + Math.pow(touch2.clientY - touch1.clientY, 2))
+  }
+
+  // NEW: Get the center X coordinate between two touch points
+  private getTouchCenterX(e: TouchEvent): number {
+    const touch1 = e.touches[0]
+    const touch2 = e.touches[1]
+    return (touch1.clientX + touch2.clientX) / 2
+  }
+
+  // NEW: Handle touch start
+  private onTouchStart = (e: TouchEvent) => {
+    if (!this.wavesurfer || !this.container) return
+    // Check if two fingers are used
+    if (e.touches.length === 2) {
+      e.preventDefault()
+      this.isPinching = true
+
+      // Store initial pinch distance
+      this.initialPinchDistance = this.getTouchDistance(e)
+
+      // Store initial zoom level
+      const duration = this.wavesurfer.getDuration()
+      this.initialZoom =
+        this.wavesurfer.options.minPxPerSec === 0
+          ? this.wavesurfer.getWrapper().scrollWidth / duration
+          : this.wavesurfer.options.minPxPerSec
+
+      // Store anchor point for zooming
+      const x = this.getTouchCenterX(e) - this.container.getBoundingClientRect().left
+      const scrollX = this.wavesurfer.getScroll()
+      this.pointerTime = (scrollX + x) / this.initialZoom
+      this.oldX = x // Use oldX to store the anchor X position
+    }
+  }
+
+  // NEW: Handle touch move
+  private onTouchMove = (e: TouchEvent) => {
+    if (!this.isPinching || e.touches.length !== 2 || !this.wavesurfer || !this.container) {
+      return
+    }
+    e.preventDefault() // Stop browser page zoom
+    // Calculate new zoom level
+    const newDistance = this.getTouchDistance(e)
+    const scaleFactor = newDistance / this.initialPinchDistance
+    let newMinPxPerSec = this.initialZoom * scaleFactor
+
+    // Constrain the zoom
+    newMinPxPerSec = Math.min(newMinPxPerSec, this.options.maxZoom!)
+
+    // Calculate minimum zoom (fit to width)
+    const duration = this.wavesurfer.getDuration()
+    const width = this.container.clientWidth
+    const minZoom = width / duration
+
+    if (newMinPxPerSec < minZoom) {
+      newMinPxPerSec = minZoom
+    }
+
+    // Apply zoom and scroll
+    const newLeftSec = (width / newMinPxPerSec) * (this.oldX / width)
+
+    if (newMinPxPerSec === minZoom) {
+      this.wavesurfer.zoom(minZoom)
+      this.container.scrollLeft = 0
+    } else {
+      this.wavesurfer.zoom(newMinPxPerSec)
+      this.container.scrollLeft = (this.pointerTime - newLeftSec) * newMinPxPerSec
+    }
+  }
+
+  // NEW: Handle touch end
+  private onTouchEnd = (e: TouchEvent) => {
+    // If we were pinching and now have less than 2 fingers, stop
+    if (this.isPinching && e.touches.length < 2) {
+      this.isPinching = false
+      this.initialPinchDistance = 0
+      this.initialZoom = 0
+    }
+  }
+
+  // MODIFIED: Update destroy method
   destroy() {
     if (this.container) {
       this.container.removeEventListener('wheel', this.onWheel)
+      // NEW: Remove touch listeners
+      this.container.removeEventListener('touchstart', this.onTouchStart)
+      this.container.removeEventListener('touchmove', this.onTouchMove)
+      this.container.removeEventListener('touchend', this.onTouchEnd)
+      this.container.removeEventListener('touchcancel', this.onTouchEnd)
     }
     super.destroy()
   }

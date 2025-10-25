@@ -1,3 +1,6 @@
+// NEW: Add this map at the top of the file
+const activePointers = new Map<number, PointerEvent>()
+
 export function makeDraggable(
   element: HTMLElement | null,
   onDrag: (dx: number, dy: number, x: number, y: number) => void,
@@ -16,8 +19,17 @@ export function makeDraggable(
   const onPointerDown = (event: PointerEvent) => {
     if (event.button !== mouseButton) return
 
-    event.preventDefault()
-    event.stopPropagation()
+    // event.preventDefault() // <--- MODIFIED: REMOVED from here
+    // event.stopPropagation() // <--- MODIFIED: REMOVED from here
+
+    // NEW: Register the pointer
+    activePointers.set(event.pointerId, event)
+
+    // NEW: If this is a second finger, it's a pinch.
+    // Don't start a drag.
+    if (activePointers.size > 1) {
+      return
+    }
 
     let startX = event.clientX
     let startY = event.clientY
@@ -25,8 +37,11 @@ export function makeDraggable(
     const touchStartTime = Date.now()
 
     const onPointerMove = (event: PointerEvent) => {
-      event.preventDefault()
-      event.stopPropagation()
+      // NEW: If the event was already handled (by zoom), or is part of
+      // a multi-touch gesture, ignore it for dragging.
+      if (event.defaultPrevented || activePointers.size > 1) {
+        return
+      }
 
       if (isTouchDevice && Date.now() - touchStartTime < touchDelay) return
 
@@ -36,6 +51,10 @@ export function makeDraggable(
       const dy = y - startY
 
       if (isDragging || Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
+        // MODIFIED: Call preventDefault() and stopPropagation() *only* when a drag is confirmed
+        event.preventDefault()
+        event.stopPropagation()
+
         const rect = element.getBoundingClientRect()
         const { left, top } = rect
 
@@ -52,6 +71,9 @@ export function makeDraggable(
     }
 
     const onPointerUp = (event: PointerEvent) => {
+      // NEW: Unregister the pointer
+      activePointers.delete(event.pointerId)
+
       if (isDragging) {
         const x = event.clientX
         const y = event.clientY
@@ -64,6 +86,9 @@ export function makeDraggable(
     }
 
     const onPointerLeave = (e: PointerEvent) => {
+      // NEW: Unregister the pointer
+      activePointers.delete(e.pointerId)
+
       // Listen to events only on the document and not on inner elements
       if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
         onPointerUp(e)
@@ -78,6 +103,10 @@ export function makeDraggable(
     }
 
     const onTouchMove = (event: TouchEvent) => {
+      // NEW: This check is also needed for touch-based fallbacks
+      if (event.defaultPrevented || activePointers.size > 1) {
+        return
+      }
       if (isDragging) {
         event.preventDefault()
       }
@@ -107,5 +136,6 @@ export function makeDraggable(
   return () => {
     unsubscribeDocument()
     element.removeEventListener('pointerdown', onPointerDown)
+    activePointers.clear() // NEW: Clear on destroy
   }
 }

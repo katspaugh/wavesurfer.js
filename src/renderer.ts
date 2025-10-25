@@ -191,6 +191,7 @@ class Renderer extends EventEmitter<RendererEvents> {
         }
         :host .canvases {
           min-height: ${this.getHeight(this.options.height, this.options.splitChannels)}px;
+          pointer-events: none; /* <--- ADDED to move event target to stable .wrapper when rerender called */
         }
         :host .canvases > div {
           position: relative;
