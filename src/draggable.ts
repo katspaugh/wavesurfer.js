@@ -1,6 +1,3 @@
-// NEW: Add this map at the top of the file
-const activePointers = new Map<number, PointerEvent>()
-
 export function makeDraggable(
   element: HTMLElement | null,
   onDrag: (dx: number, dy: number, x: number, y: number) => void,
@@ -12,6 +9,8 @@ export function makeDraggable(
 ): () => void {
   if (!element) return () => void 0
 
+  // NEW: A map used to identify multi-touch
+  const activePointers = new Map<number, PointerEvent>()
   const isTouchDevice = matchMedia('(pointer: coarse)').matches
 
   let unsubscribeDocument = () => void 0

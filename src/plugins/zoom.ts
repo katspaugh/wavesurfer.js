@@ -104,7 +104,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     this.container.addEventListener('touchstart', this.onTouchStart, { passive: false, capture: true })
     this.container.addEventListener('touchmove', this.onTouchMove, { passive: false, capture: true })
     this.container.addEventListener('touchend', this.onTouchEnd, { passive: false, capture: true })
-    this.container.addEventListener('touchcancel', this.onTouchEnd, { passive: false })
+    this.container.addEventListener('touchcancel', this.onTouchEnd, { passive: false, capture: true })
 
     if (typeof this.options.maxZoom === 'undefined') {
       this.options.maxZoom = this.container.clientWidth
