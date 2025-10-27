@@ -9,6 +9,7 @@ export function makeDraggable(
 ): () => void {
   if (!element) return () => void 0
 
+  const activePointers = new Map<number, PointerEvent>()
   const isTouchDevice = matchMedia('(pointer: coarse)').matches
 
   let unsubscribeDocument = () => void 0
@@ -16,8 +17,10 @@ export function makeDraggable(
   const onPointerDown = (event: PointerEvent) => {
     if (event.button !== mouseButton) return
 
-    event.preventDefault()
-    event.stopPropagation()
+    activePointers.set(event.pointerId, event)
+    if (activePointers.size > 1) {
+      return
+    }
 
     let startX = event.clientX
     let startY = event.clientY
@@ -25,8 +28,9 @@ export function makeDraggable(
     const touchStartTime = Date.now()
 
     const onPointerMove = (event: PointerEvent) => {
-      event.preventDefault()
-      event.stopPropagation()
+      if (event.defaultPrevented || activePointers.size > 1) {
+        return
+      }
 
       if (isTouchDevice && Date.now() - touchStartTime < touchDelay) return
 
@@ -36,6 +40,9 @@ export function makeDraggable(
       const dy = y - startY
 
       if (isDragging || Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
+        event.preventDefault()
+        event.stopPropagation()
+
         const rect = element.getBoundingClientRect()
         const { left, top } = rect
 
@@ -52,6 +59,7 @@ export function makeDraggable(
     }
 
     const onPointerUp = (event: PointerEvent) => {
+      activePointers.delete(event.pointerId)
       if (isDragging) {
         const x = event.clientX
         const y = event.clientY
@@ -64,7 +72,7 @@ export function makeDraggable(
     }
 
     const onPointerLeave = (e: PointerEvent) => {
-      // Listen to events only on the document and not on inner elements
+      activePointers.delete(e.pointerId)
       if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
         onPointerUp(e)
       }
@@ -78,6 +86,9 @@ export function makeDraggable(
     }
 
     const onTouchMove = (event: TouchEvent) => {
+      if (event.defaultPrevented || activePointers.size > 1) {
+        return
+      }
       if (isDragging) {
         event.preventDefault()
       }
@@ -107,5 +118,6 @@ export function makeDraggable(
   return () => {
     unsubscribeDocument()
     element.removeEventListener('pointerdown', onPointerDown)
+    activePointers.clear()
   }
 }
