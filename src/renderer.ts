@@ -14,6 +14,7 @@ type RendererEvents = {
   scroll: [relativeStart: number, relativeEnd: number, scrollLeft: number, scrollRight: number]
   render: []
   rendered: []
+  resize: []
 }
 
 class Renderer extends EventEmitter<RendererEvents> {
@@ -123,6 +124,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     if (width === this.lastContainerWidth && this.options.height !== 'auto') return
     this.lastContainerWidth = width
     this.reRender()
+    this.emit('resize')
   }
 
   private initDrag() {

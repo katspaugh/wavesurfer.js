@@ -633,14 +633,16 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
       const unsubscribeScroll = this.wavesurfer.on('scroll', renderIfVisible)
       const unsubscribeZoom = this.wavesurfer.on('zoom', renderIfVisible)
+      const unsubscribeResize = this.wavesurfer.on('resize', renderIfVisible);
 
       // Only push the unsubscribe functions, not the once() return values
-      this.subscriptions.push(unsubscribeScroll, unsubscribeZoom)
+      this.subscriptions.push(unsubscribeScroll, unsubscribeZoom, unsubscribeResize)
 
       // Clean up subscriptions when region is removed
       region.once('remove', () => {
         unsubscribeScroll()
         unsubscribeZoom()
+        unsubscribeResize()
       })
     }, 0)
   }
