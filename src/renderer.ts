@@ -3,6 +3,8 @@ import EventEmitter from './event-emitter.js'
 import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
 import { RenderScheduler, type RenderPriority } from './reactive/render-scheduler.js'
+import { createScrollStream, type ScrollStream } from './reactive/scroll-stream.js'
+import { effect } from './reactive/store.js'
 
 type ChannelData = utils.ChannelData
 
@@ -38,6 +40,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private dragUnsubscribe: (() => void) | null = null
   private renderScheduler = new RenderScheduler()
   private lastProgressState: { progress: number; isPlaying: boolean } | null = null
+  private scrollStream: ScrollStream | null = null
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
@@ -99,16 +102,17 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.initDrag()
     }
 
-    // Add a scroll listener
-    this.scrollContainer.addEventListener('scroll', () => {
-      const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
-      const { startX, endX } = utils.calculateScrollPercentages({
-        scrollLeft,
-        scrollWidth,
-        clientWidth,
-      })
-      this.emit('scroll', startX, endX, scrollLeft, scrollLeft + clientWidth)
-    })
+    // Add reactive scroll stream
+    this.scrollStream = createScrollStream(this.scrollContainer)
+
+    // Emit scroll events when percentages change
+    const unsubscribeScroll = effect(() => {
+      const { startX, endX } = this.scrollStream!.percentages.value
+      const { left, right } = this.scrollStream!.bounds.value
+      this.emit('scroll', startX, endX, left, right)
+    }, [this.scrollStream.percentages])
+
+    this.subscriptions.push(unsubscribeScroll)
 
     // Re-render the waveform on container resize
     if (typeof ResizeObserver === 'function') {
@@ -293,6 +297,12 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
     this.unsubscribeOnScroll?.forEach((unsubscribe) => unsubscribe())
     this.unsubscribeOnScroll = []
+
+    // Cleanup scroll stream
+    if (this.scrollStream) {
+      this.scrollStream.cleanup()
+      this.scrollStream = null
+    }
 
     // Cancel any pending renders
     this.renderScheduler.cancelRender()

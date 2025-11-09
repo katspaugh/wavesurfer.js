@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">91.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/9</span>
+                <span class='fraction'>11/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">60% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>3/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">91.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/9</span>
+                <span class='fraction'>11/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -143,6 +143,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -172,20 +174,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -203,13 +202,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">17x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -250,17 +250,17 @@ export interface ProgressProps {
  * progress.update?.({ progress: 0.5 })
  * ```
  */
-export function <span class="fstat-no" title="function not covered" >createProgressComponent(</span>) {
-<span class="cstat-no" title="statement not covered" >  return createComponent&lt;ProgressProps&gt;(</span>
-<span class="fstat-no" title="function not covered" >    (p</span>rops) =&gt; {
+export function createProgressComponent() {
+  return createComponent&lt;ProgressProps&gt;(
+    (props) =&gt; {
       // Inner div for proper overflow clipping
-      const inner = <span class="cstat-no" title="statement not covered" >createElement('div', {</span>
+      const inner = createElement('div', {
         style: {
           position: 'relative',
         },
       })
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      return createElement('div', {</span>
+      return createElement('div', {
         class: 'progress',
         style: {
           position: 'absolute',
@@ -271,21 +271,21 @@ export function <span class="fstat-no" title="function not covered" >createProgr
           height: props.height,
           overflow: 'hidden',
           pointerEvents: 'none',
-          backgroundColor: props.color || '',
+          backgroundColor: props.color || <span class="branch-1 cbranch-no" title="branch not covered" >'',</span>
         },
         children: {
           inner,
         },
       })
     },
-<span class="fstat-no" title="function not covered" >    (e</span>lement, props) =&gt; {
-<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (props.progress !== undefined) {</span>
-<span class="cstat-no" title="statement not covered" >        element.style.width = `${props.progress * 100}%`</span>
+    (element, props) =&gt; {
+      if (props.progress !== undefined) {
+        element.style.width = `${props.progress * 100}%`
       }
-<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (props.color !== undefined) {</span>
-<span class="cstat-no" title="statement not covered" >        element.style.backgroundColor = props.color</span>
+      if (props.color !== undefined) {
+        element.style.backgroundColor = props.color
       }
-<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (props.height !== undefined) {</span>
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (props.height !== undefined) {
 <span class="cstat-no" title="statement not covered" >        element.style.height = props.height</span>
       }
     },
@@ -298,7 +298,7 @@ export function <span class="fstat-no" title="function not covered" >createProgr
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-09T21:13:36.320Z
+                at 2025-11-09T21:19:54.590Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
