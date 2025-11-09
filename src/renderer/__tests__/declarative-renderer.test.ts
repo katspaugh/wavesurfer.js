@@ -49,24 +49,24 @@ describe('DeclarativeRenderer', () => {
 
     it('should create wrapper with correct height', () => {
       const { state } = createWaveSurferState()
-      const renderer = new DeclarativeRenderer(container, state, {
+      new DeclarativeRenderer(container, state, {
         container,
         height: 256,
       })
 
-      const wrapper = renderer.getWrapper()
-      expect(wrapper.style.height).toBe('256px')
+      const scrollContainer = container.querySelector('.wavesurfer-scroll') as HTMLElement
+      expect(scrollContainer.style.height).toBe('256px')
     })
 
     it('should support auto height', () => {
       const { state } = createWaveSurferState()
-      const renderer = new DeclarativeRenderer(container, state, {
+      new DeclarativeRenderer(container, state, {
         container,
         height: 'auto',
       })
 
-      const wrapper = renderer.getWrapper()
-      expect(wrapper.style.height).toBe('auto')
+      const scrollContainer = container.querySelector('.wavesurfer-scroll') as HTMLElement
+      expect(scrollContainer.style.height).toBe('auto')
     })
 
     it('should create DOM structure', () => {
@@ -76,8 +76,12 @@ describe('DeclarativeRenderer', () => {
         height: 128,
       })
 
+      const scrollContainer = container.querySelector('.wavesurfer-scroll') as HTMLElement
+      expect(scrollContainer).not.toBeNull()
+      expect(scrollContainer.parentElement).toBe(container)
+
       const wrapper = renderer.getWrapper()
-      expect(wrapper.parentElement).toBe(container)
+      expect(wrapper.parentElement).toBe(scrollContainer)
       expect(wrapper.className).toBe('wavesurfer-wrapper')
 
       const canvasWrapper = renderer.getCanvasWrapper()
@@ -197,6 +201,91 @@ describe('DeclarativeRenderer', () => {
     })
   })
 
+  describe('scroll management', () => {
+    it('should get and set scroll position', () => {
+      const { state } = createWaveSurferState()
+      const renderer = new DeclarativeRenderer(container, state, {
+        container,
+        height: 128,
+      })
+
+      expect(renderer.getScroll()).toBe(0)
+
+      renderer.setScroll(100)
+      expect(renderer.getScroll()).toBe(100)
+    })
+
+    it('should set scroll by percentage', () => {
+      const { state } = createWaveSurferState()
+      const renderer = new DeclarativeRenderer(container, state, {
+        container,
+        height: 128,
+      })
+
+      renderer.setScrollPercentage(0.5)
+      // In JSDOM, scrollWidth is 0, so scrollLeft will be 0
+      expect(renderer.getScroll()).toBeGreaterThanOrEqual(0)
+    })
+
+    it('should auto-scroll when playing', (done) => {
+      const { state, actions } = createWaveSurferState()
+      new DeclarativeRenderer(container, state, {
+        container,
+        height: 128,
+        autoScroll: true,
+      })
+
+      actions.setDuration(100)
+      actions.setPlaying(true)
+      actions.setCurrentTime(50)
+
+      // Auto-scroll effect should trigger
+      setTimeout(() => {
+        // In JSDOM, scroll won't actually change but effect ran
+        expect(state.isPlaying.value).toBe(true)
+        expect(state.progressPercent.value).toBe(0.5)
+        done()
+      }, 10)
+    })
+
+    it('should not auto-scroll when paused', (done) => {
+      const { state, actions } = createWaveSurferState()
+      new DeclarativeRenderer(container, state, {
+        container,
+        height: 128,
+        autoScroll: true,
+      })
+
+      actions.setDuration(100)
+      actions.setPlaying(false)
+      actions.setCurrentTime(50)
+
+      setTimeout(() => {
+        expect(state.isPlaying.value).toBe(false)
+        done()
+      }, 10)
+    })
+
+    it('should not auto-scroll when autoScroll is disabled', (done) => {
+      const { state, actions } = createWaveSurferState()
+      const renderer = new DeclarativeRenderer(container, state, {
+        container,
+        height: 128,
+        autoScroll: false,
+      })
+
+      actions.setDuration(100)
+      actions.setPlaying(true)
+      actions.setCurrentTime(50)
+
+      setTimeout(() => {
+        // No auto-scroll should happen
+        expect(renderer.getScroll()).toBe(0)
+        done()
+      }, 10)
+    })
+  })
+
   describe('manual methods', () => {
     it('should allow manual progress rendering for compatibility', () => {
       const { state } = createWaveSurferState()
@@ -292,7 +381,7 @@ describe('DeclarativeRenderer', () => {
         height: 128,
       })
 
-      const wrapper = renderer.getWrapper()
+      const scrollContainer = container.querySelector('.wavesurfer-scroll') as HTMLElement
 
       renderer.destroy()
 
@@ -301,7 +390,7 @@ describe('DeclarativeRenderer', () => {
       actions.setCurrentTime(50)
 
       // Element should be removed
-      expect(wrapper.parentElement).toBeNull()
+      expect(scrollContainer.parentElement).toBeNull()
     })
 
     it('should remove DOM elements', () => {

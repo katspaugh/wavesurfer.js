@@ -17,6 +17,8 @@ export interface DeclarativeRendererOptions {
   cursorColor?: string
   cursorWidth?: number
   progressColor?: string
+  autoScroll?: boolean
+  autoCenter?: boolean
 }
 
 /**
@@ -34,12 +36,14 @@ export interface DeclarativeRendererOptions {
 export class DeclarativeRenderer {
   private container: HTMLElement
   private wrapper: HTMLElement
+  private scrollContainer: HTMLElement
   private canvasWrapper: HTMLElement
   private state: WaveSurferState
   private options: DeclarativeRendererOptions
   private cursor: Component<CursorProps> | null = null
   private progress: Component<ProgressProps> | null = null
   private cleanupFunctions: Array<() => void> = []
+  private isScrollable = false
 
   constructor(container: HTMLElement | string, state: WaveSurferState, options: DeclarativeRendererOptions) {
     this.state = state
@@ -57,13 +61,35 @@ export class DeclarativeRenderer {
     }
 
     // Create DOM structure
+    this.scrollContainer = this.createScrollContainer()
     this.wrapper = this.createWrapper()
     this.canvasWrapper = this.createCanvasWrapper()
     this.wrapper.appendChild(this.canvasWrapper)
-    this.container.appendChild(this.wrapper)
+    this.scrollContainer.appendChild(this.wrapper)
+    this.container.appendChild(this.scrollContainer)
 
     // Setup reactive rendering
     this.setupReactiveRendering()
+  }
+
+  /**
+   * Create the scroll container
+   */
+  private createScrollContainer(): HTMLElement {
+    const scroll = document.createElement('div')
+    scroll.className = 'wavesurfer-scroll'
+    scroll.style.position = 'relative'
+    scroll.style.width = '100%'
+    scroll.style.overflowX = 'auto'
+    scroll.style.overflowY = 'hidden'
+
+    if (this.options.height === 'auto') {
+      scroll.style.height = 'auto'
+    } else {
+      scroll.style.height = `${this.options.height}px`
+    }
+
+    return scroll
   }
 
   /**
@@ -74,12 +100,7 @@ export class DeclarativeRenderer {
     wrapper.className = 'wavesurfer-wrapper'
     wrapper.style.position = 'relative'
     wrapper.style.width = '100%'
-
-    if (this.options.height === 'auto') {
-      wrapper.style.height = 'auto'
-    } else {
-      wrapper.style.height = `${this.options.height}px`
-    }
+    wrapper.style.height = '100%'
 
     return wrapper
   }
@@ -157,7 +178,29 @@ export class DeclarativeRenderer {
    * Get current width
    */
   getWidth(): number {
-    return this.wrapper.clientWidth
+    return this.scrollContainer.clientWidth
+  }
+
+  /**
+   * Get scroll position
+   */
+  getScroll(): number {
+    return this.scrollContainer.scrollLeft
+  }
+
+  /**
+   * Set scroll position
+   */
+  setScroll(pixels: number): void {
+    this.scrollContainer.scrollLeft = pixels
+  }
+
+  /**
+   * Set scroll by percentage
+   */
+  setScrollPercentage(percent: number): void {
+    const { scrollWidth } = this.scrollContainer
+    this.setScroll(scrollWidth * percent)
   }
 
   /**
@@ -208,7 +251,7 @@ export class DeclarativeRenderer {
     this.progress?.destroy?.()
 
     // Remove DOM
-    this.container.removeChild(this.wrapper)
+    this.container.removeChild(this.scrollContainer)
 
     // Clear references
     this.cursor = null
