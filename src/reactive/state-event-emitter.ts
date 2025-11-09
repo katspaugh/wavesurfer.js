@@ -100,6 +100,31 @@ export function setupStateEventEmission(state: WaveSurferState, emitter: EventEm
   )
 
   // ============================================================================
+  // Finish Event
+  // ============================================================================
+
+  // Emit finish when playback ends (reached duration and stopped)
+  let wasPlayingAtEnd = false
+  cleanups.push(
+    effect(() => {
+      const isPlaying = state.isPlaying.value
+      const currentTime = state.currentTime.value
+      const duration = state.duration.value
+
+      // Check if we're at the end
+      const isAtEnd = duration > 0 && currentTime >= duration
+
+      // Emit finish when we were playing at end and now stopped
+      if (wasPlayingAtEnd && !isPlaying && isAtEnd) {
+        emitter.emit('finish')
+      }
+
+      // Track if we're playing at the end
+      wasPlayingAtEnd = isPlaying && isAtEnd
+    }, [state.isPlaying, state.currentTime, state.duration]),
+  )
+
+  // ============================================================================
   // Zoom Events
   // ============================================================================
 

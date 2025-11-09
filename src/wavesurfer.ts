@@ -283,22 +283,16 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private initPlayerEvents() {
+    // Initial play state
     if (this.isPlaying()) {
       this.emit('play')
     }
 
+    // Setup side effects for media events
+    // Note: Event emission is handled by setupStateEventEmission() via reactive state
     this.mediaSubscriptions.push(
-      this.onMediaEvent('timeupdate', () => {
-        const currentTime = this.updateProgress()
-        this.emit('timeupdate', currentTime)
-      }),
-
-      this.onMediaEvent('play', () => {
-        this.emit('play')
-      }),
-
+      // Clear stopAtPosition when playback is interrupted
       this.onMediaEvent('pause', () => {
-        this.emit('pause')
         this.stopAtPosition = null
       }),
 
@@ -307,17 +301,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }),
 
       this.onMediaEvent('ended', () => {
-        this.emit('timeupdate', this.getDuration())
-        this.emit('finish')
         this.stopAtPosition = null
       }),
 
-      this.onMediaEvent('seeking', () => {
-        this.emit('seeking', this.getCurrentTime())
-      }),
-
       this.onMediaEvent('error', () => {
-        this.emit('error', (this.getMediaElement().error ?? new Error('Media error')) as Error)
         this.stopAtPosition = null
       }),
     )
