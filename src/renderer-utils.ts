@@ -23,6 +23,81 @@ export function clampToUnit(value: number): number {
   return value
 }
 
+// ============================================================================
+// Pure Peak Calculation Functions
+// ============================================================================
+// These functions calculate peaks from audio data without side effects.
+// They can be easily tested and run in Web Workers.
+
+/**
+ * Find the peak (max absolute value) in a range of audio data
+ * Pure function - no side effects
+ *
+ * @param data - The audio data array
+ * @param start - Start index (inclusive)
+ * @param end - End index (exclusive)
+ * @returns The peak value (always positive)
+ */
+export function findPeakInRange(data: Float32Array | number[], start: number, end: number): number {
+  let peak = 0
+  for (let i = start; i < end; i++) {
+    const abs = Math.abs(data[i] || 0)
+    if (abs > peak) peak = abs
+  }
+  return peak
+}
+
+/**
+ * Calculate peaks for a given number of segments
+ * Pure function - no side effects
+ *
+ * @param channelData - The audio channel data
+ * @param numPeaks - Number of peaks to calculate
+ * @returns Array of peak values
+ */
+export function calculatePeaks(channelData: Float32Array | number[], numPeaks: number): Float32Array {
+  const length = channelData.length
+  const blockSize = Math.floor(length / numPeaks)
+  const peaks = new Float32Array(numPeaks)
+
+  for (let i = 0; i < numPeaks; i++) {
+    const start = i * blockSize
+    const end = start + blockSize
+    peaks[i] = findPeakInRange(channelData, start, end)
+  }
+
+  return peaks
+}
+
+/**
+ * Find peaks in two channels (e.g., stereo)
+ * Pure function - no side effects
+ *
+ * @param topChannel - First channel data
+ * @param bottomChannel - Second channel data
+ * @param start - Start index
+ * @param end - End index
+ * @returns Object with maxTop and maxBottom peak values
+ */
+export function findPeaksInRange(
+  topChannel: Float32Array | number[],
+  bottomChannel: Float32Array | number[],
+  start: number,
+  end: number,
+): { maxTop: number; maxBottom: number } {
+  let maxTop = 0
+  let maxBottom = 0
+
+  for (let i = start; i < end; i++) {
+    const magnitudeTop = Math.abs(topChannel[i] || 0)
+    const magnitudeBottom = Math.abs(bottomChannel[i] || 0)
+    if (magnitudeTop > maxTop) maxTop = magnitudeTop
+    if (magnitudeBottom > maxBottom) maxBottom = magnitudeBottom
+  }
+
+  return { maxTop, maxBottom }
+}
+
 export function calculateBarRenderConfig({
   width,
   height,
