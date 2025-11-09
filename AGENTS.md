@@ -87,11 +87,53 @@ bd list --json | jq 'map(select(.title | contains("Phase 2, Task"))) | length'
 - Use `bd show <task-id>` to see full task details with code examples
 - Each task has explicit dependency relationships
 
+## Task Selection Guidelines
+
+**Focus on converting existing functionality, not adding new features:**
+- ✅ **Convert:** Refactor imperative code to reactive patterns
+- ✅ **Extract:** Separate pure functions from side effects
+- ❌ **Avoid:** Adding new features like keyboard shortcuts (unless they existed before)
+- When in doubt, check if the functionality already exists in the codebase
+
+**Close duplicate or already-completed tasks:**
+- Some tasks may overlap or be completed as part of other work
+- Use `bd close <task-id> --reason "explanation"` to close duplicates
+- Example: Task for audio events was completed during Player refactoring
+
+**Prioritize tasks without dependencies:**
+- Check `bd show <task-id>` to see dependencies
+- Tasks with "Blocks: None" or all dependencies closed are ready
+- Phase 4 tasks (pure function extraction) are often independent
+
 # Coding Conventions
 
 - Use TypeScript. Prefer ES modules.
 - Follow the repo Prettier configuration (2 spaces, print width 120, single quotes, no semicolons, trailing commas).
 - Do not commit files from `dist` or `node_modules`.
+
+## Code Quality Practices
+
+**Use existing utilities instead of verbose code:**
+- ✅ Use `dom.ts` utilities (`createElement`) instead of manual DOM manipulation
+- ✅ Example: Replace multiple `element.style.x = y` with declarative style objects
+- Check existing utility files before writing new code: `dom.ts`, `renderer-utils.ts`, `decoder.ts`
+
+**Pure function extraction guidelines:**
+- Mark pure functions with "Pure function - no side effects" JSDoc comment
+- Group related pure functions together with section headers
+- Separate pure functions from side-effecting wrappers
+- Pure functions should:
+  - Have no side effects
+  - Always return same output for same input
+  - Be testable without mocking
+  - Be composable and reusable
+
+**Reactive pattern guidelines:**
+- Use signals for reactive state: `signal<T>(initialValue)`
+- Use effects for side effects: `effect(() => { ... }, [dependencies])`
+- Use computed for derived values: `computed(() => { ... }, [dependencies])`
+- Always clean up subscriptions in destroy/cleanup
+- Pattern: signal → effect → emit events
 
 # Programmatic Checks
 
