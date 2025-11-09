@@ -9,7 +9,7 @@ import { effect, type Signal } from './store.js'
 import type { WaveSurferState } from '../state/wavesurfer-state.js'
 
 export type EventEmitter = {
-  emit: (event: string, ...args: any[]) => void
+  emit(event: string, ...args: any[]): void
 }
 
 /**

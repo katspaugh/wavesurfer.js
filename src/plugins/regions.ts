@@ -472,6 +472,11 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     // Position will update automatically via reactive effect
   }
 
+  private setPart() {
+    const isMarker = this.start === this.end
+    this.element?.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
+  }
+
   /** Play the region from the start, pass `true` to stop at region end */
   public play(stopAtEnd?: boolean) {
     this.emit('play', stopAtEnd && this.end !== this.start ? this.end : undefined)
