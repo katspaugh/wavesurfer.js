@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>16/20</span>
+                <span class='fraction'>0/18</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>13/20</span>
+                <span class='fraction'>0/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/2</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>16/20</span>
+                <span class='fraction'>0/18</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -115,42 +115,42 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">84x</span>
-<span class="cline-any cline-yes">168x</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-yes">28x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">140x</span>
-<span class="cline-any cline-yes">84x</span>
-<span class="cline-any cline-yes">56x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">56x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">84x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">84x</span>
-<span class="cline-any cline-yes">84x</span>
-<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">type TreeNode = { [key: string]: string | number | boolean | CSSStyleDeclaration | TreeNode | Node } &amp; {
   xmlns?: string
   style?: Partial&lt;CSSStyleDeclaration&gt;
@@ -158,40 +158,40 @@
   children?: TreeNode
 }
 &nbsp;
-function renderNode(tagName: string, content: TreeNode): HTMLElement | SVGElement {
-  const element = content.xmlns
-    ? (<span class="branch-0 cbranch-no" title="branch not covered" >document.createElementNS(content.xmlns, tagName) as SVGElement)</span>
+function <span class="fstat-no" title="function not covered" >renderNode(</span>tagName: string, content: TreeNode): HTMLElement | SVGElement {
+  const element = <span class="cstat-no" title="statement not covered" >content.xmlns</span>
+    ? (document.createElementNS(content.xmlns, tagName) as SVGElement)
     : (document.createElement(tagName) as HTMLElement)
 &nbsp;
-  for (const [key, value] of Object.entries(content)) {
-    if (key === 'children' &amp;&amp; value) {
-      for (const [childTag, childValue] of Object.entries(value as TreeNode)) {
-        if (childValue instanceof Node) {
-          element.appendChild(childValue)
-        } else <span class="cstat-no" title="statement not covered" ><span class="missing-if-branch" title="else path not taken" >E</span>if (typeof childValue === 'string') {</span>
+<span class="cstat-no" title="statement not covered" >  for (const [key, value] of Object.entries(content)) {</span>
+<span class="cstat-no" title="statement not covered" >    if (key === 'children' &amp;&amp; value) {</span>
+<span class="cstat-no" title="statement not covered" >      for (const [childTag, childValue] of Object.entries(value as TreeNode)) {</span>
+<span class="cstat-no" title="statement not covered" >        if (childValue instanceof Node) {</span>
+<span class="cstat-no" title="statement not covered" >          element.appendChild(childValue)</span>
+        } else <span class="cstat-no" title="statement not covered" >if (typeof childValue === 'string') {</span>
 <span class="cstat-no" title="statement not covered" >          element.appendChild(document.createTextNode(childValue))</span>
         } else {
 <span class="cstat-no" title="statement not covered" >          element.appendChild(renderNode(childTag, childValue as TreeNode))</span>
         }
       }
-    } else if (key === 'style') {
-      Object.assign((element as HTMLElement).style, value)
-    } else <span class="missing-if-branch" title="if path not taken" >I</span>if (key === 'textContent') {
+    } else <span class="cstat-no" title="statement not covered" >if (key === 'style') {</span>
+<span class="cstat-no" title="statement not covered" >      Object.assign((element as HTMLElement).style, value)</span>
+    } else <span class="cstat-no" title="statement not covered" >if (key === 'textContent') {</span>
 <span class="cstat-no" title="statement not covered" >      element.textContent = value as string</span>
     } else {
-      element.setAttribute(key, value.toString())
+<span class="cstat-no" title="statement not covered" >      element.setAttribute(key, value.toString())</span>
     }
   }
 &nbsp;
-  return element
+<span class="cstat-no" title="statement not covered" >  return element</span>
 }
 &nbsp;
 export function createElement(tagName: string, content: TreeNode &amp; { xmlns: string }, container?: Node): SVGElement
 export function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement
-export function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement | SVGElement {
-  const el = renderNode(tagName, content || <span class="branch-1 cbranch-no" title="branch not covered" >{})</span>
-<span class="branch-1 cbranch-no" title="branch not covered" >  container?.appendChild(el)</span>
-  return el
+export function <span class="fstat-no" title="function not covered" >createElement(</span>tagName: string, content?: TreeNode, container?: Node): HTMLElement | SVGElement {
+  const el = <span class="cstat-no" title="statement not covered" >renderNode(tagName, content || {})</span>
+<span class="cstat-no" title="statement not covered" >  container?.appendChild(el)</span>
+<span class="cstat-no" title="statement not covered" >  return el</span>
 }
 &nbsp;
 export default createElement
@@ -202,7 +202,7 @@ export default createElement
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-09T21:19:54.590Z
+                at 2025-11-09T21:21:24.150Z
             </div>
         <script src="../prettify.js"></script>
         <script>
