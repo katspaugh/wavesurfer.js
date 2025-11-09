@@ -34,20 +34,107 @@ export type TimelinePluginOptions = {
   secondaryLabelOpacity?: number
 }
 
+// ============================================================================
+// Pure Timeline Calculation Functions
+// ============================================================================
+// These functions calculate timeline intervals and formatting without side effects.
+
+/**
+ * Calculate optimal time interval between notches based on pixel density
+ * Pure function - no side effects
+ *
+ * @param pxPerSec - Pixels per second of audio
+ * @returns Time interval in seconds between notches
+ */
+export function calculateTimeInterval(pxPerSec: number): number {
+  if (pxPerSec >= 25) {
+    return 1
+  } else if (pxPerSec * 5 >= 25) {
+    return 5
+  } else if (pxPerSec * 15 >= 25) {
+    return 15
+  }
+  return Math.ceil(0.5 / pxPerSec) * 60
+}
+
+/**
+ * Calculate interval for primary (most prominent) labels
+ * Pure function - no side effects
+ *
+ * @param pxPerSec - Pixels per second of audio
+ * @returns Time interval in seconds for primary labels
+ */
+export function calculatePrimaryLabelInterval(pxPerSec: number): number {
+  if (pxPerSec >= 25) {
+    return 10
+  } else if (pxPerSec * 5 >= 25) {
+    return 6
+  } else if (pxPerSec * 15 >= 25) {
+    return 4
+  }
+  return 4
+}
+
+/**
+ * Calculate interval for secondary labels
+ * Pure function - no side effects
+ *
+ * @param pxPerSec - Pixels per second of audio
+ * @returns Time interval in seconds for secondary labels
+ */
+export function calculateSecondaryLabelInterval(pxPerSec: number): number {
+  if (pxPerSec >= 25) {
+    return 5
+  } else if (pxPerSec * 5 >= 25) {
+    return 2
+  } else if (pxPerSec * 15 >= 25) {
+    return 2
+  }
+  return 2
+}
+
+/**
+ * Format seconds into a human-readable time label
+ * Pure function - no side effects
+ *
+ * @param seconds - Time in seconds
+ * @returns Formatted time string (e.g., "1:30" or "5.234")
+ */
+export function formatTimeLabel(seconds: number): string {
+  if (seconds / 60 > 1) {
+    // calculate minutes and seconds from seconds count
+    const minutes = Math.floor(seconds / 60)
+    seconds = Math.round(seconds % 60)
+    const paddedSeconds = `${seconds < 10 ? '0' : ''}${seconds}`
+    return `${minutes}:${paddedSeconds}`
+  }
+  const rounded = Math.round(seconds * 1000) / 1000
+  return `${rounded}`
+}
+
+/**
+ * Check if a notch is visible within scroll bounds
+ * Pure function - no side effects
+ *
+ * @param notchStart - Start position of notch in pixels
+ * @param notchWidth - Width of notch in pixels
+ * @param scrollLeft - Left edge of visible area
+ * @param scrollRight - Right edge of visible area
+ * @returns True if notch is visible
+ */
+export function isNotchVisible(
+  notchStart: number,
+  notchWidth: number,
+  scrollLeft: number,
+  scrollRight: number,
+): boolean {
+  return notchStart >= scrollLeft && notchStart + notchWidth < scrollRight
+}
+
 const defaultOptions = {
   height: 20,
   timeOffset: 0,
-  formatTimeCallback: (seconds: number) => {
-    if (seconds / 60 > 1) {
-      // calculate minutes and seconds from seconds count
-      const minutes = Math.floor(seconds / 60)
-      seconds = Math.round(seconds % 60)
-      const paddedSeconds = `${seconds < 10 ? '0' : ''}${seconds}`
-      return `${minutes}:${paddedSeconds}`
-    }
-    const rounded = Math.round(seconds * 1000) / 1000
-    return `${rounded}`
-  },
+  formatTimeCallback: formatTimeLabel,
 }
 
 export type TimelinePluginEvents = BasePluginEvents & {
@@ -114,42 +201,6 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     return createElement('div', { part: 'timeline-wrapper', style: { pointerEvents: 'none' } })
   }
 
-  // Return how many seconds should be between each notch
-  private defaultTimeInterval(pxPerSec: number): number {
-    if (pxPerSec >= 25) {
-      return 1
-    } else if (pxPerSec * 5 >= 25) {
-      return 5
-    } else if (pxPerSec * 15 >= 25) {
-      return 15
-    }
-    return Math.ceil(0.5 / pxPerSec) * 60
-  }
-
-  // Return the cadence of notches that get labels in the primary color.
-  private defaultPrimaryLabelInterval(pxPerSec: number): number {
-    if (pxPerSec >= 25) {
-      return 10
-    } else if (pxPerSec * 5 >= 25) {
-      return 6
-    } else if (pxPerSec * 15 >= 25) {
-      return 4
-    }
-    return 4
-  }
-
-  // Return the cadence of notches that get labels in the secondary color.
-  private defaultSecondaryLabelInterval(pxPerSec: number): number {
-    if (pxPerSec >= 25) {
-      return 5
-    } else if (pxPerSec * 5 >= 25) {
-      return 2
-    } else if (pxPerSec * 15 >= 25) {
-      return 2
-    }
-    return 2
-  }
-
   private virtualAppend(start: number, container: HTMLElement, element: HTMLElement) {
     // Store notch metadata for batch updates
     this.notchElements.set(element, {
@@ -164,7 +215,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     const scrollRight = scrollLeft + this.wavesurfer.getWidth()
 
     const notchData = this.notchElements.get(element)!
-    const isVisible = start >= scrollLeft && start + notchData.width < scrollRight
+    const isVisible = isNotchVisible(start, notchData.width, scrollLeft, scrollRight)
     notchData.wasVisible = isVisible
 
     if (isVisible) {
@@ -174,7 +225,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
   private updateVisibleNotches(scrollLeft: number, scrollRight: number, container: HTMLElement) {
     this.notchElements.forEach((notchData, element) => {
-      const isVisible = notchData.start >= scrollLeft && notchData.start + notchData.width < scrollRight
+      const isVisible = isNotchVisible(notchData.start, notchData.width, scrollLeft, scrollRight)
 
       if (isVisible === notchData.wasVisible) return
       notchData.wasVisible = isVisible
@@ -194,10 +245,10 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
     const duration = this.wavesurfer?.getDuration() ?? this.options.duration ?? 0
     const pxPerSec = (this.wavesurfer?.getWrapper().scrollWidth || this.timelineWrapper.scrollWidth) / duration
-    const timeInterval = this.options.timeInterval ?? this.defaultTimeInterval(pxPerSec)
-    const primaryLabelInterval = this.options.primaryLabelInterval ?? this.defaultPrimaryLabelInterval(pxPerSec)
+    const timeInterval = this.options.timeInterval ?? calculateTimeInterval(pxPerSec)
+    const primaryLabelInterval = this.options.primaryLabelInterval ?? calculatePrimaryLabelInterval(pxPerSec)
     const primaryLabelSpacing = this.options.primaryLabelSpacing
-    const secondaryLabelInterval = this.options.secondaryLabelInterval ?? this.defaultSecondaryLabelInterval(pxPerSec)
+    const secondaryLabelInterval = this.options.secondaryLabelInterval ?? calculateSecondaryLabelInterval(pxPerSec)
     const secondaryLabelSpacing = this.options.secondaryLabelSpacing
     const isTop = this.options.insertPosition === 'beforebegin'
 
