@@ -233,12 +233,95 @@ export function calculateBarSegments({
   return segments
 }
 
+// ============================================================================
+// Pure Coordinate Transformation Functions
+// ============================================================================
+// These functions handle conversions between different coordinate systems
+// (pixels, relative positions, time) without side effects.
+
+/**
+ * Convert client coordinates to relative position within an element
+ * Pure function - no side effects
+ *
+ * @param rect - The bounding rectangle of the element
+ * @param clientX - Client X coordinate
+ * @param clientY - Client Y coordinate
+ * @returns Tuple of [relativeX, relativeY] where 0 = left/top, 1 = right/bottom
+ */
 export function getRelativePointerPosition(rect: DOMRect, clientX: number, clientY: number): [number, number] {
   const x = clientX - rect.left
   const y = clientY - rect.top
   const relativeX = x / rect.width
   const relativeY = y / rect.height
   return [relativeX, relativeY]
+}
+
+/**
+ * Convert pixel position to time
+ * Pure function - no side effects
+ *
+ * @param pixel - Pixel position
+ * @param duration - Total duration in seconds
+ * @param width - Total width in pixels
+ * @param zoom - Zoom factor (default: 1)
+ * @returns Time in seconds
+ */
+export function pixelToTime(pixel: number, duration: number, width: number, zoom = 1): number {
+  return ((pixel / width) * duration) / zoom
+}
+
+/**
+ * Convert time to pixel position
+ * Pure function - no side effects
+ *
+ * @param time - Time in seconds
+ * @param duration - Total duration in seconds
+ * @param width - Total width in pixels
+ * @param zoom - Zoom factor (default: 1)
+ * @returns Pixel position
+ */
+export function timeToPixel(time: number, duration: number, width: number, zoom = 1): number {
+  return (time / duration) * width * zoom
+}
+
+/**
+ * Convert relative position (0-1) to time
+ * Pure function - no side effects
+ *
+ * @param relativeX - Relative position (0 = start, 1 = end)
+ * @param duration - Total duration in seconds
+ * @returns Time in seconds
+ */
+export function relativeToTime(relativeX: number, duration: number): number {
+  return relativeX * duration
+}
+
+/**
+ * Convert time to relative position (0-1)
+ * Pure function - no side effects
+ *
+ * @param time - Time in seconds
+ * @param duration - Total duration in seconds
+ * @returns Relative position (0 = start, 1 = end)
+ */
+export function timeToRelative(time: number, duration: number): number {
+  return duration > 0 ? time / duration : 0
+}
+
+/**
+ * Normalize coordinates to viewport
+ * Pure function - no side effects
+ *
+ * @param x - X coordinate
+ * @param y - Y coordinate
+ * @param canvasRect - Canvas bounding rectangle
+ * @returns Normalized coordinates relative to canvas
+ */
+export function normalizeToViewport(x: number, y: number, canvasRect: DOMRect): { x: number; y: number } {
+  return {
+    x: x - canvasRect.left,
+    y: y - canvasRect.top,
+  }
 }
 
 export function resolveChannelHeight({
