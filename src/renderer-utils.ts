@@ -324,6 +324,85 @@ export function normalizeToViewport(x: number, y: number, canvasRect: DOMRect): 
   }
 }
 
+// ============================================================================
+// Pure Zoom Calculation Functions
+// ============================================================================
+// These functions handle zoom calculations without side effects.
+
+/**
+ * Calculate new zoom level with constraints
+ * Pure function - no side effects
+ *
+ * @param currentZoom - Current zoom level (pixels per second)
+ * @param delta - Zoom delta factor (e.g., 1.2 for zoom in, 0.8 for zoom out)
+ * @param min - Minimum zoom level (default: 1)
+ * @param max - Maximum zoom level (default: 10000)
+ * @returns New zoom level
+ */
+export function calculateZoomLevel(currentZoom: number, delta: number, min = 1, max = 10000): number {
+  return Math.max(min, Math.min(max, currentZoom * delta))
+}
+
+/**
+ * Calculate zoom that fits duration in width
+ * Pure function - no side effects
+ *
+ * @param duration - Total duration in seconds
+ * @param width - Available width in pixels
+ * @returns Zoom level (pixels per second) that fits duration in width
+ */
+export function calculateFitZoom(duration: number, width: number): number {
+  return duration > 0 ? width / duration : 1
+}
+
+/**
+ * Calculate scroll offset to maintain center point during zoom
+ * Pure function - no side effects
+ *
+ * @param centerTime - Time at the center point in seconds
+ * @param duration - Total duration in seconds
+ * @param newZoom - New zoom level (pixels per second)
+ * @param viewportWidth - Viewport width in pixels
+ * @returns Scroll offset to maintain center point
+ */
+export function calculateZoomScrollOffset(
+  centerTime: number,
+  duration: number,
+  newZoom: number,
+  viewportWidth: number,
+): number {
+  const totalWidth = duration * newZoom
+  const centerOffset = (centerTime / duration) * totalWidth
+  return Math.max(0, centerOffset - viewportWidth / 2)
+}
+
+/**
+ * Calculate zoom with maintained center point
+ * Pure function - no side effects
+ *
+ * @param currentZoom - Current zoom level (pixels per second)
+ * @param delta - Zoom delta factor
+ * @param centerTime - Time at center point in seconds
+ * @param duration - Total duration in seconds
+ * @param viewportWidth - Viewport width in pixels
+ * @param min - Minimum zoom level
+ * @param max - Maximum zoom level
+ * @returns Object with new zoom and scroll offset
+ */
+export function calculateZoom(
+  currentZoom: number,
+  delta: number,
+  centerTime: number,
+  duration: number,
+  viewportWidth: number,
+  min = 1,
+  max = 10000,
+): { zoom: number; scrollOffset: number } {
+  const zoom = calculateZoomLevel(currentZoom, delta, min, max)
+  const scrollOffset = calculateZoomScrollOffset(centerTime, duration, zoom, viewportWidth)
+  return { zoom, scrollOffset }
+}
+
 export function resolveChannelHeight({
   optionsHeight,
   optionsSplitChannels,
