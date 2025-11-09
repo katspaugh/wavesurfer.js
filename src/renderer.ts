@@ -2,6 +2,7 @@ import { makeDraggable } from './draggable.js'
 import EventEmitter from './event-emitter.js'
 import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
+import { RenderScheduler, type RenderPriority } from './reactive/render-scheduler.js'
 
 type ChannelData = utils.ChannelData
 
@@ -35,6 +36,8 @@ class Renderer extends EventEmitter<RendererEvents> {
   private subscriptions: (() => void)[] = []
   private unsubscribeOnScroll: (() => void)[] = []
   private dragUnsubscribe: (() => void) | null = null
+  private renderScheduler = new RenderScheduler()
+  private lastProgressState: { progress: number; isPlaying: boolean } | null = null
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
@@ -290,6 +293,9 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
     this.unsubscribeOnScroll?.forEach((unsubscribe) => unsubscribe())
     this.unsubscribeOnScroll = []
+
+    // Cancel any pending renders
+    this.renderScheduler.cancelRender()
   }
 
   private createDelay(delayMs = 10): () => Promise<void> {
@@ -464,6 +470,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
+    // Choose rendering approach
     if (options.renderFunction) {
       ctx.fillStyle = this.convertColorValues(options.waveColor)
       options.renderFunction(data, ctx)
@@ -709,19 +716,61 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
   }
 
-  renderProgress(progress: number, isPlaying?: boolean) {
+  /**
+   * Render progress indicator (cursor and waveform mask)
+   * Uses batching to prevent redundant renders in the same frame
+   *
+   * @param progress - Progress value (0-1)
+   * @param isPlaying - Whether audio is currently playing
+   * @param priority - Render priority: 'high' for immediate updates (cursor during playback), 'normal' for batched updates
+   */
+  renderProgress(progress: number, isPlaying?: boolean, priority: RenderPriority = 'normal') {
     if (isNaN(progress)) return
-    const percents = progress * 100
-    this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
-    this.progressWrapper.style.width = `${percents}%`
-    this.cursor.style.left = `${percents}%`
-    this.cursor.style.transform = this.options.cursorWidth
-      ? `translateX(-${progress * this.options.cursorWidth}px)`
-      : ''
 
-    if (this.isScrollable && this.options.autoScroll) {
-      this.scrollIntoView(progress, isPlaying)
-    }
+    // Store the latest state
+    this.lastProgressState = { progress, isPlaying: isPlaying || false }
+
+    // Schedule batched render (or immediate if high priority)
+    this.renderScheduler.scheduleRender(() => {
+      if (!this.lastProgressState) return
+
+      const { progress: p, isPlaying: playing } = this.lastProgressState
+      const percents = p * 100
+
+      // Update DOM
+      this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+      this.progressWrapper.style.width = `${percents}%`
+      this.cursor.style.left = `${percents}%`
+      this.cursor.style.transform = this.options.cursorWidth ? `translateX(-${p * this.options.cursorWidth}px)` : ''
+
+      if (this.isScrollable && this.options.autoScroll) {
+        this.scrollIntoView(p, playing)
+      }
+    }, priority)
+  }
+
+  /**
+   * Force immediate progress render, bypassing batching
+   * Useful for tests or when synchronous rendering is required
+   */
+  flushProgressRender() {
+    if (!this.lastProgressState) return
+
+    const { progress, isPlaying } = this.lastProgressState
+    const percents = progress * 100
+
+    this.renderScheduler.flushRender(() => {
+      this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+      this.progressWrapper.style.width = `${percents}%`
+      this.cursor.style.left = `${percents}%`
+      this.cursor.style.transform = this.options.cursorWidth
+        ? `translateX(-${progress * this.options.cursorWidth}px)`
+        : ''
+
+      if (this.isScrollable && this.options.autoScroll) {
+        this.scrollIntoView(progress, isPlaying)
+      }
+    })
   }
 
   async exportImage(format: string, quality: number, type: 'dataURL' | 'blob'): Promise<string[] | Blob[]> {

@@ -3,7 +3,8 @@
  */
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
-import Timer from '../timer.js'
+// TODO: Restore Timer after converting to reactive
+// import Timer from '../timer.js'
 import type { WaveSurferOptions } from '../wavesurfer.js'
 
 export type RecordPluginOptions = {
@@ -60,7 +61,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private dataWindow: Float32Array | null = null
   private isWaveformPaused = false
   private originalOptions?: Partial<WaveSurferOptions>
-  private timer: Timer
+  // TODO: Restore Timer after converting to reactive
+  // private timer: Timer
   private lastStartTime = 0
   private lastDuration = 0
   private duration = 0
@@ -81,8 +83,10 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       mediaRecorderTimeslice: options.mediaRecorderTimeslice ?? undefined,
     })
 
-    this.timer = new Timer()
+    // TODO: Restore Timer after converting to reactive
+    // this.timer = new Timer()
 
+    /* TODO: Restore Timer subscription
     this.subscriptions.push(
       this.timer.on('tick', () => {
         const currentTime = performance.now() - this.lastStartTime
@@ -90,6 +94,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
         this.emit('record-progress', this.duration)
       }),
     )
+    */
   }
 
   /** Create an instance of the Record plugin */
@@ -316,7 +321,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     this.lastDuration = 0
     this.duration = 0
     this.isWaveformPaused = false
-    this.timer.start()
+    // TODO: Restore Timer after converting to reactive
+    // this.timer.start()
 
     this.emit('record-start')
   }
@@ -343,7 +349,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   public stopRecording() {
     if (this.isActive()) {
       this.mediaRecorder?.stop()
-      this.timer.stop()
+      // TODO: Restore Timer after converting to reactive
+      // this.timer.stop()
     }
   }
 
@@ -353,7 +360,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       this.isWaveformPaused = true
       this.mediaRecorder?.requestData()
       this.mediaRecorder?.pause()
-      this.timer.stop()
+      // TODO: Restore Timer after converting to reactive
+      // this.timer.stop()
       this.lastDuration = this.duration
     }
   }
@@ -363,7 +371,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     if (this.isPaused()) {
       this.isWaveformPaused = false
       this.mediaRecorder?.resume()
-      this.timer.start()
+      // TODO: Restore Timer after converting to reactive
+      // this.timer.start()
       this.lastStartTime = performance.now()
       this.emit('record-resume')
     }

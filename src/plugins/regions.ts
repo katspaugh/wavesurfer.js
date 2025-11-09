@@ -110,68 +110,68 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   private _totalDuration = signal(0)
 
   // Computed values
-  private _isMarker = computed(() => this._start() === this._end())
+  private _isMarker = computed(() => this._start.value === this._end.value, [this._start, this._end])
   private _position = computed(() => {
-    const duration = this._totalDuration()
+    const duration = this._totalDuration.value
     if (duration === 0) return { left: 0, right: 100 }
     return {
-      left: (this._start() / duration) * 100,
-      right: ((duration - this._end()) / duration) * 100,
+      left: (this._start.value / duration) * 100,
+      right: ((duration - this._end.value) / duration) * 100,
     }
-  })
+  }, [this._start, this._end, this._totalDuration])
 
   // Public getters/setters for backward compatibility
   get start() {
-    return this._start()
+    return this._start.value
   }
   set start(v: number) {
     this._start.set(this.clampPosition(v))
   }
 
   get end() {
-    return this._end()
+    return this._end.value
   }
   set end(v: number) {
     this._end.set(this.clampPosition(v))
   }
 
   get color() {
-    return this._color()
+    return this._color.value
   }
   set color(v: string) {
     this._color.set(v)
   }
 
   get drag() {
-    return this._drag()
+    return this._drag.value
   }
   set drag(v: boolean) {
     this._drag.set(v)
   }
 
   get resize() {
-    return this._resize()
+    return this._resize.value
   }
   set resize(v: boolean) {
     this._resize.set(v)
   }
 
   get resizeStart() {
-    return this._resizeStart()
+    return this._resizeStart.value
   }
   set resizeStart(v: boolean) {
     this._resizeStart.set(v)
   }
 
   get resizeEnd() {
-    return this._resizeEnd()
+    return this._resizeEnd.value
   }
   set resizeEnd(v: boolean) {
     this._resizeEnd.set(v)
   }
 
   get totalDuration() {
-    return this._totalDuration()
+    return this._totalDuration.value
   }
 
   constructor(
@@ -202,7 +202,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   }
 
   private clampPosition(time: number): number {
-    return Math.max(0, Math.min(this._totalDuration(), time))
+    return Math.max(0, Math.min(this._totalDuration.value, time))
   }
 
   private setupReactiveEffects() {
@@ -211,51 +211,51 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     // Effect: Update position when start/end/duration changes
     this.subscriptions.push(
       effect(() => {
-        const pos = this._position()
+        const pos = this._position.value
         if (this.element) {
           this.element.style.left = `${pos.left}%`
           this.element.style.right = `${pos.right}%`
         }
-      }),
+      }, [this._position]),
     )
 
     // Effect: Update background color and border when color/isMarker changes
     this.subscriptions.push(
       effect(() => {
-        const isMarker = this._isMarker()
-        const color = this._color()
+        const isMarker = this._isMarker.value
+        const color = this._color.value
         if (this.element) {
           this.element.style.backgroundColor = isMarker ? 'none' : color
           this.element.style.borderLeft = isMarker ? `2px solid ${color}` : 'none'
         }
-      }),
+      }, [this._isMarker, this._color]),
     )
 
     // Effect: Update cursor when drag state changes
     this.subscriptions.push(
       effect(() => {
-        const drag = this._drag()
+        const drag = this._drag.value
         if (this.element) {
           this.element.style.cursor = drag ? 'grab' : 'default'
         }
-      }),
+      }, [this._drag]),
     )
 
     // Effect: Update part attribute when isMarker changes
     this.subscriptions.push(
       effect(() => {
-        const isMarker = this._isMarker()
+        const isMarker = this._isMarker.value
         if (this.element) {
           this.element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
         }
-      }),
+      }, [this._isMarker]),
     )
 
     // Effect: Manage resize handles when resize/isMarker changes
     this.subscriptions.push(
       effect(() => {
-        const isMarker = this._isMarker()
-        const resize = this._resize()
+        const isMarker = this._isMarker.value
+        const resize = this._resize.value
         if (this.element) {
           if (!isMarker && resize) {
             this.addResizeHandles(this.element)
@@ -263,7 +263,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
             this.removeResizeHandles(this.element)
           }
         }
-      }),
+      }, [this._isMarker, this._resize]),
     )
   }
 

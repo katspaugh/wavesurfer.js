@@ -125,8 +125,10 @@ describe('DeclarativeRenderer', () => {
       actions.setDuration(100)
       actions.setCurrentTime(50)
 
-      // Wait for effect to run
+      // Wait for effect to run and then flush render
       setTimeout(() => {
+        // Force immediate render for test
+        renderer.flushRender()
         expect(cursor.style.left).toBe('50%')
         done()
       }, 10)
@@ -149,8 +151,9 @@ describe('DeclarativeRenderer', () => {
       actions.setDuration(100)
       actions.setCurrentTime(75)
 
-      // Wait for effect to run
+      // Wait for effect to run and then flush render
       setTimeout(() => {
+        renderer.flushRender()
         expect(progress.style.width).toBe('75%')
         done()
       }, 10)
@@ -174,6 +177,7 @@ describe('DeclarativeRenderer', () => {
       }
 
       setTimeout(() => {
+        renderer.flushRender()
         expect(cursor.style.left).toBe('100%')
         done()
       }, 20)
@@ -194,6 +198,7 @@ describe('DeclarativeRenderer', () => {
       actions.setCurrentTime(33)
 
       setTimeout(() => {
+        renderer.flushRender()
         expect(cursor.style.left).toBe('33%')
         expect(progress.style.width).toBe('33%')
         done()

@@ -183,6 +183,7 @@ describe('Renderer', () => {
 
   test('renderProgress updates styles', () => {
     renderer.renderProgress(0.5)
+    ;(renderer as any).flushProgressRender()
     expect((renderer as any).progressWrapper.style.width).toBe('50%')
   })
 

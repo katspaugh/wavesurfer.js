@@ -1,4 +1,5 @@
 import EventEmitter, { type GeneralEventTypes } from './event-emitter.js'
+import { signal, type WritableSignal } from './reactive/store.js'
 
 type PlayerOptions = {
   media?: HTMLMediaElement
@@ -11,6 +12,15 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   protected media: HTMLMediaElement
   private isExternalMedia = false
 
+  // Reactive state - make state observable
+  private _isPlaying: WritableSignal<boolean>
+  private _currentTime: WritableSignal<number>
+  private _duration: WritableSignal<number>
+  private _volume: WritableSignal<number>
+  private _muted: WritableSignal<boolean>
+  private _playbackRate: WritableSignal<number>
+  private _seeking: WritableSignal<boolean>
+
   constructor(options: PlayerOptions) {
     super()
 
@@ -20,6 +30,18 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     } else {
       this.media = document.createElement('audio')
     }
+
+    // Initialize reactive state
+    this._isPlaying = signal(false)
+    this._currentTime = signal(0)
+    this._duration = signal(0)
+    this._volume = signal(this.media.volume)
+    this._muted = signal(this.media.muted)
+    this._playbackRate = signal(this.media.playbackRate || 1)
+    this._seeking = signal(false)
+
+    // Setup reactive media event handlers
+    this.setupReactiveMediaEvents()
 
     // Controls
     if (options.mediaControls) {
@@ -41,6 +63,90 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
         { once: true },
       )
     }
+  }
+
+  /**
+   * Setup reactive media event handlers that update signals
+   * This bridges the imperative HTMLMediaElement API to reactive state
+   */
+  private setupReactiveMediaEvents() {
+    // Playing state
+    this.onMediaEvent('play', () => {
+      this._isPlaying.set(true)
+    })
+
+    this.onMediaEvent('pause', () => {
+      this._isPlaying.set(false)
+    })
+
+    this.onMediaEvent('ended', () => {
+      this._isPlaying.set(false)
+    })
+
+    // Time tracking
+    this.onMediaEvent('timeupdate', () => {
+      this._currentTime.set(this.media.currentTime)
+    })
+
+    this.onMediaEvent('durationchange', () => {
+      this._duration.set(this.media.duration)
+    })
+
+    // Seeking state
+    this.onMediaEvent('seeking', () => {
+      this._seeking.set(true)
+    })
+
+    this.onMediaEvent('seeked', () => {
+      this._seeking.set(false)
+    })
+
+    // Volume
+    this.onMediaEvent('volumechange', () => {
+      this._volume.set(this.media.volume)
+      this._muted.set(this.media.muted)
+    })
+
+    // Playback rate
+    this.onMediaEvent('ratechange', () => {
+      this._playbackRate.set(this.media.playbackRate)
+    })
+  }
+
+  // Public getters for reactive state
+  /** Get reactive isPlaying signal */
+  public get isPlayingSignal() {
+    return this._isPlaying
+  }
+
+  /** Get reactive currentTime signal */
+  public get currentTimeSignal() {
+    return this._currentTime
+  }
+
+  /** Get reactive duration signal */
+  public get durationSignal() {
+    return this._duration
+  }
+
+  /** Get reactive volume signal */
+  public get volumeSignal() {
+    return this._volume
+  }
+
+  /** Get reactive muted signal */
+  public get mutedSignal() {
+    return this._muted
+  }
+
+  /** Get reactive playbackRate signal */
+  public get playbackRateSignal() {
+    return this._playbackRate
+  }
+
+  /** Get reactive seeking signal */
+  public get seekingSignal() {
+    return this._seeking
   }
 
   protected onMediaEvent<K extends keyof HTMLElementEventMap>(

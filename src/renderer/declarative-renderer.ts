@@ -6,6 +6,7 @@
  */
 
 import { effect } from '../reactive/store.js'
+import { RenderScheduler } from '../reactive/render-scheduler.js'
 import type { WaveSurferState } from '../state/wavesurfer-state.js'
 import { createCursorComponent, type CursorProps } from '../components/cursor.js'
 import { createProgressComponent, type ProgressProps } from '../components/progress.js'
@@ -44,6 +45,7 @@ export class DeclarativeRenderer {
   private progress: Component<ProgressProps> | null = null
   private cleanupFunctions: Array<() => void> = []
   private isScrollable = false
+  private scheduler = new RenderScheduler()
 
   constructor(container: HTMLElement | string, state: WaveSurferState, options: DeclarativeRendererOptions) {
     this.state = state
@@ -121,6 +123,7 @@ export class DeclarativeRenderer {
    * Setup all reactive effects for automatic UI updates
    *
    * This is where the magic happens - state changes trigger UI updates!
+   * Multiple state changes in the same frame are batched into a single render.
    */
   private setupReactiveRendering(): void {
     // Create and render cursor component
@@ -142,22 +145,21 @@ export class DeclarativeRenderer {
     })
     this.wrapper.appendChild(progressElement)
 
-    // Reactive effect: Update cursor position when progress changes
-    const cursorCleanup = effect(() => {
+    // Reactive effect: Batch cursor and progress updates
+    // Multiple state changes in the same frame result in a single DOM update
+    const renderCleanup = effect(() => {
       const position = this.state.progressPercent.value
-      this.cursor?.update?.({ position })
-    }, [this.state.progressPercent])
-    this.cleanupFunctions.push(cursorCleanup)
 
-    // Reactive effect: Update progress bar when progress changes
-    const progressCleanup = effect(() => {
-      const progress = this.state.progressPercent.value
-      this.progress?.update?.({ progress })
+      // Schedule batched update - multiple rapid state changes = single render
+      this.scheduler.scheduleRender(() => {
+        this.cursor?.update?.({ position })
+        this.progress?.update?.({ progress: position })
+      })
     }, [this.state.progressPercent])
-    this.cleanupFunctions.push(progressCleanup)
+    this.cleanupFunctions.push(renderCleanup)
 
-    // Reactive effect: Update cursor color when options change
-    // (In a full implementation, options would also be reactive)
+    // For high-priority updates during playback, use immediate rendering
+    // This is set up elsewhere when playback state changes
   }
 
   /**
@@ -237,11 +239,26 @@ export class DeclarativeRenderer {
   }
 
   /**
+   * Force immediate synchronous render (for testing)
+   * Bypasses the batching mechanism.
+   */
+  flushRender(): void {
+    const position = this.state.progressPercent.value
+    this.scheduler.flushRender(() => {
+      this.cursor?.update?.({ position })
+      this.progress?.update?.({ progress: position })
+    })
+  }
+
+  /**
    * Cleanup all effects and remove DOM elements
    *
    * This is important - all reactive effects are automatically cleaned up!
    */
   destroy(): void {
+    // Cancel any pending renders
+    this.scheduler.cancelRender()
+
     // Clean up all reactive effects
     this.cleanupFunctions.forEach((cleanup) => cleanup())
     this.cleanupFunctions = []
