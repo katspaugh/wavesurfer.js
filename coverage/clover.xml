@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1762723284176" clover="3.2.0">
-  <project timestamp="1762723284176" name="All files">
-    <metrics statements="3306" coveredstatements="97" conditionals="1692" coveredconditionals="10" methods="641" coveredmethods="44" elements="5639" coveredelements="151" complexity="0" loc="3306" ncloc="3306" packages="6" files="33" classes="33"/>
+<coverage generated="1762723425349" clover="3.2.0">
+  <project timestamp="1762723425349" name="All files">
+    <metrics statements="3356" coveredstatements="118" conditionals="1703" coveredconditionals="21" methods="657" coveredmethods="46" elements="5716" coveredelements="185" complexity="0" loc="3356" ncloc="3356" packages="6" files="34" classes="34"/>
     <package name="src">
       <metrics statements="1130" coveredstatements="0" conditionals="497" coveredconditionals="0" methods="248" coveredmethods="0"/>
       <file name="base-plugin.ts" path="/Users/ivan/Sites/wavesurfer.js/src/base-plugin.ts">
@@ -2954,7 +2954,7 @@
       </file>
     </package>
     <package name="src.reactive">
-      <metrics statements="249" coveredstatements="65" conditionals="46" coveredconditionals="5" methods="84" coveredmethods="32"/>
+      <metrics statements="299" coveredstatements="86" conditionals="57" coveredconditionals="14" methods="100" coveredmethods="34"/>
       <file name="drag-stream.ts" path="/Users/ivan/Sites/wavesurfer.js/src/reactive/drag-stream.ts">
         <metrics statements="74" coveredstatements="0" conditionals="26" coveredconditionals="0" methods="11" coveredmethods="0"/>
         <line num="54" count="0" type="cond" truecount="0" falsecount="3"/>
@@ -3084,49 +3084,47 @@
         <line num="168" count="0" type="stmt"/>
       </file>
       <file name="media-event-bridge.ts" path="/Users/ivan/Sites/wavesurfer.js/src/reactive/media-event-bridge.ts">
-        <metrics statements="42" coveredstatements="42" conditionals="3" coveredconditionals="3" methods="22" coveredmethods="22"/>
-        <line num="32" count="1" type="stmt"/>
-        <line num="33" count="14" type="stmt"/>
-        <line num="36" count="14" type="stmt"/>
-        <line num="41" count="140" type="stmt"/>
-        <line num="42" count="140" type="stmt"/>
-        <line num="49" count="14" type="stmt"/>
-        <line num="50" count="2" type="stmt"/>
-        <line num="53" count="14" type="stmt"/>
-        <line num="54" count="2" type="stmt"/>
-        <line num="57" count="14" type="stmt"/>
-        <line num="58" count="1" type="stmt"/>
-        <line num="60" count="1" type="cond" truecount="1" falsecount="0"/>
-        <line num="61" count="1" type="stmt"/>
-        <line num="69" count="14" type="stmt"/>
-        <line num="70" count="2" type="stmt"/>
-        <line num="73" count="14" type="stmt"/>
-        <line num="74" count="2" type="cond" truecount="1" falsecount="0"/>
-        <line num="75" count="1" type="stmt"/>
-        <line num="79" count="14" type="stmt"/>
-        <line num="80" count="2" type="cond" truecount="1" falsecount="0"/>
-        <line num="81" count="2" type="stmt"/>
-        <line num="89" count="14" type="stmt"/>
-        <line num="90" count="1" type="stmt"/>
-        <line num="93" count="14" type="stmt"/>
-        <line num="94" count="1" type="stmt"/>
-        <line num="101" count="14" type="stmt"/>
-        <line num="102" count="1" type="stmt"/>
-        <line num="109" count="14" type="stmt"/>
-        <line num="110" count="1" type="stmt"/>
-        <line num="114" count="14" type="stmt"/>
-        <line num="115" count="140" type="stmt"/>
-        <line num="139" count="1" type="stmt"/>
-        <line num="143" count="3" type="stmt"/>
-        <line num="145" count="3" type="stmt"/>
-        <line num="146" count="66" type="stmt"/>
-        <line num="147" count="6" type="stmt"/>
-        <line num="149" count="66" type="stmt"/>
-        <line num="150" count="66" type="stmt"/>
-        <line num="154" count="3" type="stmt"/>
-        <line num="179" count="66" type="stmt"/>
-        <line num="181" count="3" type="stmt"/>
-        <line num="182" count="66" type="stmt"/>
+        <metrics statements="40" coveredstatements="0" conditionals="3" coveredconditionals="0" methods="22" coveredmethods="0"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="36" count="0" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="49" count="0" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="60" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="61" count="0" type="stmt"/>
+        <line num="69" count="0" type="stmt"/>
+        <line num="70" count="0" type="stmt"/>
+        <line num="73" count="0" type="stmt"/>
+        <line num="74" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="75" count="0" type="stmt"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="80" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="81" count="0" type="stmt"/>
+        <line num="89" count="0" type="stmt"/>
+        <line num="90" count="0" type="stmt"/>
+        <line num="93" count="0" type="stmt"/>
+        <line num="94" count="0" type="stmt"/>
+        <line num="101" count="0" type="stmt"/>
+        <line num="102" count="0" type="stmt"/>
+        <line num="109" count="0" type="stmt"/>
+        <line num="110" count="0" type="stmt"/>
+        <line num="114" count="0" type="stmt"/>
+        <line num="115" count="0" type="stmt"/>
+        <line num="143" count="0" type="stmt"/>
+        <line num="145" count="0" type="stmt"/>
+        <line num="146" count="0" type="stmt"/>
+        <line num="147" count="0" type="stmt"/>
+        <line num="149" count="0" type="stmt"/>
+        <line num="150" count="0" type="stmt"/>
+        <line num="154" count="0" type="stmt"/>
+        <line num="179" count="0" type="stmt"/>
+        <line num="181" count="0" type="stmt"/>
+        <line num="182" count="0" type="stmt"/>
       </file>
       <file name="render-scheduler.ts" path="/Users/ivan/Sites/wavesurfer.js/src/reactive/render-scheduler.ts">
         <metrics statements="19" coveredstatements="0" conditionals="4" coveredconditionals="0" methods="6" coveredmethods="0"/>
@@ -3180,47 +3178,102 @@
         <line num="179" count="0" type="stmt"/>
         <line num="182" count="0" type="stmt"/>
       </file>
+      <file name="state-event-emitter.ts" path="/Users/ivan/Sites/wavesurfer.js/src/reactive/state-event-emitter.ts">
+        <metrics statements="52" coveredstatements="52" conditionals="11" coveredconditionals="11" methods="16" coveredmethods="16"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="41" count="11" type="stmt"/>
+        <line num="48" count="11" type="stmt"/>
+        <line num="50" count="13" type="stmt"/>
+        <line num="51" count="13" type="cond" truecount="2" falsecount="0"/>
+        <line num="60" count="11" type="stmt"/>
+        <line num="62" count="16" type="stmt"/>
+        <line num="63" count="16" type="stmt"/>
+        <line num="66" count="16" type="cond" truecount="1" falsecount="0"/>
+        <line num="67" count="4" type="stmt"/>
+        <line num="77" count="11" type="stmt"/>
+        <line num="79" count="15" type="stmt"/>
+        <line num="80" count="15" type="cond" truecount="1" falsecount="0"/>
+        <line num="81" count="1" type="stmt"/>
+        <line num="91" count="11" type="stmt"/>
+        <line num="92" count="11" type="stmt"/>
+        <line num="94" count="16" type="stmt"/>
+        <line num="95" count="16" type="cond" truecount="3" falsecount="0"/>
+        <line num="96" count="2" type="stmt"/>
+        <line num="97" count="2" type="stmt"/>
+        <line num="107" count="11" type="stmt"/>
+        <line num="109" count="12" type="stmt"/>
+        <line num="110" count="12" type="cond" truecount="1" falsecount="0"/>
+        <line num="111" count="1" type="stmt"/>
+        <line num="117" count="11" type="stmt"/>
+        <line num="118" count="55" type="stmt"/>
+        <line num="144" count="1" type="stmt"/>
+        <line num="149" count="2" type="stmt"/>
+        <line num="150" count="3" type="stmt"/>
+        <line num="151" count="3" type="stmt"/>
+        <line num="152" count="3" type="stmt"/>
+        <line num="177" count="1" type="stmt"/>
+        <line num="183" count="3" type="stmt"/>
+        <line num="185" count="3" type="stmt"/>
+        <line num="186" count="9" type="stmt"/>
+        <line num="189" count="9" type="cond" truecount="1" falsecount="0"/>
+        <line num="190" count="6" type="stmt"/>
+        <line num="194" count="9" type="stmt"/>
+        <line num="195" count="2" type="stmt"/>
+        <line num="196" count="2" type="stmt"/>
+        <line num="197" count="2" type="stmt"/>
+        <line num="202" count="3" type="stmt"/>
+        <line num="203" count="3" type="cond" truecount="1" falsecount="0"/>
+        <line num="204" count="1" type="stmt"/>
+        <line num="206" count="3" type="stmt"/>
+        <line num="232" count="1" type="stmt"/>
+        <line num="238" count="3" type="stmt"/>
+        <line num="239" count="7" type="stmt"/>
+        <line num="240" count="7" type="cond" truecount="1" falsecount="0"/>
+        <line num="241" count="2" type="stmt"/>
+        <line num="242" count="2" type="stmt"/>
+      </file>
       <file name="store.ts" path="/Users/ivan/Sites/wavesurfer.js/src/reactive/store.ts">
-        <metrics statements="39" coveredstatements="23" conditionals="5" coveredconditionals="2" methods="19" coveredmethods="10"/>
+        <metrics statements="39" coveredstatements="34" conditionals="5" coveredconditionals="3" methods="19" coveredmethods="18"/>
         <line num="38" count="1" type="stmt"/>
-        <line num="39" count="272" type="stmt"/>
-        <line num="40" count="272" type="stmt"/>
-        <line num="42" count="272" type="stmt"/>
-        <line num="44" count="162" type="stmt"/>
-        <line num="49" count="31" type="cond" truecount="1" falsecount="0"/>
-        <line num="50" count="31" type="stmt"/>
-        <line num="51" count="31" type="stmt"/>
+        <line num="39" count="184" type="stmt"/>
+        <line num="40" count="184" type="stmt"/>
+        <line num="42" count="184" type="stmt"/>
+        <line num="44" count="229" type="stmt"/>
+        <line num="49" count="50" type="cond" truecount="1" falsecount="0"/>
+        <line num="50" count="45" type="stmt"/>
+        <line num="51" count="53" type="stmt"/>
         <line num="56" count="0" type="stmt"/>
-        <line num="60" count="119" type="stmt"/>
-        <line num="61" count="119" type="stmt"/>
+        <line num="60" count="173" type="stmt"/>
+        <line num="61" count="173" type="stmt"/>
         <line num="78" count="1" type="stmt"/>
-        <line num="79" count="85" type="stmt"/>
-        <line num="80" count="85" type="stmt"/>
-        <line num="83" count="85" type="stmt"/>
-        <line num="84" count="119" type="stmt"/>
-        <line num="85" count="21" type="stmt"/>
-        <line num="87" count="21" type="cond" truecount="1" falsecount="0"/>
-        <line num="88" count="12" type="stmt"/>
-        <line num="94" count="85" type="stmt"/>
-        <line num="96" count="21" type="stmt"/>
-        <line num="101" count="17" type="stmt"/>
-        <line num="104" count="17" type="stmt"/>
-        <line num="105" count="0" type="stmt"/>
-        <line num="107" count="0" type="cond" truecount="0" falsecount="1"/>
-        <line num="108" count="0" type="stmt"/>
+        <line num="79" count="55" type="stmt"/>
+        <line num="80" count="55" type="stmt"/>
+        <line num="83" count="55" type="stmt"/>
+        <line num="84" count="77" type="stmt"/>
+        <line num="85" count="25" type="stmt"/>
+        <line num="87" count="25" type="cond" truecount="1" falsecount="0"/>
+        <line num="88" count="14" type="stmt"/>
+        <line num="94" count="55" type="stmt"/>
+        <line num="96" count="32" type="stmt"/>
+        <line num="101" count="22" type="stmt"/>
+        <line num="104" count="22" type="stmt"/>
+        <line num="105" count="22" type="stmt"/>
+        <line num="107" count="22" type="cond" truecount="1" falsecount="0"/>
+        <line num="108" count="33" type="stmt"/>
         <line num="132" count="1" type="stmt"/>
-        <line num="135" count="0" type="stmt"/>
-        <line num="137" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="135" count="63" type="stmt"/>
+        <line num="137" count="91" type="cond" truecount="0" falsecount="1"/>
         <line num="138" count="0" type="stmt"/>
         <line num="139" count="0" type="stmt"/>
-        <line num="142" count="0" type="stmt"/>
-        <line num="146" count="0" type="stmt"/>
-        <line num="149" count="0" type="stmt"/>
-        <line num="152" count="0" type="stmt"/>
-        <line num="153" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="142" count="91" type="stmt"/>
+        <line num="146" count="96" type="stmt"/>
+        <line num="149" count="63" type="stmt"/>
+        <line num="152" count="63" type="stmt"/>
+        <line num="153" count="63" type="cond" truecount="0" falsecount="1"/>
         <line num="154" count="0" type="stmt"/>
         <line num="155" count="0" type="stmt"/>
-        <line num="157" count="0" type="stmt"/>
+        <line num="157" count="96" type="stmt"/>
       </file>
     </package>
     <package name="src.renderer">
@@ -3381,48 +3434,48 @@
       </file>
     </package>
     <package name="src.state">
-      <metrics statements="39" coveredstatements="32" conditionals="7" coveredconditionals="5" methods="17" coveredmethods="12"/>
+      <metrics statements="39" coveredstatements="32" conditionals="7" coveredconditionals="7" methods="17" coveredmethods="12"/>
       <file name="wavesurfer-state.ts" path="/Users/ivan/Sites/wavesurfer.js/src/state/wavesurfer-state.ts">
-        <metrics statements="39" coveredstatements="32" conditionals="7" coveredconditionals="5" methods="17" coveredmethods="12"/>
+        <metrics statements="39" coveredstatements="32" conditionals="7" coveredconditionals="7" methods="17" coveredmethods="12"/>
         <line num="8" count="1" type="stmt"/>
         <line num="77" count="1" type="stmt"/>
-        <line num="82" count="17" type="stmt"/>
-        <line num="83" count="17" type="stmt"/>
-        <line num="84" count="17" type="stmt"/>
-        <line num="85" count="17" type="stmt"/>
-        <line num="86" count="17" type="stmt"/>
-        <line num="87" count="17" type="stmt"/>
-        <line num="88" count="17" type="stmt"/>
-        <line num="89" count="17" type="stmt"/>
-        <line num="90" count="17" type="stmt"/>
-        <line num="91" count="17" type="stmt"/>
-        <line num="92" count="17" type="stmt"/>
-        <line num="95" count="24" type="stmt"/>
-        <line num="97" count="17" type="stmt"/>
-        <line num="99" count="17" type="stmt"/>
-        <line num="100" count="21" type="cond" truecount="1" falsecount="1"/>
-        <line num="103" count="20" type="stmt"/>
-        <line num="105" count="17" type="stmt"/>
-        <line num="106" count="24" type="cond" truecount="2" falsecount="0"/>
-        <line num="110" count="17" type="stmt"/>
-        <line num="130" count="17" type="stmt"/>
-        <line num="132" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="133" count="3" type="stmt"/>
-        <line num="137" count="4" type="stmt"/>
-        <line num="141" count="7" type="stmt"/>
-        <line num="145" count="3" type="stmt"/>
-        <line num="149" count="1" type="stmt"/>
-        <line num="150" count="1" type="stmt"/>
-        <line num="154" count="1" type="stmt"/>
-        <line num="155" count="1" type="stmt"/>
-        <line num="159" count="0" type="stmt"/>
-        <line num="160" count="0" type="cond" truecount="0" falsecount="1"/>
-        <line num="161" count="0" type="stmt"/>
+        <line num="82" count="11" type="stmt"/>
+        <line num="83" count="11" type="stmt"/>
+        <line num="84" count="11" type="stmt"/>
+        <line num="85" count="11" type="stmt"/>
+        <line num="86" count="11" type="stmt"/>
+        <line num="87" count="11" type="stmt"/>
+        <line num="88" count="11" type="stmt"/>
+        <line num="89" count="11" type="stmt"/>
+        <line num="90" count="11" type="stmt"/>
+        <line num="91" count="11" type="stmt"/>
+        <line num="92" count="11" type="stmt"/>
+        <line num="95" count="16" type="stmt"/>
+        <line num="97" count="13" type="stmt"/>
+        <line num="99" count="11" type="stmt"/>
+        <line num="100" count="16" type="cond" truecount="2" falsecount="0"/>
+        <line num="103" count="16" type="stmt"/>
+        <line num="105" count="11" type="stmt"/>
+        <line num="106" count="19" type="cond" truecount="2" falsecount="0"/>
+        <line num="110" count="11" type="stmt"/>
+        <line num="130" count="11" type="stmt"/>
+        <line num="132" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="133" count="5" type="stmt"/>
+        <line num="137" count="3" type="stmt"/>
+        <line num="141" count="6" type="stmt"/>
+        <line num="145" count="1" type="stmt"/>
+        <line num="149" count="0" type="stmt"/>
+        <line num="150" count="0" type="stmt"/>
+        <line num="154" count="0" type="stmt"/>
+        <line num="155" count="0" type="stmt"/>
+        <line num="159" count="2" type="stmt"/>
+        <line num="160" count="2" type="cond" truecount="1" falsecount="0"/>
+        <line num="161" count="2" type="stmt"/>
         <line num="166" count="0" type="stmt"/>
         <line num="170" count="0" type="stmt"/>
-        <line num="174" count="0" type="stmt"/>
+        <line num="174" count="3" type="stmt"/>
         <line num="178" count="0" type="stmt"/>
-        <line num="182" count="17" type="stmt"/>
+        <line num="182" count="11" type="stmt"/>
       </file>
     </package>
   </project>
