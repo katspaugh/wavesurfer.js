@@ -62,6 +62,39 @@ A major refactoring effort is underway to transform wavesurfer.js from imperativ
 2. ✅ **DOM rendering:** Everything else (regions, cursor, timeline, hover, etc.)
 3. ✅ **No markers plugin:** Markers are zero-width regions (where `end = start` or no `end` specified)
 
+### Phase Status
+
+**✅ Phase 1: Implement Reactive Foundation** (COMPLETE)
+- Reactive store with signals, effects, computed
+- Type-safe signal system with subscriptions
+- Core reactive primitives
+
+**✅ Phase 2: Migrate Rendering to Reactive** (COMPLETE)
+- Declarative renderer architecture
+- Component-based DOM rendering (Progress, Cursor)
+- Reactive render scheduling
+- Regions plugin converted to reactive
+
+**✅ Phase 3: Transform Events to Reactive Streams** (COMPLETE)
+- Reactive state (WaveSurferState) with automatic event emission
+- Media event bridges (bridgeMediaEvents)
+- State-driven event emission (setupStateEventEmission)
+- Reactive animation (removed Timer class)
+- Event stream API for users (toStream, toStreams, mergeStreams)
+- Reactive interaction streams (scroll, drag)
+- 370 unit tests passing, 100% coverage on reactive modules
+
+**🚧 Phase 4: Separate Pure Logic from Side Effects** (IN PROGRESS)
+- Extract pure functions from components
+- Separate business logic from rendering
+- Pure function utilities
+
+**📋 Phase 5: Renderer & Plugin Refactor + Polish** (PLANNED)
+- Refactor Renderer to fully reactive (expose streams not events)
+- Refactor all plugins to reactive architecture
+- Documentation and migration guides
+- Performance optimization
+
 **View all tasks and status:**
 ```bash
 bd show wavesurfer.js-wpg                    # View epic details
