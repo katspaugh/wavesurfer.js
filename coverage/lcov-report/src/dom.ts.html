@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">85% </span>
+                <span class="strong">95% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>17/20</span>
+                <span class='fraction'>19/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">70% </span>
+                <span class="strong">85% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>14/20</span>
+                <span class='fraction'>17/20</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">85% </span>
+                <span class="strong">95% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>17/20</span>
+                <span class='fraction'>19/20</span>
             </div>
         
             
@@ -115,42 +115,42 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">123x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">123x</span>
+<span class="cline-any cline-yes">245x</span>
+<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">41x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">203x</span>
+<span class="cline-any cline-yes">121x</span>
+<span class="cline-any cline-yes">82x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">81x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">123x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">122x</span>
+<span class="cline-any cline-yes">122x</span>
+<span class="cline-any cline-yes">122x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">type TreeNode = { [key: string]: string | number | boolean | CSSStyleDeclaration | TreeNode | Node } &amp; {
   xmlns?: string
   style?: Partial&lt;CSSStyleDeclaration&gt;
@@ -166,16 +166,16 @@ function renderNode(tagName: string, content: TreeNode): HTMLElement | SVGElemen
   for (const [key, value] of Object.entries(content)) {
     if (key === 'children' &amp;&amp; value) {
       for (const [childTag, childValue] of Object.entries(value as TreeNode)) {
-        <span class="missing-if-branch" title="if path not taken" >I</span>if (childValue instanceof Node) {
-<span class="cstat-no" title="statement not covered" >          element.appendChild(childValue)</span>
+        if (childValue instanceof Node) {
+          element.appendChild(childValue)
         } else <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof childValue === 'string') {
 <span class="cstat-no" title="statement not covered" >          element.appendChild(document.createTextNode(childValue))</span>
         } else {
           element.appendChild(renderNode(childTag, childValue as TreeNode))
         }
       }
-    } else <span class="missing-if-branch" title="if path not taken" >I</span>if (key === 'style') {
-<span class="cstat-no" title="statement not covered" >      Object.assign((element as HTMLElement).style, value)</span>
+    } else if (key === 'style') {
+      Object.assign((element as HTMLElement).style, value)
     } else if (key === 'textContent') {
       element.textContent = value as string
     } else {
@@ -190,7 +190,7 @@ export function createElement(tagName: string, content: TreeNode &amp; { xmlns: 
 export function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement
 export function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement | SVGElement {
   const el = renderNode(tagName, content || <span class="branch-1 cbranch-no" title="branch not covered" >{})</span>
-  container<span class="branch-0 cbranch-no" title="branch not covered" >?.a</span>ppendChild(el)
+  container?.appendChild(el)
   return el
 }
 &nbsp;
@@ -202,7 +202,7 @@ export default createElement
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-09T20:52:04.602Z
+                at 2025-11-09T20:54:06.593Z
             </div>
         <script src="../prettify.js"></script>
         <script>

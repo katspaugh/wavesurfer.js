@@ -3,6 +3,7 @@
  */
 
 import { createComponent } from './component.js'
+import { createElement } from '../dom.js'
 
 export interface ProgressProps {
   /** Progress as percentage (0-1) */
@@ -35,28 +36,30 @@ export interface ProgressProps {
 export function createProgressComponent() {
   return createComponent<ProgressProps>(
     (props) => {
-      const wrapper = document.createElement('div')
-      wrapper.className = 'progress'
-      wrapper.style.position = 'absolute'
-      wrapper.style.zIndex = '2'
-      wrapper.style.top = '0'
-      wrapper.style.left = '0'
-      wrapper.style.width = `${props.progress * 100}%`
-      wrapper.style.height = props.height
-      wrapper.style.overflow = 'hidden'
-      wrapper.style.pointerEvents = 'none'
-
       // Inner div for proper overflow clipping
-      const inner = document.createElement('div')
-      inner.style.position = 'relative'
-      wrapper.appendChild(inner)
+      const inner = createElement('div', {
+        style: {
+          position: 'relative',
+        },
+      })
 
-      // Set background color on wrapper, not inner
-      if (props.color) {
-        wrapper.style.backgroundColor = props.color
-      }
-
-      return wrapper
+      return createElement('div', {
+        class: 'progress',
+        style: {
+          position: 'absolute',
+          zIndex: '2',
+          top: '0',
+          left: '0',
+          width: `${props.progress * 100}%`,
+          height: props.height,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+          backgroundColor: props.color || '',
+        },
+        children: {
+          inner,
+        },
+      })
     },
     (element, props) => {
       if (props.progress !== undefined) {

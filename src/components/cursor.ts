@@ -3,6 +3,7 @@
  */
 
 import { createComponent } from './component.js'
+import { createElement } from '../dom.js'
 
 export interface CursorProps {
   /** Position as percentage (0-1) */
@@ -38,18 +39,20 @@ export interface CursorProps {
 export function createCursorComponent() {
   return createComponent<CursorProps>(
     (props) => {
-      const cursor = document.createElement('div')
-      cursor.className = 'cursor'
-      cursor.style.position = 'absolute'
-      cursor.style.zIndex = '5'
-      cursor.style.top = '0'
-      cursor.style.left = `${props.position * 100}%`
-      cursor.style.height = props.height
-      cursor.style.width = `${props.width}px`
-      cursor.style.backgroundColor = props.color
-      cursor.style.borderRadius = '2px'
-      cursor.style.pointerEvents = 'none'
-      return cursor
+      return createElement('div', {
+        class: 'cursor',
+        style: {
+          position: 'absolute',
+          zIndex: '5',
+          top: '0',
+          left: `${props.position * 100}%`,
+          height: props.height,
+          width: `${props.width}px`,
+          backgroundColor: props.color,
+          borderRadius: '2px',
+          pointerEvents: 'none',
+        },
+      })
     },
     (element, props) => {
       if (props.position !== undefined) {
