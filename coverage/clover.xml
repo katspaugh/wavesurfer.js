@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1762723953761" clover="3.2.0">
-  <project timestamp="1762723953761" name="All files">
-    <metrics statements="4055" coveredstatements="1252" conditionals="2079" coveredconditionals="391" methods="831" coveredmethods="306" elements="6965" coveredelements="1949" complexity="0" loc="4055" ncloc="4055" packages="6" files="36" classes="36"/>
+<coverage generated="1762724214360" clover="3.2.0">
+  <project timestamp="1762724214360" name="All files">
+    <metrics statements="4096" coveredstatements="1293" conditionals="2083" coveredconditionals="394" methods="844" coveredmethods="320" elements="7023" coveredelements="2007" complexity="0" loc="4096" ncloc="4096" packages="6" files="37" classes="37"/>
     <package name="src">
-      <metrics statements="1438" coveredstatements="778" conditionals="608" coveredconditionals="250" methods="319" coveredmethods="162"/>
+      <metrics statements="1438" coveredstatements="778" conditionals="608" coveredconditionals="250" methods="319" coveredmethods="163"/>
       <file name="base-plugin.ts" path="/Users/ivan/Sites/wavesurfer.js/src/base-plugin.ts">
         <metrics statements="18" coveredstatements="16" conditionals="1" coveredconditionals="0" methods="5" coveredmethods="5"/>
         <line num="1" count="2" type="stmt"/>
@@ -242,24 +242,24 @@
         <line num="121" count="1" type="stmt"/>
       </file>
       <file name="event-emitter.ts" path="/Users/ivan/Sites/wavesurfer.js/src/event-emitter.ts">
-        <metrics statements="17" coveredstatements="17" conditionals="11" coveredconditionals="10" methods="10" coveredmethods="8"/>
-        <line num="17" count="48" type="stmt"/>
-        <line num="25" count="7" type="cond" truecount="1" falsecount="0"/>
-        <line num="26" count="7" type="stmt"/>
-        <line num="29" count="7" type="cond" truecount="5" falsecount="0"/>
+        <metrics statements="17" coveredstatements="17" conditionals="11" coveredconditionals="10" methods="10" coveredmethods="9"/>
+        <line num="17" count="68" type="stmt"/>
+        <line num="25" count="33" type="cond" truecount="1" falsecount="0"/>
+        <line num="26" count="33" type="stmt"/>
+        <line num="29" count="33" type="cond" truecount="5" falsecount="0"/>
         <line num="31" count="2" type="stmt"/>
         <line num="32" count="2" type="stmt"/>
         <line num="33" count="2" type="stmt"/>
         <line num="35" count="2" type="stmt"/>
         <line num="36" count="2" type="stmt"/>
-        <line num="39" count="5" type="stmt"/>
-        <line num="40" count="5" type="stmt"/>
-        <line num="48" count="2" type="cond" truecount="3" falsecount="1"/>
+        <line num="39" count="31" type="stmt"/>
+        <line num="40" count="31" type="stmt"/>
+        <line num="48" count="28" type="cond" truecount="3" falsecount="1"/>
         <line num="56" count="2" type="stmt"/>
         <line num="61" count="1" type="stmt"/>
-        <line num="66" count="96" type="cond" truecount="1" falsecount="0"/>
-        <line num="67" count="7" type="stmt"/>
-        <line num="72" count="5" type="stmt"/>
+        <line num="66" count="136" type="cond" truecount="1" falsecount="0"/>
+        <line num="67" count="47" type="stmt"/>
+        <line num="72" count="6" type="stmt"/>
       </file>
       <file name="fetcher.ts" path="/Users/ivan/Sites/wavesurfer.js/src/fetcher.ts">
         <metrics statements="22" coveredstatements="20" conditionals="13" coveredconditionals="8" methods="3" coveredmethods="3"/>
@@ -3635,7 +3635,7 @@
       </file>
     </package>
     <package name="src.reactive">
-      <metrics statements="318" coveredstatements="305" conditionals="57" coveredconditionals="45" methods="100" coveredmethods="96"/>
+      <metrics statements="359" coveredstatements="346" conditionals="61" coveredconditionals="48" methods="113" coveredmethods="109"/>
       <file name="drag-stream.ts" path="/Users/ivan/Sites/wavesurfer.js/src/reactive/drag-stream.ts">
         <metrics statements="77" coveredstatements="64" conditionals="26" coveredconditionals="14" methods="11" coveredmethods="7"/>
         <line num="8" count="1" type="stmt"/>
@@ -3715,6 +3715,50 @@
         <line num="181" count="7" type="stmt"/>
         <line num="182" count="7" type="stmt"/>
         <line num="185" count="7" type="stmt"/>
+      </file>
+      <file name="event-stream-emitter.ts" path="/Users/ivan/Sites/wavesurfer.js/src/reactive/event-stream-emitter.ts">
+        <metrics statements="41" coveredstatements="41" conditionals="4" coveredconditionals="3" methods="13" coveredmethods="13"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="39" count="17" type="stmt"/>
+        <line num="42" count="17" type="stmt"/>
+        <line num="43" count="27" type="stmt"/>
+        <line num="47" count="17" type="stmt"/>
+        <line num="49" count="17" type="stmt"/>
+        <line num="76" count="1" type="stmt"/>
+        <line num="84" count="3" type="stmt"/>
+        <line num="85" count="3" type="stmt"/>
+        <line num="87" count="3" type="stmt"/>
+        <line num="88" count="5" type="stmt"/>
+        <line num="89" count="5" type="stmt"/>
+        <line num="90" count="5" type="stmt"/>
+        <line num="94" count="3" type="stmt"/>
+        <line num="95" count="5" type="stmt"/>
+        <line num="98" count="3" type="stmt"/>
+        <line num="119" count="1" type="stmt"/>
+        <line num="126" count="5" type="stmt"/>
+        <line num="130" count="5" type="stmt"/>
+        <line num="132" count="5" type="stmt"/>
+        <line num="134" count="9" type="stmt"/>
+        <line num="135" count="8" type="stmt"/>
+        <line num="137" count="9" type="stmt"/>
+        <line num="140" count="5" type="stmt"/>
+        <line num="143" count="9" type="stmt"/>
+        <line num="157" count="1" type="stmt"/>
+        <line num="158" count="5" type="stmt"/>
+        <line num="160" count="5" type="stmt"/>
+        <line num="161" count="10" type="stmt"/>
+        <line num="165" count="5" type="stmt"/>
+        <line num="167" count="5" type="stmt"/>
+        <line num="179" count="1" type="stmt"/>
+        <line num="180" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="181" count="4" type="stmt"/>
+        <line num="183" count="4" type="stmt"/>
+        <line num="184" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="185" count="6" type="stmt"/>
+        <line num="187" count="6" type="stmt"/>
+        <line num="192" count="4" type="stmt"/>
+        <line num="194" count="4" type="stmt"/>
       </file>
       <file name="event-streams.ts" path="/Users/ivan/Sites/wavesurfer.js/src/reactive/event-streams.ts">
         <metrics statements="55" coveredstatements="55" conditionals="7" coveredconditionals="7" methods="16" coveredmethods="16"/>
@@ -3935,18 +3979,18 @@
       </file>
       <file name="store.ts" path="/Users/ivan/Sites/wavesurfer.js/src/reactive/store.ts">
         <metrics statements="39" coveredstatements="39" conditionals="5" coveredconditionals="5" methods="19" coveredmethods="19"/>
-        <line num="38" count="11" type="stmt"/>
-        <line num="39" count="2153" type="stmt"/>
-        <line num="40" count="2153" type="stmt"/>
-        <line num="42" count="2153" type="stmt"/>
-        <line num="44" count="2222" type="stmt"/>
-        <line num="49" count="693" type="cond" truecount="1" falsecount="0"/>
-        <line num="50" count="675" type="stmt"/>
-        <line num="51" count="729" type="stmt"/>
+        <line num="38" count="12" type="stmt"/>
+        <line num="39" count="2184" type="stmt"/>
+        <line num="40" count="2184" type="stmt"/>
+        <line num="42" count="2184" type="stmt"/>
+        <line num="44" count="2262" type="stmt"/>
+        <line num="49" count="750" type="cond" truecount="1" falsecount="0"/>
+        <line num="50" count="729" type="stmt"/>
+        <line num="51" count="768" type="stmt"/>
         <line num="56" count="1" type="stmt"/>
-        <line num="60" count="2245" type="stmt"/>
-        <line num="61" count="2245" type="stmt"/>
-        <line num="78" count="11" type="stmt"/>
+        <line num="60" count="2262" type="stmt"/>
+        <line num="61" count="2262" type="stmt"/>
+        <line num="78" count="12" type="stmt"/>
         <line num="79" count="626" type="stmt"/>
         <line num="80" count="626" type="stmt"/>
         <line num="83" count="626" type="stmt"/>
@@ -3961,7 +4005,7 @@
         <line num="105" count="47" type="stmt"/>
         <line num="107" count="47" type="cond" truecount="1" falsecount="0"/>
         <line num="108" count="62" type="stmt"/>
-        <line num="132" count="11" type="stmt"/>
+        <line num="132" count="12" type="stmt"/>
         <line num="135" count="235" type="stmt"/>
         <line num="137" count="293" type="cond" truecount="1" falsecount="0"/>
         <line num="138" count="2" type="stmt"/>
