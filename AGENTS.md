@@ -49,12 +49,18 @@ A major refactoring effort is underway to transform wavesurfer.js from imperativ
 **Epic:** `wavesurfer.js-wpg` - Refactor to Declarative/Reactive Architecture
 
 **Current Status:**
-- **Total Issues:** 92 (83 open, 9 closed)
+- **Total Issues:** 92 (77 open, 15 closed)
 - **Epic:** 1 issue
 - **Granular Implementation Tasks:** 39 tasks (Phase 2-5, all with detailed descriptions)
 - **Supporting Tasks:** ~43 additional tasks (infrastructure, reviews, etc.)
 - **Phase 1 (Reactive Foundation):** ✅ Complete (9 closed tasks)
-- **Phase 2 (Declarative Rendering):** 11 granular tasks ready
+- **Phase 2 (Declarative Rendering):** 🚀 In Progress (5 of 11 tasks complete)
+  - ✅ Task 1: RenderTree, CanvasRenderer, declarative-renderer (86 tests passing)
+  - ✅ Task 2: Convert drawWaveform to declarative
+  - ✅ Task 3: Convert drawBars to declarative  
+  - ✅ Task 4: Convert cursor rendering to declarative
+  - ✅ Task 5: Convert Regions plugin to reactive rendering (DOM-based)
+  - ⏳ Tasks 6-11: Ready to start
 - **Phase 3 (Event Streams):** 10 granular tasks defined
 - **Phase 4 (Pure Functions):** 10 granular tasks defined
 - **Phase 5 (Integration & Polish):** 8 granular tasks defined
@@ -66,10 +72,10 @@ bd ready                                      # See tasks ready to start
 bd list --status open                         # View all 83 open tasks
 ```
 
-**Get started on Phase 2:**
+**Continue with Phase 2:**
 ```bash
-bd show wavesurfer.js-uas                    # Phase 2, Task 1: Render tree abstraction
-bd update wavesurfer.js-uas --status in_progress
+bd ready                                        # See next tasks ready to start
+bd list --json | jq -r '.[] | select(.title | contains("Phase 2, Task")) | "\(.status): \(.title)"'
 ```
 
 **View tasks by phase:**
@@ -101,14 +107,23 @@ bd list --json | jq 'map(select(.title | contains("Phase 2, Task"))) | length'
 - Comprehensive test suite
 - Documentation
 
-**Phase 2: Declarative Rendering** (11 granular tasks)
-- Task 1: Create declarative Canvas render tree abstraction
-- Task 2: Convert Renderer drawWaveform to declarative
-- Task 3: Convert Renderer drawBars to declarative
-- Task 4: Convert cursor rendering to declarative
-- Task 5: Convert Regions plugin rendering to declarative
-- Task 6: Convert Markers plugin rendering to declarative
+**Phase 2: Declarative Rendering** 🚀 IN PROGRESS (5 of 11 complete)
+- ✅ Task 1: Create declarative Canvas render tree abstraction (COMPLETE)
+  - Implemented RenderTree, CanvasRenderer, declarative-renderer
+  - 86 tests passing with excellent coverage
+  - Full batching, dirty tracking, and layer compositing
+- ✅ Task 2: Convert Renderer drawWaveform to declarative (COMPLETE)
+- ✅ Task 3: Convert Renderer drawBars to declarative (COMPLETE)
+- ✅ Task 4: Convert cursor rendering to declarative (COMPLETE)
+- ✅ Task 5: Convert Regions plugin to reactive rendering (COMPLETE)
+  - Made DOM-based rendering reactive with signals
+  - Automatic updates via effects, no manual DOM manipulation
+- ⏳ Task 6: Convert Markers plugin rendering to declarative
 - Task 7: Create declarative hover effects system
+- Task 8: Implement render batching and RAF scheduling
+- Task 9: Add layer compositing system
+- Task 10: Convert Spectrogram plugin to declarative rendering
+- Task 11: Add render tree testing utilities
 - Task 8: Implement render batching and RAF scheduling
 - Task 9: Add layer compositing system
 - Task 10: Convert Spectrogram plugin to declarative rendering
