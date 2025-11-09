@@ -145,7 +145,7 @@ export type WaveSurferEvents = {
   /** When source file is unable to be fetched, decoded, or an error is thrown by media element */
   error: [error: Error]
   /** When audio container resizing */
-  resize: [];
+  resize: []
 }
 
 class WaveSurfer extends Player<WaveSurferEvents> {
@@ -324,8 +324,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
       // Resize
       this.renderer.on('resize', () => {
-        this.emit('resize');
-      })
+        this.emit('resize')
+      }),
     )
 
     // Drag

@@ -1,0 +1,848 @@
+[2025-11-09 14:16:42] Daemon started (interval: 5s, auto-commit: false, auto-push: false)
+[2025-11-09 14:16:42] Using database: /Users/ivan/Sites/wavesurfer.js/.beads/beads.db
+[2025-11-09 14:16:43] Database opened: /Users/ivan/Sites/wavesurfer.js/.beads/beads.db
+[2025-11-09 14:16:43] Repository fingerprint validated: 2a17d0d6
+[2025-11-09 14:16:43] Starting RPC server: /Users/ivan/Sites/wavesurfer.js/.beads/bd.sock
+[2025-11-09 14:16:43] RPC server ready (socket listening)
+[2025-11-09 14:16:43] Registered in global registry
+[2025-11-09 14:16:43] Starting sync cycle...
+[2025-11-09 14:16:43] Exported to JSONL
+[2025-11-09 14:16:44] Pulled from remote
+[2025-11-09 14:16:44] Imported from JSONL
+[2025-11-09 14:16:44] Sync cycle complete
+[2025-11-09 14:16:44] Using event-driven mode
+[2025-11-09 14:22:16] Mutation detected: create wavesurfer.js-wpg
+[2025-11-09 14:22:16] Export triggered by mutation events
+[2025-11-09 14:22:16] Starting export...
+[2025-11-09 14:22:16] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 14:23:04] Mutation detected: create wavesurfer.js-93k
+[2025-11-09 14:23:04] Mutation detected: update wavesurfer.js-93k
+[2025-11-09 14:23:04] Mutation detected: create wavesurfer.js-61x
+[2025-11-09 14:23:04] Mutation detected: update wavesurfer.js-61x
+[2025-11-09 14:23:04] Mutation detected: create wavesurfer.js-32u
+[2025-11-09 14:23:04] Mutation detected: update wavesurfer.js-32u
+[2025-11-09 14:23:04] Mutation detected: update wavesurfer.js-32u
+[2025-11-09 14:23:05] Mutation detected: create wavesurfer.js-trx
+[2025-11-09 14:23:05] Mutation detected: update wavesurfer.js-trx
+[2025-11-09 14:23:05] Mutation detected: update wavesurfer.js-trx
+[2025-11-09 14:23:05] Mutation detected: create wavesurfer.js-ofj
+[2025-11-09 14:23:05] Mutation detected: update wavesurfer.js-ofj
+[2025-11-09 14:23:05] Mutation detected: update wavesurfer.js-ofj
+[2025-11-09 14:23:05] Mutation detected: update wavesurfer.js-ofj
+[2025-11-09 14:23:05] Mutation detected: update wavesurfer.js-ofj
+[2025-11-09 14:23:05] Mutation detected: create wavesurfer.js-6g9
+[2025-11-09 14:23:05] Mutation detected: update wavesurfer.js-6g9
+[2025-11-09 14:23:05] Export triggered by mutation events
+[2025-11-09 14:23:05] Starting export...
+[2025-11-09 14:23:05] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 14:23:44] Mutation detected: create wavesurfer.js-gmg
+[2025-11-09 14:23:44] Mutation detected: update wavesurfer.js-gmg
+[2025-11-09 14:23:44] Mutation detected: update wavesurfer.js-gmg
+[2025-11-09 14:23:44] Mutation detected: create wavesurfer.js-3mr
+[2025-11-09 14:23:44] Mutation detected: update wavesurfer.js-3mr
+[2025-11-09 14:23:44] Mutation detected: create wavesurfer.js-725
+[2025-11-09 14:23:44] Mutation detected: update wavesurfer.js-725
+[2025-11-09 14:23:44] Mutation detected: update wavesurfer.js-725
+[2025-11-09 14:23:44] Mutation detected: create wavesurfer.js-zgh
+[2025-11-09 14:23:44] Mutation detected: update wavesurfer.js-zgh
+[2025-11-09 14:23:45] Mutation detected: update wavesurfer.js-zgh
+[2025-11-09 14:23:45] Mutation detected: create wavesurfer.js-ahf
+[2025-11-09 14:23:45] Mutation detected: update wavesurfer.js-ahf
+[2025-11-09 14:23:45] Mutation detected: update wavesurfer.js-ahf
+[2025-11-09 14:23:45] Mutation detected: create wavesurfer.js-54t
+[2025-11-09 14:23:45] Mutation detected: update wavesurfer.js-54t
+[2025-11-09 14:23:45] Mutation detected: update wavesurfer.js-54t
+[2025-11-09 14:23:45] Mutation detected: create wavesurfer.js-37m
+[2025-11-09 14:23:45] Mutation detected: update wavesurfer.js-37m
+[2025-11-09 14:23:45] Mutation detected: update wavesurfer.js-37m
+[2025-11-09 14:23:45] Mutation detected: create wavesurfer.js-9dp
+[2025-11-09 14:23:45] Mutation detected: update wavesurfer.js-9dp
+[2025-11-09 14:23:45] Mutation detected: update wavesurfer.js-9dp
+[2025-11-09 14:23:46] Export triggered by mutation events
+[2025-11-09 14:23:46] Starting export...
+[2025-11-09 14:23:46] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 14:24:04] Mutation detected: create wavesurfer.js-9yn
+[2025-11-09 14:24:04] Mutation detected: update wavesurfer.js-9yn
+[2025-11-09 14:24:04] Mutation detected: update wavesurfer.js-9yn
+[2025-11-09 14:24:04] Mutation detected: create wavesurfer.js-dky
+[2025-11-09 14:24:04] Mutation detected: update wavesurfer.js-dky
+[2025-11-09 14:24:04] Mutation detected: create wavesurfer.js-isi
+[2025-11-09 14:24:04] Mutation detected: update wavesurfer.js-isi
+[2025-11-09 14:24:04] Mutation detected: update wavesurfer.js-isi
+[2025-11-09 14:24:04] Mutation detected: create wavesurfer.js-jgz
+[2025-11-09 14:24:04] Mutation detected: update wavesurfer.js-jgz
+[2025-11-09 14:24:05] Mutation detected: create wavesurfer.js-o9l
+[2025-11-09 14:24:05] Mutation detected: update wavesurfer.js-o9l
+[2025-11-09 14:24:05] Mutation detected: create wavesurfer.js-drf
+[2025-11-09 14:24:05] Mutation detected: update wavesurfer.js-drf
+[2025-11-09 14:24:05] Mutation detected: update wavesurfer.js-drf
+[2025-11-09 14:24:05] Mutation detected: create wavesurfer.js-m2m
+[2025-11-09 14:24:05] Mutation detected: update wavesurfer.js-m2m
+[2025-11-09 14:24:05] Mutation detected: update wavesurfer.js-m2m
+[2025-11-09 14:24:05] Export triggered by mutation events
+[2025-11-09 14:24:05] Starting export...
+[2025-11-09 14:24:05] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 14:25:55] Mutation detected: create wavesurfer.js-rzj
+[2025-11-09 14:25:55] Mutation detected: update wavesurfer.js-rzj
+[2025-11-09 14:25:55] Mutation detected: update wavesurfer.js-rzj
+[2025-11-09 14:25:55] Mutation detected: update wavesurfer.js-rzj
+[2025-11-09 14:25:55] Mutation detected: create wavesurfer.js-l1e
+[2025-11-09 14:25:55] Mutation detected: update wavesurfer.js-l1e
+[2025-11-09 14:25:55] Mutation detected: create wavesurfer.js-dj5
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-dj5
+[2025-11-09 14:25:56] Mutation detected: create wavesurfer.js-1hq
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-1hq
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-1hq
+[2025-11-09 14:25:56] Mutation detected: create wavesurfer.js-jwq
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-jwq
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-jwq
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-jwq
+[2025-11-09 14:25:56] Mutation detected: create wavesurfer.js-3zw
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-3zw
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-3zw
+[2025-11-09 14:25:56] Mutation detected: create wavesurfer.js-8ua
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-8ua
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-8ua
+[2025-11-09 14:25:56] Mutation detected: create wavesurfer.js-tzi
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-tzi
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-tzi
+[2025-11-09 14:25:56] Mutation detected: create wavesurfer.js-389
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-389
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-389
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-389
+[2025-11-09 14:25:56] Mutation detected: update wavesurfer.js-389
+[2025-11-09 14:25:57] Mutation detected: create wavesurfer.js-m4m
+[2025-11-09 14:25:57] Mutation detected: update wavesurfer.js-m4m
+[2025-11-09 14:25:57] Mutation detected: update wavesurfer.js-m4m
+[2025-11-09 14:25:57] Export triggered by mutation events
+[2025-11-09 14:25:57] Starting export...
+[2025-11-09 14:25:57] Exported to JSONL
+[2025-11-09 14:25:57] Export complete
+[2025-11-09 14:25:57] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:25:57] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:25:57] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:25:58] Import triggered by file change
+[2025-11-09 14:25:58] Starting auto-import...
+[2025-11-09 14:26:00] Pulled from remote
+[2025-11-09 14:26:00] Imported from JSONL
+[2025-11-09 14:26:00] Auto-import complete
+[2025-11-09 14:28:58] Mutation detected: create wavesurfer.js-0ib
+[2025-11-09 14:28:58] Mutation detected: update wavesurfer.js-0ib
+[2025-11-09 14:28:58] Mutation detected: update wavesurfer.js-0ib
+[2025-11-09 14:28:58] Mutation detected: create wavesurfer.js-bn7
+[2025-11-09 14:28:58] Mutation detected: update wavesurfer.js-bn7
+[2025-11-09 14:28:58] Mutation detected: create wavesurfer.js-83o
+[2025-11-09 14:28:58] Mutation detected: update wavesurfer.js-83o
+[2025-11-09 14:28:58] Mutation detected: create wavesurfer.js-e3a
+[2025-11-09 14:28:58] Mutation detected: update wavesurfer.js-e3a
+[2025-11-09 14:28:58] Mutation detected: create wavesurfer.js-857
+[2025-11-09 14:28:58] Mutation detected: update wavesurfer.js-857
+[2025-11-09 14:28:58] Mutation detected: create wavesurfer.js-8y3
+[2025-11-09 14:28:59] Mutation detected: update wavesurfer.js-8y3
+[2025-11-09 14:28:59] Mutation detected: update wavesurfer.js-8y3
+[2025-11-09 14:28:59] Mutation detected: create wavesurfer.js-zg6
+[2025-11-09 14:28:59] Mutation detected: update wavesurfer.js-zg6
+[2025-11-09 14:28:59] Mutation detected: create wavesurfer.js-2w1
+[2025-11-09 14:28:59] Mutation detected: update wavesurfer.js-2w1
+[2025-11-09 14:28:59] Mutation detected: create wavesurfer.js-3ac
+[2025-11-09 14:28:59] Mutation detected: update wavesurfer.js-3ac
+[2025-11-09 14:28:59] Mutation detected: create wavesurfer.js-2pc
+[2025-11-09 14:28:59] Mutation detected: update wavesurfer.js-2pc
+[2025-11-09 14:28:59] Mutation detected: create wavesurfer.js-kiz
+[2025-11-09 14:28:59] Mutation detected: update wavesurfer.js-kiz
+[2025-11-09 14:28:59] Mutation detected: update wavesurfer.js-kiz
+[2025-11-09 14:28:59] Mutation detected: create wavesurfer.js-kvb
+[2025-11-09 14:28:59] Mutation detected: update wavesurfer.js-kvb
+[2025-11-09 14:29:00] Export triggered by mutation events
+[2025-11-09 14:29:00] Starting export...
+[2025-11-09 14:29:00] Exported to JSONL
+[2025-11-09 14:29:00] Export complete
+[2025-11-09 14:29:00] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:29:00] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:29:00] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:29:01] Import triggered by file change
+[2025-11-09 14:29:01] Starting auto-import...
+[2025-11-09 14:29:02] Pulled from remote
+[2025-11-09 14:29:02] Imported from JSONL
+[2025-11-09 14:29:02] Auto-import complete
+[2025-11-09 14:29:15] Mutation detected: create wavesurfer.js-190
+[2025-11-09 14:29:15] Mutation detected: update wavesurfer.js-190
+[2025-11-09 14:29:15] Mutation detected: update wavesurfer.js-190
+[2025-11-09 14:29:15] Mutation detected: update wavesurfer.js-gmg
+[2025-11-09 14:29:15] Mutation detected: create wavesurfer.js-0m3
+[2025-11-09 14:29:15] Mutation detected: update wavesurfer.js-0m3
+[2025-11-09 14:29:15] Mutation detected: update wavesurfer.js-0m3
+[2025-11-09 14:29:15] Mutation detected: update wavesurfer.js-0m3
+[2025-11-09 14:29:15] Mutation detected: update wavesurfer.js-rzj
+[2025-11-09 14:29:16] Mutation detected: create wavesurfer.js-qsq
+[2025-11-09 14:29:16] Mutation detected: update wavesurfer.js-qsq
+[2025-11-09 14:29:16] Mutation detected: create wavesurfer.js-v9l
+[2025-11-09 14:29:16] Mutation detected: update wavesurfer.js-v9l
+[2025-11-09 14:29:16] Mutation detected: update wavesurfer.js-v9l
+[2025-11-09 14:29:16] Mutation detected: create wavesurfer.js-f29
+[2025-11-09 14:29:16] Mutation detected: update wavesurfer.js-f29
+[2025-11-09 14:29:16] Mutation detected: update wavesurfer.js-f29
+[2025-11-09 14:29:16] Export triggered by mutation events
+[2025-11-09 14:29:16] Starting export...
+[2025-11-09 14:29:16] Exported to JSONL
+[2025-11-09 14:29:16] Export complete
+[2025-11-09 14:29:16] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:29:16] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:29:16] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:29:17] Import triggered by file change
+[2025-11-09 14:29:17] Starting auto-import...
+[2025-11-09 14:29:19] Pulled from remote
+[2025-11-09 14:29:19] Imported from JSONL
+[2025-11-09 14:29:19] Auto-import complete
+[2025-11-09 14:33:13] Mutation detected: update wavesurfer.js-wpg
+[2025-11-09 14:33:13] Export triggered by mutation events
+[2025-11-09 14:33:13] Starting export...
+[2025-11-09 14:33:13] Exported to JSONL
+[2025-11-09 14:33:13] Export complete
+[2025-11-09 14:33:13] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:33:13] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:33:13] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:33:14] Import triggered by file change
+[2025-11-09 14:33:14] Starting auto-import...
+[2025-11-09 14:33:16] Pulled from remote
+[2025-11-09 14:33:16] Imported from JSONL
+[2025-11-09 14:33:16] Auto-import complete
+[2025-11-09 14:34:03] Mutation detected: update wavesurfer.js-93k
+[2025-11-09 14:34:03] Mutation detected: update wavesurfer.js-61x
+[2025-11-09 14:34:03] Mutation detected: update wavesurfer.js-32u
+[2025-11-09 14:34:03] Mutation detected: update wavesurfer.js-trx
+[2025-11-09 14:34:03] Mutation detected: update wavesurfer.js-ofj
+[2025-11-09 14:34:03] Mutation detected: update wavesurfer.js-6g9
+[2025-11-09 14:34:03] Export triggered by mutation events
+[2025-11-09 14:34:03] Starting export...
+[2025-11-09 14:34:03] Exported to JSONL
+[2025-11-09 14:34:03] Export complete
+[2025-11-09 14:34:03] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:34:03] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:34:03] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:34:04] Import triggered by file change
+[2025-11-09 14:34:04] Starting auto-import...
+[2025-11-09 14:34:06] Pulled from remote
+[2025-11-09 14:34:06] Imported from JSONL
+[2025-11-09 14:34:06] Auto-import complete
+[2025-11-09 14:35:26] Mutation detected: update wavesurfer.js-gmg
+[2025-11-09 14:35:26] Mutation detected: update wavesurfer.js-3mr
+[2025-11-09 14:35:26] Mutation detected: update wavesurfer.js-725
+[2025-11-09 14:35:26] Mutation detected: update wavesurfer.js-zgh
+[2025-11-09 14:35:26] Mutation detected: update wavesurfer.js-ahf
+[2025-11-09 14:35:26] Mutation detected: update wavesurfer.js-54t
+[2025-11-09 14:35:26] Mutation detected: update wavesurfer.js-37m
+[2025-11-09 14:35:26] Mutation detected: update wavesurfer.js-9dp
+[2025-11-09 14:35:27] Export triggered by mutation events
+[2025-11-09 14:35:27] Starting export...
+[2025-11-09 14:35:27] Exported to JSONL
+[2025-11-09 14:35:27] Export complete
+[2025-11-09 14:35:27] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:35:27] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:35:27] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:35:28] Import triggered by file change
+[2025-11-09 14:35:28] Starting auto-import...
+[2025-11-09 14:35:30] Pulled from remote
+[2025-11-09 14:35:30] Imported from JSONL
+[2025-11-09 14:35:30] Auto-import complete
+[2025-11-09 14:36:47] Mutation detected: update wavesurfer.js-9yn
+[2025-11-09 14:36:47] Mutation detected: update wavesurfer.js-dky
+[2025-11-09 14:36:47] Mutation detected: update wavesurfer.js-isi
+[2025-11-09 14:36:47] Mutation detected: update wavesurfer.js-jgz
+[2025-11-09 14:36:48] Mutation detected: update wavesurfer.js-o9l
+[2025-11-09 14:36:48] Mutation detected: update wavesurfer.js-drf
+[2025-11-09 14:36:48] Mutation detected: update wavesurfer.js-m2m
+[2025-11-09 14:36:48] Export triggered by mutation events
+[2025-11-09 14:36:48] Starting export...
+[2025-11-09 14:36:48] Exported to JSONL
+[2025-11-09 14:36:48] Export complete
+[2025-11-09 14:36:48] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:36:48] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:36:48] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:36:49] Import triggered by file change
+[2025-11-09 14:36:49] Starting auto-import...
+[2025-11-09 14:36:51] Pulled from remote
+[2025-11-09 14:36:51] Imported from JSONL
+[2025-11-09 14:36:51] Auto-import complete
+[2025-11-09 14:37:45] Mutation detected: update wavesurfer.js-rzj
+[2025-11-09 14:37:45] Mutation detected: update wavesurfer.js-l1e
+[2025-11-09 14:37:46] Mutation detected: update wavesurfer.js-dj5
+[2025-11-09 14:37:46] Mutation detected: update wavesurfer.js-1hq
+[2025-11-09 14:37:46] Export triggered by mutation events
+[2025-11-09 14:37:46] Starting export...
+[2025-11-09 14:37:46] Exported to JSONL
+[2025-11-09 14:37:46] Export complete
+[2025-11-09 14:37:46] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:37:46] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:37:46] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:37:47] Import triggered by file change
+[2025-11-09 14:37:47] Starting auto-import...
+[2025-11-09 14:37:49] Pulled from remote
+[2025-11-09 14:37:49] Imported from JSONL
+[2025-11-09 14:37:49] Auto-import complete
+[2025-11-09 14:39:13] Mutation detected: update wavesurfer.js-jwq
+[2025-11-09 14:39:13] Mutation detected: update wavesurfer.js-3zw
+[2025-11-09 14:39:13] Mutation detected: update wavesurfer.js-8ua
+[2025-11-09 14:39:13] Mutation detected: update wavesurfer.js-tzi
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-389
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-m4m
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-0ib
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-bn7
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-83o
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-e3a
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-857
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-zg6
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-2w1
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-3ac
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-2pc
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-kiz
+[2025-11-09 14:39:14] Mutation detected: update wavesurfer.js-kvb
+[2025-11-09 14:39:15] Export triggered by mutation events
+[2025-11-09 14:39:15] Starting export...
+[2025-11-09 14:39:15] Exported to JSONL
+[2025-11-09 14:39:15] Export complete
+[2025-11-09 14:39:15] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:39:15] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:39:15] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:39:16] Import triggered by file change
+[2025-11-09 14:39:16] Starting auto-import...
+[2025-11-09 14:39:17] Pulled from remote
+[2025-11-09 14:39:17] Imported from JSONL
+[2025-11-09 14:39:17] Auto-import complete
+[2025-11-09 14:40:56] Mutation detected: update wavesurfer.js-190
+[2025-11-09 14:40:56] Mutation detected: update wavesurfer.js-0m3
+[2025-11-09 14:40:56] Mutation detected: update wavesurfer.js-qsq
+[2025-11-09 14:40:56] Mutation detected: update wavesurfer.js-v9l
+[2025-11-09 14:40:56] Mutation detected: update wavesurfer.js-f29
+[2025-11-09 14:40:57] Mutation detected: update wavesurfer.js-8y3
+[2025-11-09 14:40:57] Export triggered by mutation events
+[2025-11-09 14:40:57] Starting export...
+[2025-11-09 14:40:57] Exported to JSONL
+[2025-11-09 14:40:57] Export complete
+[2025-11-09 14:40:57] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:40:57] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:40:57] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:40:58] Import triggered by file change
+[2025-11-09 14:40:58] Starting auto-import...
+[2025-11-09 14:41:00] Pulled from remote
+[2025-11-09 14:41:00] Imported from JSONL
+[2025-11-09 14:41:00] Auto-import complete
+[2025-11-09 14:43:45] Mutation detected: update wavesurfer.js-61x
+[2025-11-09 14:43:45] Git HEAD change detected: /Users/ivan/Sites/wavesurfer.js/.git/HEAD
+[2025-11-09 14:43:46] Export triggered by mutation events
+[2025-11-09 14:43:46] Starting export...
+[2025-11-09 14:43:46] Exported to JSONL
+[2025-11-09 14:43:46] Export complete
+[2025-11-09 14:43:46] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:43:46] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:43:46] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:43:46] Import triggered by file change
+[2025-11-09 14:43:46] Starting auto-import...
+[2025-11-09 14:43:47] Import triggered by file change
+[2025-11-09 14:43:47] Starting auto-import...
+[2025-11-09 14:43:48] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 14:43:48] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 14:47:34] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:47:34] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:47:34] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:47:35] Import triggered by file change
+[2025-11-09 14:47:35] Starting auto-import...
+[2025-11-09 14:47:37] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 14:47:43] Mutation detected: update wavesurfer.js-61x
+[2025-11-09 14:47:43] Export triggered by mutation events
+[2025-11-09 14:47:43] Starting export...
+[2025-11-09 14:47:43] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 14:48:16] Mutation detected: update wavesurfer.js-32u
+[2025-11-09 14:48:16] Export triggered by mutation events
+[2025-11-09 14:48:16] Starting export...
+[2025-11-09 14:48:16] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 14:49:14] JSONL removed/renamed, re-establishing watch
+[2025-11-09 14:49:14] Successfully re-established JSONL watch after 50ms
+[2025-11-09 14:49:14] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 14:49:14] Mutation detected: update wavesurfer.js-32u
+[2025-11-09 14:49:14] Export triggered by mutation events
+[2025-11-09 14:49:14] Starting export...
+[2025-11-09 14:49:14] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 14:49:15] Import triggered by file change
+[2025-11-09 14:49:15] Starting auto-import...
+[2025-11-09 14:49:16] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 14:49:47] Mutation detected: update wavesurfer.js-trx
+[2025-11-09 14:49:48] Export triggered by mutation events
+[2025-11-09 14:49:48] Starting export...
+[2025-11-09 14:49:48] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 15:08:14] JSONL removed/renamed, re-establishing watch
+[2025-11-09 15:08:15] Successfully re-established JSONL watch after 50ms
+[2025-11-09 15:08:15] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 15:08:15] Mutation detected: update wavesurfer.js-trx
+[2025-11-09 15:08:15] Export triggered by mutation events
+[2025-11-09 15:08:15] Starting export...
+[2025-11-09 15:08:15] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 15:08:16] Import triggered by file change
+[2025-11-09 15:08:16] Starting auto-import...
+[2025-11-09 15:08:17] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 15:08:30] JSONL removed/renamed, re-establishing watch
+[2025-11-09 15:08:30] Successfully re-established JSONL watch after 50ms
+[2025-11-09 15:08:30] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 15:08:31] Import triggered by file change
+[2025-11-09 15:08:31] Starting auto-import...
+[2025-11-09 15:08:33] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 15:09:12] Mutation detected: update wavesurfer.js-ofj
+[2025-11-09 15:09:12] Export triggered by mutation events
+[2025-11-09 15:09:12] Starting export...
+[2025-11-09 15:09:12] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 15:15:19] Mutation detected: update wavesurfer.js-93k
+[2025-11-09 15:15:19] Export triggered by mutation events
+[2025-11-09 15:15:19] Starting export...
+[2025-11-09 15:15:19] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 15:15:29] Mutation detected: update wavesurfer.js-3mr
+[2025-11-09 15:15:29] Export triggered by mutation events
+[2025-11-09 15:15:29] Starting export...
+[2025-11-09 15:15:29] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 15:19:54] JSONL removed/renamed, re-establishing watch
+[2025-11-09 15:19:54] Successfully re-established JSONL watch after 50ms
+[2025-11-09 15:19:54] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 15:19:54] Mutation detected: update wavesurfer.js-3mr
+[2025-11-09 15:19:54] Export triggered by mutation events
+[2025-11-09 15:19:54] Starting export...
+[2025-11-09 15:19:54] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 15:19:55] Import triggered by file change
+[2025-11-09 15:19:55] Starting auto-import...
+[2025-11-09 15:19:56] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 15:20:07] JSONL removed/renamed, re-establishing watch
+[2025-11-09 15:20:08] Successfully re-established JSONL watch after 50ms
+[2025-11-09 15:20:08] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 15:20:09] Import triggered by file change
+[2025-11-09 15:20:09] Starting auto-import...
+[2025-11-09 15:20:10] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 15:23:48] Mutation detected: update wavesurfer.js-37m
+[2025-11-09 15:23:48] Export triggered by mutation events
+[2025-11-09 15:23:48] Starting export...
+[2025-11-09 15:23:48] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 15:27:23] JSONL removed/renamed, re-establishing watch
+[2025-11-09 15:27:23] Successfully re-established JSONL watch after 50ms
+[2025-11-09 15:27:23] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 15:27:23] Mutation detected: update wavesurfer.js-37m
+[2025-11-09 15:27:24] Export triggered by mutation events
+[2025-11-09 15:27:24] Starting export...
+[2025-11-09 15:27:24] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 15:27:24] Import triggered by file change
+[2025-11-09 15:27:24] Starting auto-import...
+[2025-11-09 15:27:26] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 15:28:39] Mutation detected: update wavesurfer.js-725
+[2025-11-09 15:28:40] Export triggered by mutation events
+[2025-11-09 15:28:40] Starting export...
+[2025-11-09 15:28:40] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 15:34:10] JSONL removed/renamed, re-establishing watch
+[2025-11-09 15:34:10] Successfully re-established JSONL watch after 50ms
+[2025-11-09 15:34:10] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 15:34:10] Mutation detected: update wavesurfer.js-725
+[2025-11-09 15:34:11] Export triggered by mutation events
+[2025-11-09 15:34:11] Starting export...
+[2025-11-09 15:34:11] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 15:34:11] Import triggered by file change
+[2025-11-09 15:34:11] Starting auto-import...
+[2025-11-09 15:34:13] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 15:34:20] JSONL removed/renamed, re-establishing watch
+[2025-11-09 15:34:20] Successfully re-established JSONL watch after 50ms
+[2025-11-09 15:34:20] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 15:34:21] Import triggered by file change
+[2025-11-09 15:34:21] Starting auto-import...
+[2025-11-09 15:34:22] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 15:37:51] Mutation detected: update wavesurfer.js-zgh
+[2025-11-09 15:37:52] Export triggered by mutation events
+[2025-11-09 15:37:52] Starting export...
+[2025-11-09 15:37:52] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:19:05] JSONL removed/renamed, re-establishing watch
+[2025-11-09 16:19:05] Successfully re-established JSONL watch after 50ms
+[2025-11-09 16:19:05] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 16:19:05] Mutation detected: update wavesurfer.js-zgh
+[2025-11-09 16:19:06] Export triggered by mutation events
+[2025-11-09 16:19:06] Starting export...
+[2025-11-09 16:19:06] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:19:06] Import triggered by file change
+[2025-11-09 16:19:06] Starting auto-import...
+[2025-11-09 16:19:08] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 16:19:24] JSONL removed/renamed, re-establishing watch
+[2025-11-09 16:19:24] Successfully re-established JSONL watch after 50ms
+[2025-11-09 16:19:24] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 16:19:25] Import triggered by file change
+[2025-11-09 16:19:25] Starting auto-import...
+[2025-11-09 16:19:27] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 16:23:14] Mutation detected: create wavesurfer.js-cg4
+[2025-11-09 16:23:14] Export triggered by mutation events
+[2025-11-09 16:23:14] Starting export...
+[2025-11-09 16:23:14] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:23:30] Mutation detected: create wavesurfer.js-26l
+[2025-11-09 16:23:31] Export triggered by mutation events
+[2025-11-09 16:23:31] Starting export...
+[2025-11-09 16:23:31] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:23:48] Mutation detected: create wavesurfer.js-av8
+[2025-11-09 16:23:48] Export triggered by mutation events
+[2025-11-09 16:23:48] Starting export...
+[2025-11-09 16:23:48] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:24:05] Mutation detected: create wavesurfer.js-jxc
+[2025-11-09 16:24:06] Export triggered by mutation events
+[2025-11-09 16:24:06] Starting export...
+[2025-11-09 16:24:06] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:24:14] Mutation detected: update wavesurfer.js-cg4
+[2025-11-09 16:24:14] Mutation detected: update wavesurfer.js-26l
+[2025-11-09 16:24:15] Mutation detected: update wavesurfer.js-av8
+[2025-11-09 16:24:15] Mutation detected: update wavesurfer.js-jxc
+[2025-11-09 16:24:15] Export triggered by mutation events
+[2025-11-09 16:24:15] Starting export...
+[2025-11-09 16:24:15] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:24:43] Mutation detected: update wavesurfer.js-cg4
+[2025-11-09 16:24:43] Mutation detected: update wavesurfer.js-cg4
+[2025-11-09 16:24:43] Mutation detected: update wavesurfer.js-26l
+[2025-11-09 16:24:43] Mutation detected: update wavesurfer.js-26l
+[2025-11-09 16:24:43] Mutation detected: update wavesurfer.js-av8
+[2025-11-09 16:24:43] Mutation detected: update wavesurfer.js-av8
+[2025-11-09 16:24:43] Mutation detected: update wavesurfer.js-jxc
+[2025-11-09 16:24:44] Export triggered by mutation events
+[2025-11-09 16:24:44] Starting export...
+[2025-11-09 16:24:44] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:39:23] Mutation detected: create wavesurfer.js-uas
+[2025-11-09 16:39:23] Export triggered by mutation events
+[2025-11-09 16:39:23] Starting export...
+[2025-11-09 16:39:23] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:39:38] Mutation detected: update wavesurfer.js-uas
+[2025-11-09 16:39:38] Mutation detected: update wavesurfer.js-uas
+[2025-11-09 16:39:39] Export triggered by mutation events
+[2025-11-09 16:39:39] Starting export...
+[2025-11-09 16:39:39] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:39:44] Mutation detected: create wavesurfer.js-s89
+[2025-11-09 16:39:44] Export triggered by mutation events
+[2025-11-09 16:39:44] Starting export...
+[2025-11-09 16:39:44] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:39:56] Mutation detected: update wavesurfer.js-s89
+[2025-11-09 16:39:56] Mutation detected: update wavesurfer.js-s89
+[2025-11-09 16:39:56] Mutation detected: update wavesurfer.js-s89
+[2025-11-09 16:39:56] Export triggered by mutation events
+[2025-11-09 16:39:56] Starting export...
+[2025-11-09 16:39:56] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:40:01] Mutation detected: create wavesurfer.js-fx1
+[2025-11-09 16:40:01] Export triggered by mutation events
+[2025-11-09 16:40:01] Starting export...
+[2025-11-09 16:40:01] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:40:13] Mutation detected: update wavesurfer.js-fx1
+[2025-11-09 16:40:13] Mutation detected: update wavesurfer.js-fx1
+[2025-11-09 16:40:13] Mutation detected: update wavesurfer.js-fx1
+[2025-11-09 16:40:13] Export triggered by mutation events
+[2025-11-09 16:40:13] Starting export...
+[2025-11-09 16:40:13] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:40:17] Mutation detected: create wavesurfer.js-n5k
+[2025-11-09 16:40:17] Export triggered by mutation events
+[2025-11-09 16:40:17] Starting export...
+[2025-11-09 16:40:17] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:40:27] Mutation detected: update wavesurfer.js-n5k
+[2025-11-09 16:40:28] Mutation detected: update wavesurfer.js-n5k
+[2025-11-09 16:40:28] Mutation detected: update wavesurfer.js-n5k
+[2025-11-09 16:40:28] Export triggered by mutation events
+[2025-11-09 16:40:28] Starting export...
+[2025-11-09 16:40:28] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:40:34] Mutation detected: create wavesurfer.js-ed4
+[2025-11-09 16:40:34] Export triggered by mutation events
+[2025-11-09 16:40:34] Starting export...
+[2025-11-09 16:40:34] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:40:49] Mutation detected: update wavesurfer.js-ed4
+[2025-11-09 16:40:49] Mutation detected: update wavesurfer.js-ed4
+[2025-11-09 16:40:50] Mutation detected: update wavesurfer.js-ed4
+[2025-11-09 16:40:50] Export triggered by mutation events
+[2025-11-09 16:40:50] Starting export...
+[2025-11-09 16:40:50] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:40:56] Mutation detected: create wavesurfer.js-mec
+[2025-11-09 16:40:56] Export triggered by mutation events
+[2025-11-09 16:40:56] Starting export...
+[2025-11-09 16:40:56] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:41:10] Mutation detected: update wavesurfer.js-mec
+[2025-11-09 16:41:10] Mutation detected: update wavesurfer.js-mec
+[2025-11-09 16:41:10] Mutation detected: update wavesurfer.js-mec
+[2025-11-09 16:41:11] Export triggered by mutation events
+[2025-11-09 16:41:11] Starting export...
+[2025-11-09 16:41:11] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:41:16] Mutation detected: create wavesurfer.js-8m5
+[2025-11-09 16:41:17] Export triggered by mutation events
+[2025-11-09 16:41:17] Starting export...
+[2025-11-09 16:41:17] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:41:31] Mutation detected: update wavesurfer.js-8m5
+[2025-11-09 16:41:31] Mutation detected: update wavesurfer.js-8m5
+[2025-11-09 16:41:31] Mutation detected: update wavesurfer.js-8m5
+[2025-11-09 16:41:32] Export triggered by mutation events
+[2025-11-09 16:41:32] Starting export...
+[2025-11-09 16:41:32] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:41:38] Mutation detected: create wavesurfer.js-1j7
+[2025-11-09 16:41:39] Export triggered by mutation events
+[2025-11-09 16:41:39] Starting export...
+[2025-11-09 16:41:39] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:41:54] Mutation detected: update wavesurfer.js-1j7
+[2025-11-09 16:41:54] Mutation detected: update wavesurfer.js-1j7
+[2025-11-09 16:41:54] Mutation detected: update wavesurfer.js-1j7
+[2025-11-09 16:41:55] Export triggered by mutation events
+[2025-11-09 16:41:55] Starting export...
+[2025-11-09 16:41:55] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:42:00] Mutation detected: create wavesurfer.js-2nt
+[2025-11-09 16:42:00] Export triggered by mutation events
+[2025-11-09 16:42:00] Starting export...
+[2025-11-09 16:42:00] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:42:18] Mutation detected: update wavesurfer.js-2nt
+[2025-11-09 16:42:18] Mutation detected: update wavesurfer.js-2nt
+[2025-11-09 16:42:18] Mutation detected: update wavesurfer.js-2nt
+[2025-11-09 16:42:18] Mutation detected: update wavesurfer.js-2nt
+[2025-11-09 16:42:18] Export triggered by mutation events
+[2025-11-09 16:42:18] Starting export...
+[2025-11-09 16:42:18] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:42:22] Mutation detected: create wavesurfer.js-deh
+[2025-11-09 16:42:22] Export triggered by mutation events
+[2025-11-09 16:42:22] Starting export...
+[2025-11-09 16:42:22] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:42:40] Mutation detected: update wavesurfer.js-deh
+[2025-11-09 16:42:41] Mutation detected: update wavesurfer.js-deh
+[2025-11-09 16:42:41] Mutation detected: update wavesurfer.js-deh
+[2025-11-09 16:42:41] Export triggered by mutation events
+[2025-11-09 16:42:41] Starting export...
+[2025-11-09 16:42:41] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:42:46] Mutation detected: create wavesurfer.js-pu6
+[2025-11-09 16:42:46] Export triggered by mutation events
+[2025-11-09 16:42:46] Starting export...
+[2025-11-09 16:42:46] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:43:09] Mutation detected: update wavesurfer.js-pu6
+[2025-11-09 16:43:09] Mutation detected: update wavesurfer.js-pu6
+[2025-11-09 16:43:09] Mutation detected: update wavesurfer.js-pu6
+[2025-11-09 16:43:09] Export triggered by mutation events
+[2025-11-09 16:43:09] Starting export...
+[2025-11-09 16:43:09] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:43:27] Mutation detected: create wavesurfer.js-ix6
+[2025-11-09 16:43:28] Export triggered by mutation events
+[2025-11-09 16:43:28] Starting export...
+[2025-11-09 16:43:28] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:43:43] Mutation detected: update wavesurfer.js-ix6
+[2025-11-09 16:43:44] Mutation detected: update wavesurfer.js-ix6
+[2025-11-09 16:43:44] Export triggered by mutation events
+[2025-11-09 16:43:44] Starting export...
+[2025-11-09 16:43:44] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:44:26] Mutation detected: create wavesurfer.js-ms3
+[2025-11-09 16:44:27] Mutation detected: create wavesurfer.js-919
+[2025-11-09 16:44:27] Export triggered by mutation events
+[2025-11-09 16:44:27] Starting export...
+[2025-11-09 16:44:27] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:44:38] Mutation detected: update wavesurfer.js-ms3
+[2025-11-09 16:44:38] Mutation detected: update wavesurfer.js-ms3
+[2025-11-09 16:44:38] Mutation detected: update wavesurfer.js-ms3
+[2025-11-09 16:44:39] Export triggered by mutation events
+[2025-11-09 16:44:39] Starting export...
+[2025-11-09 16:44:39] Exported to JSONL
+[2025-11-09 16:44:39] Export complete
+[2025-11-09 16:44:39] JSONL removed/renamed, re-establishing watch
+[2025-11-09 16:44:39] Successfully re-established JSONL watch after 50ms
+[2025-11-09 16:44:39] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 16:44:40] Import triggered by file change
+[2025-11-09 16:44:40] Starting auto-import...
+[2025-11-09 16:44:41] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 16:44:48] Mutation detected: update wavesurfer.js-919
+[2025-11-09 16:44:48] Mutation detected: update wavesurfer.js-919
+[2025-11-09 16:44:48] Mutation detected: update wavesurfer.js-919
+[2025-11-09 16:44:49] Export triggered by mutation events
+[2025-11-09 16:44:49] Starting export...
+[2025-11-09 16:44:49] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:44:53] Mutation detected: create wavesurfer.js-xwg
+[2025-11-09 16:44:53] Export triggered by mutation events
+[2025-11-09 16:44:53] Starting export...
+[2025-11-09 16:44:53] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:45:00] Mutation detected: create wavesurfer.js-e7m
+[2025-11-09 16:45:01] Export triggered by mutation events
+[2025-11-09 16:45:01] Starting export...
+[2025-11-09 16:45:01] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:45:09] Mutation detected: create wavesurfer.js-0ew
+[2025-11-09 16:45:10] Export triggered by mutation events
+[2025-11-09 16:45:10] Starting export...
+[2025-11-09 16:45:10] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:45:21] Mutation detected: create wavesurfer.js-q4l
+[2025-11-09 16:45:22] Export triggered by mutation events
+[2025-11-09 16:45:22] Starting export...
+[2025-11-09 16:45:22] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:45:30] Mutation detected: create wavesurfer.js-4xj
+[2025-11-09 16:45:31] Export triggered by mutation events
+[2025-11-09 16:45:31] Starting export...
+[2025-11-09 16:45:31] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:45:37] Mutation detected: create wavesurfer.js-9qq
+[2025-11-09 16:45:37] Export triggered by mutation events
+[2025-11-09 16:45:37] Starting export...
+[2025-11-09 16:45:37] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:45:44] Mutation detected: create wavesurfer.js-oc5
+[2025-11-09 16:45:44] Export triggered by mutation events
+[2025-11-09 16:45:44] Starting export...
+[2025-11-09 16:45:44] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:45:57] Mutation detected: update wavesurfer.js-xwg
+[2025-11-09 16:45:57] Mutation detected: update wavesurfer.js-xwg
+[2025-11-09 16:45:57] Mutation detected: update wavesurfer.js-xwg
+[2025-11-09 16:45:58] Export triggered by mutation events
+[2025-11-09 16:45:58] Starting export...
+[2025-11-09 16:45:58] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:46:08] Mutation detected: update wavesurfer.js-e7m
+[2025-11-09 16:46:08] Mutation detected: update wavesurfer.js-e7m
+[2025-11-09 16:46:08] Mutation detected: update wavesurfer.js-e7m
+[2025-11-09 16:46:09] Export triggered by mutation events
+[2025-11-09 16:46:09] Starting export...
+[2025-11-09 16:46:09] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:46:18] Mutation detected: update wavesurfer.js-0ew
+[2025-11-09 16:46:18] Mutation detected: update wavesurfer.js-0ew
+[2025-11-09 16:46:18] Mutation detected: update wavesurfer.js-0ew
+[2025-11-09 16:46:19] Export triggered by mutation events
+[2025-11-09 16:46:19] Starting export...
+[2025-11-09 16:46:19] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:46:26] Mutation detected: update wavesurfer.js-q4l
+[2025-11-09 16:46:26] Mutation detected: update wavesurfer.js-q4l
+[2025-11-09 16:46:26] Mutation detected: update wavesurfer.js-q4l
+[2025-11-09 16:46:27] Export triggered by mutation events
+[2025-11-09 16:46:27] Starting export...
+[2025-11-09 16:46:27] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:46:40] Mutation detected: update wavesurfer.js-4xj
+[2025-11-09 16:46:40] Mutation detected: update wavesurfer.js-4xj
+[2025-11-09 16:46:40] Mutation detected: update wavesurfer.js-4xj
+[2025-11-09 16:46:40] Mutation detected: update wavesurfer.js-4xj
+[2025-11-09 16:46:40] Export triggered by mutation events
+[2025-11-09 16:46:40] Starting export...
+[2025-11-09 16:46:40] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:46:53] Mutation detected: update wavesurfer.js-9qq
+[2025-11-09 16:46:53] Mutation detected: update wavesurfer.js-9qq
+[2025-11-09 16:46:53] Mutation detected: update wavesurfer.js-9qq
+[2025-11-09 16:46:54] Export triggered by mutation events
+[2025-11-09 16:46:54] Starting export...
+[2025-11-09 16:46:54] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:47:08] Mutation detected: update wavesurfer.js-oc5
+[2025-11-09 16:47:08] Mutation detected: update wavesurfer.js-oc5
+[2025-11-09 16:47:08] Mutation detected: update wavesurfer.js-oc5
+[2025-11-09 16:47:09] Export triggered by mutation events
+[2025-11-09 16:47:09] Starting export...
+[2025-11-09 16:47:09] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:47:21] Mutation detected: create wavesurfer.js-4dn
+[2025-11-09 16:47:21] Mutation detected: create wavesurfer.js-039
+[2025-11-09 16:47:21] Mutation detected: create wavesurfer.js-140
+[2025-11-09 16:47:21] Mutation detected: create wavesurfer.js-cq2
+[2025-11-09 16:47:21] Mutation detected: create wavesurfer.js-u2k
+[2025-11-09 16:47:21] Mutation detected: create wavesurfer.js-5qs
+[2025-11-09 16:47:21] Mutation detected: create wavesurfer.js-se8
+[2025-11-09 16:47:21] Mutation detected: create wavesurfer.js-5ya
+[2025-11-09 16:47:21] Mutation detected: create wavesurfer.js-bg0
+[2025-11-09 16:47:21] Mutation detected: create wavesurfer.js-099
+[2025-11-09 16:47:22] Export triggered by mutation events
+[2025-11-09 16:47:22] Starting export...
+[2025-11-09 16:47:22] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:47:34] Mutation detected: update wavesurfer.js-4dn
+[2025-11-09 16:47:34] Mutation detected: update wavesurfer.js-4dn
+[2025-11-09 16:47:35] Export triggered by mutation events
+[2025-11-09 16:47:35] Starting export...
+[2025-11-09 16:47:35] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:47:44] Mutation detected: update wavesurfer.js-039
+[2025-11-09 16:47:44] Mutation detected: update wavesurfer.js-039
+[2025-11-09 16:47:44] Mutation detected: update wavesurfer.js-039
+[2025-11-09 16:47:45] Export triggered by mutation events
+[2025-11-09 16:47:45] Starting export...
+[2025-11-09 16:47:45] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:47:57] Mutation detected: update wavesurfer.js-140
+[2025-11-09 16:47:57] Mutation detected: update wavesurfer.js-140
+[2025-11-09 16:47:57] Mutation detected: update wavesurfer.js-140
+[2025-11-09 16:47:57] Mutation detected: update wavesurfer.js-cq2
+[2025-11-09 16:47:57] Mutation detected: update wavesurfer.js-cq2
+[2025-11-09 16:47:58] Export triggered by mutation events
+[2025-11-09 16:47:58] Starting export...
+[2025-11-09 16:47:58] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:48:13] Mutation detected: update wavesurfer.js-u2k
+[2025-11-09 16:48:14] Mutation detected: update wavesurfer.js-u2k
+[2025-11-09 16:48:14] Mutation detected: update wavesurfer.js-5qs
+[2025-11-09 16:48:14] Mutation detected: update wavesurfer.js-5qs
+[2025-11-09 16:48:14] Mutation detected: update wavesurfer.js-se8
+[2025-11-09 16:48:14] Mutation detected: update wavesurfer.js-se8
+[2025-11-09 16:48:14] Mutation detected: update wavesurfer.js-se8
+[2025-11-09 16:48:14] Mutation detected: update wavesurfer.js-5ya
+[2025-11-09 16:48:14] Mutation detected: update wavesurfer.js-5ya
+[2025-11-09 16:48:14] Export triggered by mutation events
+[2025-11-09 16:48:14] Starting export...
+[2025-11-09 16:48:14] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:48:24] Mutation detected: update wavesurfer.js-bg0
+[2025-11-09 16:48:24] Mutation detected: update wavesurfer.js-bg0
+[2025-11-09 16:48:24] Mutation detected: update wavesurfer.js-099
+[2025-11-09 16:48:24] Mutation detected: update wavesurfer.js-099
+[2025-11-09 16:48:25] Export triggered by mutation events
+[2025-11-09 16:48:25] Starting export...
+[2025-11-09 16:48:25] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:48:37] Mutation detected: create wavesurfer.js-m15
+[2025-11-09 16:48:37] Mutation detected: create wavesurfer.js-djl
+[2025-11-09 16:48:37] Mutation detected: create wavesurfer.js-62i
+[2025-11-09 16:48:37] Mutation detected: create wavesurfer.js-xux
+[2025-11-09 16:48:37] Mutation detected: create wavesurfer.js-0lu
+[2025-11-09 16:48:38] Mutation detected: create wavesurfer.js-u6q
+[2025-11-09 16:48:38] Mutation detected: create wavesurfer.js-97v
+[2025-11-09 16:48:38] Mutation detected: create wavesurfer.js-n7g
+[2025-11-09 16:48:38] Export triggered by mutation events
+[2025-11-09 16:48:38] Starting export...
+[2025-11-09 16:48:38] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:48:50] Mutation detected: update wavesurfer.js-m15
+[2025-11-09 16:48:50] Mutation detected: update wavesurfer.js-m15
+[2025-11-09 16:48:50] Mutation detected: update wavesurfer.js-djl
+[2025-11-09 16:48:50] Mutation detected: update wavesurfer.js-djl
+[2025-11-09 16:48:50] Export triggered by mutation events
+[2025-11-09 16:48:50] Starting export...
+[2025-11-09 16:48:50] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:49:05] Mutation detected: update wavesurfer.js-62i
+[2025-11-09 16:49:05] Mutation detected: update wavesurfer.js-62i
+[2025-11-09 16:49:05] Mutation detected: update wavesurfer.js-xux
+[2025-11-09 16:49:05] Mutation detected: update wavesurfer.js-xux
+[2025-11-09 16:49:05] Mutation detected: update wavesurfer.js-xux
+[2025-11-09 16:49:05] Mutation detected: update wavesurfer.js-xux
+[2025-11-09 16:49:05] Mutation detected: update wavesurfer.js-xux
+[2025-11-09 16:49:06] Export triggered by mutation events
+[2025-11-09 16:49:06] Starting export...
+[2025-11-09 16:49:06] Exported to JSONL
+[2025-11-09 16:49:06] Export complete
+[2025-11-09 16:49:06] JSONL removed/renamed, re-establishing watch
+[2025-11-09 16:49:06] Successfully re-established JSONL watch after 50ms
+[2025-11-09 16:49:06] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 16:49:07] Import triggered by file change
+[2025-11-09 16:49:07] Starting auto-import...
+[2025-11-09 16:49:08] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 16:49:28] Mutation detected: update wavesurfer.js-0lu
+[2025-11-09 16:49:28] Mutation detected: update wavesurfer.js-0lu
+[2025-11-09 16:49:28] Mutation detected: update wavesurfer.js-u6q
+[2025-11-09 16:49:28] Mutation detected: update wavesurfer.js-u6q
+[2025-11-09 16:49:28] Mutation detected: update wavesurfer.js-97v
+[2025-11-09 16:49:28] Mutation detected: update wavesurfer.js-97v
+[2025-11-09 16:49:29] Export triggered by mutation events
+[2025-11-09 16:49:29] Starting export...
+[2025-11-09 16:49:29] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 16:57:44] File change detected: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl (op: CHMOD)
+[2025-11-09 16:57:45] Import triggered by file change
+[2025-11-09 16:57:45] Starting auto-import...
+[2025-11-09 16:57:46] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+

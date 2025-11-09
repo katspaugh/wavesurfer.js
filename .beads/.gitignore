@@ -1,0 +1,20 @@
+# SQLite databases
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Daemon runtime files
+daemon.lock
+daemon.log
+daemon.pid
+bd.sock
+
+# Legacy database files
+db.sqlite
+bd.db
+
+# Keep JSONL exports and config (source of truth for git)
+!*.jsonl
+!metadata.json
+!config.json
