@@ -18,11 +18,66 @@ export interface WaveformRenderOptions {
   barRadius?: number
 }
 
+// ============================================================================
+// Pure Waveform Path Generation Functions
+// ============================================================================
+// These functions generate SVG path strings from audio data without side effects.
+// They can be easily tested and used in different rendering contexts.
+
+export interface WaveformPathOptions {
+  /** Vertical scale factor (default: 1) */
+  vScale?: number
+}
+
+/**
+ * Generate SVG path commands for a single channel
+ * Pure function - no side effects
+ *
+ * @param channelData - Audio sample data for one channel
+ * @param width - Width of the waveform in pixels
+ * @param height - Height of the waveform in pixels
+ * @param vScale - Vertical scale factor
+ * @param startFromBottom - If true, path starts from bottom instead of middle
+ * @returns Array of path command strings
+ */
+export function generateChannelPath(
+  channelData: Float32Array | number[],
+  width: number,
+  height: number,
+  vScale: number,
+  startFromBottom = false,
+): string[] {
+  const path: string[] = []
+  const length = channelData.length
+  const halfHeight = height / 2
+
+  for (let i = 0; i < length; i++) {
+    const x = (i / (length - 1 || 1)) * width
+    const value = channelData[i] || 0
+    const y = startFromBottom ? height - value * height * vScale : halfHeight - value * halfHeight * vScale
+
+    if (i === 0) {
+      path.push(`M ${x} ${y}`)
+    } else {
+      path.push(`L ${x} ${y}`)
+    }
+  }
+
+  return path
+}
+
 /**
  * Build an SVG path string from waveform channel data
+ * Pure function - no side effects
  *
  * This creates a path that represents the waveform shape as a series of
  * points that can be efficiently rendered using Canvas Path2D.
+ *
+ * @param channelData - Array of channel data (1 for mono, 2 for stereo)
+ * @param width - Width of the waveform in pixels
+ * @param height - Height of the waveform in pixels
+ * @param vScale - Vertical scale factor
+ * @returns SVG path string
  */
 export function buildWaveformPathData(channelData: ChannelData, width: number, height: number, vScale: number): string {
   const paths: string[] = []
@@ -34,18 +89,8 @@ export function buildWaveformPathData(channelData: ChannelData, width: number, h
   if (length === 0) return ''
 
   // Build top path
-  const topPath: string[] = []
-  for (let i = 0; i < length; i++) {
-    const x = (i / (length - 1 || 1)) * width
-    const value = topChannel[i] || 0
-    const y = halfHeight - value * halfHeight * vScale
-
-    if (i === 0) {
-      topPath.push(`M ${x} ${y}`)
-    } else {
-      topPath.push(`L ${x} ${y}`)
-    }
-  }
+  const topPath = generateChannelPath(topChannel, width, height, vScale, false)
+  paths.push(...topPath)
 
   // Build bottom path (in reverse)
   const bottomPath: string[] = []
@@ -55,11 +100,32 @@ export function buildWaveformPathData(channelData: ChannelData, width: number, h
     const y = halfHeight + value * halfHeight * vScale
     bottomPath.push(`L ${x} ${y}`)
   }
+  paths.push(...bottomPath)
 
   // Close the path
-  paths.push(topPath.join(' '), bottomPath.join(' '), 'Z')
+  paths.push('Z')
 
   return paths.join(' ')
+}
+
+/**
+ * Generate waveform path with configurable options
+ * Pure function - no side effects
+ *
+ * @param channelData - Array of channel data
+ * @param width - Width of the waveform in pixels
+ * @param height - Height of the waveform in pixels
+ * @param options - Path generation options
+ * @returns SVG path string
+ */
+export function generateWaveformPath(
+  channelData: ChannelData,
+  width: number,
+  height: number,
+  options: WaveformPathOptions = {},
+): string {
+  const { vScale = 1 } = options
+  return buildWaveformPathData(channelData, width, height, vScale)
 }
 
 /**
