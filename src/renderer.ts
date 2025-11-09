@@ -4,7 +4,7 @@ import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
 import { RenderScheduler, type RenderPriority } from './reactive/render-scheduler.js'
 import { createScrollStream, type ScrollStream } from './reactive/scroll-stream.js'
-import { effect } from './reactive/store.js'
+import { effect, signal, type Signal, type WritableSignal } from './reactive/store.js'
 
 type ChannelData = utils.ChannelData
 
@@ -42,11 +42,44 @@ class Renderer extends EventEmitter<RendererEvents> {
   private lastProgressState: { progress: number; isPlaying: boolean } | null = null
   private scrollStream: ScrollStream | null = null
 
+  // Public reactive streams (expose events as signals)
+  public readonly click$: Signal<{ x: number; y: number } | null>
+  public readonly dblclick$: Signal<{ x: number; y: number } | null>
+  public readonly drag$: Signal<{ x: number; type: 'start' | 'move' | 'end' } | null>
+  public readonly resize$: Signal<void | null>
+  public readonly render$: Signal<void | null>
+  public readonly rendered$: Signal<void | null>
+  // Note: scroll$ exposed via scrollStream property
+
+  // Internal writable versions
+  private readonly _click$: WritableSignal<{ x: number; y: number } | null>
+  private readonly _dblclick$: WritableSignal<{ x: number; y: number } | null>
+  private readonly _drag$: WritableSignal<{ x: number; type: 'start' | 'move' | 'end' } | null>
+  private readonly _resize$: WritableSignal<void | null>
+  private readonly _render$: WritableSignal<void | null>
+  private readonly _rendered$: WritableSignal<void | null>
+
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
 
     this.subscriptions = []
     this.options = options
+
+    // Initialize reactive streams
+    this._click$ = signal<{ x: number; y: number } | null>(null)
+    this._dblclick$ = signal<{ x: number; y: number } | null>(null)
+    this._drag$ = signal<{ x: number; type: 'start' | 'move' | 'end' } | null>(null)
+    this._resize$ = signal<void | null>(null)
+    this._render$ = signal<void | null>(null)
+    this._rendered$ = signal<void | null>(null)
+
+    // Expose as readonly
+    this.click$ = this._click$
+    this.dblclick$ = this._dblclick$
+    this.drag$ = this._drag$
+    this.resize$ = this._resize$
+    this.render$ = this._render$
+    this.rendered$ = this._rendered$
 
     const parent = this.parentFromOptionsContainer(options.container)
     this.parent = parent
@@ -87,6 +120,9 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.wrapper.addEventListener('click', (e) => {
       const rect = this.wrapper.getBoundingClientRect()
       const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
+      // Update stream
+      this._click$.set({ x, y })
+      // Legacy event
       this.emit('click', x, y)
     })
 
@@ -94,6 +130,9 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.wrapper.addEventListener('dblclick', (e) => {
       const rect = this.wrapper.getBoundingClientRect()
       const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
+      // Update stream
+      this._dblclick$.set({ x, y })
+      // Legacy event
       this.emit('dblclick', x, y)
     })
 
@@ -131,6 +170,9 @@ class Renderer extends EventEmitter<RendererEvents> {
     if (width === this.lastContainerWidth && this.options.height !== 'auto') return
     this.lastContainerWidth = width
     this.reRender()
+    // Update stream
+    this._resize$.set(undefined)
+    // Legacy event
     this.emit('resize')
   }
 
@@ -143,19 +185,31 @@ class Renderer extends EventEmitter<RendererEvents> {
       // On drag
       (_, __, x) => {
         const width = this.wrapper.getBoundingClientRect().width
-        this.emit('drag', utils.clampToUnit(x / width))
+        const relX = utils.clampToUnit(x / width)
+        // Update stream
+        this._drag$.set({ x: relX, type: 'move' })
+        // Legacy event
+        this.emit('drag', relX)
       },
       // On start drag
       (x) => {
         this.isDragging = true
         const width = this.wrapper.getBoundingClientRect().width
-        this.emit('dragstart', utils.clampToUnit(x / width))
+        const relX = utils.clampToUnit(x / width)
+        // Update stream
+        this._drag$.set({ x: relX, type: 'start' })
+        // Legacy event
+        this.emit('dragstart', relX)
       },
       // On end drag
       (x) => {
         this.isDragging = false
         const width = this.wrapper.getBoundingClientRect().width
-        this.emit('dragend', utils.clampToUnit(x / width))
+        const relX = utils.clampToUnit(x / width)
+        // Update stream
+        this._drag$.set({ x: relX, type: 'end' })
+        // Legacy event
+        this.emit('dragend', relX)
       },
     )
 
@@ -640,6 +694,9 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     this.audioData = audioData
 
+    // Update stream
+    this._render$.set(undefined)
+    // Legacy event
     this.emit('render')
 
     // Render the waveform
@@ -657,7 +714,12 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
 
     // Must be emitted asynchronously for backward compatibility
-    Promise.resolve().then(() => this.emit('rendered'))
+    Promise.resolve().then(() => {
+      // Update stream
+      this._rendered$.set(undefined)
+      // Legacy event
+      this.emit('rendered')
+    })
   }
 
   reRender() {
