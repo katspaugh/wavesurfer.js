@@ -509,9 +509,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
     // Prevent load after destroy
     if (this.isDestroyed) {
-      throw new Error(
-        'Cannot call load() on a destroyed WaveSurfer instance. Please create a new instance instead.',
-      )
+      throw new Error('Cannot call load() on a destroyed WaveSurfer instance. Please create a new instance instead.')
     }
 
     this.emit('load', url)
@@ -551,6 +549,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       } else {
         // Watch duration signal until it's set
         let cleanup: (() => void) | undefined
+        // eslint-disable-next-line prefer-const
         cleanup = effect(() => {
           const dur = this.wavesurferState.duration.value
           if (dur > 0) {
