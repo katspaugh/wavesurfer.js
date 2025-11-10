@@ -40,7 +40,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private dragUnsubscribe: (() => void) | null = null
   private renderScheduler = new RenderScheduler()
   private lastProgressState: { progress: number; isPlaying: boolean } | null = null
-  private scrollStream: ScrollStream | null = null
+  public scrollStream: ScrollStream | null = null
 
   // Public reactive streams (expose events as signals)
   public readonly click$: Signal<{ x: number; y: number } | null>

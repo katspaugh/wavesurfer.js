@@ -119,8 +119,18 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     return this._isPlaying
   }
 
+  /** Get reactive isPlaying stream (alias for consistency with Renderer naming) */
+  public get isPlaying$() {
+    return this._isPlaying
+  }
+
   /** Get reactive currentTime signal */
   public get currentTimeSignal() {
+    return this._currentTime
+  }
+
+  /** Get reactive currentTime stream (alias for consistency with Renderer naming) */
+  public get currentTime$() {
     return this._currentTime
   }
 
@@ -129,8 +139,18 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     return this._duration
   }
 
+  /** Get reactive duration stream (alias for consistency with Renderer naming) */
+  public get duration$() {
+    return this._duration
+  }
+
   /** Get reactive volume signal */
   public get volumeSignal() {
+    return this._volume
+  }
+
+  /** Get reactive volume stream (alias for consistency with Renderer naming) */
+  public get volume$() {
     return this._volume
   }
 
@@ -139,13 +159,28 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     return this._muted
   }
 
+  /** Get reactive muted stream (alias for consistency with Renderer naming) */
+  public get muted$() {
+    return this._muted
+  }
+
   /** Get reactive playbackRate signal */
   public get playbackRateSignal() {
     return this._playbackRate
   }
 
+  /** Get reactive playbackRate stream (alias for consistency with Renderer naming) */
+  public get playbackRate$() {
+    return this._playbackRate
+  }
+
   /** Get reactive seeking signal */
   public get seekingSignal() {
+    return this._seeking
+  }
+
+  /** Get reactive seeking stream (alias for consistency with Renderer naming) */
+  public get seeking$() {
     return this._seeking
   }
 

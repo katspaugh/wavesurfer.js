@@ -311,87 +311,111 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private initRendererEvents() {
-    this.subscriptions.push(
-      // Seek on click
-      this.renderer.on('click', (relativeX, relativeY) => {
-        if (this.options.interact) {
-          this.seekTo(relativeX)
-          this.emit('interaction', relativeX * this.getDuration())
-          this.emit('click', relativeX, relativeY)
+    // Seek on click (reactive)
+    this.reactiveCleanups.push(
+      effect(() => {
+        const click = this.renderer.click$.value
+        if (click && this.options.interact) {
+          this.seekTo(click.x)
+          this.emit('interaction', click.x * this.getDuration())
+          this.emit('click', click.x, click.y)
         }
-      }),
-
-      // Double click
-      this.renderer.on('dblclick', (relativeX, relativeY) => {
-        this.emit('dblclick', relativeX, relativeY)
-      }),
-
-      // Scroll
-      this.renderer.on('scroll', (startX, endX, scrollLeft, scrollRight) => {
-        const duration = this.getDuration()
-        this.emit('scroll', startX * duration, endX * duration, scrollLeft, scrollRight)
-      }),
-
-      // Redraw
-      this.renderer.on('render', () => {
-        this.emit('redraw')
-      }),
-
-      // RedrawComplete
-      this.renderer.on('rendered', () => {
-        this.emit('redrawcomplete')
-      }),
-
-      // DragStart
-      this.renderer.on('dragstart', (relativeX) => {
-        this.emit('dragstart', relativeX)
-      }),
-
-      // DragEnd
-      this.renderer.on('dragend', (relativeX) => {
-        this.emit('dragend', relativeX)
-      }),
-
-      // Resize
-      this.renderer.on('resize', () => {
-        this.emit('resize')
-      }),
+      }, [this.renderer.click$]),
     )
 
-    // Drag
+    // Double click (reactive)
+    this.reactiveCleanups.push(
+      effect(() => {
+        const dblclick = this.renderer.dblclick$.value
+        if (dblclick) {
+          this.emit('dblclick', dblclick.x, dblclick.y)
+        }
+      }, [this.renderer.dblclick$]),
+    )
+
+    // Scroll (reactive)
+    if (this.renderer.scrollStream) {
+      this.reactiveCleanups.push(
+        effect(() => {
+          const { startX, endX } = this.renderer.scrollStream!.percentages.value
+          const { left, right } = this.renderer.scrollStream!.bounds.value
+          const duration = this.getDuration()
+          this.emit('scroll', startX * duration, endX * duration, left, right)
+        }, [this.renderer.scrollStream.percentages]),
+      )
+    }
+
+    // Redraw (reactive)
+    this.reactiveCleanups.push(
+      effect(() => {
+        if (this.renderer.render$.value !== null) {
+          this.emit('redraw')
+        }
+      }, [this.renderer.render$]),
+    )
+
+    // RedrawComplete (reactive)
+    this.reactiveCleanups.push(
+      effect(() => {
+        if (this.renderer.rendered$.value !== null) {
+          this.emit('redrawcomplete')
+        }
+      }, [this.renderer.rendered$]),
+    )
+
+    // Resize (reactive)
+    this.reactiveCleanups.push(
+      effect(() => {
+        if (this.renderer.resize$.value !== null) {
+          this.emit('resize')
+        }
+      }, [this.renderer.resize$]),
+    )
+
+    // Drag (reactive)
     {
       let debounce: ReturnType<typeof setTimeout> | undefined
-      const unsubscribeDrag = this.renderer.on('drag', (relativeX) => {
-        if (!this.options.interact) return
+      const cleanup = effect(() => {
+        const drag = this.renderer.drag$.value
+        if (!drag || !this.options.interact) return
 
-        // Update the visual position
-        this.renderer.renderProgress(relativeX)
+        const { x: relativeX, type } = drag
 
-        // Set the audio position with a debounce
-        clearTimeout(debounce)
-        let debounceTime = 0
+        // Emit drag events
+        if (type === 'start') {
+          this.emit('dragstart', relativeX)
+        } else if (type === 'end') {
+          this.emit('dragend', relativeX)
+        } else if (type === 'move') {
+          // Update the visual position
+          this.renderer.renderProgress(relativeX)
 
-        const dragToSeek = this.options.dragToSeek
-        if (this.isPlaying()) {
-          debounceTime = 0
-        } else if (dragToSeek === true) {
-          debounceTime = 200
-        } else if (dragToSeek && typeof dragToSeek === 'object') {
-          debounceTime = (dragToSeek as { debounceTime: number }).debounceTime ?? 200
+          // Set the audio position with a debounce
+          clearTimeout(debounce)
+          let debounceTime = 0
+
+          const dragToSeek = this.options.dragToSeek
+          if (this.isPlaying()) {
+            debounceTime = 0
+          } else if (dragToSeek === true) {
+            debounceTime = 200
+          } else if (dragToSeek && typeof dragToSeek === 'object') {
+            debounceTime = (dragToSeek as { debounceTime: number }).debounceTime ?? 200
+          }
+
+          debounce = setTimeout(() => {
+            this.seekTo(relativeX)
+          }, debounceTime)
+
+          this.emit('interaction', relativeX * this.getDuration())
+          this.emit('drag', relativeX)
         }
-
-        debounce = setTimeout(() => {
-          this.seekTo(relativeX)
-        }, debounceTime)
-
-        this.emit('interaction', relativeX * this.getDuration())
-        this.emit('drag', relativeX)
-      })
+      }, [this.renderer.drag$])
 
       // Clear debounce timeout on destroy
-      this.subscriptions.push(() => {
+      this.reactiveCleanups.push(() => {
         clearTimeout(debounce)
-        unsubscribeDrag()
+        cleanup()
       })
     }
   }

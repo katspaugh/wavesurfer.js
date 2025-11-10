@@ -262,10 +262,7 @@ describe('event-stream-emitter', () => {
 
     it('should work with subscriptions', () => {
       const { stream: timeStream, cleanup } = toStream(emitter, 'timeupdate')
-      const evenSeconds = filterStream(
-        timeStream,
-        (value) => value !== null && Math.floor(value[0]) % 2 === 0,
-      )
+      const evenSeconds = filterStream(timeStream, (value) => value !== null && Math.floor(value[0]) % 2 === 0)
 
       const values: any[] = []
       evenSeconds.subscribe((value) => values.push(value))

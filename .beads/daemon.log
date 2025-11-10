@@ -1415,3 +1415,54 @@ fatal: couldn't find remote ref reactive/signals
 [2025-11-09 22:45:13] Starting export...
 [2025-11-09 22:45:13] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
 [2025-11-09 22:47:14] File change detected: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl (op: CHMOD)
+[2025-11-09 22:47:14] File change detected: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl (op: CHMOD)
+[2025-11-09 22:47:15] Import triggered by file change
+[2025-11-09 22:47:15] Starting auto-import...
+[2025-11-09 22:47:16] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 22:47:36] JSONL removed/renamed, re-establishing watch
+[2025-11-09 22:47:36] Successfully re-established JSONL watch after 50ms
+[2025-11-09 22:47:36] JSONL file created: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl
+[2025-11-09 22:47:37] Import triggered by file change
+[2025-11-09 22:47:37] Starting auto-import...
+[2025-11-09 22:47:38] Pull failed: git pull failed: exit status 1
+fatal: couldn't find remote ref reactive/signals
+
+[2025-11-09 22:47:48] Mutation detected: update wavesurfer.js-cg4
+[2025-11-09 22:47:48] Export triggered by mutation events
+[2025-11-09 22:47:48] Starting export...
+[2025-11-09 22:47:48] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 22:48:36] Mutation detected: create wavesurfer.js-980
+[2025-11-09 22:48:37] Export triggered by mutation events
+[2025-11-09 22:48:37] Starting export...
+[2025-11-09 22:48:37] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 22:48:49] Mutation detected: create wavesurfer.js-ea4
+[2025-11-09 22:48:50] Export triggered by mutation events
+[2025-11-09 22:48:50] Starting export...
+[2025-11-09 22:48:50] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 22:48:57] Mutation detected: update wavesurfer.js-ea4
+[2025-11-09 22:48:57] Export triggered by mutation events
+[2025-11-09 22:48:57] Starting export...
+[2025-11-09 22:48:57] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-09 22:49:09] Mutation detected: update wavesurfer.js-980
+[2025-11-09 22:49:09] Export triggered by mutation events
+[2025-11-09 22:49:09] Starting export...
+[2025-11-09 22:49:09] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-10 08:31:45] Mutation detected: update wavesurfer.js-980
+[2025-11-10 08:31:45] Export triggered by mutation events
+[2025-11-10 08:31:45] Starting export...
+[2025-11-10 08:31:45] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-10 08:32:00] Mutation detected: update wavesurfer.js-ea4
+[2025-11-10 08:32:01] Export triggered by mutation events
+[2025-11-10 08:32:01] Starting export...
+[2025-11-10 08:32:01] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-10 08:50:08] Mutation detected: update wavesurfer.js-ea4
+[2025-11-10 08:50:09] Export triggered by mutation events
+[2025-11-10 08:50:09] Starting export...
+[2025-11-10 08:50:09] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-10 09:24:58] Mutation detected: update wavesurfer.js-ea4
+[2025-11-10 09:24:59] Export triggered by mutation events
+[2025-11-10 09:24:59] Starting export...
+[2025-11-10 09:24:59] Pre-export validation failed: refusing to export: JSONL is newer than database (import first to avoid data loss)
+[2025-11-10 09:25:02] File change detected: /Users/ivan/Sites/wavesurfer.js/.beads/beads.base.jsonl (op: CHMOD)

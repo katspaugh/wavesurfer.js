@@ -68,4 +68,138 @@ describe('Player', () => {
     await player.setSinkId('id')
     expect(media.setSinkId).toHaveBeenCalledWith('id')
   })
+
+  describe('reactive streams', () => {
+    test('exposes isPlaying$ stream', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      expect(player.isPlaying$).toBeDefined()
+      expect(player.isPlaying$.value).toBe(false)
+    })
+
+    test('exposes currentTime$ stream', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      expect(player.currentTime$).toBeDefined()
+      expect(player.currentTime$.value).toBe(0)
+    })
+
+    test('exposes duration$ stream', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      expect(player.duration$).toBeDefined()
+      expect(typeof player.duration$.value).toBe('number')
+    })
+
+    test('exposes volume$ stream', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      expect(player.volume$).toBeDefined()
+      expect(typeof player.volume$.value).toBe('number')
+    })
+
+    test('exposes muted$ stream', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      expect(player.muted$).toBeDefined()
+      expect(typeof player.muted$.value).toBe('boolean')
+    })
+
+    test('exposes playbackRate$ stream', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      expect(player.playbackRate$).toBeDefined()
+      expect(typeof player.playbackRate$.value).toBe('number')
+    })
+
+    test('exposes seeking$ stream', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      expect(player.seeking$).toBeDefined()
+      expect(player.seeking$.value).toBe(false)
+    })
+
+    test('isPlaying$ updates on play event', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      expect(player.isPlaying$.value).toBe(false)
+      media.dispatchEvent(new Event('play'))
+      expect(player.isPlaying$.value).toBe(true)
+    })
+
+    test('isPlaying$ updates on pause event', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      media.dispatchEvent(new Event('play'))
+      expect(player.isPlaying$.value).toBe(true)
+      media.dispatchEvent(new Event('pause'))
+      expect(player.isPlaying$.value).toBe(false)
+    })
+
+    test('isPlaying$ updates on ended event', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      media.dispatchEvent(new Event('play'))
+      expect(player.isPlaying$.value).toBe(true)
+      media.dispatchEvent(new Event('ended'))
+      expect(player.isPlaying$.value).toBe(false)
+    })
+
+    test('currentTime$ updates on timeupdate event', () => {
+      const media = createMedia()
+      Object.defineProperty(media, 'currentTime', { configurable: true, value: 5.5, writable: true })
+      const player = new Player<Events>({ media })
+      expect(player.currentTime$.value).toBe(0)
+      media.dispatchEvent(new Event('timeupdate'))
+      expect(player.currentTime$.value).toBe(5.5)
+    })
+
+    test('duration$ updates on durationchange event', () => {
+      const media = createMedia()
+      Object.defineProperty(media, 'duration', { configurable: true, value: 120.5, writable: true })
+      const player = new Player<Events>({ media })
+      media.dispatchEvent(new Event('durationchange'))
+      expect(player.duration$.value).toBe(120.5)
+    })
+
+    test('seeking$ updates on seeking and seeked events', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      expect(player.seeking$.value).toBe(false)
+      media.dispatchEvent(new Event('seeking'))
+      expect(player.seeking$.value).toBe(true)
+      media.dispatchEvent(new Event('seeked'))
+      expect(player.seeking$.value).toBe(false)
+    })
+
+    test('volume$ and muted$ update on volumechange event', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      Object.defineProperty(media, 'volume', { configurable: true, value: 0.7, writable: true })
+      Object.defineProperty(media, 'muted', { configurable: true, value: true, writable: true })
+      media.dispatchEvent(new Event('volumechange'))
+      expect(player.volume$.value).toBe(0.7)
+      expect(player.muted$.value).toBe(true)
+    })
+
+    test('playbackRate$ updates on ratechange event', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      Object.defineProperty(media, 'playbackRate', { configurable: true, value: 1.5, writable: true })
+      media.dispatchEvent(new Event('ratechange'))
+      expect(player.playbackRate$.value).toBe(1.5)
+    })
+
+    test('backward compatibility: also exposes Signal getters', () => {
+      const media = createMedia()
+      const player = new Player<Events>({ media })
+      expect(player.isPlayingSignal).toBe(player.isPlaying$)
+      expect(player.currentTimeSignal).toBe(player.currentTime$)
+      expect(player.durationSignal).toBe(player.duration$)
+      expect(player.volumeSignal).toBe(player.volume$)
+      expect(player.mutedSignal).toBe(player.muted$)
+      expect(player.playbackRateSignal).toBe(player.playbackRate$)
+      expect(player.seekingSignal).toBe(player.seeking$)
+    })
+  })
 })

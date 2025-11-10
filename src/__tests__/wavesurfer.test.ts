@@ -1,4 +1,5 @@
 jest.mock('../renderer.js', () => {
+  const { signal } = jest.requireActual('../reactive/store.js')
   let lastInstance: any
   class Renderer {
     options: any
@@ -15,6 +16,14 @@ jest.mock('../renderer.js', () => {
     zoom = jest.fn()
     exportImage = jest.fn(() => [])
     destroy = jest.fn()
+    // Reactive streams
+    click$ = signal(null)
+    dblclick$ = signal(null)
+    drag$ = signal(null)
+    resize$ = signal(null)
+    render$ = signal(null)
+    rendered$ = signal(null)
+    scrollStream = null
     constructor(options: any) {
       this.options = options
       lastInstance = this
