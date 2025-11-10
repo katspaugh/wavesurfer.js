@@ -189,17 +189,5 @@ describe('Player', () => {
       media.dispatchEvent(new Event('ratechange'))
       expect(player.playbackRate$.value).toBe(1.5)
     })
-
-    test('backward compatibility: also exposes Signal getters', () => {
-      const media = createMedia()
-      const player = new Player<Events>({ media })
-      expect(player.isPlayingSignal).toBe(player.isPlaying$)
-      expect(player.currentTimeSignal).toBe(player.currentTime$)
-      expect(player.durationSignal).toBe(player.duration$)
-      expect(player.volumeSignal).toBe(player.volume$)
-      expect(player.mutedSignal).toBe(player.muted$)
-      expect(player.playbackRateSignal).toBe(player.playbackRate$)
-      expect(player.seekingSignal).toBe(player.seeking$)
-    })
   })
 })

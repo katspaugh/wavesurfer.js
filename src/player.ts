@@ -114,72 +114,37 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   // Public getters for reactive state
-  /** Get reactive isPlaying signal */
-  public get isPlayingSignal() {
-    return this._isPlaying
-  }
-
-  /** Get reactive isPlaying stream (alias for consistency with Renderer naming) */
+  /** Get reactive isPlaying stream */
   public get isPlaying$() {
     return this._isPlaying
   }
 
-  /** Get reactive currentTime signal */
-  public get currentTimeSignal() {
-    return this._currentTime
-  }
-
-  /** Get reactive currentTime stream (alias for consistency with Renderer naming) */
+  /** Get reactive currentTime stream */
   public get currentTime$() {
     return this._currentTime
   }
 
-  /** Get reactive duration signal */
-  public get durationSignal() {
-    return this._duration
-  }
-
-  /** Get reactive duration stream (alias for consistency with Renderer naming) */
+  /** Get reactive duration stream */
   public get duration$() {
     return this._duration
   }
 
-  /** Get reactive volume signal */
-  public get volumeSignal() {
-    return this._volume
-  }
-
-  /** Get reactive volume stream (alias for consistency with Renderer naming) */
+  /** Get reactive volume stream */
   public get volume$() {
     return this._volume
   }
 
-  /** Get reactive muted signal */
-  public get mutedSignal() {
-    return this._muted
-  }
-
-  /** Get reactive muted stream (alias for consistency with Renderer naming) */
+  /** Get reactive muted stream */
   public get muted$() {
     return this._muted
   }
 
-  /** Get reactive playbackRate signal */
-  public get playbackRateSignal() {
-    return this._playbackRate
-  }
-
-  /** Get reactive playbackRate stream (alias for consistency with Renderer naming) */
+  /** Get reactive playbackRate stream */
   public get playbackRate$() {
     return this._playbackRate
   }
 
-  /** Get reactive seeking signal */
-  public get seekingSignal() {
-    return this._seeking
-  }
-
-  /** Get reactive seeking stream (alias for consistency with Renderer naming) */
+  /** Get reactive seeking stream */
   public get seeking$() {
     return this._seeking
   }
