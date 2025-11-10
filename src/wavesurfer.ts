@@ -288,25 +288,14 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.emit('play')
     }
 
-    // Setup side effects for media events
-    // Note: Event emission is handled by setupStateEventEmission() via reactive state
+    // Clear stopAtPosition when playback stops (reactive)
     this.mediaSubscriptions.push(
-      // Clear stopAtPosition when playback is interrupted
-      this.onMediaEvent('pause', () => {
-        this.stopAtPosition = null
-      }),
-
-      this.onMediaEvent('emptied', () => {
-        this.stopAtPosition = null
-      }),
-
-      this.onMediaEvent('ended', () => {
-        this.stopAtPosition = null
-      }),
-
-      this.onMediaEvent('error', () => {
-        this.stopAtPosition = null
-      }),
+      effect(() => {
+        const isPlaying = this.wavesurferState.isPlaying.value
+        if (!isPlaying) {
+          this.stopAtPosition = null
+        }
+      }, [this.wavesurferState.isPlaying]),
     )
   }
 
@@ -545,15 +534,21 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // Set the mediaelement source
     this.setSrc(url, blob)
 
-    // Wait for the audio duration
+    // Wait for the audio duration (reactive)
     const audioDuration = await new Promise<number>((resolve) => {
       const staticDuration = duration || this.getDuration()
       if (staticDuration) {
         resolve(staticDuration)
       } else {
-        this.mediaSubscriptions.push(
-          this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }),
-        )
+        // Watch duration signal until it's set
+        const cleanup = effect(() => {
+          const dur = this.wavesurferState.duration.value
+          if (dur > 0) {
+            cleanup()
+            resolve(dur)
+          }
+        }, [this.wavesurferState.duration])
+        this.mediaSubscriptions.push(cleanup)
       }
     })
 
