@@ -188,7 +188,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     if (renderer) {
       this.subscriptions.push(
         effect(() => {
-          if (renderer.rendered$.value !== null) {
+          if (renderer.rendered$.value > 0) {
             this.initTimeline()
           }
         }, [renderer.rendered$]),

@@ -166,6 +166,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private wavesurferState: WaveSurferState
   private wavesurferActions: WaveSurferActions
   private reactiveCleanups: Array<() => void> = []
+  private mediaEventBridgeCleanup: (() => void) | null = null
 
   public static readonly BasePlugin = BasePlugin
   public static readonly dom = dom
@@ -204,7 +205,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initPlugins()
 
     // Bridge media events to reactive state
-    this.reactiveCleanups.push(bridgeMediaEvents(this.getMediaElement(), this.wavesurferActions))
+    this.mediaEventBridgeCleanup = bridgeMediaEvents(this.getMediaElement(), this.wavesurferActions)
 
     // Bridge reactive state to legacy event emission
     this.reactiveCleanups.push(
@@ -338,7 +339,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // Redraw (reactive)
     this.reactiveCleanups.push(
       effect(() => {
-        if (this.renderer.render$.value !== null) {
+        if (this.renderer.render$.value > 0) {
           this.emit('redraw')
         }
       }, [this.renderer.render$]),
@@ -347,7 +348,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // RedrawComplete (reactive)
     this.reactiveCleanups.push(
       effect(() => {
-        if (this.renderer.rendered$.value !== null) {
+        if (this.renderer.rendered$.value > 0) {
           this.emit('redrawcomplete')
         }
       }, [this.renderer.rendered$]),
@@ -356,7 +357,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // Resize (reactive)
     this.reactiveCleanups.push(
       effect(() => {
-        if (this.renderer.resize$.value !== null) {
+        if (this.renderer.resize$.value > 0) {
           this.emit('resize')
         }
       }, [this.renderer.resize$]),
@@ -715,8 +716,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   /** Set HTML media element */
   public setMediaElement(element: HTMLMediaElement) {
     this.unsubscribePlayerEvents()
+    // Clean up old media event bridge
+    this.mediaEventBridgeCleanup?.()
     super.setMediaElement(element)
     this.initPlayerEvents()
+    // Set up new media event bridge
+    this.mediaEventBridgeCleanup = bridgeMediaEvents(this.getMediaElement(), this.wavesurferActions)
   }
 
   /**
@@ -745,6 +750,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.plugins.forEach((plugin) => plugin.destroy())
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.unsubscribePlayerEvents()
+    this.mediaEventBridgeCleanup?.()
     this.renderer.destroy()
     this.reactiveCleanups.forEach((cleanup) => cleanup())
     super.destroy()

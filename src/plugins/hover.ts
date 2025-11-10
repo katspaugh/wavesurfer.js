@@ -132,7 +132,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
       this.unsubscribeReactive.push(
         effect(() => {
           const resize = renderer.resize$.value
-          if (resize !== null && this.lastPointerPosition) {
+          if (resize > 0 && this.lastPointerPosition) {
             this.onPointerMove(this.lastPointerPosition as PointerEvent)
           }
         }, [renderer.resize$]),

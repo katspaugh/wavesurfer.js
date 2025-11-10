@@ -20,6 +20,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   private _muted: WritableSignal<boolean>
   private _playbackRate: WritableSignal<number>
   private _seeking: WritableSignal<boolean>
+  private reactiveMediaEventCleanups: Array<() => void> = []
 
   constructor(options: PlayerOptions) {
     super()
@@ -71,46 +72,64 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
    */
   private setupReactiveMediaEvents() {
     // Playing state
-    this.onMediaEvent('play', () => {
-      this._isPlaying.set(true)
-    })
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('play', () => {
+        this._isPlaying.set(true)
+      }),
+    )
 
-    this.onMediaEvent('pause', () => {
-      this._isPlaying.set(false)
-    })
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('pause', () => {
+        this._isPlaying.set(false)
+      }),
+    )
 
-    this.onMediaEvent('ended', () => {
-      this._isPlaying.set(false)
-    })
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('ended', () => {
+        this._isPlaying.set(false)
+      }),
+    )
 
     // Time tracking
-    this.onMediaEvent('timeupdate', () => {
-      this._currentTime.set(this.media.currentTime)
-    })
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('timeupdate', () => {
+        this._currentTime.set(this.media.currentTime)
+      }),
+    )
 
-    this.onMediaEvent('durationchange', () => {
-      this._duration.set(this.media.duration)
-    })
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('durationchange', () => {
+        this._duration.set(this.media.duration)
+      }),
+    )
 
     // Seeking state
-    this.onMediaEvent('seeking', () => {
-      this._seeking.set(true)
-    })
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('seeking', () => {
+        this._seeking.set(true)
+      }),
+    )
 
-    this.onMediaEvent('seeked', () => {
-      this._seeking.set(false)
-    })
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('seeked', () => {
+        this._seeking.set(false)
+      }),
+    )
 
     // Volume
-    this.onMediaEvent('volumechange', () => {
-      this._volume.set(this.media.volume)
-      this._muted.set(this.media.muted)
-    })
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('volumechange', () => {
+        this._volume.set(this.media.volume)
+        this._muted.set(this.media.muted)
+      }),
+    )
 
     // Playback rate
-    this.onMediaEvent('ratechange', () => {
-      this._playbackRate.set(this.media.playbackRate)
-    })
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('ratechange', () => {
+        this._playbackRate.set(this.media.playbackRate)
+      }),
+    )
   }
 
   // Public getters for reactive state
@@ -195,6 +214,10 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   protected destroy() {
+    // Clean up media event listeners
+    this.reactiveMediaEventCleanups.forEach((cleanup) => cleanup())
+    this.reactiveMediaEventCleanups = []
+
     if (this.isExternalMedia) return
     this.media.pause()
     this.revokeSrc()
@@ -206,7 +229,14 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   protected setMediaElement(element: HTMLMediaElement) {
+    // Clean up old media element listeners
+    this.reactiveMediaEventCleanups.forEach((cleanup) => cleanup())
+    this.reactiveMediaEventCleanups = []
+
     this.media = element
+
+    // Set up listeners for new media element
+    this.setupReactiveMediaEvents()
   }
 
   /** Start playing the audio */

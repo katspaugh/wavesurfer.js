@@ -271,7 +271,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
     if (renderer) {
       this.subscriptions.push(
         effect(() => {
-          if (renderer.rendered$.value !== null) {
+          if (renderer.rendered$.value > 0) {
             this.onRedraw()
           }
         }, [renderer.rendered$]),

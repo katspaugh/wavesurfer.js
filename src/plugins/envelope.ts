@@ -450,7 +450,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     if (renderer) {
       this.subscriptions.push(
         effect(() => {
-          if (renderer.rendered$.value !== null) {
+          if (renderer.rendered$.value > 0) {
             this.polyline?.update()
           }
         }, [renderer.rendered$]),

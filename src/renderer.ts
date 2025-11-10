@@ -46,18 +46,18 @@ class Renderer extends EventEmitter<RendererEvents> {
   public readonly click$: Signal<{ x: number; y: number } | null>
   public readonly dblclick$: Signal<{ x: number; y: number } | null>
   public readonly drag$: Signal<{ x: number; type: 'start' | 'move' | 'end' } | null>
-  public readonly resize$: Signal<void | null>
-  public readonly render$: Signal<void | null>
-  public readonly rendered$: Signal<void | null>
+  public readonly resize$: Signal<number>
+  public readonly render$: Signal<number>
+  public readonly rendered$: Signal<number>
   // Note: scroll$ exposed via scrollStream property
 
   // Internal writable versions
   private readonly _click$: WritableSignal<{ x: number; y: number } | null>
   private readonly _dblclick$: WritableSignal<{ x: number; y: number } | null>
   private readonly _drag$: WritableSignal<{ x: number; type: 'start' | 'move' | 'end' } | null>
-  private readonly _resize$: WritableSignal<void | null>
-  private readonly _render$: WritableSignal<void | null>
-  private readonly _rendered$: WritableSignal<void | null>
+  private readonly _resize$: WritableSignal<number>
+  private readonly _render$: WritableSignal<number>
+  private readonly _rendered$: WritableSignal<number>
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
@@ -69,9 +69,9 @@ class Renderer extends EventEmitter<RendererEvents> {
     this._click$ = signal<{ x: number; y: number } | null>(null)
     this._dblclick$ = signal<{ x: number; y: number } | null>(null)
     this._drag$ = signal<{ x: number; type: 'start' | 'move' | 'end' } | null>(null)
-    this._resize$ = signal<void | null>(null)
-    this._render$ = signal<void | null>(null)
-    this._rendered$ = signal<void | null>(null)
+    this._resize$ = signal<number>(0)
+    this._render$ = signal<number>(0)
+    this._rendered$ = signal<number>(0)
 
     // Expose as readonly
     this.click$ = this._click$
@@ -156,7 +156,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.lastContainerWidth = width
     this.reRender()
     // Update stream
-    this._resize$.set(undefined)
+    this._resize$.set(this._resize$.value + 1)
   }
 
   private initDrag() {
@@ -669,7 +669,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.audioData = audioData
 
     // Update stream
-    this._render$.set(undefined)
+    this._render$.set(this._render$.value + 1)
 
     // Render the waveform
     if (this.options.splitChannels) {
@@ -688,7 +688,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Must be emitted asynchronously for backward compatibility
     Promise.resolve().then(() => {
       // Update stream
-      this._rendered$.set(undefined)
+      this._rendered$.set(this._rendered$.value + 1)
     })
   }
 
