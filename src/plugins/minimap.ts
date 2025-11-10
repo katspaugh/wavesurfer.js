@@ -5,6 +5,7 @@
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import WaveSurfer, { type WaveSurferOptions } from '../wavesurfer.js'
 import createElement from '../dom.js'
+import { effect } from '../reactive/store.js'
 
 export type MinimapPluginOptions = {
   overlayColor?: string
@@ -244,19 +245,38 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   private initWaveSurferEvents() {
     if (!this.wavesurfer) return
 
+    const renderer = this.wavesurfer.getRenderer?.()
+
+    // Subscribe to decode events - we'll use the decode completion as a trigger
+    // Note: decode happens once, so this effect runs once after decode
     this.subscriptions.push(
       this.wavesurfer.on('decode', () => {
         this.initMinimap()
       }),
-
-      this.wavesurfer.on('scroll', (startTime: number) => {
-        this.onScroll(startTime)
-      }),
-
-      this.wavesurfer.on('redraw', () => {
-        this.onRedraw()
-      }),
     )
+
+    // Subscribe to scroll events reactively
+    if (renderer && renderer.scrollStream) {
+      this.subscriptions.push(
+        effect(() => {
+          const { startX } = renderer.scrollStream!.percentages.value
+          const duration = this.wavesurfer?.getDuration() || 0
+          const startTime = startX * duration
+          this.onScroll(startTime)
+        }, [renderer.scrollStream.percentages]),
+      )
+    }
+
+    // Subscribe to redraw events reactively
+    if (renderer) {
+      this.subscriptions.push(
+        effect(() => {
+          if (renderer.rendered$.value !== null) {
+            this.onRedraw()
+          }
+        }, [renderer.rendered$]),
+      )
+    }
   }
 
   /** Unmount */
