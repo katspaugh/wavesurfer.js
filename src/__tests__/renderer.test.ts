@@ -154,10 +154,10 @@ describe('Renderer', () => {
 
   test('render processes audio buffer', async () => {
     const buffer = createAudioBuffer([[0, 0.5, -0.5]])
-    const spy = jest.fn()
-    renderer.on('render', spy)
+    const initialValue = renderer.render$.value
     await renderer.render(buffer)
-    expect(spy).toHaveBeenCalled()
+    // render$ signal should be updated
+    expect(renderer.render$.value).not.toBe(initialValue)
   })
 
   test('reRender keeps scroll position', async () => {

@@ -4,7 +4,7 @@ import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
 import { RenderScheduler, type RenderPriority } from './reactive/render-scheduler.js'
 import { createScrollStream, type ScrollStream } from './reactive/scroll-stream.js'
-import { effect, signal, type Signal, type WritableSignal } from './reactive/store.js'
+import { signal, type Signal, type WritableSignal } from './reactive/store.js'
 
 type ChannelData = utils.ChannelData
 
@@ -120,20 +120,14 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.wrapper.addEventListener('click', (e) => {
       const rect = this.wrapper.getBoundingClientRect()
       const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
-      // Update stream
       this._click$.set({ x, y })
-      // Legacy event
-      this.emit('click', x, y)
     })
 
     // Add a double click listener
     this.wrapper.addEventListener('dblclick', (e) => {
       const rect = this.wrapper.getBoundingClientRect()
       const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
-      // Update stream
       this._dblclick$.set({ x, y })
-      // Legacy event
-      this.emit('dblclick', x, y)
     })
 
     // Drag
@@ -143,15 +137,6 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Add reactive scroll stream
     this.scrollStream = createScrollStream(this.scrollContainer)
-
-    // Emit scroll events when percentages change
-    const unsubscribeScroll = effect(() => {
-      const { startX, endX } = this.scrollStream!.percentages.value
-      const { left, right } = this.scrollStream!.bounds.value
-      this.emit('scroll', startX, endX, left, right)
-    }, [this.scrollStream.percentages])
-
-    this.subscriptions.push(unsubscribeScroll)
 
     // Re-render the waveform on container resize
     if (typeof ResizeObserver === 'function') {
@@ -172,8 +157,6 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.reRender()
     // Update stream
     this._resize$.set(undefined)
-    // Legacy event
-    this.emit('resize')
   }
 
   private initDrag() {
@@ -186,30 +169,21 @@ class Renderer extends EventEmitter<RendererEvents> {
       (_, __, x) => {
         const width = this.wrapper.getBoundingClientRect().width
         const relX = utils.clampToUnit(x / width)
-        // Update stream
         this._drag$.set({ x: relX, type: 'move' })
-        // Legacy event
-        this.emit('drag', relX)
       },
       // On start drag
       (x) => {
         this.isDragging = true
         const width = this.wrapper.getBoundingClientRect().width
         const relX = utils.clampToUnit(x / width)
-        // Update stream
         this._drag$.set({ x: relX, type: 'start' })
-        // Legacy event
-        this.emit('dragstart', relX)
       },
       // On end drag
       (x) => {
         this.isDragging = false
         const width = this.wrapper.getBoundingClientRect().width
         const relX = utils.clampToUnit(x / width)
-        // Update stream
         this._drag$.set({ x: relX, type: 'end' })
-        // Legacy event
-        this.emit('dragend', relX)
       },
     )
 
@@ -696,8 +670,6 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Update stream
     this._render$.set(undefined)
-    // Legacy event
-    this.emit('render')
 
     // Render the waveform
     if (this.options.splitChannels) {
@@ -717,8 +689,6 @@ class Renderer extends EventEmitter<RendererEvents> {
     Promise.resolve().then(() => {
       // Update stream
       this._rendered$.set(undefined)
-      // Legacy event
-      this.emit('rendered')
     })
   }
 
@@ -774,17 +744,6 @@ class Renderer extends EventEmitter<RendererEvents> {
       if (isPlaying && this.options.autoCenter && center > 0) {
         this.scrollContainer.scrollLeft += center
       }
-    }
-
-    // Emit the scroll event
-    {
-      const newScroll = this.scrollContainer.scrollLeft
-      const { startX, endX } = utils.calculateScrollPercentages({
-        scrollLeft: newScroll,
-        scrollWidth,
-        clientWidth,
-      })
-      this.emit('scroll', startX, endX, newScroll, newScroll + clientWidth)
     }
   }
 
