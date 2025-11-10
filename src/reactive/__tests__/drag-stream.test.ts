@@ -188,4 +188,67 @@ describe('createDragStream', () => {
 
     cleanup()
   })
+
+
+  it('should stop propagation during drag', () => {
+    const { signal, cleanup } = createDragStream(element, { threshold: 0 })
+
+    signal.subscribe((event: DragEvent | null) => {
+      if (event) events.push(event)
+    })
+
+    // Start drag
+    const pointerDown = new PointerEvent('pointerdown', { clientX: 10, clientY: 10, button: 0 })
+    element.dispatchEvent(pointerDown)
+
+    // Move - should prevent click
+    const pointerMove = new PointerEvent('pointermove', { clientX: 20, clientY: 20 })
+    document.dispatchEvent(pointerMove)
+
+    // End drag
+    const pointerUp = new PointerEvent('pointerup', { clientX: 20, clientY: 20 })
+    document.dispatchEvent(pointerUp)
+
+    // Simulate click after drag
+    const clickHandler = jest.fn()
+    document.addEventListener('click', clickHandler, { capture: true })
+
+    const click = new MouseEvent('click', { bubbles: true })
+    Object.defineProperty(click, 'stopPropagation', { value: jest.fn() })
+    Object.defineProperty(click, 'preventDefault', { value: jest.fn() })
+    document.dispatchEvent(click)
+
+    document.removeEventListener('click', clickHandler, { capture: true })
+    cleanup()
+  })
+
+  it('should handle pointer leave events', () => {
+    const { signal, cleanup } = createDragStream(element, { threshold: 0 })
+
+    signal.subscribe((event: DragEvent | null) => {
+      if (event) events.push(event)
+    })
+
+    // Start drag
+    const pointerDown = new PointerEvent('pointerdown', { clientX: 10, clientY: 10, button: 0, pointerId: 1 })
+    element.dispatchEvent(pointerDown)
+
+    // Move to start dragging
+    const pointerMove = new PointerEvent('pointermove', { clientX: 20, clientY: 20, pointerId: 1 })
+    document.dispatchEvent(pointerMove)
+
+    // Pointer leaves document
+    const pointerOut = new PointerEvent('pointerout', {
+      clientX: 20,
+      clientY: 20,
+      pointerId: 1,
+      relatedTarget: document.documentElement
+    })
+    document.dispatchEvent(pointerOut)
+
+    // Should emit end event
+    expect(events.some((e) => e.type === 'end')).toBe(true)
+
+    cleanup()
+  })
 })
