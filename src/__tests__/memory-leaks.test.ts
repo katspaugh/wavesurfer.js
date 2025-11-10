@@ -132,7 +132,7 @@ describe('Memory Leak Detection', () => {
     })
 
     it('should remove plugin elements from DOM on destroy', () => {
-      const ws = WaveSurfer.create({ container })
+      WaveSurfer.create({ container })
 
       // Mock a plugin that adds DOM elements
       const pluginElement = document.createElement('div')

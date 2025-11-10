@@ -43,7 +43,7 @@ export function toStream<T extends Record<string, any[]>, K extends keyof T>(
     stream.set(args)
   }
 
-  // @ts-ignore - EventEmitter on() signature
+  // @ts-expect-error - EventEmitter on() signature
   const unsubscribe = emitter.on(eventName as string, handler)
 
   return {
@@ -130,7 +130,7 @@ export function mergeStreams<T extends Record<string, any[]>, K extends keyof T>
   const cleanups: Array<() => void> = []
 
   for (const eventName of eventNames) {
-    // @ts-ignore - EventEmitter on() signature
+    // @ts-expect-error - EventEmitter on() signature
     const unsubscribe = emitter.on(eventName as string, (...args: T[K]) => {
       stream.set({ event: eventName, args })
     })

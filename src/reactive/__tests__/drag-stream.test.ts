@@ -189,7 +189,6 @@ describe('createDragStream', () => {
     cleanup()
   })
 
-
   it('should stop propagation during drag', () => {
     const { signal, cleanup } = createDragStream(element, { threshold: 0 })
 
@@ -242,7 +241,7 @@ describe('createDragStream', () => {
       clientX: 20,
       clientY: 20,
       pointerId: 1,
-      relatedTarget: document.documentElement
+      relatedTarget: document.documentElement,
     })
     document.dispatchEvent(pointerOut)
 

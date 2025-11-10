@@ -9,7 +9,8 @@ import {
 
 // Mock Path2D for jsdom
 global.Path2D = class Path2D {
-  constructor(path?: string | Path2D) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor(_path?: string | Path2D) {
     // Mock implementation
   }
 } as any
