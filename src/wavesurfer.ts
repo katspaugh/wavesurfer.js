@@ -160,6 +160,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   protected subscriptions: Array<() => void> = []
   protected mediaSubscriptions: Array<() => void> = []
   protected abortController: AbortController | null = null
+  private isDestroyed = false
 
   // Reactive state
   private wavesurferState: WaveSurferState
@@ -505,6 +506,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+    // Prevent load after destroy
+    if (this.isDestroyed) {
+      throw new Error(
+        'Cannot call load() on a destroyed WaveSurfer instance. Please create a new instance instead.',
+      )
+    }
+
     this.emit('load', url)
 
     if (!this.options.media && this.isPlaying()) this.pause()
@@ -541,10 +549,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         resolve(staticDuration)
       } else {
         // Watch duration signal until it's set
-        const cleanup = effect(() => {
+        let cleanup: (() => void) | undefined
+        cleanup = effect(() => {
           const dur = this.wavesurferState.duration.value
           if (dur > 0) {
-            cleanup()
+            cleanup?.()
             resolve(dur)
           }
         }, [this.wavesurferState.duration])
@@ -731,6 +740,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   /** Unmount wavesurfer */
   public destroy() {
     this.emit('destroy')
+    this.isDestroyed = true
     this.abortController?.abort()
     this.plugins.forEach((plugin) => plugin.destroy())
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
