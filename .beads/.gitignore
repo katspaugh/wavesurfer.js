@@ -14,7 +14,11 @@ bd.sock
 db.sqlite
 bd.db
 
-# Keep JSONL exports and config (source of truth for git)
-!*.jsonl
+# Generated JSONL files (ignore all except issues.jsonl)
+beads.*.jsonl
+beads.*.meta.json
+
+# Keep only essential files (source of truth for git)
+!issues.jsonl
 !metadata.json
-!config.json
+!config.yaml
