@@ -4,6 +4,7 @@
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import createElement from '../dom.js'
+import { effect } from '../reactive/store.js'
 
 export type TimelinePluginOptions = {
   /** The height of the timeline in pixels, defaults to 20 */
@@ -182,7 +183,17 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       container.appendChild(this.timelineWrapper)
     }
 
-    this.subscriptions.push(this.wavesurfer.on('redraw', () => this.initTimeline()))
+    // Subscribe to redraw events reactively
+    const renderer = this.wavesurfer.getRenderer?.()
+    if (renderer) {
+      this.subscriptions.push(
+        effect(() => {
+          if (renderer.rendered$.value !== null) {
+            this.initTimeline()
+          }
+        }, [renderer.rendered$]),
+      )
+    }
 
     if (this.wavesurfer?.getDuration() || this.options.duration) {
       this.initTimeline()
@@ -324,12 +335,14 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     this.timelineWrapper.innerHTML = ''
     this.timelineWrapper.appendChild(timeline)
 
-    // Add single scroll listener for all notches (instead of one per notch)
-    if (this.wavesurfer) {
+    // Add single scroll listener for all notches (instead of one per notch) - using reactive streams
+    const renderer = this.wavesurfer?.getRenderer?.()
+    if (renderer && renderer.scrollStream) {
       this.unsubscribeNotches.push(
-        this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
-          this.updateVisibleNotches(scrollLeft, scrollRight, timeline)
-        }),
+        effect(() => {
+          const { left, right } = renderer.scrollStream!.bounds.value
+          this.updateVisibleNotches(left, right, timeline)
+        }, [renderer.scrollStream.bounds]),
       )
     }
 
