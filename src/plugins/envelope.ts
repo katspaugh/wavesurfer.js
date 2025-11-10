@@ -3,6 +3,7 @@
  */
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
+import { effect } from '../reactive/store.js'
 import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
@@ -433,6 +434,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
 
     this.setVolume(options.volume)
 
+    // Keep decode as EventEmitter (one-time event)
     this.subscriptions.push(
       this.wavesurfer.on('decode', (duration) => {
         this.initPolyline()
@@ -441,11 +443,22 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
           this.addPolyPoint(point, duration)
         })
       }),
+    )
 
-      this.wavesurfer.on('redraw', () => {
-        this.polyline?.update()
-      }),
+    // Subscribe to redraw events reactively
+    const renderer = this.wavesurfer.getRenderer?.()
+    if (renderer) {
+      this.subscriptions.push(
+        effect(() => {
+          if (renderer.rendered$.value !== null) {
+            this.polyline?.update()
+          }
+        }, [renderer.rendered$]),
+      )
+    }
 
+    // Keep timeupdate as EventEmitter (high-frequency updates)
+    this.subscriptions.push(
       this.wavesurfer.on('timeupdate', (time) => {
         this.onTimeUpdate(time)
       }),

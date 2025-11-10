@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/218</span>
+                <span class='fraction'>0/223</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/97</span>
+                <span class='fraction'>0/103</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/201</span>
+                <span class='fraction'>0/206</span>
             </div>
         
             
@@ -594,7 +594,20 @@
 <a name='L529'></a><a href='#L529'>529</a>
 <a name='L530'></a><a href='#L530'>530</a>
 <a name='L531'></a><a href='#L531'>531</a>
-<a name='L532'></a><a href='#L532'>532</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L532'></a><a href='#L532'>532</a>
+<a name='L533'></a><a href='#L533'>533</a>
+<a name='L534'></a><a href='#L534'>534</a>
+<a name='L535'></a><a href='#L535'>535</a>
+<a name='L536'></a><a href='#L536'>536</a>
+<a name='L537'></a><a href='#L537'>537</a>
+<a name='L538'></a><a href='#L538'>538</a>
+<a name='L539'></a><a href='#L539'>539</a>
+<a name='L540'></a><a href='#L540'>540</a>
+<a name='L541'></a><a href='#L541'>541</a>
+<a name='L542'></a><a href='#L542'>542</a>
+<a name='L543'></a><a href='#L543'>543</a>
+<a name='L544'></a><a href='#L544'>544</a>
+<a name='L545'></a><a href='#L545'>545</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -620,6 +633,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1029,19 +1043,31 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1130,6 +1156,7 @@
  */
 &nbsp;
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
+import { effect } from '../reactive/store.js'
 import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
@@ -1560,6 +1587,7 @@ class EnvelopePlugin extends BasePlugin&lt;EnvelopePluginEvents, EnvelopePluginO
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    this.setVolume(options.volume)</span>
 &nbsp;
+    // Keep decode as EventEmitter (one-time event)
 <span class="cstat-no" title="statement not covered" >    this.subscriptions.push(</span>
       this.wavesurfer.on('decode', <span class="fstat-no" title="function not covered" >(d</span>uration) =&gt; {
 <span class="cstat-no" title="statement not covered" >        this.initPolyline()</span>
@@ -1568,11 +1596,22 @@ class EnvelopePlugin extends BasePlugin&lt;EnvelopePluginEvents, EnvelopePluginO
 <span class="cstat-no" title="statement not covered" >          this.addPolyPoint(point, duration)</span>
         })
       }),
+    )
 &nbsp;
-      this.wavesurfer.on('redraw', <span class="fstat-no" title="function not covered" >() =</span>&gt; {
-<span class="cstat-no" title="statement not covered" >        this.polyline?.update()</span>
-      }),
+    // Subscribe to redraw events reactively
+    const renderer = <span class="cstat-no" title="statement not covered" >this.wavesurfer.getRenderer?.()</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (renderer) {</span>
+<span class="cstat-no" title="statement not covered" >      this.subscriptions.push(</span>
+        effect(<span class="fstat-no" title="function not covered" >() =</span>&gt; {
+<span class="cstat-no" title="statement not covered" >          <span class="missing-if-branch" title="if path not taken" >I</span>if (renderer.rendered$.value !== null) {</span>
+<span class="cstat-no" title="statement not covered" >            this.polyline?.update()</span>
+          }
+        }, [renderer.rendered$]),
+      )
+    }
 &nbsp;
+    // Keep timeupdate as EventEmitter (high-frequency updates)
+<span class="cstat-no" title="statement not covered" >    this.subscriptions.push(</span>
       this.wavesurfer.on('timeupdate', <span class="fstat-no" title="function not covered" >(t</span>ime) =&gt; {
 <span class="cstat-no" title="statement not covered" >        this.onTimeUpdate(time)</span>
       }),
@@ -1663,7 +1702,7 @@ export default EnvelopePlugin
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-10T11:00:09.583Z
+                at 2025-11-10T11:10:18.569Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
