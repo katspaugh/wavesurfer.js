@@ -484,6 +484,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.renderer.getWrapper()
   }
 
+  /** For plugins only: get the renderer instance */
+  public getRenderer() {
+    return this.renderer
+  }
+
   /** For plugins only: get the scroll container client width */
   public getWidth(): number {
     return this.renderer.getWidth()

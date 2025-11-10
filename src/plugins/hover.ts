@@ -4,6 +4,7 @@
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import createElement from '../dom.js'
+import { effect } from '../reactive/store.js'
 
 export type HoverPluginOptions = {
   /** The hover cursor color (playback cursor and progress mask colors used as falllback in this order)
@@ -53,7 +54,8 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
   private wrapper: HTMLElement
   private label: HTMLElement
   private lastPointerPosition: { clientX: number; clientY: number } | null = null
-  private unsubscribe: () => void = () => undefined
+  private unsubscribePointerEvents: () => void = () => undefined
+  private unsubscribeReactive: (() => void)[] = []
 
   constructor(options?: HoverPluginOptions) {
     super(options || {})
@@ -110,27 +112,40 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     container.appendChild(this.wrapper)
 
     // When zoom or scroll happens, re-run the pointer move logic
-    // with the last known mouse position
-    const onUpdate = () => {
-      if (this.lastPointerPosition) {
-        // Recreate a minimal PointerEvent-like object
-        this.onPointerMove(this.lastPointerPosition as PointerEvent)
-      }
+    // with the last known mouse position (using reactive streams)
+    const renderer = this.wavesurfer.getRenderer?.()
+    if (renderer && renderer.scrollStream) {
+      // Subscribe to scroll changes reactively
+      this.unsubscribeReactive.push(
+        effect(() => {
+          // Access scroll percentages to trigger on scroll
+          const { startX, endX } = renderer.scrollStream!.percentages.value
+          if (this.lastPointerPosition && (startX !== undefined || endX !== undefined)) {
+            this.onPointerMove(this.lastPointerPosition as PointerEvent)
+          }
+        }, [renderer.scrollStream.percentages]),
+      )
     }
 
-    // Create unsubscribe function for wavesurfer events
-    const unsubscribeZoom = this.wavesurfer.on('zoom', onUpdate)
-    const unsubscribeScroll = this.wavesurfer.on('scroll', onUpdate)
+    // Subscribe to resize changes reactively (which includes zoom)
+    if (renderer) {
+      this.unsubscribeReactive.push(
+        effect(() => {
+          const resize = renderer.resize$.value
+          if (resize !== null && this.lastPointerPosition) {
+            this.onPointerMove(this.lastPointerPosition as PointerEvent)
+          }
+        }, [renderer.resize$]),
+      )
+    }
 
-    // Attach pointer events and create complete unsubscribe function
+    // Attach pointer events
     container.addEventListener('pointermove', this.onPointerMove)
     container.addEventListener('pointerleave', this.onPointerLeave)
 
-    this.unsubscribe = () => {
+    this.unsubscribePointerEvents = () => {
       container.removeEventListener('pointermove', this.onPointerMove)
       container.removeEventListener('pointerleave', this.onPointerLeave)
-      unsubscribeZoom()
-      unsubscribeScroll()
     }
   }
 
@@ -168,7 +183,8 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
   /** Unmount */
   public destroy() {
     super.destroy()
-    this.unsubscribe()
+    this.unsubscribePointerEvents()
+    this.unsubscribeReactive.forEach((unsub) => unsub())
     this.wrapper.remove()
   }
 }
