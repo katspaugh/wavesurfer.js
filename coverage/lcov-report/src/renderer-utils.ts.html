@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">79.47% </span>
+                <span class="strong">80% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>182/229</span>
+                <span class='fraction'>188/235</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">69.74% </span>
+                <span class="strong">70.24% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>83/119</span>
+                <span class='fraction'>85/121</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">81% </span>
+                <span class="strong">81.46% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>162/200</span>
+                <span class='fraction'>167/205</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -710,7 +710,24 @@
 <a name='L645'></a><a href='#L645'>645</a>
 <a name='L646'></a><a href='#L646'>646</a>
 <a name='L647'></a><a href='#L647'>647</a>
-<a name='L648'></a><a href='#L648'>648</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L648'></a><a href='#L648'>648</a>
+<a name='L649'></a><a href='#L649'>649</a>
+<a name='L650'></a><a href='#L650'>650</a>
+<a name='L651'></a><a href='#L651'>651</a>
+<a name='L652'></a><a href='#L652'>652</a>
+<a name='L653'></a><a href='#L653'>653</a>
+<a name='L654'></a><a href='#L654'>654</a>
+<a name='L655'></a><a href='#L655'>655</a>
+<a name='L656'></a><a href='#L656'>656</a>
+<a name='L657'></a><a href='#L657'>657</a>
+<a name='L658'></a><a href='#L658'>658</a>
+<a name='L659'></a><a href='#L659'>659</a>
+<a name='L660'></a><a href='#L660'>660</a>
+<a name='L661'></a><a href='#L661'>661</a>
+<a name='L662'></a><a href='#L662'>662</a>
+<a name='L663'></a><a href='#L663'>663</a>
+<a name='L664'></a><a href='#L664'>664</a>
+<a name='L665'></a><a href='#L665'>665</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1249,10 +1266,27 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
@@ -1891,15 +1925,32 @@ export function getLazyRenderRange({
   scrollLeft,
   totalWidth,
   numCanvases,
+  singleCanvasWidth,
+  clientWidth,
 }: {
   scrollLeft: number
   totalWidth: number
   numCanvases: number
+  singleCanvasWidth: number
+  clientWidth: number
 }): number[] {
-  if (totalWidth === 0) return [0]
-  const viewPosition = scrollLeft / totalWidth
-  const startCanvas = Math.floor(viewPosition * numCanvases)
-  return [startCanvas - 1, startCanvas, startCanvas + 1]
+  if (totalWidth === 0 || singleCanvasWidth === 0) return [0]
+&nbsp;
+  // Calculate which canvases are currently visible
+  const startCanvas = Math.floor(scrollLeft / singleCanvasWidth)
+  const endCanvas = Math.floor((scrollLeft + clientWidth) / singleCanvasWidth)
+&nbsp;
+  // Include one canvas before and after for smooth scrolling
+  const firstCanvas = Math.max(0, startCanvas - 1)
+  const lastCanvas = Math.min(numCanvases - 1, endCanvas + 1)
+&nbsp;
+  // Return array of canvas indices to render
+  const range: number[] = []
+  for (let i = firstCanvas; i &lt;= lastCanvas; i++) {
+    range.push(i)
+  }
+&nbsp;
+  return range
 }
 &nbsp;
 export function calculateVerticalScale({
@@ -2011,7 +2062,7 @@ export function <span class="fstat-no" title="function not covered" >roundToHalf
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-10T19:51:49.061Z
+                at 2025-11-12T18:40:50.181Z
             </div>
         <script src="../prettify.js"></script>
         <script>

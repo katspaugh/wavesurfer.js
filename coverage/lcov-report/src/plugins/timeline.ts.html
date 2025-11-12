@@ -32,7 +32,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/119</span>
+                <span class='fraction'>0/109</span>
             </div>
         
             
@@ -416,7 +416,10 @@
 <a name='L351'></a><a href='#L351'>351</a>
 <a name='L352'></a><a href='#L352'>352</a>
 <a name='L353'></a><a href='#L353'>353</a>
-<a name='L354'></a><a href='#L354'>354</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L354'></a><a href='#L354'>354</a>
+<a name='L355'></a><a href='#L355'>355</a>
+<a name='L356'></a><a href='#L356'>356</a>
+<a name='L357'></a><a href='#L357'>357</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -644,6 +647,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -701,6 +707,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -710,6 +717,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -725,6 +734,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -748,17 +759,12 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -984,10 +990,10 @@ class TimelinePlugin extends BasePlugin&lt;TimelinePluginEvents, TimelinePluginO
   }
 &nbsp;
   private <span class="fstat-no" title="function not covered" >virtualAppend(</span>start: number, container: HTMLElement, element: HTMLElement) {
-    // Store notch metadata for batch updates
+    // Store notch metadata for batch updates (width will be measured after append)
 <span class="cstat-no" title="statement not covered" >    this.notchElements.set(element, {</span>
       start,
-      width: element.clientWidth,
+      width: 0,
       wasVisible: false,
     })
 &nbsp;
@@ -997,11 +1003,14 @@ class TimelinePlugin extends BasePlugin&lt;TimelinePluginEvents, TimelinePluginO
     const scrollRight = <span class="cstat-no" title="statement not covered" >scrollLeft + this.wavesurfer.getWidth()</span>
 &nbsp;
     const notchData = <span class="cstat-no" title="statement not covered" >this.notchElements.get(element)!</span>
+    // Temporarily append to measure width, then check visibility
+<span class="cstat-no" title="statement not covered" >    container.appendChild(element)</span>
+<span class="cstat-no" title="statement not covered" >    notchData.width = element.clientWidth</span>
     const isVisible = <span class="cstat-no" title="statement not covered" >isNotchVisible(start, notchData.width, scrollLeft, scrollRight)</span>
 <span class="cstat-no" title="statement not covered" >    notchData.wasVisible = isVisible</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (isVisible) {</span>
-<span class="cstat-no" title="statement not covered" >      container.appendChild(element)</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!isVisible) {</span>
+<span class="cstat-no" title="statement not covered" >      element.remove()</span>
     }
   }
 &nbsp;
@@ -1040,6 +1049,7 @@ class TimelinePlugin extends BasePlugin&lt;TimelinePluginEvents, TimelinePluginO
         overflow: 'hidden',
         fontSize: `${this.options.height / 2}px`,
         whiteSpace: 'nowrap',
+        width: '100%', // Match parent width
         ...(isTop
           ? {
               position: 'absolute',
@@ -1079,6 +1089,10 @@ class TimelinePlugin extends BasePlugin&lt;TimelinePluginEvents, TimelinePluginO
       },
     })
 &nbsp;
+    // Append timeline to DOM first so we can measure element widths
+<span class="cstat-no" title="statement not covered" >    this.timelineWrapper.innerHTML = ''</span>
+<span class="cstat-no" title="statement not covered" >    this.timelineWrapper.appendChild(timeline)</span>
+&nbsp;
 <span class="cstat-no" title="statement not covered" >    for (let i = <span class="cstat-no" title="statement not covered" >0,</span> notches = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; duration; i += timeInterval, notches++) {</span>
       const notch = <span class="cstat-no" title="statement not covered" >notchEl.cloneNode() as HTMLElement</span>
       const isPrimary =
@@ -1103,17 +1117,12 @@ class TimelinePlugin extends BasePlugin&lt;TimelinePluginEvents, TimelinePluginO
 <span class="cstat-no" title="statement not covered" >      this.virtualAppend(offset, timeline, notch)</span>
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    this.timelineWrapper.innerHTML = ''</span>
-<span class="cstat-no" title="statement not covered" >    this.timelineWrapper.appendChild(timeline)</span>
-&nbsp;
-    // Add single scroll listener for all notches (instead of one per notch) - using reactive streams
-    const renderer = <span class="cstat-no" title="statement not covered" >this.wavesurfer?.getRenderer?.()</span>
-<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (renderer &amp;&amp; renderer.scrollStream) {</span>
+    // Add single scroll listener for all notches (instead of one per notch)
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (this.wavesurfer) {</span>
 <span class="cstat-no" title="statement not covered" >      this.unsubscribeNotches.push(</span>
-        effect(<span class="fstat-no" title="function not covered" >() =</span>&gt; {
-          const { left, right } = <span class="cstat-no" title="statement not covered" >renderer.scrollStream!.bounds.value</span>
-<span class="cstat-no" title="statement not covered" >          this.updateVisibleNotches(left, right, timeline)</span>
-        }, [renderer.scrollStream.bounds]),
+        this.wavesurfer.on('scroll', <span class="fstat-no" title="function not covered" >(_</span>startTime, _endTime, scrollLeft, scrollRight) =&gt; {
+<span class="cstat-no" title="statement not covered" >          this.updateVisibleNotches(scrollLeft, scrollRight, timeline)</span>
+        }),
       )
     }
 &nbsp;
@@ -1129,7 +1138,7 @@ export default TimelinePlugin
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-10T19:51:49.061Z
+                at 2025-11-12T18:40:50.181Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
