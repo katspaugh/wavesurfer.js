@@ -112,7 +112,7 @@ However, please keep in mind that this forum is dedicated to wavesurfer-specific
 
 <details>
   <summary>Does wavesurfer support large files?</summary>
-  Since wavesurfer decodes audio entirely in the browser using Web Audio, large clips may fail to decode due to memory constraints. We recommend using pre-decoded peaks for large files (see <a href="https://wavesurfer.xyz/examples/?predecoded.js">this example</a>). You can use a tool like <a href="https://github.com/bbc/audiowaveform">bbc/audiowaveform</a> to generate peaks.
+  Since wavesurfer decodes audio entirely in the browser using Web Audio, large clips may fail to decode due to memory constraints. We recommend using pre-decoded peaks for large files (see <a href="https://wavesurfer.xyz/examples/?predecoded.js">this example</a>). You can use a tool like <a href="https://codeberg.org/chrisn/audiowaveform">audiowaveform</a> to generate peaks.
 </details>
 
 <details>
