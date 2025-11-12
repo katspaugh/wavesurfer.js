@@ -166,6 +166,11 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
       }),
 
       this.miniWavesurfer.on('click', (relativeX, relativeY) => {
+        // Seek main waveform when clicking minimap
+        if (this.wavesurfer) {
+          const duration = this.wavesurfer.getDuration()
+          this.wavesurfer.setTime(relativeX * duration)
+        }
         this.emit('click', relativeX, relativeY)
       }),
 
@@ -194,6 +199,8 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
       }),
 
       this.miniWavesurfer.on('interaction', () => {
+        // Note: interaction event also includes drag, so we don't seek here
+        // Only clicks should seek (handled in 'click' event)
         this.emit('interaction')
       }),
 
