@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Record Cursor</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #waveform { border: 1px solid #ccc; margin: 20px 0; }
+    button { margin: 5px; padding: 10px 20px; }
+    #debug { background: #f5f5f5; padding: 10px; margin: 20px 0; font-family: monospace; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Record Plugin Cursor Test</h1>
+  
+  <div>
+    <label><input type="radio" name="mode" value="continuous" checked> Continuous Waveform</label>
+    <label><input type="radio" name="mode" value="scrolling"> Scrolling Waveform</label>
+    <label><input type="radio" name="mode" value="default"> Default</label>
+  </div>
+  
+  <button id="start">Start Recording</button>
+  <button id="stop" disabled>Stop Recording</button>
+  
+  <div id="waveform"></div>
+  
+  <div id="debug">Debug info will appear here...</div>
+  
+  <script type="module">
+    import WaveSurfer from './dist/wavesurfer.esm.js'
+    import RecordPlugin from './dist/plugins/record.esm.js'
+    
+    let wavesurfer, record
+    let mode = 'continuous'
+    
+    document.querySelectorAll('input[name="mode"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        mode = e.target.value
+        init()
+      })
+    })
+    
+    function log(msg) {
+      const debug = document.getElementById('debug')
+      debug.innerHTML += new Date().toLocaleTimeString() + ': ' + msg + '<br>'
+      console.log(msg)
+    }
+    
+    function init() {
+      if (wavesurfer) {
+        wavesurfer.destroy()
+      }
+      
+      wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'violet',
+        progressColor: 'purple',
+        cursorWidth: 2,
+        cursorColor: 'red',
+        height: 128
+      })
+      
+      log(`Created wavesurfer with cursorWidth: ${wavesurfer.options.cursorWidth}`)
+      
+      record = wavesurfer.registerPlugin(RecordPlugin.create({
+        renderRecordedAudio: false,
+        scrollingWaveform: mode === 'scrolling',
+        continuousWaveform: mode === 'continuous',
+        continuousWaveformDuration: 10
+      }))
+      
+      log(`Registered record plugin (mode: ${mode})`)
+    }
+    
+    document.getElementById('start').addEventListener('click', async () => {
+      log(`Before startRecording: cursorWidth = ${wavesurfer.options.cursorWidth}`)
+      
+      try {
+        await record.startRecording()
+        log(`After startRecording: cursorWidth = ${wavesurfer.options.cursorWidth}`)
+        
+        document.getElementById('start').disabled = true
+        document.getElementById('stop').disabled = false
+        
+        // Check cursor element
+        setTimeout(() => {
+          const renderer = wavesurfer.getRenderer()
+          const wrapper = renderer.getWrapper()
+          const cursor = wrapper.querySelector('.cursor')
+          if (cursor) {
+            log(`Cursor element found! width: ${cursor.style.width}, left: ${cursor.style.left}, backgroundColor: ${cursor.style.backgroundColor}`)
+          } else {
+            log('ERROR: Cursor element not found!')
+          }
+        }, 1000)
+        
+      } catch (err) {
+        log(`ERROR: ${err.message}`)
+      }
+    })
+    
+    document.getElementById('stop').addEventListener('click', () => {
+      record.stopRecording()
+      document.getElementById('start').disabled = false
+      document.getElementById('stop').disabled = true
+      log(`Stopped recording. cursorWidth = ${wavesurfer.options.cursorWidth}`)
+    })
+    
+    init()
+  </script>
+</body>
+</html>
