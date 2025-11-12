@@ -532,15 +532,32 @@ export function getLazyRenderRange({
   scrollLeft,
   totalWidth,
   numCanvases,
+  singleCanvasWidth,
+  clientWidth,
 }: {
   scrollLeft: number
   totalWidth: number
   numCanvases: number
+  singleCanvasWidth: number
+  clientWidth: number
 }): number[] {
-  if (totalWidth === 0) return [0]
-  const viewPosition = scrollLeft / totalWidth
-  const startCanvas = Math.floor(viewPosition * numCanvases)
-  return [startCanvas - 1, startCanvas, startCanvas + 1]
+  if (totalWidth === 0 || singleCanvasWidth === 0) return [0]
+
+  // Calculate which canvases are currently visible
+  const startCanvas = Math.floor(scrollLeft / singleCanvasWidth)
+  const endCanvas = Math.floor((scrollLeft + clientWidth) / singleCanvasWidth)
+
+  // Include one canvas before and after for smooth scrolling
+  const firstCanvas = Math.max(0, startCanvas - 1)
+  const lastCanvas = Math.min(numCanvases - 1, endCanvas + 1)
+
+  // Return array of canvas indices to render
+  const range: number[] = []
+  for (let i = firstCanvas; i <= lastCanvas; i++) {
+    range.push(i)
+  }
+
+  return range
 }
 
 export function calculateVerticalScale({

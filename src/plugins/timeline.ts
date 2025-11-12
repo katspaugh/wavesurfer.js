@@ -213,10 +213,10 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   }
 
   private virtualAppend(start: number, container: HTMLElement, element: HTMLElement) {
-    // Store notch metadata for batch updates
+    // Store notch metadata for batch updates (width will be measured after append)
     this.notchElements.set(element, {
       start,
-      width: element.clientWidth,
+      width: 0,
       wasVisible: false,
     })
 
@@ -226,11 +226,14 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     const scrollRight = scrollLeft + this.wavesurfer.getWidth()
 
     const notchData = this.notchElements.get(element)!
+    // Temporarily append to measure width, then check visibility
+    container.appendChild(element)
+    notchData.width = element.clientWidth
     const isVisible = isNotchVisible(start, notchData.width, scrollLeft, scrollRight)
     notchData.wasVisible = isVisible
 
-    if (isVisible) {
-      container.appendChild(element)
+    if (!isVisible) {
+      element.remove()
     }
   }
 
@@ -269,6 +272,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
         overflow: 'hidden',
         fontSize: `${this.options.height / 2}px`,
         whiteSpace: 'nowrap',
+        width: '100%', // Match parent width
         ...(isTop
           ? {
               position: 'absolute',
@@ -308,6 +312,10 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       },
     })
 
+    // Append timeline to DOM first so we can measure element widths
+    this.timelineWrapper.innerHTML = ''
+    this.timelineWrapper.appendChild(timeline)
+
     for (let i = 0, notches = 0; i < duration; i += timeInterval, notches++) {
       const notch = notchEl.cloneNode() as HTMLElement
       const isPrimary =
@@ -332,17 +340,12 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       this.virtualAppend(offset, timeline, notch)
     }
 
-    this.timelineWrapper.innerHTML = ''
-    this.timelineWrapper.appendChild(timeline)
-
-    // Add single scroll listener for all notches (instead of one per notch) - using reactive streams
-    const renderer = this.wavesurfer?.getRenderer?.()
-    if (renderer && renderer.scrollStream) {
+    // Add single scroll listener for all notches (instead of one per notch)
+    if (this.wavesurfer) {
       this.unsubscribeNotches.push(
-        effect(() => {
-          const { left, right } = renderer.scrollStream!.bounds.value
-          this.updateVisibleNotches(left, right, timeline)
-        }, [renderer.scrollStream.bounds]),
+        this.wavesurfer.on('scroll', (_startTime, _endTime, scrollLeft, scrollRight) => {
+          this.updateVisibleNotches(scrollLeft, scrollRight, timeline)
+        }),
       )
     }
 

@@ -589,15 +589,19 @@ class Renderer extends EventEmitter<RendererEvents> {
       scrollLeft: this.scrollContainer.scrollLeft,
       totalWidth,
       numCanvases,
+      singleCanvasWidth,
+      clientWidth,
     })
     initialRange.forEach((index) => draw(index))
 
-    // Subscribe to the scroll event to draw additional canvases
-    if (numCanvases > 1) {
-      const unsubscribe = this.on('scroll', () => {
+    // Subscribe to the scroll stream to draw additional canvases
+    if (numCanvases > 1 && this.scrollStream) {
+      const unsubscribe = this.scrollStream.scrollData.subscribe(() => {
         const { scrollLeft } = this.scrollContainer
         clearCanvases()
-        utils.getLazyRenderRange({ scrollLeft, totalWidth, numCanvases }).forEach((index) => draw(index))
+        utils
+          .getLazyRenderRange({ scrollLeft, totalWidth, numCanvases, singleCanvasWidth, clientWidth })
+          .forEach((index) => draw(index))
       })
 
       this.unsubscribeOnScroll.push(unsubscribe)
