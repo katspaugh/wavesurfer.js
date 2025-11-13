@@ -338,18 +338,88 @@ describe('renderer-utils', () => {
   })
 
   describe('getLazyRenderRange', () => {
-    it('returns surrounding canvas indices', () => {
+    it('returns surrounding canvas indices based on visible area', () => {
+      // With clientWidth=100, singleCanvasWidth=40, scrollLeft=50
+      // visible canvases: floor(50/40)=1 to floor((50+100)/40)=3
+      // render range: [0, 1, 2, 3, 4] (with +1 buffer on each side)
       expect(
         getLazyRenderRange({
           scrollLeft: 50,
           totalWidth: 200,
           numCanvases: 5,
+          singleCanvasWidth: 40,
+          clientWidth: 100,
         }),
-      ).toEqual([0, 1, 2])
+      ).toEqual([0, 1, 2, 3, 4])
+    })
+
+    it('returns correct range at the beginning', () => {
+      // At scrollLeft=0 with clientWidth=100, singleCanvasWidth=50
+      // visible canvases: 0 to 2
+      // render range: [0, 1, 2, 3] (with +1 buffer at end)
+      expect(
+        getLazyRenderRange({
+          scrollLeft: 0,
+          totalWidth: 500,
+          numCanvases: 10,
+          singleCanvasWidth: 50,
+          clientWidth: 100,
+        }),
+      ).toEqual([0, 1, 2, 3])
+    })
+
+    it('returns correct range at the end', () => {
+      // At scrollLeft=450 with clientWidth=100, singleCanvasWidth=50
+      // visible canvases: 9 to 11 (but max is 9)
+      // render range: [8, 9] (with buffer, clamped to numCanvases-1)
+      expect(
+        getLazyRenderRange({
+          scrollLeft: 450,
+          totalWidth: 500,
+          numCanvases: 10,
+          singleCanvasWidth: 50,
+          clientWidth: 100,
+        }),
+      ).toEqual([8, 9])
+    })
+
+    it('returns correct range in the middle', () => {
+      // At scrollLeft=200 with clientWidth=100, singleCanvasWidth=50
+      // visible canvases: 4 to 6
+      // render range: [3, 4, 5, 6, 7] (with +1 buffer on each side)
+      expect(
+        getLazyRenderRange({
+          scrollLeft: 200,
+          totalWidth: 500,
+          numCanvases: 10,
+          singleCanvasWidth: 50,
+          clientWidth: 100,
+        }),
+      ).toEqual([3, 4, 5, 6, 7])
     })
 
     it('defaults to the first canvas when width is zero', () => {
-      expect(getLazyRenderRange({ scrollLeft: 0, totalWidth: 0, numCanvases: 3 })).toEqual([0])
+      expect(
+        getLazyRenderRange({
+          scrollLeft: 0,
+          totalWidth: 0,
+          numCanvases: 3,
+          singleCanvasWidth: 100,
+          clientWidth: 100,
+        }),
+      ).toEqual([0])
+    })
+
+    it('defaults to the first canvas when singleCanvasWidth is zero', () => {
+      expect(
+        getLazyRenderRange({
+          scrollLeft: 0,
+          totalWidth: 100,
+          numCanvases: 3,
+          singleCanvasWidth: 0,
+          clientWidth: 100,
+        }),
+      ).toEqual([0])
     })
   })
 

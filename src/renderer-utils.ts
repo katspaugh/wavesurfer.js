@@ -23,6 +23,81 @@ export function clampToUnit(value: number): number {
   return value
 }
 
+// ============================================================================
+// Pure Peak Calculation Functions
+// ============================================================================
+// These functions calculate peaks from audio data without side effects.
+// They can be easily tested and run in Web Workers.
+
+/**
+ * Find the peak (max absolute value) in a range of audio data
+ * Pure function - no side effects
+ *
+ * @param data - The audio data array
+ * @param start - Start index (inclusive)
+ * @param end - End index (exclusive)
+ * @returns The peak value (always positive)
+ */
+export function findPeakInRange(data: Float32Array | number[], start: number, end: number): number {
+  let peak = 0
+  for (let i = start; i < end; i++) {
+    const abs = Math.abs(data[i] || 0)
+    if (abs > peak) peak = abs
+  }
+  return peak
+}
+
+/**
+ * Calculate peaks for a given number of segments
+ * Pure function - no side effects
+ *
+ * @param channelData - The audio channel data
+ * @param numPeaks - Number of peaks to calculate
+ * @returns Array of peak values
+ */
+export function calculatePeaks(channelData: Float32Array | number[], numPeaks: number): Float32Array {
+  const length = channelData.length
+  const blockSize = Math.floor(length / numPeaks)
+  const peaks = new Float32Array(numPeaks)
+
+  for (let i = 0; i < numPeaks; i++) {
+    const start = i * blockSize
+    const end = start + blockSize
+    peaks[i] = findPeakInRange(channelData, start, end)
+  }
+
+  return peaks
+}
+
+/**
+ * Find peaks in two channels (e.g., stereo)
+ * Pure function - no side effects
+ *
+ * @param topChannel - First channel data
+ * @param bottomChannel - Second channel data
+ * @param start - Start index
+ * @param end - End index
+ * @returns Object with maxTop and maxBottom peak values
+ */
+export function findPeaksInRange(
+  topChannel: Float32Array | number[],
+  bottomChannel: Float32Array | number[],
+  start: number,
+  end: number,
+): { maxTop: number; maxBottom: number } {
+  let maxTop = 0
+  let maxBottom = 0
+
+  for (let i = start; i < end; i++) {
+    const magnitudeTop = Math.abs(topChannel[i] || 0)
+    const magnitudeBottom = Math.abs(bottomChannel[i] || 0)
+    if (magnitudeTop > maxTop) maxTop = magnitudeTop
+    if (magnitudeBottom > maxBottom) maxBottom = magnitudeBottom
+  }
+
+  return { maxTop, maxBottom }
+}
+
 export function calculateBarRenderConfig({
   width,
   height,
@@ -158,12 +233,174 @@ export function calculateBarSegments({
   return segments
 }
 
+// ============================================================================
+// Pure Coordinate Transformation Functions
+// ============================================================================
+// These functions handle conversions between different coordinate systems
+// (pixels, relative positions, time) without side effects.
+
+/**
+ * Convert client coordinates to relative position within an element
+ * Pure function - no side effects
+ *
+ * @param rect - The bounding rectangle of the element
+ * @param clientX - Client X coordinate
+ * @param clientY - Client Y coordinate
+ * @returns Tuple of [relativeX, relativeY] where 0 = left/top, 1 = right/bottom
+ */
 export function getRelativePointerPosition(rect: DOMRect, clientX: number, clientY: number): [number, number] {
   const x = clientX - rect.left
   const y = clientY - rect.top
   const relativeX = x / rect.width
   const relativeY = y / rect.height
   return [relativeX, relativeY]
+}
+
+/**
+ * Convert pixel position to time
+ * Pure function - no side effects
+ *
+ * @param pixel - Pixel position
+ * @param duration - Total duration in seconds
+ * @param width - Total width in pixels
+ * @param zoom - Zoom factor (default: 1)
+ * @returns Time in seconds
+ */
+export function pixelToTime(pixel: number, duration: number, width: number, zoom = 1): number {
+  return ((pixel / width) * duration) / zoom
+}
+
+/**
+ * Convert time to pixel position
+ * Pure function - no side effects
+ *
+ * @param time - Time in seconds
+ * @param duration - Total duration in seconds
+ * @param width - Total width in pixels
+ * @param zoom - Zoom factor (default: 1)
+ * @returns Pixel position
+ */
+export function timeToPixel(time: number, duration: number, width: number, zoom = 1): number {
+  return (time / duration) * width * zoom
+}
+
+/**
+ * Convert relative position (0-1) to time
+ * Pure function - no side effects
+ *
+ * @param relativeX - Relative position (0 = start, 1 = end)
+ * @param duration - Total duration in seconds
+ * @returns Time in seconds
+ */
+export function relativeToTime(relativeX: number, duration: number): number {
+  return relativeX * duration
+}
+
+/**
+ * Convert time to relative position (0-1)
+ * Pure function - no side effects
+ *
+ * @param time - Time in seconds
+ * @param duration - Total duration in seconds
+ * @returns Relative position (0 = start, 1 = end)
+ */
+export function timeToRelative(time: number, duration: number): number {
+  return duration > 0 ? time / duration : 0
+}
+
+/**
+ * Normalize coordinates to viewport
+ * Pure function - no side effects
+ *
+ * @param x - X coordinate
+ * @param y - Y coordinate
+ * @param canvasRect - Canvas bounding rectangle
+ * @returns Normalized coordinates relative to canvas
+ */
+export function normalizeToViewport(x: number, y: number, canvasRect: DOMRect): { x: number; y: number } {
+  return {
+    x: x - canvasRect.left,
+    y: y - canvasRect.top,
+  }
+}
+
+// ============================================================================
+// Pure Zoom Calculation Functions
+// ============================================================================
+// These functions handle zoom calculations without side effects.
+
+/**
+ * Calculate new zoom level with constraints
+ * Pure function - no side effects
+ *
+ * @param currentZoom - Current zoom level (pixels per second)
+ * @param delta - Zoom delta factor (e.g., 1.2 for zoom in, 0.8 for zoom out)
+ * @param min - Minimum zoom level (default: 1)
+ * @param max - Maximum zoom level (default: 10000)
+ * @returns New zoom level
+ */
+export function calculateZoomLevel(currentZoom: number, delta: number, min = 1, max = 10000): number {
+  return Math.max(min, Math.min(max, currentZoom * delta))
+}
+
+/**
+ * Calculate zoom that fits duration in width
+ * Pure function - no side effects
+ *
+ * @param duration - Total duration in seconds
+ * @param width - Available width in pixels
+ * @returns Zoom level (pixels per second) that fits duration in width
+ */
+export function calculateFitZoom(duration: number, width: number): number {
+  return duration > 0 ? width / duration : 1
+}
+
+/**
+ * Calculate scroll offset to maintain center point during zoom
+ * Pure function - no side effects
+ *
+ * @param centerTime - Time at the center point in seconds
+ * @param duration - Total duration in seconds
+ * @param newZoom - New zoom level (pixels per second)
+ * @param viewportWidth - Viewport width in pixels
+ * @returns Scroll offset to maintain center point
+ */
+export function calculateZoomScrollOffset(
+  centerTime: number,
+  duration: number,
+  newZoom: number,
+  viewportWidth: number,
+): number {
+  const totalWidth = duration * newZoom
+  const centerOffset = (centerTime / duration) * totalWidth
+  return Math.max(0, centerOffset - viewportWidth / 2)
+}
+
+/**
+ * Calculate zoom with maintained center point
+ * Pure function - no side effects
+ *
+ * @param currentZoom - Current zoom level (pixels per second)
+ * @param delta - Zoom delta factor
+ * @param centerTime - Time at center point in seconds
+ * @param duration - Total duration in seconds
+ * @param viewportWidth - Viewport width in pixels
+ * @param min - Minimum zoom level
+ * @param max - Maximum zoom level
+ * @returns Object with new zoom and scroll offset
+ */
+export function calculateZoom(
+  currentZoom: number,
+  delta: number,
+  centerTime: number,
+  duration: number,
+  viewportWidth: number,
+  min = 1,
+  max = 10000,
+): { zoom: number; scrollOffset: number } {
+  const zoom = calculateZoomLevel(currentZoom, delta, min, max)
+  const scrollOffset = calculateZoomScrollOffset(centerTime, duration, zoom, viewportWidth)
+  return { zoom, scrollOffset }
 }
 
 export function resolveChannelHeight({
@@ -295,15 +532,32 @@ export function getLazyRenderRange({
   scrollLeft,
   totalWidth,
   numCanvases,
+  singleCanvasWidth,
+  clientWidth,
 }: {
   scrollLeft: number
   totalWidth: number
   numCanvases: number
+  singleCanvasWidth: number
+  clientWidth: number
 }): number[] {
-  if (totalWidth === 0) return [0]
-  const viewPosition = scrollLeft / totalWidth
-  const startCanvas = Math.floor(viewPosition * numCanvases)
-  return [startCanvas - 1, startCanvas, startCanvas + 1]
+  if (totalWidth === 0 || singleCanvasWidth === 0) return [0]
+
+  // Calculate which canvases are currently visible
+  const startCanvas = Math.floor(scrollLeft / singleCanvasWidth)
+  const endCanvas = Math.floor((scrollLeft + clientWidth) / singleCanvasWidth)
+
+  // Include one canvas before and after for smooth scrolling
+  const firstCanvas = Math.max(0, startCanvas - 1)
+  const lastCanvas = Math.min(numCanvases - 1, endCanvas + 1)
+
+  // Return array of canvas indices to render
+  const range: number[] = []
+  for (let i = firstCanvas; i <= lastCanvas; i++) {
+    range.push(i)
+  }
+
+  return range
 }
 
 export function calculateVerticalScale({

@@ -8,10 +8,13 @@ describe('WaveSurfer UMD module tests', () => {
     cy.window().then((win) => {
       return new Promise((resolve) => {
         const { WaveSurfer } = win
+        // Handle both direct export and namespace export (for plugins with named exports)
+        const Regions = WaveSurfer.Regions.default || WaveSurfer.Regions
+        const Timeline = WaveSurfer.Timeline.default || WaveSurfer.Timeline
         win.wavesurfer = win.WaveSurfer.create({
           container: '#waveform',
           url: '../../examples/audio/demo.wav',
-          plugins: [WaveSurfer.Regions.create(), WaveSurfer.Timeline.create()],
+          plugins: [Regions.create(), Timeline.create()],
         })
         resolve()
       })

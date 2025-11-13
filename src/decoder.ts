@@ -1,3 +1,75 @@
+// ============================================================================
+// Pure Functions - Audio Data Processing
+// ============================================================================
+// These functions are pure: given the same input, they always return the same
+// output without side effects. They can be easily tested and run in workers.
+
+/**
+ * Extract channel data from an AudioBuffer
+ * Pure function - no side effects
+ */
+export function extractChannelData(audioBuffer: AudioBuffer): Float32Array[] {
+  const channels: Float32Array[] = []
+  for (let i = 0; i < audioBuffer.numberOfChannels; i++) {
+    channels.push(audioBuffer.getChannelData(i))
+  }
+  return channels
+}
+
+/**
+ * Find the maximum absolute value in channel data
+ * Pure function - no side effects
+ */
+export function findMaxAmplitude(channelData: Array<Float32Array | number[]>): number {
+  const firstChannel = channelData[0]
+  if (!firstChannel) return 0
+
+  let max = 0
+  const length = firstChannel.length
+  for (let i = 0; i < length; i++) {
+    const absN = Math.abs(firstChannel[i])
+    if (absN > max) max = absN
+  }
+  return max
+}
+
+/**
+ * Check if channel data needs normalization
+ * Pure function - no side effects
+ */
+export function needsNormalization(channelData: Array<Float32Array | number[]>): boolean {
+  const firstChannel = channelData[0]
+  if (!firstChannel) return false
+  return firstChannel.some((n) => n > 1 || n < -1)
+}
+
+/**
+ * Normalize channel data to -1..1 range
+ * Pure function - returns new normalized data without mutating input
+ */
+export function normalizeChannelData(channelData: Array<Float32Array | number[]>): Array<Float32Array | number[]> {
+  if (!needsNormalization(channelData)) {
+    return channelData
+  }
+
+  const max = findMaxAmplitude(channelData)
+  if (max === 0) return channelData
+
+  return channelData.map((channel) => {
+    const normalized = new Float32Array(channel.length)
+    for (let i = 0; i < channel.length; i++) {
+      normalized[i] = channel[i] / max
+    }
+    return normalized
+  })
+}
+
+// ============================================================================
+// Side-Effecting Functions - Audio Context Operations
+// ============================================================================
+// These functions have side effects (create AudioContext, mutate data).
+// They use the pure functions above for data processing.
+
 /** Decode an array buffer into an audio buffer */
 async function decode(audioData: ArrayBuffer, sampleRate: number): Promise<AudioBuffer> {
   const audioCtx = new AudioContext({ sampleRate })
@@ -9,20 +81,21 @@ async function decode(audioData: ArrayBuffer, sampleRate: number): Promise<Audio
   }
 }
 
-/** Normalize peaks to -1..1 */
+/**
+ * Normalize peaks to -1..1 (mutates in place for backward compatibility)
+ * @deprecated Use normalizeChannelData() for pure function version
+ */
 function normalize<T extends Array<Float32Array | number[]>>(channelData: T): T {
-  const firstChannel = channelData[0]
-  if (firstChannel.some((n) => n > 1 || n < -1)) {
-    const length = firstChannel.length
-    let max = 0
-    for (let i = 0; i < length; i++) {
-      const absN = Math.abs(firstChannel[i])
-      if (absN > max) max = absN
-    }
-    for (const channel of channelData) {
-      for (let i = 0; i < length; i++) {
-        channel[i] /= max
-      }
+  if (!needsNormalization(channelData)) {
+    return channelData
+  }
+
+  const max = findMaxAmplitude(channelData)
+  if (max === 0) return channelData
+
+  for (const channel of channelData) {
+    for (let i = 0; i < channel.length; i++) {
+      channel[i] /= max
     }
   }
   return channelData

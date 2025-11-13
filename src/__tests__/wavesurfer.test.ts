@@ -1,4 +1,5 @@
 jest.mock('../renderer.js', () => {
+  const { signal } = jest.requireActual('../reactive/store.js')
   let lastInstance: any
   class Renderer {
     options: any
@@ -15,27 +16,20 @@ jest.mock('../renderer.js', () => {
     zoom = jest.fn()
     exportImage = jest.fn(() => [])
     destroy = jest.fn()
+    // Reactive streams
+    click$ = signal(null)
+    dblclick$ = signal(null)
+    drag$ = signal(null)
+    resize$ = signal(null)
+    render$ = signal(null)
+    rendered$ = signal(null)
+    scrollStream = null
     constructor(options: any) {
       this.options = options
       lastInstance = this
     }
   }
   return { __esModule: true, default: Renderer, getLastInstance: () => lastInstance }
-})
-
-jest.mock('../timer.js', () => {
-  let lastInstance: any
-  class Timer {
-    on = jest.fn(() => () => undefined)
-    start = jest.fn()
-    stop = jest.fn()
-    destroy = jest.fn()
-  }
-  const ctor = jest.fn(() => {
-    lastInstance = new Timer()
-    return lastInstance
-  })
-  return { __esModule: true, default: ctor, getLastInstance: () => lastInstance }
 })
 
 jest.mock('../decoder.js', () => {
@@ -49,9 +43,7 @@ jest.mock('../decoder.js', () => {
 import WaveSurfer from '../wavesurfer.js'
 import { BasePlugin } from '../base-plugin.js'
 import * as RendererModule from '../renderer.js'
-import * as TimerModule from '../timer.js'
 const getRenderer = (RendererModule as any).getLastInstance as () => any
-const getTimer = (TimerModule as any).getLastInstance as () => any
 
 const createMedia = () => {
   const media = document.createElement('audio') as HTMLMediaElement & { play: jest.Mock; pause: jest.Mock }
@@ -231,10 +223,9 @@ describe('WaveSurfer public methods', () => {
     expect(getRenderer().exportImage).toHaveBeenCalled()
   })
 
-  test('destroy cleans up renderer and timer', () => {
+  test('destroy cleans up renderer', () => {
     const ws = createWs()
     ws.destroy()
     expect(getRenderer().destroy).toHaveBeenCalled()
-    expect(getTimer().destroy).toHaveBeenCalled()
   })
 })

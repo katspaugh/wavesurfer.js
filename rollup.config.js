@@ -79,7 +79,7 @@ export default [
           name: plugin.replace('src/plugins/', '').replace('.ts', ''),
           file: plugin.replace('src/', 'dist/').replace('.ts', '.cjs'),
           format: 'cjs',
-          exports: 'default',
+          exports: 'auto',
         },
         plugins,
       },
@@ -97,7 +97,7 @@ export default [
           globals: {
             WaveSurfer: 'WaveSurfer',
           },
-          exports: 'default',
+          exports: 'auto',
         },
         external: ['WaveSurfer'],
         plugins,

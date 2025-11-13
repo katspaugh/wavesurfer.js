@@ -8,6 +8,9 @@ import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
+import { signal, computed, effect } from '../reactive/store.js'
+import { createDragStream } from '../reactive/drag-stream.js'
+import { fromEvent } from '../reactive/event-streams.js'
 
 export type RegionsPluginOptions = undefined
 export type UpdateSide = 'start' | 'end'
@@ -87,13 +90,6 @@ export type RegionParams = {
 class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public element: HTMLElement | null = null // Element is created on init
   public id: string
-  public start: number
-  public end: number
-  public drag: boolean
-  public resize: boolean
-  public resizeStart: boolean
-  public resizeEnd: boolean
-  public color: string
   public content?: HTMLElement
   public minLength = 0
   public maxLength = Infinity
@@ -105,44 +101,180 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   private contentClickListener?: (e: MouseEvent) => void
   private contentBlurListener?: () => void
 
+  // Reactive state
+  private _start = signal(0)
+  private _end = signal(0)
+  private _color = signal('rgba(0, 0, 0, 0.1)')
+  private _drag = signal(true)
+  private _resize = signal(true)
+  private _resizeStart = signal(true)
+  private _resizeEnd = signal(true)
+  private _totalDuration = signal(0)
+
+  // Computed values
+  private _isMarker = computed(() => this._start.value === this._end.value, [this._start, this._end])
+  private _position = computed(() => {
+    const duration = this._totalDuration.value
+    if (duration === 0) return { left: 0, right: 100 }
+    return {
+      left: (this._start.value / duration) * 100,
+      right: ((duration - this._end.value) / duration) * 100,
+    }
+  }, [this._start, this._end, this._totalDuration])
+
+  // Public getters/setters for backward compatibility
+  get start() {
+    return this._start.value
+  }
+  set start(v: number) {
+    this._start.set(this.clampPosition(v))
+  }
+
+  get end() {
+    return this._end.value
+  }
+  set end(v: number) {
+    this._end.set(this.clampPosition(v))
+  }
+
+  get color() {
+    return this._color.value
+  }
+  set color(v: string) {
+    this._color.set(v)
+  }
+
+  get drag() {
+    return this._drag.value
+  }
+  set drag(v: boolean) {
+    this._drag.set(v)
+  }
+
+  get resize() {
+    return this._resize.value
+  }
+  set resize(v: boolean) {
+    this._resize.set(v)
+  }
+
+  get resizeStart() {
+    return this._resizeStart.value
+  }
+  set resizeStart(v: boolean) {
+    this._resizeStart.set(v)
+  }
+
+  get resizeEnd() {
+    return this._resizeEnd.value
+  }
+  set resizeEnd(v: boolean) {
+    this._resizeEnd.set(v)
+  }
+
+  get totalDuration() {
+    return this._totalDuration.value
+  }
+
   constructor(
     params: RegionParams,
-    private totalDuration: number,
+    totalDuration: number,
     private numberOfChannels = 0,
   ) {
     super()
 
     this.subscriptions = []
     this.id = params.id || `region-${Math.random().toString(32).slice(2)}`
-    this.start = this.clampPosition(params.start)
-    this.end = this.clampPosition(params.end ?? params.start)
-    this.drag = params.drag ?? true
-    this.resize = params.resize ?? true
-    this.resizeStart = params.resizeStart ?? true
-    this.resizeEnd = params.resizeEnd ?? true
-    this.color = params.color ?? 'rgba(0, 0, 0, 0.1)'
+    this._totalDuration.set(totalDuration)
+    this._start.set(this.clampPosition(params.start))
+    this._end.set(this.clampPosition(params.end ?? params.start))
+    this._drag.set(params.drag ?? true)
+    this._resize.set(params.resize ?? true)
+    this._resizeStart.set(params.resizeStart ?? true)
+    this._resizeEnd.set(params.resizeEnd ?? true)
+    this._color.set(params.color ?? 'rgba(0, 0, 0, 0.1)')
     this.minLength = params.minLength ?? this.minLength
     this.maxLength = params.maxLength ?? this.maxLength
     this.channelIdx = params.channelIdx ?? -1
     this.contentEditable = params.contentEditable ?? this.contentEditable
     this.element = this.initElement()
     this.setContent(params.content)
-    this.setPart()
-
-    this.renderPosition()
+    this.setupReactiveEffects()
     this.initMouseEvents()
   }
 
   private clampPosition(time: number): number {
-    return Math.max(0, Math.min(this.totalDuration, time))
+    return Math.max(0, Math.min(this._totalDuration.value, time))
   }
 
-  private setPart() {
-    const isMarker = this.start === this.end
-    this.element?.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
+  private setupReactiveEffects() {
+    if (!this.element) return
+
+    // Effect: Update position when start/end/duration changes
+    this.subscriptions.push(
+      effect(() => {
+        const pos = this._position.value
+        if (this.element) {
+          this.element.style.left = `${pos.left}%`
+          this.element.style.right = `${pos.right}%`
+        }
+      }, [this._position]),
+    )
+
+    // Effect: Update background color and border when color/isMarker changes
+    this.subscriptions.push(
+      effect(() => {
+        const isMarker = this._isMarker.value
+        const color = this._color.value
+        if (this.element) {
+          this.element.style.backgroundColor = isMarker ? 'none' : color
+          this.element.style.borderLeft = isMarker ? `2px solid ${color}` : 'none'
+        }
+      }, [this._isMarker, this._color]),
+    )
+
+    // Effect: Update cursor when drag state changes
+    this.subscriptions.push(
+      effect(() => {
+        const drag = this._drag.value
+        if (this.element) {
+          this.element.style.cursor = drag ? 'grab' : 'default'
+        }
+      }, [this._drag]),
+    )
+
+    // Effect: Update part attribute when isMarker changes
+    this.subscriptions.push(
+      effect(() => {
+        const isMarker = this._isMarker.value
+        if (this.element) {
+          this.element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
+        }
+      }, [this._isMarker]),
+    )
+
+    // Effect: Manage resize handles when resize/isMarker changes
+    this.subscriptions.push(
+      effect(() => {
+        const isMarker = this._isMarker.value
+        const resize = this._resize.value
+        if (this.element) {
+          if (!isMarker && resize) {
+            this.addResizeHandles(this.element)
+          } else {
+            this.removeResizeHandles(this.element)
+          }
+        }
+      }, [this._isMarker, this._resize]),
+    )
   }
 
   private addResizeHandles(element: HTMLElement) {
+    // Check if handles already exist
+    if (element.querySelector('[part*="region-handle-left"]')) {
+      return
+    }
+
     const handleStyle = {
       position: 'absolute',
       zIndex: '2',
@@ -181,23 +313,39 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       element,
     )
 
-    // Resize
+    // Resize using drag streams
     const resizeThreshold = 1
+
+    // Left handle
+    const { signal: leftDragSignal, cleanup: leftCleanup } = createDragStream(leftHandle, {
+      threshold: resizeThreshold,
+    })
     this.subscriptions.push(
-      makeDraggable(
-        leftHandle,
-        (dx) => this.onResize(dx, 'start'),
-        () => null,
-        () => this.onEndResizing('start'),
-        resizeThreshold,
-      ),
-      makeDraggable(
-        rightHandle,
-        (dx) => this.onResize(dx, 'end'),
-        () => null,
-        () => this.onEndResizing('end'),
-        resizeThreshold,
-      ),
+      leftDragSignal.subscribe((drag) => {
+        if (!drag) return
+        if (drag.type === 'move' && drag.deltaX !== undefined) {
+          this.onResize(drag.deltaX, 'start')
+        } else if (drag.type === 'end') {
+          this.onEndResizing('start')
+        }
+      }),
+      leftCleanup,
+    )
+
+    // Right handle
+    const { signal: rightDragSignal, cleanup: rightCleanup } = createDragStream(rightHandle, {
+      threshold: resizeThreshold,
+    })
+    this.subscriptions.push(
+      rightDragSignal.subscribe((drag) => {
+        if (!drag) return
+        if (drag.type === 'move' && drag.deltaX !== undefined) {
+          this.onResize(drag.deltaX, 'end')
+        } else if (drag.type === 'end') {
+          this.onEndResizing('end')
+        }
+      }),
+      rightCleanup,
     )
   }
 
@@ -215,8 +363,6 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   private initElement(): HTMLElement | null {
     if (this.isRemoved) return null
 
-    const isMarker = this.start === this.end
-
     let elementTop = 0
     let elementHeight = 100
 
@@ -230,30 +376,16 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
         position: 'absolute',
         top: `${elementTop}%`,
         height: `${elementHeight}%`,
-        backgroundColor: isMarker ? 'none' : this.color,
-        borderLeft: isMarker ? '2px solid ' + this.color : 'none',
         borderRadius: '2px',
         boxSizing: 'border-box',
         transition: 'background-color 0.2s ease',
-        cursor: this.drag ? 'grab' : 'default',
         pointerEvents: 'all',
+        // Dynamic styles (backgroundColor, borderLeft, cursor, left, right)
+        // are set by reactive effects in setupReactiveEffects()
       },
     })
 
-    // Add resize handles
-    if (!isMarker && this.resize) {
-      this.addResizeHandles(element)
-    }
-
     return element
-  }
-
-  private renderPosition() {
-    if (!this.element) return
-    const start = this.start / this.totalDuration
-    const end = (this.totalDuration - this.end) / this.totalDuration
-    this.element.style.left = `${start * 100}%`
-    this.element.style.right = `${end * 100}%`
   }
 
   private toggleCursor(toggle: boolean) {
@@ -265,25 +397,46 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     const { element } = this
     if (!element) return
 
-    element.addEventListener('click', (e) => this.emit('click', e))
-    element.addEventListener('mouseenter', (e) => this.emit('over', e))
-    element.addEventListener('mouseleave', (e) => this.emit('leave', e))
-    element.addEventListener('dblclick', (e) => this.emit('dblclick', e))
+    // Click event
+    const clicks = fromEvent(element, 'click')
+    this.subscriptions.push(clicks.subscribe((e) => e && this.emit('click', e)))
+
+    // Mouse enter/leave
+    const mouseEnter = fromEvent(element, 'mouseenter')
+    const mouseLeave = fromEvent(element, 'mouseleave')
+    this.subscriptions.push(
+      mouseEnter.subscribe((e) => e && this.emit('over', e)),
+      mouseLeave.subscribe((e) => e && this.emit('leave', e)),
+    )
+
+    // Double-click
+    const dblclicks = fromEvent(element, 'dblclick')
+    this.subscriptions.push(dblclicks.subscribe((e) => e && this.emit('dblclick', e)))
+
+    // Pointer down/up for cursor changes
     element.addEventListener('pointerdown', () => this.toggleCursor(true))
     element.addEventListener('pointerup', () => this.toggleCursor(false))
 
-    // Drag
-    this.subscriptions.push(
-      makeDraggable(
-        element,
-        (dx) => this.onMove(dx),
-        () => this.toggleCursor(true),
-        () => {
-          this.toggleCursor(false)
-          if (this.drag) this.emit('update-end')
-        },
-      ),
-    )
+    // Drag using reactive stream
+    if (this.drag) {
+      const { signal: dragSignal, cleanup: dragCleanup } = createDragStream(element)
+
+      this.subscriptions.push(
+        dragSignal.subscribe((drag) => {
+          if (!drag || !this.drag) return
+
+          if (drag.type === 'start') {
+            this.toggleCursor(true)
+          } else if (drag.type === 'move' && drag.deltaX !== undefined) {
+            this.onMove(drag.deltaX)
+          } else if (drag.type === 'end') {
+            this.toggleCursor(false)
+            this.emit('update-end')
+          }
+        }),
+        dragCleanup,
+      )
+    }
 
     if (this.contentEditable && this.content) {
       this.contentClickListener = (e) => this.onContentClick(e)
@@ -317,10 +470,9 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     this.updatingSide = side
     const resizeValid = length >= this.minLength && length <= this.maxLength
     if (newStart <= newEnd && (resizeValid || isRegionCreating)) {
+      // Use setters to trigger reactive updates
       this.start = newStart
       this.end = newEnd
-
-      this.renderPosition()
       this.emit('update', side)
     }
   }
@@ -355,8 +507,13 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   }
 
   public _setTotalDuration(totalDuration: number) {
-    this.totalDuration = totalDuration
-    this.renderPosition()
+    this._totalDuration.set(totalDuration)
+    // Position will update automatically via reactive effect
+  }
+
+  private setPart() {
+    const isMarker = this.start === this.end
+    this.element?.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
   }
 
   /** Play the region from the start, pass `true` to stop at region end */
@@ -429,20 +586,19 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
     if (options.color) {
       this.color = options.color
-      this.element.style.backgroundColor = this.color
+      // backgroundColor will update automatically via reactive effect
     }
 
     if (options.drag !== undefined) {
       this.drag = options.drag
-      this.element.style.cursor = this.drag ? 'grab' : 'default'
+      // cursor will update automatically via reactive effect
     }
 
     if (options.start !== undefined || options.end !== undefined) {
       const isMarker = this.start === this.end
       this.start = this.clampPosition(options.start ?? this.start)
       this.end = this.clampPosition(options.end ?? (isMarker ? this.start : this.end))
-      this.renderPosition()
-      this.setPart()
+      // Position and part will update automatically via reactive effects
     }
 
     if (options.content) {
@@ -633,7 +789,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
       const unsubscribeScroll = this.wavesurfer.on('scroll', renderIfVisible)
       const unsubscribeZoom = this.wavesurfer.on('zoom', renderIfVisible)
-      const unsubscribeResize = this.wavesurfer.on('resize', renderIfVisible);
+      const unsubscribeResize = this.wavesurfer.on('resize', renderIfVisible)
 
       // Only push the unsubscribe functions, not the once() return values
       this.subscriptions.push(unsubscribeScroll, unsubscribeZoom, unsubscribeResize)

@@ -5,6 +5,7 @@
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import WaveSurfer, { type WaveSurferOptions } from '../wavesurfer.js'
 import createElement from '../dom.js'
+import { effect } from '../reactive/store.js'
 
 export type MinimapPluginOptions = {
   overlayColor?: string
@@ -165,6 +166,11 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
       }),
 
       this.miniWavesurfer.on('click', (relativeX, relativeY) => {
+        // Seek main waveform when clicking minimap
+        if (this.wavesurfer) {
+          const duration = this.wavesurfer.getDuration()
+          this.wavesurfer.setTime(relativeX * duration)
+        }
         this.emit('click', relativeX, relativeY)
       }),
 
@@ -193,6 +199,8 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
       }),
 
       this.miniWavesurfer.on('interaction', () => {
+        // Note: interaction event also includes drag, so we don't seek here
+        // Only clicks should seek (handled in 'click' event)
         this.emit('interaction')
       }),
 
@@ -244,19 +252,38 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   private initWaveSurferEvents() {
     if (!this.wavesurfer) return
 
+    const renderer = this.wavesurfer.getRenderer?.()
+
+    // Subscribe to decode events - we'll use the decode completion as a trigger
+    // Note: decode happens once, so this effect runs once after decode
     this.subscriptions.push(
       this.wavesurfer.on('decode', () => {
         this.initMinimap()
       }),
-
-      this.wavesurfer.on('scroll', (startTime: number) => {
-        this.onScroll(startTime)
-      }),
-
-      this.wavesurfer.on('redraw', () => {
-        this.onRedraw()
-      }),
     )
+
+    // Subscribe to scroll events reactively
+    if (renderer && renderer.scrollStream) {
+      this.subscriptions.push(
+        effect(() => {
+          const { startX } = renderer.scrollStream!.percentages.value
+          const duration = this.wavesurfer?.getDuration() || 0
+          const startTime = startX * duration
+          this.onScroll(startTime)
+        }, [renderer.scrollStream.percentages]),
+      )
+    }
+
+    // Subscribe to redraw events reactively
+    if (renderer) {
+      this.subscriptions.push(
+        effect(() => {
+          if (renderer.rendered$.value > 0) {
+            this.onRedraw()
+          }
+        }, [renderer.rendered$]),
+      )
+    }
   }
 
   /** Unmount */

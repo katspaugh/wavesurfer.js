@@ -6,22 +6,25 @@ describe('WaveSurfer abort handling tests', () => {
   })
 
   // https://github.com/katspaugh/wavesurfer.js/issues/3637
-  it('load url after destroyed should emit ready', () => {
-    cy.window().then((win) => {
-      return new Promise((resolve) => {
-        win.wavesurfer = win.WaveSurfer.create({
-          container: '#waveform',
-          height: 200,
-          waveColor: 'rgb(200, 200, 0)',
-          progressColor: 'rgb(100, 100, 0)',
-        })
-
-        win.wavesurfer.destroy()
-
-        win.wavesurfer.load('../../examples/audio/demo.wav')
-
-        win.wavesurfer.on('ready', resolve)
+  // v8.0.0 breaking change: load() after destroy() is no longer supported
+  it('load url after destroyed should throw error', () => {
+    cy.window().then(async (win) => {
+      win.wavesurfer = win.WaveSurfer.create({
+        container: '#waveform',
+        height: 200,
+        waveColor: 'rgb(200, 200, 0)',
+        progressColor: 'rgb(100, 100, 0)',
       })
+
+      win.wavesurfer.destroy()
+
+      // Should reject with error (load is async)
+      try {
+        await win.wavesurfer.load('../../examples/audio/demo.wav')
+        throw new Error('Expected load() to throw an error')
+      } catch (err) {
+        expect(err.message).to.include('Cannot call load() on a destroyed WaveSurfer instance')
+      }
     })
   })
 

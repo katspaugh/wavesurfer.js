@@ -9,3 +9,6 @@ cypress/videos
 cypress/**/__diff_output__/
 .env
 coverage/
+
+# Beads issue tracking (synced via bd sync)
+.beads/
