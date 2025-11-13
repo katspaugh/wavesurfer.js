@@ -4,9 +4,12 @@ import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
 import { RenderScheduler, type RenderPriority } from './reactive/render-scheduler.js'
 import { createScrollStream, type ScrollStream } from './reactive/scroll-stream.js'
-import { signal, type Signal, type WritableSignal } from './reactive/store.js'
+import { signal, type Signal, type WritableSignal, effect } from './reactive/store.js'
 import { CanvasRenderer } from './renderer/canvas-renderer.js'
 import type { WaveSurferState } from './state/wavesurfer-state.js'
+import { createCursorComponent, type CursorProps } from './components/cursor.js'
+import { createProgressComponent, type ProgressProps } from './components/progress.js'
+import type { Component } from './components/component.js'
 
 type ChannelData = utils.ChannelData
 
@@ -45,6 +48,9 @@ class Renderer extends EventEmitter<RendererEvents> {
   public scrollStream: ScrollStream | null = null
   private canvasRenderer: CanvasRenderer
   private wavesurferState: WaveSurferState | null = null
+  private reactiveCursor: Component<CursorProps> | null = null
+  private reactiveProgress: Component<ProgressProps> | null = null
+  private reactiveCleanups: Array<() => void> = []
 
   // Public reactive streams (expose events as signals)
   public readonly click$: Signal<{ x: number; y: number } | null>
@@ -117,11 +123,70 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.progressWrapper = shadow.querySelector('.progress') as HTMLElement
     this.cursor = shadow.querySelector('.cursor') as HTMLElement
 
+    // Create reactive cursor/progress components if state is provided
+    if (this.wavesurferState) {
+      this.setupReactiveCursorProgress()
+    }
+
     if (audioElement) {
       shadow.appendChild(audioElement)
     }
 
     this.initEvents()
+  }
+
+  private setupReactiveCursorProgress(): void {
+    if (!this.wavesurferState) return
+
+    // Create cursor component
+    this.reactiveCursor = createCursorComponent()
+    const cursorElement = this.reactiveCursor.render({
+      position: this.wavesurferState.progressPercent.value,
+      color:
+        this.convertColorToString(this.options.cursorColor) ||
+        this.convertColorToString(this.options.progressColor) ||
+        '#333',
+      width: this.options.cursorWidth ?? 2,
+      height: '100%',
+    })
+    this.wrapper.appendChild(cursorElement)
+
+    // Create progress component
+    this.reactiveProgress = createProgressComponent()
+    const progressElement = this.reactiveProgress.render({
+      progress: this.wavesurferState.progressPercent.value,
+      color: this.convertColorToString(this.options.progressColor) || 'rgba(255, 255, 255, 0.5)',
+      height: '100%',
+    })
+    this.wrapper.appendChild(progressElement)
+
+    // Hide old cursor/progress elements
+    this.cursor.style.display = 'none'
+    this.progressWrapper.style.display = 'none'
+
+    // Setup reactive effects
+    const cleanup = effect(() => {
+      const position = this.wavesurferState!.progressPercent.value
+
+      this.renderScheduler.scheduleRender(() => {
+        this.reactiveCursor?.update?.({ position })
+        this.reactiveProgress?.update?.({ progress: position })
+
+        // Update waveform clip-path
+        const percents = position * 100
+        this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+
+        // Handle auto-scroll
+        if (this.isScrollable && (this.options.autoScroll || this.options.autoCenter)) {
+          const isPlaying = this.wavesurferState!.isPlaying.value
+          if (isPlaying) {
+            this.scrollIntoView(position, true)
+          }
+        }
+      })
+    }, [this.wavesurferState.progressPercent, this.wavesurferState.isPlaying])
+
+    this.reactiveCleanups.push(cleanup)
   }
 
   private parentFromOptionsContainer(container: WaveSurferOptions['container']) {
@@ -314,6 +379,18 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     this.options = options
 
+    // Update reactive cursor/progress if they exist
+    if (this.reactiveCursor) {
+      const cursorColor =
+        this.convertColorToString(options.cursorColor) || this.convertColorToString(options.progressColor) || '#333'
+      const cursorWidth = options.cursorWidth ?? 2
+      this.reactiveCursor.update?.({ color: cursorColor, width: cursorWidth })
+    }
+    if (this.reactiveProgress) {
+      const progressColor = this.convertColorToString(options.progressColor) || 'rgba(255, 255, 255, 0.5)'
+      this.reactiveProgress.update?.({ color: progressColor })
+    }
+
     // Re-render the waveform
     this.reRender()
   }
@@ -349,6 +426,14 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
     this.unsubscribeOnScroll?.forEach((unsubscribe) => unsubscribe())
     this.unsubscribeOnScroll = []
+
+    // Clean up reactive components
+    this.reactiveCleanups.forEach((cleanup) => cleanup())
+    this.reactiveCleanups = []
+    this.reactiveCursor?.destroy?.()
+    this.reactiveProgress?.destroy?.()
+    this.reactiveCursor = null
+    this.reactiveProgress = null
 
     // Cleanup scroll stream
     if (this.scrollStream) {
@@ -409,6 +494,14 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   private convertColorValues(color?: WaveSurferOptions['waveColor']): string | CanvasGradient {
     return utils.resolveColorValue(color, this.getPixelRatio())
+  }
+
+  private convertColorToString(color?: WaveSurferOptions['waveColor']): string | undefined {
+    if (!color) return undefined
+    if (typeof color === 'string') return color
+    if (Array.isArray(color)) return color[0] || undefined
+    // CanvasGradient cannot be used for DOM styles
+    return undefined
   }
 
   private getPixelRatio(): number {
@@ -672,10 +765,18 @@ class Renderer extends EventEmitter<RendererEvents> {
   renderProgress(progress: number, isPlaying?: boolean, priority: RenderPriority = 'normal') {
     if (isNaN(progress)) return
 
-    // Store the latest state
+    // If using reactive components, they handle cursor/progress automatically
+    // Just need to handle clip-path and legacy fallback
+    if (this.reactiveCursor && this.reactiveProgress) {
+      this.lastProgressState = { progress, isPlaying: isPlaying || false }
+      // Reactive components handle cursor/progress automatically via state changes
+      // The clip-path is handled in setupReactiveCursorProgress effect
+      return
+    }
+
+    // Legacy rendering for backward compatibility (when no state provided)
     this.lastProgressState = { progress, isPlaying: isPlaying || false }
 
-    // Schedule batched render (or immediate if high priority)
     this.renderScheduler.scheduleRender(() => {
       if (!this.lastProgressState) return
 
@@ -705,6 +806,13 @@ class Renderer extends EventEmitter<RendererEvents> {
     const percents = progress * 100
 
     this.renderScheduler.flushRender(() => {
+      // If using reactive components, they handle cursor/progress
+      if (this.reactiveCursor && this.reactiveProgress) {
+        this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+        return
+      }
+
+      // Legacy rendering
       this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
       this.progressWrapper.style.width = `${percents}%`
       this.cursor.style.left = `${percents}%`
