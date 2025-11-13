@@ -20,6 +20,7 @@ export interface DeclarativeRendererOptions {
   progressColor?: string
   autoScroll?: boolean
   autoCenter?: boolean
+  hideScrollbar?: boolean
 }
 
 /**
@@ -91,6 +92,20 @@ export class DeclarativeRenderer {
       scroll.style.height = `${this.options.height}px`
     }
 
+    // Add scrollbar hiding class if needed
+    if (this.options.hideScrollbar) {
+      scroll.classList.add('noScrollbar')
+      // Apply inline styles for scrollbar hiding
+      scroll.style.scrollbarWidth = 'none' // Firefox
+      const style = document.createElement('style')
+      style.textContent = `
+        .wavesurfer-scroll.noScrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `
+      scroll.appendChild(style)
+    }
+
     return scroll
   }
 
@@ -126,12 +141,15 @@ export class DeclarativeRenderer {
    * Multiple state changes in the same frame are batched into a single render.
    */
   private setupReactiveRendering(): void {
+    // Get initial cursor width (default to 2 if not provided)
+    const cursorWidth = this.options.cursorWidth !== undefined ? this.options.cursorWidth : 2
+
     // Create and render cursor component
     this.cursor = createCursorComponent()
     const cursorElement = this.cursor.render({
       position: this.state.progressPercent.value,
       color: this.options.cursorColor || this.options.progressColor || '#333',
-      width: this.options.cursorWidth || 2,
+      width: cursorWidth,
       height: '100%',
     })
     this.wrapper.appendChild(cursorElement)
@@ -154,8 +172,15 @@ export class DeclarativeRenderer {
       this.scheduler.scheduleRender(() => {
         this.cursor?.update?.({ position })
         this.progress?.update?.({ progress: position })
+
+        // Handle auto-scroll during playback
+        if ((this.options.autoScroll || this.options.autoCenter) && this.state.isPlaying.value) {
+          const currentTime = this.state.currentTime.value
+          const duration = this.state.duration.value
+          this.handleAutoScroll(currentTime, duration)
+        }
       })
-    }, [this.state.progressPercent])
+    }, [this.state.progressPercent, this.state.isPlaying, this.state.currentTime, this.state.duration])
     this.cleanupFunctions.push(renderCleanup)
 
     // For high-priority updates during playback, use immediate rendering
@@ -248,6 +273,94 @@ export class DeclarativeRenderer {
       this.cursor?.update?.({ position })
       this.progress?.update?.({ progress: position })
     })
+  }
+
+  /**
+   * Update rendering options dynamically
+   */
+  setOptions(options: Partial<DeclarativeRendererOptions>): void {
+    // Update internal options
+    this.options = { ...this.options, ...options }
+
+    // Handle cursor width (0 = hidden)
+    if (options.cursorWidth !== undefined) {
+      if (options.cursorWidth === 0) {
+        // Hide cursor
+        this.cursor?.update?.({ width: 0 })
+      } else {
+        this.cursor?.update?.({ width: options.cursorWidth })
+      }
+    }
+
+    // Handle cursor color
+    if (options.cursorColor !== undefined) {
+      this.cursor?.update?.({ color: options.cursorColor })
+    }
+
+    // Handle progress color
+    if (options.progressColor !== undefined) {
+      this.progress?.update?.({ color: options.progressColor })
+    }
+
+    // Handle height
+    if (options.height !== undefined) {
+      if (options.height === 'auto') {
+        this.scrollContainer.style.height = 'auto'
+      } else {
+        this.scrollContainer.style.height = `${options.height}px`
+      }
+      this.cursor?.update?.({ height: '100%' })
+      this.progress?.update?.({ height: '100%' })
+    }
+
+    // Handle scrollbar visibility
+    if (options.hideScrollbar !== undefined) {
+      this.scrollContainer.classList.toggle('noScrollbar', options.hideScrollbar)
+    }
+
+    // Auto-scroll and auto-center are handled by effects that check this.options
+  }
+
+  /**
+   * Set whether the waveform is scrollable
+   */
+  setScrollable(isScrollable: boolean): void {
+    this.isScrollable = isScrollable
+    this.scrollContainer.style.overflowX = isScrollable ? 'auto' : 'hidden'
+  }
+
+  /**
+   * Handle auto-scroll during playback
+   * Centers cursor in view or scrolls to keep cursor visible
+   */
+  handleAutoScroll(currentTime: number, duration: number): void {
+    if (!this.isScrollable) return
+
+    const { scrollWidth, clientWidth } = this.scrollContainer
+    const totalScrollableWidth = scrollWidth - clientWidth
+
+    if (totalScrollableWidth <= 0) return
+
+    const progress = duration > 0 ? currentTime / duration : 0
+
+    if (this.options.autoCenter) {
+      // Center the cursor in view
+      const cursorPosition = scrollWidth * progress
+      const targetScroll = cursorPosition - clientWidth / 2
+      this.setScroll(Math.max(0, Math.min(targetScroll, totalScrollableWidth)))
+    } else if (this.options.autoScroll) {
+      // Keep cursor visible by scrolling when needed
+      const cursorPosition = scrollWidth * progress
+      const scrollLeft = this.scrollContainer.scrollLeft
+      const scrollRight = scrollLeft + clientWidth
+
+      // Scroll if cursor is outside visible area
+      if (cursorPosition < scrollLeft) {
+        this.setScroll(cursorPosition)
+      } else if (cursorPosition > scrollRight) {
+        this.setScroll(cursorPosition - clientWidth)
+      }
+    }
   }
 
   /**
