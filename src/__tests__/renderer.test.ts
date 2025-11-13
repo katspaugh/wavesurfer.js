@@ -116,11 +116,11 @@ describe('Renderer', () => {
     canvas.height = 100
     const ctx = canvas.getContext('2d') as any
     const data = [new Float32Array([0, 0.5, -0.5]), new Float32Array([0, -0.5, 0.5])]
-    
+
     // Test bar rendering
     canvasRenderer.renderWaveform(data, { barWidth: 1, waveColor: '#000' }, ctx)
     expect(ctx.beginPath).toHaveBeenCalled()
-    
+
     // Test line rendering
     ctx.beginPath.mockClear()
     canvasRenderer.renderWaveform(data, { waveColor: '#000' }, ctx)
@@ -134,17 +134,17 @@ describe('Renderer', () => {
     canvas.height = 100
     const ctx = canvas.getContext('2d') as any
     const data = [new Float32Array([0, 1])]
-    
+
     const spyBar = jest.spyOn(canvasRenderer as any, 'renderBarWaveform')
     const spyLine = jest.spyOn(canvasRenderer as any, 'renderLineWaveform')
-    
+
     // Should use bar rendering when barWidth is set
     canvasRenderer.renderWaveform(data, { barWidth: 1, waveColor: '#000' }, ctx)
     expect(spyBar).toHaveBeenCalled()
-    
+
     spyBar.mockClear()
     spyLine.mockClear()
-    
+
     // Should use line rendering when no barWidth
     canvasRenderer.renderWaveform(data, { waveColor: '#000' }, ctx)
     expect(spyLine).toHaveBeenCalled()
