@@ -197,7 +197,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.wavesurferActions = actions
 
     const audioElement = media ? undefined : this.getMediaElement()
-    this.renderer = new Renderer(this.options, audioElement)
+    this.renderer = new Renderer(this.options, this.wavesurferState, audioElement)
 
     this.initPlayerEvents()
     this.initRendererEvents()

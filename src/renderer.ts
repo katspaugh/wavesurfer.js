@@ -6,6 +6,7 @@ import { RenderScheduler, type RenderPriority } from './reactive/render-schedule
 import { createScrollStream, type ScrollStream } from './reactive/scroll-stream.js'
 import { signal, type Signal, type WritableSignal } from './reactive/store.js'
 import { CanvasRenderer } from './renderer/canvas-renderer.js'
+import type { WaveSurferState } from './state/wavesurfer-state.js'
 
 type ChannelData = utils.ChannelData
 
@@ -43,6 +44,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private lastProgressState: { progress: number; isPlaying: boolean } | null = null
   public scrollStream: ScrollStream | null = null
   private canvasRenderer: CanvasRenderer
+  private wavesurferState: WaveSurferState | null = null
 
   // Public reactive streams (expose events as signals)
   public readonly click$: Signal<{ x: number; y: number } | null>
@@ -61,11 +63,12 @@ class Renderer extends EventEmitter<RendererEvents> {
   private readonly _render$: WritableSignal<number>
   private readonly _rendered$: WritableSignal<number>
 
-  constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
+  constructor(options: WaveSurferOptions, state?: WaveSurferState, audioElement?: HTMLElement) {
     super()
 
     this.subscriptions = []
     this.options = options
+    this.wavesurferState = state || null
 
     // Initialize canvas renderer for waveform rendering
     this.canvasRenderer = new CanvasRenderer({
