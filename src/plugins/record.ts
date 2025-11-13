@@ -122,13 +122,19 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
         ...this.wavesurfer.options,
       }
 
-      this.wavesurfer.options.interact = false
-      if (this.options.scrollingWaveform) {
-        this.wavesurfer.options.cursorWidth = 0
-        // Use fixed max peak in scrolling mode to prevent "dancing" waveform
-        this.wavesurfer.options.normalize = true
-        this.wavesurfer.options.maxPeak = 1
+      // Update options using setOptions to trigger reactive updates
+      const newOptions: Partial<WaveSurferOptions> = {
+        interact: false,
       }
+
+      if (this.options.scrollingWaveform) {
+        newOptions.cursorWidth = 0
+        // Use fixed max peak in scrolling mode to prevent "dancing" waveform
+        newOptions.normalize = true
+        newOptions.maxPeak = 1
+      }
+
+      this.wavesurfer.setOptions(newOptions)
     }
 
     const drawWaveform = () => {
