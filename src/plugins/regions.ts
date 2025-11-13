@@ -9,6 +9,8 @@ import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
 import { signal, computed, effect } from '../reactive/store.js'
+import { createDragStream } from '../reactive/drag-stream.js'
+import { fromEvent } from '../reactive/event-streams.js'
 
 export type RegionsPluginOptions = undefined
 export type UpdateSide = 'start' | 'end'
@@ -311,23 +313,39 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       element,
     )
 
-    // Resize
+    // Resize using drag streams
     const resizeThreshold = 1
+
+    // Left handle
+    const { signal: leftDragSignal, cleanup: leftCleanup } = createDragStream(leftHandle, {
+      threshold: resizeThreshold,
+    })
     this.subscriptions.push(
-      makeDraggable(
-        leftHandle,
-        (dx) => this.onResize(dx, 'start'),
-        () => null,
-        () => this.onEndResizing('start'),
-        resizeThreshold,
-      ),
-      makeDraggable(
-        rightHandle,
-        (dx) => this.onResize(dx, 'end'),
-        () => null,
-        () => this.onEndResizing('end'),
-        resizeThreshold,
-      ),
+      leftDragSignal.subscribe((drag) => {
+        if (!drag) return
+        if (drag.type === 'move' && drag.deltaX !== undefined) {
+          this.onResize(drag.deltaX, 'start')
+        } else if (drag.type === 'end') {
+          this.onEndResizing('start')
+        }
+      }),
+      leftCleanup,
+    )
+
+    // Right handle
+    const { signal: rightDragSignal, cleanup: rightCleanup } = createDragStream(rightHandle, {
+      threshold: resizeThreshold,
+    })
+    this.subscriptions.push(
+      rightDragSignal.subscribe((drag) => {
+        if (!drag) return
+        if (drag.type === 'move' && drag.deltaX !== undefined) {
+          this.onResize(drag.deltaX, 'end')
+        } else if (drag.type === 'end') {
+          this.onEndResizing('end')
+        }
+      }),
+      rightCleanup,
     )
   }
 
@@ -379,25 +397,46 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     const { element } = this
     if (!element) return
 
-    element.addEventListener('click', (e) => this.emit('click', e))
-    element.addEventListener('mouseenter', (e) => this.emit('over', e))
-    element.addEventListener('mouseleave', (e) => this.emit('leave', e))
-    element.addEventListener('dblclick', (e) => this.emit('dblclick', e))
+    // Click event
+    const clicks = fromEvent(element, 'click')
+    this.subscriptions.push(clicks.subscribe((e) => e && this.emit('click', e)))
+
+    // Mouse enter/leave
+    const mouseEnter = fromEvent(element, 'mouseenter')
+    const mouseLeave = fromEvent(element, 'mouseleave')
+    this.subscriptions.push(
+      mouseEnter.subscribe((e) => e && this.emit('over', e)),
+      mouseLeave.subscribe((e) => e && this.emit('leave', e)),
+    )
+
+    // Double-click
+    const dblclicks = fromEvent(element, 'dblclick')
+    this.subscriptions.push(dblclicks.subscribe((e) => e && this.emit('dblclick', e)))
+
+    // Pointer down/up for cursor changes
     element.addEventListener('pointerdown', () => this.toggleCursor(true))
     element.addEventListener('pointerup', () => this.toggleCursor(false))
 
-    // Drag
-    this.subscriptions.push(
-      makeDraggable(
-        element,
-        (dx) => this.onMove(dx),
-        () => this.toggleCursor(true),
-        () => {
-          this.toggleCursor(false)
-          if (this.drag) this.emit('update-end')
-        },
-      ),
-    )
+    // Drag using reactive stream
+    if (this.drag) {
+      const { signal: dragSignal, cleanup: dragCleanup } = createDragStream(element)
+
+      this.subscriptions.push(
+        dragSignal.subscribe((drag) => {
+          if (!drag || !this.drag) return
+
+          if (drag.type === 'start') {
+            this.toggleCursor(true)
+          } else if (drag.type === 'move' && drag.deltaX !== undefined) {
+            this.onMove(drag.deltaX)
+          } else if (drag.type === 'end') {
+            this.toggleCursor(false)
+            this.emit('update-end')
+          }
+        }),
+        dragCleanup,
+      )
+    }
 
     if (this.contentEditable && this.content) {
       this.contentClickListener = (e) => this.onContentClick(e)
