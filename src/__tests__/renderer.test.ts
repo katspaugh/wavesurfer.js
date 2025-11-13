@@ -108,23 +108,45 @@ describe('Renderer', () => {
     expect((renderer as any).getPixelRatio()).toBe(2)
   })
 
-  test('renderBarWaveform and renderLineWaveform draw on context', () => {
-    const ctx = (renderer as any).canvasWrapper.ownerDocument.createElement('canvas').getContext('2d') as any
+  test('CanvasRenderer renderWaveform draws on context', () => {
+    // Access the internal canvasRenderer
+    const canvasRenderer = (renderer as any).canvasRenderer
+    const canvas = (renderer as any).canvasWrapper.ownerDocument.createElement('canvas')
+    canvas.width = 100
+    canvas.height = 100
+    const ctx = canvas.getContext('2d') as any
     const data = [new Float32Array([0, 0.5, -0.5]), new Float32Array([0, -0.5, 0.5])]
-    ;(renderer as any).renderBarWaveform(data, {}, ctx, 1)
+    
+    // Test bar rendering
+    canvasRenderer.renderWaveform(data, { barWidth: 1, waveColor: '#000' }, ctx)
     expect(ctx.beginPath).toHaveBeenCalled()
-    ;(renderer as any).renderLineWaveform(data, {}, ctx, 1)
+    
+    // Test line rendering
+    ctx.beginPath.mockClear()
+    canvasRenderer.renderWaveform(data, { waveColor: '#000' }, ctx)
     expect(ctx.lineTo).toHaveBeenCalled()
   })
 
-  test('renderWaveform chooses rendering path', () => {
-    const ctx = document.createElement('canvas').getContext('2d') as any
+  test('CanvasRenderer chooses rendering path based on options', () => {
+    const canvasRenderer = (renderer as any).canvasRenderer
+    const canvas = document.createElement('canvas')
+    canvas.width = 100
+    canvas.height = 100
+    const ctx = canvas.getContext('2d') as any
     const data = [new Float32Array([0, 1])]
-    const spyBar = jest.spyOn(renderer as any, 'renderBarWaveform')
-    const spyLine = jest.spyOn(renderer as any, 'renderLineWaveform')
-    ;(renderer as any).renderWaveform(data, { barWidth: 1 }, ctx)
+    
+    const spyBar = jest.spyOn(canvasRenderer as any, 'renderBarWaveform')
+    const spyLine = jest.spyOn(canvasRenderer as any, 'renderLineWaveform')
+    
+    // Should use bar rendering when barWidth is set
+    canvasRenderer.renderWaveform(data, { barWidth: 1, waveColor: '#000' }, ctx)
     expect(spyBar).toHaveBeenCalled()
-    ;(renderer as any).renderWaveform(data, {}, ctx)
+    
+    spyBar.mockClear()
+    spyLine.mockClear()
+    
+    // Should use line rendering when no barWidth
+    canvasRenderer.renderWaveform(data, { waveColor: '#000' }, ctx)
     expect(spyLine).toHaveBeenCalled()
   })
 
