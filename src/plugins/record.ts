@@ -128,10 +128,6 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
         // Use fixed max peak in scrolling mode to prevent "dancing" waveform
         this.wavesurfer.options.normalize = true
         this.wavesurfer.options.maxPeak = 1
-      } else {
-        // Ensure cursor is visible in continuous waveform and default modes
-        // Restore from original options or use default
-        this.wavesurfer.options.cursorWidth = this.originalOptions.cursorWidth ?? 1
       }
     }
 
