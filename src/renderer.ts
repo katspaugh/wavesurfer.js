@@ -176,13 +176,7 @@ class Renderer extends EventEmitter<RendererEvents> {
         const percents = position * 100
         this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
 
-        // Handle auto-scroll
-        if (this.isScrollable && (this.options.autoScroll || this.options.autoCenter)) {
-          const isPlaying = this.wavesurferState!.isPlaying.value
-          if (isPlaying) {
-            this.scrollIntoView(position, true)
-          }
-        }
+        // Note: Scrolling is handled in renderProgress for better control
       })
     }, [this.wavesurferState.progressPercent, this.wavesurferState.isPlaying])
 
@@ -766,11 +760,15 @@ class Renderer extends EventEmitter<RendererEvents> {
     if (isNaN(progress)) return
 
     // If using reactive components, they handle cursor/progress automatically
-    // Just need to handle clip-path and legacy fallback
+    // We also need to handle scrolling here for manual renderProgress calls (e.g., setTime)
     if (this.reactiveCursor && this.reactiveProgress) {
       this.lastProgressState = { progress, isPlaying: isPlaying || false }
-      // Reactive components handle cursor/progress automatically via state changes
-      // The clip-path is handled in setupReactiveCursorProgress effect
+      
+      // Always handle scrolling for explicit renderProgress calls
+      // This ensures scroll works for both playing and paused states
+      if (this.isScrollable && this.options.autoScroll) {
+        this.scrollIntoView(progress, isPlaying || false)
+      }
       return
     }
 
