@@ -5,6 +5,7 @@ import type { WaveSurferOptions } from './wavesurfer.js'
 import { RenderScheduler, type RenderPriority } from './reactive/render-scheduler.js'
 import { createScrollStream, type ScrollStream } from './reactive/scroll-stream.js'
 import { signal, type Signal, type WritableSignal } from './reactive/store.js'
+import { CanvasRenderer } from './renderer/canvas-renderer.js'
 
 type ChannelData = utils.ChannelData
 
@@ -41,6 +42,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private renderScheduler = new RenderScheduler()
   private lastProgressState: { progress: number; isPlaying: boolean } | null = null
   public scrollStream: ScrollStream | null = null
+  private canvasRenderer: CanvasRenderer
 
   // Public reactive streams (expose events as signals)
   public readonly click$: Signal<{ x: number; y: number } | null>
@@ -64,6 +66,25 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     this.subscriptions = []
     this.options = options
+
+    // Initialize canvas renderer for waveform rendering
+    this.canvasRenderer = new CanvasRenderer({
+      width: 0,
+      height: 0,
+      pixelRatio: this.getPixelRatio(),
+      waveColor: options.waveColor,
+      progressColor: options.progressColor,
+      renderFunction: options.renderFunction,
+      barWidth: options.barWidth,
+      barGap: options.barGap,
+      barRadius: options.barRadius,
+      barHeight: options.barHeight,
+      barAlign: options.barAlign,
+      minPxPerSec: options.minPxPerSec,
+      fillParent: options.fillParent,
+      normalize: options.normalize,
+      maxPeak: options.maxPeak,
+    })
 
     // Initialize reactive streams
     this._click$ = signal<{ x: number; y: number } | null>(null)
@@ -391,103 +412,6 @@ class Renderer extends EventEmitter<RendererEvents> {
     return utils.getPixelRatio(window.devicePixelRatio)
   }
 
-  private renderBarWaveform(
-    channelData: ChannelData,
-    options: WaveSurferOptions,
-    ctx: CanvasRenderingContext2D,
-    vScale: number,
-  ) {
-    const { width, height } = ctx.canvas
-    const { halfHeight, barWidth, barRadius, barIndexScale, barSpacing } = utils.calculateBarRenderConfig({
-      width,
-      height,
-      length: (channelData[0] || []).length,
-      options,
-      pixelRatio: this.getPixelRatio(),
-    })
-
-    const segments = utils.calculateBarSegments({
-      channelData,
-      barIndexScale,
-      barSpacing,
-      barWidth,
-      halfHeight,
-      vScale,
-      canvasHeight: height,
-      barAlign: options.barAlign,
-    })
-
-    ctx.beginPath()
-
-    for (const segment of segments) {
-      if (barRadius && 'roundRect' in ctx) {
-        ;(
-          ctx as CanvasRenderingContext2D & {
-            roundRect: (
-              x: number,
-              y: number,
-              width: number,
-              height: number,
-              radii?: number | DOMPointInit | DOMPointInit[],
-            ) => void
-          }
-        ).roundRect(segment.x, segment.y, segment.width, segment.height, barRadius)
-      } else {
-        ctx.rect(segment.x, segment.y, segment.width, segment.height)
-      }
-    }
-
-    ctx.fill()
-    ctx.closePath()
-  }
-
-  private renderLineWaveform(
-    channelData: ChannelData,
-    _options: WaveSurferOptions,
-    ctx: CanvasRenderingContext2D,
-    vScale: number,
-  ) {
-    const { width, height } = ctx.canvas
-    const paths = utils.calculateLinePaths({ channelData, width, height, vScale })
-
-    ctx.beginPath()
-
-    for (const path of paths) {
-      if (!path.length) continue
-      ctx.moveTo(path[0].x, path[0].y)
-      for (let i = 1; i < path.length; i++) {
-        const point = path[i]
-        ctx.lineTo(point.x, point.y)
-      }
-    }
-
-    ctx.fill()
-    ctx.closePath()
-  }
-
-  private renderWaveform(channelData: ChannelData, options: WaveSurferOptions, ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = this.convertColorValues(options.waveColor)
-
-    if (options.renderFunction) {
-      options.renderFunction(channelData, ctx)
-      return
-    }
-
-    const vScale = utils.calculateVerticalScale({
-      channelData,
-      barHeight: options.barHeight,
-      normalize: options.normalize,
-      maxPeak: options.maxPeak,
-    })
-
-    if (utils.shouldRenderBars(options)) {
-      this.renderBarWaveform(channelData, options, ctx, vScale)
-      return
-    }
-
-    this.renderLineWaveform(channelData, options, ctx, vScale)
-  }
-
   private renderSingleCanvas(
     data: ChannelData,
     options: WaveSurferOptions,
@@ -497,37 +421,20 @@ class Renderer extends EventEmitter<RendererEvents> {
     canvasContainer: HTMLElement,
     progressContainer: HTMLElement,
   ) {
-    const pixelRatio = this.getPixelRatio()
-    const canvas = document.createElement('canvas')
-    canvas.width = Math.round(width * pixelRatio)
-    canvas.height = Math.round(height * pixelRatio)
-    canvas.style.width = `${width}px`
-    canvas.style.height = `${height}px`
-    canvas.style.left = `${Math.round(offset)}px`
-    canvasContainer.appendChild(canvas)
-
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-
-    // Choose rendering approach
-    if (options.renderFunction) {
-      ctx.fillStyle = this.convertColorValues(options.waveColor)
-      options.renderFunction(data, ctx)
-    } else {
-      this.renderWaveform(data, options, ctx)
-    }
-
-    // Draw a progress canvas
-    if (canvas.width > 0 && canvas.height > 0) {
-      const progressCanvas = canvas.cloneNode() as HTMLCanvasElement
-      const progressCtx = progressCanvas.getContext('2d') as CanvasRenderingContext2D
-      progressCtx.drawImage(canvas, 0, 0)
-      // Set the composition method to draw only where the waveform is drawn
-      progressCtx.globalCompositeOperation = 'source-in'
-      progressCtx.fillStyle = this.convertColorValues(options.progressColor as WaveSurferOptions['waveColor'])
-      // This rectangle acts as a mask thanks to the composition method
-      progressCtx.fillRect(0, 0, canvas.width, canvas.height)
-      progressContainer.appendChild(progressCanvas)
-    }
+    // Delegate to CanvasRenderer
+    this.canvasRenderer.renderSingleCanvas(
+      data,
+      {
+        ...options,
+        width,
+        pixelRatio: this.getPixelRatio(),
+      },
+      width,
+      height,
+      offset,
+      canvasContainer,
+      progressContainer,
+    )
   }
 
   private renderMultiCanvas(
