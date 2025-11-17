@@ -166,24 +166,25 @@ export class DeclarativeRenderer {
     // Multiple state changes in the same frame result in a single DOM update
     const renderCleanup = effect(() => {
       const position = this.state.progressPercent.value
+      const isPlaying = this.state.isPlaying.value
 
-      // Schedule batched update - multiple rapid state changes = single render
+      // Use high priority during playback to avoid double-batching with animation loop
+      const priority = isPlaying ? 'high' : 'normal'
+
+      // Schedule update - high priority during playback for smooth animation
       this.scheduler.scheduleRender(() => {
         this.cursor?.update?.({ position })
         this.progress?.update?.({ progress: position })
 
         // Handle auto-scroll during playback
-        if ((this.options.autoScroll || this.options.autoCenter) && this.state.isPlaying.value) {
+        if ((this.options.autoScroll || this.options.autoCenter) && isPlaying) {
           const currentTime = this.state.currentTime.value
           const duration = this.state.duration.value
           this.handleAutoScroll(currentTime, duration)
         }
-      })
+      }, priority)
     }, [this.state.progressPercent, this.state.isPlaying, this.state.currentTime, this.state.duration])
     this.cleanupFunctions.push(renderCleanup)
-
-    // For high-priority updates during playback, use immediate rendering
-    // This is set up elsewhere when playback state changes
   }
 
   /**

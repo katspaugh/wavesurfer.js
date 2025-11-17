@@ -166,6 +166,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Setup reactive effects
     const cleanup = effect(() => {
       const position = this.wavesurferState!.progressPercent.value
+      const isPlaying = this.wavesurferState!.isPlaying.value
+
+      // Use high priority during playback to avoid double-batching with animation loop
+      const priority = isPlaying ? 'high' : 'normal'
 
       this.renderScheduler.scheduleRender(() => {
         this.reactiveCursor?.update?.({ position })
@@ -176,7 +180,7 @@ class Renderer extends EventEmitter<RendererEvents> {
         this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
 
         // Note: Scrolling is handled in renderProgress for better control
-      })
+      }, priority)
     }, [this.wavesurferState.progressPercent, this.wavesurferState.isPlaying])
 
     this.reactiveCleanups.push(cleanup)

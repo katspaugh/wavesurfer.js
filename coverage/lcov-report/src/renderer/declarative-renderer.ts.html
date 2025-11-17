@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.11% </span>
+                <span class="strong">71.53% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>96/135</span>
+                <span class='fraction'>98/137</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">48% </span>
+                <span class="strong">48.68% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>72/150</span>
+                <span class='fraction'>74/152</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">70.76% </span>
+                <span class="strong">71.21% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>92/130</span>
+                <span class='fraction'>94/132</span>
             </div>
         
             
@@ -447,7 +447,8 @@
 <a name='L382'></a><a href='#L382'>382</a>
 <a name='L383'></a><a href='#L383'>383</a>
 <a name='L384'></a><a href='#L384'>384</a>
-<a name='L385'></a><a href='#L385'>385</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L385'></a><a href='#L385'>385</a>
+<a name='L386'></a><a href='#L386'>386</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -615,24 +616,25 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-yes">69x</span>
+<span class="cline-any cline-yes">69x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">69x</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">69x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">28x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -777,7 +779,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -999,24 +1001,25 @@ export class DeclarativeRenderer {
     // Multiple state changes in the same frame result in a single DOM update
     const renderCleanup = effect(() =&gt; {
       const position = this.state.progressPercent.value
+      const isPlaying = this.state.isPlaying.value
 &nbsp;
-      // Schedule batched update - multiple rapid state changes = single render
+      // Use high priority during playback to avoid double-batching with animation loop
+      const priority = isPlaying ? 'high' : 'normal'
+&nbsp;
+      // Schedule update - high priority during playback for smooth animation
       this.scheduler.scheduleRender(() =&gt; {
         this.cursor<span class="branch-0 cbranch-no" title="branch not covered" >?.u</span>pdate<span class="branch-0 cbranch-no" title="branch not covered" >?.({</span> position })
         this.progress<span class="branch-0 cbranch-no" title="branch not covered" >?.u</span>pdate<span class="branch-0 cbranch-no" title="branch not covered" >?.({</span> progress: position })
 &nbsp;
         // Handle auto-scroll during playback
-        if ((this.options.autoScroll || this.options.autoCenter) &amp;&amp; this.state.isPlaying.value) {
+        if ((this.options.autoScroll || this.options.autoCenter) &amp;&amp; isPlaying) {
           const currentTime = this.state.currentTime.value
           const duration = this.state.duration.value
           this.handleAutoScroll(currentTime, duration)
         }
-      })
+      }, priority)
     }, [this.state.progressPercent, this.state.isPlaying, this.state.currentTime, this.state.duration])
     this.cleanupFunctions.push(renderCleanup)
-&nbsp;
-    // For high-priority updates during playback, use immediate rendering
-    // This is set up elsewhere when playback state changes
   }
 &nbsp;
   /**
@@ -1222,7 +1225,7 @@ export class DeclarativeRenderer {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-17T09:56:27.380Z
+                at 2025-11-17T10:19:56.292Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
