@@ -158,7 +158,6 @@ export class DeclarativeRenderer {
     this.progress = createProgressComponent()
     const progressElement = this.progress.render({
       progress: this.state.progressPercent.value,
-      color: this.options.progressColor || 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
     this.wrapper.appendChild(progressElement)
@@ -257,10 +256,8 @@ export class DeclarativeRenderer {
   /**
    * Update progress styling
    */
-  updateProgressStyle(color?: string): void {
-    if (color !== undefined) {
-      this.progress?.update?.({ color })
-    }
+  updateProgressStyle(): void {
+    // Progress color is handled by canvas rendering, not by the progress component
   }
 
   /**
@@ -297,10 +294,7 @@ export class DeclarativeRenderer {
       this.cursor?.update?.({ color: options.cursorColor })
     }
 
-    // Handle progress color
-    if (options.progressColor !== undefined) {
-      this.progress?.update?.({ color: options.progressColor })
-    }
+    // Progress color is handled by canvas rendering, not by the progress component
 
     // Handle height
     if (options.height !== undefined) {

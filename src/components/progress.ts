@@ -8,8 +8,6 @@ import { createElement } from '../dom.js'
 export interface ProgressProps {
   /** Progress as percentage (0-1) */
   progress: number
-  /** Progress bar color */
-  color: string
   /** Progress bar height (CSS value) */
   height: string
 }
@@ -17,7 +15,8 @@ export interface ProgressProps {
 /**
  * Create a progress bar component that shows playback progress
  *
- * The progress bar is an overlay that fills from left to right.
+ * The progress bar is a container with overflow:hidden that clips
+ * the progress waveform canvases. The width changes to show progress.
  * It updates automatically via reactive effects.
  *
  * @example
@@ -25,7 +24,6 @@ export interface ProgressProps {
  * const progress = createProgressComponent()
  * const element = progress.render({
  *   progress: 0,
- *   color: 'rgba(255, 255, 255, 0.5)',
  *   height: '100%'
  * })
  *
@@ -54,7 +52,6 @@ export function createProgressComponent() {
           height: props.height,
           overflow: 'hidden',
           pointerEvents: 'none',
-          backgroundColor: props.color || '',
         },
         children: {
           inner,
@@ -64,9 +61,6 @@ export function createProgressComponent() {
     (element, props) => {
       if (props.progress !== undefined) {
         element.style.width = `${props.progress * 100}%`
-      }
-      if (props.color !== undefined) {
-        element.style.backgroundColor = props.color
       }
       if (props.height !== undefined) {
         element.style.height = props.height

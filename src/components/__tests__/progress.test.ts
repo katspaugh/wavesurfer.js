@@ -5,14 +5,12 @@ describe('ProgressComponent', () => {
     const progress = createProgressComponent()
     const element = progress.render({
       progress: 0.5,
-      color: 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
 
     expect(element.className).toBe('progress')
     expect(element.style.position).toBe('absolute')
     expect(element.style.width).toBe('50%')
-    expect(element.style.backgroundColor).toBe('rgba(255, 255, 255, 0.5)')
     expect(element.style.height).toBe('100%')
     expect(element.style.zIndex).toBe('2')
     expect(element.style.overflow).toBe('hidden')
@@ -23,7 +21,6 @@ describe('ProgressComponent', () => {
     const progress = createProgressComponent()
     const element = progress.render({
       progress: 0,
-      color: 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
 
@@ -36,7 +33,6 @@ describe('ProgressComponent', () => {
     const progress = createProgressComponent()
     const element = progress.render({
       progress: 0,
-      color: 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
 
@@ -55,28 +51,21 @@ describe('ProgressComponent', () => {
     expect(element.style.width).toBe('100%')
   })
 
-  it('should update color', () => {
+  it('should not have a background color (waveform is in canvases)', () => {
     const progress = createProgressComponent()
     const element = progress.render({
       progress: 0.5,
-      color: '#000',
       height: '100%',
     })
 
-    expect(element.style.backgroundColor).toBe('rgb(0, 0, 0)')
-
-    progress.update?.({ color: '#fff' })
-    expect(element.style.backgroundColor).toBe('rgb(255, 255, 255)')
-
-    progress.update?.({ color: 'rgba(0, 0, 255, 0.3)' })
-    expect(element.style.backgroundColor).toBe('rgba(0, 0, 255, 0.3)')
+    // Progress component is just a container, no backgroundColor
+    expect(element.style.backgroundColor).toBe('')
   })
 
   it('should update height', () => {
     const progress = createProgressComponent()
     const element = progress.render({
       progress: 0.5,
-      color: 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
 
@@ -90,7 +79,6 @@ describe('ProgressComponent', () => {
     const progress = createProgressComponent()
     const element = progress.render({
       progress: 0.3,
-      color: 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
 
@@ -98,14 +86,13 @@ describe('ProgressComponent', () => {
     progress.update?.({ progress: 0.7 })
 
     expect(element.style.width).toBe('70%')
-    expect(element.style.backgroundColor).toBe('rgba(255, 255, 255, 0.5)') // Unchanged
+    expect(element.style.height).toBe('100%') // Unchanged
   })
 
   it('should handle rapid progress updates (simulating playback)', () => {
     const progress = createProgressComponent()
     const element = progress.render({
       progress: 0,
-      color: 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
 
@@ -121,7 +108,6 @@ describe('ProgressComponent', () => {
     const progress = createProgressComponent()
     const element = progress.render({
       progress: 0.3,
-      color: 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
 
@@ -134,7 +120,6 @@ describe('ProgressComponent', () => {
     const progress = createProgressComponent()
     const element = progress.render({
       progress: 0.5,
-      color: 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
 
@@ -153,7 +138,6 @@ describe('ProgressComponent', () => {
     const progress = createProgressComponent()
     const element = progress.render({
       progress: 0.5,
-      color: 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
 
@@ -174,13 +158,11 @@ describe('ProgressComponent', () => {
 
     const element1 = progress1.render({
       progress: 0.3,
-      color: 'rgba(255, 0, 0, 0.5)',
       height: '100%',
     })
 
     const element2 = progress2.render({
       progress: 0.7,
-      color: 'rgba(0, 0, 255, 0.5)',
       height: '100%',
     })
 
@@ -196,7 +178,6 @@ describe('ProgressComponent', () => {
     const progress = createProgressComponent()
     const element = progress.render({
       progress: 0,
-      color: 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
 

@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">95% </span>
+                <span class="strong">80% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>19/20</span>
+                <span class='fraction'>16/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">85% </span>
+                <span class="strong">65% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>17/20</span>
+                <span class='fraction'>13/20</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">95% </span>
+                <span class="strong">80% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>19/20</span>
+                <span class='fraction'>16/20</span>
             </div>
         
             
@@ -115,42 +115,42 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">201x</span>
+<span class="cline-any cline-yes">26x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">201x</span>
-<span class="cline-any cline-yes">401x</span>
-<span class="cline-any cline-yes">68x</span>
-<span class="cline-any cline-yes">68x</span>
-<span class="cline-any cline-yes">67x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">52x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">39x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">26x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">333x</span>
-<span class="cline-any cline-yes">199x</span>
-<span class="cline-any cline-yes">134x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">133x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">201x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">200x</span>
-<span class="cline-any cline-yes">200x</span>
-<span class="cline-any cline-yes">200x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">type TreeNode = { [key: string]: string | number | boolean | CSSStyleDeclaration | TreeNode | Node } &amp; {
   xmlns?: string
   style?: Partial&lt;CSSStyleDeclaration&gt;
@@ -168,16 +168,16 @@ function renderNode(tagName: string, content: TreeNode): HTMLElement | SVGElemen
       for (const [childTag, childValue] of Object.entries(value as TreeNode)) {
         if (childValue instanceof Node) {
           element.appendChild(childValue)
-        } else <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof childValue === 'string') {
+        } else <span class="cstat-no" title="statement not covered" ><span class="missing-if-branch" title="else path not taken" >E</span>if (typeof childValue === 'string') {</span>
 <span class="cstat-no" title="statement not covered" >          element.appendChild(document.createTextNode(childValue))</span>
         } else {
-          element.appendChild(renderNode(childTag, childValue as TreeNode))
+<span class="cstat-no" title="statement not covered" >          element.appendChild(renderNode(childTag, childValue as TreeNode))</span>
         }
       }
     } else if (key === 'style') {
       Object.assign((element as HTMLElement).style, value)
-    } else if (key === 'textContent') {
-      element.textContent = value as string
+    } else <span class="missing-if-branch" title="if path not taken" >I</span>if (key === 'textContent') {
+<span class="cstat-no" title="statement not covered" >      element.textContent = value as string</span>
     } else {
       element.setAttribute(key, value.toString())
     }
@@ -190,7 +190,7 @@ export function createElement(tagName: string, content: TreeNode &amp; { xmlns: 
 export function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement
 export function createElement(tagName: string, content?: TreeNode, container?: Node): HTMLElement | SVGElement {
   const el = renderNode(tagName, content || <span class="branch-1 cbranch-no" title="branch not covered" >{})</span>
-  container?.appendChild(el)
+<span class="branch-1 cbranch-no" title="branch not covered" >  container?.appendChild(el)</span>
   return el
 }
 &nbsp;
@@ -202,7 +202,7 @@ export default createElement
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-13T09:46:10.593Z
+                at 2025-11-17T09:30:11.709Z
             </div>
         <script src="../prettify.js"></script>
         <script>

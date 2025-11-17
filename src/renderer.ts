@@ -155,7 +155,6 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.reactiveProgress = createProgressComponent()
     const progressElement = this.reactiveProgress.render({
       progress: this.wavesurferState.progressPercent.value,
-      color: this.convertColorToString(this.options.progressColor) || 'rgba(255, 255, 255, 0.5)',
       height: '100%',
     })
     this.wrapper.appendChild(progressElement)
@@ -380,10 +379,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       const cursorWidth = options.cursorWidth ?? 2
       this.reactiveCursor.update?.({ color: cursorColor, width: cursorWidth })
     }
-    if (this.reactiveProgress) {
-      const progressColor = this.convertColorToString(options.progressColor) || 'rgba(255, 255, 255, 0.5)'
-      this.reactiveProgress.update?.({ color: progressColor })
-    }
+    // Progress color is handled by canvas rendering, not by the progress component
 
     // Re-render the waveform
     this.reRender()
