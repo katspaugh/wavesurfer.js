@@ -153,13 +153,14 @@ describe('WaveSurfer public methods', () => {
     expect(ws.options.interact).toBe(false)
   })
 
-  test('setTime updates progress and emits event', () => {
+  test('setTime updates state and emits event', () => {
     const ws = createWs()
     const spy = jest.fn()
     ws.on('timeupdate', spy)
     ws.setTime(1)
     expect(spy).toHaveBeenCalledWith(1)
-    expect(getRenderer().renderProgress).toHaveBeenCalled()
+    // setTime now updates reactive state instead of calling renderProgress directly
+    expect((ws as any).wavesurferState.currentTime.value).toBe(1)
   })
 
   test('seekTo calculates correct time', () => {

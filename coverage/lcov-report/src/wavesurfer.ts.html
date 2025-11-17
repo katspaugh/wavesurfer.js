@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">64.45% </span>
+                <span class="strong">63.54% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>185/287</span>
+                <span class='fraction'>183/288</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">81.25% </span>
+                <span class="strong">79.68% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>52/64</span>
+                <span class='fraction'>51/64</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">64.33% </span>
+                <span class="strong">63.36% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>175/272</span>
+                <span class='fraction'>173/273</span>
             </div>
         
             
@@ -822,7 +822,11 @@
 <a name='L757'></a><a href='#L757'>757</a>
 <a name='L758'></a><a href='#L758'>758</a>
 <a name='L759'></a><a href='#L759'>759</a>
-<a name='L760'></a><a href='#L760'>760</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<a name='L760'></a><a href='#L760'>760</a>
+<a name='L761'></a><a href='#L761'>761</a>
+<a name='L762'></a><a href='#L762'>762</a>
+<a name='L763'></a><a href='#L763'>763</a>
+<a name='L764'></a><a href='#L764'>764</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -1060,8 +1064,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1081,6 +1085,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1470,12 +1477,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">37x</span>
+<span class="cline-any cline-yes">32x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">37x</span>
+<span class="cline-any cline-yes">32x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">37x</span>
+<span class="cline-any cline-yes">32x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1487,6 +1494,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1818,9 +1826,9 @@ class WaveSurfer extends Player&lt;WaveSurferEvents&gt; {
     })
   }
 &nbsp;
-  private updateProgress(currentTime = <span class="branch-0 cbranch-no" title="branch not covered" >this.getCurrentTime())</span>: number {
-    this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())
-    return currentTime
+  private <span class="fstat-no" title="function not covered" >updateProgress(</span>currentTime = <span class="branch-0 cbranch-no" title="branch not covered" >this.getCurrentTime())</span>: number {
+<span class="cstat-no" title="statement not covered" >    this.renderer.renderProgress(currentTime / this.getDuration(), this.isPlaying())</span>
+<span class="cstat-no" title="statement not covered" >    return currentTime</span>
   }
 &nbsp;
   private initReactiveAnimation() {
@@ -1840,7 +1848,10 @@ class WaveSurfer extends Player&lt;WaveSurferEvents&gt; {
         // Start animation loop
         const animate = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
 <span class="cstat-no" title="statement not covered" >          <span class="missing-if-branch" title="if path not taken" >I</span>if (!this.isSeeking()) {</span>
-            const currentTime = <span class="cstat-no" title="statement not covered" >this.updateProgress()</span>
+            const currentTime = <span class="cstat-no" title="statement not covered" >this.getCurrentTime()</span>
+            
+            // Update reactive state - this triggers cursor/progress updates automatically
+<span class="cstat-no" title="statement not covered" >            this.wavesurferActions.setCurrentTime(currentTime)</span>
 &nbsp;
             // Pause audio when it reaches the stopAtPosition
 <span class="cstat-no" title="statement not covered" >            <span class="missing-if-branch" title="if path not taken" >I</span>if (this.stopAtPosition != null &amp;&amp; currentTime &gt;= this.stopAtPosition) {</span>
@@ -2246,7 +2257,8 @@ class WaveSurfer extends Player&lt;WaveSurferEvents&gt; {
   public setTime(time: number) {
     this.stopAtPosition = null
     super.setTime(time)
-    this.updateProgress(time)
+    // Update reactive state - this triggers cursor/progress updates automatically
+    this.wavesurferActions.setCurrentTime(time)
     this.emit('timeupdate', time)
   }
 &nbsp;
@@ -2347,7 +2359,7 @@ export default WaveSurfer
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-17T10:41:50.468Z
+                at 2025-11-17T10:46:59.997Z
             </div>
         <script src="../prettify.js"></script>
         <script>

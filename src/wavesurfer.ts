@@ -257,7 +257,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         // Start animation loop
         const animate = () => {
           if (!this.isSeeking()) {
-            const currentTime = this.updateProgress()
+            const currentTime = this.getCurrentTime()
+
+            // Update reactive state - this triggers cursor/progress updates automatically
+            this.wavesurferActions.setCurrentTime(currentTime)
 
             // Pause audio when it reaches the stopAtPosition
             if (this.stopAtPosition != null && currentTime >= this.stopAtPosition) {
@@ -663,7 +666,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   public setTime(time: number) {
     this.stopAtPosition = null
     super.setTime(time)
-    this.updateProgress(time)
+    // Update reactive state - this triggers cursor/progress updates automatically
+    this.wavesurferActions.setCurrentTime(time)
     this.emit('timeupdate', time)
   }
 
