@@ -619,7 +619,9 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // A container for progress canvases
     const progressContainer = canvasContainer.cloneNode() as HTMLElement
-    this.progressWrapper.appendChild(progressContainer)
+    // Append to reactive progress component's inner div if it exists, otherwise use old progressWrapper
+    const progressParent = this.reactiveProgress?.element?.querySelector('div') || this.progressWrapper
+    progressParent.appendChild(progressContainer)
 
     // Render the waveform
     this.renderMultiCanvas(channelData, options, width, height, canvasContainer, progressContainer)
@@ -632,7 +634,9 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Clear the canvases
     this.canvasWrapper.innerHTML = ''
-    this.progressWrapper.innerHTML = ''
+    // Clear reactive progress component's inner div if it exists, otherwise clear old progressWrapper
+    const progressParent = this.reactiveProgress?.element?.querySelector('div') || this.progressWrapper
+    progressParent.innerHTML = ''
 
     // Width
     if (this.options.width != null) {

@@ -324,7 +324,7 @@ describe('DeclarativeRenderer', () => {
       expect(cursor.style.width).toBe('5px')
     })
 
-    it('should update progress style', () => {
+    it('should not update progress style (handled by canvas rendering)', () => {
       const { state } = createWaveSurferState()
       const renderer = new DeclarativeRenderer(container, state, {
         container,
@@ -335,9 +335,10 @@ describe('DeclarativeRenderer', () => {
       const wrapper = renderer.getWrapper()
       const progress = wrapper.querySelector('.progress') as HTMLElement
 
-      renderer.updateProgressStyle('rgba(0, 255, 0, 0.5)')
+      // Progress component is just a container, no backgroundColor
+      renderer.updateProgressStyle()
 
-      expect(progress.style.backgroundColor).toBe('rgba(0, 255, 0, 0.5)')
+      expect(progress.style.backgroundColor).toBe('')
     })
   })
 
@@ -463,7 +464,7 @@ describe('DeclarativeRenderer', () => {
       expect(cursor.style.width).toBe('5px')
     })
 
-    it('should apply custom progress color', () => {
+    it('should not apply backgroundColor to progress (handled by canvas)', () => {
       const { state } = createWaveSurferState()
       const renderer = new DeclarativeRenderer(container, state, {
         container,
@@ -474,7 +475,8 @@ describe('DeclarativeRenderer', () => {
       const wrapper = renderer.getWrapper()
       const progress = wrapper.querySelector('.progress') as HTMLElement
 
-      expect(progress.style.backgroundColor).toBe('rgba(0, 0, 255, 0.3)')
+      // Progress component is just a container, progressColor is used for canvas rendering
+      expect(progress.style.backgroundColor).toBe('')
     })
 
     it('should use progressColor as fallback for cursorColor', () => {
