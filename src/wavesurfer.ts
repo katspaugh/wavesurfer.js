@@ -4,8 +4,11 @@ import * as dom from './dom.js'
 import Fetcher from './fetcher.js'
 import Player from './player.js'
 import Renderer from './renderer.js'
-import Timer from './timer.js'
 import WebAudioPlayer from './webaudio.js'
+import { createWaveSurferState, type WaveSurferState, type WaveSurferActions } from './state/wavesurfer-state.js'
+import { bridgeMediaEvents } from './reactive/media-event-bridge.js'
+import { setupStateEventEmission } from './reactive/state-event-emitter.js'
+import { effect } from './reactive/store.js'
 
 export type WaveSurferOptions = {
   /** Required: an HTML element or selector where the waveform will be rendered */
@@ -145,19 +148,25 @@ export type WaveSurferEvents = {
   /** When source file is unable to be fetched, decoded, or an error is thrown by media element */
   error: [error: Error]
   /** When audio container resizing */
-  resize: [];
+  resize: []
 }
 
 class WaveSurfer extends Player<WaveSurferEvents> {
   public options: WaveSurferOptions & typeof defaultOptions
   private renderer: Renderer
-  private timer: Timer
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
   private stopAtPosition: number | null = null
   protected subscriptions: Array<() => void> = []
   protected mediaSubscriptions: Array<() => void> = []
   protected abortController: AbortController | null = null
+  private isDestroyed = false
+
+  // Reactive state
+  private wavesurferState: WaveSurferState
+  private wavesurferActions: WaveSurferActions
+  private reactiveCleanups: Array<() => void> = []
+  private mediaEventBridgeCleanup: (() => void) | null = null
 
   public static readonly BasePlugin = BasePlugin
   public static readonly dom = dom
@@ -181,15 +190,29 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     })
 
     this.options = Object.assign({}, defaultOptions, options)
-    this.timer = new Timer()
+
+    // Initialize reactive state
+    const { state, actions } = createWaveSurferState()
+    this.wavesurferState = state
+    this.wavesurferActions = actions
 
     const audioElement = media ? undefined : this.getMediaElement()
-    this.renderer = new Renderer(this.options, audioElement)
+    this.renderer = new Renderer(this.options, this.wavesurferState, audioElement)
 
     this.initPlayerEvents()
     this.initRendererEvents()
-    this.initTimerEvents()
+    this.initReactiveAnimation()
     this.initPlugins()
+
+    // Bridge media events to reactive state
+    this.mediaEventBridgeCleanup = bridgeMediaEvents(this.getMediaElement(), this.wavesurferActions)
+
+    // Bridge reactive state to legacy event emission
+    this.reactiveCleanups.push(
+      setupStateEventEmission(this.wavesurferState, {
+        emit: this.emit.bind(this),
+      }),
+    )
 
     // Read the initial URL before load has been called
     const initialUrl = this.options.url || this.getSrc() || ''
@@ -217,151 +240,176 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return currentTime
   }
 
-  private initTimerEvents() {
-    // The timer fires every 16ms for a smooth progress animation
-    this.subscriptions.push(
-      this.timer.on('tick', () => {
-        if (!this.isSeeking()) {
-          const currentTime = this.updateProgress()
-          this.emit('timeupdate', currentTime)
-          this.emit('audioprocess', currentTime)
+  private initReactiveAnimation() {
+    let rafId: number | null = null
 
-          // Pause audio when it reaches the stopAtPosition
-          if (this.stopAtPosition != null && this.isPlaying() && currentTime >= this.stopAtPosition) {
-            this.pause()
+    // Animation loop runs automatically while playing
+    const cleanup = effect(() => {
+      const isPlaying = this.wavesurferState.isPlaying.value
+
+      // Cleanup previous animation frame
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+        rafId = null
+      }
+
+      if (isPlaying) {
+        // Start animation loop
+        const animate = () => {
+          if (!this.isSeeking()) {
+            const currentTime = this.getCurrentTime()
+
+            // Update reactive state - this triggers cursor/progress updates automatically
+            this.wavesurferActions.setCurrentTime(currentTime)
+
+            // Pause audio when it reaches the stopAtPosition
+            if (this.stopAtPosition != null && currentTime >= this.stopAtPosition) {
+              this.pause()
+              return
+            }
           }
+
+          // Continue loop
+          rafId = requestAnimationFrame(animate)
         }
-      }),
-    )
+
+        animate()
+      }
+    }, [this.wavesurferState.isPlaying])
+
+    // Store cleanup that also cancels any pending animation frame
+    this.reactiveCleanups.push(() => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+        rafId = null
+      }
+      cleanup()
+    })
   }
 
   private initPlayerEvents() {
+    // Initial play state
     if (this.isPlaying()) {
       this.emit('play')
-      this.timer.start()
     }
 
+    // Clear stopAtPosition when playback stops (reactive)
     this.mediaSubscriptions.push(
-      this.onMediaEvent('timeupdate', () => {
-        const currentTime = this.updateProgress()
-        this.emit('timeupdate', currentTime)
-      }),
-
-      this.onMediaEvent('play', () => {
-        this.emit('play')
-        this.timer.start()
-      }),
-
-      this.onMediaEvent('pause', () => {
-        this.emit('pause')
-        this.timer.stop()
-        this.stopAtPosition = null
-      }),
-
-      this.onMediaEvent('emptied', () => {
-        this.timer.stop()
-        this.stopAtPosition = null
-      }),
-
-      this.onMediaEvent('ended', () => {
-        this.emit('timeupdate', this.getDuration())
-        this.emit('finish')
-        this.stopAtPosition = null
-      }),
-
-      this.onMediaEvent('seeking', () => {
-        this.emit('seeking', this.getCurrentTime())
-      }),
-
-      this.onMediaEvent('error', () => {
-        this.emit('error', (this.getMediaElement().error ?? new Error('Media error')) as Error)
-        this.stopAtPosition = null
-      }),
+      effect(() => {
+        const isPlaying = this.wavesurferState.isPlaying.value
+        if (!isPlaying) {
+          this.stopAtPosition = null
+        }
+      }, [this.wavesurferState.isPlaying]),
     )
   }
 
   private initRendererEvents() {
-    this.subscriptions.push(
-      // Seek on click
-      this.renderer.on('click', (relativeX, relativeY) => {
-        if (this.options.interact) {
-          this.seekTo(relativeX)
-          this.emit('interaction', relativeX * this.getDuration())
-          this.emit('click', relativeX, relativeY)
+    // Seek on click (reactive)
+    this.reactiveCleanups.push(
+      effect(() => {
+        const click = this.renderer.click$.value
+        if (click && this.options.interact) {
+          this.seekTo(click.x)
+          this.emit('interaction', click.x * this.getDuration())
+          this.emit('click', click.x, click.y)
         }
-      }),
-
-      // Double click
-      this.renderer.on('dblclick', (relativeX, relativeY) => {
-        this.emit('dblclick', relativeX, relativeY)
-      }),
-
-      // Scroll
-      this.renderer.on('scroll', (startX, endX, scrollLeft, scrollRight) => {
-        const duration = this.getDuration()
-        this.emit('scroll', startX * duration, endX * duration, scrollLeft, scrollRight)
-      }),
-
-      // Redraw
-      this.renderer.on('render', () => {
-        this.emit('redraw')
-      }),
-
-      // RedrawComplete
-      this.renderer.on('rendered', () => {
-        this.emit('redrawcomplete')
-      }),
-
-      // DragStart
-      this.renderer.on('dragstart', (relativeX) => {
-        this.emit('dragstart', relativeX)
-      }),
-
-      // DragEnd
-      this.renderer.on('dragend', (relativeX) => {
-        this.emit('dragend', relativeX)
-      }),
-
-      // Resize
-      this.renderer.on('resize', () => {
-        this.emit('resize');
-      })
+      }, [this.renderer.click$]),
     )
 
-    // Drag
+    // Double click (reactive)
+    this.reactiveCleanups.push(
+      effect(() => {
+        const dblclick = this.renderer.dblclick$.value
+        if (dblclick) {
+          this.emit('dblclick', dblclick.x, dblclick.y)
+        }
+      }, [this.renderer.dblclick$]),
+    )
+
+    // Scroll (reactive)
+    if (this.renderer.scrollStream) {
+      this.reactiveCleanups.push(
+        effect(() => {
+          const { startX, endX } = this.renderer.scrollStream!.percentages.value
+          const { left, right } = this.renderer.scrollStream!.bounds.value
+          const duration = this.getDuration()
+          this.emit('scroll', startX * duration, endX * duration, left, right)
+        }, [this.renderer.scrollStream.percentages]),
+      )
+    }
+
+    // Redraw (reactive)
+    this.reactiveCleanups.push(
+      effect(() => {
+        if (this.renderer.render$.value > 0) {
+          this.emit('redraw')
+        }
+      }, [this.renderer.render$]),
+    )
+
+    // RedrawComplete (reactive)
+    this.reactiveCleanups.push(
+      effect(() => {
+        if (this.renderer.rendered$.value > 0) {
+          this.emit('redrawcomplete')
+        }
+      }, [this.renderer.rendered$]),
+    )
+
+    // Resize (reactive)
+    this.reactiveCleanups.push(
+      effect(() => {
+        if (this.renderer.resize$.value > 0) {
+          this.emit('resize')
+        }
+      }, [this.renderer.resize$]),
+    )
+
+    // Drag (reactive)
     {
       let debounce: ReturnType<typeof setTimeout> | undefined
-      const unsubscribeDrag = this.renderer.on('drag', (relativeX) => {
-        if (!this.options.interact) return
+      const cleanup = effect(() => {
+        const drag = this.renderer.drag$.value
+        if (!drag || !this.options.interact) return
 
-        // Update the visual position
-        this.renderer.renderProgress(relativeX)
+        const { x: relativeX, type } = drag
 
-        // Set the audio position with a debounce
-        clearTimeout(debounce)
-        let debounceTime = 0
+        // Emit drag events
+        if (type === 'start') {
+          this.emit('dragstart', relativeX)
+        } else if (type === 'end') {
+          this.emit('dragend', relativeX)
+        } else if (type === 'move') {
+          // Update the visual position
+          this.renderer.renderProgress(relativeX)
 
-        const dragToSeek = this.options.dragToSeek
-        if (this.isPlaying()) {
-          debounceTime = 0
-        } else if (dragToSeek === true) {
-          debounceTime = 200
-        } else if (dragToSeek && typeof dragToSeek === 'object') {
-          debounceTime = (dragToSeek as { debounceTime: number }).debounceTime ?? 200
+          // Set the audio position with a debounce
+          clearTimeout(debounce)
+          let debounceTime = 0
+
+          const dragToSeek = this.options.dragToSeek
+          if (this.isPlaying()) {
+            debounceTime = 0
+          } else if (dragToSeek === true) {
+            debounceTime = 200
+          } else if (dragToSeek && typeof dragToSeek === 'object') {
+            debounceTime = (dragToSeek as { debounceTime: number }).debounceTime ?? 200
+          }
+
+          debounce = setTimeout(() => {
+            this.seekTo(relativeX)
+          }, debounceTime)
+
+          this.emit('interaction', relativeX * this.getDuration())
+          this.emit('drag', relativeX)
         }
-
-        debounce = setTimeout(() => {
-          this.seekTo(relativeX)
-        }, debounceTime)
-
-        this.emit('interaction', relativeX * this.getDuration())
-        this.emit('drag', relativeX)
-      })
+      }, [this.renderer.drag$])
 
       // Clear debounce timeout on destroy
-      this.subscriptions.push(() => {
+      this.reactiveCleanups.push(() => {
         clearTimeout(debounce)
-        unsubscribeDrag()
+        cleanup()
       })
     }
   }
@@ -430,6 +478,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.renderer.getWrapper()
   }
 
+  /** For plugins only: get the renderer instance */
+  public getRenderer() {
+    return this.renderer
+  }
+
   /** For plugins only: get the scroll container client width */
   public getWidth(): number {
     return this.renderer.getWidth()
@@ -457,6 +510,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+    // Prevent load after destroy
+    if (this.isDestroyed) {
+      throw new Error('Cannot call load() on a destroyed WaveSurfer instance. Please create a new instance instead.')
+    }
+
     this.emit('load', url)
 
     if (!this.options.media && this.isPlaying()) this.pause()
@@ -486,15 +544,23 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // Set the mediaelement source
     this.setSrc(url, blob)
 
-    // Wait for the audio duration
+    // Wait for the audio duration (reactive)
     const audioDuration = await new Promise<number>((resolve) => {
       const staticDuration = duration || this.getDuration()
       if (staticDuration) {
         resolve(staticDuration)
       } else {
-        this.mediaSubscriptions.push(
-          this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }),
-        )
+        // Watch duration signal until it's set
+        let cleanup: (() => void) | undefined
+        // eslint-disable-next-line prefer-const
+        cleanup = effect(() => {
+          const dur = this.wavesurferState.duration.value
+          if (dur > 0) {
+            cleanup?.()
+            resolve(dur)
+          }
+        }, [this.wavesurferState.duration])
+        this.mediaSubscriptions.push(cleanup)
       }
     })
 
@@ -600,7 +666,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   public setTime(time: number) {
     this.stopAtPosition = null
     super.setTime(time)
-    this.updateProgress(time)
+    // Update reactive state - this triggers cursor/progress updates automatically
+    this.wavesurferActions.setCurrentTime(time)
     this.emit('timeupdate', time)
   }
 
@@ -652,8 +719,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   /** Set HTML media element */
   public setMediaElement(element: HTMLMediaElement) {
     this.unsubscribePlayerEvents()
+    // Clean up old media event bridge
+    this.mediaEventBridgeCleanup?.()
     super.setMediaElement(element)
     this.initPlayerEvents()
+    // Set up new media event bridge
+    this.mediaEventBridgeCleanup = bridgeMediaEvents(this.getMediaElement(), this.wavesurferActions)
   }
 
   /**
@@ -677,12 +748,14 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   /** Unmount wavesurfer */
   public destroy() {
     this.emit('destroy')
+    this.isDestroyed = true
     this.abortController?.abort()
     this.plugins.forEach((plugin) => plugin.destroy())
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.unsubscribePlayerEvents()
-    this.timer.destroy()
+    this.mediaEventBridgeCleanup?.()
     this.renderer.destroy()
+    this.reactiveCleanups.forEach((cleanup) => cleanup())
     super.destroy()
   }
 }

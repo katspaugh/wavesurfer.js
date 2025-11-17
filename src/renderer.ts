@@ -2,6 +2,14 @@ import { makeDraggable } from './draggable.js'
 import EventEmitter from './event-emitter.js'
 import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
+import { RenderScheduler, type RenderPriority } from './reactive/render-scheduler.js'
+import { createScrollStream, type ScrollStream } from './reactive/scroll-stream.js'
+import { signal, type Signal, type WritableSignal, effect } from './reactive/store.js'
+import { CanvasRenderer } from './renderer/canvas-renderer.js'
+import type { WaveSurferState } from './state/wavesurfer-state.js'
+import { createCursorComponent, type CursorProps } from './components/cursor.js'
+import { createProgressComponent, type ProgressProps } from './components/progress.js'
+import type { Component } from './components/component.js'
 
 type ChannelData = utils.ChannelData
 
@@ -35,12 +43,73 @@ class Renderer extends EventEmitter<RendererEvents> {
   private subscriptions: (() => void)[] = []
   private unsubscribeOnScroll: (() => void)[] = []
   private dragUnsubscribe: (() => void) | null = null
+  private renderScheduler = new RenderScheduler()
+  private lastProgressState: { progress: number; isPlaying: boolean } | null = null
+  public scrollStream: ScrollStream | null = null
+  private canvasRenderer: CanvasRenderer
+  private wavesurferState: WaveSurferState | null = null
+  private reactiveCursor: Component<CursorProps> | null = null
+  private reactiveProgress: Component<ProgressProps> | null = null
+  private reactiveCleanups: Array<() => void> = []
 
-  constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
+  // Public reactive streams (expose events as signals)
+  public readonly click$: Signal<{ x: number; y: number } | null>
+  public readonly dblclick$: Signal<{ x: number; y: number } | null>
+  public readonly drag$: Signal<{ x: number; type: 'start' | 'move' | 'end' } | null>
+  public readonly resize$: Signal<number>
+  public readonly render$: Signal<number>
+  public readonly rendered$: Signal<number>
+  // Note: scroll$ exposed via scrollStream property
+
+  // Internal writable versions
+  private readonly _click$: WritableSignal<{ x: number; y: number } | null>
+  private readonly _dblclick$: WritableSignal<{ x: number; y: number } | null>
+  private readonly _drag$: WritableSignal<{ x: number; type: 'start' | 'move' | 'end' } | null>
+  private readonly _resize$: WritableSignal<number>
+  private readonly _render$: WritableSignal<number>
+  private readonly _rendered$: WritableSignal<number>
+
+  constructor(options: WaveSurferOptions, state?: WaveSurferState, audioElement?: HTMLElement) {
     super()
 
     this.subscriptions = []
     this.options = options
+    this.wavesurferState = state || null
+
+    // Initialize canvas renderer for waveform rendering
+    this.canvasRenderer = new CanvasRenderer({
+      width: 0,
+      height: 0,
+      pixelRatio: this.getPixelRatio(),
+      waveColor: options.waveColor,
+      progressColor: options.progressColor,
+      renderFunction: options.renderFunction,
+      barWidth: options.barWidth,
+      barGap: options.barGap,
+      barRadius: options.barRadius,
+      barHeight: options.barHeight,
+      barAlign: options.barAlign,
+      minPxPerSec: options.minPxPerSec,
+      fillParent: options.fillParent,
+      normalize: options.normalize,
+      maxPeak: options.maxPeak,
+    })
+
+    // Initialize reactive streams
+    this._click$ = signal<{ x: number; y: number } | null>(null)
+    this._dblclick$ = signal<{ x: number; y: number } | null>(null)
+    this._drag$ = signal<{ x: number; type: 'start' | 'move' | 'end' } | null>(null)
+    this._resize$ = signal<number>(0)
+    this._render$ = signal<number>(0)
+    this._rendered$ = signal<number>(0)
+
+    // Expose as readonly
+    this.click$ = this._click$
+    this.dblclick$ = this._dblclick$
+    this.drag$ = this._drag$
+    this.resize$ = this._resize$
+    this.render$ = this._render$
+    this.rendered$ = this._rendered$
 
     const parent = this.parentFromOptionsContainer(options.container)
     this.parent = parent
@@ -54,11 +123,77 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.progressWrapper = shadow.querySelector('.progress') as HTMLElement
     this.cursor = shadow.querySelector('.cursor') as HTMLElement
 
+    // Create reactive cursor/progress components if state is provided
+    if (this.wavesurferState) {
+      this.setupReactiveCursorProgress()
+    }
+
     if (audioElement) {
       shadow.appendChild(audioElement)
     }
 
     this.initEvents()
+  }
+
+  private setupReactiveCursorProgress(): void {
+    if (!this.wavesurferState) return
+
+    // Create cursor component
+    this.reactiveCursor = createCursorComponent()
+    const cursorElement = this.reactiveCursor.render({
+      position: this.wavesurferState.progressPercent.value,
+      color:
+        this.convertColorToString(this.options.cursorColor) ||
+        this.convertColorToString(this.options.progressColor) ||
+        '#333',
+      width: this.options.cursorWidth ?? 2,
+      height: '100%',
+    })
+    this.wrapper.appendChild(cursorElement)
+
+    // Create progress component
+    this.reactiveProgress = createProgressComponent()
+    const progressElement = this.reactiveProgress.render({
+      progress: this.wavesurferState.progressPercent.value,
+      height: '100%',
+    })
+    this.wrapper.appendChild(progressElement)
+
+    // Hide old cursor/progress elements
+    this.cursor.style.display = 'none'
+    this.progressWrapper.style.display = 'none'
+
+    // Setup reactive effects
+    const cleanup = effect(() => {
+      const position = this.wavesurferState!.progressPercent.value
+      const isPlaying = this.wavesurferState!.isPlaying.value
+
+      // During playback, we're already inside a RAF callback from the animation loop,
+      // so render immediately without scheduling to avoid double-RAF batching.
+      // When paused, use normal scheduling for batching efficiency.
+      if (isPlaying) {
+        // Render immediately - we're already in animation frame
+        this.reactiveCursor?.update?.({ position })
+        this.reactiveProgress?.update?.({ progress: position })
+
+        // Update waveform clip-path
+        const percents = position * 100
+        this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+      } else {
+        // When paused, batch updates with RAF for efficiency
+        this.renderScheduler.scheduleRender(() => {
+          this.reactiveCursor?.update?.({ position })
+          this.reactiveProgress?.update?.({ progress: position })
+
+          const percents = position * 100
+          this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+        })
+      }
+
+      // Note: Scrolling is handled in renderProgress for better control
+    }, [this.wavesurferState.progressPercent, this.wavesurferState.isPlaying])
+
+    this.reactiveCleanups.push(cleanup)
   }
 
   private parentFromOptionsContainer(container: WaveSurferOptions['container']) {
@@ -81,14 +216,14 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.wrapper.addEventListener('click', (e) => {
       const rect = this.wrapper.getBoundingClientRect()
       const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
-      this.emit('click', x, y)
+      this._click$.set({ x, y })
     })
 
     // Add a double click listener
     this.wrapper.addEventListener('dblclick', (e) => {
       const rect = this.wrapper.getBoundingClientRect()
       const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
-      this.emit('dblclick', x, y)
+      this._dblclick$.set({ x, y })
     })
 
     // Drag
@@ -96,16 +231,8 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.initDrag()
     }
 
-    // Add a scroll listener
-    this.scrollContainer.addEventListener('scroll', () => {
-      const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
-      const { startX, endX } = utils.calculateScrollPercentages({
-        scrollLeft,
-        scrollWidth,
-        clientWidth,
-      })
-      this.emit('scroll', startX, endX, scrollLeft, scrollLeft + clientWidth)
-    })
+    // Add reactive scroll stream
+    this.scrollStream = createScrollStream(this.scrollContainer)
 
     // Re-render the waveform on container resize
     if (typeof ResizeObserver === 'function') {
@@ -124,7 +251,8 @@ class Renderer extends EventEmitter<RendererEvents> {
     if (width === this.lastContainerWidth && this.options.height !== 'auto') return
     this.lastContainerWidth = width
     this.reRender()
-    this.emit('resize')
+    // Update stream
+    this._resize$.set(this._resize$.value + 1)
   }
 
   private initDrag() {
@@ -136,19 +264,22 @@ class Renderer extends EventEmitter<RendererEvents> {
       // On drag
       (_, __, x) => {
         const width = this.wrapper.getBoundingClientRect().width
-        this.emit('drag', utils.clampToUnit(x / width))
+        const relX = utils.clampToUnit(x / width)
+        this._drag$.set({ x: relX, type: 'move' })
       },
       // On start drag
       (x) => {
         this.isDragging = true
         const width = this.wrapper.getBoundingClientRect().width
-        this.emit('dragstart', utils.clampToUnit(x / width))
+        const relX = utils.clampToUnit(x / width)
+        this._drag$.set({ x: relX, type: 'start' })
       },
       // On end drag
       (x) => {
         this.isDragging = false
         const width = this.wrapper.getBoundingClientRect().width
-        this.emit('dragend', utils.clampToUnit(x / width))
+        const relX = utils.clampToUnit(x / width)
+        this._drag$.set({ x: relX, type: 'end' })
       },
     )
 
@@ -255,6 +386,15 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     this.options = options
 
+    // Update reactive cursor/progress if they exist
+    if (this.reactiveCursor) {
+      const cursorColor =
+        this.convertColorToString(options.cursorColor) || this.convertColorToString(options.progressColor) || '#333'
+      const cursorWidth = options.cursorWidth ?? 2
+      this.reactiveCursor.update?.({ color: cursorColor, width: cursorWidth })
+    }
+    // Progress color is handled by canvas rendering, not by the progress component
+
     // Re-render the waveform
     this.reRender()
   }
@@ -290,6 +430,23 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
     this.unsubscribeOnScroll?.forEach((unsubscribe) => unsubscribe())
     this.unsubscribeOnScroll = []
+
+    // Clean up reactive components
+    this.reactiveCleanups.forEach((cleanup) => cleanup())
+    this.reactiveCleanups = []
+    this.reactiveCursor?.destroy?.()
+    this.reactiveProgress?.destroy?.()
+    this.reactiveCursor = null
+    this.reactiveProgress = null
+
+    // Cleanup scroll stream
+    if (this.scrollStream) {
+      this.scrollStream.cleanup()
+      this.scrollStream = null
+    }
+
+    // Cancel any pending renders
+    this.renderScheduler.cancelRender()
   }
 
   private createDelay(delayMs = 10): () => Promise<void> {
@@ -343,105 +500,16 @@ class Renderer extends EventEmitter<RendererEvents> {
     return utils.resolveColorValue(color, this.getPixelRatio())
   }
 
+  private convertColorToString(color?: WaveSurferOptions['waveColor']): string | undefined {
+    if (!color) return undefined
+    if (typeof color === 'string') return color
+    if (Array.isArray(color)) return color[0] || undefined
+    // CanvasGradient cannot be used for DOM styles
+    return undefined
+  }
+
   private getPixelRatio(): number {
     return utils.getPixelRatio(window.devicePixelRatio)
-  }
-
-  private renderBarWaveform(
-    channelData: ChannelData,
-    options: WaveSurferOptions,
-    ctx: CanvasRenderingContext2D,
-    vScale: number,
-  ) {
-    const { width, height } = ctx.canvas
-    const { halfHeight, barWidth, barRadius, barIndexScale, barSpacing } = utils.calculateBarRenderConfig({
-      width,
-      height,
-      length: (channelData[0] || []).length,
-      options,
-      pixelRatio: this.getPixelRatio(),
-    })
-
-    const segments = utils.calculateBarSegments({
-      channelData,
-      barIndexScale,
-      barSpacing,
-      barWidth,
-      halfHeight,
-      vScale,
-      canvasHeight: height,
-      barAlign: options.barAlign,
-    })
-
-    ctx.beginPath()
-
-    for (const segment of segments) {
-      if (barRadius && 'roundRect' in ctx) {
-        ;(
-          ctx as CanvasRenderingContext2D & {
-            roundRect: (
-              x: number,
-              y: number,
-              width: number,
-              height: number,
-              radii?: number | DOMPointInit | DOMPointInit[],
-            ) => void
-          }
-        ).roundRect(segment.x, segment.y, segment.width, segment.height, barRadius)
-      } else {
-        ctx.rect(segment.x, segment.y, segment.width, segment.height)
-      }
-    }
-
-    ctx.fill()
-    ctx.closePath()
-  }
-
-  private renderLineWaveform(
-    channelData: ChannelData,
-    _options: WaveSurferOptions,
-    ctx: CanvasRenderingContext2D,
-    vScale: number,
-  ) {
-    const { width, height } = ctx.canvas
-    const paths = utils.calculateLinePaths({ channelData, width, height, vScale })
-
-    ctx.beginPath()
-
-    for (const path of paths) {
-      if (!path.length) continue
-      ctx.moveTo(path[0].x, path[0].y)
-      for (let i = 1; i < path.length; i++) {
-        const point = path[i]
-        ctx.lineTo(point.x, point.y)
-      }
-    }
-
-    ctx.fill()
-    ctx.closePath()
-  }
-
-  private renderWaveform(channelData: ChannelData, options: WaveSurferOptions, ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = this.convertColorValues(options.waveColor)
-
-    if (options.renderFunction) {
-      options.renderFunction(channelData, ctx)
-      return
-    }
-
-    const vScale = utils.calculateVerticalScale({
-      channelData,
-      barHeight: options.barHeight,
-      normalize: options.normalize,
-      maxPeak: options.maxPeak,
-    })
-
-    if (utils.shouldRenderBars(options)) {
-      this.renderBarWaveform(channelData, options, ctx, vScale)
-      return
-    }
-
-    this.renderLineWaveform(channelData, options, ctx, vScale)
   }
 
   private renderSingleCanvas(
@@ -453,36 +521,20 @@ class Renderer extends EventEmitter<RendererEvents> {
     canvasContainer: HTMLElement,
     progressContainer: HTMLElement,
   ) {
-    const pixelRatio = this.getPixelRatio()
-    const canvas = document.createElement('canvas')
-    canvas.width = Math.round(width * pixelRatio)
-    canvas.height = Math.round(height * pixelRatio)
-    canvas.style.width = `${width}px`
-    canvas.style.height = `${height}px`
-    canvas.style.left = `${Math.round(offset)}px`
-    canvasContainer.appendChild(canvas)
-
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-
-    if (options.renderFunction) {
-      ctx.fillStyle = this.convertColorValues(options.waveColor)
-      options.renderFunction(data, ctx)
-    } else {
-      this.renderWaveform(data, options, ctx)
-    }
-
-    // Draw a progress canvas
-    if (canvas.width > 0 && canvas.height > 0) {
-      const progressCanvas = canvas.cloneNode() as HTMLCanvasElement
-      const progressCtx = progressCanvas.getContext('2d') as CanvasRenderingContext2D
-      progressCtx.drawImage(canvas, 0, 0)
-      // Set the composition method to draw only where the waveform is drawn
-      progressCtx.globalCompositeOperation = 'source-in'
-      progressCtx.fillStyle = this.convertColorValues(options.progressColor as WaveSurferOptions['waveColor'])
-      // This rectangle acts as a mask thanks to the composition method
-      progressCtx.fillRect(0, 0, canvas.width, canvas.height)
-      progressContainer.appendChild(progressCanvas)
-    }
+    // Delegate to CanvasRenderer
+    this.canvasRenderer.renderSingleCanvas(
+      data,
+      {
+        ...options,
+        width,
+        pixelRatio: this.getPixelRatio(),
+      },
+      width,
+      height,
+      offset,
+      canvasContainer,
+      progressContainer,
+    )
   }
 
   private renderMultiCanvas(
@@ -544,15 +596,19 @@ class Renderer extends EventEmitter<RendererEvents> {
       scrollLeft: this.scrollContainer.scrollLeft,
       totalWidth,
       numCanvases,
+      singleCanvasWidth,
+      clientWidth,
     })
     initialRange.forEach((index) => draw(index))
 
-    // Subscribe to the scroll event to draw additional canvases
-    if (numCanvases > 1) {
-      const unsubscribe = this.on('scroll', () => {
+    // Subscribe to the scroll stream to draw additional canvases
+    if (numCanvases > 1 && this.scrollStream) {
+      const unsubscribe = this.scrollStream.scrollData.subscribe(() => {
         const { scrollLeft } = this.scrollContainer
         clearCanvases()
-        utils.getLazyRenderRange({ scrollLeft, totalWidth, numCanvases }).forEach((index) => draw(index))
+        utils
+          .getLazyRenderRange({ scrollLeft, totalWidth, numCanvases, singleCanvasWidth, clientWidth })
+          .forEach((index) => draw(index))
       })
 
       this.unsubscribeOnScroll.push(unsubscribe)
@@ -577,7 +633,9 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // A container for progress canvases
     const progressContainer = canvasContainer.cloneNode() as HTMLElement
-    this.progressWrapper.appendChild(progressContainer)
+    // Append to reactive progress component's inner div if it exists, otherwise use old progressWrapper
+    const progressParent = this.reactiveProgress?.element?.querySelector('div') || this.progressWrapper
+    progressParent.appendChild(progressContainer)
 
     // Render the waveform
     this.renderMultiCanvas(channelData, options, width, height, canvasContainer, progressContainer)
@@ -590,7 +648,9 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Clear the canvases
     this.canvasWrapper.innerHTML = ''
-    this.progressWrapper.innerHTML = ''
+    // Clear reactive progress component's inner div if it exists, otherwise clear old progressWrapper
+    const progressParent = this.reactiveProgress?.element?.querySelector('div') || this.progressWrapper
+    progressParent.innerHTML = ''
 
     // Width
     if (this.options.width != null) {
@@ -623,7 +683,8 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     this.audioData = audioData
 
-    this.emit('render')
+    // Update stream
+    this._render$.set(this._render$.value + 1)
 
     // Render the waveform
     if (this.options.splitChannels) {
@@ -640,7 +701,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
 
     // Must be emitted asynchronously for backward compatibility
-    Promise.resolve().then(() => this.emit('rendered'))
+    Promise.resolve().then(() => {
+      // Update stream
+      this._rendered$.set(this._rendered$.value + 1)
+    })
   }
 
   reRender() {
@@ -696,32 +760,82 @@ class Renderer extends EventEmitter<RendererEvents> {
         this.scrollContainer.scrollLeft += center
       }
     }
-
-    // Emit the scroll event
-    {
-      const newScroll = this.scrollContainer.scrollLeft
-      const { startX, endX } = utils.calculateScrollPercentages({
-        scrollLeft: newScroll,
-        scrollWidth,
-        clientWidth,
-      })
-      this.emit('scroll', startX, endX, newScroll, newScroll + clientWidth)
-    }
   }
 
-  renderProgress(progress: number, isPlaying?: boolean) {
+  /**
+   * Render progress indicator (cursor and waveform mask)
+   * Uses batching to prevent redundant renders in the same frame
+   *
+   * @param progress - Progress value (0-1)
+   * @param isPlaying - Whether audio is currently playing
+   * @param priority - Render priority: 'high' for immediate updates (cursor during playback), 'normal' for batched updates
+   */
+  renderProgress(progress: number, isPlaying?: boolean, priority: RenderPriority = 'normal') {
     if (isNaN(progress)) return
-    const percents = progress * 100
-    this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
-    this.progressWrapper.style.width = `${percents}%`
-    this.cursor.style.left = `${percents}%`
-    this.cursor.style.transform = this.options.cursorWidth
-      ? `translateX(-${progress * this.options.cursorWidth}px)`
-      : ''
 
-    if (this.isScrollable && this.options.autoScroll) {
-      this.scrollIntoView(progress, isPlaying)
+    // If using reactive components, they handle cursor/progress automatically
+    // We also need to handle scrolling here for manual renderProgress calls (e.g., setTime)
+    if (this.reactiveCursor && this.reactiveProgress) {
+      this.lastProgressState = { progress, isPlaying: isPlaying || false }
+
+      // Always handle scrolling for explicit renderProgress calls
+      // This ensures scroll works for both playing and paused states
+      if (this.isScrollable && this.options.autoScroll) {
+        this.scrollIntoView(progress, isPlaying || false)
+      }
+      return
     }
+
+    // Legacy rendering for backward compatibility (when no state provided)
+    this.lastProgressState = { progress, isPlaying: isPlaying || false }
+
+    this.renderScheduler.scheduleRender(() => {
+      if (!this.lastProgressState) return
+
+      const { progress: p, isPlaying: playing } = this.lastProgressState
+      const percents = p * 100
+
+      // Update DOM
+      this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+      this.progressWrapper.style.width = `${percents}%`
+      this.cursor.style.left = `${percents}%`
+      this.cursor.style.transform = this.options.cursorWidth ? `translateX(-${p * this.options.cursorWidth}px)` : ''
+
+      if (this.isScrollable && this.options.autoScroll) {
+        this.scrollIntoView(p, playing)
+      }
+    }, priority)
+  }
+
+  /**
+   * Force immediate progress render, bypassing batching
+   * Useful for tests or when synchronous rendering is required
+   */
+  flushProgressRender() {
+    if (!this.lastProgressState) return
+
+    const { progress, isPlaying } = this.lastProgressState
+    const percents = progress * 100
+
+    this.renderScheduler.flushRender(() => {
+      // If using reactive components, they handle cursor/progress
+      if (this.reactiveCursor && this.reactiveProgress) {
+        this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+        return
+      }
+
+      // Legacy rendering
+      this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+      this.progressWrapper.style.width = `${percents}%`
+      this.cursor.style.left = `${percents}%`
+      this.cursor.style.transform = this.options.cursorWidth
+        ? `translateX(-${progress * this.options.cursorWidth}px)`
+        : ''
+
+      if (this.isScrollable && this.options.autoScroll) {
+        this.scrollIntoView(progress, isPlaying)
+      }
+    })
   }
 
   async exportImage(format: string, quality: number, type: 'dataURL' | 'blob'): Promise<string[] | Blob[]> {

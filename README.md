@@ -8,6 +8,18 @@
 
 **Gold sponsor 💖** [Closed Caption Creator](https://www.closedcaptioncreator.com)
 
+## 🎉 What's New in v8.0.0
+
+Version 8.0.0 introduces a **complete internal reactive architecture** while maintaining **100% backward compatibility**:
+
+- ✅ **Reactive State Management** - Automatic dependency tracking with signals
+- ✅ **Zero Memory Leaks** - Automatic cleanup of subscriptions
+- ✅ **Better Performance** - Declarative rendering reduces unnecessary updates
+- ✅ **423 Tests Passing** - Comprehensive test coverage with memory leak detection
+- ✅ **Fully Backward Compatible** - All existing code works without changes
+
+[Read the full CHANGELOG](./CHANGELOG.md) for details on what's new.
+
 # Table of contents
 
 1. [Getting started](#getting-started)
@@ -32,7 +44,7 @@ import WaveSurfer from 'wavesurfer.js'
 
 Alternatively, insert a UMD script tag which exports the library as a global `WaveSurfer` variable:
 ```html
-<script src="https://unpkg.com/wavesurfer.js@7"></script>
+<script src="https://unpkg.com/wavesurfer.js@8"></script>
 ```
 
 Create a wavesurfer instance and pass various [options](http://wavesurfer.xyz/docs/options):
