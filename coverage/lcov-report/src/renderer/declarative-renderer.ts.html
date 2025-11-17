@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.53% </span>
+                <span class="strong">71.94% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>98/137</span>
+                <span class='fraction'>100/139</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">48.68% </span>
+                <span class="strong">50.89% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>74/152</span>
+                <span class='fraction'>85/167</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.21% </span>
+                <span class="strong">71.64% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>94/132</span>
+                <span class='fraction'>96/134</span>
             </div>
         
             
@@ -448,7 +448,12 @@
 <a name='L383'></a><a href='#L383'>383</a>
 <a name='L384'></a><a href='#L384'>384</a>
 <a name='L385'></a><a href='#L385'>385</a>
-<a name='L386'></a><a href='#L386'>386</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L386'></a><a href='#L386'>386</a>
+<a name='L387'></a><a href='#L387'>387</a>
+<a name='L388'></a><a href='#L388'>388</a>
+<a name='L389'></a><a href='#L389'>389</a>
+<a name='L390'></a><a href='#L390'>390</a>
+<a name='L391'></a><a href='#L391'>391</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -613,24 +618,29 @@
 <span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-yes">69x</span>
 <span class="cline-any cline-yes">69x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">69x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">69x</span>
-<span class="cline-any cline-yes">17x</span>
-<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">63x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -997,27 +1007,32 @@ export class DeclarativeRenderer {
     })
     this.wrapper.appendChild(progressElement)
 &nbsp;
-    // Reactive effect: Batch cursor and progress updates
-    // Multiple state changes in the same frame result in a single DOM update
+    // Reactive effect: Update cursor and progress
     const renderCleanup = effect(() =&gt; {
       const position = this.state.progressPercent.value
       const isPlaying = this.state.isPlaying.value
 &nbsp;
-      // Use high priority during playback to avoid double-batching with animation loop
-      const priority = isPlaying ? 'high' : 'normal'
-&nbsp;
-      // Schedule update - high priority during playback for smooth animation
-      this.scheduler.scheduleRender(() =&gt; {
+      // During playback, we're already inside a RAF callback from the animation loop,
+      // so render immediately without scheduling to avoid double-RAF batching.
+      // When paused, use normal scheduling for batching efficiency.
+      if (isPlaying) {
+        // Render immediately - we're already in animation frame
         this.cursor<span class="branch-0 cbranch-no" title="branch not covered" >?.u</span>pdate<span class="branch-0 cbranch-no" title="branch not covered" >?.({</span> position })
         this.progress<span class="branch-0 cbranch-no" title="branch not covered" >?.u</span>pdate<span class="branch-0 cbranch-no" title="branch not covered" >?.({</span> progress: position })
 &nbsp;
         // Handle auto-scroll during playback
-        if ((this.options.autoScroll || this.options.autoCenter) &amp;&amp; isPlaying) {
+        if (this.options.autoScroll || this.options.autoCenter) {
           const currentTime = this.state.currentTime.value
           const duration = this.state.duration.value
           this.handleAutoScroll(currentTime, duration)
         }
-      }, priority)
+      } else {
+        // When paused, batch updates with RAF for efficiency
+        this.scheduler.scheduleRender(() =&gt; {
+          this.cursor<span class="branch-0 cbranch-no" title="branch not covered" >?.u</span>pdate<span class="branch-0 cbranch-no" title="branch not covered" >?.({</span> position })
+          this.progress<span class="branch-0 cbranch-no" title="branch not covered" >?.u</span>pdate<span class="branch-0 cbranch-no" title="branch not covered" >?.({</span> progress: position })
+        })
+      }
     }, [this.state.progressPercent, this.state.isPlaying, this.state.currentTime, this.state.duration])
     this.cleanupFunctions.push(renderCleanup)
   }
@@ -1225,7 +1240,7 @@ export class DeclarativeRenderer {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-17T10:19:56.292Z
+                at 2025-11-17T10:41:50.468Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

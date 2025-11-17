@@ -46,6 +46,7 @@ export function createCursorComponent() {
           zIndex: '5',
           top: '0',
           left: `${props.position * 100}%`,
+          transform: `translateX(-${props.width / 2}px)`,
           height: props.height,
           width: `${props.width}px`,
           backgroundColor: props.color,
@@ -63,6 +64,7 @@ export function createCursorComponent() {
       }
       if (props.width !== undefined) {
         element.style.width = `${props.width}px`
+        element.style.transform = `translateX(-${props.width / 2}px)`
       }
       if (props.height !== undefined) {
         element.style.height = props.height

@@ -168,19 +168,29 @@ class Renderer extends EventEmitter<RendererEvents> {
       const position = this.wavesurferState!.progressPercent.value
       const isPlaying = this.wavesurferState!.isPlaying.value
 
-      // Use high priority during playback to avoid double-batching with animation loop
-      const priority = isPlaying ? 'high' : 'normal'
-
-      this.renderScheduler.scheduleRender(() => {
+      // During playback, we're already inside a RAF callback from the animation loop,
+      // so render immediately without scheduling to avoid double-RAF batching.
+      // When paused, use normal scheduling for batching efficiency.
+      if (isPlaying) {
+        // Render immediately - we're already in animation frame
         this.reactiveCursor?.update?.({ position })
         this.reactiveProgress?.update?.({ progress: position })
 
         // Update waveform clip-path
         const percents = position * 100
         this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+      } else {
+        // When paused, batch updates with RAF for efficiency
+        this.renderScheduler.scheduleRender(() => {
+          this.reactiveCursor?.update?.({ position })
+          this.reactiveProgress?.update?.({ progress: position })
 
-        // Note: Scrolling is handled in renderProgress for better control
-      }, priority)
+          const percents = position * 100
+          this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+        })
+      }
+
+      // Note: Scrolling is handled in renderProgress for better control
     }, [this.wavesurferState.progressPercent, this.wavesurferState.isPlaying])
 
     this.reactiveCleanups.push(cleanup)

@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.01% </span>
+                <span class="strong">65.27% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>235/356</span>
+                <span class='fraction'>235/360</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">45.09% </span>
+                <span class="strong">41.81% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>92/204</span>
+                <span class='fraction'>92/220</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">68.27% </span>
+                <span class="strong">67.46% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>226/331</span>
+                <span class='fraction'>226/335</span>
             </div>
         
             
@@ -927,7 +927,17 @@
 <a name='L862'></a><a href='#L862'>862</a>
 <a name='L863'></a><a href='#L863'>863</a>
 <a name='L864'></a><a href='#L864'>864</a>
-<a name='L865'></a><a href='#L865'>865</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<a name='L865'></a><a href='#L865'>865</a>
+<a name='L866'></a><a href='#L866'>866</a>
+<a name='L867'></a><a href='#L867'>867</a>
+<a name='L868'></a><a href='#L868'>868</a>
+<a name='L869'></a><a href='#L869'>869</a>
+<a name='L870'></a><a href='#L870'>870</a>
+<a name='L871'></a><a href='#L871'>871</a>
+<a name='L872'></a><a href='#L872'>872</a>
+<a name='L873'></a><a href='#L873'>873</a>
+<a name='L874'></a><a href='#L874'>874</a>
+<a name='L875'></a><a href='#L875'>875</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1098,15 +1108,25 @@
 <span class="cline-any cline-yes">26x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1961,19 +1981,29 @@ class Renderer extends EventEmitter&lt;RendererEvents&gt; {
       const position = this.wavesurferState!.progressPercent.value
       const isPlaying = this.wavesurferState!.isPlaying.value
 &nbsp;
-      // Use high priority during playback to avoid double-batching with animation loop
-      const priority = isPlaying ? <span class="branch-0 cbranch-no" title="branch not covered" >'high' </span>: 'normal'
-&nbsp;
-      this.renderScheduler.scheduleRender(<span class="fstat-no" title="function not covered" >() =</span>&gt; {
+      // During playback, we're already inside a RAF callback from the animation loop,
+      // so render immediately without scheduling to avoid double-RAF batching.
+      // When paused, use normal scheduling for batching efficiency.
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (isPlaying) {
+        // Render immediately - we're already in animation frame
 <span class="cstat-no" title="statement not covered" >        this.reactiveCursor?.update?.({ position })</span>
 <span class="cstat-no" title="statement not covered" >        this.reactiveProgress?.update?.({ progress: position })</span>
 &nbsp;
         // Update waveform clip-path
         const percents = <span class="cstat-no" title="statement not covered" >position * 100</span>
 <span class="cstat-no" title="statement not covered" >        this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`</span>
+      } else {
+        // When paused, batch updates with RAF for efficiency
+        this.renderScheduler.scheduleRender(<span class="fstat-no" title="function not covered" >() =</span>&gt; {
+<span class="cstat-no" title="statement not covered" >          this.reactiveCursor?.update?.({ position })</span>
+<span class="cstat-no" title="statement not covered" >          this.reactiveProgress?.update?.({ progress: position })</span>
 &nbsp;
-        // Note: Scrolling is handled in renderProgress for better control
-      }, priority)
+          const percents = <span class="cstat-no" title="statement not covered" >position * 100</span>
+<span class="cstat-no" title="statement not covered" >          this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`</span>
+        })
+      }
+&nbsp;
+      // Note: Scrolling is handled in renderProgress for better control
     }, [this.wavesurferState.progressPercent, this.wavesurferState.isPlaying])
 &nbsp;
     this.reactiveCleanups.push(cleanup)
@@ -2662,7 +2692,7 @@ export default Renderer
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-17T10:19:56.292Z
+                at 2025-11-17T10:41:50.468Z
             </div>
         <script src="../prettify.js"></script>
         <script>

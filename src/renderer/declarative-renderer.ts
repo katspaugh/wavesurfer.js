@@ -162,27 +162,32 @@ export class DeclarativeRenderer {
     })
     this.wrapper.appendChild(progressElement)
 
-    // Reactive effect: Batch cursor and progress updates
-    // Multiple state changes in the same frame result in a single DOM update
+    // Reactive effect: Update cursor and progress
     const renderCleanup = effect(() => {
       const position = this.state.progressPercent.value
       const isPlaying = this.state.isPlaying.value
 
-      // Use high priority during playback to avoid double-batching with animation loop
-      const priority = isPlaying ? 'high' : 'normal'
-
-      // Schedule update - high priority during playback for smooth animation
-      this.scheduler.scheduleRender(() => {
+      // During playback, we're already inside a RAF callback from the animation loop,
+      // so render immediately without scheduling to avoid double-RAF batching.
+      // When paused, use normal scheduling for batching efficiency.
+      if (isPlaying) {
+        // Render immediately - we're already in animation frame
         this.cursor?.update?.({ position })
         this.progress?.update?.({ progress: position })
 
         // Handle auto-scroll during playback
-        if ((this.options.autoScroll || this.options.autoCenter) && isPlaying) {
+        if (this.options.autoScroll || this.options.autoCenter) {
           const currentTime = this.state.currentTime.value
           const duration = this.state.duration.value
           this.handleAutoScroll(currentTime, duration)
         }
-      }, priority)
+      } else {
+        // When paused, batch updates with RAF for efficiency
+        this.scheduler.scheduleRender(() => {
+          this.cursor?.update?.({ position })
+          this.progress?.update?.({ progress: position })
+        })
+      }
     }, [this.state.progressPercent, this.state.isPlaying, this.state.currentTime, this.state.duration])
     this.cleanupFunctions.push(renderCleanup)
   }
