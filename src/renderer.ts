@@ -763,7 +763,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     // We also need to handle scrolling here for manual renderProgress calls (e.g., setTime)
     if (this.reactiveCursor && this.reactiveProgress) {
       this.lastProgressState = { progress, isPlaying: isPlaying || false }
-      
+
       // Always handle scrolling for explicit renderProgress calls
       // This ensures scroll works for both playing and paused states
       if (this.isScrollable && this.options.autoScroll) {
