@@ -62,13 +62,13 @@ export type RegionParams = {
   start: number
   /** The end position of the region (in seconds) */
   end?: number
-  /** Allow/dissallow dragging the region */
+  /** Allow/disallow dragging the region */
   drag?: boolean
-  /** Allow/dissallow resizing the region */
+  /** Allow/disallow resizing the region */
   resize?: boolean
-  /** Allow/dissallow resizing the start of the region */
+  /** Allow/disallow resizing the start of the region */
   resizeStart?: boolean
-  /** Allow/dissallow resizing the end of the region */
+  /** Allow/disallow resizing the end of the region */
   resizeEnd?: boolean
   /** The color of the region (CSS color) */
   color?: string
