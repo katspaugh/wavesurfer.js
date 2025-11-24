@@ -675,9 +675,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   /** Unmount wavesurfer */
-  public destroy() {
+  public destroy(message?: string) {
     this.emit('destroy')
-    this.abortController?.abort()
+    this.abortController?.abort(message)
     this.plugins.forEach((plugin) => plugin.destroy())
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.unsubscribePlayerEvents()
