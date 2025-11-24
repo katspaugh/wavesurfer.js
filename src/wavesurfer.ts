@@ -674,7 +674,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.renderer.exportImage(format, quality, type)
   }
 
-  /** Unmount wavesurfer */
+  /**
+   * Unmount wavesurfer
+   * @param message Optional message to pass to the abort signal when destroying. This can be used to provide a reason for the abort.
+   */
   public destroy(message?: string) {
     this.emit('destroy')
     this.abortController?.abort(message)
