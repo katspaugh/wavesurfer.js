@@ -354,7 +354,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     vScale: number,
   ) {
     const { width, height } = ctx.canvas
-    const { halfHeight, barWidth, barRadius, barIndexScale, barSpacing } = utils.calculateBarRenderConfig({
+    const { halfHeight, barWidth, barRadius, barIndexScale, barSpacing, barMinHeight } = utils.calculateBarRenderConfig({
       width,
       height,
       length: (channelData[0] || []).length,
@@ -371,6 +371,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       vScale,
       canvasHeight: height,
       barAlign: options.barAlign,
+      barMinHeight,
     })
 
     ctx.beginPath()

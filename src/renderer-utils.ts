@@ -40,6 +40,7 @@ export function calculateBarRenderConfig({
   const barWidth = options.barWidth ? options.barWidth * pixelRatio : 1
   const barGap = options.barGap ? options.barGap * pixelRatio : options.barWidth ? barWidth / 2 : 0
   const barRadius = options.barRadius || 0
+  const barMinHeight = options.barMinHeight ? options.barMinHeight * pixelRatio : 0
   const spacing = barWidth + barGap || 1
   const barIndexScale = length > 0 ? width / spacing / length : 0
 
@@ -48,6 +49,7 @@ export function calculateBarRenderConfig({
     barWidth,
     barGap,
     barRadius,
+    barMinHeight,
     barIndexScale,
     barSpacing: spacing,
   }
@@ -58,15 +60,26 @@ export function calculateBarHeights({
   maxBottom,
   halfHeight,
   vScale,
+  barMinHeight = 0,
+  barAlign,
 }: {
   maxTop: number
   maxBottom: number
   halfHeight: number
   vScale: number
+  barMinHeight?: number
+  barAlign?: WaveSurferOptions['barAlign']
 }): { topHeight: number; totalHeight: number } {
-  const topHeight = Math.round(maxTop * halfHeight * vScale)
+  let topHeight = Math.round(maxTop * halfHeight * vScale)
   const bottomHeight = Math.round(maxBottom * halfHeight * vScale)
-  const totalHeight = topHeight + bottomHeight || 1
+  let totalHeight = topHeight + bottomHeight || 1
+
+  if (totalHeight < barMinHeight) {
+    totalHeight = barMinHeight
+    if (!barAlign) {
+      topHeight = totalHeight / 2
+    }
+  }
 
   return { topHeight, totalHeight }
 }
@@ -98,6 +111,7 @@ export function calculateBarSegments({
   vScale,
   canvasHeight,
   barAlign,
+  barMinHeight,
 }: {
   channelData: ChannelData
   barIndexScale: number
@@ -107,6 +121,7 @@ export function calculateBarSegments({
   vScale: number
   canvasHeight: number
   barAlign: WaveSurferOptions['barAlign']
+  barMinHeight: number
 }): BarSegment[] {
   const topChannel = channelData[0] || []
   const bottomChannel = channelData[1] || topChannel
@@ -127,6 +142,8 @@ export function calculateBarSegments({
         maxBottom,
         halfHeight,
         vScale,
+        barMinHeight,
+        barAlign,
       })
 
       const y = resolveBarYPosition({
