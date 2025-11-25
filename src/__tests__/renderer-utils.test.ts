@@ -56,6 +56,7 @@ describe('renderer-utils', () => {
         barRadius: 3,
         barIndexScale: 100 / ((4 + 2) * 10),
         barSpacing: 6,
+        barMinHeight: 0,
       })
     })
   })
@@ -79,6 +80,29 @@ describe('renderer-utils', () => {
           vScale: 1,
         }),
       ).toEqual({ topHeight: 0, totalHeight: 1 })
+    })
+
+    it('ensures total height is at least barMinHeight', () => {
+      expect(
+        calculateBarHeights({
+          maxTop: 0,
+          maxBottom: 0,
+          halfHeight: 20,
+          vScale: 1,
+          barMinHeight: 10,
+        }),
+      ).toEqual({ topHeight: 5, totalHeight: 10 })
+
+      expect(
+        calculateBarHeights({
+          maxTop: 0,
+          maxBottom: 0,
+          halfHeight: 20,
+          vScale: 1,
+          barMinHeight: 10,
+          barAlign: 'top',
+        }),
+      ).toEqual({ topHeight: 0, totalHeight: 10 })
     })
   })
 
@@ -139,6 +163,7 @@ describe('renderer-utils', () => {
         vScale: 1,
         canvasHeight: 40,
         barAlign: undefined,
+        barMinHeight: 0,
       })
 
       expect(segments).toEqual([
@@ -149,6 +174,37 @@ describe('renderer-utils', () => {
         { x: 4, y: 0, width: 1, height: 15 },
         { x: 5, y: 0, width: 1, height: 16 },
       ])
+    })
+
+    it('ensures bars are at least barMinHeight tall', () => {
+      const height = 40
+      const length = 10
+
+      const { barIndexScale, barSpacing, barWidth, halfHeight } = calculateBarRenderConfig({
+        width: 100,
+        height,
+        length,
+        options,
+        pixelRatio: 1,
+      })
+
+      const segments = calculateBarSegments({
+        channelData: [
+          new Float32Array(length).fill(0.001), // Very small values
+        ],
+        barIndexScale,
+        barSpacing,
+        barWidth,
+        halfHeight,
+        vScale: 1,
+        canvasHeight: height / 2,
+        barAlign: undefined,
+        barMinHeight: 10,
+      })
+
+      expect(segments.length).toBeGreaterThan(0)
+      expect(segments[0].height).toBe(10)
+      expect(segments[0].y).toBe(15) // Centered: 20 - 10/2
     })
   })
 

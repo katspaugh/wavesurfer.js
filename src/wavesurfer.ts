@@ -32,6 +32,8 @@ export type WaveSurferOptions = {
   barHeight?: number
   /** Vertical bar alignment */
   barAlign?: 'top' | 'bottom'
+  /** Minimum height of bars in pixels */
+  barMinHeight?: number
   /** Minimum pixels per second of audio (i.e. the zoom level) */
   minPxPerSec?: number
   /** Stretch the waveform to fill the container, true by default */
