@@ -248,17 +248,17 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   private initWaveSurferEvents() {
     if (!this.wavesurfer) return
 
-    // Get reactive state
+    // Get reactive state for duration
     const state = this.wavesurfer.getState()
 
-    // React to audio buffer changes to initialize minimap
+    // React to duration changes to initialize minimap (decode event alternative)
     this.subscriptions.push(
       effect(() => {
-        const audioBuffer = state.audioBuffer.value
-        if (audioBuffer) {
+        const duration = state.duration.value
+        if (duration > 0 && this.wavesurfer?.getDecodedData()) {
           this.initMinimap()
         }
-      }, [state.audioBuffer]),
+      }, [state.duration]),
     )
 
     // Subscribe to scroll and redraw events
