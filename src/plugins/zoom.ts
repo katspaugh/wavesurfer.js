@@ -22,6 +22,7 @@
  */
 
 import { BasePlugin, BasePluginEvents } from '../base-plugin.js'
+import { effect } from '../reactive/store.js'
 
 export type ZoomPluginOptions = {
   /**
@@ -95,16 +96,35 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
     }
     this.container = this.wrapper.parentElement as HTMLElement
 
+    if (typeof this.options.maxZoom === 'undefined') {
+      this.options.maxZoom = this.container.clientWidth
+    }
+    this.endZoom = this.options.maxZoom
+
+    // Get reactive state
+    const state = this.wavesurfer?.getState()
+
+    // React to zoom state changes to update internal state
+    if (state) {
+      this.subscriptions.push(
+        effect(() => {
+          const zoom = state.zoom.value
+          if (zoom > 0 && this.startZoom === 0 && this.options.exponentialZooming) {
+            const duration = state.duration.value
+            if (duration > 0 && this.container) {
+              this.startZoom = this.container.clientWidth / duration
+            }
+          }
+        }, [state.zoom, state.duration]),
+      )
+    }
+
+    // Attach event listeners
     this.container.addEventListener('wheel', this.onWheel)
     this.container.addEventListener('touchstart', this.onTouchStart, { passive: false, capture: true })
     this.container.addEventListener('touchmove', this.onTouchMove, { passive: false, capture: true })
     this.container.addEventListener('touchend', this.onTouchEnd, { passive: false, capture: true })
     this.container.addEventListener('touchcancel', this.onTouchEnd, { passive: false, capture: true })
-
-    if (typeof this.options.maxZoom === 'undefined') {
-      this.options.maxZoom = this.container.clientWidth
-    }
-    this.endZoom = this.options.maxZoom
   }
 
   private onWheel = (e: WheelEvent) => {

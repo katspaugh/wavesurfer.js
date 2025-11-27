@@ -4,6 +4,8 @@
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import createElement from '../dom.js'
+import { fromEvent } from '../reactive/event-streams.js'
+import { effect } from '../reactive/store.js'
 
 export type HoverPluginOptions = {
   /** The hover cursor color (playback cursor and progress mask colors used as falllback in this order)
@@ -53,7 +55,6 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
   private wrapper: HTMLElement
   private label: HTMLElement
   private lastPointerPosition: { clientX: number; clientY: number } | null = null
-  private unsubscribe: () => void = () => undefined
 
   constructor(options?: HoverPluginOptions) {
     super(options || {})
@@ -109,66 +110,82 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     const container = this.wavesurfer.getWrapper()
     container.appendChild(this.wrapper)
 
-    // When zoom or scroll happens, re-run the pointer move logic
-    // with the last known mouse position
+    // Get reactive state
+    const state = this.wavesurfer.getState()
+
+    // Create event streams for pointer events
+    const pointerMove = fromEvent(container, 'pointermove')
+    const pointerLeave = fromEvent(container, 'pointerleave')
+
+    // React to pointer movement
+    this.subscriptions.push(
+      effect(() => {
+        const e = pointerMove.value
+        if (!e || !this.wavesurfer) return
+
+        // Store only the position data needed for zoom/scroll updates
+        this.lastPointerPosition = { clientX: e.clientX, clientY: e.clientY }
+
+        // Position
+        const bbox = this.wavesurfer.getWrapper().getBoundingClientRect()
+        const { width } = bbox
+        const offsetX = e.clientX - bbox.left
+        const relX = Math.min(1, Math.max(0, offsetX / width))
+        const posX = Math.min(width - this.options.lineWidth - 1, offsetX)
+        this.wrapper.style.transform = `translateX(${posX}px)`
+        this.wrapper.style.opacity = '1'
+
+        // Timestamp
+        const duration = state.duration.value
+        this.label.textContent = this.options.formatTimeCallback(duration * relX)
+        const labelWidth = this.label.offsetWidth
+        const transformCondition = this.options.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
+        this.label.style.transform = transformCondition ? `translateX(-${labelWidth + this.options.lineWidth}px)` : ''
+
+        // Emit a hover event with the relative X position
+        this.emit('hover', relX)
+      }, [pointerMove, state.duration]),
+    )
+
+    // React to pointer leave
+    this.subscriptions.push(
+      effect(() => {
+        const e = pointerLeave.value
+        if (!e) return
+
+        this.wrapper.style.opacity = '0'
+        this.lastPointerPosition = null
+      }, [pointerLeave]),
+    )
+
+    // When zoom or scroll happens, re-run the pointer move logic with the last known mouse position
     const onUpdate = () => {
-      if (this.lastPointerPosition) {
-        // Recreate a minimal PointerEvent-like object
-        this.onPointerMove(this.lastPointerPosition as PointerEvent)
+      if (this.lastPointerPosition && this.wavesurfer) {
+        // Position
+        const bbox = this.wavesurfer.getWrapper().getBoundingClientRect()
+        const { width } = bbox
+        const offsetX = this.lastPointerPosition.clientX - bbox.left
+        const relX = Math.min(1, Math.max(0, offsetX / width))
+        const posX = Math.min(width - this.options.lineWidth - 1, offsetX)
+        this.wrapper.style.transform = `translateX(${posX}px)`
+
+        // Timestamp
+        const duration = state.duration.value
+        this.label.textContent = this.options.formatTimeCallback(duration * relX)
+        const labelWidth = this.label.offsetWidth
+        const transformCondition = this.options.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
+        this.label.style.transform = transformCondition ? `translateX(-${labelWidth + this.options.lineWidth}px)` : ''
       }
     }
 
-    // Create unsubscribe function for wavesurfer events
-    const unsubscribeZoom = this.wavesurfer.on('zoom', onUpdate)
-    const unsubscribeScroll = this.wavesurfer.on('scroll', onUpdate)
-
-    // Attach pointer events and create complete unsubscribe function
-    container.addEventListener('pointermove', this.onPointerMove)
-    container.addEventListener('pointerleave', this.onPointerLeave)
-
-    this.unsubscribe = () => {
-      container.removeEventListener('pointermove', this.onPointerMove)
-      container.removeEventListener('pointerleave', this.onPointerLeave)
-      unsubscribeZoom()
-      unsubscribeScroll()
-    }
-  }
-
-  private onPointerMove = (e: PointerEvent) => {
-    if (!this.wavesurfer) return
-
-    // Store only the position data needed for zoom/scroll updates
-    this.lastPointerPosition = { clientX: e.clientX, clientY: e.clientY }
-
-    // Position
-    const bbox = this.wavesurfer.getWrapper().getBoundingClientRect()
-    const { width } = bbox
-    const offsetX = e.clientX - bbox.left
-    const relX = Math.min(1, Math.max(0, offsetX / width))
-    const posX = Math.min(width - this.options.lineWidth - 1, offsetX)
-    this.wrapper.style.transform = `translateX(${posX}px)`
-    this.wrapper.style.opacity = '1'
-
-    // Timestamp
-    const duration = this.wavesurfer.getDuration() || 0
-    this.label.textContent = this.options.formatTimeCallback(duration * relX)
-    const labelWidth = this.label.offsetWidth
-    const transformCondition = this.options.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
-    this.label.style.transform = transformCondition ? `translateX(-${labelWidth + this.options.lineWidth}px)` : ''
-
-    // Emit a hover event with the relative X position
-    this.emit('hover', relX)
-  }
-
-  private onPointerLeave = () => {
-    this.wrapper.style.opacity = '0'
-    this.lastPointerPosition = null
+    // Subscribe to zoom and scroll events
+    this.subscriptions.push(this.wavesurfer.on('zoom', onUpdate))
+    this.subscriptions.push(this.wavesurfer.on('scroll', onUpdate))
   }
 
   /** Unmount */
   public destroy() {
     super.destroy()
-    this.unsubscribe()
     this.wrapper.remove()
   }
 }
