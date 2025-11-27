@@ -66,7 +66,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   protected options: ZoomPluginOptions & typeof defaultOptions
   private wrapper: HTMLElement | undefined = undefined
   private container: HTMLElement | null = null
-  
+
   // State for wheel zoom
   private accumulatedDelta = 0
   private pointerTime: number = 0

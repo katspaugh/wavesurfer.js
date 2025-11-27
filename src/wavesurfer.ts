@@ -163,7 +163,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   protected subscriptions: Array<() => void> = []
   protected mediaSubscriptions: Array<() => void> = []
   protected abortController: AbortController | null = null
-  
+
   // Reactive state
   private wavesurferState: WaveSurferState
   private wavesurferActions: WaveSurferActions

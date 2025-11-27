@@ -354,13 +354,15 @@ class Renderer extends EventEmitter<RendererEvents> {
     vScale: number,
   ) {
     const { width, height } = ctx.canvas
-    const { halfHeight, barWidth, barRadius, barIndexScale, barSpacing, barMinHeight } = utils.calculateBarRenderConfig({
-      width,
-      height,
-      length: (channelData[0] || []).length,
-      options,
-      pixelRatio: this.getPixelRatio(),
-    })
+    const { halfHeight, barWidth, barRadius, barIndexScale, barSpacing, barMinHeight } = utils.calculateBarRenderConfig(
+      {
+        width,
+        height,
+        length: (channelData[0] || []).length,
+        options,
+        pixelRatio: this.getPixelRatio(),
+      },
+    )
 
     const segments = utils.calculateBarSegments({
       channelData,
