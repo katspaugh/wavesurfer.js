@@ -1,4 +1,10 @@
 import type { WaveSurferOptions } from './wavesurfer.js'
+import {
+  clampToUnit as coreClampToUnit,
+  getRelativePointerPosition as coreGetRelativePointerPosition,
+  calculateScrollPercentages as coreCalculateScrollPercentages,
+  calculateWaveformLayout as coreCalculateWaveformLayout,
+} from './core/calculations.js'
 
 export type ChannelData = Array<Float32Array | number[]>
 
@@ -18,9 +24,7 @@ export const MAX_CANVAS_WIDTH = 8000
 export const MAX_NODES = 10
 
 export function clampToUnit(value: number): number {
-  if (value < 0) return 0
-  if (value > 1) return 1
-  return value
+  return coreClampToUnit(value)
 }
 
 export function calculateBarRenderConfig({
@@ -176,11 +180,11 @@ export function calculateBarSegments({
 }
 
 export function getRelativePointerPosition(rect: DOMRect, clientX: number, clientY: number): [number, number] {
-  const x = clientX - rect.left
-  const y = clientY - rect.top
-  const relativeX = x / rect.width
-  const relativeY = y / rect.height
-  return [relativeX, relativeY]
+  return coreGetRelativePointerPosition(
+    { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+    clientX,
+    clientY,
+  )
 }
 
 export function resolveChannelHeight({
@@ -251,17 +255,13 @@ export function calculateWaveformLayout({
   fillParent?: boolean
   pixelRatio: number
 }) {
-  const scrollWidth = Math.ceil(duration * minPxPerSec)
-  const isScrollable = scrollWidth > parentWidth
-  const useParentWidth = Boolean(fillParent && !isScrollable)
-  const width = (useParentWidth ? parentWidth : scrollWidth) * pixelRatio
-
-  return {
-    scrollWidth,
-    isScrollable,
-    useParentWidth,
-    width,
-  }
+  return coreCalculateWaveformLayout({
+    duration,
+    minPxPerSec,
+    parentWidth,
+    fillParent: fillParent || false,
+    pixelRatio,
+  })
 }
 
 export function clampWidthToBarGrid(width: number, options: WaveSurferOptions): number {
@@ -410,14 +410,7 @@ export function calculateScrollPercentages({
   clientWidth: number
   scrollWidth: number
 }): { startX: number; endX: number } {
-  if (scrollWidth === 0) {
-    return { startX: 0, endX: 0 }
-  }
-
-  const startX = scrollLeft / scrollWidth
-  const endX = (scrollLeft + clientWidth) / scrollWidth
-
-  return { startX, endX }
+  return coreCalculateScrollPercentages({ scrollLeft, scrollWidth, clientWidth })
 }
 
 export function roundToHalfAwayFromZero(value: number): number {
