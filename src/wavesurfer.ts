@@ -203,7 +203,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     // Initialize reactive state
     // Pass Player signals to compose them into WaveSurferState
-    // This eliminates signal duplication and manual syncing
     const { state, actions } = createWaveSurferState({
       isPlaying: this.isPlayingSignal,
       currentTime: this.currentTimeSignal,
@@ -272,7 +271,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   private initReactiveState() {
     // Bridge reactive state to EventEmitter for backwards compatibility
-    // No manual syncing needed - WaveSurferState uses Player signals directly
     this.reactiveCleanups.push(
       setupStateEventEmission(this.wavesurferState, {
         emit: this.emit.bind(this),

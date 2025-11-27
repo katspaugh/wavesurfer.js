@@ -102,8 +102,6 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
   actions: WaveSurferActions
 } {
   // Use Player signals if provided, otherwise create new ones
-  // This allows WaveSurferState to compose Player's existing signals
-  // instead of duplicating them
   // Cast to WritableSignal since they need to be writable for actions
   const currentTime = (playerSignals?.currentTime ?? signal(0)) as WritableSignal<number>
   const duration = (playerSignals?.duration ?? signal(0)) as WritableSignal<number>
