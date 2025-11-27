@@ -88,7 +88,7 @@ describe('Normalization', () => {
 
       expect(normalized[0][1]).toBe(1.0) // Max value stays 1.0
       expect(normalized[0][0]).toBe(0.5)
-      expect(normalized[1][0]).toBe(0.3)
+      expect(normalized[1][0]).toBeCloseTo(0.3)
     })
 
     it('should normalize with custom max peak', () => {
@@ -161,7 +161,7 @@ describe('Normalization', () => {
   describe('findMaxAmplitude', () => {
     it('should find maximum absolute value', () => {
       const channelData = [new Float32Array([0.5, -0.8, 0.3, -0.6])]
-      expect(findMaxAmplitude(channelData)).toBe(0.8)
+      expect(findMaxAmplitude(channelData)).toBeCloseTo(0.8)
     })
 
     it('should handle positive and negative values', () => {

@@ -1,3 +1,5 @@
+import { needsNormalization, findMaxAmplitude } from './core/audio-processing.js'
+
 /** Decode an array buffer into an audio buffer */
 async function decode(audioData: ArrayBuffer, sampleRate: number): Promise<AudioBuffer> {
   const audioCtx = new AudioContext({ sampleRate })
@@ -9,20 +11,19 @@ async function decode(audioData: ArrayBuffer, sampleRate: number): Promise<Audio
   }
 }
 
-/** Normalize peaks to -1..1 */
+/** Normalize peaks to -1..1 (mutates input for backwards compatibility) */
 function normalize<T extends Array<Float32Array | number[]>>(channelData: T): T {
-  const firstChannel = channelData[0]
-  if (firstChannel.some((n) => n > 1 || n < -1)) {
-    const length = firstChannel.length
-    let max = 0
-    for (let i = 0; i < length; i++) {
-      const absN = Math.abs(firstChannel[i])
-      if (absN > max) max = absN
-    }
-    for (const channel of channelData) {
-      for (let i = 0; i < length; i++) {
-        channel[i] /= max
-      }
+  if (!needsNormalization(channelData)) {
+    return channelData
+  }
+
+  const max = findMaxAmplitude(channelData)
+  if (max === 0) return channelData
+
+  // Mutate channels in place for backwards compatibility
+  for (const channel of channelData) {
+    for (let i = 0; i < channel.length; i++) {
+      channel[i] /= max
     }
   }
   return channelData
