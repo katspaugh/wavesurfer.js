@@ -3,9 +3,10 @@
  */
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
-import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
+import { createDragStream } from '../reactive/drag-stream.js'
+import { effect } from '../reactive/store.js'
 
 export type EnvelopePoint = {
   id?: string
@@ -116,23 +117,30 @@ class Polyline extends EventEmitter<{
 
     // Make the polyline draggable along the Y axis
     if (options.dragLine) {
-      this.subscriptions.push(
-        makeDraggable(polyline as unknown as HTMLElement, (_, dy) => {
-          const { height } = svg.viewBox.baseVal
-          const { points } = polyline
-          for (let i = 1; i < points.numberOfItems - 1; i++) {
-            const point = points.getItem(i)
-            point.y = Math.min(height, Math.max(0, point.y + dy))
-          }
-          const circles = svg.querySelectorAll('ellipse')
-          Array.from(circles).forEach((circle) => {
-            const newY = Math.min(height, Math.max(0, Number(circle.getAttribute('cy')) + dy))
-            circle.setAttribute('cy', newY.toString())
-          })
+      const dragStream = createDragStream(polyline as unknown as HTMLElement)
+      const unsubscribe = effect(() => {
+        const drag = dragStream.signal.value
+        if (!drag || drag.type !== 'move' || drag.deltaY === undefined) return
 
-          this.emit('line-move', dy / height)
-        }),
-      )
+        const { height } = svg.viewBox.baseVal
+        const { points } = polyline
+        for (let i = 1; i < points.numberOfItems - 1; i++) {
+          const point = points.getItem(i)
+          point.y = Math.min(height, Math.max(0, point.y + drag.deltaY))
+        }
+        const circles = svg.querySelectorAll('ellipse')
+        Array.from(circles).forEach((circle) => {
+          const newY = Math.min(height, Math.max(0, Number(circle.getAttribute('cy')) + drag.deltaY))
+          circle.setAttribute('cy', newY.toString())
+        })
+
+        this.emit('line-move', drag.deltaY / height)
+      }, [dragStream.signal])
+
+      this.subscriptions.push(() => {
+        unsubscribe()
+        dragStream.cleanup()
+      })
     }
 
     // Listen to double click to add a new point
@@ -175,15 +183,25 @@ class Polyline extends EventEmitter<{
   }
 
   private makeDraggable(draggable: SVGElement, onDrag: (x: number, y: number) => void) {
-    this.subscriptions.push(
-      makeDraggable(
-        draggable as unknown as HTMLElement,
-        onDrag,
-        () => (draggable.style.cursor = 'grabbing'),
-        () => (draggable.style.cursor = 'grab'),
-        1,
-      ),
-    )
+    const dragStream = createDragStream(draggable as unknown as HTMLElement, { threshold: 1 })
+
+    const unsubscribe = effect(() => {
+      const drag = dragStream.signal.value
+      if (!drag) return
+
+      if (drag.type === 'start') {
+        draggable.style.cursor = 'grabbing'
+      } else if (drag.type === 'move' && drag.deltaX !== undefined && drag.deltaY !== undefined) {
+        onDrag(drag.deltaX, drag.deltaY)
+      } else if (drag.type === 'end') {
+        draggable.style.cursor = 'grab'
+      }
+    }, [dragStream.signal])
+
+    this.subscriptions.push(() => {
+      unsubscribe()
+      dragStream.cleanup()
+    })
   }
 
   private createCircle(x: number, y: number) {

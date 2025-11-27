@@ -462,14 +462,14 @@ describe('renderer-utils', () => {
   })
 
   describe('calculateScrollPercentages', () => {
-    it('returns zero percentages when scroll width is zero', () => {
+    it('returns full range when scroll width is zero', () => {
       expect(
         calculateScrollPercentages({
           scrollLeft: 0,
           clientWidth: 100,
           scrollWidth: 0,
         }),
-      ).toEqual({ startX: 0, endX: 0 })
+      ).toEqual({ startX: 0, endX: 1 })
     })
 
     it('returns start and end ratios relative to scroll width', () => {
@@ -480,6 +480,16 @@ describe('renderer-utils', () => {
           scrollWidth: 400,
         }),
       ).toEqual({ startX: 0.125, endX: 0.375 })
+    })
+
+    it('clamps values to 0-1 range', () => {
+      expect(
+        calculateScrollPercentages({
+          scrollLeft: -10,
+          clientWidth: 100,
+          scrollWidth: 400,
+        }),
+      ).toEqual({ startX: 0, endX: 0.225 })
     })
   })
 })

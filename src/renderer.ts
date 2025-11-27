@@ -1,7 +1,9 @@
-import { makeDraggable } from './draggable.js'
 import EventEmitter from './event-emitter.js'
 import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
+import { createDragStream } from './reactive/drag-stream.js'
+import { createScrollStream } from './reactive/scroll-stream.js'
+import { effect } from './reactive/store.js'
 
 type ChannelData = utils.ChannelData
 
@@ -34,7 +36,8 @@ class Renderer extends EventEmitter<RendererEvents> {
   private isDragging = false
   private subscriptions: (() => void)[] = []
   private unsubscribeOnScroll: (() => void)[] = []
-  private dragUnsubscribe: (() => void) | null = null
+  private dragStream: { signal: any; cleanup: () => void } | null = null
+  private scrollStream: { scrollData: any; percentages: any; bounds: any; cleanup: () => void } | null = null
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
@@ -96,16 +99,14 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.initDrag()
     }
 
-    // Add a scroll listener
-    this.scrollContainer.addEventListener('scroll', () => {
-      const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
-      const { startX, endX } = utils.calculateScrollPercentages({
-        scrollLeft,
-        scrollWidth,
-        clientWidth,
-      })
-      this.emit('scroll', startX, endX, scrollLeft, scrollLeft + clientWidth)
-    })
+    // Add a scroll listener using reactive stream
+    this.scrollStream = createScrollStream(this.scrollContainer)
+    const unsubscribeScroll = effect(() => {
+      const { startX, endX } = this.scrollStream!.percentages.value
+      const { left, right } = this.scrollStream!.bounds.value
+      this.emit('scroll', startX, endX, left, right)
+    }, [this.scrollStream.percentages])
+    this.subscriptions.push(unsubscribeScroll)
 
     // Re-render the waveform on container resize
     if (typeof ResizeObserver === 'function') {
@@ -129,30 +130,29 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   private initDrag() {
     // Don't initialize drag if it's already set up
-    if (this.dragUnsubscribe) return
+    if (this.dragStream) return
 
-    this.dragUnsubscribe = makeDraggable(
-      this.wrapper,
-      // On drag
-      (_, __, x) => {
-        const width = this.wrapper.getBoundingClientRect().width
-        this.emit('drag', utils.clampToUnit(x / width))
-      },
-      // On start drag
-      (x) => {
+    this.dragStream = createDragStream(this.wrapper)
+
+    const unsubscribeDrag = effect(() => {
+      const drag = this.dragStream!.signal.value
+      if (!drag) return
+
+      const width = this.wrapper.getBoundingClientRect().width
+      const relX = utils.clampToUnit(drag.x / width)
+
+      if (drag.type === 'start') {
         this.isDragging = true
-        const width = this.wrapper.getBoundingClientRect().width
-        this.emit('dragstart', utils.clampToUnit(x / width))
-      },
-      // On end drag
-      (x) => {
+        this.emit('dragstart', relX)
+      } else if (drag.type === 'move') {
+        this.emit('drag', relX)
+      } else if (drag.type === 'end') {
         this.isDragging = false
-        const width = this.wrapper.getBoundingClientRect().width
-        this.emit('dragend', utils.clampToUnit(x / width))
-      },
-    )
+        this.emit('dragend', relX)
+      }
+    }, [this.dragStream.signal])
 
-    this.subscriptions.push(this.dragUnsubscribe)
+    this.subscriptions.push(unsubscribeDrag)
   }
 
   private initHtml(): [HTMLElement, ShadowRoot] {
@@ -290,6 +290,14 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
     this.unsubscribeOnScroll?.forEach((unsubscribe) => unsubscribe())
     this.unsubscribeOnScroll = []
+    if (this.dragStream) {
+      this.dragStream.cleanup()
+      this.dragStream = null
+    }
+    if (this.scrollStream) {
+      this.scrollStream.cleanup()
+      this.scrollStream = null
+    }
   }
 
   private createDelay(delayMs = 10): () => Promise<void> {
@@ -698,17 +706,6 @@ class Renderer extends EventEmitter<RendererEvents> {
       if (isPlaying && this.options.autoCenter && center > 0) {
         this.scrollContainer.scrollLeft += center
       }
-    }
-
-    // Emit the scroll event
-    {
-      const newScroll = this.scrollContainer.scrollLeft
-      const { startX, endX } = utils.calculateScrollPercentages({
-        scrollLeft: newScroll,
-        scrollWidth,
-        clientWidth,
-      })
-      this.emit('scroll', startX, endX, newScroll, newScroll + clientWidth)
     }
   }
 
