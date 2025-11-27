@@ -122,19 +122,20 @@ class Polyline extends EventEmitter<{
         const drag = dragStream.signal.value
         if (!drag || drag.type !== 'move' || drag.deltaY === undefined) return
 
+        const deltaY = drag.deltaY
         const { height } = svg.viewBox.baseVal
         const { points } = polyline
         for (let i = 1; i < points.numberOfItems - 1; i++) {
           const point = points.getItem(i)
-          point.y = Math.min(height, Math.max(0, point.y + drag.deltaY))
+          point.y = Math.min(height, Math.max(0, point.y + deltaY))
         }
         const circles = svg.querySelectorAll('ellipse')
         Array.from(circles).forEach((circle) => {
-          const newY = Math.min(height, Math.max(0, Number(circle.getAttribute('cy')) + drag.deltaY))
+          const newY = Math.min(height, Math.max(0, Number(circle.getAttribute('cy')) + deltaY))
           circle.setAttribute('cy', newY.toString())
         })
 
-        this.emit('line-move', drag.deltaY / height)
+        this.emit('line-move', deltaY / height)
       }, [dragStream.signal])
 
       this.subscriptions.push(() => {

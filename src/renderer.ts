@@ -105,7 +105,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       const { startX, endX } = this.scrollStream!.percentages.value
       const { left, right } = this.scrollStream!.bounds.value
       this.emit('scroll', startX, endX, left, right)
-    }, [this.scrollStream.percentages])
+    }, [this.scrollStream.percentages, this.scrollStream.bounds])
     this.subscriptions.push(unsubscribeScroll)
 
     // Re-render the waveform on container resize
