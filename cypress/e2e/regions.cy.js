@@ -219,7 +219,7 @@ describe('WaveSurfer Regions plugin tests', () => {
     })
   })
 
-  xit('should listen to clicks on a region', () => {
+  it('should listen to clicks on a region', () => {
     cy.window().then((win) => {
       const regionsPlugin = win.wavesurfer.getActivePlugins()[0]
 
@@ -337,7 +337,7 @@ describe('WaveSurfer Regions plugin tests', () => {
     })
   })
 
-  xit('should add a region to a specific channel by index', () => {
+  it('should add a region to a specific channel by index', () => {
     cy.window().then((win) => {
       const regionsPlugin = win.wavesurfer.getActivePlugins()[0]
 
