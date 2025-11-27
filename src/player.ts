@@ -1,5 +1,5 @@
 import EventEmitter, { type GeneralEventTypes } from './event-emitter.js'
-import { signal, type Signal, type WritableSignal } from './reactive/store.js'
+import { signal, type WritableSignal } from './reactive/store.js'
 
 type PlayerOptions = {
   media?: HTMLMediaElement
