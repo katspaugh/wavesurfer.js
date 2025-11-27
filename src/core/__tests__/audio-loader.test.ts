@@ -21,7 +21,7 @@ class MockAudioContext {
       length,
       sampleRate,
       duration: length / sampleRate,
-      getChannelData: jest.fn((channel: number) => new Float32Array(length)),
+      getChannelData: jest.fn(() => new Float32Array(length)),
       copyFromChannel: jest.fn(),
       copyToChannel: jest.fn(),
     }
@@ -48,7 +48,7 @@ describe('Audio Loader', () => {
         numberOfChannels: 2,
         length: 441000,
         sampleRate: 44100,
-        getChannelData: jest.fn((channel: number) => new Float32Array(1000)),
+        getChannelData: jest.fn(() => new Float32Array(1000)),
       } as unknown as AudioBuffer
 
       ;(global.fetch as jest.Mock).mockResolvedValue({
@@ -102,7 +102,7 @@ describe('Audio Loader', () => {
           length,
           sampleRate,
           duration: length / sampleRate,
-          getChannelData: jest.fn((channel: number) => new Float32Array(length)),
+          getChannelData: jest.fn(() => new Float32Array(length)),
         } as unknown as AudioBuffer
       })
 
@@ -143,7 +143,7 @@ describe('Audio Loader', () => {
     })
 
     it.skip('should override MIME type when provided', async () => {
-      // Skipping due to complex blob mocking requirements  
+      // Skipping due to complex blob mocking requirements
       // This is better tested with integration tests
     })
   })
