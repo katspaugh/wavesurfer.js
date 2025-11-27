@@ -35,7 +35,7 @@ describe('WaveSurfer Envelope plugin tests', () => {
     })
   })
 
-  xit('should render an envelope and add a point', () => {
+  it('should render an envelope and add a point', () => {
     cy.visit('cypress/e2e/index.html')
     cy.window().then((win) => {
       return new Promise((resolve) => {

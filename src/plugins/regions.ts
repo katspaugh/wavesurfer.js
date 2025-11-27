@@ -5,9 +5,10 @@
  */
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
-import { makeDraggable } from '../draggable.js'
 import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
+import { createDragStream } from '../reactive/drag-stream.js'
+import { effect } from '../reactive/store.js'
 
 export type RegionsPluginOptions = undefined
 export type UpdateSide = 'start' | 'end'
@@ -183,22 +184,35 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
     // Resize
     const resizeThreshold = 1
-    this.subscriptions.push(
-      makeDraggable(
-        leftHandle,
-        (dx) => this.onResize(dx, 'start'),
-        () => null,
-        () => this.onEndResizing('start'),
-        resizeThreshold,
-      ),
-      makeDraggable(
-        rightHandle,
-        (dx) => this.onResize(dx, 'end'),
-        () => null,
-        () => this.onEndResizing('end'),
-        resizeThreshold,
-      ),
-    )
+    const leftDragStream = createDragStream(leftHandle, { threshold: resizeThreshold })
+    const rightDragStream = createDragStream(rightHandle, { threshold: resizeThreshold })
+
+    const unsubscribeLeft = effect(() => {
+      const drag = leftDragStream.signal.value
+      if (!drag) return
+      if (drag.type === 'move' && drag.deltaX !== undefined) {
+        this.onResize(drag.deltaX, 'start')
+      } else if (drag.type === 'end') {
+        this.onEndResizing('start')
+      }
+    }, [leftDragStream.signal])
+
+    const unsubscribeRight = effect(() => {
+      const drag = rightDragStream.signal.value
+      if (!drag) return
+      if (drag.type === 'move' && drag.deltaX !== undefined) {
+        this.onResize(drag.deltaX, 'end')
+      } else if (drag.type === 'end') {
+        this.onEndResizing('end')
+      }
+    }, [rightDragStream.signal])
+
+    this.subscriptions.push(() => {
+      unsubscribeLeft()
+      unsubscribeRight()
+      leftDragStream.cleanup()
+      rightDragStream.cleanup()
+    })
   }
 
   private removeResizeHandles(element: HTMLElement) {
@@ -273,17 +287,26 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     element.addEventListener('pointerup', () => this.toggleCursor(false))
 
     // Drag
-    this.subscriptions.push(
-      makeDraggable(
-        element,
-        (dx) => this.onMove(dx),
-        () => this.toggleCursor(true),
-        () => {
-          this.toggleCursor(false)
-          if (this.drag) this.emit('update-end')
-        },
-      ),
-    )
+    const dragStream = createDragStream(element)
+
+    const unsubscribeDrag = effect(() => {
+      const drag = dragStream.signal.value
+      if (!drag) return
+
+      if (drag.type === 'start') {
+        this.toggleCursor(true)
+      } else if (drag.type === 'move' && drag.deltaX !== undefined) {
+        this.onMove(drag.deltaX)
+      } else if (drag.type === 'end') {
+        this.toggleCursor(false)
+        if (this.drag) this.emit('update-end')
+      }
+    }, [dragStream.signal])
+
+    this.subscriptions.push(() => {
+      unsubscribeDrag()
+      dragStream.cleanup()
+    })
 
     if (this.contentEditable && this.content) {
       this.contentClickListener = (e) => this.onContentClick(e)
@@ -733,21 +756,15 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     let startX = 0
     let startTime = 0
 
-    return makeDraggable(
-      wrapper,
+    const dragStream = createDragStream(wrapper, { threshold })
 
-      // On drag move
-      (dx, _dy, x) => {
-        if (region) {
-          // Update the end position of the region
-          // If we're dragging to the left, we need to update the start instead
-          region._onUpdate(dx, x > startX ? 'end' : 'start', startTime)
-        }
-      },
+    const unsubscribe = effect(() => {
+      const drag = dragStream.signal.value
+      if (!drag) return
 
-      // On drag start
-      (x) => {
-        startX = x
+      if (drag.type === 'start') {
+        // On drag start
+        startX = drag.x
         if (!this.wavesurfer) return
         const duration = this.wavesurfer.getDuration()
         const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
@@ -755,9 +772,9 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         startTime = (startX / width) * duration
 
         // Calculate the start time of the region
-        const start = (x / width) * duration
+        const start = (drag.x / width) * duration
         // Give the region a small initial size
-        const end = ((x + initialSize) / width) * duration
+        const end = ((drag.x + initialSize) / width) * duration
 
         // Create a region but don't save it until the drag ends
         region = new SingleRegion(
@@ -776,19 +793,27 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         if (region.element) {
           this.regionsContainer.appendChild(region.element)
         }
-      },
-
-      // On drag end
-      () => {
+      } else if (drag.type === 'move' && drag.deltaX !== undefined) {
+        // On drag move
+        if (region) {
+          // Update the end position of the region
+          // If we're dragging to the left, we need to update the start instead
+          region._onUpdate(drag.deltaX, drag.x > startX ? 'end' : 'start', startTime)
+        }
+      } else if (drag.type === 'end') {
+        // On drag end
         if (region) {
           this.saveRegion(region)
           region.updatingSide = undefined
           region = null
         }
-      },
+      }
+    }, [dragStream.signal])
 
-      threshold,
-    )
+    return () => {
+      unsubscribe()
+      dragStream.cleanup()
+    }
   }
 
   /** Remove all regions */
