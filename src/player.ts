@@ -222,7 +222,15 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   protected setMediaElement(element: HTMLMediaElement) {
+    // Cleanup reactive event listeners from old media element
+    this.reactiveMediaEventCleanups.forEach((cleanup) => cleanup())
+    this.reactiveMediaEventCleanups = []
+
+    // Set new media element
     this.media = element
+
+    // Reinitialize reactive event listeners on new media element
+    this.setupReactiveMediaEvents()
   }
 
   /** Start playing the audio */
