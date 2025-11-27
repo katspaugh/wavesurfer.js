@@ -6,6 +6,9 @@ import Player from './player.js'
 import Renderer from './renderer.js'
 import Timer from './timer.js'
 import WebAudioPlayer from './webaudio.js'
+import { createWaveSurferState, type WaveSurferState, type WaveSurferActions } from './state/wavesurfer-state.js'
+import { setupStateEventEmission } from './reactive/state-event-emitter.js'
+import { effect } from './reactive/store.js'
 
 export type WaveSurferOptions = {
   /** Required: an HTML element or selector where the waveform will be rendered */
@@ -147,7 +150,7 @@ export type WaveSurferEvents = {
   /** When source file is unable to be fetched, decoded, or an error is thrown by media element */
   error: [error: Error]
   /** When audio container resizing */
-  resize: [];
+  resize: []
 }
 
 class WaveSurfer extends Player<WaveSurferEvents> {
@@ -160,6 +163,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   protected subscriptions: Array<() => void> = []
   protected mediaSubscriptions: Array<() => void> = []
   protected abortController: AbortController | null = null
+  
+  // Reactive state
+  private wavesurferState: WaveSurferState
+  private wavesurferActions: WaveSurferActions
+  private reactiveCleanups: Array<() => void> = []
 
   public static readonly BasePlugin = BasePlugin
   public static readonly dom = dom
@@ -167,6 +175,16 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   /** Create a new WaveSurfer instance */
   public static create(options: WaveSurferOptions) {
     return new WaveSurfer(options)
+  }
+
+  /** Get the reactive state for advanced use cases */
+  public getState(): WaveSurferState {
+    return this.wavesurferState
+  }
+
+  /** Get the renderer instance for plugin access to reactive streams */
+  public getRenderer(): Renderer {
+    return this.renderer
   }
 
   /** Create a new WaveSurfer instance */
@@ -183,6 +201,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     })
 
     this.options = Object.assign({}, defaultOptions, options)
+
+    // Initialize reactive state
+    const { state, actions } = createWaveSurferState()
+    this.wavesurferState = state
+    this.wavesurferActions = actions
+
     this.timer = new Timer()
 
     const audioElement = media ? undefined : this.getMediaElement()
@@ -191,6 +215,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initPlayerEvents()
     this.initRendererEvents()
     this.initTimerEvents()
+    this.initReactiveState()
     this.initPlugins()
 
     // Read the initial URL before load has been called
@@ -234,6 +259,51 @@ class WaveSurfer extends Player<WaveSurferEvents> {
           }
         }
       }),
+    )
+  }
+
+  private initReactiveState() {
+    // Bridge reactive state to EventEmitter for backwards compatibility
+    this.reactiveCleanups.push(
+      setupStateEventEmission(this.wavesurferState, {
+        emit: this.emit.bind(this),
+      }),
+    )
+
+    // Sync Player signals to WaveSurferState
+    this.reactiveCleanups.push(
+      effect(() => {
+        const isPlaying = this.isPlayingSignal.value
+        this.wavesurferActions.setPlaying(isPlaying)
+      }, [this.isPlayingSignal]),
+    )
+
+    this.reactiveCleanups.push(
+      effect(() => {
+        const currentTime = this.currentTimeSignal.value
+        this.wavesurferActions.setCurrentTime(currentTime)
+      }, [this.currentTimeSignal]),
+    )
+
+    this.reactiveCleanups.push(
+      effect(() => {
+        const duration = this.durationSignal.value
+        this.wavesurferActions.setDuration(duration)
+      }, [this.durationSignal]),
+    )
+
+    this.reactiveCleanups.push(
+      effect(() => {
+        const volume = this.volumeSignal.value
+        this.wavesurferActions.setVolume(volume)
+      }, [this.volumeSignal]),
+    )
+
+    this.reactiveCleanups.push(
+      effect(() => {
+        const playbackRate = this.playbackRateSignal.value
+        this.wavesurferActions.setPlaybackRate(playbackRate)
+      }, [this.playbackRateSignal]),
     )
   }
 
@@ -326,8 +396,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
       // Resize
       this.renderer.on('resize', () => {
-        this.emit('resize');
-      })
+        this.emit('resize')
+      }),
     )
 
     // Drag
@@ -683,6 +753,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.plugins.forEach((plugin) => plugin.destroy())
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.unsubscribePlayerEvents()
+    this.reactiveCleanups.forEach((cleanup) => cleanup())
+    this.reactiveCleanups = []
     this.timer.destroy()
     this.renderer.destroy()
     super.destroy()

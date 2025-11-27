@@ -1,4 +1,5 @@
 import EventEmitter, { type GeneralEventTypes } from './event-emitter.js'
+import { signal, type Signal, type WritableSignal } from './reactive/store.js'
 
 type PlayerOptions = {
   media?: HTMLMediaElement
@@ -11,6 +12,39 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   protected media: HTMLMediaElement
   private isExternalMedia = false
 
+  // Reactive state - make media state observable
+  private _isPlaying: WritableSignal<boolean>
+  private _currentTime: WritableSignal<number>
+  private _duration: WritableSignal<number>
+  private _volume: WritableSignal<number>
+  private _muted: WritableSignal<boolean>
+  private _playbackRate: WritableSignal<number>
+  private _seeking: WritableSignal<boolean>
+  private reactiveMediaEventCleanups: Array<() => void> = []
+
+  // Expose reactive state as readonly signals
+  public get isPlayingSignal(): Signal<boolean> {
+    return this._isPlaying
+  }
+  public get currentTimeSignal(): Signal<number> {
+    return this._currentTime
+  }
+  public get durationSignal(): Signal<number> {
+    return this._duration
+  }
+  public get volumeSignal(): Signal<number> {
+    return this._volume
+  }
+  public get mutedSignal(): Signal<boolean> {
+    return this._muted
+  }
+  public get playbackRateSignal(): Signal<number> {
+    return this._playbackRate
+  }
+  public get seekingSignal(): Signal<boolean> {
+    return this._seeking
+  }
+
   constructor(options: PlayerOptions) {
     super()
 
@@ -20,6 +54,18 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     } else {
       this.media = document.createElement('audio')
     }
+
+    // Initialize reactive state
+    this._isPlaying = signal(false)
+    this._currentTime = signal(0)
+    this._duration = signal(0)
+    this._volume = signal(this.media.volume)
+    this._muted = signal(this.media.muted)
+    this._playbackRate = signal(this.media.playbackRate || 1)
+    this._seeking = signal(false)
+
+    // Setup reactive media event handlers
+    this.setupReactiveMediaEvents()
 
     // Controls
     if (options.mediaControls) {
@@ -41,6 +87,78 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
         { once: true },
       )
     }
+  }
+
+  /**
+   * Setup reactive media event handlers that update signals
+   * This bridges the imperative HTMLMediaElement API to reactive state
+   */
+  private setupReactiveMediaEvents() {
+    // Playing state
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('play', () => {
+        this._isPlaying.set(true)
+      }),
+    )
+
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('pause', () => {
+        this._isPlaying.set(false)
+      }),
+    )
+
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('ended', () => {
+        this._isPlaying.set(false)
+      }),
+    )
+
+    // Time tracking
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('timeupdate', () => {
+        this._currentTime.set(this.media.currentTime)
+      }),
+    )
+
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('durationchange', () => {
+        this._duration.set(this.media.duration || 0)
+      }),
+    )
+
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('loadedmetadata', () => {
+        this._duration.set(this.media.duration || 0)
+      }),
+    )
+
+    // Seeking state
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('seeking', () => {
+        this._seeking.set(true)
+      }),
+    )
+
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('seeked', () => {
+        this._seeking.set(false)
+      }),
+    )
+
+    // Volume and muted
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('volumechange', () => {
+        this._volume.set(this.media.volume)
+        this._muted.set(this.media.muted)
+      }),
+    )
+
+    // Playback rate
+    this.reactiveMediaEventCleanups.push(
+      this.onMediaEvent('ratechange', () => {
+        this._playbackRate.set(this.media.playbackRate)
+      }),
+    )
   }
 
   protected onMediaEvent<K extends keyof HTMLElementEventMap>(
@@ -89,6 +207,10 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   protected destroy() {
+    // Cleanup reactive media event listeners
+    this.reactiveMediaEventCleanups.forEach((cleanup) => cleanup())
+    this.reactiveMediaEventCleanups = []
+
     if (this.isExternalMedia) return
     this.media.pause()
     this.revokeSrc()
