@@ -5,7 +5,6 @@
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import WaveSurfer, { type WaveSurferOptions } from '../wavesurfer.js'
 import createElement from '../dom.js'
-import { effect } from '../reactive/store.js'
 
 export type MinimapPluginOptions = {
   overlayColor?: string
@@ -238,31 +237,19 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
 
   private onScroll(startTime: number) {
     if (!this.wavesurfer) return
-    const state = this.wavesurfer.getState()
-    const duration = state.duration.value
-    if (duration > 0) {
-      this.overlay.style.left = `${(startTime / duration) * 100}%`
-    }
+    const duration = this.wavesurfer.getDuration()
+    this.overlay.style.left = `${(startTime / duration) * 100}%`
   }
 
   private initWaveSurferEvents() {
     if (!this.wavesurfer) return
 
-    // Get reactive state for duration
-    const state = this.wavesurfer.getState()
-
-    // React to duration changes to initialize minimap (decode event alternative)
+    // Subscribe to decode, scroll and redraw events
     this.subscriptions.push(
-      effect(() => {
-        const duration = state.duration.value
-        if (duration > 0 && this.wavesurfer?.getDecodedData()) {
-          this.initMinimap()
-        }
-      }, [state.duration]),
-    )
+      this.wavesurfer.on('decode', () => {
+        this.initMinimap()
+      }),
 
-    // Subscribe to scroll and redraw events
-    this.subscriptions.push(
       this.wavesurfer.on('scroll', (startTime: number) => {
         this.onScroll(startTime)
       }),
