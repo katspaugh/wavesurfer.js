@@ -4,6 +4,7 @@
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import createElement from '../dom.js'
+import { effect } from '../reactive/store.js'
 
 export type TimelinePluginOptions = {
   /** The height of the timeline in pixels, defaults to 20 */
@@ -56,9 +57,9 @@ export type TimelinePluginEvents = BasePluginEvents & {
 
 class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOptions> {
   private timelineWrapper: HTMLElement
-  private unsubscribeNotches: (() => void)[] = []
   protected options: TimelinePluginOptions & typeof defaultOptions
   private notchElements: Map<HTMLElement, { start: number; width: number; wasVisible: boolean }> = new Map()
+  private currentTimeline: HTMLElement | null = null
 
   constructor(options?: TimelinePluginOptions) {
     super(options || {})
@@ -95,7 +96,29 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       container.appendChild(this.timelineWrapper)
     }
 
+    // Get reactive state
+    const state = this.wavesurfer.getState()
+
+    // React to duration changes and redraw events to initialize timeline
+    this.subscriptions.push(
+      effect(() => {
+        const duration = state.duration.value
+        if (duration > 0 || this.options.duration) {
+          this.initTimeline()
+        }
+      }, [state.duration]),
+    )
+
     this.subscriptions.push(this.wavesurfer.on('redraw', () => this.initTimeline()))
+
+    // Add single scroll listener for all notches (register once, not on every redraw)
+    this.subscriptions.push(
+      this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
+        if (this.currentTimeline) {
+          this.updateVisibleNotches(scrollLeft, scrollRight, this.currentTimeline)
+        }
+      }),
+    )
 
     if (this.wavesurfer?.getDuration() || this.options.duration) {
       this.initTimeline()
@@ -104,8 +127,6 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
   /** Unmount */
   public destroy() {
-    this.unsubscribeNotches.forEach((unsubscribe) => unsubscribe())
-    this.unsubscribeNotches = []
     this.timelineWrapper.remove()
     super.destroy()
   }
@@ -188,8 +209,6 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   }
 
   private initTimeline() {
-    this.unsubscribeNotches.forEach((unsubscribe) => unsubscribe())
-    this.unsubscribeNotches = []
     this.notchElements.clear()
 
     const duration = this.wavesurfer?.getDuration() ?? this.options.duration ?? 0
@@ -272,15 +291,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
     this.timelineWrapper.innerHTML = ''
     this.timelineWrapper.appendChild(timeline)
-
-    // Add single scroll listener for all notches (instead of one per notch)
-    if (this.wavesurfer) {
-      this.unsubscribeNotches.push(
-        this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
-          this.updateVisibleNotches(scrollLeft, scrollRight, timeline)
-        }),
-      )
-    }
+    this.currentTimeline = timeline
 
     this.emit('ready')
   }

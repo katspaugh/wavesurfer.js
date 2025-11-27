@@ -244,6 +244,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   private initWaveSurferEvents() {
     if (!this.wavesurfer) return
 
+    // Subscribe to decode, scroll and redraw events
     this.subscriptions.push(
       this.wavesurfer.on('decode', () => {
         this.initMinimap()
