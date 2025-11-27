@@ -734,4 +734,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 }
 
+// Export reactive types for plugin authors
+export type { Signal, WritableSignal } from './reactive/store.js'
+export type { WaveSurferState, WaveSurferActions } from './state/wavesurfer-state.js'
+
 export default WaveSurfer
