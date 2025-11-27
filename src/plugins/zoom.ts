@@ -23,6 +23,7 @@
 
 import { BasePlugin, BasePluginEvents } from '../base-plugin.js'
 import { effect } from '../reactive/store.js'
+import { fromEvent } from '../reactive/event-streams.js'
 
 export type ZoomPluginOptions = {
   /**
@@ -119,12 +120,49 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
       )
     }
 
-    // Attach event listeners
-    this.container.addEventListener('wheel', this.onWheel)
-    this.container.addEventListener('touchstart', this.onTouchStart, { passive: false, capture: true })
-    this.container.addEventListener('touchmove', this.onTouchMove, { passive: false, capture: true })
-    this.container.addEventListener('touchend', this.onTouchEnd, { passive: false, capture: true })
-    this.container.addEventListener('touchcancel', this.onTouchEnd, { passive: false, capture: true })
+    // Create event streams
+    const wheelStream = fromEvent(this.container, 'wheel')
+    const touchStartStream = fromEvent(this.container, 'touchstart')
+    const touchMoveStream = fromEvent(this.container, 'touchmove')
+    const touchEndStream = fromEvent(this.container, 'touchend')
+    const touchCancelStream = fromEvent(this.container, 'touchcancel')
+
+    // React to wheel events
+    this.subscriptions.push(
+      effect(() => {
+        const e = wheelStream.value
+        if (e) this.onWheel(e)
+      }, [wheelStream]),
+    )
+
+    // React to touch events
+    this.subscriptions.push(
+      effect(() => {
+        const e = touchStartStream.value
+        if (e) this.onTouchStart(e)
+      }, [touchStartStream]),
+    )
+
+    this.subscriptions.push(
+      effect(() => {
+        const e = touchMoveStream.value
+        if (e) this.onTouchMove(e)
+      }, [touchMoveStream]),
+    )
+
+    this.subscriptions.push(
+      effect(() => {
+        const e = touchEndStream.value
+        if (e) this.onTouchEnd(e)
+      }, [touchEndStream]),
+    )
+
+    this.subscriptions.push(
+      effect(() => {
+        const e = touchCancelStream.value
+        if (e) this.onTouchEnd(e)
+      }, [touchCancelStream]),
+    )
   }
 
   private onWheel = (e: WheelEvent) => {
@@ -268,13 +306,6 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   }
 
   destroy() {
-    if (this.container) {
-      this.container.removeEventListener('wheel', this.onWheel)
-      this.container.removeEventListener('touchstart', this.onTouchStart)
-      this.container.removeEventListener('touchmove', this.onTouchMove)
-      this.container.removeEventListener('touchend', this.onTouchEnd)
-      this.container.removeEventListener('touchcancel', this.onTouchEnd)
-    }
     super.destroy()
   }
 }
