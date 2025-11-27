@@ -59,6 +59,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   private timelineWrapper: HTMLElement
   protected options: TimelinePluginOptions & typeof defaultOptions
   private notchElements: Map<HTMLElement, { start: number; width: number; wasVisible: boolean }> = new Map()
+  private currentTimeline: HTMLElement | null = null
 
   constructor(options?: TimelinePluginOptions) {
     super(options || {})
@@ -109,6 +110,15 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     )
 
     this.subscriptions.push(this.wavesurfer.on('redraw', () => this.initTimeline()))
+
+    // Add single scroll listener for all notches (register once, not on every redraw)
+    this.subscriptions.push(
+      this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
+        if (this.currentTimeline) {
+          this.updateVisibleNotches(scrollLeft, scrollRight, this.currentTimeline)
+        }
+      }),
+    )
 
     if (this.wavesurfer?.getDuration() || this.options.duration) {
       this.initTimeline()
@@ -281,15 +291,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
     this.timelineWrapper.innerHTML = ''
     this.timelineWrapper.appendChild(timeline)
-
-    // Add single scroll listener for all notches (instead of one per notch)
-    if (this.wavesurfer) {
-      this.subscriptions.push(
-        this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
-          this.updateVisibleNotches(scrollLeft, scrollRight, timeline)
-        }),
-      )
-    }
+    this.currentTimeline = timeline
 
     this.emit('ready')
   }
