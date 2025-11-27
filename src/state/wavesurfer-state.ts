@@ -58,14 +58,15 @@ export interface WaveSurferActions {
 /**
  * Optional Player signals to compose into WaveSurferState
  * When provided, these signals from Player are used directly instead of creating new ones
+ * Note: Signals must be WritableSignal to allow state actions to update them
  */
 export interface PlayerSignals {
-  isPlaying?: Signal<boolean>
-  currentTime?: Signal<number>
-  duration?: Signal<number>
-  volume?: Signal<number>
-  playbackRate?: Signal<number>
-  isSeeking?: Signal<boolean>
+  isPlaying?: WritableSignal<boolean>
+  currentTime?: WritableSignal<number>
+  duration?: WritableSignal<number>
+  volume?: WritableSignal<number>
+  playbackRate?: WritableSignal<number>
+  isSeeking?: WritableSignal<boolean>
 }
 
 /**
@@ -102,13 +103,12 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
   actions: WaveSurferActions
 } {
   // Use Player signals if provided, otherwise create new ones
-  // Cast to WritableSignal since they need to be writable for actions
-  const currentTime = (playerSignals?.currentTime ?? signal(0)) as WritableSignal<number>
-  const duration = (playerSignals?.duration ?? signal(0)) as WritableSignal<number>
-  const isPlaying = (playerSignals?.isPlaying ?? signal(false)) as WritableSignal<boolean>
-  const isSeeking = (playerSignals?.isSeeking ?? signal(false)) as WritableSignal<boolean>
-  const volume = (playerSignals?.volume ?? signal(1)) as WritableSignal<number>
-  const playbackRate = (playerSignals?.playbackRate ?? signal(1)) as WritableSignal<number>
+  const currentTime = playerSignals?.currentTime ?? signal(0)
+  const duration = playerSignals?.duration ?? signal(0)
+  const isPlaying = playerSignals?.isPlaying ?? signal(false)
+  const isSeeking = playerSignals?.isSeeking ?? signal(false)
+  const volume = playerSignals?.volume ?? signal(1)
+  const playbackRate = playerSignals?.playbackRate ?? signal(1)
 
   // WaveSurfer-specific signals (not in Player)
   const audioBuffer = signal<AudioBuffer | null>(null)

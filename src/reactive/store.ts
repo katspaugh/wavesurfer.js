@@ -77,10 +77,10 @@ export function signal<T>(initialValue: T): WritableSignal<T> {
  */
 export function computed<T>(fn: () => T, dependencies: Signal<any>[]): Signal<T> {
   const result = signal<T>(fn())
-  const subscribers = new Set<(value: T) => void>()
 
-  // Subscribe to all dependencies
-  const unsubscribes = dependencies.map((dep) =>
+  // Subscribe to all dependencies immediately
+  // This ensures the computed value stays in sync even if no one is subscribed to it
+  dependencies.forEach((dep) =>
     dep.subscribe(() => {
       const newValue = fn()
       // Update the result signal, which will notify our subscribers if value changed
@@ -90,24 +90,15 @@ export function computed<T>(fn: () => T, dependencies: Signal<any>[]): Signal<T>
     }),
   )
 
-  // Return a read-only signal that subscribes to the result
+  // Return a read-only signal that proxies the result
   return {
     get value() {
       return result.value
     },
 
     subscribe(callback: (value: T) => void): () => void {
-      // Subscribe to result changes
-      const unsub = result.subscribe(callback)
-
-      // Return cleanup that removes from both
-      return () => {
-        unsub()
-        // If this was the last subscriber, cleanup dependencies
-        if (subscribers.size === 0) {
-          unsubscribes.forEach((fn) => fn())
-        }
-      }
+      // Just subscribe to result changes
+      return result.subscribe(callback)
     },
   }
 }

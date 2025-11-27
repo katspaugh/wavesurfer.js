@@ -22,26 +22,27 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   private _seeking: WritableSignal<boolean>
   private reactiveMediaEventCleanups: Array<() => void> = []
 
-  // Expose reactive state as readonly signals
-  public get isPlayingSignal(): Signal<boolean> {
+  // Expose reactive state as writable signals
+  // These are writable to allow WaveSurfer to compose them into centralized state
+  public get isPlayingSignal(): WritableSignal<boolean> {
     return this._isPlaying
   }
-  public get currentTimeSignal(): Signal<number> {
+  public get currentTimeSignal(): WritableSignal<number> {
     return this._currentTime
   }
-  public get durationSignal(): Signal<number> {
+  public get durationSignal(): WritableSignal<number> {
     return this._duration
   }
-  public get volumeSignal(): Signal<number> {
+  public get volumeSignal(): WritableSignal<number> {
     return this._volume
   }
-  public get mutedSignal(): Signal<boolean> {
+  public get mutedSignal(): WritableSignal<boolean> {
     return this._muted
   }
-  public get playbackRateSignal(): Signal<number> {
+  public get playbackRateSignal(): WritableSignal<number> {
     return this._playbackRate
   }
-  public get seekingSignal(): Signal<boolean> {
+  public get seekingSignal(): WritableSignal<boolean> {
     return this._seeking
   }
 
