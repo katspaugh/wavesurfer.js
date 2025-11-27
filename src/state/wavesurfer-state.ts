@@ -5,7 +5,7 @@
  * State is managed using reactive signals that automatically notify subscribers.
  */
 
-import { signal, computed, type Signal } from '../reactive/store.js'
+import { signal, computed, type Signal, type WritableSignal } from '../reactive/store.js'
 
 /**
  * Read-only reactive state for WaveSurfer
@@ -56,11 +56,34 @@ export interface WaveSurferActions {
 }
 
 /**
+ * Optional Player signals to compose into WaveSurferState
+ * When provided, these signals from Player are used directly instead of creating new ones
+ */
+export interface PlayerSignals {
+  isPlaying?: Signal<boolean>
+  currentTime?: Signal<number>
+  duration?: Signal<number>
+  volume?: Signal<number>
+  playbackRate?: Signal<number>
+  isSeeking?: Signal<boolean>
+}
+
+/**
  * Create a new WaveSurfer state instance
+ *
+ * @param playerSignals - Optional signals from Player to compose with WaveSurfer state
  *
  * @example
  * ```typescript
+ * // Without Player signals (standalone)
  * const { state, actions } = createWaveSurferState()
+ *
+ * // With Player signals (composed)
+ * const { state, actions } = createWaveSurferState({
+ *   isPlaying: player.isPlayingSignal,
+ *   currentTime: player.currentTimeSignal,
+ *   // ...
+ * })
  *
  * // Read state
  * console.log(state.isPlaying.value)
@@ -74,17 +97,22 @@ export interface WaveSurferActions {
  * })
  * ```
  */
-export function createWaveSurferState(): {
+export function createWaveSurferState(playerSignals?: PlayerSignals): {
   state: WaveSurferState
   actions: WaveSurferActions
 } {
-  // Writable signals (internal state)
-  const currentTime = signal(0)
-  const duration = signal(0)
-  const isPlaying = signal(false)
-  const isSeeking = signal(false)
-  const volume = signal(1)
-  const playbackRate = signal(1)
+  // Use Player signals if provided, otherwise create new ones
+  // This allows WaveSurferState to compose Player's existing signals
+  // instead of duplicating them
+  // Cast to WritableSignal since they need to be writable for actions
+  const currentTime = (playerSignals?.currentTime ?? signal(0)) as WritableSignal<number>
+  const duration = (playerSignals?.duration ?? signal(0)) as WritableSignal<number>
+  const isPlaying = (playerSignals?.isPlaying ?? signal(false)) as WritableSignal<boolean>
+  const isSeeking = (playerSignals?.isSeeking ?? signal(false)) as WritableSignal<boolean>
+  const volume = (playerSignals?.volume ?? signal(1)) as WritableSignal<number>
+  const playbackRate = (playerSignals?.playbackRate ?? signal(1)) as WritableSignal<number>
+
+  // WaveSurfer-specific signals (not in Player)
   const audioBuffer = signal<AudioBuffer | null>(null)
   const peaks = signal<Array<Float32Array | number[]> | null>(null)
   const url = signal('')

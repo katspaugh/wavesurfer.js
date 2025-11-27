@@ -8,7 +8,6 @@ import Timer from './timer.js'
 import WebAudioPlayer from './webaudio.js'
 import { createWaveSurferState, type WaveSurferState, type WaveSurferActions } from './state/wavesurfer-state.js'
 import { setupStateEventEmission } from './reactive/state-event-emitter.js'
-import { effect } from './reactive/store.js'
 
 export type WaveSurferOptions = {
   /** Required: an HTML element or selector where the waveform will be rendered */
@@ -203,7 +202,16 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.options = Object.assign({}, defaultOptions, options)
 
     // Initialize reactive state
-    const { state, actions } = createWaveSurferState()
+    // Pass Player signals to compose them into WaveSurferState
+    // This eliminates signal duplication and manual syncing
+    const { state, actions } = createWaveSurferState({
+      isPlaying: this.isPlayingSignal,
+      currentTime: this.currentTimeSignal,
+      duration: this.durationSignal,
+      volume: this.volumeSignal,
+      playbackRate: this.playbackRateSignal,
+      isSeeking: this.seekingSignal,
+    })
     this.wavesurferState = state
     this.wavesurferActions = actions
 
@@ -264,46 +272,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   private initReactiveState() {
     // Bridge reactive state to EventEmitter for backwards compatibility
+    // No manual syncing needed - WaveSurferState uses Player signals directly
     this.reactiveCleanups.push(
       setupStateEventEmission(this.wavesurferState, {
         emit: this.emit.bind(this),
       }),
-    )
-
-    // Sync Player signals to WaveSurferState
-    this.reactiveCleanups.push(
-      effect(() => {
-        const isPlaying = this.isPlayingSignal.value
-        this.wavesurferActions.setPlaying(isPlaying)
-      }, [this.isPlayingSignal]),
-    )
-
-    this.reactiveCleanups.push(
-      effect(() => {
-        const currentTime = this.currentTimeSignal.value
-        this.wavesurferActions.setCurrentTime(currentTime)
-      }, [this.currentTimeSignal]),
-    )
-
-    this.reactiveCleanups.push(
-      effect(() => {
-        const duration = this.durationSignal.value
-        this.wavesurferActions.setDuration(duration)
-      }, [this.durationSignal]),
-    )
-
-    this.reactiveCleanups.push(
-      effect(() => {
-        const volume = this.volumeSignal.value
-        this.wavesurferActions.setVolume(volume)
-      }, [this.volumeSignal]),
-    )
-
-    this.reactiveCleanups.push(
-      effect(() => {
-        const playbackRate = this.playbackRateSignal.value
-        this.wavesurferActions.setPlaybackRate(playbackRate)
-      }, [this.playbackRateSignal]),
     )
   }
 
