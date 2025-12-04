@@ -220,6 +220,7 @@ export function shouldRenderBars(options: WaveSurferOptions): boolean {
 export function resolveColorValue(
   color: WaveSurferOptions['waveColor'],
   devicePixelRatio: number,
+  canvasHeight?: number,
 ): string | CanvasGradient {
   if (!Array.isArray(color)) return color || ''
   if (color.length === 0) return '#999'
@@ -227,7 +228,7 @@ export function resolveColorValue(
 
   const canvasElement = document.createElement('canvas')
   const ctx = canvasElement.getContext('2d') as CanvasRenderingContext2D
-  const gradientHeight = canvasElement.height * devicePixelRatio
+  const gradientHeight = canvasHeight ?? canvasElement.height * devicePixelRatio
   const gradient = ctx.createLinearGradient(0, 0, 0, gradientHeight || devicePixelRatio)
 
   const colorStopPercentage = 1 / (color.length - 1)
