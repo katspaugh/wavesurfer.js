@@ -1,0 +1,1 @@
+{"id":"wavesurfer.js-pgw","title":"Fix race condition with autoCenter/autoScroll during loadBlob","description":"","status":"closed","priority":2,"issue_type":"bug","created_at":"2025-12-04T20:44:48.179843+01:00","updated_at":"2025-12-04T20:48:52.196792+01:00","closed_at":"2025-12-04T20:48:52.196792+01:00"}
