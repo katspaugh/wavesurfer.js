@@ -725,7 +725,8 @@ class Renderer extends EventEmitter<RendererEvents> {
       ? `translateX(-${progress * this.options.cursorWidth}px)`
       : ''
 
-    if (this.isScrollable && this.options.autoScroll) {
+    // Only scroll if we have valid audio data to prevent race conditions during loading
+    if (this.isScrollable && this.options.autoScroll && this.audioData && this.audioData.duration > 0) {
       this.scrollIntoView(progress, isPlaying)
     }
   }
