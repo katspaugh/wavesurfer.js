@@ -347,8 +347,11 @@ class Renderer extends EventEmitter<RendererEvents> {
     })
   }
 
-  private convertColorValues(color?: WaveSurferOptions['waveColor']): string | CanvasGradient {
-    return utils.resolveColorValue(color, this.getPixelRatio())
+  private convertColorValues(
+    color?: WaveSurferOptions['waveColor'],
+    ctx?: CanvasRenderingContext2D,
+  ): string | CanvasGradient {
+    return utils.resolveColorValue(color, this.getPixelRatio(), ctx?.canvas.height)
   }
 
   private getPixelRatio(): number {
@@ -433,7 +436,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   private renderWaveform(channelData: ChannelData, options: WaveSurferOptions, ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = this.convertColorValues(options.waveColor)
+    ctx.fillStyle = this.convertColorValues(options.waveColor, ctx)
 
     if (options.renderFunction) {
       options.renderFunction(channelData, ctx)
@@ -476,7 +479,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
     if (options.renderFunction) {
-      ctx.fillStyle = this.convertColorValues(options.waveColor)
+      ctx.fillStyle = this.convertColorValues(options.waveColor, ctx)
       options.renderFunction(data, ctx)
     } else {
       this.renderWaveform(data, options, ctx)
@@ -489,7 +492,10 @@ class Renderer extends EventEmitter<RendererEvents> {
       progressCtx.drawImage(canvas, 0, 0)
       // Set the composition method to draw only where the waveform is drawn
       progressCtx.globalCompositeOperation = 'source-in'
-      progressCtx.fillStyle = this.convertColorValues(options.progressColor as WaveSurferOptions['waveColor'])
+      progressCtx.fillStyle = this.convertColorValues(
+        options.progressColor as WaveSurferOptions['waveColor'],
+        progressCtx,
+      )
       // This rectangle acts as a mask thanks to the composition method
       progressCtx.fillRect(0, 0, canvas.width, canvas.height)
       progressContainer.appendChild(progressCanvas)
