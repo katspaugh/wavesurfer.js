@@ -9,6 +9,7 @@ import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
 import { createDragStream } from '../reactive/drag-stream.js'
 import { effect } from '../reactive/store.js'
+import { fromEvent, cleanup as cleanupStream } from '../reactive/event-streams.js'
 
 export type RegionsPluginOptions = undefined
 export type UpdateSide = 'start' | 'end'
@@ -279,12 +280,37 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     const { element } = this
     if (!element) return
 
-    element.addEventListener('click', (e) => this.emit('click', e))
-    element.addEventListener('mouseenter', (e) => this.emit('over', e))
-    element.addEventListener('mouseleave', (e) => this.emit('leave', e))
-    element.addEventListener('dblclick', (e) => this.emit('dblclick', e))
-    element.addEventListener('pointerdown', () => this.toggleCursor(true))
-    element.addEventListener('pointerup', () => this.toggleCursor(false))
+    // Create event streams
+    const clicks = fromEvent(element, 'click')
+    const mouseenters = fromEvent(element, 'mouseenter')
+    const mouseleaves = fromEvent(element, 'mouseleave')
+    const dblclicks = fromEvent(element, 'dblclick')
+    const pointerdowns = fromEvent(element, 'pointerdown')
+    const pointerups = fromEvent(element, 'pointerup')
+
+    // Subscribe to streams
+    const unsubscribeClick = clicks.subscribe((e) => e && this.emit('click', e))
+    const unsubscribeMouseenter = mouseenters.subscribe((e) => e && this.emit('over', e))
+    const unsubscribeMouseleave = mouseleaves.subscribe((e) => e && this.emit('leave', e))
+    const unsubscribeDblclick = dblclicks.subscribe((e) => e && this.emit('dblclick', e))
+    const unsubscribePointerdown = pointerdowns.subscribe((e) => e && this.toggleCursor(true))
+    const unsubscribePointerup = pointerups.subscribe((e) => e && this.toggleCursor(false))
+
+    // Store cleanup
+    this.subscriptions.push(() => {
+      unsubscribeClick()
+      unsubscribeMouseenter()
+      unsubscribeMouseleave()
+      unsubscribeDblclick()
+      unsubscribePointerdown()
+      unsubscribePointerup()
+      cleanupStream(clicks)
+      cleanupStream(mouseenters)
+      cleanupStream(mouseleaves)
+      cleanupStream(dblclicks)
+      cleanupStream(pointerdowns)
+      cleanupStream(pointerups)
+    })
 
     // Drag
     const dragStream = createDragStream(element)
@@ -500,11 +526,31 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public remove() {
     this.isRemoved = true
     this.emit('remove')
+
+    // Clean up all subscriptions (drag streams, event listeners, etc.)
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
+    this.subscriptions = []
+
+    // Clean up content event listeners
+    if (this.content && this.contentEditable) {
+      if (this.contentClickListener) {
+        this.content.removeEventListener('click', this.contentClickListener)
+        this.contentClickListener = undefined
+      }
+      if (this.contentBlurListener) {
+        this.content.removeEventListener('blur', this.contentBlurListener)
+        this.contentBlurListener = undefined
+      }
+    }
+
+    // Remove DOM element
     if (this.element) {
       this.element.remove()
       this.element = null
     }
+
+    // Clear all event listeners from the EventEmitter
+    this.unAll()
   }
 }
 
