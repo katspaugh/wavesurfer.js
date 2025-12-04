@@ -6,6 +6,7 @@
  */
 
 import WaveSurfer from '../wavesurfer.js'
+import RegionsPlugin from '../plugins/regions.js'
 
 // Mock audio context and matchMedia
 beforeAll(() => {
@@ -168,7 +169,6 @@ describe('Memory Leak Detection', () => {
   describe('Regions plugin memory leak (#4243)', () => {
     it('should cleanup region event listeners when removed', () => {
       const ws = WaveSurfer.create({ container })
-      const RegionsPlugin = require('../plugins/regions.js').default
       const regions = ws.registerPlugin(RegionsPlugin.create())
 
       // Mock duration so regions are saved immediately
@@ -194,7 +194,6 @@ describe('Memory Leak Detection', () => {
 
     it('should not retain regions in memory after removal', () => {
       const ws = WaveSurfer.create({ container })
-      const RegionsPlugin = require('../plugins/regions.js').default
       const regions = ws.registerPlugin(RegionsPlugin.create())
 
       // Mock duration so regions are saved immediately
@@ -226,7 +225,6 @@ describe('Memory Leak Detection', () => {
 
     it('should cleanup content event listeners when region is removed', () => {
       const ws = WaveSurfer.create({ container })
-      const RegionsPlugin = require('../plugins/regions.js').default
       const regions = ws.registerPlugin(RegionsPlugin.create())
 
       // Mock duration so regions are saved immediately
@@ -253,7 +251,6 @@ describe('Memory Leak Detection', () => {
 
     it('should cleanup DOM event streams on region removal', () => {
       const ws = WaveSurfer.create({ container })
-      const RegionsPlugin = require('../plugins/regions.js').default
       const regions = ws.registerPlugin(RegionsPlugin.create())
 
       // Mock duration so regions are saved immediately
