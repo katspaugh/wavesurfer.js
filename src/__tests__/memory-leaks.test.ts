@@ -7,7 +7,7 @@
 
 import WaveSurfer from '../wavesurfer.js'
 
-// Mock audio context
+// Mock audio context and matchMedia
 beforeAll(() => {
   global.AudioContext = jest.fn().mockImplementation(() => ({
     createMediaElementSource: jest.fn(() => ({
@@ -22,6 +22,21 @@ beforeAll(() => {
     destination: {},
     close: jest.fn(),
   }))
+
+  // Mock matchMedia for drag-stream
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  })
 })
 
 describe('Memory Leak Detection', () => {
@@ -147,6 +162,120 @@ describe('Memory Leak Detection', () => {
 
       const elementCountAfter = container.querySelectorAll('.test-plugin').length
       expect(elementCountAfter).toBe(0)
+    })
+  })
+
+  describe('Regions plugin memory leak (#4243)', () => {
+    it('should cleanup region event listeners when removed', () => {
+      const ws = WaveSurfer.create({ container })
+      const RegionsPlugin = require('../plugins/regions.js').default
+      const regions = ws.registerPlugin(RegionsPlugin.create())
+
+      // Mock duration so regions are saved immediately
+      jest.spyOn(ws, 'getDuration').mockReturnValue(10)
+      jest.spyOn(ws, 'getDecodedData').mockReturnValue({ numberOfChannels: 1 } as any)
+
+      // Create a region
+      const region = regions.addRegion({ start: 0, end: 1 })
+
+      // Track if cleanup is happening
+      const clickHandler = jest.fn()
+      region.on('click', clickHandler)
+
+      // Remove the region
+      region.remove()
+
+      // After removal, the region element should be null
+      expect(region.element).toBeNull()
+
+      // Cleanup
+      ws.destroy()
+    })
+
+    it('should not retain regions in memory after removal', () => {
+      const ws = WaveSurfer.create({ container })
+      const RegionsPlugin = require('../plugins/regions.js').default
+      const regions = ws.registerPlugin(RegionsPlugin.create())
+
+      // Mock duration so regions are saved immediately
+      jest.spyOn(ws, 'getDuration').mockReturnValue(10)
+      jest.spyOn(ws, 'getDecodedData').mockReturnValue({ numberOfChannels: 1 } as any)
+
+      // Create multiple regions
+      const region1 = regions.addRegion({ start: 0, end: 1 })
+      const region2 = regions.addRegion({ start: 2, end: 3 })
+      const region3 = regions.addRegion({ start: 4, end: 5 })
+
+      expect(regions.getRegions().length).toBe(3)
+
+      // Remove regions
+      region1.remove()
+      region2.remove()
+
+      // Only one region should remain
+      expect(regions.getRegions().length).toBe(1)
+      expect(regions.getRegions()[0]).toBe(region3)
+
+      // Remove last region
+      region3.remove()
+      expect(regions.getRegions().length).toBe(0)
+
+      // Cleanup
+      ws.destroy()
+    })
+
+    it('should cleanup content event listeners when region is removed', () => {
+      const ws = WaveSurfer.create({ container })
+      const RegionsPlugin = require('../plugins/regions.js').default
+      const regions = ws.registerPlugin(RegionsPlugin.create())
+
+      // Mock duration so regions are saved immediately
+      jest.spyOn(ws, 'getDuration').mockReturnValue(10)
+      jest.spyOn(ws, 'getDecodedData').mockReturnValue({ numberOfChannels: 1 } as any)
+
+      // Create a region with editable content
+      const region = regions.addRegion({
+        start: 0,
+        end: 1,
+        content: 'Test content',
+        contentEditable: true,
+      })
+
+      // Remove the region
+      region.remove()
+
+      // Content should be cleaned up
+      expect(region.element).toBeNull()
+
+      // Cleanup
+      ws.destroy()
+    })
+
+    it('should cleanup DOM event streams on region removal', () => {
+      const ws = WaveSurfer.create({ container })
+      const RegionsPlugin = require('../plugins/regions.js').default
+      const regions = ws.registerPlugin(RegionsPlugin.create())
+
+      // Mock duration so regions are saved immediately
+      jest.spyOn(ws, 'getDuration').mockReturnValue(10)
+      jest.spyOn(ws, 'getDecodedData').mockReturnValue({ numberOfChannels: 1 } as any)
+
+      // Create regions
+      const createdRegions = []
+      for (let i = 0; i < 10; i++) {
+        createdRegions.push(regions.addRegion({ start: i, end: i + 1 }))
+      }
+
+      expect(regions.getRegions().length).toBe(10)
+
+      // Remove all regions
+      createdRegions.forEach((r) => r.remove())
+
+      // All regions should be removed
+      expect(regions.getRegions().length).toBe(0)
+
+      // Cleanup
+      ws.destroy()
     })
   })
 
