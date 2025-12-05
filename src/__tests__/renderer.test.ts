@@ -162,10 +162,20 @@ describe('Renderer', () => {
 
   test('reRender keeps scroll position', async () => {
     const buffer = createAudioBuffer([[0, 0.5, -0.5]])
+    renderer.zoom(20)
     await renderer.render(buffer)
     renderer.setScroll(10)
     renderer.reRender()
     expect(renderer.getScroll()).toBe(10)
+  })
+
+  test('reRender keeps non-scroll position', async () => {
+    const buffer = createAudioBuffer([[0, 0.5, -0.5]])
+    renderer.zoom(0)
+    await renderer.render(buffer)
+    renderer.setScroll(10)
+    renderer.reRender()
+    expect(renderer.getScroll()).toBe(0)
   })
 
   test('zoom updates option', () => {

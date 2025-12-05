@@ -675,7 +675,9 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.render(this.audioData)
 
     // Adjust the scroll position so that the cursor stays in the same place
-    if (this.isScrollable && scrollWidth !== this.scrollContainer.scrollWidth) {
+    if (!this.isScrollable && this.scrollContainer.scrollLeft) {
+      this.scrollContainer.scrollLeft = 0
+    } else if (this.isScrollable && scrollWidth !== this.scrollContainer.scrollWidth) {
       const { right: after } = this.progressWrapper.getBoundingClientRect()
       const delta = utils.roundToHalfAwayFromZero(after - before)
       this.scrollContainer.scrollLeft += delta
