@@ -24,7 +24,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   private gainNode: GainNode
   private bufferNode: AudioBufferSourceNode | null = null
   private playStartTime = 0
-  private playedDuration = 0
+  private playbackPosition = 0
   private _muted = false
   private _playbackRate = 1
   private _duration: number | undefined = undefined
@@ -110,10 +110,10 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.bufferNode.playbackRate.value = this._playbackRate
     this.bufferNode.connect(this.gainNode)
 
-    let currentPos = this.playedDuration
+    let currentPos = this.playbackPosition
     if (currentPos >= this.duration || currentPos < 0) {
       currentPos = 0
-      this.playedDuration = 0
+      this.playbackPosition = 0
     }
 
     this.bufferNode.start(this.audioContext.currentTime, currentPos)
@@ -130,7 +130,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   private _pause() {
     this.paused = true
     this.bufferNode?.stop()
-    this.playedDuration += (this.audioContext.currentTime - this.playStartTime) * this._playbackRate
+    this.playbackPosition += (this.audioContext.currentTime - this.playStartTime) * this._playbackRate
   }
 
   async play() {
@@ -183,14 +183,14 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
   get currentTime() {
     return this.paused
-      ? this.playedDuration
-      : this.playedDuration + (this.audioContext.currentTime - this.playStartTime) * this._playbackRate
+      ? this.playbackPosition
+      : this.playbackPosition + (this.audioContext.currentTime - this.playStartTime) * this._playbackRate
   }
   set currentTime(value) {
     const wasPlaying = !this.paused
 
     if (wasPlaying) this._pause()
-    this.playedDuration = value
+    this.playbackPosition = value
     if (wasPlaying) this._play()
 
     this.emit('seeking')
