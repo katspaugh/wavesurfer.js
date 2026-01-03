@@ -639,16 +639,20 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     setTimeout(() => {
       // Check that the label doesn't overlap with other labels
       // If it does, push it down until it doesn't
+      // only check regions that are before us in the list -- otherwise
+      // both overlapping regions will try to move down away from each other.
       const div = region.content as HTMLElement
       const box = div.getBoundingClientRect()
 
-      const overlap = this.regions
+      const regionIndex = this.regions.indexOf(region)
+
+      const overlap = this.regions.slice(0, regionIndex)
         .map((reg) => {
           if (reg === region || !reg.content) return 0
 
           const otherBox = reg.content.getBoundingClientRect()
           if (box.left < otherBox.left + otherBox.width && otherBox.left < box.left + box.width) {
-            return otherBox.height
+            return otherBox.height + 2
           }
           return 0
         })
