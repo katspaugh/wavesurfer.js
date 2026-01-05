@@ -67,7 +67,8 @@
     "test": "cypress run --browser chrome",
     "test:unit": "jest --coverage",
     "serve": "npx live-server --port=9090 --no-browser --ignore='.*,src,cypress,scripts'",
-    "start": "npm run build:dev & npm run serve"
+    "start": "npm run build:dev & npm run serve",
+    "prepare": "npm run build"
   },
   "packageManager": "yarn@1.22.22",
   "devDependencies": {
