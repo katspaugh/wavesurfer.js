@@ -103,7 +103,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public contentEditable = false
   public subscriptions: (() => void)[] = []
   public updatingSide?: UpdateSide = undefined
-  private isRemoved = false
+  public isRemoved = false
   private contentClickListener?: (e: MouseEvent) => void
   private contentBlurListener?: () => void
 
@@ -634,7 +634,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
   }
 
   private avoidOverlapping(region: Region) {
-    if (!region.content) return
+    if (!region.content || region.isRemoved) return
 
     setTimeout(() => {
       // Check that the label doesn't overlap with other labels
@@ -647,6 +647,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       const regionIndex = this.regions.indexOf(region)
 
       const overlap = this.regions.slice(0, regionIndex)
+        .filter((reg) => !reg.isRemoved)
         .map((reg) => {
           if (reg === region || !reg.content) return 0
 
