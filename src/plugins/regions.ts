@@ -646,7 +646,8 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
       const regionIndex = this.regions.indexOf(region)
 
-      const overlap = this.regions.slice(0, regionIndex)
+      const overlap = this.regions
+        .slice(0, regionIndex)
         .filter((reg) => !reg.isRemoved)
         .map((reg) => {
           if (reg === region || !reg.content) return 0
