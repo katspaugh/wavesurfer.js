@@ -11,6 +11,7 @@ const ws = WaveSurfer.create({
   container: '#waveform',
   waveColor: 'rgb(200, 0, 200)',
   progressColor: 'rgb(100, 0, 100)',
+  dragToSeek: false,
   url: '/examples/audio/audio.wav',
   plugins: [regions],
 })
@@ -59,10 +60,6 @@ ws.on('decode', () => {
   })
 })
 
-regions.enableDragSelection({
-  color: 'rgba(255, 0, 0, 0.1)',
-})
-
 regions.on('region-updated', (region) => {
   console.log('Updated region', region)
 })
@@ -70,9 +67,41 @@ regions.on('region-updated', (region) => {
 // Loop a region on click
 let loop = true
 // Toggle looping with a checkbox
-document.querySelector('input[type="checkbox"]').onclick = (e) => {
+document.querySelector('#loop').onclick = (e) => {
   loop = e.target.checked
 }
+
+// Drag Selection: Create new regions by moving the cursor while holding left-click on the waveform
+let dragSelection = undefined
+
+const toggleDragSelection = () => {
+  if (!dragSelection) {
+    dragSelection = regions.enableDragSelection({
+      color: 'rgba(255, 0, 0, 0.1)',
+    })
+  } else {
+    dragSelection()
+    dragSelection = undefined
+  }
+}
+
+// Toggle drag selection with a checkbox
+document.querySelector('#dragSelectToggle').addEventListener('change', () => {
+  toggleDragSelection()
+})
+
+// Drag To Seek
+let dragToSeek = false
+const toggleDragToSeek = () => {
+  console.log(dragToSeek)
+  dragToSeek = !dragToSeek
+  ws.setOptions({ dragToSeek: dragToSeek })
+}
+
+// Toggle drag selection with a checkbox
+document.querySelector('#dragToSeekToggle').addEventListener('change', () => {
+  toggleDragToSeek()
+})
 
 {
   let activeRegion = null
@@ -116,8 +145,18 @@ ws.once('decode', () => {
 
     <p>
       <label>
-        <input type="checkbox" checked="${loop}" />
+        <input id="loop" type="checkbox" checked="${loop}" />
         Loop regions
+      </label>
+
+      <label>
+        <input id="dragSelectToggle" type="checkbox" style="margin-left: 1em" />
+        Enable drag select
+      </label>
+
+      <label>
+        <input id="dragToSeekToggle" type="checkbox" style="margin-left: 1em" />
+        Enable drag to seek
       </label>
 
       <label style="margin-left: 2em">
@@ -126,7 +165,7 @@ ws.once('decode', () => {
     </p>
 
     <p>
-      📖 <a href="https://wavesurfer.xyz/docs/classes/plugins_regions.default">Regions plugin docs</a>
+      <a href="https://wavesurfer.xyz/docs/classes/plugins_regions.default">Regions plugin docs</a>
     </p>
   </html>
 */
