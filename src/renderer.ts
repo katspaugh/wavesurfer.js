@@ -251,6 +251,9 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     if (options.dragToSeek === true || typeof this.options.dragToSeek === 'object') {
       this.initDrag()
+    } else {
+      this.dragStream?.cleanup()
+      this.dragStream = null
     }
 
     this.options = options
