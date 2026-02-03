@@ -111,7 +111,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.bufferNode.connect(this.gainNode)
 
     let currentPos = this.playbackPosition
-    if (currentPos >= this.duration || currentPos < 0) {
+    if (currentPos > this.duration || currentPos < 0) {
       currentPos = 0
       this.playbackPosition = 0
     }

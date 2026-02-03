@@ -84,9 +84,21 @@ describe('WebAudioPlayer', () => {
         player.playbackRate = 2
 
         return player.play().then(() => {
-          // currentPos should be 4 (2 * 2)
-          cy.get('@startStub').should('have.been.calledWith', 0, 4)
+          // currentPos should be 2 (playbackRate does not multiply start position)
+          cy.get('@startStub').should('have.been.calledWith', 0, 2)
           expect(player.bufferNode.playbackRate.value).to.equal(2)
+        })
+      })
+    })
+
+    it('should NOT reset position when seeking to exactly the duration', () => {
+      cy.get('@player').then((player) => {
+        // Set position to exactly the duration (10)
+        player.currentTime = 10
+
+        return player.play().then(() => {
+          // Position should NOT be reset to 0, should start at the end
+          cy.get('@startStub').should('have.been.calledWith', 0, 10)
         })
       })
     })
