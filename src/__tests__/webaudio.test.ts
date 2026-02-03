@@ -27,7 +27,8 @@ const mockAudioContext = {
 }
 
 // Mock window.AudioContext
-;(global as any).AudioContext = jest.fn(() => mockAudioContext)
+const mockAudioContextConstructor = jest.fn(() => mockAudioContext)
+Object.defineProperty(global, 'AudioContext', { value: mockAudioContextConstructor })
 
 import WebAudioPlayer from '../webaudio.js'
 
@@ -42,7 +43,8 @@ describe('WebAudioPlayer', () => {
 
     player = new WebAudioPlayer(mockAudioContext as unknown as AudioContext)
     // Set up a mock buffer with 33 seconds duration
-    ;(player as any).buffer = { duration: 33 }
+    const playerWithBuffer = player as unknown as { buffer: { duration: number } }
+    playerWithBuffer.buffer = { duration: 33 }
   })
 
   describe('position reset behavior', () => {
