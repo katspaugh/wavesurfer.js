@@ -655,8 +655,17 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Start playing the audio */
   public async play(start?: number, end?: number): Promise<void> {
+    // If media is ended and we're setting a start position, wait for seek to complete
+    // before playing to avoid the browser restarting from the beginning
+    const isEnded = this.media instanceof WebAudioPlayer ? false : this.getMediaElement().ended
     if (start != null) {
       this.setTime(start)
+      // Wait for the seek to complete if the media was ended
+      if (isEnded) {
+        await new Promise<void>((resolve) => {
+          this.onMediaEvent('seeked', () => resolve(), { once: true })
+        })
+      }
     }
 
     const playResult = await super.play()

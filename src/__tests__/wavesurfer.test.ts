@@ -186,6 +186,26 @@ describe('WaveSurfer public methods', () => {
     expect((ws as any).stopAtPosition).toBe(4)
   })
 
+  test('play waits for seek when media is ended', async () => {
+    const ws = createWs()
+    const media = ws.getMediaElement()
+    // Simulate media ended state
+    Object.defineProperty(media, 'ended', { configurable: true, value: true, writable: true })
+
+    const setTimeSpy = jest.spyOn(ws, 'setTime')
+
+    // Start play but don't await it yet
+    const playPromise = ws.play(10)
+
+    // Dispatch seeked event to simulate seek completion
+    media.dispatchEvent(new Event('seeked'))
+
+    await playPromise
+
+    expect(setTimeSpy).toHaveBeenCalledWith(10)
+    expect(media.play).toHaveBeenCalled()
+  })
+
   test('playPause toggles play and pause', async () => {
     const ws = createWs()
     const media = ws.getMediaElement()
