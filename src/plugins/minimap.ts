@@ -275,16 +275,16 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
 
     this.renderMainProgress(relativeX)
 
-    clearTimeout(this.dragTimeout ?? undefined)
+    if (this.dragTimeout) {
+      clearTimeout(this.dragTimeout)
+    }
 
     let debounceTime = 0
     const dragToSeek = this.options.dragToSeek
 
-    if (this.wavesurfer.isPlaying()) {
-      debounceTime = 0
-    } else if (dragToSeek === true) {
+    if (!this.wavesurfer.isPlaying() && dragToSeek === true) {
       debounceTime = 200
-    } else if (dragToSeek && typeof dragToSeek === 'object') {
+    } else if (!this.wavesurfer.isPlaying() && dragToSeek && typeof dragToSeek === 'object') {
       debounceTime = dragToSeek.debounceTime ?? 200
     }
 
