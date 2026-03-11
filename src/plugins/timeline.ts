@@ -284,7 +284,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       const mode = isPrimary ? 'primary' : isSecondary ? 'secondary' : 'tick'
       notch.setAttribute('part', `timeline-notch timeline-notch-${mode}`)
 
-      const offset = (Math.round((i + this.options.timeOffset) * 100) / 100) * pxPerSec
+      const offset = (i + this.options.timeOffset) * pxPerSec
       notch.style.left = `${offset}px`
       this.virtualAppend(offset, timeline, notch)
     }
