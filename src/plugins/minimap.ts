@@ -52,9 +52,11 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   protected options: MinimapPluginOptions & typeof defaultOptions
   private minimapWrapper: HTMLElement
   private miniWavesurfer: WaveSurfer | null = null
+  private miniSubscriptions: Array<() => void> = []
   private overlay: HTMLElement
   private container: HTMLElement | null = null
   private isInitializing = false
+  private dragTimeout: ReturnType<typeof setTimeout> | null = null
 
   constructor(options: MinimapPluginOptions) {
     super(options)
@@ -127,10 +129,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
     if (this.isInitializing) return
     this.isInitializing = true
 
-    if (this.miniWavesurfer) {
-      this.miniWavesurfer.destroy()
-      this.miniWavesurfer = null
-    }
+    this.destroyMinimap()
 
     if (!this.wavesurfer) {
       this.isInitializing = false
@@ -138,8 +137,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
     }
 
     const data = this.wavesurfer.getDecodedData()
-    const media = this.wavesurfer.getMediaElement()
-    if (!data || !media) {
+    if (!data) {
       this.isInitializing = false
       return
     }
@@ -154,17 +152,21 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
       container: this.minimapWrapper,
       minPxPerSec: 0,
       fillParent: true,
-      media,
+      url: undefined,
+      media: undefined,
       peaks,
       duration: data.duration,
     })
 
-    this.subscriptions.push(
+    this.syncMinimapPosition(this.wavesurfer.getCurrentTime())
+
+    this.miniSubscriptions.push(
       this.miniWavesurfer.on('audioprocess', (currentTime) => {
         this.emit('audioprocess', currentTime)
       }),
 
       this.miniWavesurfer.on('click', (relativeX, relativeY) => {
+        this.wavesurfer?.seekTo(relativeX)
         this.emit('click', relativeX, relativeY)
       }),
 
@@ -181,6 +183,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
       }),
 
       this.miniWavesurfer.on('drag', (relativeX) => {
+        this.onMinimapDrag(relativeX)
         this.emit('drag', relativeX)
       }),
 
@@ -201,6 +204,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
       }),
 
       this.miniWavesurfer.on('ready', () => {
+        this.syncMinimapPosition(this.wavesurfer?.getCurrentTime() || 0)
         this.emit('ready')
       }),
 
@@ -230,6 +234,66 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
     return Math.round((this.minimapWrapper.clientWidth / waveformWidth) * 100)
   }
 
+  private destroyMinimap() {
+    const miniWavesurfer = this.miniWavesurfer
+    this.miniWavesurfer = null
+    miniWavesurfer?.destroy()
+    this.miniSubscriptions.forEach((unsubscribe) => unsubscribe())
+    this.miniSubscriptions = []
+
+    if (this.dragTimeout) {
+      clearTimeout(this.dragTimeout)
+      this.dragTimeout = null
+    }
+  }
+
+  private renderMainProgress(progress: number) {
+    if (!this.wavesurfer) return
+    this.wavesurfer.getRenderer().renderProgress(progress, this.wavesurfer.isPlaying())
+  }
+
+  private renderMinimapProgress(progress: number) {
+    if (!this.wavesurfer || !this.miniWavesurfer) return
+    this.miniWavesurfer.getRenderer().renderProgress(progress, this.wavesurfer.isPlaying())
+  }
+
+  private syncMinimapPosition(currentTime: number) {
+    if (!this.wavesurfer || !this.miniWavesurfer) return
+
+    const duration = this.wavesurfer.getDuration()
+    if (!duration) return
+
+    if (this.miniWavesurfer.getDuration()) {
+      this.miniWavesurfer.setTime(currentTime)
+    } else {
+      this.renderMinimapProgress(currentTime / duration)
+    }
+  }
+
+  private onMinimapDrag(relativeX: number) {
+    if (!this.wavesurfer) return
+
+    this.renderMainProgress(relativeX)
+
+    if (this.dragTimeout) {
+      clearTimeout(this.dragTimeout)
+    }
+
+    let debounceTime = 0
+    const dragToSeek = this.options.dragToSeek
+
+    if (!this.wavesurfer.isPlaying() && dragToSeek === true) {
+      debounceTime = 200
+    } else if (!this.wavesurfer.isPlaying() && dragToSeek && typeof dragToSeek === 'object') {
+      debounceTime = dragToSeek.debounceTime ?? 200
+    }
+
+    this.dragTimeout = setTimeout(() => {
+      this.wavesurfer?.seekTo(relativeX)
+      this.dragTimeout = null
+    }, debounceTime)
+  }
+
   private onRedraw() {
     const overlayWidth = this.getOverlayWidth()
     this.overlay.style.width = `${overlayWidth}%`
@@ -250,6 +314,14 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
         this.initMinimap()
       }),
 
+      this.wavesurfer.on('timeupdate', (currentTime: number) => {
+        this.syncMinimapPosition(currentTime)
+      }),
+
+      this.wavesurfer.on('drag', (relativeX: number) => {
+        this.renderMinimapProgress(relativeX)
+      }),
+
       this.wavesurfer.on('scroll', (startTime: number) => {
         this.onScroll(startTime)
       }),
@@ -262,7 +334,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
 
   /** Unmount */
   public destroy() {
-    this.miniWavesurfer?.destroy()
+    this.destroyMinimap()
     this.minimapWrapper.remove()
     this.container = null
     super.destroy()
