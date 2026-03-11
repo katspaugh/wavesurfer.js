@@ -56,6 +56,11 @@ describe('TimelinePlugin', () => {
 
     const notches = wavesurfer.getWrapper().querySelectorAll<HTMLElement>('[part^="timeline-notch"]')
     expect(notches).toHaveLength(4)
-    expect(parseFloat(notches[1].style.left)).toBeCloseTo((0.333 + 0.001) * 100)
+    const offsets = Array.from(notches, (notch) => parseFloat(notch.style.left))
+
+    expect(offsets[0]).toBeCloseTo(0.1)
+    expect(offsets[1]).toBeCloseTo(33.4)
+    expect(offsets[2]).toBeCloseTo(66.7)
+    expect(offsets[3]).toBeCloseTo(100)
   })
 })
