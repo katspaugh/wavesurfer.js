@@ -43,6 +43,8 @@ export type RegionEvents = {
   update: [side?: UpdateSide]
   /** When dragging or resizing is finished */
   'update-end': [side?: UpdateSide]
+  /** When the region needs to be re-rendered */
+  render: []
   /** On play */
   play: [end?: number]
   /** On mouse click */
@@ -492,6 +494,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       this.end = this.clampPosition(options.end ?? (isMarker ? this.start : this.end))
       this.renderPosition()
       this.setPart()
+      this.emit('render')
     }
 
     if (options.content) {
@@ -709,15 +712,17 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       const unsubscribeScroll = this.wavesurfer.on('scroll', renderIfVisible)
       const unsubscribeZoom = this.wavesurfer.on('zoom', renderIfVisible)
       const unsubscribeResize = this.wavesurfer.on('resize', renderIfVisible)
+      const unsubscribeRender = region.on('render', renderIfVisible)
 
       // Only push the unsubscribe functions, not the once() return values
-      this.subscriptions.push(unsubscribeScroll, unsubscribeZoom, unsubscribeResize)
+      this.subscriptions.push(unsubscribeScroll, unsubscribeZoom, unsubscribeResize, unsubscribeRender)
 
       // Clean up subscriptions when region is removed
       region.once('remove', () => {
         unsubscribeScroll()
         unsubscribeZoom()
         unsubscribeResize()
+        unsubscribeRender()
       })
     }, 0)
   }
