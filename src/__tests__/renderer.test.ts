@@ -181,21 +181,38 @@ describe('Renderer', () => {
     expect(renderer.getScroll()).toBeGreaterThanOrEqual(0)
   })
 
-  test('renderProgress uses a zoom-based smooth scroll delta when auto-centering', () => {
+  test('renderProgress uses a pixels-per-second-based smooth scroll delta when auto-centering', () => {
     ;(renderer as any).options.autoScroll = true
     ;(renderer as any).options.autoCenter = true
     ;(renderer as any).isScrollable = true
 
-    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 100 })
-    ;(renderer as any).audioData = { duration: 2 }
-    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 200 })
+    const viewportWidth = 100
+    const lowZoomDuration = 2
+    const lowZoomScrollWidth = 200
+    const highZoomDuration = 1
+    const highZoomScrollWidth = 800
+
+    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', {
+      configurable: true,
+      value: viewportWidth,
+    })
+    ;(renderer as any).audioData = { duration: lowZoomDuration }
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', {
+      configurable: true,
+      value: lowZoomScrollWidth,
+    })
     renderer.setScroll(0)
     renderer.renderProgress(0.35, true)
+    // Math.min(20, Math.ceil((200 / 2) / 60)) = 2
     expect(renderer.getScroll()).toBe(2)
-    ;(renderer as any).audioData = { duration: 1 }
-    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 800 })
+    ;(renderer as any).audioData = { duration: highZoomDuration }
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', {
+      configurable: true,
+      value: highZoomScrollWidth,
+    })
     renderer.setScroll(0)
     renderer.renderProgress(0.0875, true)
+    // Math.min(20, Math.ceil((800 / 1) / 60)) = 14
     expect(renderer.getScroll()).toBe(14)
   })
 
