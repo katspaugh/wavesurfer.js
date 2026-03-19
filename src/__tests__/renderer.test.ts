@@ -181,6 +181,24 @@ describe('Renderer', () => {
     expect(renderer.getScroll()).toBeGreaterThanOrEqual(0)
   })
 
+  test('renderProgress uses a zoom-based smooth scroll delta when auto-centering', () => {
+    ;(renderer as any).options.autoScroll = true
+    ;(renderer as any).options.autoCenter = true
+    ;(renderer as any).isScrollable = true
+
+    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 100 })
+    ;(renderer as any).audioData = { duration: 2 }
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 200 })
+    renderer.setScroll(0)
+    renderer.renderProgress(0.35, true)
+    expect(renderer.getScroll()).toBe(2)
+    ;(renderer as any).audioData = { duration: 1 }
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 800 })
+    renderer.setScroll(0)
+    renderer.renderProgress(0.0875, true)
+    expect(renderer.getScroll()).toBe(14)
+  })
+
   test('renderProgress updates styles', () => {
     renderer.renderProgress(0.5)
     expect((renderer as any).progressWrapper.style.width).toBe('50%')
