@@ -84,8 +84,8 @@ describe('WebAudioPlayer', () => {
         player.playbackRate = 2
 
         return player.play().then(() => {
-          // currentPos should be 4 (2 * 2)
-          cy.get('@startStub').should('have.been.calledWith', 0, 4)
+          // currentPos should be 2 (playbackRate affects speed, not start offset)
+          cy.get('@startStub').should('have.been.calledWith', 0, 2)
           expect(player.bufferNode.playbackRate.value).to.equal(2)
         })
       })
