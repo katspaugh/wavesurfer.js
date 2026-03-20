@@ -19,6 +19,10 @@ type RendererEvents = {
   resize: []
 }
 
+const SMOOTH_SCROLL_FPS = 60
+const SMOOTH_SCROLL_MAX_DELTA = 10
+const LOW_ZOOM_PIXELS_PER_SECOND_THRESHOLD = SMOOTH_SCROLL_MAX_DELTA * SMOOTH_SCROLL_FPS
+
 class Renderer extends EventEmitter<RendererEvents> {
   private options: WaveSurferOptions
   private parent: HTMLElement
@@ -713,7 +717,18 @@ class Renderer extends EventEmitter<RendererEvents> {
       // Keep the cursor centered when playing
       const center = progressWidth - scrollLeft - middle
       if (isPlaying && this.options.autoCenter && center > 0) {
-        this.scrollContainer.scrollLeft += center
+        const duration = this.audioData?.duration
+        if (duration === undefined || duration <= 0) {
+          this.scrollContainer.scrollLeft += center
+          return
+        }
+
+        const pixelsPerSecond = scrollWidth / duration
+        if (pixelsPerSecond <= LOW_ZOOM_PIXELS_PER_SECOND_THRESHOLD) {
+          this.scrollContainer.scrollLeft += Math.min(center, SMOOTH_SCROLL_MAX_DELTA)
+        } else {
+          this.scrollContainer.scrollLeft += center
+        }
       }
     }
   }

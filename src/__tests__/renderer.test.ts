@@ -181,6 +181,41 @@ describe('Renderer', () => {
     expect(renderer.getScroll()).toBeGreaterThanOrEqual(0)
   })
 
+  test('renderProgress clamps only at low zoom when auto-centering', () => {
+    ;(renderer as any).options.autoScroll = true
+    ;(renderer as any).options.autoCenter = true
+    ;(renderer as any).isScrollable = true
+
+    const viewportWidth = 100
+    const lowZoomDuration = 2
+    const lowZoomScrollWidth = 200
+    const highZoomDuration = 1
+    const highZoomScrollWidth = 800
+
+    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', {
+      configurable: true,
+      value: viewportWidth,
+    })
+    ;(renderer as any).audioData = { duration: lowZoomDuration }
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', {
+      configurable: true,
+      value: lowZoomScrollWidth,
+    })
+    renderer.setScroll(0)
+    renderer.renderProgress(0.35, true)
+    // 200 / 2 = 100 px/s, so low zoom keeps Math.min(20, 10) = 10
+    expect(renderer.getScroll()).toBe(10)
+    ;(renderer as any).audioData = { duration: highZoomDuration }
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', {
+      configurable: true,
+      value: highZoomScrollWidth,
+    })
+    renderer.setScroll(0)
+    renderer.renderProgress(0.0875, true)
+    // 800 / 1 = 800 px/s, so high zoom applies no clamp and scrolls by the full center offset
+    expect(renderer.getScroll()).toBe(20)
+  })
+
   test('renderProgress updates styles', () => {
     renderer.renderProgress(0.5)
     expect((renderer as any).progressWrapper.style.width).toBe('50%')
