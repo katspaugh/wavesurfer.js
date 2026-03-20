@@ -115,7 +115,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
           left: '0',
           top: '0',
           bottom: '0',
-          transition: 'left 100ms ease-out',
+          transition: 'left 100ms ease-out, width 100ms ease-out',
           pointerEvents: 'none',
           backgroundColor: this.options.overlayColor,
         },

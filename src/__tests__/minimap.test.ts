@@ -158,6 +158,8 @@ describe('MinimapPlugin', () => {
     const minimapContainer = createMock.mock.calls[0][0].container as HTMLElement
     const overlay = minimapContainer.querySelector('[part="minimap-overlay"]') as HTMLElement
 
+    expect(overlay.style.transition).toBe('left 100ms ease-out, width 100ms ease-out')
+
     mainWaveSurfer.__setScroll(180)
     mainWaveSurfer.emit('redraw')
     mainWaveSurfer.emit('scroll', 10.8, 22.8, 180, 380)
