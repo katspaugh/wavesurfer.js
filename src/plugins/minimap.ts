@@ -115,7 +115,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
           left: '0',
           top: '0',
           bottom: '0',
-          transition: 'left 100ms ease-out',
+          transition: 'left 100ms ease-out, width 100ms ease-out',
           pointerEvents: 'none',
           backgroundColor: this.options.overlayColor,
         },
@@ -229,9 +229,28 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
     this.isInitializing = false
   }
 
-  private getOverlayWidth(): number {
-    const waveformWidth = this.wavesurfer?.getWrapper().clientWidth || 1
-    return Math.round((this.minimapWrapper.clientWidth / waveformWidth) * 100)
+  private updateOverlay(startTime?: number, endTime?: number) {
+    if (!this.wavesurfer) return
+
+    const duration = this.wavesurfer.getDuration()
+    if (!duration) return
+
+    if (startTime === undefined || endTime === undefined) {
+      const waveformWidth = this.wavesurfer.getWrapper().clientWidth || 1
+      const visibleWidth = this.wavesurfer.getWidth()
+      const scrollLeft = this.wavesurfer.getScroll()
+
+      startTime = (scrollLeft / waveformWidth) * duration
+      endTime = ((scrollLeft + visibleWidth) / waveformWidth) * duration
+    }
+
+    const clampedStartTime = Math.min(Math.max(startTime, 0), duration)
+    const clampedEndTime = Math.min(Math.max(endTime, clampedStartTime), duration)
+    const overlayLeft = (clampedStartTime / duration) * 100
+    const overlayWidth = ((clampedEndTime - clampedStartTime) / duration) * 100
+
+    this.overlay.style.left = `${overlayLeft}%`
+    this.overlay.style.width = `${Math.min(overlayWidth, 100 - overlayLeft)}%`
   }
 
   private destroyMinimap() {
@@ -295,14 +314,11 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   }
 
   private onRedraw() {
-    const overlayWidth = this.getOverlayWidth()
-    this.overlay.style.width = `${overlayWidth}%`
+    this.updateOverlay()
   }
 
-  private onScroll(startTime: number) {
-    if (!this.wavesurfer) return
-    const duration = this.wavesurfer.getDuration()
-    this.overlay.style.left = `${(startTime / duration) * 100}%`
+  private onScroll(startTime: number, endTime: number) {
+    this.updateOverlay(startTime, endTime)
   }
 
   private initWaveSurferEvents() {
@@ -322,8 +338,8 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
         this.renderMinimapProgress(relativeX)
       }),
 
-      this.wavesurfer.on('scroll', (startTime: number) => {
-        this.onScroll(startTime)
+      this.wavesurfer.on('scroll', (startTime: number, endTime: number) => {
+        this.onScroll(startTime, endTime)
       }),
 
       this.wavesurfer.on('redraw', () => {
