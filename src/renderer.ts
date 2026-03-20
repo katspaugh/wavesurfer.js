@@ -20,6 +20,8 @@ type RendererEvents = {
 }
 
 const SMOOTH_SCROLL_FPS = 60
+const SMOOTH_SCROLL_MAX_DELTA = 10
+const LOW_ZOOM_PIXELS_PER_SECOND_THRESHOLD = SMOOTH_SCROLL_MAX_DELTA * SMOOTH_SCROLL_FPS
 
 class Renderer extends EventEmitter<RendererEvents> {
   private options: WaveSurferOptions
@@ -722,8 +724,11 @@ class Renderer extends EventEmitter<RendererEvents> {
         }
 
         const pixelsPerSecond = scrollWidth / duration
-        const maxScrollDelta = Math.max(1, Math.ceil(pixelsPerSecond / SMOOTH_SCROLL_FPS))
-        this.scrollContainer.scrollLeft += Math.min(center, maxScrollDelta)
+        if (pixelsPerSecond <= LOW_ZOOM_PIXELS_PER_SECOND_THRESHOLD) {
+          this.scrollContainer.scrollLeft += Math.min(center, SMOOTH_SCROLL_MAX_DELTA)
+        } else {
+          this.scrollContainer.scrollLeft += center
+        }
       }
     }
   }

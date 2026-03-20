@@ -181,7 +181,7 @@ describe('Renderer', () => {
     expect(renderer.getScroll()).toBeGreaterThanOrEqual(0)
   })
 
-  test('renderProgress uses a pixels-per-second-based smooth scroll delta when auto-centering', () => {
+  test('renderProgress clamps only at low zoom when auto-centering', () => {
     ;(renderer as any).options.autoScroll = true
     ;(renderer as any).options.autoCenter = true
     ;(renderer as any).isScrollable = true
@@ -203,8 +203,8 @@ describe('Renderer', () => {
     })
     renderer.setScroll(0)
     renderer.renderProgress(0.35, true)
-    // Math.min(20, Math.ceil((200 / 2) / 60)) = 2
-    expect(renderer.getScroll()).toBe(2)
+    // 200 / 2 = 100 px/s, so low zoom keeps Math.min(20, 10) = 10
+    expect(renderer.getScroll()).toBe(10)
     ;(renderer as any).audioData = { duration: highZoomDuration }
     Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', {
       configurable: true,
@@ -212,8 +212,8 @@ describe('Renderer', () => {
     })
     renderer.setScroll(0)
     renderer.renderProgress(0.0875, true)
-    // Math.min(20, Math.ceil((800 / 1) / 60)) = 14
-    expect(renderer.getScroll()).toBe(14)
+    // 800 / 1 = 800 px/s, so high zoom applies no clamp and scrolls by the full center offset
+    expect(renderer.getScroll()).toBe(20)
   })
 
   test('renderProgress updates styles', () => {
