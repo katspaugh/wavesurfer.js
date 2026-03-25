@@ -48,11 +48,28 @@ const createMainWaveSurfer = (dragToSeek: boolean | { debounceTime: number } = t
   const wrapper = document.createElement('div')
   const renderer = { renderProgress: jest.fn() }
   const channelData = new Float32Array([0, 1, -1])
+  let scroll = 0
+  let width = 200
+  let wrapperWidth = 500
+
+  Object.defineProperty(wrapper, 'clientWidth', {
+    configurable: true,
+    get: () => wrapperWidth,
+  })
 
   wrapperParent.appendChild(wrapper)
 
   return {
     ...emitter,
+    __setScroll: (value: number) => {
+      scroll = value
+    },
+    __setWidth: (value: number) => {
+      width = value
+    },
+    __setWrapperWidth: (value: number) => {
+      wrapperWidth = value
+    },
     options: { dragToSeek },
     getCurrentTime: jest.fn(() => 12),
     getDecodedData: jest.fn(() => ({
@@ -62,6 +79,8 @@ const createMainWaveSurfer = (dragToSeek: boolean | { debounceTime: number } = t
     })),
     getDuration: jest.fn(() => 30),
     getRenderer: jest.fn(() => renderer),
+    getScroll: jest.fn(() => scroll),
+    getWidth: jest.fn(() => width),
     getWrapper: jest.fn(() => wrapper),
     isPlaying: jest.fn(() => false),
     seekTo: jest.fn(),
@@ -124,5 +143,38 @@ describe('MinimapPlugin', () => {
 
     jest.advanceTimersByTime(200)
     expect(mainWaveSurfer.seekTo).toHaveBeenLastCalledWith(0.75)
+  })
+
+  test('keeps the overlay contained while redraw and scroll updates are catching up during zoom-out', async () => {
+    const miniWaveSurfer = createMiniWaveSurfer()
+    const mainWaveSurfer = createMainWaveSurfer()
+
+    createMock.mockReturnValue(miniWaveSurfer)
+
+    const plugin = MinimapPlugin.create({ height: 20 })
+    plugin._init(mainWaveSurfer as any)
+    await Promise.resolve()
+
+    const minimapContainer = createMock.mock.calls[0][0].container as HTMLElement
+    const overlay = minimapContainer.querySelector('[part="minimap-overlay"]') as HTMLElement
+
+    expect(overlay.style.transition).toBe('left 100ms ease-out, width 100ms ease-out')
+
+    mainWaveSurfer.__setScroll(180)
+    mainWaveSurfer.emit('redraw')
+    mainWaveSurfer.emit('scroll', 10.8, 22.8, 180, 380)
+
+    mainWaveSurfer.__setScroll(300)
+    mainWaveSurfer.__setWrapperWidth(400)
+    mainWaveSurfer.emit('redraw')
+
+    expect(overlay.style.left).toBe('75%')
+    expect(overlay.style.width).toBe('25%')
+
+    mainWaveSurfer.__setScroll(200)
+    mainWaveSurfer.emit('scroll', 15, 30, 200, 400)
+
+    expect(overlay.style.left).toBe('50%')
+    expect(overlay.style.width).toBe('50%')
   })
 })
