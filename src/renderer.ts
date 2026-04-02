@@ -164,7 +164,8 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   private calculateInlinePadding(): void {
     const { paddingLeft, paddingRight } = getComputedStyle(this.scrollContainer)
-    this.containerInlinePadding = parseFloat(paddingLeft) + parseFloat(paddingRight)
+    const padding = parseFloat(paddingLeft) + parseFloat(paddingRight)
+    this.containerInlinePadding = Number.isNaN(padding) ? 0 : padding
   }
 
   private initHtml(): [HTMLElement, ShadowRoot] {
