@@ -155,6 +155,9 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
 
         this.wrapper.style.opacity = '0'
         this.lastPointerPosition = null
+        // reset transform so the hover element doesn't extend the scrollable overflow area
+        // of the scroll container, which would prevent proper scrollLeft clamping on zoom changes
+        this.wrapper.style.transform = ''
       }, [pointerLeave]),
     )
 
