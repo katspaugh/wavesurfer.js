@@ -42,6 +42,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private unsubscribeOnScroll: (() => void)[] = []
   private dragStream: { signal: any; cleanup: () => void } | null = null
   private scrollStream: { scrollData: any; percentages: any; bounds: any; cleanup: () => void } | null = null
+  private containerInlinePadding = 0
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
@@ -60,6 +61,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.canvasWrapper = shadow.querySelector('.canvases') as HTMLElement
     this.progressWrapper = shadow.querySelector('.progress') as HTMLElement
     this.cursor = shadow.querySelector('.cursor') as HTMLElement
+    this.calculateInlinePadding()
 
     if (audioElement) {
       shadow.appendChild(audioElement)
@@ -126,6 +128,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   private onContainerResize() {
     const width = this.parent.clientWidth
+    this.calculateInlinePadding()
     if (width === this.lastContainerWidth && this.options.height !== 'auto') return
     this.lastContainerWidth = width
     this.reRender()
@@ -157,6 +160,12 @@ class Renderer extends EventEmitter<RendererEvents> {
     }, [this.dragStream.signal])
 
     this.subscriptions.push(unsubscribeDrag)
+  }
+
+  private calculateInlinePadding(): void {
+    const { paddingLeft, paddingRight } = getComputedStyle(this.scrollContainer)
+    const padding = parseFloat(paddingLeft) + parseFloat(paddingRight)
+    this.containerInlinePadding = Number.isNaN(padding) ? 0 : padding
   }
 
   private initHtml(): [HTMLElement, ShadowRoot] {
@@ -271,7 +280,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   getWidth(): number {
-    return this.scrollContainer.clientWidth
+    return this.scrollContainer.clientWidth - this.containerInlinePadding
   }
 
   getScroll(): number {
@@ -624,7 +633,7 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Determine the width of the waveform
     const pixelRatio = this.getPixelRatio()
-    const parentWidth = this.scrollContainer.clientWidth
+    const parentWidth = this.scrollContainer.clientWidth - this.containerInlinePadding
     const { scrollWidth, isScrollable, useParentWidth, width } = utils.calculateWaveformLayout({
       duration: audioData.duration,
       minPxPerSec: this.options.minPxPerSec || 0,
