@@ -278,7 +278,10 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     // Use the user-specified container if provided, otherwise fall back to the wavesurfer wrapper
     if (this.options.container) {
       if (typeof this.options.container === 'string') {
-        this.container = document.querySelector(this.options.container) as HTMLElement
+        const el = document.querySelector(this.options.container)
+        if (el instanceof HTMLElement) {
+          this.container = el
+        }
       } else if (this.options.container instanceof HTMLElement) {
         this.container = this.options.container
       }
