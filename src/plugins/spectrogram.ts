@@ -275,8 +275,20 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       this.createCanvas()
     }
 
-    // Always get fresh container reference to avoid stale references
-    this.container = this.wavesurfer.getWrapper()
+    // Use the user-specified container if provided, otherwise fall back to the wavesurfer wrapper
+    if (this.options.container) {
+      if (typeof this.options.container === 'string') {
+        const el = document.querySelector(this.options.container)
+        if (el instanceof HTMLElement) {
+          this.container = el
+        }
+      } else if (this.options.container instanceof HTMLElement) {
+        this.container = this.options.container
+      }
+    }
+    if (!this.container) {
+      this.container = this.wavesurfer.getWrapper()
+    }
     this.container.appendChild(this.wrapper)
 
     if (this.wavesurfer.options.fillParent) {
