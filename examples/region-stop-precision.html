@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Region Stop Precision Test — issue #4297</title>
+  <style>
+    body { font-family: monospace; max-width: 860px; margin: 2em auto; padding: 0 1em; }
+    h2 { font-size: 1.1em; }
+    #waveform { margin: 1.5em 0; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 0.5em 1.2em; font-size: 1em; cursor: pointer; margin-right: 0.5em; }
+    #log {
+      margin-top: 1em;
+      height: 280px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 0.6em 0.8em;
+      background: #f8f8f8;
+      font-size: 0.85em;
+      line-height: 1.6;
+    }
+    .ok   { color: #080; }
+    .warn { color: #c60; }
+    .bad  { color: #c00; font-weight: bold; }
+    .info { color: #666; }
+    #stats { margin-top: 0.6em; font-size: 0.9em; color: #444; }
+    label { margin-right: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Region stop-precision test &mdash; <a href="https://github.com/katspaugh/wavesurfer.js/issues/4297">#4297</a></h1>
+  <p>
+    Loads a short clip, creates a 1-second region (1s&ndash;2s), and records
+    <strong>actual stop time</strong> vs <strong>expected end</strong> each play.
+    Click <em>Play region</em> rapidly and watch the log for drift.
+  </p>
+
+  <label>
+    Backend:
+    <select id="backend">
+      <option value="WebAudio" selected>WebAudio</option>
+      <option value="default">HTML5 Audio (default)</option>
+    </select>
+  </label>
+
+  <div id="waveform"></div>
+
+  <button id="btnPlay">Play region</button>
+  <button id="btnClear">Clear log</button>
+
+  <div id="stats">Plays: 0 &nbsp;|&nbsp; Max error: — &nbsp;|&nbsp; Mean error: —</div>
+  <div id="log"><span class="info">Loading…</span></div>
+
+  <script type="module">
+    import WaveSurfer from '/dist/wavesurfer.esm.js'
+    import RegionsPlugin from '/dist/plugins/regions.esm.js'
+
+    const REGION_START = 1.0   // seconds
+    const REGION_END   = 3.0
+    const EXPECTED_DURATION = REGION_END - REGION_START  // 1.0 s
+
+    const logEl   = document.getElementById('log')
+    const statsEl = document.getElementById('stats')
+    const btnPlay = document.getElementById('btnPlay')
+
+    const errors = []
+
+    function appendLog(msg, cls = '') {
+      const line = document.createElement('div')
+      if (cls) line.className = cls
+      line.textContent = msg
+      logEl.appendChild(line)
+      logEl.scrollTop = logEl.scrollHeight
+    }
+
+    function updateStats() {
+      if (!errors.length) return
+      const max  = Math.max(...errors.map(Math.abs))
+      const mean = errors.reduce((a, b) => a + b, 0) / errors.length
+      statsEl.innerHTML =
+        `Plays: ${errors.length} &nbsp;|&nbsp; ` +
+        `Max |error|: ${(max * 1000).toFixed(2)} ms &nbsp;|&nbsp; ` +
+        `Mean error: ${(mean * 1000).toFixed(2)} ms`
+    }
+
+    const backendSelect = document.getElementById('backend')
+
+    function init() {
+      const useWebAudio = backendSelect.value === 'WebAudio'
+
+      const regions = RegionsPlugin.create()
+
+      const ws = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'rgb(100, 150, 220)',
+        progressColor: 'rgb(40, 80, 140)',
+        url: '/examples/audio/audio.wav',
+        backend: useWebAudio ? 'WebAudio' : undefined,
+        plugins: [regions],
+      })
+
+      let region = null
+      let playStartedAt = null   // performance.now() when play was requested
+      let expectedEnd = null
+
+      ws.on('decode', () => {
+        region = regions.addRegion({
+          start: REGION_START,
+          end: REGION_END,
+          color: 'rgba(255, 100, 0, 0.25)',
+          drag: false,
+          resize: false,
+        })
+        appendLog(`Decoded. Region: ${REGION_START}s – ${REGION_END}s (${EXPECTED_DURATION}s). Backend: ${useWebAudio ? 'WebAudio' : 'HTML5 Audio'}`, 'info')
+        btnPlay.disabled = false
+      })
+
+      // Hook into wavesurfer play to record when we requested play
+      ws.on('play', () => {
+        playStartedAt = performance.now() / 1000
+        expectedEnd = REGION_END
+      })
+
+      ws.on('pause', () => {
+        if (playStartedAt === null) return
+        const stoppedAt = performance.now() / 1000
+        const actualDuration = stoppedAt - playStartedAt
+        // Expected duration = REGION_END - REGION_START = 1s
+        // But the pause event fires after the JS event loop tick, so we compare
+        // current playback position to REGION_END instead.
+        const actualPos = ws.getCurrentTime()
+        const posError = actualPos - REGION_END   // positive = overshoot, negative = undershoot
+
+        errors.push(posError)
+        const ms = (posError * 1000).toFixed(2)
+        const cls = Math.abs(posError) < 0.005 ? 'ok' : Math.abs(posError) < 0.015 ? 'warn' : 'bad'
+        appendLog(
+          `Play #${errors.length}: stopped at ${actualPos.toFixed(4)}s  ` +
+          `(expected ${REGION_END}s)  error: ${ms > 0 ? '+' : ''}${ms} ms`,
+          cls,
+        )
+        updateStats()
+        playStartedAt = null
+      })
+
+      btnPlay.addEventListener('click', () => {
+        if (!region) return
+        region.play(true)
+      })
+
+      return ws
+    }
+
+    let ws = init()
+
+    backendSelect.addEventListener('change', () => {
+      ws.destroy()
+      document.getElementById('waveform').innerHTML = ''
+      errors.length = 0
+      statsEl.innerHTML = 'Plays: 0 &nbsp;|&nbsp; Max error: — &nbsp;|&nbsp; Mean error: —'
+      logEl.innerHTML = '<span class="info">Reinitialising…</span>'
+      btnPlay.disabled = true
+      ws = init()
+    })
+
+    document.getElementById('btnClear').addEventListener('click', () => {
+      logEl.innerHTML = ''
+      errors.length = 0
+      statsEl.innerHTML = 'Plays: 0 &nbsp;|&nbsp; Max error: — &nbsp;|&nbsp; Mean error: —'
+    })
+  </script>
+</body>
+</html>
