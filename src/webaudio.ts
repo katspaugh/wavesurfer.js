@@ -120,7 +120,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.playStartTime = this.audioContext.currentTime
 
     this.bufferNode.onended = () => {
-      if (this.currentTime >= this.duration) {
+      if (!this.paused && this.duration - this.currentTime < 0.01) {
         this.pause()
         this.emit('ended')
       }
