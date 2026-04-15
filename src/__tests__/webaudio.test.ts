@@ -56,7 +56,7 @@ function createMockBuffer(duration: number) {
 
 describe('WebAudioPlayer', () => {
   describe('onended and finish event', () => {
-    test('emits ended when buffer finishes naturally and currentTime equals duration', () => {
+    test('emits ended when buffer finishes naturally at duration', () => {
       const { audioContext, bufferSource, triggerOnended } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       const endedSpy = jest.fn()
@@ -189,6 +189,27 @@ describe('WebAudioPlayer', () => {
       triggerOnended()
 
       expect(endedSpy).toHaveBeenCalledTimes(1)
+    })
+
+    test('does not emit ended when currentTime is beyond tolerance threshold from duration', () => {
+      const { audioContext, bufferSource, triggerOnended } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      const endedSpy = jest.fn()
+      player.on('ended', endedSpy)
+
+      // Set up buffer
+      ;(player as any).buffer = createMockBuffer(10)
+
+      // Play
+      audioContext.currentTime = 100
+      player.play()
+
+      // Simulate stopAt scenario where currentTime is 0.02s before duration (beyond 0.01s tolerance)
+      // currentTime = 0 + (109.98 - 100) * 1 = 9.98, duration - currentTime = 0.02 >= 0.01
+      audioContext.currentTime = 109.98
+      triggerOnended()
+
+      expect(endedSpy).not.toHaveBeenCalled()
     })
   })
 })
