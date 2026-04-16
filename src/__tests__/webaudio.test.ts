@@ -57,7 +57,7 @@ function createMockBuffer(duration: number) {
 describe('WebAudioPlayer', () => {
   describe('onended and finish event', () => {
     test('emits ended when buffer finishes naturally at duration', () => {
-      const { audioContext, bufferSource, triggerOnended } = createMockAudioContext()
+      const { audioContext, triggerOnended } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       const endedSpy = jest.fn()
       player.on('ended', endedSpy)
@@ -77,7 +77,7 @@ describe('WebAudioPlayer', () => {
     })
 
     test('emits ended when buffer finishes naturally and currentTime is slightly less than duration due to float precision', () => {
-      const { audioContext, bufferSource, triggerOnended } = createMockAudioContext()
+      const { audioContext, triggerOnended } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       const endedSpy = jest.fn()
       player.on('ended', endedSpy)
@@ -98,7 +98,7 @@ describe('WebAudioPlayer', () => {
     })
 
     test('does not emit ended when paused programmatically (far from end)', () => {
-      const { audioContext, bufferSource, triggerOnended } = createMockAudioContext()
+      const { audioContext, triggerOnended } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       const endedSpy = jest.fn()
       player.on('ended', endedSpy)
@@ -123,7 +123,7 @@ describe('WebAudioPlayer', () => {
     })
 
     test('does not emit ended when stopAt stops before end of audio', () => {
-      const { audioContext, bufferSource, triggerOnended } = createMockAudioContext()
+      const { audioContext, triggerOnended } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       const endedSpy = jest.fn()
       player.on('ended', endedSpy)
@@ -148,7 +148,7 @@ describe('WebAudioPlayer', () => {
     })
 
     test('emits ended when currentTime slightly exceeds duration', () => {
-      const { audioContext, bufferSource, triggerOnended } = createMockAudioContext()
+      const { audioContext, triggerOnended } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       const endedSpy = jest.fn()
       player.on('ended', endedSpy)
@@ -168,7 +168,7 @@ describe('WebAudioPlayer', () => {
     })
 
     test('emits ended with non-default playback rate', () => {
-      const { audioContext, bufferSource, triggerOnended } = createMockAudioContext()
+      const { audioContext, triggerOnended } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       const endedSpy = jest.fn()
       player.on('ended', endedSpy)
@@ -192,7 +192,7 @@ describe('WebAudioPlayer', () => {
     })
 
     test('does not emit ended when currentTime is beyond tolerance threshold from duration', () => {
-      const { audioContext, bufferSource, triggerOnended } = createMockAudioContext()
+      const { audioContext, triggerOnended } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       const endedSpy = jest.fn()
       player.on('ended', endedSpy)
