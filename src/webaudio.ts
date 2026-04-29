@@ -13,11 +13,11 @@ type WebAudioPlayerEvents = {
 }
 
 function setWebAudioSessionPlayback() {
-  const asAny = globalThis.navigator as (Navigator & { audioSession?: { type: string } }) | undefined
-  if (!asAny?.audioSession) return
+  const navigator = globalThis.navigator as (Navigator & { audioSession?: { type: string } }) | undefined
+  if (!navigator?.audioSession) return
 
   try {
-    asAny.audioSession.type = 'playback'
+    navigator.audioSession.type = 'playback'
   } catch (e) {
     console.warn('Setting navigator.audioSession.type failed:', e)
   }
