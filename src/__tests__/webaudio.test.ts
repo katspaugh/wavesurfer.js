@@ -55,6 +55,50 @@ function createMockBuffer(duration: number) {
 }
 
 describe('WebAudioPlayer', () => {
+  describe('audio session playback mode', () => {
+    const originalAudioSession = Object.getOwnPropertyDescriptor(navigator, 'audioSession')
+
+    afterEach(() => {
+      if (originalAudioSession) {
+        Object.defineProperty(navigator, 'audioSession', originalAudioSession)
+      } else {
+        delete (navigator as Navigator & { audioSession?: unknown }).audioSession
+      }
+      jest.restoreAllMocks()
+    })
+
+    test('sets navigator.audioSession.type to playback when available', () => {
+      const { audioContext } = createMockAudioContext()
+      const audioSession = { type: 'ambient' }
+      Object.defineProperty(navigator, 'audioSession', { configurable: true, value: audioSession })
+
+      new WebAudioPlayer(audioContext)
+
+      expect(audioSession.type).toBe('playback')
+    })
+
+    test('warns when setting navigator.audioSession.type fails', () => {
+      const { audioContext } = createMockAudioContext()
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const audioSession = {
+        get type() {
+          return 'ambient'
+        },
+        set type(_value: string) {
+          throw new Error('nope')
+        },
+      }
+      Object.defineProperty(navigator, 'audioSession', { configurable: true, value: audioSession })
+
+      new WebAudioPlayer(audioContext)
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        'Setting navigator.audioSession.type failed:',
+        expect.objectContaining({ message: 'nope' }),
+      )
+    })
+  })
+
   describe('onended and finish event', () => {
     test('emits ended when buffer finishes naturally at duration', () => {
       const { audioContext, triggerOnended } = createMockAudioContext()
