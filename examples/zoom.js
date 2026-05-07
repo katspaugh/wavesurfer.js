@@ -34,7 +34,7 @@ wavesurfer.once('decode', () => {
 
 /*
 <html>
-  <label><input type="checkbox" checked value="scrollbar" /> Scroll bar</label>
+  <label><input type="checkbox" checked value="hideScrollbar" /> Scroll bar</label>
   <label><input type="checkbox" checked value="fillParent" /> Fill parent</label>
   <label><input type="checkbox" checked value="autoCenter" /> Auto center</label>
 
