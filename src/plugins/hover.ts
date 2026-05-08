@@ -136,7 +136,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
         this.wrapper.style.opacity = '1'
 
         // Timestamp
-        const duration = state.duration.value
+        const duration = this.wavesurfer.getDuration()
         this.label.textContent = this.options.formatTimeCallback(duration * relX)
         const labelWidth = this.label.offsetWidth
         const transformCondition = this.options.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
@@ -173,7 +173,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
         this.wrapper.style.transform = `translateX(${posX}px)`
 
         // Timestamp
-        const duration = state.duration.value
+        const duration = this.wavesurfer.getDuration()
         this.label.textContent = this.options.formatTimeCallback(duration * relX)
         const labelWidth = this.label.offsetWidth
         const transformCondition = this.options.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
