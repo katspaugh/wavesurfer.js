@@ -64,10 +64,11 @@
     "make-plugin": "./scripts/plugin.sh",
     "cypress": "cypress open --e2e",
     "cypress:canary": "cypress open --e2e -b chrome:canary",
-    "test": "cypress run --browser chrome",
+    "test": "cypress run --browser ${CYPRESS_BROWSER:-chromium}",
     "test:unit": "jest --coverage",
     "serve": "npx live-server --port=9090 --no-browser --ignore='.*,src,cypress,scripts'",
     "start": "npm run build:dev & npm run serve",
+    "dev": "npm run start",
     "prepare": "npm run build"
   },
   "packageManager": "yarn@1.22.22",
