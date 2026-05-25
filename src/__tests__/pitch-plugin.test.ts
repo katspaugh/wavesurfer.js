@@ -39,10 +39,6 @@ describe('PitchPlugin', () => {
       disconnect: jest.fn(),
     }
 
-    ;(globalThis as unknown as { AudioWorkletNode: unknown }).AudioWorkletNode = jest
-      .fn()
-      .mockImplementation(() => phaseNode)
-
     const ws = {
       getMediaElement: jest.fn(() => ({ getGainNode: () => gainNode })),
       setPlaybackRate: jest.fn(),

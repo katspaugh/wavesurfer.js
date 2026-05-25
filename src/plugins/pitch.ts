@@ -137,7 +137,10 @@ export class PitchPlugin extends BasePlugin<PitchPluginEvents, PitchPluginOption
 
     const media = this.wavesurfer.getMediaElement() as unknown as Partial<WebAudioLikeMedia>
     if (!media.getGainNode) {
-      throw new Error('PitchPlugin requires backend: "WebAudio"')
+      throw new Error(
+        'PitchPlugin requires WaveSurfer to use the WebAudio backend. ' +
+        'Pass backend: "WebAudio" in WaveSurfer.create() options.',
+      )
     }
 
     this.gainNode = media.getGainNode()
@@ -145,6 +148,10 @@ export class PitchPlugin extends BasePlugin<PitchPluginEvents, PitchPluginOption
 
     if (!this.audioContext.audioWorklet) {
       throw new Error('AudioWorklet is not supported in this browser')
+    }
+
+    if (this.audioContext.state === 'suspended') {
+      await this.audioContext.resume()
     }
 
     const soundTouchModule = await this.getSoundTouchModule()
@@ -165,9 +172,7 @@ export class PitchPlugin extends BasePlugin<PitchPluginEvents, PitchPluginOption
       return this.options.soundTouchModule
     }
 
-    const moduleUrl = this.options.soundTouchModuleUrl
-    const dynamicImporter = new Function('url', 'return import(url)') as (url: string) => Promise<SoundTouchModule>
-    return dynamicImporter(moduleUrl)
+    return import(/* @vite-ignore */ this.options.soundTouchModuleUrl) as Promise<SoundTouchModule>
   }
 
   private async ensureSoundTouchRegistered(audioContext: AudioContext, SoundTouchNode: SoundTouchNodeCtor) {
@@ -199,10 +204,14 @@ export class PitchPlugin extends BasePlugin<PitchPluginEvents, PitchPluginOption
 
   /** Unmount */
   public destroy() {
-    if (this.gainNode && this.audioContext) {
-      this.gainNode.disconnect()
-      this.soundTouchNode?.disconnect()
-      this.gainNode.connect(this.audioContext.destination)
+    if (this.gainNode && this.audioContext && this.soundTouchNode) {
+      try {
+        this.soundTouchNode.disconnect()
+        this.gainNode.disconnect(this.soundTouchNode)
+        this.gainNode.connect(this.audioContext.destination)
+      } catch {
+        // Nodes may already be disconnected if the AudioContext was closed.
+      }
     }
 
     this.soundTouchNode = null
