@@ -43,7 +43,7 @@ wavesurfer.on('ready', async () => {
     const gainNode = webAudioPlayer.getGainNode()
     const audioContext = gainNode.context
 
-    await SoundTouchNode.register(audioContext, 'https://unpkg.com/@soundtouchjs/audio-worklet/.dist/soundtouch-processor.js')
+    await SoundTouchNode.register(audioContext, 'https://unpkg.com/@soundtouchjs/audio-worklet/dist/soundtouch-processor.js')
     soundTouchNode = new SoundTouchNode({ context: audioContext })
 
     gainNode.disconnect()

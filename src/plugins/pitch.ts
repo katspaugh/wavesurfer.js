@@ -42,7 +42,7 @@ const defaultOptions = {
   maxSemitones: 24,
   smoothingTimeConstant: 0.02,
   soundTouchModuleUrl: 'https://unpkg.com/@soundtouchjs/audio-worklet?module',
-  soundTouchProcessorUrl: 'https://unpkg.com/@soundtouchjs/audio-worklet/.dist/soundtouch-processor.js',
+  soundTouchProcessorUrl: 'https://unpkg.com/@soundtouchjs/audio-worklet/dist/soundtouch-processor.js',
 }
 
 type WebAudioLikeMedia = {
@@ -207,7 +207,7 @@ export class PitchPlugin extends BasePlugin<PitchPluginEvents, PitchPluginOption
     if (this.gainNode && this.audioContext && this.soundTouchNode) {
       try {
         this.soundTouchNode.disconnect()
-        this.gainNode.disconnect(this.soundTouchNode)
+        this.gainNode.disconnect()
         this.gainNode.connect(this.audioContext.destination)
       } catch {
         // Nodes may already be disconnected if the AudioContext was closed.
