@@ -3,7 +3,17 @@
  */
 
 import WaveSurfer from '../dist/wavesurfer.esm.js'
-import { SoundTouchNode } from 'https://unpkg.com/@soundtouchjs/audio-worklet?module'
+import { SoundTouchNode } from 'https://unpkg.com/@soundtouchjs/audio-worklet@2.0.3/.dist/index.js'
+
+const createProcessorBlobUrl = async (processorUrl) => {
+  const response = await fetch(processorUrl)
+  if (!response.ok) {
+    throw new Error(`Failed to load SoundTouch processor: ${response.status} ${response.statusText}`)
+  }
+
+  const script = await response.text()
+  return URL.createObjectURL(new Blob([script], { type: 'text/javascript' }))
+}
 
 const wavesurfer = WaveSurfer.create({
   backend: 'WebAudio',
@@ -42,8 +52,15 @@ wavesurfer.on('ready', async () => {
     const webAudioPlayer = wavesurfer.getMediaElement()
     const gainNode = webAudioPlayer.getGainNode()
     const audioContext = gainNode.context
+    const processorUrl = 'https://unpkg.com/@soundtouchjs/audio-worklet@2.0.3/.dist/soundtouch-processor.js'
+    const blobUrl = await createProcessorBlobUrl(processorUrl)
 
-    await SoundTouchNode.register(audioContext, 'https://unpkg.com/@soundtouchjs/audio-worklet/dist/soundtouch-processor.js')
+    try {
+      await SoundTouchNode.register(audioContext, blobUrl)
+    } finally {
+      URL.revokeObjectURL(blobUrl)
+    }
+
     soundTouchNode = new SoundTouchNode({ context: audioContext })
 
     gainNode.disconnect()

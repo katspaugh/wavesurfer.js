@@ -41,12 +41,26 @@ const defaultOptions = {
   minSemitones: -24,
   maxSemitones: 24,
   smoothingTimeConstant: 0.02,
-  soundTouchModuleUrl: 'https://unpkg.com/@soundtouchjs/audio-worklet?module',
-  soundTouchProcessorUrl: 'https://unpkg.com/@soundtouchjs/audio-worklet/dist/soundtouch-processor.js',
+  soundTouchModuleUrl: 'https://unpkg.com/@soundtouchjs/audio-worklet@2.0.3/.dist/index.js',
+  soundTouchProcessorUrl: 'https://unpkg.com/@soundtouchjs/audio-worklet@2.0.3/.dist/soundtouch-processor.js',
 }
 
 type WebAudioLikeMedia = {
   getGainNode: () => GainNode
+}
+
+const createProcessorBlobUrl = async (processorUrl: string) => {
+  const response = await fetch(processorUrl)
+  if (!response.ok) {
+    throw new Error(`Failed to load SoundTouch processor: ${response.status} ${response.statusText}`)
+  }
+
+  const script = await response.text()
+  return URL.createObjectURL(
+    new Blob([script], {
+      type: 'text/javascript',
+    }),
+  )
 }
 
 const registeredProcessorUrls = new WeakMap<AudioContext, Set<string>>()
@@ -180,7 +194,12 @@ export class PitchPlugin extends BasePlugin<PitchPluginEvents, PitchPluginOption
     const registered = registeredProcessorUrls.get(audioContext)
     if (registered?.has(processorUrl)) return
 
-    await SoundTouchNode.register(audioContext, processorUrl)
+    const blobUrl = await createProcessorBlobUrl(processorUrl)
+    try {
+      await SoundTouchNode.register(audioContext, blobUrl)
+    } finally {
+      URL.revokeObjectURL(blobUrl)
+    }
 
     const nextRegistered = registered ?? new Set<string>()
     nextRegistered.add(processorUrl)
