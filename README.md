@@ -35,7 +35,7 @@ Alternatively, insert a UMD script tag which exports the library as a global `Wa
 <script src="https://unpkg.com/wavesurfer.js@7"></script>
 ```
 
-Create a wavesurfer instance and pass various [options](http://wavesurfer.xyz/docs/options):
+Create a wavesurfer instance and pass various [options](https://wavesurfer.xyz/docs/api/options):
 ```js
 const wavesurfer = WaveSurfer.create({
   container: '#waveform',
@@ -59,13 +59,17 @@ TypeScript types are included in the package, so there's no need to install `@ty
 
 See more [examples](https://wavesurfer.xyz/examples).
 
+## Documentation
+
+See the [wavesurfer.js guide](https://wavesurfer.xyz/docs/) on our website for beginner-friendly, practical documentation covering common use cases, plugins, framework integration, and troubleshooting.
+
 ## API reference
 
-See the wavesurfer.js documentation on our website:
+The full generated API reference lives at [wavesurfer.xyz/docs/api](https://wavesurfer.xyz/docs/api/):
 
- * [methods](https://wavesurfer.xyz/docs/methods)
- * [options](http://wavesurfer.xyz/docs/options)
- * [events](http://wavesurfer.xyz/docs/events)
+ * [methods](https://wavesurfer.xyz/docs/api/methods)
+ * [options](https://wavesurfer.xyz/docs/api/options)
+ * [events](https://wavesurfer.xyz/docs/api/events)
 
 ## Plugins
 
