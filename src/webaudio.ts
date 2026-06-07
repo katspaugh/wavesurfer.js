@@ -64,13 +64,18 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     return
   }
 
-  /** No-op for compatibility with HTMLMediaElement.remove() */
+  /** For compatibility with HTMLMediaElement.remove(). Delegates to destroy(). */
   remove() {
-    // WebAudioPlayer has no DOM element to remove
+    this.destroy()
   }
 
-  /** Clean up all resources */
+  private _destroyed = false
+
+  /** Clean up all resources. Idempotent — safe to call multiple times. */
   destroy() {
+    if (this._destroyed) return
+    this._destroyed = true
+
     // Stop and disconnect buffer node
     if (this.bufferNode) {
       this.bufferNode.onended = null
@@ -87,7 +92,8 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.gainNode.disconnect()
 
     // Close audio context (returns a promise, catch rejection if already closed)
-    this.audioContext.close().catch(() => undefined)
+    // Wrap in Promise.resolve for mock/test environments where close() may return void
+    Promise.resolve(this.audioContext.close()).catch(() => undefined)
 
     // Clear buffer reference
     this.buffer = null
@@ -205,21 +211,19 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
     // Register the 'ended' listener BEFORE calling stop()
     // to avoid the event firing before the listener is attached
-    currentBufferNode.addEventListener(
-      'ended',
-      () => {
-        if (currentBufferNode === this.bufferNode) {
-          this.bufferNode = null
-          this.pause()
-        }
-      },
-      { once: true },
-    )
+    const onEnded = () => {
+      if (currentBufferNode === this.bufferNode) {
+        this.bufferNode = null
+        this.pause()
+      }
+    }
+    currentBufferNode.addEventListener('ended', onEnded, { once: true })
 
     try {
       currentBufferNode.stop(this.audioContext.currentTime + delay)
     } catch {
-      // Ignore InvalidStateError if node already stopped
+      // If stop() throws, clean up the listener we just added
+      currentBufferNode.removeEventListener('ended', onEnded)
     }
   }
 

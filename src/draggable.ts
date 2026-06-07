@@ -17,22 +17,14 @@ export function makeDraggable(
   const isTouchDevice = matchMedia('(pointer: coarse)').matches
 
   let unsubscribeDocument = () => void 0
-  let clickCleanupTimeout: ReturnType<typeof setTimeout> | undefined
-
-  // Clean up any previous document-level listeners before starting a new drag
-  const safeCleanup = () => {
-    if (clickCleanupTimeout != null) {
-      clearTimeout(clickCleanupTimeout)
-      clickCleanupTimeout = undefined
-    }
-    unsubscribeDocument()
-  }
 
   const onPointerDown = (event: PointerEvent) => {
     if (event.button !== mouseButton) return
 
-    // Clean up any stale document listeners from a previous drag that never ended
-    safeCleanup()
+    // Clean up any stale document listeners from a previous drag that never ended.
+    // Each drag cycle creates unique listener functions, so the old unsubscribeDocument
+    // only removes its own listeners — it won't interfere with the new ones.
+    unsubscribeDocument()
 
     activePointers.set(event.pointerId, event)
     if (activePointers.size > 1) {
@@ -118,17 +110,18 @@ export function makeDraggable(
     document.addEventListener('touchmove', onTouchMove, { passive: false })
     document.addEventListener('click', onClick, { capture: true })
 
+    // Each drag cycle owns its listener functions via closure.
+    // unsubscribeDocument removes only this cycle's listeners.
+    // The click listener removal is deferred 10ms to allow it to suppress
+    // the click event that fires right after pointerup.
     unsubscribeDocument = () => {
       document.removeEventListener('pointermove', onPointerMove)
       document.removeEventListener('pointerup', onPointerUp)
       document.removeEventListener('pointerout', onPointerLeave)
       document.removeEventListener('pointercancel', onPointerLeave)
       document.removeEventListener('touchmove', onTouchMove)
-      // Clear any previous click cleanup and schedule a new one
-      if (clickCleanupTimeout != null) clearTimeout(clickCleanupTimeout)
-      clickCleanupTimeout = setTimeout(() => {
+      setTimeout(() => {
         document.removeEventListener('click', onClick, { capture: true })
-        clickCleanupTimeout = undefined
       }, 10)
     }
   }
@@ -136,14 +129,8 @@ export function makeDraggable(
   element.addEventListener('pointerdown', onPointerDown)
 
   return () => {
-    // Clear any stale click cleanup timeout from a previous drag cycle
-    if (clickCleanupTimeout != null) {
-      clearTimeout(clickCleanupTimeout)
-      clickCleanupTimeout = undefined
-    }
     element.removeEventListener('pointerdown', onPointerDown)
+    unsubscribeDocument()
     activePointers.clear()
-    // Clean up current document listeners and schedule click listener removal
-    safeCleanup()
   }
 }
