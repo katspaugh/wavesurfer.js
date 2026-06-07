@@ -74,7 +74,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     // Stop and disconnect buffer node
     if (this.bufferNode) {
       this.bufferNode.onended = null
-      this.bufferNode.stop()
+      try {
+        this.bufferNode.stop()
+      } catch {
+        // Ignore InvalidStateError if node already stopped
+      }
       this.bufferNode.disconnect()
       this.bufferNode = null
     }
@@ -82,8 +86,8 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     // Disconnect gain node
     this.gainNode.disconnect()
 
-    // Close audio context
-    this.audioContext.close()
+    // Close audio context (returns a promise, catch rejection if already closed)
+    this.audioContext.close().catch(() => undefined)
 
     // Clear buffer reference
     this.buffer = null
@@ -172,7 +176,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     // Clear onended before stopping to prevent spurious 'ended' event
     if (this.bufferNode) {
       this.bufferNode.onended = null
-      this.bufferNode.stop()
+      try {
+        this.bufferNode.stop()
+      } catch {
+        // Ignore InvalidStateError if node already stopped
+      }
     }
     this.playbackPosition += (this.audioContext.currentTime - this.playStartTime) * this._playbackRate
   }
@@ -194,8 +202,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     if (!currentBufferNode || this.paused) return
 
     const delay = Math.max(0, timeSeconds - this.currentTime)
-    currentBufferNode.stop(this.audioContext.currentTime + delay)
 
+    // Register the 'ended' listener BEFORE calling stop()
+    // to avoid the event firing before the listener is attached
     currentBufferNode.addEventListener(
       'ended',
       () => {
@@ -206,6 +215,12 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
       },
       { once: true },
     )
+
+    try {
+      currentBufferNode.stop(this.audioContext.currentTime + delay)
+    } catch {
+      // Ignore InvalidStateError if node already stopped
+    }
   }
 
   async setSinkId(deviceId: string) {
@@ -251,10 +266,15 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   get volume() {
-    return this.gainNode.gain.value
+    return this._muted ? (this._lastVolume ?? 1) : this.gainNode.gain.value
   }
   set volume(value) {
-    this.gainNode.gain.value = value
+    if (this._muted) {
+      // Store the volume for later, but don't change gain while muted
+      this._lastVolume = value
+    } else {
+      this.gainNode.gain.value = value
+    }
     this.emit('volumechange')
   }
 
@@ -271,6 +291,8 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     } else {
       this.gainNode.gain.value = this._lastVolume ?? 1
     }
+
+    this.emit('volumechange')
   }
 
   private _lastVolume: number | undefined

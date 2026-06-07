@@ -136,12 +136,14 @@ export function makeDraggable(
   element.addEventListener('pointerdown', onPointerDown)
 
   return () => {
-    safeCleanup()
+    // Clear any stale click cleanup timeout from a previous drag cycle
     if (clickCleanupTimeout != null) {
       clearTimeout(clickCleanupTimeout)
       clickCleanupTimeout = undefined
     }
     element.removeEventListener('pointerdown', onPointerDown)
     activePointers.clear()
+    // Clean up current document listeners and schedule click listener removal
+    safeCleanup()
   }
 }

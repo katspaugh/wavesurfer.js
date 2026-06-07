@@ -6,18 +6,16 @@ async function watchProgress(response: Response, progressCallback: (percentage: 
   let receivedLength = 0
 
   // Abort the reader when the signal fires
+  const onAbort = () => {
+    reader.cancel()
+  }
+
   if (signal) {
     if (signal.aborted) {
       reader.cancel()
       return
     }
-    signal.addEventListener(
-      'abort',
-      () => {
-        reader.cancel()
-      },
-      { once: true },
-    )
+    signal.addEventListener('abort', onAbort, { once: true })
   }
 
   // Use iteration instead of recursion to avoid stack issues
@@ -42,6 +40,11 @@ async function watchProgress(response: Response, progressCallback: (percentage: 
     if (err instanceof DOMException && err.name === 'AbortError') return
     // Ignore other errors because we can only handle the main response
     console.warn('Progress tracking error:', err)
+  } finally {
+    // Remove the abort listener to prevent leaks
+    if (signal) {
+      signal.removeEventListener('abort', onAbort)
+    }
   }
 }
 
