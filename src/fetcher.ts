@@ -1,8 +1,4 @@
-async function watchProgress(
-  response: Response,
-  progressCallback: (percentage: number) => void,
-  signal?: AbortSignal,
-) {
+async function watchProgress(response: Response, progressCallback: (percentage: number) => void, signal?: AbortSignal) {
   if (!response.body || !response.headers) return
   const reader = response.body.getReader()
 

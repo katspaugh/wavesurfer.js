@@ -121,7 +121,10 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     // Create event streams for pointer events
     const pointerMove = fromEvent(container, 'pointermove')
     const pointerLeave = fromEvent(container, 'pointerleave')
-    this.streamCleanups.push(() => cleanup(pointerMove), () => cleanup(pointerLeave))
+    this.streamCleanups.push(
+      () => cleanup(pointerMove),
+      () => cleanup(pointerLeave),
+    )
 
     // React to pointer movement
     this.subscriptions.push(
