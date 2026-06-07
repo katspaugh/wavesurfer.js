@@ -76,6 +76,10 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     if (this._destroyed) return
     this._destroyed = true
 
+    // Clear currentSrc so any in-flight fetch/decode chains bail out
+    // via their existing `this.currentSrc !== value` guards
+    this.currentSrc = ''
+
     // Stop and disconnect buffer node
     if (this.bufferNode) {
       this.bufferNode.onended = null
@@ -92,8 +96,10 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.gainNode.disconnect()
 
     // Close audio context (returns a promise, catch rejection if already closed)
-    // Wrap in Promise.resolve for mock/test environments where close() may return void
-    Promise.resolve(this.audioContext.close()).catch(() => undefined)
+    // Guard with typeof check for mock environments where close may not exist
+    if (typeof this.audioContext.close === 'function') {
+      Promise.resolve(this.audioContext.close.call(this.audioContext)).catch(() => undefined)
+    }
 
     // Clear buffer reference
     this.buffer = null

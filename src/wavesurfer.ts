@@ -505,6 +505,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // If a newer load starts while this one is in-flight, this one will bail out
     const loadVersion = ++this._loadVersion
 
+    // Reset destroyed flag so the instance can be reused after destroy()
+    this._isDestroyed = false
+
     this.emit('load', url)
 
     if (!this.options.media && this.isPlaying()) this.pause()

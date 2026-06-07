@@ -17,6 +17,7 @@ export function makeDraggable(
   const isTouchDevice = matchMedia('(pointer: coarse)').matches
 
   let unsubscribeDocument = () => void 0
+  let clickCleanupTimeout: ReturnType<typeof setTimeout> | undefined
 
   const onPointerDown = (event: PointerEvent) => {
     if (event.button !== mouseButton) return
@@ -120,8 +121,13 @@ export function makeDraggable(
       document.removeEventListener('pointerout', onPointerLeave)
       document.removeEventListener('pointercancel', onPointerLeave)
       document.removeEventListener('touchmove', onTouchMove)
-      setTimeout(() => {
+      // Clear pending timeout for this cycle's click listener before re-scheduling.
+      // Safe because all calls to this unsubscribeDocument are for the same onClick
+      // function (same closure), so cancelling and re-scheduling is harmless.
+      if (clickCleanupTimeout != null) clearTimeout(clickCleanupTimeout)
+      clickCleanupTimeout = setTimeout(() => {
         document.removeEventListener('click', onClick, { capture: true })
+        clickCleanupTimeout = undefined
       }, 10)
     }
   }
@@ -129,6 +135,11 @@ export function makeDraggable(
   element.addEventListener('pointerdown', onPointerDown)
 
   return () => {
+    // Clear any stale click cleanup timeout from a previous drag cycle
+    if (clickCleanupTimeout != null) {
+      clearTimeout(clickCleanupTimeout)
+      clickCleanupTimeout = undefined
+    }
     element.removeEventListener('pointerdown', onPointerDown)
     unsubscribeDocument()
     activePointers.clear()
