@@ -17,9 +17,22 @@ export function makeDraggable(
   const isTouchDevice = matchMedia('(pointer: coarse)').matches
 
   let unsubscribeDocument = () => void 0
+  let clickCleanupTimeout: ReturnType<typeof setTimeout> | undefined
+
+  // Clean up any previous document-level listeners before starting a new drag
+  const safeCleanup = () => {
+    if (clickCleanupTimeout != null) {
+      clearTimeout(clickCleanupTimeout)
+      clickCleanupTimeout = undefined
+    }
+    unsubscribeDocument()
+  }
 
   const onPointerDown = (event: PointerEvent) => {
     if (event.button !== mouseButton) return
+
+    // Clean up any stale document listeners from a previous drag that never ended
+    safeCleanup()
 
     activePointers.set(event.pointerId, event)
     if (activePointers.size > 1) {
@@ -111,8 +124,11 @@ export function makeDraggable(
       document.removeEventListener('pointerout', onPointerLeave)
       document.removeEventListener('pointercancel', onPointerLeave)
       document.removeEventListener('touchmove', onTouchMove)
-      setTimeout(() => {
+      // Clear any previous click cleanup and schedule a new one
+      if (clickCleanupTimeout != null) clearTimeout(clickCleanupTimeout)
+      clickCleanupTimeout = setTimeout(() => {
         document.removeEventListener('click', onClick, { capture: true })
+        clickCleanupTimeout = undefined
       }, 10)
     }
   }
@@ -120,7 +136,11 @@ export function makeDraggable(
   element.addEventListener('pointerdown', onPointerDown)
 
   return () => {
-    unsubscribeDocument()
+    safeCleanup()
+    if (clickCleanupTimeout != null) {
+      clearTimeout(clickCleanupTimeout)
+      clickCleanupTimeout = undefined
+    }
     element.removeEventListener('pointerdown', onPointerDown)
     activePointers.clear()
   }

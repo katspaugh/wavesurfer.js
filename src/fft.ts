@@ -589,7 +589,11 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
     bit = bit >> 1
   }
 
-  for (let i = 0; i < bufferSize; i++) {
+  // Precompute sin/cos tables for FFT twiddle factors
+  // Index 0 is a special case: -PI/0 would produce NaN, use 0 instead
+  this.sinTable[0] = 0
+  this.cosTable[0] = 1
+  for (let i = 1; i < bufferSize; i++) {
     this.sinTable[i] = Math.sin(-Math.PI / i)
     this.cosTable[i] = Math.cos(-Math.PI / i)
   }

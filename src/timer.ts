@@ -40,6 +40,7 @@ class Timer extends EventEmitter<TimerEvents> {
 
   destroy() {
     this.stop()
+    this.unAll()
   }
 }
 

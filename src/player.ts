@@ -212,9 +212,14 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.reactiveMediaEventCleanups.forEach((cleanup) => cleanup())
     this.reactiveMediaEventCleanups = []
 
+    // Always revoke blob URLs, even for external media
+    this.revokeSrc()
+
+    // Clear all event emitter listeners
+    this.unAll()
+
     if (this.isExternalMedia) return
     this.media.pause()
-    this.revokeSrc()
     this.media.removeAttribute('src')
     // Load resets the media element to its initial state
     this.media.load()

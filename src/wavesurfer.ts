@@ -162,6 +162,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   protected subscriptions: Array<() => void> = []
   protected mediaSubscriptions: Array<() => void> = []
   protected abortController: AbortController | null = null
+  private _isDestroyed = false
+  private _loadVersion = 0
 
   // Reactive state
   private wavesurferState: WaveSurferState
@@ -238,9 +240,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       if (initialUrl || (peaks && duration)) {
         // Swallow async errors because they cannot be caught from a constructor call.
         // Subscribe to the wavesurfer's error event to handle them.
-        this.load(initialUrl, peaks, duration).catch((err) => {
-          // Emit error event for proper error handling
-          this.emit('error', err instanceof Error ? err : new Error(String(err)))
+        this.load(initialUrl, peaks, duration).catch(() => {
+          // Error already emitted by load()
         })
       }
     })
@@ -500,6 +501,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+    // Re-entrancy guard: assign a version to this load call
+    // If a newer load starts while this one is in-flight, this one will bail out
+    const loadVersion = ++this._loadVersion
+
     this.emit('load', url)
 
     if (!this.options.media && this.isPlaying()) this.pause()
@@ -520,11 +525,16 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
       const onProgress = (percentage: number) => this.emit('loading', percentage)
       blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
+      // Guard: bail if destroyed or a newer load started
+      if (this._isDestroyed || loadVersion !== this._loadVersion) return
       const overridenMimeType = this.options.blobMimeType
       if (overridenMimeType) {
         blob = new Blob([blob], { type: overridenMimeType })
       }
     }
+
+    // Guard: bail if destroyed or a newer load started
+    if (this._isDestroyed || loadVersion !== this._loadVersion) return
 
     // Set the mediaelement source
     this.setSrc(url, blob)
@@ -541,6 +551,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
     })
 
+    // Guard: bail if destroyed or a newer load started
+    if (this._isDestroyed || loadVersion !== this._loadVersion) return
+
     // Set the duration if the player is a WebAudioPlayer without a URL
     if (!url && !blob) {
       const media = this.getMediaElement()
@@ -554,8 +567,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.decodedData = Decoder.createBuffer(channelData, audioDuration || 0)
     } else if (blob) {
       const arrayBuffer = await blob.arrayBuffer()
+      // Guard: bail if destroyed or a newer load started
+      if (this._isDestroyed || loadVersion !== this._loadVersion) return
       this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
     }
+
+    // Guard: bail if destroyed or a newer load started
+    if (this._isDestroyed || loadVersion !== this._loadVersion) return
 
     if (this.decodedData) {
       this.emit('decode', this.getDuration())
@@ -719,6 +737,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Unmount wavesurfer */
   public destroy() {
+    this._isDestroyed = true
     this.emit('destroy')
     this.abortController?.abort()
     this.plugins.forEach((plugin) => plugin.destroy())

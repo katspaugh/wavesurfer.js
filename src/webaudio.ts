@@ -64,6 +64,34 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     return
   }
 
+  /** No-op for compatibility with HTMLMediaElement.remove() */
+  remove() {
+    // WebAudioPlayer has no DOM element to remove
+  }
+
+  /** Clean up all resources */
+  destroy() {
+    // Stop and disconnect buffer node
+    if (this.bufferNode) {
+      this.bufferNode.onended = null
+      this.bufferNode.stop()
+      this.bufferNode.disconnect()
+      this.bufferNode = null
+    }
+
+    // Disconnect gain node
+    this.gainNode.disconnect()
+
+    // Close audio context
+    this.audioContext.close()
+
+    // Clear buffer reference
+    this.buffer = null
+
+    // Clear all event listeners
+    this.unAll()
+  }
+
   get src() {
     return this.currentSrc
   }
@@ -141,7 +169,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
   private _pause() {
     this.paused = true
-    this.bufferNode?.stop()
+    // Clear onended before stopping to prevent spurious 'ended' event
+    if (this.bufferNode) {
+      this.bufferNode.onended = null
+      this.bufferNode.stop()
+    }
     this.playbackPosition += (this.audioContext.currentTime - this.playStartTime) * this._playbackRate
   }
 
@@ -158,11 +190,13 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   stopAt(timeSeconds: number) {
-    const delay = timeSeconds - this.currentTime
     const currentBufferNode = this.bufferNode
-    currentBufferNode?.stop(this.audioContext.currentTime + delay)
+    if (!currentBufferNode || this.paused) return
 
-    currentBufferNode?.addEventListener(
+    const delay = Math.max(0, timeSeconds - this.currentTime)
+    currentBufferNode.stop(this.audioContext.currentTime + delay)
+
+    currentBufferNode.addEventListener(
       'ended',
       () => {
         if (currentBufferNode === this.bufferNode) {
@@ -232,11 +266,14 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this._muted = value
 
     if (this._muted) {
-      this.gainNode.disconnect()
+      this._lastVolume = this.gainNode.gain.value
+      this.gainNode.gain.value = 0
     } else {
-      this.gainNode.connect(this.audioContext.destination)
+      this.gainNode.gain.value = this._lastVolume ?? 1
     }
   }
+
+  private _lastVolume: number | undefined
 
   public canPlayType(mimeType: string) {
     return /^(audio|video)\//.test(mimeType)
@@ -267,13 +304,13 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
         this.src = ''
         break
       case 'playbackRate':
-        this.playbackRate = 0
+        this.playbackRate = 1
         break
       case 'currentTime':
         this.currentTime = 0
         break
       case 'duration':
-        this.duration = 0
+        this._duration = undefined
         break
       case 'volume':
         this.volume = 0

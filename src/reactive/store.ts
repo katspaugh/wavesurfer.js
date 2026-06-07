@@ -75,12 +75,12 @@ export function signal<T>(initialValue: T): WritableSignal<T> {
  * console.log(doubled.value) // 10
  * ```
  */
-export function computed<T>(fn: () => T, dependencies: Signal<any>[]): Signal<T> {
+export function computed<T>(fn: () => T, dependencies: Signal<any>[]): Signal<T> & { destroy(): void } {
   const result = signal<T>(fn())
 
   // Subscribe to all dependencies immediately
   // This ensures the computed value stays in sync even if no one is subscribed to it
-  dependencies.forEach((dep) =>
+  const dependencyUnsubscribes = dependencies.map((dep) =>
     dep.subscribe(() => {
       const newValue = fn()
       // Update the result signal, which will notify our subscribers if value changed
@@ -99,6 +99,11 @@ export function computed<T>(fn: () => T, dependencies: Signal<any>[]): Signal<T>
     subscribe(callback: (value: T) => void): () => void {
       // Just subscribe to result changes
       return result.subscribe(callback)
+    },
+
+    /** Clean up dependency subscriptions to prevent memory leaks */
+    destroy() {
+      dependencyUnsubscribes.forEach((unsub) => unsub())
     },
   }
 }
