@@ -505,7 +505,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // If a newer load starts while this one is in-flight, this one will bail out
     const loadVersion = ++this._loadVersion
 
-    // Reset destroyed flag so the instance can be reused after destroy()
+    // Reusing an instance after destroy() is a supported behavior (see issue #3637
+    // and cypress/e2e/abort.cy.js "load url after destroyed should emit ready").
+    // Reset the destroyed flag so the instance can be reloaded. Stale in-flight
+    // loads from before destroy() are still cancelled by the loadVersion guard
+    // below, so this reset does not weaken the post-await bail-out checks.
     this._isDestroyed = false
 
     this.emit('load', url)
