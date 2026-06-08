@@ -210,27 +210,20 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   stopAt(timeSeconds: number) {
+    const delay = timeSeconds - this.currentTime
     const currentBufferNode = this.bufferNode
-    if (!currentBufferNode || this.paused) return
+    currentBufferNode?.stop(this.audioContext.currentTime + delay)
 
-    const delay = Math.max(0, timeSeconds - this.currentTime)
-
-    // Register the 'ended' listener BEFORE calling stop()
-    // to avoid the event firing before the listener is attached
-    const onEnded = () => {
-      if (currentBufferNode === this.bufferNode) {
-        this.bufferNode = null
-        this.pause()
-      }
-    }
-    currentBufferNode.addEventListener('ended', onEnded, { once: true })
-
-    try {
-      currentBufferNode.stop(this.audioContext.currentTime + delay)
-    } catch {
-      // If stop() throws, clean up the listener we just added
-      currentBufferNode.removeEventListener('ended', onEnded)
-    }
+    currentBufferNode?.addEventListener(
+      'ended',
+      () => {
+        if (currentBufferNode === this.bufferNode) {
+          this.bufferNode = null
+          this.pause()
+        }
+      },
+      { once: true },
+    )
   }
 
   async setSinkId(deviceId: string) {
@@ -276,15 +269,10 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   get volume() {
-    return this._muted ? (this._lastVolume ?? 1) : this.gainNode.gain.value
+    return this.gainNode.gain.value
   }
   set volume(value) {
-    if (this._muted) {
-      // Store the volume for later, but don't change gain while muted
-      this._lastVolume = value
-    } else {
-      this.gainNode.gain.value = value
-    }
+    this.gainNode.gain.value = value
     this.emit('volumechange')
   }
 
@@ -296,16 +284,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this._muted = value
 
     if (this._muted) {
-      this._lastVolume = this.gainNode.gain.value
-      this.gainNode.gain.value = 0
+      this.gainNode.disconnect()
     } else {
-      this.gainNode.gain.value = this._lastVolume ?? 1
+      this.gainNode.connect(this.audioContext.destination)
     }
-
-    this.emit('volumechange')
   }
-
-  private _lastVolume: number | undefined
 
   public canPlayType(mimeType: string) {
     return /^(audio|video)\//.test(mimeType)
@@ -336,13 +319,13 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
         this.src = ''
         break
       case 'playbackRate':
-        this.playbackRate = 1
+        this.playbackRate = 0
         break
       case 'currentTime':
         this.currentTime = 0
         break
       case 'duration':
-        this._duration = undefined
+        this.duration = 0
         break
       case 'volume':
         this.volume = 0

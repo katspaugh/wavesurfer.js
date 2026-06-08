@@ -699,8 +699,8 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Return if the waveform has not been rendered yet
     if (!this.audioData) return
 
-    // Remember the current cursor position as a fraction of the total width
-    const { scrollWidth: oldScrollWidth, scrollLeft: oldScrollLeft } = this.scrollContainer
+    // Remember the current cursor position
+    const { scrollWidth } = this.scrollContainer
     const { right: before } = this.progressWrapper.getBoundingClientRect()
 
     // Re-render the waveform
@@ -709,10 +709,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Adjust the scroll position so that the cursor stays in the same place
     if (!this.isScrollable && this.scrollContainer.scrollLeft) {
       this.scrollContainer.scrollLeft = 0
-    } else if (this.isScrollable && oldScrollWidth !== this.scrollContainer.scrollWidth) {
+    } else if (this.isScrollable && scrollWidth !== this.scrollContainer.scrollWidth) {
       const { right: after } = this.progressWrapper.getBoundingClientRect()
       const delta = utils.roundToHalfAwayFromZero(after - before)
-      this.scrollContainer.scrollLeft = oldScrollLeft + delta
+      this.scrollContainer.scrollLeft += delta
     }
   }
 
