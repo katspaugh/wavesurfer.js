@@ -175,9 +175,18 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
         this.wrapper.style.opacity = '0'
         this.isPointerOverWaveform = false
         this.lastPointerPosition = null
-        // reset transform so the hover element doesn't extend the scrollable overflow area
-        // of the scroll container, which would prevent proper scrollLeft clamping on zoom changes
-        this.wrapper.style.transform = ''
+        // Reset transform after the opacity fade so the line doesn't jump to position 0
+        // while still visible. Also resets the scrollable overflow area of the scroll
+        // container to prevent improper scrollLeft clamping on zoom changes.
+        this.wrapper.addEventListener(
+          'transitionend',
+          () => {
+            if (!this.isPointerOverWaveform) {
+              this.wrapper.style.transform = ''
+            }
+          },
+          { once: true },
+        )
       }, [pointerLeave]),
     )
 

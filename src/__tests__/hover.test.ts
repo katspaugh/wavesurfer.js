@@ -80,6 +80,8 @@ describe('HoverPlugin', () => {
     container.dispatchEvent(new MouseEvent('pointerleave', { bubbles: true }))
 
     expect(hover?.style.opacity).toBe('0')
+    // transform is cleared after the opacity transition ends, not immediately
+    hover?.dispatchEvent(new Event('transitionend'))
     expect(hover?.style.transform).toBe('')
 
     duration.set(12)
