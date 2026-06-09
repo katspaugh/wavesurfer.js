@@ -227,9 +227,10 @@ export function resolveColorValue(
   if (color.length < 2) return color[0] || ''
 
   const canvasElement = document.createElement('canvas')
-  const ctx = canvasElement.getContext('2d') as CanvasRenderingContext2D
-  const gradientHeight = canvasHeight ?? canvasElement.height * devicePixelRatio
-  const gradient = ctx.createLinearGradient(0, 0, 0, gradientHeight || devicePixelRatio)
+  const ctx = canvasElement.getContext('2d')
+  if (!ctx) return color[0] || ''
+  const gradientHeight = canvasHeight || canvasElement.height * devicePixelRatio
+  const gradient = ctx.createLinearGradient(0, 0, 0, gradientHeight)
 
   const colorStopPercentage = 1 / (color.length - 1)
   color.forEach((value, index) => {

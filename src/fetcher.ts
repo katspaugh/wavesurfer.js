@@ -1,16 +1,21 @@
-async function watchProgress(response: Response, progressCallback: (percentage: number) => void) {
+async function watchProgress(response: Response, progressCallback: (percentage: number) => void, signal?: AbortSignal) {
   if (!response.body || !response.headers) return
   const reader = response.body.getReader()
 
   const contentLength = Number(response.headers.get('Content-Length')) || 0
   let receivedLength = 0
 
-  // Process the data
-  const processChunk = (value: Uint8Array | undefined) => {
-    // Add to the received length
-    receivedLength += value?.length || 0
-    const percentage = Math.round((receivedLength / contentLength) * 100)
-    progressCallback(percentage)
+  // Abort the reader when the signal fires
+  const onAbort = () => {
+    reader.cancel()
+  }
+
+  if (signal) {
+    if (signal.aborted) {
+      reader.cancel()
+      return
+    }
+    signal.addEventListener('abort', onAbort, { once: true })
   }
 
   // Use iteration instead of recursion to avoid stack issues
@@ -22,11 +27,24 @@ async function watchProgress(response: Response, progressCallback: (percentage: 
         break
       }
 
-      processChunk(data.value)
+      receivedLength += data.value?.length || 0
+
+      // Only report progress if Content-Length is available and non-zero
+      if (contentLength > 0) {
+        const percentage = Math.round((receivedLength / contentLength) * 100)
+        progressCallback(percentage)
+      }
     }
   } catch (err) {
-    // Ignore errors because we can only handle the main response
+    // Ignore abort errors from reader cancellation
+    if (err instanceof DOMException && err.name === 'AbortError') return
+    // Ignore other errors because we can only handle the main response
     console.warn('Progress tracking error:', err)
+  } finally {
+    // Remove the abort listener to prevent leaks
+    if (signal) {
+      signal.removeEventListener('abort', onAbort)
+    }
   }
 }
 
@@ -43,7 +61,8 @@ async function fetchBlob(
   }
 
   // Read the data to track progress
-  watchProgress(response.clone(), progressCallback)
+  // Pass the abort signal so the progress reader can be cancelled
+  watchProgress(response.clone(), progressCallback, requestInit?.signal ?? undefined)
 
   return response.blob()
 }

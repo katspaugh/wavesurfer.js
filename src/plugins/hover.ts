@@ -4,7 +4,7 @@
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import createElement from '../dom.js'
-import { fromEvent } from '../reactive/event-streams.js'
+import { cleanup, fromEvent } from '../reactive/event-streams.js'
 import { effect } from '../reactive/store.js'
 
 export type HoverPluginOptions = {
@@ -55,6 +55,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
   private wrapper: HTMLElement
   private label: HTMLElement
   private lastPointerPosition: { clientX: number; clientY: number } | null = null
+  private streamCleanups: Array<() => void> = []
 
   constructor(options?: HoverPluginOptions) {
     super(options || {})
@@ -113,9 +114,17 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
     // Get reactive state
     const state = this.wavesurfer.getState()
 
+    // Clean up old event streams (from re-initialization)
+    this.streamCleanups.forEach((fn) => fn())
+    this.streamCleanups = []
+
     // Create event streams for pointer events
     const pointerMove = fromEvent(container, 'pointermove')
     const pointerLeave = fromEvent(container, 'pointerleave')
+    this.streamCleanups.push(
+      () => cleanup(pointerMove),
+      () => cleanup(pointerLeave),
+    )
 
     // React to pointer movement
     this.subscriptions.push(
@@ -188,6 +197,8 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
 
   /** Unmount */
   public destroy() {
+    this.streamCleanups.forEach((fn) => fn())
+    this.streamCleanups = []
     super.destroy()
     this.wrapper.remove()
   }

@@ -99,6 +99,16 @@ export function setupStateEventEmission(state: WaveSurferState, emitter: EventEm
     }, [state.isReady, state.duration]),
   )
 
+  // Reset wasReady when audio buffer is cleared (new load starting)
+  // This allows the 'ready' event to fire again on subsequent loads
+  cleanups.push(
+    effect(() => {
+      if (state.audioBuffer.value === null) {
+        wasReady = false
+      }
+    }, [state.audioBuffer]),
+  )
+
   // ============================================================================
   // Finish Event
   // ============================================================================

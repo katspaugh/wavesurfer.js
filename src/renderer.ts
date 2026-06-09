@@ -85,20 +85,24 @@ class Renderer extends EventEmitter<RendererEvents> {
     return parent
   }
 
+  private onClickWrapper = (e: MouseEvent) => {
+    const rect = this.wrapper.getBoundingClientRect()
+    const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
+    this.emit('click', x, y)
+  }
+
+  private onDblClickWrapper = (e: MouseEvent) => {
+    const rect = this.wrapper.getBoundingClientRect()
+    const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
+    this.emit('dblclick', x, y)
+  }
+
   private initEvents() {
     // Add a click listener
-    this.wrapper.addEventListener('click', (e) => {
-      const rect = this.wrapper.getBoundingClientRect()
-      const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
-      this.emit('click', x, y)
-    })
+    this.wrapper.addEventListener('click', this.onClickWrapper)
 
     // Add a double click listener
-    this.wrapper.addEventListener('dblclick', (e) => {
-      const rect = this.wrapper.getBoundingClientRect()
-      const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
-      this.emit('dblclick', x, y)
-    })
+    this.wrapper.addEventListener('dblclick', this.onDblClickWrapper)
 
     // Drag
     if (this.options.dragToSeek === true || typeof this.options.dragToSeek === 'object') {
@@ -298,6 +302,14 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   destroy() {
+    // Remove DOM event listeners
+    this.wrapper.removeEventListener('click', this.onClickWrapper)
+    this.wrapper.removeEventListener('dblclick', this.onDblClickWrapper)
+
+    // Clean up all timeouts
+    this.timeouts.forEach((clear) => clear())
+    this.timeouts = []
+
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.container.remove()
     if (this.resizeObserver) {
@@ -620,6 +632,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Clear previous timeouts
     this.timeouts.forEach((clear) => clear())
     this.timeouts = []
+
+    // Clear scroll subscriptions from previous render
+    this.unsubscribeOnScroll.forEach((unsubscribe) => unsubscribe())
+    this.unsubscribeOnScroll = []
 
     // Clear the canvases
     this.canvasWrapper.innerHTML = ''

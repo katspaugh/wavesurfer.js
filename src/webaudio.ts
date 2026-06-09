@@ -64,6 +64,50 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     return
   }
 
+  /** For compatibility with HTMLMediaElement.remove(). Delegates to destroy(). */
+  remove() {
+    this.destroy()
+  }
+
+  private _destroyed = false
+
+  /** Clean up all resources. Idempotent — safe to call multiple times. */
+  destroy() {
+    if (this._destroyed) return
+    this._destroyed = true
+
+    // Clear currentSrc so any in-flight fetch/decode chains bail out
+    // via their existing `this.currentSrc !== value` guards
+    this.currentSrc = ''
+
+    // Stop and disconnect buffer node
+    if (this.bufferNode) {
+      this.bufferNode.onended = null
+      try {
+        this.bufferNode.stop()
+      } catch {
+        // Ignore InvalidStateError if node already stopped
+      }
+      this.bufferNode.disconnect()
+      this.bufferNode = null
+    }
+
+    // Disconnect gain node
+    this.gainNode.disconnect()
+
+    // Close audio context (returns a promise, catch rejection if already closed)
+    // Guard with typeof check for mock environments where close may not exist
+    if (typeof this.audioContext.close === 'function') {
+      Promise.resolve(this.audioContext.close.call(this.audioContext)).catch(() => undefined)
+    }
+
+    // Clear buffer reference
+    this.buffer = null
+
+    // Clear all event listeners
+    this.unAll()
+  }
+
   get src() {
     return this.currentSrc
   }
@@ -141,7 +185,15 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
   private _pause() {
     this.paused = true
-    this.bufferNode?.stop()
+    // Clear onended before stopping to prevent spurious 'ended' event
+    if (this.bufferNode) {
+      this.bufferNode.onended = null
+      try {
+        this.bufferNode.stop()
+      } catch {
+        // Ignore InvalidStateError if node already stopped
+      }
+    }
     this.playbackPosition += (this.audioContext.currentTime - this.playStartTime) * this._playbackRate
   }
 

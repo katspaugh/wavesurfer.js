@@ -11,6 +11,7 @@ type PlayerOptions = {
 class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   protected media: HTMLMediaElement
   private isExternalMedia = false
+  private _ownBlobUrl: string | null = null
 
   // Reactive state - make media state observable
   private _isPlaying: WritableSignal<boolean>
@@ -176,9 +177,10 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   private revokeSrc() {
-    const src = this.getSrc()
-    if (src.startsWith('blob:')) {
-      URL.revokeObjectURL(src)
+    // Only revoke blob URLs that we created (not ones owned by external callers)
+    if (this._ownBlobUrl) {
+      URL.revokeObjectURL(this._ownBlobUrl)
+      this._ownBlobUrl = null
     }
   }
 
@@ -192,6 +194,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
     this.revokeSrc()
     const newSrc = blob instanceof Blob && (this.canPlayType(blob.type) || !url) ? URL.createObjectURL(blob) : url
+
+    // Track blob URLs we created so we can revoke them on destroy
+    if (newSrc !== url) {
+      this._ownBlobUrl = newSrc
+    }
 
     // Reset the media element, otherwise it keeps the previous source
     if (prevSrc) {
@@ -212,9 +219,14 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.reactiveMediaEventCleanups.forEach((cleanup) => cleanup())
     this.reactiveMediaEventCleanups = []
 
+    // Revoke blob URLs that we created
+    this.revokeSrc()
+
+    // Clear all event emitter listeners
+    this.unAll()
+
     if (this.isExternalMedia) return
     this.media.pause()
-    this.revokeSrc()
     this.media.removeAttribute('src')
     // Load resets the media element to its initial state
     this.media.load()

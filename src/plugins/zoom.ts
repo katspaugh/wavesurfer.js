@@ -23,7 +23,7 @@
 
 import { BasePlugin, BasePluginEvents } from '../base-plugin.js'
 import { effect } from '../reactive/store.js'
-import { fromEvent } from '../reactive/event-streams.js'
+import { cleanup, fromEvent } from '../reactive/event-streams.js'
 
 export type ZoomPluginOptions = {
   /**
@@ -68,6 +68,7 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   protected options: ZoomPluginOptions & typeof defaultOptions
   private wrapper: HTMLElement | undefined = undefined
   private container: HTMLElement | null = null
+  private streamCleanups: Array<() => void> = []
 
   // State for wheel zoom
   private accumulatedDelta = 0
@@ -120,12 +121,23 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
       )
     }
 
+    // Clean up old event streams (from re-initialization)
+    this.streamCleanups.forEach((fn) => fn())
+    this.streamCleanups = []
+
     // Create event streams
     const wheelStream = fromEvent(this.container, 'wheel')
     const touchStartStream = fromEvent(this.container, 'touchstart')
     const touchMoveStream = fromEvent(this.container, 'touchmove')
     const touchEndStream = fromEvent(this.container, 'touchend')
     const touchCancelStream = fromEvent(this.container, 'touchcancel')
+    this.streamCleanups.push(
+      () => cleanup(wheelStream),
+      () => cleanup(touchStartStream),
+      () => cleanup(touchMoveStream),
+      () => cleanup(touchEndStream),
+      () => cleanup(touchCancelStream),
+    )
 
     // React to wheel events
     this.subscriptions.push(
@@ -306,6 +318,8 @@ class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
   }
 
   destroy() {
+    this.streamCleanups.forEach((fn) => fn())
+    this.streamCleanups = []
     super.destroy()
   }
 }
