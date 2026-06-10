@@ -66,6 +66,11 @@ describe('Renderer', () => {
     jest.clearAllMocks()
   })
 
+  test('parentFromOptionsContainer accepts an element from another realm (e.g. an iframe)', () => {
+    const foreign = { nodeType: 1, style: {} } as unknown as HTMLElement
+    expect((renderer as any).parentFromOptionsContainer(foreign)).toBe(foreign)
+  })
+
   test('parentFromOptionsContainer returns element and throws', () => {
     expect((renderer as any).parentFromOptionsContainer(container)).toBe(container)
     expect((renderer as any).parentFromOptionsContainer('#root')).toBe(container)

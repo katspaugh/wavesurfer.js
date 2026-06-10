@@ -8,7 +8,7 @@
 // @ts-nocheck
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
-import createElement from '../dom.js'
+import createElement, { isHTMLElement } from '../dom.js'
 // Import centralized FFT functionality
 import FFT, {
   hzToScale,
@@ -246,7 +246,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
         if (el instanceof HTMLElement) {
           this.container = el
         }
-      } else if (this.options.container instanceof HTMLElement) {
+      } else if (isHTMLElement(this.options.container)) {
         this.container = this.options.container
       }
     }

@@ -41,4 +41,18 @@ export function createElement(tagName: string, content?: TreeNode, container?: N
   return el
 }
 
+/**
+ * Check if a value is an HTML element, including elements from other realms
+ * (e.g. an iframe), for which `instanceof HTMLElement` returns false
+ */
+export function isHTMLElement(value: unknown): value is HTMLElement {
+  if (value instanceof HTMLElement) return true
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as Node).nodeType === Node.ELEMENT_NODE &&
+    typeof (value as HTMLElement).style === 'object'
+  )
+}
+
 export default createElement

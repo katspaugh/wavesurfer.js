@@ -4,7 +4,7 @@
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
 import WaveSurfer, { type WaveSurferOptions } from '../wavesurfer.js'
-import createElement from '../dom.js'
+import createElement, { isHTMLElement } from '../dom.js'
 
 export type MinimapPluginOptions = {
   overlayColor?: string
@@ -79,7 +79,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
     if (this.options.container) {
       if (typeof this.options.container === 'string') {
         this.container = document.querySelector(this.options.container) as HTMLElement
-      } else if (this.options.container instanceof HTMLElement) {
+      } else if (isHTMLElement(this.options.container)) {
         this.container = this.options.container
       }
       this.container?.appendChild(this.minimapWrapper)
