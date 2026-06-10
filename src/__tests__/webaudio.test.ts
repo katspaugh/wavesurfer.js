@@ -235,6 +235,38 @@ describe('WebAudioPlayer', () => {
       expect(endedSpy).toHaveBeenCalledTimes(1)
     })
 
+    test('stopAt schedules the stop scaled by playback rate', () => {
+      const { audioContext, bufferSource } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      ;(player as any).buffer = createMockBuffer(10)
+      ;(player as any)._playbackRate = 2
+
+      audioContext.currentTime = 100
+      player.play()
+
+      // At 2x rate, stopping at media time 5 takes only 2.5s of real time
+      player.stopAt(5)
+
+      expect(bufferSource.stop).toHaveBeenCalledWith(102.5)
+    })
+
+    test('stopAt reports exactly the stop position after the buffer ends', () => {
+      const { audioContext, bufferSource } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      ;(player as any).buffer = createMockBuffer(10)
+
+      audioContext.currentTime = 100
+      player.play()
+      player.stopAt(5)
+
+      // The 'ended' event fires with some latency after the actual stop
+      audioContext.currentTime = 105.03
+      const endedListener = bufferSource.addEventListener.mock.calls.find(([type]) => type === 'ended')?.[1]
+      endedListener?.()
+
+      expect(player.currentTime).toBe(5)
+    })
+
     test('does not emit ended when currentTime is beyond tolerance threshold from duration', () => {
       const { audioContext, triggerOnended } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
