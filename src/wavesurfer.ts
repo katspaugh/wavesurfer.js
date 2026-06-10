@@ -534,9 +534,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
       // Guard: bail if destroyed or a newer load started
       if (this._isDestroyed || loadVersion !== this._loadVersion) return
-      const overridenMimeType = this.options.blobMimeType
-      if (overridenMimeType) {
-        blob = new Blob([blob], { type: overridenMimeType })
+      const overriddenMimeType = this.options.blobMimeType
+      if (overriddenMimeType) {
+        blob = new Blob([blob], { type: overriddenMimeType })
       }
     }
 
