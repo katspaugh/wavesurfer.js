@@ -186,6 +186,22 @@ describe('WaveSurfer public methods', () => {
     expect((ws as any).stopAtPosition).toBe(4)
   })
 
+  test('pauses and clamps time to the exact stop position when playback overshoots it', async () => {
+    const ws = createWs()
+    const media = ws.getMediaElement()
+    Object.defineProperty(media, 'paused', { configurable: true, value: false })
+    await ws.play(1, 2)
+
+    // Simulate the clock overshooting the stop position between timer ticks
+    media.currentTime = 2.013
+    const timer = getTimer()
+    const tick = timer.on.mock.calls.find(([event]: [string]) => event === 'tick')[1]
+    tick()
+
+    expect(media.pause).toHaveBeenCalled()
+    expect(ws.getCurrentTime()).toBe(2)
+  })
+
   test('playPause toggles play and pause', async () => {
     const ws = createWs()
     const media = ws.getMediaElement()

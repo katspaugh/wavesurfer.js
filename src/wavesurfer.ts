@@ -263,7 +263,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
           // Pause audio when it reaches the stopAtPosition
           if (this.stopAtPosition != null && this.isPlaying() && currentTime >= this.stopAtPosition) {
+            // The timer may overshoot the stop position, so clamp the time back to it
+            const stopAt = this.stopAtPosition
             this.pause()
+            this.setTime(stopAt)
           }
         }
       }),

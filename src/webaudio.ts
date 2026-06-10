@@ -210,7 +210,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   stopAt(timeSeconds: number) {
-    const delay = timeSeconds - this.currentTime
+    // The stop is scheduled on the AudioContext clock, so convert the remaining
+    // media time to real time via the playback rate
+    const delay = (timeSeconds - this.currentTime) / this._playbackRate
     const currentBufferNode = this.bufferNode
     currentBufferNode?.stop(this.audioContext.currentTime + delay)
 
@@ -220,6 +222,10 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
         if (currentBufferNode === this.bufferNode) {
           this.bufferNode = null
           this.pause()
+          // The 'ended' event fires with some latency, so clamp the reported
+          // position to the exact stop time
+          this.playbackPosition = Math.min(timeSeconds, this.duration)
+          this.emit('timeupdate')
         }
       },
       { once: true },
