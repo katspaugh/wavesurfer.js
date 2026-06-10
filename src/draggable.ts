@@ -20,18 +20,21 @@ export function makeDraggable(
 
   const onPointerDown = (event: PointerEvent) => {
     if (event.button !== mouseButton) return
+    if (activePointers.has(event.pointerId)) return
 
     activePointers.set(event.pointerId, event)
     if (activePointers.size > 1) {
       return
     }
 
+    const dragPointerId = event.pointerId
     let startX = event.clientX
     let startY = event.clientY
     let isDragging = false
     const touchStartTime = Date.now()
 
     const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerId !== dragPointerId) return
       if (event.defaultPrevented || activePointers.size > 1) {
         return
       }
@@ -63,8 +66,11 @@ export function makeDraggable(
     }
 
     const onPointerUp = (event: PointerEvent) => {
-      activePointers.delete(event.pointerId)
-      if (isDragging) {
+      // Only react to pointers that started on the element
+      if (!activePointers.delete(event.pointerId)) return
+
+      // Only the pointer that started the drag can end it
+      if (event.pointerId === dragPointerId && isDragging) {
         const x = event.clientX
         const y = event.clientY
         const rect = element.getBoundingClientRect()
@@ -72,11 +78,14 @@ export function makeDraggable(
 
         onEnd?.(x - left, y - top)
       }
-      unsubscribeDocument()
+
+      // Keep listening until all pointers are released
+      if (activePointers.size === 0) {
+        unsubscribeDocument()
+      }
     }
 
     const onPointerLeave = (e: PointerEvent) => {
-      activePointers.delete(e.pointerId)
       if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
         onPointerUp(e)
       }
