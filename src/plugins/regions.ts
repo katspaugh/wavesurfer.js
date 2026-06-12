@@ -656,15 +656,15 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       const overlap = this.regions
         .slice(0, regionIndex)
         .filter((reg) => !reg.isRemoved)
-        .flatMap((reg) => {
-          if (reg === region || !reg.content) return []
+        .reduce<DOMRect[]>((boxes, reg) => {
+          if (reg === region || !reg.content) return boxes
 
           const otherBox = reg.content.getBoundingClientRect()
           if (box.left < otherBox.right && otherBox.left < box.right) {
-            return [otherBox]
+            boxes.push(otherBox)
           }
-          return []
-        })
+          return boxes
+        }, [])
         .sort((a, b) => a.top - b.top)
         .reduce((marginTop, otherBox) => {
           const top = box.top + marginTop
@@ -677,6 +677,10 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
 
       div.style.marginTop = `${overlap}px`
     }, 10)
+  }
+
+  private avoidOverlappingAll() {
+    this.regions.forEach((region) => this.avoidOverlapping(region))
   }
 
   private adjustScroll(region: Region) {
@@ -755,7 +759,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       }),
 
       region.on('update-end', (side) => {
-        this.avoidOverlapping(region)
+        this.avoidOverlappingAll()
         this.emit('region-updated', region, side)
       }),
 

@@ -118,4 +118,27 @@ describe('RegionsPlugin', () => {
     expect(secondRegion.content?.style.marginTop).toBe('0px')
     expect(thirdRegion.content?.style.marginTop).toBe('12px')
   })
+
+  test('reflows shifted labels when another region moves away', () => {
+    const wavesurfer = createWaveSurfer()
+    const plugin = RegionsPlugin.create()
+
+    plugin._init(wavesurfer as any)
+
+    const firstRegion = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+    const secondRegion = plugin.addRegion({ start: 1, end: 2, content: 'Second' })
+
+    mockRect(firstRegion.content!, { left: 0, top: 0, width: 40, height: 10 })
+    mockRect(secondRegion.content!, { left: 20, top: 0, width: 40, height: 10 })
+
+    jest.runOnlyPendingTimers()
+    expect(secondRegion.content?.style.marginTop).toBe('12px')
+
+    mockRect(firstRegion.content!, { left: 80, top: 0, width: 40, height: 10 })
+    firstRegion.onContentBlur()
+
+    jest.runOnlyPendingTimers()
+    expect(firstRegion.content?.style.marginTop).toBe('0px')
+    expect(secondRegion.content?.style.marginTop).toBe('0px')
+  })
 })
