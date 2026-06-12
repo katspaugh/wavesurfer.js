@@ -640,31 +640,47 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     if (!region.content || region.isRemoved) return
 
     setTimeout(() => {
+      if (!region.content) return
+
       // Check that the label doesn't overlap with other labels
       // If it does, push it down until it doesn't
       // only check regions that are before us in the list -- otherwise
       // both overlapping regions will try to move down away from each other.
       const div = region.content as HTMLElement
+      div.style.marginTop = '0'
       const box = div.getBoundingClientRect()
 
       const regionIndex = this.regions.indexOf(region)
+      if (regionIndex < 0) return
 
       const overlap = this.regions
         .slice(0, regionIndex)
         .filter((reg) => !reg.isRemoved)
-        .map((reg) => {
-          if (reg === region || !reg.content) return 0
+        .reduce<DOMRect[]>((boxes, reg) => {
+          if (reg === region || !reg.content) return boxes
 
           const otherBox = reg.content.getBoundingClientRect()
-          if (box.left < otherBox.left + otherBox.width && otherBox.left < box.left + box.width) {
-            return otherBox.height + 2
+          if (box.left < otherBox.right && otherBox.left < box.right) {
+            boxes.push(otherBox)
           }
-          return 0
-        })
-        .reduce((sum, val) => sum + val, 0)
+          return boxes
+        }, [])
+        .sort((a, b) => a.top - b.top)
+        .reduce((marginTop, otherBox) => {
+          const top = box.top + marginTop
+          const bottom = top + box.height
+          if (top < otherBox.bottom && otherBox.top < bottom) {
+            return otherBox.bottom - box.top + 2
+          }
+          return marginTop
+        }, 0)
 
       div.style.marginTop = `${overlap}px`
     }, 10)
+  }
+
+  private avoidOverlappingAll() {
+    this.regions.forEach((region) => this.avoidOverlapping(region))
   }
 
   private adjustScroll(region: Region) {
@@ -743,7 +759,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       }),
 
       region.on('update-end', (side) => {
-        this.avoidOverlapping(region)
+        this.avoidOverlappingAll()
         this.emit('region-updated', region, side)
       }),
 
