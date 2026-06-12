@@ -1,4 +1,5 @@
 import EventEmitter from './event-emitter.js'
+import { isHTMLElement } from './dom.js'
 import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
 import { createDragStream } from './reactive/drag-stream.js'
@@ -74,7 +75,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     let parent
     if (typeof container === 'string') {
       parent = document.querySelector(container) satisfies HTMLElement | null
-    } else if (container instanceof HTMLElement) {
+    } else if (isHTMLElement(container)) {
       parent = container
     }
 

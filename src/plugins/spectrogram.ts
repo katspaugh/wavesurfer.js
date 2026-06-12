@@ -37,7 +37,7 @@ import FFT, {
  * Spectrogram plugin for wavesurfer.
  */
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
-import createElement from '../dom.js'
+import createElement, { isHTMLElement } from '../dom.js'
 
 // Import the worker using rollup-plugin-web-worker-loader
 import SpectrogramWorker from 'web-worker:./spectrogram-worker.ts'
@@ -282,7 +282,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         if (el instanceof HTMLElement) {
           this.container = el
         }
-      } else if (this.options.container instanceof HTMLElement) {
+      } else if (isHTMLElement(this.options.container)) {
         this.container = this.options.container
       }
     }

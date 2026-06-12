@@ -3,7 +3,7 @@
  */
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
-import createElement from '../dom.js'
+import createElement, { isHTMLElement } from '../dom.js'
 import { effect } from '../reactive/store.js'
 
 export type TimelinePluginOptions = {
@@ -79,7 +79,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
     }
 
     let container = this.wavesurfer.getWrapper()
-    if (this.options.container instanceof HTMLElement) {
+    if (isHTMLElement(this.options.container)) {
       container = this.options.container
     } else if (typeof this.options.container === 'string') {
       const el = document.querySelector(this.options.container)
