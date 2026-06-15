@@ -782,14 +782,16 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         // Remove from pending set
         this.pendingBitmaps.delete(bitmapPromise)
 
-        // Check if canvas is still valid before drawing
-        if (ctx.canvas.parentNode) {
-          const drawHeight = (height * rMax1) / rMax
-          const drawY = yOffset + height * (1 - rMax1 / rMax)
+        try {
+          // Check if canvas is still valid before drawing
+          if (ctx.canvas.parentNode) {
+            const drawHeight = (height * rMax1) / rMax
+            const drawY = yOffset + height * (1 - rMax1 / rMax)
 
-          ctx.drawImage(bitmap, 0, drawY, canvasWidth, drawHeight)
-
-          // Clean up bitmap to free memory
+            ctx.drawImage(bitmap, 0, drawY, canvasWidth, drawHeight)
+          }
+        } finally {
+          // Clean up bitmap to free memory, even if the canvas was removed before it resolved
           if ('close' in bitmap) {
             bitmap.close()
           }
