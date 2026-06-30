@@ -355,8 +355,10 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       this.worker.terminate()
       this.worker = null
     }
+    const error = new Error('Spectrogram plugin destroyed')
     this.workerPromises.forEach((promise) => {
       if (promise.timer) clearTimeout(promise.timer)
+      promise.reject(error)
     })
     this.workerPromises.clear()
 
