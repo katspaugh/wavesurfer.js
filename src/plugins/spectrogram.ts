@@ -112,6 +112,12 @@ export type SpectrogramPluginOptions = {
   maxCanvasWidth?: number
   /** Use web worker for FFT calculations (default: false) */
   useWebWorker?: boolean
+  /**
+   * Max time in milliseconds to wait for the web worker FFT result before the calculation is
+   * rejected (and falls back to the main thread). Set to 0 to disable the timeout. Only used when
+   * useWebWorker is true. (default: 30000)
+   */
+  workerTimeout?: number
 }
 
 export type SpectrogramPluginEvents = BasePluginEvents & {
@@ -148,7 +154,9 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   // Web worker support
   private useWebWorker: boolean = false
   private worker: Worker | null = null
-  private workerPromises: Map<string, { resolve: Function; reject: Function }> = new Map()
+  private workerTimeout = 30000
+  private workerPromises: Map<string, { resolve: Function; reject: Function; timer?: ReturnType<typeof setTimeout> }> =
+    new Map()
 
   // Performance optimization properties
   private cachedFrequencies: Uint8Array[][] | null = null
@@ -185,6 +193,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
     // Web worker option (disabled by default)
     this.useWebWorker = options.useWebWorker === true
+    this.workerTimeout = options.workerTimeout ?? 30000
 
     // Set up color map using shared utility
     this.colorMap = setupColorMap(options.colorMap)
@@ -246,6 +255,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
           const promise = this.workerPromises.get(id)
           if (promise) {
             this.workerPromises.delete(id)
+            if (promise.timer) clearTimeout(promise.timer)
             if (error) {
               promise.reject(new Error(error))
             } else {
@@ -345,6 +355,12 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       this.worker.terminate()
       this.worker = null
     }
+    const error = new Error('Spectrogram plugin destroyed')
+    this.workerPromises.forEach((promise) => {
+      if (promise.timer) clearTimeout(promise.timer)
+      promise.reject(error)
+    })
+    this.workerPromises.clear()
 
     this.cachedFrequencies = null
     this.cachedResampledData = null
@@ -837,35 +853,43 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
     // Create promise for worker response
     const promise = new Promise<Uint8Array[][]>((resolve, reject) => {
-      this.workerPromises.set(id, { resolve, reject })
+      // Set timeout to avoid hanging; workerTimeout === 0 disables it
+      const timer =
+        this.workerTimeout > 0
+          ? setTimeout(() => {
+              if (this.workerPromises.has(id)) {
+                this.workerPromises.delete(id)
+                reject(new Error('Worker timeout'))
+              }
+            }, this.workerTimeout)
+          : undefined
+      this.workerPromises.set(id, { resolve, reject, timer })
 
-      // Set timeout to avoid hanging
-      setTimeout(() => {
-        if (this.workerPromises.has(id)) {
-          this.workerPromises.delete(id)
-          reject(new Error('Worker timeout'))
-        }
-      }, 30000) // 30 second timeout
-    })
-
-    // Send message to worker
-    this.worker.postMessage({
-      type: 'calculateFrequencies',
-      id,
-      audioData,
-      options: {
-        startTime: 0,
-        endTime: buffer.duration,
-        sampleRate: buffer.sampleRate,
-        fftSamples: this.fftSamples,
-        windowFunc: this.windowFunc,
-        alpha: this.alpha,
-        noverlap,
-        scale: this.scale,
-        gainDB: this.gainDB,
-        rangeDB: this.rangeDB,
-        splitChannels: this.options.splitChannels || false,
-      },
+      // Send message to worker; if dispatch fails synchronously, settle and clean up immediately
+      try {
+        this.worker.postMessage({
+          type: 'calculateFrequencies',
+          id,
+          audioData,
+          options: {
+            startTime: 0,
+            endTime: buffer.duration,
+            sampleRate: buffer.sampleRate,
+            fftSamples: this.fftSamples,
+            windowFunc: this.windowFunc,
+            alpha: this.alpha,
+            noverlap,
+            scale: this.scale,
+            gainDB: this.gainDB,
+            rangeDB: this.rangeDB,
+            splitChannels: this.options.splitChannels || false,
+          },
+        })
+      } catch (error) {
+        if (timer) clearTimeout(timer)
+        this.workerPromises.delete(id)
+        reject(error)
+      }
     })
 
     return promise
