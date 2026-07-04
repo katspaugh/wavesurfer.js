@@ -13,8 +13,8 @@ import createElement, { isHTMLElement } from '../dom.js'
 import FFT, {
   hzToScale,
   scaleToHz,
-  createFilterBankForScale,
-  applyFilterBank,
+  createSparseFilterBankForScale,
+  applySparseFilterBank,
   setupColorMap,
   freqType,
   unitType,
@@ -913,6 +913,9 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     const fftStartTime = performance.now()
     let totalFFTs = 0
 
+    // Create the filter bank once for all frames and channels
+    const filterBank = this.getFilterBank(sampleRate)
+
     for (let c = 0; c < channels; c++) {
       const channelData = this.buffer.getChannelData(c)
       const channelFreq: Uint8Array[] = []
@@ -923,9 +926,8 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
         totalFFTs++
 
         // Apply filter bank if needed
-        const filterBank = this.getFilterBank(sampleRate)
         if (filterBank) {
-          spectrum = applyFilterBank(spectrum, filterBank)
+          spectrum = applySparseFilterBank(spectrum, filterBank)
         }
 
         // Convert to uint8 color indices
@@ -1062,9 +1064,9 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     this.segments.clear()
   }
 
-  private getFilterBank(sampleRate: number): number[][] | null {
+  private getFilterBank(sampleRate: number) {
     const numFilters = this.fftSamples / 2
-    return createFilterBankForScale(this.scale, numFilters, this.fftSamples, sampleRate)
+    return createSparseFilterBankForScale(this.scale, numFilters, this.fftSamples, sampleRate)
   }
 
   private _onWrapperClick = (e: MouseEvent) => {

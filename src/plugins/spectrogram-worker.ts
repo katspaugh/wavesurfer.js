@@ -4,7 +4,7 @@
  */
 
 // Import centralized FFT functionality
-import FFT, { createFilterBankForScale, applyFilterBank } from '../fft.js'
+import FFT, { createSparseFilterBankForScale, applySparseFilterBank } from '../fft.js'
 
 // Global FFT instance (reused for performance)
 let fft: FFT | null = null
@@ -88,7 +88,7 @@ function calculateFrequencies(audioChannels: Float32Array[], options: WorkerMess
 
   // Create filter bank based on scale using centralized function
   const numFilters = fftSamples / 2 // Same as main thread
-  const filterBank = createFilterBankForScale(scale, numFilters, fftSamples, sampleRate)
+  const filterBank = createSparseFilterBankForScale(scale, numFilters, fftSamples, sampleRate)
 
   // Calculate hop size
   let actualNoverlap = noverlap || Math.max(0, Math.round(fftSamples * 0.5))
@@ -109,7 +109,7 @@ function calculateFrequencies(audioChannels: Float32Array[], options: WorkerMess
 
       // Apply filter bank if specified (same as main thread)
       if (filterBank) {
-        spectrum = applyFilterBank(spectrum, filterBank)
+        spectrum = applySparseFilterBank(spectrum, filterBank)
       }
 
       // Convert to uint8 color indices

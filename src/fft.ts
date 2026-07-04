@@ -128,6 +128,8 @@ export function applyFilterBank(fftPoints: Float32Array, filterBank: number[][])
 }
 
 // Centralized filter bank creation based on scale type
+// Superseded by createSparseFilterBankForScale/applySparseFilterBank below; kept exported
+// for compatibility
 export function createFilterBankForScale(
   scale: 'linear' | 'logarithmic' | 'mel' | 'bark' | 'erb',
   numFilters: number,
@@ -143,6 +145,82 @@ export function createFilterBankForScale(
       return createFilterBank(numFilters, fftSamples, sampleRate, hzToBark, barkToHz)
     case 'erb':
       return createFilterBank(numFilters, fftSamples, sampleRate, hzToErb, erbToHz)
+    case 'linear':
+    default:
+      return null // No filter bank for linear scale
+  }
+}
+
+/**
+ * One output row of a sparse frequency-scale filter bank. Every row produced by
+ * createFilterBank() has exactly two adjacent non-zero taps, so storing just those (plus the
+ * row's center frequency) lets the bank be applied in O(filters) instead of O(filters × bins).
+ */
+export interface SparseFilter {
+  /** Index of the lower of the two adjacent FFT bins (the upper tap is lo + 1) */
+  lo: number
+  /** Weight of the lower bin */
+  weightLo: number
+  /** Weight of the upper bin */
+  weightHi: number
+  /** Center frequency of this output row in Hz */
+  centerHz: number
+}
+
+function createSparseFilterBank(
+  numFilters: number,
+  fftSamples: number,
+  sampleRate: number,
+  hzToScaleFunc: (hz: number) => number,
+  scaleToHzFunc: (scale: number) => number,
+): SparseFilter[] {
+  const filterMin = hzToScaleFunc(0)
+  const filterMax = hzToScaleFunc(sampleRate / 2)
+  const filterBank: SparseFilter[] = new Array(numFilters)
+  const scale = sampleRate / fftSamples
+
+  for (let i = 0; i < numFilters; i++) {
+    const hz = scaleToHzFunc(filterMin + (i / numFilters) * (filterMax - filterMin))
+    const j = Math.floor(hz / scale)
+    const hzLow = j * scale
+    const hzHigh = (j + 1) * scale
+    const r = (hz - hzLow) / (hzHigh - hzLow)
+    filterBank[i] = { lo: j, weightLo: 1 - r, weightHi: r, centerHz: hz }
+  }
+  return filterBank
+}
+
+export function applySparseFilterBank(fftPoints: Float32Array, filterBank: SparseFilter[]): Float32Array {
+  const numFilters = filterBank.length
+  const logSpectrum = new Float32Array(numFilters)
+  for (let i = 0; i < numFilters; i++) {
+    const { lo, weightLo, weightHi } = filterBank[i]
+    if (lo >= 0 && lo < fftPoints.length) {
+      logSpectrum[i] = fftPoints[lo] * weightLo
+    }
+    if (lo + 1 >= 0 && lo + 1 < fftPoints.length) {
+      logSpectrum[i] += fftPoints[lo + 1] * weightHi
+    }
+  }
+  return logSpectrum
+}
+
+// Sparse equivalent of createFilterBankForScale: same rows, same weights, O(filters) apply
+export function createSparseFilterBankForScale(
+  scale: 'linear' | 'logarithmic' | 'mel' | 'bark' | 'erb',
+  numFilters: number,
+  fftSamples: number,
+  sampleRate: number,
+): SparseFilter[] | null {
+  switch (scale) {
+    case 'mel':
+      return createSparseFilterBank(numFilters, fftSamples, sampleRate, hzToMel, melToHz)
+    case 'logarithmic':
+      return createSparseFilterBank(numFilters, fftSamples, sampleRate, hzToLog, logToHz)
+    case 'bark':
+      return createSparseFilterBank(numFilters, fftSamples, sampleRate, hzToBark, barkToHz)
+    case 'erb':
+      return createSparseFilterBank(numFilters, fftSamples, sampleRate, hzToErb, erbToHz)
     case 'linear':
     default:
       return null // No filter bank for linear scale

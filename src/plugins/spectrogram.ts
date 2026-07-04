@@ -24,8 +24,8 @@
 import FFT, {
   hzToScale,
   scaleToHz,
-  createFilterBankForScale,
-  applyFilterBank,
+  createSparseFilterBankForScale,
+  applySparseFilterBank,
   setupColorMap,
   freqType,
   unitType,
@@ -950,7 +950,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
     // Create filter bank based on scale using centralized function
     const numFilters = this.fftSamples / 2
-    const filterBank = createFilterBankForScale(this.scale, numFilters, this.fftSamples, sampleRate)
+    const filterBank = createSparseFilterBankForScale(this.scale, numFilters, this.fftSamples, sampleRate)
 
     for (let c = 0; c < channels; c++) {
       // for each channel
@@ -963,7 +963,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         let spectrum = fft.calculateSpectrum(segment)
 
         if (filterBank) {
-          spectrum = applyFilterBank(spectrum, filterBank)
+          spectrum = applySparseFilterBank(spectrum, filterBank)
         }
 
         // Convert to uint8 color indices
