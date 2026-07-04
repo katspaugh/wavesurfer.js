@@ -3,6 +3,7 @@ import FFT, {
   applySparseFilterBank,
   createFilterBankForScale,
   createSparseFilterBankForScale,
+  magnitudesToColorIndices,
 } from '../fft.js'
 
 const SCALES = ['mel', 'logarithmic', 'bark', 'erb'] as const
@@ -145,5 +146,71 @@ describe('FFT zero-padding (windowLength)', () => {
     expect(() => new (FFT as any)(512, SAMPLE_RATE, 'hann', undefined, NaN)).toThrow()
     expect(() => new (FFT as any)(512, SAMPLE_RATE, 'hann', undefined, 80.5)).toThrow()
     expect(() => new (FFT as any)(512, SAMPLE_RATE, 'hann', undefined, -64)).toThrow()
+  })
+})
+
+describe('magnitudesToColorIndices', () => {
+  /** The exact inline loop this helper replaced in all three plugins */
+  function legacyLoop(spectrum: Float32Array, gainDB: number, rangeDB: number): Uint8Array {
+    const freqBins = new Uint8Array(spectrum.length)
+    const gainPlusRange = gainDB + rangeDB
+    for (let j = 0; j < spectrum.length; j++) {
+      const magnitude = spectrum[j] > 1e-12 ? spectrum[j] : 1e-12
+      const valueDB = 20 * Math.log10(magnitude)
+      if (valueDB < -gainPlusRange) {
+        freqBins[j] = 0
+      } else if (valueDB > -gainDB) {
+        freqBins[j] = 255
+      } else {
+        freqBins[j] = Math.round(((valueDB + gainDB) / rangeDB) * 255)
+      }
+    }
+    return freqBins
+  }
+
+  const dbToMagnitude = (db: number) => Math.pow(10, db / 20)
+
+  it('is byte-identical to the inline loop it replaced, including boundary and wrap values', () => {
+    const gainDB = 20
+    const rangeDB = 80
+    // Magnitudes spanning silence, the 1e-12 floor, the full ramp, both clip branches, and
+    // values just around the -gainDB white point where the historical arithmetic wraps
+    const values: number[] = [0, 1e-15, 1e-12, 2e-12, 1]
+    for (let db = -140; db <= 20; db += 0.37) {
+      values.push(dbToMagnitude(db))
+    }
+    for (const db of [-100.001, -100, -99.999, -20.2, -20.157, -20.1, -20.001, -20, -19.999]) {
+      values.push(dbToMagnitude(db))
+    }
+    const spectrum = Float32Array.from(values)
+
+    expect(Array.from(magnitudesToColorIndices(spectrum, -gainDB, rangeDB))).toEqual(
+      Array.from(legacyLoop(spectrum, gainDB, rangeDB)),
+    )
+  })
+
+  it('is byte-identical to the inline loop across gain/range combinations on a real spectrum', () => {
+    const signal = makeSine(512, 1000, 16000)
+    const spectrum = new (FFT as any)(512, 16000, 'hann', undefined).calculateSpectrum(signal)
+
+    for (const [gainDB, rangeDB] of [
+      [20, 80],
+      [0, 40],
+      [40, 120],
+      [-10, 60],
+    ]) {
+      expect(Array.from(magnitudesToColorIndices(spectrum, -gainDB, rangeDB))).toEqual(
+        Array.from(legacyLoop(spectrum, gainDB, rangeDB)),
+      )
+    }
+  })
+
+  it('rejects invalid whiteDb and rangeDB values', () => {
+    const spectrum = new Float32Array(4)
+    expect(() => magnitudesToColorIndices(spectrum, NaN, 80)).toThrow(TypeError)
+    expect(() => magnitudesToColorIndices(spectrum, -20, 0)).toThrow(TypeError)
+    expect(() => magnitudesToColorIndices(spectrum, -20, -80)).toThrow(TypeError)
+    expect(() => magnitudesToColorIndices(spectrum, -20, NaN)).toThrow(TypeError)
+    expect(() => magnitudesToColorIndices(spectrum, Infinity, 80)).toThrow(TypeError)
   })
 })

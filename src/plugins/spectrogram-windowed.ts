@@ -15,6 +15,7 @@ import FFT, {
   scaleToHz,
   createSparseFilterBankForScale,
   applySparseFilterBank,
+  magnitudesToColorIndices,
   setupColorMap,
   freqType,
   unitType,
@@ -973,22 +974,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
         }
 
         // Convert to uint8 color indices
-        const freqBins = new Uint8Array(spectrum.length)
-        const gainPlusRange = this.gainDB + this.rangeDB
-
-        for (let j = 0; j < spectrum.length; j++) {
-          const magnitude = spectrum[j] > 1e-12 ? spectrum[j] : 1e-12
-          const valueDB = 20 * Math.log10(magnitude)
-
-          if (valueDB < -gainPlusRange) {
-            freqBins[j] = 0
-          } else if (valueDB > -this.gainDB) {
-            freqBins[j] = 255
-          } else {
-            freqBins[j] = Math.round(((valueDB + this.gainDB) / this.rangeDB) * 255)
-          }
-        }
-        channelFreq.push(freqBins)
+        channelFreq.push(magnitudesToColorIndices(spectrum, -this.gainDB, this.rangeDB))
       }
       frequencies.push(channelFreq)
     }

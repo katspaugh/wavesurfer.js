@@ -4,7 +4,7 @@
  */
 
 // Import centralized FFT functionality
-import FFT, { createSparseFilterBankForScale, applySparseFilterBank } from '../fft.js'
+import FFT, { createSparseFilterBankForScale, applySparseFilterBank, magnitudesToColorIndices } from '../fft.js'
 
 // Global FFT instance (reused for performance)
 let fft: FFT | null = null
@@ -121,22 +121,7 @@ function calculateFrequencies(audioChannels: Float32Array[], options: WorkerMess
       }
 
       // Convert to uint8 color indices
-      const freqBins = new Uint8Array(spectrum.length)
-      const gainPlusRange = gainDB + rangeDB
-
-      for (let j = 0; j < spectrum.length; j++) {
-        const magnitude = spectrum[j] > 1e-12 ? spectrum[j] : 1e-12
-        const valueDB = 20 * Math.log10(magnitude)
-
-        if (valueDB < -gainPlusRange) {
-          freqBins[j] = 0
-        } else if (valueDB > -gainDB) {
-          freqBins[j] = 255
-        } else {
-          freqBins[j] = Math.round(((valueDB + gainDB) / rangeDB) * 255)
-        }
-      }
-      channelFreq.push(freqBins)
+      channelFreq.push(magnitudesToColorIndices(spectrum, -gainDB, rangeDB))
     }
     frequencies.push(channelFreq)
   }

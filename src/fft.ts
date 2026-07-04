@@ -227,6 +227,36 @@ export function createSparseFilterBankForScale(
   }
 }
 
+/**
+ * Convert one frame of FFT magnitudes into 8-bit color indices, exactly as the spectrogram
+ * plugins have always done: dB = 20*log10(max(magnitude, 1e-12)); 255 at/above whiteDb, 0 below
+ * whiteDb - rangeDB, and the historical ramp arithmetic in between. The ramp expression is
+ * negative over its whole range and relies on Uint8Array's mod-256 wrap - kept bit-for-bit
+ * because changing it would shift every mid-tone pixel of every existing spectrogram.
+ */
+export function magnitudesToColorIndices(spectrum: Float32Array, whiteDb: number, rangeDB: number): Uint8Array {
+  if (!Number.isFinite(whiteDb) || !Number.isFinite(rangeDB) || rangeDB <= 0) {
+    throw new TypeError(
+      `whiteDb must be finite and rangeDB must be a finite positive number, got ${whiteDb}/${rangeDB}`,
+    )
+  }
+  const colorIndices = new Uint8Array(spectrum.length)
+  const floorDb = whiteDb - rangeDB
+  for (let i = 0; i < spectrum.length; i++) {
+    const magnitude = spectrum[i] > 1e-12 ? spectrum[i] : 1e-12
+    const valueDB = 20 * Math.log10(magnitude)
+
+    if (valueDB < floorDb) {
+      colorIndices[i] = 0
+    } else if (valueDB > whiteDb) {
+      colorIndices[i] = 255
+    } else {
+      colorIndices[i] = Math.round(((valueDB - whiteDb) / rangeDB) * 255)
+    }
+  }
+  return colorIndices
+}
+
 export const COLOR_MAPS = {
   gray: () => {
     const colorMap = []
