@@ -62,6 +62,10 @@ ws.registerPlugin(
     // Overlap between FFT windows:
     // noverlap: null,    // Auto-calculated by default, or set manually
     //
+    // Zero-padded FFT length (power of 2, >= fftSamples):
+    // fftSize: 4096,     // Interpolates extra frequency bins for a smoother image without
+    //                    // changing the analysis window, hop, or time resolution
+    //
     // Maximum canvas width for performance:
     // maxCanvasWidth: 30000,  // Split large spectrograms into multiple canvases
   }),
@@ -116,6 +120,7 @@ ws.on('spectrogram-click', (relativeX) => {
     <h4>Performance Settings</h4>
     <ul>
       <li><code>fftSamples: 1024</code> - FFT resolution (512, 1024, 2048, 4096)</li>
+      <li><code>fftSize: 4096</code> - Optional zero-padded FFT length for smoother frequency interpolation</li>
       <li><code>useWebWorker: true</code> - Use web worker for faster processing</li>
       <li><code>maxCanvasWidth: 30000</code> - Split large spectrograms into multiple canvases</li>
       <li><code>noverlap: null</code> - Overlap between FFT windows (auto-calculated)</li>

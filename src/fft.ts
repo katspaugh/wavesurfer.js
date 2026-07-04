@@ -576,8 +576,15 @@ export function createWrapperClickHandler(wrapper: HTMLElement, emit: (event: st
 /**
  * Calculate FFT - Based on https://github.com/corbanbrook/dsp.js
  */
-function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: number) {
+function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: number, windowLength?: number) {
+  // Absent values default to the full buffer; explicit values are validated, not coerced
+  windowLength = windowLength ?? bufferSize
+  if (!Number.isInteger(windowLength) || windowLength < 2 || windowLength > bufferSize) {
+    // Every window formula divides by (windowLength - 1) and the table has bufferSize entries
+    throw Error('windowLength must be an integer between 2 and bufferSize')
+  }
   this.bufferSize = bufferSize
+  this.windowLength = windowLength
   this.sampleRate = sampleRate
   this.bandwidth = (2 / bufferSize) * (sampleRate / 2)
 
@@ -591,68 +598,79 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
 
   switch (windowFunc) {
     case 'bartlett':
-      for (let i = 0; i < bufferSize; i++) {
-        this.windowValues[i] = (2 / (bufferSize - 1)) * ((bufferSize - 1) / 2 - Math.abs(i - (bufferSize - 1) / 2))
+      for (let i = 0; i < windowLength; i++) {
+        this.windowValues[i] =
+          (2 / (windowLength - 1)) * ((windowLength - 1) / 2 - Math.abs(i - (windowLength - 1) / 2))
       }
       break
     case 'bartlettHann':
-      for (let i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < windowLength; i++) {
         this.windowValues[i] =
-          0.62 - 0.48 * Math.abs(i / (bufferSize - 1) - 0.5) - 0.38 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1))
+          0.62 - 0.48 * Math.abs(i / (windowLength - 1) - 0.5) - 0.38 * Math.cos((Math.PI * 2 * i) / (windowLength - 1))
       }
       break
     case 'blackman':
       alpha = alpha || 0.16
-      for (let i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < windowLength; i++) {
         this.windowValues[i] =
           (1 - alpha) / 2 -
-          0.5 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1)) +
-          (alpha / 2) * Math.cos((4 * Math.PI * i) / (bufferSize - 1))
+          0.5 * Math.cos((Math.PI * 2 * i) / (windowLength - 1)) +
+          (alpha / 2) * Math.cos((4 * Math.PI * i) / (windowLength - 1))
       }
       break
     case 'cosine':
-      for (let i = 0; i < bufferSize; i++) {
-        this.windowValues[i] = Math.cos((Math.PI * i) / (bufferSize - 1) - Math.PI / 2)
+      for (let i = 0; i < windowLength; i++) {
+        this.windowValues[i] = Math.cos((Math.PI * i) / (windowLength - 1) - Math.PI / 2)
       }
       break
     case 'gauss':
       alpha = alpha || 0.25
-      for (let i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < windowLength; i++) {
         this.windowValues[i] = Math.pow(
           Math.E,
-          -0.5 * Math.pow((i - (bufferSize - 1) / 2) / ((alpha * (bufferSize - 1)) / 2), 2),
+          -0.5 * Math.pow((i - (windowLength - 1) / 2) / ((alpha * (windowLength - 1)) / 2), 2),
         )
       }
       break
     case 'hamming':
-      for (let i = 0; i < bufferSize; i++) {
-        this.windowValues[i] = 0.54 - 0.46 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1))
+      for (let i = 0; i < windowLength; i++) {
+        this.windowValues[i] = 0.54 - 0.46 * Math.cos((Math.PI * 2 * i) / (windowLength - 1))
       }
       break
     case 'hann':
     case undefined:
-      for (let i = 0; i < bufferSize; i++) {
-        this.windowValues[i] = 0.5 * (1 - Math.cos((Math.PI * 2 * i) / (bufferSize - 1)))
+      for (let i = 0; i < windowLength; i++) {
+        this.windowValues[i] = 0.5 * (1 - Math.cos((Math.PI * 2 * i) / (windowLength - 1)))
       }
       break
     case 'lanczoz':
-      for (let i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < windowLength; i++) {
         this.windowValues[i] =
-          Math.sin(Math.PI * ((2 * i) / (bufferSize - 1) - 1)) / (Math.PI * ((2 * i) / (bufferSize - 1) - 1))
+          Math.sin(Math.PI * ((2 * i) / (windowLength - 1) - 1)) / (Math.PI * ((2 * i) / (windowLength - 1) - 1))
       }
       break
     case 'rectangular':
-      for (let i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < windowLength; i++) {
         this.windowValues[i] = 1
       }
       break
     case 'triangular':
-      for (let i = 0; i < bufferSize; i++) {
-        this.windowValues[i] = (2 / bufferSize) * (bufferSize / 2 - Math.abs(i - (bufferSize - 1) / 2))
+      for (let i = 0; i < windowLength; i++) {
+        this.windowValues[i] = (2 / windowLength) * (windowLength / 2 - Math.abs(i - (windowLength - 1) / 2))
       }
       break
     default:
       throw Error("No such window function '" + windowFunc + "'")
+  }
+
+  // When the window is shorter than the FFT, the remaining table entries stay zero (zero
+  // padding) and the live samples are scaled up so the 2 / bufferSize magnitude
+  // normalization in calculateSpectrum() remains calibrated
+  if (windowLength < bufferSize) {
+    const windowScale = bufferSize / windowLength
+    for (let i = 0; i < windowLength; i++) {
+      this.windowValues[i] *= windowScale
+    }
   }
 
   let limit = 1
@@ -766,7 +784,9 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
 
 // TypeScript declaration for FFT class
 export declare class FFT {
-  constructor(bufferSize: number, sampleRate: number, windowFunc: string, alpha: number)
+  constructor(bufferSize: number, sampleRate: number, windowFunc: string, alpha: number, windowLength?: number)
+  bufferSize: number
+  windowLength: number
   calculateSpectrum(buffer: Float32Array): Float32Array
 }
 
