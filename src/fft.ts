@@ -228,23 +228,84 @@ export function createSparseFilterBankForScale(
 }
 
 /**
- * Convert one frame of FFT magnitudes into 8-bit color indices, exactly as the spectrogram
- * plugins have always done: dB = 20*log10(max(magnitude, 1e-12)); 255 at/above whiteDb, 0 below
- * whiteDb - rangeDB, and the historical ramp arithmetic in between. The ramp expression is
- * negative over its whole range and relies on Uint8Array's mod-256 wrap - kept bit-for-bit
- * because changing it would shift every mid-tone pixel of every existing spectrogram.
+ * Global-peak level below which autoGain treats the whole signal as digital silence and leaves
+ * the spectrogram blank instead of amplifying the numeric floor. -180 dBFS is well below the
+ * quantization floor of 24-bit audio (~-144 dBFS) and float32 near full scale (~-138 dB), but
+ * far above denormals, so it only triggers on true silence.
  */
-export function magnitudesToColorIndices(spectrum: Float32Array, whiteDb: number, rangeDB: number): Uint8Array {
+export const SILENCE_FLOOR_DB = -180
+
+/**
+ * autoGain transient-memory budget: below this estimate (frames x bins x 4 bytes x channels)
+ * the Float32 dB frames are kept between the two passes (single FFT pass, fastest); at or
+ * above it, only the running maximum is kept and the spectra are recomputed for quantization,
+ * trading a second FFT pass on very long short-window files for a bounded heap.
+ */
+export const AUTO_GAIN_BUFFER_BUDGET_BYTES = 64 * 1024 * 1024
+
+/**
+ * Per-bin display tilt in dB: preEmphasis dB/octave relative to 1 kHz - 0 dB at 1 kHz,
+ * boosting above, attenuating below. This is Praat's display pre-emphasis formula, including
+ * its 1e-308 guard that sends the DC bin toward -infinity instead of NaN.
+ */
+export function createPreEmphasisTilt(preEmphasis: number, binFrequencies: ArrayLike<number>): Float64Array {
+  if (!Number.isFinite(preEmphasis)) {
+    throw new TypeError(`preEmphasis must be a finite number, got ${preEmphasis}`)
+  }
+  const tilt = new Float64Array(binFrequencies.length)
+  for (let i = 0; i < binFrequencies.length; i++) {
+    tilt[i] = preEmphasis * Math.log2(binFrequencies[i] / 1000 + 1e-308)
+  }
+  return tilt
+}
+
+/** Center frequency in Hz of each output row: sparse scale rows, or linear FFT bins */
+export function getBinFrequencies(
+  filterBank: SparseFilter[] | null,
+  fftLength: number,
+  sampleRate: number,
+): Float64Array {
+  if (filterBank) {
+    return Float64Array.from(filterBank, (filter) => filter.centerHz)
+  }
+  const bins = fftLength / 2
+  const frequencies = new Float64Array(bins)
+  for (let i = 0; i < bins; i++) {
+    frequencies[i] = (i * sampleRate) / fftLength
+  }
+  return frequencies
+}
+
+/**
+ * Convert one frame of FFT magnitudes into 8-bit color indices, exactly as the spectrogram
+ * plugins have always done: dB = 20*log10(max(magnitude, 1e-12)); 255 strictly above whiteDb,
+ * 0 strictly below whiteDb - rangeDB, and the historical ramp arithmetic for everything in
+ * between - including both exact boundaries, where the negative ramp expression and
+ * Uint8Array's mod-256 wrap map valueDB === whiteDb to 0 and valueDB === whiteDb - rangeDB
+ * to 1. Kept bit-for-bit because changing it would shift every mid-tone pixel of every
+ * existing spectrogram (dbToColorIndices is the clean-mapping counterpart used by autoGain).
+ * The optional tilt (createPreEmphasisTilt) is added to each bin's dB value before mapping.
+ */
+export function magnitudesToColorIndices(
+  spectrum: Float32Array,
+  whiteDb: number,
+  rangeDB: number,
+  tilt?: Float64Array | null,
+): Uint8Array {
   if (!Number.isFinite(whiteDb) || !Number.isFinite(rangeDB) || rangeDB <= 0) {
     throw new TypeError(
       `whiteDb must be finite and rangeDB must be a finite positive number, got ${whiteDb}/${rangeDB}`,
     )
   }
+  if (tilt && tilt.length !== spectrum.length) {
+    throw new TypeError(`tilt length ${tilt.length} does not match spectrum length ${spectrum.length}`)
+  }
   const colorIndices = new Uint8Array(spectrum.length)
   const floorDb = whiteDb - rangeDB
   for (let i = 0; i < spectrum.length; i++) {
     const magnitude = spectrum[i] > 1e-12 ? spectrum[i] : 1e-12
-    const valueDB = 20 * Math.log10(magnitude)
+    let valueDB = 20 * Math.log10(magnitude)
+    if (tilt) valueDB += tilt[i]
 
     if (valueDB < floorDb) {
       colorIndices[i] = 0
@@ -252,6 +313,51 @@ export function magnitudesToColorIndices(spectrum: Float32Array, whiteDb: number
       colorIndices[i] = 255
     } else {
       colorIndices[i] = Math.round(((valueDB - whiteDb) / rangeDB) * 255)
+    }
+  }
+  return colorIndices
+}
+
+/**
+ * One frame of FFT magnitudes to dB (same floor and tilt semantics as
+ * magnitudesToColorIndices), materialized as Float32 for autoGain's deferred quantization.
+ * Pass `out` to reuse a scratch buffer when the frame is not retained.
+ */
+export function magnitudesToDb(spectrum: Float32Array, tilt?: Float64Array | null, out?: Float32Array): Float32Array {
+  if (tilt && tilt.length !== spectrum.length) {
+    throw new TypeError(`tilt length ${tilt.length} does not match spectrum length ${spectrum.length}`)
+  }
+  const db = out && out.length === spectrum.length ? out : new Float32Array(spectrum.length)
+  for (let i = 0; i < spectrum.length; i++) {
+    const magnitude = spectrum[i] > 1e-12 ? spectrum[i] : 1e-12
+    db[i] = tilt ? 20 * Math.log10(magnitude) + tilt[i] : 20 * Math.log10(magnitude)
+  }
+  return db
+}
+
+/**
+ * Quantize a dB frame produced by magnitudesToDb: 255 at/above whiteDb, 0 at/below
+ * whiteDb - rangeDB, linear in between. Used by autoGain, whose white point is the exact
+ * spectrogram maximum - unlike magnitudesToColorIndices this deliberately does NOT reproduce
+ * the historical wrap arithmetic, because with valueDB === whiteDb the wrap would map the
+ * loudest bin to 0 instead of 255.
+ */
+export function dbToColorIndices(db: Float32Array, whiteDb: number, rangeDB: number): Uint8Array {
+  if (!Number.isFinite(whiteDb) || !Number.isFinite(rangeDB) || rangeDB <= 0) {
+    throw new TypeError(
+      `whiteDb must be finite and rangeDB must be a finite positive number, got ${whiteDb}/${rangeDB}`,
+    )
+  }
+  const colorIndices = new Uint8Array(db.length)
+  const floorDb = whiteDb - rangeDB
+  for (let i = 0; i < db.length; i++) {
+    const valueDB = db[i]
+    if (valueDB >= whiteDb) {
+      colorIndices[i] = 255
+    } else if (valueDB <= floorDb) {
+      colorIndices[i] = 0
+    } else {
+      colorIndices[i] = Math.round(((valueDB - floorDb) / rangeDB) * 255)
     }
   }
   return colorIndices
@@ -640,7 +746,7 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
       }
       break
     case 'blackman':
-      alpha = alpha || 0.16
+      alpha = alpha ?? 0.16
       for (let i = 0; i < windowLength; i++) {
         this.windowValues[i] =
           (1 - alpha) / 2 -

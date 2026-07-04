@@ -4,6 +4,11 @@ import FFT, {
   createFilterBankForScale,
   createSparseFilterBankForScale,
   magnitudesToColorIndices,
+  magnitudesToDb,
+  dbToColorIndices,
+  createPreEmphasisTilt,
+  getBinFrequencies,
+  SILENCE_FLOOR_DB,
 } from '../fft.js'
 
 const SCALES = ['mel', 'logarithmic', 'bark', 'erb'] as const
@@ -212,5 +217,78 @@ describe('magnitudesToColorIndices', () => {
     expect(() => magnitudesToColorIndices(spectrum, -20, -80)).toThrow(TypeError)
     expect(() => magnitudesToColorIndices(spectrum, -20, NaN)).toThrow(TypeError)
     expect(() => magnitudesToColorIndices(spectrum, Infinity, 80)).toThrow(TypeError)
+  })
+})
+
+describe('preEmphasis tilt and autoGain helpers', () => {
+  it('computes the Praat tilt: -6/0/+6 dB at 500/1000/2000 Hz for preEmphasis 6', () => {
+    const tilt = createPreEmphasisTilt(6, [500, 1000, 2000])
+    expect(tilt[0]).toBeCloseTo(-6, 10)
+    expect(tilt[1]).toBeCloseTo(0, 10)
+    expect(tilt[2]).toBeCloseTo(6, 10)
+  })
+
+  it('sends the DC bin toward -infinity instead of NaN (the 1e-308 guard)', () => {
+    const tilt = createPreEmphasisTilt(6, [0, 1000])
+    expect(Number.isFinite(tilt[0])).toBe(true)
+    expect(tilt[0]).toBeLessThan(-6000)
+  })
+
+  it('rejects non-finite preEmphasis', () => {
+    expect(() => createPreEmphasisTilt(NaN, [1000])).toThrow(TypeError)
+    expect(() => createPreEmphasisTilt(Infinity, [1000])).toThrow(TypeError)
+  })
+
+  it('derives bin frequencies from linear bins or the sparse scale rows', () => {
+    const linear = getBinFrequencies(null, 512, 16000)
+    expect(linear.length).toBe(256)
+    expect(linear[0]).toBe(0)
+    expect(linear[64]).toBe((64 * 16000) / 512)
+
+    const bank = createSparseFilterBankForScale('mel', 256, 512, 16000)!
+    const scaled = getBinFrequencies(bank, 512, 16000)
+    expect(Array.from(scaled)).toEqual(bank.map((filter) => filter.centerHz))
+  })
+
+  it('rejects a tilt whose length does not match the spectrum', () => {
+    const spectrum = new Float32Array(8)
+    const tilt = createPreEmphasisTilt(6, [1000])
+    expect(() => magnitudesToColorIndices(spectrum, -20, 80, tilt)).toThrow(TypeError)
+    expect(() => magnitudesToDb(spectrum, tilt)).toThrow(TypeError)
+  })
+
+  it('reuses the out buffer in magnitudesToDb when shapes match', () => {
+    const spectrum = Float32Array.from([1, 0.1, 0.01])
+    const out = new Float32Array(3)
+    expect(magnitudesToDb(spectrum, null, out)).toBe(out)
+    expect(out[0]).toBeCloseTo(0, 5)
+    expect(out[1]).toBeCloseTo(-20, 4)
+  })
+
+  it('maps the exact white point to 255 in dbToColorIndices (autoGain semantics)', () => {
+    const db = Float32Array.from([-10, -30, -90, -200])
+    const indices = dbToColorIndices(db, -10, 80)
+    expect(indices[0]).toBe(255) // valueDB === whiteDb -> 255, not the wrapped 0
+    expect(indices[3]).toBe(0) // below whiteDb - rangeDB
+    expect(indices[1]).toBeGreaterThan(0)
+    expect(indices[1]).toBeLessThan(255)
+    expect(indices[1]).toBeGreaterThan(indices[2])
+  })
+
+  it('rejects invalid whiteDb/rangeDB in dbToColorIndices', () => {
+    const db = new Float32Array(4)
+    expect(() => dbToColorIndices(db, NaN, 80)).toThrow(TypeError)
+    expect(() => dbToColorIndices(db, -20, 0)).toThrow(TypeError)
+    expect(() => dbToColorIndices(db, -20, -1)).toThrow(TypeError)
+  })
+
+  it('exports a silence floor far below real signal levels', () => {
+    expect(SILENCE_FLOOR_DB).toBe(-180)
+  })
+
+  it('honors an explicit blackman alpha of 0 instead of coercing it to the default', () => {
+    const explicitZero = new (FFT as any)(64, 8000, 'blackman', 0)
+    const defaulted = new (FFT as any)(64, 8000, 'blackman', undefined)
+    expect(explicitZero.windowValues[10]).not.toBe(defaulted.windowValues[10])
   })
 })

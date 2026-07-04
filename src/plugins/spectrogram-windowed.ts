@@ -16,6 +16,8 @@ import FFT, {
   createSparseFilterBankForScale,
   applySparseFilterBank,
   magnitudesToColorIndices,
+  createPreEmphasisTilt,
+  getBinFrequencies,
   setupColorMap,
   freqType,
   unitType,
@@ -76,6 +78,14 @@ export type WindowedSpectrogramPluginOptions = {
   gainDB?: number
   /** Range in dB */
   rangeDB?: number
+  /**
+   * Praat-style display pre-emphasis in dB per octave, applied before quantization: each bin
+   * gets preEmphasis * log2(binHz / 1000) dB - 0 dB at 1 kHz, boosting higher frequencies and
+   * attenuating lower ones (Praat's default is 6). Set 0 to disable. Note: the autoGain option
+   * of SpectrogramPlugin is not available here - segments are computed lazily while scrolling,
+   * so no global maximum exists. (default: 0)
+   */
+  preEmphasis?: number
   /** Color map */
   colorMap?: number[][] | 'gray' | 'igray' | 'roseus'
   /** Render a spectrogram for each channel independently when true. */
@@ -128,6 +138,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
   private frequencyMax: WindowedSpectrogramPluginOptions['frequencyMax']
   private gainDB: WindowedSpectrogramPluginOptions['gainDB']
   private rangeDB: WindowedSpectrogramPluginOptions['rangeDB']
+  private preEmphasis: number
   private scale: WindowedSpectrogramPluginOptions['scale']
 
   // Windowing properties
@@ -204,6 +215,25 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     this.gainDB = options.gainDB ?? 20
     this.rangeDB = options.rangeDB ?? 80
     this.scale = options.scale || 'mel'
+    this.preEmphasis = options.preEmphasis ?? 0
+
+    if (options.gainDB != null && !Number.isFinite(options.gainDB)) {
+      throw new TypeError(`gainDB must be a finite number, got ${options.gainDB}`)
+    }
+    if (options.rangeDB != null && (!Number.isFinite(options.rangeDB) || options.rangeDB <= 0)) {
+      throw new TypeError(`rangeDB must be a finite positive number, got ${options.rangeDB}`)
+    }
+    if (options.preEmphasis != null && !Number.isFinite(options.preEmphasis)) {
+      throw new TypeError(`preEmphasis must be a finite number, got ${options.preEmphasis}`)
+    }
+    if (options.alpha != null) {
+      if (!Number.isFinite(options.alpha)) {
+        throw new TypeError(`alpha must be a finite number, got ${options.alpha}`)
+      }
+      if (this.windowFunc === 'gauss' && options.alpha <= 0) {
+        throw new TypeError(`alpha must be positive for the gauss window, got ${options.alpha}`)
+      }
+    }
 
     // Windowing options
     this.windowSize = options.windowSize || 30 // 30 seconds window
@@ -904,6 +934,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
             scale: this.scale,
             gainDB: this.gainDB,
             rangeDB: this.rangeDB,
+            preEmphasis: this.preEmphasis,
             splitChannels: this.options.splitChannels || false,
           },
         })
@@ -956,6 +987,11 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     // Create the filter bank once for all frames and channels
     const filterBank = this.getFilterBank(sampleRate)
 
+    // Optional Praat display pre-emphasis, precomputed per output row
+    const tilt = this.preEmphasis
+      ? createPreEmphasisTilt(this.preEmphasis, getBinFrequencies(filterBank, fftLength, sampleRate))
+      : null
+
     // One reused frame buffer; the zero tail beyond fftSamples doubles as the FFT padding
     const frame = new Float32Array(fftLength)
 
@@ -974,7 +1010,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
         }
 
         // Convert to uint8 color indices
-        channelFreq.push(magnitudesToColorIndices(spectrum, -this.gainDB, this.rangeDB))
+        channelFreq.push(magnitudesToColorIndices(spectrum, -this.gainDB, this.rangeDB, tilt))
       }
       frequencies.push(channelFreq)
     }
