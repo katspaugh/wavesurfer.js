@@ -83,7 +83,7 @@ function calculateFrequencies(audioChannels: Float32Array[], options: WorkerMess
 
   // Initialize FFT (reuse if possible for performance)
   if (!fft || fft.bufferSize !== fftSamples) {
-    fft = new (FFT as any)(fftSamples, sampleRate, windowFunc, alpha || 0.16)
+    fft = new (FFT as any)(fftSamples, sampleRate, windowFunc, alpha)
   }
 
   // Create filter bank based on scale using centralized function
