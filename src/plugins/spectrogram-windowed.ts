@@ -140,7 +140,8 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
 
   // Web worker for FFT calculations
   private worker: Worker | null = null
-  private workerPromises: Map<string, { resolve: Function; reject: Function }> = new Map()
+  private workerPromises: Map<string, { resolve: Function; reject: Function; timer?: ReturnType<typeof setTimeout> }> =
+    new Map()
 
   static create(options?: WindowedSpectrogramPluginOptions) {
     return new WindowedSpectrogramPlugin(options || {})
@@ -210,6 +211,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
           const promise = this.workerPromises.get(id)
           if (promise) {
             this.workerPromises.delete(id)
+            if (promise.timer) clearTimeout(promise.timer)
             if (error) {
               promise.reject(new Error(error))
             } else {
@@ -221,13 +223,31 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
 
       this.worker.onerror = (error) => {
         console.warn('Spectrogram worker error, falling back to main thread:', error)
-        // Fallback to main thread calculation
-        this.worker = null
+        this.disposeWorker(new Error('Worker error'))
+      }
+
+      this.worker.onmessageerror = (event) => {
+        console.warn('Spectrogram worker message error, falling back to main thread:', event)
+        this.disposeWorker(new Error('Worker message error'))
       }
     } catch (error) {
       console.warn('Failed to initialize worker, falling back to main thread:', error)
       this.worker = null
     }
+  }
+
+  // Terminate the worker and reject in-flight requests so callers fall back to the main thread
+  // immediately instead of waiting out the 30s request timeout
+  private disposeWorker(error: Error) {
+    if (this.worker) {
+      this.worker.terminate()
+      this.worker = null
+    }
+    this.workerPromises.forEach((promise) => {
+      if (promise.timer) clearTimeout(promise.timer)
+      promise.reject(error)
+    })
+    this.workerPromises.clear()
   }
 
   onInit() {
@@ -820,35 +840,40 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
 
     // Create promise for worker response
     const promise = new Promise<Uint8Array[][]>((resolve, reject) => {
-      this.workerPromises.set(id, { resolve, reject })
-
       // Set timeout to avoid hanging
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         if (this.workerPromises.has(id)) {
           this.workerPromises.delete(id)
           reject(new Error('Worker timeout'))
         }
       }, 30000) // 30 second timeout
-    })
+      this.workerPromises.set(id, { resolve, reject, timer })
 
-    // Send message to worker
-    this.worker.postMessage({
-      type: 'calculateFrequencies',
-      id,
-      audioData,
-      options: {
-        startTime,
-        endTime,
-        sampleRate,
-        fftSamples: this.fftSamples,
-        windowFunc: this.windowFunc,
-        alpha: this.alpha,
-        noverlap,
-        scale: this.scale,
-        gainDB: this.gainDB,
-        rangeDB: this.rangeDB,
-        splitChannels: this.options.splitChannels || false,
-      },
+      // Send message to worker; if dispatch fails synchronously, settle and clean up immediately
+      try {
+        this.worker.postMessage({
+          type: 'calculateFrequencies',
+          id,
+          audioData,
+          options: {
+            startTime,
+            endTime,
+            sampleRate,
+            fftSamples: this.fftSamples,
+            windowFunc: this.windowFunc,
+            alpha: this.alpha,
+            noverlap,
+            scale: this.scale,
+            gainDB: this.gainDB,
+            rangeDB: this.rangeDB,
+            splitChannels: this.options.splitChannels || false,
+          },
+        })
+      } catch (error) {
+        clearTimeout(timer)
+        this.workerPromises.delete(id)
+        reject(error)
+      }
     })
 
     return promise
@@ -1183,17 +1208,8 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     this.stopProgressiveLoading()
     this.nextProgressiveSegmentTime = 0
 
-    // Clean up worker
-    if (this.worker) {
-      this.worker.terminate()
-      this.worker = null
-    }
-
-    // Clear any pending worker promises
-    for (const [id, promise] of this.workerPromises) {
-      promise.reject(new Error('Plugin destroyed'))
-    }
-    this.workerPromises.clear()
+    // Clean up worker and any pending worker promises
+    this.disposeWorker(new Error('Plugin destroyed'))
 
     this.clearAllSegments()
 
