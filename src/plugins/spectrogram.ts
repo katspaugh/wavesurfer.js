@@ -156,11 +156,22 @@ export type SpectrogramPluginOptions = {
    * useWebWorker is true. (default: 30000)
    */
   workerTimeout?: number
+  /**
+   * Whether a failed or timed-out worker calculation silently recomputes the FFT on the main
+   * thread. The default keeps that historical behavior. Set to false to emit an 'error' event
+   * and skip rendering instead - on long files a main-thread FFT can freeze the page, which is
+   * usually worse than a missing spectrogram. After a worker failure the worker is re-created
+   * on the next render either way. Only applies when useWebWorker is true and a worker could
+   * actually be created; environments without Worker support always compute on the main
+   * thread. (default: true)
+   */
+  fallbackToMainThread?: boolean
 }
 
 export type SpectrogramPluginEvents = BasePluginEvents & {
   ready: []
   click: [relativeX: number]
+  error: [error: Error]
 }
 
 // Exact for all safe-integer powers of two; deliberately not bitwise (Int32 truncation would
@@ -201,6 +212,8 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   private useWebWorker: boolean = false
   private worker: Worker | null = null
   private workerTimeout = 30000
+  private fallbackToMainThread = true
+  private workerConstructionFailed = false
   private workerPromises: Map<string, { resolve: Function; reject: Function; timer?: ReturnType<typeof setTimeout> }> =
     new Map()
 
@@ -240,6 +253,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     // Web worker option (disabled by default)
     this.useWebWorker = options.useWebWorker === true
     this.workerTimeout = options.workerTimeout ?? 30000
+    this.fallbackToMainThread = options.fallbackToMainThread ?? true
 
     // Set up color map using shared utility
     this.colorMap = setupColorMap(options.colorMap)
@@ -365,6 +379,9 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     } catch (error) {
       console.warn('Failed to initialize worker, falling back to main thread:', error)
       this.worker = null
+      // Construction failure (e.g. CSP worker-src denial) is permanent for this environment:
+      // latch it so computations don't retry it, unlike runtime failures of a live worker
+      this.workerConstructionFailed = true
     }
   }
 
@@ -509,10 +526,17 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       // Check if we can use cached frequencies
       return this.cachedFrequencies
     } else {
-      // Calculate new frequencies and cache them
+      // Calculate new frequencies and cache them; a failed computation (empty result)
+      // is not cached so the next render retries
       const frequencies = await this.getFrequencies(decodedData)
-      this.cachedFrequencies = frequencies
-      this.cachedBuffer = decodedData
+      if (frequencies.length > 0) {
+        this.cachedFrequencies = frequencies
+        this.cachedBuffer = decodedData
+      } else if (this.cachedBuffer && this.cachedBuffer !== decodedData) {
+        // The buffer changed and its computation failed: drop the previous buffer's data so
+        // nothing stale can be drawn against the new audio
+        this.clearCache()
+      }
       return frequencies
     }
   }
@@ -645,7 +669,9 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         const decodedData = this.wavesurfer?.getDecodedData()
         if (decodedData) {
           const frequencies = await this.getFrequenciesData()
-          this.drawSpectrogram(this.cachedFrequencies)
+          // Draw what this render computed (cache hit, fresh data, or empty on failure)
+          // rather than whatever the cache field holds
+          this.drawSpectrogram(frequencies)
         }
       }
       this.lastZoomLevel = this.wavesurfer?.options.minPxPerSec || 0
@@ -668,6 +694,16 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   }
 
   private drawSpectrogram(frequenciesData: Uint8Array[][]): void {
+    if (
+      !frequenciesData ||
+      frequenciesData.length === 0 ||
+      frequenciesData.every((channel) => !channel || channel.length === 0)
+    ) {
+      // Nothing to draw (failed computation, or a buffer too short for a single FFT frame):
+      // remove any previously drawn canvases so no stale spectrogram stays on screen
+      this.clearCanvases()
+      return
+    }
     if (!isNaN(frequenciesData[0][0])) {
       // data is 1ch [sample, freq] format
       // to [channel, sample, freq] format
@@ -957,8 +993,10 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         this.workerTimeout > 0
           ? setTimeout(() => {
               if (this.workerPromises.has(id)) {
-                this.workerPromises.delete(id)
-                reject(new Error('Worker timeout'))
+                // A timed-out result can never be consumed (its id is dropped), so dispose
+                // the worker too: this stops the abandoned computation and lets the next
+                // render start a fresh worker instead of queueing behind a stuck one
+                this.disposeWorker(new Error('Worker timeout'))
               }
             }, this.workerTimeout)
           : undefined
@@ -1004,11 +1042,21 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
     if (!buffer) return []
 
-    // Use worker if enabled and available
+    // Use worker if enabled and available; a worker disposed after a runtime failure is
+    // re-created on the next computation (construction failures are latched as permanent)
+    if (this.useWebWorker && !this.worker && !this.workerConstructionFailed && typeof Worker !== 'undefined') {
+      this.initializeWorker()
+    }
     if (this.useWebWorker && this.worker) {
       try {
         return await this.calculateFrequenciesWithWorker(buffer)
       } catch (error) {
+        if (!this.fallbackToMainThread) {
+          // Surface the failure instead of silently recomputing on the main thread, which
+          // can freeze the page for long files
+          this.emit('error', error instanceof Error ? error : new Error(String(error)))
+          return []
+        }
         console.warn('Worker calculation failed, falling back to main thread:', error)
         // Fall through to main thread calculation
       }

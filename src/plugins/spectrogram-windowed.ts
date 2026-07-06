@@ -98,12 +98,21 @@ export type WindowedSpectrogramPluginOptions = {
   progressiveLoading?: boolean
   /** Use web worker for FFT calculations (default: true) */
   useWebWorker?: boolean
+  /**
+   * Whether a failed or timed-out worker calculation silently recomputes the FFT on the main
+   * thread. The default keeps that historical behavior. Set to false to emit an 'error' event
+   * and skip the segment instead - on long files a main-thread FFT can freeze the page. After
+   * a worker failure the worker is re-created on the next computation either way. Only applies
+   * when a worker could actually be created. (default: true)
+   */
+  fallbackToMainThread?: boolean
 }
 
 export type WindowedSpectrogramPluginEvents = BasePluginEvents & {
   ready: []
   click: [relativeX: number]
   progress: [progress: number] // Progress from 0 to 1
+  error: [error: Error]
 }
 
 /**
@@ -146,6 +155,8 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
   private bufferSize: number // pixels
   private progressiveLoading: boolean
   private useWebWorker: boolean
+  private fallbackToMainThread: boolean
+  private workerConstructionFailed = false
   private segments: Map<string, FrequencySegment> = new Map()
   private buffer: AudioBuffer | null = null
   private currentPosition = 0 // current playback position in seconds
@@ -244,6 +255,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
 
     // Web worker (disabled by default in SSR environments like Next.js)
     this.useWebWorker = options.useWebWorker === true && typeof window !== 'undefined'
+    this.fallbackToMainThread = options.fallbackToMainThread ?? true
 
     // Filter banks
     this.numMelFilters = fftLength / 2
@@ -300,6 +312,9 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     } catch (error) {
       console.warn('Failed to initialize worker, falling back to main thread:', error)
       this.worker = null
+      // Construction failure (e.g. CSP worker-src denial) is permanent for this environment:
+      // latch it so segment computations don't retry it on every segment
+      this.workerConstructionFailed = true
     }
   }
 
@@ -860,13 +875,23 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     const sampleRate = this.buffer.sampleRate
     const channels = this.options.splitChannels ? this.buffer.numberOfChannels : 1
 
-    // Try to use web worker first
+    // Try to use web worker first; a worker disposed after a runtime failure is re-created
+    // on the next computation (construction failures are latched as permanent)
+    if (this.useWebWorker && !this.worker && !this.workerConstructionFailed && typeof Worker !== 'undefined') {
+      this.initializeWorker()
+    }
     if (this.worker) {
       try {
         const result = await this.calculateFrequenciesWithWorker(startTime, endTime)
         const totalTime = performance.now() - calcStartTime
         return result
       } catch (error) {
+        if (!this.fallbackToMainThread) {
+          // Surface the failure instead of silently recomputing on the main thread, which
+          // can freeze the page for long files
+          this.emit('error', error instanceof Error ? error : new Error(String(error)))
+          return []
+        }
         console.warn('Worker calculation failed, falling back to main thread:', error)
         // Fall through to main thread calculation
       }
@@ -910,8 +935,10 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
       // Set timeout to avoid hanging
       const timer = setTimeout(() => {
         if (this.workerPromises.has(id)) {
-          this.workerPromises.delete(id)
-          reject(new Error('Worker timeout'))
+          // A timed-out result can never be consumed (its id is dropped), so dispose the
+          // worker too: this stops the abandoned computation and lets the next segment
+          // start a fresh worker instead of queueing behind a stuck one
+          this.disposeWorker(new Error('Worker timeout'))
         }
       }, 30000) // 30 second timeout
       this.workerPromises.set(id, { resolve, reject, timer })
