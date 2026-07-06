@@ -59,6 +59,11 @@ ws.registerPlugin(
     // gainDB: 20,        // Brightness adjustment (default: 20dB)
     // rangeDB: 80,       // Dynamic range (default: 80dB)
     //
+    // Praat-style display options (combine with windowFunc: 'gauss', scale: 'linear',
+    // colorMap: 'gray' and rangeDB: 70 for the classic Praat look):
+    // preEmphasis: 6,    // dB/octave boost above 1 kHz so speech formants stay visible
+    // autoGain: true,    // Map the loudest bin to black instead of using the fixed gainDB
+    //
     // Overlap between FFT windows:
     // noverlap: null,    // Auto-calculated by default, or set manually
     //
@@ -131,6 +136,8 @@ ws.on('spectrogram-click', (relativeX) => {
       <li><code>colorMap: 'gray'|'igray'|'roseus'</code> - Color scheme for frequency intensity</li>
       <li><code>gainDB: 20</code> - Brightness adjustment (-20 to +40)</li>
       <li><code>rangeDB: 80</code> - Dynamic range (20 to 120)</li>
+      <li><code>preEmphasis: 6</code> - Praat-style dB/octave display tilt around 1 kHz</li>
+      <li><code>autoGain: true</code> - Praat-style autoscaling of the white point</li>
       <li><code>windowFunc: 'hann'</code> - FFT window function (hann, hamming, blackman, etc.)</li>
     </ul>
     

@@ -4,7 +4,17 @@
  */
 
 // Import centralized FFT functionality
-import FFT, { createSparseFilterBankForScale, applySparseFilterBank } from '../fft.js'
+import FFT, {
+  createSparseFilterBankForScale,
+  applySparseFilterBank,
+  magnitudesToColorIndices,
+  magnitudesToDb,
+  dbToColorIndices,
+  createPreEmphasisTilt,
+  getBinFrequencies,
+  SILENCE_FLOOR_DB,
+  AUTO_GAIN_BUFFER_BUDGET_BYTES,
+} from '../fft.js'
 
 // Global FFT instance (reused for performance)
 let fft: FFT | null = null
@@ -25,6 +35,10 @@ interface WorkerMessage {
     scale: 'linear' | 'logarithmic' | 'mel' | 'bark' | 'erb'
     gainDB: number
     rangeDB: number
+    preEmphasis?: number
+    autoGain?: boolean
+    /** Internal: overrides the autoGain transient-memory budget (used by tests) */
+    autoGainBufferBudgetBytes?: number
     splitChannels: boolean
   }
 }
@@ -76,6 +90,9 @@ function calculateFrequencies(audioChannels: Float32Array[], options: WorkerMess
     scale,
     gainDB,
     rangeDB,
+    preEmphasis,
+    autoGain,
+    autoGainBufferBudgetBytes,
     splitChannels,
   } = options
 
@@ -85,7 +102,8 @@ function calculateFrequencies(audioChannels: Float32Array[], options: WorkerMess
   const fftLength = fftSize ?? fftSamples
 
   // Initialize FFT (reuse if possible for performance); the window covers fftSamples samples,
-  // zero-padded up to fftLength
+  // zero-padded up to fftLength. Alpha passes through untouched so FFT's per-window defaults
+  // and the explicit blackman alpha: 0 semantics match the main thread
   if (!fft || fft.bufferSize !== fftLength || fft.windowLength !== fftSamples) {
     fft = new (FFT as any)(fftLength, sampleRate, windowFunc, alpha, fftSamples)
   }
@@ -107,36 +125,91 @@ function calculateFrequencies(audioChannels: Float32Array[], options: WorkerMess
   // One reused frame buffer; the zero tail beyond fftSamples doubles as the FFT padding
   const frame = new Float32Array(fftLength)
 
+  // Optional Praat display pre-emphasis, precomputed per output row (same as main thread)
+  const tilt = preEmphasis
+    ? createPreEmphasisTilt(preEmphasis, getBinFrequencies(filterBank, fftLength, sampleRate))
+    : null
+
+  const computeSpectrum = (channelData: Float32Array, sample: number): Float32Array => {
+    frame.set(channelData.subarray(sample, sample + fftSamples))
+    let spectrum = fft.calculateSpectrum(frame)
+
+    // Apply filter bank if specified (same as main thread)
+    if (filterBank) {
+      spectrum = applySparseFilterBank(spectrum, filterBank)
+    }
+    return spectrum
+  }
+
+  if (!autoGain) {
+    for (let c = 0; c < channels; c++) {
+      const channelData = audioChannels[c]
+      const channelFreq: Uint8Array[] = []
+
+      for (let sample = startSample; sample + fftSamples < endSample; sample += hopSize) {
+        // Convert to uint8 color indices
+        channelFreq.push(magnitudesToColorIndices(computeSpectrum(channelData, sample), -gainDB, rangeDB, tilt))
+      }
+      frequencies.push(channelFreq)
+    }
+    return frequencies
+  }
+
+  // autoGain (Praat-style autoscaling): the white point is the loudest bin of the whole
+  // spectrogram, found after pre-emphasis, shared across channels. Two strategies bound the
+  // transient memory - see the main thread implementation for details.
+  const bins = fftLength / 2
+  const span = endSample - startSample
+  const frameCount = span > fftSamples ? Math.floor((span - fftSamples - 1) / hopSize) + 1 : 0
+  const estimatedBytes = frameCount * bins * 4 * channels
+  const budgetBytes = autoGainBufferBudgetBytes ?? AUTO_GAIN_BUFFER_BUDGET_BYTES
+  let maxDb = -Infinity
+
+  if (estimatedBytes < budgetBytes) {
+    const dbFrames: Float32Array[][] = []
+    for (let c = 0; c < channels; c++) {
+      const channelData = audioChannels[c]
+      const channelDb: Float32Array[] = []
+      for (let sample = startSample; sample + fftSamples < endSample; sample += hopSize) {
+        const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt)
+        for (let i = 0; i < db.length; i++) {
+          if (db[i] > maxDb) maxDb = db[i]
+        }
+        channelDb.push(db)
+      }
+      dbFrames.push(channelDb)
+    }
+    const silent = maxDb < SILENCE_FLOOR_DB
+    for (const channelDb of dbFrames) {
+      frequencies.push(
+        channelDb.map((db) => (silent ? new Uint8Array(db.length) : dbToColorIndices(db, maxDb, rangeDB))),
+      )
+    }
+    return frequencies
+  }
+
+  // Over budget: pass 1 tracks only the maximum with one reused dB frame
+  const dbScratch = new Float32Array(bins)
+  for (let c = 0; c < channels; c++) {
+    const channelData = audioChannels[c]
+    for (let sample = startSample; sample + fftSamples < endSample; sample += hopSize) {
+      const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt, dbScratch)
+      for (let i = 0; i < db.length; i++) {
+        if (db[i] > maxDb) maxDb = db[i]
+      }
+    }
+  }
+  const silent = maxDb < SILENCE_FLOOR_DB
   for (let c = 0; c < channels; c++) {
     const channelData = audioChannels[c]
     const channelFreq: Uint8Array[] = []
-
     for (let sample = startSample; sample + fftSamples < endSample; sample += hopSize) {
-      frame.set(channelData.subarray(sample, sample + fftSamples))
-      let spectrum = fft.calculateSpectrum(frame)
-
-      // Apply filter bank if specified (same as main thread)
-      if (filterBank) {
-        spectrum = applySparseFilterBank(spectrum, filterBank)
+      if (silent) {
+        channelFreq.push(new Uint8Array(bins))
+      } else {
+        const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt, dbScratch)
+        channelFreq.push(dbToColorIndices(db, maxDb, rangeDB))
       }
-
-      // Convert to uint8 color indices
-      const freqBins = new Uint8Array(spectrum.length)
-      const gainPlusRange = gainDB + rangeDB
-
-      for (let j = 0; j < spectrum.length; j++) {
-        const magnitude = spectrum[j] > 1e-12 ? spectrum[j] : 1e-12
-        const valueDB = 20 * Math.log10(magnitude)
-
-        if (valueDB < -gainPlusRange) {
-          freqBins[j] = 0
-        } else if (valueDB > -gainDB) {
-          freqBins[j] = 255
-        } else {
-          freqBins[j] = Math.round(((valueDB + gainDB) / rangeDB) * 255)
-        }
-      }
-      channelFreq.push(freqBins)
     }
     frequencies.push(channelFreq)
   }

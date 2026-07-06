@@ -26,6 +26,13 @@ import FFT, {
   scaleToHz,
   createSparseFilterBankForScale,
   applySparseFilterBank,
+  magnitudesToColorIndices,
+  magnitudesToDb,
+  dbToColorIndices,
+  createPreEmphasisTilt,
+  getBinFrequencies,
+  SILENCE_FLOOR_DB,
+  AUTO_GAIN_BUFFER_BUDGET_BYTES,
   setupColorMap,
   freqType,
   unitType,
@@ -107,6 +114,27 @@ export type SpectrogramPluginOptions = {
    */
   rangeDB?: number
   /**
+   * Praat-style display pre-emphasis in dB per octave, applied before quantization: each bin
+   * gets preEmphasis * log2(binHz / 1000) dB - 0 dB at 1 kHz, boosting higher frequencies and
+   * attenuating lower ones (Praat's default is 6). Counteracts the natural ~-6 dB/oct spectral
+   * slope of speech so formants above 1 kHz stay visible. Set 0 to disable. Only applies when
+   * frequencies are computed from audio, not to pre-computed frequenciesDataUrl data.
+   * (default: 0)
+   */
+  preEmphasis?: number
+  /**
+   * Praat-style autoscaling: map the loudest bin of the computed spectrogram (found after
+   * pre-emphasis) to the last colormap entry and everything rangeDB below it to the first,
+   * instead of using the fixed gainDB white point. gainDB is ignored while enabled. With
+   * splitChannels, a single maximum serves all channels, so inter-channel level differences
+   * are preserved (a quieter channel renders lighter); per-channel scaling was rejected to
+   * keep channels comparable. If the whole signal is digital silence, the spectrogram is left
+   * blank instead of amplifying the numeric floor. SpectrogramPlugin only - the windowed
+   * variant computes segments lazily and has no global maximum. No effect with
+   * frequenciesDataUrl. (default: false)
+   */
+  autoGain?: boolean
+  /**
    * A 256 long array of 4-element arrays. Each entry should contain a float between 0 and 1 and specify r, g, b, and alpha.
    * Each entry should contain a float between 0 and 1 and specify r, g, b, and alpha.
    * - gray: Gray scale.
@@ -160,6 +188,9 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   private frequencyMax: SpectrogramPluginOptions['frequencyMax']
   private gainDB: SpectrogramPluginOptions['gainDB']
   private rangeDB: SpectrogramPluginOptions['rangeDB']
+  private preEmphasis: number
+  private autoGain: boolean
+  private autoGainBudgetBytes = AUTO_GAIN_BUFFER_BUDGET_BYTES
   private scale: SpectrogramPluginOptions['scale']
   private numMelFilters: number
   private numLogFilters: number
@@ -248,6 +279,26 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.gainDB = options.gainDB ?? 20
     this.rangeDB = options.rangeDB ?? 80
     this.scale = options.scale || 'mel'
+    this.preEmphasis = options.preEmphasis ?? 0
+    this.autoGain = options.autoGain ?? false
+
+    if (options.gainDB != null && !Number.isFinite(options.gainDB)) {
+      throw new TypeError(`gainDB must be a finite number, got ${options.gainDB}`)
+    }
+    if (options.rangeDB != null && (!Number.isFinite(options.rangeDB) || options.rangeDB <= 0)) {
+      throw new TypeError(`rangeDB must be a finite positive number, got ${options.rangeDB}`)
+    }
+    if (options.preEmphasis != null && !Number.isFinite(options.preEmphasis)) {
+      throw new TypeError(`preEmphasis must be a finite number, got ${options.preEmphasis}`)
+    }
+    if (options.alpha != null) {
+      if (!Number.isFinite(options.alpha)) {
+        throw new TypeError(`alpha must be a finite number, got ${options.alpha}`)
+      }
+      if (this.windowFunc === 'gauss' && options.alpha <= 0) {
+        throw new TypeError(`alpha must be positive for the gauss window, got ${options.alpha}`)
+      }
+    }
 
     // Rendering and labels derive their geometry from the computed data, so these follow the
     // transform length
@@ -931,6 +982,9 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
             scale: this.scale,
             gainDB: this.gainDB,
             rangeDB: this.rangeDB,
+            preEmphasis: this.preEmphasis,
+            autoGain: this.autoGain,
+            autoGainBufferBudgetBytes: this.autoGainBudgetBytes,
             splitChannels: this.options.splitChannels || false,
           },
         })
@@ -996,41 +1050,95 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     // One reused frame buffer; the zero tail beyond fftSamples doubles as the FFT padding
     const frame = new Float32Array(fftLength)
 
+    // Optional Praat display pre-emphasis, precomputed per output row
+    const tilt = this.preEmphasis
+      ? createPreEmphasisTilt(this.preEmphasis, getBinFrequencies(filterBank, fftLength, sampleRate))
+      : null
+
+    const computeSpectrum = (channelData: Float32Array, sample: number): Float32Array => {
+      frame.set(channelData.subarray(sample, sample + fftSamples))
+      let spectrum = fft.calculateSpectrum(frame)
+      if (filterBank) {
+        spectrum = applySparseFilterBank(spectrum, filterBank)
+      }
+      return spectrum
+    }
+
+    if (!this.autoGain) {
+      for (let c = 0; c < channels; c++) {
+        // for each channel
+        const channelData = buffer.getChannelData(c)
+        const channelFreq: Uint8Array[] = []
+
+        // Use same hop size calculation as worker for consistency
+        for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
+          // Convert to uint8 color indices
+          channelFreq.push(
+            magnitudesToColorIndices(computeSpectrum(channelData, sample), -this.gainDB, this.rangeDB, tilt),
+          )
+        }
+        frequencies.push(channelFreq)
+      }
+      return frequencies
+    }
+
+    // autoGain (Praat-style autoscaling): the white point is the loudest bin of the whole
+    // spectrogram, found after pre-emphasis, shared across channels. Two strategies bound the
+    // transient memory: below the budget the dB frames are kept between the two passes; above
+    // it only the maximum is tracked and the spectra are recomputed for quantization.
+    const bins = fftLength / 2
+    const frameCount = buffer.length > fftSamples ? Math.floor((buffer.length - fftSamples - 1) / hopSize) + 1 : 0
+    const estimatedBytes = frameCount * bins * 4 * channels
+    let maxDb = -Infinity
+
+    if (estimatedBytes < this.autoGainBudgetBytes) {
+      const dbFrames: Float32Array[][] = []
+      for (let c = 0; c < channels; c++) {
+        const channelData = buffer.getChannelData(c)
+        const channelDb: Float32Array[] = []
+        for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
+          const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt)
+          for (let i = 0; i < db.length; i++) {
+            if (db[i] > maxDb) maxDb = db[i]
+          }
+          channelDb.push(db)
+        }
+        dbFrames.push(channelDb)
+      }
+      const silent = maxDb < SILENCE_FLOOR_DB
+      for (const channelDb of dbFrames) {
+        frequencies.push(
+          channelDb.map((db) => (silent ? new Uint8Array(db.length) : dbToColorIndices(db, maxDb, this.rangeDB))),
+        )
+      }
+      return frequencies
+    }
+
+    // Over budget: pass 1 tracks only the maximum with one reused dB frame
+    const dbScratch = new Float32Array(bins)
     for (let c = 0; c < channels; c++) {
-      // for each channel
+      const channelData = buffer.getChannelData(c)
+      for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
+        const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt, dbScratch)
+        for (let i = 0; i < db.length; i++) {
+          if (db[i] > maxDb) maxDb = db[i]
+        }
+      }
+    }
+    const silent = maxDb < SILENCE_FLOOR_DB
+    for (let c = 0; c < channels; c++) {
       const channelData = buffer.getChannelData(c)
       const channelFreq: Uint8Array[] = []
-
-      // Use same hop size calculation as worker for consistency
       for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
-        frame.set(channelData.subarray(sample, sample + fftSamples))
-        let spectrum = fft.calculateSpectrum(frame)
-
-        if (filterBank) {
-          spectrum = applySparseFilterBank(spectrum, filterBank)
+        if (silent) {
+          channelFreq.push(new Uint8Array(bins))
+        } else {
+          const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt, dbScratch)
+          channelFreq.push(dbToColorIndices(db, maxDb, this.rangeDB))
         }
-
-        // Convert to uint8 color indices
-        const freqBins = new Uint8Array(spectrum.length)
-        const gainPlusRange = this.gainDB + this.rangeDB
-
-        for (let j = 0; j < spectrum.length; j++) {
-          const magnitude = spectrum[j] > 1e-12 ? spectrum[j] : 1e-12
-          const valueDB = 20 * Math.log10(magnitude)
-
-          if (valueDB < -gainPlusRange) {
-            freqBins[j] = 0
-          } else if (valueDB > -this.gainDB) {
-            freqBins[j] = 255
-          } else {
-            freqBins[j] = Math.round(((valueDB + this.gainDB) / this.rangeDB) * 255)
-          }
-        }
-        channelFreq.push(freqBins)
       }
       frequencies.push(channelFreq)
     }
-
     return frequencies
   }
 
