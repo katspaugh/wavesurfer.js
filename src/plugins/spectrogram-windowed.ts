@@ -13,8 +13,8 @@ import createElement, { isHTMLElement } from '../dom.js'
 import FFT, {
   hzToScale,
   scaleToHz,
-  createFilterBankForScale,
-  applyFilterBank,
+  createSparseFilterBankForScale,
+  applySparseFilterBank,
   setupColorMap,
   freqType,
   unitType,
@@ -28,8 +28,18 @@ import SpectrogramWorker from 'web-worker:./spectrogram-worker.ts'
 export type WindowedSpectrogramPluginOptions = {
   /** Selector of element or element in which to render */
   container?: string | HTMLElement
-  /** Number of samples to fetch to FFT. Must be a power of 2. */
+  /** Number of samples per analysis window. Must be a power of 2, unless fftSize is set (then any integer from 2 to fftSize). */
   fftSamples?: number
+  /**
+   * Length of the zero-padded FFT, in samples. Must be a power of two, and at least fftSamples.
+   * When set, each fftSamples-long analysis window is zero-padded to fftSize before the FFT, which
+   * only adds interpolated frequency bins (fftSize / 2 in total) - it does not improve the true
+   * frequency resolution, and the time resolution (window and hop) is unchanged. Same split as
+   * win_length vs n_fft in librosa/scipy or AnalyserNode.fftSize. When fftSize is set, fftSamples
+   * may be any integer from 2 up to fftSize (the power-of-two requirement moves to fftSize).
+   * (default: fftSamples)
+   */
+  fftSize?: number
   /** Height of the spectrogram view in CSS pixels */
   height?: number
   /** Set to true to display frequency labels. */
@@ -97,6 +107,10 @@ interface FrequencySegment {
   canvas?: HTMLCanvasElement
 }
 
+// Exact for all safe-integer powers of two; deliberately not bitwise (Int32 truncation would
+// accept values like 2^32 + 1)
+const isPowerOfTwo = (value: number) => Number.isInteger(value) && value >= 2 && Number.isInteger(Math.log2(value))
+
 class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEvents, WindowedSpectrogramPluginOptions> {
   private container: HTMLElement
   private wrapper: HTMLElement
@@ -104,6 +118,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
   private canvasContainer: HTMLElement
   private colorMap: number[][]
   private fftSamples: WindowedSpectrogramPluginOptions['fftSamples']
+  private fftSize: WindowedSpectrogramPluginOptions['fftSize']
   private height: WindowedSpectrogramPluginOptions['height']
   private noverlap: WindowedSpectrogramPluginOptions['noverlap']
   private windowFunc: WindowedSpectrogramPluginOptions['windowFunc']
@@ -157,9 +172,30 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     this.colorMap = setupColorMap(options.colorMap)
 
     // FFT and processing options
-    this.fftSamples = options.fftSamples || 512
+    this.fftSize = options.fftSize
+    // With fftSize set, fftSamples is a validated analysis-window length: only absent values get
+    // the default. Without it, the historical coercion of falsy values is preserved.
+    this.fftSamples = this.fftSize != null ? (options.fftSamples ?? 512) : options.fftSamples || 512
     this.height = options.height || 200
     this.noverlap = options.noverlap || null // Will be calculated later based on canvas size, like normal plugin
+
+    // The transform length must be a power of two; with fftSize set, fftSamples is just the
+    // analysis window length and only needs to fit inside the transform
+    const fftLength = this.fftSize ?? this.fftSamples
+    if (!isPowerOfTwo(fftLength)) {
+      throw new TypeError(
+        `fftSize (or fftSamples when fftSize is not set) must be a power of two and at least 2, got ${fftLength}`,
+      )
+    }
+    if (
+      this.fftSize != null &&
+      (!Number.isInteger(this.fftSamples) || this.fftSamples < 2 || this.fftSamples > this.fftSize)
+    ) {
+      throw new TypeError(`fftSamples must be an integer between 2 and fftSize, got ${this.fftSamples}`)
+    }
+    if (options.noverlap != null && !Number.isInteger(options.noverlap)) {
+      throw new TypeError(`noverlap must be an integer number of samples, got ${options.noverlap}`)
+    }
     this.windowFunc = options.windowFunc || 'hann'
     this.alpha = options.alpha
     this.frequencyMin = options.frequencyMin || 0
@@ -179,10 +215,10 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     this.useWebWorker = options.useWebWorker === true && typeof window !== 'undefined'
 
     // Filter banks
-    this.numMelFilters = this.fftSamples / 2
-    this.numLogFilters = this.fftSamples / 2
-    this.numBarkFilters = this.fftSamples / 2
-    this.numErbFilters = this.fftSamples / 2
+    this.numMelFilters = fftLength / 2
+    this.numLogFilters = fftLength / 2
+    this.numBarkFilters = fftLength / 2
+    this.numErbFilters = fftLength / 2
 
     this.createWrapper()
     this.createCanvas()
@@ -860,6 +896,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
             endTime,
             sampleRate,
             fftSamples: this.fftSamples,
+            fftSize: this.fftSize,
             windowFunc: this.windowFunc,
             alpha: this.alpha,
             noverlap,
@@ -887,9 +924,10 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     const endSample = Math.floor(endTime * sampleRate)
     const channels = this.options.splitChannels ? this.buffer.numberOfChannels : 1
 
-    // Initialize FFT if needed
-    if (!this.fft) {
-      this.fft = new FFT(this.fftSamples, sampleRate, this.windowFunc, this.alpha)
+    // Initialize FFT if needed; the window covers fftSamples samples, zero-padded up to fftLength
+    const fftLength = this.fftSize ?? this.fftSamples
+    if (!this.fft || this.fft.bufferSize !== fftLength || this.fft.windowLength !== this.fftSamples) {
+      this.fft = new FFT(fftLength, sampleRate, this.windowFunc, this.alpha, this.fftSamples)
     }
 
     // Calculate noverlap like the normal plugin
@@ -902,10 +940,11 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
       noverlap = Math.max(0, Math.round(this.fftSamples - uniqueSamplesPerPx))
     }
 
-    // OPTIMIZATION: For windowed mode, reduce overlap to speed up processing
-    const maxOverlap = this.fftSamples * 0.5
+    // OPTIMIZATION: For windowed mode, reduce overlap to speed up processing; integer
+    // arithmetic so non-power-of-two windows cannot produce fractional frame starts
+    const maxOverlap = Math.floor(this.fftSamples / 2)
     noverlap = Math.min(noverlap, maxOverlap)
-    const minHopSize = Math.max(64, this.fftSamples * 0.25)
+    const minHopSize = Math.max(64, Math.ceil(this.fftSamples * 0.25))
     const hopSize = Math.max(minHopSize, this.fftSamples - noverlap)
 
     const frequencies: Uint8Array[][] = []
@@ -913,19 +952,24 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     const fftStartTime = performance.now()
     let totalFFTs = 0
 
+    // Create the filter bank once for all frames and channels
+    const filterBank = this.getFilterBank(sampleRate)
+
+    // One reused frame buffer; the zero tail beyond fftSamples doubles as the FFT padding
+    const frame = new Float32Array(fftLength)
+
     for (let c = 0; c < channels; c++) {
       const channelData = this.buffer.getChannelData(c)
       const channelFreq: Uint8Array[] = []
 
       for (let sample = startSample; sample + this.fftSamples < endSample; sample += hopSize) {
-        const segment = channelData.slice(sample, sample + this.fftSamples)
-        let spectrum = this.fft.calculateSpectrum(segment)
+        frame.set(channelData.subarray(sample, sample + this.fftSamples))
+        let spectrum = this.fft.calculateSpectrum(frame)
         totalFFTs++
 
         // Apply filter bank if needed
-        const filterBank = this.getFilterBank(sampleRate)
         if (filterBank) {
-          spectrum = applyFilterBank(spectrum, filterBank)
+          spectrum = applySparseFilterBank(spectrum, filterBank)
         }
 
         // Convert to uint8 color indices
@@ -1062,9 +1106,10 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     this.segments.clear()
   }
 
-  private getFilterBank(sampleRate: number): number[][] | null {
-    const numFilters = this.fftSamples / 2
-    return createFilterBankForScale(this.scale, numFilters, this.fftSamples, sampleRate)
+  private getFilterBank(sampleRate: number) {
+    const fftLength = this.fftSize ?? this.fftSamples
+    const numFilters = fftLength / 2
+    return createSparseFilterBankForScale(this.scale, numFilters, fftLength, sampleRate)
   }
 
   private _onWrapperClick = (e: MouseEvent) => {

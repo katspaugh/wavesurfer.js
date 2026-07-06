@@ -128,6 +128,8 @@ export function applyFilterBank(fftPoints: Float32Array, filterBank: number[][])
 }
 
 // Centralized filter bank creation based on scale type
+// Superseded by createSparseFilterBankForScale/applySparseFilterBank below; kept exported
+// for compatibility
 export function createFilterBankForScale(
   scale: 'linear' | 'logarithmic' | 'mel' | 'bark' | 'erb',
   numFilters: number,
@@ -143,6 +145,82 @@ export function createFilterBankForScale(
       return createFilterBank(numFilters, fftSamples, sampleRate, hzToBark, barkToHz)
     case 'erb':
       return createFilterBank(numFilters, fftSamples, sampleRate, hzToErb, erbToHz)
+    case 'linear':
+    default:
+      return null // No filter bank for linear scale
+  }
+}
+
+/**
+ * One output row of a sparse frequency-scale filter bank. Every row produced by
+ * createFilterBank() has exactly two adjacent non-zero taps, so storing just those (plus the
+ * row's center frequency) lets the bank be applied in O(filters) instead of O(filters × bins).
+ */
+export interface SparseFilter {
+  /** Index of the lower of the two adjacent FFT bins (the upper tap is lo + 1) */
+  lo: number
+  /** Weight of the lower bin */
+  weightLo: number
+  /** Weight of the upper bin */
+  weightHi: number
+  /** Center frequency of this output row in Hz */
+  centerHz: number
+}
+
+function createSparseFilterBank(
+  numFilters: number,
+  fftSamples: number,
+  sampleRate: number,
+  hzToScaleFunc: (hz: number) => number,
+  scaleToHzFunc: (scale: number) => number,
+): SparseFilter[] {
+  const filterMin = hzToScaleFunc(0)
+  const filterMax = hzToScaleFunc(sampleRate / 2)
+  const filterBank: SparseFilter[] = new Array(numFilters)
+  const scale = sampleRate / fftSamples
+
+  for (let i = 0; i < numFilters; i++) {
+    const hz = scaleToHzFunc(filterMin + (i / numFilters) * (filterMax - filterMin))
+    const j = Math.floor(hz / scale)
+    const hzLow = j * scale
+    const hzHigh = (j + 1) * scale
+    const r = (hz - hzLow) / (hzHigh - hzLow)
+    filterBank[i] = { lo: j, weightLo: 1 - r, weightHi: r, centerHz: hz }
+  }
+  return filterBank
+}
+
+export function applySparseFilterBank(fftPoints: Float32Array, filterBank: SparseFilter[]): Float32Array {
+  const numFilters = filterBank.length
+  const logSpectrum = new Float32Array(numFilters)
+  for (let i = 0; i < numFilters; i++) {
+    const { lo, weightLo, weightHi } = filterBank[i]
+    if (lo >= 0 && lo < fftPoints.length) {
+      logSpectrum[i] = fftPoints[lo] * weightLo
+    }
+    if (lo + 1 >= 0 && lo + 1 < fftPoints.length) {
+      logSpectrum[i] += fftPoints[lo + 1] * weightHi
+    }
+  }
+  return logSpectrum
+}
+
+// Sparse equivalent of createFilterBankForScale: same rows, same weights, O(filters) apply
+export function createSparseFilterBankForScale(
+  scale: 'linear' | 'logarithmic' | 'mel' | 'bark' | 'erb',
+  numFilters: number,
+  fftSamples: number,
+  sampleRate: number,
+): SparseFilter[] | null {
+  switch (scale) {
+    case 'mel':
+      return createSparseFilterBank(numFilters, fftSamples, sampleRate, hzToMel, melToHz)
+    case 'logarithmic':
+      return createSparseFilterBank(numFilters, fftSamples, sampleRate, hzToLog, logToHz)
+    case 'bark':
+      return createSparseFilterBank(numFilters, fftSamples, sampleRate, hzToBark, barkToHz)
+    case 'erb':
+      return createSparseFilterBank(numFilters, fftSamples, sampleRate, hzToErb, erbToHz)
     case 'linear':
     default:
       return null // No filter bank for linear scale
@@ -498,8 +576,15 @@ export function createWrapperClickHandler(wrapper: HTMLElement, emit: (event: st
 /**
  * Calculate FFT - Based on https://github.com/corbanbrook/dsp.js
  */
-function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: number) {
+function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: number, windowLength?: number) {
+  // Absent values default to the full buffer; explicit values are validated, not coerced
+  windowLength = windowLength ?? bufferSize
+  if (!Number.isInteger(windowLength) || windowLength < 2 || windowLength > bufferSize) {
+    // Every window formula divides by (windowLength - 1) and the table has bufferSize entries
+    throw Error('windowLength must be an integer between 2 and bufferSize')
+  }
   this.bufferSize = bufferSize
+  this.windowLength = windowLength
   this.sampleRate = sampleRate
   this.bandwidth = (2 / bufferSize) * (sampleRate / 2)
 
@@ -513,68 +598,79 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
 
   switch (windowFunc) {
     case 'bartlett':
-      for (let i = 0; i < bufferSize; i++) {
-        this.windowValues[i] = (2 / (bufferSize - 1)) * ((bufferSize - 1) / 2 - Math.abs(i - (bufferSize - 1) / 2))
+      for (let i = 0; i < windowLength; i++) {
+        this.windowValues[i] =
+          (2 / (windowLength - 1)) * ((windowLength - 1) / 2 - Math.abs(i - (windowLength - 1) / 2))
       }
       break
     case 'bartlettHann':
-      for (let i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < windowLength; i++) {
         this.windowValues[i] =
-          0.62 - 0.48 * Math.abs(i / (bufferSize - 1) - 0.5) - 0.38 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1))
+          0.62 - 0.48 * Math.abs(i / (windowLength - 1) - 0.5) - 0.38 * Math.cos((Math.PI * 2 * i) / (windowLength - 1))
       }
       break
     case 'blackman':
       alpha = alpha || 0.16
-      for (let i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < windowLength; i++) {
         this.windowValues[i] =
           (1 - alpha) / 2 -
-          0.5 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1)) +
-          (alpha / 2) * Math.cos((4 * Math.PI * i) / (bufferSize - 1))
+          0.5 * Math.cos((Math.PI * 2 * i) / (windowLength - 1)) +
+          (alpha / 2) * Math.cos((4 * Math.PI * i) / (windowLength - 1))
       }
       break
     case 'cosine':
-      for (let i = 0; i < bufferSize; i++) {
-        this.windowValues[i] = Math.cos((Math.PI * i) / (bufferSize - 1) - Math.PI / 2)
+      for (let i = 0; i < windowLength; i++) {
+        this.windowValues[i] = Math.cos((Math.PI * i) / (windowLength - 1) - Math.PI / 2)
       }
       break
     case 'gauss':
       alpha = alpha || 0.25
-      for (let i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < windowLength; i++) {
         this.windowValues[i] = Math.pow(
           Math.E,
-          -0.5 * Math.pow((i - (bufferSize - 1) / 2) / ((alpha * (bufferSize - 1)) / 2), 2),
+          -0.5 * Math.pow((i - (windowLength - 1) / 2) / ((alpha * (windowLength - 1)) / 2), 2),
         )
       }
       break
     case 'hamming':
-      for (let i = 0; i < bufferSize; i++) {
-        this.windowValues[i] = 0.54 - 0.46 * Math.cos((Math.PI * 2 * i) / (bufferSize - 1))
+      for (let i = 0; i < windowLength; i++) {
+        this.windowValues[i] = 0.54 - 0.46 * Math.cos((Math.PI * 2 * i) / (windowLength - 1))
       }
       break
     case 'hann':
     case undefined:
-      for (let i = 0; i < bufferSize; i++) {
-        this.windowValues[i] = 0.5 * (1 - Math.cos((Math.PI * 2 * i) / (bufferSize - 1)))
+      for (let i = 0; i < windowLength; i++) {
+        this.windowValues[i] = 0.5 * (1 - Math.cos((Math.PI * 2 * i) / (windowLength - 1)))
       }
       break
     case 'lanczoz':
-      for (let i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < windowLength; i++) {
         this.windowValues[i] =
-          Math.sin(Math.PI * ((2 * i) / (bufferSize - 1) - 1)) / (Math.PI * ((2 * i) / (bufferSize - 1) - 1))
+          Math.sin(Math.PI * ((2 * i) / (windowLength - 1) - 1)) / (Math.PI * ((2 * i) / (windowLength - 1) - 1))
       }
       break
     case 'rectangular':
-      for (let i = 0; i < bufferSize; i++) {
+      for (let i = 0; i < windowLength; i++) {
         this.windowValues[i] = 1
       }
       break
     case 'triangular':
-      for (let i = 0; i < bufferSize; i++) {
-        this.windowValues[i] = (2 / bufferSize) * (bufferSize / 2 - Math.abs(i - (bufferSize - 1) / 2))
+      for (let i = 0; i < windowLength; i++) {
+        this.windowValues[i] = (2 / windowLength) * (windowLength / 2 - Math.abs(i - (windowLength - 1) / 2))
       }
       break
     default:
       throw Error("No such window function '" + windowFunc + "'")
+  }
+
+  // When the window is shorter than the FFT, the remaining table entries stay zero (zero
+  // padding) and the live samples are scaled up so the 2 / bufferSize magnitude
+  // normalization in calculateSpectrum() remains calibrated
+  if (windowLength < bufferSize) {
+    const windowScale = bufferSize / windowLength
+    for (let i = 0; i < windowLength; i++) {
+      this.windowValues[i] *= windowScale
+    }
   }
 
   let limit = 1
@@ -688,7 +784,9 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
 
 // TypeScript declaration for FFT class
 export declare class FFT {
-  constructor(bufferSize: number, sampleRate: number, windowFunc: string, alpha: number)
+  constructor(bufferSize: number, sampleRate: number, windowFunc: string, alpha: number, windowLength?: number)
+  bufferSize: number
+  windowLength: number
   calculateSpectrum(buffer: Float32Array): Float32Array
 }
 

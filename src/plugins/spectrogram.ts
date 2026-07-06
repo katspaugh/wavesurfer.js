@@ -24,8 +24,8 @@
 import FFT, {
   hzToScale,
   scaleToHz,
-  createFilterBankForScale,
-  applyFilterBank,
+  createSparseFilterBankForScale,
+  applySparseFilterBank,
   setupColorMap,
   freqType,
   unitType,
@@ -45,8 +45,18 @@ import SpectrogramWorker from 'web-worker:./spectrogram-worker.ts'
 export type SpectrogramPluginOptions = {
   /** Selector of element or element in which to render */
   container?: string | HTMLElement
-  /** Number of samples to fetch to FFT. Must be a power of 2. */
+  /** Number of samples per analysis window. Must be a power of 2, unless fftSize is set (then any integer from 2 to fftSize). */
   fftSamples?: number
+  /**
+   * Length of the zero-padded FFT, in samples. Must be a power of two, and at least fftSamples.
+   * When set, each fftSamples-long analysis window is zero-padded to fftSize before the FFT, which
+   * only adds interpolated frequency bins (fftSize / 2 in total) - it does not improve the true
+   * frequency resolution, and the time resolution (window and hop) is unchanged. Same split as
+   * win_length vs n_fft in librosa/scipy or AnalyserNode.fftSize. When fftSize is set, fftSamples
+   * may be any integer from 2 up to fftSize (the power-of-two requirement moves to fftSize).
+   * (default: fftSamples)
+   */
+  fftSize?: number
   /** Height of the spectrogram view in CSS pixels */
   height?: number
   /** Set to true to display frequency labels. */
@@ -125,6 +135,10 @@ export type SpectrogramPluginEvents = BasePluginEvents & {
   click: [relativeX: number]
 }
 
+// Exact for all safe-integer powers of two; deliberately not bitwise (Int32 truncation would
+// accept values like 2^32 + 1)
+const isPowerOfTwo = (value: number) => Number.isInteger(value) && value >= 2 && Number.isInteger(Math.log2(value))
+
 class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramPluginOptions> {
   private static MAX_CANVAS_WIDTH = 30000
   private static MAX_NODES = 10
@@ -137,6 +151,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   private canvasContainer: HTMLElement
   private colorMap: number[][]
   private fftSamples: SpectrogramPluginOptions['fftSamples']
+  private fftSize: SpectrogramPluginOptions['fftSize']
   private height: SpectrogramPluginOptions['height']
   private noverlap: SpectrogramPluginOptions['noverlap']
   private windowFunc: SpectrogramPluginOptions['windowFunc']
@@ -198,9 +213,30 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     // Set up color map using shared utility
     this.colorMap = setupColorMap(options.colorMap)
 
-    this.fftSamples = options.fftSamples || 512
+    this.fftSize = options.fftSize
+    // With fftSize set, fftSamples is a validated analysis-window length: only absent values get
+    // the default. Without it, the historical coercion of falsy values is preserved.
+    this.fftSamples = this.fftSize != null ? (options.fftSamples ?? 512) : options.fftSamples || 512
     this.height = options.height || 200
     this.noverlap = options.noverlap || null // Will be calculated later based on canvas size
+
+    // The transform length must be a power of two; with fftSize set, fftSamples is just the
+    // analysis window length and only needs to fit inside the transform
+    const fftLength = this.fftSize ?? this.fftSamples
+    if (!isPowerOfTwo(fftLength)) {
+      throw new TypeError(
+        `fftSize (or fftSamples when fftSize is not set) must be a power of two and at least 2, got ${fftLength}`,
+      )
+    }
+    if (
+      this.fftSize != null &&
+      (!Number.isInteger(this.fftSamples) || this.fftSamples < 2 || this.fftSamples > this.fftSize)
+    ) {
+      throw new TypeError(`fftSamples must be an integer between 2 and fftSize, got ${this.fftSamples}`)
+    }
+    if (options.noverlap != null && !Number.isInteger(options.noverlap)) {
+      throw new TypeError(`noverlap must be an integer number of samples, got ${options.noverlap}`)
+    }
     this.windowFunc = options.windowFunc || 'hann'
     this.alpha = options.alpha
 
@@ -213,11 +249,12 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.rangeDB = options.rangeDB ?? 80
     this.scale = options.scale || 'mel'
 
-    // Other values will currently cause a misalignment between labels and the spectrogram
-    this.numMelFilters = this.fftSamples / 2
-    this.numLogFilters = this.fftSamples / 2
-    this.numBarkFilters = this.fftSamples / 2
-    this.numErbFilters = this.fftSamples / 2
+    // Rendering and labels derive their geometry from the computed data, so these follow the
+    // transform length
+    this.numMelFilters = fftLength / 2
+    this.numLogFilters = fftLength / 2
+    this.numBarkFilters = fftLength / 2
+    this.numErbFilters = fftLength / 2
 
     // Override the default max canvas width if provided
     if (options.maxCanvasWidth) {
@@ -887,6 +924,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
             endTime: buffer.duration,
             sampleRate: buffer.sampleRate,
             fftSamples: this.fftSamples,
+            fftSize: this.fftSize,
             windowFunc: this.windowFunc,
             alpha: this.alpha,
             noverlap,
@@ -923,6 +961,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     }
 
     const fftSamples = this.fftSamples
+    const fftLength = this.fftSize ?? fftSamples
     const channels =
       (this.options.splitChannels ?? this.wavesurfer?.options.splitChannels) ? buffer.numberOfChannels : 1
 
@@ -938,19 +977,24 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx))
     }
 
-    // Calculate hop size (same as worker for consistency)
+    // Calculate hop size (same as worker for consistency); integer arithmetic so non-power-of-two
+    // windows cannot produce fractional frame starts
     let actualNoverlap = noverlap || Math.max(0, Math.round(fftSamples * 0.5))
-    const maxOverlap = fftSamples * 0.5
+    const maxOverlap = Math.floor(fftSamples / 2)
     actualNoverlap = Math.min(actualNoverlap, maxOverlap)
-    const minHopSize = Math.max(64, fftSamples * 0.25)
+    const minHopSize = Math.max(64, Math.ceil(fftSamples * 0.25))
     const hopSize = Math.max(minHopSize, fftSamples - actualNoverlap)
 
-    // Create FFT instance (reuse if possible for performance)
-    const fft = new FFT(fftSamples, sampleRate, this.windowFunc, this.alpha)
+    // Create FFT instance (reuse if possible for performance); the window covers fftSamples
+    // samples, zero-padded up to fftLength
+    const fft = new FFT(fftLength, sampleRate, this.windowFunc, this.alpha, fftSamples)
 
     // Create filter bank based on scale using centralized function
-    const numFilters = this.fftSamples / 2
-    const filterBank = createFilterBankForScale(this.scale, numFilters, this.fftSamples, sampleRate)
+    const numFilters = fftLength / 2
+    const filterBank = createSparseFilterBankForScale(this.scale, numFilters, fftLength, sampleRate)
+
+    // One reused frame buffer; the zero tail beyond fftSamples doubles as the FFT padding
+    const frame = new Float32Array(fftLength)
 
     for (let c = 0; c < channels; c++) {
       // for each channel
@@ -959,11 +1003,11 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
       // Use same hop size calculation as worker for consistency
       for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
-        const segment = channelData.slice(sample, sample + fftSamples)
-        let spectrum = fft.calculateSpectrum(segment)
+        frame.set(channelData.subarray(sample, sample + fftSamples))
+        let spectrum = fft.calculateSpectrum(frame)
 
         if (filterBank) {
-          spectrum = applyFilterBank(spectrum, filterBank)
+          spectrum = applySparseFilterBank(spectrum, filterBank)
         }
 
         // Convert to uint8 color indices

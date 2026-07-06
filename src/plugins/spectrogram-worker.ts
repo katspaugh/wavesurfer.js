@@ -4,7 +4,7 @@
  */
 
 // Import centralized FFT functionality
-import FFT, { createFilterBankForScale, applyFilterBank } from '../fft.js'
+import FFT, { createSparseFilterBankForScale, applySparseFilterBank } from '../fft.js'
 
 // Global FFT instance (reused for performance)
 let fft: FFT | null = null
@@ -18,6 +18,7 @@ interface WorkerMessage {
     endTime: number
     sampleRate: number
     fftSamples: number
+    fftSize?: number
     windowFunc: string
     alpha?: number
     noverlap: number
@@ -68,6 +69,7 @@ function calculateFrequencies(audioChannels: Float32Array[], options: WorkerMess
     endTime,
     sampleRate,
     fftSamples,
+    fftSize,
     windowFunc,
     alpha,
     noverlap,
@@ -80,36 +82,42 @@ function calculateFrequencies(audioChannels: Float32Array[], options: WorkerMess
   const startSample = Math.floor(startTime * sampleRate)
   const endSample = Math.floor(endTime * sampleRate)
   const channels = splitChannels ? audioChannels.length : 1
+  const fftLength = fftSize ?? fftSamples
 
-  // Initialize FFT (reuse if possible for performance)
-  if (!fft || fft.bufferSize !== fftSamples) {
-    fft = new (FFT as any)(fftSamples, sampleRate, windowFunc, alpha)
+  // Initialize FFT (reuse if possible for performance); the window covers fftSamples samples,
+  // zero-padded up to fftLength
+  if (!fft || fft.bufferSize !== fftLength || fft.windowLength !== fftSamples) {
+    fft = new (FFT as any)(fftLength, sampleRate, windowFunc, alpha, fftSamples)
   }
 
   // Create filter bank based on scale using centralized function
-  const numFilters = fftSamples / 2 // Same as main thread
-  const filterBank = createFilterBankForScale(scale, numFilters, fftSamples, sampleRate)
+  const numFilters = fftLength / 2 // Same as main thread
+  const filterBank = createSparseFilterBankForScale(scale, numFilters, fftLength, sampleRate)
 
-  // Calculate hop size
+  // Calculate hop size; integer arithmetic so non-power-of-two windows cannot produce
+  // fractional frame starts
   let actualNoverlap = noverlap || Math.max(0, Math.round(fftSamples * 0.5))
-  const maxOverlap = fftSamples * 0.5
+  const maxOverlap = Math.floor(fftSamples / 2)
   actualNoverlap = Math.min(actualNoverlap, maxOverlap)
-  const minHopSize = Math.max(64, fftSamples * 0.25)
+  const minHopSize = Math.max(64, Math.ceil(fftSamples * 0.25))
   const hopSize = Math.max(minHopSize, fftSamples - actualNoverlap)
 
   const frequencies: Uint8Array[][] = []
+
+  // One reused frame buffer; the zero tail beyond fftSamples doubles as the FFT padding
+  const frame = new Float32Array(fftLength)
 
   for (let c = 0; c < channels; c++) {
     const channelData = audioChannels[c]
     const channelFreq: Uint8Array[] = []
 
     for (let sample = startSample; sample + fftSamples < endSample; sample += hopSize) {
-      const segment = channelData.slice(sample, sample + fftSamples)
-      let spectrum = fft.calculateSpectrum(segment)
+      frame.set(channelData.subarray(sample, sample + fftSamples))
+      let spectrum = fft.calculateSpectrum(frame)
 
       // Apply filter bank if specified (same as main thread)
       if (filterBank) {
-        spectrum = applyFilterBank(spectrum, filterBank)
+        spectrum = applySparseFilterBank(spectrum, filterBank)
       }
 
       // Convert to uint8 color indices
