@@ -267,13 +267,31 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
       this.worker.onerror = (error) => {
         console.warn('Spectrogram worker error, falling back to main thread:', error)
-        // Fallback to main thread calculation
-        this.worker = null
+        this.disposeWorker(new Error('Worker error'))
+      }
+
+      this.worker.onmessageerror = (event) => {
+        console.warn('Spectrogram worker message error, falling back to main thread:', event)
+        this.disposeWorker(new Error('Worker message error'))
       }
     } catch (error) {
       console.warn('Failed to initialize worker, falling back to main thread:', error)
       this.worker = null
     }
+  }
+
+  // Terminate the worker and reject in-flight requests so callers fall back to the main thread
+  // immediately instead of waiting out the worker timeout (or hanging when it is disabled)
+  private disposeWorker(error: Error) {
+    if (this.worker) {
+      this.worker.terminate()
+      this.worker = null
+    }
+    this.workerPromises.forEach((promise) => {
+      if (promise.timer) clearTimeout(promise.timer)
+      promise.reject(error)
+    })
+    this.workerPromises.clear()
   }
 
   onInit() {
@@ -351,16 +369,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.pendingBitmaps.clear()
 
     // Clean up worker
-    if (this.worker) {
-      this.worker.terminate()
-      this.worker = null
-    }
-    const error = new Error('Spectrogram plugin destroyed')
-    this.workerPromises.forEach((promise) => {
-      if (promise.timer) clearTimeout(promise.timer)
-      promise.reject(error)
-    })
-    this.workerPromises.clear()
+    this.disposeWorker(new Error('Spectrogram plugin destroyed'))
 
     this.cachedFrequencies = null
     this.cachedResampledData = null
