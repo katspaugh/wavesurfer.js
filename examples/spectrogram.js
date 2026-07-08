@@ -46,6 +46,8 @@ ws.registerPlugin(
 
     // Performance optimization
     useWebWorker: true, // Use web worker for FFT calculations (improves performance)
+    // fallbackToMainThread: true, // Set false to emit 'error' instead of computing a failed
+    //                                worker FFT on the main thread (can freeze on long files)
 
     // Additional options you can configure:
     //
@@ -127,6 +129,7 @@ ws.on('spectrogram-click', (relativeX) => {
       <li><code>fftSamples: 1024</code> - FFT resolution (512, 1024, 2048, 4096)</li>
       <li><code>fftSize: 4096</code> - Optional zero-padded FFT length for smoother frequency interpolation</li>
       <li><code>useWebWorker: true</code> - Use web worker for faster processing</li>
+      <li><code>fallbackToMainThread: true</code> - Whether a failed worker FFT silently recomputes on the main thread</li>
       <li><code>maxCanvasWidth: 30000</code> - Split large spectrograms into multiple canvases</li>
       <li><code>noverlap: null</code> - Overlap between FFT windows (auto-calculated)</li>
     </ul>
