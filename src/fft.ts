@@ -307,12 +307,12 @@ export function magnitudesToColorIndices(
     let valueDB = 20 * Math.log10(magnitude)
     if (tilt) valueDB += tilt[i]
 
-    if (valueDB < floorDb) {
+    if (valueDB <= floorDb) {
       colorIndices[i] = 0
-    } else if (valueDB > whiteDb) {
+    } else if (valueDB >= whiteDb) {
       colorIndices[i] = 255
     } else {
-      colorIndices[i] = Math.round(((valueDB - whiteDb) / rangeDB) * 255)
+      colorIndices[i] = Math.round(((valueDB - floorDb) / rangeDB) * 255)
     }
   }
   return colorIndices

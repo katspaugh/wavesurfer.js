@@ -162,12 +162,12 @@ describe('magnitudesToColorIndices', () => {
     for (let j = 0; j < spectrum.length; j++) {
       const magnitude = spectrum[j] > 1e-12 ? spectrum[j] : 1e-12
       const valueDB = 20 * Math.log10(magnitude)
-      if (valueDB < -gainPlusRange) {
+      if (valueDB <= -gainPlusRange) {
         freqBins[j] = 0
-      } else if (valueDB > -gainDB) {
+      } else if (valueDB >= -gainDB) {
         freqBins[j] = 255
       } else {
-        freqBins[j] = Math.round(((valueDB + gainDB) / rangeDB) * 255)
+        freqBins[j] = Math.round(((valueDB + gainPlusRange) / rangeDB) * 255)
       }
     }
     return freqBins
@@ -175,11 +175,11 @@ describe('magnitudesToColorIndices', () => {
 
   const dbToMagnitude = (db: number) => Math.pow(10, db / 20)
 
-  it('is byte-identical to the inline loop it replaced, including boundary and wrap values', () => {
+  it('is byte-identical to the reference loop, including boundary values', () => {
     const gainDB = 20
     const rangeDB = 80
     // Magnitudes spanning silence, the 1e-12 floor, the full ramp, both clip branches, and
-    // values just around the -gainDB white point where the historical arithmetic wraps
+    // values just around the -gainDB white point
     const values: number[] = [0, 1e-15, 1e-12, 2e-12, 1]
     for (let db = -140; db <= 20; db += 0.37) {
       values.push(dbToMagnitude(db))
@@ -194,7 +194,7 @@ describe('magnitudesToColorIndices', () => {
     )
   })
 
-  it('is byte-identical to the inline loop across gain/range combinations on a real spectrum', () => {
+  it('is byte-identical to the reference loop across gain/range combinations on a real spectrum', () => {
     const signal = makeSine(512, 1000, 16000)
     const spectrum = new (FFT as any)(512, 16000, 'hann', undefined).calculateSpectrum(signal)
 
