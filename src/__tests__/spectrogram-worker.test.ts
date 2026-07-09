@@ -59,12 +59,12 @@ function mainThreadFrequencies(
     for (let j = 0; j < spectrum.length; j++) {
       const magnitude = spectrum[j] > 1e-12 ? spectrum[j] : 1e-12
       const valueDB = 20 * Math.log10(magnitude)
-      if (valueDB < -(GAIN_DB + RANGE_DB)) {
+      if (valueDB <= -(GAIN_DB + RANGE_DB)) {
         freqBins[j] = 0
-      } else if (valueDB > -GAIN_DB) {
+      } else if (valueDB >= -GAIN_DB) {
         freqBins[j] = 255
       } else {
-        freqBins[j] = Math.round(((valueDB + GAIN_DB) / RANGE_DB) * 255)
+        freqBins[j] = Math.round(((valueDB + GAIN_DB + RANGE_DB) / RANGE_DB) * 255)
       }
     }
     frames.push(freqBins)

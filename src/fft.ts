@@ -277,14 +277,11 @@ export function getBinFrequencies(
 }
 
 /**
- * Convert one frame of FFT magnitudes into 8-bit color indices, exactly as the spectrogram
- * plugins have always done: dB = 20*log10(max(magnitude, 1e-12)); 255 strictly above whiteDb,
- * 0 strictly below whiteDb - rangeDB, and the historical ramp arithmetic for everything in
- * between - including both exact boundaries, where the negative ramp expression and
- * Uint8Array's mod-256 wrap map valueDB === whiteDb to 0 and valueDB === whiteDb - rangeDB
- * to 1. Kept bit-for-bit because changing it would shift every mid-tone pixel of every
- * existing spectrogram (dbToColorIndices is the clean-mapping counterpart used by autoGain).
- * The optional tilt (createPreEmphasisTilt) is added to each bin's dB value before mapping.
+ * Convert one frame of FFT magnitudes into 8-bit color indices.
+ * dB = 20*log10(max(magnitude, 1e-12)); clipped to 0 at or below floorDb (whiteDb - rangeDB)
+ * and to 255 at or above whiteDb, with a linear mapping ((valueDB - floorDb) / rangeDB) * 255
+ * for everything in between. The optional tilt (createPreEmphasisTilt) is added to each bin's
+ * dB value before mapping.
  */
 export function magnitudesToColorIndices(
   spectrum: Float32Array,
@@ -307,12 +304,12 @@ export function magnitudesToColorIndices(
     let valueDB = 20 * Math.log10(magnitude)
     if (tilt) valueDB += tilt[i]
 
-    if (valueDB < floorDb) {
+    if (valueDB <= floorDb) {
       colorIndices[i] = 0
-    } else if (valueDB > whiteDb) {
+    } else if (valueDB >= whiteDb) {
       colorIndices[i] = 255
     } else {
-      colorIndices[i] = Math.round(((valueDB - whiteDb) / rangeDB) * 255)
+      colorIndices[i] = Math.round(((valueDB - floorDb) / rangeDB) * 255)
     }
   }
   return colorIndices
@@ -337,10 +334,8 @@ export function magnitudesToDb(spectrum: Float32Array, tilt?: Float64Array | nul
 
 /**
  * Quantize a dB frame produced by magnitudesToDb: 255 at/above whiteDb, 0 at/below
- * whiteDb - rangeDB, linear in between. Used by autoGain, whose white point is the exact
- * spectrogram maximum - unlike magnitudesToColorIndices this deliberately does NOT reproduce
- * the historical wrap arithmetic, because with valueDB === whiteDb the wrap would map the
- * loudest bin to 0 instead of 255.
+ * whiteDb - rangeDB, linear mapping ((valueDB - floorDb) / rangeDB) * 255 in between.
+ * Used by autoGain, whose white point is the exact spectrogram maximum.
  */
 export function dbToColorIndices(db: Float32Array, whiteDb: number, rangeDB: number): Uint8Array {
   if (!Number.isFinite(whiteDb) || !Number.isFinite(rangeDB) || rangeDB <= 0) {
