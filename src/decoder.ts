@@ -5,7 +5,9 @@ async function decode(audioData: ArrayBuffer, sampleRate: number): Promise<Audio
     return await audioCtx.decodeAudioData(audioData)
   } finally {
     // Ensure AudioContext is always closed, even on synchronous errors
-    audioCtx.close()
+    if (audioCtx.state !== 'closed') {
+      await audioCtx.close()
+    }
   }
 }
 
