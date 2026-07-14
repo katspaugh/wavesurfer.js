@@ -137,6 +137,12 @@ However, please keep in mind that this forum is dedicated to wavesurfer-specific
 Generally, wavesurfer.js doesn't aim to be a wrapper for all things Web Audio. It's just a player with a waveform visualization. It does allow connecting itself to a Web Audio graph by exporting its audio element (see <a href="https://wavesurfer.xyz/examples/?4436ec40a2ab943243755e659ae32196">this example</a>) but nothign more than that. Please don't expect wavesurfer to be able to cut, add effects, or process your audio in any way.
 </details>
 
+<details>
+  <summary>Why does my waveform look asymmetrical?</summary>
+  By default, wavesurfer.js renders stereo audio as a single waveform, with the left channel on the top half and the right channel on the bottom half. If your audio has hard-panned sounds, this will result in an asymmetrical waveform.
+  To render each channel separately, use the <code>splitChannels</code> option.
+</details>
+
 ## Development
 
 To get started with development, follow these steps:

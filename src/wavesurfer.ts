@@ -68,7 +68,10 @@ export type WaveSurferOptions = {
   autoCenter?: boolean
   /** Decoding sample rate. Doesn't affect the playback. Defaults to 8000 */
   sampleRate?: number
-  /** Render each audio channel as a separate waveform */
+  /**
+   * Render each audio channel as a separate waveform.
+   * By default, stereo audio is rendered as a single waveform with the left channel on top and the right channel on the bottom.
+   */
   splitChannels?: Array<Partial<WaveSurferOptions> & { overlay?: boolean }>
   /** Stretch the waveform to the full height */
   normalize?: boolean
