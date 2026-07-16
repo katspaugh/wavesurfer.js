@@ -513,10 +513,11 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       throw new Error('Unable to fetch frequencies data')
     }
     const data = await resp.json()
+    if (!this.options) return
     this.drawSpectrogram(data)
   }
 
-  public async getFrequenciesData(): Uint8Array[][] | null {
+  public async getFrequenciesData(): Promise<Uint8Array[][] | null> {
     const decodedData = this.wavesurfer?.getDecodedData()
     if (!decodedData) {
       return null
@@ -669,6 +670,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         const decodedData = this.wavesurfer?.getDecodedData()
         if (decodedData) {
           const frequencies = await this.getFrequenciesData()
+          if (!this.options || !frequencies) return
           // Draw what this render computed (cache hit, fresh data, or empty on failure)
           // rather than whatever the cache field holds
           this.drawSpectrogram(frequencies)
@@ -1051,6 +1053,8 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       try {
         return await this.calculateFrequenciesWithWorker(buffer)
       } catch (error) {
+        if (!this.options) return []
+        
         if (!this.fallbackToMainThread) {
           // Surface the failure instead of silently recomputing on the main thread, which
           // can freeze the page for long files
