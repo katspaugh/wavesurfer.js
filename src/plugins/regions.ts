@@ -731,7 +731,8 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       const unsubscribeRender = region.on('render', renderIfVisible)
 
       // Only push the unsubscribe functions, not the once() return values
-      this.subscriptions.push(unsubscribeScroll, unsubscribeZoom, unsubscribeResize, unsubscribeRender)
+      const virtualAppendSubscriptions = [unsubscribeScroll, unsubscribeZoom, unsubscribeResize, unsubscribeRender]
+      this.subscriptions.push(...virtualAppendSubscriptions)
 
       // Clean up subscriptions when region is removed
       region.once('remove', () => {
@@ -739,6 +740,10 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         unsubscribeZoom()
         unsubscribeResize()
         unsubscribeRender()
+        // Prune this region's now-dead unsubscribe closures from the plugin-level
+        // subscriptions array; otherwise it only gets emptied in destroy(), so every
+        // removed region stays retained (via its captured closures) for the plugin's lifetime.
+        this.subscriptions = this.subscriptions.filter((sub) => !virtualAppendSubscriptions.includes(sub))
       })
     }, 0)
   }
@@ -781,6 +786,10 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       // Remove the region from the list when it's removed
       region.once('remove', () => {
         regionSubscriptions.forEach((unsubscribe) => unsubscribe())
+        // Prune this region's now-dead unsubscribe closures from the plugin-level
+        // subscriptions array; otherwise it only gets emptied in destroy(), so every
+        // removed region stays retained (via its captured closures) for the plugin's lifetime.
+        this.subscriptions = this.subscriptions.filter((sub) => !regionSubscriptions.includes(sub))
         this.regions = this.regions.filter((reg) => reg !== region)
         this.emit('region-removed', region)
       }),
@@ -803,12 +812,14 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     this.emit('region-initialized', region)
 
     if (!duration) {
-      this.subscriptions.push(
-        this.wavesurfer.once('ready', (duration) => {
-          region._setTotalDuration(duration)
-          this.saveRegion(region)
-        }),
-      )
+      // Prune this once('ready') unsubscriber after it fires instead of retaining it
+      // (and the region it captures) in the plugin-level subscriptions array until destroy().
+      const unsubscribeReady = this.wavesurfer.once('ready', (duration) => {
+        region._setTotalDuration(duration)
+        this.saveRegion(region)
+        this.subscriptions = this.subscriptions.filter((sub) => sub !== unsubscribeReady)
+      })
+      this.subscriptions.push(unsubscribeReady)
     } else {
       this.saveRegion(region)
     }
