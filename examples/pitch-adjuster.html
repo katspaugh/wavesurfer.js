@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>wavesurfer.js pitch adjuster</title>
+    <style>
+      html {
+        font-family: sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 1rem;
+      }
+      #controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+      input {
+        vertical-align: middle;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #333;
+          color: #eee;
+        }
+        a {
+          color: #fff;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="waveform"></div>
+
+    <div id="controls">
+      <button id="play">Play / Pause</button>
+
+      <label>
+        Pitch: <strong><span id="semitones-value">0.0</span> st</strong>
+      </label>
+
+      <span id="status">Loading DSP...</span>
+
+      <label>
+        -12
+        <input id="semitones" type="range" min="-12" max="12" step="0.1" value="0" />
+        +12
+      </label>
+    </div>
+
+    <script type="module" src="/examples/pitch-adjuster.js"></script>
+  </body>
+</html>
