@@ -164,9 +164,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private stopAtPosition: number | null = null
   protected scope: Scope = new Scope()
   private mediaEventScope = this.scope.child()
-  protected abortController: AbortController | null = null
-  private _isDestroyed = false
-  private _loadVersion = 0
+  private loadScope: Scope | null = null
 
   // Reactive state
   private wavesurferState: WaveSurferState
@@ -536,16 +534,20 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
-    // Re-entrancy guard: assign a version to this load call
-    // If a newer load starts while this one is in-flight, this one will bail out
-    const loadVersion = ++this._loadVersion
+    // Re-entrancy guard: a fresh child scope for this load call.
+    // If a newer load starts (or the instance is destroyed) while this one is
+    // in-flight, this scope is disposed and this call bails out at the next
+    // checkpoint below.
+    this.loadScope?.dispose()
+    const loadScope = this.scope.child()
+    this.loadScope = loadScope
 
     // Reusing an instance after destroy() is a supported behavior (see issue #3637
     // and cypress/e2e/abort.cy.js "load url after destroyed should emit ready").
-    // Reset the destroyed flag so the instance can be reloaded. Stale in-flight
-    // loads from before destroy() are still cancelled by the loadVersion guard
-    // below, so this reset does not weaken the post-await bail-out checks.
-    this._isDestroyed = false
+    // this.scope (and thus loadScope's parent) is recreated fresh by destroy(),
+    // so loadScope above is always a child of the current, live scope -- stale
+    // in-flight loads from before destroy() are still cancelled by the
+    // loadScope.disposed guard below.
 
     this.emit('load', url)
 
@@ -562,29 +564,24 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.wavesurferActions.setAudioBuffer(null)
     this.stopAtPosition = null
 
-    // Abort any ongoing fetch before starting a new one
-    this.abortController?.abort()
-    this.abortController = null
-
     // Fetch the entire audio as a blob if pre-decoded data is not provided
     if (!blob && !channelData) {
       const fetchParams = this.options.fetchParams || {}
-      if (window.AbortController && !fetchParams.signal) {
-        this.abortController = new AbortController()
-        fetchParams.signal = this.abortController.signal
+      if (!fetchParams.signal) {
+        fetchParams.signal = loadScope.abortSignal()
       }
       const onProgress = (percentage: number) => this.emit('loading', percentage)
       blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
-      // Guard: bail if destroyed or a newer load started
-      if (this._isDestroyed || loadVersion !== this._loadVersion) return
+      // Guard: bail if a newer load started or the instance was destroyed
+      if (loadScope.disposed) return
       const overriddenMimeType = this.options.blobMimeType
       if (overriddenMimeType) {
         blob = new Blob([blob], { type: overriddenMimeType })
       }
     }
 
-    // Guard: bail if destroyed or a newer load started
-    if (this._isDestroyed || loadVersion !== this._loadVersion) return
+    // Guard: bail if a newer load started or the instance was destroyed
+    if (loadScope.disposed) return
 
     // Set the mediaelement source
     this.setSrc(url, blob)
@@ -599,8 +596,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
     })
 
-    // Guard: bail if destroyed or a newer load started
-    if (this._isDestroyed || loadVersion !== this._loadVersion) return
+    // Guard: bail if a newer load started or the instance was destroyed
+    if (loadScope.disposed) return
 
     // Set the duration if the player is a WebAudioPlayer without a URL
     if (!url && !blob) {
@@ -615,13 +612,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.decodedData = Decoder.createBuffer(channelData, audioDuration || 0)
     } else if (blob) {
       const arrayBuffer = await blob.arrayBuffer()
-      // Guard: bail if destroyed or a newer load started
-      if (this._isDestroyed || loadVersion !== this._loadVersion) return
+      // Guard: bail if a newer load started or the instance was destroyed
+      if (loadScope.disposed) return
       this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
     }
 
-    // Guard: bail if destroyed or a newer load started
-    if (this._isDestroyed || loadVersion !== this._loadVersion) return
+    // Guard: bail if a newer load started or the instance was destroyed
+    if (loadScope.disposed) return
 
     if (this.decodedData) {
       this.wavesurferActions.setAudioBuffer(this.decodedData)
@@ -787,10 +784,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Unmount wavesurfer */
   public destroy() {
-    this._isDestroyed = true
     this.emit('destroy')
-    this.abortController?.abort()
     this.plugins.forEach((plugin) => plugin.destroy())
+    // this.scope.dispose() cascades to loadScope (a child), which aborts any
+    // in-flight fetch via its abortSignal() -- no separate abort call needed.
     this.scope.dispose()
     // Reusing an instance after destroy() is a supported behavior (see the
     // loadAudio comment about issue #3637), so fresh scopes must replace the
@@ -798,6 +795,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // which would otherwise break a subsequent load()/setMediaElement() call.
     this.scope = new Scope()
     this.mediaEventScope = this.scope.child()
+    // loadScope was a child of the now-disposed old scope; loadAudio always
+    // creates its next loadScope from the current this.scope, so this is
+    // just clearing the stale reference (already disposed via cascade above).
+    this.loadScope = null
     this.timer.destroy()
     this.renderer.destroy()
     super.destroy()

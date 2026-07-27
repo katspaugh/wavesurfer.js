@@ -388,4 +388,84 @@ describe('WaveSurfer public methods', () => {
 
     ws.destroy()
   })
+
+  describe('per-load Scope', () => {
+    let originalFetch: typeof global.fetch
+
+    beforeEach(() => {
+      originalFetch = global.fetch
+    })
+
+    afterEach(() => {
+      global.fetch = originalFetch
+    })
+
+    it('starting a new load aborts the previous fetch via scope disposal', async () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      const seenSignals: AbortSignal[] = []
+      global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
+        seenSignals.push(init.signal as AbortSignal)
+        return new Promise(() => undefined) // never resolves
+      })
+      ws.load('http://x/a.mp3').catch(() => undefined)
+      await Promise.resolve()
+      ws.load('http://x/b.mp3').catch(() => undefined)
+      await Promise.resolve()
+      expect(seenSignals[0].aborted).toBe(true)
+      expect(seenSignals[1].aborted).toBe(false)
+      ws.destroy()
+      expect(seenSignals[1].aborted).toBe(true) // destroy cancels the in-flight load
+    })
+
+    it('a superseded load never applies its results', async () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      let resolveFirst: (b: Blob) => void
+      const blob = new Blob([new ArrayBuffer(8)], { type: 'audio/wav' })
+      global.fetch = jest
+        .fn()
+        .mockImplementationOnce(
+          () =>
+            new Promise((res) => {
+              resolveFirst = () =>
+                res({
+                  status: 200,
+                  blob: () => Promise.resolve(blob),
+                  clone: () => ({ body: null, headers: new Headers() }),
+                  body: null,
+                  headers: new Headers(),
+                } as unknown as Response)
+            }),
+        )
+        .mockImplementation(() => new Promise(() => undefined))
+      ws.load('http://x/a.mp3').catch(() => undefined)
+      await Promise.resolve()
+      ws.load('http://x/b.mp3').catch(() => undefined) // supersedes
+      resolveFirst!(blob)
+      await new Promise((r) => setTimeout(r, 0))
+      expect((ws as any).getSrc?.() ?? (ws.getMediaElement().src || '')).not.toContain('a.mp3')
+      ws.destroy()
+    })
+
+    it('loadScope is a child of the current scope, replaced by each load, and cleared by destroy', async () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      global.fetch = jest.fn().mockImplementation(() => new Promise(() => undefined))
+
+      ws.load('http://x/a.mp3').catch(() => undefined)
+      await Promise.resolve()
+      const firstLoadScope = (ws as any).loadScope
+      expect(firstLoadScope).toBeTruthy()
+      expect(firstLoadScope.disposed).toBe(false)
+
+      ws.load('http://x/b.mp3').catch(() => undefined)
+      await Promise.resolve()
+      expect(firstLoadScope.disposed).toBe(true)
+      const secondLoadScope = (ws as any).loadScope
+      expect(secondLoadScope).not.toBe(firstLoadScope)
+      expect(secondLoadScope.disposed).toBe(false)
+
+      ws.destroy()
+      expect(secondLoadScope.disposed).toBe(true)
+      expect((ws as any).loadScope).toBeNull()
+    })
+  })
 })
