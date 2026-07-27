@@ -474,6 +474,46 @@ describe('WaveSurfer public methods', () => {
       ws.destroy()
     })
 
+    it('destroy() before ready rejects load() with AbortError and emits error, unlike a superseded load', async () => {
+      // Contract pinned by cypress/e2e/abort.cy.js / issue #3637: destroying
+      // mid-load must reject the load() promise and emit 'error' -- this is
+      // different from supersession (a newer load() starting), which must be
+      // swallowed silently. Both cases dispose loadScope, so the fix must
+      // distinguish them by whether the *instance* (not just the load) was
+      // torn down.
+      global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
+        const signal = init.signal as AbortSignal
+        return new Promise((_resolve, reject) => {
+          const onAbort = () => reject(new DOMException('The user aborted a request.', 'AbortError'))
+          if (signal.aborted) {
+            onAbort()
+          } else {
+            signal.addEventListener('abort', onAbort, { once: true })
+          }
+        })
+      })
+
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+
+      const loadPromise = ws.load('http://x/a.mp3')
+      await Promise.resolve()
+      ws.destroy()
+
+      // destroy() clears all listeners (unAll()), same as the real
+      // cypress/e2e/abort.cy.js "destroy before wavesurfer ready should emit
+      // AbortError Exception" case -- it (re-)registers the 'error' listener
+      // *after* destroy(), since reusing an instance post-destroy is
+      // supported (#3637) and the delayed 'error' emit lands on a later tick.
+      const onError = jest.fn()
+      ws.on('error', onError)
+
+      await expect(loadPromise).rejects.toThrow()
+      await expect(loadPromise).rejects.toMatchObject({ name: 'AbortError' })
+      expect(onError).toHaveBeenCalledTimes(1)
+      expect(onError.mock.calls[0][0].name).toBe('AbortError')
+      expect(ws.getState().loadPhase.value).toBe('error')
+    })
+
     it('loadScope is a child of the current scope, replaced by each load, and cleared by destroy', async () => {
       const ws = WaveSurfer.create({ container: document.createElement('div') })
       global.fetch = jest.fn().mockImplementation(() => new Promise(() => undefined))

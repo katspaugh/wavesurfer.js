@@ -541,6 +541,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.loadScope?.dispose()
     const loadScope = this.scope.child()
     this.loadScope = loadScope
+    // Captured now, before any await: destroy() replaces `this.scope` with a
+    // fresh instance, so this reference stays pointing at the (now-disposed)
+    // scope that was live when this load started. That lets the catch below
+    // tell "destroyed mid-load" (ownerScope.disposed) apart from "superseded
+    // by a newer load()" (loadScope.disposed but ownerScope still live).
+    const ownerScope = this.scope
 
     // Reusing an instance after destroy() is a supported behavior (see issue #3637
     // and cypress/e2e/abort.cy.js "load url after destroyed should emit ready").
@@ -571,13 +577,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.stopAtPosition = null
 
     // The fetch/decode pipeline below can reject when this load is superseded
-    // or the instance is destroyed (e.g. an aborted fetch rejects with
-    // AbortError). Such rejections must never escape loadAudio -- they aren't
-    // genuine failures of the current (live) load, just noise from cancelling
-    // a stale one. Only rethrow when this load is still the live one; a
-    // superseded/aborted load's error is swallowed here instead, so
-    // load()/loadBlob()'s catch blocks can treat "it threw" as "it's the
-    // error phase of the current load" unconditionally.
+    // by a newer load() (e.g. an aborted fetch rejects with AbortError). Such
+    // rejections must never escape loadAudio -- they aren't genuine failures,
+    // just noise from cancelling a stale load. A destroy-triggered abort is
+    // different: it must still propagate (see the catch below), so
+    // load()/loadBlob()'s catch blocks only ever see "supersession, already
+    // filtered" or "a real failure/destroy, handle it."
     try {
       // Fetch the entire audio as a blob if pre-decoded data is not provided
       if (!blob && !channelData) {
@@ -656,10 +661,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
       this.emit('ready', this.getDuration())
     } catch (err) {
-      // Superseded/aborted loads are expected to reject here (e.g. the fetch's
-      // AbortSignal firing) -- that's not a real failure, so it's swallowed.
-      // A genuine failure of the still-live load is rethrown as usual.
-      if (!loadScope.disposed) throw err
+      // Superseded by a newer load(): swallow (the new load owns the state).
+      // Destroyed mid-load or a genuine failure: propagate -- the contract
+      // (issue #3637 / cypress/e2e/abort.cy.js) requires load()'s promise to
+      // reject with AbortError and emit 'error' when destroy() lands before
+      // 'ready'.
+      const superseded = loadScope.disposed && !ownerScope.disposed
+      if (!superseded) throw err
     }
   }
 
