@@ -339,6 +339,20 @@ describe('WaveSurfer public methods', () => {
     ws.destroy()
   })
 
+  test('walks loadPhase through decoding→ready for a peaks+duration load', async () => {
+    const ws = WaveSurfer.create({
+      container: document.createElement('div'),
+      peaks: [[0, 0.5, 1]],
+      duration: 1,
+    })
+    const phases: string[] = []
+    ws.getState().loadPhase.subscribe((p) => phases.push(p))
+    await new Promise((resolve) => ws.once('ready', resolve))
+    expect(ws.getState().loadPhase.value).toBe('ready')
+    expect(phases).toContain('decoding')
+    ws.destroy()
+  })
+
   test('resets peaks state at the start of a load that provides no channelData', async () => {
     const ws = createWs({
       peaks: [[0, 0.5, 1]],
@@ -419,6 +433,8 @@ describe('WaveSurfer public methods', () => {
 
     it('a superseded load never applies its results', async () => {
       const ws = WaveSurfer.create({ container: document.createElement('div') })
+      const onError = jest.fn()
+      ws.on('error', onError)
       let resolveFirst: (b: Blob) => void
       const blob = new Blob([new ArrayBuffer(8)], { type: 'audio/wav' })
       global.fetch = jest
@@ -443,6 +459,18 @@ describe('WaveSurfer public methods', () => {
       resolveFirst!(blob)
       await new Promise((r) => setTimeout(r, 0))
       expect((ws as any).getSrc?.() ?? (ws.getMediaElement().src || '')).not.toContain('a.mp3')
+      // A superseded load must never surface as a user-visible error -- its
+      // rejection (if any) is filtered inside loadAudio via the loadScope.disposed
+      // check, so load()'s catch never runs for it.
+      expect(onError).not.toHaveBeenCalled()
+      ws.destroy()
+    })
+
+    it('sets loadPhase=error when the fetch rejects', async () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      global.fetch = jest.fn().mockRejectedValue(new Error('network'))
+      await expect(ws.load('http://x/a.mp3')).rejects.toThrow()
+      expect(ws.getState().loadPhase.value).toBe('error')
       ws.destroy()
     })
 

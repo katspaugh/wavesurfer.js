@@ -551,6 +551,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     this.emit('load', url)
 
+    // Only the fetch path goes through 'fetching' -- pre-decoded data
+    // (blob/channelData already provided) skips straight to 'decoding' below.
+    if (!loadScope.disposed && !blob && !channelData) {
+      this.wavesurferActions.setLoadPhase('fetching')
+    }
+
     this.wavesurferActions.setUrl(url || '')
     if (channelData) {
       this.wavesurferActions.setPeaks(channelData)
@@ -564,73 +570,97 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.wavesurferActions.setAudioBuffer(null)
     this.stopAtPosition = null
 
-    // Fetch the entire audio as a blob if pre-decoded data is not provided
-    if (!blob && !channelData) {
-      // Shallow-copy: this.options.fetchParams is a user-owned object that may be
-      // reused across multiple load() calls. Writing our per-load abort signal
-      // onto it directly would leak load N's (eventually aborted) signal into
-      // load N+1's fetch, since `!fetchParams.signal` would then already be false.
-      const fetchParams = { ...this.options.fetchParams }
-      if (!fetchParams.signal) {
-        fetchParams.signal = loadScope.abortSignal()
+    // The fetch/decode pipeline below can reject when this load is superseded
+    // or the instance is destroyed (e.g. an aborted fetch rejects with
+    // AbortError). Such rejections must never escape loadAudio -- they aren't
+    // genuine failures of the current (live) load, just noise from cancelling
+    // a stale one. Only rethrow when this load is still the live one; a
+    // superseded/aborted load's error is swallowed here instead, so
+    // load()/loadBlob()'s catch blocks can treat "it threw" as "it's the
+    // error phase of the current load" unconditionally.
+    try {
+      // Fetch the entire audio as a blob if pre-decoded data is not provided
+      if (!blob && !channelData) {
+        // Shallow-copy: this.options.fetchParams is a user-owned object that may be
+        // reused across multiple load() calls. Writing our per-load abort signal
+        // onto it directly would leak load N's (eventually aborted) signal into
+        // load N+1's fetch, since `!fetchParams.signal` would then already be false.
+        const fetchParams = { ...this.options.fetchParams }
+        if (!fetchParams.signal) {
+          fetchParams.signal = loadScope.abortSignal()
+        }
+        const onProgress = (percentage: number) => this.emit('loading', percentage)
+        blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
+        // Guard: bail if a newer load started or the instance was destroyed
+        if (loadScope.disposed) return
+        const overriddenMimeType = this.options.blobMimeType
+        if (overriddenMimeType) {
+          blob = new Blob([blob], { type: overriddenMimeType })
+        }
       }
-      const onProgress = (percentage: number) => this.emit('loading', percentage)
-      blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
+
       // Guard: bail if a newer load started or the instance was destroyed
       if (loadScope.disposed) return
-      const overriddenMimeType = this.options.blobMimeType
-      if (overriddenMimeType) {
-        blob = new Blob([blob], { type: overriddenMimeType })
-      }
-    }
 
-    // Guard: bail if a newer load started or the instance was destroyed
-    if (loadScope.disposed) return
+      // Set the mediaelement source
+      this.setSrc(url, blob)
 
-    // Set the mediaelement source
-    this.setSrc(url, blob)
+      // Wait for the audio duration
+      const audioDuration = await new Promise<number>((resolve) => {
+        const staticDuration = duration || this.getDuration()
+        if (staticDuration) {
+          resolve(staticDuration)
+        } else {
+          this.mediaEventScope.add(
+            this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }),
+          )
+        }
+      })
 
-    // Wait for the audio duration
-    const audioDuration = await new Promise<number>((resolve) => {
-      const staticDuration = duration || this.getDuration()
-      if (staticDuration) {
-        resolve(staticDuration)
-      } else {
-        this.mediaEventScope.add(this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }))
-      }
-    })
-
-    // Guard: bail if a newer load started or the instance was destroyed
-    if (loadScope.disposed) return
-
-    // Set the duration if the player is a WebAudioPlayer without a URL
-    if (!url && !blob) {
-      const media = this.getMediaElement()
-      if (media instanceof WebAudioPlayer) {
-        media.duration = audioDuration
-      }
-    }
-
-    // Decode the audio data or use user-provided peaks
-    if (channelData) {
-      this.decodedData = Decoder.createBuffer(channelData, audioDuration || 0)
-    } else if (blob) {
-      const arrayBuffer = await blob.arrayBuffer()
       // Guard: bail if a newer load started or the instance was destroyed
       if (loadScope.disposed) return
-      this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
+
+      // Set the duration if the player is a WebAudioPlayer without a URL
+      if (!url && !blob) {
+        const media = this.getMediaElement()
+        if (media instanceof WebAudioPlayer) {
+          media.duration = audioDuration
+        }
+      }
+
+      if (!loadScope.disposed) {
+        this.wavesurferActions.setLoadPhase('decoding')
+      }
+
+      // Decode the audio data or use user-provided peaks
+      if (channelData) {
+        this.decodedData = Decoder.createBuffer(channelData, audioDuration || 0)
+      } else if (blob) {
+        const arrayBuffer = await blob.arrayBuffer()
+        // Guard: bail if a newer load started or the instance was destroyed
+        if (loadScope.disposed) return
+        this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
+      }
+
+      // Guard: bail if a newer load started or the instance was destroyed
+      if (loadScope.disposed) return
+
+      if (this.decodedData) {
+        this.wavesurferActions.setAudioBuffer(this.decodedData)
+        this.emit('decode', this.getDuration())
+        this.renderer.render(this.decodedData)
+      }
+
+      if (!loadScope.disposed) {
+        this.wavesurferActions.setLoadPhase('ready')
+      }
+      this.emit('ready', this.getDuration())
+    } catch (err) {
+      // Superseded/aborted loads are expected to reject here (e.g. the fetch's
+      // AbortSignal firing) -- that's not a real failure, so it's swallowed.
+      // A genuine failure of the still-live load is rethrown as usual.
+      if (!loadScope.disposed) throw err
     }
-
-    // Guard: bail if a newer load started or the instance was destroyed
-    if (loadScope.disposed) return
-
-    if (this.decodedData) {
-      this.wavesurferActions.setAudioBuffer(this.decodedData)
-      this.emit('decode', this.getDuration())
-      this.renderer.render(this.decodedData)
-    }
-
-    this.emit('ready', this.getDuration())
   }
 
   /** Load an audio file by URL, with optional pre-decoded audio data */
@@ -638,6 +668,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     try {
       return await this.loadAudio(url, undefined, channelData, duration)
     } catch (err) {
+      this.wavesurferActions.setLoadPhase('error')
       this.emit('error', err as Error)
       throw err
     }
@@ -648,6 +679,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     try {
       return await this.loadAudio('', blob, channelData, duration)
     } catch (err) {
+      this.wavesurferActions.setLoadPhase('error')
       this.emit('error', err as Error)
       throw err
     }
@@ -811,6 +843,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
 // Export reactive types for plugin authors
 export type { Signal, WritableSignal } from './reactive/store.js'
-export type { WaveSurferState, WaveSurferActions } from './state/wavesurfer-state.js'
+export type { WaveSurferState, WaveSurferActions, LoadPhase } from './state/wavesurfer-state.js'
 
 export default WaveSurfer

@@ -8,6 +8,13 @@
 import { signal, computed, type Signal, type WritableSignal } from '../reactive/store.js'
 
 /**
+ * The lifecycle phase of the current/most-recent load, driven by the load
+ * pipeline in `loadAudio`/`load`/`loadBlob`. `idle` is the initial value
+ * before any load has started.
+ */
+export type LoadPhase = 'idle' | 'fetching' | 'decoding' | 'ready' | 'error'
+
+/**
  * Read-only reactive state for WaveSurfer
  */
 export interface WaveSurferState {
@@ -31,6 +38,9 @@ export interface WaveSurferState {
   readonly zoom: Signal<number>
   readonly scrollPosition: Signal<number>
 
+  // Load lifecycle
+  readonly loadPhase: Signal<LoadPhase>
+
   // Computed state (derived from other state)
   readonly canPlay: Signal<boolean>
   readonly isReady: Signal<boolean>
@@ -53,6 +63,7 @@ export interface WaveSurferActions {
   setUrl: (url: string) => void
   setZoom: (zoom: number) => void
   setScrollPosition: (position: number) => void
+  setLoadPhase: (phase: LoadPhase) => void
 }
 
 /**
@@ -117,6 +128,7 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
   const url = signal('')
   const zoom = signal(0)
   const scrollPosition = signal(0)
+  const loadPhase = signal<LoadPhase>('idle')
 
   // Computed values (derived state)
   const isPaused = computed(() => !isPlaying.value, [isPlaying])
@@ -149,6 +161,7 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
     url,
     zoom,
     scrollPosition,
+    loadPhase,
     canPlay,
     isReady,
     progress,
@@ -212,6 +225,10 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
 
     setScrollPosition: (pos: number) => {
       scrollPosition.set(Math.max(0, pos))
+    },
+
+    setLoadPhase: (phase: LoadPhase) => {
+      loadPhase.set(phase)
     },
   }
 
