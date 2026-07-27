@@ -256,9 +256,9 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   private destroyMinimap() {
     const miniWavesurfer = this.miniWavesurfer
     this.miniWavesurfer = null
-    miniWavesurfer?.destroy()
     this.miniSubscriptions.forEach((unsubscribe) => unsubscribe())
     this.miniSubscriptions = []
+    miniWavesurfer?.destroy()
 
     if (this.dragTimeout) {
       clearTimeout(this.dragTimeout)
