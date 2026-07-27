@@ -1,5 +1,6 @@
 import EventEmitter, { type GeneralEventTypes } from './event-emitter.js'
 import { signal, type WritableSignal } from './reactive/store.js'
+import { Scope } from './scope.js'
 
 type PlayerOptions = {
   media?: HTMLMediaElement
@@ -21,7 +22,18 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   private _muted: WritableSignal<boolean>
   private _playbackRate: WritableSignal<number>
   private _seeking: WritableSignal<boolean>
-  private reactiveMediaEventCleanups: Array<() => void> = []
+  // Note: Player has no separate "root" scope of its own -- mediaScope IS its
+  // whole ownership tree. (A wrapper root named `scope`, as a plain mechanical
+  // reading of the plan might suggest, would collide with WaveSurfer's own
+  // `scope` field of the same name: TS rejects two classes in an extends
+  // chain declaring a same-named field with different visibility (TS2415),
+  // and even reconciling visibility wouldn't help since it's a single
+  // storage slot per instance -- WaveSurfer's field initializer would run
+  // after Player's and silently stomp the reference Player already captured
+  // for mediaScope's parent. Keeping Player's and WaveSurfer's scopes as two
+  // independent trees also matches their pre-existing independence: neither
+  // class's cleanup array was ever connected to the other's.)
+  protected mediaScope = new Scope()
 
   // Expose reactive state as writable signals
   // These are writable to allow WaveSurfer to compose them into centralized state
@@ -97,58 +109,58 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
    */
   private setupReactiveMediaEvents() {
     // Playing state
-    this.reactiveMediaEventCleanups.push(
+    this.mediaScope.add(
       this.onMediaEvent('play', () => {
         this._isPlaying.set(true)
       }),
     )
 
-    this.reactiveMediaEventCleanups.push(
+    this.mediaScope.add(
       this.onMediaEvent('pause', () => {
         this._isPlaying.set(false)
       }),
     )
 
-    this.reactiveMediaEventCleanups.push(
+    this.mediaScope.add(
       this.onMediaEvent('ended', () => {
         this._isPlaying.set(false)
       }),
     )
 
     // Time tracking
-    this.reactiveMediaEventCleanups.push(
+    this.mediaScope.add(
       this.onMediaEvent('timeupdate', () => {
         this._currentTime.set(this.media.currentTime)
       }),
     )
 
-    this.reactiveMediaEventCleanups.push(
+    this.mediaScope.add(
       this.onMediaEvent('durationchange', () => {
         this._duration.set(this.media.duration || 0)
       }),
     )
 
-    this.reactiveMediaEventCleanups.push(
+    this.mediaScope.add(
       this.onMediaEvent('loadedmetadata', () => {
         this._duration.set(this.media.duration || 0)
       }),
     )
 
     // Seeking state
-    this.reactiveMediaEventCleanups.push(
+    this.mediaScope.add(
       this.onMediaEvent('seeking', () => {
         this._seeking.set(true)
       }),
     )
 
-    this.reactiveMediaEventCleanups.push(
+    this.mediaScope.add(
       this.onMediaEvent('seeked', () => {
         this._seeking.set(false)
       }),
     )
 
     // Volume and muted
-    this.reactiveMediaEventCleanups.push(
+    this.mediaScope.add(
       this.onMediaEvent('volumechange', () => {
         this._volume.set(this.media.volume)
         this._muted.set(this.media.muted)
@@ -156,7 +168,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     )
 
     // Playback rate
-    this.reactiveMediaEventCleanups.push(
+    this.mediaScope.add(
       this.onMediaEvent('ratechange', () => {
         this._playbackRate.set(this.media.playbackRate)
       }),
@@ -216,8 +228,12 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   protected destroy() {
     // Cleanup reactive media event listeners
-    this.reactiveMediaEventCleanups.forEach((cleanup) => cleanup())
-    this.reactiveMediaEventCleanups = []
+    this.mediaScope.dispose()
+    // Player instances are reused after destroy (see WaveSurfer's loadAudio
+    // comment about issue #3637), so a fresh scope must replace the disposed
+    // one -- a disposed Scope runs late registrations immediately, which
+    // would break setMediaElement() if called again on this instance.
+    this.mediaScope = new Scope()
 
     // Revoke blob URLs that we created
     this.revokeSrc()
@@ -236,8 +252,8 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   protected setMediaElement(element: HTMLMediaElement) {
     // Cleanup reactive event listeners from old media element
-    this.reactiveMediaEventCleanups.forEach((cleanup) => cleanup())
-    this.reactiveMediaEventCleanups = []
+    this.mediaScope.dispose()
+    this.mediaScope = new Scope()
 
     // Set new media element
     this.media = element
