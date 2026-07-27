@@ -160,6 +160,11 @@ export function computed<T>(fn: () => T, dependencies?: Signal<any>[]): Computed
   const result = signal<T>(undefined as T)
   let unsubscribes: Array<() => void> = []
   let disposed = false
+  // Unsubscribe fns for every callback subscribed via the readonly wrapper,
+  // so dispose() can release them from `result`'s own subscriber set -
+  // otherwise the underlying signal keeps every subscriber closure alive
+  // for as long as the signal itself lives, well past dispose().
+  const resultUnsubs = new Set<() => void>()
 
   const recompute = () => {
     if (disposed) return
@@ -186,6 +191,8 @@ export function computed<T>(fn: () => T, dependencies?: Signal<any>[]): Computed
     disposed = true
     unsubscribes.forEach((unsub) => unsub())
     unsubscribes = []
+    resultUnsubs.forEach((unsub) => unsub())
+    resultUnsubs.clear()
   }
 
   const readonly: ComputedSignal<T> = {
@@ -194,12 +201,22 @@ export function computed<T>(fn: () => T, dependencies?: Signal<any>[]): Computed
       activeTracker?.add(readonly)
       return result.value
     },
-    subscribe: (callback) => result.subscribe(callback),
+    subscribe: (callback) => {
+      const unsub = result.subscribe(callback)
+      resultUnsubs.add(unsub)
+      return () => {
+        resultUnsubs.delete(unsub)
+        unsub()
+      }
+    },
     dispose,
   }
 
   // Duck-typed disposal used by event-streams' cleanup()
   Object.defineProperty(readonly, '_cleanup', { value: dispose, enumerable: false })
+  // Debug-only: number of live result subscribers, for leak tests. Not part
+  // of the public ComputedSignal interface.
+  Object.defineProperty(readonly, '_subscriberCount', { value: () => resultUnsubs.size, enumerable: false })
 
   return readonly
 }

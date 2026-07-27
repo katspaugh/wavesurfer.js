@@ -146,6 +146,17 @@ describe('EnvelopePlugin leak fixes', () => {
     expect(anyPlugin.polyline.pointCleanups.size).toBe(1)
   })
 
+  it('nulls the polyline on destroy so post-destroy calls cannot reach a torn-down instance', () => {
+    const plugin = EnvelopePlugin.create({ points: [] })
+    const anyPlugin = plugin as any
+    anyPlugin.wavesurfer = createWaveSurfer()
+    anyPlugin.initPolyline()
+
+    plugin.destroy()
+
+    expect(anyPlugin.polyline).toBeNull()
+  })
+
   it('double Polyline.destroy() does not throw and empties its subscriptions', () => {
     const plugin = EnvelopePlugin.create({ points: [] })
     const anyPlugin = plugin as any
