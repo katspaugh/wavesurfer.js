@@ -21,7 +21,8 @@
  * });
  */
 
-import { BasePlugin, BasePluginEvents } from '../base-plugin.js'
+import { type BasePluginEvents } from '../base-plugin.js'
+import { definePlugin } from '../define-plugin.js'
 import { effect } from '../reactive/store.js'
 import { cleanup, fromEvent } from '../reactive/event-streams.js'
 
@@ -64,264 +65,232 @@ const defaultOptions = {
 
 export type ZoomPluginEvents = BasePluginEvents
 
-class ZoomPlugin extends BasePlugin<ZoomPluginEvents, ZoomPluginOptions> {
-  protected options: ZoomPluginOptions & typeof defaultOptions
-  private wrapper: HTMLElement | undefined = undefined
-  private container: HTMLElement | null = null
-  private streamCleanups: Array<() => void> = []
+function getTouchDistance(e: TouchEvent): number {
+  const touch1 = e.touches[0]
+  const touch2 = e.touches[1]
+  return Math.sqrt(Math.pow(touch2.clientX - touch1.clientX, 2) + Math.pow(touch2.clientY - touch1.clientY, 2))
+}
+
+function getTouchCenterX(e: TouchEvent): number {
+  const touch1 = e.touches[0]
+  const touch2 = e.touches[1]
+  return (touch1.clientX + touch2.clientX) / 2
+}
+
+const ZoomPlugin = definePlugin<ZoomPluginOptions, ZoomPluginEvents, object>('zoom', (ctx, options) => {
+  const opts: ZoomPluginOptions & typeof defaultOptions = Object.assign({}, defaultOptions, options)
+
+  const container = ctx.wavesurfer.getWrapper().parentElement as HTMLElement
+
+  if (typeof opts.maxZoom === 'undefined') {
+    opts.maxZoom = container.clientWidth
+  }
+  const endZoom = opts.maxZoom
 
   // State for wheel zoom
-  private accumulatedDelta = 0
-  private pointerTime: number = 0
-  private oldX: number = 0
-  private endZoom: number = 0
-  private startZoom: number = 0
+  let accumulatedDelta = 0
+  let pointerTime = 0
+  let oldX = 0
+  let startZoom = 0
 
   // State for proportional pinch-to-zoom
-  private isPinching = false
-  private initialPinchDistance = 0
-  private initialZoom = 0
+  let isPinching = false
+  let initialPinchDistance = 0
+  let initialZoom = 0
 
-  constructor(options?: ZoomPluginOptions) {
-    super(options || {})
-    this.options = Object.assign({}, defaultOptions, options)
+  const calculateNewZoom = (oldZoom: number, delta: number) => {
+    let newZoom
+    if (opts.exponentialZooming) {
+      const zoomFactor =
+        delta > 0
+          ? Math.pow(endZoom / startZoom, 1 / (opts.iterations - 1))
+          : Math.pow(startZoom / endZoom, 1 / (opts.iterations - 1))
+      newZoom = Math.max(0, oldZoom * zoomFactor)
+    } else {
+      // Default linear zooming
+      newZoom = Math.max(0, oldZoom + delta * opts.scale)
+    }
+    return Math.min(newZoom, opts.maxZoom!)
   }
 
-  public static create(options?: ZoomPluginOptions) {
-    return new ZoomPlugin(options)
-  }
-
-  onInit() {
-    this.wrapper = this.wavesurfer?.getWrapper()
-    if (!this.wrapper) {
-      return
-    }
-    this.container = this.wrapper.parentElement as HTMLElement
-
-    if (typeof this.options.maxZoom === 'undefined') {
-      this.options.maxZoom = this.container.clientWidth
-    }
-    this.endZoom = this.options.maxZoom
-
-    // Get reactive state
-    const state = this.wavesurfer?.getState()
-
-    // React to zoom state changes to update internal state
-    if (state) {
-      this.subscriptions.push(
-        effect(() => {
-          const zoom = state.zoom.value
-          if (zoom > 0 && this.startZoom === 0 && this.options.exponentialZooming) {
-            const duration = state.duration.value
-            if (duration > 0 && this.container) {
-              this.startZoom = this.container.clientWidth / duration
-            }
-          }
-        }, [state.zoom, state.duration]),
-      )
-    }
-
-    // Clean up old event streams (from re-initialization)
-    this.streamCleanups.forEach((fn) => fn())
-    this.streamCleanups = []
-
-    // Create event streams
-    const wheelStream = fromEvent(this.container, 'wheel')
-    const touchStartStream = fromEvent(this.container, 'touchstart')
-    const touchMoveStream = fromEvent(this.container, 'touchmove')
-    const touchEndStream = fromEvent(this.container, 'touchend')
-    const touchCancelStream = fromEvent(this.container, 'touchcancel')
-    this.streamCleanups.push(
-      () => cleanup(wheelStream),
-      () => cleanup(touchStartStream),
-      () => cleanup(touchMoveStream),
-      () => cleanup(touchEndStream),
-      () => cleanup(touchCancelStream),
-    )
-
-    // React to wheel events
-    this.subscriptions.push(
-      effect(() => {
-        const e = wheelStream.value
-        if (e) this.onWheel(e)
-      }, [wheelStream]),
-    )
-
-    // React to touch events
-    this.subscriptions.push(
-      effect(() => {
-        const e = touchStartStream.value
-        if (e) this.onTouchStart(e)
-      }, [touchStartStream]),
-    )
-
-    this.subscriptions.push(
-      effect(() => {
-        const e = touchMoveStream.value
-        if (e) this.onTouchMove(e)
-      }, [touchMoveStream]),
-    )
-
-    this.subscriptions.push(
-      effect(() => {
-        const e = touchEndStream.value
-        if (e) this.onTouchEnd(e)
-      }, [touchEndStream]),
-    )
-
-    this.subscriptions.push(
-      effect(() => {
-        const e = touchCancelStream.value
-        if (e) this.onTouchEnd(e)
-      }, [touchCancelStream]),
-    )
-  }
-
-  private onWheel = (e: WheelEvent) => {
-    if (!this.wavesurfer || !this.container || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) {
+  const onWheel = (e: WheelEvent) => {
+    if (Math.abs(e.deltaX) >= Math.abs(e.deltaY)) {
       return
     }
     // prevent scrolling the sidebar while zooming
     e.preventDefault()
 
     // Update the accumulated delta...
-    this.accumulatedDelta += -e.deltaY
+    accumulatedDelta += -e.deltaY
 
-    if (this.startZoom === 0 && this.options.exponentialZooming) {
-      this.startZoom = this.wavesurfer.getWrapper().clientWidth / this.wavesurfer.getDuration()
+    if (startZoom === 0 && opts.exponentialZooming) {
+      startZoom = ctx.wavesurfer.getWrapper().clientWidth / ctx.wavesurfer.getDuration()
     }
 
     // ...and only scroll once we've hit our threshold
-    if (this.options.deltaThreshold === 0 || Math.abs(this.accumulatedDelta) >= this.options.deltaThreshold) {
-      const duration = this.wavesurfer.getDuration()
+    if (opts.deltaThreshold === 0 || Math.abs(accumulatedDelta) >= opts.deltaThreshold) {
+      const duration = ctx.wavesurfer.getDuration()
       const oldMinPxPerSec =
-        this.wavesurfer.options.minPxPerSec === 0
-          ? this.wavesurfer.getWrapper().scrollWidth / duration
-          : this.wavesurfer.options.minPxPerSec
-      const x = e.clientX - this.container.getBoundingClientRect().left
-      const width = this.container.clientWidth
-      const scrollX = this.wavesurfer.getScroll()
+        ctx.wavesurfer.options.minPxPerSec === 0
+          ? ctx.wavesurfer.getWrapper().scrollWidth / duration
+          : ctx.wavesurfer.options.minPxPerSec
+      const x = e.clientX - container.getBoundingClientRect().left
+      const width = container.clientWidth
+      const scrollX = ctx.wavesurfer.getScroll()
 
       // Update pointerTime only if the pointer position has changed. This prevents the waveform from drifting during fixed zooming.
-      if (x !== this.oldX || this.oldX === 0) {
-        this.pointerTime = (scrollX + x) / oldMinPxPerSec
+      if (x !== oldX || oldX === 0) {
+        pointerTime = (scrollX + x) / oldMinPxPerSec
       }
-      this.oldX = x
+      oldX = x
 
-      const newMinPxPerSec = this.calculateNewZoom(oldMinPxPerSec, this.accumulatedDelta)
+      const newMinPxPerSec = calculateNewZoom(oldMinPxPerSec, accumulatedDelta)
       const newLeftSec = (width / newMinPxPerSec) * (x / width)
 
       if (newMinPxPerSec * duration < width) {
-        this.wavesurfer.zoom(width / duration)
-        this.container.scrollLeft = 0
+        ctx.wavesurfer.zoom(width / duration)
+        container.scrollLeft = 0
       } else {
-        this.wavesurfer.zoom(newMinPxPerSec)
-        this.container.scrollLeft = (this.pointerTime - newLeftSec) * newMinPxPerSec
+        ctx.wavesurfer.zoom(newMinPxPerSec)
+        container.scrollLeft = (pointerTime - newLeftSec) * newMinPxPerSec
       }
 
       // Reset the accumulated delta
-      this.accumulatedDelta = 0
+      accumulatedDelta = 0
     }
   }
 
-  private calculateNewZoom = (oldZoom: number, delta: number) => {
-    let newZoom
-    if (this.options.exponentialZooming) {
-      const zoomFactor =
-        delta > 0
-          ? Math.pow(this.endZoom / this.startZoom, 1 / (this.options.iterations - 1))
-          : Math.pow(this.startZoom / this.endZoom, 1 / (this.options.iterations - 1))
-      newZoom = Math.max(0, oldZoom * zoomFactor)
-    } else {
-      // Default linear zooming
-      newZoom = Math.max(0, oldZoom + delta * this.options.scale)
-    }
-    return Math.min(newZoom, this.options.maxZoom!)
-  }
-
-  private getTouchDistance(e: TouchEvent): number {
-    const touch1 = e.touches[0]
-    const touch2 = e.touches[1]
-    return Math.sqrt(Math.pow(touch2.clientX - touch1.clientX, 2) + Math.pow(touch2.clientY - touch1.clientY, 2))
-  }
-
-  private getTouchCenterX(e: TouchEvent): number {
-    const touch1 = e.touches[0]
-    const touch2 = e.touches[1]
-    return (touch1.clientX + touch2.clientX) / 2
-  }
-
-  private onTouchStart = (e: TouchEvent) => {
-    if (!this.wavesurfer || !this.container) return
+  const onTouchStart = (e: TouchEvent) => {
     // Check if two fingers are used
     if (e.touches.length === 2) {
       e.preventDefault()
-      this.isPinching = true
+      isPinching = true
 
       // Store initial pinch distance
-      this.initialPinchDistance = this.getTouchDistance(e)
+      initialPinchDistance = getTouchDistance(e)
 
       // Store initial zoom level
-      const duration = this.wavesurfer.getDuration()
-      this.initialZoom =
-        this.wavesurfer.options.minPxPerSec === 0
-          ? this.wavesurfer.getWrapper().scrollWidth / duration
-          : this.wavesurfer.options.minPxPerSec
+      const duration = ctx.wavesurfer.getDuration()
+      initialZoom =
+        ctx.wavesurfer.options.minPxPerSec === 0
+          ? ctx.wavesurfer.getWrapper().scrollWidth / duration
+          : ctx.wavesurfer.options.minPxPerSec
 
       // Store anchor point for zooming
-      const x = this.getTouchCenterX(e) - this.container.getBoundingClientRect().left
-      const scrollX = this.wavesurfer.getScroll()
-      this.pointerTime = (scrollX + x) / this.initialZoom
-      this.oldX = x // Use oldX to store the anchor X position
+      const x = getTouchCenterX(e) - container.getBoundingClientRect().left
+      const scrollX = ctx.wavesurfer.getScroll()
+      pointerTime = (scrollX + x) / initialZoom
+      oldX = x // Use oldX to store the anchor X position
     }
   }
 
-  private onTouchMove = (e: TouchEvent) => {
-    if (!this.isPinching || e.touches.length !== 2 || !this.wavesurfer || !this.container) {
+  const onTouchMove = (e: TouchEvent) => {
+    if (!isPinching || e.touches.length !== 2) {
       return
     }
     e.preventDefault()
 
     // Calculate new zoom level
-    const newDistance = this.getTouchDistance(e)
-    const scaleFactor = newDistance / this.initialPinchDistance
-    let newMinPxPerSec = this.initialZoom * scaleFactor
+    const newDistance = getTouchDistance(e)
+    const scaleFactor = newDistance / initialPinchDistance
+    let newMinPxPerSec = initialZoom * scaleFactor
 
     // Constrain the zoom
-    newMinPxPerSec = Math.min(newMinPxPerSec, this.options.maxZoom!)
+    newMinPxPerSec = Math.min(newMinPxPerSec, opts.maxZoom!)
 
     // Calculate minimum zoom (fit to width)
-    const duration = this.wavesurfer.getDuration()
-    const width = this.container.clientWidth
+    const duration = ctx.wavesurfer.getDuration()
+    const width = container.clientWidth
     const minZoom = width / duration
     if (newMinPxPerSec < minZoom) {
       newMinPxPerSec = minZoom
     }
 
     // Apply zoom and scroll
-    const newLeftSec = (width / newMinPxPerSec) * (this.oldX / width)
+    const newLeftSec = (width / newMinPxPerSec) * (oldX / width)
     if (newMinPxPerSec === minZoom) {
-      this.wavesurfer.zoom(minZoom)
-      this.container.scrollLeft = 0
+      ctx.wavesurfer.zoom(minZoom)
+      container.scrollLeft = 0
     } else {
-      this.wavesurfer.zoom(newMinPxPerSec)
-      this.container.scrollLeft = (this.pointerTime - newLeftSec) * newMinPxPerSec
+      ctx.wavesurfer.zoom(newMinPxPerSec)
+      container.scrollLeft = (pointerTime - newLeftSec) * newMinPxPerSec
     }
   }
 
-  private onTouchEnd = (e: TouchEvent) => {
-    if (this.isPinching && e.touches.length < 2) {
-      this.isPinching = false
-      this.initialPinchDistance = 0
-      this.initialZoom = 0
+  const onTouchEnd = (e: TouchEvent) => {
+    if (isPinching && e.touches.length < 2) {
+      isPinching = false
+      initialPinchDistance = 0
+      initialZoom = 0
     }
   }
 
-  destroy() {
-    this.streamCleanups.forEach((fn) => fn())
-    this.streamCleanups = []
-    super.destroy()
-  }
-}
+  // Get reactive state
+  const { zoom, duration } = ctx.state
+
+  // React to zoom state changes to update internal state
+  ctx.scope.add(
+    effect(() => {
+      const z = zoom.value
+      if (z > 0 && startZoom === 0 && opts.exponentialZooming) {
+        const dur = duration.value
+        if (dur > 0) {
+          startZoom = container.clientWidth / dur
+        }
+      }
+    }, [zoom, duration]),
+  )
+
+  // Create event streams
+  const wheelStream = fromEvent(container, 'wheel')
+  const touchStartStream = fromEvent(container, 'touchstart')
+  const touchMoveStream = fromEvent(container, 'touchmove')
+  const touchEndStream = fromEvent(container, 'touchend')
+  const touchCancelStream = fromEvent(container, 'touchcancel')
+  ctx.scope.add(() => cleanup(wheelStream))
+  ctx.scope.add(() => cleanup(touchStartStream))
+  ctx.scope.add(() => cleanup(touchMoveStream))
+  ctx.scope.add(() => cleanup(touchEndStream))
+  ctx.scope.add(() => cleanup(touchCancelStream))
+
+  // React to wheel events
+  ctx.scope.add(
+    effect(() => {
+      const e = wheelStream.value
+      if (e) onWheel(e)
+    }, [wheelStream]),
+  )
+
+  // React to touch events
+  ctx.scope.add(
+    effect(() => {
+      const e = touchStartStream.value
+      if (e) onTouchStart(e)
+    }, [touchStartStream]),
+  )
+
+  ctx.scope.add(
+    effect(() => {
+      const e = touchMoveStream.value
+      if (e) onTouchMove(e)
+    }, [touchMoveStream]),
+  )
+
+  ctx.scope.add(
+    effect(() => {
+      const e = touchEndStream.value
+      if (e) onTouchEnd(e)
+    }, [touchEndStream]),
+  )
+
+  ctx.scope.add(
+    effect(() => {
+      const e = touchCancelStream.value
+      if (e) onTouchEnd(e)
+    }, [touchCancelStream]),
+  )
+
+  return {}
+})
 
 export default ZoomPlugin
