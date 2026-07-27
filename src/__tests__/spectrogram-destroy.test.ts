@@ -33,6 +33,37 @@ describe('SpectrogramPlugin destroy', () => {
   it('does not let one instance override another instance maxCanvasWidth', () => {
     const a = SpectrogramPlugin.create({ maxCanvasWidth: 1000 })
     const b = SpectrogramPlugin.create({})
-    expect((b as any).maxCanvasWidth).not.toBe(1000)
+    expect((a as any).maxCanvasWidth).toBe(1000)
+    expect((b as any).maxCanvasWidth).toBe(30000)
+  })
+
+  describe('async continuations after destroy', () => {
+    const originalFetch = global.fetch
+
+    afterEach(() => {
+      global.fetch = originalFetch
+    })
+
+    it('does not touch destroyed DOM state when frequenciesData arrives after destroy', async () => {
+      let resolveJson: (value: unknown) => void = () => {}
+      const jsonPromise = new Promise((resolve) => {
+        resolveJson = resolve
+      })
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: () => jsonPromise,
+      }) as any
+
+      const plugin = SpectrogramPlugin.create({})
+      const drawSpy = jest.spyOn(plugin as any, 'drawSpectrogram')
+
+      const loadPromise = plugin.loadFrequenciesData('https://example.com/data.json')
+      plugin.destroy()
+
+      resolveJson([[1, 2, 3]])
+
+      await expect(loadPromise).resolves.toBeUndefined()
+      expect(drawSpy).not.toHaveBeenCalled()
+    })
   })
 })
