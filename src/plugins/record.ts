@@ -68,6 +68,11 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private unsubscribeDestroy?: () => void
   private unsubscribeRecordEnd?: () => void
   private recordedBlobUrl: string | null = null
+  // Snapshot of 'record-end' listeners taken at destroy() time when a recording is
+  // still active. MediaRecorder.stop() fires 'onstop' via a queued task (async), so
+  // by the time it runs, super.destroy() may have already cleared listeners via
+  // unAll(); this lets the final blob still reach whoever was listening.
+  private pendingFinalRecordEndListeners: Set<(...args: unknown[]) => void> | null = null
 
   /** Create an instance of the Record plugin */
   constructor(options: RecordPluginOptions) {
@@ -252,6 +257,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
     const micStream = this.renderMicStream(stream)
     this.micStream = micStream
+    // Safety net: cleans up mic resources if 'destroy' fires before stopMic() runs
+    // (stopMic() normally unsubscribes this first, making the common path a no-op).
     this.unsubscribeDestroy = this.once('destroy', micStream.onDestroy)
     this.unsubscribeRecordEnd = this.once('record-end', micStream.onEnd)
     this.stream = stream
@@ -298,6 +305,22 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     const emitWithBlob = (ev: 'record-pause' | 'record-end') => {
       const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType })
       this.emit(ev, blob)
+      if (ev === 'record-end' && this.pendingFinalRecordEndListeners) {
+        const snapshot = this.pendingFinalRecordEndListeners
+        this.pendingFinalRecordEndListeners = null
+        // Only redeliver here if the plugin has already fully torn down (unAll ran) —
+        // otherwise this.emit(ev, blob) above already reached these listeners live,
+        // and redelivering would double-fire them.
+        if (this.destroyed) {
+          snapshot.forEach((listener) => {
+            try {
+              listener(blob)
+            } catch (err) {
+              console.error('Error in record-end listener during destroy teardown:', err)
+            }
+          })
+        }
+      }
       if (this.options.renderRecordedAudio) {
         this.applyOriginalOptionsIfNeeded()
         // Revoke previous blob URL before creating a new one
@@ -385,6 +408,20 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   /** Destroy the plugin */
   public destroy() {
     this.applyOriginalOptionsIfNeeded()
+
+    // If a recording is still active, MediaRecorder.stop() below will fire 'onstop'
+    // asynchronously (a queued task) — after this synchronous destroy() call (and
+    // its super.destroy()) has already returned and cleared listeners via unAll().
+    // Snapshot the current 'record-end' listeners now, while they're still live, so
+    // emitWithBlob() can still deliver the final blob to them later.
+    if (this.mediaRecorder && (this.mediaRecorder.state === 'recording' || this.mediaRecorder.state === 'paused')) {
+      // Reaching into EventEmitter's private `listeners` map is an intentional escape
+      // hatch: it's the only way to preserve delivery across the async onstop boundary.
+      const listeners = (this as unknown as { listeners?: Record<string, Set<(...args: unknown[]) => void>> })
+        .listeners?.['record-end']
+      this.pendingFinalRecordEndListeners = listeners ? new Set(listeners) : null
+    }
+
     // Stop recording/mic first so any resulting 'record-end' reaches
     // listeners before super.destroy() clears them (unAll).
     this.stopRecording()

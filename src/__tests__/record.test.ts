@@ -52,3 +52,137 @@ describe('RecordPlugin teardown', () => {
     }).not.toThrow()
   })
 })
+
+// A minimal, spec-shaped MediaRecorder mock: `stop()` transitions state to 'inactive'
+// synchronously but fires 'onstop' asynchronously via a queued microtask, matching
+// real MediaRecorder semantics (and the bug: destroy() completes, including
+// super.destroy()'s unAll(), before 'onstop' ever runs).
+class MockMediaRecorder {
+  static isTypeSupported = () => true
+  state: 'inactive' | 'recording' | 'paused' = 'inactive'
+  mimeType: string
+  ondataavailable: ((event: { data: Blob }) => void) | null = null
+  onpause: (() => void) | null = null
+  onstop: (() => void) | null = null
+
+  constructor(_stream: MediaStream, opts?: { mimeType?: string }) {
+    this.mimeType = opts?.mimeType ?? 'audio/webm'
+  }
+
+  start(_timeslice?: number) {
+    this.state = 'recording'
+  }
+
+  stop() {
+    this.state = 'inactive'
+    queueMicrotask(() => this.onstop?.())
+  }
+
+  pause() {
+    this.state = 'paused'
+  }
+
+  resume() {
+    this.state = 'recording'
+  }
+
+  requestData() {
+    // no-op
+  }
+}
+
+class MockAudioContext {
+  createMediaStreamSource() {
+    return { connect: jest.fn(), disconnect: jest.fn() }
+  }
+  createAnalyser() {
+    return {
+      fftSize: 2048,
+      frequencyBinCount: 1024,
+      getFloatTimeDomainData: jest.fn(),
+    }
+  }
+  close() {
+    return Promise.resolve()
+  }
+}
+
+function createFakeMicStream(): MediaStream {
+  return {
+    getTracks: () => [{ stop: jest.fn() }],
+  } as unknown as MediaStream
+}
+
+const flushMicrotasks = async () => {
+  await Promise.resolve()
+  await Promise.resolve()
+}
+
+describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)', () => {
+  const originalAudioContext = global.AudioContext
+  const originalMediaRecorder = global.MediaRecorder
+  const originalMediaDevices = navigator.mediaDevices
+  const originalCreateObjectURL = URL.createObjectURL
+  const originalRevokeObjectURL = URL.revokeObjectURL
+
+  beforeEach(() => {
+    global.AudioContext = MockAudioContext as unknown as typeof AudioContext
+    global.MediaRecorder = MockMediaRecorder as unknown as typeof MediaRecorder
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      writable: true,
+      value: { getUserMedia: jest.fn().mockResolvedValue(createFakeMicStream()) },
+    })
+    // jsdom doesn't implement the Blob URL registry
+    URL.createObjectURL = jest.fn(() => 'blob:mock-url')
+    URL.revokeObjectURL = jest.fn()
+  })
+
+  afterEach(() => {
+    global.AudioContext = originalAudioContext
+    global.MediaRecorder = originalMediaRecorder
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      writable: true,
+      value: originalMediaDevices,
+    })
+    URL.createObjectURL = originalCreateObjectURL
+    URL.revokeObjectURL = originalRevokeObjectURL
+  })
+
+  it('delivers the final record-end blob to listeners even though onstop fires after destroy() returns', async () => {
+    const plugin = RecordPlugin.create()
+    const onEnd = jest.fn()
+    plugin.on('record-end', onEnd)
+
+    await plugin.startRecording()
+    plugin.destroy()
+
+    // The real MediaRecorder mock's 'onstop' hasn't run yet at this point —
+    // it's a queued microtask, exactly like the browser.
+    expect(onEnd).not.toHaveBeenCalled()
+
+    await flushMicrotasks()
+
+    expect(onEnd).toHaveBeenCalledTimes(1)
+    expect(onEnd.mock.calls[0][0]).toBeInstanceOf(Blob)
+  })
+
+  it('does not double-deliver record-end on a normal (non-destroy) stop', async () => {
+    const plugin = RecordPlugin.create()
+    const onEnd = jest.fn()
+    plugin.on('record-end', onEnd)
+
+    await plugin.startRecording()
+    plugin.stopRecording()
+    await flushMicrotasks()
+
+    expect(onEnd).toHaveBeenCalledTimes(1)
+
+    // Destroying afterwards (recorder already inactive) must not re-deliver.
+    plugin.destroy()
+    await flushMicrotasks()
+
+    expect(onEnd).toHaveBeenCalledTimes(1)
+  })
+})
