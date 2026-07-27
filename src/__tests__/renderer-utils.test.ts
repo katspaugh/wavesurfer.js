@@ -501,11 +501,9 @@ describe('renderer-utils', () => {
     it('splits total width into clamped slots', () => {
       const plan = computeCanvasPlan({ totalWidth: 2500, clientWidth: 500, options })
       expect(plan.numCanvases).toBe(Math.ceil(2500 / plan.singleCanvasWidth))
-      expect(plan.slots.length).toBeLessThanOrEqual(plan.numCanvases)
-      const last: CanvasSlot | undefined = plan.slots[plan.slots.length - 1]
-      if (last) {
-        expect(last.offset + last.width).toBeLessThanOrEqual(2500 + 1)
-      }
+      expect(plan.slots.length).toBe(plan.numCanvases)
+      const last: CanvasSlot = plan.slots[plan.slots.length - 1]
+      expect(last.offset + last.width).toBeLessThanOrEqual(2500 + 1)
       plan.slots.forEach((s, i) => expect(s.offset).toBe(i * plan.singleCanvasWidth))
     })
 

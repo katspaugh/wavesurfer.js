@@ -21,7 +21,7 @@ Implemented in branch `refactor/declarative-load-and-viewport` (7 tasks, all pas
 - `Renderer.getVisibleRange(): Signal<{startTime: number; endTime: number}>` — computed per-render, freezes post-destroy
 
 **Utilities:**
-- `computeCanvasPlan({totalWidth, clientWidth, options})` returning `{numCanvases, singleCanvasWidth, slots: CanvasSlot[]}` where `CanvasSlot = {offset, width}`
+- `computeCanvasPlan({totalWidth, clientWidth, options})` returning `{numCanvases, singleCanvasWidth, slots: CanvasSlot[]}` where `CanvasSlot = {index, offset, width}`
 - `FrameScheduler(scope)` constructor; synchronous first tick on `start()`
 
 **Patterns:**

@@ -638,5 +638,52 @@ describe('WaveSurfer public methods', () => {
 
       ws.destroy()
     })
+
+    it('does not let a superseded load-A rejection (arriving via destroy -> load-B reuse) clobber load-Bs in-flight phase', async () => {
+      // Regression test: load(A) in flight, then destroy(), then load(B) in
+      // the same tick (destroy() -> load() reuse is supported, #3637). A's
+      // fetch is still pending and will eventually reject with AbortError
+      // (its signal was aborted by destroy() disposing the old scope). That
+      // rejection reaches loadAudio's catch on a later microtask -- by then
+      // this.loadScope already points at B's loadScope, not A's. Before the
+      // fix, load()'s catch unconditionally wrote setLoadPhase('error'),
+      // regardless of which load it belonged to, so A's late rejection wiped
+      // out B's 'fetching'/'decoding'/'ready' progress. The fix moves the
+      // write into loadAudio's catch, guarded to only fire when the load
+      // that's erroring is still the current one (or the instance has since
+      // been destroyed, nulling loadScope entirely).
+      global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
+        const signal = init.signal as AbortSignal
+        return new Promise((_resolve, reject) => {
+          const onAbort = () => reject(new DOMException('The user aborted a request.', 'AbortError'))
+          if (signal.aborted) {
+            onAbort()
+          } else {
+            signal.addEventListener('abort', onAbort, { once: true })
+          }
+        })
+      })
+
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+
+      const pA = ws.load('http://x/a.mp3')
+      pA.catch(() => undefined)
+      await Promise.resolve()
+
+      ws.destroy() // aborts A's fetch signal
+      ws.load('http://x/b.mp3').catch(() => undefined) // reuse after destroy (#3637), same tick
+
+      // Flush A's now-rejected fetch promise (its abort listener fires
+      // synchronously on dispose, but the .catch chain in loadAudio needs a
+      // couple of microtask turns to run).
+      await Promise.resolve()
+      await Promise.resolve()
+      await Promise.resolve()
+
+      expect(ws.getState().loadPhase.value).not.toBe('error')
+      expect(ws.getState().loadPhase.value).toBe('fetching')
+
+      ws.destroy()
+    })
   })
 })

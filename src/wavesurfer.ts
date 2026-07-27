@@ -674,7 +674,22 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       // mid-load, or a genuine failure -- must propagate so load()/loadBlob()
       // rejects and emits 'error' (issue #3637 / cypress/e2e/abort.cy.js
       // contract).
-      if (!this.supersededLoadScopes.has(loadScope)) throw err
+      if (!this.supersededLoadScopes.has(loadScope)) {
+        // Write the 'error' phase here, not in load()/loadBlob()'s catches,
+        // and only when this load is still the current one (this.loadScope
+        // === loadScope) or the instance has since been destroyed
+        // (this.loadScope === null, set by destroy()). Without this guard, a
+        // stale load's rejection landing on a later microtask -- e.g.
+        // destroy() then load(B) reusing the instance in the same tick,
+        // where A's late AbortError still isn't classified as "superseded"
+        // because supersession is only marked when a *newer load()* starts,
+        // not by destroy() -- would clobber loadPhase back to 'error' while
+        // B is still fetching/decoding.
+        if (this.loadScope === loadScope || this.loadScope === null) {
+          this.wavesurferActions.setLoadPhase('error')
+        }
+        throw err
+      }
     }
   }
 
@@ -683,7 +698,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     try {
       return await this.loadAudio(url, undefined, channelData, duration)
     } catch (err) {
-      this.wavesurferActions.setLoadPhase('error')
       this.emit('error', err as Error)
       throw err
     }
@@ -694,7 +708,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     try {
       return await this.loadAudio('', blob, channelData, duration)
     } catch (err) {
-      this.wavesurferActions.setLoadPhase('error')
       this.emit('error', err as Error)
       throw err
     }
