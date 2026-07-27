@@ -1,4 +1,4 @@
-import { signal, computed, effect } from '../store'
+import { signal, computed, effect, batch } from '../store'
 
 describe('signal', () => {
   it('should create a signal with initial value', () => {
@@ -358,5 +358,102 @@ describe('integration tests', () => {
 
     expect(callback).toHaveBeenCalledTimes(100)
     expect(count.value).toBe(100)
+  })
+})
+
+describe('store v2', () => {
+  it('computed can be disposed and stops tracking deps', () => {
+    const a = signal(1)
+    const c = computed(() => a.value * 2, [a])
+    expect(c.value).toBe(2)
+    c.dispose()
+    a.set(5)
+    expect(c.value).toBe(2) // frozen after dispose
+  })
+
+  it('computed with no dep array auto-tracks', () => {
+    const a = signal(1)
+    const b = signal(10)
+    const c = computed(() => a.value + b.value)
+    a.set(2)
+    b.set(20)
+    expect(c.value).toBe(22)
+    c.dispose()
+  })
+
+  it('batch coalesces notifications', () => {
+    const a = signal(0)
+    const spy = jest.fn()
+    a.subscribe(spy)
+    batch(() => {
+      a.set(1)
+      a.set(2)
+      a.set(3)
+    })
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith(3)
+  })
+
+  it('a throwing subscriber does not prevent later subscribers', () => {
+    const a = signal(0)
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    const second = jest.fn()
+    a.subscribe(() => {
+      throw new Error('boom')
+    })
+    a.subscribe(second)
+    a.set(1)
+    expect(second).toHaveBeenCalledWith(1)
+    errSpy.mockRestore()
+  })
+
+  it('re-entrant set during notification settles without recursion', () => {
+    const a = signal(0)
+    const seen: number[] = []
+    a.subscribe((v) => {
+      seen.push(v)
+      if (v === 1) a.set(2)
+    })
+    a.set(1)
+    expect(a.value).toBe(2)
+    expect(seen).toEqual([1, 2])
+  })
+
+  it('effect with no dep array auto-tracks and disposes', () => {
+    const a = signal(1)
+    const runs: number[] = []
+    const dispose = effect(() => {
+      runs.push(a.value)
+    })
+    a.set(2)
+    dispose()
+    a.set(3)
+    expect(runs).toEqual([1, 2])
+  })
+
+  it('batch coalesces a cascaded set() to a different signal during flush', () => {
+    const a = signal(0)
+    const b = signal(0)
+    const bCalls: number[] = []
+    b.subscribe((v) => bCalls.push(v))
+    a.subscribe(() => b.set(2))
+    batch(() => {
+      b.set(1)
+      a.set(1)
+    })
+    expect(bCalls).toEqual([2])
+  })
+
+  it('a same-signal reentrant set() during batch flush does not double-deliver the final value', () => {
+    const a = signal(0)
+    const seen: number[] = []
+    a.subscribe((v) => {
+      seen.push(v)
+      if (v === 1) a.set(2)
+    })
+    batch(() => {
+      a.set(1)
+    })
+    expect(seen).toEqual([1, 2])
   })
 })

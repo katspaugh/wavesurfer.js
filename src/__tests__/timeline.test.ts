@@ -63,4 +63,19 @@ describe('TimelinePlugin', () => {
     expect(offsets[2]).toBeCloseTo(66.7)
     expect(offsets[3]).toBeCloseTo(100)
   })
+
+  test('clears notch element cache on destroy', () => {
+    const wavesurfer = createWaveSurfer(1, 100)
+    const plugin = TimelinePlugin.create({ duration: 1 })
+
+    plugin._init(wavesurfer as any)
+
+    expect((plugin as any).notchElements.size).toBeGreaterThan(0)
+    expect((plugin as any).currentTimeline).not.toBeUndefined()
+
+    plugin.destroy()
+
+    expect((plugin as any).notchElements.size).toBe(0)
+    expect((plugin as any).currentTimeline).toBeUndefined()
+  })
 })

@@ -361,4 +361,45 @@ describe('Memory Leak Detection', () => {
       expect(destroyHandler).toHaveBeenCalled()
     })
   })
+
+  describe('Scope ownership tree', () => {
+    it('root scope is disposed on destroy and a fresh scope replaces it for reuse', () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      // Capture the scope reference BEFORE destroy: destroy() must recreate
+      // `this.scope` afterwards so a subsequent load() can still register
+      // cleanups (a disposed Scope runs late registrations immediately, see
+      // issue #3637 / the loadAudio re-entrancy comment).
+      const originalScope = (ws as any).scope
+
+      ws.destroy()
+
+      expect(originalScope.disposed).toBe(true)
+      const late = jest.fn()
+      originalScope.add(late)
+      expect(late).toHaveBeenCalledTimes(1)
+
+      // A fresh, non-disposed scope must be in place for reuse.
+      const freshScope = (ws as any).scope
+      expect(freshScope).not.toBe(originalScope)
+      expect(freshScope.disposed).toBe(false)
+    })
+
+    it('media event listeners registered after destroy still fire (issue #3637 reuse)', () => {
+      const ws = WaveSurfer.create({ container })
+      ws.destroy()
+
+      // Reuse the instance: attach a new media element after destroy, as
+      // load() after destroy() is a supported flow.
+      const newMedia = document.createElement('audio')
+      ws.setMediaElement(newMedia)
+
+      const timeupdateHandler = jest.fn()
+      ws.on('timeupdate', timeupdateHandler)
+
+      Object.defineProperty(newMedia, 'currentTime', { value: 5, configurable: true })
+      newMedia.dispatchEvent(new Event('timeupdate'))
+
+      expect(timeupdateHandler).toHaveBeenCalledWith(5)
+    })
+  })
 })

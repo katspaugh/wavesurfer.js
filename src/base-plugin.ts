@@ -14,6 +14,11 @@ export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends Ev
   protected options: Options
   private isDestroyed = false
 
+  /** Whether destroy() has been called. Subclasses use this to guard async work. */
+  protected get destroyed(): boolean {
+    return this.isDestroyed
+  }
+
   /** Create a plugin instance */
   constructor(options: Options) {
     super()
@@ -27,22 +32,21 @@ export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends Ev
 
   /** Do not call directly, only called by WavesSurfer internally */
   public _init(wavesurfer: WaveSurfer) {
-    // Reset state if plugin was previously destroyed
-    if (this.isDestroyed) {
-      this.subscriptions = []
-      this.isDestroyed = false
-    }
-
+    this.isDestroyed = false
     this.wavesurfer = wavesurfer
     this.onInit()
   }
 
   /** Destroy the plugin and unsubscribe from all events */
   public destroy() {
+    if (this.isDestroyed) return
+    this.isDestroyed = true
     this.emit('destroy')
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.subscriptions = []
-    this.isDestroyed = true
+    // Clear listeners registered BY consumers ON this plugin — after the
+    // destroy event so those consumers still receive it
+    this.unAll()
     this.wavesurfer = undefined
   }
 }

@@ -5,6 +5,7 @@ import type { WaveSurferOptions } from './wavesurfer.js'
 import { createDragStream } from './reactive/drag-stream.js'
 import { createScrollStream } from './reactive/scroll-stream.js'
 import { effect } from './reactive/store.js'
+import { Scope } from './scope.js'
 
 type ChannelData = utils.ChannelData
 
@@ -33,14 +34,21 @@ class Renderer extends EventEmitter<RendererEvents> {
   private canvasWrapper: HTMLElement
   private progressWrapper: HTMLElement
   private cursor: HTMLElement
-  private timeouts: Array<() => void> = []
   private isScrollable = false
   private audioData: AudioBuffer | null = null
   private resizeObserver: ResizeObserver | null = null
   private lastContainerWidth = 0
   private isDragging = false
-  private subscriptions: (() => void)[] = []
-  private unsubscribeOnScroll: (() => void)[] = []
+  private scope = new Scope()
+  // Recreated (disposed + replaced) at the top of render()/reRender(), exactly
+  // where `unsubscribeOnScroll.forEach(...); unsubscribeOnScroll = []` used to run.
+  private scrollRenderScope = this.scope.child()
+  // Recreated at the top of render() only, matching the original
+  // `timeouts.forEach(clear); timeouts = []` there. Each pending delay()
+  // registers its cancellation on the delayScope current at call time, so
+  // both the next render() pass and destroy() can cancel it.
+  private delayScope = this.scope.child()
+  private disposeDragStream: (() => void) | null = null
   private dragStream: { signal: any; cleanup: () => void } | null = null
   private scrollStream: { scrollData: any; percentages: any; bounds: any; cleanup: () => void } | null = null
   private containerInlinePadding = 0
@@ -48,7 +56,6 @@ class Renderer extends EventEmitter<RendererEvents> {
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
 
-    this.subscriptions = []
     this.options = options
 
     const parent = this.parentFromOptionsContainer(options.container)
@@ -117,7 +124,11 @@ class Renderer extends EventEmitter<RendererEvents> {
       const { left, right } = this.scrollStream!.bounds.value
       this.emit('scroll', startX, endX, left, right)
     }, [this.scrollStream.percentages, this.scrollStream.bounds])
-    this.subscriptions.push(unsubscribeScroll)
+    this.scope.add(unsubscribeScroll)
+    this.scope.add(() => {
+      this.scrollStream?.cleanup()
+      this.scrollStream = null
+    })
 
     // Re-render the waveform on container resize
     if (typeof ResizeObserver === 'function') {
@@ -145,6 +156,10 @@ class Renderer extends EventEmitter<RendererEvents> {
     if (this.dragStream) return
 
     this.dragStream = createDragStream(this.wrapper)
+    this.disposeDragStream = this.scope.add(() => {
+      this.dragStream?.cleanup()
+      this.dragStream = null
+    })
 
     const unsubscribeDrag = effect(() => {
       const drag = this.dragStream!.signal.value
@@ -164,7 +179,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       }
     }, [this.dragStream.signal])
 
-    this.subscriptions.push(unsubscribeDrag)
+    this.scope.add(unsubscribeDrag)
   }
 
   private calculateInlinePadding(): void {
@@ -270,8 +285,8 @@ class Renderer extends EventEmitter<RendererEvents> {
     if (options.dragToSeek === true || typeof this.options.dragToSeek === 'object') {
       this.initDrag()
     } else {
-      this.dragStream?.cleanup()
-      this.dragStream = null
+      this.disposeDragStream?.()
+      this.disposeDragStream = null
     }
 
     this.options = options
@@ -307,31 +322,30 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.wrapper.removeEventListener('click', this.onClickWrapper)
     this.wrapper.removeEventListener('dblclick', this.onDblClickWrapper)
 
-    // Clean up all timeouts
-    this.timeouts.forEach((clear) => clear())
-    this.timeouts = []
+    this.scope.dispose()
+    // A Renderer instance IS reused after WaveSurfer.destroy(): a subsequent
+    // load() reaches render(), and setOptions() reaches reRender(). A
+    // disposed Scope hands back pre-disposed children from child(), so
+    // without recreating here, render()/reRender()'s own scope resets would
+    // install permanently-disposed scrollRenderScope/delayScope and any
+    // lazy-render scroll subscription registered afterward would be torn
+    // down the instant it's added (see renderMultiCanvas()). Recreate fresh
+    // scopes exactly as Player/WaveSurfer do.
+    this.scope = new Scope()
+    this.scrollRenderScope = this.scope.child()
+    this.delayScope = this.scope.child()
 
-    this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.container.remove()
     if (this.resizeObserver) {
       this.resizeObserver.disconnect()
       this.resizeObserver = null
-    }
-    this.unsubscribeOnScroll?.forEach((unsubscribe) => unsubscribe())
-    this.unsubscribeOnScroll = []
-    if (this.dragStream) {
-      this.dragStream.cleanup()
-      this.dragStream = null
-    }
-    if (this.scrollStream) {
-      this.scrollStream.cleanup()
-      this.scrollStream = null
     }
   }
 
   private createDelay(delayMs = 10): () => Promise<void> {
     let timeout: ReturnType<typeof setTimeout> | undefined
     let rejectFn: (() => void) | undefined
+    let deregister: (() => void) | undefined
 
     const onClear = () => {
       if (timeout) {
@@ -344,11 +358,11 @@ class Renderer extends EventEmitter<RendererEvents> {
       }
     }
 
-    this.timeouts.push(onClear)
-
     return () => {
       return new Promise<void>((resolve, reject) => {
-        // Clear any pending delay
+        // Drop the previous registration (a no-op if its delayScope was
+        // already replaced by render()) and clear any pending delay
+        deregister?.()
         onClear()
         // Store reject function for cleanup
         rejectFn = reject
@@ -358,6 +372,9 @@ class Renderer extends EventEmitter<RendererEvents> {
           rejectFn = undefined
           resolve()
         }, delayMs)
+        // Register on the CURRENT delayScope so the next render() pass and
+        // destroy() can both cancel this pending delay
+        deregister = this.delayScope.add(onClear)
       })
     }
   }
@@ -601,7 +618,7 @@ class Renderer extends EventEmitter<RendererEvents> {
         utils.getLazyRenderRange({ scrollLeft, totalWidth, numCanvases }).forEach((index) => draw(index))
       })
 
-      this.unsubscribeOnScroll.push(unsubscribe)
+      this.scrollRenderScope.add(unsubscribe)
     }
   }
 
@@ -631,12 +648,12 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   async render(audioData: AudioBuffer) {
     // Clear previous timeouts
-    this.timeouts.forEach((clear) => clear())
-    this.timeouts = []
+    this.delayScope.dispose()
+    this.delayScope = this.scope.child()
 
     // Clear scroll subscriptions from previous render
-    this.unsubscribeOnScroll.forEach((unsubscribe) => unsubscribe())
-    this.unsubscribeOnScroll = []
+    this.scrollRenderScope.dispose()
+    this.scrollRenderScope = this.scope.child()
 
     // Clear the canvases
     this.canvasWrapper.innerHTML = ''
@@ -694,8 +711,8 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   reRender() {
-    this.unsubscribeOnScroll.forEach((unsubscribe) => unsubscribe())
-    this.unsubscribeOnScroll = []
+    this.scrollRenderScope.dispose()
+    this.scrollRenderScope = this.scope.child()
 
     // Return if the waveform has not been rendered yet
     if (!this.audioData) return

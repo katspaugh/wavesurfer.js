@@ -179,9 +179,10 @@ export type SpectrogramPluginEvents = BasePluginEvents & {
 const isPowerOfTwo = (value: number) => Number.isInteger(value) && value >= 2 && Number.isInteger(Math.log2(value))
 
 class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramPluginOptions> {
-  private static MAX_CANVAS_WIDTH = 30000
   private static MAX_NODES = 10
 
+  private maxCanvasWidth = 30000
+  private buffer: AudioBuffer | null = null
   private frequenciesDataUrl?: string
   private container: HTMLElement
   private wrapper: HTMLElement
@@ -323,7 +324,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
 
     // Override the default max canvas width if provided
     if (options.maxCanvasWidth) {
-      SpectrogramPlugin.MAX_CANVAS_WIDTH = options.maxCanvasWidth
+      this.maxCanvasWidth = options.maxCanvasWidth
     }
 
     // Set default performance settings
@@ -444,20 +445,6 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
   }
 
   public destroy() {
-    this.unAll()
-
-    // Clean up any direct event listeners (if they exist)
-    if (this.wavesurfer) {
-      // Note: _onReady and _onRender methods may not exist, but the original code had these
-      // We should be cautious and only call un if the methods exist
-      if (typeof this._onReady === 'function') {
-        this.wavesurfer.un('ready', this._onReady)
-      }
-      if (typeof this._onRender === 'function') {
-        this.wavesurfer.un('redraw', this._onRender)
-      }
-    }
-
     // Clean up performance optimization resources
     if (this.renderTimeout) {
       clearTimeout(this.renderTimeout)
@@ -479,6 +466,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.cachedFrequencies = null
     this.cachedResampledData = null
     this.cachedBuffer = null
+    this.buffer = null
 
     // Clean up DOM elements properly
     this.clearCanvases()
@@ -500,9 +488,6 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.container = null
     this.isRendering = false
     this.lastZoomLevel = 0
-    this.wavesurfer = null
-    this.util = null
-    this.options = null
 
     super.destroy()
   }
@@ -513,7 +498,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       throw new Error('Unable to fetch frequencies data')
     }
     const data = await resp.json()
-    if (!this.options) return
+    if (this.destroyed) return
     this.drawSpectrogram(data)
   }
 
@@ -670,7 +655,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
         const decodedData = this.wavesurfer?.getDecodedData()
         if (decodedData) {
           const frequencies = await this.getFrequenciesData()
-          if (!this.options || !frequencies) return
+          if (this.destroyed || !frequencies) return
           // Draw what this render computed (cache hit, fresh data, or empty on failure)
           // rather than whatever the cache field holds
           this.drawSpectrogram(frequencies)
@@ -720,7 +705,7 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
     this.wrapper.style.height = totalHeight + 'px'
 
     const totalWidth = this.getWidth()
-    const maxCanvasWidth = Math.min(SpectrogramPlugin.MAX_CANVAS_WIDTH, totalWidth)
+    const maxCanvasWidth = Math.min(this.maxCanvasWidth, totalWidth)
 
     // Nothing to render
     if (totalWidth === 0 || totalHeight === 0) return
@@ -1053,8 +1038,8 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       try {
         return await this.calculateFrequenciesWithWorker(buffer)
       } catch (error) {
-        if (!this.options) return []
-        
+        if (this.destroyed) return []
+
         if (!this.fallbackToMainThread) {
           // Surface the failure instead of silently recomputing on the main thread, which
           // can freeze the page for long files

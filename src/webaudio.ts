@@ -10,6 +10,7 @@ type WebAudioPlayerEvents = {
   volumechange: []
   emptied: []
   ended: []
+  error: [error: Error]
 }
 
 function setWebAudioSessionPlayback() {
@@ -45,6 +46,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   public crossOrigin: string | null = null
   public seeking = false
   public autoplay = false
+  public error: Error | null = null
 
   constructor(audioContext?: AudioContext) {
     super()
@@ -115,6 +117,8 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   set src(value: string) {
     this.currentSrc = value
     this._duration = undefined
+    // A new load starts with a clean slate, like HTMLMediaElement.error
+    this.error = null
 
     if (!value) {
       this.buffer = null
@@ -146,6 +150,8 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
       .catch((err) => {
         // Emit error for proper error handling
         console.error('WebAudioPlayer load error:', err)
+        this.error = err instanceof Error ? err : new Error(String(err))
+        this.emit('error', this.error)
       })
   }
 

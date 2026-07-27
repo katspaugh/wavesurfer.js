@@ -1,54 +1,133 @@
 /**
- * Reactive primitives for managing state in WaveSurfer
- *
- * This module provides signal-based reactivity similar to SolidJS signals.
- * Signals are reactive values that notify subscribers when they change.
+ * Reactive primitives for managing state in WaveSurfer.
+ * Signals notify synchronously; use batch() to coalesce. computed/effect
+ * auto-track dependencies when no dependency array is given, and are
+ * always disposable.
  */
 
-/**
- * A reactive value that can be read and subscribed to
- */
 export interface Signal<T> {
-  /** Get the current value */
   get value(): T
-  /** Subscribe to changes. Returns an unsubscribe function. */
   subscribe(callback: (value: T) => void): () => void
 }
 
-/**
- * A writable reactive value that can be updated
- */
 export interface WritableSignal<T> extends Signal<T> {
-  /** Set a new value. Only notifies if value changed. */
   set(value: T): void
-  /** Update value using a function. */
   update(fn: (current: T) => T): void
 }
 
+export interface ComputedSignal<T> extends Signal<T> {
+  dispose(): void
+}
+
+type AnySignal = Signal<unknown>
+
+let activeTracker: Set<AnySignal> | null = null
+let batchDepth = 0
+// Queue of not-yet-fired notifyAll closures, one per dirtied signal.
+// pendingSet gives O(1) membership checks so re-dirtying an already-queued
+// signal merges into its existing entry instead of pushing a duplicate.
+const pendingQueue: Array<() => void> = []
+const pendingSet = new Set<() => void>()
+
+function scheduleNotification(notify: () => void): void {
+  if (pendingSet.has(notify)) return
+  pendingSet.add(notify)
+  pendingQueue.push(notify)
+}
+
+export function batch(fn: () => void): void {
+  batchDepth++
+  try {
+    fn()
+  } finally {
+    batchDepth--
+    if (batchDepth === 0) {
+      flushPending()
+    }
+  }
+}
+
 /**
- * Create a reactive signal that notifies subscribers when its value changes
+ * Drain pendingQueue until empty. Runs under an elevated batchDepth so that
+ * any set() triggered by a notification - e.g. one signal's subscriber
+ * setting another signal, or a signal's own subscriber re-setting itself -
+ * is queued rather than fired immediately.
  *
- * @example
- * ```typescript
- * const count = signal(0)
- * count.subscribe(val => console.log('Count:', val))
- * count.set(5) // Logs: Count: 5
- * ```
+ * Draining LIFO (most-recently-queued first) means a cascading set()
+ * triggered while flushing a later-queued entry reaches an earlier-queued,
+ * not-yet-fired entry for the same signal in time to merge into it, instead
+ * of that entry having already fired with a stale value and needing a
+ * second, separate flush.
+ *
+ * A signal stays in pendingSet for the full duration of its own notify()
+ * call, not just while it's queued. That way a same-signal reentrant set()
+ * triggered from within its own subscribers - which notify()'s internal
+ * notifying/settleAgain loop already settles to the final value - finds
+ * itself still "pending" and is deduped by scheduleNotification, instead of
+ * being re-queued for a redundant second delivery of the same final value.
  */
+function flushPending(): void {
+  batchDepth++
+  try {
+    while (pendingQueue.length > 0) {
+      const notify = pendingQueue.pop() as () => void
+      notify()
+      pendingSet.delete(notify)
+    }
+  } finally {
+    batchDepth--
+  }
+}
+
 export function signal<T>(initialValue: T): WritableSignal<T> {
   let _value = initialValue
   const subscribers = new Set<(value: T) => void>()
+  let notifying = false
+  let settleAgain = false
 
-  return {
+  const notifyAll = () => {
+    if (notifying) {
+      settleAgain = true
+      return
+    }
+    notifying = true
+    try {
+      do {
+        settleAgain = false
+        const snapshot = [...subscribers]
+        const valueAtStart = _value
+        for (const fn of snapshot) {
+          try {
+            fn(valueAtStart)
+          } catch (err) {
+            console.error('Signal subscriber error:', err)
+          }
+          // A subscriber changed the value again; abort this pass, the
+          // settle loop delivers the newer value to everyone
+          if (!Object.is(_value, valueAtStart)) {
+            settleAgain = true
+            break
+          }
+        }
+      } while (settleAgain)
+    } finally {
+      notifying = false
+    }
+  }
+
+  const self: WritableSignal<T> = {
     get value() {
+      activeTracker?.add(self)
       return _value
     },
 
     set(newValue: T) {
-      // Only update and notify if value actually changed
-      if (!Object.is(_value, newValue)) {
-        _value = newValue
-        subscribers.forEach((fn) => fn(_value))
+      if (Object.is(_value, newValue)) return
+      _value = newValue
+      if (batchDepth > 0) {
+        scheduleNotification(notifyAll)
+      } else {
+        notifyAll()
       }
     },
 
@@ -61,90 +140,111 @@ export function signal<T>(initialValue: T): WritableSignal<T> {
       return () => subscribers.delete(callback)
     },
   }
+
+  return self
 }
 
-/**
- * Create a computed value that automatically updates when its dependencies change
- *
- * @example
- * ```typescript
- * const count = signal(0)
- * const doubled = computed(() => count.value * 2, [count])
- * console.log(doubled.value) // 0
- * count.set(5)
- * console.log(doubled.value) // 10
- * ```
- */
-export function computed<T>(fn: () => T, dependencies: Signal<any>[]): Signal<T> {
-  const result = signal<T>(fn())
+/** Run fn, recording which signals it reads. Returns [result, dependencies]. */
+function track<T>(fn: () => T): [T, Set<AnySignal>] {
+  const previousTracker = activeTracker
+  const deps = new Set<AnySignal>()
+  activeTracker = deps
+  try {
+    return [fn(), deps]
+  } finally {
+    activeTracker = previousTracker
+  }
+}
 
-  // Subscribe to all dependencies immediately
-  // This ensures the computed value stays in sync even if no one is subscribed to it
-  dependencies.forEach((dep) =>
-    dep.subscribe(() => {
-      const newValue = fn()
-      // Update the result signal, which will notify our subscribers if value changed
-      if (!Object.is(result.value, newValue)) {
-        ;(result as WritableSignal<T>).set(newValue)
-      }
-    }),
-  )
+export function computed<T>(fn: () => T, dependencies?: Signal<any>[]): ComputedSignal<T> {
+  const result = signal<T>(undefined as T)
+  let unsubscribes: Array<() => void> = []
+  let disposed = false
 
-  // Return a read-only signal that proxies the result
-  return {
+  const recompute = () => {
+    if (disposed) return
+    if (dependencies) {
+      result.set(fn())
+    } else {
+      // Auto-tracked: re-collect dependencies on every run so
+      // conditional reads stay correct
+      unsubscribes.forEach((unsub) => unsub())
+      const [value, deps] = track(fn)
+      unsubscribes = [...deps].map((dep) => dep.subscribe(recompute))
+      result.set(value)
+    }
+  }
+
+  if (dependencies) {
+    unsubscribes = dependencies.map((dep) => dep.subscribe(recompute))
+    result.set(fn())
+  } else {
+    recompute()
+  }
+
+  const dispose = () => {
+    disposed = true
+    unsubscribes.forEach((unsub) => unsub())
+    unsubscribes = []
+  }
+
+  const readonly: ComputedSignal<T> = {
     get value() {
+      // Propagate tracking so computeds can nest
+      activeTracker?.add(readonly)
       return result.value
     },
-
-    subscribe(callback: (value: T) => void): () => void {
-      // Just subscribe to result changes
-      return result.subscribe(callback)
-    },
+    subscribe: (callback) => result.subscribe(callback),
+    dispose,
   }
+
+  // Duck-typed disposal used by event-streams' cleanup()
+  Object.defineProperty(readonly, '_cleanup', { value: dispose, enumerable: false })
+
+  return readonly
 }
 
-/**
- * Run a side effect automatically when dependencies change
- *
- * @param fn - Effect function. Can return a cleanup function.
- * @param dependencies - Signals that trigger the effect when they change
- * @returns Unsubscribe function that stops the effect and runs cleanup
- *
- * @example
- * ```typescript
- * const count = signal(0)
- * effect(() => {
- *   console.log('Count is:', count.value)
- *   return () => console.log('Cleanup')
- * }, [count])
- * count.set(5) // Logs: Cleanup, Count is: 5
- * ```
- */
-export function effect(fn: () => void | (() => void), dependencies: Signal<any>[]): () => void {
+export function effect(fn: () => void | (() => void), dependencies?: Signal<any>[]): () => void {
   let cleanup: (() => void) | void
+  let unsubscribes: Array<() => void> = []
+  let disposed = false
 
   const run = () => {
-    // Run cleanup from previous execution
+    if (disposed) return
     if (cleanup) {
-      cleanup()
+      try {
+        cleanup()
+      } catch (err) {
+        console.error('Effect cleanup error:', err)
+      }
       cleanup = undefined
     }
-    // Run effect and capture new cleanup
-    cleanup = fn()
+    if (dependencies) {
+      cleanup = fn()
+    } else {
+      unsubscribes.forEach((unsub) => unsub())
+      const [result, deps] = track(fn)
+      unsubscribes = [...deps].map((dep) => dep.subscribe(run))
+      cleanup = result
+    }
   }
 
-  // Subscribe to all dependencies
-  const unsubscribes = dependencies.map((dep) => dep.subscribe(run))
-
-  // Run effect immediately
+  if (dependencies) {
+    unsubscribes = dependencies.map((dep) => dep.subscribe(run))
+  }
   run()
 
-  // Return function that unsubscribes and runs cleanup
   return () => {
+    disposed = true
     if (cleanup) {
-      cleanup()
+      try {
+        cleanup()
+      } catch (err) {
+        console.error('Effect cleanup error:', err)
+      }
       cleanup = undefined
     }
     unsubscribes.forEach((unsub) => unsub())
+    unsubscribes = []
   }
 }

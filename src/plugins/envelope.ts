@@ -57,6 +57,7 @@ class Polyline extends EventEmitter<{
     }
   >
   private subscriptions: (() => void)[] = []
+  private pointCleanups = new Map<EnvelopePoint, () => void>()
   private dblClickListener?: (e: MouseEvent) => void
   private touchStartListener?: (e: TouchEvent) => void
   private touchMoveListener?: () => void
@@ -183,7 +184,7 @@ class Polyline extends EventEmitter<{
     svg.addEventListener('touchend', this.touchEndListener)
   }
 
-  private makeDraggable(draggable: SVGElement, onDrag: (x: number, y: number) => void) {
+  private makeDraggable(draggable: SVGElement, onDrag: (x: number, y: number) => void): () => void {
     const dragStream = createDragStream(draggable as unknown as HTMLElement, { threshold: 1 })
 
     const unsubscribe = effect(() => {
@@ -199,10 +200,10 @@ class Polyline extends EventEmitter<{
       }
     }, [dragStream.signal])
 
-    this.subscriptions.push(() => {
+    return () => {
       unsubscribe()
       dragStream.cleanup()
-    })
+    }
   }
 
   private createCircle(x: number, y: number) {
@@ -238,6 +239,12 @@ class Polyline extends EventEmitter<{
     points.removeItem(index)
     circle.remove()
     this.polyPoints.delete(point)
+
+    const cleanup = this.pointCleanups.get(point)
+    if (cleanup) {
+      cleanup()
+      this.pointCleanups.delete(point)
+    }
   }
 
   addPolyPoint(relX: number, relY: number, refPoint: EnvelopePoint) {
@@ -258,7 +265,7 @@ class Polyline extends EventEmitter<{
 
     this.polyPoints.set(refPoint, { polyPoint: newPoint, circle })
 
-    this.makeDraggable(circle, (dx, dy) => {
+    const cleanup = this.makeDraggable(circle, (dx, dy) => {
       const newX = newPoint.x + dx
       const newY = newPoint.y + dy
 
@@ -284,6 +291,8 @@ class Polyline extends EventEmitter<{
       // Emit the event passing the point and new relative coordinates
       this.emit('point-move', refPoint, newX / width, newY / height)
     })
+
+    this.pointCleanups.set(refPoint, cleanup)
   }
 
   update() {
@@ -333,8 +342,14 @@ class Polyline extends EventEmitter<{
     }
 
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
+    this.subscriptions = []
+
+    this.pointCleanups.forEach((cleanup) => cleanup())
+    this.pointCleanups.clear()
+
     this.polyPoints.clear()
     this.svg.remove()
+    this.unAll()
   }
 }
 
@@ -343,6 +358,7 @@ const randomId = () => Math.random().toString(36).slice(2)
 class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOptions> {
   protected options: Options
   private polyline: Polyline | null = null
+  private polylineSubscriptions: Array<() => void> = []
   private points: EnvelopePoint[]
   private throttleTimeout: ReturnType<typeof setTimeout> | null = null
   private volume = 1
@@ -422,6 +438,9 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
       this.throttleTimeout = null
     }
 
+    this.polylineSubscriptions.forEach((unsubscribe) => unsubscribe())
+    this.polylineSubscriptions = []
+
     this.polyline?.destroy()
     super.destroy()
   }
@@ -481,6 +500,11 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
   }
 
   private initPolyline() {
+    // Drop the previous polyline's listeners before replacing it, instead of
+    // accumulating a fresh set of 4 on every decode.
+    this.polylineSubscriptions.forEach((unsubscribe) => unsubscribe())
+    this.polylineSubscriptions = []
+
     if (this.polyline) this.polyline.destroy()
     if (!this.wavesurfer) return
 
@@ -488,7 +512,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
 
     this.polyline = new Polyline(this.options, wrapper)
 
-    this.subscriptions.push(
+    this.polylineSubscriptions.push(
       this.polyline.on('point-move', (point, relativeX, relativeY) => {
         const duration = this.wavesurfer?.getDuration() || 0
         point.time = relativeX * duration

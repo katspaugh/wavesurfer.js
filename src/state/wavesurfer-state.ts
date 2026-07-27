@@ -101,6 +101,7 @@ export interface PlayerSignals {
 export function createWaveSurferState(playerSignals?: PlayerSignals): {
   state: WaveSurferState
   actions: WaveSurferActions
+  dispose: () => void
 } {
   // Use Player signals if provided, otherwise create new ones
   const currentTime = playerSignals?.currentTime ?? signal(0)
@@ -131,6 +132,8 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
   const progressPercent = computed(() => {
     return duration.value > 0 ? currentTime.value / duration.value : 0
   }, [currentTime, duration])
+
+  const computeds = [isPaused, canPlay, isReady, progress, progressPercent]
 
   // Public read-only state
   const state: WaveSurferState = {
@@ -184,7 +187,14 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
     setAudioBuffer: (buffer: AudioBuffer | null) => {
       audioBuffer.set(buffer)
       if (buffer) {
-        duration.set(buffer.duration)
+        // Don't clobber an already-valid duration (e.g. reported by media
+        // metadata) with the AudioBuffer's duration, which can differ
+        // fractionally due to sample-rate resampling or encoder padding.
+        // Mirrors the media-first precedence in WaveSurfer.getDuration().
+        const current = duration.value
+        if (current === 0 || Number.isNaN(current) || current === Infinity) {
+          duration.set(buffer.duration)
+        }
       }
     },
 
@@ -205,5 +215,9 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
     },
   }
 
-  return { state, actions }
+  const dispose = () => {
+    computeds.forEach((c) => c.dispose())
+  }
+
+  return { state, actions, dispose }
 }

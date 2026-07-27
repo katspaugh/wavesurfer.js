@@ -26,4 +26,45 @@ describe('BasePlugin', () => {
     expect(spy).toHaveBeenCalled()
     expect(unsub).toHaveBeenCalled()
   })
+
+  describe('BasePlugin hardening', () => {
+    class TestPluginHardened extends BasePlugin<{ destroy: [] }, unknown> {
+      public initCount = 0
+      protected onInit() {
+        this.initCount++
+      }
+      public get isDestroyedPublic() {
+        return (this as any).destroyed
+      }
+    }
+
+    it('destroy is idempotent: second call does not re-emit destroy', () => {
+      const plugin = new TestPluginHardened({})
+      const onDestroy = jest.fn()
+      plugin.on('destroy', onDestroy)
+      plugin.destroy()
+      plugin.destroy()
+      expect(onDestroy).toHaveBeenCalledTimes(1)
+    })
+
+    it('clears all own listeners after destroy (unAll)', () => {
+      const plugin = new TestPluginHardened({})
+      const cb = jest.fn()
+      plugin.on('destroy', cb)
+      plugin.destroy()
+      // re-init + destroy again: old listener must NOT fire a second time
+      plugin._init({} as never)
+      plugin.destroy()
+      expect(cb).toHaveBeenCalledTimes(1)
+    })
+
+    it('exposes protected destroyed flag to subclasses', () => {
+      const plugin = new TestPluginHardened({})
+      expect(plugin.isDestroyedPublic).toBe(false)
+      plugin.destroy()
+      expect(plugin.isDestroyedPublic).toBe(true)
+      plugin._init({} as never)
+      expect(plugin.isDestroyedPublic).toBe(false)
+    })
+  })
 })

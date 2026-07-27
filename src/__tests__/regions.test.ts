@@ -98,6 +98,59 @@ describe('RegionsPlugin', () => {
     expect(region.element?.parentElement).toBeNull()
   })
 
+  test('cleans up drag selection on plugin destroy', () => {
+    const wavesurfer = createWaveSurfer()
+    const plugin = RegionsPlugin.create()
+
+    plugin._init(wavesurfer as any)
+
+    const wrapper = wavesurfer.getWrapper()
+    const addSpy = jest.spyOn(wrapper, 'addEventListener')
+    const removeSpy = jest.spyOn(wrapper, 'removeEventListener')
+
+    plugin.enableDragSelection({})
+    plugin.destroy()
+
+    const addCount = addSpy.mock.calls.filter(([type]) => type === 'pointerdown').length
+    const removeCount = removeSpy.mock.calls.filter(([type]) => type === 'pointerdown').length
+    expect(addCount).toBeGreaterThan(0)
+    expect(addCount).toBe(removeCount)
+  })
+
+  test('attaches only one click listener to region content', () => {
+    const wavesurfer = createWaveSurfer()
+    const plugin = RegionsPlugin.create()
+
+    plugin._init(wavesurfer as any)
+
+    const region = plugin.addRegion({ start: 0, end: 1, content: 'label', contentEditable: true })
+    const clicked = jest.fn()
+    plugin.on('region-clicked', clicked)
+
+    region.content!.dispatchEvent(new MouseEvent('click'))
+
+    expect(clicked).toHaveBeenCalledTimes(1)
+  })
+
+  test('toggling resize option repeatedly does not grow region subscriptions', () => {
+    const wavesurfer = createWaveSurfer()
+    const plugin = RegionsPlugin.create()
+
+    plugin._init(wavesurfer as any)
+
+    const region = plugin.addRegion({ start: 0, end: 1, resize: true })
+
+    region.setOptions({ resize: false })
+    region.setOptions({ resize: true })
+    const lengthAfterFirstToggle = region.subscriptions.length
+
+    region.setOptions({ resize: false })
+    region.setOptions({ resize: true })
+    const lengthAfterSecondToggle = region.subscriptions.length
+
+    expect(lengthAfterSecondToggle).toBe(lengthAfterFirstToggle)
+  })
+
   test('places a region in the first free row instead of summing all prior overlaps', () => {
     const wavesurfer = createWaveSurfer()
     const plugin = RegionsPlugin.create()

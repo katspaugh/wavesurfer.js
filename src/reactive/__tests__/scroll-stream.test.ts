@@ -5,6 +5,7 @@ import {
   calculateScrollBounds,
   type ScrollData,
 } from '../scroll-stream'
+import type { WritableSignal } from '../store'
 
 describe('scroll-stream', () => {
   describe('calculateScrollPercentages', () => {
@@ -186,6 +187,22 @@ describe('scroll-stream', () => {
 
       addSpy.mockRestore()
       removeSpy.mockRestore()
+    })
+
+    it('cleanup() disposes derived computeds, not just the DOM listener', () => {
+      const stream = createScrollStream(element)
+      const spy = jest.fn()
+      stream.percentages.subscribe(spy)
+      stream.cleanup()
+      // Force an internal write after cleanup, bypassing the (now-removed)
+      // DOM listener: scrollData is a plain signal, so setting it directly
+      // still notifies subscribers. percentages must no longer recompute.
+      ;(stream.scrollData as WritableSignal<ScrollData>).set({
+        scrollLeft: 999,
+        scrollWidth: 1000,
+        clientWidth: 200,
+      })
+      expect(spy).not.toHaveBeenCalled()
     })
   })
 

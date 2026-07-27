@@ -108,6 +108,9 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public isRemoved = false
   private contentClickListener?: (e: MouseEvent) => void
   private contentBlurListener?: () => void
+  private resizeHandleCleanup: (() => void) | null = null
+  /** True once initMouseEvents has run; controls whether setContent must (re)attach listeners itself */
+  private mouseEventsInitialized = false
 
   constructor(
     params: RegionParams,
@@ -210,15 +213,24 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       }
     }, [rightDragStream.signal])
 
-    this.subscriptions.push(() => {
+    const cleanup = () => {
       unsubscribeLeft()
       unsubscribeRight()
       leftDragStream.cleanup()
       rightDragStream.cleanup()
-    })
+    }
+
+    this.resizeHandleCleanup = cleanup
+    this.subscriptions.push(cleanup)
   }
 
   private removeResizeHandles(element: HTMLElement) {
+    if (this.resizeHandleCleanup) {
+      this.resizeHandleCleanup()
+      this.subscriptions = this.subscriptions.filter((sub) => sub !== this.resizeHandleCleanup)
+      this.resizeHandleCleanup = null
+    }
+
     const leftHandle = element.querySelector('[part*="region-handle-left"]')
     const rightHandle = element.querySelector('[part*="region-handle-right"]')
     if (leftHandle) {
@@ -276,6 +288,32 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   private toggleCursor(toggle: boolean) {
     if (!this.drag || !this.element?.style) return
     this.element.style.cursor = toggle ? 'grabbing' : 'grab'
+  }
+
+  /** Attach the content click/blur listeners, first removing any existing pair */
+  private attachContentListeners() {
+    this.detachContentListeners()
+
+    if (!this.contentEditable || !this.content) return
+
+    this.contentClickListener = (e) => this.onContentClick(e)
+    this.contentBlurListener = () => this.onContentBlur()
+    this.content.addEventListener('click', this.contentClickListener)
+    this.content.addEventListener('blur', this.contentBlurListener)
+  }
+
+  /** Remove the content click/blur listeners, if attached */
+  private detachContentListeners() {
+    if (!this.content) return
+
+    if (this.contentClickListener) {
+      this.content.removeEventListener('click', this.contentClickListener)
+      this.contentClickListener = undefined
+    }
+    if (this.contentBlurListener) {
+      this.content.removeEventListener('blur', this.contentBlurListener)
+      this.contentBlurListener = undefined
+    }
   }
 
   private initMouseEvents() {
@@ -336,12 +374,8 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       dragStream.cleanup()
     })
 
-    if (this.contentEditable && this.content) {
-      this.contentClickListener = (e) => this.onContentClick(e)
-      this.contentBlurListener = () => this.onContentBlur()
-      this.content.addEventListener('click', this.contentClickListener)
-      this.content.addEventListener('blur', this.contentBlurListener)
-    }
+    this.attachContentListeners()
+    this.mouseEventsInitialized = true
   }
 
   public _onUpdate(dx: number, side?: UpdateSide, startTime?: number) {
@@ -431,14 +465,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     if (!this.element) return
 
     // Remove event listeners from old content before removing it
-    if (this.content && this.contentEditable) {
-      if (this.contentClickListener) {
-        this.content.removeEventListener('click', this.contentClickListener)
-      }
-      if (this.contentBlurListener) {
-        this.content.removeEventListener('blur', this.contentBlurListener)
-      }
-    }
+    this.detachContentListeners()
 
     this.content?.remove()
     if (!content) {
@@ -459,11 +486,11 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     }
     if (this.contentEditable) {
       this.content.contentEditable = 'true'
-      // Re-add event listeners to new content
-      this.contentClickListener = (e) => this.onContentClick(e)
-      this.contentBlurListener = () => this.onContentBlur()
-      this.content.addEventListener('click', this.contentClickListener)
-      this.content.addEventListener('blur', this.contentBlurListener)
+      // Only (re)attach here when replacing content at runtime -- during construction,
+      // initMouseEvents() runs right after setContent() and is the single attachment point.
+      if (this.mouseEventsInitialized) {
+        this.attachContentListeners()
+      }
     }
     this.content.setAttribute('part', 'region-content')
     this.element.appendChild(this.content)
@@ -535,16 +562,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     this.subscriptions = []
 
     // Clean up content event listeners
-    if (this.content && this.contentEditable) {
-      if (this.contentClickListener) {
-        this.content.removeEventListener('click', this.contentClickListener)
-        this.contentClickListener = undefined
-      }
-      if (this.contentBlurListener) {
-        this.content.removeEventListener('blur', this.contentBlurListener)
-        this.contentBlurListener = undefined
-      }
-    }
+    this.detachContentListeners()
 
     // Remove DOM element
     if (this.element) {
@@ -894,9 +912,16 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       }
     }, [dragStream.signal])
 
-    return () => {
+    const cleanup = () => {
       unsubscribe()
       dragStream.cleanup()
+    }
+
+    this.subscriptions.push(cleanup)
+
+    return () => {
+      cleanup()
+      this.subscriptions = this.subscriptions.filter((sub) => sub !== cleanup)
     }
   }
 

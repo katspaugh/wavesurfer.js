@@ -90,6 +90,19 @@ const createMainWaveSurfer = (dragToSeek: boolean | { debounceTime: number } = t
 
 const createMock = WaveSurfer.create as jest.Mock
 
+const createInitializedMinimap = async () => {
+  const miniWaveSurfer = createMiniWaveSurfer()
+  const mainWaveSurfer = createMainWaveSurfer()
+
+  createMock.mockReturnValue(miniWaveSurfer)
+
+  const plugin = MinimapPlugin.create({ height: 20 })
+  plugin._init(mainWaveSurfer as any)
+  await Promise.resolve()
+
+  return { plugin, miniWaveSurfer, mainWaveSurfer }
+}
+
 describe('MinimapPlugin', () => {
   afterEach(() => {
     jest.clearAllMocks()
@@ -176,5 +189,13 @@ describe('MinimapPlugin', () => {
 
     expect(overlay.style.left).toBe('50%')
     expect(overlay.style.width).toBe('50%')
+  })
+
+  test('does not re-emit destroy when the nested wavesurfer is recreated', async () => {
+    const { plugin } = await createInitializedMinimap()
+    const onDestroy = jest.fn()
+    plugin.on('destroy', onDestroy)
+    ;(plugin as any).destroyMinimap()
+    expect(onDestroy).not.toHaveBeenCalled()
   })
 })

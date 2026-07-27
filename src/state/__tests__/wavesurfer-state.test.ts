@@ -1,4 +1,5 @@
 import { createWaveSurferState } from '../wavesurfer-state'
+import { signal } from '../../reactive/store'
 
 describe('WaveSurferState', () => {
   it('should create state with default values', () => {
@@ -121,6 +122,27 @@ describe('WaveSurferState', () => {
 
       actions.setAudioBuffer(buffer)
       expect(state.duration.value).toBe(120)
+    })
+
+    it('should not overwrite an already-valid duration with a differing AudioBuffer duration', () => {
+      const { state, actions } = createWaveSurferState()
+
+      actions.setDuration(100)
+      const buffer = { duration: 100.02 } as AudioBuffer
+      actions.setAudioBuffer(buffer)
+
+      expect(state.duration.value).toBe(100)
+    })
+
+    it('should set duration from AudioBuffer when the current duration is invalid (0, NaN, Infinity)', () => {
+      const zeroCase = createWaveSurferState()
+      zeroCase.actions.setAudioBuffer({ duration: 55 } as AudioBuffer)
+      expect(zeroCase.state.duration.value).toBe(55)
+
+      const infinityCase = createWaveSurferState()
+      infinityCase.actions.setDuration(Infinity)
+      infinityCase.actions.setAudioBuffer({ duration: 42 } as AudioBuffer)
+      expect(infinityCase.state.duration.value).toBe(42)
     })
 
     it('should update peaks', () => {
@@ -305,6 +327,25 @@ describe('WaveSurferState', () => {
 
       expect(instance1.state.isPlaying.value).toBe(true)
       expect(instance2.state.isPlaying.value).toBe(false)
+    })
+  })
+
+  describe('dispose', () => {
+    it('dispose() detaches computeds from the player signals', () => {
+      const deps = {
+        isPlaying: signal(false),
+        currentTime: signal(0),
+        duration: signal(0),
+        volume: signal(1),
+        playbackRate: signal(1),
+        isSeeking: signal(false),
+      }
+      const { state, dispose } = createWaveSurferState(deps)
+
+      dispose()
+      deps.currentTime.set(42)
+
+      expect(state.progress.value).toBe(0) // frozen — no longer recomputing
     })
   })
 

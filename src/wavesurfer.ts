@@ -4,10 +4,10 @@ import * as dom from './dom.js'
 import Fetcher from './fetcher.js'
 import Player from './player.js'
 import Renderer from './renderer.js'
+import { Scope } from './scope.js'
 import Timer from './timer.js'
 import WebAudioPlayer from './webaudio.js'
 import { createWaveSurferState, type WaveSurferState, type WaveSurferActions } from './state/wavesurfer-state.js'
-import { setupStateEventEmission } from './reactive/state-event-emitter.js'
 
 export type WaveSurferOptions = {
   /** Required: an HTML element or selector where the waveform will be rendered */
@@ -162,8 +162,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
   private stopAtPosition: number | null = null
-  protected subscriptions: Array<() => void> = []
-  protected mediaSubscriptions: Array<() => void> = []
+  protected scope: Scope = new Scope()
+  private mediaEventScope = this.scope.child()
   protected abortController: AbortController | null = null
   private _isDestroyed = false
   private _loadVersion = 0
@@ -171,7 +171,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   // Reactive state
   private wavesurferState: WaveSurferState
   private wavesurferActions: WaveSurferActions
-  private reactiveCleanups: Array<() => void> = []
 
   public static readonly BasePlugin = BasePlugin
   public static readonly dom = dom
@@ -218,6 +217,17 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     })
     this.wavesurferState = state
     this.wavesurferActions = actions
+    // Intentionally NOT registering the returned `dispose` with `this.scope`:
+    // the state's signal graph (base signals + computeds) is owned by this
+    // WaveSurfer instance for its entire lifetime, not by the per-load Scope.
+    // `destroy()` disposes and recreates `this.scope` to support a supported
+    // destroy -> load() reuse pattern; if the state's computeds were disposed
+    // there too, they'd be permanently frozen after the first destroy since
+    // nothing ever recreates them. The computeds hold no external resources
+    // (DOM listeners, timers, etc.) -- disposing them buys nothing beyond
+    // what letting the instance (and its closures) get garbage-collected
+    // already provides. `dispose` remains part of createWaveSurferState's
+    // public return value for direct/standalone users of the state module.
 
     this.timer = new Timer()
 
@@ -227,7 +237,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initPlayerEvents()
     this.initRendererEvents()
     this.initTimerEvents()
-    this.initReactiveState()
     this.initPlugins()
 
     // Read the initial URL before load has been called
@@ -257,7 +266,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   private initTimerEvents() {
     // The timer fires every 16ms for a smooth progress animation
-    this.subscriptions.push(
+    this.scope.add(
       this.timer.on('tick', () => {
         if (!this.isSeeking()) {
           const currentTime = this.updateProgress()
@@ -276,53 +285,56 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     )
   }
 
-  private initReactiveState() {
-    // Bridge reactive state to EventEmitter for backwards compatibility
-    this.reactiveCleanups.push(
-      setupStateEventEmission(this.wavesurferState, {
-        emit: this.emit.bind(this),
-      }),
-    )
-  }
-
   private initPlayerEvents() {
     if (this.isPlaying()) {
       this.emit('play')
       this.timer.start()
     }
 
-    this.mediaSubscriptions.push(
+    this.mediaEventScope.add(
       this.onMediaEvent('timeupdate', () => {
         const currentTime = this.updateProgress()
         this.emit('timeupdate', currentTime)
       }),
+    )
 
+    this.mediaEventScope.add(
       this.onMediaEvent('play', () => {
         this.emit('play')
         this.timer.start()
       }),
+    )
 
+    this.mediaEventScope.add(
       this.onMediaEvent('pause', () => {
         this.emit('pause')
         this.timer.stop()
         this.stopAtPosition = null
       }),
+    )
 
+    this.mediaEventScope.add(
       this.onMediaEvent('emptied', () => {
         this.timer.stop()
         this.stopAtPosition = null
       }),
+    )
 
+    this.mediaEventScope.add(
       this.onMediaEvent('ended', () => {
         this.emit('timeupdate', this.getDuration())
         this.emit('finish')
         this.stopAtPosition = null
       }),
+    )
 
+    this.mediaEventScope.add(
       this.onMediaEvent('seeking', () => {
         this.emit('seeking', this.getCurrentTime())
       }),
+    )
 
+    this.mediaEventScope.add(
       this.onMediaEvent('error', () => {
         this.emit('error', (this.getMediaElement().error ?? new Error('Media error')) as Error)
         this.stopAtPosition = null
@@ -331,8 +343,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private initRendererEvents() {
-    this.subscriptions.push(
-      // Seek on click
+    // Seek on click
+    this.scope.add(
       this.renderer.on('click', (relativeX, relativeY) => {
         if (this.options.interact) {
           this.seekTo(relativeX)
@@ -340,39 +352,53 @@ class WaveSurfer extends Player<WaveSurferEvents> {
           this.emit('click', relativeX, relativeY)
         }
       }),
+    )
 
-      // Double click
+    // Double click
+    this.scope.add(
       this.renderer.on('dblclick', (relativeX, relativeY) => {
         this.emit('dblclick', relativeX, relativeY)
       }),
+    )
 
-      // Scroll
+    // Scroll
+    this.scope.add(
       this.renderer.on('scroll', (startX, endX, scrollLeft, scrollRight) => {
         const duration = this.getDuration()
         this.emit('scroll', startX * duration, endX * duration, scrollLeft, scrollRight)
       }),
+    )
 
-      // Redraw
+    // Redraw
+    this.scope.add(
       this.renderer.on('render', () => {
         this.emit('redraw')
       }),
+    )
 
-      // RedrawComplete
+    // RedrawComplete
+    this.scope.add(
       this.renderer.on('rendered', () => {
         this.emit('redrawcomplete')
       }),
+    )
 
-      // DragStart
+    // DragStart
+    this.scope.add(
       this.renderer.on('dragstart', (relativeX) => {
         this.emit('dragstart', relativeX)
       }),
+    )
 
-      // DragEnd
+    // DragEnd
+    this.scope.add(
       this.renderer.on('dragend', (relativeX) => {
         this.emit('dragend', relativeX)
       }),
+    )
 
-      // Resize
+    // Resize
+    this.scope.add(
       this.renderer.on('resize', () => {
         this.emit('resize')
       }),
@@ -409,7 +435,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       })
 
       // Clear debounce timeout on destroy
-      this.subscriptions.push(() => {
+      this.scope.add(() => {
         clearTimeout(debounce)
         unsubscribeDrag()
       })
@@ -425,8 +451,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private unsubscribePlayerEvents() {
-    this.mediaSubscriptions.forEach((unsubscribe) => unsubscribe())
-    this.mediaSubscriptions = []
+    this.mediaEventScope.dispose()
+    this.mediaEventScope = this.scope.child()
   }
 
   /** Set new wavesurfer options and re-render it */
@@ -434,10 +460,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.options = Object.assign({}, this.options, options)
     if (options.duration && !options.peaks) {
       this.decodedData = Decoder.createBuffer(this.exportPeaks(), options.duration)
+      this.wavesurferActions.setAudioBuffer(this.decodedData)
     }
     if (options.peaks && options.duration) {
       // Create new decoded data buffer from peaks and duration
       this.decodedData = Decoder.createBuffer(options.peaks, options.duration)
+      this.wavesurferActions.setAudioBuffer(this.decodedData)
     }
     this.renderer.setOptions(this.options)
 
@@ -460,11 +488,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.plugins.push(plugin)
 
     // Unregister plugin on destroy
-    const unsubscribe = plugin.once('destroy', () => {
-      this.plugins = this.plugins.filter((p) => p !== plugin)
-      this.subscriptions = this.subscriptions.filter((fn) => fn !== unsubscribe)
-    })
-    this.subscriptions.push(unsubscribe)
+    const remove = this.scope.add(
+      plugin.once('destroy', () => {
+        this.plugins = this.plugins.filter((p) => p !== plugin)
+        remove()
+      }),
+    )
 
     return plugin
   }
@@ -520,9 +549,17 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     this.emit('load', url)
 
+    this.wavesurferActions.setUrl(url || '')
+    if (channelData) {
+      this.wavesurferActions.setPeaks(channelData)
+    } else {
+      this.wavesurferActions.setPeaks(null)
+    }
+
     if (!this.options.media && this.isPlaying()) this.pause()
 
     this.decodedData = null
+    this.wavesurferActions.setAudioBuffer(null)
     this.stopAtPosition = null
 
     // Abort any ongoing fetch before starting a new one
@@ -558,9 +595,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       if (staticDuration) {
         resolve(staticDuration)
       } else {
-        this.mediaSubscriptions.push(
-          this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }),
-        )
+        this.mediaEventScope.add(this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }))
       }
     })
 
@@ -589,6 +624,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     if (this._isDestroyed || loadVersion !== this._loadVersion) return
 
     if (this.decodedData) {
+      this.wavesurferActions.setAudioBuffer(this.decodedData)
       this.emit('decode', this.getDuration())
       this.renderer.render(this.decodedData)
     }
@@ -622,6 +658,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       throw new Error('No audio loaded')
     }
     this.renderer.zoom(minPxPerSec)
+    this.wavesurferActions.setZoom(minPxPerSec)
     this.emit('zoom', minPxPerSec)
   }
 
@@ -754,10 +791,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.emit('destroy')
     this.abortController?.abort()
     this.plugins.forEach((plugin) => plugin.destroy())
-    this.subscriptions.forEach((unsubscribe) => unsubscribe())
-    this.unsubscribePlayerEvents()
-    this.reactiveCleanups.forEach((cleanup) => cleanup())
-    this.reactiveCleanups = []
+    this.scope.dispose()
+    // Reusing an instance after destroy() is a supported behavior (see the
+    // loadAudio comment about issue #3637), so fresh scopes must replace the
+    // disposed ones -- a disposed Scope runs late registrations immediately,
+    // which would otherwise break a subsequent load()/setMediaElement() call.
+    this.scope = new Scope()
+    this.mediaEventScope = this.scope.child()
     this.timer.destroy()
     this.renderer.destroy()
     super.destroy()

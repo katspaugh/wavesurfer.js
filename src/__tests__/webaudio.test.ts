@@ -288,4 +288,39 @@ describe('WebAudioPlayer', () => {
       expect(endedSpy).not.toHaveBeenCalled()
     })
   })
+
+  describe('error event', () => {
+    const originalFetch = global.fetch
+
+    afterEach(() => {
+      global.fetch = originalFetch
+    })
+
+    test('emits error when fetch fails', async () => {
+      const { audioContext } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      const onError = jest.fn()
+      player.on('error', onError)
+      global.fetch = jest.fn().mockResolvedValue({ status: 404, statusText: 'Not Found' } as Response)
+      player.src = 'http://example.com/missing.mp3'
+      await new Promise((r) => setTimeout(r, 0))
+      expect(onError).toHaveBeenCalledWith(expect.any(Error))
+    })
+
+    test('clears a stale error when a new source is set', async () => {
+      const { audioContext } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      global.fetch = jest.fn().mockRejectedValue(new Error('network'))
+      player.src = 'http://example.com/bad.mp3'
+      await new Promise((r) => setTimeout(r, 0))
+      expect(player.error).toBeInstanceOf(Error)
+
+      global.fetch = jest.fn().mockResolvedValue({
+        status: 200,
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+      } as unknown as Response)
+      player.src = 'http://example.com/good.mp3'
+      expect(player.error).toBeNull()
+    })
+  })
 })

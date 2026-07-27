@@ -249,4 +249,64 @@ describe('Renderer', () => {
     renderer.destroy()
     expect(container.contains(renderer.getWrapper())).toBe(false)
   })
+
+  test('render() after destroy recreates scopes instead of installing pre-disposed ones', async () => {
+    // Renderer is reused after WaveSurfer.destroy(): a subsequent load() call
+    // reaches renderer.render(...), and setOptions() reaches reRender(). If
+    // Renderer's own scope stays disposed forever, `this.scope.child()` hands
+    // back an already-disposed child (per Scope's documented behavior), so
+    // render() would install pre-disposed scrollRenderScope/delayScope and
+    // any lazy-render scroll subscription registered afterward would be torn
+    // down immediately -- long scrollable waveforms would only ever draw
+    // their initial canvas range post destroy->load.
+    const buffer = createAudioBuffer([[0, 0.5, -0.5]])
+
+    renderer.destroy()
+    await renderer.render(buffer)
+
+    expect((renderer as any).scope.disposed).toBe(false)
+    expect((renderer as any).scrollRenderScope.disposed).toBe(false)
+    expect((renderer as any).delayScope.disposed).toBe(false)
+
+    // And a fresh scroll subscription registered after the reuse must
+    // actually stick instead of being disposed on arrival.
+    const lateUnsubscribe = jest.fn()
+    ;(renderer as any).scrollRenderScope.add(lateUnsubscribe)
+    expect(lateUnsubscribe).not.toHaveBeenCalled()
+  })
+
+  it('cancels a pending resize debounce on destroy even after a render', async () => {
+    // The debounce delay() is created once in initEvents(), but render()
+    // replaces delayScope; its cancellation must re-register per call or
+    // destroy() cannot cancel a debounce scheduled after the first render.
+    jest.useFakeTimers()
+    let roCallback: (() => void) | undefined
+    const OriginalRO = (global as any).ResizeObserver
+    ;(global as any).ResizeObserver = class {
+      constructor(cb: () => void) {
+        roCallback = cb
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    const resizeSpy = jest.spyOn(Renderer.prototype as any, 'onContainerResize')
+    const localContainer = document.createElement('div')
+    document.body.appendChild(localContainer)
+    const localRenderer = new Renderer({ container: localContainer })
+    try {
+      await localRenderer.render(createAudioBuffer([[0, 0.5, -0.5]]))
+      roCallback?.() // schedules the 100ms resize debounce
+      localRenderer.destroy()
+      jest.advanceTimersByTime(1000)
+      await Promise.resolve()
+      await Promise.resolve()
+      expect(resizeSpy).not.toHaveBeenCalled()
+    } finally {
+      resizeSpy.mockRestore()
+      ;(global as any).ResizeObserver = OriginalRO
+      jest.useRealTimers()
+      localContainer.remove()
+    }
+  })
 })
