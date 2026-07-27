@@ -117,6 +117,8 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   set src(value: string) {
     this.currentSrc = value
     this._duration = undefined
+    // A new load starts with a clean slate, like HTMLMediaElement.error
+    this.error = null
 
     if (!value) {
       this.buffer = null

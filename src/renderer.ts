@@ -44,12 +44,9 @@ class Renderer extends EventEmitter<RendererEvents> {
   // where `unsubscribeOnScroll.forEach(...); unsubscribeOnScroll = []` used to run.
   private scrollRenderScope = this.scope.child()
   // Recreated at the top of render() only, matching the original
-  // `timeouts.forEach(clear); timeouts = []` there. createDelay() is only ever
-  // called once (from initEvents()), so -- exactly as before -- after the
-  // first render() this scope is permanently empty; the resize-debounce
-  // delay keeps working via its own closure state regardless, it's just no
-  // longer auto-cancelled on a later render()/destroy() pass. That quirk is
-  // preserved as-is rather than fixed here.
+  // `timeouts.forEach(clear); timeouts = []` there. Each pending delay()
+  // registers its cancellation on the delayScope current at call time, so
+  // both the next render() pass and destroy() can cancel it.
   private delayScope = this.scope.child()
   private disposeDragStream: (() => void) | null = null
   private dragStream: { signal: any; cleanup: () => void } | null = null
@@ -348,6 +345,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private createDelay(delayMs = 10): () => Promise<void> {
     let timeout: ReturnType<typeof setTimeout> | undefined
     let rejectFn: (() => void) | undefined
+    let deregister: (() => void) | undefined
 
     const onClear = () => {
       if (timeout) {
@@ -360,11 +358,11 @@ class Renderer extends EventEmitter<RendererEvents> {
       }
     }
 
-    this.delayScope.add(onClear)
-
     return () => {
       return new Promise<void>((resolve, reject) => {
-        // Clear any pending delay
+        // Drop the previous registration (a no-op if its delayScope was
+        // already replaced by render()) and clear any pending delay
+        deregister?.()
         onClear()
         // Store reject function for cleanup
         rejectFn = reject
@@ -374,6 +372,9 @@ class Renderer extends EventEmitter<RendererEvents> {
           rejectFn = undefined
           resolve()
         }, delayMs)
+        // Register on the CURRENT delayScope so the next render() pass and
+        // destroy() can both cancel this pending delay
+        deregister = this.delayScope.add(onClear)
       })
     }
   }

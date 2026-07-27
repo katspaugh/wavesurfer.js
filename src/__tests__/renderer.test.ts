@@ -274,4 +274,39 @@ describe('Renderer', () => {
     ;(renderer as any).scrollRenderScope.add(lateUnsubscribe)
     expect(lateUnsubscribe).not.toHaveBeenCalled()
   })
+
+  it('cancels a pending resize debounce on destroy even after a render', async () => {
+    // The debounce delay() is created once in initEvents(), but render()
+    // replaces delayScope; its cancellation must re-register per call or
+    // destroy() cannot cancel a debounce scheduled after the first render.
+    jest.useFakeTimers()
+    let roCallback: (() => void) | undefined
+    const OriginalRO = (global as any).ResizeObserver
+    ;(global as any).ResizeObserver = class {
+      constructor(cb: () => void) {
+        roCallback = cb
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    const resizeSpy = jest.spyOn(Renderer.prototype as any, 'onContainerResize')
+    const localContainer = document.createElement('div')
+    document.body.appendChild(localContainer)
+    const localRenderer = new Renderer({ container: localContainer })
+    try {
+      await localRenderer.render(createAudioBuffer([[0, 0.5, -0.5]]))
+      roCallback?.() // schedules the 100ms resize debounce
+      localRenderer.destroy()
+      jest.advanceTimersByTime(1000)
+      await Promise.resolve()
+      await Promise.resolve()
+      expect(resizeSpy).not.toHaveBeenCalled()
+    } finally {
+      resizeSpy.mockRestore()
+      ;(global as any).ResizeObserver = OriginalRO
+      jest.useRealTimers()
+      localContainer.remove()
+    }
+  })
 })
