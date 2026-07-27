@@ -75,9 +75,10 @@ export class Scope {
     return remove
   }
 
+  /** Observe element for resize. On dispose, unobserves only this element (safe if observer is shared). */
   observeResize(observer: ResizeObserver, el: Element): void {
     observer.observe(el)
-    this.add(() => observer.disconnect())
+    this.add(() => observer.unobserve(el))
   }
 
   abortSignal(): AbortSignal {

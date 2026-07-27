@@ -77,4 +77,19 @@ describe('Scope', () => {
     scope.add(spy)
     expect(spy).toHaveBeenCalledTimes(1) // late registration disposed immediately, never leaks
   })
+
+  it('observeResize unobserves element without disconnecting observer', () => {
+    const scope = new Scope()
+    const el = document.createElement('div')
+    const observer = {
+      observe: jest.fn(),
+      unobserve: jest.fn(),
+      disconnect: jest.fn(),
+    } as unknown as ResizeObserver
+    scope.observeResize(observer, el)
+    expect(observer.observe).toHaveBeenCalledWith(el)
+    scope.dispose()
+    expect(observer.unobserve).toHaveBeenCalledWith(el)
+    expect(observer.disconnect).not.toHaveBeenCalled()
+  })
 })
