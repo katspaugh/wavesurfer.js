@@ -88,6 +88,42 @@ describe('WindowedSpectrogramPlugin destroy', () => {
       expect((plugin as any).segments.has(0)).toBe(true)
       expect((plugin as any).segments.has(total - 1)).toBe(false)
     })
+
+    it('enforces the segment cap during progressive loading even with no renderVisibleWindow calls', async () => {
+      jest.useFakeTimers()
+      try {
+        const plugin = WindowedSpectrogramPlugin.create({ progressiveLoading: true })
+        ;(plugin as any).maxRetainedSegments = 3
+        // Long enough for far more than maxRetainedSegments 30s segments.
+        ;(plugin as any).buffer = { duration: 30 * 20 }
+        ;(plugin as any).isProgressiveLoading = true
+
+        // Stand in for the real FFT pipeline: just record a segment for the requested range,
+        // the same way generateSegments would after computing frequencies.
+        jest.spyOn(plugin as any, 'generateSegments').mockImplementation(async (...args: unknown[]) => {
+          const [start, end] = args as [number, number]
+          const key = `${Math.floor(start * 10)}_${Math.floor(end * 10)}`
+          ;(plugin as any).segments.set(key, {
+            startTime: start,
+            endTime: end,
+            startPixel: 0,
+            endPixel: 0,
+            canvas: document.createElement('canvas'),
+            frequencies: [],
+          })
+        })
+
+        // Drive several progressive-load ticks directly (no scroll/resize/playback, so
+        // renderVisibleWindow - and its evictDistantSegments call - never runs).
+        for (let i = 0; i < 10; i++) {
+          await (plugin as any).progressiveLoadNextSegment()
+        }
+
+        expect((plugin as any).segments.size).toBeLessThanOrEqual(3)
+      } finally {
+        jest.useRealTimers()
+      }
+    })
   })
 
   describe('async continuations after destroy', () => {

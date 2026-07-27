@@ -652,10 +652,29 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
 
       // Evict segments far from the current view so memory stays bounded regardless
       // of audio length, instead of keeping every segment ever rendered
-      this.evictDistantSegments((windowStartTime + windowEndTime) / 2)
+      this.evictDistantSegments(this.getCurrentViewMidpoint() ?? (windowStartTime + windowEndTime) / 2)
     } finally {
       this.isRendering = false
     }
+  }
+
+  /**
+   * Midpoint (in seconds) of the currently visible viewport, using the same scroll/viewport/
+   * zoom sources as renderVisibleWindow. Returns null when there's no wavesurfer wrapper or
+   * buffered audio yet, so callers have nothing sensible to anchor eviction on.
+   */
+  private getCurrentViewMidpoint(): number | null {
+    const wrapper = this.wavesurfer?.getWrapper()
+    if (!wrapper || !this.buffer) return null
+
+    const scrollLeft = this.getScrollLeft(wrapper)
+    const viewportWidth = this.getViewportWidth(wrapper)
+    const pixelsPerSec = this.getPixelsPerSecond()
+    if (!pixelsPerSec) return null
+
+    const visibleStartTime = scrollLeft / pixelsPerSec
+    const visibleEndTime = (scrollLeft + viewportWidth) / pixelsPerSec
+    return (visibleStartTime + visibleEndTime) / 2
   }
 
   private async generateSegments(startTime: number, endTime: number) {
@@ -842,6 +861,13 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     // Re-check after the await: destroy() or stopProgressiveLoading() may have run
     // while we were awaiting, and must not be undone by re-arming the timer below
     if (this.destroyed || !this.isProgressiveLoading) return
+
+    // Background loading has no renderVisibleWindow to enforce the cap, so evict here too -
+    // anchored on the current view (not the segment we just loaded) so background fill
+    // doesn't push out segments near what the user is actually looking at; fall back to the
+    // freshly loaded segment's own midpoint only when there's no view to anchor on (e.g. no
+    // wavesurfer wrapper yet)
+    this.evictDistantSegments(this.getCurrentViewMidpoint() ?? (segmentStart + segmentEnd) / 2)
 
     // Move to next segment
     this.nextProgressiveSegmentTime = segmentEnd
