@@ -1,4 +1,5 @@
 import { createWaveSurferState } from '../wavesurfer-state'
+import { signal } from '../../reactive/store'
 
 describe('WaveSurferState', () => {
   it('should create state with default values', () => {
@@ -305,6 +306,25 @@ describe('WaveSurferState', () => {
 
       expect(instance1.state.isPlaying.value).toBe(true)
       expect(instance2.state.isPlaying.value).toBe(false)
+    })
+  })
+
+  describe('dispose', () => {
+    it('dispose() detaches computeds from the player signals', () => {
+      const deps = {
+        isPlaying: signal(false),
+        currentTime: signal(0),
+        duration: signal(0),
+        volume: signal(1),
+        playbackRate: signal(1),
+        isSeeking: signal(false),
+      }
+      const { state, dispose } = createWaveSurferState(deps)
+
+      dispose()
+      deps.currentTime.set(42)
+
+      expect(state.progress.value).toBe(0) // frozen — no longer recomputing
     })
   })
 

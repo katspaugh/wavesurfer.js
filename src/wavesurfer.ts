@@ -208,7 +208,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     // Initialize reactive state
     // Pass Player signals to compose them into WaveSurferState
-    const { state, actions } = createWaveSurferState({
+    const { state, actions, dispose } = createWaveSurferState({
       isPlaying: this.isPlayingSignal,
       currentTime: this.currentTimeSignal,
       duration: this.durationSignal,
@@ -218,6 +218,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     })
     this.wavesurferState = state
     this.wavesurferActions = actions
+    this.reactiveCleanups.push(dispose)
 
     this.timer = new Timer()
 

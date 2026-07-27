@@ -6,7 +6,6 @@
  */
 
 import { signal, computed, effect, type Signal } from './store.js'
-import { cleanup } from './event-streams.js'
 
 export interface ScrollData {
   /** Current scroll position in pixels */
@@ -133,7 +132,8 @@ export function createScrollStream(element: HTMLElement): ScrollStream {
   // Cleanup function
   const cleanupFn = () => {
     element.removeEventListener('scroll', onScroll)
-    cleanup(scrollData)
+    percentages.dispose()
+    bounds.dispose()
   }
 
   return {

@@ -6,7 +6,6 @@
  */
 
 import { signal, type Signal } from './store.js'
-import { cleanup } from './event-streams.js'
 
 export interface DragEvent {
   type: 'start' | 'move' | 'end'
@@ -188,7 +187,6 @@ export function createDragStream(
     unsubscribeDocument()
     element.removeEventListener('pointerdown', onPointerDown)
     activePointers.clear()
-    cleanup(dragSignal)
   }
 
   return {
