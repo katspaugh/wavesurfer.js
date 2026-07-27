@@ -313,25 +313,62 @@ describe('Renderer', () => {
     expect(lateUnsubscribe).not.toHaveBeenCalled()
   })
 
-  it('keeps visibleRange live (not disposed) across destroy -> render reuse', async () => {
+  it('keeps visibleRange live (not disposed) and revives scroll tracking across destroy -> render reuse', async () => {
     // visibleRange is instance-lifetime state, deliberately never disposed via
-    // this.scope (see the constructor comment): scrollStream/initEvents() only
-    // run once, so registering visibleRange's dispose on this.scope would
-    // permanently freeze it after the first destroy(), with nothing left to
-    // recreate it. Reading it post-destroy must not throw, and a subsequent
-    // render() reuse must still update it via the still-live audioDuration
-    // signal, even though this.scrollStream is now null.
+    // this.scope (see the constructor comment). Reading it post-destroy must
+    // not throw despite this.scrollStream being torn down, and a subsequent
+    // render() reuse must both keep the still-live audioDuration signal
+    // driving it AND re-subscribe to the brand new scroll stream that
+    // ensureInputEvents() creates on revival -- not stay pinned to the
+    // disposed pre-destroy percentages signal (see visibleRange's
+    // auto-tracking comment in the constructor).
     renderer.zoom(1000)
     await renderer.render(createAudioBuffer([[0, 0.5, -0.5]], 100))
 
     renderer.destroy()
 
+    // Immediately post-destroy: scrollStream is torn down, but reading
+    // visibleRange must not throw.
+    expect((renderer as any).scrollStream).toBeNull()
     expect(() => renderer.getVisibleRange().value).not.toThrow()
 
     await renderer.render(createAudioBuffer([[0, 0.5, -0.5]], 42))
 
-    expect((renderer as any).scrollStream).toBeNull()
-    expect(renderer.getVisibleRange().value).toEqual({ startTime: 0, endTime: 42 })
+    // render() revives the input pipeline, including a fresh scrollStream.
+    expect((renderer as any).scrollStream).not.toBeNull()
+
+    // jsdom performs no layout (scrollWidth/clientWidth both 0 by default),
+    // as in 'recomputes visibleRange when the underlying scroll position
+    // changes' above -- stub in sizes to exercise a real scroll delta.
+    const scrollContainer = (renderer as any).scrollContainer as HTMLElement
+    Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
+    Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 100 })
+
+    expect((renderer as any).isScrollable).toBe(true)
+
+    scrollContainer.scrollLeft = 500
+    scrollContainer.dispatchEvent(new Event('scroll'))
+
+    // visibleRange must react to the NEW scroll stream, proving it
+    // re-subscribed after reuse instead of staying pinned to the old one.
+    expect(renderer.getVisibleRange().value.startTime).toBeGreaterThan(0)
+  })
+
+  it('revives click and scroll input after destroy -> render reuse', async () => {
+    const localContainer = document.createElement('div')
+    document.body.appendChild(localContainer)
+    const localRenderer = new Renderer({ container: localContainer })
+    const clickSpy = jest.fn()
+    localRenderer.on('click', clickSpy)
+    localRenderer.destroy()
+    await localRenderer.render(createAudioBuffer([[0, 0.5, -0.5]]))
+    const wrapper = (localRenderer as any).wrapper as HTMLElement
+    wrapper.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 100, height: 50, right: 100, bottom: 50 }) as DOMRect
+    wrapper.dispatchEvent(new MouseEvent('click', { clientX: 10, clientY: 10 }))
+    expect(clickSpy).toHaveBeenCalled() // dead pre-fix: listener was removed at destroy, never re-added
+    localRenderer.destroy()
+    localContainer.remove()
   })
 
   it('cancels a pending resize debounce on destroy even after a render', async () => {

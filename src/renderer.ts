@@ -54,6 +54,14 @@ class Renderer extends EventEmitter<RendererEvents> {
   private containerInlinePadding = 0
   private audioDuration = signal(0)
   private visibleRange: ComputedSignal<{ startTime: number; endTime: number }>
+  // initEvents() (click/dblclick listeners, scrollStream, dragStream,
+  // resize observer) only ever ran from the constructor, historically. But
+  // destroy() disposes+recreates this.scope and tears the DOM listeners
+  // down manually, so a reused instance (destroy() -> load() -> render())
+  // needs its input pipeline rebuilt too. ensureInputEvents() makes that
+  // idempotent: the constructor and the top of render() both call it, and
+  // destroy() flips the flag back off so the next render() re-runs it.
+  private inputEventsInitialized = false
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
@@ -77,34 +85,41 @@ class Renderer extends EventEmitter<RendererEvents> {
       shadow.appendChild(audioElement)
     }
 
-    // initEvents() creates this.scrollStream, so visibleRange must be built
-    // after it.
-    this.initEvents()
+    // ensureInputEvents() creates this.scrollStream, so visibleRange must be
+    // built after it.
+    this.ensureInputEvents()
 
     // visibleRange is instance-lifetime state, deliberately NOT disposed via
     // this.scope -- mirroring the WaveSurferState computeds precedent (see
     // wavesurfer.ts's constructor comment near createWaveSurferState). Why:
     // destroy() disposes and recreates `this.scope` to support the documented
-    // destroy -> load() reuse contract, but this.scrollStream/initEvents()
-    // only ever run once, from this constructor. If visibleRange's dispose
-    // were registered on this.scope, it would be permanently disposed after
-    // the FIRST destroy() with nothing left to recreate it -- breaking
-    // getVisibleRange() forever for any reused instance (and for future
-    // consumers like minimap/spectrogram). So visibleRange itself is never
-    // disposed; it depends on this.audioDuration (owned by this instance,
-    // never disposed) and, transitively through the recompute body below, on
-    // this.scrollStream.percentages, which the scope cleanup below DOES
-    // dispose at destroy() (and nulls out this.scrollStream). The recompute
-    // body defends against that by falling back to the non-scrollable
-    // {0, duration} shape whenever this.scrollStream is null, instead of
-    // throwing. Net effect after a destroy(): visibleRange freezes at its
-    // last live value until the next render() (which still fires, since
-    // audioDuration.set() is unaffected by the scope reset) recomputes it to
-    // {startTime: 0, endTime: newDuration} -- the same "not scrollable"
-    // shape reported before any scroll ever happened. This mirrors the
-    // pre-existing behavior of the 'scroll' event itself, which also stops
-    // firing after the first destroy() for the same reason (scrollStream is
-    // never recreated) -- not a regression introduced by visibleRange.
+    // destroy -> load() reuse contract, and ensureInputEvents() rebuilds
+    // this.scrollStream on the next render() after a destroy(). If
+    // visibleRange's dispose were registered on this.scope, it would be
+    // permanently disposed after the FIRST destroy() with nothing left to
+    // recreate it -- breaking getVisibleRange() forever for any reused
+    // instance (and for future consumers like minimap/spectrogram). So
+    // visibleRange itself is never disposed; it depends on this.audioDuration
+    // (owned by this instance, never disposed) and, transitively through the
+    // recompute body below, on this.scrollStream.percentages, which the scope
+    // cleanup in initEvents() DOES dispose at destroy() (and nulls out
+    // this.scrollStream). The recompute body defends against that by falling
+    // back to the non-scrollable {0, duration} shape whenever
+    // this.scrollStream is null, instead of throwing.
+    //
+    // Deliberately built with NO explicit dependency array (auto-tracking):
+    // computed()'s auto mode re-collects dependencies from the signals
+    // actually read on each recompute (see store.ts). An explicit
+    // `[this.audioDuration, this.scrollStream.percentages]` array would pin
+    // the subscription to whichever percentages signal object existed at
+    // construction time; once ensureInputEvents() rebuilds this.scrollStream
+    // on a post-destroy render(), that pinned subscription would keep
+    // pointing at the old, now-orphaned percentages signal forever, and
+    // visibleRange would never react to scroll again after the first
+    // destroy(). Auto-tracking re-subscribes to whatever this.scrollStream
+    // currently is every time the computed reruns (e.g. on the
+    // audioDuration.set() in render()), so it picks up the freshly created
+    // percentages signal after a reuse.
     this.visibleRange = computed(() => {
       const duration = this.audioDuration.value
       if (!this.isScrollable || duration === 0 || !this.scrollStream) {
@@ -112,7 +127,21 @@ class Renderer extends EventEmitter<RendererEvents> {
       }
       const { startX, endX } = this.scrollStream.percentages.value
       return { startTime: startX * duration, endTime: endX * duration }
-    }, [this.audioDuration, this.scrollStream!.percentages])
+    })
+  }
+
+  /**
+   * Idempotently (re)establishes the input pipeline: click/dblclick DOM
+   * listeners, the scroll stream (and its 'scroll' event bridge), the
+   * optional drag stream, and the resize observer. Runs once from the
+   * constructor; destroy() flips inputEventsInitialized back to false so the
+   * next render() call re-runs initEvents() and revives the pipeline for a
+   * reused instance.
+   */
+  private ensureInputEvents(): void {
+    if (this.inputEventsInitialized) return
+    this.inputEventsInitialized = true
+    this.initEvents()
   }
 
   private parentFromOptionsContainer(container: WaveSurferOptions['container']) {
@@ -381,6 +410,11 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.scope = new Scope()
     this.scrollRenderScope = this.scope.child()
     this.delayScope = this.scope.child()
+
+    // Flip so the next render() re-runs initEvents() via ensureInputEvents(),
+    // reviving the click/dblclick listeners just removed above along with
+    // the scroll/drag streams and resize observer disposed via this.scope.
+    this.inputEventsInitialized = false
 
     this.container.remove()
     if (this.resizeObserver) {
@@ -689,6 +723,10 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   async render(audioData: AudioBuffer) {
+    // Revive the input pipeline if this instance is being reused after a
+    // destroy() (no-op otherwise, see ensureInputEvents()).
+    this.ensureInputEvents()
+
     // Clear previous timeouts
     this.delayScope.dispose()
     this.delayScope = this.scope.child()
