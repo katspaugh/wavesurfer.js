@@ -23,19 +23,20 @@ jest.mock('../renderer.js', () => {
   return { __esModule: true, default: Renderer, getLastInstance: () => lastInstance }
 })
 
-jest.mock('../timer.js', () => {
+jest.mock('../frame-scheduler.js', () => {
   let lastInstance: any
-  class Timer {
-    on = jest.fn(() => () => undefined)
+  class FrameScheduler {
     start = jest.fn()
     stop = jest.fn()
-    destroy = jest.fn()
+    constructor(scope: any) {
+      lastInstance = this
+      // Mirror the real FrameScheduler's contract: stop() runs when the
+      // owning scope is disposed, so wavesurfer.destroy() (which disposes
+      // this.scope) exercises the same teardown path here.
+      scope.add(() => this.stop())
+    }
   }
-  const ctor = jest.fn(() => {
-    lastInstance = new Timer()
-    return lastInstance
-  })
-  return { __esModule: true, default: ctor, getLastInstance: () => lastInstance }
+  return { __esModule: true, FrameScheduler, getLastInstance: () => lastInstance }
 })
 
 jest.mock('../decoder.js', () => {
@@ -49,9 +50,9 @@ jest.mock('../decoder.js', () => {
 import WaveSurfer from '../wavesurfer.js'
 import { BasePlugin } from '../base-plugin.js'
 import * as RendererModule from '../renderer.js'
-import * as TimerModule from '../timer.js'
+import * as FrameSchedulerModule from '../frame-scheduler.js'
 const getRenderer = (RendererModule as any).getLastInstance as () => any
-const getTimer = (TimerModule as any).getLastInstance as () => any
+const getFrameScheduler = (FrameSchedulerModule as any).getLastInstance as () => any
 
 const createMedia = () => {
   const media = document.createElement('audio') as HTMLMediaElement & { play: jest.Mock; pause: jest.Mock }
@@ -192,11 +193,12 @@ describe('WaveSurfer public methods', () => {
     Object.defineProperty(media, 'paused', { configurable: true, value: false })
     await ws.play(1, 2)
 
-    // Simulate the clock overshooting the stop position between timer ticks
+    // Simulate the clock overshooting the stop position between scheduler ticks.
+    // ws.play() resolves media.play() (mocked) but jsdom never dispatches a real
+    // 'play' event, so the scheduler is never actually started here -- invoke
+    // the tick body (a private field on the instance) directly instead.
     media.currentTime = 2.013
-    const timer = getTimer()
-    const tick = timer.on.mock.calls.find(([event]: [string]) => event === 'tick')[1]
-    tick()
+    ;(ws as any).onTick()
 
     expect(media.pause).toHaveBeenCalled()
     expect(ws.getCurrentTime()).toBe(2)
@@ -247,11 +249,34 @@ describe('WaveSurfer public methods', () => {
     expect(getRenderer().exportImage).toHaveBeenCalled()
   })
 
-  test('destroy cleans up renderer and timer', () => {
+  test('destroy cleans up renderer and stops the frame scheduler via scope disposal', () => {
     const ws = createWs()
+    const scheduler = getFrameScheduler()
     ws.destroy()
     expect(getRenderer().destroy).toHaveBeenCalled()
-    expect(getTimer().destroy).toHaveBeenCalled()
+    expect(scheduler.stop).toHaveBeenCalled()
+  })
+
+  test('destroy recreates the frame scheduler so a post-destroy play() still ticks', () => {
+    // destroy() disposes and recreates this.scope for the supported
+    // destroy -> load() reuse pattern (see the reuse test below). The
+    // FrameScheduler registers its stop() on the scope it was built with,
+    // so it must be recreated alongside the scope -- otherwise a post-destroy
+    // play() would call start() on a scheduler whose stop is tied to a dead
+    // scope (or was already run), and progress ticking would silently break.
+    const ws = createWs()
+    const schedulerBeforeDestroy = getFrameScheduler()
+    ws.destroy()
+    const schedulerAfterDestroy = getFrameScheduler()
+    expect(schedulerAfterDestroy).not.toBe(schedulerBeforeDestroy)
+
+    // Reusing an instance after destroy() is supported (see the reuse test
+    // below); setMediaElement() re-registers the media event listeners
+    // destroy() tore down, same as a real post-destroy reuse would need.
+    const media = createMedia()
+    ws.setMediaElement(media)
+    media.dispatchEvent(new Event('play'))
+    expect(schedulerAfterDestroy.start).toHaveBeenCalled()
   })
 
   test('does not emit pause or timeupdate during construction', async () => {

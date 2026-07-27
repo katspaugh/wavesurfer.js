@@ -2,10 +2,10 @@ import BasePlugin, { type GenericPlugin } from './base-plugin.js'
 import Decoder from './decoder.js'
 import * as dom from './dom.js'
 import Fetcher from './fetcher.js'
+import { FrameScheduler } from './frame-scheduler.js'
 import Player from './player.js'
 import Renderer from './renderer.js'
 import { Scope } from './scope.js'
-import Timer from './timer.js'
 import WebAudioPlayer from './webaudio.js'
 import { createWaveSurferState, type WaveSurferState, type WaveSurferActions } from './state/wavesurfer-state.js'
 
@@ -158,12 +158,12 @@ export type WaveSurferEvents = {
 class WaveSurfer extends Player<WaveSurferEvents> {
   public options: WaveSurferOptions & typeof defaultOptions
   private renderer: Renderer
-  private timer: Timer
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
   private stopAtPosition: number | null = null
   protected scope: Scope = new Scope()
   private mediaEventScope = this.scope.child()
+  private frameScheduler: FrameScheduler = new FrameScheduler(this.scope)
   private loadScope: Scope | null = null
   // Scopes marked here were superseded by a newer load() at the moment
   // supersession happened (see loadAudio) -- distinct from a scope merely
@@ -234,14 +234,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // already provides. `dispose` remains part of createWaveSurferState's
     // public return value for direct/standalone users of the state module.
 
-    this.timer = new Timer()
-
     const audioElement = media ? undefined : this.getMediaElement()
     this.renderer = new Renderer(this.options, audioElement)
 
     this.initPlayerEvents()
     this.initRendererEvents()
-    this.initTimerEvents()
     this.initPlugins()
 
     // Read the initial URL before load has been called
@@ -269,31 +266,28 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return currentTime
   }
 
-  private initTimerEvents() {
-    // The timer fires every 16ms for a smooth progress animation
-    this.scope.add(
-      this.timer.on('tick', () => {
-        if (!this.isSeeking()) {
-          const currentTime = this.updateProgress()
-          this.emit('timeupdate', currentTime)
-          this.emit('audioprocess', currentTime)
+  // The frame scheduler ticks every animation frame for a smooth progress
+  // animation while playing.
+  private onTick = () => {
+    if (!this.isSeeking()) {
+      const currentTime = this.updateProgress()
+      this.emit('timeupdate', currentTime)
+      this.emit('audioprocess', currentTime)
 
-          // Pause audio when it reaches the stopAtPosition
-          if (this.stopAtPosition != null && this.isPlaying() && currentTime >= this.stopAtPosition) {
-            // The timer may overshoot the stop position, so clamp the time back to it
-            const stopAt = this.stopAtPosition
-            this.pause()
-            this.setTime(stopAt)
-          }
-        }
-      }),
-    )
+      // Pause audio when it reaches the stopAtPosition
+      if (this.stopAtPosition != null && this.isPlaying() && currentTime >= this.stopAtPosition) {
+        // The scheduler may overshoot the stop position, so clamp the time back to it
+        const stopAt = this.stopAtPosition
+        this.pause()
+        this.setTime(stopAt)
+      }
+    }
   }
 
   private initPlayerEvents() {
     if (this.isPlaying()) {
       this.emit('play')
-      this.timer.start()
+      this.frameScheduler.start(this.onTick)
     }
 
     this.mediaEventScope.add(
@@ -306,21 +300,21 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.mediaEventScope.add(
       this.onMediaEvent('play', () => {
         this.emit('play')
-        this.timer.start()
+        this.frameScheduler.start(this.onTick)
       }),
     )
 
     this.mediaEventScope.add(
       this.onMediaEvent('pause', () => {
         this.emit('pause')
-        this.timer.stop()
+        this.frameScheduler.stop()
         this.stopAtPosition = null
       }),
     )
 
     this.mediaEventScope.add(
       this.onMediaEvent('emptied', () => {
-        this.timer.stop()
+        this.frameScheduler.stop()
         this.stopAtPosition = null
       }),
     )
@@ -856,7 +850,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // creates its next loadScope from the current this.scope, so this is
     // just clearing the stale reference (already disposed via cascade above).
     this.loadScope = null
-    this.timer.destroy()
+    // frameScheduler.stop() already ran via the disposer it registered on the
+    // old (now-disposed) scope; a fresh instance is needed so a post-destroy
+    // load()/play() registers its stop on the new scope instead of the dead one.
+    this.frameScheduler = new FrameScheduler(this.scope)
     this.renderer.destroy()
     super.destroy()
   }
