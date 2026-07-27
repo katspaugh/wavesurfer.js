@@ -188,13 +188,15 @@ and event name+payload is preserved. `record` and the spectrogram plugins were *
   once. When the caller doesn't pass `maxZoom`, it's derived from the container's `clientWidth`
   at setup time; a destroy → re-init cycle (e.g. after a container resize) now picks up the
   current width rather than the value computed at the plugin's first init.
-- **`hover`, `regions`, and `minimap` now remove their root DOM element (wrapper /
-  `regionsContainer` / minimap wrapper) as part of scope disposal, which runs BEFORE the
-  `'destroy'` event is emitted** (`definePlugin`'s destroy order is: dispose `ctx.scope`, then
-  `super.destroy()` — which emits `'destroy'` last). Previously these three plugins removed their
-  root element AFTER the `'destroy'` event, so a `plugin.on('destroy', ...)` listener could still
-  observe the element attached to the DOM; it can no longer do so. Each port's test suite (plus
-  the regions memory-leak suite) was checked and found nothing pinned the old ordering.
+- **`hover` and `regions` now remove their root DOM element (wrapper / `regionsContainer`) as
+  part of scope disposal, which runs BEFORE the `'destroy'` event is emitted**
+  (`definePlugin`'s destroy order is: dispose `ctx.scope`, then `super.destroy()` — which emits
+  `'destroy'` last). Previously these two plugins removed their root element AFTER the
+  `'destroy'` event, so a `plugin.on('destroy', ...)` listener could still observe the element
+  attached to the DOM; it can no longer do so. Each port's test suite (plus the regions
+  memory-leak suite) was checked and found nothing pinned the old ordering. (`minimap` also
+  removes its wrapper via scope disposal now, but its pre-port `destroy()` already removed the
+  wrapper before `super.destroy()`, so this is not an ordering change for minimap.)
 - **The timeline plugin's "container not found" error message wording changed**, from
   `` `No Timeline container found matching ${container}` `` to
   `` `timeline: container not found: ${container}` `` (now produced by the shared
