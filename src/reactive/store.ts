@@ -23,7 +23,17 @@ type AnySignal = Signal<unknown>
 
 let activeTracker: Set<AnySignal> | null = null
 let batchDepth = 0
-const pendingNotifications = new Set<() => void>()
+// Queue of not-yet-fired notifyAll closures, one per dirtied signal.
+// pendingSet gives O(1) membership checks so re-dirtying an already-queued
+// signal merges into its existing entry instead of pushing a duplicate.
+const pendingQueue: Array<() => void> = []
+const pendingSet = new Set<() => void>()
+
+function scheduleNotification(notify: () => void): void {
+  if (pendingSet.has(notify)) return
+  pendingSet.add(notify)
+  pendingQueue.push(notify)
+}
 
 export function batch(fn: () => void): void {
   batchDepth++
@@ -32,10 +42,32 @@ export function batch(fn: () => void): void {
   } finally {
     batchDepth--
     if (batchDepth === 0) {
-      const pending = [...pendingNotifications]
-      pendingNotifications.clear()
-      pending.forEach((notify) => notify())
+      flushPending()
     }
+  }
+}
+
+/**
+ * Drain pendingQueue until empty. Runs under an elevated batchDepth so that
+ * any set() triggered by a notification - e.g. one signal's subscriber
+ * setting another signal - is queued rather than fired immediately.
+ *
+ * Draining LIFO (most-recently-queued first) means a cascading set()
+ * triggered while flushing a later-queued entry reaches an earlier-queued,
+ * not-yet-fired entry for the same signal in time to merge into it, instead
+ * of that entry having already fired with a stale value and needing a
+ * second, separate flush.
+ */
+function flushPending(): void {
+  batchDepth++
+  try {
+    while (pendingQueue.length > 0) {
+      const notify = pendingQueue.pop() as () => void
+      pendingSet.delete(notify)
+      notify()
+    }
+  } finally {
+    batchDepth--
   }
 }
 
@@ -85,7 +117,7 @@ export function signal<T>(initialValue: T): WritableSignal<T> {
       if (Object.is(_value, newValue)) return
       _value = newValue
       if (batchDepth > 0) {
-        pendingNotifications.add(notifyAll)
+        scheduleNotification(notifyAll)
       } else {
         notifyAll()
       }

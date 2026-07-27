@@ -419,4 +419,17 @@ describe('store v2', () => {
     a.set(3)
     expect(runs).toEqual([1, 2])
   })
+
+  it('batch coalesces a cascaded set() to a different signal during flush', () => {
+    const a = signal(0)
+    const b = signal(0)
+    const bCalls: number[] = []
+    b.subscribe((v) => bCalls.push(v))
+    a.subscribe(() => b.set(2))
+    batch(() => {
+      b.set(1)
+      a.set(1)
+    })
+    expect(bCalls).toEqual([2])
+  })
 })
