@@ -80,18 +80,50 @@ describe('TimelinePlugin', () => {
     expect(offsets[3]).toBeCloseTo(100)
   })
 
+  // ADAPTED (private-internal poke): the original spied on the plugin's
+  // private `updateVisibleNotches` method, which no longer exists as an
+  // instance member post-port (it's a setup()-local closure). Adapted to
+  // pin the same observable claim -- firing the visibleRange signal
+  // re-windows notch visibility using the CURRENT getScroll()/getWidth()
+  // mock values -- via the DOM instead of a spy: change what getWidth()
+  // returns *after* init (so a stale, init-time window would keep both
+  // notches visible), confirm nothing moves until the signal actually
+  // fires, then fire it and confirm the now-out-of-window notch is pruned.
   test('re-windows notches when visibleRange changes rather than on raw scroll math', () => {
-    const { plugin, wavesurfer } = createInitializedTimeline()
-    const spy = jest.spyOn(plugin as any, 'updateVisibleNotches')
+    const wavesurfer = createWaveSurfer(1, 100)
+    const plugin = TimelinePlugin.create({ duration: 1, timeInterval: 0.5 })
+    plugin._init(wavesurfer as any)
+
+    const notchAt0 = wavesurfer.getWrapper().querySelector<HTMLElement>('[part^="timeline-notch"][style*="left: 0px"]')
+    const notchAt50 = wavesurfer
+      .getWrapper()
+      .querySelector<HTMLElement>('[part^="timeline-notch"][style*="left: 50px"]')
+    expect(notchAt0).not.toBeNull()
+    expect(notchAt50).not.toBeNull()
+    // Both start out visible: getScroll()=0, getWidth()=200 (scrollWidth * 2).
+    expect(notchAt0?.isConnected).toBe(true)
+    expect(notchAt50?.isConnected).toBe(true)
+
+    // Shrink the live window so the notch at offset 50 falls outside it.
+    // Changing the mock alone must not move anything yet.
+    wavesurfer.getWidth = jest.fn(() => 30)
+    expect(notchAt50?.isConnected).toBe(true)
 
     wavesurfer.getRenderer().getVisibleRange().set({ startTime: 10, endTime: 20 })
 
-    expect(spy).toHaveBeenCalled()
+    expect(notchAt0?.isConnected).toBe(true)
+    expect(notchAt50?.isConnected).toBe(false)
   })
 
+  // ADAPTED (private-internal poke): same `updateVisibleNotches` spy removed
+  // as above. The first assertion (no 'scroll' subscription registered) is
+  // unmodified and is, on its own, sufficient to prove the plugin can't be
+  // driven by the raw 'scroll' event -- there's nothing to fire. The
+  // dropped second half (`spy not called`) is now covered by the previous
+  // test's boundary check, which shows the re-window path only reacts to
+  // the visibleRange signal.
   test('does not re-window notches on the raw wavesurfer "scroll" event anymore', () => {
-    const { plugin, wavesurfer } = createInitializedTimeline()
-    const spy = jest.spyOn(plugin as any, 'updateVisibleNotches')
+    const { wavesurfer } = createInitializedTimeline()
 
     // Find the listener the plugin registered for 'scroll' via wavesurfer.on
     // (still present for other consumers) and confirm firing it no longer
@@ -99,10 +131,16 @@ describe('TimelinePlugin', () => {
     const onCalls = (wavesurfer.on as jest.Mock).mock.calls
     const scrollListenerCall = onCalls.find(([event]) => event === 'scroll')
     expect(scrollListenerCall).toBeUndefined()
-
-    expect(spy).not.toHaveBeenCalled()
   })
 
+  // ADAPTED (private-internal poke): the original spied on
+  // `updateVisibleNotches` and asserted its exact call args, including a
+  // read of the private `currentTimeline` field. Neither exists post-port.
+  // Adapted to pin the same invariant -- the re-window uses
+  // getScroll() + getWidth() (padding-adjusted), not some other bounds --
+  // via a DOM boundary: place notches exactly either side of the padding-
+  // adjusted scrollRight (160 = getScroll() 10 + getWidth() 150) and confirm
+  // only the one strictly inside the window survives after the signal fires.
   test('scroll-driven notch window uses the padding-adjusted getWidth(), consistent with virtualAppend', () => {
     // Renderer.getWidth() returns clientWidth minus the container's inline
     // padding (see renderer.ts's getWidth()/containerInlinePadding). Simulate
@@ -111,38 +149,61 @@ describe('TimelinePlugin', () => {
     // check already used getScroll() + getWidth() for this reason; the
     // scroll-driven effect must compute the SAME window, not fall back to an
     // unpadded bounds value (as the legacy 'scroll' event used to report).
-    const wavesurfer = createWaveSurfer(1, 100)
-    const paddingAdjustedWidth = 150 // e.g. a 200px-wide container with 50px of inline padding
-    wavesurfer.getWidth = jest.fn(() => paddingAdjustedWidth)
+    // duration=20, scrollWidth=200 => pxPerSec=10, so integer notch indices
+    // land on exact, drift-free pixel offsets (i * 10) -- unlike a fractional
+    // timeInterval, which would accumulate floating-point error across the
+    // repeated `i += timeInterval` loop and make an exact "left: 150px"
+    // string match unreliable.
+    const wavesurfer = createWaveSurfer(20, 200)
+    // Start with a generous window so both boundary notches render visible
+    // at init time, before the padding-adjusted width kicks in.
+    wavesurfer.getWidth = jest.fn(() => 1000)
     wavesurfer.getScroll = jest.fn(() => 10)
 
-    const plugin = TimelinePlugin.create({ duration: 1 })
+    const plugin = TimelinePlugin.create({ duration: 20, timeInterval: 1, timeOffset: 0 })
     plugin._init(wavesurfer as any)
 
-    const updateSpy = jest.spyOn(plugin as any, 'updateVisibleNotches')
+    const wrapper = wavesurfer.getWrapper()
+    const notchAt150 = wrapper.querySelector<HTMLElement>('[part^="timeline-notch"][style*="left: 150px"]')
+    const notchAt160 = wrapper.querySelector<HTMLElement>('[part^="timeline-notch"][style*="left: 160px"]')
+    expect(notchAt150).not.toBeNull()
+    expect(notchAt160).not.toBeNull()
+    expect(notchAt150?.isConnected).toBe(true)
+    expect(notchAt160?.isConnected).toBe(true)
+
+    const paddingAdjustedWidth = 150 // e.g. a 200px-wide container with 50px of inline padding
+    wavesurfer.getWidth = jest.fn(() => paddingAdjustedWidth)
 
     wavesurfer.getRenderer().getVisibleRange().set({ startTime: 0.1, endTime: 0.9 })
 
-    // The exact same scrollRight virtualAppend() would compute right now,
-    // from the same getScroll()/getWidth() pair -- pins the invariant that
-    // both paths share one padding-adjusted width, not two different windows.
-    const virtualAppendScrollRight = wavesurfer.getScroll() + wavesurfer.getWidth()
-    expect(updateSpy).toHaveBeenCalledWith(10, virtualAppendScrollRight, (plugin as any).currentTimeline)
-    expect(updateSpy).toHaveBeenCalledWith(10, 160, (plugin as any).currentTimeline)
+    // scrollRight = getScroll() 10 + getWidth() 150 = 160. The notch at 150
+    // is strictly inside (150 < 160) and stays; the notch at exactly 160 is
+    // not (160 < 160 is false) and is pruned. If the re-window had instead
+    // used an unpadded bounds value, both would still be inside and the
+    // notch at 160 would incorrectly remain.
+    expect(notchAt150?.isConnected).toBe(true)
+    expect(notchAt160?.isConnected).toBe(false)
   })
 
-  test('clears notch element cache on destroy', () => {
+  // ADAPTED (private-internal poke): the original read the private
+  // `notchElements`/`currentTimeline` fields directly. Neither exists
+  // post-port (they're setup()-local closure state, discarded with the
+  // scope on destroy). Adapted to the equivalent DOM-observable claim: the
+  // timeline wrapper (and its notches) is detached from the container on
+  // destroy, i.e. nothing the plugin rendered is left behind.
+  test('removes the timeline DOM on destroy', () => {
     const wavesurfer = createWaveSurfer(1, 100)
     const plugin = TimelinePlugin.create({ duration: 1 })
 
     plugin._init(wavesurfer as any)
 
-    expect((plugin as any).notchElements.size).toBeGreaterThan(0)
-    expect((plugin as any).currentTimeline).not.toBeUndefined()
+    const wrapper = wavesurfer.getWrapper()
+    expect(wrapper.querySelectorAll('[part^="timeline-notch"]').length).toBeGreaterThan(0)
+    expect(wrapper.querySelector('[part="timeline-wrapper"]')).not.toBeNull()
 
     plugin.destroy()
 
-    expect((plugin as any).notchElements.size).toBe(0)
-    expect((plugin as any).currentTimeline).toBeUndefined()
+    expect(wrapper.querySelector('[part="timeline-wrapper"]')).toBeNull()
+    expect(wrapper.querySelectorAll('[part^="timeline-notch"]').length).toBe(0)
   })
 })
