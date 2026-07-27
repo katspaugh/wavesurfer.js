@@ -1,4 +1,5 @@
 import EventEmitter from './event-emitter.js'
+import { Scope } from './scope.js'
 import type WaveSurfer from './wavesurfer.js'
 
 export type BasePluginEvents = {
@@ -12,6 +13,13 @@ export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends Ev
   protected wavesurfer?: WaveSurfer
   protected subscriptions: (() => void)[] = []
   protected options: Options
+  /**
+   * A disposal scope owned by the plugin chassis. `definePlugin` (see
+   * define-plugin.ts) replaces this with a fresh Scope on every (re-)init
+   * and disposes it on destroy. BasePlugin itself does NOT dispose this —
+   * class-based plugins that don't opt in are unaffected.
+   */
+  protected scope: Scope = new Scope()
   private isDestroyed = false
 
   /** Whether destroy() has been called. Subclasses use this to guard async work. */
