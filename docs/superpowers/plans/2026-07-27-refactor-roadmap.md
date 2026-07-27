@@ -29,20 +29,118 @@ Implemented in branch `refactor/declarative-load-and-viewport` (7 tasks, all pas
 - Load lifecycle on child `Scope` + `AbortSignal`: replaces `_loadVersion`, `_isDestroyed` post-await guards, and `abortController`
 - Deferred-minor cleanup sweep completed (webaudio stale-src guard, envelope polyline null, duplicate drag-stream tests, computed subscriber clearing on dispose).
 
-## Plan 3 — definePlugin + plugin ports (after Plan 2)
+## Plan 3 — definePlugin + plugin ports (DONE ✓, full plan in 2026-07-27-define-plugin.md)
 
-Spec: functional plugin API `definePlugin(name, (ctx, options) => api)`
-with `ctx = { wavesurfer, scope, state }`; teardown = scope disposal only;
-`BasePlugin` becomes a deprecated compat shim over it. Shared utilities to
-kill the copy-paste classes found in review: `resolveContainer()` (one
-error behavior, replaces 4 divergent copies), `overlayElement(scope,
-style)` (6 copies), `bridgeEvents(from, to, names, scope)` (minimap's 64
-forwarder lines). Port order: hover, zoom (smallest) → timeline, minimap →
-regions, envelope, record (per-entity child scopes). Public API: existing
-plugin classes keep working via the shim through v8; `definePlugin` is
-additive.
-Depends on Plan 2's `visibleRange` (timeline/minimap ports consume it) and
-`loadPhase` (record/regions guards).
+Implemented in branch `refactor/define-plugin` (12 tasks, all passing:
+465 jest tests, tsc+eslint clean). `definePlugin` is re-exported from the
+main entry (`wavesurfer.ts`) alongside `PluginContext`/`PluginSetup`/
+`DefinedPlugin`. Six plugins ported (hover, zoom, timeline, minimap,
+envelope, regions); record deliberately NOT ported (see ruling below);
+spectrograms deliberately NOT ported (Plan 4). Produced interfaces (for
+Plan 4's author):
+
+**`definePlugin` / `PluginContext` (src/define-plugin.ts):**
+```typescript
+export interface PluginContext<Events extends BasePluginEvents> {
+  wavesurfer: WaveSurfer   // lazy getter — reads the CURRENT plugin.wavesurfer,
+                           // not a snapshot; undefined after destroy() despite the type
+  scope: Scope             // fresh per (re-)init; disposed on destroy, BEFORE super.destroy()
+  state: WaveSurferState   // lazy getter — wavesurfer.getState() read live, not cached
+  emit: <K extends keyof Events>(event: K, ...args: Events[K] extends unknown[] ? Events[K] : never) => void
+}
+export type PluginSetup<Options, Events extends BasePluginEvents, Api extends object> =
+  (ctx: PluginContext<Events>, options: Options) => Api
+export type DefinedPlugin<Options, Events extends BasePluginEvents, Api extends object> = {
+  new (...args: PluginCtorArgs<Options>): BasePlugin<Events, Options> & Api
+  create(...args: PluginCtorArgs<Options>): BasePlugin<Events, Options> & Api
+}
+export function definePlugin<Options, Events extends BasePluginEvents, Api extends object>(
+  name: string,
+  setup: PluginSetup<Options, Events, Api>,
+): DefinedPlugin<Options, Events, Api>
+```
+- `ctx.wavesurfer`/`ctx.state` are **lazy getters**, not values captured at
+  setup time — api closures always see current plugin state and can't pin a
+  destroyed WaveSurfer alive.
+- **API collision guard**: every key returned by `setup()` is checked at
+  init time against a `RESERVED_CHASSIS_KEYS` set (`destroy`, `_init`,
+  `emit`, `on`, `un`, `once`, `unAll`, `options`, `wavesurfer`,
+  `subscriptions`, `scope`, `destroyed`, `isDestroyed`, `listeners` —
+  includes TS-`private` chassis fields, which `Object.assign` doesn't
+  respect at runtime); a collision throws
+  `definePlugin('<name>'): api key "<key>" collides with the plugin chassis`
+  instead of silently disabling core plugin machinery.
+- **`PluginCtorArgs<Options>` optionality rule**: `new Plugin(options)` /
+  `Plugin.create(options)` takes the options argument as *optional* iff
+  every property of `Options` is optional (`Record<string, never> extends
+  Options`), otherwise required — matching what a hand-written
+  `constructor(options?: Options)` vs `constructor(options: Options)` would
+  offer. When omitted, `setup` receives `options === undefined` (not `{}`)
+  — setup must default it itself.
+- **Destroy order**: `ctx.scope.dispose()` runs FIRST, `super.destroy()`
+  (emits `'destroy'`, drains legacy `subscriptions`, then `unAll()`s
+  listeners) runs LAST. Scope-owned root-DOM-element removal is therefore
+  torn down BEFORE the `'destroy'` event reaches consumers. Two plugins
+  (hover, regions) historically removed their root element AFTER
+  `super.destroy()` so a `'destroy'` listener could still observe an
+  attached node; both ports checked their test suites, found nothing pins
+  that ordering, and moved removal onto `ctx.scope` (documented, deliberate
+  behavior change — see RELEASE_NOTES-scope-refactor.md).
+
+**`plugin-utils.ts` (consumed by every port):**
+```typescript
+export function resolveContainer(
+  option: HTMLElement | string | undefined,
+  fallback: HTMLElement,
+  pluginName: string,
+): HTMLElement
+// string → querySelector, throws `${pluginName}: container not found: ${option}` on miss;
+// HTMLElement → itself; undefined → fallback.
+
+export function overlayElement(
+  scope: Scope,
+  parent: HTMLElement,
+  style?: Partial<CSSStyleDeclaration>,
+): HTMLElement
+// position:absolute div appended to parent; scope.add(() => el.remove()).
+
+export function bridgeEvents<Events extends Record<string, unknown[]>>(
+  scope: Scope,
+  from: { on: (e: never, cb: never) => () => void },
+  to: { emit: (e: never, ...args: never[]) => void },
+  names: Array<keyof Events & string>,
+): void
+// Forwards each named event from `from` to `to.emit`; each subscription is scope.add()'d.
+```
+
+**Per-region child-scope pattern (regions.ts, Task 11):** each `SingleRegion`
+owns a private `scope: Scope` handed to it by the plugin — `const
+regionScope = ctx.scope.child()` — tracked in a `WeakMap<Region, Scope>` on
+the plugin side. `region.remove()` disposes `regionScope` (cascading
+through `ctx.scope`'s child-scope tree) instead of draining a hand-rolled
+`subscriptions` array; drag-selection's in-progress region gets its own
+`regionScope` too, disposed and re-created per drag. Same pattern name
+(`regionScope`, `.child()`) used consistently; minimap's Task 8 nested-
+wavesurfer scope uses the identical `ctx.scope.child()` primitive (there
+called `miniScope`) for the same drain-before-recreate need.
+
+**RECORD stays class-based (ruling, Task 10):** `RecordPlugin` is usable
+standalone (construct → `startMic`/`record` → `destroy`, without ever
+calling `registerPlugin`), which `definePlugin`'s setup-at-init model
+cannot express — its constructor builds a `Timer` and its destroy path
+must work pre-init. `RecordPlugin` remains a `BasePlugin` subclass with an
+explicit `destroy()` override, but internally adopts the chassis's
+`protected scope: Scope` for its resources. Its public surface, and the
+`destroy()` override itself, are unchanged. Any future consolidation
+(e.g. if `definePlugin` grows a pre-init-usable variant) is out of scope
+for Plan 3/4.
+
+Shared utilities killed the copy-paste classes found in review:
+`resolveContainer()` (one error behavior, replaced 4 divergent copies),
+`overlayElement()` (replaced ~6 hand-rolled copies), `bridgeEvents()`
+(replaced minimap's 64 forwarder lines with one call). `BasePlugin` stays
+exported and functional — both as the chassis `definePlugin` builds on
+and, unchanged, for third-party class-based plugins and `record.ts`.
 
 ## Plan 4 — Spectrogram unification + leak harness + lint bans (last)
 
