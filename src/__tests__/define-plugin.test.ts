@@ -128,6 +128,25 @@ describe('definePlugin', () => {
     expect(() => plugin._init(wsStub())).toThrow(/collide-plugin/)
   })
 
+  it('throws when the setup api collides with a runtime-private chassis field (isDestroyed / listeners)', () => {
+    // `Api = any` here: TS itself catches `isDestroyed`/`listeners` colliding
+    // with BasePlugin/EventEmitter's private fields at the type level
+    // (intersection collapses to `never`) when Api is precisely typed. The
+    // runtime guard exists for exactly the case type-checking can't cover —
+    // an untyped/`any`-typed setup(), a plain-JS consumer, or a type escape
+    // hatch — so this test deliberately opts out of that type-level safety
+    // net to exercise the runtime check.
+    const PluginA = definePlugin<{}, { destroy: [] }, any>('collide-isDestroyed', () => ({
+      isDestroyed: true,
+    }))
+    expect(() => PluginA.create({})._init(wsStub())).toThrow(/collide-isDestroyed/)
+
+    const PluginB = definePlugin<{}, { destroy: [] }, any>('collide-listeners', () => ({
+      listeners: {},
+    }))
+    expect(() => PluginB.create({})._init(wsStub())).toThrow(/collide-listeners/)
+  })
+
   it('does not eagerly read wavesurfer/state at setup time, only lazily via ctx getters', () => {
     const Plugin = definePlugin<{}, { destroy: [] }, { read: () => unknown }>('lazy-plugin', (ctx) => ({
       read: () => ctx.state,

@@ -34,6 +34,18 @@ export type DefinedPlugin<Options, Events extends BasePluginEvents, Api extends 
 // (e.g. an api key named `destroy` would shadow BasePlugin#destroy, making
 // `plugin.destroy()` a no-op — a hard leak with no error). Checked
 // unconditionally (not just in dev builds): failing fast beats a silent leak.
+//
+// Includes TS-`private` fields (`isDestroyed`, `listeners`) as well as
+// `protected`/public ones: `private` is compile-time-only — it does not
+// exist at runtime, and `Object.assign` does not respect it. An api key
+// `isDestroyed` (truthy) would make `destroy()` a permanent no-op (the
+// `if (this.isDestroyed) return` guard trips immediately); an api key
+// `listeners` would replace EventEmitter's backing store and silently kill
+// all event dispatch. (TS does catch precisely-typed collisions on these
+// two at compile time too — the intersection type collapses to `never` —
+// but that protection disappears the moment `Api` is `any`/untyped or the
+// plugin is authored in plain JS, which is exactly what this runtime check
+// is for.)
 const RESERVED_CHASSIS_KEYS = new Set([
   'destroy',
   '_init',
@@ -47,6 +59,8 @@ const RESERVED_CHASSIS_KEYS = new Set([
   'subscriptions',
   'scope',
   'destroyed',
+  'isDestroyed',
+  'listeners',
 ])
 
 /**
@@ -58,7 +72,11 @@ const RESERVED_CHASSIS_KEYS = new Set([
  *
  * Api methods only exist on the instance after `_init()` has run (i.e.
  * after `wavesurfer.registerPlugin(...)`); accessing them beforehand is
- * undefined behavior.
+ * undefined behavior. Symmetrically: calling an api method AFTER the
+ * plugin has been destroyed is also undefined behavior — `ctx.wavesurfer`
+ * is typed non-null, but `destroy()` sets the underlying field to
+ * `undefined`, so a post-destroy read returns `undefined` at runtime
+ * despite the type.
  */
 export function definePlugin<Options, Events extends BasePluginEvents, Api extends object>(
   name: string,
