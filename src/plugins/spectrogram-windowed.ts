@@ -163,6 +163,10 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
   private pixelsPerSecond = 0
   private isRendering = false
   private renderTimeout: number | null = null
+  private initialRenderTimeout: number | null = null
+  // Cap on how many frequency segments are kept in memory/DOM at once; segments farthest
+  // from the current view are evicted once this is exceeded (see evictDistantSegments)
+  private maxRetainedSegments = 48
 
   // FFT and processing
   private fft: FFT | null = null
@@ -397,8 +401,11 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     // This ensures the spectrogram appears even if no redraw event is fired
     if (this.wavesurfer.getDecodedData()) {
       // Use setTimeout to ensure DOM is fully ready
-      setTimeout(() => {
-        this.render(this.wavesurfer.getDecodedData())
+      this.initialRenderTimeout = window.setTimeout(() => {
+        this.initialRenderTimeout = null
+        const decodedData = this.wavesurfer?.getDecodedData()
+        if (!decodedData) return
+        this.render(decodedData)
       }, 0)
     }
   }
@@ -524,6 +531,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     for (const segment of visibleSegments) {
       if (segment.canvas) {
         await this.renderSegment(segment)
+        if (this.destroyed) return
       }
     }
   }
@@ -640,8 +648,11 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
 
       // Generate segments for this window
       await this.generateSegments(windowStartTime, windowEndTime)
+      if (this.destroyed) return
 
-      // Don't clean up old segments - keep them all in memory for performance
+      // Evict segments far from the current view so memory stays bounded regardless
+      // of audio length, instead of keeping every segment ever rendered
+      this.evictDistantSegments((windowStartTime + windowEndTime) / 2)
     } finally {
       this.isRendering = false
     }
@@ -712,6 +723,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
         // Calculate frequency data for this segment
         const freqStartTime = performance.now()
         const frequencies = await this.calculateFrequencies(segmentStart, segmentEnd)
+        if (this.destroyed) return
         const freqEndTime = performance.now()
 
         if (frequencies && frequencies.length > 0) {
@@ -728,6 +740,7 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
           // Render this segment
           const renderStartTime = performance.now()
           await this.renderSegment(segment)
+          if (this.destroyed) return
           const renderEndTime = performance.now()
 
           // Emit progress update
@@ -825,6 +838,10 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
         return
       }
     }
+
+    // Re-check after the await: destroy() or stopProgressiveLoading() may have run
+    // while we were awaiting, and must not be undone by re-arming the timer below
+    if (this.destroyed || !this.isProgressiveLoading) return
 
     // Move to next segment
     this.nextProgressiveSegmentTime = segmentEnd
@@ -1081,7 +1098,10 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
         freqMin,
         freqMax,
       )
+      if (this.destroyed) return
     }
+
+    if (!this.canvasContainer) return
 
     // Remove old canvas if this segment was previously rendered
     if (segment.canvas) {
@@ -1153,6 +1173,29 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
       }
     }
     this.segments.clear()
+  }
+
+  /**
+   * Evict segments whose midpoint is farthest from currentTime once the retained count
+   * exceeds maxRetainedSegments, so memory usage stays bounded regardless of audio length.
+   */
+  private evictDistantSegments(currentTime: number) {
+    if (this.segments.size <= this.maxRetainedSegments) return
+
+    const entries = Array.from(this.segments.entries())
+    // Farthest-from-currentTime first
+    entries.sort((a, b) => {
+      const distA = Math.abs((a[1].startTime + a[1].endTime) / 2 - currentTime)
+      const distB = Math.abs((b[1].startTime + b[1].endTime) / 2 - currentTime)
+      return distB - distA
+    })
+
+    const numToEvict = this.segments.size - this.maxRetainedSegments
+    for (let i = 0; i < numToEvict; i++) {
+      const [key, segment] = entries[i]
+      segment.canvas?.remove()
+      this.segments.delete(key)
+    }
   }
 
   private getFilterBank(sampleRate: number) {
@@ -1286,8 +1329,6 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
   }
 
   destroy() {
-    this.unAll()
-
     if (this.renderTimeout) {
       clearTimeout(this.renderTimeout)
       this.renderTimeout = null
@@ -1296,6 +1337,11 @@ class WindowedSpectrogramPlugin extends BasePlugin<WindowedSpectrogramPluginEven
     if (this.qualityUpdateTimeout) {
       clearTimeout(this.qualityUpdateTimeout)
       this.qualityUpdateTimeout = null
+    }
+
+    if (this.initialRenderTimeout) {
+      clearTimeout(this.initialRenderTimeout)
+      this.initialRenderTimeout = null
     }
 
     // Stop progressive loading
