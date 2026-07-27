@@ -82,6 +82,14 @@ const ZoomPlugin = definePlugin<ZoomPluginOptions, ZoomPluginEvents, object>('zo
 
   const container = ctx.wavesurfer.getWrapper().parentElement as HTMLElement
 
+  // When the caller doesn't pass `maxZoom`, derive it from the container's
+  // CURRENT width. `opts` is a fresh object built fresh on every (re-)init
+  // (setup() reruns from scratch), so this recomputes from the live
+  // container on each init rather than being cached across a
+  // destroy -> re-init cycle — unlike the pre-port class, which stored the
+  // default on the long-lived `this.options` and only computed it once, on
+  // the first init. Deliberate behavior change: a container resized
+  // between init cycles gets an accurate cap instead of a stale one.
   if (typeof opts.maxZoom === 'undefined') {
     opts.maxZoom = container.clientWidth
   }
