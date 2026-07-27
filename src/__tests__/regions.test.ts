@@ -139,10 +139,17 @@ describe('RegionsPlugin', () => {
   // envelope-leaks.test.ts for the established precedent). Pin the same
   // "does not grow" contract one level down: each `resize: true` toggle
   // creates fresh left/right resize-handle elements and attaches one
-  // 'pointerdown' listener to each (via createDragStream); the *net* count of
-  // attached pointerdown listeners (adds minus removes) after settling on
-  // `resize: true` must stay constant across repeated off/on cycles, rather
-  // than growing if a stale cleanup were left behind each toggle.
+  // 'pointerdown' listener to each (via createDragStream). The spy is
+  // installed AFTER the region is constructed (so it doesn't see the
+  // construction-time attach, or the unrelated single pointerdown listener
+  // initMouseEvents attaches to the region element itself for its own drag
+  // handling -- that one is never toggled and would otherwise permanently
+  // skew the count). Two full off/on cycles land back on the same
+  // `resize: true` state the spy started at, so the total 'pointerdown'
+  // adds and removes it captured must match exactly -- mirroring the
+  // add/remove-count-equality pattern already used above in 'cleans up drag
+  // selection on plugin destroy'. A leaked per-cycle cleanup would show up
+  // here as adds outpacing removes.
   test('toggling resize option repeatedly does not grow region subscriptions', () => {
     const wavesurfer = createWaveSurfer()
     const plugin = RegionsPlugin.create()
@@ -153,21 +160,22 @@ describe('RegionsPlugin', () => {
 
     const addSpy = jest.spyOn(HTMLElement.prototype, 'addEventListener')
     const removeSpy = jest.spyOn(HTMLElement.prototype, 'removeEventListener')
-    const netPointerdownListeners = () => {
-      const adds = addSpy.mock.calls.filter(([type]) => type === 'pointerdown').length
-      const removes = removeSpy.mock.calls.filter(([type]) => type === 'pointerdown').length
-      return adds - removes
+
+    try {
+      region.setOptions({ resize: false })
+      region.setOptions({ resize: true })
+      region.setOptions({ resize: false })
+      region.setOptions({ resize: true })
+
+      const pointerdownAdds = addSpy.mock.calls.filter(([type]) => type === 'pointerdown').length
+      const pointerdownRemoves = removeSpy.mock.calls.filter(([type]) => type === 'pointerdown').length
+
+      expect(pointerdownAdds).toBeGreaterThan(0)
+      expect(pointerdownAdds).toBe(pointerdownRemoves)
+    } finally {
+      addSpy.mockRestore()
+      removeSpy.mockRestore()
     }
-
-    region.setOptions({ resize: false })
-    region.setOptions({ resize: true })
-    const netAfterFirstToggle = netPointerdownListeners()
-
-    region.setOptions({ resize: false })
-    region.setOptions({ resize: true })
-    const netAfterSecondToggle = netPointerdownListeners()
-
-    expect(netAfterSecondToggle).toBe(netAfterFirstToggle)
   })
 
   test('places a region in the first free row instead of summing all prior overlaps', () => {
