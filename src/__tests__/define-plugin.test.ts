@@ -119,4 +119,23 @@ describe('definePlugin', () => {
     expect(ws.getActivePlugins()).toContain(plugin)
     ws.destroy()
   })
+
+  it('throws when the setup api collides with a chassis key, naming the plugin', () => {
+    const Plugin = definePlugin<{}, { destroy: [] }, { destroy: () => void }>('collide-plugin', () => ({
+      destroy: () => undefined,
+    }))
+    const plugin = Plugin.create({})
+    expect(() => plugin._init(wsStub())).toThrow(/collide-plugin/)
+  })
+
+  it('does not eagerly read wavesurfer/state at setup time, only lazily via ctx getters', () => {
+    const Plugin = definePlugin<{}, { destroy: [] }, { read: () => unknown }>('lazy-plugin', (ctx) => ({
+      read: () => ctx.state,
+    }))
+    const plugin = Plugin.create({})
+    // A stub missing getState() must not throw during _init — only when the
+    // api actually reads ctx.state.
+    const wsWithoutState = { getWrapper: () => document.createElement('div') } as never
+    expect(() => plugin._init(wsWithoutState)).not.toThrow()
+  })
 })
