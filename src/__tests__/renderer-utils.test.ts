@@ -502,7 +502,7 @@ describe('renderer-utils', () => {
       const plan = computeCanvasPlan({ totalWidth: 2500, clientWidth: 500, options })
       expect(plan.numCanvases).toBe(Math.ceil(2500 / plan.singleCanvasWidth))
       expect(plan.slots.length).toBeLessThanOrEqual(plan.numCanvases)
-      const last = plan.slots[plan.slots.length - 1]
+      const last: CanvasSlot | undefined = plan.slots[plan.slots.length - 1]
       if (last) {
         expect(last.offset + last.width).toBeLessThanOrEqual(2500 + 1)
       }

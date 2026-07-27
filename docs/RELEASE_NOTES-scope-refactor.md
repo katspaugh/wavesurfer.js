@@ -74,3 +74,34 @@ current package version `7.12.11`). Copy/trim into the changelog as needed.
   cycles, so `getState()` keeps working correctly across a `destroy()` -> `load()` reuse (a
   previously-supported pattern per issue #3637). See the comment at the
   `createWaveSurferState()` call site in `src/wavesurfer.ts` for the reasoning.
+
+## Phase 2 — Declarative load & viewport (branch: `refactor/declarative-load-and-viewport`)
+
+Adds declarative load-state signals and viewport derivation (canvas rendering plan, visible time range),
+replacing hand-rolled window tracking and load-version guards. No event-timing or behavior changes.
+
+### New API
+
+- **`WaveSurferState.loadPhase` signal** — emits `'idle' | 'fetching' | 'decoding' | 'ready' | 'error'`.
+  Replaces polling `isReady` for exact load-state awareness without event-timing coupling.
+
+- **`Renderer.getVisibleRange()` derived signal** — returns `{startTime, endTime}` of the visible time range
+  in the current viewport, computed per-render cycle (frozen post-destroy until next render).
+  Consumed by canvas rendering and timeline plugin for synchronized windowing.
+
+- **`FrameScheduler` utility** — new per-frame coalescing scheduler for progress rendering callbacks,
+  replacing direct Timer wiring in WaveSurfer (Timer class retained for Record plugin).
+
+### Internal improvements
+
+- **Per-load `Scope` pattern in `load()` / `_createAudioContext()`** — replaces
+  `_loadVersion` counters and post-await `_isDestroyed` / `abortController` guards with
+  unified child-scope lifecycle. New load aborts previous `loadScope` automatically via
+  `supersededLoadScopes` WeakSet.
+
+- **Pure canvas-plan computation** — `computeCanvasPlan()` returns `{numCanvases, singleCanvasWidth, slots}`.
+  Renderer interprets plan as data instead of imperative rendering, enabling offline testing and
+  layout reuse. Deleted 40+ lines of hand-coded canvas windowing from `renderMultiCanvas`.
+
+- Deferred-minor cleanup sweep: webaudio stale-source guard, envelope polyline null checks,
+  duplicate drag-stream tests, computed subscriber disposal on destroy.
