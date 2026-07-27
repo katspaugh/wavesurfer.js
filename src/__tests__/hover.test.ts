@@ -90,4 +90,24 @@ describe('HoverPlugin', () => {
     expect(hover?.style.transform).toBe('')
     expect(formatTimeCallback).toHaveBeenCalledTimes(1)
   })
+
+  test('does not accumulate transitionend listeners across pointerleave events', () => {
+    const container = document.createElement('div')
+    const { wavesurfer } = createWaveSurfer(container, 10)
+
+    const plugin = HoverPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const hover = container.querySelector<HTMLElement>('[part="hover"]')!
+    const addSpy = jest.spyOn(hover, 'addEventListener')
+    const removeSpy = jest.spyOn(hover, 'removeEventListener')
+
+    for (let i = 0; i < 5; i++) {
+      container.dispatchEvent(new MouseEvent('pointerleave', { bubbles: true }))
+    }
+
+    const added = addSpy.mock.calls.filter(([type]) => type === 'transitionend').length
+    const removed = removeSpy.mock.calls.filter(([type]) => type === 'transitionend').length
+    expect(added - removed).toBeLessThanOrEqual(1)
+  })
 })

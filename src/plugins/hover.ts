@@ -57,6 +57,7 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
   private lastPointerPosition: { clientX: number; clientY: number } | null = null
   private isPointerOverWaveform = false
   private streamCleanups: Array<() => void> = []
+  private transitionEndCleanup: (() => void) | null = null
 
   constructor(options?: HoverPluginOptions) {
     super(options || {})
@@ -175,18 +176,26 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
         this.wrapper.style.opacity = '0'
         this.isPointerOverWaveform = false
         this.lastPointerPosition = null
+
+        // Remove any previously attached transitionend listener before attaching a
+        // new one, so listeners don't accumulate if the transition never fires
+        // (e.g. element hidden or opacity already 0).
+        if (this.transitionEndCleanup) {
+          this.transitionEndCleanup()
+          this.transitionEndCleanup = null
+        }
+
         // Reset transform after the opacity fade so the line doesn't jump to position 0
         // while still visible. Also resets the scrollable overflow area of the scroll
         // container to prevent improper scrollLeft clamping on zoom changes.
-        this.wrapper.addEventListener(
-          'transitionend',
-          () => {
-            if (!this.isPointerOverWaveform) {
-              this.wrapper.style.transform = ''
-            }
-          },
-          { once: true },
-        )
+        const onTransitionEnd = () => {
+          this.transitionEndCleanup = null
+          if (!this.isPointerOverWaveform) {
+            this.wrapper.style.transform = ''
+          }
+        }
+        this.wrapper.addEventListener('transitionend', onTransitionEnd, { once: true })
+        this.transitionEndCleanup = () => this.wrapper.removeEventListener('transitionend', onTransitionEnd)
       }, [pointerLeave]),
     )
 
@@ -217,6 +226,10 @@ class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
 
   /** Unmount */
   public destroy() {
+    if (this.transitionEndCleanup) {
+      this.transitionEndCleanup()
+      this.transitionEndCleanup = null
+    }
     this.streamCleanups.forEach((fn) => fn())
     this.streamCleanups = []
     super.destroy()

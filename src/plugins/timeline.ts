@@ -59,7 +59,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   private timelineWrapper: HTMLElement
   protected options: TimelinePluginOptions & typeof defaultOptions
   private notchElements: Map<HTMLElement, { start: number; width: number; wasVisible: boolean }> = new Map()
-  private currentTimeline: HTMLElement | null = null
+  private currentTimeline: HTMLElement | undefined = undefined
 
   constructor(options?: TimelinePluginOptions) {
     super(options || {})
@@ -127,6 +127,8 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
   /** Unmount */
   public destroy() {
+    this.notchElements.clear()
+    this.currentTimeline = undefined
     this.timelineWrapper.remove()
     super.destroy()
   }
