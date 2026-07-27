@@ -663,6 +663,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.renderer.render(this.decodedData)
       }
 
+      // The 'ready' emit is deliberately NOT guarded: v7 has always emitted
+      // it once execution passes the last checkpoint, even if a listener on
+      // 'decode' called destroy()/load() synchronously, and consumers rely
+      // on that timing. The phase write IS guarded so a cancelled load can
+      // never stamp 'ready' onto state a newer load (or none) now owns. In
+      // the narrow cancelled-during-decode window the two therefore
+      // disagree: the event fires while loadPhase stays 'decoding'.
       if (!loadScope.disposed) {
         this.wavesurferActions.setLoadPhase('ready')
       }
