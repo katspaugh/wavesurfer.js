@@ -103,6 +103,34 @@ describe('TimelinePlugin', () => {
     expect(spy).not.toHaveBeenCalled()
   })
 
+  test('scroll-driven notch window uses the padding-adjusted getWidth(), consistent with virtualAppend', () => {
+    // Renderer.getWidth() returns clientWidth minus the container's inline
+    // padding (see renderer.ts's getWidth()/containerInlinePadding). Simulate
+    // non-zero container padding by making getWidth() smaller than a raw,
+    // unpadded viewport width would be. virtualAppend()'s initial-visibility
+    // check already used getScroll() + getWidth() for this reason; the
+    // scroll-driven effect must compute the SAME window, not fall back to an
+    // unpadded bounds value (as the legacy 'scroll' event used to report).
+    const wavesurfer = createWaveSurfer(1, 100)
+    const paddingAdjustedWidth = 150 // e.g. a 200px-wide container with 50px of inline padding
+    wavesurfer.getWidth = jest.fn(() => paddingAdjustedWidth)
+    wavesurfer.getScroll = jest.fn(() => 10)
+
+    const plugin = TimelinePlugin.create({ duration: 1 })
+    plugin._init(wavesurfer as any)
+
+    const updateSpy = jest.spyOn(plugin as any, 'updateVisibleNotches')
+
+    wavesurfer.getRenderer().getVisibleRange().set({ startTime: 0.1, endTime: 0.9 })
+
+    // The exact same scrollRight virtualAppend() would compute right now,
+    // from the same getScroll()/getWidth() pair -- pins the invariant that
+    // both paths share one padding-adjusted width, not two different windows.
+    const virtualAppendScrollRight = wavesurfer.getScroll() + wavesurfer.getWidth()
+    expect(updateSpy).toHaveBeenCalledWith(10, virtualAppendScrollRight, (plugin as any).currentTimeline)
+    expect(updateSpy).toHaveBeenCalledWith(10, 160, (plugin as any).currentTimeline)
+  })
+
   test('clears notch element cache on destroy', () => {
     const wavesurfer = createWaveSurfer(1, 100)
     const plugin = TimelinePlugin.create({ duration: 1 })

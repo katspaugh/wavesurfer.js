@@ -119,6 +119,15 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
       effect(() => {
         if (this.currentTimeline) {
           const scrollLeft = this.wavesurfer!.getScroll()
+          // getWidth() is the container width minus its inline padding (see
+          // Renderer.getWidth()), matching virtualAppend()'s initial-visibility
+          // check below. This is intentional: it keeps the scroll-driven
+          // re-window consistent with the initial-render window, both derived
+          // from the same padding-adjusted width. The legacy 'scroll' event
+          // this replaced reported unpadded bounds (scrollLeft + clientWidth),
+          // which was inconsistent with virtualAppend -- with non-zero
+          // container padding the visible window now differs slightly (by the
+          // padding amount) from that old, inconsistent behavior.
           const scrollRight = scrollLeft + this.wavesurfer!.getWidth()
           this.updateVisibleNotches(scrollLeft, scrollRight, this.currentTimeline)
         }
