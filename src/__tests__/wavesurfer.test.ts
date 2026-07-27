@@ -23,19 +23,20 @@ jest.mock('../renderer.js', () => {
   return { __esModule: true, default: Renderer, getLastInstance: () => lastInstance }
 })
 
-jest.mock('../timer.js', () => {
+jest.mock('../frame-scheduler.js', () => {
   let lastInstance: any
-  class Timer {
-    on = jest.fn(() => () => undefined)
+  class FrameScheduler {
     start = jest.fn()
     stop = jest.fn()
-    destroy = jest.fn()
+    constructor(scope: any) {
+      lastInstance = this
+      // Mirror the real FrameScheduler's contract: stop() runs when the
+      // owning scope is disposed, so wavesurfer.destroy() (which disposes
+      // this.scope) exercises the same teardown path here.
+      scope.add(() => this.stop())
+    }
   }
-  const ctor = jest.fn(() => {
-    lastInstance = new Timer()
-    return lastInstance
-  })
-  return { __esModule: true, default: ctor, getLastInstance: () => lastInstance }
+  return { __esModule: true, FrameScheduler, getLastInstance: () => lastInstance }
 })
 
 jest.mock('../decoder.js', () => {
@@ -49,9 +50,9 @@ jest.mock('../decoder.js', () => {
 import WaveSurfer from '../wavesurfer.js'
 import { BasePlugin } from '../base-plugin.js'
 import * as RendererModule from '../renderer.js'
-import * as TimerModule from '../timer.js'
+import * as FrameSchedulerModule from '../frame-scheduler.js'
 const getRenderer = (RendererModule as any).getLastInstance as () => any
-const getTimer = (TimerModule as any).getLastInstance as () => any
+const getFrameScheduler = (FrameSchedulerModule as any).getLastInstance as () => any
 
 const createMedia = () => {
   const media = document.createElement('audio') as HTMLMediaElement & { play: jest.Mock; pause: jest.Mock }
@@ -192,11 +193,12 @@ describe('WaveSurfer public methods', () => {
     Object.defineProperty(media, 'paused', { configurable: true, value: false })
     await ws.play(1, 2)
 
-    // Simulate the clock overshooting the stop position between timer ticks
+    // Simulate the clock overshooting the stop position between scheduler ticks.
+    // ws.play() resolves media.play() (mocked) but jsdom never dispatches a real
+    // 'play' event, so the scheduler is never actually started here -- invoke
+    // the tick body (a private field on the instance) directly instead.
     media.currentTime = 2.013
-    const timer = getTimer()
-    const tick = timer.on.mock.calls.find(([event]: [string]) => event === 'tick')[1]
-    tick()
+    ;(ws as any).onTick()
 
     expect(media.pause).toHaveBeenCalled()
     expect(ws.getCurrentTime()).toBe(2)
@@ -247,11 +249,34 @@ describe('WaveSurfer public methods', () => {
     expect(getRenderer().exportImage).toHaveBeenCalled()
   })
 
-  test('destroy cleans up renderer and timer', () => {
+  test('destroy cleans up renderer and stops the frame scheduler via scope disposal', () => {
     const ws = createWs()
+    const scheduler = getFrameScheduler()
     ws.destroy()
     expect(getRenderer().destroy).toHaveBeenCalled()
-    expect(getTimer().destroy).toHaveBeenCalled()
+    expect(scheduler.stop).toHaveBeenCalled()
+  })
+
+  test('destroy recreates the frame scheduler so a post-destroy play() still ticks', () => {
+    // destroy() disposes and recreates this.scope for the supported
+    // destroy -> load() reuse pattern (see the reuse test below). The
+    // FrameScheduler registers its stop() on the scope it was built with,
+    // so it must be recreated alongside the scope -- otherwise a post-destroy
+    // play() would call start() on a scheduler whose stop is tied to a dead
+    // scope (or was already run), and progress ticking would silently break.
+    const ws = createWs()
+    const schedulerBeforeDestroy = getFrameScheduler()
+    ws.destroy()
+    const schedulerAfterDestroy = getFrameScheduler()
+    expect(schedulerAfterDestroy).not.toBe(schedulerBeforeDestroy)
+
+    // Reusing an instance after destroy() is supported (see the reuse test
+    // below); setMediaElement() re-registers the media event listeners
+    // destroy() tore down, same as a real post-destroy reuse would need.
+    const media = createMedia()
+    ws.setMediaElement(media)
+    media.dispatchEvent(new Event('play'))
+    expect(schedulerAfterDestroy.start).toHaveBeenCalled()
   })
 
   test('does not emit pause or timeupdate during construction', async () => {
@@ -339,6 +364,20 @@ describe('WaveSurfer public methods', () => {
     ws.destroy()
   })
 
+  test('walks loadPhase through decoding→ready for a peaks+duration load', async () => {
+    const ws = WaveSurfer.create({
+      container: document.createElement('div'),
+      peaks: [[0, 0.5, 1]],
+      duration: 1,
+    })
+    const phases: string[] = []
+    ws.getState().loadPhase.subscribe((p) => phases.push(p))
+    await new Promise((resolve) => ws.once('ready', resolve))
+    expect(ws.getState().loadPhase.value).toBe('ready')
+    expect(phases).toContain('decoding')
+    ws.destroy()
+  })
+
   test('resets peaks state at the start of a load that provides no channelData', async () => {
     const ws = createWs({
       peaks: [[0, 0.5, 1]],
@@ -387,5 +426,264 @@ describe('WaveSurfer public methods', () => {
     expect(ws.getState().progress.value).toBe(42)
 
     ws.destroy()
+  })
+
+  describe('per-load Scope', () => {
+    let originalFetch: typeof global.fetch
+
+    beforeEach(() => {
+      originalFetch = global.fetch
+    })
+
+    afterEach(() => {
+      global.fetch = originalFetch
+    })
+
+    it('starting a new load aborts the previous fetch via scope disposal', async () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      const seenSignals: AbortSignal[] = []
+      global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
+        seenSignals.push(init.signal as AbortSignal)
+        return new Promise(() => undefined) // never resolves
+      })
+      ws.load('http://x/a.mp3').catch(() => undefined)
+      await Promise.resolve()
+      ws.load('http://x/b.mp3').catch(() => undefined)
+      await Promise.resolve()
+      expect(seenSignals[0].aborted).toBe(true)
+      expect(seenSignals[1].aborted).toBe(false)
+      ws.destroy()
+      expect(seenSignals[1].aborted).toBe(true) // destroy cancels the in-flight load
+    })
+
+    it('a superseded load never applies its results', async () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      const onError = jest.fn()
+      ws.on('error', onError)
+      let resolveFirst: (b: Blob) => void
+      const blob = new Blob([new ArrayBuffer(8)], { type: 'audio/wav' })
+      global.fetch = jest
+        .fn()
+        .mockImplementationOnce(
+          () =>
+            new Promise((res) => {
+              resolveFirst = () =>
+                res({
+                  status: 200,
+                  blob: () => Promise.resolve(blob),
+                  clone: () => ({ body: null, headers: new Headers() }),
+                  body: null,
+                  headers: new Headers(),
+                } as unknown as Response)
+            }),
+        )
+        .mockImplementation(() => new Promise(() => undefined))
+      ws.load('http://x/a.mp3').catch(() => undefined)
+      await Promise.resolve()
+      ws.load('http://x/b.mp3').catch(() => undefined) // supersedes
+      resolveFirst!(blob)
+      await new Promise((r) => setTimeout(r, 0))
+      expect((ws as any).getSrc?.() ?? (ws.getMediaElement().src || '')).not.toContain('a.mp3')
+      // A superseded load must never surface as a user-visible error -- its
+      // rejection (if any) is filtered inside loadAudio via the loadScope.disposed
+      // check, so load()'s catch never runs for it.
+      expect(onError).not.toHaveBeenCalled()
+      ws.destroy()
+    })
+
+    it('sets loadPhase=error when the fetch rejects', async () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      global.fetch = jest.fn().mockRejectedValue(new Error('network'))
+      await expect(ws.load('http://x/a.mp3')).rejects.toThrow()
+      expect(ws.getState().loadPhase.value).toBe('error')
+      ws.destroy()
+    })
+
+    it('destroy() before ready rejects load() with AbortError and emits error, unlike a superseded load', async () => {
+      // Contract pinned by cypress/e2e/abort.cy.js / issue #3637: destroying
+      // mid-load must reject the load() promise and emit 'error' -- this is
+      // different from supersession (a newer load() starting), which must be
+      // swallowed silently. Both cases dispose loadScope, so the fix must
+      // distinguish them by whether the *instance* (not just the load) was
+      // torn down.
+      global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
+        const signal = init.signal as AbortSignal
+        return new Promise((_resolve, reject) => {
+          const onAbort = () => reject(new DOMException('The user aborted a request.', 'AbortError'))
+          if (signal.aborted) {
+            onAbort()
+          } else {
+            signal.addEventListener('abort', onAbort, { once: true })
+          }
+        })
+      })
+
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+
+      const loadPromise = ws.load('http://x/a.mp3')
+      await Promise.resolve()
+      ws.destroy()
+
+      // destroy() clears all listeners (unAll()), same as the real
+      // cypress/e2e/abort.cy.js "destroy before wavesurfer ready should emit
+      // AbortError Exception" case -- it (re-)registers the 'error' listener
+      // *after* destroy(), since reusing an instance post-destroy is
+      // supported (#3637) and the delayed 'error' emit lands on a later tick.
+      const onError = jest.fn()
+      ws.on('error', onError)
+
+      await expect(loadPromise).rejects.toThrow()
+      await expect(loadPromise).rejects.toMatchObject({ name: 'AbortError' })
+      expect(onError).toHaveBeenCalledTimes(1)
+      expect(onError.mock.calls[0][0].name).toBe('AbortError')
+      expect(ws.getState().loadPhase.value).toBe('error')
+    })
+
+    it('does not double-emit error when a load is superseded and the instance is destroyed in the same tick', async () => {
+      // Regression probe for the destroy-vs-supersede fix above: load(A),
+      // then load(B) (superseding A), then destroy() -- all synchronously,
+      // no await between them. A was genuinely superseded *before* destroy()
+      // ever ran, so it must still resolve (swallowed) even though, by the
+      // time its rejection handler finally runs (a later microtask),
+      // destroy() has *also* torn the instance down. Only B (the load that
+      // was still live at destroy time) should reject and emit 'error' --
+      // exactly once. A design that re-derives "was this superseded?" from
+      // scope.disposed state at catch time (rather than marking it at the
+      // moment supersession actually happens) gets this wrong: both A and B
+      // would look indistinguishable from "destroyed" by the time their
+      // catches run, so both reject and 'error' fires twice.
+      global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
+        const signal = init.signal as AbortSignal
+        return new Promise((_resolve, reject) => {
+          const onAbort = () => reject(new DOMException('The user aborted a request.', 'AbortError'))
+          if (signal.aborted) {
+            onAbort()
+          } else {
+            signal.addEventListener('abort', onAbort, { once: true })
+          }
+        })
+      })
+
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+
+      const pA = ws.load('http://x/a.mp3')
+      const pB = ws.load('http://x/b.mp3') // supersedes A
+      ws.destroy() // same tick -- no await before this point
+
+      // Registered after destroy(), same reasoning as the test above:
+      // destroy() -> unAll() wipes listeners registered before it.
+      const onError = jest.fn()
+      ws.on('error', onError)
+
+      await expect(pA).resolves.toBeUndefined()
+      await expect(pB).rejects.toMatchObject({ name: 'AbortError' })
+      expect(onError).toHaveBeenCalledTimes(1)
+      expect(onError.mock.calls[0][0].name).toBe('AbortError')
+    })
+
+    it('loadScope is a child of the current scope, replaced by each load, and cleared by destroy', async () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      global.fetch = jest.fn().mockImplementation(() => new Promise(() => undefined))
+
+      ws.load('http://x/a.mp3').catch(() => undefined)
+      await Promise.resolve()
+      const firstLoadScope = (ws as any).loadScope
+      expect(firstLoadScope).toBeTruthy()
+      expect(firstLoadScope.disposed).toBe(false)
+
+      ws.load('http://x/b.mp3').catch(() => undefined)
+      await Promise.resolve()
+      expect(firstLoadScope.disposed).toBe(true)
+      const secondLoadScope = (ws as any).loadScope
+      expect(secondLoadScope).not.toBe(firstLoadScope)
+      expect(secondLoadScope.disposed).toBe(false)
+
+      ws.destroy()
+      expect(secondLoadScope.disposed).toBe(true)
+      expect((ws as any).loadScope).toBeNull()
+
+      // #3637: reusing an instance after destroy() is supported. A load()
+      // after destroy() must derive its loadScope from the freshly recreated
+      // this.scope, not the disposed one. If child() were called on the old
+      // (still-disposed) scope, Scope.child() returns a pre-disposed child,
+      // so this scope would come back `disposed === true` -- proving the
+      // parentage, not just the null-check above.
+      ws.load('http://x/c.mp3').catch(() => undefined)
+      await Promise.resolve()
+      expect((ws as any).loadScope.disposed).toBe(false)
+      ws.destroy()
+    })
+
+    it('fetchParams option is copied per load so a superseded load does not poison the next fetch with an aborted signal', async () => {
+      const userFetchParams: RequestInit = {}
+      const ws = WaveSurfer.create({ container: document.createElement('div'), fetchParams: userFetchParams })
+      const seenSignals: AbortSignal[] = []
+      global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
+        seenSignals.push(init.signal as AbortSignal)
+        return new Promise(() => undefined) // never resolves
+      })
+
+      ws.load('http://x/a.mp3').catch(() => undefined)
+      await Promise.resolve()
+      ws.load('http://x/b.mp3').catch(() => undefined) // supersedes
+      await Promise.resolve()
+
+      expect(seenSignals).toHaveLength(2)
+      // The user's own fetchParams object must never be mutated by wavesurfer.
+      expect(userFetchParams.signal).toBeUndefined()
+      // The second fetch must get its own, non-aborted signal -- not load 1's
+      // (now-aborted) signal leaking through a shared/aliased fetchParams object.
+      expect(seenSignals[1]).not.toBe(seenSignals[0])
+      expect(seenSignals[1].aborted).toBe(false)
+
+      ws.destroy()
+    })
+
+    it('does not let a superseded load-A rejection (arriving via destroy -> load-B reuse) clobber load-Bs in-flight phase', async () => {
+      // Regression test: load(A) in flight, then destroy(), then load(B) in
+      // the same tick (destroy() -> load() reuse is supported, #3637). A's
+      // fetch is still pending and will eventually reject with AbortError
+      // (its signal was aborted by destroy() disposing the old scope). That
+      // rejection reaches loadAudio's catch on a later microtask -- by then
+      // this.loadScope already points at B's loadScope, not A's. Before the
+      // fix, load()'s catch unconditionally wrote setLoadPhase('error'),
+      // regardless of which load it belonged to, so A's late rejection wiped
+      // out B's 'fetching'/'decoding'/'ready' progress. The fix moves the
+      // write into loadAudio's catch, guarded to only fire when the load
+      // that's erroring is still the current one (or the instance has since
+      // been destroyed, nulling loadScope entirely).
+      global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
+        const signal = init.signal as AbortSignal
+        return new Promise((_resolve, reject) => {
+          const onAbort = () => reject(new DOMException('The user aborted a request.', 'AbortError'))
+          if (signal.aborted) {
+            onAbort()
+          } else {
+            signal.addEventListener('abort', onAbort, { once: true })
+          }
+        })
+      })
+
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+
+      const pA = ws.load('http://x/a.mp3')
+      pA.catch(() => undefined)
+      await Promise.resolve()
+
+      ws.destroy() // aborts A's fetch signal
+      ws.load('http://x/b.mp3').catch(() => undefined) // reuse after destroy (#3637), same tick
+
+      // Flush A's now-rejected fetch promise (its abort listener fires
+      // synchronously on dispose, but the .catch chain in loadAudio needs a
+      // couple of microtask turns to run).
+      await Promise.resolve()
+      await Promise.resolve()
+      await Promise.resolve()
+
+      expect(ws.getState().loadPhase.value).not.toBe('error')
+      expect(ws.getState().loadPhase.value).toBe('fetching')
+
+      ws.destroy()
+    })
   })
 })

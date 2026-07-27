@@ -2,10 +2,10 @@ import BasePlugin, { type GenericPlugin } from './base-plugin.js'
 import Decoder from './decoder.js'
 import * as dom from './dom.js'
 import Fetcher from './fetcher.js'
+import { FrameScheduler } from './frame-scheduler.js'
 import Player from './player.js'
 import Renderer from './renderer.js'
 import { Scope } from './scope.js'
-import Timer from './timer.js'
 import WebAudioPlayer from './webaudio.js'
 import { createWaveSurferState, type WaveSurferState, type WaveSurferActions } from './state/wavesurfer-state.js'
 
@@ -158,15 +158,20 @@ export type WaveSurferEvents = {
 class WaveSurfer extends Player<WaveSurferEvents> {
   public options: WaveSurferOptions & typeof defaultOptions
   private renderer: Renderer
-  private timer: Timer
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
   private stopAtPosition: number | null = null
   protected scope: Scope = new Scope()
   private mediaEventScope = this.scope.child()
-  protected abortController: AbortController | null = null
-  private _isDestroyed = false
-  private _loadVersion = 0
+  private frameScheduler: FrameScheduler = new FrameScheduler(this.scope)
+  private loadScope: Scope | null = null
+  // Scopes marked here were superseded by a newer load() at the moment
+  // supersession happened (see loadAudio) -- distinct from a scope merely
+  // being disposed, which also happens on destroy(). Checked from loadAudio's
+  // catch block to swallow only genuinely-superseded loads, never a
+  // destroy-triggered abort or a real failure. WeakSet so a superseded
+  // scope isn't kept alive once nothing else references it.
+  private supersededLoadScopes = new WeakSet<Scope>()
 
   // Reactive state
   private wavesurferState: WaveSurferState
@@ -229,14 +234,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // already provides. `dispose` remains part of createWaveSurferState's
     // public return value for direct/standalone users of the state module.
 
-    this.timer = new Timer()
-
     const audioElement = media ? undefined : this.getMediaElement()
     this.renderer = new Renderer(this.options, audioElement)
 
     this.initPlayerEvents()
     this.initRendererEvents()
-    this.initTimerEvents()
     this.initPlugins()
 
     // Read the initial URL before load has been called
@@ -264,31 +266,28 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return currentTime
   }
 
-  private initTimerEvents() {
-    // The timer fires every 16ms for a smooth progress animation
-    this.scope.add(
-      this.timer.on('tick', () => {
-        if (!this.isSeeking()) {
-          const currentTime = this.updateProgress()
-          this.emit('timeupdate', currentTime)
-          this.emit('audioprocess', currentTime)
+  // The frame scheduler ticks every animation frame for a smooth progress
+  // animation while playing.
+  private onTick = () => {
+    if (!this.isSeeking()) {
+      const currentTime = this.updateProgress()
+      this.emit('timeupdate', currentTime)
+      this.emit('audioprocess', currentTime)
 
-          // Pause audio when it reaches the stopAtPosition
-          if (this.stopAtPosition != null && this.isPlaying() && currentTime >= this.stopAtPosition) {
-            // The timer may overshoot the stop position, so clamp the time back to it
-            const stopAt = this.stopAtPosition
-            this.pause()
-            this.setTime(stopAt)
-          }
-        }
-      }),
-    )
+      // Pause audio when it reaches the stopAtPosition
+      if (this.stopAtPosition != null && this.isPlaying() && currentTime >= this.stopAtPosition) {
+        // The scheduler may overshoot the stop position, so clamp the time back to it
+        const stopAt = this.stopAtPosition
+        this.pause()
+        this.setTime(stopAt)
+      }
+    }
   }
 
   private initPlayerEvents() {
     if (this.isPlaying()) {
       this.emit('play')
-      this.timer.start()
+      this.frameScheduler.start(this.onTick)
     }
 
     this.mediaEventScope.add(
@@ -301,21 +300,21 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.mediaEventScope.add(
       this.onMediaEvent('play', () => {
         this.emit('play')
-        this.timer.start()
+        this.frameScheduler.start(this.onTick)
       }),
     )
 
     this.mediaEventScope.add(
       this.onMediaEvent('pause', () => {
         this.emit('pause')
-        this.timer.stop()
+        this.frameScheduler.stop()
         this.stopAtPosition = null
       }),
     )
 
     this.mediaEventScope.add(
       this.onMediaEvent('emptied', () => {
-        this.timer.stop()
+        this.frameScheduler.stop()
         this.stopAtPosition = null
       }),
     )
@@ -536,18 +535,40 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
-    // Re-entrancy guard: assign a version to this load call
-    // If a newer load starts while this one is in-flight, this one will bail out
-    const loadVersion = ++this._loadVersion
+    // Re-entrancy guard: a fresh child scope for this load call.
+    // If a newer load starts (or the instance is destroyed) while this one is
+    // in-flight, this scope is disposed and this call bails out at the next
+    // checkpoint below.
+    // Mark the previous load's scope as superseded right now, synchronously,
+    // at the only place supersession can happen -- a newer load() starting.
+    // This must be a point-in-time mark, not something re-derived later from
+    // scope.disposed state: if load(A), then load(B) (superseding A), then
+    // destroy() all land in the same tick, A's catch doesn't run until a
+    // later microtask, by which point destroy() has *also* disposed the
+    // owning scope -- so "disposed" alone can no longer distinguish "A was
+    // superseded before destroy" from "A was destroyed". The mark captured
+    // here is unambiguous regardless of what happens afterward.
+    if (this.loadScope && !this.loadScope.disposed) {
+      this.supersededLoadScopes.add(this.loadScope)
+    }
+    this.loadScope?.dispose()
+    const loadScope = this.scope.child()
+    this.loadScope = loadScope
 
     // Reusing an instance after destroy() is a supported behavior (see issue #3637
     // and cypress/e2e/abort.cy.js "load url after destroyed should emit ready").
-    // Reset the destroyed flag so the instance can be reloaded. Stale in-flight
-    // loads from before destroy() are still cancelled by the loadVersion guard
-    // below, so this reset does not weaken the post-await bail-out checks.
-    this._isDestroyed = false
+    // this.scope (and thus loadScope's parent) is recreated fresh by destroy(),
+    // so loadScope above is always a child of the current, live scope -- stale
+    // in-flight loads from before destroy() are still cancelled by the
+    // loadScope.disposed guard below.
 
     this.emit('load', url)
+
+    // Only the fetch path goes through 'fetching' -- pre-decoded data
+    // (blob/channelData already provided) skips straight to 'decoding' below.
+    if (!loadScope.disposed && !blob && !channelData) {
+      this.wavesurferActions.setLoadPhase('fetching')
+    }
 
     this.wavesurferActions.setUrl(url || '')
     if (channelData) {
@@ -562,74 +583,121 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.wavesurferActions.setAudioBuffer(null)
     this.stopAtPosition = null
 
-    // Abort any ongoing fetch before starting a new one
-    this.abortController?.abort()
-    this.abortController = null
-
-    // Fetch the entire audio as a blob if pre-decoded data is not provided
-    if (!blob && !channelData) {
-      const fetchParams = this.options.fetchParams || {}
-      if (window.AbortController && !fetchParams.signal) {
-        this.abortController = new AbortController()
-        fetchParams.signal = this.abortController.signal
+    // The fetch/decode pipeline below can reject when this load is superseded
+    // by a newer load() (e.g. an aborted fetch rejects with AbortError). Such
+    // rejections must never escape loadAudio -- they aren't genuine failures,
+    // just noise from cancelling a stale load. A destroy-triggered abort is
+    // different: it must still propagate (see the catch below), so
+    // load()/loadBlob()'s catch blocks only ever see "supersession, already
+    // filtered" or "a real failure/destroy, handle it."
+    try {
+      // Fetch the entire audio as a blob if pre-decoded data is not provided
+      if (!blob && !channelData) {
+        // Shallow-copy: this.options.fetchParams is a user-owned object that may be
+        // reused across multiple load() calls. Writing our per-load abort signal
+        // onto it directly would leak load N's (eventually aborted) signal into
+        // load N+1's fetch, since `!fetchParams.signal` would then already be false.
+        const fetchParams = { ...this.options.fetchParams }
+        if (!fetchParams.signal) {
+          fetchParams.signal = loadScope.abortSignal()
+        }
+        const onProgress = (percentage: number) => this.emit('loading', percentage)
+        blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
+        // Guard: bail if a newer load started or the instance was destroyed
+        if (loadScope.disposed) return
+        const overriddenMimeType = this.options.blobMimeType
+        if (overriddenMimeType) {
+          blob = new Blob([blob], { type: overriddenMimeType })
+        }
       }
-      const onProgress = (percentage: number) => this.emit('loading', percentage)
-      blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
-      // Guard: bail if destroyed or a newer load started
-      if (this._isDestroyed || loadVersion !== this._loadVersion) return
-      const overriddenMimeType = this.options.blobMimeType
-      if (overriddenMimeType) {
-        blob = new Blob([blob], { type: overriddenMimeType })
+
+      // Guard: bail if a newer load started or the instance was destroyed
+      if (loadScope.disposed) return
+
+      // Set the mediaelement source
+      this.setSrc(url, blob)
+
+      // Wait for the audio duration
+      const audioDuration = await new Promise<number>((resolve) => {
+        const staticDuration = duration || this.getDuration()
+        if (staticDuration) {
+          resolve(staticDuration)
+        } else {
+          this.mediaEventScope.add(
+            this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }),
+          )
+        }
+      })
+
+      // Guard: bail if a newer load started or the instance was destroyed
+      if (loadScope.disposed) return
+
+      // Set the duration if the player is a WebAudioPlayer without a URL
+      if (!url && !blob) {
+        const media = this.getMediaElement()
+        if (media instanceof WebAudioPlayer) {
+          media.duration = audioDuration
+        }
+      }
+
+      if (!loadScope.disposed) {
+        this.wavesurferActions.setLoadPhase('decoding')
+      }
+
+      // Decode the audio data or use user-provided peaks
+      if (channelData) {
+        this.decodedData = Decoder.createBuffer(channelData, audioDuration || 0)
+      } else if (blob) {
+        const arrayBuffer = await blob.arrayBuffer()
+        // Guard: bail if a newer load started or the instance was destroyed
+        if (loadScope.disposed) return
+        this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
+      }
+
+      // Guard: bail if a newer load started or the instance was destroyed
+      if (loadScope.disposed) return
+
+      if (this.decodedData) {
+        this.wavesurferActions.setAudioBuffer(this.decodedData)
+        this.emit('decode', this.getDuration())
+        this.renderer.render(this.decodedData)
+      }
+
+      // The 'ready' emit is deliberately NOT guarded: v7 has always emitted
+      // it once execution passes the last checkpoint, even if a listener on
+      // 'decode' called destroy()/load() synchronously, and consumers rely
+      // on that timing. The phase write IS guarded so a cancelled load can
+      // never stamp 'ready' onto state a newer load (or none) now owns. In
+      // the narrow cancelled-during-decode window the two therefore
+      // disagree: the event fires while loadPhase stays 'decoding'.
+      if (!loadScope.disposed) {
+        this.wavesurferActions.setLoadPhase('ready')
+      }
+      this.emit('ready', this.getDuration())
+    } catch (err) {
+      // Superseded loads were marked in supersededLoadScopes at the moment
+      // supersession happened (see the top of this method): swallow those,
+      // the new load owns the state now. Everything else -- destroy
+      // mid-load, or a genuine failure -- must propagate so load()/loadBlob()
+      // rejects and emits 'error' (issue #3637 / cypress/e2e/abort.cy.js
+      // contract).
+      if (!this.supersededLoadScopes.has(loadScope)) {
+        // Write the 'error' phase here, not in load()/loadBlob()'s catches,
+        // and only when this load is still the current one (this.loadScope
+        // === loadScope) or the instance has since been destroyed
+        // (this.loadScope === null, set by destroy()). Without this guard, a
+        // stale load's rejection landing on a later microtask -- e.g.
+        // destroy() then load(B) reusing the instance in the same tick,
+        // where A's late AbortError still isn't classified as "superseded"
+        // because supersession is only marked when a *newer load()* starts,
+        // not by destroy() -- would clobber loadPhase back to 'error' while
+        // B is still fetching/decoding.
+        if (this.loadScope === loadScope || this.loadScope === null) {
+          this.wavesurferActions.setLoadPhase('error')
+        }
+        throw err
       }
     }
-
-    // Guard: bail if destroyed or a newer load started
-    if (this._isDestroyed || loadVersion !== this._loadVersion) return
-
-    // Set the mediaelement source
-    this.setSrc(url, blob)
-
-    // Wait for the audio duration
-    const audioDuration = await new Promise<number>((resolve) => {
-      const staticDuration = duration || this.getDuration()
-      if (staticDuration) {
-        resolve(staticDuration)
-      } else {
-        this.mediaEventScope.add(this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }))
-      }
-    })
-
-    // Guard: bail if destroyed or a newer load started
-    if (this._isDestroyed || loadVersion !== this._loadVersion) return
-
-    // Set the duration if the player is a WebAudioPlayer without a URL
-    if (!url && !blob) {
-      const media = this.getMediaElement()
-      if (media instanceof WebAudioPlayer) {
-        media.duration = audioDuration
-      }
-    }
-
-    // Decode the audio data or use user-provided peaks
-    if (channelData) {
-      this.decodedData = Decoder.createBuffer(channelData, audioDuration || 0)
-    } else if (blob) {
-      const arrayBuffer = await blob.arrayBuffer()
-      // Guard: bail if destroyed or a newer load started
-      if (this._isDestroyed || loadVersion !== this._loadVersion) return
-      this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
-    }
-
-    // Guard: bail if destroyed or a newer load started
-    if (this._isDestroyed || loadVersion !== this._loadVersion) return
-
-    if (this.decodedData) {
-      this.wavesurferActions.setAudioBuffer(this.decodedData)
-      this.emit('decode', this.getDuration())
-      this.renderer.render(this.decodedData)
-    }
-
-    this.emit('ready', this.getDuration())
   }
 
   /** Load an audio file by URL, with optional pre-decoded audio data */
@@ -787,10 +855,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Unmount wavesurfer */
   public destroy() {
-    this._isDestroyed = true
     this.emit('destroy')
-    this.abortController?.abort()
     this.plugins.forEach((plugin) => plugin.destroy())
+    // this.scope.dispose() cascades to loadScope (a child), which aborts any
+    // in-flight fetch via its abortSignal() -- no separate abort call needed.
     this.scope.dispose()
     // Reusing an instance after destroy() is a supported behavior (see the
     // loadAudio comment about issue #3637), so fresh scopes must replace the
@@ -798,7 +866,14 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // which would otherwise break a subsequent load()/setMediaElement() call.
     this.scope = new Scope()
     this.mediaEventScope = this.scope.child()
-    this.timer.destroy()
+    // loadScope was a child of the now-disposed old scope; loadAudio always
+    // creates its next loadScope from the current this.scope, so this is
+    // just clearing the stale reference (already disposed via cascade above).
+    this.loadScope = null
+    // frameScheduler.stop() already ran via the disposer it registered on the
+    // old (now-disposed) scope; a fresh instance is needed so a post-destroy
+    // load()/play() registers its stop on the new scope instead of the dead one.
+    this.frameScheduler = new FrameScheduler(this.scope)
     this.renderer.destroy()
     super.destroy()
   }
@@ -806,6 +881,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
 // Export reactive types for plugin authors
 export type { Signal, WritableSignal } from './reactive/store.js'
-export type { WaveSurferState, WaveSurferActions } from './state/wavesurfer-state.js'
+export type { WaveSurferState, WaveSurferActions, LoadPhase } from './state/wavesurfer-state.js'
 
 export default WaveSurfer

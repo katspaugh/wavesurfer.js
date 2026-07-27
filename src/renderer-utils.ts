@@ -9,6 +9,12 @@ export type BarSegment = {
   height: number
 }
 
+export type CanvasSlot = {
+  index: number
+  offset: number
+  width: number
+}
+
 export type LinePath = Array<{ x: number; y: number }>
 
 export const DEFAULT_HEIGHT = 128
@@ -286,6 +292,37 @@ export function calculateSingleCanvasWidth({
 }): number {
   const baseWidth = Math.min(MAX_CANVAS_WIDTH, clientWidth, totalWidth)
   return clampWidthToBarGrid(baseWidth, options)
+}
+
+export function computeCanvasPlan({
+  totalWidth,
+  clientWidth,
+  options,
+}: {
+  totalWidth: number
+  clientWidth: number
+  options: WaveSurferOptions
+}): { singleCanvasWidth: number; numCanvases: number; slots: CanvasSlot[] } {
+  const singleCanvasWidth = calculateSingleCanvasWidth({ clientWidth, totalWidth, options })
+  if (singleCanvasWidth === 0) return { singleCanvasWidth: 0, numCanvases: 0, slots: [] }
+  const numCanvases = Math.ceil(totalWidth / singleCanvasWidth)
+  const slots: CanvasSlot[] = []
+  // Only the tail slot can ever be dropped here: every non-tail slot's width
+  // is min(totalWidth - offset, singleCanvasWidth) === singleCanvasWidth,
+  // which was already floor-clamped to the bar grid when it was computed
+  // above, and clampWidthToBarGrid is idempotent on an already-aligned
+  // value -- so it can't collapse to 0 for those. Only the final slot (where
+  // totalWidth - offset < singleCanvasWidth) can floor-clamp down to 0 and
+  // get skipped. That keeps `slots` dense with no gaps, so `slots[index]`
+  // positional lookup stays aligned with `index`; if this clamping logic
+  // ever changes such that a middle slot could also be dropped, draw() must
+  // switch from positional indexing to finding a slot by its `.index` field.
+  for (let index = 0; index < numCanvases; index++) {
+    const offset = index * singleCanvasWidth
+    const width = clampWidthToBarGrid(Math.min(totalWidth - offset, singleCanvasWidth), options)
+    if (width > 0) slots.push({ index, offset, width })
+  }
+  return { singleCanvasWidth, numCanvases, slots }
 }
 
 export function sliceChannelData({

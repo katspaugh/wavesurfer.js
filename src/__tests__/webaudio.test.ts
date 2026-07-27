@@ -322,5 +322,22 @@ describe('WebAudioPlayer', () => {
       player.src = 'http://example.com/good.mp3'
       expect(player.error).toBeNull()
     })
+
+    test('does not emit error for a fetch that lost the race to a newer src', async () => {
+      const { audioContext } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      const onError = jest.fn()
+      player.on('error', onError)
+      let rejectFirst: (e: Error) => void = () => undefined
+      global.fetch = jest
+        .fn()
+        .mockImplementationOnce(() => new Promise((_, rej) => (rejectFirst = rej)))
+        .mockImplementationOnce(() => new Promise(() => undefined))
+      player.src = 'http://x/a.mp3'
+      player.src = 'http://x/b.mp3' // supersedes a.mp3
+      rejectFirst(new Error('network'))
+      await new Promise((r) => setTimeout(r, 0))
+      expect(onError).not.toHaveBeenCalled() // stale failure must be silent
+    })
   })
 })

@@ -11,6 +11,7 @@ import {
   calculateWaveformLayout,
   clampToUnit,
   clampWidthToBarGrid,
+  computeCanvasPlan,
   getLazyRenderRange,
   getPixelRatio,
   getRelativePointerPosition,
@@ -21,6 +22,7 @@ import {
   shouldRenderBars,
   sliceChannelData,
 } from '../renderer-utils.js'
+import type { CanvasSlot } from '../renderer-utils.js'
 import type { WaveSurferOptions } from '../wavesurfer.js'
 
 describe('renderer-utils', () => {
@@ -490,6 +492,32 @@ describe('renderer-utils', () => {
           scrollWidth: 400,
         }),
       ).toEqual({ startX: 0, endX: 0.225 })
+    })
+  })
+
+  describe('computeCanvasPlan', () => {
+    const options = {} as WaveSurferOptions
+
+    it('splits total width into clamped slots', () => {
+      const plan = computeCanvasPlan({ totalWidth: 2500, clientWidth: 500, options })
+      expect(plan.numCanvases).toBe(Math.ceil(2500 / plan.singleCanvasWidth))
+      expect(plan.slots.length).toBe(plan.numCanvases)
+      const last: CanvasSlot = plan.slots[plan.slots.length - 1]
+      expect(last.offset + last.width).toBeLessThanOrEqual(2500 + 1)
+      plan.slots.forEach((s, i) => expect(s.offset).toBe(i * plan.singleCanvasWidth))
+    })
+
+    it('returns an empty plan when singleCanvasWidth is 0', () => {
+      const plan = computeCanvasPlan({ totalWidth: 0, clientWidth: 0, options })
+      expect(plan.slots).toEqual([])
+      expect(plan.numCanvases).toBe(0)
+      expect(plan.singleCanvasWidth).toBe(0)
+    })
+
+    it('drops zero-width tail slots clamped away by the bar grid', () => {
+      const barOptions = { barWidth: 3, barGap: 1 } as WaveSurferOptions
+      const plan = computeCanvasPlan({ totalWidth: 1001, clientWidth: 500, options: barOptions })
+      plan.slots.forEach((s) => expect(s.width).toBeGreaterThan(0))
     })
   })
 })

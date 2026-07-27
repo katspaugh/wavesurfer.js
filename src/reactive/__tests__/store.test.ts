@@ -444,6 +444,19 @@ describe('store v2', () => {
     expect(bCalls).toEqual([2])
   })
 
+  it('dispose() drops the computed result subscribers', () => {
+    const a = signal(1)
+    const c = computed(() => a.value * 2, [a])
+    const spy = jest.fn()
+    c.subscribe(spy)
+    // internal result signal must retain the subscriber while live...
+    expect((c as any)._subscriberCount?.()).toBe(1)
+    c.dispose()
+    // ...and release it once disposed, so the underlying signal doesn't
+    // pin the subscriber closure in memory forever.
+    expect((c as any)._subscriberCount?.()).toBe(0)
+  })
+
   it('a same-signal reentrant set() during batch flush does not double-deliver the final value', () => {
     const a = signal(0)
     const seen: number[] = []

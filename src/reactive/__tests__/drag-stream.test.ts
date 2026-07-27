@@ -25,6 +25,18 @@ describe('createDragStream', () => {
       global.PointerEvent = FakePointerEvent
     }
   })
+  // The jsdom PointerEvent (poly)fill above does not reliably carry pointerId
+  // through the constructor's init dict, so force it - required whenever a
+  // test needs to distinguish between multiple concurrent pointers.
+  const pointerEvent = (
+    type: string,
+    props: { clientX?: number; clientY?: number; button?: number; pointerId: number },
+  ) => {
+    const e = new PointerEvent(type, props)
+    Object.defineProperty(e, 'pointerId', { value: props.pointerId, configurable: true })
+    return e
+  }
+
   let element: HTMLElement
   let events: DragEvent[]
 
@@ -247,6 +259,72 @@ describe('createDragStream', () => {
 
     // Should emit end event
     expect(events.some((e) => e.type === 'end')).toBe(true)
+
+    cleanup()
+  })
+
+  it('continues to work after a two-finger touch', () => {
+    const { signal, cleanup } = createDragStream(element, { threshold: 0 })
+
+    signal.subscribe((event: DragEvent | null) => {
+      if (event) events.push(event)
+    })
+
+    // Two-finger tap: the second finger lifts before the first
+    element.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10, button: 0, pointerId: 1 }))
+    element.dispatchEvent(pointerEvent('pointerdown', { clientX: 50, clientY: 10, button: 0, pointerId: 2 }))
+    document.dispatchEvent(pointerEvent('pointerup', { clientX: 50, clientY: 10, pointerId: 2 }))
+    document.dispatchEvent(pointerEvent('pointerup', { clientX: 10, clientY: 10, pointerId: 1 }))
+
+    // A subsequent single-finger drag should work
+    element.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10, button: 0, pointerId: 3 }))
+    document.dispatchEvent(pointerEvent('pointermove', { clientX: 30, clientY: 10, pointerId: 3 }))
+    document.dispatchEvent(pointerEvent('pointerup', { clientX: 30, clientY: 10, pointerId: 3 }))
+
+    expect(events.map((e) => e.type)).toEqual(['start', 'move', 'end'])
+
+    cleanup()
+  })
+
+  it('a second finger lifting does not end the first pointer drag', () => {
+    const { signal, cleanup } = createDragStream(element, { threshold: 0 })
+
+    signal.subscribe((event: DragEvent | null) => {
+      if (event) events.push(event)
+    })
+
+    element.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10, button: 0, pointerId: 1 }))
+    document.dispatchEvent(pointerEvent('pointermove', { clientX: 20, clientY: 10, pointerId: 1 }))
+
+    // A second finger touches and lifts mid-drag
+    element.dispatchEvent(pointerEvent('pointerdown', { clientX: 50, clientY: 10, button: 0, pointerId: 2 }))
+    document.dispatchEvent(pointerEvent('pointerup', { clientX: 50, clientY: 10, pointerId: 2 }))
+
+    // The first finger continues dragging and lifts
+    document.dispatchEvent(pointerEvent('pointermove', { clientX: 30, clientY: 10, pointerId: 1 }))
+    document.dispatchEvent(pointerEvent('pointerup', { clientX: 30, clientY: 10, pointerId: 1 }))
+
+    expect(events.map((e) => e.type)).toEqual(['start', 'move', 'move', 'end'])
+
+    cleanup()
+  })
+
+  it('only the dragging pointer moves the drag', () => {
+    const { signal, cleanup } = createDragStream(element, { threshold: 0 })
+
+    signal.subscribe((event: DragEvent | null) => {
+      if (event) events.push(event)
+    })
+
+    element.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10, button: 0, pointerId: 1 }))
+    document.dispatchEvent(pointerEvent('pointermove', { clientX: 20, clientY: 10, pointerId: 1 }))
+
+    // Moves from an untracked pointer are ignored
+    document.dispatchEvent(pointerEvent('pointermove', { clientX: 90, clientY: 90, pointerId: 7 }))
+    document.dispatchEvent(pointerEvent('pointerup', { clientX: 30, clientY: 10, pointerId: 1 }))
+
+    expect(events.map((e) => e.type)).toEqual(['start', 'move', 'end'])
+    expect(events[1]?.x).toBe(20)
 
     cleanup()
   })

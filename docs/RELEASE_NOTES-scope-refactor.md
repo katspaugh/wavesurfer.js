@@ -74,3 +74,61 @@ current package version `7.12.11`). Copy/trim into the changelog as needed.
   cycles, so `getState()` keeps working correctly across a `destroy()` -> `load()` reuse (a
   previously-supported pattern per issue #3637). See the comment at the
   `createWaveSurferState()` call site in `src/wavesurfer.ts` for the reasoning.
+
+## Phase 2 — Declarative load & viewport (branch: `refactor/declarative-load-and-viewport`)
+
+Adds declarative load-state signals and viewport derivation (canvas rendering plan, visible time range),
+replacing hand-rolled window tracking and load-version guards. No event-timing or behavior changes, except:
+
+- **Superseded loads no longer spuriously emit `error`.** Previously, if `load()` was called
+  again while a fetch/decode from a prior `load()` call was still in flight, the stale call's
+  rejection (e.g. its aborted fetch throwing `AbortError`) had no dedicated handling and
+  propagated straight through to `load()`'s `catch`, which unconditionally emitted `error` and
+  rejected -- even though a newer load had already superseded it and was progressing normally.
+  That rejection is now recognized as supersession and swallowed; only a destroy-triggered abort
+  or a genuine failure of the *current* load still emits `error`.
+- **The timeline plugin's scroll-driven visible window is now padding-consistent.** Its
+  scroll-position notch updates now derive the visible-right bound from
+  `getWidth()` (container width minus inline padding), matching the same padding-adjusted width
+  `virtualAppend()` already used for the initial-visibility check. The previous scroll handler
+  used unpadded bounds (`scrollLeft + clientWidth`), so with non-zero container padding the
+  visible window during scroll differed slightly (by the padding amount) from the initial-render
+  window; the two now agree.
+
+### Breaking changes
+
+- **`WaveSurfer` no longer exposes `protected abortController`.** It was replaced by the
+  per-load `loadScope`/`AbortSignal` pattern described under Internal improvements below. This
+  is a source-level break for TypeScript subclasses that referenced `this.abortController`
+  directly; the runtime load/abort API (`load()`, `loadBlob()`, cancellation-on-new-load
+  behavior) is unaffected.
+
+### New API
+
+- **`WaveSurferState.loadPhase` signal** — emits `'idle' | 'fetching' | 'decoding' | 'ready' | 'error'`.
+  Replaces polling `isReady` for exact load-state awareness without event-timing coupling.
+
+- **`Renderer.getVisibleRange()` derived signal** — returns `{startTime, endTime}` of the visible time range
+  in the current viewport, computed per-render cycle (frozen post-destroy until next render).
+  Consumed by canvas rendering and timeline plugin for synchronized windowing.
+
+- **`FrameScheduler` utility** — new per-frame coalescing scheduler for progress rendering callbacks,
+  replacing direct Timer wiring in WaveSurfer (Timer class retained for Record plugin).
+
+### Internal improvements
+
+- **Per-load `Scope` pattern in `loadAudio()`** — replaces `_loadVersion` counters and
+  post-await `_isDestroyed` / `abortController` guards with a unified per-load child `Scope`
+  (`this.loadScope`, a child of `this.scope`) created fresh on each `loadAudio` call. Starting a
+  new load disposes the previous `loadScope`, which fires that load's `AbortSignal` and cancels
+  its in-flight fetch; a `supersededLoadScopes` `WeakSet` records which disposed scopes were
+  superseded (as opposed to torn down by `destroy()`) so that only their rejections are swallowed
+  when they surface later -- a destroy-triggered abort or a genuine failure of the still-current
+  load still propagates.
+
+- **Pure canvas-plan computation** — `computeCanvasPlan()` returns `{numCanvases, singleCanvasWidth, slots}`.
+  Renderer interprets plan as data instead of imperative rendering, enabling offline testing and
+  layout reuse. Deleted 40+ lines of hand-coded canvas windowing from `renderMultiCanvas`.
+
+- Deferred-minor cleanup sweep: webaudio stale-source guard, envelope polyline null checks,
+  duplicate drag-stream tests, computed subscriber disposal on destroy.

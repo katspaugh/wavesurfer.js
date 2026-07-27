@@ -403,5 +403,12 @@ describe('WaveSurferState', () => {
       expect(state.isPlaying.value).toBe(false)
       expect(state.volume.value).toBe(1)
     })
+
+    it('exposes loadPhase with idle default and setLoadPhase action', () => {
+      const { state, actions } = createWaveSurferState()
+      expect(state.loadPhase.value).toBe('idle')
+      actions.setLoadPhase('fetching')
+      expect(state.loadPhase.value).toBe('fetching')
+    })
   })
 })

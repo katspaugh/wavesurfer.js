@@ -442,6 +442,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     this.polylineSubscriptions = []
 
     this.polyline?.destroy()
+    this.polyline = null
     super.destroy()
   }
 

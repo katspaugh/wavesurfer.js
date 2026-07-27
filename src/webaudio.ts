@@ -148,6 +148,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
         if (this.autoplay) this.play()
       })
       .catch((err) => {
+        if (this.currentSrc !== value) return // stale request lost the race
         // Emit error for proper error handling
         console.error('WebAudioPlayer load error:', err)
         this.error = err instanceof Error ? err : new Error(String(err))

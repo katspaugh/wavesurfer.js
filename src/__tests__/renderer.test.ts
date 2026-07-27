@@ -165,6 +165,44 @@ describe('Renderer', () => {
     expect(spy).toHaveBeenCalled()
   })
 
+  it('exposes visibleRange derived from scroll position and duration', async () => {
+    const buffer = createAudioBuffer([[0, 0.5, -0.5]], 60)
+    await renderer.render(buffer)
+    const range = renderer.getVisibleRange()
+    expect(range.value.startTime).toBe(0)
+    expect(range.value.endTime).toBeGreaterThan(0)
+  })
+
+  it('reports full duration as visibleRange when not scrollable', async () => {
+    const buffer = createAudioBuffer([[0, 0.5, -0.5]], 10)
+    renderer.zoom(0) // fillParent, not scrollable
+    await renderer.render(buffer)
+    expect((renderer as any).isScrollable).toBe(false)
+    expect(renderer.getVisibleRange().value).toEqual({ startTime: 0, endTime: 10 })
+  })
+
+  it('recomputes visibleRange when the underlying scroll position changes', async () => {
+    const buffer = createAudioBuffer([[0, 0.5, -0.5]], 100)
+    renderer.zoom(1000) // force isScrollable
+    await renderer.render(buffer)
+    // jsdom performs no layout, so scrollWidth/clientWidth are both 0 by
+    // default -- calculateScrollPercentages special-cases scrollWidth===0 to
+    // {startX: 0, endX: 1}, which is exactly what render() sees. Stub in
+    // sizes to exercise a real scroll delta.
+    const scrollContainer = (renderer as any).scrollContainer as HTMLElement
+    Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
+    Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 100 })
+
+    expect((renderer as any).isScrollable).toBe(true)
+
+    scrollContainer.scrollLeft = 500
+    scrollContainer.dispatchEvent(new Event('scroll'))
+
+    const range = renderer.getVisibleRange().value
+    expect(range.startTime).toBeCloseTo(50)
+    expect(range.endTime).toBeCloseTo(60)
+  })
+
   test('reRender keeps scroll position', async () => {
     const buffer = createAudioBuffer([[0, 0.5, -0.5]])
     renderer.zoom(20)
@@ -273,6 +311,27 @@ describe('Renderer', () => {
     const lateUnsubscribe = jest.fn()
     ;(renderer as any).scrollRenderScope.add(lateUnsubscribe)
     expect(lateUnsubscribe).not.toHaveBeenCalled()
+  })
+
+  it('keeps visibleRange live (not disposed) across destroy -> render reuse', async () => {
+    // visibleRange is instance-lifetime state, deliberately never disposed via
+    // this.scope (see the constructor comment): scrollStream/initEvents() only
+    // run once, so registering visibleRange's dispose on this.scope would
+    // permanently freeze it after the first destroy(), with nothing left to
+    // recreate it. Reading it post-destroy must not throw, and a subsequent
+    // render() reuse must still update it via the still-live audioDuration
+    // signal, even though this.scrollStream is now null.
+    renderer.zoom(1000)
+    await renderer.render(createAudioBuffer([[0, 0.5, -0.5]], 100))
+
+    renderer.destroy()
+
+    expect(() => renderer.getVisibleRange().value).not.toThrow()
+
+    await renderer.render(createAudioBuffer([[0, 0.5, -0.5]], 42))
+
+    expect((renderer as any).scrollStream).toBeNull()
+    expect(renderer.getVisibleRange().value).toEqual({ startTime: 0, endTime: 42 })
   })
 
   it('cancels a pending resize debounce on destroy even after a render', async () => {
