@@ -7,7 +7,6 @@ import Renderer from './renderer.js'
 import Timer from './timer.js'
 import WebAudioPlayer from './webaudio.js'
 import { createWaveSurferState, type WaveSurferState, type WaveSurferActions } from './state/wavesurfer-state.js'
-import { setupStateEventEmission } from './reactive/state-event-emitter.js'
 
 export type WaveSurferOptions = {
   /** Required: an HTML element or selector where the waveform will be rendered */
@@ -228,7 +227,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initPlayerEvents()
     this.initRendererEvents()
     this.initTimerEvents()
-    this.initReactiveState()
     this.initPlugins()
 
     // Read the initial URL before load has been called
@@ -273,15 +271,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
             this.setTime(stopAt)
           }
         }
-      }),
-    )
-  }
-
-  private initReactiveState() {
-    // Bridge reactive state to EventEmitter for backwards compatibility
-    this.reactiveCleanups.push(
-      setupStateEventEmission(this.wavesurferState, {
-        emit: this.emit.bind(this),
       }),
     )
   }

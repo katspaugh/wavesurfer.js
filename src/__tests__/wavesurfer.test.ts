@@ -253,4 +253,25 @@ describe('WaveSurfer public methods', () => {
     expect(getRenderer().destroy).toHaveBeenCalled()
     expect(getTimer().destroy).toHaveBeenCalled()
   })
+
+  test('does not emit pause or timeupdate during construction', async () => {
+    const onPause = jest.fn()
+    const onTimeupdate = jest.fn()
+    const ws = createWs()
+    ws.on('pause', onPause)
+    ws.on('timeupdate', onTimeupdate)
+    await Promise.resolve() // let the constructor's deferred init run
+    expect(onPause).not.toHaveBeenCalled()
+    expect(onTimeupdate).not.toHaveBeenCalled()
+    ws.destroy()
+  })
+
+  test('emits play exactly once per media play event', () => {
+    const ws = createWs()
+    const onPlay = jest.fn()
+    ws.on('play', onPlay)
+    ws.getMediaElement().dispatchEvent(new Event('play'))
+    expect(onPlay).toHaveBeenCalledTimes(1)
+    ws.destroy()
+  })
 })
