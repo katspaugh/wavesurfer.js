@@ -82,7 +82,9 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     })
 
     this.timer = new Timer()
+  }
 
+  protected onInit() {
     this.subscriptions.push(
       this.timer.on('tick', () => {
         const currentTime = performance.now() - this.lastStartTime
@@ -383,14 +385,17 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   /** Destroy the plugin */
   public destroy() {
     this.applyOriginalOptionsIfNeeded()
-    super.destroy()
+    // Stop recording/mic first so any resulting 'record-end' reaches
+    // listeners before super.destroy() clears them (unAll).
     this.stopRecording()
     this.stopMic()
+    this.timer.destroy()
     // Revoke blob URL to free memory
     if (this.recordedBlobUrl) {
       URL.revokeObjectURL(this.recordedBlobUrl)
       this.recordedBlobUrl = null
     }
+    super.destroy()
   }
 
   private applyOriginalOptionsIfNeeded() {
