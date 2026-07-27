@@ -255,14 +255,26 @@ describe('WaveSurfer public methods', () => {
   })
 
   test('does not emit pause or timeupdate during construction', async () => {
-    const onPause = jest.fn()
-    const onTimeupdate = jest.fn()
-    const ws = createWs()
-    ws.on('pause', onPause)
-    ws.on('timeupdate', onTimeupdate)
-    await Promise.resolve() // let the constructor's deferred init run
-    expect(onPause).not.toHaveBeenCalled()
-    expect(onTimeupdate).not.toHaveBeenCalled()
+    // Record every event emitted (not just pause/timeupdate observed via a listener
+    // attached after construction) so a synchronous emit during the constructor -
+    // before any test code can call ws.on() - is actually caught.
+    const emittedDuringConstruction: string[] = []
+    const originalEmit = (WaveSurfer.prototype as any).emit
+    ;(WaveSurfer.prototype as any).emit = function (this: WaveSurfer, event: string, ...args: unknown[]) {
+      emittedDuringConstruction.push(event)
+      return originalEmit.call(this, event, ...args)
+    }
+
+    let ws!: WaveSurfer
+    try {
+      ws = createWs()
+      await Promise.resolve() // let the constructor's deferred init run
+    } finally {
+      ;(WaveSurfer.prototype as any).emit = originalEmit
+    }
+
+    expect(emittedDuringConstruction).not.toContain('pause')
+    expect(emittedDuringConstruction).not.toContain('timeupdate')
     ws.destroy()
   })
 
@@ -272,6 +284,46 @@ describe('WaveSurfer public methods', () => {
     ws.on('play', onPlay)
     ws.getMediaElement().dispatchEvent(new Event('play'))
     expect(onPlay).toHaveBeenCalledTimes(1)
+    ws.destroy()
+  })
+
+  test('emits pause exactly once per media pause event', () => {
+    const ws = createWs()
+    const onPause = jest.fn()
+    ws.on('pause', onPause)
+    ws.getMediaElement().dispatchEvent(new Event('pause'))
+    expect(onPause).toHaveBeenCalledTimes(1)
+    ws.destroy()
+  })
+
+  test('emits seeking exactly once per media seeking event', () => {
+    const ws = createWs()
+    const onSeeking = jest.fn()
+    ws.on('seeking', onSeeking)
+    ws.getMediaElement().dispatchEvent(new Event('seeking'))
+    expect(onSeeking).toHaveBeenCalledTimes(1)
+    ws.destroy()
+  })
+
+  test('emits finish exactly once per media ended event', () => {
+    const ws = createWs()
+    const onFinish = jest.fn()
+    ws.on('finish', onFinish)
+    ws.getMediaElement().dispatchEvent(new Event('ended'))
+    expect(onFinish).toHaveBeenCalledTimes(1)
+    ws.destroy()
+  })
+
+  test('emits timeupdate exactly once per media timeupdate event while paused', () => {
+    // audioprocess is only driven by the 16ms timer during playback (see
+    // initTimerEvents in wavesurfer.ts) - simulating a timer tick isn't worth it for
+    // a doubled-emission regression test, so this only covers the imperative
+    // onMediaEvent('timeupdate', ...) -> emit('timeupdate') path exercised here.
+    const ws = createWs()
+    const onTimeupdate = jest.fn()
+    ws.on('timeupdate', onTimeupdate)
+    ws.getMediaElement().dispatchEvent(new Event('timeupdate'))
+    expect(onTimeupdate).toHaveBeenCalledTimes(1)
     ws.destroy()
   })
 })
