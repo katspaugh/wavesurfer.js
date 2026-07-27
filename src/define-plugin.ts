@@ -170,8 +170,10 @@ export function definePlugin<Options, Events extends BasePluginEvents, Api exten
     // rule: hover's port (Task 5) checked its test suite, found nothing
     // pins the old ordering, and moved wrapper removal onto ctx.scope — a
     // deliberate, documented behavior change from the original hover.
-    // Regions has not been ported yet (Task 11); its own test suite may
-    // pin the old ordering and warrant keeping its removal manual.
+    // Regions' port (Task 11) checked its own test suite (regions.test.ts +
+    // memory-leaks.test.ts's #4243 cases) too, found nothing pins post-destroy
+    // attachment of regionsContainer either, and likewise moved its removal
+    // onto ctx.scope.
     public destroy(): void {
       this.scope.dispose() // always set (BasePlugin field initializer) — no `?.` needed
       super.destroy()

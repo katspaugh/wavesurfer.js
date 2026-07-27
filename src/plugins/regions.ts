@@ -4,14 +4,25 @@
  * You can set the color and content of each region, as well as their HTML content.
  */
 
-import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
+import { type BasePluginEvents } from '../base-plugin.js'
+import { definePlugin } from '../define-plugin.js'
 import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
+import { Scope } from '../scope.js'
 import { createDragStream } from '../reactive/drag-stream.js'
 import { effect } from '../reactive/store.js'
 import { fromEvent, cleanup as cleanupStream } from '../reactive/event-streams.js'
 
-export type RegionsPluginOptions = undefined
+// The pre-port class took no options at all (`constructor(options?: undefined)`).
+// A literal `undefined` Options type does not fit definePlugin's PluginCtorArgs
+// contract (`Record<string, never> extends Options ? [options?: Options] : ...`):
+// `Record<string, never> extends undefined` is false, which would make the
+// generated `create()`/constructor take a REQUIRED `undefined` argument and break
+// every existing zero-arg `RegionsPlugin.create()` call site. `Record<string,
+// never>` (an object with no properties) is the all-optional-fields shape the
+// contract expects, and keeps `create()`/`create({})`/`create(undefined)` all
+// callable, same as before.
+export type RegionsPluginOptions = Record<string, never>
 export type UpdateSide = 'start' | 'end'
 export type RegionsPluginEvents = BasePluginEvents & {
   /** When a new region is initialized but not rendered yet */
@@ -103,23 +114,27 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public maxLength = Infinity
   public channelIdx: number
   public contentEditable = false
-  public subscriptions: (() => void)[] = []
   public updatingSide?: UpdateSide = undefined
   public isRemoved = false
-  private contentClickListener?: (e: MouseEvent) => void
-  private contentBlurListener?: () => void
   private resizeHandleCleanup: (() => void) | null = null
+  private contentListenersCleanup: (() => void) | null = null
   /** True once initMouseEvents has run; controls whether setContent must (re)attach listeners itself */
   private mouseEventsInitialized = false
 
   constructor(
     params: RegionParams,
     private totalDuration: number,
+    /**
+     * A scope private to this region, owned by RegionsPlugin (`ctx.scope.child()`).
+     * All of this region's own listener bookkeeping (mouse events, drag/resize
+     * streams, content listeners) lives here instead of a hand-rolled
+     * `subscriptions` array; `remove()` disposes it in one shot.
+     */
+    private scope: Scope,
     private numberOfChannels = 0,
   ) {
     super()
 
-    this.subscriptions = []
     this.id = params.id || `region-${Math.random().toString(32).slice(2)}`
     this.start = this.clampPosition(params.start)
     this.end = this.clampPosition(params.end ?? params.start)
@@ -193,41 +208,48 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     const leftDragStream = createDragStream(leftHandle, { threshold: resizeThreshold })
     const rightDragStream = createDragStream(rightHandle, { threshold: resizeThreshold })
 
-    const unsubscribeLeft = effect(() => {
-      const drag = leftDragStream.signal.value
-      if (!drag) return
-      if (drag.type === 'move' && drag.deltaX !== undefined) {
-        this.onResize(drag.deltaX, 'start')
-      } else if (drag.type === 'end') {
-        this.onEndResizing('start')
-      }
-    }, [leftDragStream.signal])
+    const removeLeftEffect = this.scope.add(
+      effect(() => {
+        const drag = leftDragStream.signal.value
+        if (!drag) return
+        if (drag.type === 'move' && drag.deltaX !== undefined) {
+          this.onResize(drag.deltaX, 'start')
+        } else if (drag.type === 'end') {
+          this.onEndResizing('start')
+        }
+      }, [leftDragStream.signal]),
+    )
 
-    const unsubscribeRight = effect(() => {
-      const drag = rightDragStream.signal.value
-      if (!drag) return
-      if (drag.type === 'move' && drag.deltaX !== undefined) {
-        this.onResize(drag.deltaX, 'end')
-      } else if (drag.type === 'end') {
-        this.onEndResizing('end')
-      }
-    }, [rightDragStream.signal])
+    const removeRightEffect = this.scope.add(
+      effect(() => {
+        const drag = rightDragStream.signal.value
+        if (!drag) return
+        if (drag.type === 'move' && drag.deltaX !== undefined) {
+          this.onResize(drag.deltaX, 'end')
+        } else if (drag.type === 'end') {
+          this.onEndResizing('end')
+        }
+      }, [rightDragStream.signal]),
+    )
 
-    const cleanup = () => {
-      unsubscribeLeft()
-      unsubscribeRight()
+    const removeStreamCleanup = this.scope.add(() => {
       leftDragStream.cleanup()
       rightDragStream.cleanup()
-    }
+    })
 
-    this.resizeHandleCleanup = cleanup
-    this.subscriptions.push(cleanup)
+    // A single handle bundling all three scope registrations above, so
+    // removeResizeHandles() can tear down just the resize-handle listeners
+    // (and deregister them from `scope`) without disposing the whole region.
+    this.resizeHandleCleanup = () => {
+      removeLeftEffect()
+      removeRightEffect()
+      removeStreamCleanup()
+    }
   }
 
   private removeResizeHandles(element: HTMLElement) {
     if (this.resizeHandleCleanup) {
       this.resizeHandleCleanup()
-      this.subscriptions = this.subscriptions.filter((sub) => sub !== this.resizeHandleCleanup)
       this.resizeHandleCleanup = null
     }
 
@@ -296,23 +318,21 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
     if (!this.contentEditable || !this.content) return
 
-    this.contentClickListener = (e) => this.onContentClick(e)
-    this.contentBlurListener = () => this.onContentBlur()
-    this.content.addEventListener('click', this.contentClickListener)
-    this.content.addEventListener('blur', this.contentBlurListener)
+    const content = this.content
+    const removeClick = this.scope.listen(content, 'click', (e) => this.onContentClick(e as MouseEvent))
+    const removeBlur = this.scope.listen(content, 'blur', () => this.onContentBlur())
+
+    this.contentListenersCleanup = () => {
+      removeClick()
+      removeBlur()
+    }
   }
 
   /** Remove the content click/blur listeners, if attached */
   private detachContentListeners() {
-    if (!this.content) return
-
-    if (this.contentClickListener) {
-      this.content.removeEventListener('click', this.contentClickListener)
-      this.contentClickListener = undefined
-    }
-    if (this.contentBlurListener) {
-      this.content.removeEventListener('blur', this.contentBlurListener)
-      this.contentBlurListener = undefined
+    if (this.contentListenersCleanup) {
+      this.contentListenersCleanup()
+      this.contentListenersCleanup = null
     }
   }
 
@@ -337,7 +357,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     const unsubscribePointerup = pointerups.subscribe((e) => e && this.toggleCursor(false))
 
     // Store cleanup
-    this.subscriptions.push(() => {
+    this.scope.add(() => {
       unsubscribeClick()
       unsubscribeMouseenter()
       unsubscribeMouseleave()
@@ -355,24 +375,22 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     // Drag
     const dragStream = createDragStream(element)
 
-    const unsubscribeDrag = effect(() => {
-      const drag = dragStream.signal.value
-      if (!drag) return
+    this.scope.add(
+      effect(() => {
+        const drag = dragStream.signal.value
+        if (!drag) return
 
-      if (drag.type === 'start') {
-        this.toggleCursor(true)
-      } else if (drag.type === 'move' && drag.deltaX !== undefined) {
-        this.onMove(drag.deltaX)
-      } else if (drag.type === 'end') {
-        this.toggleCursor(false)
-        if (this.drag) this.emit('update-end')
-      }
-    }, [dragStream.signal])
-
-    this.subscriptions.push(() => {
-      unsubscribeDrag()
-      dragStream.cleanup()
-    })
+        if (drag.type === 'start') {
+          this.toggleCursor(true)
+        } else if (drag.type === 'move' && drag.deltaX !== undefined) {
+          this.onMove(drag.deltaX)
+        } else if (drag.type === 'end') {
+          this.toggleCursor(false)
+          if (this.drag) this.emit('update-end')
+        }
+      }, [dragStream.signal]),
+    )
+    this.scope.add(() => dragStream.cleanup())
 
     this.attachContentListeners()
     this.mouseEventsInitialized = true
@@ -557,11 +575,14 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     this.isRemoved = true
     this.emit('remove')
 
-    // Clean up all subscriptions (drag streams, event listeners, etc.)
-    this.subscriptions.forEach((unsubscribe) => unsubscribe())
-    this.subscriptions = []
+    // Clean up all of this region's listener bookkeeping in one shot: mouse
+    // events, drag/resize streams, content listeners (and any plugin-level
+    // per-region listeners registered onto this same scope, e.g. saveRegion's
+    // region.on('update', ...) subscriptions).
+    this.scope.dispose()
 
-    // Clean up content event listeners
+    // Belt-and-braces: detachContentListeners() is idempotent (a no-op once
+    // scope.dispose() has already run the same removers).
     this.detachContentListeners()
 
     // Remove DOM element
@@ -575,89 +596,90 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   }
 }
 
-class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions> {
-  private regions: Region[] = []
-  private regionsContainer: HTMLElement
+// The public surface returned by setup() below — VERIFIED against the
+// pre-port class: getRegions/addRegion/enableDragSelection/clearRegions were
+// its only public methods (destroy is chassis-owned now, not part of the
+// Api — see port-recipe.md).
+type Api = {
+  getRegions: () => Region[]
+  addRegion: (options: RegionParams) => Region
+  enableDragSelection: (options: Omit<RegionParams, 'start' | 'end'>, threshold?: number) => () => void
+  clearRegions: () => void
+}
 
-  /** Create an instance of RegionsPlugin */
-  constructor(options?: RegionsPluginOptions) {
-    super(options)
-    this.regionsContainer = this.initRegionsContainer()
+const RegionsPlugin = definePlugin<RegionsPluginOptions, RegionsPluginEvents, Api>('regions', (ctx) => {
+  // setup-closure state — replaces the pre-port instance fields `regions` and
+  // the onInit()-local `activeRegions`.
+  let regions: Region[] = []
+  let activeRegions: Region[] = []
+
+  const regionsContainer = createElement('div', {
+    part: 'regions-container',
+    style: {
+      position: 'absolute',
+      top: '0',
+      left: '0',
+      width: '100%',
+      height: '100%',
+      zIndex: '5',
+      pointerEvents: 'none',
+    },
+  })
+  ctx.wavesurfer.getWrapper().appendChild(regionsContainer)
+  // DESTROY-ORDER: the pre-port class removed regionsContainer AFTER
+  // super.destroy() (so a 'destroy' listener could still observe it
+  // attached). Neither regions.test.ts nor memory-leaks.test.ts's regions
+  // cases (#4243) assert anything about post-destroy DOM attachment of the
+  // regions container, so — per the chassis's per-port rule in
+  // define-plugin.ts — this follows hover's precedent (Task 5) and moves
+  // removal onto ctx.scope: a deliberate, documented behavior change
+  // (removal now happens BEFORE the 'destroy' event, alongside every other
+  // scope-owned teardown, instead of after).
+  ctx.scope.add(() => regionsContainer.remove())
+
+  // Update region durations when a new audio file is loaded
+  ctx.scope.add(
+    ctx.wavesurfer.on('ready', (duration) => {
+      regions.forEach((region) => region._setTotalDuration(duration))
+    }),
+  )
+
+  ctx.scope.add(
+    ctx.wavesurfer.on('timeupdate', (currentTime) => {
+      // Detect when regions are being played
+      const playedRegions = regions.filter(
+        (region) =>
+          region.start <= currentTime &&
+          (region.end === region.start ? region.start + 0.05 : region.end) >= currentTime,
+      )
+
+      // Trigger region-in when activeRegions doesn't include a played regions
+      playedRegions.forEach((region) => {
+        if (!activeRegions.includes(region)) {
+          ctx.emit('region-in', region)
+        }
+      })
+
+      // Trigger region-out when activeRegions include a un-played regions
+      activeRegions.forEach((region) => {
+        if (!playedRegions.includes(region)) {
+          ctx.emit('region-out', region)
+        }
+      })
+
+      // Update activeRegions only played regions
+      activeRegions = playedRegions
+    }),
+  )
+
+  function getRegions(): Region[] {
+    return regions
   }
 
-  /** Create an instance of RegionsPlugin */
-  public static create(options?: RegionsPluginOptions) {
-    return new RegionsPlugin(options)
-  }
-
-  /** Called by wavesurfer, don't call manually */
-  onInit() {
-    if (!this.wavesurfer) {
-      throw Error('WaveSurfer is not initialized')
-    }
-    this.wavesurfer.getWrapper().appendChild(this.regionsContainer)
-
-    // Update region durations when a new audio file is loaded
-    this.subscriptions.push(
-      this.wavesurfer.on('ready', (duration) => {
-        this.regions.forEach((region) => region._setTotalDuration(duration))
-      }),
-    )
-
-    let activeRegions: Region[] = []
-    this.subscriptions.push(
-      this.wavesurfer.on('timeupdate', (currentTime) => {
-        // Detect when regions are being played
-        const playedRegions = this.regions.filter(
-          (region) =>
-            region.start <= currentTime &&
-            (region.end === region.start ? region.start + 0.05 : region.end) >= currentTime,
-        )
-
-        // Trigger region-in when activeRegions doesn't include a played regions
-        playedRegions.forEach((region) => {
-          if (!activeRegions.includes(region)) {
-            this.emit('region-in', region)
-          }
-        })
-
-        // Trigger region-out when activeRegions include a un-played regions
-        activeRegions.forEach((region) => {
-          if (!playedRegions.includes(region)) {
-            this.emit('region-out', region)
-          }
-        })
-
-        // Update activeRegions only played regions
-        activeRegions = playedRegions
-      }),
-    )
-  }
-
-  private initRegionsContainer(): HTMLElement {
-    return createElement('div', {
-      part: 'regions-container',
-      style: {
-        position: 'absolute',
-        top: '0',
-        left: '0',
-        width: '100%',
-        height: '100%',
-        zIndex: '5',
-        pointerEvents: 'none',
-      },
-    })
-  }
-
-  /** Get all created regions */
-  public getRegions(): Region[] {
-    return this.regions
-  }
-
-  private avoidOverlapping(region: Region) {
+  function avoidOverlapping(region: Region) {
     if (!region.content || region.isRemoved) return
 
-    setTimeout(() => {
+    ctx.scope.timeout(() => {
       if (!region.content) return
 
       // Check that the label doesn't overlap with other labels
@@ -668,10 +690,10 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       div.style.marginTop = '0'
       const box = div.getBoundingClientRect()
 
-      const regionIndex = this.regions.indexOf(region)
+      const regionIndex = regions.indexOf(region)
       if (regionIndex < 0) return
 
-      const overlap = this.regions
+      const overlap = regions
         .slice(0, regionIndex)
         .filter((reg) => !reg.isRemoved)
         .reduce<DOMRect[]>((boxes, reg) => {
@@ -697,13 +719,13 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     }, 10)
   }
 
-  private avoidOverlappingAll() {
-    this.regions.forEach((region) => this.avoidOverlapping(region))
+  function avoidOverlappingAll() {
+    regions.forEach((region) => avoidOverlapping(region))
   }
 
-  private adjustScroll(region: Region) {
+  function adjustScroll(region: Region) {
     if (!region.element) return
-    const scrollContainer = this.wavesurfer?.getWrapper()?.parentElement
+    const scrollContainer = ctx.wavesurfer?.getWrapper()?.parentElement
     if (!scrollContainer) return
     const { clientWidth, scrollWidth } = scrollContainer
     if (scrollWidth <= clientWidth) return
@@ -718,13 +740,19 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
     }
   }
 
-  private virtualAppend(region: Region, container: HTMLElement, element: HTMLElement) {
+  // `regionScope` is the same child scope SingleRegion itself owns (created
+  // in addRegion/enableDragSelection and passed into its constructor). Once
+  // ('remove'), the three previously hand-rolled `subscriptions`-array splice
+  // sites (virtualAppend, saveRegion, addRegion's once('ready')) are gone:
+  // everything below is torn down for free when region.remove() disposes
+  // this same scope.
+  function virtualAppend(region: Region, regionScope: Scope, container: HTMLElement, element: HTMLElement) {
     const renderIfVisible = () => {
-      if (!this.wavesurfer) return
-      const clientWidth = this.wavesurfer.getWidth()
-      const scrollLeft = this.wavesurfer.getScroll()
+      if (!ctx.wavesurfer) return
+      const clientWidth = ctx.wavesurfer.getWidth()
+      const scrollLeft = ctx.wavesurfer.getScroll()
       const scrollWidth = container.clientWidth
-      const duration = this.wavesurfer.getDuration()
+      const duration = ctx.wavesurfer.getDuration()
       const start = Math.round((region.start / duration) * scrollWidth)
       const width = Math.round(((region.end - region.start) / duration) * scrollWidth) || 1
 
@@ -738,108 +766,105 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       }
     }
 
-    setTimeout(() => {
-      // Check if region was removed before setTimeout executed
-      if (!this.wavesurfer || !region.element) return
+    regionScope.timeout(() => {
+      // Check if region was removed before this timeout executed (defensive;
+      // the timeout itself is cancelled by regionScope.dispose() when the
+      // region is removed first, so this should already be unreachable then).
+      if (!ctx.wavesurfer || !region.element) return
       renderIfVisible()
 
-      const unsubscribeScroll = this.wavesurfer.on('scroll', renderIfVisible)
-      const unsubscribeZoom = this.wavesurfer.on('zoom', renderIfVisible)
-      const unsubscribeResize = this.wavesurfer.on('resize', renderIfVisible)
-      const unsubscribeRender = region.on('render', renderIfVisible)
-
-      // Only push the unsubscribe functions, not the once() return values
-      const virtualAppendSubscriptions = [unsubscribeScroll, unsubscribeZoom, unsubscribeResize, unsubscribeRender]
-      this.subscriptions.push(...virtualAppendSubscriptions)
-
-      // Clean up subscriptions when region is removed
-      region.once('remove', () => {
-        unsubscribeScroll()
-        unsubscribeZoom()
-        unsubscribeResize()
-        unsubscribeRender()
-        // Prune this region's now-dead unsubscribe closures from the plugin-level
-        // subscriptions array; otherwise it only gets emptied in destroy(), so every
-        // removed region stays retained (via its captured closures) for the plugin's lifetime.
-        this.subscriptions = this.subscriptions.filter((sub) => !virtualAppendSubscriptions.includes(sub))
-      })
+      regionScope.add(ctx.wavesurfer.on('scroll', renderIfVisible))
+      regionScope.add(ctx.wavesurfer.on('zoom', renderIfVisible))
+      regionScope.add(ctx.wavesurfer.on('resize', renderIfVisible))
+      regionScope.add(region.on('render', renderIfVisible))
     }, 0)
   }
 
-  private saveRegion(region: Region) {
+  function saveRegion(region: Region, regionScope: Scope) {
     if (!region.element) return
-    this.virtualAppend(region, this.regionsContainer, region.element)
-    this.avoidOverlapping(region)
-    this.regions.push(region)
+    virtualAppend(region, regionScope, regionsContainer, region.element)
+    avoidOverlapping(region)
+    regions.push(region)
 
-    const regionSubscriptions = [
+    regionScope.add(
       region.on('update', (side) => {
         // Undefined side indicates that we are dragging not resizing
         if (!side) {
-          this.adjustScroll(region)
+          adjustScroll(region)
         }
-        this.emit('region-update', region, side)
+        ctx.emit('region-update', region, side)
       }),
+    )
 
+    regionScope.add(
       region.on('update-end', (side) => {
-        this.avoidOverlappingAll()
-        this.emit('region-updated', region, side)
+        avoidOverlappingAll()
+        ctx.emit('region-updated', region, side)
       }),
+    )
 
+    regionScope.add(
       region.on('play', (end?: number) => {
-        this.wavesurfer?.play(region.start, end)
+        ctx.wavesurfer?.play(region.start, end)
       }),
+    )
 
+    regionScope.add(
       region.on('click', (e) => {
-        this.emit('region-clicked', region, e)
+        ctx.emit('region-clicked', region, e)
       }),
+    )
 
+    regionScope.add(
       region.on('dblclick', (e) => {
-        this.emit('region-double-clicked', region, e)
+        ctx.emit('region-double-clicked', region, e)
       }),
+    )
+
+    regionScope.add(
       region.on('content-changed', () => {
-        this.emit('region-content-changed', region)
+        ctx.emit('region-content-changed', region)
       }),
+    )
 
-      // Remove the region from the list when it's removed
-      region.once('remove', () => {
-        regionSubscriptions.forEach((unsubscribe) => unsubscribe())
-        // Prune this region's now-dead unsubscribe closures from the plugin-level
-        // subscriptions array; otherwise it only gets emptied in destroy(), so every
-        // removed region stays retained (via its captured closures) for the plugin's lifetime.
-        this.subscriptions = this.subscriptions.filter((sub) => !regionSubscriptions.includes(sub))
-        this.regions = this.regions.filter((reg) => reg !== region)
-        this.emit('region-removed', region)
-      }),
-    ]
+    // Remove the region from the list when it's removed. This is the only
+    // bookkeeping left that isn't scope-owned teardown (the six listeners
+    // above die automatically with regionScope, disposed by region.remove());
+    // pruning `regions` and emitting 'region-removed' are active side effects
+    // that must run in response to the event itself.
+    region.once('remove', () => {
+      regions = regions.filter((reg) => reg !== region)
+      ctx.emit('region-removed', region)
+    })
 
-    this.subscriptions.push(...regionSubscriptions)
-
-    this.emit('region-created', region)
+    ctx.emit('region-created', region)
   }
 
   /** Create a region with given parameters */
-  public addRegion(options: RegionParams): Region {
-    if (!this.wavesurfer) {
+  function addRegion(options: RegionParams): Region {
+    if (!ctx.wavesurfer) {
       throw Error('WaveSurfer is not initialized')
     }
 
-    const duration = this.wavesurfer.getDuration()
-    const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
-    const region = new SingleRegion(options, duration, numberOfChannels)
-    this.emit('region-initialized', region)
+    const duration = ctx.wavesurfer.getDuration()
+    const numberOfChannels = ctx.wavesurfer.getDecodedData()?.numberOfChannels
+    const regionScope = ctx.scope.child()
+    const region = new SingleRegion(options, duration, regionScope, numberOfChannels)
+    ctx.emit('region-initialized', region)
 
     if (!duration) {
-      // Prune this once('ready') unsubscriber after it fires instead of retaining it
-      // (and the region it captures) in the plugin-level subscriptions array until destroy().
-      const unsubscribeReady = this.wavesurfer.once('ready', (duration) => {
-        region._setTotalDuration(duration)
-        this.saveRegion(region)
-        this.subscriptions = this.subscriptions.filter((sub) => sub !== unsubscribeReady)
-      })
-      this.subscriptions.push(unsubscribeReady)
+      // Registered on regionScope instead of a plugin-level subscriptions
+      // array: if the region is removed before wavesurfer becomes ready,
+      // regionScope.dispose() (via region.remove()) cancels this pending
+      // listener along with everything else — no manual splice needed.
+      regionScope.add(
+        ctx.wavesurfer.once('ready', (readyDuration) => {
+          region._setTotalDuration(readyDuration)
+          saveRegion(region, regionScope)
+        }),
+      )
     } else {
-      this.saveRegion(region)
+      saveRegion(region, regionScope)
     }
 
     return region
@@ -849,12 +874,13 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
    * Enable creation of regions by dragging on an empty space on the waveform.
    * Returns a function to disable the drag selection.
    */
-  public enableDragSelection(options: Omit<RegionParams, 'start' | 'end'>, threshold = 3): () => void {
-    const wrapper = this.wavesurfer?.getWrapper()
+  function enableDragSelection(options: Omit<RegionParams, 'start' | 'end'>, threshold = 3): () => void {
+    const wrapper = ctx.wavesurfer?.getWrapper()
     if (!wrapper || !(wrapper instanceof HTMLElement)) return () => undefined
 
     const initialSize = 5
     let region: Region | null = null
+    let regionScope: Scope | null = null
     let startX = 0
     let startTime = 0
 
@@ -867,10 +893,10 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
       if (drag.type === 'start') {
         // On drag start
         startX = drag.x
-        if (!this.wavesurfer) return
-        const duration = this.wavesurfer.getDuration()
-        const numberOfChannels = this.wavesurfer?.getDecodedData()?.numberOfChannels
-        const { width } = this.wavesurfer.getWrapper().getBoundingClientRect()
+        if (!ctx.wavesurfer) return
+        const duration = ctx.wavesurfer.getDuration()
+        const numberOfChannels = ctx.wavesurfer?.getDecodedData()?.numberOfChannels
+        const { width } = ctx.wavesurfer.getWrapper().getBoundingClientRect()
         startTime = (startX / width) * duration
 
         // Calculate the start time of the region
@@ -879,6 +905,7 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         const end = ((drag.x + initialSize) / width) * duration
 
         // Create a region but don't save it until the drag ends
+        regionScope = ctx.scope.child()
         region = new SingleRegion(
           {
             ...options,
@@ -886,14 +913,15 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
             end,
           },
           duration,
+          regionScope,
           numberOfChannels,
         )
 
-        this.emit('region-initialized', region)
+        ctx.emit('region-initialized', region)
 
         // Just add it to the DOM for now
         if (region.element) {
-          this.regionsContainer.appendChild(region.element)
+          regionsContainer.appendChild(region.element)
         }
       } else if (drag.type === 'move' && drag.deltaX !== undefined) {
         // On drag move
@@ -904,41 +932,45 @@ class RegionsPlugin extends BasePlugin<RegionsPluginEvents, RegionsPluginOptions
         }
       } else if (drag.type === 'end') {
         // On drag end
-        if (region) {
-          this.saveRegion(region)
+        if (region && regionScope) {
+          saveRegion(region, regionScope)
           region.updatingSide = undefined
           region = null
+          regionScope = null
         }
       }
     }, [dragStream.signal])
 
-    const cleanup = () => {
+    // The returned disposer IS the scope.add(...) remover — calling it both
+    // runs the cleanup and deregisters it from ctx.scope, so a manual
+    // splice-out of a plugin-level subscriptions array is no longer needed.
+    return ctx.scope.add(() => {
       unsubscribe()
       dragStream.cleanup()
-    }
-
-    this.subscriptions.push(cleanup)
-
-    return () => {
-      cleanup()
-      this.subscriptions = this.subscriptions.filter((sub) => sub !== cleanup)
-    }
+    })
   }
 
   /** Remove all regions */
-  public clearRegions() {
-    const regions = this.regions.slice()
-    regions.forEach((region) => region.remove())
-    this.regions = []
+  function clearRegions() {
+    const regionsToRemove = regions.slice()
+    regionsToRemove.forEach((region) => region.remove())
+    regions = []
   }
 
-  /** Destroy the plugin and clean up */
-  public destroy() {
-    this.clearRegions()
-    super.destroy()
-    this.regionsContainer.remove()
+  // Equivalent of the pre-port destroy() override's `this.clearRegions()`
+  // call: explicitly remove()s every region (emitting 'remove'/'region-removed'
+  // and clearing region.element) rather than relying solely on the implicit
+  // ctx.scope -> regionScope cascade, which would dispose each region's raw
+  // listeners but skip SingleRegion.remove()'s other side effects.
+  ctx.scope.add(() => clearRegions())
+
+  return {
+    getRegions,
+    addRegion,
+    enableDragSelection,
+    clearRegions,
   }
-}
+})
 
 export default RegionsPlugin
 export type Region = SingleRegion

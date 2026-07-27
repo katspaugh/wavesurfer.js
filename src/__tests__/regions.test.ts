@@ -132,6 +132,17 @@ describe('RegionsPlugin', () => {
     expect(clicked).toHaveBeenCalledTimes(1)
   })
 
+  // ADAPTED: the pre-port test read `region.subscriptions.length` directly.
+  // SingleRegion's hand-rolled `subscriptions` array is gone -- its listener
+  // bookkeeping (including resize-handle cleanup) now lives on a private
+  // child Scope with no length/size introspection (by design, see
+  // envelope-leaks.test.ts for the established precedent). Pin the same
+  // "does not grow" contract one level down: each `resize: true` toggle
+  // creates fresh left/right resize-handle elements and attaches one
+  // 'pointerdown' listener to each (via createDragStream); the *net* count of
+  // attached pointerdown listeners (adds minus removes) after settling on
+  // `resize: true` must stay constant across repeated off/on cycles, rather
+  // than growing if a stale cleanup were left behind each toggle.
   test('toggling resize option repeatedly does not grow region subscriptions', () => {
     const wavesurfer = createWaveSurfer()
     const plugin = RegionsPlugin.create()
@@ -140,15 +151,23 @@ describe('RegionsPlugin', () => {
 
     const region = plugin.addRegion({ start: 0, end: 1, resize: true })
 
-    region.setOptions({ resize: false })
-    region.setOptions({ resize: true })
-    const lengthAfterFirstToggle = region.subscriptions.length
+    const addSpy = jest.spyOn(HTMLElement.prototype, 'addEventListener')
+    const removeSpy = jest.spyOn(HTMLElement.prototype, 'removeEventListener')
+    const netPointerdownListeners = () => {
+      const adds = addSpy.mock.calls.filter(([type]) => type === 'pointerdown').length
+      const removes = removeSpy.mock.calls.filter(([type]) => type === 'pointerdown').length
+      return adds - removes
+    }
 
     region.setOptions({ resize: false })
     region.setOptions({ resize: true })
-    const lengthAfterSecondToggle = region.subscriptions.length
+    const netAfterFirstToggle = netPointerdownListeners()
 
-    expect(lengthAfterSecondToggle).toBe(lengthAfterFirstToggle)
+    region.setOptions({ resize: false })
+    region.setOptions({ resize: true })
+    const netAfterSecondToggle = netPointerdownListeners()
+
+    expect(netAfterSecondToggle).toBe(netAfterFirstToggle)
   })
 
   test('places a region in the first free row instead of summing all prior overlaps', () => {
