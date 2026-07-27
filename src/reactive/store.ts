@@ -1,54 +1,93 @@
 /**
- * Reactive primitives for managing state in WaveSurfer
- *
- * This module provides signal-based reactivity similar to SolidJS signals.
- * Signals are reactive values that notify subscribers when they change.
+ * Reactive primitives for managing state in WaveSurfer.
+ * Signals notify synchronously; use batch() to coalesce. computed/effect
+ * auto-track dependencies when no dependency array is given, and are
+ * always disposable.
  */
 
-/**
- * A reactive value that can be read and subscribed to
- */
 export interface Signal<T> {
-  /** Get the current value */
   get value(): T
-  /** Subscribe to changes. Returns an unsubscribe function. */
   subscribe(callback: (value: T) => void): () => void
 }
 
-/**
- * A writable reactive value that can be updated
- */
 export interface WritableSignal<T> extends Signal<T> {
-  /** Set a new value. Only notifies if value changed. */
   set(value: T): void
-  /** Update value using a function. */
   update(fn: (current: T) => T): void
 }
 
-/**
- * Create a reactive signal that notifies subscribers when its value changes
- *
- * @example
- * ```typescript
- * const count = signal(0)
- * count.subscribe(val => console.log('Count:', val))
- * count.set(5) // Logs: Count: 5
- * ```
- */
+export interface ComputedSignal<T> extends Signal<T> {
+  dispose(): void
+}
+
+type AnySignal = Signal<unknown>
+
+let activeTracker: Set<AnySignal> | null = null
+let batchDepth = 0
+const pendingNotifications = new Set<() => void>()
+
+export function batch(fn: () => void): void {
+  batchDepth++
+  try {
+    fn()
+  } finally {
+    batchDepth--
+    if (batchDepth === 0) {
+      const pending = [...pendingNotifications]
+      pendingNotifications.clear()
+      pending.forEach((notify) => notify())
+    }
+  }
+}
+
 export function signal<T>(initialValue: T): WritableSignal<T> {
   let _value = initialValue
   const subscribers = new Set<(value: T) => void>()
+  let notifying = false
+  let settleAgain = false
 
-  return {
+  const notifyAll = () => {
+    if (notifying) {
+      settleAgain = true
+      return
+    }
+    notifying = true
+    try {
+      do {
+        settleAgain = false
+        const snapshot = [...subscribers]
+        const valueAtStart = _value
+        for (const fn of snapshot) {
+          try {
+            fn(valueAtStart)
+          } catch (err) {
+            console.error('Signal subscriber error:', err)
+          }
+          // A subscriber changed the value again; abort this pass, the
+          // settle loop delivers the newer value to everyone
+          if (!Object.is(_value, valueAtStart)) {
+            settleAgain = true
+            break
+          }
+        }
+      } while (settleAgain)
+    } finally {
+      notifying = false
+    }
+  }
+
+  const self: WritableSignal<T> = {
     get value() {
+      activeTracker?.add(self)
       return _value
     },
 
     set(newValue: T) {
-      // Only update and notify if value actually changed
-      if (!Object.is(_value, newValue)) {
-        _value = newValue
-        subscribers.forEach((fn) => fn(_value))
+      if (Object.is(_value, newValue)) return
+      _value = newValue
+      if (batchDepth > 0) {
+        pendingNotifications.add(notifyAll)
+      } else {
+        notifyAll()
       }
     },
 
@@ -61,90 +100,111 @@ export function signal<T>(initialValue: T): WritableSignal<T> {
       return () => subscribers.delete(callback)
     },
   }
+
+  return self
 }
 
-/**
- * Create a computed value that automatically updates when its dependencies change
- *
- * @example
- * ```typescript
- * const count = signal(0)
- * const doubled = computed(() => count.value * 2, [count])
- * console.log(doubled.value) // 0
- * count.set(5)
- * console.log(doubled.value) // 10
- * ```
- */
-export function computed<T>(fn: () => T, dependencies: Signal<any>[]): Signal<T> {
-  const result = signal<T>(fn())
+/** Run fn, recording which signals it reads. Returns [result, dependencies]. */
+function track<T>(fn: () => T): [T, Set<AnySignal>] {
+  const previousTracker = activeTracker
+  const deps = new Set<AnySignal>()
+  activeTracker = deps
+  try {
+    return [fn(), deps]
+  } finally {
+    activeTracker = previousTracker
+  }
+}
 
-  // Subscribe to all dependencies immediately
-  // This ensures the computed value stays in sync even if no one is subscribed to it
-  dependencies.forEach((dep) =>
-    dep.subscribe(() => {
-      const newValue = fn()
-      // Update the result signal, which will notify our subscribers if value changed
-      if (!Object.is(result.value, newValue)) {
-        ;(result as WritableSignal<T>).set(newValue)
-      }
-    }),
-  )
+export function computed<T>(fn: () => T, dependencies?: Signal<any>[]): ComputedSignal<T> {
+  const result = signal<T>(undefined as T)
+  let unsubscribes: Array<() => void> = []
+  let disposed = false
 
-  // Return a read-only signal that proxies the result
-  return {
+  const recompute = () => {
+    if (disposed) return
+    if (dependencies) {
+      result.set(fn())
+    } else {
+      // Auto-tracked: re-collect dependencies on every run so
+      // conditional reads stay correct
+      unsubscribes.forEach((unsub) => unsub())
+      const [value, deps] = track(fn)
+      unsubscribes = [...deps].map((dep) => dep.subscribe(recompute))
+      result.set(value)
+    }
+  }
+
+  if (dependencies) {
+    unsubscribes = dependencies.map((dep) => dep.subscribe(recompute))
+    result.set(fn())
+  } else {
+    recompute()
+  }
+
+  const dispose = () => {
+    disposed = true
+    unsubscribes.forEach((unsub) => unsub())
+    unsubscribes = []
+  }
+
+  const readonly: ComputedSignal<T> = {
     get value() {
+      // Propagate tracking so computeds can nest
+      activeTracker?.add(readonly)
       return result.value
     },
-
-    subscribe(callback: (value: T) => void): () => void {
-      // Just subscribe to result changes
-      return result.subscribe(callback)
-    },
+    subscribe: (callback) => result.subscribe(callback),
+    dispose,
   }
+
+  // Duck-typed disposal used by event-streams' cleanup()
+  Object.defineProperty(readonly, '_cleanup', { value: dispose, enumerable: false })
+
+  return readonly
 }
 
-/**
- * Run a side effect automatically when dependencies change
- *
- * @param fn - Effect function. Can return a cleanup function.
- * @param dependencies - Signals that trigger the effect when they change
- * @returns Unsubscribe function that stops the effect and runs cleanup
- *
- * @example
- * ```typescript
- * const count = signal(0)
- * effect(() => {
- *   console.log('Count is:', count.value)
- *   return () => console.log('Cleanup')
- * }, [count])
- * count.set(5) // Logs: Cleanup, Count is: 5
- * ```
- */
-export function effect(fn: () => void | (() => void), dependencies: Signal<any>[]): () => void {
+export function effect(fn: () => void | (() => void), dependencies?: Signal<any>[]): () => void {
   let cleanup: (() => void) | void
+  let unsubscribes: Array<() => void> = []
+  let disposed = false
 
   const run = () => {
-    // Run cleanup from previous execution
+    if (disposed) return
     if (cleanup) {
-      cleanup()
+      try {
+        cleanup()
+      } catch (err) {
+        console.error('Effect cleanup error:', err)
+      }
       cleanup = undefined
     }
-    // Run effect and capture new cleanup
-    cleanup = fn()
+    if (dependencies) {
+      cleanup = fn()
+    } else {
+      unsubscribes.forEach((unsub) => unsub())
+      const [result, deps] = track(fn)
+      unsubscribes = [...deps].map((dep) => dep.subscribe(run))
+      cleanup = result
+    }
   }
 
-  // Subscribe to all dependencies
-  const unsubscribes = dependencies.map((dep) => dep.subscribe(run))
-
-  // Run effect immediately
+  if (dependencies) {
+    unsubscribes = dependencies.map((dep) => dep.subscribe(run))
+  }
   run()
 
-  // Return function that unsubscribes and runs cleanup
   return () => {
+    disposed = true
     if (cleanup) {
-      cleanup()
+      try {
+        cleanup()
+      } catch (err) {
+        console.error('Effect cleanup error:', err)
+      }
       cleanup = undefined
     }
     unsubscribes.forEach((unsub) => unsub())
+    unsubscribes = []
   }
 }
