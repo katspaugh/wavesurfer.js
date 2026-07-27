@@ -326,4 +326,16 @@ describe('WaveSurfer public methods', () => {
     expect(onTimeupdate).toHaveBeenCalledTimes(1)
     ws.destroy()
   })
+
+  test('reflects zoom and decoded audio in reactive state', async () => {
+    const ws = createWs({
+      peaks: [[0, 0.5, 1]],
+      duration: 1,
+    })
+    await new Promise((resolve) => ws.once('ready', resolve))
+    expect(ws.getState().audioBuffer.value).not.toBeNull()
+    ws.zoom(123)
+    expect(ws.getState().zoom.value).toBe(123)
+    ws.destroy()
+  })
 })

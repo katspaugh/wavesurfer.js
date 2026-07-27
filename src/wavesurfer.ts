@@ -424,10 +424,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.options = Object.assign({}, this.options, options)
     if (options.duration && !options.peaks) {
       this.decodedData = Decoder.createBuffer(this.exportPeaks(), options.duration)
+      this.wavesurferActions.setAudioBuffer(this.decodedData)
     }
     if (options.peaks && options.duration) {
       // Create new decoded data buffer from peaks and duration
       this.decodedData = Decoder.createBuffer(options.peaks, options.duration)
+      this.wavesurferActions.setAudioBuffer(this.decodedData)
     }
     this.renderer.setOptions(this.options)
 
@@ -510,9 +512,15 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     this.emit('load', url)
 
+    this.wavesurferActions.setUrl(url || '')
+    if (channelData) {
+      this.wavesurferActions.setPeaks(channelData)
+    }
+
     if (!this.options.media && this.isPlaying()) this.pause()
 
     this.decodedData = null
+    this.wavesurferActions.setAudioBuffer(null)
     this.stopAtPosition = null
 
     // Abort any ongoing fetch before starting a new one
@@ -579,6 +587,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     if (this._isDestroyed || loadVersion !== this._loadVersion) return
 
     if (this.decodedData) {
+      this.wavesurferActions.setAudioBuffer(this.decodedData)
       this.emit('decode', this.getDuration())
       this.renderer.render(this.decodedData)
     }
@@ -612,6 +621,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       throw new Error('No audio loaded')
     }
     this.renderer.zoom(minPxPerSec)
+    this.wavesurferActions.setZoom(minPxPerSec)
     this.emit('zoom', minPxPerSec)
   }
 
