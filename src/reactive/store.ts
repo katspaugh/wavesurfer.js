@@ -50,21 +50,29 @@ export function batch(fn: () => void): void {
 /**
  * Drain pendingQueue until empty. Runs under an elevated batchDepth so that
  * any set() triggered by a notification - e.g. one signal's subscriber
- * setting another signal - is queued rather than fired immediately.
+ * setting another signal, or a signal's own subscriber re-setting itself -
+ * is queued rather than fired immediately.
  *
  * Draining LIFO (most-recently-queued first) means a cascading set()
  * triggered while flushing a later-queued entry reaches an earlier-queued,
  * not-yet-fired entry for the same signal in time to merge into it, instead
  * of that entry having already fired with a stale value and needing a
  * second, separate flush.
+ *
+ * A signal stays in pendingSet for the full duration of its own notify()
+ * call, not just while it's queued. That way a same-signal reentrant set()
+ * triggered from within its own subscribers - which notify()'s internal
+ * notifying/settleAgain loop already settles to the final value - finds
+ * itself still "pending" and is deduped by scheduleNotification, instead of
+ * being re-queued for a redundant second delivery of the same final value.
  */
 function flushPending(): void {
   batchDepth++
   try {
     while (pendingQueue.length > 0) {
       const notify = pendingQueue.pop() as () => void
-      pendingSet.delete(notify)
       notify()
+      pendingSet.delete(notify)
     }
   } finally {
     batchDepth--

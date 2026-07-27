@@ -432,4 +432,12 @@ describe('store v2', () => {
     })
     expect(bCalls).toEqual([2])
   })
+
+  it('a same-signal reentrant set() during batch flush does not double-deliver the final value', () => {
+    const a = signal(0)
+    const seen: number[] = []
+    a.subscribe((v) => { seen.push(v); if (v === 1) a.set(2) })
+    batch(() => { a.set(1) })
+    expect(seen).toEqual([1, 2])
+  })
 })
