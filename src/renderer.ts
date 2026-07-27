@@ -4,7 +4,7 @@ import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
 import { createDragStream } from './reactive/drag-stream.js'
 import { createScrollStream } from './reactive/scroll-stream.js'
-import { effect } from './reactive/store.js'
+import { computed, effect, signal, type ComputedSignal, type Signal } from './reactive/store.js'
 import { Scope } from './scope.js'
 
 type ChannelData = utils.ChannelData
@@ -52,6 +52,8 @@ class Renderer extends EventEmitter<RendererEvents> {
   private dragStream: { signal: any; cleanup: () => void } | null = null
   private scrollStream: { scrollData: any; percentages: any; bounds: any; cleanup: () => void } | null = null
   private containerInlinePadding = 0
+  private audioDuration = signal(0)
+  private visibleRange: ComputedSignal<{ startTime: number; endTime: number }>
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     super()
@@ -75,7 +77,42 @@ class Renderer extends EventEmitter<RendererEvents> {
       shadow.appendChild(audioElement)
     }
 
+    // initEvents() creates this.scrollStream, so visibleRange must be built
+    // after it.
     this.initEvents()
+
+    // visibleRange is instance-lifetime state, deliberately NOT disposed via
+    // this.scope -- mirroring the WaveSurferState computeds precedent (see
+    // wavesurfer.ts's constructor comment near createWaveSurferState). Why:
+    // destroy() disposes and recreates `this.scope` to support the documented
+    // destroy -> load() reuse contract, but this.scrollStream/initEvents()
+    // only ever run once, from this constructor. If visibleRange's dispose
+    // were registered on this.scope, it would be permanently disposed after
+    // the FIRST destroy() with nothing left to recreate it -- breaking
+    // getVisibleRange() forever for any reused instance (and for future
+    // consumers like minimap/spectrogram). So visibleRange itself is never
+    // disposed; it depends on this.audioDuration (owned by this instance,
+    // never disposed) and, transitively through the recompute body below, on
+    // this.scrollStream.percentages, which the scope cleanup below DOES
+    // dispose at destroy() (and nulls out this.scrollStream). The recompute
+    // body defends against that by falling back to the non-scrollable
+    // {0, duration} shape whenever this.scrollStream is null, instead of
+    // throwing. Net effect after a destroy(): visibleRange freezes at its
+    // last live value until the next render() (which still fires, since
+    // audioDuration.set() is unaffected by the scope reset) recomputes it to
+    // {startTime: 0, endTime: newDuration} -- the same "not scrollable"
+    // shape reported before any scroll ever happened. This mirrors the
+    // pre-existing behavior of the 'scroll' event itself, which also stops
+    // firing after the first destroy() for the same reason (scrollStream is
+    // never recreated) -- not a regression introduced by visibleRange.
+    this.visibleRange = computed(() => {
+      const duration = this.audioDuration.value
+      if (!this.isScrollable || duration === 0 || !this.scrollStream) {
+        return { startTime: 0, endTime: duration }
+      }
+      const { startX, endX } = this.scrollStream.percentages.value
+      return { startTime: startX * duration, endTime: endX * duration }
+    }, [this.audioDuration, this.scrollStream!.percentages])
   }
 
   private parentFromOptionsContainer(container: WaveSurferOptions['container']) {
@@ -315,6 +352,16 @@ class Renderer extends EventEmitter<RendererEvents> {
     const { scrollWidth } = this.scrollContainer
     const scrollStart = scrollWidth * percent
     this.setScroll(scrollStart)
+  }
+
+  /**
+   * The currently visible time range, derived from scroll position and
+   * audio duration -- `{startTime: 0, endTime: duration}` when the waveform
+   * isn't scrollable. Read-only; consumers (e.g. the timeline plugin) should
+   * subscribe/effect off it rather than recomputing scroll math themselves.
+   */
+  getVisibleRange(): Signal<{ startTime: number; endTime: number }> {
+    return this.visibleRange
   }
 
   destroy() {
@@ -610,13 +657,15 @@ class Renderer extends EventEmitter<RendererEvents> {
     })
     initialRange.forEach((index) => draw(index))
 
-    // Subscribe to the scroll event to draw additional canvases
+    // Subscribe to visibleRange to draw additional canvases as the user
+    // scrolls. visibleRange is the trigger; the DOM scrollLeft read below
+    // stays the source of truth for the pixel math, unchanged from before.
     if (numCanvases > 1) {
-      const unsubscribe = this.on('scroll', () => {
+      const unsubscribe = effect(() => {
         const { scrollLeft } = this.scrollContainer
         clearCanvases()
         utils.getLazyRenderRange({ scrollLeft, totalWidth, numCanvases }).forEach((index) => draw(index))
-      })
+      }, [this.visibleRange])
 
       this.scrollRenderScope.add(unsubscribe)
     }
@@ -689,6 +738,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.cursor.style.width = `${this.options.cursorWidth}px`
 
     this.audioData = audioData
+    this.audioDuration.set(audioData.duration)
 
     this.emit('render')
 

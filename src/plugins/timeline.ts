@@ -111,13 +111,18 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
 
     this.subscriptions.push(this.wavesurfer.on('redraw', () => this.initTimeline()))
 
-    // Add single scroll listener for all notches (register once, not on every redraw)
+    // Re-window notches off the renderer's visibleRange (derived from scroll
+    // position + duration) rather than hand-rolling scroll math off the raw
+    // 'scroll' event. Registered once, not on every redraw.
+    const renderer = this.wavesurfer.getRenderer()
     this.subscriptions.push(
-      this.wavesurfer.on('scroll', (_start, _end, scrollLeft, scrollRight) => {
+      effect(() => {
         if (this.currentTimeline) {
+          const scrollLeft = this.wavesurfer!.getScroll()
+          const scrollRight = scrollLeft + this.wavesurfer!.getWidth()
           this.updateVisibleNotches(scrollLeft, scrollRight, this.currentTimeline)
         }
-      }),
+      }, [renderer.getVisibleRange()]),
     )
 
     if (this.wavesurfer?.getDuration() || this.options.duration) {
