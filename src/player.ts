@@ -33,7 +33,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   // for mediaScope's parent. Keeping Player's and WaveSurfer's scopes as two
   // independent trees also matches their pre-existing independence: neither
   // class's cleanup array was ever connected to the other's.)
-  protected mediaScope = new Scope()
+  private mediaScope = new Scope()
 
   // Expose reactive state as writable signals
   // These are writable to allow WaveSurfer to compose them into centralized state
@@ -230,9 +230,12 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     // Cleanup reactive media event listeners
     this.mediaScope.dispose()
     // Player instances are reused after destroy (see WaveSurfer's loadAudio
-    // comment about issue #3637), so a fresh scope must replace the disposed
-    // one -- a disposed Scope runs late registrations immediately, which
-    // would break setMediaElement() if called again on this instance.
+    // comment about issue #3637). setMediaElement() already disposes and
+    // replaces mediaScope unconditionally at its own start, so this isn't
+    // strictly required for that path -- it's here for consistency /
+    // defensiveness, so a destroyed-but-reused Player is never left holding
+    // a disposed scope that would silently no-op (or immediately re-run)
+    // anything registered on it before setMediaElement() is called again.
     this.mediaScope = new Scope()
 
     // Revoke blob URLs that we created

@@ -249,4 +249,29 @@ describe('Renderer', () => {
     renderer.destroy()
     expect(container.contains(renderer.getWrapper())).toBe(false)
   })
+
+  test('render() after destroy recreates scopes instead of installing pre-disposed ones', async () => {
+    // Renderer is reused after WaveSurfer.destroy(): a subsequent load() call
+    // reaches renderer.render(...), and setOptions() reaches reRender(). If
+    // Renderer's own scope stays disposed forever, `this.scope.child()` hands
+    // back an already-disposed child (per Scope's documented behavior), so
+    // render() would install pre-disposed scrollRenderScope/delayScope and
+    // any lazy-render scroll subscription registered afterward would be torn
+    // down immediately -- long scrollable waveforms would only ever draw
+    // their initial canvas range post destroy->load.
+    const buffer = createAudioBuffer([[0, 0.5, -0.5]])
+
+    renderer.destroy()
+    await renderer.render(buffer)
+
+    expect((renderer as any).scope.disposed).toBe(false)
+    expect((renderer as any).scrollRenderScope.disposed).toBe(false)
+    expect((renderer as any).delayScope.disposed).toBe(false)
+
+    // And a fresh scroll subscription registered after the reuse must
+    // actually stick instead of being disposed on arrival.
+    const lateUnsubscribe = jest.fn()
+    ;(renderer as any).scrollRenderScope.add(lateUnsubscribe)
+    expect(lateUnsubscribe).not.toHaveBeenCalled()
+  })
 })

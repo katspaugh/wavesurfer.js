@@ -325,9 +325,18 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.wrapper.removeEventListener('click', this.onClickWrapper)
     this.wrapper.removeEventListener('dblclick', this.onDblClickWrapper)
 
-    // Renderer is not reused after destroy (its container is removed), so
-    // this scope is terminal -- unlike Player/WaveSurfer, it is not recreated.
     this.scope.dispose()
+    // A Renderer instance IS reused after WaveSurfer.destroy(): a subsequent
+    // load() reaches render(), and setOptions() reaches reRender(). A
+    // disposed Scope hands back pre-disposed children from child(), so
+    // without recreating here, render()/reRender()'s own scope resets would
+    // install permanently-disposed scrollRenderScope/delayScope and any
+    // lazy-render scroll subscription registered afterward would be torn
+    // down the instant it's added (see renderMultiCanvas()). Recreate fresh
+    // scopes exactly as Player/WaveSurfer do.
+    this.scope = new Scope()
+    this.scrollRenderScope = this.scope.child()
+    this.delayScope = this.scope.child()
 
     this.container.remove()
     if (this.resizeObserver) {
