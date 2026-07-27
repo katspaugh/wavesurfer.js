@@ -35,7 +35,9 @@ describe('Scope', () => {
     const scope = new Scope()
     const second = jest.fn()
     scope.add(second)
-    scope.add(() => { throw new Error('boom') })
+    scope.add(() => {
+      throw new Error('boom')
+    })
     scope.dispose()
     expect(second).toHaveBeenCalled()
     errSpy.mockRestore()

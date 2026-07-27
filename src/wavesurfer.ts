@@ -207,7 +207,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     // Initialize reactive state
     // Pass Player signals to compose them into WaveSurferState
-    const { state, actions, dispose } = createWaveSurferState({
+    const { state, actions } = createWaveSurferState({
       isPlaying: this.isPlayingSignal,
       currentTime: this.currentTimeSignal,
       duration: this.durationSignal,
@@ -217,7 +217,17 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     })
     this.wavesurferState = state
     this.wavesurferActions = actions
-    this.scope.add(dispose)
+    // Intentionally NOT registering the returned `dispose` with `this.scope`:
+    // the state's signal graph (base signals + computeds) is owned by this
+    // WaveSurfer instance for its entire lifetime, not by the per-load Scope.
+    // `destroy()` disposes and recreates `this.scope` to support a supported
+    // destroy -> load() reuse pattern; if the state's computeds were disposed
+    // there too, they'd be permanently frozen after the first destroy since
+    // nothing ever recreates them. The computeds hold no external resources
+    // (DOM listeners, timers, etc.) -- disposing them buys nothing beyond
+    // what letting the instance (and its closures) get garbage-collected
+    // already provides. `dispose` remains part of createWaveSurferState's
+    // public return value for direct/standalone users of the state module.
 
     this.timer = new Timer()
 

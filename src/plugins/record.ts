@@ -321,7 +321,12 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
           })
         }
       }
-      if (this.options.renderRecordedAudio) {
+      // Guard against onstop firing after destroy() has already run (it's a queued
+      // microtask, so it can land after destroy() returns -- see the test above).
+      // Without this, a post-destroy onstop would create a fresh blob URL via
+      // createObjectURL() that nothing ever revokes, since destroy() has already
+      // done its own revocation pass and this code path runs after that.
+      if (this.options.renderRecordedAudio && !this.destroyed) {
         this.applyOriginalOptionsIfNeeded()
         // Revoke previous blob URL before creating a new one
         if (this.recordedBlobUrl) {

@@ -385,7 +385,11 @@ describe('store v2', () => {
     const a = signal(0)
     const spy = jest.fn()
     a.subscribe(spy)
-    batch(() => { a.set(1); a.set(2); a.set(3) })
+    batch(() => {
+      a.set(1)
+      a.set(2)
+      a.set(3)
+    })
     expect(spy).toHaveBeenCalledTimes(1)
     expect(spy).toHaveBeenCalledWith(3)
   })
@@ -394,7 +398,9 @@ describe('store v2', () => {
     const a = signal(0)
     const errSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
     const second = jest.fn()
-    a.subscribe(() => { throw new Error('boom') })
+    a.subscribe(() => {
+      throw new Error('boom')
+    })
     a.subscribe(second)
     a.set(1)
     expect(second).toHaveBeenCalledWith(1)
@@ -404,7 +410,10 @@ describe('store v2', () => {
   it('re-entrant set during notification settles without recursion', () => {
     const a = signal(0)
     const seen: number[] = []
-    a.subscribe((v) => { seen.push(v); if (v === 1) a.set(2) })
+    a.subscribe((v) => {
+      seen.push(v)
+      if (v === 1) a.set(2)
+    })
     a.set(1)
     expect(a.value).toBe(2)
     expect(seen).toEqual([1, 2])
@@ -413,7 +422,9 @@ describe('store v2', () => {
   it('effect with no dep array auto-tracks and disposes', () => {
     const a = signal(1)
     const runs: number[] = []
-    const dispose = effect(() => { runs.push(a.value) })
+    const dispose = effect(() => {
+      runs.push(a.value)
+    })
     a.set(2)
     dispose()
     a.set(3)
@@ -436,8 +447,13 @@ describe('store v2', () => {
   it('a same-signal reentrant set() during batch flush does not double-deliver the final value', () => {
     const a = signal(0)
     const seen: number[] = []
-    a.subscribe((v) => { seen.push(v); if (v === 1) a.set(2) })
-    batch(() => { a.set(1) })
+    a.subscribe((v) => {
+      seen.push(v)
+      if (v === 1) a.set(2)
+    })
+    batch(() => {
+      a.set(1)
+    })
     expect(seen).toEqual([1, 2])
   })
 })

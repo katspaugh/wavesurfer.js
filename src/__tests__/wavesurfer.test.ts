@@ -356,4 +356,36 @@ describe('WaveSurfer public methods', () => {
     await loadPromise
     ws.destroy()
   })
+
+  test('getState() computeds keep reacting to signal writes after destroy -> reuse', async () => {
+    // Regression test: destroy() used to register the wavesurfer-state `dispose`
+    // callback on `this.scope`, so scope.dispose() permanently unsubscribed the
+    // derived computeds (isPaused, canPlay, isReady, progress, progressPercent)
+    // from their base signals. destroy() then recreates `this.scope` for the
+    // (supported) destroy -> load() reuse pattern, but createWaveSurferState()
+    // is only ever called once, in the constructor -- so the computeds were
+    // never recreated and stayed frozen at their pre-destroy values forever.
+    const media = createMedia()
+    const container = document.createElement('div')
+    const ws = WaveSurfer.create({ container, media, peaks: [[0, 0.5, 1]], duration: 1 })
+    await new Promise((resolve) => ws.once('ready', resolve))
+
+    ws.destroy()
+
+    // Reusing an instance after destroy() is supported (see loadAudio's issue
+    // #3637 comment / cypress/e2e/abort.cy.js). setMediaElement() re-registers
+    // the media event listeners the same way a reused instance needs them
+    // re-registered, then a real 'timeupdate' event drives the base
+    // `currentTime` signal exactly as the browser would during playback.
+    ws.setMediaElement(media)
+    Object.defineProperty(media, 'currentTime', { configurable: true, value: 42, writable: true })
+    media.dispatchEvent(new Event('timeupdate'))
+
+    // The load-bearing assertion: this base-signal write must still propagate
+    // to the derived `progress` computed. Before the fix this stayed frozen at
+    // the pre-destroy value (0) because the computed had been disposed.
+    expect(ws.getState().progress.value).toBe(42)
+
+    ws.destroy()
+  })
 })

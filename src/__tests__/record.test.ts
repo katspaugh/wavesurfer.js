@@ -69,7 +69,7 @@ class MockMediaRecorder {
     this.mimeType = opts?.mimeType ?? 'audio/webm'
   }
 
-  start(_timeslice?: number) {
+  start() {
     this.state = 'recording'
   }
 
@@ -166,6 +166,13 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
 
     expect(onEnd).toHaveBeenCalledTimes(1)
     expect(onEnd.mock.calls[0][0]).toBeInstanceOf(Blob)
+
+    // renderRecordedAudio defaults to true, so without the post-destroy guard
+    // this post-destroy onstop would call createObjectURL() again for a blob
+    // URL that destroy()'s own revocation pass (which already ran) would
+    // never revoke -- a leak. destroy() itself revoked once synchronously;
+    // the guard must prevent any further calls from this async onstop.
+    expect(URL.createObjectURL).not.toHaveBeenCalled()
   })
 
   it('does not double-deliver record-end on a normal (non-destroy) stop', async () => {
