@@ -1,5 +1,5 @@
-import { Scope } from './scope'
-import { isHTMLElement, createElement } from './dom'
+import { Scope } from './scope.js'
+import { isHTMLElement, createElement } from './dom.js'
 
 /**
  * Resolve a container option: element, selector, or fallback.
@@ -10,7 +10,7 @@ export function resolveContainer(
   fallback: HTMLElement,
   pluginName: string,
 ): HTMLElement {
-  if (option === undefined) {
+  if (!option) {
     return fallback
   }
 

@@ -613,7 +613,7 @@ type Api = {
 }
 
 const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>, RegionsPluginEvents, Api>(
-  'regions',
+  'RegionsPlugin',
   (ctx) => {
     // setup-closure state — replaces the pre-port instance fields `regions` and
     // the onInit()-local `activeRegions`.
@@ -692,11 +692,13 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
     function avoidOverlapping(region: Region) {
       if (!region.content || region.isRemoved) return
 
-      // Schedule on the region's own scope (falling back to ctx.scope for a
-      // not-yet-saved region, though avoidOverlapping is never reached before
-      // a region is saved in practice) so a removal cancels this pending
-      // reflow instead of letting it fire, or accumulate, on the plugin scope.
-      const scope = regionScopes.get(region) ?? ctx.scope
+      // Schedule on the region's own scope so a removal cancels this pending
+      // reflow instead of letting it fire, or accumulate, on the plugin
+      // scope. Both call sites (avoidOverlappingAll, iterating `regions`;
+      // and saveRegion, right after `regionScopes.set`) only ever reach a
+      // region once it's been saved, so the scope is always present here —
+      // no fallback needed.
+      const scope = regionScopes.get(region)!
       scope.timeout(() => {
         if (!region.content) return
 

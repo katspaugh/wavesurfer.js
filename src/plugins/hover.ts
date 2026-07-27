@@ -56,7 +56,7 @@ function addUnits(value: string | number): string {
   return `${value}${units}`
 }
 
-const HoverPlugin = definePlugin<HoverPluginOptions, HoverPluginEvents, object>('hover', (ctx, options) => {
+const HoverPlugin = definePlugin<HoverPluginOptions, HoverPluginEvents, object>('HoverPlugin', (ctx, options) => {
   const opts: HoverPluginOptions & typeof defaultOptions = Object.assign({}, defaultOptions, options)
 
   // Create the plugin elements

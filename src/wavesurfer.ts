@@ -1,5 +1,6 @@
 import BasePlugin, { type GenericPlugin } from './base-plugin.js'
 import Decoder from './decoder.js'
+import { definePlugin } from './define-plugin.js'
 import * as dom from './dom.js'
 import Fetcher from './fetcher.js'
 import { FrameScheduler } from './frame-scheduler.js'
@@ -179,6 +180,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   public static readonly BasePlugin = BasePlugin
   public static readonly dom = dom
+  public static readonly definePlugin = definePlugin
 
   /** Create a new WaveSurfer instance */
   public static create(options: WaveSurferOptions) {
@@ -903,8 +905,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 export type { Signal, WritableSignal } from './reactive/store.js'
 export type { WaveSurferState, WaveSurferActions, LoadPhase } from './state/wavesurfer-state.js'
 
-// Export the functional plugin API for plugin authors
-export { definePlugin } from './define-plugin.js'
+// The functional plugin API (`definePlugin`) is exposed as a static on the
+// WaveSurfer class (`WaveSurfer.definePlugin`), not as a runtime named
+// export here: the main-entry rollup outputs (cjs/umd) use
+// `output.exports: 'default'`, which hard-errors if a runtime named export
+// exists alongside the default export. Only type-only re-exports are safe
+// here since types are erased before rollup sees them.
 export type { PluginContext, PluginSetup, DefinedPlugin } from './define-plugin.js'
 
 export default WaveSurfer

@@ -138,12 +138,22 @@ replacing hand-rolled window tracking and load-version guards. No event-timing o
 Adds a functional plugin API, `definePlugin(name, (ctx, options) => api)`, whose teardown is a
 single `Scope` disposal instead of a hand-rolled `destroy()` override, and rebuilds six of the
 seven remaining first-party plugins on it. This is an **additive** API — `BasePlugin`
-class-based plugins (first-party and third-party) keep working unchanged. `definePlugin` is now
-re-exported from the package's main entry point alongside its supporting types:
+class-based plugins (first-party and third-party) keep working unchanged. `definePlugin` is
+exposed as a static on the `WaveSurfer` class rather than a named export from the main entry
+point — the main-entry rollup outputs (CJS/UMD) use `output.exports: 'default'`, which hard-errors
+on a runtime named export alongside the default export. Its supporting types (`PluginContext`,
+`PluginSetup`, `DefinedPlugin`) are still re-exported by name from the main entry, since types are
+erased before bundling and don't hit that restriction:
 
 ```ts
-import { definePlugin, type PluginContext, type PluginSetup, type DefinedPlugin } from 'wavesurfer.js'
+import WaveSurfer, { type PluginContext, type PluginSetup, type DefinedPlugin } from 'wavesurfer.js'
+
+const MyPlugin = WaveSurfer.definePlugin('MyPlugin', (ctx, options) => ({ ... }))
 ```
+
+If you need `definePlugin` without importing all of `wavesurfer.js`, it's also available directly
+from its dist subpath: `import { definePlugin } from 'wavesurfer.js/dist/define-plugin.js'` (that
+module has no default export, so it's unaffected by the `exports: 'default'` restriction above).
 
 ### New API
 
@@ -161,8 +171,12 @@ import { definePlugin, type PluginContext, type PluginSetup, type DefinedPlugin 
 
 `hover`, `zoom`, `timeline`, `minimap`, `envelope`, `regions`. Every exported class name, default
 export, `Plugin.create(options)` / `new Plugin(options)` constructor form, public method/field,
-and event name+payload is preserved. `record` and the spectrogram plugins were **not** ported
-(see below); `spectrogram-*` unification is scheduled for a later phase.
+and event name+payload is preserved — including each class's runtime `Function.name` (`HoverPlugin`,
+`ZoomPlugin`, `TimelinePlugin`, `MinimapPlugin`, `EnvelopePlugin`, `RegionsPlugin`), which
+`definePlugin`'s internal `Defined` class takes on via the first argument passed to
+`definePlugin(name, setup)`; this keeps devtools/stack-trace display names stable across the port.
+`record` and the spectrogram plugins were **not** ported (see below); `spectrogram-*` unification is
+scheduled for a later phase.
 
 - **`RecordPlugin` stays class-based.** It's usable standalone (construct → `startMic()`/
   `record()` → `destroy()`, without ever calling `registerPlugin()`), which `definePlugin`'s
@@ -201,3 +215,13 @@ and event name+payload is preserved. `record` and the spectrogram plugins were *
   `` `No Timeline container found matching ${container}` `` to
   `` `timeline: container not found: ${container}` `` (now produced by the shared
   `resolveContainer()` helper, consistent with every other plugin's container-resolution error).
+- **`minimap` and `envelope`'s `create(options)` / `new Plugin(options)` argument is now
+  optional** (`MinimapPlugin.create()` and `EnvelopePlugin.create()` are both valid with no
+  argument now, as is `new MinimapPlugin()` / `new EnvelopePlugin()`). Previously the hand-written
+  classes declared `constructor(options: MinimapPluginOptions)` /
+  `constructor(options: EnvelopePluginOptions)` — a required parameter — even though every field on
+  both options types was already optional. `definePlugin`'s `PluginCtorArgs` derives
+  optionality structurally (an all-optional `Options` type gets an optional `create()`/constructor
+  parameter), so this falls out automatically from the port. It's a pure type widening, not a
+  runtime behavior change: both setups already handled an omitted/`undefined` `options` correctly
+  via `Object.assign({}, defaultOptions, options)`.

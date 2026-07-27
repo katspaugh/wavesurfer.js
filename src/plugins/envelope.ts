@@ -369,202 +369,205 @@ type Api = {
   getCurrentVolume: () => number
 }
 
-const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents, Api>('envelope', (ctx, options) => {
-  const opts: Options = Object.assign({}, defaultOptions, options)
-  opts.lineColor = opts.lineColor || defaultOptions.lineColor
-  opts.dragPointFill = opts.dragPointFill || defaultOptions.dragPointFill
-  opts.dragPointStroke = opts.dragPointStroke || defaultOptions.dragPointStroke
-  opts.dragPointSize = opts.dragPointSize || defaultOptions.dragPointSize
+const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents, Api>(
+  'EnvelopePlugin',
+  (ctx, options) => {
+    const opts: Options = Object.assign({}, defaultOptions, options)
+    opts.lineColor = opts.lineColor || defaultOptions.lineColor
+    opts.dragPointFill = opts.dragPointFill || defaultOptions.dragPointFill
+    opts.dragPointStroke = opts.dragPointStroke || defaultOptions.dragPointStroke
+    opts.dragPointSize = opts.dragPointSize || defaultOptions.dragPointSize
 
-  const points: EnvelopePoint[] = options?.points || []
-  let polyline: Polyline | null = null
-  // A child scope dedicated to the current polyline's event subscriptions.
-  // Disposed and replaced (not accumulated) every time initPolyline() runs,
-  // e.g. on every 'decode' — this is the equivalent of the pre-port
-  // `polylineSubscriptions` array plus its manual drain-before-push.
-  let polylineScope = ctx.scope.child()
-  let volume = 1
-  let clearEmitPointsTimeout: (() => void) | null = null
+    const points: EnvelopePoint[] = options?.points || []
+    let polyline: Polyline | null = null
+    // A child scope dedicated to the current polyline's event subscriptions.
+    // Disposed and replaced (not accumulated) every time initPolyline() runs,
+    // e.g. on every 'decode' — this is the equivalent of the pre-port
+    // `polylineSubscriptions` array plus its manual drain-before-push.
+    let polylineScope = ctx.scope.child()
+    let volume = 1
+    let clearEmitPointsTimeout: (() => void) | null = null
 
-  function emitPoints() {
-    // Replace the pending throttle timeout instead of accumulating one per
-    // call (mirrors the old `throttleTimeout` clearTimeout-then-set).
-    clearEmitPointsTimeout?.()
-    clearEmitPointsTimeout = ctx.scope.timeout(() => {
-      ctx.emit('points-change', points)
-    }, 200)
-  }
-
-  function addPolyPoint(point: EnvelopePoint, duration: number) {
-    polyline?.addPolyPoint(point.time / duration, point.volume, point)
-  }
-
-  function onTimeUpdate(time: number) {
-    // Guards a post-destroy call the same way the pre-port `this.wavesurfer`
-    // optional-chaining did: ctx.wavesurfer is typed non-null but reads
-    // `undefined` at runtime once destroy() has run (see define-plugin.ts).
-    const duration = ctx.wavesurfer?.getDuration()
-    if (duration === undefined) return
-
-    let nextPoint = points.find((point) => point.time > time)
-    if (!nextPoint) {
-      nextPoint = { time: duration || 0, volume: 0 }
+    function emitPoints() {
+      // Replace the pending throttle timeout instead of accumulating one per
+      // call (mirrors the old `throttleTimeout` clearTimeout-then-set).
+      clearEmitPointsTimeout?.()
+      clearEmitPointsTimeout = ctx.scope.timeout(() => {
+        ctx.emit('points-change', points)
+      }, 200)
     }
-    let prevPoint = points.findLast((point) => point.time <= time)
-    if (!prevPoint) {
-      prevPoint = { time: 0, volume: 0 }
+
+    function addPolyPoint(point: EnvelopePoint, duration: number) {
+      polyline?.addPolyPoint(point.time / duration, point.volume, point)
     }
-    const timeDiff = nextPoint.time - prevPoint.time
-    const volumeDiff = nextPoint.volume - prevPoint.volume
-    const newVolume = prevPoint.volume + (time - prevPoint.time) * (volumeDiff / timeDiff)
-    const clampedVolume = Math.min(1, Math.max(0, newVolume))
-    const roundedVolume = Math.round(clampedVolume * 100) / 100
 
-    if (roundedVolume !== volume) {
-      setVolume(roundedVolume)
-      ctx.emit('volume-change', roundedVolume)
+    function onTimeUpdate(time: number) {
+      // Guards a post-destroy call the same way the pre-port `this.wavesurfer`
+      // optional-chaining did: ctx.wavesurfer is typed non-null but reads
+      // `undefined` at runtime once destroy() has run (see define-plugin.ts).
+      const duration = ctx.wavesurfer?.getDuration()
+      if (duration === undefined) return
+
+      let nextPoint = points.find((point) => point.time > time)
+      if (!nextPoint) {
+        nextPoint = { time: duration || 0, volume: 0 }
+      }
+      let prevPoint = points.findLast((point) => point.time <= time)
+      if (!prevPoint) {
+        prevPoint = { time: 0, volume: 0 }
+      }
+      const timeDiff = nextPoint.time - prevPoint.time
+      const volumeDiff = nextPoint.volume - prevPoint.volume
+      const newVolume = prevPoint.volume + (time - prevPoint.time) * (volumeDiff / timeDiff)
+      const clampedVolume = Math.min(1, Math.max(0, newVolume))
+      const roundedVolume = Math.round(clampedVolume * 100) / 100
+
+      if (roundedVolume !== volume) {
+        setVolume(roundedVolume)
+        ctx.emit('volume-change', roundedVolume)
+      }
     }
-  }
 
-  function initPolyline() {
-    // Drop the previous polyline's listeners before replacing it, instead
-    // of accumulating a fresh set of 4 on every decode.
-    polylineScope.dispose()
-    polyline?.destroy()
-    polyline = null
-    polylineScope = ctx.scope.child()
+    function initPolyline() {
+      // Drop the previous polyline's listeners before replacing it, instead
+      // of accumulating a fresh set of 4 on every decode.
+      polylineScope.dispose()
+      polyline?.destroy()
+      polyline = null
+      polylineScope = ctx.scope.child()
 
-    if (!ctx.wavesurfer) return
+      if (!ctx.wavesurfer) return
 
-    const wrapper = ctx.wavesurfer.getWrapper()
-    polyline = new Polyline(opts, wrapper)
+      const wrapper = ctx.wavesurfer.getWrapper()
+      polyline = new Polyline(opts, wrapper)
 
-    polylineScope.add(
-      polyline.on('point-move', (point, relativeX, relativeY) => {
-        const duration = ctx.wavesurfer?.getDuration() || 0
-        point.time = relativeX * duration
-        point.volume = 1 - relativeY
+      polylineScope.add(
+        polyline.on('point-move', (point, relativeX, relativeY) => {
+          const duration = ctx.wavesurfer?.getDuration() || 0
+          point.time = relativeX * duration
+          point.volume = 1 - relativeY
 
-        emitPoints()
-      }),
-    )
+          emitPoints()
+        }),
+      )
 
-    polylineScope.add(
-      polyline.on('point-dragout', (point) => {
-        removePoint(point)
-      }),
-    )
+      polylineScope.add(
+        polyline.on('point-dragout', (point) => {
+          removePoint(point)
+        }),
+      )
 
-    polylineScope.add(
-      polyline.on('point-create', (relativeX, relativeY) => {
-        addPoint({
-          time: relativeX * (ctx.wavesurfer?.getDuration() || 0),
-          volume: 1 - relativeY,
-        })
-      }),
-    )
+      polylineScope.add(
+        polyline.on('point-create', (relativeX, relativeY) => {
+          addPoint({
+            time: relativeX * (ctx.wavesurfer?.getDuration() || 0),
+            volume: 1 - relativeY,
+          })
+        }),
+      )
 
-    polylineScope.add(
-      polyline.on('line-move', (relativeY) => {
-        points.forEach((point) => {
-          point.volume = Math.min(1, Math.max(0, point.volume - relativeY))
-        })
+      polylineScope.add(
+        polyline.on('line-move', (relativeY) => {
+          points.forEach((point) => {
+            point.volume = Math.min(1, Math.max(0, point.volume - relativeY))
+          })
 
-        emitPoints()
+          emitPoints()
 
-        onTimeUpdate(ctx.wavesurfer?.getCurrentTime() || 0)
-      }),
-    )
-  }
-
-  function addPoint(point: EnvelopePoint) {
-    if (!point.id) point.id = randomId()
-
-    // Insert the point in the correct position to keep the array sorted
-    const index = points.findLastIndex((p) => p.time < point.time)
-    points.splice(index + 1, 0, point)
-
-    emitPoints()
-
-    // Add the point to the polyline if the duration is available
-    const duration = ctx.wavesurfer?.getDuration()
-    if (duration) {
-      addPolyPoint(point, duration)
+          onTimeUpdate(ctx.wavesurfer?.getCurrentTime() || 0)
+        }),
+      )
     }
-  }
 
-  function removePoint(point: EnvelopePoint) {
-    const index = points.indexOf(point)
-    if (index > -1) {
-      points.splice(index, 1)
-      polyline?.removePolyPoint(point)
+    function addPoint(point: EnvelopePoint) {
+      if (!point.id) point.id = randomId()
+
+      // Insert the point in the correct position to keep the array sorted
+      const index = points.findLastIndex((p) => p.time < point.time)
+      points.splice(index + 1, 0, point)
+
       emitPoints()
-    }
-  }
 
-  function getPoints(): EnvelopePoint[] {
-    return points
-  }
-
-  function setPoints(newPoints: EnvelopePoint[]) {
-    points.slice().forEach((point) => removePoint(point))
-    newPoints.forEach((point) => addPoint(point))
-  }
-
-  function getCurrentVolume(): number {
-    return volume
-  }
-
-  function setVolume(floatValue: number) {
-    volume = floatValue
-    ctx.wavesurfer?.setVolume(floatValue)
-  }
-
-  // Equivalent of the pre-port onInit(): default the volume option from the
-  // live wavesurfer and apply it, then subscribe to decode/redraw/timeupdate.
-  opts.volume = opts.volume ?? ctx.wavesurfer.getVolume()
-  setVolume(opts.volume)
-
-  ctx.scope.add(
-    ctx.wavesurfer.on('decode', (duration) => {
-      initPolyline()
-
-      points.forEach((point) => {
+      // Add the point to the polyline if the duration is available
+      const duration = ctx.wavesurfer?.getDuration()
+      if (duration) {
         addPolyPoint(point, duration)
-      })
-    }),
-  )
+      }
+    }
 
-  ctx.scope.add(
-    ctx.wavesurfer.on('redraw', () => {
-      polyline?.update()
-    }),
-  )
+    function removePoint(point: EnvelopePoint) {
+      const index = points.indexOf(point)
+      if (index > -1) {
+        points.splice(index, 1)
+        polyline?.removePolyPoint(point)
+        emitPoints()
+      }
+    }
 
-  ctx.scope.add(
-    ctx.wavesurfer.on('timeupdate', (time) => {
-      onTimeUpdate(time)
-    }),
-  )
+    function getPoints(): EnvelopePoint[] {
+      return points
+    }
 
-  // No destroy() override exists anymore — teardown IS scope disposal.
-  // polylineScope (a child of ctx.scope) is disposed automatically as part
-  // of that tree, but `polyline` itself must be explicitly destroyed and
-  // nulled out here so a post-destroy Api call (addPoint/removePoint/...)
-  // can't reach a torn-down Polyline instance.
-  ctx.scope.add(() => {
-    polyline?.destroy()
-    polyline = null
-  })
+    function setPoints(newPoints: EnvelopePoint[]) {
+      points.slice().forEach((point) => removePoint(point))
+      newPoints.forEach((point) => addPoint(point))
+    }
 
-  return {
-    addPoint,
-    removePoint,
-    getPoints,
-    setPoints,
-    setVolume,
-    getCurrentVolume,
-  }
-})
+    function getCurrentVolume(): number {
+      return volume
+    }
+
+    function setVolume(floatValue: number) {
+      volume = floatValue
+      ctx.wavesurfer?.setVolume(floatValue)
+    }
+
+    // Equivalent of the pre-port onInit(): default the volume option from the
+    // live wavesurfer and apply it, then subscribe to decode/redraw/timeupdate.
+    opts.volume = opts.volume ?? ctx.wavesurfer.getVolume()
+    setVolume(opts.volume)
+
+    ctx.scope.add(
+      ctx.wavesurfer.on('decode', (duration) => {
+        initPolyline()
+
+        points.forEach((point) => {
+          addPolyPoint(point, duration)
+        })
+      }),
+    )
+
+    ctx.scope.add(
+      ctx.wavesurfer.on('redraw', () => {
+        polyline?.update()
+      }),
+    )
+
+    ctx.scope.add(
+      ctx.wavesurfer.on('timeupdate', (time) => {
+        onTimeUpdate(time)
+      }),
+    )
+
+    // No destroy() override exists anymore — teardown IS scope disposal.
+    // polylineScope (a child of ctx.scope) is disposed automatically as part
+    // of that tree, but `polyline` itself must be explicitly destroyed and
+    // nulled out here so a post-destroy Api call (addPoint/removePoint/...)
+    // can't reach a torn-down Polyline instance.
+    ctx.scope.add(() => {
+      polyline?.destroy()
+      polyline = null
+    })
+
+    return {
+      addPoint,
+      removePoint,
+      getPoints,
+      setPoints,
+      setVolume,
+      getCurrentVolume,
+    }
+  },
+)
 
 export default EnvelopePlugin

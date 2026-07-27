@@ -59,9 +59,16 @@ export type DefinedPlugin<Options, Events extends BasePluginEvents, Api extends 
 // but that protection disappears the moment `Api` is `any`/untyped or the
 // plugin is authored in plain JS, which is exactly what this runtime check
 // is for.)
+//
+// `onInit` is on `Defined` itself (below), not BasePlugin/EventEmitter, but
+// the same hazard applies: an api key named `onInit` would shadow it on the
+// instance, so a subsequent destroy() -> _init() re-init cycle would invoke
+// the shadowed api value (if callable) or throw (if not) instead of
+// `Defined.prototype.onInit`, silently breaking re-init.
 const RESERVED_CHASSIS_KEYS = new Set([
   'destroy',
   '_init',
+  'onInit',
   'emit',
   'on',
   'un',

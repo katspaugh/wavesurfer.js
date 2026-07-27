@@ -147,6 +147,17 @@ describe('definePlugin', () => {
     expect(() => PluginB.create({})._init(wsStub())).toThrow(/collide-listeners/)
   })
 
+  it('throws when the setup api collides with the onInit chassis method', () => {
+    // An api key named `onInit` would shadow `Defined.prototype.onInit` on
+    // the instance via `Object.assign(this, api)`, silently breaking a
+    // subsequent destroy() -> _init() re-init cycle (see RESERVED_CHASSIS_KEYS
+    // comment in define-plugin.ts). Must be caught, same as `destroy`.
+    const Plugin = definePlugin<{}, { destroy: [] }, any>('collide-onInit', () => ({
+      onInit: () => undefined,
+    }))
+    expect(() => Plugin.create({})._init(wsStub())).toThrow(/collide-onInit/)
+  })
+
   it('makes the constructor/create() arg optional when Options has no required fields, required otherwise', () => {
     // All-optional Options: `create()`/`new Plugin()` need no argument.
     const OptionalPlugin = definePlugin<{ label?: string }, { destroy: [] }, {}>('optional-opts', () => ({}))

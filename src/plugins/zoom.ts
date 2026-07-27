@@ -77,7 +77,7 @@ function getTouchCenterX(e: TouchEvent): number {
   return (touch1.clientX + touch2.clientX) / 2
 }
 
-const ZoomPlugin = definePlugin<ZoomPluginOptions, ZoomPluginEvents, object>('zoom', (ctx, options) => {
+const ZoomPlugin = definePlugin<ZoomPluginOptions, ZoomPluginEvents, object>('ZoomPlugin', (ctx, options) => {
   const opts: ZoomPluginOptions & typeof defaultOptions = Object.assign({}, defaultOptions, options)
 
   const container = ctx.wavesurfer.getWrapper().parentElement as HTMLElement
