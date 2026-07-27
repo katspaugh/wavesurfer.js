@@ -9,6 +9,12 @@ export type BarSegment = {
   height: number
 }
 
+export type CanvasSlot = {
+  index: number
+  offset: number
+  width: number
+}
+
 export type LinePath = Array<{ x: number; y: number }>
 
 export const DEFAULT_HEIGHT = 128
@@ -286,6 +292,27 @@ export function calculateSingleCanvasWidth({
 }): number {
   const baseWidth = Math.min(MAX_CANVAS_WIDTH, clientWidth, totalWidth)
   return clampWidthToBarGrid(baseWidth, options)
+}
+
+export function computeCanvasPlan({
+  totalWidth,
+  clientWidth,
+  options,
+}: {
+  totalWidth: number
+  clientWidth: number
+  options: WaveSurferOptions
+}): { singleCanvasWidth: number; numCanvases: number; slots: CanvasSlot[] } {
+  const singleCanvasWidth = calculateSingleCanvasWidth({ clientWidth, totalWidth, options })
+  if (singleCanvasWidth === 0) return { singleCanvasWidth: 0, numCanvases: 0, slots: [] }
+  const numCanvases = Math.ceil(totalWidth / singleCanvasWidth)
+  const slots: CanvasSlot[] = []
+  for (let index = 0; index < numCanvases; index++) {
+    const offset = index * singleCanvasWidth
+    const width = clampWidthToBarGrid(Math.min(totalWidth - offset, singleCanvasWidth), options)
+    if (width > 0) slots.push({ index, offset, width })
+  }
+  return { singleCanvasWidth, numCanvases, slots }
 }
 
 export function sliceChannelData({

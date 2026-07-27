@@ -607,26 +607,20 @@ class Renderer extends EventEmitter<RendererEvents> {
     const { clientWidth } = this.scrollContainer
     const totalWidth = width / pixelRatio
 
-    const singleCanvasWidth = utils.calculateSingleCanvasWidth({ clientWidth, totalWidth, options })
+    const plan = utils.computeCanvasPlan({ clientWidth, totalWidth, options })
     let drawnIndexes: Record<number, boolean> = {}
 
     // Nothing to render
-    if (singleCanvasWidth === 0) return
+    if (plan.singleCanvasWidth === 0) return
 
     // Draw a single canvas
     const draw = (index: number) => {
-      if (index < 0 || index >= numCanvases) return
+      const slot = plan.slots[index]
+      if (!slot) return
       if (drawnIndexes[index]) return
       drawnIndexes[index] = true
-      const offset = index * singleCanvasWidth
-      let clampedWidth = Math.min(totalWidth - offset, singleCanvasWidth)
-
-      // Clamp the width to the bar grid to avoid empty canvases at the end
-      clampedWidth = utils.clampWidthToBarGrid(clampedWidth, options)
-
-      if (clampedWidth <= 0) return
-      const data = utils.sliceChannelData({ channelData, offset, clampedWidth, totalWidth })
-      this.renderSingleCanvas(data, options, clampedWidth, height, offset, canvasContainer, progressContainer)
+      const data = utils.sliceChannelData({ channelData, offset: slot.offset, clampedWidth: slot.width, totalWidth })
+      this.renderSingleCanvas(data, options, slot.width, height, slot.offset, canvasContainer, progressContainer)
     }
 
     // Clear canvases to avoid too many DOM nodes
@@ -638,12 +632,9 @@ class Renderer extends EventEmitter<RendererEvents> {
       }
     }
 
-    // Calculate how many canvases to render
-    const numCanvases = Math.ceil(totalWidth / singleCanvasWidth)
-
     // Render all canvases if the waveform doesn't scroll
     if (!this.isScrollable) {
-      for (let i = 0; i < numCanvases; i++) {
+      for (let i = 0; i < plan.numCanvases; i++) {
         draw(i)
       }
       return
@@ -653,18 +644,20 @@ class Renderer extends EventEmitter<RendererEvents> {
     const initialRange = utils.getLazyRenderRange({
       scrollLeft: this.scrollContainer.scrollLeft,
       totalWidth,
-      numCanvases,
+      numCanvases: plan.numCanvases,
     })
     initialRange.forEach((index) => draw(index))
 
     // Subscribe to visibleRange to draw additional canvases as the user
     // scrolls. visibleRange is the trigger; the DOM scrollLeft read below
     // stays the source of truth for the pixel math, unchanged from before.
-    if (numCanvases > 1) {
+    if (plan.numCanvases > 1) {
       const unsubscribe = effect(() => {
         const { scrollLeft } = this.scrollContainer
         clearCanvases()
-        utils.getLazyRenderRange({ scrollLeft, totalWidth, numCanvases }).forEach((index) => draw(index))
+        utils
+          .getLazyRenderRange({ scrollLeft, totalWidth, numCanvases: plan.numCanvases })
+          .forEach((index) => draw(index))
       }, [this.visibleRange])
 
       this.scrollRenderScope.add(unsubscribe)
