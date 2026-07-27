@@ -223,13 +223,49 @@ describe('EnvelopePlugin leak fixes', () => {
   // observably instead: destroying the plugin tears the polyline's DOM down
   // and is safe to call twice, and a post-destroy Api call cannot reach (or
   // resurrect) a torn-down polyline.
+  //
+  // KNOWN COVERAGE LIMIT (found during review round 1, verified by
+  // temporarily deleting the `polyline = null` line and re-running this
+  // test — it still passed): `points` is closure state, not scope-owned, so
+  // it survives destroy() and `removePoint(point)` below genuinely reaches
+  // `polyline?.removePolyPoint(point)` (confirmed the reviewer's
+  // reachability hypothesis). But that call is a no-op whether or not
+  // `polyline` was nulled, because `Polyline#destroy()` itself
+  // unconditionally clears `this.polyPoints` (see the `destroy()` method
+  // above) *before* the outer disposer's `polyline = null` even runs — so a
+  // destroyed-but-not-nulled `polyline` reference is already functionally
+  // inert on every path currently reachable from the public Api (addPoint's
+  // polyline-touching branch is separately gated by `ctx.wavesurfer?.`,
+  // which is also undefined post-destroy). Dropping `polyline = null` alone
+  // is therefore a pure memory-retention regression (the closure keeps the
+  // whole destroyed Polyline object graph reachable), not a
+  // functional/DOM-observable one — no black-box assertion here can catch
+  // it without either changing Polyline's own idempotent destroy() design
+  // or reaching into the closure directly (both out of scope). This test
+  // still meaningfully improves on the pre-round-1 version: it's the first
+  // one to actually reach `removePolyPoint` post-destroy (via a real,
+  // identity-matched pre-added point, not a throwaway object), so it does
+  // catch e.g. a regression to the `ctx.wavesurfer?.` guard or to
+  // Polyline#destroy()'s own clearing.
   it('destroying the plugin twice does not throw, and post-destroy Api calls are safe no-ops', () => {
     const ws = createWaveSurfer()
     const plugin = EnvelopePlugin.create({ points: [] })
     plugin._init(ws as any)
     ws.emit('decode', 10)
 
-    expect(ws.getWrapper().querySelector('svg')).toBeTruthy()
+    const svg = ws.getWrapper().querySelector('svg') as SVGSVGElement
+    mockSvgGeometry(svg)
+
+    // Add a point BEFORE destroy, keeping the same object reference, so a
+    // post-destroy removePoint(point) call below actually finds it via
+    // `points.indexOf(point)` (identity, not shape) and reaches the
+    // `polyline?.removePolyPoint(point)` line — a removePoint call with a
+    // fresh, never-added object short-circuits on the `index > -1` guard
+    // before ever touching `polyline`, which is what the original version
+    // of this test did and is why it couldn't have caught a regression here.
+    const point = { time: 1, volume: 0.5 }
+    plugin.addPoint(point)
+    expect(svg.querySelectorAll('ellipse').length).toBe(1)
 
     expect(() => {
       plugin.destroy()
@@ -239,8 +275,16 @@ describe('EnvelopePlugin leak fixes', () => {
     expect(ws.getWrapper().querySelector('svg')).toBeNull()
 
     expect(() => {
-      plugin.addPoint({ time: 1, volume: 0.5 })
-      plugin.removePoint({ time: 1, volume: 0.5 })
+      plugin.addPoint({ time: 2, volume: 0.2 })
+      plugin.removePoint(point)
+      plugin.setVolume(0.3)
     }).not.toThrow()
+
+    // No <svg>/<ellipse> anywhere in the document afterward — asserted
+    // against `document`, not just the (already svg-less) wrapper, so a
+    // live polyline reference mutating its own detached DOM subtree would
+    // still be visible to this check.
+    expect(document.querySelectorAll('svg').length).toBe(0)
+    expect(document.querySelectorAll('ellipse').length).toBe(0)
   })
 })
