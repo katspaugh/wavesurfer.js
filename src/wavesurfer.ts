@@ -566,7 +566,11 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     // Fetch the entire audio as a blob if pre-decoded data is not provided
     if (!blob && !channelData) {
-      const fetchParams = this.options.fetchParams || {}
+      // Shallow-copy: this.options.fetchParams is a user-owned object that may be
+      // reused across multiple load() calls. Writing our per-load abort signal
+      // onto it directly would leak load N's (eventually aborted) signal into
+      // load N+1's fetch, since `!fetchParams.signal` would then already be false.
+      const fetchParams = { ...this.options.fetchParams }
       if (!fetchParams.signal) {
         fetchParams.signal = loadScope.abortSignal()
       }

@@ -466,6 +466,42 @@ describe('WaveSurfer public methods', () => {
       ws.destroy()
       expect(secondLoadScope.disposed).toBe(true)
       expect((ws as any).loadScope).toBeNull()
+
+      // #3637: reusing an instance after destroy() is supported. A load()
+      // after destroy() must derive its loadScope from the freshly recreated
+      // this.scope, not the disposed one. If child() were called on the old
+      // (still-disposed) scope, Scope.child() returns a pre-disposed child,
+      // so this scope would come back `disposed === true` -- proving the
+      // parentage, not just the null-check above.
+      ws.load('http://x/c.mp3').catch(() => undefined)
+      await Promise.resolve()
+      expect((ws as any).loadScope.disposed).toBe(false)
+      ws.destroy()
+    })
+
+    it('fetchParams option is copied per load so a superseded load does not poison the next fetch with an aborted signal', async () => {
+      const userFetchParams: RequestInit = {}
+      const ws = WaveSurfer.create({ container: document.createElement('div'), fetchParams: userFetchParams })
+      const seenSignals: AbortSignal[] = []
+      global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
+        seenSignals.push(init.signal as AbortSignal)
+        return new Promise(() => undefined) // never resolves
+      })
+
+      ws.load('http://x/a.mp3').catch(() => undefined)
+      await Promise.resolve()
+      ws.load('http://x/b.mp3').catch(() => undefined) // supersedes
+      await Promise.resolve()
+
+      expect(seenSignals).toHaveLength(2)
+      // The user's own fetchParams object must never be mutated by wavesurfer.
+      expect(userFetchParams.signal).toBeUndefined()
+      // The second fetch must get its own, non-aborted signal -- not load 1's
+      // (now-aborted) signal leaking through a shared/aliased fetchParams object.
+      expect(seenSignals[1]).not.toBe(seenSignals[0])
+      expect(seenSignals[1].aborted).toBe(false)
+
+      ws.destroy()
     })
   })
 })
