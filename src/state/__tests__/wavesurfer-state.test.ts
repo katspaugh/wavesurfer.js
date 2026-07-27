@@ -124,6 +124,27 @@ describe('WaveSurferState', () => {
       expect(state.duration.value).toBe(120)
     })
 
+    it('should not overwrite an already-valid duration with a differing AudioBuffer duration', () => {
+      const { state, actions } = createWaveSurferState()
+
+      actions.setDuration(100)
+      const buffer = { duration: 100.02 } as AudioBuffer
+      actions.setAudioBuffer(buffer)
+
+      expect(state.duration.value).toBe(100)
+    })
+
+    it('should set duration from AudioBuffer when the current duration is invalid (0, NaN, Infinity)', () => {
+      const zeroCase = createWaveSurferState()
+      zeroCase.actions.setAudioBuffer({ duration: 55 } as AudioBuffer)
+      expect(zeroCase.state.duration.value).toBe(55)
+
+      const infinityCase = createWaveSurferState()
+      infinityCase.actions.setDuration(Infinity)
+      infinityCase.actions.setAudioBuffer({ duration: 42 } as AudioBuffer)
+      expect(infinityCase.state.duration.value).toBe(42)
+    })
+
     it('should update peaks', () => {
       const { state, actions } = createWaveSurferState()
       const peaks = [new Float32Array([1, 2, 3])]

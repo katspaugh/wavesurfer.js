@@ -338,4 +338,22 @@ describe('WaveSurfer public methods', () => {
     expect(ws.getState().zoom.value).toBe(123)
     ws.destroy()
   })
+
+  test('resets peaks state at the start of a load that provides no channelData', async () => {
+    const ws = createWs({
+      peaks: [[0, 0.5, 1]],
+      duration: 1,
+    })
+    await new Promise((resolve) => ws.once('ready', resolve))
+    expect(ws.getState().peaks.value).not.toBeNull()
+
+    // The URL-only load can't complete in jsdom (no fetch polyfill/mock), but the
+    // peaks reset happens synchronously at the top of loadAudio, before the first
+    // await, so it's observable immediately without waiting for the load to settle.
+    const loadPromise = ws.load('http://example.com/audio.mp3').catch(() => {})
+    expect(ws.getState().peaks.value).toBeNull()
+
+    await loadPromise
+    ws.destroy()
+  })
 })

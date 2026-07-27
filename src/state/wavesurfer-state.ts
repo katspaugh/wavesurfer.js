@@ -187,7 +187,14 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
     setAudioBuffer: (buffer: AudioBuffer | null) => {
       audioBuffer.set(buffer)
       if (buffer) {
-        duration.set(buffer.duration)
+        // Don't clobber an already-valid duration (e.g. reported by media
+        // metadata) with the AudioBuffer's duration, which can differ
+        // fractionally due to sample-rate resampling or encoder padding.
+        // Mirrors the media-first precedence in WaveSurfer.getDuration().
+        const current = duration.value
+        if (current === 0 || Number.isNaN(current) || current === Infinity) {
+          duration.set(buffer.duration)
+        }
       }
     },
 

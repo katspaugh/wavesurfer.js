@@ -515,6 +515,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.wavesurferActions.setUrl(url || '')
     if (channelData) {
       this.wavesurferActions.setPeaks(channelData)
+    } else {
+      this.wavesurferActions.setPeaks(null)
     }
 
     if (!this.options.media && this.isPlaying()) this.pause()
