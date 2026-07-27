@@ -514,6 +514,48 @@ describe('WaveSurfer public methods', () => {
       expect(ws.getState().loadPhase.value).toBe('error')
     })
 
+    it('does not double-emit error when a load is superseded and the instance is destroyed in the same tick', async () => {
+      // Regression probe for the destroy-vs-supersede fix above: load(A),
+      // then load(B) (superseding A), then destroy() -- all synchronously,
+      // no await between them. A was genuinely superseded *before* destroy()
+      // ever ran, so it must still resolve (swallowed) even though, by the
+      // time its rejection handler finally runs (a later microtask),
+      // destroy() has *also* torn the instance down. Only B (the load that
+      // was still live at destroy time) should reject and emit 'error' --
+      // exactly once. A design that re-derives "was this superseded?" from
+      // scope.disposed state at catch time (rather than marking it at the
+      // moment supersession actually happens) gets this wrong: both A and B
+      // would look indistinguishable from "destroyed" by the time their
+      // catches run, so both reject and 'error' fires twice.
+      global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
+        const signal = init.signal as AbortSignal
+        return new Promise((_resolve, reject) => {
+          const onAbort = () => reject(new DOMException('The user aborted a request.', 'AbortError'))
+          if (signal.aborted) {
+            onAbort()
+          } else {
+            signal.addEventListener('abort', onAbort, { once: true })
+          }
+        })
+      })
+
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+
+      const pA = ws.load('http://x/a.mp3')
+      const pB = ws.load('http://x/b.mp3') // supersedes A
+      ws.destroy() // same tick -- no await before this point
+
+      // Registered after destroy(), same reasoning as the test above:
+      // destroy() -> unAll() wipes listeners registered before it.
+      const onError = jest.fn()
+      ws.on('error', onError)
+
+      await expect(pA).resolves.toBeUndefined()
+      await expect(pB).rejects.toMatchObject({ name: 'AbortError' })
+      expect(onError).toHaveBeenCalledTimes(1)
+      expect(onError.mock.calls[0][0].name).toBe('AbortError')
+    })
+
     it('loadScope is a child of the current scope, replaced by each load, and cleared by destroy', async () => {
       const ws = WaveSurfer.create({ container: document.createElement('div') })
       global.fetch = jest.fn().mockImplementation(() => new Promise(() => undefined))

@@ -165,6 +165,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   protected scope: Scope = new Scope()
   private mediaEventScope = this.scope.child()
   private loadScope: Scope | null = null
+  // Scopes marked here were superseded by a newer load() at the moment
+  // supersession happened (see loadAudio) -- distinct from a scope merely
+  // being disposed, which also happens on destroy(). Checked from loadAudio's
+  // catch block to swallow only genuinely-superseded loads, never a
+  // destroy-triggered abort or a real failure. WeakSet so a superseded
+  // scope isn't kept alive once nothing else references it.
+  private supersededLoadScopes = new WeakSet<Scope>()
 
   // Reactive state
   private wavesurferState: WaveSurferState
@@ -538,15 +545,21 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // If a newer load starts (or the instance is destroyed) while this one is
     // in-flight, this scope is disposed and this call bails out at the next
     // checkpoint below.
+    // Mark the previous load's scope as superseded right now, synchronously,
+    // at the only place supersession can happen -- a newer load() starting.
+    // This must be a point-in-time mark, not something re-derived later from
+    // scope.disposed state: if load(A), then load(B) (superseding A), then
+    // destroy() all land in the same tick, A's catch doesn't run until a
+    // later microtask, by which point destroy() has *also* disposed the
+    // owning scope -- so "disposed" alone can no longer distinguish "A was
+    // superseded before destroy" from "A was destroyed". The mark captured
+    // here is unambiguous regardless of what happens afterward.
+    if (this.loadScope && !this.loadScope.disposed) {
+      this.supersededLoadScopes.add(this.loadScope)
+    }
     this.loadScope?.dispose()
     const loadScope = this.scope.child()
     this.loadScope = loadScope
-    // Captured now, before any await: destroy() replaces `this.scope` with a
-    // fresh instance, so this reference stays pointing at the (now-disposed)
-    // scope that was live when this load started. That lets the catch below
-    // tell "destroyed mid-load" (ownerScope.disposed) apart from "superseded
-    // by a newer load()" (loadScope.disposed but ownerScope still live).
-    const ownerScope = this.scope
 
     // Reusing an instance after destroy() is a supported behavior (see issue #3637
     // and cypress/e2e/abort.cy.js "load url after destroyed should emit ready").
@@ -661,13 +674,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       }
       this.emit('ready', this.getDuration())
     } catch (err) {
-      // Superseded by a newer load(): swallow (the new load owns the state).
-      // Destroyed mid-load or a genuine failure: propagate -- the contract
-      // (issue #3637 / cypress/e2e/abort.cy.js) requires load()'s promise to
-      // reject with AbortError and emit 'error' when destroy() lands before
-      // 'ready'.
-      const superseded = loadScope.disposed && !ownerScope.disposed
-      if (!superseded) throw err
+      // Superseded loads were marked in supersededLoadScopes at the moment
+      // supersession happened (see the top of this method): swallow those,
+      // the new load owns the state now. Everything else -- destroy
+      // mid-load, or a genuine failure -- must propagate so load()/loadBlob()
+      // rejects and emits 'error' (issue #3637 / cypress/e2e/abort.cy.js
+      // contract).
+      if (!this.supersededLoadScopes.has(loadScope)) throw err
     }
   }
 
