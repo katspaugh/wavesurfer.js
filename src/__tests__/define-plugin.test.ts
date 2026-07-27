@@ -147,6 +147,21 @@ describe('definePlugin', () => {
     expect(() => PluginB.create({})._init(wsStub())).toThrow(/collide-listeners/)
   })
 
+  it('makes the constructor/create() arg optional when Options has no required fields, required otherwise', () => {
+    // All-optional Options: `create()`/`new Plugin()` need no argument.
+    const OptionalPlugin = definePlugin<{ label?: string }, { destroy: [] }, {}>('optional-opts', () => ({}))
+    expect(() => OptionalPlugin.create()).not.toThrow()
+    expect(() => new OptionalPlugin()).not.toThrow()
+
+    // Options with a required field: the argument stays required — a
+    // no-arg call is a compile error (checked below), not just a runtime
+    // possibility.
+    const RequiredPlugin = definePlugin<{ req: number }, { destroy: [] }, {}>('required-opts', () => ({}))
+    // @ts-expect-error - `req` is required on this plugin's Options, so create() must be called with an argument
+    RequiredPlugin.create()
+    expect(() => RequiredPlugin.create({ req: 1 })).not.toThrow()
+  })
+
   it('does not eagerly read wavesurfer/state at setup time, only lazily via ctx getters', () => {
     const Plugin = definePlugin<{}, { destroy: [] }, { read: () => unknown }>('lazy-plugin', (ctx) => ({
       read: () => ctx.state,

@@ -95,7 +95,7 @@ describe('HoverPlugin', () => {
     const container = document.createElement('div')
     const { wavesurfer } = createWaveSurfer(container, 10)
 
-    const plugin = HoverPlugin.create({})
+    const plugin = HoverPlugin.create()
     plugin._init(wavesurfer as any)
 
     const hover = container.querySelector<HTMLElement>('[part="hover"]')!

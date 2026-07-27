@@ -22,10 +22,23 @@ export type PluginSetup<Options, Events extends BasePluginEvents, Api extends ob
   options: Options,
 ) => Api
 
+// `Record<string, never> extends Options` is true exactly when every
+// property Options declares is optional (an index signature of `never`
+// values satisfies any optional property, but can't satisfy a required
+// one) — including `Options = {}`/`Record<string, never>` itself. That
+// makes the constructor/`create()` parameter optional for all-optional
+// options types (e.g. `HoverPluginOptions`) and required otherwise (e.g. an
+// options type with a mandatory field), matching what a hand-written class
+// with `constructor(options?: Options)` vs `constructor(options: Options)`
+// would offer. See define-plugin.test.ts for the two-way compile-time
+// check (a no-arg `create()` on a required-field Options type is rejected
+// via `@ts-expect-error`).
+type PluginCtorArgs<Options> = Record<string, never> extends Options ? [options?: Options] : [options: Options]
+
 /** The constructor + factory produced by `definePlugin`. */
 export type DefinedPlugin<Options, Events extends BasePluginEvents, Api extends object> = {
-  new (options: Options): BasePlugin<Events, Options> & Api
-  create(options: Options): BasePlugin<Events, Options> & Api
+  new (...args: PluginCtorArgs<Options>): BasePlugin<Events, Options> & Api
+  create(...args: PluginCtorArgs<Options>): BasePlugin<Events, Options> & Api
 }
 
 // Own-property names on the plugin chassis (BasePlugin + EventEmitter) that
@@ -77,14 +90,29 @@ const RESERVED_CHASSIS_KEYS = new Set([
  * is typed non-null, but `destroy()` sets the underlying field to
  * `undefined`, so a post-destroy read returns `undefined` at runtime
  * despite the type.
+ *
+ * `new Plugin(options)` / `Plugin.create(options)`: the `options` argument
+ * is optional when (and only when) `Options` has no required properties
+ * (see `PluginCtorArgs` below) — same ergonomics a hand-written
+ * `constructor(options?: Options)` would give. When it's omitted, `setup`
+ * is called with `options === undefined`, not `{}`; a `setup` for an
+ * all-optional `Options` type must default it itself (e.g.
+ * `Object.assign({}, defaultOptions, options)`), exactly as it already had
+ * to for any individually-omitted field.
  */
 export function definePlugin<Options, Events extends BasePluginEvents, Api extends object>(
   name: string,
   setup: PluginSetup<Options, Events, Api>,
 ): DefinedPlugin<Options, Events, Api> {
   class Defined extends BasePlugin<Events, Options> {
-    public static create(options: Options) {
-      return new Defined(options) as Defined & Api
+    // Runtime is permissive for both directions of PluginCtorArgs: a
+    // missing arg is passed through as `undefined` (cast to `Options`).
+    // For an all-optional Options type this is exactly what
+    // `setup(ctx, options)` should see — setup is responsible for
+    // defaulting (e.g. `Object.assign({}, defaultOptions, options)`), the
+    // same way it always had to for any individually-omitted field.
+    public static create(...args: PluginCtorArgs<Options>) {
+      return new Defined(args[0] as Options) as Defined & Api
     }
 
     protected onInit(): void {
@@ -124,16 +152,26 @@ export function definePlugin<Options, Events extends BasePluginEvents, Api exten
     // Decided order: dispose the scope FIRST, then call super.destroy()
     // LAST (as everywhere else). super.destroy() emits 'destroy', drains
     // `subscriptions`, then unAll()s listeners registered on this plugin.
-    // Consequence: scope-owned resources are torn down BEFORE the
+    // Consequence: scope-owned resources — including any root DOM element
+    // removal registered via ctx.scope.add — are torn down BEFORE the
     // 'destroy' event reaches consumers (plugin.on('destroy', ...)).
-    // This matches six of the eight current class-based plugins' destroy()
+    // This matches six of the eight original class-based plugins' destroy()
     // ordering (they tear down their own state before calling
-    // super.destroy()). Two plugins — hover and regions — intentionally
-    // remove their root DOM element AFTER super.destroy() so 'destroy'
-    // listeners still observe an attached node; ports of those plugins
-    // should keep that specific element removal OUT of ctx.scope (do it
-    // manually, after super.destroy(), instead of via ctx.scope.add) to
-    // preserve that behavior.
+    // super.destroy()). Two plugins — hover and regions — historically
+    // removed their root DOM element AFTER super.destroy(), so a
+    // 'destroy' listener could still observe an attached node.
+    //
+    // General rule for ports: default to tearing down the root element via
+    // ctx.scope like everything else — that's simplest and matches most
+    // plugins. Keep an element's removal OUT of ctx.scope (do it manually,
+    // after the equivalent of super.destroy() has run) ONLY when a test or
+    // documented consumer contract for that specific plugin actually pins
+    // post-destroy attachment. This is a per-port decision, not a blanket
+    // rule: hover's port (Task 5) checked its test suite, found nothing
+    // pins the old ordering, and moved wrapper removal onto ctx.scope — a
+    // deliberate, documented behavior change from the original hover.
+    // Regions has not been ported yet (Task 11); its own test suite may
+    // pin the old ordering and warrant keeping its removal manual.
     public destroy(): void {
       this.scope.dispose() // always set (BasePlugin field initializer) — no `?.` needed
       super.destroy()
