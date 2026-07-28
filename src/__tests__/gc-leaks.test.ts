@@ -16,6 +16,30 @@
  * actually gone. It only runs under the 'leaks' Jest project (see jest.config.js), via
  * `yarn test:leaks`, which sets `NODE_OPTIONS=--expose-gc` so `global.gc()` exists.
  *
+ * ## CI stance: manual/pre-release gate, not wired into CI
+ *
+ * `test:leaks` is deliberately NOT part of `.github/workflows/unit-tests.yml` (which only runs
+ * `yarn test:unit`, i.e. the 'default' project). Real-GC timing is inherently less deterministic
+ * than the rest of this repo's structural leak tests - it depends on V8's actual GC scheduling,
+ * not just "did teardown code run" - so it's a manual/pre-release gate (run `yarn test:leaks`
+ * before cutting a release, or when touching plugin/WaveSurfer teardown paths) rather than a
+ * per-PR CI check that could flake the build on GC timing alone.
+ *
+ * ## Coverage shape: "whole graph" cases vs. the one field-sensitive case
+ *
+ * Most cases below drop EVERY reference to the whole object under test (instance, plugin, ws,
+ * container, ...) before checking collection. That proves overall collectability - "is
+ * everything reachable from this object gone once nothing external holds it" - which is real,
+ * useful coverage, but it is NOT sensitive to a leak isolated to a single field: if some OTHER
+ * field on an otherwise-dropped instance keeps pointing at a heavyweight value, that's invisible
+ * to a "whole graph" check, because the whole instance (including the leaking field) becomes
+ * unreachable anyway once nothing outside holds the instance itself. Only Case 3a
+ * ("collects the decoded buffer once destroyed, even while the plugin instance itself is still
+ * referenced") is shaped to catch that specific failure mode - it deliberately keeps the plugin
+ * instance alive and checks that ONE field on it still releases its heavyweight value - and it's
+ * the only case with a mutation-check (see the Task 4 report) actually proving it does. Each
+ * "whole graph" case below carries its own inline note to this effect.
+ *
  * ## Why every case nulls its own locals inside `make()`
  *
  * `collected()`'s `make: () => object` factory is deliberately synchronous and self-contained:
@@ -132,6 +156,17 @@ const collected = async (make: () => object): Promise<boolean> => {
   return ref.deref() === undefined
 }
 
+/**
+ * `expect(ok).toBe(true)` alone just prints "expected true, received false" on failure - jest's
+ * `toBe` has no message parameter, and this file has enough distinct retention scenarios that a
+ * bare boolean forces whoever's debugging a red run to go re-derive which of them failed and
+ * where to look. This bakes that answer into the assertion itself: `retainedWhat` names the
+ * target and points at the teardown site responsible for releasing it.
+ */
+const expectCollected = (ok: boolean, retainedWhat: string): void => {
+  expect(ok ? 'collected' : `still reachable after the GC-cycle budget: ${retainedWhat}`).toBe('collected')
+}
+
 /** A handful of non-trivial peaks so Decoder.createBuffer produces a real, sized Float32Array. */
 const makePeaks = (length = 4096): number[][] => [Array.from({ length }, (_, i) => Math.sin(i / 37) * 0.8)]
 
@@ -140,6 +175,9 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
   // Case 1: WaveSurfer core (+ its decoded AudioBuffer-equivalent)
   // ==========================================================================================
   describe('Case 1: WaveSurfer core', () => {
+    // Whole-graph coverage (see this file's top doc comment, "Coverage shape") - both tests below
+    // drop every reference to `ws` itself, so they verify overall collectability of the whole
+    // instance, not sensitivity to a single retained field.
     it('collects the WaveSurfer instance after destroy, with peaks+duration loaded', async () => {
       // Detached: appended to nothing, in particular never document.body. jsdom's own document
       // keeps every node ever attached to it reachable for the lifetime of the test file (see
@@ -167,9 +205,18 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
       })
 
       expect(childrenAfterDestroy).toBe(0)
-      expect(ok).toBe(true)
+      expectCollected(
+        ok,
+        'the WaveSurfer instance (check WaveSurfer#destroy() / whatever external code still references it)',
+      )
     })
 
+    // Whole-graph coverage, not field-retention sensitive (see top doc comment): `ws` itself is
+    // also dropped here, so this proves the whole ws+renderer+decodedData graph is collectible
+    // once nothing external holds `ws` - NOT that WaveSurfer#destroy()/Renderer#destroy()
+    // proactively null their own `decodedData`/`audioData` fields (they don't - confirmed by
+    // reading both; existing, not-in-scope behavior). A field-only leak on an otherwise-dropped
+    // `ws` would be invisible to this test; only Case 3a is shaped to catch that failure mode.
     it('collects the decoded AudioBuffer-equivalent after destroy', async () => {
       let container: HTMLElement | null = document.createElement('div')
       let ws: WaveSurfer | null = WaveSurfer.create({ container, peaks: makePeaks(), duration: 2 })
@@ -184,7 +231,12 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
         return decoded
       })
 
-      expect(ok).toBe(true)
+      expectCollected(
+        ok,
+        'the decoded AudioBuffer-equivalent (check what still references `ws` - WaveSurfer#destroy() and ' +
+          'Renderer#destroy() do not null decodedData/audioData themselves, so this only passes if nothing ' +
+          'external keeps `ws` alive)',
+      )
     })
   })
 
@@ -192,6 +244,11 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
   // Case 2: RegionsPlugin, 3 regions incl. one removed pre-destroy (#4243 lineage)
   // ==========================================================================================
   describe('Case 2: RegionsPlugin (#4243 lineage)', () => {
+    // Whole-graph coverage, not field-retention sensitive (see top doc comment): both tests below
+    // drop every reference to `ws`/`regions`/`removedRegion` before checking collection, so they
+    // verify overall collectability of the removed region / the plugin instance once nothing
+    // external holds them - NOT sensitivity to a leak isolated to one field on an object that's
+    // otherwise still referenced. Only Case 3a is shaped (and mutation-proven) to catch that.
     it('collects a region removed pre-destroy, and the plugin itself, after wavesurfer.destroy()', async () => {
       let container: HTMLElement | null = document.createElement('div')
       let ws: WaveSurfer | null = WaveSurfer.create({ container, peaks: makePeaks(), duration: 10 })
@@ -217,7 +274,11 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
         return target
       })
 
-      expect(ok).toBe(true)
+      expectCollected(
+        ok,
+        "the region removed pre-destroy (check RegionsPlugin's region.once('remove', ...) pruning of its " +
+          "`regions` array, and Region#remove()'s scope.dispose())",
+      )
     })
 
     it('collects the RegionsPlugin instance itself after destroy', async () => {
@@ -238,7 +299,11 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
         return target
       })
 
-      expect(ok).toBe(true)
+      expectCollected(
+        ok,
+        'the RegionsPlugin instance (check WaveSurfer#registerPlugin()/#destroy() plugin bookkeeping and ' +
+          'BasePlugin#destroy())',
+      )
     })
   })
 
@@ -341,9 +406,17 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
         return t
       })
 
-      expect(ok).toBe(true)
+      expectCollected(
+        ok,
+        "the decoded buffer, while `plugin` itself is still referenced (check spectrogram-setup.ts's " +
+          'destroy() teardown - specifically the `buffer = null` line)',
+      )
     })
 
+    // Whole-graph coverage, not field-retention sensitive (see top doc comment): unlike 3a above,
+    // this drops `plugin` itself too, so it verifies the plugin instance is collectible when
+    // unreferenced - it does NOT isolate the `buffer` field the way 3a does, and stays green even
+    // under 3a's mutation check (see the Task 4 report).
     it('collects the SpectrogramPlugin instance itself after a real render, after destroy', async () => {
       const ok = await collected(() => {
         const audioBuffer = makeAudioBuffer()
@@ -358,7 +431,7 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
         return plugin
       })
 
-      expect(ok).toBe(true)
+      expectCollected(ok, 'the SpectrogramPlugin instance (check BasePlugin#destroy() / definePlugin teardown)')
     })
   })
 
@@ -388,6 +461,12 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
       },
     )
 
+    // Whole-graph coverage, not field-retention sensitive (see top doc comment): `plugin` itself
+    // is dropped along with `ws`/`container`, so this proves the plugin instance (and therefore,
+    // transitively, its closure-only `payload`) is collectible once unreferenced - NOT that
+    // `payload` specifically gets released while the plugin instance survives. No case in this
+    // file mutation-tests scope.ts's `dispose()` directly (see the Task 4 report); the "whole
+    // graph gone" signal here is real but coarser than Case 3a's field-level check.
     it('collects the plugin instance (and its closure-only payload) after destroy', async () => {
       const ok = await collected(() => {
         const container = document.createElement('div')
@@ -398,7 +477,11 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
         return plugin
       })
 
-      expect(ok).toBe(true)
+      expectCollected(
+        ok,
+        'the GcPayloadTestPlugin instance / its closure-only payload (check definePlugin teardown and ' +
+          'Scope#dispose())',
+      )
     })
   })
 })
