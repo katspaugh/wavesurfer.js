@@ -192,10 +192,15 @@ describe('MinimapPlugin', () => {
   })
 
   test('does not re-emit destroy when the nested wavesurfer is recreated', async () => {
-    const { plugin } = await createInitializedMinimap()
+    const { plugin, mainWaveSurfer } = await createInitializedMinimap()
     const onDestroy = jest.fn()
     plugin.on('destroy', onDestroy)
-    ;(plugin as any).destroyMinimap()
+    // `destroyMinimap()` is now a private setup-closure, not an instance
+    // method — drive the same recreate-the-nested-wavesurfer path through
+    // its public trigger (a 'decode' event) instead of poking a private
+    // internal directly. Same observable assertion as before.
+    mainWaveSurfer.emit('decode', 30)
+    await Promise.resolve()
     expect(onDestroy).not.toHaveBeenCalled()
   })
 })

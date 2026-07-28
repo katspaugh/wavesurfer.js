@@ -156,27 +156,35 @@ console.log('Progress:', state.progressPercent.value)
 
 ### In Plugins
 
+First-party plugins are built with `definePlugin()` (see `src/define-plugin.ts`), whose `setup(ctx, options)` receives a `ctx.scope: Scope` for the current init — register every subscription on it instead of hand-rolling a `subscriptions` array; `ctx.scope` is disposed automatically on plugin destroy (and a fresh one is created on re-init):
+
 ```typescript
-class MyPlugin extends BasePlugin {
-  onInit() {
-    const state = this.wavesurfer.getState()
+import { definePlugin } from './define-plugin.js'
 
-    // Subscribe to state changes
-    this.subscriptions.push(
-      state.isPlaying.subscribe((playing) => {
-        if (playing) {
-          this.startAnimation()
-        } else {
-          this.stopAnimation()
-        }
-      })
-    )
+const MyPlugin = definePlugin<MyPluginOptions, MyPluginEvents, MyApi>('my-plugin', (ctx, options) => {
+  const state = ctx.state // ctx.wavesurfer.getState()
 
-    // Access current time
-    const currentTime = state.currentTime.value
+  // Subscribe to state changes; released when ctx.scope is disposed
+  ctx.scope.add(
+    state.isPlaying.subscribe((playing) => {
+      if (playing) {
+        startAnimation()
+      } else {
+        stopAnimation()
+      }
+    }),
+  )
+
+  // Access current time
+  const currentTime = state.currentTime.value
+
+  return {
+    /* public api */
   }
-}
+})
 ```
+
+`BasePlugin` (the chassis `definePlugin` builds on) still exists for third-party class-based plugins and exposes a `protected scope: Scope` for the same pattern.
 
 ## Testing
 

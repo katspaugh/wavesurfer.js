@@ -2,7 +2,9 @@
  * Minimap is a tiny copy of the main waveform serving as a navigation tool.
  */
 
-import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
+import { type BasePluginEvents } from '../base-plugin.js'
+import { definePlugin } from '../define-plugin.js'
+import { bridgeEvents } from '../plugin-utils.js'
 import WaveSurfer, { type WaveSurferOptions } from '../wavesurfer.js'
 import createElement, { isHTMLElement } from '../dom.js'
 
@@ -48,64 +50,39 @@ export type MinimapPluginEvents = BasePluginEvents & {
   timeupdate: [currentTime: number]
 }
 
-class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions> {
-  protected options: MinimapPluginOptions & typeof defaultOptions
-  private minimapWrapper: HTMLElement
-  private miniWavesurfer: WaveSurfer | null = null
-  private miniSubscriptions: Array<() => void> = []
-  private overlay: HTMLElement
-  private container: HTMLElement | null = null
-  private isInitializing = false
-  private dragTimeout: ReturnType<typeof setTimeout> | null = null
+// Pure 1:1 forwarders from the nested mini wavesurfer to the plugin's own
+// event stream — no side effects beyond re-emitting under the same name.
+// 'click', 'drag' and 'ready' are handled manually below because they carry
+// extra logic (seeking the main waveform, debounced drag-to-seek, syncing
+// the minimap position) in addition to forwarding.
+const FORWARDED_MINI_EVENTS: Array<keyof MinimapPluginEvents & string> = [
+  'audioprocess',
+  'dblclick',
+  'decode',
+  'destroy',
+  'dragend',
+  'dragstart',
+  'interaction',
+  'init',
+  'redraw',
+  'redrawcomplete',
+  'seeking',
+  'timeupdate',
+]
 
-  constructor(options: MinimapPluginOptions) {
-    super(options)
-    this.options = Object.assign({}, defaultOptions, options)
+const MinimapPlugin = definePlugin<MinimapPluginOptions, MinimapPluginEvents, object>(
+  'MinimapPlugin',
+  (ctx, options) => {
+    const opts: MinimapPluginOptions & typeof defaultOptions = Object.assign({}, defaultOptions, options)
 
-    this.minimapWrapper = this.initMinimapWrapper()
-    this.overlay = this.initOverlay()
-  }
-
-  public static create(options: MinimapPluginOptions) {
-    return new MinimapPlugin(options)
-  }
-
-  /** Called by wavesurfer, don't call manually */
-  onInit() {
-    if (!this.wavesurfer) {
-      throw Error('WaveSurfer is not initialized')
-    }
-
-    if (this.options.container) {
-      if (typeof this.options.container === 'string') {
-        this.container = document.querySelector(this.options.container) as HTMLElement
-      } else if (isHTMLElement(this.options.container)) {
-        this.container = this.options.container
-      }
-      this.container?.appendChild(this.minimapWrapper)
-    } else {
-      this.container = this.wavesurfer.getWrapper().parentElement
-      this.container?.insertAdjacentElement(this.options.insertPosition, this.minimapWrapper)
-    }
-
-    this.initWaveSurferEvents()
-
-    Promise.resolve().then(() => {
-      this.initMinimap()
-    })
-  }
-
-  private initMinimapWrapper(): HTMLElement {
-    return createElement('div', {
+    const minimapWrapper = createElement('div', {
       part: 'minimap',
       style: {
         position: 'relative',
       },
     })
-  }
 
-  private initOverlay(): HTMLElement {
-    return createElement(
+    const overlay = createElement(
       'div',
       {
         part: 'minimap-overlay',
@@ -117,244 +94,232 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
           bottom: '0',
           transition: 'left 100ms ease-out, width 100ms ease-out',
           pointerEvents: 'none',
-          backgroundColor: this.options.overlayColor,
+          backgroundColor: opts.overlayColor,
         },
       },
-      this.minimapWrapper,
+      minimapWrapper,
     )
-  }
 
-  private initMinimap() {
-    // Prevent concurrent initialization
-    if (this.isInitializing) return
-    this.isInitializing = true
+    // Resolve and attach the wrapper. A missing/invalid `container` selector
+    // is a SILENT no-op here (matches the pre-port behavior) — unlike
+    // resolveContainer(), which throws. Do not switch this to
+    // resolveContainer().
+    if (opts.container) {
+      let container: HTMLElement | null = null
+      if (typeof opts.container === 'string') {
+        container = document.querySelector(opts.container) as HTMLElement | null
+      } else if (isHTMLElement(opts.container)) {
+        container = opts.container
+      }
+      container?.appendChild(minimapWrapper)
+    } else {
+      const container = ctx.wavesurfer.getWrapper().parentElement
+      container?.insertAdjacentElement(opts.insertPosition, minimapWrapper)
+    }
+    ctx.scope.add(() => minimapWrapper.remove())
 
-    this.destroyMinimap()
+    let miniWavesurfer: WaveSurfer | null = null
+    let miniScope = ctx.scope.child()
+    let isInitializing = false
+    let dragTimeout: ReturnType<typeof setTimeout> | null = null
 
-    if (!this.wavesurfer) {
-      this.isInitializing = false
-      return
+    function renderMainProgress(progress: number) {
+      ctx.wavesurfer.getRenderer().renderProgress(progress, ctx.wavesurfer.isPlaying())
     }
 
-    const data = this.wavesurfer.getDecodedData()
-    if (!data) {
-      this.isInitializing = false
-      return
+    function renderMinimapProgress(progress: number) {
+      if (!miniWavesurfer) return
+      miniWavesurfer.getRenderer().renderProgress(progress, ctx.wavesurfer.isPlaying())
     }
 
-    const peaks = []
-    for (let i = 0; i < data.numberOfChannels; i++) {
-      peaks.push(data.getChannelData(i))
+    function syncMinimapPosition(currentTime: number) {
+      if (!miniWavesurfer) return
+
+      const duration = ctx.wavesurfer.getDuration()
+      if (!duration) return
+
+      if (miniWavesurfer.getDuration()) {
+        miniWavesurfer.setTime(currentTime)
+      } else {
+        renderMinimapProgress(currentTime / duration)
+      }
     }
 
-    this.miniWavesurfer = WaveSurfer.create({
-      ...this.options,
-      container: this.minimapWrapper,
-      minPxPerSec: 0,
-      fillParent: true,
-      url: undefined,
-      media: undefined,
-      peaks,
-      duration: data.duration,
+    function onMinimapDrag(relativeX: number) {
+      renderMainProgress(relativeX)
+
+      if (dragTimeout) {
+        clearTimeout(dragTimeout)
+      }
+
+      let debounceTime = 0
+      const dragToSeek = opts.dragToSeek
+
+      if (!ctx.wavesurfer.isPlaying() && dragToSeek === true) {
+        debounceTime = 200
+      } else if (!ctx.wavesurfer.isPlaying() && dragToSeek && typeof dragToSeek === 'object') {
+        debounceTime = dragToSeek.debounceTime ?? 200
+      }
+
+      dragTimeout = setTimeout(() => {
+        ctx.wavesurfer.seekTo(relativeX)
+        dragTimeout = null
+      }, debounceTime)
+    }
+
+    function updateOverlay(startTime?: number, endTime?: number) {
+      const duration = ctx.wavesurfer.getDuration()
+      if (!duration) return
+
+      if (startTime === undefined || endTime === undefined) {
+        const waveformWidth = ctx.wavesurfer.getWrapper().clientWidth || 1
+        const visibleWidth = ctx.wavesurfer.getWidth()
+        const scrollLeft = ctx.wavesurfer.getScroll()
+
+        startTime = (scrollLeft / waveformWidth) * duration
+        endTime = ((scrollLeft + visibleWidth) / waveformWidth) * duration
+      }
+
+      const clampedStartTime = Math.min(Math.max(startTime, 0), duration)
+      const clampedEndTime = Math.min(Math.max(endTime, clampedStartTime), duration)
+      const overlayLeft = (clampedStartTime / duration) * 100
+      const overlayWidth = ((clampedEndTime - clampedStartTime) / duration) * 100
+
+      overlay.style.left = `${overlayLeft}%`
+      overlay.style.width = `${Math.min(overlayWidth, 100 - overlayLeft)}%`
+    }
+
+    // Dispose the current bridge scope FIRST (unsubscribing the mini
+    // wavesurfer's event forwarders, including its 'destroy' forwarder),
+    // THEN destroy the nested instance, THEN replace miniScope with a fresh
+    // child. This order means the nested instance's own 'destroy' event
+    // fires with no forwarder listening, so recreating the minimap (e.g. on
+    // 'decode') never re-emits the plugin's own 'destroy' event.
+    function destroyMinimap() {
+      const mini = miniWavesurfer
+      miniWavesurfer = null
+      miniScope.dispose()
+      mini?.destroy()
+      miniScope = ctx.scope.child()
+
+      if (dragTimeout) {
+        clearTimeout(dragTimeout)
+        dragTimeout = null
+      }
+    }
+
+    function initMinimap() {
+      // Prevent concurrent initialization
+      if (isInitializing) return
+      isInitializing = true
+
+      destroyMinimap()
+
+      const data = ctx.wavesurfer.getDecodedData()
+      if (!data) {
+        isInitializing = false
+        return
+      }
+
+      const peaks = []
+      for (let i = 0; i < data.numberOfChannels; i++) {
+        peaks.push(data.getChannelData(i))
+      }
+
+      miniWavesurfer = WaveSurfer.create({
+        ...opts,
+        container: minimapWrapper,
+        minPxPerSec: 0,
+        fillParent: true,
+        url: undefined,
+        media: undefined,
+        peaks,
+        duration: data.duration,
+      })
+
+      syncMinimapPosition(ctx.wavesurfer.getCurrentTime())
+
+      bridgeEvents<MinimapPluginEvents>(
+        miniScope,
+        miniWavesurfer,
+        { emit: ctx.emit as (event: never, ...args: never[]) => void },
+        FORWARDED_MINI_EVENTS,
+      )
+
+      miniScope.add(
+        miniWavesurfer.on('click', (relativeX, relativeY) => {
+          ctx.wavesurfer.seekTo(relativeX)
+          ctx.emit('click', relativeX, relativeY)
+        }),
+      )
+
+      miniScope.add(
+        miniWavesurfer.on('drag', (relativeX) => {
+          onMinimapDrag(relativeX)
+          ctx.emit('drag', relativeX)
+        }),
+      )
+
+      miniScope.add(
+        miniWavesurfer.on('ready', () => {
+          syncMinimapPosition(ctx.wavesurfer.getCurrentTime() || 0)
+          ctx.emit('ready')
+        }),
+      )
+
+      // Reset flag after initialization completes
+      isInitializing = false
+    }
+
+    // Final teardown: tear down the nested wavesurfer the same way a
+    // reinit would. `ctx.scope`'s children (the current `miniScope`) are
+    // already disposed by the time this disposer runs (Scope disposes
+    // children before its own disposers), so the `miniScope.dispose()`
+    // inside `destroyMinimap()` is a no-op here — only `mini?.destroy()`
+    // and the timeout clear actually do anything.
+    ctx.scope.add(() => destroyMinimap())
+
+    ctx.scope.add(
+      ctx.wavesurfer.on('decode', () => {
+        initMinimap()
+      }),
+    )
+
+    ctx.scope.add(
+      ctx.wavesurfer.on('timeupdate', (currentTime: number) => {
+        syncMinimapPosition(currentTime)
+      }),
+    )
+
+    ctx.scope.add(
+      ctx.wavesurfer.on('drag', (relativeX: number) => {
+        renderMinimapProgress(relativeX)
+      }),
+    )
+
+    ctx.scope.add(
+      ctx.wavesurfer.on('scroll', (startTime: number, endTime: number) => {
+        updateOverlay(startTime, endTime)
+      }),
+    )
+
+    ctx.scope.add(
+      ctx.wavesurfer.on('redraw', () => {
+        updateOverlay()
+      }),
+    )
+
+    Promise.resolve().then(() => {
+      // The plugin may have been destroyed before this microtask runs
+      // (e.g. destroy() called synchronously right after registerPlugin());
+      // ctx.scope.disposed mirrors the old `if (!this.wavesurfer) return`
+      // guard for that race.
+      if (ctx.scope.disposed) return
+      initMinimap()
     })
 
-    this.syncMinimapPosition(this.wavesurfer.getCurrentTime())
-
-    this.miniSubscriptions.push(
-      this.miniWavesurfer.on('audioprocess', (currentTime) => {
-        this.emit('audioprocess', currentTime)
-      }),
-
-      this.miniWavesurfer.on('click', (relativeX, relativeY) => {
-        this.wavesurfer?.seekTo(relativeX)
-        this.emit('click', relativeX, relativeY)
-      }),
-
-      this.miniWavesurfer.on('dblclick', (relativeX, relativeY) => {
-        this.emit('dblclick', relativeX, relativeY)
-      }),
-
-      this.miniWavesurfer.on('decode', (duration) => {
-        this.emit('decode', duration)
-      }),
-
-      this.miniWavesurfer.on('destroy', () => {
-        this.emit('destroy')
-      }),
-
-      this.miniWavesurfer.on('drag', (relativeX) => {
-        this.onMinimapDrag(relativeX)
-        this.emit('drag', relativeX)
-      }),
-
-      this.miniWavesurfer.on('dragend', (relativeX) => {
-        this.emit('dragend', relativeX)
-      }),
-
-      this.miniWavesurfer.on('dragstart', (relativeX) => {
-        this.emit('dragstart', relativeX)
-      }),
-
-      this.miniWavesurfer.on('interaction', () => {
-        this.emit('interaction')
-      }),
-
-      this.miniWavesurfer.on('init', () => {
-        this.emit('init')
-      }),
-
-      this.miniWavesurfer.on('ready', () => {
-        this.syncMinimapPosition(this.wavesurfer?.getCurrentTime() || 0)
-        this.emit('ready')
-      }),
-
-      this.miniWavesurfer.on('redraw', () => {
-        this.emit('redraw')
-      }),
-
-      this.miniWavesurfer.on('redrawcomplete', () => {
-        this.emit('redrawcomplete')
-      }),
-
-      this.miniWavesurfer.on('seeking', (currentTime) => {
-        this.emit('seeking', currentTime)
-      }),
-
-      this.miniWavesurfer.on('timeupdate', (currentTime) => {
-        this.emit('timeupdate', currentTime)
-      }),
-    )
-
-    // Reset flag after initialization completes
-    this.isInitializing = false
-  }
-
-  private updateOverlay(startTime?: number, endTime?: number) {
-    if (!this.wavesurfer) return
-
-    const duration = this.wavesurfer.getDuration()
-    if (!duration) return
-
-    if (startTime === undefined || endTime === undefined) {
-      const waveformWidth = this.wavesurfer.getWrapper().clientWidth || 1
-      const visibleWidth = this.wavesurfer.getWidth()
-      const scrollLeft = this.wavesurfer.getScroll()
-
-      startTime = (scrollLeft / waveformWidth) * duration
-      endTime = ((scrollLeft + visibleWidth) / waveformWidth) * duration
-    }
-
-    const clampedStartTime = Math.min(Math.max(startTime, 0), duration)
-    const clampedEndTime = Math.min(Math.max(endTime, clampedStartTime), duration)
-    const overlayLeft = (clampedStartTime / duration) * 100
-    const overlayWidth = ((clampedEndTime - clampedStartTime) / duration) * 100
-
-    this.overlay.style.left = `${overlayLeft}%`
-    this.overlay.style.width = `${Math.min(overlayWidth, 100 - overlayLeft)}%`
-  }
-
-  private destroyMinimap() {
-    const miniWavesurfer = this.miniWavesurfer
-    this.miniWavesurfer = null
-    this.miniSubscriptions.forEach((unsubscribe) => unsubscribe())
-    this.miniSubscriptions = []
-    miniWavesurfer?.destroy()
-
-    if (this.dragTimeout) {
-      clearTimeout(this.dragTimeout)
-      this.dragTimeout = null
-    }
-  }
-
-  private renderMainProgress(progress: number) {
-    if (!this.wavesurfer) return
-    this.wavesurfer.getRenderer().renderProgress(progress, this.wavesurfer.isPlaying())
-  }
-
-  private renderMinimapProgress(progress: number) {
-    if (!this.wavesurfer || !this.miniWavesurfer) return
-    this.miniWavesurfer.getRenderer().renderProgress(progress, this.wavesurfer.isPlaying())
-  }
-
-  private syncMinimapPosition(currentTime: number) {
-    if (!this.wavesurfer || !this.miniWavesurfer) return
-
-    const duration = this.wavesurfer.getDuration()
-    if (!duration) return
-
-    if (this.miniWavesurfer.getDuration()) {
-      this.miniWavesurfer.setTime(currentTime)
-    } else {
-      this.renderMinimapProgress(currentTime / duration)
-    }
-  }
-
-  private onMinimapDrag(relativeX: number) {
-    if (!this.wavesurfer) return
-
-    this.renderMainProgress(relativeX)
-
-    if (this.dragTimeout) {
-      clearTimeout(this.dragTimeout)
-    }
-
-    let debounceTime = 0
-    const dragToSeek = this.options.dragToSeek
-
-    if (!this.wavesurfer.isPlaying() && dragToSeek === true) {
-      debounceTime = 200
-    } else if (!this.wavesurfer.isPlaying() && dragToSeek && typeof dragToSeek === 'object') {
-      debounceTime = dragToSeek.debounceTime ?? 200
-    }
-
-    this.dragTimeout = setTimeout(() => {
-      this.wavesurfer?.seekTo(relativeX)
-      this.dragTimeout = null
-    }, debounceTime)
-  }
-
-  private onRedraw() {
-    this.updateOverlay()
-  }
-
-  private onScroll(startTime: number, endTime: number) {
-    this.updateOverlay(startTime, endTime)
-  }
-
-  private initWaveSurferEvents() {
-    if (!this.wavesurfer) return
-
-    // Subscribe to decode, scroll and redraw events
-    this.subscriptions.push(
-      this.wavesurfer.on('decode', () => {
-        this.initMinimap()
-      }),
-
-      this.wavesurfer.on('timeupdate', (currentTime: number) => {
-        this.syncMinimapPosition(currentTime)
-      }),
-
-      this.wavesurfer.on('drag', (relativeX: number) => {
-        this.renderMinimapProgress(relativeX)
-      }),
-
-      this.wavesurfer.on('scroll', (startTime: number, endTime: number) => {
-        this.onScroll(startTime, endTime)
-      }),
-
-      this.wavesurfer.on('redraw', () => {
-        this.onRedraw()
-      }),
-    )
-  }
-
-  /** Unmount */
-  public destroy() {
-    this.destroyMinimap()
-    this.minimapWrapper.remove()
-    this.container = null
-    super.destroy()
-  }
-}
+    return {}
+  },
+)
 
 export default MinimapPlugin

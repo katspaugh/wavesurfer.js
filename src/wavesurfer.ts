@@ -1,5 +1,6 @@
 import BasePlugin, { type GenericPlugin } from './base-plugin.js'
 import Decoder from './decoder.js'
+import { definePlugin } from './define-plugin.js'
 import * as dom from './dom.js'
 import Fetcher from './fetcher.js'
 import { FrameScheduler } from './frame-scheduler.js'
@@ -179,6 +180,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   public static readonly BasePlugin = BasePlugin
   public static readonly dom = dom
+  public static readonly definePlugin = definePlugin
 
   /** Create a new WaveSurfer instance */
   public static create(options: WaveSurferOptions) {
@@ -562,35 +564,42 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // in-flight loads from before destroy() are still cancelled by the
     // loadScope.disposed guard below.
 
-    this.emit('load', url)
-
-    // Only the fetch path goes through 'fetching' -- pre-decoded data
-    // (blob/channelData already provided) skips straight to 'decoding' below.
-    if (!loadScope.disposed && !blob && !channelData) {
-      this.wavesurferActions.setLoadPhase('fetching')
-    }
-
-    this.wavesurferActions.setUrl(url || '')
-    if (channelData) {
-      this.wavesurferActions.setPeaks(channelData)
-    } else {
-      this.wavesurferActions.setPeaks(null)
-    }
-
-    if (!this.options.media && this.isPlaying()) this.pause()
-
-    this.decodedData = null
-    this.wavesurferActions.setAudioBuffer(null)
-    this.stopAtPosition = null
-
-    // The fetch/decode pipeline below can reject when this load is superseded
-    // by a newer load() (e.g. an aborted fetch rejects with AbortError). Such
-    // rejections must never escape loadAudio -- they aren't genuine failures,
-    // just noise from cancelling a stale load. A destroy-triggered abort is
-    // different: it must still propagate (see the catch below), so
+    // The pipeline below -- starting with the 'load' emit -- can throw or
+    // reject when this load is superseded by a newer load() (e.g. an aborted
+    // fetch rejects with AbortError) or when a user's synchronous listener
+    // (e.g. on 'load') throws. Such failures must never escape loadAudio
+    // unhandled -- they're either noise from cancelling a stale load, or a
+    // genuine failure that must be classified and reported the same way
+    // regardless of where in the pipeline it originated. A destroy-triggered
+    // abort is different: it must still propagate (see the catch below), so
     // load()/loadBlob()'s catch blocks only ever see "supersession, already
-    // filtered" or "a real failure/destroy, handle it."
+    // filtered" or "a real failure/destroy, handle it." The try opens here,
+    // above the emit/setUrl/setPeaks/pause section, so a synchronous throw
+    // from any of those is covered by the same catch as the async pipeline --
+    // the catch's supersede/destroy classification only consults `loadScope`
+    // and the WeakSet, so it's correct regardless of where the throw came from.
     try {
+      this.emit('load', url)
+
+      // Only the fetch path goes through 'fetching' -- pre-decoded data
+      // (blob/channelData already provided) skips straight to 'decoding' below.
+      if (!loadScope.disposed && !blob && !channelData) {
+        this.wavesurferActions.setLoadPhase('fetching')
+      }
+
+      this.wavesurferActions.setUrl(url || '')
+      if (channelData) {
+        this.wavesurferActions.setPeaks(channelData)
+      } else {
+        this.wavesurferActions.setPeaks(null)
+      }
+
+      if (!this.options.media && this.isPlaying()) this.pause()
+
+      this.decodedData = null
+      this.wavesurferActions.setAudioBuffer(null)
+      this.stopAtPosition = null
+
       // Fetch the entire audio as a blob if pre-decoded data is not provided
       if (!blob && !channelData) {
         // Shallow-copy: this.options.fetchParams is a user-owned object that may be
@@ -626,6 +635,19 @@ class WaveSurfer extends Player<WaveSurferEvents> {
           this.mediaEventScope.add(
             this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }),
           )
+          // Settle if this load is superseded or the instance is destroyed
+          // before 'loadedmetadata' ever fires (e.g. never emitted by the
+          // test/media environment) -- otherwise this promise, and thus
+          // loadAudio()/load(), would hang forever. Registered on loadScope
+          // (not mediaEventScope, which the 'loadedmetadata' listener above
+          // must stay on -- moving it there would remove it, and thus resolve
+          // this promise, on every load's disposal, not just this one's).
+          // Late registration on an already-disposed scope runs immediately
+          // (see Scope.add), so this is safe even if loadScope somehow
+          // disposes synchronously before this line runs. The resolved value
+          // is discarded either way: the very next `if (loadScope.disposed)
+          // return` bails before audioDuration is used.
+          loadScope.add(() => resolve(0))
         }
       })
 
@@ -882,5 +904,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 // Export reactive types for plugin authors
 export type { Signal, WritableSignal } from './reactive/store.js'
 export type { WaveSurferState, WaveSurferActions, LoadPhase } from './state/wavesurfer-state.js'
+
+// The functional plugin API (`definePlugin`) is exposed as a static on the
+// WaveSurfer class (`WaveSurfer.definePlugin`), not as a runtime named
+// export here: the main-entry rollup outputs (cjs/umd) use
+// `output.exports: 'default'`, which hard-errors if a runtime named export
+// exists alongside the default export. Only type-only re-exports are safe
+// here since types are erased before rollup sees them.
+export type { PluginContext, PluginSetup, DefinedPlugin } from './define-plugin.js'
 
 export default WaveSurfer

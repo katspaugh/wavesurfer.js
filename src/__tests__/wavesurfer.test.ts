@@ -685,5 +685,48 @@ describe('WaveSurfer public methods', () => {
 
       ws.destroy()
     })
+
+    it('settles a superseded load promise even when no loadedmetadata ever arrives', async () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      // Fetch resolves with a blob, so load A reaches the duration-promise await;
+      // jsdom never fires loadedmetadata, so pre-fix the promise pends forever.
+      const blob = new Blob([new ArrayBuffer(8)], { type: 'audio/wav' })
+      const response = {
+        status: 200,
+        blob: () => Promise.resolve(blob),
+        body: null,
+        headers: new Headers(),
+        clone: () => ({ body: null, headers: new Headers() }),
+      } as unknown as Response
+      const originalFetch = global.fetch
+      global.fetch = jest.fn().mockResolvedValue(response)
+      try {
+        const pA = ws.load('http://x/a.mp3')
+        await new Promise((r) => setTimeout(r, 0)) // let A reach the duration await
+        ws.load('http://x/b.mp3').catch(() => undefined) // supersede A
+        await expect(
+          Promise.race([
+            pA.then(
+              () => 'settled',
+              () => 'settled',
+            ),
+            new Promise((r) => setTimeout(() => r('pending'), 50)),
+          ]),
+        ).resolves.toBe('settled')
+      } finally {
+        global.fetch = originalFetch
+        ws.destroy()
+      }
+    })
+
+    it('sets loadPhase=error when a load listener throws synchronously', async () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      ws.on('load', () => {
+        throw new Error('listener boom')
+      })
+      await expect(ws.load('http://x/a.mp3')).rejects.toThrow('listener boom')
+      expect(ws.getState().loadPhase.value).toBe('error')
+      ws.destroy()
+    })
   })
 })

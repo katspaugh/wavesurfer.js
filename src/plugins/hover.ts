@@ -2,7 +2,8 @@
  * The Hover plugin follows the mouse and shows a timestamp
  */
 
-import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
+import { type BasePluginEvents } from '../base-plugin.js'
+import { definePlugin } from '../define-plugin.js'
 import createElement from '../dom.js'
 import { cleanup, fromEvent } from '../reactive/event-streams.js'
 import { effect } from '../reactive/store.js'
@@ -50,191 +51,164 @@ export type HoverPluginEvents = BasePluginEvents & {
   hover: [relX: number]
 }
 
-class HoverPlugin extends BasePlugin<HoverPluginEvents, HoverPluginOptions> {
-  protected options: HoverPluginOptions & typeof defaultOptions
-  private wrapper: HTMLElement
-  private label: HTMLElement
-  private lastPointerPosition: { clientX: number; clientY: number } | null = null
-  private isPointerOverWaveform = false
-  private streamCleanups: Array<() => void> = []
-  private transitionEndCleanup: (() => void) | null = null
-
-  constructor(options?: HoverPluginOptions) {
-    super(options || {})
-    this.options = Object.assign({}, defaultOptions, options)
-
-    // Create the plugin elements
-    this.wrapper = createElement('div', { part: 'hover' })
-    this.label = createElement('span', { part: 'hover-label' }, this.wrapper)
-  }
-
-  public static create(options?: HoverPluginOptions) {
-    return new HoverPlugin(options)
-  }
-
-  private addUnits(value: string | number): string {
-    const units = typeof value === 'number' ? 'px' : ''
-    return `${value}${units}`
-  }
-
-  /** Called by wavesurfer, don't call manually */
-  onInit() {
-    if (!this.wavesurfer) {
-      throw Error('WaveSurfer is not initialized')
-    }
-
-    const wsOptions = this.wavesurfer.options
-    const lineColor = this.options.lineColor || wsOptions.cursorColor || wsOptions.progressColor
-
-    // Vertical line
-    Object.assign(this.wrapper.style, {
-      position: 'absolute',
-      zIndex: 10,
-      left: 0,
-      top: 0,
-      height: '100%',
-      pointerEvents: 'none',
-      borderLeft: `${this.addUnits(this.options.lineWidth)} solid ${lineColor}`,
-      opacity: '0',
-      transition: 'opacity .1s ease-in',
-    })
-
-    // Timestamp label
-    Object.assign(this.label.style, {
-      display: 'block',
-      backgroundColor: this.options.labelBackground,
-      color: this.options.labelColor,
-      fontSize: `${this.addUnits(this.options.labelSize)}`,
-      transition: 'transform .1s ease-in',
-      padding: '2px 3px',
-    })
-
-    // Append the wrapper
-    const container = this.wavesurfer.getWrapper()
-    container.appendChild(this.wrapper)
-
-    // Get reactive state
-    const state = this.wavesurfer.getState()
-
-    // Clean up old event streams (from re-initialization)
-    this.streamCleanups.forEach((fn) => fn())
-    this.streamCleanups = []
-
-    // Create event streams for pointer events
-    const pointerMove = fromEvent(container, 'pointermove')
-    const pointerLeave = fromEvent(container, 'pointerleave')
-    this.streamCleanups.push(
-      () => cleanup(pointerMove),
-      () => cleanup(pointerLeave),
-    )
-
-    this.subscriptions.push(
-      effect(() => {
-        const e = pointerMove.value
-        if (!e) return
-
-        this.isPointerOverWaveform = true
-      }, [pointerMove]),
-    )
-
-    // React to pointer movement
-    this.subscriptions.push(
-      effect(() => {
-        const e = pointerMove.value
-        if (!e || !this.wavesurfer || !this.isPointerOverWaveform) return
-
-        // Store only the position data needed for zoom/scroll updates
-        this.lastPointerPosition = { clientX: e.clientX, clientY: e.clientY }
-
-        // Position
-        const bbox = this.wavesurfer.getWrapper().getBoundingClientRect()
-        const { width } = bbox
-        const offsetX = e.clientX - bbox.left
-        const relX = Math.min(1, Math.max(0, offsetX / width))
-        const posX = Math.min(width - this.options.lineWidth - 1, offsetX)
-        this.wrapper.style.transform = `translateX(${posX}px)`
-        this.wrapper.style.opacity = '1'
-
-        // Timestamp
-        const duration = this.wavesurfer.getDuration()
-        this.label.textContent = this.options.formatTimeCallback(duration * relX)
-        const labelWidth = this.label.offsetWidth
-        const transformCondition = this.options.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
-        this.label.style.transform = transformCondition ? `translateX(-${labelWidth + this.options.lineWidth}px)` : ''
-
-        // Emit a hover event with the relative X position
-        this.emit('hover', relX)
-      }, [pointerMove, state.duration]),
-    )
-
-    // React to pointer leave
-    this.subscriptions.push(
-      effect(() => {
-        const e = pointerLeave.value
-        if (!e) return
-
-        this.wrapper.style.opacity = '0'
-        this.isPointerOverWaveform = false
-        this.lastPointerPosition = null
-
-        // Remove any previously attached transitionend listener before attaching a
-        // new one, so listeners don't accumulate if the transition never fires
-        // (e.g. element hidden or opacity already 0).
-        if (this.transitionEndCleanup) {
-          this.transitionEndCleanup()
-          this.transitionEndCleanup = null
-        }
-
-        // Reset transform after the opacity fade so the line doesn't jump to position 0
-        // while still visible. Also resets the scrollable overflow area of the scroll
-        // container to prevent improper scrollLeft clamping on zoom changes.
-        const onTransitionEnd = () => {
-          this.transitionEndCleanup = null
-          if (!this.isPointerOverWaveform) {
-            this.wrapper.style.transform = ''
-          }
-        }
-        this.wrapper.addEventListener('transitionend', onTransitionEnd, { once: true })
-        this.transitionEndCleanup = () => this.wrapper.removeEventListener('transitionend', onTransitionEnd)
-      }, [pointerLeave]),
-    )
-
-    // When zoom or scroll happens, re-run the pointer move logic with the last known mouse position
-    const onUpdate = () => {
-      if (this.lastPointerPosition && this.wavesurfer) {
-        // Position
-        const bbox = this.wavesurfer.getWrapper().getBoundingClientRect()
-        const { width } = bbox
-        const offsetX = this.lastPointerPosition.clientX - bbox.left
-        const relX = Math.min(1, Math.max(0, offsetX / width))
-        const posX = Math.min(width - this.options.lineWidth - 1, offsetX)
-        this.wrapper.style.transform = `translateX(${posX}px)`
-
-        // Timestamp
-        const duration = this.wavesurfer.getDuration()
-        this.label.textContent = this.options.formatTimeCallback(duration * relX)
-        const labelWidth = this.label.offsetWidth
-        const transformCondition = this.options.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
-        this.label.style.transform = transformCondition ? `translateX(-${labelWidth + this.options.lineWidth}px)` : ''
-      }
-    }
-
-    // Subscribe to zoom and scroll events
-    this.subscriptions.push(this.wavesurfer.on('zoom', onUpdate))
-    this.subscriptions.push(this.wavesurfer.on('scroll', onUpdate))
-  }
-
-  /** Unmount */
-  public destroy() {
-    if (this.transitionEndCleanup) {
-      this.transitionEndCleanup()
-      this.transitionEndCleanup = null
-    }
-    this.streamCleanups.forEach((fn) => fn())
-    this.streamCleanups = []
-    super.destroy()
-    this.wrapper.remove()
-  }
+function addUnits(value: string | number): string {
+  const units = typeof value === 'number' ? 'px' : ''
+  return `${value}${units}`
 }
+
+const HoverPlugin = definePlugin<HoverPluginOptions, HoverPluginEvents, object>('HoverPlugin', (ctx, options) => {
+  const opts: HoverPluginOptions & typeof defaultOptions = Object.assign({}, defaultOptions, options)
+
+  // Create the plugin elements
+  const wrapper = createElement('div', { part: 'hover' })
+  const label = createElement('span', { part: 'hover-label' }, wrapper)
+
+  const wsOptions = ctx.wavesurfer.options
+  const lineColor = opts.lineColor || wsOptions.cursorColor || wsOptions.progressColor
+
+  // Vertical line
+  Object.assign(wrapper.style, {
+    position: 'absolute',
+    zIndex: 10,
+    left: 0,
+    top: 0,
+    height: '100%',
+    pointerEvents: 'none',
+    borderLeft: `${addUnits(opts.lineWidth)} solid ${lineColor}`,
+    opacity: '0',
+    transition: 'opacity .1s ease-in',
+  })
+
+  // Timestamp label
+  Object.assign(label.style, {
+    display: 'block',
+    backgroundColor: opts.labelBackground,
+    color: opts.labelColor,
+    fontSize: `${addUnits(opts.labelSize)}`,
+    transition: 'transform .1s ease-in',
+    padding: '2px 3px',
+  })
+
+  // Append the wrapper
+  const container = ctx.wavesurfer.getWrapper()
+  container.appendChild(wrapper)
+  ctx.scope.add(() => wrapper.remove())
+
+  // Get reactive state
+  const { duration } = ctx.state
+
+  let lastPointerPosition: { clientX: number; clientY: number } | null = null
+  let isPointerOverWaveform = false
+  let transitionEndCleanup: (() => void) | null = null
+
+  // Create event streams for pointer events
+  const pointerMove = fromEvent(container, 'pointermove')
+  const pointerLeave = fromEvent(container, 'pointerleave')
+  ctx.scope.add(() => cleanup(pointerMove))
+  ctx.scope.add(() => cleanup(pointerLeave))
+
+  ctx.scope.add(
+    effect(() => {
+      const e = pointerMove.value
+      if (!e) return
+
+      isPointerOverWaveform = true
+    }, [pointerMove]),
+  )
+
+  // React to pointer movement
+  ctx.scope.add(
+    effect(() => {
+      const e = pointerMove.value
+      if (!e || !isPointerOverWaveform) return
+
+      // Store only the position data needed for zoom/scroll updates
+      lastPointerPosition = { clientX: e.clientX, clientY: e.clientY }
+
+      // Position
+      const bbox = ctx.wavesurfer.getWrapper().getBoundingClientRect()
+      const { width } = bbox
+      const offsetX = e.clientX - bbox.left
+      const relX = Math.min(1, Math.max(0, offsetX / width))
+      const posX = Math.min(width - opts.lineWidth - 1, offsetX)
+      wrapper.style.transform = `translateX(${posX}px)`
+      wrapper.style.opacity = '1'
+
+      // Timestamp
+      const dur = ctx.wavesurfer.getDuration()
+      label.textContent = opts.formatTimeCallback(dur * relX)
+      const labelWidth = label.offsetWidth
+      const transformCondition = opts.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
+      label.style.transform = transformCondition ? `translateX(-${labelWidth + opts.lineWidth}px)` : ''
+
+      // Emit a hover event with the relative X position
+      ctx.emit('hover', relX)
+    }, [pointerMove, duration]),
+  )
+
+  // React to pointer leave
+  ctx.scope.add(
+    effect(() => {
+      const e = pointerLeave.value
+      if (!e) return
+
+      wrapper.style.opacity = '0'
+      isPointerOverWaveform = false
+      lastPointerPosition = null
+
+      // Remove any previously attached transitionend listener before attaching a
+      // new one, so listeners don't accumulate if the transition never fires
+      // (e.g. element hidden or opacity already 0).
+      if (transitionEndCleanup) {
+        transitionEndCleanup()
+        transitionEndCleanup = null
+      }
+
+      // Reset transform after the opacity fade so the line doesn't jump to position 0
+      // while still visible. Also resets the scrollable overflow area of the scroll
+      // container to prevent improper scrollLeft clamping on zoom changes.
+      const onTransitionEnd = () => {
+        transitionEndCleanup = null
+        if (!isPointerOverWaveform) {
+          wrapper.style.transform = ''
+        }
+      }
+      wrapper.addEventListener('transitionend', onTransitionEnd, { once: true })
+      transitionEndCleanup = () => wrapper.removeEventListener('transitionend', onTransitionEnd)
+    }, [pointerLeave]),
+  )
+  ctx.scope.add(() => {
+    if (transitionEndCleanup) {
+      transitionEndCleanup()
+      transitionEndCleanup = null
+    }
+  })
+
+  // When zoom or scroll happens, re-run the pointer move logic with the last known mouse position
+  const onUpdate = () => {
+    if (lastPointerPosition) {
+      // Position
+      const bbox = ctx.wavesurfer.getWrapper().getBoundingClientRect()
+      const { width } = bbox
+      const offsetX = lastPointerPosition.clientX - bbox.left
+      const relX = Math.min(1, Math.max(0, offsetX / width))
+      const posX = Math.min(width - opts.lineWidth - 1, offsetX)
+      wrapper.style.transform = `translateX(${posX}px)`
+
+      // Timestamp
+      const dur = ctx.wavesurfer.getDuration()
+      label.textContent = opts.formatTimeCallback(dur * relX)
+      const labelWidth = label.offsetWidth
+      const transformCondition = opts.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
+      label.style.transform = transformCondition ? `translateX(-${labelWidth + opts.lineWidth}px)` : ''
+    }
+  }
+
+  // Subscribe to zoom and scroll events
+  ctx.scope.add(ctx.wavesurfer.on('zoom', onUpdate))
+  ctx.scope.add(ctx.wavesurfer.on('scroll', onUpdate))
+
+  return {}
+})
 
 export default HoverPlugin

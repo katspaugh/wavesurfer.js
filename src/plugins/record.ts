@@ -3,6 +3,7 @@
  */
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
+import { Scope } from '../scope.js'
 import Timer from '../timer.js'
 import type { WaveSurferOptions } from '../wavesurfer.js'
 
@@ -65,7 +66,6 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private lastDuration = 0
   private duration = 0
   private micStream: MicStream | null = null
-  private unsubscribeDestroy?: () => void
   private unsubscribeRecordEnd?: () => void
   private recordedBlobUrl: string | null = null
   // Snapshot of 'record-end' listeners taken at destroy() time when a recording is
@@ -90,7 +90,9 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   protected onInit() {
-    this.subscriptions.push(
+    // this.scope is disposed and recreated on every destroy() (see below), so
+    // this re-registers cleanly on _init() after a destroy() + re-init cycle.
+    this.scope.add(
       this.timer.on('tick', () => {
         const currentTime = performance.now() - this.lastStartTime
         this.duration = this.isPaused() ? this.duration : this.lastDuration + currentTime
@@ -222,17 +224,31 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       }
     }
 
-    const intervalId = setInterval(drawWaveform, 1000 / FPS)
-
-    const cleanup = () => {
-      clearInterval(intervalId)
+    // A child of the plugin's scope: startMic()/stopMic() can run several
+    // times over the plugin's life, so these mic-specific resources need
+    // their own disposable unit rather than living directly on this.scope.
+    // Being a CHILD also means a full plugin destroy() (which disposes
+    // this.scope) cascades to clean this up even if stopMic() was somehow
+    // never called -- a backstop that replaces the previous once('destroy')
+    // wiring, which relied on the same "destroy fires -> clean up mic"
+    // relationship but had to be manually threaded through the event bus.
+    const micScope = this.scope.child()
+    // Registered before the interval so LIFO disposal clears the interval
+    // first and only then disconnects/closes the audio graph, preserving the
+    // original teardown order (stop drawing before tearing down what it reads).
+    micScope.add(() => {
       source?.disconnect()
       audioContext?.close()
-    }
+    })
+    micScope.interval(drawWaveform, 1000 / FPS)
 
     return {
-      onDestroy: cleanup,
+      onDestroy: () => micScope.dispose(),
       onEnd: () => {
+        // Fires when a recording ends on its own (not via an explicit
+        // stopMic()/destroy() call) -- a domain-event reaction, not a
+        // teardown resource, so it stays wired through once('record-end')
+        // below rather than the scope (see startMic()).
         this.isWaveformPaused = true
         this.stopMic()
       },
@@ -257,9 +273,6 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
     const micStream = this.renderMicStream(stream)
     this.micStream = micStream
-    // Safety net: cleans up mic resources if 'destroy' fires before stopMic() runs
-    // (stopMic() normally unsubscribes this first, making the common path a no-op).
-    this.unsubscribeDestroy = this.once('destroy', micStream.onDestroy)
     this.unsubscribeRecordEnd = this.once('record-end', micStream.onEnd)
     this.stream = stream
 
@@ -269,10 +282,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   /** Stop monitoring incoming audio */
   public stopMic() {
     this.micStream?.onDestroy()
-    this.unsubscribeDestroy?.()
     this.unsubscribeRecordEnd?.()
     this.micStream = null
-    this.unsubscribeDestroy = undefined
     this.unsubscribeRecordEnd = undefined
     if (!this.stream) return
     this.stream.getTracks().forEach((track) => track.stop())
@@ -437,6 +448,14 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       URL.revokeObjectURL(this.recordedBlobUrl)
       this.recordedBlobUrl = null
     }
+    // Disposes the timer-tick subscription registered in onInit() and
+    // cascades to any mic child scope still attached (normally none --
+    // stopMic() above already detached and disposed it; this is only a
+    // backstop). Recreated because re-init after destroy() is supported
+    // (see record.test.ts): a disposed Scope runs late registrations
+    // immediately, which would silently break a subsequent onInit().
+    this.scope.dispose()
+    this.scope = new Scope()
     super.destroy()
   }
 
