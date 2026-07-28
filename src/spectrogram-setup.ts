@@ -816,6 +816,10 @@ export function spectrogramSetup(
       try {
         return await calculateFrequenciesWithWorkerRange(startTime, endTime)
       } catch (error) {
+        // A worker rejection reaching here after teardown (destroy() -> disposeWorker())
+        // must not touch a destroyed plugin's state - same guard as full mode's getFrequencies.
+        if (ctx.scope.disposed) return []
+
         if (!fallbackToMainThread) {
           ctx.emit('error', error instanceof Error ? error : new Error(String(error)))
           return []

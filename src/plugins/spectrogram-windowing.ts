@@ -337,7 +337,8 @@ export class SegmentManager {
     if (!isAlreadyLoaded) {
       try {
         await this.generateSegments(segmentStart, segmentEnd)
-      } catch {
+      } catch (error) {
+        console.warn('Progressive loading failed:', error)
         this.stopProgressiveLoading()
         return
       }
