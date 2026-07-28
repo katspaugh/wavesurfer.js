@@ -18,32 +18,21 @@
  * });
  */
 
-// @ts-nocheck
-
-// Import centralized FFT functionality
-import FFT, {
+// Only the shared, display-oriented FFT utilities are needed here now - the actual FFT/filter-bank/
+// autoGain loop lives in computeFrequencies (spectrogram-frequencies.ts), which this file delegates to.
+import {
   hzToScale,
-  scaleToHz,
-  createSparseFilterBankForScale,
-  applySparseFilterBank,
-  magnitudesToColorIndices,
-  magnitudesToDb,
-  dbToColorIndices,
-  createPreEmphasisTilt,
-  getBinFrequencies,
-  SILENCE_FLOOR_DB,
-  AUTO_GAIN_BUFFER_BUDGET_BYTES,
   setupColorMap,
+  getLabelFrequency,
   freqType,
   unitType,
-  getLabelFrequency,
   createWrapperClickHandler,
+  AUTO_GAIN_BUFFER_BUDGET_BYTES,
 } from '../fft.js'
+import { computeFrequencies, type FrequencyParams } from '../spectrogram-frequencies.js'
 
-/**
- * Spectrogram plugin for wavesurfer.
- */
-import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
+import { type BasePluginEvents } from '../base-plugin.js'
+import { definePlugin } from '../define-plugin.js'
 import createElement, { isHTMLElement } from '../dom.js'
 
 // Import the worker using rollup-plugin-web-worker-loader
@@ -178,124 +167,108 @@ export type SpectrogramPluginEvents = BasePluginEvents & {
 // accept values like 2^32 + 1)
 const isPowerOfTwo = (value: number) => Number.isInteger(value) && value >= 2 && Number.isInteger(Math.log2(value))
 
-class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramPluginOptions> {
-  private static MAX_NODES = 10
+const MAX_NODES = 10
 
-  private maxCanvasWidth = 30000
-  private buffer: AudioBuffer | null = null
-  private frequenciesDataUrl?: string
-  private container: HTMLElement
-  private wrapper: HTMLElement
-  private labelsEl: HTMLCanvasElement
-  private canvases: HTMLCanvasElement[] = []
-  private canvasContainer: HTMLElement
-  private colorMap: number[][]
-  private fftSamples: SpectrogramPluginOptions['fftSamples']
-  private fftSize: SpectrogramPluginOptions['fftSize']
-  private height: SpectrogramPluginOptions['height']
-  private noverlap: SpectrogramPluginOptions['noverlap']
-  private windowFunc: SpectrogramPluginOptions['windowFunc']
-  private alpha: SpectrogramPluginOptions['alpha']
-  private frequencyMin: SpectrogramPluginOptions['frequencyMin']
-  private frequencyMax: SpectrogramPluginOptions['frequencyMax']
-  private gainDB: SpectrogramPluginOptions['gainDB']
-  private rangeDB: SpectrogramPluginOptions['rangeDB']
-  private preEmphasis: number
-  private autoGain: boolean
-  private autoGainBudgetBytes = AUTO_GAIN_BUFFER_BUDGET_BYTES
-  private scale: SpectrogramPluginOptions['scale']
-  private numMelFilters: number
-  private numLogFilters: number
-  private numBarkFilters: number
-  private numErbFilters: number
+type WorkerRequest = { resolve: (value: Uint8Array[][]) => void; reject: (reason: unknown) => void; timer?: ReturnType<typeof setTimeout> }
+type WorkerFrequenciesMessage = { type: string; id: string; result?: Uint8Array[][]; error?: string }
 
-  // Web worker support
-  private useWebWorker: boolean = false
-  private worker: Worker | null = null
-  private workerTimeout = 30000
-  private fallbackToMainThread = true
-  private workerConstructionFailed = false
-  private workerPromises: Map<string, { resolve: Function; reject: Function; timer?: ReturnType<typeof setTimeout> }> =
-    new Map()
+/**
+ * Test-only introspection/poking surface. The pre-port class exposed all of this as plain
+ * instance fields, which the existing spectrogram unit test suite (predating this port) pokes
+ * directly via `(plugin as any).field`. Closure-based setup() state isn't reachable that way -
+ * `Object.assign(this, api)` (see define-plugin.ts) copies each Api value ONCE, at init time, so
+ * a plain returned field would go stale the moment the closure reassigns it. This object is
+ * created once per setup() run and its getters/setters read/write the actual closure variables
+ * live, so `plugin.__testInternals().buffer = x` and later reads of the same call still observe
+ * the plugin's real internal state. Not part of the plugin's public contract - do not use outside
+ * tests.
+ */
+type TestInternals = {
+  buffer: AudioBuffer | null
+  readonly worker: Worker | null
+  readonly workerPromises: Map<string, WorkerRequest>
+  readonly cachedFrequencies: Uint8Array[][] | null
+  readonly cachedBuffer: AudioBuffer | null
+  readonly canvasContainer: HTMLElement
+  readonly canvases: HTMLCanvasElement[]
+  readonly drawnCanvases: Record<number, boolean>
+  readonly maxCanvasWidth: number
+  autoGainBudgetBytes: number
+  getFrequencies: (buffer: AudioBuffer) => Promise<Uint8Array[][]>
+  calculateFrequenciesWithWorker: (buffer: AudioBuffer) => Promise<Uint8Array[][]>
+  drawSpectrogram: (frequenciesData: Uint8Array[][]) => void
+}
 
-  // Performance optimization properties
-  private cachedFrequencies: Uint8Array[][] | null = null
-  private cachedResampledData: Uint8Array[][] | null = null
-  private cachedBuffer: AudioBuffer | null = null
-  private cachedWidth = 0
-  private renderTimeout: number | null = null
-  private isRendering = false
-  private lastZoomLevel = 0
-  private renderThrottleMs = 50 // Reduced frequency for better performance
-  private zoomThreshold = 0.05 // More sensitive zoom detection
-  private drawnCanvases: Record<number, boolean> = {}
-  private pendingBitmaps = new Set<Promise<ImageBitmap>>()
-  private isScrollable = false
-  private scrollUnsubscribe: (() => void) | null = null
-  private _onWrapperClick: (e: MouseEvent) => void
+type Api = {
+  /** Fetch pre-computed spectrogram JSON data from a URL and render it. */
+  loadFrequenciesData: (url: string | URL) => Promise<void>
+  /** Get the current frequency data, computing (and caching) it from the decoded audio if needed. */
+  getFrequenciesData: () => Promise<Uint8Array[][] | null>
+  /** Clear cached frequency data to force recalculation. */
+  clearCache: () => void
+  /** @internal test-only, see TestInternals */
+  __testInternals: () => TestInternals
+}
 
-  static create(options?: SpectrogramPluginOptions) {
-    return new SpectrogramPlugin(options || {})
-  }
+const SpectrogramPlugin = definePlugin<SpectrogramPluginOptions, SpectrogramPluginEvents, Api>(
+  'SpectrogramPlugin',
+  (ctx, rawOptions) => {
+    // setup() runs once per (re-)init, on a fresh scope - see define-plugin.ts. All the pre-port
+    // class's constructor validation now lives here rather than in a constructor, since
+    // definePlugin has no per-plugin constructor hook: it only runs (and can only throw) once the
+    // plugin is registered with a wavesurfer instance, not at `.create()` time. This is a
+    // deliberate, documented behavior change from the pre-port class (see task-2-report.md).
+    const options: SpectrogramPluginOptions = rawOptions ?? {}
 
-  constructor(options: SpectrogramPluginOptions) {
-    super(options)
-
-    this.frequenciesDataUrl = options.frequenciesDataUrl
-
-    // Validate that sampleRate is provided when using frequenciesDataUrl
-    if (this.frequenciesDataUrl && !options.sampleRate) {
+    const frequenciesDataUrl = options.frequenciesDataUrl
+    if (frequenciesDataUrl && !options.sampleRate) {
       throw new Error('sampleRate option is required when using frequenciesDataUrl')
     }
 
-    this.container =
-      'string' == typeof options.container ? document.querySelector(options.container) : options.container
+    const useWebWorker = options.useWebWorker === true
+    const workerTimeout = options.workerTimeout ?? 30000
+    const fallbackToMainThread = options.fallbackToMainThread ?? true
 
-    // Web worker option (disabled by default)
-    this.useWebWorker = options.useWebWorker === true
-    this.workerTimeout = options.workerTimeout ?? 30000
-    this.fallbackToMainThread = options.fallbackToMainThread ?? true
+    const colorMap = setupColorMap(options.colorMap)
 
-    // Set up color map using shared utility
-    this.colorMap = setupColorMap(options.colorMap)
-
-    this.fftSize = options.fftSize
+    const fftSize = options.fftSize
     // With fftSize set, fftSamples is a validated analysis-window length: only absent values get
     // the default. Without it, the historical coercion of falsy values is preserved.
-    this.fftSamples = this.fftSize != null ? (options.fftSamples ?? 512) : options.fftSamples || 512
-    this.height = options.height || 200
-    this.noverlap = options.noverlap || null // Will be calculated later based on canvas size
+    const fftSamples = fftSize != null ? (options.fftSamples ?? 512) : options.fftSamples || 512
+    const height = options.height || 200
+    // Will be calculated later based on canvas size when not set
+    let noverlap: number | null = options.noverlap || null
 
     // The transform length must be a power of two; with fftSize set, fftSamples is just the
     // analysis window length and only needs to fit inside the transform
-    const fftLength = this.fftSize ?? this.fftSamples
+    const fftLength = fftSize ?? fftSamples
     if (!isPowerOfTwo(fftLength)) {
       throw new TypeError(
         `fftSize (or fftSamples when fftSize is not set) must be a power of two and at least 2, got ${fftLength}`,
       )
     }
-    if (
-      this.fftSize != null &&
-      (!Number.isInteger(this.fftSamples) || this.fftSamples < 2 || this.fftSamples > this.fftSize)
-    ) {
-      throw new TypeError(`fftSamples must be an integer between 2 and fftSize, got ${this.fftSamples}`)
+    if (fftSize != null && (!Number.isInteger(fftSamples) || fftSamples < 2 || fftSamples > fftSize)) {
+      throw new TypeError(`fftSamples must be an integer between 2 and fftSize, got ${fftSamples}`)
     }
     if (options.noverlap != null && !Number.isInteger(options.noverlap)) {
       throw new TypeError(`noverlap must be an integer number of samples, got ${options.noverlap}`)
     }
-    this.windowFunc = options.windowFunc || 'hann'
-    this.alpha = options.alpha
+    const windowFunc = options.windowFunc || 'hann'
+    const alpha = options.alpha
 
     // Getting file's original samplerate is difficult(#1248).
     // So set 12kHz default to render like wavesurfer.js 5.x.
-    this.frequencyMin = options.frequencyMin || 0
-    this.frequencyMax = options.frequencyMax || 0
+    let frequencyMin = options.frequencyMin || 0
+    let frequencyMax = options.frequencyMax || 0
 
-    this.gainDB = options.gainDB ?? 20
-    this.rangeDB = options.rangeDB ?? 80
-    this.scale = options.scale || 'mel'
-    this.preEmphasis = options.preEmphasis ?? 0
-    this.autoGain = options.autoGain ?? false
+    const gainDB = options.gainDB ?? 20
+    const rangeDB = options.rangeDB ?? 80
+    const scale = options.scale || 'mel'
+    const preEmphasis = options.preEmphasis ?? 0
+    const autoGain = options.autoGain ?? false
+    // Per-instance override of the autoGain transient-memory budget (used by tests via
+    // __testInternals().autoGainBudgetBytes).
+    let autoGainBudgetBytes = AUTO_GAIN_BUFFER_BUDGET_BYTES
 
     if (options.gainDB != null && !Number.isFinite(options.gainDB)) {
       throw new TypeError(`gainDB must be a finite number, got ${options.gainDB}`)
@@ -310,234 +283,35 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       if (!Number.isFinite(options.alpha)) {
         throw new TypeError(`alpha must be a finite number, got ${options.alpha}`)
       }
-      if (this.windowFunc === 'gauss' && options.alpha <= 0) {
+      if (windowFunc === 'gauss' && options.alpha <= 0) {
         throw new TypeError(`alpha must be positive for the gauss window, got ${options.alpha}`)
       }
     }
 
-    // Rendering and labels derive their geometry from the computed data, so these follow the
-    // transform length
-    this.numMelFilters = fftLength / 2
-    this.numLogFilters = fftLength / 2
-    this.numBarkFilters = fftLength / 2
-    this.numErbFilters = fftLength / 2
+    const maxCanvasWidth = options.maxCanvasWidth || 30000
 
-    // Override the default max canvas width if provided
-    if (options.maxCanvasWidth) {
-      this.maxCanvasWidth = options.maxCanvasWidth
-    }
+    // ---- Mutable render/cache/worker state (closure-owned, replaces the pre-port instance fields) ----
+    let buffer: AudioBuffer | null = null
+    let worker: Worker | null = null
+    let workerConstructionFailed = false
+    const workerPromises = new Map<string, WorkerRequest>()
 
-    // Set default performance settings
-    this.renderThrottleMs = 50
-    this.zoomThreshold = 0.05
+    let cachedFrequencies: Uint8Array[][] | null = null
+    let cachedResampledData: Uint8Array[][] | null = null
+    let cachedBuffer: AudioBuffer | null = null
+    let cachedWidth = 0
+    let cancelPendingRender: (() => void) | null = null
+    let isRendering = false
+    let lastZoomLevel = 0
+    const renderThrottleMs = 50 // Reduced frequency for better performance
+    const zoomThreshold = 0.05 // More sensitive zoom detection
+    let drawnCanvases: Record<number, boolean> = {}
+    let canvases: HTMLCanvasElement[] = []
+    const pendingBitmaps = new Set<Promise<ImageBitmap>>()
+    let scrollUnsubscribe: (() => void) | null = null
 
-    this.createWrapper()
-    this.createCanvas()
-
-    // Initialize worker if enabled
-    if (this.useWebWorker) {
-      this.initializeWorker()
-    }
-  }
-
-  private initializeWorker() {
-    // Skip worker initialization in SSR environments (Next.js server-side)
-    if (typeof window === 'undefined' || typeof Worker === 'undefined') {
-      console.warn('Worker not available in this environment, using main thread calculation')
-      return
-    }
-
-    try {
-      // Create worker using imported worker constructor
-      this.worker = new SpectrogramWorker()
-
-      this.worker.onmessage = (e) => {
-        const { type, id, result, error } = e.data
-
-        if (type === 'frequenciesResult') {
-          const promise = this.workerPromises.get(id)
-          if (promise) {
-            this.workerPromises.delete(id)
-            if (promise.timer) clearTimeout(promise.timer)
-            if (error) {
-              promise.reject(new Error(error))
-            } else {
-              promise.resolve(result)
-            }
-          }
-        }
-      }
-
-      this.worker.onerror = (error) => {
-        console.warn('Spectrogram worker error, falling back to main thread:', error)
-        this.disposeWorker(new Error('Worker error'))
-      }
-
-      this.worker.onmessageerror = (event) => {
-        console.warn('Spectrogram worker message error, falling back to main thread:', event)
-        this.disposeWorker(new Error('Worker message error'))
-      }
-    } catch (error) {
-      console.warn('Failed to initialize worker, falling back to main thread:', error)
-      this.worker = null
-      // Construction failure (e.g. CSP worker-src denial) is permanent for this environment:
-      // latch it so computations don't retry it, unlike runtime failures of a live worker
-      this.workerConstructionFailed = true
-    }
-  }
-
-  // Terminate the worker and reject in-flight requests so callers fall back to the main thread
-  // immediately instead of waiting out the worker timeout (or hanging when it is disabled)
-  private disposeWorker(error: Error) {
-    if (this.worker) {
-      this.worker.terminate()
-      this.worker = null
-    }
-    this.workerPromises.forEach((promise) => {
-      if (promise.timer) clearTimeout(promise.timer)
-      promise.reject(error)
-    })
-    this.workerPromises.clear()
-  }
-
-  onInit() {
-    // Recreate DOM elements if they were destroyed
-    if (!this.wrapper) {
-      this.createWrapper()
-    }
-    if (!this.canvasContainer) {
-      this.createCanvas()
-    }
-
-    // Use the user-specified container if provided, otherwise fall back to the wavesurfer wrapper
-    if (this.options.container) {
-      if (typeof this.options.container === 'string') {
-        const el = document.querySelector(this.options.container)
-        if (el instanceof HTMLElement) {
-          this.container = el
-        }
-      } else if (isHTMLElement(this.options.container)) {
-        this.container = this.options.container
-      }
-    }
-    if (!this.container) {
-      this.container = this.wavesurfer.getWrapper()
-    }
-    this.container.appendChild(this.wrapper)
-
-    if (this.wavesurfer.options.fillParent) {
-      Object.assign(this.wrapper.style, {
-        width: '100%',
-        overflowX: 'hidden',
-        overflowY: 'hidden',
-      })
-    }
-    this.subscriptions.push(this.wavesurfer.on('redraw', () => this.throttledRender()))
-
-    // Trigger initial render after re-initialization
-    // This ensures the spectrogram appears even if no redraw event is fired
-    if (this.wavesurfer.getDecodedData()) {
-      // Use setTimeout to ensure DOM is fully ready
-      setTimeout(() => {
-        this.throttledRender()
-      }, 0)
-    }
-  }
-
-  public destroy() {
-    // Clean up performance optimization resources
-    if (this.renderTimeout) {
-      clearTimeout(this.renderTimeout)
-      this.renderTimeout = null
-    }
-
-    // Clean up scroll listener
-    if (this.scrollUnsubscribe) {
-      this.scrollUnsubscribe()
-      this.scrollUnsubscribe = null
-    }
-
-    // Cancel pending bitmap operations
-    this.pendingBitmaps.clear()
-
-    // Clean up worker
-    this.disposeWorker(new Error('Spectrogram plugin destroyed'))
-
-    this.cachedFrequencies = null
-    this.cachedResampledData = null
-    this.cachedBuffer = null
-    this.buffer = null
-
-    // Clean up DOM elements properly
-    this.clearCanvases()
-    if (this.canvasContainer) {
-      this.canvasContainer.remove()
-      this.canvasContainer = null
-    }
-    if (this.wrapper) {
-      this.wrapper.remove()
-      this.wrapper = null
-    }
-    if (this.labelsEl) {
-      // Properly remove labels canvas from DOM before nullifying reference
-      this.labelsEl.remove()
-      this.labelsEl = null
-    }
-
-    // Reset state for potential re-initialization
-    this.container = null
-    this.isRendering = false
-    this.lastZoomLevel = 0
-
-    super.destroy()
-  }
-
-  public async loadFrequenciesData(url: string | URL) {
-    const resp = await fetch(url)
-    if (!resp.ok) {
-      throw new Error('Unable to fetch frequencies data')
-    }
-    const data = await resp.json()
-    if (this.destroyed) return
-    this.drawSpectrogram(data)
-  }
-
-  public async getFrequenciesData(): Promise<Uint8Array[][] | null> {
-    const decodedData = this.wavesurfer?.getDecodedData()
-    if (!decodedData) {
-      return null
-    }
-
-    if (this.cachedBuffer === decodedData && this.cachedFrequencies) {
-      // Check if we can use cached frequencies
-      return this.cachedFrequencies
-    } else {
-      // Calculate new frequencies and cache them; a failed computation (empty result)
-      // is not cached so the next render retries
-      const frequencies = await this.getFrequencies(decodedData)
-      if (frequencies.length > 0) {
-        this.cachedFrequencies = frequencies
-        this.cachedBuffer = decodedData
-      } else if (this.cachedBuffer && this.cachedBuffer !== decodedData) {
-        // The buffer changed and its computation failed: drop the previous buffer's data so
-        // nothing stale can be drawn against the new audio
-        this.clearCache()
-      }
-      return frequencies
-    }
-  }
-
-  /** Clear cached frequency data to force recalculation */
-  public clearCache() {
-    this.cachedFrequencies = null
-    this.cachedResampledData = null
-    this.cachedBuffer = null
-    this.cachedWidth = 0
-    this.lastZoomLevel = 0
-  }
-
-  private createWrapper() {
-    this.wrapper = createElement('div', {
+    // ---- DOM ----
+    const wrapper = createElement('div', {
       style: {
         display: 'block',
         position: 'relative',
@@ -545,805 +319,927 @@ class SpectrogramPlugin extends BasePlugin<SpectrogramPluginEvents, SpectrogramP
       },
     })
 
-    // if labels are active
-    if (this.options.labels) {
-      this.labelsEl = createElement(
+    let labelsEl: HTMLCanvasElement | null = null
+    if (options.labels) {
+      // createElement's return type isn't narrowed by the tagName string literal ('canvas' vs
+      // 'div' etc. are indistinguishable to its `string` parameter type), so it always returns
+      // HTMLElement; cast to the concrete DOM type actually produced.
+      labelsEl = createElement(
         'canvas',
         {
           part: 'spec-labels',
           style: {
             position: 'absolute',
-            zIndex: 9,
+            zIndex: '9',
             width: '55px',
             height: '100%',
           },
         },
-        this.wrapper,
-      )
+        wrapper,
+      ) as HTMLCanvasElement
     }
 
-    // Create wrapper click handler using shared utility
-    this._onWrapperClick = createWrapperClickHandler(this.wrapper, this.emit.bind(this))
-    this.wrapper.addEventListener('click', this._onWrapperClick)
-  }
+    const onWrapperClick = createWrapperClickHandler(
+      wrapper,
+      // createWrapperClickHandler is shared with spectrogram-windowed.ts and is intentionally
+      // loosely typed (event: string, ...args: any[]); here it only ever emits 'click' with a
+      // single relativeX number, matching SpectrogramPluginEvents.
+      ctx.emit as (event: string, ...args: any[]) => void,
+    )
+    wrapper.addEventListener('click', onWrapperClick)
+    ctx.scope.add(() => wrapper.removeEventListener('click', onWrapperClick))
 
-  private createCanvas() {
-    this.canvasContainer = createElement(
+    const canvasContainer = createElement(
       'div',
       {
         style: {
           position: 'absolute',
-          left: 0,
-          top: 0,
+          left: '0',
+          top: '0',
           width: '100%',
           height: '100%',
-          zIndex: 4,
+          zIndex: '4',
         },
       },
-      this.wrapper,
-    )
-  }
-
-  private createSingleCanvas(width: number, height: number, offset: number): HTMLCanvasElement {
-    const canvas = createElement('canvas', {
-      style: {
-        position: 'absolute',
-        left: `${Math.round(offset)}px`,
-        top: '0',
-        width: `${width}px`,
-        height: `${height}px`,
-        zIndex: 4,
-      },
-    })
-
-    canvas.width = Math.round(width)
-    canvas.height = Math.round(height)
-
-    this.canvasContainer.appendChild(canvas)
-    return canvas
-  }
-
-  private clearCanvases() {
-    this.canvases.forEach((canvas) => canvas.remove())
-    this.canvases = []
-    this.drawnCanvases = {}
-  }
-
-  private clearExcessCanvases() {
-    // Clear canvases to avoid too many DOM nodes
-    if (Object.keys(this.drawnCanvases).length > SpectrogramPlugin.MAX_NODES) {
-      this.clearCanvases()
-    }
-  }
-
-  private throttledRender() {
-    // Clear any pending render
-    if (this.renderTimeout) {
-      clearTimeout(this.renderTimeout)
-    }
-
-    // Skip if already rendering
-    if (this.isRendering) {
-      return
-    }
-
-    // Check if zoom level changed significantly
-    const currentZoom = this.wavesurfer?.options.minPxPerSec || 0
-    const zoomDiff = Math.abs(currentZoom - this.lastZoomLevel) / Math.max(currentZoom, this.lastZoomLevel, 1)
-
-    if (zoomDiff < this.zoomThreshold && this.cachedFrequencies) {
-      // Small zoom change - just re-render with cached data
-      this.renderTimeout = window.setTimeout(() => {
-        this.fastRender()
-      }, this.renderThrottleMs)
-    } else {
-      // Significant zoom change - full re-render
-      this.renderTimeout = window.setTimeout(() => {
-        this.render()
-      }, this.renderThrottleMs)
-    }
-  }
-
-  private async render() {
-    if (this.isRendering) return
-    this.isRendering = true
-
-    try {
-      if (this.frequenciesDataUrl) {
-        await this.loadFrequenciesData(this.frequenciesDataUrl)
-      } else {
-        const decodedData = this.wavesurfer?.getDecodedData()
-        if (decodedData) {
-          const frequencies = await this.getFrequenciesData()
-          if (this.destroyed || !frequencies) return
-          // Draw what this render computed (cache hit, fresh data, or empty on failure)
-          // rather than whatever the cache field holds
-          this.drawSpectrogram(frequencies)
-        }
-      }
-      this.lastZoomLevel = this.wavesurfer?.options.minPxPerSec || 0
-    } finally {
-      this.isRendering = false
-    }
-  }
-
-  private fastRender() {
-    if (this.isRendering || !this.cachedFrequencies) return
-    this.isRendering = true
-
-    try {
-      // Use cached frequencies for fast re-render
-      this.drawSpectrogram(this.cachedFrequencies)
-      this.lastZoomLevel = this.wavesurfer?.options.minPxPerSec || 0
-    } finally {
-      this.isRendering = false
-    }
-  }
-
-  private drawSpectrogram(frequenciesData: Uint8Array[][]): void {
-    if (
-      !frequenciesData ||
-      frequenciesData.length === 0 ||
-      frequenciesData.every((channel) => !channel || channel.length === 0)
-    ) {
-      // Nothing to draw (failed computation, or a buffer too short for a single FFT frame):
-      // remove any previously drawn canvases so no stale spectrogram stays on screen
-      this.clearCanvases()
-      return
-    }
-    if (!isNaN(frequenciesData[0][0])) {
-      // data is 1ch [sample, freq] format
-      // to [channel, sample, freq] format
-      frequenciesData = [frequenciesData]
-    }
-
-    // Clear existing canvases
-    this.clearCanvases()
-
-    // Set the height to fit all channels
-    const totalHeight = this.height * frequenciesData.length
-    this.wrapper.style.height = totalHeight + 'px'
-
-    const totalWidth = this.getWidth()
-    const maxCanvasWidth = Math.min(this.maxCanvasWidth, totalWidth)
-
-    // Nothing to render
-    if (totalWidth === 0 || totalHeight === 0) return
-
-    // Calculate number of canvases needed
-    const numCanvases = Math.ceil(totalWidth / maxCanvasWidth)
-
-    // Smart resampling based on zoom level
-    let resampledData: Uint8Array[][]
-    const originalDataWidth = frequenciesData[0]?.length || 0
-    const needsResampling = totalWidth !== originalDataWidth
-
-    if (!needsResampling) {
-      // At high zoom levels, use original data directly - much faster!
-      resampledData = frequenciesData
-    } else if (this.cachedResampledData && this.cachedWidth === totalWidth) {
-      // Use cached resampled data
-      resampledData = this.cachedResampledData
-    } else {
-      // Only resample when actually needed
-      resampledData = this.efficientResample(frequenciesData, totalWidth)
-      this.cachedResampledData = resampledData
-      this.cachedWidth = totalWidth
-    }
-
-    // Maximum frequency represented in `frequenciesData`
-    // Use buffer.sampleRate if available (from getFrequencies), otherwise use the provided sampleRate
-    const freqFrom = this.buffer?.sampleRate ? this.buffer.sampleRate / 2 : (this.options.sampleRate || 0) / 2
-
-    // Minimum and maximum frequency we want to draw
-    const freqMin = this.frequencyMin
-    const freqMax = this.frequencyMax
-
-    // Draw background if needed
-    const shouldDrawBackground = freqMax > freqFrom
-    const bgColor = shouldDrawBackground ? this.colorMap[this.colorMap.length - 1] : null
-
-    // Function to draw a single canvas
-    const drawCanvas = (canvasIndex: number) => {
-      if (canvasIndex < 0 || canvasIndex >= numCanvases) return
-      if (this.drawnCanvases[canvasIndex]) return
-
-      this.drawnCanvases[canvasIndex] = true
-
-      const offset = canvasIndex * maxCanvasWidth
-      const canvasWidth = Math.min(maxCanvasWidth, totalWidth - offset)
-
-      if (canvasWidth <= 0) return
-
-      const canvas = this.createSingleCanvas(canvasWidth, totalHeight, offset)
-      this.canvases.push(canvas)
-      const ctx = canvas.getContext('2d')
-
-      if (!ctx) return
-
-      // Draw background if needed
-      if (shouldDrawBackground && bgColor) {
-        ctx.fillStyle = `rgba(${bgColor[0] * 255}, ${bgColor[1] * 255}, ${bgColor[2] * 255}, ${bgColor[3]})`
-        ctx.fillRect(0, 0, canvasWidth, totalHeight)
-      }
-
-      // Render each channel for this canvas segment
-      for (let c = 0; c < resampledData.length; c++) {
-        this.drawSpectrogramSegment(
-          resampledData[c],
-          ctx,
-          canvasWidth,
-          this.height,
-          c * this.height,
-          offset,
-          totalWidth,
-          freqFrom,
-          freqMin,
-          freqMax,
-        )
-      }
-    }
-
-    // Store rendering parameters for lazy loading
-    this.isScrollable = totalWidth > this.getWrapperWidth()
-
-    // Clear previous scroll listener
-    if (this.scrollUnsubscribe) {
-      this.scrollUnsubscribe()
-      this.scrollUnsubscribe = null
-    }
-
-    if (!this.isScrollable || numCanvases <= 3) {
-      // Draw all canvases if not scrollable or few canvases
-      for (let i = 0; i < numCanvases; i++) {
-        drawCanvas(i)
-      }
-    } else {
-      // Implement lazy rendering with scroll listener
-      const renderVisibleCanvases = () => {
-        const wrapper = this.wavesurfer?.getWrapper()
-        if (!wrapper) return
-
-        const scrollLeft = wrapper.scrollLeft || 0
-        const containerWidth = wrapper.clientWidth || 0
-
-        // Calculate visible range with some buffer
-        const bufferRatio = 0.5 // Render 50% extra on each side
-        const visibleStart = Math.max(0, scrollLeft - containerWidth * bufferRatio)
-        const visibleEnd = Math.min(totalWidth, scrollLeft + containerWidth * (1 + bufferRatio))
-
-        const startCanvasIndex = Math.floor((visibleStart / totalWidth) * numCanvases)
-        const endCanvasIndex = Math.min(Math.ceil((visibleEnd / totalWidth) * numCanvases), numCanvases - 1)
-
-        // Clear excess canvases if we have too many
-        if (Object.keys(this.drawnCanvases).length > SpectrogramPlugin.MAX_NODES) {
-          this.clearExcessCanvases()
-        }
-
-        // Draw visible canvases
-        for (let i = startCanvasIndex; i <= endCanvasIndex; i++) {
-          drawCanvas(i)
-        }
-      }
-
-      // Initial render of visible canvases
-      renderVisibleCanvases()
-
-      // Set up scroll listener for lazy loading
-      let scrollTimeout: number | null = null
-      const onScroll = () => {
-        if (scrollTimeout) clearTimeout(scrollTimeout)
-        scrollTimeout = window.setTimeout(renderVisibleCanvases, 16) // 60fps
-      }
-
-      const wrapper = this.wavesurfer?.getWrapper()
-      if (wrapper) {
-        wrapper.addEventListener('scroll', onScroll, { passive: true })
-        this.scrollUnsubscribe = () => {
-          wrapper.removeEventListener('scroll', onScroll)
-          if (scrollTimeout) clearTimeout(scrollTimeout)
-        }
-      }
-    }
-
-    if (this.options.labels) {
-      this.loadLabels(
-        this.options.labelsBackground,
-        '12px',
-        '12px',
-        '',
-        this.options.labelsColor,
-        this.options.labelsHzColor || this.options.labelsColor,
-        'center',
-        '#specLabels',
-        frequenciesData.length,
-      )
-    }
-
-    this.emit('ready')
-  }
-
-  private drawSpectrogramSegment(
-    resampledPixels: Uint8Array[],
-    ctx: CanvasRenderingContext2D,
-    canvasWidth: number,
-    height: number,
-    yOffset: number,
-    xOffset: number,
-    totalWidth: number,
-    freqFrom: number,
-    freqMin: number,
-    freqMax: number,
-  ): void {
-    // Data is already resampled for the total width
-    const bitmapHeight = resampledPixels[0].length
-
-    // Calculate which portion of the resampled data corresponds to this canvas
-    const startIndex = Math.floor((xOffset / totalWidth) * resampledPixels.length)
-    const endIndex = Math.min(
-      Math.ceil(((xOffset + canvasWidth) / totalWidth) * resampledPixels.length),
-      resampledPixels.length,
-    )
-    const segmentPixels = resampledPixels.slice(startIndex, endIndex)
-
-    if (segmentPixels.length === 0) return
-
-    // Create ImageData for this segment
-    const segmentWidth = segmentPixels.length
-    const imageData = new ImageData(segmentWidth, bitmapHeight)
-    const data = imageData.data
-
-    // Always use quality rendering - users want accurate spectrograms
-    this.fillImageDataQuality(data, segmentPixels, segmentWidth, bitmapHeight)
-
-    // Calculate frequency scaling
-    const rMin = hzToScale(freqMin, this.scale) / hzToScale(freqFrom, this.scale)
-    const rMax = hzToScale(freqMax, this.scale) / hzToScale(freqFrom, this.scale)
-    const rMax1 = Math.min(1, rMax)
-
-    // Create and draw the bitmap - manage async properly
-    const bitmapPromise = createImageBitmap(
-      imageData,
-      0,
-      Math.round(bitmapHeight * (1 - rMax1)),
-      segmentWidth,
-      Math.round(bitmapHeight * (rMax1 - rMin)),
+      wrapper,
     )
 
-    // Track pending bitmap for cleanup
-    this.pendingBitmaps.add(bitmapPromise)
+    function createSingleCanvas(width: number, height: number, offset: number): HTMLCanvasElement {
+      // See the labelsEl cast above for why this cast is needed.
+      const canvas = createElement('canvas', {
+        style: {
+          position: 'absolute',
+          left: `${Math.round(offset)}px`,
+          top: '0',
+          width: `${width}px`,
+          height: `${height}px`,
+          zIndex: '4',
+        },
+      }) as HTMLCanvasElement
 
-    bitmapPromise
-      .then((bitmap) => {
-        // Remove from pending set
-        this.pendingBitmaps.delete(bitmapPromise)
+      canvas.width = Math.round(width)
+      canvas.height = Math.round(height)
 
-        try {
-          // Check if canvas is still valid before drawing
-          if (ctx.canvas.parentNode) {
-            const drawHeight = (height * rMax1) / rMax
-            const drawY = yOffset + height * (1 - rMax1 / rMax)
+      canvasContainer.appendChild(canvas)
+      return canvas
+    }
 
-            ctx.drawImage(bitmap, 0, drawY, canvasWidth, drawHeight)
+    function clearCanvases(): void {
+      canvases.forEach((canvas) => canvas.remove())
+      canvases = []
+      drawnCanvases = {}
+    }
+
+    function clearExcessCanvases(): void {
+      // Clear canvases to avoid too many DOM nodes
+      if (Object.keys(drawnCanvases).length > MAX_NODES) {
+        clearCanvases()
+      }
+    }
+
+    function getWidth(): number {
+      return ctx.wavesurfer.getWrapper().offsetWidth
+    }
+
+    function getWrapperWidth(): number {
+      return ctx.wavesurfer?.getWrapper()?.clientWidth || 0
+    }
+
+    // Terminate the worker and reject in-flight requests so callers fall back to the main thread
+    // immediately instead of waiting out the worker timeout (or hanging when it is disabled)
+    function disposeWorker(error: Error): void {
+      if (worker) {
+        worker.terminate()
+        worker = null
+      }
+      workerPromises.forEach((promise) => {
+        if (promise.timer) clearTimeout(promise.timer)
+        promise.reject(error)
+      })
+      workerPromises.clear()
+    }
+
+    function initializeWorker(): void {
+      // Skip worker initialization in SSR environments (Next.js server-side)
+      if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+        console.warn('Worker not available in this environment, using main thread calculation')
+        return
+      }
+
+      try {
+        // Create worker using imported worker constructor
+        worker = new SpectrogramWorker()
+
+        worker.onmessage = (e: MessageEvent<WorkerFrequenciesMessage>) => {
+          const { type, id, result, error } = e.data
+
+          if (type === 'frequenciesResult') {
+            const promise = workerPromises.get(id)
+            if (promise) {
+              workerPromises.delete(id)
+              if (promise.timer) clearTimeout(promise.timer)
+              if (error) {
+                promise.reject(new Error(error))
+              } else {
+                // The worker protocol guarantees exactly one of result/error is set
+                promise.resolve(result as Uint8Array[][])
+              }
+            }
           }
-        } finally {
-          // Clean up bitmap to free memory, even if the canvas was removed before it resolved
-          if ('close' in bitmap) {
+        }
+
+        worker.onerror = (error: ErrorEvent) => {
+          console.warn('Spectrogram worker error, falling back to main thread:', error)
+          disposeWorker(new Error('Worker error'))
+        }
+
+        worker.onmessageerror = (event: MessageEvent) => {
+          console.warn('Spectrogram worker message error, falling back to main thread:', event)
+          disposeWorker(new Error('Worker message error'))
+        }
+      } catch (error) {
+        console.warn('Failed to initialize worker, falling back to main thread:', error)
+        worker = null
+        // Construction failure (e.g. CSP worker-src denial) is permanent for this environment:
+        // latch it so computations don't retry it, unlike runtime failures of a live worker
+        workerConstructionFailed = true
+      }
+    }
+
+    async function calculateFrequenciesWithWorker(audioBuffer: AudioBuffer): Promise<Uint8Array[][]> {
+      if (!worker) {
+        throw new Error('Worker not available')
+      }
+      // Narrow to a local const: TS can't prove `worker` stays non-null inside the Promise
+      // executor below (it's a mutable closure variable), and this avoids a non-null assertion.
+      const activeWorker = worker
+
+      const channels = (options.splitChannels ?? ctx.wavesurfer?.options.splitChannels) ? audioBuffer.numberOfChannels : 1
+
+      // Calculate noverlap
+      let requestNoverlap = noverlap
+      if (!requestNoverlap) {
+        const totalWidth = getWidth()
+        const uniqueSamplesPerPx = audioBuffer.length / totalWidth
+        requestNoverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx))
+      }
+
+      // Prepare audio data for worker
+      const audioData: Float32Array[] = []
+      for (let c = 0; c < channels; c++) {
+        audioData.push(audioBuffer.getChannelData(c))
+      }
+
+      // Generate unique ID for this request
+      const id = `${Date.now()}_${Math.random()}`
+
+      // Create promise for worker response
+      return new Promise<Uint8Array[][]>((resolve, reject) => {
+        // Set timeout to avoid hanging; workerTimeout === 0 disables it
+        const timer =
+          workerTimeout > 0
+            ? setTimeout(() => {
+                if (workerPromises.has(id)) {
+                  // A timed-out result can never be consumed (its id is dropped), so dispose
+                  // the worker too: this stops the abandoned computation and lets the next
+                  // render start a fresh worker instead of queueing behind a stuck one
+                  disposeWorker(new Error('Worker timeout'))
+                }
+              }, workerTimeout)
+            : undefined
+        workerPromises.set(id, { resolve, reject, timer })
+
+        // Send message to worker; if dispatch fails synchronously, settle and clean up immediately
+        try {
+          activeWorker.postMessage({
+            type: 'calculateFrequencies',
+            id,
+            audioData,
+            options: {
+              startTime: 0,
+              endTime: audioBuffer.duration,
+              sampleRate: audioBuffer.sampleRate,
+              fftSamples,
+              fftSize,
+              windowFunc,
+              alpha,
+              noverlap: requestNoverlap,
+              scale,
+              gainDB,
+              rangeDB,
+              preEmphasis,
+              autoGain,
+              autoGainBufferBudgetBytes: autoGainBudgetBytes,
+              splitChannels: options.splitChannels || false,
+            },
+          })
+        } catch (error) {
+          if (timer) clearTimeout(timer)
+          workerPromises.delete(id)
+          reject(error)
+        }
+      })
+    }
+
+    async function getFrequencies(audioBuffer: AudioBuffer): Promise<Uint8Array[][]> {
+      frequencyMax = frequencyMax || audioBuffer.sampleRate / 2
+      buffer = audioBuffer
+
+      // Use worker if enabled and available; a worker disposed after a runtime failure is
+      // re-created on the next computation (construction failures are latched as permanent)
+      if (useWebWorker && !worker && !workerConstructionFailed && typeof Worker !== 'undefined') {
+        initializeWorker()
+      }
+      if (useWebWorker && worker) {
+        try {
+          return await calculateFrequenciesWithWorker(audioBuffer)
+        } catch (error) {
+          if (ctx.scope.disposed) return []
+
+          if (!fallbackToMainThread) {
+            // Surface the failure instead of silently recomputing on the main thread, which
+            // can freeze the page for long files
+            ctx.emit('error', error instanceof Error ? error : new Error(String(error)))
+            return []
+          }
+          console.warn('Worker calculation failed, falling back to main thread:', error)
+          // Fall through to main thread calculation
+        }
+      }
+
+      const channels = (options.splitChannels ?? ctx.wavesurfer?.options.splitChannels) ? audioBuffer.numberOfChannels : 1
+
+      // Calculate noverlap (same logic as worker for consistency)
+      let mainThreadNoverlap = noverlap
+      if (!mainThreadNoverlap) {
+        const totalWidth = getWidth()
+        const uniqueSamplesPerPx = audioBuffer.length / totalWidth
+        mainThreadNoverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx))
+      }
+
+      const channelData: Float32Array[] = []
+      for (let c = 0; c < channels; c++) {
+        channelData.push(audioBuffer.getChannelData(c))
+      }
+
+      const params: FrequencyParams = {
+        fftSamples,
+        fftSize,
+        windowFunc,
+        alpha,
+        noverlap: mainThreadNoverlap,
+        scale,
+        gainDB,
+        rangeDB,
+        preEmphasis,
+        autoGain,
+        autoGainBufferBudgetBytes: autoGainBudgetBytes,
+        sampleRate: audioBuffer.sampleRate,
+      }
+      return computeFrequencies(channelData, params)
+    }
+
+    async function loadFrequenciesData(url: string | URL): Promise<void> {
+      const resp = await fetch(url)
+      if (!resp.ok) {
+        throw new Error('Unable to fetch frequencies data')
+      }
+      const data = await resp.json()
+      if (ctx.scope.disposed) return
+      // frequenciesDataUrl's contract (see SpectrogramPluginOptions.frequenciesDataUrl) is that
+      // the JSON already IS a Uint8Array[][]-shaped nested array; parsed JSON can only ever
+      // produce plain number arrays (never real Uint8Array instances), but every consumer below
+      // only relies on indexing/length/iteration, which plain arrays support identically. Not
+      // runtime-validated, matching the pre-port behavior.
+      drawSpectrogram(data as Uint8Array[][])
+    }
+
+    async function getFrequenciesData(): Promise<Uint8Array[][] | null> {
+      const decodedData = ctx.wavesurfer?.getDecodedData()
+      if (!decodedData) {
+        return null
+      }
+
+      if (cachedBuffer === decodedData && cachedFrequencies) {
+        // Check if we can use cached frequencies
+        return cachedFrequencies
+      } else {
+        // Calculate new frequencies and cache them; a failed computation (empty result)
+        // is not cached so the next render retries
+        const frequencies = await getFrequencies(decodedData)
+        if (frequencies.length > 0) {
+          cachedFrequencies = frequencies
+          cachedBuffer = decodedData
+        } else if (cachedBuffer && cachedBuffer !== decodedData) {
+          // The buffer changed and its computation failed: drop the previous buffer's data so
+          // nothing stale can be drawn against the new audio
+          clearCache()
+        }
+        return frequencies
+      }
+    }
+
+    /** Clear cached frequency data to force recalculation */
+    function clearCache(): void {
+      cachedFrequencies = null
+      cachedResampledData = null
+      cachedBuffer = null
+      cachedWidth = 0
+      lastZoomLevel = 0
+    }
+
+    function throttledRender(): void {
+      // Clear any pending render
+      cancelPendingRender?.()
+
+      // Skip if already rendering
+      if (isRendering) {
+        return
+      }
+
+      // Check if zoom level changed significantly
+      const currentZoom = ctx.wavesurfer?.options.minPxPerSec || 0
+      const zoomDiff = Math.abs(currentZoom - lastZoomLevel) / Math.max(currentZoom, lastZoomLevel, 1)
+
+      if (zoomDiff < zoomThreshold && cachedFrequencies) {
+        // Small zoom change - just re-render with cached data
+        cancelPendingRender = ctx.scope.timeout(() => {
+          cancelPendingRender = null
+          fastRender()
+        }, renderThrottleMs)
+      } else {
+        // Significant zoom change - full re-render
+        cancelPendingRender = ctx.scope.timeout(() => {
+          cancelPendingRender = null
+          void render()
+        }, renderThrottleMs)
+      }
+    }
+
+    async function render(): Promise<void> {
+      if (isRendering) return
+      isRendering = true
+
+      try {
+        if (frequenciesDataUrl) {
+          await loadFrequenciesData(frequenciesDataUrl)
+        } else {
+          const decodedData = ctx.wavesurfer?.getDecodedData()
+          if (decodedData) {
+            const frequencies = await getFrequenciesData()
+            if (ctx.scope.disposed || !frequencies) return
+            // Draw what this render computed (cache hit, fresh data, or empty on failure)
+            // rather than whatever the cache field holds
+            drawSpectrogram(frequencies)
+          }
+        }
+        lastZoomLevel = ctx.wavesurfer?.options.minPxPerSec || 0
+      } finally {
+        isRendering = false
+      }
+    }
+
+    function fastRender(): void {
+      if (isRendering || !cachedFrequencies) return
+      isRendering = true
+
+      try {
+        // Use cached frequencies for fast re-render
+        drawSpectrogram(cachedFrequencies)
+        lastZoomLevel = ctx.wavesurfer?.options.minPxPerSec || 0
+      } finally {
+        isRendering = false
+      }
+    }
+
+    function drawSpectrogramSegment(
+      resampledPixels: Uint8Array[],
+      canvasCtx: CanvasRenderingContext2D,
+      canvasWidth: number,
+      segmentHeight: number,
+      yOffset: number,
+      xOffset: number,
+      totalWidth: number,
+      freqFrom: number,
+      freqMin: number,
+      freqMax: number,
+    ): void {
+      // Data is already resampled for the total width
+      const bitmapHeight = resampledPixels[0].length
+
+      // Calculate which portion of the resampled data corresponds to this canvas
+      const startIndex = Math.floor((xOffset / totalWidth) * resampledPixels.length)
+      const endIndex = Math.min(
+        Math.ceil(((xOffset + canvasWidth) / totalWidth) * resampledPixels.length),
+        resampledPixels.length,
+      )
+      const segmentPixels = resampledPixels.slice(startIndex, endIndex)
+
+      if (segmentPixels.length === 0) return
+
+      // Create ImageData for this segment
+      const segmentWidth = segmentPixels.length
+      const imageData = new ImageData(segmentWidth, bitmapHeight)
+      const data = imageData.data
+
+      // Always use quality rendering - users want accurate spectrograms
+      fillImageDataQuality(data, segmentPixels, segmentWidth, bitmapHeight)
+
+      // Calculate frequency scaling
+      const rMin = hzToScale(freqMin, scale) / hzToScale(freqFrom, scale)
+      const rMax = hzToScale(freqMax, scale) / hzToScale(freqFrom, scale)
+      const rMax1 = Math.min(1, rMax)
+
+      // Create and draw the bitmap - manage async properly
+      const bitmapPromise = createImageBitmap(
+        imageData,
+        0,
+        Math.round(bitmapHeight * (1 - rMax1)),
+        segmentWidth,
+        Math.round(bitmapHeight * (rMax1 - rMin)),
+      )
+
+      // Track pending bitmap for cleanup
+      pendingBitmaps.add(bitmapPromise)
+
+      bitmapPromise
+        .then((bitmap) => {
+          // Remove from pending set
+          pendingBitmaps.delete(bitmapPromise)
+
+          try {
+            // Check if canvas is still valid before drawing
+            if (canvasCtx.canvas.parentNode) {
+              const drawHeight = (segmentHeight * rMax1) / rMax
+              const drawY = yOffset + segmentHeight * (1 - rMax1 / rMax)
+
+              canvasCtx.drawImage(bitmap, 0, drawY, canvasWidth, drawHeight)
+            }
+          } finally {
+            // Clean up bitmap to free memory, even if the canvas was removed before it resolved
             bitmap.close()
           }
-        }
-      })
-      .catch((error) => {
-        // Clean up on error
-        this.pendingBitmaps.delete(bitmapPromise)
-      })
-  }
-
-  private getWidth() {
-    return this.wavesurfer.getWrapper().offsetWidth
-  }
-
-  private getWrapperWidth() {
-    return this.wavesurfer?.getWrapper()?.clientWidth || 0
-  }
-
-  private async calculateFrequenciesWithWorker(buffer: AudioBuffer): Promise<Uint8Array[][]> {
-    if (!this.worker) {
-      throw new Error('Worker not available')
-    }
-
-    const fftSamples = this.fftSamples
-    const channels =
-      (this.options.splitChannels ?? this.wavesurfer?.options.splitChannels) ? buffer.numberOfChannels : 1
-
-    // Calculate noverlap
-    let noverlap = this.noverlap
-    if (!noverlap) {
-      const totalWidth = this.getWidth()
-      const uniqueSamplesPerPx = buffer.length / totalWidth
-      noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx))
-    }
-
-    // Prepare audio data for worker
-    const audioData: Float32Array[] = []
-    for (let c = 0; c < channels; c++) {
-      audioData.push(buffer.getChannelData(c))
-    }
-
-    // Generate unique ID for this request
-    const id = `${Date.now()}_${Math.random()}`
-
-    // Create promise for worker response
-    const promise = new Promise<Uint8Array[][]>((resolve, reject) => {
-      // Set timeout to avoid hanging; workerTimeout === 0 disables it
-      const timer =
-        this.workerTimeout > 0
-          ? setTimeout(() => {
-              if (this.workerPromises.has(id)) {
-                // A timed-out result can never be consumed (its id is dropped), so dispose
-                // the worker too: this stops the abandoned computation and lets the next
-                // render start a fresh worker instead of queueing behind a stuck one
-                this.disposeWorker(new Error('Worker timeout'))
-              }
-            }, this.workerTimeout)
-          : undefined
-      this.workerPromises.set(id, { resolve, reject, timer })
-
-      // Send message to worker; if dispatch fails synchronously, settle and clean up immediately
-      try {
-        this.worker.postMessage({
-          type: 'calculateFrequencies',
-          id,
-          audioData,
-          options: {
-            startTime: 0,
-            endTime: buffer.duration,
-            sampleRate: buffer.sampleRate,
-            fftSamples: this.fftSamples,
-            fftSize: this.fftSize,
-            windowFunc: this.windowFunc,
-            alpha: this.alpha,
-            noverlap,
-            scale: this.scale,
-            gainDB: this.gainDB,
-            rangeDB: this.rangeDB,
-            preEmphasis: this.preEmphasis,
-            autoGain: this.autoGain,
-            autoGainBufferBudgetBytes: this.autoGainBudgetBytes,
-            splitChannels: this.options.splitChannels || false,
-          },
         })
-      } catch (error) {
-        if (timer) clearTimeout(timer)
-        this.workerPromises.delete(id)
-        reject(error)
-      }
-    })
-
-    return promise
-  }
-
-  private async getFrequencies(buffer: AudioBuffer): Promise<Uint8Array[][]> {
-    this.frequencyMax = this.frequencyMax || buffer.sampleRate / 2
-    this.buffer = buffer
-
-    if (!buffer) return []
-
-    // Use worker if enabled and available; a worker disposed after a runtime failure is
-    // re-created on the next computation (construction failures are latched as permanent)
-    if (this.useWebWorker && !this.worker && !this.workerConstructionFailed && typeof Worker !== 'undefined') {
-      this.initializeWorker()
+        .catch(() => {
+          // Clean up on error
+          pendingBitmaps.delete(bitmapPromise)
+        })
     }
-    if (this.useWebWorker && this.worker) {
-      try {
-        return await this.calculateFrequenciesWithWorker(buffer)
-      } catch (error) {
-        if (this.destroyed) return []
 
-        if (!this.fallbackToMainThread) {
-          // Surface the failure instead of silently recomputing on the main thread, which
-          // can freeze the page for long files
-          this.emit('error', error instanceof Error ? error : new Error(String(error)))
-          return []
+    // Accepts either the [channel][frame][bin] shape every internal caller produces
+    // (Uint8Array[][]) or a flat single-channel [frame][bin] shape (Uint8Array[]) - only
+    // reachable via loadFrequenciesData's externally-supplied JSON, see
+    // SpectrogramPluginOptions.frequenciesDataUrl. Both shapes are duck-type compatible for the
+    // emptiness check below (Uint8Array and Uint8Array[] both have a numeric .length).
+    function drawSpectrogram(input: Uint8Array[][] | Uint8Array[]): void {
+      if (!input || input.length === 0 || input.every((channel) => !channel || channel.length === 0)) {
+        // Nothing to draw (failed computation, or a buffer too short for a single FFT frame):
+        // remove any previously drawn canvases so no stale spectrogram stays on screen
+        clearCanvases()
+        return
+      }
+      // data is 1ch [sample, freq] format -> to [channel, sample, freq] format. The global
+      // (coercing) isNaN on input[0][0] discriminates the two shapes: for the flat shape
+      // input[0][0] is a raw number; for the nested shape it's a Uint8Array, which isNaN's
+      // ToNumber coercion turns into NaN for any frame with more than one bin. Matches the
+      // pre-port duck typing exactly.
+      const frequenciesData: Uint8Array[][] = isNaN(input[0][0] as unknown as number)
+        ? (input as Uint8Array[][])
+        : [input as Uint8Array[]]
+
+      // Clear existing canvases
+      clearCanvases()
+
+      // Set the height to fit all channels
+      const totalHeight = height * frequenciesData.length
+      wrapper.style.height = totalHeight + 'px'
+
+      const totalWidth = getWidth()
+      const perCanvasWidth = Math.min(maxCanvasWidth, totalWidth)
+
+      // Nothing to render
+      if (totalWidth === 0 || totalHeight === 0) return
+
+      // Calculate number of canvases needed
+      const numCanvases = Math.ceil(totalWidth / perCanvasWidth)
+
+      // Smart resampling based on zoom level
+      let resampledData: Uint8Array[][]
+      const originalDataWidth = frequenciesData[0]?.length || 0
+      const needsResampling = totalWidth !== originalDataWidth
+
+      if (!needsResampling) {
+        // At high zoom levels, use original data directly - much faster!
+        resampledData = frequenciesData
+      } else if (cachedResampledData && cachedWidth === totalWidth) {
+        // Use cached resampled data
+        resampledData = cachedResampledData
+      } else {
+        // Only resample when actually needed
+        resampledData = efficientResample(frequenciesData, totalWidth)
+        cachedResampledData = resampledData
+        cachedWidth = totalWidth
+      }
+
+      // Maximum frequency represented in `frequenciesData`
+      // Use buffer.sampleRate if available (from getFrequencies), otherwise use the provided sampleRate
+      const freqFrom = buffer?.sampleRate ? buffer.sampleRate / 2 : (options.sampleRate || 0) / 2
+
+      // Minimum and maximum frequency we want to draw
+      const freqMin = frequencyMin
+      const freqMax = frequencyMax
+
+      // Draw background if needed
+      const shouldDrawBackground = freqMax > freqFrom
+      const bgColor = shouldDrawBackground ? colorMap[colorMap.length - 1] : null
+
+      // Function to draw a single canvas
+      const drawCanvas = (canvasIndex: number) => {
+        if (canvasIndex < 0 || canvasIndex >= numCanvases) return
+        if (drawnCanvases[canvasIndex]) return
+
+        drawnCanvases[canvasIndex] = true
+
+        const offset = canvasIndex * perCanvasWidth
+        const canvasWidth = Math.min(perCanvasWidth, totalWidth - offset)
+
+        if (canvasWidth <= 0) return
+
+        const canvas = createSingleCanvas(canvasWidth, totalHeight, offset)
+        canvases.push(canvas)
+        const canvasCtx = canvas.getContext('2d')
+
+        if (!canvasCtx) return
+
+        // Draw background if needed
+        if (shouldDrawBackground && bgColor) {
+          canvasCtx.fillStyle = `rgba(${bgColor[0] * 255}, ${bgColor[1] * 255}, ${bgColor[2] * 255}, ${bgColor[3]})`
+          canvasCtx.fillRect(0, 0, canvasWidth, totalHeight)
         }
-        console.warn('Worker calculation failed, falling back to main thread:', error)
-        // Fall through to main thread calculation
-      }
-    }
 
-    const fftSamples = this.fftSamples
-    const fftLength = this.fftSize ?? fftSamples
-    const channels =
-      (this.options.splitChannels ?? this.wavesurfer?.options.splitChannels) ? buffer.numberOfChannels : 1
-
-    // This may differ from file samplerate. Browser resamples audio.
-    const sampleRate = buffer.sampleRate
-    const frequencies: Uint8Array[][] = []
-
-    // Calculate noverlap and hop size (same logic as worker for consistency)
-    let noverlap = this.noverlap
-    if (!noverlap) {
-      const totalWidth = this.getWidth()
-      const uniqueSamplesPerPx = buffer.length / totalWidth
-      noverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx))
-    }
-
-    // Calculate hop size (same as worker for consistency); integer arithmetic so non-power-of-two
-    // windows cannot produce fractional frame starts
-    let actualNoverlap = noverlap || Math.max(0, Math.round(fftSamples * 0.5))
-    const maxOverlap = Math.floor(fftSamples / 2)
-    actualNoverlap = Math.min(actualNoverlap, maxOverlap)
-    const minHopSize = Math.max(64, Math.ceil(fftSamples * 0.25))
-    const hopSize = Math.max(minHopSize, fftSamples - actualNoverlap)
-
-    // Create FFT instance (reuse if possible for performance); the window covers fftSamples
-    // samples, zero-padded up to fftLength
-    const fft = new FFT(fftLength, sampleRate, this.windowFunc, this.alpha, fftSamples)
-
-    // Create filter bank based on scale using centralized function
-    const numFilters = fftLength / 2
-    const filterBank = createSparseFilterBankForScale(this.scale, numFilters, fftLength, sampleRate)
-
-    // One reused frame buffer; the zero tail beyond fftSamples doubles as the FFT padding
-    const frame = new Float32Array(fftLength)
-
-    // Optional Praat display pre-emphasis, precomputed per output row
-    const tilt = this.preEmphasis
-      ? createPreEmphasisTilt(this.preEmphasis, getBinFrequencies(filterBank, fftLength, sampleRate))
-      : null
-
-    const computeSpectrum = (channelData: Float32Array, sample: number): Float32Array => {
-      frame.set(channelData.subarray(sample, sample + fftSamples))
-      let spectrum = fft.calculateSpectrum(frame)
-      if (filterBank) {
-        spectrum = applySparseFilterBank(spectrum, filterBank)
-      }
-      return spectrum
-    }
-
-    if (!this.autoGain) {
-      for (let c = 0; c < channels; c++) {
-        // for each channel
-        const channelData = buffer.getChannelData(c)
-        const channelFreq: Uint8Array[] = []
-
-        // Use same hop size calculation as worker for consistency
-        for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
-          // Convert to uint8 color indices
-          channelFreq.push(
-            magnitudesToColorIndices(computeSpectrum(channelData, sample), -this.gainDB, this.rangeDB, tilt),
+        // Render each channel for this canvas segment
+        for (let c = 0; c < resampledData.length; c++) {
+          drawSpectrogramSegment(
+            resampledData[c],
+            canvasCtx,
+            canvasWidth,
+            height,
+            c * height,
+            offset,
+            totalWidth,
+            freqFrom,
+            freqMin,
+            freqMax,
           )
         }
-        frequencies.push(channelFreq)
       }
-      return frequencies
-    }
 
-    // autoGain (Praat-style autoscaling): the white point is the loudest bin of the whole
-    // spectrogram, found after pre-emphasis, shared across channels. Two strategies bound the
-    // transient memory: below the budget the dB frames are kept between the two passes; above
-    // it only the maximum is tracked and the spectra are recomputed for quantization.
-    const bins = fftLength / 2
-    const frameCount = buffer.length > fftSamples ? Math.floor((buffer.length - fftSamples - 1) / hopSize) + 1 : 0
-    const estimatedBytes = frameCount * bins * 4 * channels
-    let maxDb = -Infinity
+      // Store rendering parameters for lazy loading
+      const isScrollable = totalWidth > getWrapperWidth()
 
-    if (estimatedBytes < this.autoGainBudgetBytes) {
-      const dbFrames: Float32Array[][] = []
-      for (let c = 0; c < channels; c++) {
-        const channelData = buffer.getChannelData(c)
-        const channelDb: Float32Array[] = []
-        for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
-          const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt)
-          for (let i = 0; i < db.length; i++) {
-            if (db[i] > maxDb) maxDb = db[i]
-          }
-          channelDb.push(db)
+      // Clear previous scroll listener
+      scrollUnsubscribe?.()
+      scrollUnsubscribe = null
+
+      if (!isScrollable || numCanvases <= 3) {
+        // Draw all canvases if not scrollable or few canvases
+        for (let i = 0; i < numCanvases; i++) {
+          drawCanvas(i)
         }
-        dbFrames.push(channelDb)
+      } else {
+        // Implement lazy rendering with scroll listener
+        const renderVisibleCanvases = () => {
+          const wsWrapper = ctx.wavesurfer?.getWrapper()
+          if (!wsWrapper) return
+
+          const scrollLeft = wsWrapper.scrollLeft || 0
+          const containerWidth = wsWrapper.clientWidth || 0
+
+          // Calculate visible range with some buffer
+          const bufferRatio = 0.5 // Render 50% extra on each side
+          const visibleStart = Math.max(0, scrollLeft - containerWidth * bufferRatio)
+          const visibleEnd = Math.min(totalWidth, scrollLeft + containerWidth * (1 + bufferRatio))
+
+          const startCanvasIndex = Math.floor((visibleStart / totalWidth) * numCanvases)
+          const endCanvasIndex = Math.min(Math.ceil((visibleEnd / totalWidth) * numCanvases), numCanvases - 1)
+
+          // Clear excess canvases if we have too many
+          if (Object.keys(drawnCanvases).length > MAX_NODES) {
+            clearExcessCanvases()
+          }
+
+          // Draw visible canvases
+          for (let i = startCanvasIndex; i <= endCanvasIndex; i++) {
+            drawCanvas(i)
+          }
+        }
+
+        // Initial render of visible canvases
+        renderVisibleCanvases()
+
+        // Set up scroll listener for lazy loading
+        let scrollTimeout: ReturnType<typeof setTimeout> | null = null
+        const onScroll = () => {
+          if (scrollTimeout) clearTimeout(scrollTimeout)
+          scrollTimeout = setTimeout(renderVisibleCanvases, 16) // 60fps
+        }
+
+        const wsWrapper = ctx.wavesurfer?.getWrapper()
+        if (wsWrapper) {
+          wsWrapper.addEventListener('scroll', onScroll, { passive: true })
+          scrollUnsubscribe = () => {
+            wsWrapper.removeEventListener('scroll', onScroll)
+            if (scrollTimeout) clearTimeout(scrollTimeout)
+          }
+        }
       }
-      const silent = maxDb < SILENCE_FLOOR_DB
-      for (const channelDb of dbFrames) {
-        frequencies.push(
-          channelDb.map((db) => (silent ? new Uint8Array(db.length) : dbToColorIndices(db, maxDb, this.rangeDB))),
+
+      if (options.labels) {
+        loadLabels(
+          options.labelsBackground,
+          '12px',
+          '12px',
+          '',
+          options.labelsColor,
+          options.labelsHzColor || options.labelsColor,
+          'center',
+          frequenciesData.length,
         )
       }
-      return frequencies
+
+      ctx.emit('ready')
     }
 
-    // Over budget: pass 1 tracks only the maximum with one reused dB frame
-    const dbScratch = new Float32Array(bins)
-    for (let c = 0; c < channels; c++) {
-      const channelData = buffer.getChannelData(c)
-      for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
-        const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt, dbScratch)
-        for (let i = 0; i < db.length; i++) {
-          if (db[i] > maxDb) maxDb = db[i]
+    function loadLabels(
+      bgFill: string | undefined,
+      fontSizeFreq: string,
+      fontSizeUnit: string,
+      fontType: string,
+      textColorFreq: string | undefined,
+      textColorUnit: string | undefined,
+      textAlign: CanvasTextAlign,
+      channels: number,
+    ): void {
+      if (!labelsEl) return
+
+      const frequenciesHeight = height
+      bgFill = bgFill || 'rgba(68,68,68,0)'
+      fontSizeFreq = fontSizeFreq || '12px'
+      fontSizeUnit = fontSizeUnit || '12px'
+      fontType = fontType || 'Helvetica'
+      textColorFreq = textColorFreq || '#fff'
+      textColorUnit = textColorUnit || '#fff'
+      textAlign = textAlign || 'center'
+      const bgWidth = 55
+      const getMaxY = frequenciesHeight || 512
+      const labelIndex = 5 * (getMaxY / 256)
+
+      // prepare canvas element for labels
+      const canvasCtx = labelsEl.getContext('2d')
+      if (!canvasCtx) return
+      const dispScale = window.devicePixelRatio
+      labelsEl.height = height * channels * dispScale
+      labelsEl.width = bgWidth * dispScale
+      canvasCtx.scale(dispScale, dispScale)
+
+      for (let c = 0; c < channels; c++) {
+        // for each channel
+        // fill background
+        canvasCtx.fillStyle = bgFill
+        canvasCtx.fillRect(0, c * getMaxY, bgWidth, (1 + c) * getMaxY)
+        canvasCtx.fill()
+
+        // render labels
+        for (let i = 0; i <= labelIndex; i++) {
+          canvasCtx.textAlign = textAlign
+          canvasCtx.textBaseline = 'middle'
+
+          const freq = getLabelFrequency(i, labelIndex, frequencyMin, frequencyMax, scale)
+          const label = freqType(freq)
+          const units = unitType(freq)
+          const x = 16
+          let y = (1 + c) * getMaxY - (i / labelIndex) * getMaxY
+
+          // Make sure label remains in view
+          y = Math.min(Math.max(y, c * getMaxY + 10), (1 + c) * getMaxY - 10)
+
+          // unit label
+          canvasCtx.fillStyle = textColorUnit
+          canvasCtx.font = fontSizeUnit + ' ' + fontType
+          canvasCtx.fillText(units, x + 24, y)
+          // freq label
+          canvasCtx.fillStyle = textColorFreq
+          canvasCtx.font = fontSizeFreq + ' ' + fontType
+          canvasCtx.fillText(label, x, y)
         }
       }
     }
-    const silent = maxDb < SILENCE_FLOOR_DB
-    for (let c = 0; c < channels; c++) {
-      const channelData = buffer.getChannelData(c)
-      const channelFreq: Uint8Array[] = []
-      for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
-        if (silent) {
-          channelFreq.push(new Uint8Array(bins))
-        } else {
-          const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt, dbScratch)
-          channelFreq.push(dbToColorIndices(db, maxDb, this.rangeDB))
-        }
+
+    function resampleChannel(oldMatrix: Uint8Array[], targetWidth: number): Uint8Array[] {
+      const oldColumns = oldMatrix.length
+      const freqBins = oldMatrix[0]?.length || 0
+
+      // Fast path for no resampling needed
+      if (oldColumns === targetWidth || targetWidth === 0) {
+        return oldMatrix
       }
-      frequencies.push(channelFreq)
-    }
-    return frequencies
-  }
 
-  private loadLabels(
-    bgFill,
-    fontSizeFreq,
-    fontSizeUnit,
-    fontType,
-    textColorFreq,
-    textColorUnit,
-    textAlign,
-    container,
-    channels,
-  ) {
-    const frequenciesHeight = this.height
-    bgFill = bgFill || 'rgba(68,68,68,0)'
-    fontSizeFreq = fontSizeFreq || '12px'
-    fontSizeUnit = fontSizeUnit || '12px'
-    fontType = fontType || 'Helvetica'
-    textColorFreq = textColorFreq || '#fff'
-    textColorUnit = textColorUnit || '#fff'
-    textAlign = textAlign || 'center'
-    container = container || '#specLabels'
-    const bgWidth = 55
-    const getMaxY = frequenciesHeight || 512
-    const labelIndex = 5 * (getMaxY / 256)
-    const freqStart = this.frequencyMin
-    const step = (this.frequencyMax - freqStart) / labelIndex
+      const ratio = oldColumns / targetWidth
 
-    // prepare canvas element for labels
-    const ctx = this.labelsEl.getContext('2d')
-    const dispScale = window.devicePixelRatio
-    this.labelsEl.height = this.height * channels * dispScale
-    this.labelsEl.width = bgWidth * dispScale
-    ctx.scale(dispScale, dispScale)
+      // Always use quality resampling for accurate spectrograms
+      const newMatrix: Uint8Array[] = new Array(targetWidth)
 
-    if (!ctx) {
-      return
-    }
+      if (ratio >= 1) {
+        // Downsampling with proper averaging
+        for (let i = 0; i < targetWidth; i++) {
+          const start = Math.floor(i * ratio)
+          const end = Math.min(Math.ceil((i + 1) * ratio), oldColumns)
+          const count = end - start
 
-    for (let c = 0; c < channels; c++) {
-      // for each channel
-      // fill background
-      ctx.fillStyle = bgFill
-      ctx.fillRect(0, c * getMaxY, bgWidth, (1 + c) * getMaxY)
-      ctx.fill()
-      let i
-
-      // render labels
-      for (i = 0; i <= labelIndex; i++) {
-        ctx.textAlign = textAlign
-        ctx.textBaseline = 'middle'
-
-        const freq = getLabelFrequency(i, labelIndex, this.frequencyMin, this.frequencyMax, this.scale)
-        const label = freqType(freq)
-        const units = unitType(freq)
-        const x = 16
-        let y = (1 + c) * getMaxY - (i / labelIndex) * getMaxY
-
-        // Make sure label remains in view
-        y = Math.min(Math.max(y, c * getMaxY + 10), (1 + c) * getMaxY - 10)
-
-        // unit label
-        ctx.fillStyle = textColorUnit
-        ctx.font = fontSizeUnit + ' ' + fontType
-        ctx.fillText(units, x + 24, y)
-        // freq label
-        ctx.fillStyle = textColorFreq
-        ctx.font = fontSizeFreq + ' ' + fontType
-        ctx.fillText(label, x, y)
-      }
-    }
-  }
-
-  private efficientResample(frequenciesData: Uint8Array[][], targetWidth: number): Uint8Array[][] {
-    return frequenciesData.map((channelFreq) => this.resampleChannel(channelFreq, targetWidth))
-  }
-
-  private resampleChannel(oldMatrix: Uint8Array[], targetWidth: number): Uint8Array[] {
-    const oldColumns = oldMatrix.length
-    const freqBins = oldMatrix[0]?.length || 0
-
-    // Fast path for no resampling needed
-    if (oldColumns === targetWidth || targetWidth === 0) {
-      return oldMatrix
-    }
-
-    const ratio = oldColumns / targetWidth
-
-    // Always use quality resampling for accurate spectrograms
-    const newMatrix = new Array(targetWidth)
-
-    if (ratio >= 1) {
-      // Downsampling with proper averaging
-      for (let i = 0; i < targetWidth; i++) {
-        const start = Math.floor(i * ratio)
-        const end = Math.min(Math.ceil((i + 1) * ratio), oldColumns)
-        const count = end - start
-
-        // Always create new column to avoid reference issues
-        const column = new Uint8Array(freqBins)
-        if (count === 1) {
-          // Single source column - copy data
-          column.set(oldMatrix[start])
-        } else {
-          // Average multiple source columns
-          for (let k = 0; k < freqBins; k++) {
-            let sum = 0
-            for (let j = start; j < end; j++) {
-              sum += oldMatrix[j][k]
+          // Always create new column to avoid reference issues
+          const column = new Uint8Array(freqBins)
+          if (count === 1) {
+            // Single source column - copy data
+            column.set(oldMatrix[start])
+          } else {
+            // Average multiple source columns
+            for (let k = 0; k < freqBins; k++) {
+              let sum = 0
+              for (let j = start; j < end; j++) {
+                sum += oldMatrix[j][k]
+              }
+              column[k] = Math.round(sum / count)
             }
-            column[k] = Math.round(sum / count)
           }
+          newMatrix[i] = column
         }
-        newMatrix[i] = column
+      } else {
+        // Upsampling with linear interpolation for quality
+        for (let i = 0; i < targetWidth; i++) {
+          const srcIndex = i * ratio
+          const leftIndex = Math.floor(srcIndex)
+          const rightIndex = Math.min(leftIndex + 1, oldColumns - 1)
+          const weight = srcIndex - leftIndex
+
+          const column = new Uint8Array(freqBins)
+
+          if (weight === 0 || leftIndex === rightIndex) {
+            // Exact match or at boundary - use nearest neighbor
+            column.set(oldMatrix[leftIndex])
+          } else {
+            // Linear interpolation for better quality
+            const leftColumn = oldMatrix[leftIndex]
+            const rightColumn = oldMatrix[rightIndex]
+            const invWeight = 1 - weight
+            for (let k = 0; k < freqBins; k++) {
+              column[k] = Math.round(leftColumn[k] * invWeight + rightColumn[k] * weight)
+            }
+          }
+          newMatrix[i] = column
+        }
       }
-    } else {
-      // Upsampling with linear interpolation for quality
-      for (let i = 0; i < targetWidth; i++) {
-        const srcIndex = i * ratio
-        const leftIndex = Math.floor(srcIndex)
-        const rightIndex = Math.min(leftIndex + 1, oldColumns - 1)
-        const weight = srcIndex - leftIndex
 
-        const column = new Uint8Array(freqBins)
+      return newMatrix
+    }
 
-        if (weight === 0 || leftIndex === rightIndex) {
-          // Exact match or at boundary - use nearest neighbor
-          column.set(oldMatrix[leftIndex])
-        } else {
-          // Linear interpolation for better quality
-          const leftColumn = oldMatrix[leftIndex]
-          const rightColumn = oldMatrix[rightIndex]
-          const invWeight = 1 - weight
-          for (let k = 0; k < freqBins; k++) {
-            column[k] = Math.round(leftColumn[k] * invWeight + rightColumn[k] * weight)
-          }
+    function efficientResample(frequenciesData: Uint8Array[][], targetWidth: number): Uint8Array[][] {
+      return frequenciesData.map((channelFreq) => resampleChannel(channelFreq, targetWidth))
+    }
+
+    function fillImageDataQuality(
+      data: Uint8ClampedArray,
+      segmentPixels: Uint8Array[],
+      segmentWidth: number,
+      bitmapHeight: number,
+    ): void {
+      // High quality rendering - process all pixels
+      for (let i = 0; i < segmentWidth; i++) {
+        const column = segmentPixels[i]
+        for (let j = 0; j < bitmapHeight; j++) {
+          const colorIndex = column[j]
+          const color = colorMap[colorIndex]
+          const pixelIndex = ((bitmapHeight - j - 1) * segmentWidth + i) * 4
+
+          // Write RGBA values
+          data[pixelIndex] = color[0] * 255
+          data[pixelIndex + 1] = color[1] * 255
+          data[pixelIndex + 2] = color[2] * 255
+          data[pixelIndex + 3] = color[3] * 255
         }
-        newMatrix[i] = column
       }
     }
 
-    return newMatrix
-  }
-
-  private fillImageDataQuality(
-    data: Uint8ClampedArray,
-    segmentPixels: Uint8Array[],
-    segmentWidth: number,
-    bitmapHeight: number,
-  ): void {
-    // High quality rendering - process all pixels
-    const colorMap = this.colorMap
-    for (let i = 0; i < segmentWidth; i++) {
-      const column = segmentPixels[i]
-      for (let j = 0; j < bitmapHeight; j++) {
-        const colorIndex = column[j]
-        const color = colorMap[colorIndex]
-        const pixelIndex = ((bitmapHeight - j - 1) * segmentWidth + i) * 4
-
-        // Write RGBA values
-        data[pixelIndex] = color[0] * 255
-        data[pixelIndex + 1] = color[1] * 255
-        data[pixelIndex + 2] = color[2] * 255
-        data[pixelIndex + 3] = color[3] * 255
+    // ---- Wire up to wavesurfer (replaces the pre-port onInit()) ----
+    let container: HTMLElement | null = null
+    if (options.container) {
+      if (typeof options.container === 'string') {
+        const el = document.querySelector(options.container)
+        if (el instanceof HTMLElement) {
+          container = el
+        }
+      } else if (isHTMLElement(options.container)) {
+        container = options.container
       }
     }
-  }
-}
+    if (!container) {
+      container = ctx.wavesurfer.getWrapper()
+    }
+    container.appendChild(wrapper)
+    ctx.scope.add(() => wrapper.remove())
+    ctx.scope.add(() => canvasContainer.remove())
+    ctx.scope.add(() => labelsEl?.remove())
+
+    if (ctx.wavesurfer.options.fillParent) {
+      Object.assign(wrapper.style, {
+        width: '100%',
+        overflowX: 'hidden',
+        overflowY: 'hidden',
+      })
+    }
+
+    ctx.scope.add(ctx.wavesurfer.on('redraw', () => throttledRender()))
+
+    // Trigger initial render after init. This ensures the spectrogram appears even if no redraw
+    // event is fired.
+    if (ctx.wavesurfer.getDecodedData()) {
+      ctx.scope.timeout(() => throttledRender(), 0)
+    }
+
+    // Initialize worker if enabled
+    if (useWebWorker) {
+      initializeWorker()
+    }
+
+    // ---- Teardown (replaces the pre-port destroy() override) ----
+    ctx.scope.add(() => {
+      // Cancel pending bitmap operations
+      pendingBitmaps.clear()
+
+      // Clean up worker, rejecting any in-flight requests
+      disposeWorker(new Error('Spectrogram plugin destroyed'))
+
+      // Release the decoded buffer and caches
+      cachedFrequencies = null
+      cachedResampledData = null
+      cachedBuffer = null
+      buffer = null
+
+      // Clean up scroll listener
+      scrollUnsubscribe?.()
+      scrollUnsubscribe = null
+
+      clearCanvases()
+    })
+
+    const testInternals: TestInternals = {
+      get buffer() {
+        return buffer
+      },
+      set buffer(value: AudioBuffer | null) {
+        buffer = value
+      },
+      get worker() {
+        return worker
+      },
+      get workerPromises() {
+        return workerPromises
+      },
+      get cachedFrequencies() {
+        return cachedFrequencies
+      },
+      get cachedBuffer() {
+        return cachedBuffer
+      },
+      get canvasContainer() {
+        return canvasContainer
+      },
+      get canvases() {
+        return canvases
+      },
+      get drawnCanvases() {
+        return drawnCanvases
+      },
+      get maxCanvasWidth() {
+        return maxCanvasWidth
+      },
+      get autoGainBudgetBytes() {
+        return autoGainBudgetBytes
+      },
+      set autoGainBudgetBytes(value: number) {
+        autoGainBudgetBytes = value
+      },
+      getFrequencies,
+      calculateFrequenciesWithWorker,
+      drawSpectrogram,
+    }
+
+    return {
+      loadFrequenciesData,
+      getFrequenciesData,
+      clearCache,
+      __testInternals: () => testInternals,
+    }
+  },
+)
 
 export default SpectrogramPlugin

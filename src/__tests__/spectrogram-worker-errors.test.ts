@@ -43,6 +43,25 @@ function makeBuffer(): AudioBuffer {
   } as unknown as AudioBuffer
 }
 
+// SpectrogramPlugin is a definePlugin() plugin: its setup() (which attaches the public/test API
+// and creates the worker) only runs once the plugin is registered with a wavesurfer instance, not
+// at `.create()` time - see hover.test.ts/regions.test.ts for the same `_init()` pattern with
+// other ported plugins. WindowedSpectrogramPlugin is untouched by this port (still the pre-port
+// class, still does its setup in the constructor) and is deliberately NOT given this treatment
+// below.
+function createFakeWaveSurfer(overrides: Record<string, unknown> = {}) {
+  const wrapper = document.createElement('div')
+  Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
+  Object.defineProperty(wrapper, 'clientWidth', { value: 600, configurable: true })
+  return {
+    options: {},
+    getWrapper: () => wrapper,
+    getDecodedData: () => null,
+    on: () => () => undefined,
+    ...overrides,
+  }
+}
+
 /** Reports how a promise settled within `ms`, without waiting longer */
 function settledWithin(promise: Promise<unknown>, ms: number): Promise<'resolved' | 'rejected' | 'pending'> {
   return Promise.race([
@@ -72,28 +91,29 @@ afterEach(() => {
 
 describe('SpectrogramPlugin worker error handling', () => {
   function createPlugin(options: Record<string, unknown> = {}) {
-    const plugin = Spectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', ...options })
-    return { plugin: plugin as any, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
+    const plugin = Spectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', ...options }) as any
+    plugin._init(createFakeWaveSurfer() as any)
+    return { plugin, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
   }
 
   it('rejects the in-flight promise when the worker errors, even with workerTimeout: 0', async () => {
     const { plugin, worker } = createPlugin({ workerTimeout: 0 })
-    const promise = plugin.calculateFrequenciesWithWorker(makeBuffer())
+    const promise = plugin.__testInternals().calculateFrequenciesWithWorker(makeBuffer())
     promise.catch(() => undefined)
     expect(worker.postMessage).toHaveBeenCalledTimes(1)
 
     worker.onerror(new Event('error'))
 
     expect(await settledWithin(promise, 200)).toBe('rejected')
-    expect(plugin.workerPromises.size).toBe(0)
+    expect(plugin.__testInternals().workerPromises.size).toBe(0)
     expect(worker.terminate).toHaveBeenCalled()
-    expect(plugin.worker).toBeNull()
+    expect(plugin.__testInternals().worker).toBeNull()
   })
 
   it('clears the timeout timer when the worker errors', async () => {
     const { plugin, worker } = createPlugin()
     const clearTimeoutSpy = jest.spyOn(globalThis, 'clearTimeout')
-    const promise = plugin.calculateFrequenciesWithWorker(makeBuffer())
+    const promise = plugin.__testInternals().calculateFrequenciesWithWorker(makeBuffer())
 
     worker.onerror(new Event('error'))
 
@@ -103,19 +123,19 @@ describe('SpectrogramPlugin worker error handling', () => {
 
   it('rejects the in-flight promise on a message deserialization error', async () => {
     const { plugin, worker } = createPlugin({ workerTimeout: 0 })
-    const promise = plugin.calculateFrequenciesWithWorker(makeBuffer())
+    const promise = plugin.__testInternals().calculateFrequenciesWithWorker(makeBuffer())
     promise.catch(() => undefined)
 
     worker.onmessageerror(new Event('messageerror'))
 
     expect(await settledWithin(promise, 200)).toBe('rejected')
-    expect(plugin.workerPromises.size).toBe(0)
-    expect(plugin.worker).toBeNull()
+    expect(plugin.__testInternals().workerPromises.size).toBe(0)
+    expect(plugin.__testInternals().worker).toBeNull()
   })
 
   it('falls back to the main thread immediately after a worker error', async () => {
     const { plugin, worker } = createPlugin({ workerTimeout: 0 })
-    const promise = plugin.getFrequencies(makeBuffer())
+    const promise = plugin.__testInternals().getFrequencies(makeBuffer())
     expect(worker.postMessage).toHaveBeenCalledTimes(1)
 
     worker.onerror(new Event('error'))
@@ -128,13 +148,13 @@ describe('SpectrogramPlugin worker error handling', () => {
 
   it('rejects pending promises on destroy', async () => {
     const { plugin } = createPlugin({ workerTimeout: 0 })
-    const promise = plugin.calculateFrequenciesWithWorker(makeBuffer())
+    const promise = plugin.__testInternals().calculateFrequenciesWithWorker(makeBuffer())
     promise.catch(() => undefined)
 
     plugin.destroy()
 
     await expect(promise).rejects.toThrow('Spectrogram plugin destroyed')
-    expect(plugin.workerPromises.size).toBe(0)
+    expect(plugin.__testInternals().workerPromises.size).toBe(0)
   })
 })
 
@@ -211,8 +231,9 @@ describe('WindowedSpectrogramPlugin worker error handling', () => {
 
 describe('SpectrogramPlugin fallbackToMainThread option', () => {
   function createPlugin(options: Record<string, unknown> = {}) {
-    const plugin = Spectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', ...options })
-    return { plugin: plugin as any, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
+    const plugin = Spectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', ...options }) as any
+    plugin._init(createFakeWaveSurfer() as any)
+    return { plugin, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
   }
 
   it('falls back to the main thread by default, without emitting an error', async () => {
@@ -220,7 +241,7 @@ describe('SpectrogramPlugin fallbackToMainThread option', () => {
     const errors: Error[] = []
     plugin.on('error', (error: Error) => errors.push(error))
 
-    const promise = plugin.getFrequencies(makeBuffer())
+    const promise = plugin.__testInternals().getFrequencies(makeBuffer())
     worker.onerror(new Event('error'))
 
     const frequencies = await promise
@@ -233,7 +254,7 @@ describe('SpectrogramPlugin fallbackToMainThread option', () => {
     const errors: Error[] = []
     plugin.on('error', (error: Error) => errors.push(error))
 
-    const promise = plugin.getFrequencies(makeBuffer())
+    const promise = plugin.__testInternals().getFrequencies(makeBuffer())
     worker.onerror(new Event('error'))
 
     const frequencies = await promise
@@ -247,7 +268,7 @@ describe('SpectrogramPlugin fallbackToMainThread option', () => {
     const errors: Error[] = []
     plugin.on('error', (error: Error) => errors.push(error))
 
-    const frequencies = await plugin.getFrequencies(makeBuffer())
+    const frequencies = await plugin.__testInternals().getFrequencies(makeBuffer())
     expect(frequencies).toEqual([])
     expect(errors).toHaveLength(1)
     expect(errors[0].message).toMatch(/timeout/i)
@@ -255,16 +276,16 @@ describe('SpectrogramPlugin fallbackToMainThread option', () => {
 
   it('re-creates the worker on the next computation after a failure', async () => {
     const { plugin, worker } = createPlugin({ workerTimeout: 0 })
-    const promise = plugin.getFrequencies(makeBuffer())
+    const promise = plugin.__testInternals().getFrequencies(makeBuffer())
     worker.onerror(new Event('error'))
     await promise
-    expect(plugin.worker).toBeNull()
+    expect(plugin.__testInternals().worker).toBeNull()
 
     const workerCount = mockWorkerInstances.length
-    const second = plugin.getFrequencies(makeBuffer())
+    const second = plugin.__testInternals().getFrequencies(makeBuffer())
     expect(mockWorkerInstances.length).toBe(workerCount + 1)
     const newWorker = mockWorkerInstances[mockWorkerInstances.length - 1]
-    expect(plugin.worker).toBe(newWorker)
+    expect(plugin.__testInternals().worker).toBe(newWorker)
     expect(newWorker.postMessage).toHaveBeenCalledTimes(1)
     newWorker.onerror(new Event('error'))
     await second
@@ -273,19 +294,19 @@ describe('SpectrogramPlugin fallbackToMainThread option', () => {
   it('does not cache a failed computation', async () => {
     const { plugin, worker } = createPlugin({ workerTimeout: 0, fallbackToMainThread: false })
     const buffer = makeBuffer()
-    plugin.wavesurfer = { getDecodedData: () => buffer }
+    plugin.wavesurfer = { getDecodedData: () => buffer, options: {} }
 
     const promise = plugin.getFrequenciesData()
     worker.onerror(new Event('error'))
     const frequencies = await promise
 
     expect(frequencies).toEqual([])
-    expect(plugin.cachedFrequencies).toBeNull()
+    expect(plugin.__testInternals().cachedFrequencies).toBeNull()
   })
 
   it('drawSpectrogram tolerates an empty result instead of throwing', () => {
     const { plugin } = createPlugin()
-    expect(() => plugin.drawSpectrogram([])).not.toThrow()
+    expect(() => plugin.__testInternals().drawSpectrogram([])).not.toThrow()
   })
 })
 
@@ -351,6 +372,7 @@ describe('failure-state hygiene (stale cache and construction latch)', () => {
       workerTimeout: 0,
       fallbackToMainThread: false,
     })
+    plugin._init(createFakeWaveSurfer() as any)
     const worker = mockWorkerInstances[mockWorkerInstances.length - 1]
 
     const bufferA = makeBuffer()
@@ -359,7 +381,7 @@ describe('failure-state hygiene (stale cache and construction latch)', () => {
     await tick() // let the async chain reach the worker dispatch
     respondToLastRequest(worker, fakeResult)
     await first
-    expect(plugin.cachedFrequencies).toEqual(fakeResult)
+    expect(plugin.__testInternals().cachedFrequencies).toEqual(fakeResult)
 
     const bufferB = makeBuffer()
     plugin.wavesurfer = { getDecodedData: () => bufferB, options: {} }
@@ -370,29 +392,41 @@ describe('failure-state hygiene (stale cache and construction latch)', () => {
 
     expect(frequencies).toEqual([])
     // Audio A's data must not survive to be drawn against audio B
-    expect(plugin.cachedFrequencies).toBeNull()
-    expect(plugin.cachedBuffer).toBeNull()
+    expect(plugin.__testInternals().cachedFrequencies).toBeNull()
+    expect(plugin.__testInternals().cachedBuffer).toBeNull()
   })
 
   it('clears previously drawn canvases when asked to draw an empty result', () => {
     const plugin: any = Spectrogram.create({ useWebWorker: true, noverlap: 256 })
+    plugin._init(createFakeWaveSurfer() as any)
     const canvas = document.createElement('canvas')
-    plugin.canvasContainer.appendChild(canvas)
-    plugin.canvases.push(canvas)
-    plugin.drawnCanvases[0] = true
+    plugin.__testInternals().canvasContainer.appendChild(canvas)
+    plugin.__testInternals().canvases.push(canvas)
+    plugin.__testInternals().drawnCanvases[0] = true
 
-    plugin.drawSpectrogram([])
+    plugin.__testInternals().drawSpectrogram([])
 
-    expect(plugin.canvases).toHaveLength(0)
-    expect(plugin.canvasContainer.contains(canvas)).toBe(false)
+    expect(plugin.__testInternals().canvases).toHaveLength(0)
+    expect(plugin.__testInternals().canvasContainer.contains(canvas)).toBe(false)
   })
 
   it.each([
-    ['SpectrogramPlugin', Spectrogram, (plugin: any) => plugin.getFrequencies(makeBuffer())],
-    ['WindowedSpectrogramPlugin', WindowedSpectrogram, (plugin: any) => plugin.calculateFrequencies(0, 0.25)],
-  ])('%s stops retrying worker construction after it fails permanently', async (_name, Plugin: any, compute) => {
+    [
+      'SpectrogramPlugin',
+      Spectrogram,
+      (plugin: any) => plugin._init(createFakeWaveSurfer() as any),
+      (plugin: any) => plugin.__testInternals().getFrequencies(makeBuffer()),
+    ],
+    [
+      'WindowedSpectrogramPlugin',
+      WindowedSpectrogram,
+      () => undefined,
+      (plugin: any) => plugin.calculateFrequencies(0, 0.25),
+    ],
+  ])('%s stops retrying worker construction after it fails permanently', async (_name, Plugin: any, init, compute) => {
     mockWorkerState.constructorShouldThrow = true
     const plugin: any = Plugin.create({ useWebWorker: true, noverlap: 256, scale: 'linear' })
+    init(plugin)
     plugin.buffer = makeBuffer()
     expect(mockWorkerState.constructorAttempts).toBe(1)
 
@@ -407,17 +441,18 @@ describe('failure-state hygiene (stale cache and construction latch)', () => {
 describe('worker timeout disposal', () => {
   it('disposes the worker on timeout and re-creates it on the next computation', async () => {
     const plugin: any = Spectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', workerTimeout: 1 })
+    plugin._init(createFakeWaveSurfer() as any)
     const worker = mockWorkerInstances[mockWorkerInstances.length - 1]
 
-    const promise = plugin.calculateFrequenciesWithWorker(makeBuffer())
+    const promise = plugin.__testInternals().calculateFrequenciesWithWorker(makeBuffer())
     await expect(promise).rejects.toThrow(/timeout/i)
     // A timed-out result can never be consumed, so the worker itself is disposed
     expect(worker.terminate).toHaveBeenCalled()
-    expect(plugin.worker).toBeNull()
-    expect(plugin.workerPromises.size).toBe(0)
+    expect(plugin.__testInternals().worker).toBeNull()
+    expect(plugin.__testInternals().workerPromises.size).toBe(0)
 
     const workerCount = mockWorkerInstances.length
-    const second = plugin.getFrequencies(makeBuffer())
+    const second = plugin.__testInternals().getFrequencies(makeBuffer())
     expect(mockWorkerInstances.length).toBe(workerCount + 1)
     const newWorker = mockWorkerInstances[mockWorkerInstances.length - 1]
     expect(newWorker.postMessage).toHaveBeenCalledTimes(1)
@@ -453,6 +488,7 @@ describe('worker timeout disposal', () => {
 describe('drawSpectrogram zero-frame channels', () => {
   it('treats all-channels-empty as nothing to draw instead of crashing in resample', () => {
     const plugin: any = Spectrogram.create({ useWebWorker: true, noverlap: 256 })
+    plugin._init(createFakeWaveSurfer() as any)
     // A real width so the pre-fix path reaches the resample crash rather than dying on a
     // missing wrapper (the intended red observable)
     plugin.wavesurfer = {
@@ -460,12 +496,12 @@ describe('drawSpectrogram zero-frame channels', () => {
       options: {},
     }
     const canvas = document.createElement('canvas')
-    plugin.canvasContainer.appendChild(canvas)
-    plugin.canvases.push(canvas)
+    plugin.__testInternals().canvasContainer.appendChild(canvas)
+    plugin.__testInternals().canvases.push(canvas)
 
     // [[]] = channels exist but a too-short buffer produced zero FFT frames
-    expect(() => plugin.drawSpectrogram([[]])).not.toThrow()
-    expect(plugin.canvases).toHaveLength(0)
-    expect(plugin.canvasContainer.contains(canvas)).toBe(false)
+    expect(() => plugin.__testInternals().drawSpectrogram([[]])).not.toThrow()
+    expect(plugin.__testInternals().canvases).toHaveLength(0)
+    expect(plugin.__testInternals().canvasContainer.contains(canvas)).toBe(false)
   })
 })
