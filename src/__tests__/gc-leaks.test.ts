@@ -281,6 +281,11 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
       )
     })
 
+    // Whole-graph coverage, not field-retention sensitive (see top doc comment): `regions` itself
+    // is also dropped here, so this proves the whole RegionsPlugin instance is collectible once
+    // nothing external holds `ws`/`regions` - NOT that any single field on it is proactively
+    // released while the plugin instance survives. A field-only leak on an otherwise-dropped
+    // `regions` would be invisible to this test; only Case 3a is shaped to catch that failure mode.
     it('collects the RegionsPlugin instance itself after destroy', async () => {
       let container: HTMLElement | null = document.createElement('div')
       let ws: WaveSurfer | null = WaveSurfer.create({ container, peaks: makePeaks(), duration: 10 })
