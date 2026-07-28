@@ -62,13 +62,12 @@ beforeAll(() => {
   ;(globalThis as any).Worker = function Worker() {}
 })
 
-// SpectrogramPlugin is a definePlugin() plugin: option validation (which used to throw straight
-// out of the pre-port class's constructor) now runs inside setup(), which only executes once the
-// plugin is registered with a wavesurfer instance - see hover.test.ts/regions.test.ts for the same
-// `_init()` pattern with other ported plugins. `construct` below is this describe.each block's
-// per-plugin hook: for SpectrogramPlugin it creates-and-inits (so a validation throw surfaces the
-// same way `Plugin.create(...)` alone used to); for WindowedSpectrogramPlugin (untouched by this
-// port, still throws straight out of `.create()`) it's a passthrough.
+// SpectrogramPlugin is a definePlugin() plugin, but validateOptions() runs from its constructor
+// (see spectrogram.ts) same as the pre-port class, so `Plugin.create({...})` alone still throws
+// synchronously below - no `_init()` needed for the validation tests. The functional tests further
+// down still need a fake wavesurfer since setup() (which drives the actual render/worker/cache
+// behavior) only runs once the plugin is registered - see hover.test.ts/regions.test.ts for the
+// underlying `_init()` precedent with other ported plugins.
 function createFakeWaveSurfer() {
   const wrapper = document.createElement('div')
   Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
@@ -82,36 +81,36 @@ function createFakeWaveSurfer() {
 }
 
 describe.each([
-  ['SpectrogramPlugin', (opts: any) => (Spectrogram.create(opts) as any)._init(createFakeWaveSurfer() as any)],
-  ['WindowedSpectrogramPlugin', (opts: any) => WindowedSpectrogram.create(opts)],
-])('%s Praat display option validation', (_name, construct) => {
+  ['SpectrogramPlugin', Spectrogram],
+  ['WindowedSpectrogramPlugin', WindowedSpectrogram],
+])('%s Praat display option validation', (_name, Plugin: any) => {
   it('rejects non-finite or non-positive rangeDB', () => {
-    expect(() => construct({ rangeDB: 0 })).toThrow(TypeError)
-    expect(() => construct({ rangeDB: -5 })).toThrow(TypeError)
-    expect(() => construct({ rangeDB: NaN })).toThrow(TypeError)
-    expect(() => construct({ rangeDB: Infinity })).toThrow(TypeError)
+    expect(() => Plugin.create({ rangeDB: 0 })).toThrow(TypeError)
+    expect(() => Plugin.create({ rangeDB: -5 })).toThrow(TypeError)
+    expect(() => Plugin.create({ rangeDB: NaN })).toThrow(TypeError)
+    expect(() => Plugin.create({ rangeDB: Infinity })).toThrow(TypeError)
   })
 
   it('rejects non-finite gainDB and preEmphasis', () => {
-    expect(() => construct({ gainDB: NaN })).toThrow(TypeError)
-    expect(() => construct({ preEmphasis: NaN })).toThrow(TypeError)
-    expect(() => construct({ preEmphasis: Infinity })).toThrow(TypeError)
+    expect(() => Plugin.create({ gainDB: NaN })).toThrow(TypeError)
+    expect(() => Plugin.create({ preEmphasis: NaN })).toThrow(TypeError)
+    expect(() => Plugin.create({ preEmphasis: Infinity })).toThrow(TypeError)
   })
 
   it('accepts finite preEmphasis values including zero and negatives', () => {
-    expect(() => construct({ preEmphasis: 0 })).not.toThrow()
-    expect(() => construct({ preEmphasis: 6 })).not.toThrow()
-    expect(() => construct({ preEmphasis: -3 })).not.toThrow()
+    expect(() => Plugin.create({ preEmphasis: 0 })).not.toThrow()
+    expect(() => Plugin.create({ preEmphasis: 6 })).not.toThrow()
+    expect(() => Plugin.create({ preEmphasis: -3 })).not.toThrow()
   })
 
   it('rejects invalid alpha values per window function', () => {
-    expect(() => construct({ alpha: NaN })).toThrow(TypeError)
-    expect(() => construct({ windowFunc: 'gauss', alpha: 0 })).toThrow(TypeError)
-    expect(() => construct({ windowFunc: 'gauss', alpha: -0.2 })).toThrow(TypeError)
+    expect(() => Plugin.create({ alpha: NaN })).toThrow(TypeError)
+    expect(() => Plugin.create({ windowFunc: 'gauss', alpha: 0 })).toThrow(TypeError)
+    expect(() => Plugin.create({ windowFunc: 'gauss', alpha: -0.2 })).toThrow(TypeError)
   })
 
   it('accepts an explicit blackman alpha of 0', () => {
-    expect(() => construct({ windowFunc: 'blackman', alpha: 0 })).not.toThrow()
+    expect(() => Plugin.create({ windowFunc: 'blackman', alpha: 0 })).not.toThrow()
   })
 })
 
@@ -197,7 +196,7 @@ describe('main-thread parity with the worker for the new options', () => {
     const plugin: any = Spectrogram.create({ fftSamples: 256, noverlap: 128, scale: 'linear', ...extra } as any)
     plugin._init(createFakeWaveSurfer() as any)
 
-    const mainResult = await plugin.__testInternals().getFrequencies(makeBuffer(signal))
+    const mainResult = await plugin.__spectrogramInternalsForTests().getFrequencies(makeBuffer(signal))
     const workerResult = runWorker(signal, extra as Record<string, unknown>)
 
     expect(mainResult[0].length).toBe(workerResult[0].length)
@@ -214,10 +213,10 @@ describe('main-thread parity with the worker for the new options', () => {
       return plugin
     }
 
-    const buffered = await makePlugin().__testInternals().getFrequencies(makeBuffer(signal))
+    const buffered = await makePlugin().__spectrogramInternalsForTests().getFrequencies(makeBuffer(signal))
     const constrained = makePlugin()
-    constrained.__testInternals().autoGainBudgetBytes = 1
-    const recomputed = await constrained.__testInternals().getFrequencies(makeBuffer(signal))
+    constrained.__spectrogramInternalsForTests().autoGainBudgetBytes = 1
+    const recomputed = await constrained.__spectrogramInternalsForTests().getFrequencies(makeBuffer(signal))
 
     expect(flatten(recomputed)).toEqual(flatten(buffered))
   })
@@ -243,7 +242,7 @@ describe('explicit blackman alpha: 0 end-to-end', () => {
     const workerResult = runWorker(signal, options)
     const plugin: any = Spectrogram.create({ ...options, scale: 'linear' } as any)
     plugin._init(createFakeWaveSurfer() as any)
-    const mainResult = await plugin.__testInternals().getFrequencies(makeBuffer(signal))
+    const mainResult = await plugin.__spectrogramInternalsForTests().getFrequencies(makeBuffer(signal))
 
     expect(mainResult[0].length).toBe(workerResult[0].length)
     mainResult[0].forEach((frame: Uint8Array, i: number) => {
@@ -265,8 +264,8 @@ describe('explicit blackman alpha: 0 end-to-end', () => {
       return plugin
     }
 
-    const explicitZero = await create(0).__testInternals().getFrequencies(makeBuffer(signal))
-    const defaulted = await create(undefined).__testInternals().getFrequencies(makeBuffer(signal))
+    const explicitZero = await create(0).__spectrogramInternalsForTests().getFrequencies(makeBuffer(signal))
+    const defaulted = await create(undefined).__spectrogramInternalsForTests().getFrequencies(makeBuffer(signal))
 
     expect(explicitZero[0].map((f: Uint8Array) => Array.from(f))).not.toEqual(
       defaulted[0].map((f: Uint8Array) => Array.from(f)),

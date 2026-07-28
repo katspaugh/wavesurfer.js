@@ -179,9 +179,9 @@ type WorkerFrequenciesMessage = { type: string; id: string; result?: Uint8Array[
  * `Object.assign(this, api)` (see define-plugin.ts) copies each Api value ONCE, at init time, so
  * a plain returned field would go stale the moment the closure reassigns it. This object is
  * created once per setup() run and its getters/setters read/write the actual closure variables
- * live, so `plugin.__testInternals().buffer = x` and later reads of the same call still observe
- * the plugin's real internal state. Not part of the plugin's public contract - do not use outside
- * tests.
+ * live, so `plugin.__spectrogramInternalsForTests().buffer = x` and later reads of the same call
+ * still observe the plugin's real internal state. Not part of the plugin's public contract - do
+ * not use outside tests.
  */
 type TestInternals = {
   buffer: AudioBuffer | null
@@ -207,23 +207,81 @@ type Api = {
   /** Clear cached frequency data to force recalculation. */
   clearCache: () => void
   /** @internal test-only, see TestInternals */
-  __testInternals: () => TestInternals
+  __spectrogramInternalsForTests: () => TestInternals
 }
 
-const SpectrogramPlugin = definePlugin<SpectrogramPluginOptions, SpectrogramPluginEvents, Api>(
+/**
+ * Every check that must fail synchronously at construction time, mirroring the pre-port class's
+ * constructor. `definePlugin` has no per-plugin constructor hook - setup() (below) only runs once
+ * the plugin is registered with a wavesurfer instance - so this is called from BOTH the
+ * SpectrogramPlugin constructor (below the definePlugin() call) and from the top of setup()
+ * itself. The constructor call is the one that matters observably: `new SpectrogramPlugin(bad)` /
+ * `SpectrogramPlugin.create(bad)` must throw immediately, the same way the pre-port class did,
+ * and in particular BEFORE `WaveSurfer.create({ plugins: [SpectrogramPlugin.create(bad)] })` ever
+ * starts building a WaveSurfer instance - a throw surfacing later, out of registerPlugin()/
+ * `_init()`, would fire mid-construction with a partially built WaveSurfer (renderer/media already
+ * created) that the caller has no reference to and that never gets torn down. The setup() call is
+ * belt-and-braces so setup() stays correct on its own even though, today, the constructor is the
+ * only path that reaches it with unvalidated options.
+ */
+function validateOptions(options: SpectrogramPluginOptions): void {
+  if (options.frequenciesDataUrl && !options.sampleRate) {
+    throw new Error('sampleRate option is required when using frequenciesDataUrl')
+  }
+
+  // Throws on an invalid colorMap array (wrong length/entry shape) or an unknown named colormap.
+  // The computed map itself is discarded here; setup() below calls it again to get the value it
+  // actually renders with.
+  setupColorMap(options.colorMap)
+
+  const fftSize = options.fftSize
+  // With fftSize set, fftSamples is a validated analysis-window length: only absent values get
+  // the default. Without it, the historical coercion of falsy values is preserved.
+  const fftSamples = fftSize != null ? (options.fftSamples ?? 512) : options.fftSamples || 512
+
+  // The transform length must be a power of two; with fftSize set, fftSamples is just the
+  // analysis window length and only needs to fit inside the transform
+  const fftLength = fftSize ?? fftSamples
+  if (!isPowerOfTwo(fftLength)) {
+    throw new TypeError(
+      `fftSize (or fftSamples when fftSize is not set) must be a power of two and at least 2, got ${fftLength}`,
+    )
+  }
+  if (fftSize != null && (!Number.isInteger(fftSamples) || fftSamples < 2 || fftSamples > fftSize)) {
+    throw new TypeError(`fftSamples must be an integer between 2 and fftSize, got ${fftSamples}`)
+  }
+  if (options.noverlap != null && !Number.isInteger(options.noverlap)) {
+    throw new TypeError(`noverlap must be an integer number of samples, got ${options.noverlap}`)
+  }
+  const windowFunc = options.windowFunc || 'hann'
+
+  if (options.gainDB != null && !Number.isFinite(options.gainDB)) {
+    throw new TypeError(`gainDB must be a finite number, got ${options.gainDB}`)
+  }
+  if (options.rangeDB != null && (!Number.isFinite(options.rangeDB) || options.rangeDB <= 0)) {
+    throw new TypeError(`rangeDB must be a finite positive number, got ${options.rangeDB}`)
+  }
+  if (options.preEmphasis != null && !Number.isFinite(options.preEmphasis)) {
+    throw new TypeError(`preEmphasis must be a finite number, got ${options.preEmphasis}`)
+  }
+  if (options.alpha != null) {
+    if (!Number.isFinite(options.alpha)) {
+      throw new TypeError(`alpha must be a finite number, got ${options.alpha}`)
+    }
+    if (windowFunc === 'gauss' && options.alpha <= 0) {
+      throw new TypeError(`alpha must be positive for the gauss window, got ${options.alpha}`)
+    }
+  }
+}
+
+const Defined = definePlugin<SpectrogramPluginOptions, SpectrogramPluginEvents, Api>(
   'SpectrogramPlugin',
   (ctx, rawOptions) => {
-    // setup() runs once per (re-)init, on a fresh scope - see define-plugin.ts. All the pre-port
-    // class's constructor validation now lives here rather than in a constructor, since
-    // definePlugin has no per-plugin constructor hook: it only runs (and can only throw) once the
-    // plugin is registered with a wavesurfer instance, not at `.create()` time. This is a
-    // deliberate, documented behavior change from the pre-port class (see task-2-report.md).
+    // setup() runs once per (re-)init, on a fresh scope - see define-plugin.ts.
     const options: SpectrogramPluginOptions = rawOptions ?? {}
+    validateOptions(options)
 
     const frequenciesDataUrl = options.frequenciesDataUrl
-    if (frequenciesDataUrl && !options.sampleRate) {
-      throw new Error('sampleRate option is required when using frequenciesDataUrl')
-    }
 
     const useWebWorker = options.useWebWorker === true
     const workerTimeout = options.workerTimeout ?? 30000
@@ -237,22 +295,8 @@ const SpectrogramPlugin = definePlugin<SpectrogramPluginOptions, SpectrogramPlug
     const fftSamples = fftSize != null ? (options.fftSamples ?? 512) : options.fftSamples || 512
     const height = options.height || 200
     // Will be calculated later based on canvas size when not set
-    let noverlap: number | null = options.noverlap || null
+    const noverlap: number | null = options.noverlap || null
 
-    // The transform length must be a power of two; with fftSize set, fftSamples is just the
-    // analysis window length and only needs to fit inside the transform
-    const fftLength = fftSize ?? fftSamples
-    if (!isPowerOfTwo(fftLength)) {
-      throw new TypeError(
-        `fftSize (or fftSamples when fftSize is not set) must be a power of two and at least 2, got ${fftLength}`,
-      )
-    }
-    if (fftSize != null && (!Number.isInteger(fftSamples) || fftSamples < 2 || fftSamples > fftSize)) {
-      throw new TypeError(`fftSamples must be an integer between 2 and fftSize, got ${fftSamples}`)
-    }
-    if (options.noverlap != null && !Number.isInteger(options.noverlap)) {
-      throw new TypeError(`noverlap must be an integer number of samples, got ${options.noverlap}`)
-    }
     const windowFunc = options.windowFunc || 'hann'
     const alpha = options.alpha
 
@@ -267,26 +311,8 @@ const SpectrogramPlugin = definePlugin<SpectrogramPluginOptions, SpectrogramPlug
     const preEmphasis = options.preEmphasis ?? 0
     const autoGain = options.autoGain ?? false
     // Per-instance override of the autoGain transient-memory budget (used by tests via
-    // __testInternals().autoGainBudgetBytes).
+    // __spectrogramInternalsForTests().autoGainBudgetBytes).
     let autoGainBudgetBytes = AUTO_GAIN_BUFFER_BUDGET_BYTES
-
-    if (options.gainDB != null && !Number.isFinite(options.gainDB)) {
-      throw new TypeError(`gainDB must be a finite number, got ${options.gainDB}`)
-    }
-    if (options.rangeDB != null && (!Number.isFinite(options.rangeDB) || options.rangeDB <= 0)) {
-      throw new TypeError(`rangeDB must be a finite positive number, got ${options.rangeDB}`)
-    }
-    if (options.preEmphasis != null && !Number.isFinite(options.preEmphasis)) {
-      throw new TypeError(`preEmphasis must be a finite number, got ${options.preEmphasis}`)
-    }
-    if (options.alpha != null) {
-      if (!Number.isFinite(options.alpha)) {
-        throw new TypeError(`alpha must be a finite number, got ${options.alpha}`)
-      }
-      if (windowFunc === 'gauss' && options.alpha <= 0) {
-        throw new TypeError(`alpha must be positive for the gauss window, got ${options.alpha}`)
-      }
-    }
 
     const maxCanvasWidth = options.maxCanvasWidth || 30000
 
@@ -776,8 +802,13 @@ const SpectrogramPlugin = definePlugin<SpectrogramPluginOptions, SpectrogramPlug
               canvasCtx.drawImage(bitmap, 0, drawY, canvasWidth, drawHeight)
             }
           } finally {
-            // Clean up bitmap to free memory, even if the canvas was removed before it resolved
-            bitmap.close()
+            // Clean up bitmap to free memory, even if the canvas was removed before it resolved.
+            // The 'close' in bitmap guard is deliberate: some createImageBitmap polyfills (used in
+            // older/non-browser environments) don't implement .close() despite lib.dom's ImageBitmap
+            // type always declaring it.
+            if ('close' in bitmap) {
+              bitmap.close()
+            }
           }
         })
         .catch(() => {
@@ -1237,9 +1268,28 @@ const SpectrogramPlugin = definePlugin<SpectrogramPluginOptions, SpectrogramPlug
       loadFrequenciesData,
       getFrequenciesData,
       clearCache,
-      __testInternals: () => testInternals,
+      __spectrogramInternalsForTests: () => testInternals,
     }
   },
 )
+
+/**
+ * Thin wrapper around the definePlugin()-produced class, whose only job is to run
+ * validateOptions() synchronously in the constructor - see validateOptions' own comment for why
+ * this can't just live in setup(). Everything else (the actual render/cache/worker behavior,
+ * the Api surface) is unchanged; TS structurally carries `Defined`'s `BasePlugin<Events,Options> &
+ * Api` instance shape and `create()`/constructor signature through the `extends`, so consumers see
+ * the same type as before.
+ */
+class SpectrogramPlugin extends Defined {
+  constructor(options?: SpectrogramPluginOptions) {
+    super(options)
+    validateOptions(options ?? {})
+  }
+
+  static create(options?: SpectrogramPluginOptions) {
+    return new SpectrogramPlugin(options)
+  }
+}
 
 export default SpectrogramPlugin

@@ -53,10 +53,12 @@ function runWorker(signal: Float32Array, options: Record<string, unknown>): Uint
   return response.result
 }
 
-// SpectrogramPlugin is a definePlugin() plugin: option validation now runs inside setup(), which
-// only executes once the plugin is registered with a wavesurfer instance - see
-// spectrogram-praat-options.test.ts (same `construct` hook pattern) and hover.test.ts/
-// regions.test.ts for the underlying `_init()` precedent with other ported plugins.
+// SpectrogramPlugin is a definePlugin() plugin, but validateOptions() runs from its constructor
+// (see spectrogram.ts) same as the pre-port class, so `Plugin.create({...})` alone still throws
+// synchronously below - no `_init()` needed for the validation tests. The functional tests further
+// down still need a fake wavesurfer since setup() (which drives the actual render/worker/cache
+// behavior) only runs once the plugin is registered - see hover.test.ts/regions.test.ts for the
+// underlying `_init()` precedent with other ported plugins.
 function createFakeWaveSurfer() {
   const wrapper = document.createElement('div')
   Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
@@ -70,56 +72,56 @@ function createFakeWaveSurfer() {
 }
 
 describe.each([
-  ['SpectrogramPlugin', (opts: any) => (Spectrogram.create(opts) as any)._init(createFakeWaveSurfer() as any)],
-  ['WindowedSpectrogramPlugin', (opts: any) => WindowedSpectrogram.create(opts)],
-])('%s fftSize option validation', (_name, construct) => {
+  ['SpectrogramPlugin', Spectrogram],
+  ['WindowedSpectrogramPlugin', WindowedSpectrogram],
+])('%s fftSize option validation', (_name, Plugin: any) => {
   it('rejects a non-power-of-two fftSize', () => {
-    expect(() => construct({ fftSize: 500 })).toThrow(TypeError)
+    expect(() => Plugin.create({ fftSize: 500 })).toThrow(TypeError)
   })
 
   it('rejects a non-power-of-two fftSamples when fftSize is not set', () => {
-    expect(() => construct({ fftSamples: 333 })).toThrow(TypeError)
+    expect(() => Plugin.create({ fftSamples: 333 })).toThrow(TypeError)
   })
 
   it('rejects fftSamples larger than fftSize', () => {
-    expect(() => construct({ fftSamples: 1024, fftSize: 512 })).toThrow(TypeError)
+    expect(() => Plugin.create({ fftSamples: 1024, fftSize: 512 })).toThrow(TypeError)
   })
 
   it('rejects a non-integer fftSamples when fftSize is set', () => {
-    expect(() => construct({ fftSamples: 80.5, fftSize: 512 })).toThrow(TypeError)
+    expect(() => Plugin.create({ fftSamples: 80.5, fftSize: 512 })).toThrow(TypeError)
   })
 
   it('rejects a non-integer noverlap', () => {
-    expect(() => construct({ noverlap: 100.5 })).toThrow(TypeError)
+    expect(() => Plugin.create({ noverlap: 100.5 })).toThrow(TypeError)
   })
 
   it('rejects one-sample windows, whose window formulas would produce NaN spectra', () => {
-    expect(() => construct({ fftSamples: 1 })).toThrow(TypeError)
-    expect(() => construct({ fftSamples: 1, fftSize: 512 })).toThrow(TypeError)
+    expect(() => Plugin.create({ fftSamples: 1 })).toThrow(TypeError)
+    expect(() => Plugin.create({ fftSamples: 1, fftSize: 512 })).toThrow(TypeError)
   })
 
   it('rejects explicit invalid fftSamples values when fftSize is set', () => {
-    expect(() => construct({ fftSamples: 0, fftSize: 512 })).toThrow(TypeError)
-    expect(() => construct({ fftSamples: NaN, fftSize: 512 })).toThrow(TypeError)
-    expect(() => construct({ fftSamples: -64, fftSize: 512 })).toThrow(TypeError)
+    expect(() => Plugin.create({ fftSamples: 0, fftSize: 512 })).toThrow(TypeError)
+    expect(() => Plugin.create({ fftSamples: NaN, fftSize: 512 })).toThrow(TypeError)
+    expect(() => Plugin.create({ fftSamples: -64, fftSize: 512 })).toThrow(TypeError)
   })
 
   it('keeps the historical coercion of falsy fftSamples when fftSize is not set', () => {
-    expect(() => construct({ fftSamples: 0 })).not.toThrow()
-    expect(() => construct({ fftSamples: NaN })).not.toThrow()
+    expect(() => Plugin.create({ fftSamples: 0 })).not.toThrow()
+    expect(() => Plugin.create({ fftSamples: NaN })).not.toThrow()
   })
 
   it('rejects large non-powers-of-two that fool 32-bit bitwise checks', () => {
-    expect(() => construct({ fftSize: 2 ** 32 + 1 })).toThrow(TypeError)
+    expect(() => Plugin.create({ fftSize: 2 ** 32 + 1 })).toThrow(TypeError)
   })
 
   it('accepts a non-power-of-two window once fftSize carries the transform length', () => {
-    expect(() => construct({ fftSamples: 80, fftSize: 512 })).not.toThrow()
-    expect(() => construct({ fftSamples: 333, fftSize: 512 })).not.toThrow()
+    expect(() => Plugin.create({ fftSamples: 80, fftSize: 512 })).not.toThrow()
+    expect(() => Plugin.create({ fftSamples: 333, fftSize: 512 })).not.toThrow()
   })
 
   it('accepts the defaults unchanged', () => {
-    expect(() => construct({})).not.toThrow()
+    expect(() => Plugin.create({})).not.toThrow()
   })
 })
 
@@ -190,7 +192,7 @@ describe('main-thread compute with fftSize', () => {
       getChannelData: () => signal,
     } as unknown as AudioBuffer
 
-    const mainResult = await plugin.__testInternals().getFrequencies(buffer)
+    const mainResult = await plugin.__spectrogramInternalsForTests().getFrequencies(buffer)
     const workerResult = runWorker(signal, { fftSamples: 64, fftSize: 512, noverlap: 32, scale: 'mel' })
 
     expect(mainResult.length).toBe(1)
