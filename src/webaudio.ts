@@ -233,6 +233,13 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     currentBufferNode?.stop(this.audioContext.currentTime + delay)
 
     if (currentBufferNode) {
+      // Each stopAt() call adds one more disposer to this.scope, even though the `{ once: true }`
+      // listener below removes itself from the DOM node once it fires - Scope.listen()'s own
+      // bookkeeping doesn't know about `once` and only prunes disposers on an explicit early-remove
+      // or scope.dispose(). This does not unbounded-leak in practice: it's bounded by how many
+      // times a single WebAudioPlayer instance has stopAt() called on it over its lifetime (not by
+      // audio duration or playback time), and the whole array - including any already-fired
+      // no-op removeEventListener entries - is pruned in one shot by destroy()'s scope.dispose().
       this.scope.listen(
         currentBufferNode,
         'ended',

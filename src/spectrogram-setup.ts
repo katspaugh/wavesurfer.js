@@ -1536,6 +1536,12 @@ export function spectrogramSetup(
       const el = document.querySelector(options.container)
       if (el instanceof HTMLElement) {
         container = el
+      } else {
+        // Falls back to the wavesurfer wrapper below rather than throwing - warn so a typo'd
+        // selector doesn't silently render the spectrogram somewhere the caller didn't expect.
+        console.warn(
+          `SpectrogramPlugin: no element found for container selector "${options.container}", falling back to the wavesurfer wrapper`,
+        )
       }
     } else if (isHTMLElement(options.container)) {
       container = options.container

@@ -281,8 +281,11 @@ outside `Scope`. Public surface (`SpectrogramPlugin`/`WindowedSpectrogramPlugin`
 ### Behavior changes worth calling out
 
 - **`SpectrogramPlugin` now accepts `rendering?: 'full' | 'windowed'`** directly (previously only
-  reachable via the separate `WindowedSpectrogramPlugin`), plus the windowed-only options
-  (`windowSeconds`, `bufferSeconds`, `progressiveLoading`, etc.) forwarded straight through.
+  reachable via the separate `WindowedSpectrogramPlugin`), plus the windowed-only options.
+  `progressiveLoading` is a real option and takes effect (gates background segment loading beyond
+  the visible viewport). `windowSize`/`bufferSize` are accepted for `WindowedSpectrogramPlugin`
+  compatibility but not read by the windowing algorithm — segment sizing is driven by zoom level
+  and container width instead; this is pre-existing behavior, carried over unchanged by the merge.
 - **Windowed mode's configurable `workerTimeout` unification.** Previously windowed mode had a
   worker timeout hard-coded to 30000ms regardless of the `workerTimeout` option; it now honors
   the same configurable value full mode always did, in both rendering modes uniformly.
@@ -296,6 +299,12 @@ outside `Scope`. Public surface (`SpectrogramPlugin`/`WindowedSpectrogramPlugin`
   windowed segments computed on the main thread (worker path and full mode were already this way).
   autoGain remains unavailable in windowed mode (unchanged — windowed segments are computed
   lazily/independently with no whole-buffer maximum to scale against).
+- **Container-selector fallback now warns instead of failing silently.** If `options.container` is
+  a string that doesn't match any element, both plugins have always fallen back to the wavesurfer
+  wrapper rather than throwing (pre-existing behavior, unchanged by this merge) — but that fallback
+  used to be silent. `spectrogram-setup.ts`'s shared setup now emits a `console.warn` naming the
+  unmatched selector when this happens, so a typo'd `container` option is discoverable instead of
+  quietly rendering the spectrogram somewhere the caller didn't expect.
 - **Both spectrogram plugins' `@ts-nocheck` headers are gone** — the ~390 duplicated lines they
   hid, and the undeclared-field bugs those lines carried, are fixed or deleted in the merge. (The
   unrelated pre-existing `@ts-nocheck` in `src/fft.ts` is untouched — outside this phase's scope.)

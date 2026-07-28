@@ -81,6 +81,11 @@ function getOrCreateFFT(
   const cached = fftCache.get(key)
   if (cached) return cached
 
+  // `fft.ts` is `@ts-nocheck` (its runtime `FFT` is a plain constructor function, untyped) with a
+  // separate `declare class FFT` bolted on purely for callers' benefit - that declared class has
+  // no usable construct signature TS can see through from here, so `new FFT(...)` doesn't
+  // type-check as-is. Cast to `any` just to invoke the constructor; the function's own `: FFT`
+  // return annotation immediately re-establishes the declared type for everything downstream.
   const fft = new (FFT as any)(fftLength, sampleRate, windowFunc, alpha, windowLength)
   fftConstructionCount++
 
