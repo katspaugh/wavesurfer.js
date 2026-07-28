@@ -36,7 +36,7 @@ import {
   deriveNoverlap,
   getScrollLeft as getWindowedScrollLeft,
   getViewportWidth as getWindowedViewportWidth,
-} from './plugins/spectrogram-windowing.js'
+} from './spectrogram-windowing.js'
 
 import { type BasePluginEvents } from './base-plugin.js'
 import { type PluginContext } from './define-plugin.js'
@@ -351,7 +351,7 @@ export function validateOptions(options: SpectrogramPluginOptions): void {
  * `(ctx, options) => spectrogramSetup(ctx, { ...options, rendering: 'windowed' })` - i.e.
  * "construct the merged setup with rendering: 'windowed'" per the Phase 4 plan. This keeps the
  * windowed rendering strategy itself in exactly one place (this function, plus
- * plugins/spectrogram-windowing.ts) with no second copy to drift.
+ * ./spectrogram-windowing.ts) with no second copy to drift.
  */
 export function spectrogramSetup(
   ctx: PluginContext<SpectrogramPluginEvents>,
@@ -510,8 +510,14 @@ export function spectrogramSetup(
     }
   }
 
+  // Tolerant of a missing wavesurfer/wrapper (`?.` + `|| 0`, not a direct dereference): windowed
+  // mode calls this far more eagerly than full mode (from timeupdate/scroll/redraw listeners,
+  // and SegmentManager's own deps.getWidth()), including in windows where ctx.wavesurfer can be
+  // undefined at runtime despite its non-null type (destroy() nulls the underlying field - see
+  // define-plugin.ts's PluginContext doc comment). Ported from the pre-unification windowed
+  // plugin's own `this.wavesurfer?.getWrapper()?.offsetWidth || 0`.
   function getWidth(): number {
-    return ctx.wavesurfer.getWrapper().offsetWidth
+    return ctx.wavesurfer?.getWrapper()?.offsetWidth || 0
   }
 
   function getWrapperWidth(): number {
@@ -854,6 +860,7 @@ export function spectrogramSetup(
               freqMin: frequencyMin,
               freqMax: frequencyMax || (buffer?.sampleRate ? buffer.sampleRate / 2 : 0),
               canvasContainer,
+              isDisposed: () => ctx.scope.disposed,
             }),
           emitProgress: (progress) => ctx.emit('progress', progress),
           isDisposed: () => ctx.scope.disposed,

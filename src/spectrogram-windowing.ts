@@ -17,7 +17,7 @@
  * progressive scheduling unit-testable in isolation (see spectrogram-windowing.test.ts).
  */
 
-import { hzToScale } from '../fft.js'
+import { hzToScale } from './fft.js'
 
 /** One lazily-computed slice of the sliding window's frequency data. */
 export interface FrequencySegment {
@@ -93,6 +93,15 @@ export class SegmentManager {
 
   private readonly deps: SegmentManagerDeps
   private cancelProgressiveTimer: (() => void) | null = null
+  // Re-entrancy guard for renderVisibleWindow: without it, an overlapping call (e.g. a scroll
+  // event firing while a previous call's computeSegmentFrequencies await is still pending) would
+  // race the same uncovered range through generateSegments twice - the second call's segment
+  // Map.set() for a duplicate key overwrites the first's entry (and its canvas reference)
+  // in-place, orphaning the first computation's canvas: never appended if the second's render
+  // hasn't happened yet, or left attached-but-unreachable (never evicted, since the map no
+  // longer has a key pointing at it) if it has. Ported from the pre-unification windowed
+  // plugin's `isRendering` flag.
+  private isRendering = false
 
   constructor(deps: SegmentManagerDeps, options: SegmentManagerOptions = {}) {
     this.deps = deps
@@ -130,8 +139,14 @@ export class SegmentManager {
     }
   }
 
-  /** Which sub-ranges of [startTime, endTime) aren't already covered by an existing segment. */
-  findUncoveredTimeRanges(startTime: number, endTime: number, _segmentDuration: number): TimeRange[] {
+  /**
+   * Which sub-ranges of [startTime, endTime) aren't already covered by an existing segment.
+   * Note: doesn't take a segmentDuration parameter, even though its one caller (generateSegments)
+   * has one in scope - the gap-finding logic itself never needed it (true of the pre-unification
+   * windowed plugin's identical method too, which carried an unused segmentDuration param; this
+   * port drops it rather than perpetuating the dead parameter).
+   */
+  findUncoveredTimeRanges(startTime: number, endTime: number): TimeRange[] {
     const existingSegments = Array.from(this.segments.values()).sort((a, b) => a.startTime - b.startTime)
 
     const uncoveredRanges: TimeRange[] = []
@@ -200,7 +215,7 @@ export class SegmentManager {
     }
 
     // Check coverage first to avoid duplicate work
-    const uncoveredRanges = this.findUncoveredTimeRanges(startTime, endTime, segmentDuration)
+    const uncoveredRanges = this.findUncoveredTimeRanges(startTime, endTime)
     if (uncoveredRanges.length === 0) return
 
     for (const range of uncoveredRanges) {
@@ -242,31 +257,39 @@ export class SegmentManager {
 
   /** Render (generate + evict) whatever the current viewport needs, plus a small buffer on each side. */
   async renderVisibleWindow(): Promise<void> {
-    const totalAudioDuration = this.deps.getBufferDuration()
-    if (totalAudioDuration === null) return
+    // Re-entrancy guard - see the isRendering field's doc comment.
+    if (this.isRendering) return
+    this.isRendering = true
 
-    const pixelsPerSec = this.deps.getPixelsPerSecond()
-    const scrollLeft = this.deps.getScrollLeft()
-    const viewportWidth = this.deps.getViewportWidth()
+    try {
+      const totalAudioDuration = this.deps.getBufferDuration()
+      if (totalAudioDuration === null) return
 
-    const visibleStartTime = scrollLeft / pixelsPerSec
-    const visibleEndTime = (scrollLeft + viewportWidth) / pixelsPerSec
+      const pixelsPerSec = this.deps.getPixelsPerSecond()
+      const scrollLeft = this.deps.getScrollLeft()
+      const viewportWidth = this.deps.getViewportWidth()
 
-    const visibleDuration = visibleEndTime - visibleStartTime
-    let bufferTimeSeconds = Math.min(VIEWPORT_BUFFER_MAX_SECONDS, visibleDuration * 0.5)
-    if (visibleDuration > VIEWPORT_BUFFER_LARGE_VISIBLE_DURATION_SECONDS) {
-      bufferTimeSeconds = VIEWPORT_BUFFER_FALLBACK_SECONDS
+      const visibleStartTime = scrollLeft / pixelsPerSec
+      const visibleEndTime = (scrollLeft + viewportWidth) / pixelsPerSec
+
+      const visibleDuration = visibleEndTime - visibleStartTime
+      let bufferTimeSeconds = Math.min(VIEWPORT_BUFFER_MAX_SECONDS, visibleDuration * 0.5)
+      if (visibleDuration > VIEWPORT_BUFFER_LARGE_VISIBLE_DURATION_SECONDS) {
+        bufferTimeSeconds = VIEWPORT_BUFFER_FALLBACK_SECONDS
+      }
+
+      const windowStartTime = Math.max(0, visibleStartTime - bufferTimeSeconds)
+      const windowEndTime = Math.min(totalAudioDuration, visibleEndTime + bufferTimeSeconds)
+
+      await this.generateSegments(windowStartTime, windowEndTime)
+      if (this.deps.isDisposed()) return
+
+      // Evict segments far from the current view so memory stays bounded regardless of audio
+      // length, instead of keeping every segment ever rendered
+      this.evictDistantSegments(this.getCurrentViewMidpoint() ?? (windowStartTime + windowEndTime) / 2)
+    } finally {
+      this.isRendering = false
     }
-
-    const windowStartTime = Math.max(0, visibleStartTime - bufferTimeSeconds)
-    const windowEndTime = Math.min(totalAudioDuration, visibleEndTime + bufferTimeSeconds)
-
-    await this.generateSegments(windowStartTime, windowEndTime)
-    if (this.deps.isDisposed()) return
-
-    // Evict segments far from the current view so memory stays bounded regardless of audio
-    // length, instead of keeping every segment ever rendered
-    this.evictDistantSegments(this.getCurrentViewMidpoint() ?? (windowStartTime + windowEndTime) / 2)
   }
 
   /** Re-position (and, on a large enough zoom change, schedule a re-render of) segments after a zoom change. */
@@ -457,7 +480,12 @@ export function computeWindowedPixelsPerSecond(
 }
 
 /** Default noverlap (in samples) for a range covering `sampleSpan` samples rendered into `pixelWidth` CSS pixels. */
-export function deriveNoverlap(fftSamples: number, explicitNoverlap: number | null | undefined, sampleSpan: number, pixelWidth: number): number {
+export function deriveNoverlap(
+  fftSamples: number,
+  explicitNoverlap: number | null | undefined,
+  sampleSpan: number,
+  pixelWidth: number,
+): number {
   if (explicitNoverlap) return explicitNoverlap
   const uniqueSamplesPerPx = sampleSpan / pixelWidth
   return Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx))
@@ -473,6 +501,15 @@ export interface SegmentRenderOptions {
   freqMin: number
   freqMax: number
   canvasContainer: HTMLElement
+  /**
+   * Checked after each channel's async createImageBitmap()/drawImage() completes, and before
+   * the finished canvas is attached to canvasContainer. Each channel is its own await point, so
+   * the plugin can be destroyed mid-render; without this the (possibly several) remaining
+   * channels still draw into a canvas that never gets attached to (or, worse, into a container
+   * that's already been removed from) the DOM. Optional so unit tests that don't care about
+   * disposal (spectrogram-windowing.test.ts) can omit it.
+   */
+  isDisposed?: () => boolean
 }
 
 async function renderChannelToCanvas(
@@ -538,6 +575,9 @@ export async function renderFrequencySegment(segment: FrequencySegment, opts: Se
 
   for (let c = 0; c < segment.frequencies.length; c++) {
     await renderChannelToCanvas(segment.frequencies[c], canvasCtx, segmentWidth, opts.height, c * opts.height, opts)
+    // Bail before touching segment/DOM state if the plugin was destroyed while this channel's
+    // createImageBitmap()/drawImage() was in flight - see the isDisposed doc comment above.
+    if (opts.isDisposed?.()) return
   }
 
   if (segment.canvas) {
