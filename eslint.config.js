@@ -73,9 +73,11 @@ export default compat.config({
       // requestAnimationFrame/ResizeObserver/Worker construction) across all of
       // src/**, so lifecycle cleanup is always expressed as disposing a Scope
       // (src/scope.ts) instead of hand-paired add/remove calls. Tests are
-      // exempt entirely (excludedFiles below) -- there are three __tests__
-      // directories (src/__tests__, src/state/__tests__, src/reactive/__tests__),
-      // hence the doubled-** glob rather than a single src/__tests__/**.
+      // exempt entirely (excludedFiles below) -- of the three __tests__
+      // directories in src/ (src/__tests__, src/state/__tests__,
+      // src/reactive/__tests__), src/__tests__ and src/reactive/__tests__ both
+      // contain real raw-acquisition calls that would otherwise fail; the
+      // doubled-** glob reaches all three uniformly rather than listing them.
       files: ['src/**/*.ts'],
       excludedFiles: ['src/**/__tests__/**/*.ts'],
       rules: {
@@ -111,17 +113,20 @@ export default compat.config({
         // Scope instead of calling scope.listen directly.
         'src/reactive/drag-stream.ts',
         'src/reactive/scroll-stream.ts',
-        // Player.onMediaEvent(): the listener-registration primitive for
-        // HTMLMediaElement events, mirroring scope.listen's add/remove
-        // pairing; callers register its returned remover on mediaScope (a
-        // Scope) themselves (see the constructor above).
-        'src/player.ts',
         // fetchBlob()'s progress-abort listener: not owned by any component
         // lifecycle (fetchBlob is a bare async utility, not a class with a
-        // Scope), and it is deterministically removed in a `finally` block
-        // before the function ever returns, so it cannot outlive the fetch
-        // it belongs to regardless of how/when destroy() runs elsewhere.
+        // Scope). It is deterministically removed in a `finally` block that
+        // runs on every exit path -- including the abort-mid-flight path,
+        // where the `while(true)` read loop throws a DOMException out of
+        // `reader.read()` and the `finally` still fires before the throw
+        // propagates -- so the listener cannot outlive the fetch regardless
+        // of how/when destroy() runs elsewhere.
         'src/fetcher.ts',
+        // Player.onMediaEvent() is allowlisted at the call site (a
+        // line-level eslint-disable-next-line), not here -- see that method
+        // in player.ts. It's the file's only raw-acquisition call, so a
+        // file-wide entry isn't needed and would hide any new one added
+        // later in this (357-line) file.
       ],
       rules: {
         'no-restricted-syntax': 'off',
