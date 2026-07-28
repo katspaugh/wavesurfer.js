@@ -39,8 +39,9 @@ import SpectrogramWorker from 'web-worker:./spectrogram-worker.ts'
 
 export type { SpectrogramPluginOptions, SpectrogramPluginEvents }
 
-const Defined = definePlugin<SpectrogramPluginOptions, SpectrogramPluginEvents, Api>('SpectrogramPlugin', (ctx, options) =>
-  spectrogramSetup(ctx, options, SpectrogramWorker),
+const Defined = definePlugin<SpectrogramPluginOptions, SpectrogramPluginEvents, Api>(
+  'SpectrogramPlugin',
+  (ctx, options) => spectrogramSetup(ctx, options, SpectrogramWorker),
 )
 
 /**

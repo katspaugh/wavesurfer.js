@@ -81,6 +81,20 @@ export class Scope {
     this.add(() => observer.unobserve(el))
   }
 
+  /**
+   * Creates a ResizeObserver scoped to this Scope: observes `el` immediately
+   * and disconnects the observer entirely on dispose. Use this instead of a
+   * bare `new ResizeObserver(...)` when the observer is owned exclusively by
+   * this Scope (i.e. it isn't shared across elements/scopes via
+   * observeResize()).
+   */
+  createResizeObserver(el: Element, fn: ResizeObserverCallback): ResizeObserver {
+    const observer = new ResizeObserver(fn)
+    observer.observe(el)
+    this.add(() => observer.disconnect())
+    return observer
+  }
+
   abortSignal(): AbortSignal {
     if (!this.abortController) {
       this.abortController = new AbortController()

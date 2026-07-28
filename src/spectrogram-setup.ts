@@ -214,7 +214,8 @@ const MAX_NODES = 10
 type WorkerRequest = {
   resolve: (value: Uint8Array[][]) => void
   reject: (reason: unknown) => void
-  timer?: ReturnType<typeof setTimeout>
+  // Cancel function from ctx.scope.timeout(), not a raw timer id -- see postWorkerRequest.
+  timer?: () => void
 }
 type WorkerFrequenciesMessage = { type: string; id: string; result?: Uint8Array[][]; error?: string }
 
@@ -459,8 +460,7 @@ export function spectrogramSetup(
     // single relativeX number, matching SpectrogramPluginEvents.
     ctx.emit as (event: string, ...args: any[]) => void,
   )
-  wrapper.addEventListener('click', onWrapperClick)
-  ctx.scope.add(() => wrapper.removeEventListener('click', onWrapperClick))
+  ctx.scope.listen(wrapper, 'click', onWrapperClick as EventListener)
 
   const canvasContainer = createElement(
     'div',
@@ -532,7 +532,7 @@ export function spectrogramSetup(
       worker = null
     }
     workerPromises.forEach((promise) => {
-      if (promise.timer) clearTimeout(promise.timer)
+      promise.timer?.()
       promise.reject(error)
     })
     workerPromises.clear()
@@ -557,7 +557,7 @@ export function spectrogramSetup(
           const promise = workerPromises.get(id)
           if (promise) {
             workerPromises.delete(id)
-            if (promise.timer) clearTimeout(promise.timer)
+            promise.timer?.()
             if (error) {
               promise.reject(new Error(error))
             } else {
@@ -607,10 +607,12 @@ export function spectrogramSetup(
 
     // Create promise for worker response
     return new Promise<Uint8Array[][]>((resolve, reject) => {
-      // Set timeout to avoid hanging; workerTimeout === 0 disables it
+      // Set timeout to avoid hanging; workerTimeout === 0 disables it. Uses ctx.scope.timeout
+      // (not a raw setTimeout) so a plugin destroy() while this is in flight cancels it too,
+      // via disposeWorker() below being registered on ctx.scope's teardown.
       const timer =
         workerTimeout > 0
-          ? setTimeout(() => {
+          ? ctx.scope.timeout(() => {
               if (workerPromises.has(id)) {
                 // A timed-out result can never be consumed (its id is dropped), so dispose
                 // the worker too: this stops the abandoned computation and lets the next
@@ -630,7 +632,7 @@ export function spectrogramSetup(
           options: workerOptions,
         })
       } catch (error) {
-        if (timer) clearTimeout(timer)
+        timer?.()
         workerPromises.delete(id)
         reject(error)
       }
@@ -1274,18 +1276,19 @@ export function spectrogramSetup(
       renderVisibleCanvases()
 
       // Set up scroll listener for lazy loading
-      let scrollTimeout: ReturnType<typeof setTimeout> | null = null
+      let cancelScrollTimeout: (() => void) | null = null
       const onScroll = () => {
-        if (scrollTimeout) clearTimeout(scrollTimeout)
-        scrollTimeout = setTimeout(renderVisibleCanvases, 16) // 60fps
+        cancelScrollTimeout?.()
+        cancelScrollTimeout = ctx.scope.timeout(renderVisibleCanvases, 16) // 60fps
       }
 
       const wsWrapper = ctx.wavesurfer?.getWrapper()
       if (wsWrapper) {
-        wsWrapper.addEventListener('scroll', onScroll, { passive: true })
+        const removeScrollListener = ctx.scope.listen(wsWrapper, 'scroll', onScroll, { passive: true })
         scrollUnsubscribe = () => {
-          wsWrapper.removeEventListener('scroll', onScroll)
-          if (scrollTimeout) clearTimeout(scrollTimeout)
+          removeScrollListener()
+          cancelScrollTimeout?.()
+          cancelScrollTimeout = null
         }
       }
     }

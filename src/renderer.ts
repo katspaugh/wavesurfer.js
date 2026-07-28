@@ -173,10 +173,10 @@ class Renderer extends EventEmitter<RendererEvents> {
 
   private initEvents() {
     // Add a click listener
-    this.wrapper.addEventListener('click', this.onClickWrapper)
+    this.scope.listen(this.wrapper, 'click', this.onClickWrapper as EventListener)
 
     // Add a double click listener
-    this.wrapper.addEventListener('dblclick', this.onDblClickWrapper)
+    this.scope.listen(this.wrapper, 'dblclick', this.onDblClickWrapper as EventListener)
 
     // Drag
     if (this.options.dragToSeek === true || typeof this.options.dragToSeek === 'object') {
@@ -199,12 +199,14 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Re-render the waveform on container resize
     if (typeof ResizeObserver === 'function') {
       const delay = this.createDelay(100)
-      this.resizeObserver = new ResizeObserver(() => {
+      this.resizeObserver = this.scope.createResizeObserver(this.scrollContainer, () => {
         delay()
           .then(() => this.onContainerResize())
           .catch(() => undefined)
       })
-      this.resizeObserver.observe(this.scrollContainer)
+      this.scope.add(() => {
+        this.resizeObserver = null
+      })
     }
   }
 
@@ -394,10 +396,9 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   destroy() {
-    // Remove DOM event listeners
-    this.wrapper.removeEventListener('click', this.onClickWrapper)
-    this.wrapper.removeEventListener('dblclick', this.onDblClickWrapper)
-
+    // Removes the click/dblclick DOM listeners and disconnects the resize
+    // observer (both registered on this.scope in initEvents()/
+    // ensureInputEvents() above), plus the scroll/drag streams.
     this.scope.dispose()
     // A Renderer instance IS reused after WaveSurfer.destroy(): a subsequent
     // load() reaches render(), and setOptions() reaches reRender(). A
@@ -412,27 +413,28 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.delayScope = this.scope.child()
 
     // Flip so the next render() re-runs initEvents() via ensureInputEvents(),
-    // reviving the click/dblclick listeners just removed above along with
-    // the scroll/drag streams and resize observer disposed via this.scope.
+    // reviving the click/dblclick listeners, scroll/drag streams, and resize
+    // observer just disposed via the (now-replaced) this.scope above.
     this.inputEventsInitialized = false
 
     this.container.remove()
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect()
-      this.resizeObserver = null
-    }
   }
 
   private createDelay(delayMs = 10): () => Promise<void> {
-    let timeout: ReturnType<typeof setTimeout> | undefined
+    let cancelTimeout: (() => void) | undefined
+    let cancelReject: (() => void) | undefined
     let rejectFn: (() => void) | undefined
-    let deregister: (() => void) | undefined
 
+    // Cancels the pending scope.timeout() (if any) and rejects its promise
+    // (if still pending). Runs both when a new delay() call supersedes the
+    // previous one and when the CURRENT delayScope is disposed (by the next
+    // render() pass or destroy()) -- registered on delayScope below so scope
+    // disposal triggers it just like the removed manual clearTimeout() did.
     const onClear = () => {
-      if (timeout) {
-        clearTimeout(timeout)
-        timeout = undefined
-      }
+      cancelTimeout?.()
+      cancelTimeout = undefined
+      cancelReject?.()
+      cancelReject = undefined
       if (rejectFn) {
         rejectFn()
         rejectFn = undefined
@@ -441,21 +443,19 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     return () => {
       return new Promise<void>((resolve, reject) => {
-        // Drop the previous registration (a no-op if its delayScope was
-        // already replaced by render()) and clear any pending delay
-        deregister?.()
+        // Cancel any pending delay from a previous call
         onClear()
         // Store reject function for cleanup
         rejectFn = reject
-        // Set new timeout
-        timeout = setTimeout(() => {
-          timeout = undefined
-          rejectFn = undefined
-          resolve()
-        }, delayMs)
         // Register on the CURRENT delayScope so the next render() pass and
         // destroy() can both cancel this pending delay
-        deregister = this.delayScope.add(onClear)
+        cancelTimeout = this.delayScope.timeout(() => {
+          rejectFn = undefined
+          cancelReject?.()
+          cancelReject = undefined
+          resolve()
+        }, delayMs)
+        cancelReject = this.delayScope.add(onClear)
       })
     }
   }
