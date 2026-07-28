@@ -1,4 +1,9 @@
-import { computeFrequencies, FrequencyParams } from '../spectrogram-frequencies.js'
+import {
+  computeFrequencies,
+  FrequencyParams,
+  __getFFTCacheStatsForTests,
+  __resetFFTCacheForTests,
+} from '../spectrogram-frequencies.js'
 import FFT, {
   createSparseFilterBankForScale,
   applySparseFilterBank,
@@ -430,9 +435,35 @@ describe('computeFrequencies golden values', () => {
     }
   })
 
-  it('does not mutate a module-global FFT instance across independent calls (no shared state)', () => {
-    // Two back-to-back calls with different fftSamples must not interfere, as they would if
-    // an FFT instance were cached on a module-level variable keyed loosely on size.
+  it('produces a blank (all-zero) grid for digital silence under autoGain on the over-budget path', () => {
+    // Forcing autoGainBufferBudgetBytes down to 1 byte pushes computeFrequencies past the
+    // "keep dB frames between passes" branch into the "only track the max, recompute for
+    // quantization" branch - this is a second, separately-implemented silent-output path
+    // (see the `if (silent) { channelFreq.push(new Uint8Array(bins)) }` arm) that the
+    // in-budget silence test above never exercises.
+    const silence = new Float32Array(4096)
+
+    const result = computeFrequencies([silence], {
+      fftSamples: 256,
+      scale: 'linear',
+      noverlap: 128,
+      gainDB: 20,
+      rangeDB: 80,
+      autoGain: true,
+      autoGainBufferBudgetBytes: 1,
+      sampleRate: SAMPLE_RATE,
+    })
+
+    expect(result[0].length).toBeGreaterThan(0)
+    for (const frame of result[0]) {
+      expect(Array.from(frame).every((v) => v === 0)).toBe(true)
+    }
+  })
+
+  it('reuses a cached FFT instance for repeated identical params without changing output', () => {
+    // Two back-to-back calls with different fftSamples must not interfere with each
+    // other's output, as they would if the cache key omitted any FFT-construction param.
+    __resetFFTCacheForTests()
     const signalSmall = makeSine(2048, 1000)
     const signalLarge = makeSine(2048, 1000)
 
@@ -464,5 +495,57 @@ describe('computeFrequencies golden values', () => {
     expect(resultSmall[0][0].length).toBe(64)
     expect(resultLarge[0][0].length).toBe(128)
     expectEqualFrequencies(resultSmall, resultSmallAgain)
+  })
+
+  it('constructs one FFT per distinct param set, not per call', () => {
+    __resetFFTCacheForTests()
+    const signal = makeSine(2048, 1000)
+    const params: FrequencyParams = {
+      fftSamples: 128,
+      scale: 'linear',
+      noverlap: 64,
+      gainDB: 20,
+      rangeDB: 80,
+      sampleRate: SAMPLE_RATE,
+    }
+
+    computeFrequencies([signal], params)
+    computeFrequencies([signal], params)
+    expect(__getFFTCacheStatsForTests()).toEqual({ size: 1, constructions: 1 })
+
+    // A third call with a different fftSamples must construct (and cache) a second instance
+    computeFrequencies([signal], { ...params, fftSamples: 256, noverlap: 128 })
+    expect(__getFFTCacheStatsForTests()).toEqual({ size: 2, constructions: 2 })
+  })
+
+  it('evicts the oldest cache entry once the cache exceeds its capacity', () => {
+    __resetFFTCacheForTests()
+    const signal = makeSine(2048, 1000)
+    const baseParams: Omit<FrequencyParams, 'fftSamples' | 'noverlap'> = {
+      scale: 'linear',
+      gainDB: 20,
+      rangeDB: 80,
+      sampleRate: SAMPLE_RATE,
+    }
+
+    // Five distinct fftSamples values, one more than the cache's capacity of four
+    const fftSamplesValues = [64, 128, 256, 512, 1024]
+    for (const fftSamples of fftSamplesValues) {
+      computeFrequencies([signal], { ...baseParams, fftSamples, noverlap: Math.floor(fftSamples / 2) })
+    }
+
+    const stats = __getFFTCacheStatsForTests()
+    expect(stats.constructions).toBe(5)
+    expect(stats.size).toBeLessThanOrEqual(4)
+
+    // Re-running the very first (now-evicted) config must still produce a correct result,
+    // and must construct a new FFT instance rather than serving a wrong cached one
+    const resultAfterEviction = computeFrequencies([signal], {
+      ...baseParams,
+      fftSamples: 64,
+      noverlap: 32,
+    })
+    expect(resultAfterEviction[0][0].length).toBe(32)
+    expect(__getFFTCacheStatsForTests().constructions).toBe(6)
   })
 })

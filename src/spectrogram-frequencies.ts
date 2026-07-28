@@ -10,9 +10,13 @@
  * strategies and the noverlap re-fallback), so it is the behavioral
  * reference this module reproduces exactly.
  *
- * Pure by design: every FFT instance and scratch buffer is owned by a
- * single call, so concurrent callers (e.g. the worker handling requests
- * back-to-back) never share mutable state.
+ * Pure with respect to output: every scratch buffer (frame, dB scratch) is owned by a
+ * single call, so concurrent callers never share mutable state that could change what a
+ * call returns. The one exception is a small, correctly-keyed FFT instance cache (see
+ * `getOrCreateFFT` below) - that state is a pure performance optimization and cannot
+ * itself change a call's output, unlike the worker's old unkeyed `let fft` global, which
+ * could silently reuse a stale instance if params changed shape without also changing
+ * `bufferSize`/`windowLength`.
  */
 
 import FFT, {
@@ -26,6 +30,79 @@ import FFT, {
   SILENCE_FLOOR_DB,
   AUTO_GAIN_BUFFER_BUDGET_BYTES,
 } from './fft.js'
+
+/**
+ * Bounded, keyed cache of FFT instances, reused across `computeFrequencies` calls.
+ *
+ * Why this is safe: `FFT.calculateSpectrum` allocates fresh `real`/`imag`/`spectrum`
+ * buffers on every call and never reads a previous call's output back in - the only
+ * fields it mutates on `this` (`peak`/`peakBand`) are write-only running-max bookkeeping
+ * that nothing in this module (or the wider codebase) reads. So two calls through the
+ * same FFT instance with the same params are deterministic and independent; only the
+ * expensive one-time setup (window/sin/cos/bit-reversal tables) is being reused.
+ *
+ * Why it's keyed: every argument that affects the precomputed tables (bufferSize,
+ * sampleRate, windowFunc, alpha, windowLength) is part of the key, so two calls that
+ * differ in any of them always get distinct instances - this is what makes the cache
+ * safe in a way the worker's old unkeyed `let fft` (matched only on bufferSize/
+ * windowLength) was not: that global could reuse a stale instance built with a
+ * different windowFunc/alpha/sampleRate if a caller changed those without also
+ * changing the size.
+ *
+ * Capped at a handful of entries with FIFO eviction (oldest insertion dropped first) -
+ * plugins only cycle through a small number of distinct FFT configurations (typically
+ * one, occasionally two during a live option change), so this bounds memory without
+ * needing real LRU bookkeeping.
+ */
+const FFT_CACHE_MAX_ENTRIES = 4
+const fftCache = new Map<string, FFT>()
+// Test-only: total FFT instances constructed since the process started (or since the
+// last __resetFFTCacheForTests() call). Never read by production code.
+let fftConstructionCount = 0
+
+function fftCacheKey(
+  fftLength: number,
+  sampleRate: number,
+  windowFunc: string | undefined,
+  alpha: number | undefined,
+  windowLength: number,
+): string {
+  return `${fftLength}|${sampleRate}|${windowFunc}|${alpha}|${windowLength}`
+}
+
+function getOrCreateFFT(
+  fftLength: number,
+  sampleRate: number,
+  windowFunc: string | undefined,
+  alpha: number | undefined,
+  windowLength: number,
+): FFT {
+  const key = fftCacheKey(fftLength, sampleRate, windowFunc, alpha, windowLength)
+  const cached = fftCache.get(key)
+  if (cached) return cached
+
+  const fft = new (FFT as any)(fftLength, sampleRate, windowFunc, alpha, windowLength)
+  fftConstructionCount++
+
+  if (fftCache.size >= FFT_CACHE_MAX_ENTRIES) {
+    // Map iteration order is insertion order, so the first key is the oldest entry
+    const oldestKey = fftCache.keys().next().value
+    if (oldestKey !== undefined) fftCache.delete(oldestKey)
+  }
+  fftCache.set(key, fft)
+  return fft
+}
+
+/** Test-only introspection into the FFT cache; not part of the public contract. */
+export function __getFFTCacheStatsForTests(): { size: number; constructions: number } {
+  return { size: fftCache.size, constructions: fftConstructionCount }
+}
+
+/** Test-only: clears the FFT cache and resets the construction counter. */
+export function __resetFFTCacheForTests(): void {
+  fftCache.clear()
+  fftConstructionCount = 0
+}
 
 export type FrequencyParams = {
   /** FFT window size in samples: the number of samples per analysis frame before zero-padding. */
@@ -63,8 +140,10 @@ export type FrequencyParams = {
  *
  * `channels` should already contain exactly the channel data (and sample range, via
  * `Float32Array.subarray`) the caller wants analyzed - this function always walks each
- * channel from index 0 to its full length. It owns its FFT instance and all scratch
- * buffers for the duration of the call; nothing is cached or shared across calls.
+ * channel from index 0 to its full length. All scratch buffers (the analysis frame, the
+ * autoGain dB scratch) are owned by a single call and never shared; the only thing shared
+ * across calls is the bounded, correctly-keyed FFT instance cache described above
+ * `getOrCreateFFT`, which cannot change a call's output.
  */
 export function computeFrequencies(channels: Float32Array[], params: FrequencyParams): Uint8Array[][] {
   const {
@@ -84,10 +163,11 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
 
   const fftLength = fftSize ?? fftSamples
 
-  // Fresh FFT instance per call (no module-global mutable state); the window covers
-  // fftSamples samples, zero-padded up to fftLength. Alpha passes through untouched so
-  // FFT's per-window defaults and the explicit blackman alpha: 0 semantics match.
-  const fft = new (FFT as any)(fftLength, sampleRate, windowFunc, alpha, fftSamples)
+  // FFT instance from the bounded, keyed cache (see getOrCreateFFT above) - the window
+  // covers fftSamples samples, zero-padded up to fftLength. Alpha passes through
+  // untouched so FFT's per-window defaults and the explicit blackman alpha: 0 semantics
+  // match.
+  const fft = getOrCreateFFT(fftLength, sampleRate, windowFunc, alpha, fftSamples)
 
   // Create filter bank based on scale using the centralized function
   const numFilters = fftLength / 2
@@ -141,6 +221,10 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
   // transient memory: below the budget the dB frames are kept between the two passes; above
   // it only the maximum is tracked and the spectra are recomputed for quantization.
   const bins = fftLength / 2
+  // Callers are expected to pass equal-length channels (all sliced from one buffer, as
+  // every current caller does) - frameCount is taken as the max across channels so a
+  // ragged input still produces a safe (not undersized) memory-budget estimate, but the
+  // per-channel frame loops below still stop at each channel's own length.
   let frameCount = 0
   for (const channelData of channels) {
     const span = channelData.length
