@@ -1,6 +1,6 @@
 # <img src="https://user-images.githubusercontent.com/381895/226091100-f5567a28-7736-4d37-8f84-e08f297b7e1a.png" alt="logo" height="60" valign="middle" /> wavesurfer.js
 
-[![npm](https://img.shields.io/npm/v/wavesurfer.js)](https://www.npmjs.com/package/wavesurfer.js) [![sponsor](https://img.shields.io/badge/sponsor_us-🤍-%23B14586)](https://github.com/sponsors/katspaugh)
+[![npm](https://img.shields.io/npm/v/wavesurfer.js)](https://www.npmjs.com/package/wavesurfer.js) [![sponsor](https://img.shields.io/badge/sponsor_us-🤍-%23B14586)](https://github.com/sponsors/katspaugh) [![Digital Ocean](https://img.shields.io/badge/-Deploy%20on%20Digital%20Ocean-555?&logo=DigitalOcean)](https://m.do.co/c/b2fb57f5cf9a)
 
 **Wavesurfer.js** is an interactive waveform rendering and audio playback library, perfect for web applications. It leverages modern web technologies to provide a robust and visually engaging audio experience.
 
