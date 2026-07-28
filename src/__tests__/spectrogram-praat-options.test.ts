@@ -273,19 +273,26 @@ describe('explicit blackman alpha: 0 end-to-end', () => {
   })
 })
 
+// WindowedSpectrogramPlugin is now a thin shim delegating into spectrogram.ts's definePlugin()
+// setup (see spectrogram-windowed.ts) - calculateFrequenciesMainThread/calculateFrequenciesWithWorker
+// only exist post-_init(), under __spectrogramInternalsForTests().windowed. Same _init()
+// precedent as the rest of this file's SpectrogramPlugin rows; see spectrogram-windowed-destroy.test.ts
+// for the fuller explanation of this adaptation.
 describe('windowed plugin preEmphasis', () => {
   it('tilts the main-thread computation', async () => {
     const signal = makeSine(4000)
     const create = (preEmphasis: number): any => {
       const plugin: any = WindowedSpectrogram.create({ fftSamples: 256, noverlap: 128, scale: 'linear', preEmphasis })
-      plugin.buffer = {
+      plugin._init(createFakeWaveSurfer() as any)
+      const internals = plugin.__spectrogramInternalsForTests()
+      internals.buffer = {
         sampleRate: SAMPLE_RATE,
         length: signal.length,
         duration: signal.length / SAMPLE_RATE,
         numberOfChannels: 1,
         getChannelData: () => signal,
       }
-      return plugin
+      return internals.windowed
     }
 
     const plain = await create(0).calculateFrequenciesMainThread(0, signal.length / SAMPLE_RATE)
@@ -299,7 +306,9 @@ describe('windowed plugin preEmphasis', () => {
 
   it('forwards preEmphasis to the worker', async () => {
     const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 128, preEmphasis: 6 })
-    plugin.buffer = {
+    plugin._init(createFakeWaveSurfer() as any)
+    const internals = plugin.__spectrogramInternalsForTests()
+    internals.buffer = {
       sampleRate: SAMPLE_RATE,
       length: 4000,
       duration: 0.5,
@@ -307,9 +316,9 @@ describe('windowed plugin preEmphasis', () => {
       getChannelData: () => makeSine(4000),
     }
 
-    const promise = plugin.calculateFrequenciesWithWorker(0, 0.5)
+    const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.5)
     promise.catch(() => undefined)
-    const worker = plugin.worker
+    const worker = internals.worker
     expect(worker.postMessage).toHaveBeenCalledTimes(1)
     expect(worker.postMessage.mock.calls[0][0].options.preEmphasis).toBe(6)
     plugin.destroy()

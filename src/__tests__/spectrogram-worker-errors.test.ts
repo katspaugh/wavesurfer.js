@@ -46,9 +46,11 @@ function makeBuffer(): AudioBuffer {
 // SpectrogramPlugin is a definePlugin() plugin: its setup() (which attaches the public/test API
 // and creates the worker) only runs once the plugin is registered with a wavesurfer instance, not
 // at `.create()` time - see hover.test.ts/regions.test.ts for the same `_init()` pattern with
-// other ported plugins. WindowedSpectrogramPlugin is untouched by this port (still the pre-port
-// class, still does its setup in the constructor) and is deliberately NOT given this treatment
-// below.
+// other ported plugins. WindowedSpectrogramPlugin is now a thin shim delegating into the same
+// setup() (see spectrogram-windowed.ts), so it needs the identical `_init()` treatment - its
+// windowed-only internals (calculateFrequencies/calculateFrequenciesMainThread/
+// calculateFrequenciesWithWorker, and the segment manager) live under
+// __spectrogramInternalsForTests().windowed, same as spectrogram-windowed-destroy.test.ts.
 function createFakeWaveSurfer(overrides: Record<string, unknown> = {}) {
   const wrapper = document.createElement('div')
   Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
@@ -160,72 +162,76 @@ describe('SpectrogramPlugin worker error handling', () => {
 
 describe('WindowedSpectrogramPlugin worker error handling', () => {
   function createPlugin(options: Record<string, unknown> = {}) {
-    const plugin = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', ...options })
-    ;(plugin as any).buffer = makeBuffer()
-    return { plugin: plugin as any, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
+    const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', ...options })
+    plugin._init(createFakeWaveSurfer() as any)
+    const internals = plugin.__spectrogramInternalsForTests()
+    internals.buffer = makeBuffer()
+    return { plugin, internals, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
   }
 
   it('rejects the in-flight promise when the worker errors instead of waiting out the timeout', async () => {
-    const { plugin, worker } = createPlugin()
-    const promise = plugin.calculateFrequenciesWithWorker(0, 0.25)
+    const { internals, worker } = createPlugin()
+    const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.25)
     promise.catch(() => undefined)
     expect(worker.postMessage).toHaveBeenCalledTimes(1)
 
     worker.onerror(new Event('error'))
 
     expect(await settledWithin(promise, 200)).toBe('rejected')
-    expect(plugin.workerPromises.size).toBe(0)
+    expect(internals.workerPromises.size).toBe(0)
     expect(worker.terminate).toHaveBeenCalled()
-    expect(plugin.worker).toBeNull()
+    expect(internals.worker).toBeNull()
   })
 
   it('rejects the in-flight promise on a message deserialization error', async () => {
-    const { plugin, worker } = createPlugin()
-    const promise = plugin.calculateFrequenciesWithWorker(0, 0.25)
+    const { internals, worker } = createPlugin()
+    const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.25)
     promise.catch(() => undefined)
 
     worker.onmessageerror(new Event('messageerror'))
 
     expect(await settledWithin(promise, 200)).toBe('rejected')
-    expect(plugin.workerPromises.size).toBe(0)
-    expect(plugin.worker).toBeNull()
+    expect(internals.workerPromises.size).toBe(0)
+    expect(internals.worker).toBeNull()
   })
 
   it('cleans up the pending request when postMessage throws synchronously', async () => {
-    const { plugin, worker } = createPlugin()
+    const { internals, worker } = createPlugin()
     worker.postMessage.mockImplementation(() => {
       throw new Error('DataCloneError')
     })
 
-    const promise = plugin.calculateFrequenciesWithWorker(0, 0.25)
+    const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.25)
 
     await expect(promise).rejects.toThrow('DataCloneError')
-    expect(plugin.workerPromises.size).toBe(0)
+    expect(internals.workerPromises.size).toBe(0)
   })
 
   it('clears the timeout timer when a result arrives', async () => {
-    const { plugin, worker } = createPlugin()
+    const { internals, worker } = createPlugin()
     const clearTimeoutSpy = jest.spyOn(globalThis, 'clearTimeout')
-    const promise = plugin.calculateFrequenciesWithWorker(0, 0.25)
+    const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.25)
     const { id } = worker.postMessage.mock.calls[0][0]
     const result = [[new Uint8Array([1, 2, 3])]]
 
     worker.onmessage({ data: { type: 'frequenciesResult', id, result } })
 
     await expect(promise).resolves.toEqual(result)
-    expect(plugin.workerPromises.size).toBe(0)
+    expect(internals.workerPromises.size).toBe(0)
     expect(clearTimeoutSpy).toHaveBeenCalled()
   })
 
   it('rejects pending promises on destroy', async () => {
-    const { plugin } = createPlugin()
-    const promise = plugin.calculateFrequenciesWithWorker(0, 0.25)
+    const { plugin, internals } = createPlugin()
+    const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.25)
     promise.catch(() => undefined)
 
     plugin.destroy()
 
-    await expect(promise).rejects.toThrow('Plugin destroyed')
-    expect(plugin.workerPromises.size).toBe(0)
+    // Message text is now unified with SpectrogramPlugin's own teardown (both rendering modes
+    // share one setup()/teardown now) - was 'Plugin destroyed' pre-unification.
+    await expect(promise).rejects.toThrow('Spectrogram plugin destroyed')
+    expect(internals.workerPromises.size).toBe(0)
   })
 })
 
@@ -313,13 +319,15 @@ describe('SpectrogramPlugin fallbackToMainThread option', () => {
 describe('WindowedSpectrogramPlugin fallbackToMainThread option', () => {
   function createPlugin(options: Record<string, unknown> = {}) {
     const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', ...options })
-    plugin.buffer = makeBuffer()
-    return { plugin, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
+    plugin._init(createFakeWaveSurfer() as any)
+    const internals = plugin.__spectrogramInternalsForTests()
+    internals.buffer = makeBuffer()
+    return { plugin, internals, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
   }
 
   it('falls back to the main thread by default', async () => {
-    const { plugin, worker } = createPlugin()
-    const promise = plugin.calculateFrequencies(0, 0.25)
+    const { internals, worker } = createPlugin()
+    const promise = internals.windowed.calculateFrequencies(0, 0.25)
     worker.onerror(new Event('error'))
 
     const frequencies = await promise
@@ -327,11 +335,11 @@ describe('WindowedSpectrogramPlugin fallbackToMainThread option', () => {
   })
 
   it('emits an error and skips the main-thread computation when disabled', async () => {
-    const { plugin, worker } = createPlugin({ fallbackToMainThread: false })
+    const { plugin, internals, worker } = createPlugin({ fallbackToMainThread: false })
     const errors: Error[] = []
     plugin.on('error', (error: Error) => errors.push(error))
 
-    const promise = plugin.calculateFrequencies(0, 0.25)
+    const promise = internals.windowed.calculateFrequencies(0, 0.25)
     worker.onerror(new Event('error'))
 
     const frequencies = await promise
@@ -340,14 +348,14 @@ describe('WindowedSpectrogramPlugin fallbackToMainThread option', () => {
   })
 
   it('re-creates the worker on the next computation after a failure', async () => {
-    const { plugin, worker } = createPlugin()
-    const promise = plugin.calculateFrequencies(0, 0.25)
+    const { internals, worker } = createPlugin()
+    const promise = internals.windowed.calculateFrequencies(0, 0.25)
     worker.onerror(new Event('error'))
     await promise
-    expect(plugin.worker).toBeNull()
+    expect(internals.worker).toBeNull()
 
     const workerCount = mockWorkerInstances.length
-    const second = plugin.calculateFrequencies(0, 0.25)
+    const second = internals.windowed.calculateFrequencies(0, 0.25)
     expect(mockWorkerInstances.length).toBe(workerCount + 1)
     mockWorkerInstances[mockWorkerInstances.length - 1].onerror(new Event('error'))
     await second
@@ -424,9 +432,10 @@ describe('failure-state hygiene (stale cache and construction latch)', () => {
       // buffer, so this row needs one; the SpectrogramPlugin row's compute() takes its own
       // buffer argument instead and has no such field to set.
       (plugin: any) => {
-        plugin.buffer = makeBuffer()
+        plugin._init(createFakeWaveSurfer() as any)
+        plugin.__spectrogramInternalsForTests().buffer = makeBuffer()
       },
-      (plugin: any) => plugin.calculateFrequencies(0, 0.25),
+      (plugin: any) => plugin.__spectrogramInternalsForTests().windowed.calculateFrequencies(0, 0.25),
     ],
   ])('%s stops retrying worker construction after it fails permanently', async (_name, Plugin: any, init, compute) => {
     mockWorkerState.constructorShouldThrow = true
@@ -468,18 +477,22 @@ describe('worker timeout disposal', () => {
     jest.useFakeTimers()
     try {
       const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear' })
-      plugin.buffer = makeBuffer()
+      plugin._init(createFakeWaveSurfer() as any)
+      const internals = plugin.__spectrogramInternalsForTests()
+      internals.buffer = makeBuffer()
       const worker = mockWorkerInstances[mockWorkerInstances.length - 1]
 
-      const promise = plugin.calculateFrequenciesWithWorker(0, 0.25)
+      // Default workerTimeout (30000ms) - now the same configurable option full mode uses
+      // (Phase-1 windowed had this hard-coded; this unification removes that divergence).
+      const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.25)
       promise.catch(() => undefined)
       jest.advanceTimersByTime(30000)
       await expect(promise).rejects.toThrow(/timeout/i)
       expect(worker.terminate).toHaveBeenCalled()
-      expect(plugin.worker).toBeNull()
+      expect(internals.worker).toBeNull()
 
       const workerCount = mockWorkerInstances.length
-      const second = plugin.calculateFrequencies(0, 0.25)
+      const second = internals.windowed.calculateFrequencies(0, 0.25)
       expect(mockWorkerInstances.length).toBe(workerCount + 1)
       mockWorkerInstances[mockWorkerInstances.length - 1].onerror(new Event('error'))
       await second

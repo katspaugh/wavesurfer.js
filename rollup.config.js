@@ -49,10 +49,13 @@ export default [
     plugins: [dts()],
   },
 
-  // Wavesurfer plugins (exclude worker files)
+  // Wavesurfer plugins (exclude worker files and internal shared modules that live under
+  // src/plugins/ but aren't public plugin entries themselves - spectrogram-windowing.ts has no
+  // default export, which the CJS/UMD `exports: 'default'` builds below require; it's only
+  // ever imported by ../spectrogram-setup.ts, never built standalone)
   ...glob
     .sync('src/plugins/*.ts')
-    .filter((plugin) => !plugin.includes('worker'))
+    .filter((plugin) => !plugin.includes('worker') && !plugin.includes('spectrogram-windowing'))
     .map((plugin) => [
       // ES module
       {
