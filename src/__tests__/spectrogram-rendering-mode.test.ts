@@ -153,3 +153,65 @@ describe('SpectrogramPlugin windowed mode honors a configurable workerTimeout', 
     await expect(promise).resolves.toEqual(result)
   })
 })
+
+describe('SpectrogramPlugin full-mode-only data APIs no-op in windowed mode', () => {
+  // loadFrequenciesData/getFrequenciesData/clearCache all operate on the whole-buffer
+  // cachedBuffer/cachedFrequencies state that full mode's render() populates and consults;
+  // windowed mode has its own per-segment cache in segmentManager and never touches that state.
+  // Calling these in windowed mode would fight the segment renderer (loadFrequenciesData in
+  // particular would draw a whole-buffer result over/under the segment canvases). Deferred sweep
+  // item from the Task-4 report: resolved as a warn-and-no-op rather than a throw, since this is
+  // reachable from public API misuse, not a programming error inside this file.
+  let warnSpy: jest.SpyInstance
+
+  beforeEach(() => {
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+  })
+
+  afterEach(() => {
+    warnSpy.mockRestore()
+  })
+
+  it('loadFrequenciesData() warns and does not fetch or draw', async () => {
+    const fetchSpy = jest.fn()
+    global.fetch = fetchSpy as any
+
+    const plugin: any = SpectrogramPlugin.create({ rendering: 'windowed' })
+    plugin._init(createFakeWaveSurfer() as any)
+
+    await expect(plugin.loadFrequenciesData('https://example.com/data.json')).resolves.toBeUndefined()
+
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    expect(warnSpy.mock.calls[0][0]).toMatch(/loadFrequenciesData.*windowed/)
+  })
+
+  it('getFrequenciesData() warns and resolves null without touching the decoded buffer', async () => {
+    const plugin: any = SpectrogramPlugin.create({ rendering: 'windowed' })
+    plugin._init(createFakeWaveSurfer() as any)
+
+    await expect(plugin.getFrequenciesData()).resolves.toBeNull()
+
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    expect(warnSpy.mock.calls[0][0]).toMatch(/getFrequenciesData.*windowed/)
+  })
+
+  it('clearCache() warns and is a no-op', () => {
+    const plugin: any = SpectrogramPlugin.create({ rendering: 'windowed' })
+    plugin._init(createFakeWaveSurfer() as any)
+
+    expect(() => plugin.clearCache()).not.toThrow()
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    expect(warnSpy.mock.calls[0][0]).toMatch(/clearCache.*windowed/)
+  })
+
+  it('does NOT warn for these APIs in full mode', async () => {
+    const plugin: any = SpectrogramPlugin.create({})
+    plugin._init(createFakeWaveSurfer() as any)
+
+    plugin.clearCache()
+    await plugin.getFrequenciesData() // getDecodedData() returns null -> resolves null, no warn
+
+    expect(warnSpy).not.toHaveBeenCalled()
+  })
+})

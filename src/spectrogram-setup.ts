@@ -265,11 +265,24 @@ type TestInternals = {
 }
 
 export type Api = {
-  /** Fetch pre-computed spectrogram JSON data from a URL and render it. */
+  /**
+   * Fetch pre-computed spectrogram JSON data from a URL and render it.
+   * 'full' mode only - a no-op (with a console.warn) in 'windowed' mode, where data is
+   * computed and cached per segment via progressive loading instead of as one whole-buffer
+   * result; calling this would fight the segment renderer's own canvases.
+   */
   loadFrequenciesData: (url: string | URL) => Promise<void>
-  /** Get the current frequency data, computing (and caching) it from the decoded audio if needed. */
+  /**
+   * Get the current frequency data, computing (and caching) it from the decoded audio if needed.
+   * 'full' mode only - a no-op (returns null, with a console.warn) in 'windowed' mode; see
+   * loadFrequenciesData's doc comment for why.
+   */
   getFrequenciesData: () => Promise<Uint8Array[][] | null>
-  /** Clear cached frequency data to force recalculation. */
+  /**
+   * Clear cached frequency data to force recalculation.
+   * 'full' mode only - a no-op (with a console.warn) in 'windowed' mode, whose segment cache
+   * lives in segmentManager instead; see loadFrequenciesData's doc comment for why.
+   */
   clearCache: () => void
   /** Windowed rendering only: current loading progress as a percentage (0-100); 100 in 'full' mode. */
   getLoadingProgress: () => number
@@ -933,6 +946,21 @@ export function spectrogramSetup(
   }
 
   async function loadFrequenciesData(url: string | URL): Promise<void> {
+    // Full-mode-only API: it ends by calling drawSpectrogram() straight onto the paginated
+    // full-mode canvases, which windowed mode doesn't create/maintain (it owns its data and
+    // canvases through segmentManager's per-segment lazy loading instead). Calling it in
+    // windowed mode would draw over/under the segment renderer's own canvases with data that
+    // covers the whole buffer instead of a segment - a real "fight" between two independent
+    // drawing paths, not just a redundant call. No-op with a warning rather than throwing,
+    // since this is reachable from public API misuse, not a programming error inside this file.
+    if (isWindowed) {
+      console.warn(
+        'SpectrogramPlugin: loadFrequenciesData() is not supported in windowed rendering mode ' +
+          '(rendering: "windowed") - windowed instances compute and cache frequency data per ' +
+          'segment via progressive loading instead. Ignoring this call.',
+      )
+      return
+    }
     const resp = await fetch(url)
     if (!resp.ok) {
       throw new Error('Unable to fetch frequencies data')
@@ -948,6 +976,19 @@ export function spectrogramSetup(
   }
 
   async function getFrequenciesData(): Promise<Uint8Array[][] | null> {
+    // Same full-mode-only rationale as loadFrequenciesData above: this reads/writes
+    // cachedBuffer/cachedFrequencies, the whole-buffer cache full mode's render() path uses -
+    // windowed mode never populates or consults it (segmentManager has its own per-segment
+    // cache instead), so returning it here would silently hand back stale-shaped or empty data
+    // that has nothing to do with what's actually on screen.
+    if (isWindowed) {
+      console.warn(
+        'SpectrogramPlugin: getFrequenciesData() is not supported in windowed rendering mode ' +
+          '(rendering: "windowed") - windowed instances compute frequency data per segment, not ' +
+          'as one whole-buffer result. Returning null.',
+      )
+      return null
+    }
     const decodedData = ctx.wavesurfer?.getDecodedData()
     if (!decodedData) {
       return null
@@ -958,8 +999,14 @@ export function spectrogramSetup(
       return cachedFrequencies
     } else {
       // Calculate new frequencies and cache them; a failed computation (empty result)
-      // is not cached so the next render retries
+      // is not cached so the next render retries. Guard immediately post-await (mirroring
+      // render()'s ctx.scope.disposed checks, e.g. line ~1023): a caller can fire-and-forget
+      // this method (`void plugin.getFrequenciesData()`) and destroy() synchronously right
+      // after - without this guard, the cache write below would land after destroy() had
+      // already nulled cachedBuffer/cachedFrequencies, silently repopulating them with a
+      // stale AudioBuffer reference post-teardown.
       const frequencies = await getFrequencies(decodedData)
+      if (ctx.scope.disposed) return null
       if (frequencies.length > 0) {
         cachedFrequencies = frequencies
         cachedBuffer = decodedData
@@ -974,6 +1021,20 @@ export function spectrogramSetup(
 
   /** Clear cached frequency data to force recalculation */
   function clearCache(): void {
+    // Full-mode-only API for the same reason as loadFrequenciesData/getFrequenciesData above:
+    // this clears the whole-buffer cache full mode's render() consults; windowed mode's segment
+    // cache lives entirely in segmentManager (see its own reset()/evict paths) and is untouched
+    // by this. Note: this guard only affects the publicly-exposed clearCache (below, in the
+    // returned Api object); the internal call from getFrequenciesData's failure branch above is
+    // unreachable in windowed mode since getFrequenciesData no-ops before reaching it.
+    if (isWindowed) {
+      console.warn(
+        'SpectrogramPlugin: clearCache() is not supported in windowed rendering mode ' +
+          '(rendering: "windowed") - use stopProgressiveLoading()/restartProgressiveLoading() or ' +
+          'segmentManager APIs to control windowed caching instead. Ignoring this call.',
+      )
+      return
+    }
     cachedFrequencies = null
     cachedResampledData = null
     cachedBuffer = null

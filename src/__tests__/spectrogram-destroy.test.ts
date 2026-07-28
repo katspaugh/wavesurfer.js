@@ -17,8 +17,12 @@ import SpectrogramPlugin from '../plugins/spectrogram.js'
 // SpectrogramPlugin is a definePlugin() plugin now: its setup() (where the public/test API is
 // attached to the instance) only runs once the plugin is registered with a wavesurfer instance
 // (`_init`), not at `.create()` time - see hover.test.ts/regions.test.ts for the same pattern
-// with other ported plugins. Validation, which used to throw straight out of the pre-port class's
-// constructor, has moved with it: it now runs (and can only throw) at `_init()` time too. A
+// with other ported plugins. Option validation, however, still throws synchronously out of
+// `.create()`/`new SpectrogramPlugin()`, matching pre-port behavior: the default export is a
+// thin wrapper class around definePlugin's output whose constructor calls validateOptions()
+// right after `super()`, specifically so a bad option (e.g. an odd fftSize) fails at
+// construction time instead of surfacing later inside `_init()`/setup() - see
+// src/plugins/spectrogram.ts and src/spectrogram-setup.ts's validateOptions() for why. A
 // minimal fake wavesurfer is enough since these tests never exercise a real render.
 function createFakeWaveSurfer(overrides: Record<string, unknown> = {}) {
   const wrapper = document.createElement('div')
@@ -97,6 +101,45 @@ describe('SpectrogramPlugin destroy', () => {
       // Object.assign-based instance properties don't intercept a closure's own direct calls to
       // itself).
       expect(plugin.__spectrogramInternalsForTests().canvases).toHaveLength(0)
+    })
+
+    it('does not repopulate cachedBuffer/cachedFrequencies when getFrequenciesData resolves after destroy', async () => {
+      // getFrequenciesData()'s cache write (cachedBuffer = decodedData; cachedFrequencies =
+      // frequencies) happens after `await getFrequencies(decodedData)`, with no post-await
+      // destroyed guard - unlike every other async continuation in this file (loadFrequenciesData
+      // above, the worker-error handlers at spectrogram-setup.ts:695/829) which all check
+      // ctx.scope.disposed immediately after their await. A caller firing getFrequenciesData()
+      // and destroying without awaiting it (a plausible sequence - the public method returns a
+      // promise nothing forces the caller to await) would see the destroyed plugin's cache
+      // silently repopulated with a stale AudioBuffer reference post-teardown. No worker mocking
+      // needed to hit the race: useWebWorker defaults to false, so getFrequencies() runs its
+      // main-thread branch synchronously and returns a promise via computeFrequencies() - awaiting
+      // that always yields at least one microtask turn, which is enough for a synchronous
+      // destroy() call in between to land first.
+      const sampleRate = 8000
+      const signal = new Float32Array(2048)
+      for (let i = 0; i < signal.length; i++) {
+        signal[i] = Math.sin((2 * Math.PI * 1000 * i) / sampleRate)
+      }
+      const buffer = {
+        sampleRate,
+        length: signal.length,
+        duration: signal.length / sampleRate,
+        numberOfChannels: 1,
+        getChannelData: () => signal,
+      } as unknown as AudioBuffer
+
+      const plugin = SpectrogramPlugin.create({})
+      plugin._init(createFakeWaveSurfer({ getDecodedData: () => buffer }) as any)
+
+      const dataPromise = plugin.getFrequenciesData() // fire-and-forget, not awaited before destroy
+      plugin.destroy()
+
+      await dataPromise
+
+      const internals = plugin.__spectrogramInternalsForTests()
+      expect(internals.cachedBuffer).toBeNull()
+      expect(internals.cachedFrequencies).toBeNull()
     })
   })
 })

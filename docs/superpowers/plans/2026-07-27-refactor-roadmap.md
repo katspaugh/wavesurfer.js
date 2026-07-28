@@ -142,21 +142,58 @@ Shared utilities killed the copy-paste classes found in review:
 exported and functional — both as the chassis `definePlugin` builds on
 and, unchanged, for third-party class-based plugins and `record.ts`.
 
-## Plan 4 — Spectrogram unification + leak harness + lint bans (last)
+## Plan 4 — Spectrogram unification + leak harness + lint bans (DONE ✓, full plan in 2026-07-28-spectrogram-and-hardening.md)
 
-Spec: one spectrogram plugin with `rendering: 'full' | 'windowed'`
-strategy; single shared FFT kernel module imported by worker and main
-thread (deletes the triplicated loop); one options type + validation
-block; configurable worker timeout in both modes; remove both
-`@ts-nocheck` headers (the ~390 duplicated lines and the undeclared-field
-bugs they hid are already fixed or die in the merge). Plus:
-FinalizationRegistry leak tests under `node --expose-gc` (create →
-interact → destroy → gc → assert collected — the class of test that would
-have caught the spectrogram buffer retention); ESLint `no-restricted-*`
-bans on raw `addEventListener`/`setTimeout`/`setInterval`/
-`requestAnimationFrame`/`new ResizeObserver` outside `src/scope.ts`.
-Depends on Plan 3 (the merged spectrogram should be written against
-`definePlugin`, not `BasePlugin`).
+Implemented in branch `refactor/spectrogram-unification` (6 tasks, all passing: 537 jest
+tests + 7/7 GC-leak tests, tsc+eslint clean, full build clean). One spectrogram plugin
+(`SpectrogramPlugin`) with `rendering: 'full' | 'windowed'` as a strategy; single shared
+`computeFrequencies` kernel (`src/spectrogram-frequencies.ts`) imported by both the worker and
+main thread, replacing three near-identical ~130-line copies; one options type + validation
+block; configurable `workerTimeout` unified across both rendering modes; both spectrogram
+`@ts-nocheck` headers removed (the pre-existing one in `src/fft.ts` is untouched — out of this
+phase's scope, unrelated to the spectrogram plugins). `spectrogram-windowed.ts` survives as a
+thin deprecated shim (`WindowedSpectrogramPlugin` = its own `definePlugin` call that delegates
+into the same `spectrogramSetup()` with `rendering: 'windowed'` forced), keeping its dist entry
+and full test surface (including private-poke tests) working. Plus a `FinalizationRegistry`/
+`WeakRef` GC-leak harness (`src/__tests__/gc-leaks.test.ts`, run via `yarn test:leaks` under
+`node --expose-gc`, excluded from the default jest project) and ESLint `no-restricted-syntax`
+bans on raw `addEventListener`/`setTimeout`/`setInterval`/`requestAnimationFrame`/
+`new ResizeObserver`/`new Worker` outside a curated primitive-file allowlist (`src/scope.ts`,
+`src/timer.ts`, `src/frame-scheduler.ts`, the `src/reactive/*-stream.ts` files, `src/player.ts`
+line-scoped, `src/fetcher.ts`) — every hit adjudicated, one real violation fixed
+(`src/renderer.ts`'s raw `new ResizeObserver` moved onto a new `Scope.createResizeObserver()`
+primitive). See `docs/RELEASE_NOTES-scope-refactor.md`'s Phase 4 section for the full behavior-
+delta list and the `getFrequenciesData()` post-destroy cache-write race found and fixed in the
+final task.
+
+## REFACTOR COMPLETE
+
+All four sub-projects of the declarative refactor (Plan 1 — Scope/leak fixes and PR #4340
+groundwork predating this roadmap's Plan 2 numbering, Plan 2 — declarative load & viewport,
+Plan 3 — `definePlugin` + plugin ports, Plan 4 — spectrogram unification + leak harness + lint
+bans) are done and merged onto `refactor/spectrogram-unification`'s lineage. Closing summary:
+
+- **Leak-safety primitive**: `Scope`, a disposal tree every core/plugin resource (listeners,
+  timers, RAF loops, resize/intersection observers, workers, child scopes) is now registered on,
+  torn down in one `dispose()` call, and — as of Plan 4 — regression-tested at the GC level
+  (`FinalizationRegistry`/`WeakRef` harness under `node --expose-gc`), not just via manual
+  reference-counting review.
+- **Declarative load/viewport state**: `loadPhase`/`getVisibleRange()` signals and a pure
+  `computeCanvasPlan()` replaced ad hoc polling/flags for load and render-viewport state (Plan 2).
+- **Functional plugin chassis**: `definePlugin(name, (ctx, options) => api)` is the now-preferred
+  way to write a first-party plugin; seven of eight first-party plugins (`hover`, `zoom`,
+  `timeline`, `minimap`, `envelope`, `regions`, and now `spectrogram`/`spectrogram-windowed`) are
+  built on it. `record` remains class-based by deliberate ruling (needs pre-`registerPlugin()`
+  usability that `definePlugin`'s setup-at-init model can't express).
+- **Spectrogram unification**: one plugin, one shared frequency-computation kernel, a
+  `rendering: 'full' | 'windowed'` strategy instead of two divergent implementations, and a
+  deprecated-but-functional shim for the old `WindowedSpectrogramPlugin` entry point.
+- **Hardening**: ESLint now structurally prevents new raw `addEventListener`/timer/observer/
+  worker acquisitions outside `Scope`'s own primitive files, and the GC-leak harness gives that
+  guarantee a runtime regression test, not just a lint-time one.
+- Public API surface (exported plugin classes, `create()` signatures, option fields, event
+  names/payloads) is preserved throughout; every intentional behavior change is called out in
+  `docs/RELEASE_NOTES-scope-refactor.md`'s Phase 2/3/4 sections.
 
 ## Deliberately deferred (recommendation, not scheduled)
 

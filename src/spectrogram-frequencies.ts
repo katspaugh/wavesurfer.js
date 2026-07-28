@@ -93,12 +93,18 @@ function getOrCreateFFT(
   return fft
 }
 
-/** Test-only introspection into the FFT cache; not part of the public contract. */
+/**
+ * Test-only introspection into the FFT cache; not part of the public contract.
+ * @internal
+ */
 export function __getFFTCacheStatsForTests(): { size: number; constructions: number } {
   return { size: fftCache.size, constructions: fftConstructionCount }
 }
 
-/** Test-only: clears the FFT cache and resets the construction counter. */
+/**
+ * Test-only: clears the FFT cache and resets the construction counter.
+ * @internal
+ */
 export function __resetFFTCacheForTests(): void {
   fftCache.clear()
   fftConstructionCount = 0

@@ -225,3 +225,100 @@ scheduled for a later phase.
   parameter), so this falls out automatically from the port. It's a pure type widening, not a
   runtime behavior change: both setups already handled an omitted/`undefined` `options` correctly
   via `Object.assign({}, defaultOptions, options)`.
+
+## Phase 4 — Spectrogram unification + leak harness + lint bans (branch: `refactor/spectrogram-unification`)
+
+Merges the two spectrogram plugins onto one implementation and one shared frequency-computation
+kernel, adds a GC-level leak-regression harness, and adds ESLint bans on raw resource acquisition
+outside `Scope`. Public surface (`SpectrogramPlugin`/`WindowedSpectrogramPlugin` default exports,
+`create()` signatures, option fields, events) is unchanged.
+
+### New API
+
+- **`computeFrequencies(channels, params)`** (`src/spectrogram-frequencies.ts`) — the single,
+  fully-typed implementation of the frame/FFT/filter-bank/dB-scaling/autoGain loop that
+  previously existed as three near-identical ~130-line copies (the main-thread `spectrogram.ts`
+  path, `spectrogram-windowed.ts`'s main-thread fallback, and `spectrogram-worker.ts`). The
+  worker's version — the most complete of the three, the only one with both autoGain budget
+  strategies and the noverlap re-fallback quirk — was chosen as the behavioral reference; both
+  other call sites now route through it, and `spectrogram-worker.ts` imports it instead of
+  carrying its own copy (the worker bundling pipeline still inlines it correctly — verified in
+  `dist/plugins/spectrogram*.js` post-build).
+- **`Scope.createResizeObserver(el, fn)`** (`src/scope.ts`) — constructs a `ResizeObserver`,
+  calls `.observe(el)` immediately, and registers `.disconnect()` on the scope's disposal, in one
+  call — the `ResizeObserver` analog of `scope.listen`/`scope.timeout`. Added because the ESLint
+  resource-acquisition ban (below) caught `src/renderer.ts`'s raw `new ResizeObserver(...)` with
+  a manual `disconnect()` in `destroy()`; that call site now uses the primitive instead.
+- **`yarn test:leaks`** (`NODE_OPTIONS=--expose-gc jest --selectProjects leaks --runInBand`) — a
+  second Jest project (`src/__tests__/gc-leaks.test.ts`) that asserts, via `WeakRef` +
+  `global.gc()` polling, that destroyed instances and their heavyweight retainees (decoded
+  `AudioBuffer`s, region objects, a `definePlugin`-captured array) actually become collectible.
+  Not part of the default `yarn test:unit`/CI run (requires `--expose-gc`); run manually as an
+  additional gate. One case (detached-container DOM node collection) documents a known jsdom
+  caveat and is asserted with that caveat inline rather than silently passed.
+- **ESLint `no-restricted-syntax` resource-acquisition bans** (`eslint.config.js`) — raw
+  `addEventListener`/`setTimeout`/`setInterval`/`requestAnimationFrame`/`new ResizeObserver`/
+  `new Worker` in `src/**` (tests exempt) now fail lint with a message pointing at the `Scope`
+  alternative, except in a curated primitive-file allowlist where raw acquisition *is* the
+  primitive being implemented: `src/scope.ts`, `src/timer.ts`, `src/frame-scheduler.ts`,
+  `src/reactive/event-streams.ts`, `src/reactive/drag-stream.ts`, `src/reactive/scroll-stream.ts`,
+  a single line-scoped exemption in `src/player.ts` (`onMediaEvent()`), and `src/fetcher.ts`
+  (`watchProgress()`'s abort listener — no owning `Scope` in reach, but removed deterministically
+  in a `finally` before the function returns, so it can't outlive the fetch regardless of any
+  component's destroy timing; flagged in the task report as the one judgment call in the audit).
+  Every rule hit was individually adjudicated (see the task 5 report); the only genuine violation
+  found was `renderer.ts`'s `new ResizeObserver`, fixed via the new primitive above.
+
+### Deprecated
+
+- **`spectrogram-windowed.ts` / `WindowedSpectrogramPlugin`** is now a thin deprecated shim: its
+  own `definePlugin('WindowedSpectrogramPlugin', ...)` call that delegates into the same
+  `spectrogramSetup()` implementation `SpectrogramPlugin` uses, with `rendering: 'windowed'`
+  forced. Equivalent to (and going forward, prefer) `SpectrogramPlugin.create({ ...options,
+  rendering: 'windowed' })`. Kept fully functional, including its private test-poke surface, for
+  backward compatibility — no removal planned yet.
+
+### Behavior changes worth calling out
+
+- **`SpectrogramPlugin` now accepts `rendering?: 'full' | 'windowed'`** directly (previously only
+  reachable via the separate `WindowedSpectrogramPlugin`), plus the windowed-only options
+  (`windowSeconds`, `bufferSeconds`, `progressiveLoading`, etc.) forwarded straight through.
+- **Windowed mode's configurable `workerTimeout` unification.** Previously windowed mode had a
+  worker timeout hard-coded to 30000ms regardless of the `workerTimeout` option; it now honors
+  the same configurable value full mode always did, in both rendering modes uniformly.
+- **Windowed mode's noverlap re-fallback quirk now applies uniformly on the main-thread path.**
+  `computeFrequencies` treats a *derived* (pixel-density-computed, not user-supplied) noverlap of
+  exactly 0 as "unset" and re-overrides it to `round(fftSamples * 0.5)` — this was always true of
+  windowed mode's *worker* path (it already shared the worker's logic) but NOT of its bespoke
+  main-thread fallback, which clamped the derived value directly and respected a computed 0.
+  Post-unification both paths agree with the worker's pre-existing behavior. This only affects
+  the edge case where pixel density pushes the derived noverlap to exactly 0, and only for
+  windowed segments computed on the main thread (worker path and full mode were already this way).
+  autoGain remains unavailable in windowed mode (unchanged — windowed segments are computed
+  lazily/independently with no whole-buffer maximum to scale against).
+- **Both spectrogram plugins' `@ts-nocheck` headers are gone** — the ~390 duplicated lines they
+  hid, and the undeclared-field bugs those lines carried, are fixed or deleted in the merge. (The
+  unrelated pre-existing `@ts-nocheck` in `src/fft.ts` is untouched — outside this phase's scope.)
+- **Fixed: `getFrequenciesData()` could silently repopulate its cache after `destroy()`.** Its
+  cache write (`cachedBuffer`/`cachedFrequencies` assignment) ran after an unguarded
+  `await getFrequencies(...)`, unlike every other post-await continuation in the same file. A
+  caller firing it without awaiting (`void plugin.getFrequenciesData()`) and destroying
+  immediately after could see the cache land *after* `destroy()` had already nulled it — a narrow
+  but real post-teardown state leak, found during Phase 4's GC-leak harness work and fixed with a
+  post-await `ctx.scope.disposed` guard, mirroring `render()`'s own pattern. Covered by a new
+  failing-first regression test in `spectrogram-destroy.test.ts`.
+- **`loadFrequenciesData()`/`getFrequenciesData()`/`clearCache()` are now explicit no-ops (with a
+  `console.warn`) in windowed rendering mode**, instead of silently operating on whole-buffer
+  cache state windowed mode's render path never reads. These are full-mode-only APIs — calling
+  them in windowed mode would fight the segment renderer, which owns its own per-segment cache
+  through `segmentManager` instead. `loadFrequenciesData`/`getFrequenciesData` resolve to
+  `undefined`/`null` respectively; `clearCache` simply returns. Documented on each method's `Api`
+  doc comment.
+- **`tsconfig.json` now sets `"stripInternal": true`.** The `__*ForTests`/`__spectrogramInternalsForTests`
+  test-only introspection hatches (tagged `@internal`) are stripped from the emitted `dist/*.d.ts`
+  files, so they no longer appear as part of the published TypeScript surface, while remaining
+  fully usable from `src/__tests__/*` (ts-jest type-checks against `src/*.ts` directly, never
+  `dist/*.d.ts`, so this has zero effect on test compilation — verified by a full build and a full
+  test suite run with the flag enabled). Chosen over the documented-instability alternative because it
+  achieves the stronger guarantee (not just "please don't rely on this" but "it isn't there")
+  with no compilation-breaking downside found.

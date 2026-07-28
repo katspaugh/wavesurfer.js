@@ -7,6 +7,7 @@
     ],
     "allowUmdGlobalAccess": false,
     "declaration": true,
+    "stripInternal": true,
     "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
