@@ -173,8 +173,7 @@ const HoverPlugin = definePlugin<HoverPluginOptions, HoverPluginEvents, object>(
           wrapper.style.transform = ''
         }
       }
-      wrapper.addEventListener('transitionend', onTransitionEnd, { once: true })
-      transitionEndCleanup = () => wrapper.removeEventListener('transitionend', onTransitionEnd)
+      transitionEndCleanup = ctx.scope.listen(wrapper, 'transitionend', onTransitionEnd, { once: true })
     }, [pointerLeave]),
   )
   ctx.scope.add(() => {

@@ -180,6 +180,10 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     callback: (ev: HTMLElementEventMap[K]) => void,
     options?: boolean | AddEventListenerOptions,
   ): () => void {
+    // This IS player.ts's own listener-registration primitive for HTMLMediaElement events (mirrors
+    // scope.listen's add/remove pairing); every caller registers the returned remover on mediaScope
+    // (a real Scope) itself (see the constructor above).
+    // eslint-disable-next-line no-restricted-syntax
     this.media.addEventListener(event, callback, options)
     return () => this.media.removeEventListener(event, callback, options)
   }

@@ -1,4 +1,5 @@
 import EventEmitter from './event-emitter.js'
+import { Scope } from './scope.js'
 
 type WebAudioPlayerEvents = {
   loadedmetadata: []
@@ -47,6 +48,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   public seeking = false
   public autoplay = false
   public error: Error | null = null
+  // Owns only the one-shot 'ended' listener registered in stopAt() below (the
+  // raw-acquisition ESLint ban requires it go through Scope); disposed in
+  // destroy(). Everything else in this class is cleaned up manually because
+  // it isn't a DOM/timer/observer resource the ban covers.
+  private scope = new Scope()
 
   constructor(audioContext?: AudioContext) {
     super()
@@ -77,6 +83,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   destroy() {
     if (this._destroyed) return
     this._destroyed = true
+
+    // Tear down the stopAt() 'ended' listener, if any is pending
+    this.scope.dispose()
 
     // Clear currentSrc so any in-flight fetch/decode chains bail out
     // via their existing `this.currentSrc !== value` guards
@@ -223,20 +232,30 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     const currentBufferNode = this.bufferNode
     currentBufferNode?.stop(this.audioContext.currentTime + delay)
 
-    currentBufferNode?.addEventListener(
-      'ended',
-      () => {
-        if (currentBufferNode === this.bufferNode) {
-          this.bufferNode = null
-          this.pause()
-          // The 'ended' event fires with some latency, so clamp the reported
-          // position to the exact stop time
-          this.playbackPosition = Math.min(timeSeconds, this.duration)
-          this.emit('timeupdate')
-        }
-      },
-      { once: true },
-    )
+    if (currentBufferNode) {
+      // Each stopAt() call adds one more disposer to this.scope, even though the `{ once: true }`
+      // listener below removes itself from the DOM node once it fires - Scope.listen()'s own
+      // bookkeeping doesn't know about `once` and only prunes disposers on an explicit early-remove
+      // or scope.dispose(). This does not unbounded-leak in practice: it's bounded by how many
+      // times a single WebAudioPlayer instance has stopAt() called on it over its lifetime (not by
+      // audio duration or playback time), and the whole array - including any already-fired
+      // no-op removeEventListener entries - is pruned in one shot by destroy()'s scope.dispose().
+      this.scope.listen(
+        currentBufferNode,
+        'ended',
+        () => {
+          if (currentBufferNode === this.bufferNode) {
+            this.bufferNode = null
+            this.pause()
+            // The 'ended' event fires with some latency, so clamp the reported
+            // position to the exact stop time
+            this.playbackPosition = Math.min(timeSeconds, this.duration)
+            this.emit('timeupdate')
+          }
+        },
+        { once: true },
+      )
+    }
   }
 
   async setSinkId(deviceId: string) {

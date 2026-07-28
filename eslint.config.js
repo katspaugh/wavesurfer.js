@@ -7,6 +7,47 @@ const compat = new FlatCompat({
   allConfig: js.configs.all,
 })
 
+// Raw resource-acquisition APIs are banned everywhere in src/** except the
+// Scope primitives themselves (see the `no-restricted-syntax` override
+// below). Each selector matches both the bare global form (`setTimeout(...)`)
+// and the `window.`/`self.`/`globalThis.`-qualified form, so renaming the
+// receiver doesn't dodge the ban. The message on every entry names the Scope
+// (src/scope.ts) alternative to use instead.
+const rawResourceAcquisitionRule = [
+  'error',
+  {
+    selector: "CallExpression[callee.property.name='addEventListener']",
+    message:
+      'Raw addEventListener is banned outside Scope primitives. Use scope.listen(target, type, fn, options) (src/scope.ts) so the listener is removed on dispose.',
+  },
+  {
+    selector: "CallExpression[callee.name='setTimeout'], CallExpression[callee.property.name='setTimeout']",
+    message:
+      'Raw setTimeout is banned outside Scope primitives. Use scope.timeout(fn, ms) (src/scope.ts) so the timer is cleared on dispose.',
+  },
+  {
+    selector: "CallExpression[callee.name='setInterval'], CallExpression[callee.property.name='setInterval']",
+    message:
+      'Raw setInterval is banned outside Scope primitives. Use scope.interval(fn, ms) (src/scope.ts) so the interval is cleared on dispose.',
+  },
+  {
+    selector:
+      "CallExpression[callee.name='requestAnimationFrame'], CallExpression[callee.property.name='requestAnimationFrame']",
+    message:
+      'Raw requestAnimationFrame is banned outside Scope primitives. Use scope.raf(fn) (src/scope.ts), or Timer/FrameScheduler for a recurring loop, so the frame is cancelled on dispose.',
+  },
+  {
+    selector: "NewExpression[callee.name='ResizeObserver'], NewExpression[callee.property.name='ResizeObserver']",
+    message:
+      'Raw `new ResizeObserver(...)` is banned outside Scope primitives. Use scope.createResizeObserver(el, fn) (src/scope.ts), or scope.observeResize(observer, el) for an observer shared across elements, so it is disconnected/unobserved on dispose.',
+  },
+  {
+    selector: "NewExpression[callee.name='Worker'], NewExpression[callee.property.name='Worker']",
+    message:
+      'Raw `new Worker(...)` is banned. Construct workers via the `web-worker:` import + an injected WorkerCtor param (see src/plugins/spectrogram.ts) and register teardown (worker.terminate()) on ctx.scope.',
+  },
+]
+
 export default compat.config({
   env: { browser: true, es2021: true },
   parser: '@typescript-eslint/parser',
@@ -18,13 +59,77 @@ export default compat.config({
     '@typescript-eslint/no-empty-object-type': 'off',
     '@typescript-eslint/no-this-alias': 'off',
   },
-  ignorePatterns: ['cypress', 'examples', 'tutorial', 'src/plugins/spectrogram*', 'scripts'],
+  ignorePatterns: ['cypress', 'examples', 'tutorial', 'scripts'],
   overrides: [
     {
       files: ['src/__tests__/**/*.ts'],
       env: { jest: true, node: true },
       rules: {
         '@typescript-eslint/ban-ts-comment': 'off',
+      },
+    },
+    {
+      // Bans raw resource acquisition (addEventListener/setTimeout/setInterval/
+      // requestAnimationFrame/ResizeObserver/Worker construction) across all of
+      // src/**, so lifecycle cleanup is always expressed as disposing a Scope
+      // (src/scope.ts) instead of hand-paired add/remove calls. Tests are
+      // exempt entirely (excludedFiles below) -- of the three __tests__
+      // directories in src/ (src/__tests__, src/state/__tests__,
+      // src/reactive/__tests__), src/__tests__ and src/reactive/__tests__ both
+      // contain real raw-acquisition calls that would otherwise fail; the
+      // doubled-** glob reaches all three uniformly rather than listing them.
+      files: ['src/**/*.ts'],
+      excludedFiles: ['src/**/__tests__/**/*.ts'],
+      rules: {
+        'no-restricted-syntax': rawResourceAcquisitionRule,
+      },
+    },
+    {
+      // Primitive files: raw acquisition here IS the primitive that
+      // scope.listen/timeout/interval/raf/observeResize/createResizeObserver
+      // wraps for everyone else, or a self-contained resource with its own
+      // deterministic cleanup that isn't part of the Scope tree. Each is
+      // audited individually below; see task-5-report.md for the full hit
+      // audit this allowlist was derived from.
+      files: [
+        // The Scope class itself: addEventListener/setTimeout/setInterval/
+        // requestAnimationFrame/ResizeObserver here ARE scope.listen/timeout/
+        // interval/raf/createResizeObserver's implementations.
+        'src/scope.ts',
+        // Timer: a standalone requestAnimationFrame-driven tick loop (the
+        // pre-Scope playback clock primitive), analogous to scope.raf().
+        'src/timer.ts',
+        // FrameScheduler: the requestAnimationFrame loop primitive; its own
+        // stop() is registered on the Scope passed into its constructor.
+        'src/frame-scheduler.ts',
+        // fromEvent(): the reactive-signal DOM-event primitive. Its
+        // addEventListener is paired with a `_cleanup` function that callers
+        // invoke via reactive/event-streams.ts's own cleanup() helper (see
+        // renderer.ts/hover.ts, which wire that cleanup into their Scope).
+        'src/reactive/event-streams.ts',
+        // createDragStream()/createScrollStream(): reactive-stream primitives
+        // that own their own listeners and return a `cleanup()` function;
+        // callers (renderer.ts, envelope.ts) register that cleanup on their
+        // Scope instead of calling scope.listen directly.
+        'src/reactive/drag-stream.ts',
+        'src/reactive/scroll-stream.ts',
+        // fetchBlob()'s progress-abort listener: not owned by any component
+        // lifecycle (fetchBlob is a bare async utility, not a class with a
+        // Scope). It is deterministically removed in a `finally` block that
+        // runs on every exit path -- including the abort-mid-flight path,
+        // where the `while(true)` read loop throws a DOMException out of
+        // `reader.read()` and the `finally` still fires before the throw
+        // propagates -- so the listener cannot outlive the fetch regardless
+        // of how/when destroy() runs elsewhere.
+        'src/fetcher.ts',
+        // Player.onMediaEvent() is allowlisted at the call site (a
+        // line-level eslint-disable-next-line), not here -- see that method
+        // in player.ts. It's the file's only raw-acquisition call, so a
+        // file-wide entry isn't needed and would hide any new one added
+        // later in this (357-line) file.
+      ],
+      rules: {
+        'no-restricted-syntax': 'off',
       },
     },
   ],

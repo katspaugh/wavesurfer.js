@@ -121,7 +121,10 @@ const MinimapPlugin = definePlugin<MinimapPluginOptions, MinimapPluginEvents, ob
     let miniWavesurfer: WaveSurfer | null = null
     let miniScope = ctx.scope.child()
     let isInitializing = false
-    let dragTimeout: ReturnType<typeof setTimeout> | null = null
+    // Cancel function for the pending debounced-seek timeout, registered on
+    // ctx.scope (not miniScope) so it survives a minimap reinit (e.g. on
+    // 'decode') and is only ever cancelled explicitly below.
+    let cancelDragTimeout: (() => void) | null = null
 
     function renderMainProgress(progress: number) {
       ctx.wavesurfer.getRenderer().renderProgress(progress, ctx.wavesurfer.isPlaying())
@@ -148,9 +151,8 @@ const MinimapPlugin = definePlugin<MinimapPluginOptions, MinimapPluginEvents, ob
     function onMinimapDrag(relativeX: number) {
       renderMainProgress(relativeX)
 
-      if (dragTimeout) {
-        clearTimeout(dragTimeout)
-      }
+      cancelDragTimeout?.()
+      cancelDragTimeout = null
 
       let debounceTime = 0
       const dragToSeek = opts.dragToSeek
@@ -161,9 +163,9 @@ const MinimapPlugin = definePlugin<MinimapPluginOptions, MinimapPluginEvents, ob
         debounceTime = dragToSeek.debounceTime ?? 200
       }
 
-      dragTimeout = setTimeout(() => {
+      cancelDragTimeout = ctx.scope.timeout(() => {
         ctx.wavesurfer.seekTo(relativeX)
-        dragTimeout = null
+        cancelDragTimeout = null
       }, debounceTime)
     }
 
@@ -202,10 +204,8 @@ const MinimapPlugin = definePlugin<MinimapPluginOptions, MinimapPluginEvents, ob
       mini?.destroy()
       miniScope = ctx.scope.child()
 
-      if (dragTimeout) {
-        clearTimeout(dragTimeout)
-        dragTimeout = null
-      }
+      cancelDragTimeout?.()
+      cancelDragTimeout = null
     }
 
     function initMinimap() {

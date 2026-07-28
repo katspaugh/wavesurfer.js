@@ -53,6 +53,24 @@ function runWorker(signal: Float32Array, options: Record<string, unknown>): Uint
   return response.result
 }
 
+// SpectrogramPlugin is a definePlugin() plugin, but validateOptions() runs from its constructor
+// (see spectrogram.ts) same as the pre-port class, so `Plugin.create({...})` alone still throws
+// synchronously below - no `_init()` needed for the validation tests. The functional tests further
+// down still need a fake wavesurfer since setup() (which drives the actual render/worker/cache
+// behavior) only runs once the plugin is registered - see hover.test.ts/regions.test.ts for the
+// underlying `_init()` precedent with other ported plugins.
+function createFakeWaveSurfer() {
+  const wrapper = document.createElement('div')
+  Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
+  Object.defineProperty(wrapper, 'clientWidth', { value: 600, configurable: true })
+  return {
+    options: {},
+    getWrapper: () => wrapper,
+    getDecodedData: () => null,
+    on: () => () => undefined,
+  }
+}
+
 describe.each([
   ['SpectrogramPlugin', Spectrogram],
   ['WindowedSpectrogramPlugin', WindowedSpectrogram],
@@ -165,6 +183,7 @@ describe('main-thread compute with fftSize', () => {
   it('matches the worker output byte for byte on the default (no worker) path', async () => {
     const signal = makeSine(4000)
     const plugin: any = Spectrogram.create({ fftSamples: 64, fftSize: 512, noverlap: 32, scale: 'mel' })
+    plugin._init(createFakeWaveSurfer() as any)
     const buffer = {
       sampleRate: SAMPLE_RATE,
       length: signal.length,
@@ -173,7 +192,7 @@ describe('main-thread compute with fftSize', () => {
       getChannelData: () => signal,
     } as unknown as AudioBuffer
 
-    const mainResult = await plugin.getFrequencies(buffer)
+    const mainResult = await plugin.__spectrogramInternalsForTests().getFrequencies(buffer)
     const workerResult = runWorker(signal, { fftSamples: 64, fftSize: 512, noverlap: 32, scale: 'mel' })
 
     expect(mainResult.length).toBe(1)

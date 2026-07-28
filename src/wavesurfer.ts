@@ -407,7 +407,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     // Drag
     {
-      let debounce: ReturnType<typeof setTimeout> | undefined
+      let cancelDebounce: (() => void) | undefined
       const unsubscribeDrag = this.renderer.on('drag', (relativeX) => {
         if (!this.options.interact) return
 
@@ -415,7 +415,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.renderer.renderProgress(relativeX)
 
         // Set the audio position with a debounce
-        clearTimeout(debounce)
+        cancelDebounce?.()
         let debounceTime = 0
 
         const dragToSeek = this.options.dragToSeek
@@ -427,7 +427,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
           debounceTime = (dragToSeek as { debounceTime: number }).debounceTime ?? 200
         }
 
-        debounce = setTimeout(() => {
+        cancelDebounce = this.scope.timeout(() => {
           this.seekTo(relativeX)
         }, debounceTime)
 
@@ -435,11 +435,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.emit('drag', relativeX)
       })
 
-      // Clear debounce timeout on destroy
-      this.scope.add(() => {
-        clearTimeout(debounce)
-        unsubscribeDrag()
-      })
+      // Unsubscribe the drag listener on destroy (the debounce timeout is
+      // already torn down by this.scope itself via scope.timeout above).
+      this.scope.add(unsubscribeDrag)
     }
   }
 

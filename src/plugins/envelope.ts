@@ -8,6 +8,7 @@ import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
 import { createDragStream } from '../reactive/drag-stream.js'
 import { effect } from '../reactive/store.js'
+import { Scope } from '../scope.js'
 
 export type EnvelopePoint = {
   id?: string
@@ -59,11 +60,11 @@ class Polyline extends EventEmitter<{
   >
   private subscriptions: (() => void)[] = []
   private pointCleanups = new Map<EnvelopePoint, () => void>()
-  private dblClickListener?: (e: MouseEvent) => void
-  private touchStartListener?: (e: TouchEvent) => void
-  private touchMoveListener?: () => void
-  private touchEndListener?: () => void
-  private pressTimer?: number
+  // Owns the dblclick/touch listeners and the long-press timer below (the
+  // raw-acquisition ESLint ban requires these to go through Scope; destroy()
+  // disposes this instead of manually pairing add/removeEventListener).
+  private scope = new Scope()
+  private cancelPressTimer?: () => void
 
   constructor(options: Options, wrapper: HTMLElement) {
     super()
@@ -147,25 +148,24 @@ class Polyline extends EventEmitter<{
     }
 
     // Listen to double click to add a new point
-    this.dblClickListener = (e) => {
+    const dblClickListener = (e: MouseEvent) => {
       const rect = svg.getBoundingClientRect()
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
       this.emit('point-create', x / rect.width, y / rect.height)
     }
-    svg.addEventListener('dblclick', this.dblClickListener)
+    this.scope.listen(svg, 'dblclick', dblClickListener as EventListener)
 
     // Long press on touch devices
     const clearTimer = () => {
-      if (this.pressTimer !== undefined) {
-        clearTimeout(this.pressTimer)
-        this.pressTimer = undefined
-      }
+      this.cancelPressTimer?.()
+      this.cancelPressTimer = undefined
     }
 
-    this.touchStartListener = (e) => {
+    const touchStartListener = (e: TouchEvent) => {
       if (e.touches.length === 1) {
-        this.pressTimer = window.setTimeout(() => {
+        this.cancelPressTimer = this.scope.timeout(() => {
+          this.cancelPressTimer = undefined
           e.preventDefault()
           const rect = svg.getBoundingClientRect()
           const x = e.touches[0].clientX - rect.left
@@ -177,12 +177,9 @@ class Polyline extends EventEmitter<{
       }
     }
 
-    this.touchMoveListener = clearTimer
-    this.touchEndListener = clearTimer
-
-    svg.addEventListener('touchstart', this.touchStartListener)
-    svg.addEventListener('touchmove', this.touchMoveListener)
-    svg.addEventListener('touchend', this.touchEndListener)
+    this.scope.listen(svg, 'touchstart', touchStartListener as EventListener)
+    this.scope.listen(svg, 'touchmove', clearTimer)
+    this.scope.listen(svg, 'touchend', clearTimer)
   }
 
   private makeDraggable(draggable: SVGElement, onDrag: (x: number, y: number) => void): () => void {
@@ -318,29 +315,9 @@ class Polyline extends EventEmitter<{
   }
 
   destroy() {
-    // Clear pending press timer
-    if (this.pressTimer !== undefined) {
-      clearTimeout(this.pressTimer)
-      this.pressTimer = undefined
-    }
-
-    // Remove event listeners
-    if (this.dblClickListener) {
-      this.svg.removeEventListener('dblclick', this.dblClickListener)
-      this.dblClickListener = undefined
-    }
-    if (this.touchStartListener) {
-      this.svg.removeEventListener('touchstart', this.touchStartListener)
-      this.touchStartListener = undefined
-    }
-    if (this.touchMoveListener) {
-      this.svg.removeEventListener('touchmove', this.touchMoveListener)
-      this.touchMoveListener = undefined
-    }
-    if (this.touchEndListener) {
-      this.svg.removeEventListener('touchend', this.touchEndListener)
-      this.touchEndListener = undefined
-    }
+    // Cancels the pending press timer (if any) and removes the
+    // dblclick/touch listeners registered in the constructor above.
+    this.scope.dispose()
 
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.subscriptions = []
