@@ -1,6 +1,8 @@
-// One-off verification script (not wired into package.json scripts): resolves every
+// Verification script run automatically at the end of `npm run build` (and therefore
+// `prepublishOnly`), and available standalone as `npm run verify-exports`: resolves every
 // concrete example the exports map should serve against real files on disk, for both
-// the "import"+"types" and "require" conditions. Run with: node scripts/verify-exports.cjs
+// the "import"+"types" and "require" conditions, and exits non-zero if any target is
+// missing -- so a broken package.json#exports entry fails the build instead of shipping.
 'use strict'
 const fs = require('fs')
 const path = require('path')
