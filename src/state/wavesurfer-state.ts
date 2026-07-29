@@ -27,6 +27,7 @@ export interface WaveSurferState {
 
   // Audio controls
   readonly volume: Signal<number>
+  readonly muted: Signal<boolean>
   readonly playbackRate: Signal<number>
 
   // Audio data
@@ -52,11 +53,17 @@ export interface WaveSurferState {
  * Actions for updating WaveSurfer state
  */
 export interface WaveSurferActions {
+  /** @internal No caller in WaveSurfer's own wiring -- see the note above these six actions' implementations below. Public for direct/standalone use of this module. */
   setCurrentTime: (time: number) => void
+  /** @internal See setCurrentTime. */
   setDuration: (duration: number) => void
+  /** @internal See setCurrentTime. */
   setPlaying: (playing: boolean) => void
+  /** @internal See setCurrentTime. */
   setSeeking: (seeking: boolean) => void
+  /** @internal See setCurrentTime. */
   setVolume: (volume: number) => void
+  /** @internal See setCurrentTime. */
   setPlaybackRate: (rate: number) => void
   setAudioBuffer: (buffer: AudioBuffer | null) => void
   setPeaks: (peaks: Array<Float32Array | number[]> | null) => void
@@ -76,6 +83,7 @@ export interface PlayerSignals {
   currentTime?: WritableSignal<number>
   duration?: WritableSignal<number>
   volume?: WritableSignal<number>
+  muted?: WritableSignal<boolean>
   playbackRate?: WritableSignal<number>
   isSeeking?: WritableSignal<boolean>
 }
@@ -120,6 +128,7 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
   const isPlaying = playerSignals?.isPlaying ?? signal(false)
   const isSeeking = playerSignals?.isSeeking ?? signal(false)
   const volume = playerSignals?.volume ?? signal(1)
+  const muted = playerSignals?.muted ?? signal(false)
   const playbackRate = playerSignals?.playbackRate ?? signal(1)
 
   // WaveSurfer-specific signals (not in Player)
@@ -139,6 +148,7 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
     return canPlay.value && duration.value > 0
   }, [canPlay, duration])
 
+  // Historical alias of currentTime -- kept as-is (public API), not currentTime's inverse or a distinct value.
   const progress = computed(() => currentTime.value, [currentTime])
 
   const progressPercent = computed(() => {
@@ -155,6 +165,7 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
     isPaused,
     isSeeking,
     volume,
+    muted,
     playbackRate,
     audioBuffer,
     peaks,
@@ -168,7 +179,17 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
     progressPercent,
   }
 
-  // Actions that modify state
+  // Actions that modify state.
+  //
+  // setCurrentTime/setDuration/setPlaying/setSeeking/setVolume/setPlaybackRate
+  // (marked @internal on WaveSurferActions above) have no caller in
+  // WaveSurfer's own wiring: when playerSignals are supplied, WaveSurfer
+  // writes to the composed currentTime/duration/isPlaying/isSeeking/volume
+  // signals exclusively through Player (media events -> Player's own
+  // signals, which ARE these signals by reference -- see PlayerSignals).
+  // They're kept, not deleted, because they're part of this module's
+  // standalone/direct-use public contract (see the dedicated test coverage
+  // in wavesurfer-state.test.ts) independent of the WaveSurfer integration.
   const actions: WaveSurferActions = {
     setCurrentTime: (time: number) => {
       const clampedTime = Math.max(0, Math.min(duration.value || Infinity, time))

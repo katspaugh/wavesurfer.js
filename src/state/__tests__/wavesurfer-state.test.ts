@@ -11,6 +11,7 @@ describe('WaveSurferState', () => {
     expect(state.isPaused.value).toBe(true)
     expect(state.isSeeking.value).toBe(false)
     expect(state.volume.value).toBe(1)
+    expect(state.muted.value).toBe(false)
     expect(state.playbackRate.value).toBe(1)
     expect(state.audioBuffer.value).toBeNull()
     expect(state.peaks.value).toBeNull()
@@ -79,6 +80,15 @@ describe('WaveSurferState', () => {
 
       actions.setVolume(0.5)
       expect(state.volume.value).toBe(0.5)
+    })
+
+    it('should compose an externally-supplied muted signal, parallel to volume', () => {
+      const muted = signal(false)
+      const { state } = createWaveSurferState({ muted })
+
+      expect(state.muted.value).toBe(false)
+      muted.set(true)
+      expect(state.muted.value).toBe(true)
     })
 
     it('should clamp volume between 0 and 1', () => {

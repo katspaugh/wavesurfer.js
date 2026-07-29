@@ -1,6 +1,5 @@
 import {
   createScrollStream,
-  createScrollStreamWithAction,
   calculateScrollPercentages,
   calculateScrollBounds,
   type ScrollData,
@@ -121,7 +120,42 @@ describe('scroll-stream', () => {
       expect(stream.scrollData).toBeDefined()
       expect(stream.percentages).toBeDefined()
       expect(stream.bounds).toBeDefined()
+      expect(stream.refresh).toBeDefined()
       expect(stream.cleanup).toBeDefined()
+
+      stream.cleanup()
+    })
+
+    it('refresh() re-reads scroll metrics without a scroll event (R1)', () => {
+      const stream = createScrollStream(element)
+
+      expect(stream.scrollData.value).toEqual({
+        scrollLeft: 100,
+        scrollWidth: 1000,
+        clientWidth: 200,
+      })
+
+      // Change the element's metrics directly (as a layout pass would,
+      // e.g. render()/zoom()/container resize) WITHOUT dispatching a
+      // 'scroll' event.
+      Object.defineProperty(element, 'scrollWidth', { value: 2000, writable: true, configurable: true })
+      Object.defineProperty(element, 'clientWidth', { value: 400, writable: true, configurable: true })
+
+      // Stale until refresh() is called.
+      expect(stream.scrollData.value).toEqual({
+        scrollLeft: 100,
+        scrollWidth: 1000,
+        clientWidth: 200,
+      })
+
+      stream.refresh()
+
+      expect(stream.scrollData.value).toEqual({
+        scrollLeft: 100,
+        scrollWidth: 2000,
+        clientWidth: 400,
+      })
+      expect(stream.percentages.value.endX).toBeCloseTo((100 + 400) / 2000)
 
       stream.cleanup()
     })
@@ -203,65 +237,6 @@ describe('scroll-stream', () => {
         clientWidth: 200,
       })
       expect(spy).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('createScrollStreamWithAction', () => {
-    let element: HTMLElement
-
-    beforeEach(() => {
-      element = document.createElement('div')
-      document.body.appendChild(element)
-
-      Object.defineProperties(element, {
-        scrollLeft: { value: 100, writable: true, configurable: true },
-        scrollWidth: { value: 1000, writable: true, configurable: true },
-        clientWidth: { value: 200, writable: true, configurable: true },
-      })
-    })
-
-    afterEach(() => {
-      document.body.removeChild(element)
-    })
-
-    it('should call action on scroll', () => {
-      const onScrollChange = jest.fn()
-      const stream = createScrollStreamWithAction(element, onScrollChange)
-
-      // Initial call from effect
-      expect(onScrollChange).toHaveBeenCalledWith(100)
-
-      // Update scroll
-      Object.defineProperty(element, 'scrollLeft', {
-        value: 200,
-        writable: true,
-        configurable: true,
-      })
-      element.dispatchEvent(new Event('scroll'))
-
-      expect(onScrollChange).toHaveBeenCalledWith(200)
-
-      stream.cleanup()
-    })
-
-    it('should cleanup action effect', () => {
-      const onScrollChange = jest.fn()
-      const stream = createScrollStreamWithAction(element, onScrollChange)
-
-      const callCount = onScrollChange.mock.calls.length
-
-      stream.cleanup()
-
-      // Update scroll after cleanup
-      Object.defineProperty(element, 'scrollLeft', {
-        value: 300,
-        writable: true,
-        configurable: true,
-      })
-      element.dispatchEvent(new Event('scroll'))
-
-      // Should not be called again
-      expect(onScrollChange).toHaveBeenCalledTimes(callCount)
     })
   })
 })

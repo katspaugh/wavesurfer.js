@@ -219,6 +219,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       currentTime: this.currentTimeSignal,
       duration: this.durationSignal,
       volume: this.volumeSignal,
+      muted: this.mutedSignal,
       playbackRate: this.playbackRateSignal,
       isSeeking: this.seekingSignal,
     })
@@ -366,6 +367,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.scope.add(
       this.renderer.on('scroll', (startX, endX, scrollLeft, scrollRight) => {
         const duration = this.getDuration()
+        this.wavesurferActions.setScrollPosition(scrollLeft)
         this.emit('scroll', startX * duration, endX * duration, scrollLeft, scrollRight)
       }),
     )

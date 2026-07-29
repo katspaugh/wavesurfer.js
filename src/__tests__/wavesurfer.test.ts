@@ -364,6 +364,38 @@ describe('WaveSurfer public methods', () => {
     ws.destroy()
   })
 
+  test('wires the renderer scroll event into state.scrollPosition (R4)', () => {
+    const ws = createWs()
+    const renderer = getRenderer()
+    const scrollHandler = renderer.on.mock.calls.find(([event]: [string]) => event === 'scroll')?.[1]
+    expect(scrollHandler).toBeDefined()
+
+    jest.spyOn(ws, 'getDuration').mockReturnValue(100)
+    const scrollSpy = jest.fn()
+    ws.on('scroll', scrollSpy)
+
+    expect(ws.getState().scrollPosition.value).toBe(0)
+    scrollHandler(0.2, 0.4, 200, 400)
+
+    expect(ws.getState().scrollPosition.value).toBe(200)
+    // The public 'scroll' event still emits time-scaled values, unaffected by
+    // the new action call above.
+    expect(scrollSpy).toHaveBeenCalledWith(20, 40, 200, 400)
+    ws.destroy()
+  })
+
+  test('composes mutedSignal into state.muted, parallel to volume (R4)', () => {
+    const ws = createWs()
+    const media = ws.getMediaElement()
+    expect(ws.getState().muted.value).toBe(false)
+
+    Object.defineProperty(media, 'muted', { configurable: true, value: true, writable: true })
+    media.dispatchEvent(new Event('volumechange'))
+
+    expect(ws.getState().muted.value).toBe(true)
+    ws.destroy()
+  })
+
   test('walks loadPhase through decoding→ready for a peaks+duration load', async () => {
     const ws = WaveSurfer.create({
       container: document.createElement('div'),

@@ -405,4 +405,150 @@ describe('Renderer', () => {
       localContainer.remove()
     }
   })
+
+  it('visibleRange is truthful right after render, with no scroll event dispatched (R1)', async () => {
+    // Stub the scrollable metrics BEFORE render(), as real layout would
+    // produce them -- unlike 'recomputes visibleRange...' above, which stubs
+    // AFTER render() and dispatches a 'scroll' event. This exercises the
+    // render()-internal scrollStream.refresh() call directly: prior to R1,
+    // scrollStream was only ever updated by a DOM 'scroll' event, so
+    // visibleRange stayed pinned to the construction-time {startX:0, endX:1}
+    // shape (full duration) until the user scrolled.
+    const scrollContainer = (renderer as any).scrollContainer as HTMLElement
+    Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
+    Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 100 })
+
+    renderer.zoom(1000) // force isScrollable (no-op before first render, see zoom())
+    const buffer = createAudioBuffer([[0, 0.5, -0.5]], 100)
+    await renderer.render(buffer)
+
+    expect((renderer as any).isScrollable).toBe(true)
+    const range = renderer.getVisibleRange().value
+    expect(range.endTime).toBeLessThan(100)
+    expect(range.endTime).toBeCloseTo(10) // (0 + 100) / 1000 * 100
+  })
+
+  it('zoom() updates visibleRange via the same refresh path (R1)', async () => {
+    const buffer = createAudioBuffer([[0, 0.5, -0.5]], 100)
+    renderer.zoom(1000)
+    await renderer.render(buffer)
+
+    const scrollContainer = (renderer as any).scrollContainer as HTMLElement
+    // Layout changes between renders without a 'scroll' event ever firing --
+    // zoom()'s reRender() -> render() must refresh scrollStream itself.
+    Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 2000 })
+    Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 200 })
+
+    renderer.zoom(2000)
+
+    const range = renderer.getVisibleRange().value
+    expect(range.endTime).toBeCloseTo(10) // (0 + 200) / 2000 * 100
+  })
+
+  describe('dragToSeek object-form toggling (R5)', () => {
+    beforeAll(() => {
+      // Polyfill matchMedia and PointerEvent for jsdom, same shims as
+      // reactive/drag-stream.test.ts -- createDragStream() reads matchMedia
+      // synchronously to detect touch devices.
+      if (typeof window.matchMedia === 'undefined') {
+        Object.defineProperty(window, 'matchMedia', {
+          writable: true,
+          value: jest.fn().mockReturnValue({
+            matches: false,
+            addListener: jest.fn(),
+            removeListener: jest.fn(),
+          }),
+        })
+      }
+      if (typeof window.PointerEvent === 'undefined') {
+        class FakePointerEvent extends MouseEvent {
+          constructor(type: string, props: any) {
+            super(type, props)
+          }
+        }
+        // @ts-expect-error - Polyfill PointerEvent for jsdom test environment
+        window.PointerEvent = FakePointerEvent
+        // @ts-expect-error - Polyfill PointerEvent for jsdom test environment
+        global.PointerEvent = FakePointerEvent
+      }
+    })
+
+    const stubRect = (wrapper: HTMLElement) => {
+      wrapper.getBoundingClientRect = () =>
+        ({ left: 0, top: 0, right: 100, bottom: 50, width: 100, height: 50, x: 0, y: 0, toJSON: () => ({}) }) as DOMRect
+    }
+
+    // Full pointerdown -> pointermove -> pointerup cycle (past the default
+    // threshold of 3px) so createDragStream's internal document listeners are
+    // torn down again at the end of each simulated drag, same as
+    // reactive/drag-stream.test.ts's pattern.
+    const simulateDrag = (wrapper: HTMLElement) => {
+      wrapper.dispatchEvent(new PointerEvent('pointerdown', { clientX: 0, clientY: 0, button: 0 }))
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: 20, clientY: 0 }))
+      document.dispatchEvent(new PointerEvent('pointerup', { clientX: 20, clientY: 0 }))
+    }
+
+    test('enabling dragToSeek with the object form via setOptions makes drag work', () => {
+      const wrapper = renderer.getWrapper()
+      stubRect(wrapper)
+      const dragStartSpy = jest.fn()
+      renderer.on('dragstart', dragStartSpy)
+
+      expect((renderer as any).dragStream).toBeNull()
+
+      renderer.setOptions({ ...(renderer as any).options, dragToSeek: { debounceTime: 100 } })
+
+      simulateDrag(wrapper)
+      expect(dragStartSpy).toHaveBeenCalled()
+    })
+
+    test('disabling dragToSeek via setOptions (object -> false) kills drag', () => {
+      const wrapper = renderer.getWrapper()
+      stubRect(wrapper)
+
+      renderer.setOptions({ ...(renderer as any).options, dragToSeek: { debounceTime: 100 } })
+      expect((renderer as any).dragStream).not.toBeNull()
+
+      const dragStartSpy = jest.fn()
+      renderer.on('dragstart', dragStartSpy)
+
+      renderer.setOptions({ ...(renderer as any).options, dragToSeek: false })
+      expect((renderer as any).dragStream).toBeNull()
+
+      simulateDrag(wrapper)
+      expect(dragStartSpy).not.toHaveBeenCalled()
+    })
+
+    test('repeated setOptions toggles do not accumulate disposers on this.scope', () => {
+      const scope = (renderer as any).scope as { disposers: unknown[] }
+      const baseline = scope.disposers.length
+
+      for (let i = 0; i < 5; i++) {
+        renderer.setOptions({ ...(renderer as any).options, dragToSeek: { debounceTime: 100 } })
+        renderer.setOptions({ ...(renderer as any).options, dragToSeek: false })
+      }
+
+      expect(scope.disposers.length).toBe(baseline)
+      expect((renderer as any).dragScope).toBeNull()
+    })
+
+    test('repeated setOptions toggles balance pointerdown listener add/remove on the wrapper', () => {
+      const wrapper = renderer.getWrapper()
+      const addSpy = jest.spyOn(wrapper, 'addEventListener')
+      const removeSpy = jest.spyOn(wrapper, 'removeEventListener')
+
+      for (let i = 0; i < 5; i++) {
+        renderer.setOptions({ ...(renderer as any).options, dragToSeek: { debounceTime: 100 } })
+        renderer.setOptions({ ...(renderer as any).options, dragToSeek: false })
+      }
+
+      const adds = addSpy.mock.calls.filter(([type]) => type === 'pointerdown').length
+      const removes = removeSpy.mock.calls.filter(([type]) => type === 'pointerdown').length
+      expect(adds).toBe(5)
+      expect(removes).toBe(5)
+
+      addSpy.mockRestore()
+      removeSpy.mockRestore()
+    })
+  })
 })

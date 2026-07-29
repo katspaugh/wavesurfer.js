@@ -48,9 +48,21 @@ class Renderer extends EventEmitter<RendererEvents> {
   // registers its cancellation on the delayScope current at call time, so
   // both the next render() pass and destroy() can cancel it.
   private delayScope = this.scope.child()
-  private disposeDragStream: (() => void) | null = null
+  // Child of this.scope, created fresh in initDrag() and disposed+cleared in
+  // disposeDrag(). Scoping the drag stream + its effect to their own child
+  // (instead of registering their disposers straight onto this.scope) means
+  // repeated setOptions({dragToSeek}) toggles dispose exactly what the last
+  // initDrag() added -- a disposed child detaches itself from its parent, so
+  // this.scope never accumulates stale disposers across toggles.
+  private dragScope: Scope | null = null
   private dragStream: { signal: any; cleanup: () => void } | null = null
-  private scrollStream: { scrollData: any; percentages: any; bounds: any; cleanup: () => void } | null = null
+  private scrollStream: {
+    scrollData: any
+    percentages: any
+    bounds: any
+    refresh: () => void
+    cleanup: () => void
+  } | null = null
   private containerInlinePadding = 0
   private audioDuration = signal(0)
   private visibleRange: ComputedSignal<{ startTime: number; endTime: number }>
@@ -211,6 +223,11 @@ class Renderer extends EventEmitter<RendererEvents> {
   }
 
   private onContainerResize() {
+    // A container resize changes the scrollContainer's clientWidth (and
+    // potentially scrollWidth) without dispatching a 'scroll' event -- refresh
+    // unconditionally, even when the early-return below skips a full
+    // re-render, so visibleRange never reports stale metrics.
+    this.scrollStream?.refresh()
     const width = this.parent.clientWidth
     this.calculateInlinePadding()
     if (width === this.lastContainerWidth && this.options.height !== 'auto') return
@@ -223,8 +240,11 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Don't initialize drag if it's already set up
     if (this.dragStream) return
 
+    const dragScope = this.scope.child()
+    this.dragScope = dragScope
+
     this.dragStream = createDragStream(this.wrapper)
-    this.disposeDragStream = this.scope.add(() => {
+    dragScope.add(() => {
       this.dragStream?.cleanup()
       this.dragStream = null
     })
@@ -247,7 +267,20 @@ class Renderer extends EventEmitter<RendererEvents> {
       }
     }, [this.dragStream.signal])
 
-    this.scope.add(unsubscribeDrag)
+    dragScope.add(unsubscribeDrag)
+  }
+
+  /**
+   * Tears down the drag stream + its effect by disposing their child scope
+   * (see dragScope above), then clears the field so the next initDrag()
+   * starts from a clean, freshly-created child of the current this.scope.
+   * Safe to call when drag was never initialized (dragScope is null, or
+   * already disposed from a prior destroy()) -- Scope#dispose() is a no-op
+   * the second time.
+   */
+  private disposeDrag() {
+    this.dragScope?.dispose()
+    this.dragScope = null
   }
 
   private calculateInlinePadding(): void {
@@ -350,11 +383,10 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.parent = newParent
     }
 
-    if (options.dragToSeek === true || typeof this.options.dragToSeek === 'object') {
+    if (options.dragToSeek === true || typeof options.dragToSeek === 'object') {
       this.initDrag()
     } else {
-      this.disposeDragStream?.()
-      this.disposeDragStream = null
+      this.disposeDrag()
     }
 
     this.options = options
@@ -767,6 +799,15 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.scrollContainer.classList.toggle('noScrollbar', !!this.options.hideScrollbar)
     this.cursor.style.backgroundColor = `${this.options.cursorColor || this.options.progressColor}`
     this.cursor.style.width = `${this.options.cursorWidth}px`
+
+    // Layout is now settled (wrapper width + scrollContainer overflow both
+    // just set above): re-read the DOM's actual scroll metrics into
+    // scrollStream so visibleRange (and any other percentages/bounds
+    // consumer) reflects reality immediately, instead of staying pinned to
+    // whatever scrollWidth/clientWidth existed when the stream was created
+    // (construction time, or the previous render's layout) until the next
+    // 'scroll' DOM event happens to fire.
+    this.scrollStream?.refresh()
 
     this.audioData = audioData
     this.audioDuration.set(audioData.duration)
