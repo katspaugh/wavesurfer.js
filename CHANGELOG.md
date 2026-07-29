@@ -27,8 +27,21 @@ and a couple of narrow, intentionally-fixed behaviors.
   to `dist/`**, so deep imports through `./dist/*` for these specific paths will
   404: `dist/draggable.js`, `dist/reactive/event-stream-emitter.js`,
   `dist/reactive/media-event-bridge.js`, `dist/reactive/render-scheduler.js`,
-  `dist/reactive/state-event-emitter.js`. These had zero call sites in `src/`;
-  anyone importing one directly should drop the import or vendor the code.
+  `dist/reactive/state-event-emitter.js`, `dist/timer.js` (the internal `Timer`
+  class was ported to the existing `FrameScheduler` primitive and deleted; no
+  replacement export — `record.ts`, its only consumer, now uses
+  `FrameScheduler` directly). These had zero call sites in `src/`; anyone
+  importing one directly should drop the import or vendor the code.
+- **`dist/fft.js` now exports only the `FFT` class.** The frequency-scale math,
+  autoGain/color-mapping helpers, and colormap/UI helpers that used to live in
+  the same file (under its blanket `@ts-nocheck`) moved to a new
+  `dist/spectrogram-render-utils.js`. Anyone deep-importing e.g.
+  `magnitudesToColorIndices`, `setupColorMap`, `hzToMel`/`scaleToHz`, or
+  `createSparseFilterBankForScale` from `dist/fft.js` must import them from
+  `dist/spectrogram-render-utils.js` instead. The dead, unused dense
+  filter-bank functions `applyFilterBank` and `createFilterBankForScale` (the
+  sparse equivalents were already the ones actually used) were deleted
+  outright with no replacement.
 
 ### Added
 
