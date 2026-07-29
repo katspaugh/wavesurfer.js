@@ -402,4 +402,134 @@ describe('Memory Leak Detection', () => {
       expect(timeupdateHandler).toHaveBeenCalledWith(5)
     })
   })
+
+  // Task 3 (R3): destroy() disposes this.scope/mediaEventScope and Player's
+  // mediaScope, but historically only the constructor ever re-registered the
+  // listeners living on them (initPlayerEvents/initRendererEvents/
+  // Player.setupReactiveMediaEvents) -- so a plain destroy() -> load() reuse
+  // (no explicit setMediaElement() call, unlike the #3637 test above) left
+  // every WaveSurfer/Player event bridge permanently dead: no timeupdate
+  // forwarding, no renderer click-to-seek, no play forwarding, no reactive
+  // state tracking, and (per the Task 1 ledger) no scrollPosition tracking.
+  // ensureCoreEvents() (wavesurfer.ts) + Player.ensureMediaEvents()
+  // (player.ts) fix this by reviving those bridges at the top of
+  // loadAudio(), mirroring Renderer's own ensureInputEvents().
+  describe('destroy -> load() reuse: event bridges revive (Task 3, R3)', () => {
+    const originalGetContext = window.HTMLCanvasElement.prototype.getContext
+
+    // jsdom ships no Web Audio API at all (`typeof AudioBuffer === 'undefined'`), but
+    // decoder.ts's real (unmocked) Decoder.createBuffer() reads
+    // AudioBuffer.prototype.copyFromChannel/copyToChannel to populate its returned object. A
+    // minimal stub is enough: nothing in these tests calls those two methods, they just need to
+    // exist as functions at the point createBuffer reads them off the prototype. Same pattern as
+    // gc-leaks.test.ts.
+    if (typeof (globalThis as { AudioBuffer?: unknown }).AudioBuffer === 'undefined') {
+      class FakeAudioBuffer {
+        copyFromChannel(): void {}
+        copyToChannel(): void {}
+      }
+      ;(globalThis as { AudioBuffer?: unknown }).AudioBuffer = FakeAudioBuffer
+    }
+
+    beforeAll(() => {
+      // Renderer.render() is real here (unlike wavesurfer.test.ts, which
+      // mocks Renderer entirely) -- jsdom has no canvas backend, so its
+      // 2D context calls need a minimal stub to avoid throwing.
+      window.HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
+        beginPath: jest.fn(),
+        rect: jest.fn(),
+        roundRect: jest.fn(),
+        moveTo: jest.fn(),
+        lineTo: jest.fn(),
+        closePath: jest.fn(),
+        fill: jest.fn(),
+        drawImage: jest.fn(),
+        fillRect: jest.fn(),
+        createLinearGradient: jest.fn(() => ({ addColorStop: jest.fn() })),
+        globalCompositeOperation: '',
+        canvas: { width: 100, height: 100 },
+      })) as any
+    })
+
+    afterAll(() => {
+      window.HTMLCanvasElement.prototype.getContext = originalGetContext
+    })
+
+    // No peaks/duration in the create() options -- the constructor's
+    // deferred auto-load only fires when initialUrl || (peaks && duration)
+    // is truthy, so passing neither here means the only loads that happen
+    // are the explicit ones below, avoiding a race with that internal
+    // Promise.resolve().then(...).
+    const createReusedWs = async () => {
+      const ws = WaveSurfer.create({ container })
+      await ws.load('', [[0, 0.5, 1]], 1)
+      ws.destroy()
+      await ws.load('', [[0, 0.5, 1]], 1)
+      return ws
+    }
+
+    it('timeupdate flows on media event after destroy -> load', async () => {
+      const ws = await createReusedWs()
+      const onTimeupdate = jest.fn()
+      ws.on('timeupdate', onTimeupdate)
+
+      const media = ws.getMediaElement()
+      Object.defineProperty(media, 'currentTime', { configurable: true, value: 7 })
+      media.dispatchEvent(new Event('timeupdate'))
+
+      expect(onTimeupdate).toHaveBeenCalledWith(7)
+      ws.destroy()
+    })
+
+    it('renderer click seeks after destroy -> load', async () => {
+      const ws = await createReusedWs()
+      const setTimeSpy = jest.spyOn(ws, 'setTime')
+
+      // Drive the bridge directly via the Renderer's own event emitter
+      // (real, unmocked, in this file) rather than a raw DOM click -- this
+      // isolates WaveSurfer's own click -> seekTo bridge (initRendererEvents,
+      // registered on this.scope) from Renderer's separate internal
+      // DOM-listener revival (ensureInputEvents, already covered elsewhere).
+      const renderer = ws.getRenderer()
+      ;(renderer as any).emit('click', 0.5, 0.5)
+
+      expect(setTimeSpy).toHaveBeenCalled()
+      ws.destroy()
+    })
+
+    it('play event forwards after destroy -> load', async () => {
+      const ws = await createReusedWs()
+      const onPlay = jest.fn()
+      ws.on('play', onPlay)
+
+      ws.getMediaElement().dispatchEvent(new Event('play'))
+
+      expect(onPlay).toHaveBeenCalledTimes(1)
+      ws.destroy()
+    })
+
+    it('reactive state signals track again after destroy -> load', async () => {
+      const ws = await createReusedWs()
+
+      const media = ws.getMediaElement()
+      Object.defineProperty(media, 'currentTime', { configurable: true, value: 9 })
+      media.dispatchEvent(new Event('timeupdate'))
+
+      expect(ws.getState().currentTime.value).toBe(9)
+      ws.destroy()
+    })
+
+    it('state.scrollPosition tracks again after destroy -> load (Task 1 ledger)', async () => {
+      const ws = await createReusedWs()
+      jest.spyOn(ws, 'getDuration').mockReturnValue(100)
+
+      expect(ws.getState().scrollPosition.value).toBe(0)
+
+      const renderer = ws.getRenderer()
+      ;(renderer as any).emit('scroll', 0.2, 0.4, 200, 400)
+
+      expect(ws.getState().scrollPosition.value).toBe(200)
+      ws.destroy()
+    })
+  })
 })
