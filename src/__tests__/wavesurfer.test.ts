@@ -120,14 +120,24 @@ describe('WaveSurfer public methods', () => {
     expect((ws as any).scope.disposers.length).toBe(disposersBefore)
   })
 
-  test('registerPlugin after ws.destroy() re-registers cleanly on the fresh post-destroy scope (current behavior)', () => {
+  test('registerPlugin after ws.destroy() succeeds structurally, but stays dormant until the next load() revives the media-event bridge (current behavior)', async () => {
     // destroy() disposes the old scope and replaces it with a fresh, non-disposed one (see the
     // "Scope ownership tree" describe block in memory-leaks.test.ts) so a subsequent load() can
     // still register cleanups. registerPlugin() only ever touches `this.scope` and `this.plugins`
     // - neither of which destroy() nulls out or leaves disposed - so calling it AFTER destroy()
-    // is not rejected: it behaves exactly like calling it on a freshly-constructed instance. This
-    // pins that as the CURRENT, deliberate behavior (destroy() -> load() reuse is a supported
-    // flow elsewhere in this codebase; plugins registered post-destroy are not treated specially).
+    // is not rejected: the plugin registers, appears in getActivePlugins(), and its own destroy()
+    // is tracked normally.
+    //
+    // That is NOT the same as a freshly-constructed instance, though: the media-event ->
+    // public-event forwarding bridge (initPlayerEvents()'s mediaEventScope.add(onMediaEvent(...))
+    // -- what actually delivers 'timeupdate' etc. to WaveSurfer's public events, and from there to
+    // any plugin listening via ctx.wavesurfer.on(...)) is a SEPARATE mechanism gated by
+    // coreEventsInitialized. destroy() flips that flag off but does not immediately revive it --
+    // only the next loadAudio() call does, via ensureCoreEvents() at its top (see that method's
+    // doc comment). So there's a real dormant window: a plugin registered right after destroy(),
+    // before any load() call, structurally exists but receives nothing, because the bridge that
+    // would forward events to it hasn't been rebuilt yet. This test pins both halves of that
+    // boundary as CURRENT, deliberate behavior.
     const ws = createWs()
     class TestPlugin extends BasePlugin<{ destroy: [] }, {}> {}
 
@@ -146,9 +156,32 @@ describe('WaveSurfer public methods', () => {
     expect(() => ws.registerPlugin(pluginAfterDestroy)).not.toThrow()
     expect(ws.getActivePlugins()).toContain(pluginAfterDestroy)
 
-    // And its lifecycle is fully live on the new scope: destroying it removes it normally.
+    // Dormant window: the forwarding bridge isn't rebuilt yet, so a real media event does not
+    // reach WaveSurfer's public 'timeupdate' (and thus never reaches the plugin either).
+    const media = ws.getMediaElement()
+    const dormant = jest.fn()
+    ws.on('timeupdate', dormant)
+    Object.defineProperty(media, 'currentTime', { configurable: true, value: 5, writable: true })
+    media.dispatchEvent(new Event('timeupdate'))
+    expect(dormant).not.toHaveBeenCalled()
+
+    // Revival: load() runs ensureCoreEvents() at its top, rebuilding the bridge. Awaiting it
+    // already waits for the whole pipeline through its own 'ready' emit (no separate
+    // once('ready') wait needed -- that event has already fired by the time this resolves).
+    await ws.load('', [[0, 0.5, 1]], 1)
+
+    const revived = jest.fn()
+    ws.on('timeupdate', revived)
+    Object.defineProperty(media, 'currentTime', { configurable: true, value: 9, writable: true })
+    media.dispatchEvent(new Event('timeupdate'))
+    expect(revived).toHaveBeenCalledWith(9)
+
+    // And the plugin's own lifecycle is fully live on the new scope: destroying it removes it
+    // normally.
     pluginAfterDestroy.destroy()
     expect(ws.getActivePlugins()).not.toContain(pluginAfterDestroy)
+
+    ws.destroy()
   })
 
   test('wrapper and scroll helpers call renderer', () => {
