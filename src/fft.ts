@@ -4,7 +4,7 @@
  *
  * The legacy ES5 constructor-function FFT class. Everything else that used to live in this file
  * (frequency-scale math, autoGain/color-mapping helpers, colormap/UI helpers) is fully typed and
- * has moved to spectrogram-render-utils.ts (R16) - this file's blanket @ts-nocheck below is now
+ * has moved to spectrogram-render-utils.ts - this file's blanket @ts-nocheck below is now
  * truthfully scoped to just the untyped ES5 `this.x =` constructor pattern below, which doesn't
  * type-check as a class under strict mode.
  */

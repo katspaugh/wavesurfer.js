@@ -364,7 +364,7 @@ describe('WaveSurfer public methods', () => {
     ws.destroy()
   })
 
-  test('wires the renderer scroll event into state.scrollPosition (R4)', () => {
+  test('wires the renderer scroll event into state.scrollPosition', () => {
     const ws = createWs()
     const renderer = getRenderer()
     const scrollHandler = renderer.on.mock.calls.find(([event]: [string]) => event === 'scroll')?.[1]
@@ -384,7 +384,7 @@ describe('WaveSurfer public methods', () => {
     ws.destroy()
   })
 
-  test('composes mutedSignal into state.muted, parallel to volume (R4)', () => {
+  test('composes mutedSignal into state.muted, parallel to volume', () => {
     const ws = createWs()
     const media = ws.getMediaElement()
     expect(ws.getState().muted.value).toBe(false)

@@ -406,11 +406,11 @@ describe('Renderer', () => {
     }
   })
 
-  it('visibleRange is truthful right after render, with no scroll event dispatched (R1)', async () => {
+  it('visibleRange is truthful right after render, with no scroll event dispatched', async () => {
     // Stub the scrollable metrics BEFORE render(), as real layout would
     // produce them -- unlike 'recomputes visibleRange...' above, which stubs
     // AFTER render() and dispatches a 'scroll' event. This exercises the
-    // render()-internal scrollStream.refresh() call directly: prior to R1,
+    // render()-internal scrollStream.refresh() call directly: without it,
     // scrollStream was only ever updated by a DOM 'scroll' event, so
     // visibleRange stayed pinned to the construction-time {startX:0, endX:1}
     // shape (full duration) until the user scrolled.
@@ -428,7 +428,7 @@ describe('Renderer', () => {
     expect(range.endTime).toBeCloseTo(10) // (0 + 100) / 1000 * 100
   })
 
-  it('zoom() updates visibleRange via the same refresh path (R1)', async () => {
+  it('zoom() updates visibleRange via the same refresh path', async () => {
     const buffer = createAudioBuffer([[0, 0.5, -0.5]], 100)
     renderer.zoom(1000)
     await renderer.render(buffer)
@@ -445,7 +445,7 @@ describe('Renderer', () => {
     expect(range.endTime).toBeCloseTo(10) // (0 + 200) / 2000 * 100
   })
 
-  describe('dragToSeek object-form toggling (R5)', () => {
+  describe('dragToSeek object-form toggling', () => {
     beforeAll(() => {
       // Polyfill matchMedia and PointerEvent for jsdom, same shims as
       // reactive/drag-stream.test.ts -- createDragStream() reads matchMedia

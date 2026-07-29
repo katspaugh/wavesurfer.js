@@ -61,7 +61,7 @@ class Polyline extends EventEmitter<{
   private pointCleanups = new Map<EnvelopePoint, () => void>()
   // Owns every constructor-registered teardown: the dblclick/touch listeners
   // and long-press timer below, plus (when dragLine is on) the polyline
-  // drag-stream + its effect. Unified onto one Scope (R18) rather than
+  // drag-stream + its effect. Unified onto one Scope rather than
   // splitting cleanup between this and a hand-rolled subscriptions array --
   // destroy() disposes this once instead of draining two separate mechanisms.
   private scope = new Scope()

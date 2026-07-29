@@ -48,6 +48,51 @@ describe('sparse filter bank', () => {
     expect(sparse[0].centerHz).toBeGreaterThanOrEqual(0)
     expect(sparse[sparse.length - 1].centerHz).toBeLessThanOrEqual(sampleRate / 2)
   })
+
+  /**
+   * Independent analytic oracle for the sparse filter bank's own construction math (lo/
+   * weightLo/weightHi/centerHz), replacing the deleted dense-vs-sparse byte-identical
+   * comparison test. That test's only remaining value was catching a regression in
+   * createSparseFilterBank's per-row math (bin index, interpolation weights) - these two
+   * invariants target exactly that, independently of the production formula:
+   *
+   * 1. weightLo + weightHi === 1: by construction weightLo = 1 - r, weightHi = r, so this is
+   *    what a triangular filter's two taps must sum to (a single unit of energy split across
+   *    the two adjacent bins) - a weight-formula regression (e.g. swapped lo/hi, or `r`
+   *    computed from the wrong endpoint) breaks this.
+   * 2. Linear interpolation reconstructs centerHz: hzLow*weightLo + hzHigh*weightHi === hz,
+   *    where hzLow/hzHigh are recomputed here from `lo` and an independently-derived `scale`
+   *    (sampleRate / fftSamples, the same public quantity the implementation is documented to
+   *    use, but computed fresh in this test rather than read off any internal). This is the
+   *    algebraic identity the whole "sparse" representation depends on (see the module's own
+   *    SparseFilter doc comment): if it does not hold, applySparseFilterBank's two-tap
+   *    reconstruction of any row is wrong regardless of what centerHz itself claims - a bug in
+   *    the bin index `j`, the `scale` divisor, or the interpolation fraction `r` all break this
+   *    even though centerHz is taken as given. This does NOT independently verify hzToScale/
+   *    scaleToHz's own formulas (e.g. hzToMel/melToHz) are mathematically correct in isolation -
+   *    only that createSparseFilterBank's row construction is internally consistent with
+   *    whatever scale/inverse-scale pair it's handed. The golden-value block below covers the
+   *    end-to-end output (scale functions included) for a few frozen configurations instead.
+   */
+  it.each(SCALES)(
+    'interpolation-reconstructs centerHz from lo/weightLo/weightHi for %s scale (analytic oracle)',
+    (scale) => {
+      const fftSamples = 512
+      const sampleRate = 44100
+      const binHz = sampleRate / fftSamples // independently derived, not read from the implementation
+      const sparse = createSparseFilterBankForScale(scale, 64, fftSamples, sampleRate)!
+
+      for (const { lo, weightLo, weightHi, centerHz } of sparse) {
+        expect(weightLo + weightHi).toBeCloseTo(1, 10)
+        const hzLow = lo * binHz
+        const hzHigh = (lo + 1) * binHz
+        expect(hzLow * weightLo + hzHigh * weightHi).toBeCloseTo(centerHz, 6)
+        // Both taps must land within the FFT's valid bin range (0..fftSamples/2)
+        expect(lo).toBeGreaterThanOrEqual(0)
+        expect(lo + 1).toBeLessThanOrEqual(fftSamples / 2 + 1)
+      }
+    },
+  )
 })
 
 describe('magnitudesToColorIndices', () => {
@@ -198,3 +243,57 @@ describe('applySparseFilterBank', () => {
     }
   })
 })
+
+/**
+ * Golden-value oracle for createSparseFilterBank, restoring the independent-of-the-
+ * implementation-under-test correctness check the deleted dense-vs-sparse comparison test used
+ * to provide (see the "sparse filter bank" describe block above for the complementary analytic
+ * invariants, which don't cover the scale/inverse-scale formulas themselves - hzToMel/melToHz
+ * etc). These arrays are literal values captured from the CURRENT implementation while its math
+ * is known-good (frozen 2026-07-29, via `createSparseFilterBankForScale(scale, numFilters,
+ * fftSamples, sampleRate)` for each config below) and hardcoded here as the expected output -
+ * not re-derived from any production formula at test time. A regression in the bin index, the
+ * interpolation weights, OR the underlying hzToMel/hzToBark/hzToErb formulas would change these
+ * numbers and fail this test, which the finite/monotonic/interpolation-consistency checks above
+ * cannot catch on their own (they're satisfied by any internally-consistent - even if wrong in
+ * absolute terms - scale formula).
+ */
+describe('sparse filter bank golden values (frozen baseline)', () => {
+  it('matches the frozen mel-scale baseline (numFilters=6, fftSamples=512, sampleRate=16000)', () => {
+    const sparse = createSparseFilterBankForScale('mel', 6, 512, 16000)!
+    expect(sparse).toEqual([
+      { lo: 0, weightLo: 1, weightHi: 0, centerHz: 0 },
+      { lo: 11, weightLo: closeTo(0.3080726909), weightHi: closeTo(0.6919273091), centerHz: closeTo(365.372728) },
+      { lo: 29, weightLo: closeTo(0.513414837), weightHi: closeTo(0.486585163), centerHz: closeTo(921.455786) },
+      { lo: 56, weightLo: closeTo(0.4306388528), weightHi: closeTo(0.5693611472), centerHz: closeTo(1767.792536) },
+      { lo: 97, weightLo: closeTo(0.2117089339), weightHi: closeTo(0.7882910661), centerHz: closeTo(3055.884096) },
+      { lo: 160, weightLo: closeTo(0.4781034627), weightHi: closeTo(0.5218965373), centerHz: closeTo(5016.309267) },
+    ])
+  })
+
+  it('matches the frozen bark-scale baseline (numFilters=5, fftSamples=256, sampleRate=8000)', () => {
+    const sparse = createSparseFilterBankForScale('bark', 5, 256, 8000)!
+    expect(sparse).toEqual([
+      { lo: 0, weightLo: 1, weightHi: 0, centerHz: 0 },
+      { lo: 10, weightLo: closeTo(0.3158565751), weightHi: closeTo(0.6841434249), centerHz: closeTo(333.879482) },
+      { lo: 24, weightLo: closeTo(0.9764075834), weightHi: closeTo(0.0235924166), centerHz: closeTo(750.737263) },
+      { lo: 43, weightLo: closeTo(0.7119838265), weightHi: closeTo(0.2880161735), centerHz: closeTo(1352.750505) },
+      { lo: 73, weightLo: closeTo(0.4480759307), weightHi: closeTo(0.5519240693), centerHz: closeTo(2298.497627) },
+    ])
+  })
+
+  it('matches the frozen erb-scale baseline (numFilters=4, fftSamples=1024, sampleRate=44100)', () => {
+    const sparse = createSparseFilterBankForScale('erb', 4, 1024, 44100)!
+    expect(sparse).toEqual([
+      { lo: 0, weightLo: 1, weightHi: 0, centerHz: 0 },
+      { lo: 11, weightLo: closeTo(0.6228350563), weightHi: closeTo(0.3771649437), centerHz: closeTo(489.973607) },
+      { lo: 47, weightLo: closeTo(0.8850590098), weightHi: closeTo(0.1149409902), centerHz: closeTo(2029.071189) },
+      { lo: 159, weightLo: closeTo(0.6261049489), weightHi: closeTo(0.3738950511), centerHz: closeTo(6863.66091) },
+    ])
+  })
+})
+
+/** `expect.closeTo` shorthand for use inside `toEqual`'s nested object literals above. */
+function closeTo(value: number, precision = 6) {
+  return expect.closeTo(value, precision)
+}

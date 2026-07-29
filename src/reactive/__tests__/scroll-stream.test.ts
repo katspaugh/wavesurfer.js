@@ -68,7 +68,7 @@ describe('scroll-stream', () => {
       expect(result.endX).toBeLessThanOrEqual(1)
     })
 
-    // Moved from renderer-utils.test.ts's now-deleted duplicate (R10): a
+    // Moved from renderer-utils.test.ts's now-deleted duplicate: a
     // partial clamp (only the low end goes negative) with exact expected
     // values, distinct from the boundary-only assertion above.
     it('clamps only the out-of-range end while leaving the other exact', () => {
@@ -140,7 +140,7 @@ describe('scroll-stream', () => {
       stream.cleanup()
     })
 
-    it('refresh() re-reads scroll metrics without a scroll event (R1)', () => {
+    it('refresh() re-reads scroll metrics without a scroll event', () => {
       const stream = createScrollStream(element)
 
       expect(stream.scrollData.value).toEqual({

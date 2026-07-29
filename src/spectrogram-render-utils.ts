@@ -2,7 +2,7 @@
  * Frequency-scale math, autoGain/color-mapping helpers, and canvas/UI helpers shared by the
  * spectrogram plugins.
  *
- * Split out of fft.ts (R16): fft.ts's blanket `@ts-nocheck` was there only for the legacy ES5
+ * Split out of fft.ts: fft.ts's blanket `@ts-nocheck` was there only for the legacy ES5
  * FFT constructor (see fft.ts) -- these ~700 lines are fully typed and never needed it. Keeping
  * them in their own leaf module also lets spectrogram-windowing.ts and spectrogram-setup.ts both
  * import from here without creating a spectrogram-setup.ts <-> spectrogram-windowing.ts import
