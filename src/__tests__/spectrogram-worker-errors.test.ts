@@ -25,6 +25,7 @@ jest.mock(
 
 import Spectrogram from '../plugins/spectrogram.js'
 import WindowedSpectrogram from '../plugins/spectrogram-windowed.js'
+import { paintColumnPixels } from '../fft.js'
 
 const SAMPLE_RATE = 8000
 const LENGTH = 4096
@@ -183,6 +184,27 @@ describe('WindowedSpectrogramPlugin worker error handling', () => {
     expect(internals.worker).toBeNull()
   })
 
+  it('slices channel data to the segment range before postMessage instead of cloning the whole buffer', async () => {
+    // makeBuffer() is LENGTH (4096) samples at SAMPLE_RATE (8000) = 0.512s total. Requesting
+    // just [0, 0.25) must postMessage only floor(0.25 * 8000) = 2000 samples per channel, not
+    // getChannelData()'s full 4096-sample view - postMessage's structured clone copies the
+    // WHOLE ArrayBuffer backing a TypedArray view (not just the viewed range), so posting the
+    // full-length view directly would clone the entire decoded channel on every segment
+    // request, however small the segment.
+    const { internals, worker } = createPlugin()
+    const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.25)
+    promise.catch(() => undefined)
+
+    expect(worker.postMessage).toHaveBeenCalledTimes(1)
+    const { audioData, options } = worker.postMessage.mock.calls[0][0]
+    expect(audioData[0].length).toBe(2000)
+    // The worker still re-subarrays internally using options.startTime/endTime (same protocol
+    // as the full-buffer path) - since the data it now receives IS the slice, those must be
+    // shifted to be relative to it (0..sliceDuration), not the original absolute [0, 0.25).
+    expect(options.startTime).toBe(0)
+    expect(options.endTime).toBeCloseTo(2000 / 8000, 10)
+  })
+
   it('rejects the in-flight promise on a message deserialization error', async () => {
     const { internals, worker } = createPlugin()
     const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.25)
@@ -232,6 +254,28 @@ describe('WindowedSpectrogramPlugin worker error handling', () => {
     // share one setup()/teardown now) - was 'Plugin destroyed' pre-unification.
     await expect(promise).rejects.toThrow('Spectrogram plugin destroyed')
     expect(internals.workerPromises.size).toBe(0)
+  })
+
+  it('does not recreate the worker for a computation that runs after destroy', async () => {
+    // destroy()'s teardown (spectrogram-setup.ts's ctx.scope.add block) disposes the worker
+    // exactly once and relies on that being the plugin's last one - it never runs again. A
+    // worker built by a post-destroy computation would therefore never be terminated: a
+    // permanent live-Worker leak. `buffer` is normally nulled by that same teardown, closing
+    // off the only path that reaches worker construction; poking it back non-null (as this test
+    // does) simulates a caller still holding a stale reference and firing a computation anyway -
+    // the ctx.scope.disposed check is the guard that must catch that instead.
+    const { plugin, internals } = createPlugin()
+    const workerCountBeforeDestroy = mockWorkerInstances.length
+
+    plugin.destroy()
+    internals.buffer = makeBuffer()
+
+    // No worker to respond, so this falls back to (and completes via) the main-thread path -
+    // the point under test is only that it does so WITHOUT building a new worker first.
+    await internals.windowed.calculateFrequencies(0, 0.25)
+
+    expect(mockWorkerInstances.length).toBe(workerCountBeforeDestroy)
+    expect(internals.worker).toBeNull()
   })
 })
 
@@ -520,5 +564,32 @@ describe('drawSpectrogram zero-frame channels', () => {
     expect(() => plugin.__spectrogramInternalsForTests().drawSpectrogram([[]])).not.toThrow()
     expect(plugin.__spectrogramInternalsForTests().canvases).toHaveLength(0)
     expect(plugin.__spectrogramInternalsForTests().canvasContainer.contains(canvas)).toBe(false)
+  })
+})
+
+describe('paintColumnPixels clamps out-of-range bin values', () => {
+  // fillImageDataQuality (full-mode canvas path) and spectrogram-windowing.ts's
+  // renderChannelToCanvas (windowed-mode canvas path) both delegate to this one shared helper,
+  // so exercising it directly here covers both instead of fighting jsdom's lack of a real 2D
+  // canvas context (getContext('2d') returns null without a canvas-mock package, so the
+  // drawSpectrogram -> ... -> fillImageDataQuality DOM path never actually reaches pixel
+  // painting in this test environment).
+  it('does not throw indexing colorMap for a bin value outside [0, 255], and clamps to the nearest valid color', () => {
+    // Every internally-computed segment's bin values come from a Uint8Array (already 0-255),
+    // but loadFrequenciesData's externally-supplied JSON (frequenciesDataUrl) is only assumed,
+    // never runtime-validated, to already be in range - see frequenciesDataUrl's own doc
+    // comment. An out-of-range value must clamp to the nearest valid color instead of indexing
+    // colorMap out of bounds and throwing on `color[0]` off `undefined`.
+    const colorMap: number[][] = Array.from({ length: 256 }, (_, i) => [i / 255, 0, 0, 1])
+    const data = new Uint8ClampedArray(4 * 5) // 1 column, 5 rows, RGBA
+    const column = [300, -5, 128, 0, 255]
+
+    expect(() => paintColumnPixels(data, column, colorMap, 0, 1, 5)).not.toThrow()
+
+    // row 0 (value 300, clamps to 255 -> colorMap[255] = [1, 0, 0, 1]) lands at the BOTTOM
+    // pixel row ((rowCount - row - 1) * columnCount + columnIndex) * 4 = (5-0-1)*1*4 = 16
+    expect(data[16]).toBe(255)
+    // row 1 (value -5, clamps to 0 -> colorMap[0] = [0, 0, 0, 1]) at pixelIndex (5-1-1)*4 = 12
+    expect(data[12]).toBe(0)
   })
 })

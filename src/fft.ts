@@ -663,6 +663,46 @@ export function setupColorMap(colorMap: number[][] | 'gray' | 'igray' | 'roseus'
 }
 
 /**
+ * Map one column's dB-quantized bin values into an ImageData buffer's RGBA bytes via colorMap,
+ * for CSS pixel column `columnIndex` of `columnCount` total, `rowCount` bins tall. Shared by
+ * spectrogram-setup.ts's full-mode canvas path (fillImageDataQuality) and
+ * spectrogram-windowing.ts's windowed-mode canvas path (renderChannelToCanvas) so the two
+ * rendering strategies draw identically instead of drifting - which they had: windowed clamped
+ * `column[row]` into [0, 255] before indexing colorMap, full mode's fillImageDataQuality did
+ * not. Clamping is the correct form (this is the form both paths are unified on): `column`
+ * values are Uint8Array entries (already 0-255) for every internally-computed segment, but
+ * loadFrequenciesData's externally supplied JSON (see SpectrogramPluginOptions.frequenciesDataUrl
+ * in spectrogram-setup.ts) is only assumed, never runtime-validated, to already be in range - an
+ * out-of-range index would otherwise read `colorMap[colorIndex]` out of bounds and throw on
+ * `color[0]` off `undefined` instead of just rendering the nearest valid color.
+ *
+ * Lives here (not in spectrogram-setup.ts, despite being consumed there too) so
+ * spectrogram-windowing.ts - which spectrogram-setup.ts already imports SegmentManager etc. from
+ * - can use it too without a spectrogram-setup.ts <-> spectrogram-windowing.ts import cycle
+ * (rollup flags exactly that as a "Circular dependency" build warning if this lived on the other
+ * side). fft.ts is a dependency-free leaf both files already import from for colormap/scale
+ * helpers, so it's the natural shared home for a third pure colorMap-indexing helper.
+ */
+export function paintColumnPixels(
+  data: Uint8ClampedArray,
+  column: ArrayLike<number>,
+  colorMap: number[][],
+  columnIndex: number,
+  columnCount: number,
+  rowCount: number,
+): void {
+  for (let row = 0; row < rowCount; row++) {
+    const colorIndex = Math.min(255, Math.max(0, column[row]))
+    const color = colorMap[colorIndex]
+    const pixelIndex = ((rowCount - row - 1) * columnCount + columnIndex) * 4
+    data[pixelIndex] = color[0] * 255
+    data[pixelIndex + 1] = color[1] * 255
+    data[pixelIndex + 2] = color[2] * 255
+    data[pixelIndex + 3] = color[3] * 255
+  }
+}
+
+/**
  * Format frequency value for display
  */
 export function freqType(freq: number): string {

@@ -23,6 +23,7 @@ import {
   unitType,
   createWrapperClickHandler,
   AUTO_GAIN_BUFFER_BUDGET_BYTES,
+  paintColumnPixels,
 } from './fft.js'
 import { computeFrequencies, type FrequencyParams } from './spectrogram-frequencies.js'
 // Windowed rendering strategy (Phase 4, Task 3): segment map, eviction, uncovered-range
@@ -173,7 +174,13 @@ export type SpectrogramPluginOptions = {
   colorMap?: number[][] | 'gray' | 'igray' | 'roseus'
   /** Render a spectrogram for each channel independently when true. */
   splitChannels?: boolean
-  /** URL with pre-computed spectrogram JSON data, the data must be a Uint8Array[][] **/
+  /**
+   * URL with pre-computed spectrogram JSON data, the data must be a Uint8Array[][].
+   * 'full' mode only (the default `rendering` value) - ignored with `rendering: 'windowed'`,
+   * which computes and caches frequency data lazily per on-screen segment instead of as one
+   * whole-buffer result up front; there's no single whole-buffer draw for pre-computed data to
+   * feed. See loadFrequenciesData's own doc comment for the same rationale.
+   **/
   frequenciesDataUrl?: string
   /** Maximum width of individual canvas elements in pixels (default: 30000) */
   maxCanvasWidth?: number
@@ -434,7 +441,6 @@ export function spectrogramSetup(
   const zoomThreshold = 0.05 // More sensitive zoom detection
   let drawnCanvases: Record<number, boolean> = {}
   let canvases: HTMLCanvasElement[] = []
-  const pendingBitmaps = new Set<Promise<ImageBitmap>>()
   let scrollUnsubscribe: (() => void) | null = null
 
   // ---- DOM ----
@@ -535,6 +541,28 @@ export function spectrogramSetup(
 
   function getWrapperWidth(): number {
     return ctx.wavesurfer?.getWrapper()?.clientWidth || 0
+  }
+
+  // Single source of truth for "should this render split its channels into separate rows":
+  // the plugin's own splitChannels option wins when set, otherwise falls back to the
+  // wavesurfer instance's own splitChannels option (so a spectrogram matches the waveform it
+  // sits under by default). Used everywhere channel count or the worker's splitChannels flag
+  // is decided - full mode's own worker/main-thread paths and the windowed per-segment paths
+  // alike - so they can't drift the way full mode (which already had this `??` fallback) and
+  // windowed (which read only options.splitChannels, ignoring the wavesurfer-level option) did
+  // before this unification.
+  function effectiveSplitChannels(): boolean {
+    return Boolean(options.splitChannels ?? ctx.wavesurfer?.options.splitChannels)
+  }
+
+  // Normalizes a caught value into an Error and routes it to the plugin's own 'error' event,
+  // for use as a .catch() handler on the fire-and-forget renders below (throttledRender's
+  // `render()`, scheduleWindowedRender's `renderVisibleWindow()`, scheduleQualityUpdate's
+  // `updateVisibleSegmentQuality()`) - none of those callers await their promise (they're
+  // invoked from a timer callback with nothing to await it), so an uncaught rejection there
+  // would otherwise surface as an unhandled promise rejection instead of a normal plugin error.
+  function emitAsError(error: unknown): void {
+    ctx.emit('error', error instanceof Error ? error : new Error(String(error)))
   }
 
   // Terminate the worker and reject in-flight requests so callers fall back to the main thread
@@ -657,7 +685,7 @@ export function spectrogramSetup(
       throw new Error('Worker not available')
     }
 
-    const channels = (options.splitChannels ?? ctx.wavesurfer?.options.splitChannels) ? audioBuffer.numberOfChannels : 1
+    const channels = effectiveSplitChannels() ? audioBuffer.numberOfChannels : 1
 
     // Calculate noverlap
     let requestNoverlap = noverlap
@@ -688,7 +716,7 @@ export function spectrogramSetup(
       preEmphasis,
       autoGain,
       autoGainBufferBudgetBytes: autoGainBudgetBytes,
-      splitChannels: options.splitChannels || false,
+      splitChannels: effectiveSplitChannels(),
     })
   }
 
@@ -698,7 +726,12 @@ export function spectrogramSetup(
 
     // Use worker if enabled and available; a worker disposed after a runtime failure is
     // re-created on the next computation (construction failures are latched as permanent)
-    if (useWebWorker && !worker && !workerConstructionFailed && typeof Worker !== 'undefined') {
+    // ctx.scope.disposed guards against recreating a worker for a plugin that's already been
+    // destroyed: destroy()'s teardown (ctx.scope.add, above) runs disposeWorker() once and
+    // relies on that being the LAST worker this plugin ever owns - a worker built here after
+    // that teardown already ran would never be terminated (nothing re-registers a fresh
+    // teardown for it after the scope has already disposed), a permanent live-Worker leak.
+    if (useWebWorker && !worker && !workerConstructionFailed && !ctx.scope.disposed && typeof Worker !== 'undefined') {
       initializeWorker()
     }
     if (useWebWorker && worker) {
@@ -710,7 +743,7 @@ export function spectrogramSetup(
         if (!fallbackToMainThread) {
           // Surface the failure instead of silently recomputing on the main thread, which
           // can freeze the page for long files
-          ctx.emit('error', error instanceof Error ? error : new Error(String(error)))
+          emitAsError(error)
           return []
         }
         console.warn('Worker calculation failed, falling back to main thread:', error)
@@ -718,7 +751,7 @@ export function spectrogramSetup(
       }
     }
 
-    const channels = (options.splitChannels ?? ctx.wavesurfer?.options.splitChannels) ? audioBuffer.numberOfChannels : 1
+    const channels = effectiveSplitChannels() ? audioBuffer.numberOfChannels : 1
 
     // Calculate noverlap (same logic as worker for consistency)
     let mainThreadNoverlap = noverlap
@@ -767,20 +800,31 @@ export function spectrogramSetup(
     }
 
     const sampleRate = buffer.sampleRate
-    const channels = options.splitChannels ? buffer.numberOfChannels : 1
+    const channels = effectiveSplitChannels() ? buffer.numberOfChannels : 1
     const startSample = Math.floor(startTime * sampleRate)
     const endSample = Math.floor(endTime * sampleRate)
     const segmentWidth = (endTime - startTime) * getWindowedPixelsPerSecond()
     const requestNoverlap = deriveNoverlap(fftSamples, noverlap, endSample - startSample, segmentWidth)
 
+    // Slice each channel down to just this segment's samples BEFORE postMessage. postMessage's
+    // structured clone copies the whole ArrayBuffer backing a TypedArray view, not just the
+    // range the view exposes - so posting buffer.getChannelData(c) directly (a view over the
+    // ENTIRE decoded channel) would clone the whole file on every segment request, however
+    // small the segment. .slice() (not .subarray()) makes an actual copy with its own
+    // right-sized ArrayBuffer, so the structured clone only ever copies this segment's data.
+    // The worker still re-subarrays internally using options.startTime/endTime (same protocol
+    // as the full-buffer path in calculateFrequenciesWithWorker above) - startTime/endTime sent
+    // here are shifted to be relative to the slice (0..sliceDuration) rather than absolute
+    // offsets into the full buffer, since the slice no longer contains samples before
+    // startSample.
     const audioData: Float32Array[] = []
     for (let c = 0; c < channels; c++) {
-      audioData.push(buffer.getChannelData(c))
+      audioData.push(buffer.getChannelData(c).slice(startSample, endSample))
     }
 
     return postWorkerRequest(audioData, {
-      startTime,
-      endTime,
+      startTime: 0,
+      endTime: (endSample - startSample) / sampleRate,
       sampleRate,
       fftSamples,
       fftSize,
@@ -791,7 +835,7 @@ export function spectrogramSetup(
       gainDB,
       rangeDB,
       preEmphasis,
-      splitChannels: options.splitChannels || false,
+      splitChannels: effectiveSplitChannels(),
     })
   }
 
@@ -801,7 +845,7 @@ export function spectrogramSetup(
     const sampleRate = buffer.sampleRate
     const startSample = Math.floor(startTime * sampleRate)
     const endSample = Math.floor(endTime * sampleRate)
-    const channels = options.splitChannels ? buffer.numberOfChannels : 1
+    const channels = effectiveSplitChannels() ? buffer.numberOfChannels : 1
     const segmentWidth = (endTime - startTime) * getWindowedPixelsPerSecond()
     const requestNoverlap = deriveNoverlap(fftSamples, noverlap, endSample - startSample, segmentWidth)
 
@@ -830,7 +874,12 @@ export function spectrogramSetup(
 
     // A worker disposed after a runtime failure is re-created on the next computation
     // (construction failures are latched as permanent) - same policy as full mode.
-    if (useWebWorker && !worker && !workerConstructionFailed && typeof Worker !== 'undefined') {
+    // ctx.scope.disposed guards against recreating a worker for a plugin that's already been
+    // destroyed: destroy()'s teardown (ctx.scope.add, above) runs disposeWorker() once and
+    // relies on that being the LAST worker this plugin ever owns - a worker built here after
+    // that teardown already ran would never be terminated (nothing re-registers a fresh
+    // teardown for it after the scope has already disposed), a permanent live-Worker leak.
+    if (useWebWorker && !worker && !workerConstructionFailed && !ctx.scope.disposed && typeof Worker !== 'undefined') {
       initializeWorker()
     }
     if (worker) {
@@ -890,7 +939,10 @@ export function spectrogramSetup(
     cancelWindowedRenderTimer?.()
     cancelWindowedRenderTimer = ctx.scope.timeout(() => {
       cancelWindowedRenderTimer = null
-      void segmentManager?.renderVisibleWindow()
+      // Fire-and-forget from a timer callback - nothing here awaits this promise, so a
+      // rejection (e.g. a deps.computeSegmentFrequencies() failure) must be caught here or it
+      // becomes an unhandled rejection instead of a normal plugin 'error' event.
+      segmentManager?.renderVisibleWindow().catch(emitAsError)
     }, 16) // 60fps
   }
 
@@ -899,7 +951,7 @@ export function spectrogramSetup(
     cancelQualityUpdateTimer?.()
     cancelQualityUpdateTimer = ctx.scope.timeout(() => {
       cancelQualityUpdateTimer = null
-      void segmentManager?.updateVisibleSegmentQuality()
+      segmentManager?.updateVisibleSegmentQuality().catch(emitAsError)
     }, 500) // wait for zoom to settle
   }
 
@@ -922,7 +974,7 @@ export function spectrogramSetup(
     buffer = audioData
     frequencyMax = frequencyMax || audioData.sampleRate / 2
 
-    const channels = options.splitChannels ? audioData.numberOfChannels : 1
+    const channels = effectiveSplitChannels() ? audioData.numberOfChannels : 1
     wrapper.style.height = height * channels + 'px'
 
     // Clear existing data and reset progressive loading
@@ -1065,7 +1117,7 @@ export function spectrogramSetup(
       // Significant zoom change - full re-render
       cancelPendingRender = ctx.scope.timeout(() => {
         cancelPendingRender = null
-        void render()
+        render().catch(emitAsError)
       }, renderThrottleMs)
     }
   }
@@ -1153,14 +1205,8 @@ export function spectrogramSetup(
       Math.round(bitmapHeight * (rMax1 - rMin)),
     )
 
-    // Track pending bitmap for cleanup
-    pendingBitmaps.add(bitmapPromise)
-
     bitmapPromise
       .then((bitmap) => {
-        // Remove from pending set
-        pendingBitmaps.delete(bitmapPromise)
-
         try {
           // Check if canvas is still valid before drawing
           if (canvasCtx.canvas.parentNode) {
@@ -1180,8 +1226,8 @@ export function spectrogramSetup(
         }
       })
       .catch(() => {
-        // Clean up on error
-        pendingBitmaps.delete(bitmapPromise)
+        // Nothing to clean up on error - createImageBitmap rejected, so there's no bitmap and
+        // no canvas write to skip.
       })
   }
 
@@ -1514,18 +1560,7 @@ export function spectrogramSetup(
   ): void {
     // High quality rendering - process all pixels
     for (let i = 0; i < segmentWidth; i++) {
-      const column = segmentPixels[i]
-      for (let j = 0; j < bitmapHeight; j++) {
-        const colorIndex = column[j]
-        const color = colorMap[colorIndex]
-        const pixelIndex = ((bitmapHeight - j - 1) * segmentWidth + i) * 4
-
-        // Write RGBA values
-        data[pixelIndex] = color[0] * 255
-        data[pixelIndex + 1] = color[1] * 255
-        data[pixelIndex + 2] = color[2] * 255
-        data[pixelIndex + 3] = color[3] * 255
-      }
+      paintColumnPixels(data, segmentPixels[i], colorMap, i, segmentWidth, bitmapHeight)
     }
   }
 
@@ -1602,9 +1637,6 @@ export function spectrogramSetup(
 
   // ---- Teardown (replaces the pre-port destroy() override) ----
   ctx.scope.add(() => {
-    // Cancel pending bitmap operations
-    pendingBitmaps.clear()
-
     // Clean up worker, rejecting any in-flight requests
     disposeWorker(new Error('Spectrogram plugin destroyed'))
 
