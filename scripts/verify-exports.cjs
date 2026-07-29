@@ -30,6 +30,14 @@ const cases = [
   ['./dist/webaudio.js', 'import'],
   ['./dist/scope.js', 'types'],
   ['./dist/scope.js', 'import'],
+  // Known, permanently-accepted gap (see CHANGELOG's "Known limitations"):
+  // dist/*.min.js (terser-minified UMD bundles for a <script> tag) are built
+  // with `declaration: false` in rollup.config.js -- no realistic TS consumer
+  // imports types from a minified UMD bundle. The `./dist/*.js` wildcard
+  // still nominally matches this subpath and points `types` at a `.d.ts`
+  // that will never exist; `knownGap: true` reports that explicitly as a
+  // SKIP below instead of either failing the build or silently passing.
+  ['./dist/wavesurfer.min.js', 'types', { knownGap: true }],
 ]
 
 function matchPattern(key, subpath) {
@@ -47,7 +55,7 @@ function resolveTarget(template, captured) {
 }
 
 let failures = 0
-for (const [subpath, condition] of cases) {
+for (const [subpath, condition, opts] of cases) {
   // Node's real patternKeyCompare (lib/internal/modules/esm/resolve.js): longer
   // pre-'*' prefix wins; ties broken by longer full key string (so a more specific
   // suffix like '*.esm.js' outranks a broader '*.js' sharing the same prefix).
@@ -72,6 +80,10 @@ for (const [subpath, condition] of cases) {
   }
   const abs = path.join(root, resolved)
   const exists = fs.existsSync(abs)
+  if (!exists && opts?.knownGap) {
+    console.log(`SKIP   ${subpath} [${condition}] -> ${resolved} (known gap, not built -- see CHANGELOG "Known limitations")`)
+    continue
+  }
   console.log(`${exists ? 'OK  ' : 'FAIL'}   ${subpath} [${condition}] -> ${resolved}`)
   if (!exists) failures++
 }

@@ -140,7 +140,25 @@ export function createScrollStream(element: HTMLElement): ScrollStream {
   element.addEventListener('scroll', onScroll, { passive: true })
 
   const refresh = () => {
-    scrollData.set(readScrollData())
+    const next = readScrollData()
+    const current = scrollData.value
+    // readScrollData() always returns a fresh object literal, so
+    // scrollData.set(next) would always pass signal.set()'s Object.is
+    // check (two distinct objects are never Object.is-equal) and always
+    // notify, even when every field is identical to the current value --
+    // making every call site (initial render, zoom, container resize; see
+    // this function's doc comment) fire a spurious 'scroll' event downstream
+    // and risking a re-render-triggers-refresh-triggers-notify recursion for
+    // any consumer that re-renders from a scroll handler. Field-compare
+    // first and only set() on a genuine change.
+    if (
+      current.scrollLeft === next.scrollLeft &&
+      current.scrollWidth === next.scrollWidth &&
+      current.clientWidth === next.clientWidth
+    ) {
+      return
+    }
+    scrollData.set(next)
   }
 
   // Cleanup function

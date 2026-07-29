@@ -67,6 +67,37 @@ and a couple of narrow, intentionally-fixed behaviors.
   of the default test run) asserting that destroyed instances and their
   heavyweight retainees actually become collectible.
 
+### Changed
+
+- **`package.json`#`exports`' `"./dist/*"` deep-import wildcard is narrowed to
+  `"./dist/*.js"`** (`types`/`import` only — no `require` condition, since
+  there's no per-module `.cjs` build for internal `dist/` modules under
+  `"type": "module"`). The old `"./dist/*"` pattern's `types`/`require`
+  templates appended `.d.ts`/`.cjs` onto a subpath that already included
+  `.js` (e.g. producing `./dist/webaudio.js.d.ts`, which never existed);
+  besides fixing that, this also means a bare extensionless deep import like
+  `wavesurfer.js/dist/webaudio` no longer resolves at all — only the
+  `.js`-suffixed form does. `scripts/verify-exports.cjs` (new; also wired as
+  `npm run verify-exports` and into `npm run build`) checks every export
+  template against real post-build `dist/` files.
+- **`dist/types.d.ts`** (a `rollup-plugin-dts` bundle of `wavesurfer.d.ts`) is
+  no longer built. It was referenced by nothing — not `package.json`'s
+  `types` field, not any export entry, not any doc — so the rollup config
+  block and the now-unused `rollup-plugin-dts` devDependency were removed
+  rather than wired in.
+- **`createDragStream(element)`'s parameter type widened from `HTMLElement` to
+  the base `Element`.** Every DOM API the function touches
+  (`getBoundingClientRect`, add/removeEventListener) is declared on
+  `Element`/`EventTarget`, not `HTMLElement` specifically; callers passing an
+  `HTMLElement` (the overwhelmingly common case) are unaffected, but any
+  reimplementation of the `ScrollStream`/drag-stream shape against the old,
+  narrower parameter type should widen it too.
+- **The `ScrollStream` interface (`src/reactive/scroll-stream.ts`) gained a
+  `refresh()` method** — re-reads the element's current scroll metrics and
+  writes them into `scrollData` without waiting for a DOM `scroll` event.
+  Anyone structurally implementing `ScrollStream` (rather than only consuming
+  `createScrollStream()`'s return value) needs to add it.
+
 ### Fixed
 
 - Events (`pause`, `seeking`, `finish`, `timeupdate`, and others) are now emitted
@@ -107,3 +138,30 @@ and a couple of narrow, intentionally-fixed behaviors.
   style vs. the rest of the codebase, the minimap's hand-rolled overlay, some
   duplicated drag-toggle logic) were flagged in review as cosmetic drift and
   intentionally left as-is rather than churned for their own sake.
+
+### Known limitations
+
+- **Windowed spectrogram: a request-side segment-boundary rounding hazard.**
+  `calculateFrequenciesWithWorkerRange`'s `startSample`/`endSample` are
+  computed as `Math.floor(startTime * sampleRate)` /
+  `Math.floor(endTime * sampleRate)` directly off the caller-supplied
+  segment `startTime`/`endTime` (`src/spectrogram-setup.ts`). This is the
+  same class of division/re-multiplication rounding hazard already fixed on
+  the *response* side (the slice-length → `endTime` → worker
+  reconstruction round-trip, fixed with a half-sample epsilon — see the
+  "Fixed" entry above and `src/__tests__/spectrogram-worker-errors.test.ts`),
+  but on the *request* side it remains unaddressed: for an adversarial
+  `(startTime, sampleRate)` pair it can drop or duplicate a sample at a
+  segment boundary. Deliberately deferred — currently documented only in a
+  test comment (`spectrogram-worker-errors.test.ts`, the
+  "reconstructs the exact slice length..." test); called out here so the gap
+  is visible outside test source.
+- **`dist/*.min.js` (the terser-minified UMD bundles) have no matching
+  `.d.ts`.** `rollup.config.js` builds them with `declaration: false` — a
+  `<script>`-tag UMD bundle has no realistic TypeScript consumer. The
+  `"./dist/*.js"` exports wildcard (see Changed above) still nominally
+  matches these paths and points `types` at a `.d.ts` that will never exist;
+  `scripts/verify-exports.cjs` checks this explicitly and reports it as a
+  known, accepted gap (`SKIP ... (known gap...)`) in `npm run build`'s
+  verify-exports output, rather than either failing the build or silently
+  passing.

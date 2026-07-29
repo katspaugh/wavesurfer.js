@@ -174,6 +174,37 @@ describe('scroll-stream', () => {
       stream.cleanup()
     })
 
+    it('refresh() does not notify when metrics are unchanged (idempotent)', () => {
+      // Regression: refresh() used to call scrollData.set(readScrollData())
+      // unconditionally. readScrollData() always returns a fresh object
+      // literal, so even when every field is identical to the current
+      // value, signal.set()'s Object.is(_value, newValue) check always sees
+      // two distinct objects and always notifies -- meaning the Renderer's
+      // public 'scroll' event fired on every render()/resize call, even
+      // when nothing about the scroll metrics actually changed. Two
+      // consecutive refresh() calls with unchanged metrics must produce
+      // zero additional notifications; an actual metrics change must
+      // produce exactly one.
+      const stream = createScrollStream(element)
+      const spy = jest.fn()
+      stream.scrollData.subscribe(spy)
+
+      stream.refresh()
+      stream.refresh()
+      expect(spy).not.toHaveBeenCalled()
+
+      Object.defineProperty(element, 'scrollLeft', { value: 250, writable: true, configurable: true })
+      stream.refresh()
+      expect(spy).toHaveBeenCalledTimes(1)
+
+      // A second refresh() against the now-unchanged (post-update) metrics
+      // must not notify again.
+      stream.refresh()
+      expect(spy).toHaveBeenCalledTimes(1)
+
+      stream.cleanup()
+    })
+
     it('should initialize with current scroll values', () => {
       const stream = createScrollStream(element)
 

@@ -58,6 +58,12 @@ class Renderer extends EventEmitter<RendererEvents> {
   private scrollStream: ScrollStream | null = null
   private containerInlinePadding = 0
   private audioDuration = signal(0)
+  // Bumped in initEvents() every time a new this.scrollStream is created
+  // (construction, and each destroy() -> render() revival). Read (but
+  // otherwise unused) inside visibleRange's auto-tracked computed body below
+  // purely to force it to be a dependency -- see that computed's comment for
+  // why this is needed on top of this.audioDuration.
+  private streamEpoch = signal(0)
   private visibleRange: ComputedSignal<{ startTime: number; endTime: number }>
   // initEvents() (click/dblclick listeners, scrollStream, dragStream,
   // resize observer) only ever ran from the constructor, historically. But
@@ -122,10 +128,25 @@ class Renderer extends EventEmitter<RendererEvents> {
     // pointing at the old, now-orphaned percentages signal forever, and
     // visibleRange would never react to scroll again after the first
     // destroy(). Auto-tracking re-subscribes to whatever this.scrollStream
-    // currently is every time the computed reruns (e.g. on the
-    // audioDuration.set() in render()), so it picks up the freshly created
-    // percentages signal after a reuse.
+    // currently is every time the computed reruns.
+    //
+    // But a recompute has to actually FIRE for that re-subscription to
+    // happen, and audioDuration.set(duration) in render() -- the trigger
+    // this used to rely on exclusively -- is a no-op via Object.is whenever
+    // the reused instance loads audio of the SAME duration (the most common
+    // reuse: reloading the same track). With no duration change to ride
+    // along on, nothing would tell visibleRange to recompute, and it would
+    // stay subscribed to the disposed, orphaned pre-destroy percentages
+    // signal forever. this.streamEpoch closes that gap: initEvents() bumps
+    // it every time it builds a new this.scrollStream (construction, and
+    // every destroy() -> render() revival), and reading it here makes it a
+    // tracked dependency, so that bump alone -- independent of whether
+    // audioDuration actually changed -- forces the one recompute needed to
+    // re-collect dependencies against the new stream.
     this.visibleRange = computed(() => {
+      // Tracked only to force a recompute when initEvents() rebuilds
+      // this.scrollStream; see the comment above.
+      void this.streamEpoch.value
       const duration = this.audioDuration.value
       if (!this.isScrollable || duration === 0 || !this.scrollStream) {
         return { startTime: 0, endTime: duration }
@@ -190,6 +211,12 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Add a scroll listener using reactive stream
     this.scrollStream = createScrollStream(this.scrollContainer)
+    // Force visibleRange's auto-tracked computed to recompute and
+    // re-subscribe to THIS scrollStream's percentages, even when nothing
+    // else about to run this render cycle (e.g. audioDuration.set()) will
+    // actually change value and fire on its own -- see visibleRange's
+    // constructor comment.
+    this.streamEpoch.update((n) => n + 1)
     const unsubscribeScroll = effect(() => {
       const { startX, endX } = this.scrollStream!.percentages.value
       const { left, right } = this.scrollStream!.bounds.value

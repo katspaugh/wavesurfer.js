@@ -354,6 +354,41 @@ describe('Renderer', () => {
     expect(renderer.getVisibleRange().value.startTime).toBeGreaterThan(0)
   })
 
+  it('re-tracks visibleRange after destroy -> render reuse with the SAME duration', async () => {
+    // Regression: the 'keeps visibleRange live...' test above reuses with a
+    // DIFFERENT duration (100 -> 42), so audioDuration.set(42) genuinely
+    // changes value and fires -- which is exactly the trigger visibleRange's
+    // auto-tracking recompute needs to re-subscribe to the freshly created
+    // scrollStream.percentages. That masks the far more common reuse case:
+    // reloading the SAME track, where audioDuration.set(duration) is a no-op
+    // via Object.is (same number in, same number out) and never fires at
+    // all. Without a duration change to ride along on, nothing tells
+    // visibleRange's auto-tracked computed to recompute, so it stays
+    // subscribed to the disposed pre-destroy percentages signal forever and
+    // getVisibleRange() is permanently frozen at {startTime: 0, endTime:
+    // duration} for the rest of the instance's life.
+    renderer.zoom(1000)
+    await renderer.render(createAudioBuffer([[0, 0.5, -0.5]], 42))
+
+    renderer.destroy()
+    await renderer.render(createAudioBuffer([[0, 0.5, -0.5]], 42)) // SAME duration
+
+    expect((renderer as any).scrollStream).not.toBeNull()
+
+    const scrollContainer = (renderer as any).scrollContainer as HTMLElement
+    Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
+    Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 100 })
+
+    expect((renderer as any).isScrollable).toBe(true)
+
+    scrollContainer.scrollLeft = 500
+    scrollContainer.dispatchEvent(new Event('scroll'))
+
+    // Fails at HEAD: frozen at {startTime: 0, endTime: 42} because
+    // visibleRange never re-subscribed to the new scrollStream.
+    expect(renderer.getVisibleRange().value.startTime).toBeGreaterThan(0)
+  })
+
   it('revives click and scroll input after destroy -> render reuse', async () => {
     const localContainer = document.createElement('div')
     document.body.appendChild(localContainer)
