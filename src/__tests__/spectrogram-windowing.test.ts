@@ -304,6 +304,43 @@ describe('SegmentManager.renderVisibleWindow re-entrancy', () => {
     expect(manager.segments.size).toBe(2)
   })
 
+  it('does not run the coalesced re-arm pass once disposed while pendingRender is set', async () => {
+    // Mirrors the real host contract (destroy() disposes the Scope before/while an in-flight
+    // renderVisibleWindow() await can resume - see the "does not throw or touch destroyed DOM
+    // state..." host-level test elsewhere in this suite) but pins the dirty-flag re-arm path
+    // specifically: pendingRender is already true (from a bailed overlapping call) at the moment
+    // disposal happens, so the finally block's "one more pass" must still be skipped rather than
+    // reading deps (or computing) for a torn-down host.
+    let resolveCompute: ((value: Uint8Array[][]) => void) | null = null
+    let computeCalls = 0
+    const deps = makeDeps({
+      getBufferDuration: () => 600,
+      computeSegmentFrequencies: () => {
+        computeCalls++
+        return new Promise<Uint8Array[][]>((resolve) => {
+          resolveCompute = resolve
+        })
+      },
+    })
+    const manager = new SegmentManager(deps)
+
+    // First call starts computing (in flight, awaiting resolveCompute).
+    const first = manager.renderVisibleWindow()
+    // Second, overlapping call bails on the re-entrancy guard and re-arms pendingRender.
+    const second = manager.renderVisibleWindow()
+    expect(computeCalls).toBe(1)
+
+    // Dispose while the first call's compute is still pending, with pendingRender already set.
+    ;(deps as any).__setDisposed(true)
+    resolveCompute!([[new Uint8Array([1, 2, 3])]])
+
+    await Promise.all([first, second])
+
+    // Only the first call's own compute ran - the coalesced rerun the dirty flag would
+    // otherwise trigger must be skipped once disposed, not attempted.
+    expect(computeCalls).toBe(1)
+  })
+
   it('a second call after the first completes is not blocked by the guard', async () => {
     let computeCalls = 0
     const deps = makeDeps({

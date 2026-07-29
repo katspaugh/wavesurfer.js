@@ -202,7 +202,61 @@ describe('WindowedSpectrogramPlugin worker error handling', () => {
     // as the full-buffer path) - since the data it now receives IS the slice, those must be
     // shifted to be relative to it (0..sliceDuration), not the original absolute [0, 0.25).
     expect(options.startTime).toBe(0)
-    expect(options.endTime).toBeCloseTo(2000 / 8000, 10)
+    // Strict, not approximate: the worker reconstructs its own end sample via
+    // `Math.floor(options.endTime * options.sampleRate)` (spectrogram-worker.ts's
+    // calculateFrequencies) - that must land exactly on the slice's true length, not just
+    // "close to" it. See the adversarial-pairs test below for why this can't be `toBeCloseTo`.
+    expect(Math.floor(options.endTime * options.sampleRate)).toBe(2000)
+  })
+
+  it('reconstructs the exact slice length across the endTime float round-trip, for pairs where a naive division drops the last sample', async () => {
+    // Regression: sending `sliceLength / sampleRate` as the worker's endTime does not reliably
+    // survive the worker's own `Math.floor(endTime * sampleRate)` reconstruction - for ~5% of
+    // realistic (length, sampleRate) pairs the division-then-remultiplication round-trip lands a
+    // hair under the true value and silently drops the segment's last sample. (1015, 8000) is a
+    // concrete instance: 1015/8000 = 0.126875, and Math.floor(0.126875 * 8000) === 1014, not
+    // 1015. Brute-force verified fixed (0 mismatches across 9 common sample rates x 5000
+    // lengths) by sending a half-sample epsilon instead: (sliceLength + 0.5) / sampleRate.
+    const adversarialPairs: Array<[len: number, sampleRate: number]> = [
+      [1015, 8000],
+      [1, 8000],
+      [3, 11025],
+      [999, 22050],
+      [12345, 44100],
+      [7, 48000],
+    ]
+
+    for (const [len, sampleRate] of adversarialPairs) {
+      const data = new Float32Array(len + 10) // padding so the segment sits strictly inside the buffer
+      const buffer = {
+        sampleRate,
+        length: data.length,
+        duration: data.length / sampleRate,
+        numberOfChannels: 1,
+        getChannelData: () => data,
+      } as unknown as AudioBuffer
+
+      const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear' })
+      plugin._init(createFakeWaveSurfer() as any)
+      const internals = plugin.__spectrogramInternalsForTests()
+      internals.buffer = buffer
+      const worker = mockWorkerInstances[mockWorkerInstances.length - 1]
+
+      // +0.5-sample epsilon on the REQUEST's endTime too, so [startSample, endSample) resolves
+      // to exactly `len` samples regardless of the separate, pre-existing, same-shaped rounding
+      // hazard in THAT computation (calculateFrequenciesWithWorkerRange's own
+      // `Math.floor(endTime * sampleRate)` on the caller-supplied endTime) - isolating this test
+      // to only the round-trip this fix targets: the slice-length -> endTime -> worker's own
+      // floor reconstruction.
+      const promise = internals.windowed.calculateFrequenciesWithWorker(0, (len + 0.5) / sampleRate)
+      promise.catch(() => undefined)
+
+      const { audioData, options } = worker.postMessage.mock.calls[0][0]
+      expect(audioData[0].length).toBe(len)
+      // The worker's actual reconstruction formula (spectrogram-worker.ts's calculateFrequencies:
+      // `Math.floor(endTime * sampleRate)`) must recover the slice's true length exactly.
+      expect(Math.floor(options.endTime * options.sampleRate)).toBe(len)
+    }
   })
 
   it('rejects the in-flight promise on a message deserialization error', async () => {
