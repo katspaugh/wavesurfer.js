@@ -1,20 +1,8 @@
-jest.mock(
-  'web-worker:./spectrogram-worker.ts',
-  () => ({
-    __esModule: true,
-    default: class MockSpectrogramWorker {
-      onmessage: ((e: { data: any }) => void) | null = null
-      onerror: ((e: Event) => void) | null = null
-      postMessage = jest.fn()
-      terminate = jest.fn()
-    },
-  }),
-  { virtual: true },
-)
-
 import Spectrogram from '../plugins/spectrogram.js'
 import WindowedSpectrogram from '../plugins/spectrogram-windowed.js'
 import '../plugins/spectrogram-worker.js'
+import { createFakeWaveSurfer } from './helpers/fake-wavesurfer.js'
+import { createFakeAudioBuffer } from './helpers/audio-buffer.js'
 
 const SAMPLE_RATE = 8000
 
@@ -59,17 +47,6 @@ function runWorker(signal: Float32Array, options: Record<string, unknown>): Uint
 // down still need a fake wavesurfer since setup() (which drives the actual render/worker/cache
 // behavior) only runs once the plugin is registered - see hover.test.ts/regions.test.ts for the
 // underlying `_init()` precedent with other ported plugins.
-function createFakeWaveSurfer() {
-  const wrapper = document.createElement('div')
-  Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
-  Object.defineProperty(wrapper, 'clientWidth', { value: 600, configurable: true })
-  return {
-    options: {},
-    getWrapper: () => wrapper,
-    getDecodedData: () => null,
-    on: () => () => undefined,
-  }
-}
 
 describe.each([
   ['SpectrogramPlugin', Spectrogram],
@@ -183,14 +160,8 @@ describe('main-thread compute with fftSize', () => {
   it('matches the worker output byte for byte on the default (no worker) path', async () => {
     const signal = makeSine(4000)
     const plugin: any = Spectrogram.create({ fftSamples: 64, fftSize: 512, noverlap: 32, scale: 'mel' })
-    plugin._init(createFakeWaveSurfer() as any)
-    const buffer = {
-      sampleRate: SAMPLE_RATE,
-      length: signal.length,
-      duration: signal.length / SAMPLE_RATE,
-      numberOfChannels: 1,
-      getChannelData: () => signal,
-    } as unknown as AudioBuffer
+    plugin._init(createFakeWaveSurfer())
+    const buffer = createFakeAudioBuffer(signal, { sampleRate: SAMPLE_RATE })
 
     const mainResult = await plugin.__spectrogramInternalsForTests().getFrequencies(buffer)
     const workerResult = runWorker(signal, { fftSamples: 64, fftSize: 512, noverlap: 32, scale: 'mel' })

@@ -30,6 +30,25 @@ describe('Scope', () => {
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
+  it('child() on an already-disposed parent returns an already-disposed, unattached child', () => {
+    const parent = new Scope()
+    parent.dispose()
+
+    const child = parent.child()
+
+    // Returned pre-disposed (not merely inert): a disposer added afterward must run immediately,
+    // same as calling add() directly on a disposed scope.
+    expect(child.disposed).toBe(true)
+    const late = jest.fn()
+    child.add(late)
+    expect(late).toHaveBeenCalledTimes(1)
+
+    // Never attached to the parent's children set (the early-return in Scope.child() skips
+    // `this.children.add(child)`) - unlike a child created on a live parent (see "a
+    // directly-disposed child detaches from the parent" above, which starts attached).
+    expect((parent as any).children.has(child)).toBe(false)
+  })
+
   it('isolates disposer errors', () => {
     const errSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
     const scope = new Scope()

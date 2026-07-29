@@ -1,22 +1,6 @@
 import ZoomPlugin from '../plugins/zoom.js'
 import { signal } from '../reactive/store.js'
-
-type Listener = (...args: any[]) => void
-
-const createEmitter = () => {
-  const listeners = new Map<string, Set<Listener>>()
-
-  return {
-    on: jest.fn((event: string, listener: Listener) => {
-      if (!listeners.has(event)) {
-        listeners.set(event, new Set())
-      }
-
-      listeners.get(event)!.add(listener)
-      return () => listeners.get(event)?.delete(listener)
-    }),
-  }
-}
+import { createEmitter } from './helpers/create-emitter.js'
 
 const createWaveSurfer = (container: HTMLElement, wrapper: HTMLElement, durationValue: number) => {
   const duration = signal(durationValue)

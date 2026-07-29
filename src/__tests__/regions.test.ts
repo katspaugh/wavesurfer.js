@@ -1,21 +1,6 @@
 import RegionsPlugin from '../plugins/regions.js'
-
-type Listener = (...args: any[]) => void
-
-const createEmitter = () => {
-  const listeners = new Map<string, Set<Listener>>()
-
-  return {
-    on: jest.fn((event: string, listener: Listener) => {
-      if (!listeners.has(event)) {
-        listeners.set(event, new Set())
-      }
-
-      listeners.get(event)!.add(listener)
-      return () => listeners.get(event)?.delete(listener)
-    }),
-  }
-}
+import { createEmitter } from './helpers/create-emitter.js'
+import { installMatchMediaStub } from './helpers/match-media.js'
 
 const createWaveSurfer = (duration = 10, width = 100, scroll = 0) => {
   const emitter = createEmitter()
@@ -49,19 +34,7 @@ const mockRect = (element: HTMLElement, rect: { left: number; top: number; width
 describe('RegionsPlugin', () => {
   beforeEach(() => {
     jest.useFakeTimers()
-    Object.defineProperty(window, 'matchMedia', {
-      writable: true,
-      value: jest.fn().mockImplementation((query) => ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        dispatchEvent: jest.fn(),
-      })),
-    })
+    installMatchMediaStub()
   })
 
   afterEach(() => {

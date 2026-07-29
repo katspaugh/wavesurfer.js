@@ -62,27 +62,16 @@ import { definePlugin } from '../define-plugin.js'
 import WaveSurfer from '../wavesurfer.js'
 import RegionsPlugin from '../plugins/regions.js'
 import SpectrogramPlugin from '../plugins/spectrogram.js'
+import { installMatchMediaStub } from './helpers/match-media.js'
+import { ensureGlobalAudioBufferStub } from './helpers/audio-buffer.js'
 
 // SpectrogramWorker is imported (indirectly, via plugins/spectrogram.ts's
 // `import SpectrogramWorker from 'web-worker:./spectrogram-worker.ts'`) through
 // rollup-plugin-web-worker-loader's virtual module scheme, which only resolves under rollup -
-// under ts-jest it doesn't exist on disk at all. Every existing spectrogram test suite
-// (spectrogram-destroy.test.ts, spectrogram-fft-size.test.ts, ...) mocks it the same way; this
-// harness's SpectrogramPlugin case never sets `useWebWorker: true`, but the module is still
-// imported eagerly by plugins/spectrogram.ts, so it must resolve to *something*.
-jest.mock(
-  'web-worker:./spectrogram-worker.ts',
-  () => ({
-    __esModule: true,
-    default: class MockSpectrogramWorker {
-      onmessage: ((e: { data: unknown }) => void) | null = null
-      onerror: ((e: Event) => void) | null = null
-      postMessage = jest.fn()
-      terminate = jest.fn()
-    },
-  }),
-  { virtual: true },
-)
+// under ts-jest it doesn't exist on disk at all. jest.config.js's moduleNameMapper redirects that
+// exact specifier to helpers/spectrogram-worker-mock.ts for every project (including this file's
+// 'leaks' project); this harness's SpectrogramPlugin case never sets `useWebWorker: true`, but the
+// module is still imported eagerly by plugins/spectrogram.ts, so it must resolve to *something*.
 
 // ---- Suite-start guard: fail loudly (not silently-vacuous) if global.gc isn't callable ----
 // A missing --expose-gc would make every `collected()` call below a silent, permanent `false` -
@@ -99,16 +88,7 @@ beforeAll(() => {
   }
 })
 
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(() => ({
-    matches: false,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-  })),
-})
+installMatchMediaStub()
 
 // jsdom ships no Web Audio API at all (`typeof AudioBuffer === 'undefined'`), but
 // decoder.ts's real (unmocked - this suite deliberately exercises the real decode path, not a
@@ -117,13 +97,7 @@ Object.defineProperty(window, 'matchMedia', {
 // `AudioBuffer.prototype.copyFromChannel`/`copyToChannel` to populate its returned object. A
 // minimal stub is enough: nothing in this file ever calls those two methods, they just need to
 // exist as functions at the point `createBuffer` reads them off the prototype.
-if (typeof (globalThis as { AudioBuffer?: unknown }).AudioBuffer === 'undefined') {
-  class FakeAudioBuffer {
-    copyFromChannel(): void {}
-    copyToChannel(): void {}
-  }
-  ;(globalThis as { AudioBuffer?: unknown }).AudioBuffer = FakeAudioBuffer
-}
+ensureGlobalAudioBufferStub()
 
 /**
  * This helper's WeakRef-polling design deliberately deviates from the naive/literal form in one

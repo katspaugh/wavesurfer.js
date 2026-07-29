@@ -1,5 +1,7 @@
 import EnvelopePlugin from '../plugins/envelope.js'
 import { Scope } from '../scope.js'
+import { createEmitter } from './helpers/create-emitter.js'
+import { installMatchMediaStub } from './helpers/match-media.js'
 
 // jsdom implements almost none of the SVG geometry APIs envelope.ts relies on
 // (SVGSVGElement.viewBox, SVGSVGElement.createSVGPoint, SVGPointList). Stub
@@ -45,8 +47,6 @@ const mockSvgGeometry = (svg: SVGSVGElement, width = 100, height = 100) => {
   })
 }
 
-type Listener = (...args: any[]) => void
-
 // EnvelopePlugin now only reaches its 'decode'/'redraw'/'timeupdate' wiring
 // through ctx.wavesurfer.on(...) registered inside setup() — which only runs
 // via the real _init() lifecycle. The pre-port tests bypassed all of that by
@@ -55,23 +55,6 @@ type Listener = (...args: any[]) => void
 // a real emitter stub, drive everything through plugin._init(ws) + ws.emit,
 // and exercise the public Api (addPoint/removePoint/setPoints/destroy)
 // instead — same pattern as hover.test.ts / minimap.test.ts.
-const createEmitter = () => {
-  const listeners = new Map<string, Set<Listener>>()
-
-  return {
-    on: jest.fn((event: string, listener: Listener) => {
-      if (!listeners.has(event)) {
-        listeners.set(event, new Set())
-      }
-
-      listeners.get(event)!.add(listener)
-      return () => listeners.get(event)?.delete(listener)
-    }),
-    emit: (event: string, ...args: any[]) => {
-      listeners.get(event)?.forEach((listener) => listener(...args))
-    },
-  }
-}
 
 const createWaveSurfer = (duration = 10) => {
   const wrapper = document.createElement('div')
@@ -90,14 +73,7 @@ const createWaveSurfer = (duration = 10) => {
 
 describe('EnvelopePlugin leak fixes', () => {
   beforeAll(() => {
-    Object.defineProperty(window, 'matchMedia', {
-      writable: true,
-      value: jest.fn().mockReturnValue({
-        matches: false,
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
-      }),
-    })
+    installMatchMediaStub()
   })
 
   afterEach(() => {

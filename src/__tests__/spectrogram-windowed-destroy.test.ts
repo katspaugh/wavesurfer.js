@@ -1,19 +1,5 @@
-jest.mock(
-  'web-worker:./spectrogram-worker.ts',
-  () => ({
-    __esModule: true,
-    default: class MockSpectrogramWorker {
-      onmessage: ((e: { data: any }) => void) | null = null
-      onerror: ((e: Event) => void) | null = null
-      onmessageerror: ((e: Event) => void) | null = null
-      postMessage = jest.fn()
-      terminate = jest.fn()
-    },
-  }),
-  { virtual: true },
-)
-
 import WindowedSpectrogramPlugin from '../plugins/spectrogram-windowed.js'
+import { createFakeWaveSurfer } from './helpers/fake-wavesurfer.js'
 
 // WindowedSpectrogramPlugin is now a thin shim that delegates into spectrogram.ts's
 // definePlugin() setup (see spectrogram-windowed.ts's doc comment) - its Api (including the
@@ -29,21 +15,9 @@ import WindowedSpectrogramPlugin from '../plugins/spectrogram-windowed.js'
 // `this.foo()`, so jest.spyOn(internals.segmentManager, 'foo') still correctly intercepts
 // internal calls, unlike spying on a closure-merged Api field, which only ever redirects calls
 // made through the returned Api object itself.
-function createFakeWaveSurfer(overrides: Record<string, unknown> = {}) {
-  const wrapper = document.createElement('div')
-  Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
-  Object.defineProperty(wrapper, 'clientWidth', { value: 600, configurable: true })
-  return {
-    options: {},
-    getWrapper: () => wrapper,
-    getDecodedData: () => null,
-    on: () => () => undefined,
-    ...overrides,
-  }
-}
 
 function initPlugin(plugin: any) {
-  plugin._init(createFakeWaveSurfer() as any)
+  plugin._init(createFakeWaveSurfer())
   return plugin.__spectrogramInternalsForTests().windowed
 }
 
@@ -203,7 +177,7 @@ describe('WindowedSpectrogramPlugin destroy', () => {
       const fakeWrapper = document.createElement('div')
       Object.defineProperty(fakeWrapper, 'offsetWidth', { value: 600, configurable: true })
       Object.defineProperty(fakeWrapper, 'clientWidth', { value: 600, configurable: true })
-      plugin._init(createFakeWaveSurfer({ getWrapper: () => fakeWrapper }) as any)
+      plugin._init(createFakeWaveSurfer({ getWrapper: () => fakeWrapper }))
       const internals = plugin.__spectrogramInternalsForTests().windowed
       const manager = internals.segmentManager
       plugin.__spectrogramInternalsForTests().buffer = { duration: 60 }

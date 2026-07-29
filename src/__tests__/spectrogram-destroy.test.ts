@@ -1,18 +1,6 @@
-jest.mock(
-  'web-worker:./spectrogram-worker.ts',
-  () => ({
-    __esModule: true,
-    default: class MockSpectrogramWorker {
-      onmessage: ((e: { data: any }) => void) | null = null
-      onerror: ((e: Event) => void) | null = null
-      postMessage = jest.fn()
-      terminate = jest.fn()
-    },
-  }),
-  { virtual: true },
-)
-
 import SpectrogramPlugin from '../plugins/spectrogram.js'
+import { createFakeWaveSurfer } from './helpers/fake-wavesurfer.js'
+import { createFakeAudioBuffer } from './helpers/audio-buffer.js'
 
 // SpectrogramPlugin is a definePlugin() plugin now: its setup() (where the public/test API is
 // attached to the instance) only runs once the plugin is registered with a wavesurfer instance
@@ -24,23 +12,11 @@ import SpectrogramPlugin from '../plugins/spectrogram.js'
 // construction time instead of surfacing later inside `_init()`/setup() - see
 // src/plugins/spectrogram.ts and src/spectrogram-setup.ts's validateOptions() for why. A
 // minimal fake wavesurfer is enough since these tests never exercise a real render.
-function createFakeWaveSurfer(overrides: Record<string, unknown> = {}) {
-  const wrapper = document.createElement('div')
-  Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
-  Object.defineProperty(wrapper, 'clientWidth', { value: 600, configurable: true })
-  return {
-    options: {},
-    getWrapper: () => wrapper,
-    getDecodedData: () => null,
-    on: () => () => undefined,
-    ...overrides,
-  }
-}
 
 describe('SpectrogramPlugin destroy', () => {
   it('delivers the destroy event to subscribers', () => {
     const plugin = SpectrogramPlugin.create({})
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     const onDestroy = jest.fn()
     plugin.on('destroy', onDestroy)
     plugin.destroy()
@@ -49,7 +25,7 @@ describe('SpectrogramPlugin destroy', () => {
 
   it('releases the decoded buffer on destroy', () => {
     const plugin = SpectrogramPlugin.create({})
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     plugin.__spectrogramInternalsForTests().buffer = { length: 1 } as any // simulate a render having cached it
     plugin.destroy()
     expect(plugin.__spectrogramInternalsForTests().buffer).toBeNull()
@@ -57,9 +33,9 @@ describe('SpectrogramPlugin destroy', () => {
 
   it('does not let one instance override another instance maxCanvasWidth', () => {
     const a = SpectrogramPlugin.create({ maxCanvasWidth: 1000 })
-    a._init(createFakeWaveSurfer() as any)
+    a._init(createFakeWaveSurfer())
     const b = SpectrogramPlugin.create({})
-    b._init(createFakeWaveSurfer() as any)
+    b._init(createFakeWaveSurfer())
     expect(a.__spectrogramInternalsForTests().maxCanvasWidth).toBe(1000)
     expect(b.__spectrogramInternalsForTests().maxCanvasWidth).toBe(30000)
   })
@@ -82,7 +58,7 @@ describe('SpectrogramPlugin destroy', () => {
       }) as any
 
       const plugin = SpectrogramPlugin.create({})
-      plugin._init(createFakeWaveSurfer() as any)
+      plugin._init(createFakeWaveSurfer())
 
       const loadPromise = plugin.loadFrequenciesData('https://example.com/data.json')
       plugin.destroy()
@@ -116,21 +92,15 @@ describe('SpectrogramPlugin destroy', () => {
       // main-thread branch synchronously and returns a promise via computeFrequencies() - awaiting
       // that always yields at least one microtask turn, which is enough for a synchronous
       // destroy() call in between to land first.
-      const sampleRate = 8000
       const signal = new Float32Array(2048)
+      const sampleRate = 8000
       for (let i = 0; i < signal.length; i++) {
         signal[i] = Math.sin((2 * Math.PI * 1000 * i) / sampleRate)
       }
-      const buffer = {
-        sampleRate,
-        length: signal.length,
-        duration: signal.length / sampleRate,
-        numberOfChannels: 1,
-        getChannelData: () => signal,
-      } as unknown as AudioBuffer
+      const buffer = createFakeAudioBuffer(signal, { sampleRate })
 
       const plugin = SpectrogramPlugin.create({})
-      plugin._init(createFakeWaveSurfer({ getDecodedData: () => buffer }) as any)
+      plugin._init(createFakeWaveSurfer({ getDecodedData: () => buffer }))
 
       const dataPromise = plugin.getFrequenciesData() // fire-and-forget, not awaited before destroy
       plugin.destroy()

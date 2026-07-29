@@ -3,43 +3,15 @@
 // worker-timeout unification (windowed mode now honors the same configurable workerTimeout
 // option full mode does, instead of a hard-coded 30s).
 
-const mockWorkerInstances: any[] = []
-
-jest.mock(
-  'web-worker:./spectrogram-worker.ts',
-  () => ({
-    __esModule: true,
-    default: class MockSpectrogramWorker {
-      onmessage: ((e: { data: any }) => void) | null = null
-      onerror: ((e: Event) => void) | null = null
-      onmessageerror: ((e: Event) => void) | null = null
-      postMessage = jest.fn()
-      terminate = jest.fn()
-      constructor() {
-        mockWorkerInstances.push(this)
-      }
-    },
-  }),
-  { virtual: true },
-)
-
 import SpectrogramPlugin from '../plugins/spectrogram.js'
+import { createFakeWaveSurfer } from './helpers/fake-wavesurfer.js'
+import { createFakeAudioBuffer } from './helpers/audio-buffer.js'
+import { createEmitter } from './helpers/create-emitter.js'
+import { mockWorkerInstances } from './helpers/spectrogram-worker-mock.js'
 
 // See spectrogram-destroy.test.ts for the underlying _init() precedent: SpectrogramPlugin's
 // Api (including __spectrogramInternalsForTests()) only exists on the instance once _init()
 // has run.
-function createFakeWaveSurfer(overrides: Record<string, unknown> = {}) {
-  const wrapper = document.createElement('div')
-  Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
-  Object.defineProperty(wrapper, 'clientWidth', { value: 600, configurable: true })
-  return {
-    options: {},
-    getWrapper: () => wrapper,
-    getDecodedData: () => null,
-    on: () => () => undefined,
-    ...overrides,
-  }
-}
 
 beforeAll(() => {
   // jsdom has no Worker; the plugin only checks its existence before using the bundled constructor
@@ -53,7 +25,7 @@ beforeEach(() => {
 describe('SpectrogramPlugin rendering mode dispatch', () => {
   it('populates __spectrogramInternalsForTests().windowed when rendering: "windowed"', () => {
     const plugin: any = SpectrogramPlugin.create({ rendering: 'windowed' })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
 
     const internals = plugin.__spectrogramInternalsForTests()
 
@@ -66,7 +38,7 @@ describe('SpectrogramPlugin rendering mode dispatch', () => {
 
   it('leaves __spectrogramInternalsForTests().windowed undefined by default (rendering omitted)', () => {
     const plugin: any = SpectrogramPlugin.create({})
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
 
     const internals = plugin.__spectrogramInternalsForTests()
 
@@ -75,7 +47,7 @@ describe('SpectrogramPlugin rendering mode dispatch', () => {
 
   it('also leaves windowed undefined for an explicit rendering: "full"', () => {
     const plugin: any = SpectrogramPlugin.create({ rendering: 'full' })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
 
     expect(plugin.__spectrogramInternalsForTests().windowed).toBeUndefined()
   })
@@ -95,14 +67,9 @@ describe('SpectrogramPlugin windowed mode honors a configurable workerTimeout', 
         useWebWorker: true,
         workerTimeout: WORKER_TIMEOUT_MS,
       })
-      plugin._init(createFakeWaveSurfer() as any)
+      plugin._init(createFakeWaveSurfer())
       const internals = plugin.__spectrogramInternalsForTests()
-      internals.buffer = {
-        sampleRate: 8000,
-        duration: 1,
-        numberOfChannels: 1,
-        getChannelData: () => new Float32Array(8000),
-      }
+      internals.buffer = createFakeAudioBuffer(new Float32Array(8000))
 
       const promise = internals.windowed.calculateFrequenciesWithWorker(0, 1)
       promise.catch(() => undefined)
@@ -135,14 +102,9 @@ describe('SpectrogramPlugin windowed mode honors a configurable workerTimeout', 
       useWebWorker: true,
       workerTimeout: 0,
     })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     const internals = plugin.__spectrogramInternalsForTests()
-    internals.buffer = {
-      sampleRate: 8000,
-      duration: 1,
-      numberOfChannels: 1,
-      getChannelData: () => new Float32Array(8000),
-    }
+    internals.buffer = createFakeAudioBuffer(new Float32Array(8000))
 
     const promise = internals.windowed.calculateFrequenciesWithWorker(0, 1)
     const worker = mockWorkerInstances[mockWorkerInstances.length - 1]
@@ -177,7 +139,7 @@ describe('SpectrogramPlugin full-mode-only data APIs no-op in windowed mode', ()
     global.fetch = fetchSpy as any
 
     const plugin: any = SpectrogramPlugin.create({ rendering: 'windowed' })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
 
     await expect(plugin.loadFrequenciesData('https://example.com/data.json')).resolves.toBeUndefined()
 
@@ -188,7 +150,7 @@ describe('SpectrogramPlugin full-mode-only data APIs no-op in windowed mode', ()
 
   it('getFrequenciesData() warns and resolves null without touching the decoded buffer', async () => {
     const plugin: any = SpectrogramPlugin.create({ rendering: 'windowed' })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
 
     await expect(plugin.getFrequenciesData()).resolves.toBeNull()
 
@@ -198,7 +160,7 @@ describe('SpectrogramPlugin full-mode-only data APIs no-op in windowed mode', ()
 
   it('clearCache() warns and is a no-op', () => {
     const plugin: any = SpectrogramPlugin.create({ rendering: 'windowed' })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
 
     expect(() => plugin.clearCache()).not.toThrow()
     expect(warnSpy).toHaveBeenCalledTimes(1)
@@ -207,7 +169,7 @@ describe('SpectrogramPlugin full-mode-only data APIs no-op in windowed mode', ()
 
   it('does NOT warn for these APIs in full mode', async () => {
     const plugin: any = SpectrogramPlugin.create({})
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
 
     plugin.clearCache()
     await plugin.getFrequenciesData() // getDecodedData() returns null -> resolves null, no warn
@@ -223,19 +185,11 @@ function createEmitterWaveSurfer(overrides: Record<string, unknown> = {}) {
   const wrapper = document.createElement('div')
   Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
   Object.defineProperty(wrapper, 'clientWidth', { value: 600, configurable: true })
-  const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
   return {
     options: {},
     getWrapper: () => wrapper,
     getDecodedData: () => null,
-    on: (event: string, cb: (...args: unknown[]) => void) => {
-      if (!listeners.has(event)) listeners.set(event, new Set())
-      listeners.get(event)!.add(cb)
-      return () => listeners.get(event)?.delete(cb)
-    },
-    emit: (event: string, ...args: unknown[]) => {
-      listeners.get(event)?.forEach((cb) => cb(...args))
-    },
+    ...createEmitter(),
     ...overrides,
   }
 }
@@ -264,7 +218,7 @@ describe('a rejected fire-and-forget render routes to the plugin error event', (
       const plugin: any = SpectrogramPlugin.create({})
       const errors: Error[] = []
       plugin.on('error', (error: Error) => errors.push(error))
-      plugin._init(createFakeWaveSurfer({ getDecodedData: () => throwingBuffer }) as any)
+      plugin._init(createFakeWaveSurfer({ getDecodedData: () => throwingBuffer }))
 
       // Initial-render-after-init (ctx.scope.timeout(() => throttledRender(), 0)) schedules
       // throttledRender, which (no cached frequencies yet) schedules render() another
@@ -315,7 +269,7 @@ describe('windowed mode splitChannels fallback', () => {
   // wavesurfer instance's splitChannels option instead of always treating it as false.
   it('honors ctx.wavesurfer.options.splitChannels when the plugin option is unset', async () => {
     const plugin: any = SpectrogramPlugin.create({ rendering: 'windowed' })
-    plugin._init(createFakeWaveSurfer({ options: { splitChannels: true } }) as any)
+    plugin._init(createFakeWaveSurfer({ options: { splitChannels: true } }))
     const internals = plugin.__spectrogramInternalsForTests()
     internals.buffer = {
       sampleRate: 8000,

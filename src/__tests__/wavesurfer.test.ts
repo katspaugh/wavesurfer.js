@@ -97,6 +97,60 @@ describe('WaveSurfer public methods', () => {
     expect(ws.getActivePlugins()).not.toContain(plugin)
   })
 
+  test('unregisterPlugin destroys the plugin, removes it from getActivePlugins(), and cleans up its scope entry', () => {
+    const ws = createWs()
+    class TestPlugin extends BasePlugin<{ destroy: [] }, {}> {}
+    const plugin = new TestPlugin({})
+    const onDestroy = jest.fn()
+    plugin.on('destroy', onDestroy)
+
+    const disposersBefore = (ws as any).scope.disposers.length
+    ws.registerPlugin(plugin)
+    // registerPlugin() adds exactly one disposer to ws.scope (the plugin's 'destroy' unsubscribe,
+    // registered so scope disposal alone - without an explicit unregisterPlugin/plugin.destroy()
+    // call - can't leak the listener).
+    expect((ws as any).scope.disposers.length).toBe(disposersBefore + 1)
+
+    ws.unregisterPlugin(plugin)
+
+    expect(onDestroy).toHaveBeenCalledTimes(1) // unregisterPlugin() actually calls plugin.destroy()
+    expect(ws.getActivePlugins()).not.toContain(plugin)
+    // The disposer registerPlugin() added is gone too, not merely inert - unregisterPlugin()
+    // doesn't leave a dangling entry in ws.scope for a plugin it already tore down itself.
+    expect((ws as any).scope.disposers.length).toBe(disposersBefore)
+  })
+
+  test('registerPlugin after ws.destroy() re-registers cleanly on the fresh post-destroy scope (current behavior)', () => {
+    // destroy() disposes the old scope and replaces it with a fresh, non-disposed one (see the
+    // "Scope ownership tree" describe block in memory-leaks.test.ts) so a subsequent load() can
+    // still register cleanups. registerPlugin() only ever touches `this.scope` and `this.plugins`
+    // - neither of which destroy() nulls out or leaves disposed - so calling it AFTER destroy()
+    // is not rejected: it behaves exactly like calling it on a freshly-constructed instance. This
+    // pins that as the CURRENT, deliberate behavior (destroy() -> load() reuse is a supported
+    // flow elsewhere in this codebase; plugins registered post-destroy are not treated specially).
+    const ws = createWs()
+    class TestPlugin extends BasePlugin<{ destroy: [] }, {}> {}
+
+    const pluginBeforeDestroy = new TestPlugin({})
+    ws.registerPlugin(pluginBeforeDestroy)
+    expect(ws.getActivePlugins()).toContain(pluginBeforeDestroy)
+
+    ws.destroy()
+
+    // destroy() destroys every plugin registered before it ran (this.plugins.forEach((p) =>
+    // p.destroy())), which in turn fires each plugin's registerPlugin()-installed 'destroy'
+    // listener and drops it from the plugins array.
+    expect(ws.getActivePlugins()).not.toContain(pluginBeforeDestroy)
+
+    const pluginAfterDestroy = new TestPlugin({})
+    expect(() => ws.registerPlugin(pluginAfterDestroy)).not.toThrow()
+    expect(ws.getActivePlugins()).toContain(pluginAfterDestroy)
+
+    // And its lifecycle is fully live on the new scope: destroying it removes it normally.
+    pluginAfterDestroy.destroy()
+    expect(ws.getActivePlugins()).not.toContain(pluginAfterDestroy)
+  })
+
   test('wrapper and scroll helpers call renderer', () => {
     const ws = createWs()
     const renderer = getRenderer()
