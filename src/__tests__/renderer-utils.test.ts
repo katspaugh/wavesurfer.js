@@ -5,7 +5,6 @@ import {
   calculateBarRenderConfig,
   calculateBarSegments,
   calculateLinePaths,
-  calculateScrollPercentages,
   calculateSingleCanvasWidth,
   calculateVerticalScale,
   calculateWaveformLayout,
@@ -460,38 +459,6 @@ describe('renderer-utils', () => {
         { x: 4, y: 7 },
         { x: 6, y: 4 },
       ])
-    })
-  })
-
-  describe('calculateScrollPercentages', () => {
-    it('returns full range when scroll width is zero', () => {
-      expect(
-        calculateScrollPercentages({
-          scrollLeft: 0,
-          clientWidth: 100,
-          scrollWidth: 0,
-        }),
-      ).toEqual({ startX: 0, endX: 1 })
-    })
-
-    it('returns start and end ratios relative to scroll width', () => {
-      expect(
-        calculateScrollPercentages({
-          scrollLeft: 50,
-          clientWidth: 100,
-          scrollWidth: 400,
-        }),
-      ).toEqual({ startX: 0.125, endX: 0.375 })
-    })
-
-    it('clamps values to 0-1 range', () => {
-      expect(
-        calculateScrollPercentages({
-          scrollLeft: -10,
-          clientWidth: 100,
-          scrollWidth: 400,
-        }),
-      ).toEqual({ startX: 0, endX: 0.225 })
     })
   })
 

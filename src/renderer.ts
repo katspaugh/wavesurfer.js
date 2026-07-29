@@ -2,8 +2,8 @@ import EventEmitter from './event-emitter.js'
 import { isHTMLElement } from './dom.js'
 import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
-import { createDragStream } from './reactive/drag-stream.js'
-import { createScrollStream } from './reactive/scroll-stream.js'
+import { createDragStream, type DragEvent } from './reactive/drag-stream.js'
+import { createScrollStream, type ScrollStream } from './reactive/scroll-stream.js'
 import { computed, effect, signal, type ComputedSignal, type Signal } from './reactive/store.js'
 import { Scope } from './scope.js'
 
@@ -36,7 +36,6 @@ class Renderer extends EventEmitter<RendererEvents> {
   private cursor: HTMLElement
   private isScrollable = false
   private audioData: AudioBuffer | null = null
-  private resizeObserver: ResizeObserver | null = null
   private lastContainerWidth = 0
   private isDragging = false
   private scope = new Scope()
@@ -55,14 +54,8 @@ class Renderer extends EventEmitter<RendererEvents> {
   // initDrag() added -- a disposed child detaches itself from its parent, so
   // this.scope never accumulates stale disposers across toggles.
   private dragScope: Scope | null = null
-  private dragStream: { signal: any; cleanup: () => void } | null = null
-  private scrollStream: {
-    scrollData: any
-    percentages: any
-    bounds: any
-    refresh: () => void
-    cleanup: () => void
-  } | null = null
+  private dragStream: { signal: Signal<DragEvent | null>; cleanup: () => void } | null = null
+  private scrollStream: ScrollStream | null = null
   private containerInlinePadding = 0
   private audioDuration = signal(0)
   private visibleRange: ComputedSignal<{ startTime: number; endTime: number }>
@@ -211,13 +204,13 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Re-render the waveform on container resize
     if (typeof ResizeObserver === 'function') {
       const delay = this.createDelay(100)
-      this.resizeObserver = this.scope.createResizeObserver(this.scrollContainer, () => {
+      // The observer itself is scope-owned (createResizeObserver registers its
+      // own disconnect on this.scope) -- no need to keep a field reference to
+      // it here; nothing in this class ever read one.
+      this.scope.createResizeObserver(this.scrollContainer, () => {
         delay()
           .then(() => this.onContainerResize())
           .catch(() => undefined)
-      })
-      this.scope.add(() => {
-        this.resizeObserver = null
       })
     }
   }

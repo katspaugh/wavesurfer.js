@@ -1,7 +1,7 @@
 /**
  * Segment manager for windowed spectrogram rendering.
  *
- * Extracted from the pre-unification `spectrogram-windowed.ts` (Phase 4, Task 3): owns the
+ * Extracted from the original standalone `spectrogram-windowed.ts` implementation: owns the
  * sliding-window segment map, LRU-ish (farthest-first) eviction, uncovered-time-range
  * detection, and progressive background loading. Consumed by two callers - the merged
  * `spectrogram.ts` when `rendering: 'windowed'`, and the deprecated `spectrogram-windowed.ts`
@@ -17,7 +17,7 @@
  * progressive scheduling unit-testable in isolation (see spectrogram-windowing.test.ts).
  */
 
-import { hzToScale, paintColumnPixels } from './fft.js'
+import { hzToScale, paintColumnPixels } from './spectrogram-render-utils.js'
 
 /** One lazily-computed slice of the sliding window's frequency data. */
 export interface FrequencySegment {

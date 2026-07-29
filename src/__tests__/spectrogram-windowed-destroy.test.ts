@@ -21,13 +21,14 @@ import WindowedSpectrogramPlugin from '../plugins/spectrogram-windowed.js'
 // has run, not at .create() time. Same _init() precedent as spectrogram-destroy.test.ts; see
 // spectrogram.ts's WindowedTestInternals type for what's exposed under .windowed here.
 //
-// __windowedInternals() below is the private-poke adaptation for this file (Phase 4 Task 3):
-// every direct instance-field poke the pre-unification version of this test used
+// __windowedInternals() below is the private-poke adaptation for this file: every direct
+// instance-field poke the pre-unification version of this test used
 // ((plugin as any).segments, .maxRetainedSegments, .buffer, .evictDistantSegments(), etc.) is
 // replaced with the equivalent read through __spectrogramInternalsForTests().windowed, whose
 // segmentManager is a real SegmentManager class instance - its own methods call each other via
 // `this.foo()`, so jest.spyOn(internals.segmentManager, 'foo') still correctly intercepts
-// internal calls (unlike spying on a closure-merged Api field - see Task 2's report).
+// internal calls, unlike spying on a closure-merged Api field, which only ever redirects calls
+// made through the returned Api object itself.
 function createFakeWaveSurfer(overrides: Record<string, unknown> = {}) {
   const wrapper = document.createElement('div')
   Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })

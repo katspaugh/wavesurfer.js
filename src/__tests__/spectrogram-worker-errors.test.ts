@@ -25,7 +25,7 @@ jest.mock(
 
 import Spectrogram from '../plugins/spectrogram.js'
 import WindowedSpectrogram from '../plugins/spectrogram-windowed.js'
-import { paintColumnPixels } from '../fft.js'
+import { paintColumnPixels } from '../spectrogram-render-utils.js'
 
 const SAMPLE_RATE = 8000
 const LENGTH = 4096

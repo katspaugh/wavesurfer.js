@@ -1,7 +1,7 @@
-// Pins the brief-mandated "merged-mode" contract for Phase 4 Task 3: SpectrogramPlugin itself
-// (not just the deprecated spectrogram-windowed.ts shim) can be driven directly with
-// `rendering: 'windowed'`, and the worker-timeout unification (windowed mode now honors the
-// same configurable workerTimeout option full mode does, instead of Phase 1's hard-coded 30s).
+// Pins the "merged-mode" contract: SpectrogramPlugin itself (not just the deprecated
+// spectrogram-windowed.ts shim) can be driven directly with `rendering: 'windowed'`, and the
+// worker-timeout unification (windowed mode now honors the same configurable workerTimeout
+// option full mode does, instead of a hard-coded 30s).
 
 const mockWorkerInstances: any[] = []
 

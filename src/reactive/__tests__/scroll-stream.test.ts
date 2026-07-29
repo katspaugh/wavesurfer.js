@@ -67,6 +67,20 @@ describe('scroll-stream', () => {
       expect(result.startX).toBeGreaterThanOrEqual(0)
       expect(result.endX).toBeLessThanOrEqual(1)
     })
+
+    // Moved from renderer-utils.test.ts's now-deleted duplicate (R10): a
+    // partial clamp (only the low end goes negative) with exact expected
+    // values, distinct from the boundary-only assertion above.
+    it('clamps only the out-of-range end while leaving the other exact', () => {
+      const data: ScrollData = {
+        scrollLeft: -10,
+        scrollWidth: 400,
+        clientWidth: 100,
+      }
+
+      const result = calculateScrollPercentages(data)
+      expect(result).toEqual({ startX: 0, endX: 0.225 })
+    })
   })
 
   describe('calculateScrollBounds', () => {

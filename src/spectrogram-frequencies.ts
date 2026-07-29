@@ -19,7 +19,8 @@
  * `bufferSize`/`windowLength`.
  */
 
-import FFT, {
+import FFT from './fft.js'
+import {
   createSparseFilterBankForScale,
   applySparseFilterBank,
   magnitudesToColorIndices,
@@ -29,7 +30,7 @@ import FFT, {
   getBinFrequencies,
   SILENCE_FLOOR_DB,
   AUTO_GAIN_BUFFER_BUDGET_BYTES,
-} from './fft.js'
+} from './spectrogram-render-utils.js'
 
 /**
  * Bounded, keyed cache of FFT instances, reused across `computeFrequencies` calls.

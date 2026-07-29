@@ -403,18 +403,18 @@ describe('Memory Leak Detection', () => {
     })
   })
 
-  // Task 3 (R3): destroy() disposes this.scope/mediaEventScope and Player's
-  // mediaScope, but historically only the constructor ever re-registered the
-  // listeners living on them (initPlayerEvents/initRendererEvents/
+  // destroy() disposes this.scope/mediaEventScope and Player's mediaScope,
+  // but historically only the constructor ever re-registered the listeners
+  // living on them (initPlayerEvents/initRendererEvents/
   // Player.setupReactiveMediaEvents) -- so a plain destroy() -> load() reuse
   // (no explicit setMediaElement() call, unlike the #3637 test above) left
   // every WaveSurfer/Player event bridge permanently dead: no timeupdate
   // forwarding, no renderer click-to-seek, no play forwarding, no reactive
-  // state tracking, and (per the Task 1 ledger) no scrollPosition tracking.
+  // state tracking, and no scrollPosition tracking.
   // ensureCoreEvents() (wavesurfer.ts) + Player.ensureMediaEvents()
   // (player.ts) fix this by reviving those bridges at the top of
   // loadAudio(), mirroring Renderer's own ensureInputEvents().
-  describe('destroy -> load() reuse: event bridges revive (Task 3, R3)', () => {
+  describe('destroy -> load() reuse: event bridges revive', () => {
     const originalGetContext = window.HTMLCanvasElement.prototype.getContext
 
     // jsdom ships no Web Audio API at all (`typeof AudioBuffer === 'undefined'`), but
@@ -519,7 +519,7 @@ describe('Memory Leak Detection', () => {
       ws.destroy()
     })
 
-    it('state.scrollPosition tracks again after destroy -> load (Task 1 ledger)', async () => {
+    it('state.scrollPosition tracks again after destroy -> load', async () => {
       const ws = await createReusedWs()
       jest.spyOn(ws, 'getDuration').mockReturnValue(100)
 

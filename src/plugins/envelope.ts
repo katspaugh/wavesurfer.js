@@ -58,18 +58,18 @@ class Polyline extends EventEmitter<{
       circle: SVGEllipseElement
     }
   >
-  private subscriptions: (() => void)[] = []
   private pointCleanups = new Map<EnvelopePoint, () => void>()
-  // Owns the dblclick/touch listeners and the long-press timer below (the
-  // raw-acquisition ESLint ban requires these to go through Scope; destroy()
-  // disposes this instead of manually pairing add/removeEventListener).
+  // Owns every constructor-registered teardown: the dblclick/touch listeners
+  // and long-press timer below, plus (when dragLine is on) the polyline
+  // drag-stream + its effect. Unified onto one Scope (R18) rather than
+  // splitting cleanup between this and a hand-rolled subscriptions array --
+  // destroy() disposes this once instead of draining two separate mechanisms.
   private scope = new Scope()
   private cancelPressTimer?: () => void
 
   constructor(options: Options, wrapper: HTMLElement) {
     super()
 
-    this.subscriptions = []
     this.options = options
     this.polyPoints = new Map()
 
@@ -120,7 +120,7 @@ class Polyline extends EventEmitter<{
 
     // Make the polyline draggable along the Y axis
     if (options.dragLine) {
-      const dragStream = createDragStream(polyline as unknown as HTMLElement)
+      const dragStream = createDragStream(polyline)
       const unsubscribe = effect(() => {
         const drag = dragStream.signal.value
         if (!drag || drag.type !== 'move' || drag.deltaY === undefined) return
@@ -141,7 +141,7 @@ class Polyline extends EventEmitter<{
         this.emit('line-move', deltaY / height)
       }, [dragStream.signal])
 
-      this.subscriptions.push(() => {
+      this.scope.add(() => {
         unsubscribe()
         dragStream.cleanup()
       })
@@ -183,7 +183,7 @@ class Polyline extends EventEmitter<{
   }
 
   private makeDraggable(draggable: SVGElement, onDrag: (x: number, y: number) => void): () => void {
-    const dragStream = createDragStream(draggable as unknown as HTMLElement, { threshold: 1 })
+    const dragStream = createDragStream(draggable, { threshold: 1 })
 
     const unsubscribe = effect(() => {
       const drag = dragStream.signal.value
@@ -315,12 +315,10 @@ class Polyline extends EventEmitter<{
   }
 
   destroy() {
-    // Cancels the pending press timer (if any) and removes the
-    // dblclick/touch listeners registered in the constructor above.
+    // Cancels the pending press timer (if any), removes the dblclick/touch
+    // listeners registered in the constructor above, and (when dragLine was
+    // on) unsubscribes the polyline's own drag-stream effect.
     this.scope.dispose()
-
-    this.subscriptions.forEach((unsubscribe) => unsubscribe())
-    this.subscriptions = []
 
     this.pointCleanups.forEach((cleanup) => cleanup())
     this.pointCleanups.clear()
@@ -333,10 +331,9 @@ class Polyline extends EventEmitter<{
 
 const randomId = () => Math.random().toString(36).slice(2)
 
-// The public surface returned by setup() below — VERIFIED against the
-// pre-port class: addPoint/removePoint/getPoints/setPoints/setVolume/
-// getCurrentVolume were its only public methods (destroy is chassis-owned
-// now, not part of the Api — see port-recipe.md).
+// The public surface returned by setup() below: addPoint/removePoint/
+// getPoints/setPoints/setVolume/getCurrentVolume are Envelope's only public
+// API methods (destroy is chassis-owned by definePlugin, not part of Api).
 type Api = {
   addPoint: (point: EnvelopePoint) => void
   removePoint: (point: EnvelopePoint) => void
@@ -358,9 +355,9 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
     const points: EnvelopePoint[] = options?.points || []
     let polyline: Polyline | null = null
     // A child scope dedicated to the current polyline's event subscriptions.
-    // Disposed and replaced (not accumulated) every time initPolyline() runs,
-    // e.g. on every 'decode' — this is the equivalent of the pre-port
-    // `polylineSubscriptions` array plus its manual drain-before-push.
+    // Disposed and replaced (not accumulated) every time initPolyline() runs
+    // (e.g. on every 'decode'), so listeners never pile up across repeated
+    // re-inits.
     let polylineScope = ctx.scope.child()
     let volume = 1
     let clearEmitPointsTimeout: (() => void) | null = null
@@ -379,8 +376,7 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
     }
 
     function onTimeUpdate(time: number) {
-      // Guards a post-destroy call the same way the pre-port `this.wavesurfer`
-      // optional-chaining did: ctx.wavesurfer is typed non-null but reads
+      // Guards a post-destroy call: ctx.wavesurfer is typed non-null but reads
       // `undefined` at runtime once destroy() has run (see define-plugin.ts).
       const duration = ctx.wavesurfer?.getDuration()
       if (duration === undefined) return
@@ -499,8 +495,8 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
       ctx.wavesurfer?.setVolume(floatValue)
     }
 
-    // Equivalent of the pre-port onInit(): default the volume option from the
-    // live wavesurfer and apply it, then subscribe to decode/redraw/timeupdate.
+    // Default the volume option from the live wavesurfer and apply it, then
+    // subscribe to decode/redraw/timeupdate.
     opts.volume = opts.volume ?? ctx.wavesurfer.getVolume()
     setVolume(opts.volume)
 

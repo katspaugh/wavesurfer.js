@@ -41,9 +41,9 @@ describe('ZoomPlugin', () => {
     jest.clearAllMocks()
   })
 
-  // Coordinator review finding (round 1): the pre-port class computed a
-  // missing `maxZoom` once from the container width and kept it on the
-  // long-lived `this.options` for the plugin instance's lifetime, even
+  // The pre-port class computed a missing `maxZoom` once from the
+  // container width and kept it on the long-lived `this.options` for the
+  // plugin instance's lifetime, even
   // across a destroy -> re-init cycle. The port recomputes it fresh from
   // the CURRENT container width on every (re-)init instead — this is a
   // deliberate, disclosed behavior change (see the comment in zoom.ts).

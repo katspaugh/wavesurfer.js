@@ -12,7 +12,7 @@
  * separately-importable named exports (that's the whole point of the shim delegating into them),
  * so they can't live in `plugins/spectrogram.ts` itself without breaking that single-default-export
  * constraint (confirmed by rollup's own build-time error when they briefly did). Same reasoning
- * `spectrogram-frequencies.ts` (Task 1) already followed for `computeFrequencies`.
+ * `spectrogram-frequencies.ts` already followed for `computeFrequencies`.
  */
 
 import {
@@ -24,9 +24,9 @@ import {
   createWrapperClickHandler,
   AUTO_GAIN_BUFFER_BUDGET_BYTES,
   paintColumnPixels,
-} from './fft.js'
+} from './spectrogram-render-utils.js'
 import { computeFrequencies, type FrequencyParams } from './spectrogram-frequencies.js'
-// Windowed rendering strategy (Phase 4, Task 3): segment map, eviction, uncovered-range
+// Windowed rendering strategy: segment map, eviction, uncovered-range
 // detection and progressive loading live in this shared, host-agnostic module so the
 // `rendering: 'windowed'` path here and the deprecated spectrogram-windowed.ts shim (which
 // delegates into spectrogramSetup with rendering forced to 'windowed') can't drift apart.
@@ -243,8 +243,8 @@ type WorkerFrequenciesMessage = { type: string; id: string; result?: Uint8Array[
  * methods (generateSegments, evictDistantSegments, progressiveLoadNextSegment,
  * renderVisibleWindow, ...) are genuine class methods that call each other via `this.foo()`,
  * so jest.spyOn(internals.windowed.segmentManager, 'foo') correctly intercepts internal calls
- * too, unlike spying on a closure-merged Api field (see spectrogram.ts's own TestInternals
- * doc comment, and Task 2's report, for why that distinction matters).
+ * too, unlike spying on a closure-merged Api field, which only ever redirects calls made through
+ * the returned Api object itself (see the "Test-only introspection/poking surface" comment above).
  */
 type WindowedTestInternals = {
   segmentManager: SegmentManager
@@ -370,7 +370,7 @@ export function validateOptions(options: SpectrogramPluginOptions): void {
  * The plugin's setup function, consumed by both plugins/spectrogram.ts's `SpectrogramPlugin` and
  * plugins/spectrogram-windowed.ts's deprecated `WindowedSpectrogramPlugin` shim, whose setup is
  * `(ctx, options) => spectrogramSetup(ctx, { ...options, rendering: 'windowed' })` - i.e.
- * "construct the merged setup with rendering: 'windowed'" per the Phase 4 plan. This keeps the
+ * "construct the merged setup with rendering: 'windowed'". This keeps the
  * windowed rendering strategy itself in exactly one place (this function, plus
  * ./spectrogram-windowing.ts) with no second copy to drift.
  */
