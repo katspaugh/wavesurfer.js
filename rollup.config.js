@@ -1,7 +1,6 @@
 import { glob } from 'glob'
 import typescript from '@rollup/plugin-typescript'
 import terser from '@rollup/plugin-terser'
-import dts from 'rollup-plugin-dts'
 import webWorkerLoader from 'rollup-plugin-web-worker-loader'
 
 const plugins = [
@@ -40,13 +39,6 @@ export default [
       exports: 'default',
     },
     plugins,
-  },
-
-  // Compiled type definitions
-  {
-    input: './dist/wavesurfer.d.ts',
-    output: [{ file: 'dist/types.d.ts', format: 'es' }],
-    plugins: [dts()],
   },
 
   // Wavesurfer plugins (exclude worker files)

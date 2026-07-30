@@ -42,12 +42,16 @@ export interface DragStreamOptions {
  * }, [dragSignal])
  * ```
  *
- * @param element - Element to make draggable
+ * @param element - Element to make draggable. Typed as the base `Element` (not `HTMLElement`)
+ *   so SVG elements (envelope.ts's polyline/handle circles) can be passed directly, without an
+ *   `as unknown as HTMLElement` cast -- every DOM API this function touches
+ *   (getBoundingClientRect, add/removeEventListener) is declared on `Element`/`EventTarget`, not
+ *   `HTMLElement` specifically.
  * @param options - Drag configuration options
  * @returns Signal emitting drag events and cleanup function
  */
 export function createDragStream(
-  element: HTMLElement,
+  element: Element,
   options: DragStreamOptions = {},
 ): { signal: Signal<DragEvent | null>; cleanup: () => void } {
   const { threshold = 3, mouseButton = 0, touchDelay = 100 } = options
@@ -181,11 +185,15 @@ export function createDragStream(
     }
   }
 
-  element.addEventListener('pointerdown', onPointerDown)
+  // Element (unlike HTMLElement) doesn't merge GlobalEventHandlersEventMap into its
+  // addEventListener overloads, so 'pointerdown' isn't a recognized key on the plain-Element
+  // overload -- cast to the generic EventListener form at the call site only; onPointerDown
+  // itself stays declared as `(event: PointerEvent) => void` everywhere else in this file.
+  element.addEventListener('pointerdown', onPointerDown as EventListener)
 
   const cleanupFn = () => {
     unsubscribeDocument()
-    element.removeEventListener('pointerdown', onPointerDown)
+    element.removeEventListener('pointerdown', onPointerDown as EventListener)
     activePointers.clear()
   }
 

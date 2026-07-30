@@ -1,19 +1,5 @@
-jest.mock(
-  'web-worker:./spectrogram-worker.ts',
-  () => ({
-    __esModule: true,
-    default: class MockSpectrogramWorker {
-      onmessage: ((e: { data: any }) => void) | null = null
-      onerror: ((e: Event) => void) | null = null
-      onmessageerror: ((e: Event) => void) | null = null
-      postMessage = jest.fn()
-      terminate = jest.fn()
-    },
-  }),
-  { virtual: true },
-)
-
 import WindowedSpectrogramPlugin from '../plugins/spectrogram-windowed.js'
+import { createFakeWaveSurfer } from './helpers/fake-wavesurfer.js'
 
 // WindowedSpectrogramPlugin is now a thin shim that delegates into spectrogram.ts's
 // definePlugin() setup (see spectrogram-windowed.ts's doc comment) - its Api (including the
@@ -21,28 +7,17 @@ import WindowedSpectrogramPlugin from '../plugins/spectrogram-windowed.js'
 // has run, not at .create() time. Same _init() precedent as spectrogram-destroy.test.ts; see
 // spectrogram.ts's WindowedTestInternals type for what's exposed under .windowed here.
 //
-// __windowedInternals() below is the private-poke adaptation for this file (Phase 4 Task 3):
-// every direct instance-field poke the pre-unification version of this test used
+// __windowedInternals() below is the private-poke adaptation for this file: every direct
+// instance-field poke the pre-unification version of this test used
 // ((plugin as any).segments, .maxRetainedSegments, .buffer, .evictDistantSegments(), etc.) is
 // replaced with the equivalent read through __spectrogramInternalsForTests().windowed, whose
 // segmentManager is a real SegmentManager class instance - its own methods call each other via
 // `this.foo()`, so jest.spyOn(internals.segmentManager, 'foo') still correctly intercepts
-// internal calls (unlike spying on a closure-merged Api field - see Task 2's report).
-function createFakeWaveSurfer(overrides: Record<string, unknown> = {}) {
-  const wrapper = document.createElement('div')
-  Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
-  Object.defineProperty(wrapper, 'clientWidth', { value: 600, configurable: true })
-  return {
-    options: {},
-    getWrapper: () => wrapper,
-    getDecodedData: () => null,
-    on: () => () => undefined,
-    ...overrides,
-  }
-}
+// internal calls, unlike spying on a closure-merged Api field, which only ever redirects calls
+// made through the returned Api object itself.
 
 function initPlugin(plugin: any) {
-  plugin._init(createFakeWaveSurfer() as any)
+  plugin._init(createFakeWaveSurfer())
   return plugin.__spectrogramInternalsForTests().windowed
 }
 
@@ -202,7 +177,7 @@ describe('WindowedSpectrogramPlugin destroy', () => {
       const fakeWrapper = document.createElement('div')
       Object.defineProperty(fakeWrapper, 'offsetWidth', { value: 600, configurable: true })
       Object.defineProperty(fakeWrapper, 'clientWidth', { value: 600, configurable: true })
-      plugin._init(createFakeWaveSurfer({ getWrapper: () => fakeWrapper }) as any)
+      plugin._init(createFakeWaveSurfer({ getWrapper: () => fakeWrapper }))
       const internals = plugin.__spectrogramInternalsForTests().windowed
       const manager = internals.segmentManager
       plugin.__spectrogramInternalsForTests().buffer = { duration: 60 }

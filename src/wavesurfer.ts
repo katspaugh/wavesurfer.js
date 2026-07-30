@@ -173,6 +173,16 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   // destroy-triggered abort or a real failure. WeakSet so a superseded
   // scope isn't kept alive once nothing else references it.
   private supersededLoadScopes = new WeakSet<Scope>()
+  // initPlayerEvents()/initRendererEvents() (plus reviving the Player-level
+  // media-signal bridge) only ever ran once, from the constructor,
+  // historically. But destroy() disposes+recreates this.scope (and
+  // this.mediaEventScope, its child) and tears the DOM/media listeners down,
+  // so a reused instance (destroy() -> load()) needs its event bridges
+  // rebuilt too -- mirroring Renderer's own ensureInputEvents() one layer
+  // down. ensureCoreEvents() makes that idempotent: the constructor and the
+  // top of loadAudio() both call it, and destroy() flips the flag back off
+  // so the next loadAudio() re-runs it and revives everything.
+  private coreEventsInitialized = false
 
   // Reactive state
   private wavesurferState: WaveSurferState
@@ -219,6 +229,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       currentTime: this.currentTimeSignal,
       duration: this.durationSignal,
       volume: this.volumeSignal,
+      muted: this.mutedSignal,
       playbackRate: this.playbackRateSignal,
       isSeeking: this.seekingSignal,
     })
@@ -239,8 +250,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     const audioElement = media ? undefined : this.getMediaElement()
     this.renderer = new Renderer(this.options, audioElement)
 
-    this.initPlayerEvents()
-    this.initRendererEvents()
+    this.ensureCoreEvents()
     this.initPlugins()
 
     // Read the initial URL before load has been called
@@ -284,6 +294,36 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.setTime(stopAt)
       }
     }
+  }
+
+  /**
+   * Idempotently (re)establishes every event bridge WaveSurfer owns: the
+   * Player-level reactive media-signal bridge (isPlaying/currentTime/etc,
+   * via Player.ensureMediaEvents()), the media-event -> public-event
+   * forwarding bridge (initPlayerEvents(), which also (re)wires the
+   * FrameScheduler via onTick/frameScheduler.start() -- see initPlayerEvents
+   * below), and the renderer-event -> public-event forwarding bridge
+   * (initRendererEvents(), which includes the state.scrollPosition wiring).
+   * Runs once from the constructor; destroy() flips coreEventsInitialized
+   * back to false so the next loadAudio() call re-runs this and revives the
+   * bridges for a reused instance -- mirroring Renderer's own
+   * ensureInputEvents() one layer down.
+   *
+   * initPlayerEvents() is re-run via unsubscribePlayerEvents() + itself
+   * (rather than a bare call) so this stays safe even when setMediaElement()
+   * already rebuilt the media-event forwarding bridge earlier in the same
+   * destroy() -> setMediaElement() -> load() reuse cycle: unsubscribing
+   * first means a redundant call here just disposes-and-rebuilds an
+   * already-fresh scope instead of registering duplicate listeners on top of
+   * live ones.
+   */
+  private ensureCoreEvents(): void {
+    if (this.coreEventsInitialized) return
+    this.coreEventsInitialized = true
+    this.ensureMediaEvents()
+    this.unsubscribePlayerEvents()
+    this.initPlayerEvents()
+    this.initRendererEvents()
   }
 
   private initPlayerEvents() {
@@ -366,6 +406,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.scope.add(
       this.renderer.on('scroll', (startX, endX, scrollLeft, scrollRight) => {
         const duration = this.getDuration()
+        this.wavesurferActions.setScrollPosition(scrollLeft)
         this.emit('scroll', startX * duration, endX * duration, scrollLeft, scrollRight)
       }),
     )
@@ -535,6 +576,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+    // Revive the event bridges if this instance is being reused after a
+    // destroy() (no-op otherwise, see ensureCoreEvents()). Must run before
+    // any of the pipeline below, which relies on those bridges (e.g.
+    // renderer.render() further down emits 'render'/'rendered', and media
+    // events must be wired before playback/seek events matter again).
+    this.ensureCoreEvents()
+
     // Re-entrancy guard: a fresh child scope for this load call.
     // If a newer load starts (or the instance is destroyed) while this one is
     // in-flight, this scope is disposed and this call bails out at the next
@@ -896,6 +944,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.frameScheduler = new FrameScheduler(this.scope)
     this.renderer.destroy()
     super.destroy()
+    // Flip so the next loadAudio() call re-runs ensureCoreEvents() and
+    // revives the event bridges just torn down above (this.scope.dispose()
+    // and super.destroy()'s mediaScope.dispose()).
+    this.coreEventsInitialized = false
   }
 }
 

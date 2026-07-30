@@ -254,6 +254,93 @@ describe('SegmentManager.renderVisibleWindow re-entrancy', () => {
     expect(manager.segments.size).toBe(1)
   })
 
+  it('re-runs once for the current viewport after a bailed-out overlapping call (dirty-flag re-arm)', async () => {
+    const resolvers: Array<(value: Uint8Array[][]) => void> = []
+    const computedRanges: Array<[number, number]> = []
+    let scrollLeft = 0
+    const deps = makeDeps({
+      getBufferDuration: () => 600,
+      getWidth: () => 1000,
+      getPixelsPerSecond: () => 100,
+      getScrollLeft: () => scrollLeft,
+      getViewportWidth: () => 100,
+      computeSegmentFrequencies: (start, end) => {
+        computedRanges.push([start, end])
+        return new Promise<Uint8Array[][]>((resolve) => {
+          resolvers.push(resolve)
+        })
+      },
+    })
+    const manager = new SegmentManager(deps)
+
+    const first = manager.renderVisibleWindow()
+    // A second, overlapping call targeting a different part of the timeline arrives while the
+    // first is still awaiting its compute - e.g. the user scrolled again mid-flight.
+    scrollLeft = 40000
+    const second = manager.renderVisibleWindow()
+
+    // The second call is turned away immediately by the re-entrancy guard - no second compute
+    // in flight yet.
+    expect(resolvers).toHaveLength(1)
+
+    resolvers[0]([[new Uint8Array([1, 2, 3])]])
+
+    // Without the dirty-flag re-arm, the second (bailed) call's window is dropped for good and
+    // no further compute ever happens - this loop times out at length 1 and the assertion below
+    // fails, which is the "fails today: dropped" case the plan calls out. With the re-arm, the
+    // first call's finally block gives the (now-moved) viewport one more pass once it's done.
+    for (let i = 0; i < 20 && resolvers.length < 2; i++) {
+      await Promise.resolve()
+    }
+    expect(resolvers).toHaveLength(2)
+    resolvers[1]([[new Uint8Array([4, 5, 6])]])
+
+    await Promise.all([first, second])
+
+    expect(computedRanges).toHaveLength(2)
+    // The second computed range must be for the moved viewport (t=400ish), not a repeat of the
+    // first (t=0ish).
+    expect(computedRanges[1][0]).toBeGreaterThan(100)
+    expect(manager.segments.size).toBe(2)
+  })
+
+  it('does not run the coalesced re-arm pass once disposed while pendingRender is set', async () => {
+    // Mirrors the real host contract (destroy() disposes the Scope before/while an in-flight
+    // renderVisibleWindow() await can resume - see the "does not throw or touch destroyed DOM
+    // state..." host-level test elsewhere in this suite) but pins the dirty-flag re-arm path
+    // specifically: pendingRender is already true (from a bailed overlapping call) at the moment
+    // disposal happens, so the finally block's "one more pass" must still be skipped rather than
+    // reading deps (or computing) for a torn-down host.
+    let resolveCompute: ((value: Uint8Array[][]) => void) | null = null
+    let computeCalls = 0
+    const deps = makeDeps({
+      getBufferDuration: () => 600,
+      computeSegmentFrequencies: () => {
+        computeCalls++
+        return new Promise<Uint8Array[][]>((resolve) => {
+          resolveCompute = resolve
+        })
+      },
+    })
+    const manager = new SegmentManager(deps)
+
+    // First call starts computing (in flight, awaiting resolveCompute).
+    const first = manager.renderVisibleWindow()
+    // Second, overlapping call bails on the re-entrancy guard and re-arms pendingRender.
+    const second = manager.renderVisibleWindow()
+    expect(computeCalls).toBe(1)
+
+    // Dispose while the first call's compute is still pending, with pendingRender already set.
+    ;(deps as any).__setDisposed(true)
+    resolveCompute!([[new Uint8Array([1, 2, 3])]])
+
+    await Promise.all([first, second])
+
+    // Only the first call's own compute ran - the coalesced rerun the dirty flag would
+    // otherwise trigger must be skipped once disposed, not attempted.
+    expect(computeCalls).toBe(1)
+  })
+
   it('a second call after the first completes is not blocked by the guard', async () => {
     let computeCalls = 0
     const deps = makeDeps({

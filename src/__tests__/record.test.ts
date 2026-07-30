@@ -29,19 +29,23 @@ describe('RecordPlugin teardown', () => {
     const onProgress = jest.fn()
     plugin.on('record-progress', onProgress)
 
-    anyPlugin.timer.emit('tick')
+    // onInit() (run by _init() above) recreates frameScheduler bound to the
+    // fresh post-destroy scope; start()'s synchronous first tick reaches the
+    // plugin's tick handler and emits 'record-progress'.
+    anyPlugin.frameScheduler.start(anyPlugin.handleTick)
 
     expect(onProgress).toHaveBeenCalled()
   })
 
-  it('destroys the timer on plugin destroy', () => {
+  it('stops the frame scheduler on plugin destroy', () => {
     const plugin = RecordPlugin.create()
     const anyPlugin = plugin as any
-    const timerDestroySpy = jest.spyOn(anyPlugin.timer, 'destroy')
+    anyPlugin.frameScheduler.start(jest.fn())
+    expect(anyPlugin.frameScheduler.running).toBe(true)
 
     plugin.destroy()
 
-    expect(timerDestroySpy).toHaveBeenCalledTimes(1)
+    expect(anyPlugin.frameScheduler.running).toBe(false)
   })
 
   it('destroy is idempotent', () => {

@@ -1,6 +1,9 @@
 {
   "name": "wavesurfer.js",
-  "version": "7.12.11",
+  "version": "8.0.0-beta.1",
+  "publishConfig": {
+    "tag": "beta"
+  },
   "license": "BSD-3-Clause",
   "author": "katspaugh",
   "description": "Audio waveform player",
@@ -28,40 +31,40 @@
   "types": "./dist/wavesurfer.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/wavesurfer.esm.js",
       "types": "./dist/wavesurfer.d.ts",
+      "import": "./dist/wavesurfer.esm.js",
       "require": "./dist/wavesurfer.cjs"
     },
     "./dist/plugins/*.js": {
-      "import": "./dist/plugins/*.esm.js",
       "types": "./dist/plugins/*.d.ts",
+      "import": "./dist/plugins/*.esm.js",
       "require": "./dist/plugins/*.cjs"
     },
     "./plugins/*": {
-      "import": "./dist/plugins/*.esm.js",
       "types": "./dist/plugins/*.d.ts",
+      "import": "./dist/plugins/*.esm.js",
       "require": "./dist/plugins/*.cjs"
-    },
-    "./dist/*": {
-      "import": "./dist/*",
-      "types": "./dist/*.d.ts",
-      "require": "./dist/*.cjs"
     },
     "./dist/plugins/*.esm.js": {
-      "import": "./dist/plugins/*.esm.js",
       "types": "./dist/plugins/*.d.ts",
+      "import": "./dist/plugins/*.esm.js",
       "require": "./dist/plugins/*.cjs"
+    },
+    "./dist/*.js": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js"
     }
   },
   "scripts": {
     "clean": "node ./scripts/clean.cjs",
     "build:dev": "tsc -w --target ESNext",
-    "build": "npm run clean && tsc && rollup -c",
+    "build": "npm run clean && tsc && rollup -c && node ./scripts/verify-exports.cjs",
     "prepublishOnly": "npm run build",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "lint:report": "eslint \"src/**/*.ts\" --output-file eslint_report.json --format json",
     "prettier": "prettier -w '**/*.{js,ts,css}' --ignore-path .gitignore",
     "make-plugin": "./scripts/plugin.sh",
+    "verify-exports": "node ./scripts/verify-exports.cjs",
     "cypress": "cypress open --e2e",
     "cypress:canary": "cypress open --e2e -b chrome:canary",
     "test": "cypress run --browser ${CYPRESS_BROWSER:-chromium}",
@@ -89,7 +92,6 @@
     "jest-environment-jsdom": "^29.7.0",
     "prettier": "^3.8.3",
     "rollup": "^4.61.1",
-    "rollup-plugin-dts": "^6.4.1",
     "rollup-plugin-web-worker-loader": "^1.7.0",
     "ts-jest": "^29.4.11",
     "typescript": "^5.9.3"

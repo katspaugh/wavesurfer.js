@@ -1,7 +1,7 @@
 /**
  * Segment manager for windowed spectrogram rendering.
  *
- * Extracted from the pre-unification `spectrogram-windowed.ts` (Phase 4, Task 3): owns the
+ * Extracted from the original standalone `spectrogram-windowed.ts` implementation: owns the
  * sliding-window segment map, LRU-ish (farthest-first) eviction, uncovered-time-range
  * detection, and progressive background loading. Consumed by two callers - the merged
  * `spectrogram.ts` when `rendering: 'windowed'`, and the deprecated `spectrogram-windowed.ts`
@@ -17,7 +17,7 @@
  * progressive scheduling unit-testable in isolation (see spectrogram-windowing.test.ts).
  */
 
-import { hzToScale } from './fft.js'
+import { hzToScale, paintColumnPixels } from './spectrogram-render-utils.js'
 
 /** One lazily-computed slice of the sliding window's frequency data. */
 export interface FrequencySegment {
@@ -102,6 +102,14 @@ export class SegmentManager {
   // longer has a key pointing at it) if it has. Ported from the pre-unification windowed
   // plugin's `isRendering` flag.
   private isRendering = false
+  // Dirty flag set by a call that got bailed out by isRendering above: without it, that call's
+  // work is dropped for good - once the in-flight renderVisibleWindow() finishes, nothing
+  // re-checks whether the viewport/deps moved on while it was busy, so a scroll (or zoom, or
+  // playback) that happens mid-render never gets its segments computed. Set on bail, cleared and
+  // acted on (one more pass, reading fresh deps) in the finally below, so at most one extra pass
+  // is coalesced per busy period - a further bail during that pass re-arms the flag again rather
+  // than being lost.
+  private pendingRender = false
 
   constructor(deps: SegmentManagerDeps, options: SegmentManagerOptions = {}) {
     this.deps = deps
@@ -257,8 +265,13 @@ export class SegmentManager {
 
   /** Render (generate + evict) whatever the current viewport needs, plus a small buffer on each side. */
   async renderVisibleWindow(): Promise<void> {
-    // Re-entrancy guard - see the isRendering field's doc comment.
-    if (this.isRendering) return
+    // Re-entrancy guard - see the isRendering field's doc comment. A bailed-out call re-arms
+    // pendingRender instead of just dropping its request, so the finally block below can give
+    // the current viewport one more pass once the in-flight call is done.
+    if (this.isRendering) {
+      this.pendingRender = true
+      return
+    }
     this.isRendering = true
 
     try {
@@ -289,6 +302,16 @@ export class SegmentManager {
       this.evictDistantSegments(this.getCurrentViewMidpoint() ?? (windowStartTime + windowEndTime) / 2)
     } finally {
       this.isRendering = false
+      // A call bailed out while this one was in flight - re-run once for whatever the
+      // viewport/deps look like now, rather than dropping its request. Awaited (not
+      // fire-and-forget) so this call's own promise doesn't resolve until the coalesced pass
+      // is done too; that rerun's own finally applies the same check, so a further bail during
+      // it re-arms and chains rather than being lost. Skipped once disposed - nothing left to
+      // render for, and deps may no longer be safe to read (see the isDisposed doc comment).
+      if (this.pendingRender && !this.deps.isDisposed()) {
+        this.pendingRender = false
+        await this.renderVisibleWindow()
+      }
     }
   }
 
@@ -527,16 +550,7 @@ async function renderChannelToCanvas(
   const data = imageData.data
 
   for (let i = 0; i < channelFreq.length; i++) {
-    const column = channelFreq[i]
-    for (let j = 0; j < freqBins; j++) {
-      const colorIndex = Math.min(255, Math.max(0, column[j]))
-      const color = opts.colorMap[colorIndex]
-      const pixelIndex = ((freqBins - j - 1) * channelFreq.length + i) * 4
-      data[pixelIndex] = color[0] * 255
-      data[pixelIndex + 1] = color[1] * 255
-      data[pixelIndex + 2] = color[2] * 255
-      data[pixelIndex + 3] = color[3] * 255
-    }
+    paintColumnPixels(data, channelFreq[i], opts.colorMap, i, channelFreq.length, freqBins)
   }
 
   const rMin = hzToScale(opts.freqMin, opts.scale) / hzToScale(opts.freqFrom, opts.scale)

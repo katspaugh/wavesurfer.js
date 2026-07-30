@@ -168,19 +168,18 @@ export function definePlugin<Options, Events extends BasePluginEvents, Api exten
     // removed their root DOM element AFTER super.destroy(), so a
     // 'destroy' listener could still observe an attached node.
     //
-    // General rule for ports: default to tearing down the root element via
-    // ctx.scope like everything else — that's simplest and matches most
-    // plugins. Keep an element's removal OUT of ctx.scope (do it manually,
-    // after the equivalent of super.destroy() has run) ONLY when a test or
-    // documented consumer contract for that specific plugin actually pins
-    // post-destroy attachment. This is a per-port decision, not a blanket
-    // rule: hover's port (Task 5) checked its test suite, found nothing
-    // pins the old ordering, and moved wrapper removal onto ctx.scope — a
-    // deliberate, documented behavior change from the original hover.
-    // Regions' port (Task 11) checked its own test suite (regions.test.ts +
-    // memory-leaks.test.ts's #4243 cases) too, found nothing pins post-destroy
-    // attachment of regionsContainer either, and likewise moved its removal
-    // onto ctx.scope.
+    // General rule for plugins built on this chassis: default to tearing down
+    // the root element via ctx.scope like everything else — that's simplest
+    // and matches most plugins. Keep an element's removal OUT of ctx.scope
+    // (do it manually, after the equivalent of super.destroy() has run) ONLY
+    // when a test or documented consumer contract for that specific plugin
+    // actually pins post-destroy attachment. This is a per-plugin decision,
+    // not a blanket rule: hover's test suite pins nothing about the old
+    // ordering, so its wrapper removal lives on ctx.scope — a deliberate,
+    // documented behavior change from its pre-chassis implementation.
+    // Regions' test suite (regions.test.ts + memory-leaks.test.ts's #4243
+    // cases) likewise pins nothing about post-destroy attachment of
+    // regionsContainer, so its removal is on ctx.scope too.
     public destroy(): void {
       this.scope.dispose() // always set (BasePlugin field initializer) — no `?.` needed
       super.destroy()

@@ -1,4 +1,10 @@
 // Windowed Spectrogram plugin - Optimized for very long audio files
+//
+// DEPRECATED: WindowedSpectrogramPlugin (spectrogram-windowed.js) is a thin
+// backward-compatible shim now. Prefer the regular Spectrogram plugin with
+// `rendering: 'windowed'` instead - see examples/spectrogram.js for the
+// equivalent using the merged option, and README.md's "Advanced / reactive
+// API" section for details. This example is kept working as-is.
 
 import WaveSurfer from 'wavesurfer.js'
 import WindowedSpectrogram from 'wavesurfer.js/dist/plugins/spectrogram-windowed.esm.js'

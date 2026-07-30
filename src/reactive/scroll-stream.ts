@@ -5,7 +5,7 @@
  * Automatically handles scroll event optimization and cleanup.
  */
 
-import { signal, computed, effect, type Signal } from './store.js'
+import { signal, computed, type Signal } from './store.js'
 
 export interface ScrollData {
   /** Current scroll position in pixels */
@@ -75,6 +75,16 @@ export interface ScrollStream {
   percentages: Signal<ScrollPercentages>
   /** Computed signal with scroll bounds */
   bounds: Signal<{ left: number; right: number }>
+  /**
+   * Re-reads the element's current scrollLeft/scrollWidth/clientWidth and
+   * writes them into `scrollData` -- the same math the `scroll` event
+   * listener runs. Call this after any layout change that doesn't dispatch a
+   * DOM `scroll` event (initial render, zoom, container resize) so
+   * `percentages`/`bounds` (and anything derived from them, e.g. the
+   * renderer's `visibleRange`) reflect the real, current metrics instead of
+   * whatever was true when the stream was created.
+   */
+  refresh: () => void
   /** Cleanup function to remove listeners */
   cleanup: () => void
 }
@@ -101,12 +111,16 @@ export interface ScrollStream {
  * @returns Scroll stream with signals and cleanup
  */
 export function createScrollStream(element: HTMLElement): ScrollStream {
-  // Create signals
-  const scrollData = signal<ScrollData>({
+  // Reads the element's current scroll metrics. Shared by the initial value,
+  // the scroll event handler, and refresh() so all three stay in sync.
+  const readScrollData = (): ScrollData => ({
     scrollLeft: element.scrollLeft,
     scrollWidth: element.scrollWidth,
     clientWidth: element.clientWidth,
   })
+
+  // Create signals
+  const scrollData = signal<ScrollData>(readScrollData())
 
   // Computed derived values
   const percentages = computed(() => {
@@ -119,15 +133,33 @@ export function createScrollStream(element: HTMLElement): ScrollStream {
 
   // Update scroll data on scroll event
   const onScroll = () => {
-    scrollData.set({
-      scrollLeft: element.scrollLeft,
-      scrollWidth: element.scrollWidth,
-      clientWidth: element.clientWidth,
-    })
+    scrollData.set(readScrollData())
   }
 
   // Attach scroll listener
   element.addEventListener('scroll', onScroll, { passive: true })
+
+  const refresh = () => {
+    const next = readScrollData()
+    const current = scrollData.value
+    // readScrollData() always returns a fresh object literal, so
+    // scrollData.set(next) would always pass signal.set()'s Object.is
+    // check (two distinct objects are never Object.is-equal) and always
+    // notify, even when every field is identical to the current value --
+    // making every call site (initial render, zoom, container resize; see
+    // this function's doc comment) fire a spurious 'scroll' event downstream
+    // and risking a re-render-triggers-refresh-triggers-notify recursion for
+    // any consumer that re-renders from a scroll handler. Field-compare
+    // first and only set() on a genuine change.
+    if (
+      current.scrollLeft === next.scrollLeft &&
+      current.scrollWidth === next.scrollWidth &&
+      current.clientWidth === next.clientWidth
+    ) {
+      return
+    }
+    scrollData.set(next)
+  }
 
   // Cleanup function
   const cleanupFn = () => {
@@ -140,44 +172,7 @@ export function createScrollStream(element: HTMLElement): ScrollStream {
     scrollData,
     percentages,
     bounds,
+    refresh,
     cleanup: cleanupFn,
   }
-}
-
-/**
- * Create a scroll stream that automatically updates external state
- *
- * This is a convenience wrapper that connects scroll events to a state action.
- *
- * @example
- * ```typescript
- * const scrollStream = createScrollStreamWithAction(
- *   container,
- *   (scrollLeft) => actions.setScrollPosition(scrollLeft)
- * )
- * ```
- *
- * @param element - Scrollable element
- * @param onScrollChange - Action to call when scroll changes
- * @returns Scroll stream with signals and cleanup
- */
-export function createScrollStreamWithAction(
-  element: HTMLElement,
-  onScrollChange: (scrollLeft: number) => void,
-): ScrollStream {
-  const stream = createScrollStream(element)
-
-  // Effect to update external state
-  const unsubscribe = effect(() => {
-    onScrollChange(stream.scrollData.value.scrollLeft)
-  }, [stream.scrollData])
-
-  // Wrap cleanup to include effect cleanup
-  const originalCleanup = stream.cleanup
-  stream.cleanup = () => {
-    unsubscribe()
-    originalCleanup()
-  }
-
-  return stream
 }

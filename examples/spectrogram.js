@@ -49,6 +49,12 @@ ws.registerPlugin(
     // fallbackToMainThread: true, // Set false to emit 'error' instead of computing a failed
     //                                worker FFT on the main thread (can freeze on long files)
 
+    // For very long audio files, render only the visible time range instead of
+    // the whole file up front (replaces the deprecated WindowedSpectrogramPlugin -
+    // see examples/spectrogram-windowed.js):
+    // rendering: 'windowed',
+    // progressiveLoading: true, // windowed only: keep loading segments in the background
+
     // Additional options you can configure:
     //
     // Window function for FFT (affects frequency resolution vs time resolution):

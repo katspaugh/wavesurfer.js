@@ -97,6 +97,93 @@ describe('WaveSurfer public methods', () => {
     expect(ws.getActivePlugins()).not.toContain(plugin)
   })
 
+  test('unregisterPlugin destroys the plugin, removes it from getActivePlugins(), and cleans up its scope entry', () => {
+    const ws = createWs()
+    class TestPlugin extends BasePlugin<{ destroy: [] }, {}> {}
+    const plugin = new TestPlugin({})
+    const onDestroy = jest.fn()
+    plugin.on('destroy', onDestroy)
+
+    const disposersBefore = (ws as any).scope.disposers.length
+    ws.registerPlugin(plugin)
+    // registerPlugin() adds exactly one disposer to ws.scope (the plugin's 'destroy' unsubscribe,
+    // registered so scope disposal alone - without an explicit unregisterPlugin/plugin.destroy()
+    // call - can't leak the listener).
+    expect((ws as any).scope.disposers.length).toBe(disposersBefore + 1)
+
+    ws.unregisterPlugin(plugin)
+
+    expect(onDestroy).toHaveBeenCalledTimes(1) // unregisterPlugin() actually calls plugin.destroy()
+    expect(ws.getActivePlugins()).not.toContain(plugin)
+    // The disposer registerPlugin() added is gone too, not merely inert - unregisterPlugin()
+    // doesn't leave a dangling entry in ws.scope for a plugin it already tore down itself.
+    expect((ws as any).scope.disposers.length).toBe(disposersBefore)
+  })
+
+  test('registerPlugin after ws.destroy() succeeds structurally, but stays dormant until the next load() revives the media-event bridge (current behavior)', async () => {
+    // destroy() disposes the old scope and replaces it with a fresh, non-disposed one (see the
+    // "Scope ownership tree" describe block in memory-leaks.test.ts) so a subsequent load() can
+    // still register cleanups. registerPlugin() only ever touches `this.scope` and `this.plugins`
+    // - neither of which destroy() nulls out or leaves disposed - so calling it AFTER destroy()
+    // is not rejected: the plugin registers, appears in getActivePlugins(), and its own destroy()
+    // is tracked normally.
+    //
+    // That is NOT the same as a freshly-constructed instance, though: the media-event ->
+    // public-event forwarding bridge (initPlayerEvents()'s mediaEventScope.add(onMediaEvent(...))
+    // -- what actually delivers 'timeupdate' etc. to WaveSurfer's public events, and from there to
+    // any plugin listening via ctx.wavesurfer.on(...)) is a SEPARATE mechanism gated by
+    // coreEventsInitialized. destroy() flips that flag off but does not immediately revive it --
+    // only the next loadAudio() call does, via ensureCoreEvents() at its top (see that method's
+    // doc comment). So there's a real dormant window: a plugin registered right after destroy(),
+    // before any load() call, structurally exists but receives nothing, because the bridge that
+    // would forward events to it hasn't been rebuilt yet. This test pins both halves of that
+    // boundary as CURRENT, deliberate behavior.
+    const ws = createWs()
+    class TestPlugin extends BasePlugin<{ destroy: [] }, {}> {}
+
+    const pluginBeforeDestroy = new TestPlugin({})
+    ws.registerPlugin(pluginBeforeDestroy)
+    expect(ws.getActivePlugins()).toContain(pluginBeforeDestroy)
+
+    ws.destroy()
+
+    // destroy() destroys every plugin registered before it ran (this.plugins.forEach((p) =>
+    // p.destroy())), which in turn fires each plugin's registerPlugin()-installed 'destroy'
+    // listener and drops it from the plugins array.
+    expect(ws.getActivePlugins()).not.toContain(pluginBeforeDestroy)
+
+    const pluginAfterDestroy = new TestPlugin({})
+    expect(() => ws.registerPlugin(pluginAfterDestroy)).not.toThrow()
+    expect(ws.getActivePlugins()).toContain(pluginAfterDestroy)
+
+    // Dormant window: the forwarding bridge isn't rebuilt yet, so a real media event does not
+    // reach WaveSurfer's public 'timeupdate' (and thus never reaches the plugin either).
+    const media = ws.getMediaElement()
+    const dormant = jest.fn()
+    ws.on('timeupdate', dormant)
+    Object.defineProperty(media, 'currentTime', { configurable: true, value: 5, writable: true })
+    media.dispatchEvent(new Event('timeupdate'))
+    expect(dormant).not.toHaveBeenCalled()
+
+    // Revival: load() runs ensureCoreEvents() at its top, rebuilding the bridge. Awaiting it
+    // already waits for the whole pipeline through its own 'ready' emit (no separate
+    // once('ready') wait needed -- that event has already fired by the time this resolves).
+    await ws.load('', [[0, 0.5, 1]], 1)
+
+    const revived = jest.fn()
+    ws.on('timeupdate', revived)
+    Object.defineProperty(media, 'currentTime', { configurable: true, value: 9, writable: true })
+    media.dispatchEvent(new Event('timeupdate'))
+    expect(revived).toHaveBeenCalledWith(9)
+
+    // And the plugin's own lifecycle is fully live on the new scope: destroying it removes it
+    // normally.
+    pluginAfterDestroy.destroy()
+    expect(ws.getActivePlugins()).not.toContain(pluginAfterDestroy)
+
+    ws.destroy()
+  })
+
   test('wrapper and scroll helpers call renderer', () => {
     const ws = createWs()
     const renderer = getRenderer()
@@ -361,6 +448,38 @@ describe('WaveSurfer public methods', () => {
     expect(ws.getState().audioBuffer.value).not.toBeNull()
     ws.zoom(123)
     expect(ws.getState().zoom.value).toBe(123)
+    ws.destroy()
+  })
+
+  test('wires the renderer scroll event into state.scrollPosition', () => {
+    const ws = createWs()
+    const renderer = getRenderer()
+    const scrollHandler = renderer.on.mock.calls.find(([event]: [string]) => event === 'scroll')?.[1]
+    expect(scrollHandler).toBeDefined()
+
+    jest.spyOn(ws, 'getDuration').mockReturnValue(100)
+    const scrollSpy = jest.fn()
+    ws.on('scroll', scrollSpy)
+
+    expect(ws.getState().scrollPosition.value).toBe(0)
+    scrollHandler(0.2, 0.4, 200, 400)
+
+    expect(ws.getState().scrollPosition.value).toBe(200)
+    // The public 'scroll' event still emits time-scaled values, unaffected by
+    // the new action call above.
+    expect(scrollSpy).toHaveBeenCalledWith(20, 40, 200, 400)
+    ws.destroy()
+  })
+
+  test('composes mutedSignal into state.muted, parallel to volume', () => {
+    const ws = createWs()
+    const media = ws.getMediaElement()
+    expect(ws.getState().muted.value).toBe(false)
+
+    Object.defineProperty(media, 'muted', { configurable: true, value: true, writable: true })
+    media.dispatchEvent(new Event('volumechange'))
+
+    expect(ws.getState().muted.value).toBe(true)
     ws.destroy()
   })
 

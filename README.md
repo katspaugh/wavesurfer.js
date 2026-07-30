@@ -15,11 +15,12 @@
 1. [Getting started](#getting-started)
 2. [API reference](#api-reference)
 3. [Plugins](#plugins)
-4. [CSS styling](#css-styling)
-5. [Frequent questions](#questions)
-6. [Development](#development)
-7. [Tests](#tests)
-8. [Feedback](#feedback)
+4. [Advanced / reactive API](#advanced--reactive-api)
+5. [CSS styling](#css-styling)
+6. [Frequent questions](#questions)
+7. [Development](#development)
+8. [Tests](#tests)
+9. [Feedback](#feedback)
 
 ## Getting started
 
@@ -84,6 +85,55 @@ We maintain a number of official plugins that add various extra features:
  * [Record](https://wavesurfer.xyz/examples/?record.js) – records audio from the microphone and renders a waveform
  * [Spectrogram](https://wavesurfer.xyz/examples/?spectrogram.js) – visualization of an audio frequency spectrum (written by @akreal)
  * [Hover](https://wavesurfer.xyz/examples/?hover.js) – shows a vertical line and timestmap on waveform hover
+
+## Advanced / reactive API
+
+Beyond the imperative `wavesurfer.on(...)` events, v8 exposes a small reactive
+surface for apps that want to read state instead of tracking it themselves:
+
+```js
+const state = wavesurfer.getState()
+
+state.isPlaying.subscribe((playing) => console.log('playing:', playing))
+console.log(state.loadPhase.value) // 'idle' | 'fetching' | 'decoding' | 'ready' | 'error'
+
+const { startTime, endTime } = wavesurfer.getRenderer().getVisibleRange().value
+```
+
+`getState()` returns read-only [`Signal`](https://wavesurfer.xyz/docs/) objects
+(`.value` to read, `.subscribe(fn)` to watch) for things like `currentTime`,
+`isPlaying`, `volume`, `muted`, `loadPhase` and `scrollPosition`.
+`getRenderer().getVisibleRange()` is a derived signal with the currently visible
+`{startTime, endTime}` of the viewport, useful for plugins that need to sync to
+what's on screen (e.g. a custom minimap or timeline).
+
+If you're writing a plugin, `WaveSurfer.definePlugin(name, (ctx, options) => api)`
+is an alternative to subclassing `BasePlugin`: `ctx` gives you `{ wavesurfer, scope, state, emit }`,
+and anything you register on `ctx.scope` (listeners, timers, child scopes) is torn
+down automatically on `destroy()` — no manual cleanup array required.
+
+```js
+import WaveSurfer from 'wavesurfer.js'
+
+const MyPlugin = WaveSurfer.definePlugin('MyPlugin', (ctx, options) => {
+  ctx.scope.listen(ctx.wavesurfer.getWrapper(), 'click', () => ctx.emit('my-event'))
+  return { doSomething: () => {} }
+})
+```
+
+The [Spectrogram plugin](https://wavesurfer.xyz/examples/?spectrogram.js) accepts
+a `rendering: 'windowed'` option for very long audio files: it renders only the
+visible time range and evicts off-screen segments, instead of computing the
+whole file's frequency data up front.
+
+```js
+SpectrogramPlugin.create({ rendering: 'windowed', /* ...other options */ })
+```
+
+This replaces the standalone `WindowedSpectrogramPlugin` (`spectrogram-windowed.js`),
+which is now deprecated in favor of the merged option above — it's kept working
+as a thin backward-compatible shim, but new code should use `SpectrogramPlugin`
+directly.
 
 ## CSS styling
 

@@ -195,6 +195,54 @@ bans) are done and merged onto `refactor/spectrogram-unification`'s lineage. Clo
   names/payloads) is preserved throughout; every intentional behavior change is called out in
   `docs/RELEASE_NOTES-scope-refactor.md`'s Phase 2/3/4 sections.
 
+## Post-refactor cleanup (DONE ✓, full plan in 2026-07-28-post-refactor-cleanup.md)
+
+Implemented in branch `chore/post-refactor-cleanup` (7 tasks, all passing: 563 jest
+tests + 7/7 GC-leak tests, `tsc --noEmit` clean, eslint clean, full build (tsc + rollup +
+`verify-exports.cjs`) clean). Closed every finding from the full-codebase review that sat
+on top of the four merged refactor phases above. **The codebase is now at its final
+refactored state for the v8 line; this closes the declarative-refactor project end to
+end.** What this phase closed:
+
+- **Truthful reactive surface**: `getVisibleRange()`/`scrollStream` now reflect actual
+  scroll/zoom state without waiting for a DOM `scroll` event first (`refresh()` called
+  post-layout and on resize); `state.scrollPosition` and a composed `state.muted` signal
+  are wired live; `dragToSeek`'s object form (`{ debounceTime }`) can be toggled on and
+  off at runtime (previously a one-token bug silently no-opped it).
+- **Windowed spectrogram correctness**: dropped renders under an in-flight overlap are
+  now re-armed and re-run instead of silently lost; the worker path slices each channel to
+  its segment's own sample range before `postMessage` instead of cloning the whole decoded
+  buffer; the colorIndex/crop loop is unified on the correct (clamped) form across both
+  full and windowed paths, closing a rendering-correctness drift where windowed clamped
+  out-of-range dB values and full-mode didn't.
+- **Symmetric destroy→reuse revival**: a `destroy()` → `load()` cycle (no explicit
+  `setMediaElement()`) now revives every event bridge — `timeupdate`, renderer
+  click-to-seek, `play`/`pause` forwarding, reactive state tracking — instead of leaving
+  half the wiring dead after the first destroy.
+- **v8 beta release prep**: version bumped to `8.0.0-beta.1`, `CHANGELOG.md` landed as the
+  repo's changelog convention, `package.json#exports` fixed (`types` condition first,
+  wildcard targets corrected), `tsconfig.json` excludes `__tests__` from the emitted build,
+  README/AI_OVERVIEW/examples refreshed for the new surface, and the build now ends with
+  `verify-exports.cjs` so a broken exports map fails CI instead of shipping.
+- **Debt sweep**: one `calculateScrollPercentages` (the `renderer-utils.ts` duplicate is
+  gone), `Timer` deleted in favor of the single `FrameScheduler` RAF primitive
+  (`record.ts` ported, byte-green on its own tests), `fft.ts` split so only the untyped
+  ES5 FFT constructor stays under `@ts-nocheck` (typed scale/color/UI helpers moved to
+  `src/spectrogram-render-utils.ts`, dead dense filter-bank functions deleted), renderer
+  stream fields properly typed (no more `any`), and every dangling plan/task-report
+  comment citation removed from `src/` in favor of the invariant itself.
+- **Test-suite consolidation**: tautological memory-leak cases (spy-asserts-spy,
+  toBeDefined-on-defined) rewritten against real observables (`Scope.disposed`, DOM state,
+  listener balance) or deleted; shared typed fixtures under `src/__tests__/helpers/`; five
+  previously-missing lifecycle cases added (`unregisterPlugin`, post-destroy
+  `registerPlugin`, `Scope.child()` on a disposed parent, `batch()` with a throwing nested
+  body, `FrameScheduler` stop/start restart).
+
+Both `Timer`'s deletion and `fft.ts`'s split changed which files the public
+`./dist/*.js` wildcard export resolves (`dist/timer.js` is gone; `dist/fft.js` now
+exports only `FFT`, with the rest moved to `dist/spectrogram-render-utils.js`) — both are
+called out in `CHANGELOG.md`'s Breaking changes section.
+
 ## Deliberately deferred (recommendation, not scheduled)
 
 Deriving the public events from state (the original proposal's "events as

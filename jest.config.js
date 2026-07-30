@@ -25,6 +25,14 @@ const sharedProjectConfig = {
   testEnvironment: 'jsdom',
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    // rollup-plugin-web-worker-loader's virtual module scheme (see src/web-worker-loader.d.ts)
+    // only resolves under rollup; every spectrogram suite that imports plugins/spectrogram.ts or
+    // plugins/spectrogram-windowed.ts (both import the worker eagerly at this exact specifier)
+    // needs *something* to resolve here under ts-jest. Redirecting it here (once, for both
+    // projects — the 'leaks' project's gc-leaks.test.ts imports plugins/spectrogram.ts too) means
+    // individual suites no longer need their own `jest.mock('web-worker:./spectrogram-worker.ts',
+    // ..., { virtual: true })` — see helpers/spectrogram-worker-mock.ts.
+    '^web-worker:\\./spectrogram-worker\\.ts$': '<rootDir>/src/__tests__/helpers/spectrogram-worker-mock.ts',
   },
   globals: {
     'ts-jest': {
@@ -49,7 +57,16 @@ export default {
       ...sharedProjectConfig,
       displayName: 'default',
       roots: ['<rootDir>/src'],
-      testPathIgnorePatterns: ['/node_modules/', '<rootDir>/src/__tests__/gc-leaks.test.ts'],
+      // src/__tests__/helpers/ holds shared fixtures, not test suites — Jest's default testMatch
+      // (`**/__tests__/**/*.[jt]s?(x)`) would otherwise pick up every file under it and fail each
+      // one with "must contain at least one test" (no describe/it in a fixture module). The
+      // 'leaks' project doesn't need this: it overrides testMatch to the single gc-leaks.test.ts
+      // file explicitly, so it never globs the __tests__ directory in the first place.
+      testPathIgnorePatterns: [
+        '/node_modules/',
+        '<rootDir>/src/__tests__/gc-leaks.test.ts',
+        '<rootDir>/src/__tests__/helpers/',
+      ],
     },
     ...(typeof globalThis.gc === 'function' ? [leaksProject] : []),
   ],

@@ -88,17 +88,13 @@ export default compat.config({
       // Primitive files: raw acquisition here IS the primitive that
       // scope.listen/timeout/interval/raf/observeResize/createResizeObserver
       // wraps for everyone else, or a self-contained resource with its own
-      // deterministic cleanup that isn't part of the Scope tree. Each is
-      // audited individually below; see task-5-report.md for the full hit
-      // audit this allowlist was derived from.
+      // deterministic cleanup that isn't part of the Scope tree. Each entry
+      // below carries its own justification for why it's exempt.
       files: [
         // The Scope class itself: addEventListener/setTimeout/setInterval/
         // requestAnimationFrame/ResizeObserver here ARE scope.listen/timeout/
         // interval/raf/createResizeObserver's implementations.
         'src/scope.ts',
-        // Timer: a standalone requestAnimationFrame-driven tick loop (the
-        // pre-Scope playback clock primitive), analogous to scope.raf().
-        'src/timer.ts',
         // FrameScheduler: the requestAnimationFrame loop primitive; its own
         // stop() is registered on the Scope passed into its constructor.
         'src/frame-scheduler.ts',

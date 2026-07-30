@@ -1,20 +1,8 @@
-jest.mock(
-  'web-worker:./spectrogram-worker.ts',
-  () => ({
-    __esModule: true,
-    default: class MockSpectrogramWorker {
-      onmessage: ((e: { data: any }) => void) | null = null
-      onerror: ((e: Event) => void) | null = null
-      postMessage = jest.fn()
-      terminate = jest.fn()
-    },
-  }),
-  { virtual: true },
-)
-
 import Spectrogram from '../plugins/spectrogram.js'
 import WindowedSpectrogram from '../plugins/spectrogram-windowed.js'
 import '../plugins/spectrogram-worker.js'
+import { createFakeWaveSurfer } from './helpers/fake-wavesurfer.js'
+import { createFakeAudioBuffer } from './helpers/audio-buffer.js'
 
 const SAMPLE_RATE = 8000
 
@@ -68,17 +56,6 @@ beforeAll(() => {
 // down still need a fake wavesurfer since setup() (which drives the actual render/worker/cache
 // behavior) only runs once the plugin is registered - see hover.test.ts/regions.test.ts for the
 // underlying `_init()` precedent with other ported plugins.
-function createFakeWaveSurfer() {
-  const wrapper = document.createElement('div')
-  Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
-  Object.defineProperty(wrapper, 'clientWidth', { value: 600, configurable: true })
-  return {
-    options: {},
-    getWrapper: () => wrapper,
-    getDecodedData: () => null,
-    on: () => () => undefined,
-  }
-}
 
 describe.each([
   ['SpectrogramPlugin', Spectrogram],
@@ -177,15 +154,7 @@ describe('worker compute with autoGain', () => {
 })
 
 describe('main-thread parity with the worker for the new options', () => {
-  function makeBuffer(signal: Float32Array): AudioBuffer {
-    return {
-      sampleRate: SAMPLE_RATE,
-      length: signal.length,
-      duration: signal.length / SAMPLE_RATE,
-      numberOfChannels: 1,
-      getChannelData: () => signal,
-    } as unknown as AudioBuffer
-  }
+  const makeBuffer = (signal: Float32Array) => createFakeAudioBuffer(signal, { sampleRate: SAMPLE_RATE })
 
   it.each([
     ['preEmphasis', { preEmphasis: 6 }],
@@ -194,7 +163,7 @@ describe('main-thread parity with the worker for the new options', () => {
   ])('matches the worker byte for byte with %s', async (_label, extra) => {
     const signal = makeSine(4000)
     const plugin: any = Spectrogram.create({ fftSamples: 256, noverlap: 128, scale: 'linear', ...extra } as any)
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
 
     const mainResult = await plugin.__spectrogramInternalsForTests().getFrequencies(makeBuffer(signal))
     const workerResult = runWorker(signal, extra as Record<string, unknown>)
@@ -209,7 +178,7 @@ describe('main-thread parity with the worker for the new options', () => {
     const signal = makeSine(4000)
     const makePlugin = (): any => {
       const plugin: any = Spectrogram.create({ fftSamples: 256, noverlap: 128, autoGain: true })
-      plugin._init(createFakeWaveSurfer() as any)
+      plugin._init(createFakeWaveSurfer())
       return plugin
     }
 
@@ -223,15 +192,7 @@ describe('main-thread parity with the worker for the new options', () => {
 })
 
 describe('explicit blackman alpha: 0 end-to-end', () => {
-  function makeBuffer(signal: Float32Array): AudioBuffer {
-    return {
-      sampleRate: SAMPLE_RATE,
-      length: signal.length,
-      duration: signal.length / SAMPLE_RATE,
-      numberOfChannels: 1,
-      getChannelData: () => signal,
-    } as unknown as AudioBuffer
-  }
+  const makeBuffer = (signal: Float32Array) => createFakeAudioBuffer(signal, { sampleRate: SAMPLE_RATE })
 
   it('is honored on the worker path, byte-identical to the main thread', async () => {
     // Distinct fftSamples so the worker module's FFT cache (keyed on sizes only) cannot
@@ -241,7 +202,7 @@ describe('explicit blackman alpha: 0 end-to-end', () => {
 
     const workerResult = runWorker(signal, options)
     const plugin: any = Spectrogram.create({ ...options, scale: 'linear' } as any)
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     const mainResult = await plugin.__spectrogramInternalsForTests().getFrequencies(makeBuffer(signal))
 
     expect(mainResult[0].length).toBe(workerResult[0].length)
@@ -260,7 +221,7 @@ describe('explicit blackman alpha: 0 end-to-end', () => {
         windowFunc: 'blackman',
         alpha,
       } as any)
-      plugin._init(createFakeWaveSurfer() as any)
+      plugin._init(createFakeWaveSurfer())
       return plugin
     }
 
@@ -283,15 +244,9 @@ describe('windowed plugin preEmphasis', () => {
     const signal = makeSine(4000)
     const create = (preEmphasis: number): any => {
       const plugin: any = WindowedSpectrogram.create({ fftSamples: 256, noverlap: 128, scale: 'linear', preEmphasis })
-      plugin._init(createFakeWaveSurfer() as any)
+      plugin._init(createFakeWaveSurfer())
       const internals = plugin.__spectrogramInternalsForTests()
-      internals.buffer = {
-        sampleRate: SAMPLE_RATE,
-        length: signal.length,
-        duration: signal.length / SAMPLE_RATE,
-        numberOfChannels: 1,
-        getChannelData: () => signal,
-      }
+      internals.buffer = createFakeAudioBuffer(signal, { sampleRate: SAMPLE_RATE })
       return internals.windowed
     }
 
@@ -306,15 +261,9 @@ describe('windowed plugin preEmphasis', () => {
 
   it('forwards preEmphasis to the worker', async () => {
     const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 128, preEmphasis: 6 })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     const internals = plugin.__spectrogramInternalsForTests()
-    internals.buffer = {
-      sampleRate: SAMPLE_RATE,
-      length: 4000,
-      duration: 0.5,
-      numberOfChannels: 1,
-      getChannelData: () => makeSine(4000),
-    }
+    internals.buffer = createFakeAudioBuffer(makeSine(4000), { sampleRate: SAMPLE_RATE })
 
     const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.5)
     promise.catch(() => undefined)

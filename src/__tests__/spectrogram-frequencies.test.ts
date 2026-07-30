@@ -4,7 +4,8 @@ import {
   __getFFTCacheStatsForTests,
   __resetFFTCacheForTests,
 } from '../spectrogram-frequencies.js'
-import FFT, {
+import FFT from '../fft.js'
+import {
   createSparseFilterBankForScale,
   applySparseFilterBank,
   magnitudesToColorIndices,
@@ -14,7 +15,7 @@ import FFT, {
   getBinFrequencies,
   SILENCE_FLOOR_DB,
   AUTO_GAIN_BUFFER_BUDGET_BYTES,
-} from '../fft.js'
+} from '../spectrogram-render-utils.js'
 
 /**
  * Oracle: a verbatim port of `calculateFrequencies` from src/plugins/spectrogram-worker.ts,

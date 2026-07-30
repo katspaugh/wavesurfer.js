@@ -469,4 +469,45 @@ describe('store v2', () => {
     })
     expect(seen).toEqual([1, 2])
   })
+
+  it('a throwing batch body still flushes queued notifications before rethrowing', () => {
+    // batch()'s decrement + flush live in a `finally`, so even though the body below throws
+    // after queuing a set(), the subscriber must still see it - the exception propagates to the
+    // caller only AFTER the flush runs, not instead of it.
+    const a = signal(0)
+    const spy = jest.fn()
+    a.subscribe(spy)
+
+    expect(() =>
+      batch(() => {
+        a.set(1)
+        throw new Error('boom')
+      }),
+    ).toThrow('boom')
+
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith(1)
+    expect(a.value).toBe(1)
+  })
+
+  it('nested batch() only flushes once, at the outermost call', () => {
+    const a = signal(0)
+    const spy = jest.fn()
+    a.subscribe(spy)
+
+    batch(() => {
+      a.set(1)
+      batch(() => {
+        a.set(2)
+        a.set(3)
+      })
+      // Still inside the outer batch: the inner batch()'s own decrement brought batchDepth back
+      // down to 1 (not 0), so it must not have flushed on its own.
+      expect(spy).not.toHaveBeenCalled()
+      a.set(4)
+    })
+
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith(4)
+  })
 })

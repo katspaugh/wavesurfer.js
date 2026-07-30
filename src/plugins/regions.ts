@@ -601,10 +601,9 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   }
 }
 
-// The public surface returned by setup() below — VERIFIED against the
-// pre-port class: getRegions/addRegion/enableDragSelection/clearRegions were
-// its only public methods (destroy is chassis-owned now, not part of the
-// Api — see port-recipe.md).
+// The public surface returned by setup() below: getRegions/addRegion/
+// enableDragSelection/clearRegions are RegionsPlugin's only public API
+// methods (destroy is chassis-owned by definePlugin, not part of Api).
 type Api = {
   getRegions: () => Region[]
   addRegion: (options: RegionParams) => Region
@@ -643,8 +642,8 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
     // super.destroy() (so a 'destroy' listener could still observe it
     // attached). Neither regions.test.ts nor memory-leaks.test.ts's regions
     // cases (#4243) assert anything about post-destroy DOM attachment of the
-    // regions container, so — per the chassis's per-port rule in
-    // define-plugin.ts — this follows hover's precedent (Task 5) and moves
+    // regions container, so — per the chassis's per-plugin rule in
+    // define-plugin.ts — this follows hover's precedent and moves
     // removal onto ctx.scope: a deliberate, documented behavior change
     // (removal now happens BEFORE the 'destroy' event, alongside every other
     // scope-owned teardown, instead of after).

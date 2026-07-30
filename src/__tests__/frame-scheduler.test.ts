@@ -76,4 +76,31 @@ describe('FrameScheduler', () => {
     scheduler.stop()
     expect(() => scheduler.stop()).not.toThrow()
   })
+
+  it('restarts cleanly after stop: a fresh synchronous first tick, then RAF ticks resume', () => {
+    const scope = new Scope()
+    const scheduler = new FrameScheduler(scope)
+    const tick = jest.fn()
+
+    scheduler.start(tick)
+    expect(tick).toHaveBeenCalledTimes(1) // synchronous first tick
+    ;(global as any).__flushFrames(2)
+    expect(tick).toHaveBeenCalledTimes(3)
+
+    scheduler.stop()
+    ;(global as any).__flushFrames(2) // stopped: no further ticks, and the cancelled frame is gone
+    expect(tick).toHaveBeenCalledTimes(3)
+    expect(scheduler.running).toBe(false)
+
+    // Restart: start() fires its synchronous first tick again (same as a fresh scheduler would),
+    // and the RAF loop resumes ticking on subsequent frames - stop() must not have left any stale
+    // frameId/isRunning state that would make this a no-op or double-schedule.
+    scheduler.start(tick)
+    expect(scheduler.running).toBe(true)
+    expect(tick).toHaveBeenCalledTimes(4)
+    ;(global as any).__flushFrames(2)
+    expect(tick).toHaveBeenCalledTimes(6)
+
+    scheduler.stop()
+  })
 })

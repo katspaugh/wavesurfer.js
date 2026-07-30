@@ -2,8 +2,8 @@ import EventEmitter from './event-emitter.js'
 import { isHTMLElement } from './dom.js'
 import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
-import { createDragStream } from './reactive/drag-stream.js'
-import { createScrollStream } from './reactive/scroll-stream.js'
+import { createDragStream, type DragEvent } from './reactive/drag-stream.js'
+import { createScrollStream, type ScrollStream } from './reactive/scroll-stream.js'
 import { computed, effect, signal, type ComputedSignal, type Signal } from './reactive/store.js'
 import { Scope } from './scope.js'
 
@@ -36,7 +36,6 @@ class Renderer extends EventEmitter<RendererEvents> {
   private cursor: HTMLElement
   private isScrollable = false
   private audioData: AudioBuffer | null = null
-  private resizeObserver: ResizeObserver | null = null
   private lastContainerWidth = 0
   private isDragging = false
   private scope = new Scope()
@@ -48,11 +47,23 @@ class Renderer extends EventEmitter<RendererEvents> {
   // registers its cancellation on the delayScope current at call time, so
   // both the next render() pass and destroy() can cancel it.
   private delayScope = this.scope.child()
-  private disposeDragStream: (() => void) | null = null
-  private dragStream: { signal: any; cleanup: () => void } | null = null
-  private scrollStream: { scrollData: any; percentages: any; bounds: any; cleanup: () => void } | null = null
+  // Child of this.scope, created fresh in initDrag() and disposed+cleared in
+  // disposeDrag(). Scoping the drag stream + its effect to their own child
+  // (instead of registering their disposers straight onto this.scope) means
+  // repeated setOptions({dragToSeek}) toggles dispose exactly what the last
+  // initDrag() added -- a disposed child detaches itself from its parent, so
+  // this.scope never accumulates stale disposers across toggles.
+  private dragScope: Scope | null = null
+  private dragStream: { signal: Signal<DragEvent | null>; cleanup: () => void } | null = null
+  private scrollStream: ScrollStream | null = null
   private containerInlinePadding = 0
   private audioDuration = signal(0)
+  // Bumped in initEvents() every time a new this.scrollStream is created
+  // (construction, and each destroy() -> render() revival). Read (but
+  // otherwise unused) inside visibleRange's auto-tracked computed body below
+  // purely to force it to be a dependency -- see that computed's comment for
+  // why this is needed on top of this.audioDuration.
+  private streamEpoch = signal(0)
   private visibleRange: ComputedSignal<{ startTime: number; endTime: number }>
   // initEvents() (click/dblclick listeners, scrollStream, dragStream,
   // resize observer) only ever ran from the constructor, historically. But
@@ -117,10 +128,25 @@ class Renderer extends EventEmitter<RendererEvents> {
     // pointing at the old, now-orphaned percentages signal forever, and
     // visibleRange would never react to scroll again after the first
     // destroy(). Auto-tracking re-subscribes to whatever this.scrollStream
-    // currently is every time the computed reruns (e.g. on the
-    // audioDuration.set() in render()), so it picks up the freshly created
-    // percentages signal after a reuse.
+    // currently is every time the computed reruns.
+    //
+    // But a recompute has to actually FIRE for that re-subscription to
+    // happen, and audioDuration.set(duration) in render() -- the trigger
+    // this used to rely on exclusively -- is a no-op via Object.is whenever
+    // the reused instance loads audio of the SAME duration (the most common
+    // reuse: reloading the same track). With no duration change to ride
+    // along on, nothing would tell visibleRange to recompute, and it would
+    // stay subscribed to the disposed, orphaned pre-destroy percentages
+    // signal forever. this.streamEpoch closes that gap: initEvents() bumps
+    // it every time it builds a new this.scrollStream (construction, and
+    // every destroy() -> render() revival), and reading it here makes it a
+    // tracked dependency, so that bump alone -- independent of whether
+    // audioDuration actually changed -- forces the one recompute needed to
+    // re-collect dependencies against the new stream.
     this.visibleRange = computed(() => {
+      // Tracked only to force a recompute when initEvents() rebuilds
+      // this.scrollStream; see the comment above.
+      void this.streamEpoch.value
       const duration = this.audioDuration.value
       if (!this.isScrollable || duration === 0 || !this.scrollStream) {
         return { startTime: 0, endTime: duration }
@@ -185,6 +211,12 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     // Add a scroll listener using reactive stream
     this.scrollStream = createScrollStream(this.scrollContainer)
+    // Force visibleRange's auto-tracked computed to recompute and
+    // re-subscribe to THIS scrollStream's percentages, even when nothing
+    // else about to run this render cycle (e.g. audioDuration.set()) will
+    // actually change value and fire on its own -- see visibleRange's
+    // constructor comment.
+    this.streamEpoch.update((n) => n + 1)
     const unsubscribeScroll = effect(() => {
       const { startX, endX } = this.scrollStream!.percentages.value
       const { left, right } = this.scrollStream!.bounds.value
@@ -199,18 +231,23 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Re-render the waveform on container resize
     if (typeof ResizeObserver === 'function') {
       const delay = this.createDelay(100)
-      this.resizeObserver = this.scope.createResizeObserver(this.scrollContainer, () => {
+      // The observer itself is scope-owned (createResizeObserver registers its
+      // own disconnect on this.scope) -- no need to keep a field reference to
+      // it here; nothing in this class ever read one.
+      this.scope.createResizeObserver(this.scrollContainer, () => {
         delay()
           .then(() => this.onContainerResize())
           .catch(() => undefined)
-      })
-      this.scope.add(() => {
-        this.resizeObserver = null
       })
     }
   }
 
   private onContainerResize() {
+    // A container resize changes the scrollContainer's clientWidth (and
+    // potentially scrollWidth) without dispatching a 'scroll' event -- refresh
+    // unconditionally, even when the early-return below skips a full
+    // re-render, so visibleRange never reports stale metrics.
+    this.scrollStream?.refresh()
     const width = this.parent.clientWidth
     this.calculateInlinePadding()
     if (width === this.lastContainerWidth && this.options.height !== 'auto') return
@@ -223,8 +260,11 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Don't initialize drag if it's already set up
     if (this.dragStream) return
 
+    const dragScope = this.scope.child()
+    this.dragScope = dragScope
+
     this.dragStream = createDragStream(this.wrapper)
-    this.disposeDragStream = this.scope.add(() => {
+    dragScope.add(() => {
       this.dragStream?.cleanup()
       this.dragStream = null
     })
@@ -247,7 +287,20 @@ class Renderer extends EventEmitter<RendererEvents> {
       }
     }, [this.dragStream.signal])
 
-    this.scope.add(unsubscribeDrag)
+    dragScope.add(unsubscribeDrag)
+  }
+
+  /**
+   * Tears down the drag stream + its effect by disposing their child scope
+   * (see dragScope above), then clears the field so the next initDrag()
+   * starts from a clean, freshly-created child of the current this.scope.
+   * Safe to call when drag was never initialized (dragScope is null, or
+   * already disposed from a prior destroy()) -- Scope#dispose() is a no-op
+   * the second time.
+   */
+  private disposeDrag() {
+    this.dragScope?.dispose()
+    this.dragScope = null
   }
 
   private calculateInlinePadding(): void {
@@ -350,11 +403,10 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.parent = newParent
     }
 
-    if (options.dragToSeek === true || typeof this.options.dragToSeek === 'object') {
+    if (options.dragToSeek === true || typeof options.dragToSeek === 'object') {
       this.initDrag()
     } else {
-      this.disposeDragStream?.()
-      this.disposeDragStream = null
+      this.disposeDrag()
     }
 
     this.options = options
@@ -767,6 +819,15 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.scrollContainer.classList.toggle('noScrollbar', !!this.options.hideScrollbar)
     this.cursor.style.backgroundColor = `${this.options.cursorColor || this.options.progressColor}`
     this.cursor.style.width = `${this.options.cursorWidth}px`
+
+    // Layout is now settled (wrapper width + scrollContainer overflow both
+    // just set above): re-read the DOM's actual scroll metrics into
+    // scrollStream so visibleRange (and any other percentages/bounds
+    // consumer) reflects reality immediately, instead of staying pinned to
+    // whatever scrollWidth/clientWidth existed when the stream was created
+    // (construction time, or the previous render's layout) until the next
+    // 'scroll' DOM event happens to fire.
+    this.scrollStream?.refresh()
 
     this.audioData = audioData
     this.audioDuration.set(audioData.duration)

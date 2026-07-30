@@ -1,30 +1,9 @@
-const mockWorkerInstances: any[] = []
-const mockWorkerState = { constructorAttempts: 0, constructorShouldThrow: false }
-
-jest.mock(
-  'web-worker:./spectrogram-worker.ts',
-  () => ({
-    __esModule: true,
-    default: class MockSpectrogramWorker {
-      onmessage: ((e: { data: any }) => void) | null = null
-      onerror: ((e: Event) => void) | null = null
-      onmessageerror: ((e: Event) => void) | null = null
-      postMessage = jest.fn()
-      terminate = jest.fn()
-      constructor() {
-        mockWorkerState.constructorAttempts++
-        if (mockWorkerState.constructorShouldThrow) {
-          throw new Error('worker construction blocked')
-        }
-        mockWorkerInstances.push(this)
-      }
-    },
-  }),
-  { virtual: true },
-)
-
 import Spectrogram from '../plugins/spectrogram.js'
 import WindowedSpectrogram from '../plugins/spectrogram-windowed.js'
+import { paintColumnPixels } from '../spectrogram-render-utils.js'
+import { createFakeWaveSurfer } from './helpers/fake-wavesurfer.js'
+import { createFakeAudioBuffer } from './helpers/audio-buffer.js'
+import { mockWorkerInstances, mockWorkerState } from './helpers/spectrogram-worker-mock.js'
 
 const SAMPLE_RATE = 8000
 const LENGTH = 4096
@@ -34,13 +13,7 @@ function makeBuffer(): AudioBuffer {
   for (let i = 0; i < LENGTH; i++) {
     data[i] = Math.sin((2 * Math.PI * 440 * i) / SAMPLE_RATE)
   }
-  return {
-    sampleRate: SAMPLE_RATE,
-    length: LENGTH,
-    duration: LENGTH / SAMPLE_RATE,
-    numberOfChannels: 1,
-    getChannelData: () => data,
-  } as unknown as AudioBuffer
+  return createFakeAudioBuffer(data, { sampleRate: SAMPLE_RATE })
 }
 
 // SpectrogramPlugin is a definePlugin() plugin: its setup() (which attaches the public/test API
@@ -51,18 +24,6 @@ function makeBuffer(): AudioBuffer {
 // windowed-only internals (calculateFrequencies/calculateFrequenciesMainThread/
 // calculateFrequenciesWithWorker, and the segment manager) live under
 // __spectrogramInternalsForTests().windowed, same as spectrogram-windowed-destroy.test.ts.
-function createFakeWaveSurfer(overrides: Record<string, unknown> = {}) {
-  const wrapper = document.createElement('div')
-  Object.defineProperty(wrapper, 'offsetWidth', { value: 600, configurable: true })
-  Object.defineProperty(wrapper, 'clientWidth', { value: 600, configurable: true })
-  return {
-    options: {},
-    getWrapper: () => wrapper,
-    getDecodedData: () => null,
-    on: () => () => undefined,
-    ...overrides,
-  }
-}
 
 /** Reports how a promise settled within `ms`, without waiting longer */
 function settledWithin(promise: Promise<unknown>, ms: number): Promise<'resolved' | 'rejected' | 'pending'> {
@@ -94,7 +55,7 @@ afterEach(() => {
 describe('SpectrogramPlugin worker error handling', () => {
   function createPlugin(options: Record<string, unknown> = {}) {
     const plugin = Spectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', ...options }) as any
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     return { plugin, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
   }
 
@@ -163,7 +124,7 @@ describe('SpectrogramPlugin worker error handling', () => {
 describe('WindowedSpectrogramPlugin worker error handling', () => {
   function createPlugin(options: Record<string, unknown> = {}) {
     const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', ...options })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     const internals = plugin.__spectrogramInternalsForTests()
     internals.buffer = makeBuffer()
     return { plugin, internals, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
@@ -181,6 +142,75 @@ describe('WindowedSpectrogramPlugin worker error handling', () => {
     expect(internals.workerPromises.size).toBe(0)
     expect(worker.terminate).toHaveBeenCalled()
     expect(internals.worker).toBeNull()
+  })
+
+  it('slices channel data to the segment range before postMessage instead of cloning the whole buffer', async () => {
+    // makeBuffer() is LENGTH (4096) samples at SAMPLE_RATE (8000) = 0.512s total. Requesting
+    // just [0, 0.25) must postMessage only floor(0.25 * 8000) = 2000 samples per channel, not
+    // getChannelData()'s full 4096-sample view - postMessage's structured clone copies the
+    // WHOLE ArrayBuffer backing a TypedArray view (not just the viewed range), so posting the
+    // full-length view directly would clone the entire decoded channel on every segment
+    // request, however small the segment.
+    const { internals, worker } = createPlugin()
+    const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.25)
+    promise.catch(() => undefined)
+
+    expect(worker.postMessage).toHaveBeenCalledTimes(1)
+    const { audioData, options } = worker.postMessage.mock.calls[0][0]
+    expect(audioData[0].length).toBe(2000)
+    // The worker still re-subarrays internally using options.startTime/endTime (same protocol
+    // as the full-buffer path) - since the data it now receives IS the slice, those must be
+    // shifted to be relative to it (0..sliceDuration), not the original absolute [0, 0.25).
+    expect(options.startTime).toBe(0)
+    // Strict, not approximate: the worker reconstructs its own end sample via
+    // `Math.floor(options.endTime * options.sampleRate)` (spectrogram-worker.ts's
+    // calculateFrequencies) - that must land exactly on the slice's true length, not just
+    // "close to" it. See the adversarial-pairs test below for why this can't be `toBeCloseTo`.
+    expect(Math.floor(options.endTime * options.sampleRate)).toBe(2000)
+  })
+
+  it('reconstructs the exact slice length across the endTime float round-trip, for pairs where a naive division drops the last sample', async () => {
+    // Regression: sending `sliceLength / sampleRate` as the worker's endTime does not reliably
+    // survive the worker's own `Math.floor(endTime * sampleRate)` reconstruction - for ~5% of
+    // realistic (length, sampleRate) pairs the division-then-remultiplication round-trip lands a
+    // hair under the true value and silently drops the segment's last sample. (1015, 8000) is a
+    // concrete instance: 1015/8000 = 0.126875, and Math.floor(0.126875 * 8000) === 1014, not
+    // 1015. Brute-force verified fixed (0 mismatches across 9 common sample rates x 5000
+    // lengths) by sending a half-sample epsilon instead: (sliceLength + 0.5) / sampleRate.
+    const adversarialPairs: Array<[len: number, sampleRate: number]> = [
+      [1015, 8000],
+      [1, 8000],
+      [3, 11025],
+      [999, 22050],
+      [12345, 44100],
+      [7, 48000],
+    ]
+
+    for (const [len, sampleRate] of adversarialPairs) {
+      const data = new Float32Array(len + 10) // padding so the segment sits strictly inside the buffer
+      const buffer = createFakeAudioBuffer(data, { sampleRate })
+
+      const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear' })
+      plugin._init(createFakeWaveSurfer())
+      const internals = plugin.__spectrogramInternalsForTests()
+      internals.buffer = buffer
+      const worker = mockWorkerInstances[mockWorkerInstances.length - 1]
+
+      // +0.5-sample epsilon on the REQUEST's endTime too, so [startSample, endSample) resolves
+      // to exactly `len` samples regardless of the separate, pre-existing, same-shaped rounding
+      // hazard in THAT computation (calculateFrequenciesWithWorkerRange's own
+      // `Math.floor(endTime * sampleRate)` on the caller-supplied endTime) - isolating this test
+      // to only the round-trip this fix targets: the slice-length -> endTime -> worker's own
+      // floor reconstruction.
+      const promise = internals.windowed.calculateFrequenciesWithWorker(0, (len + 0.5) / sampleRate)
+      promise.catch(() => undefined)
+
+      const { audioData, options } = worker.postMessage.mock.calls[0][0]
+      expect(audioData[0].length).toBe(len)
+      // The worker's actual reconstruction formula (spectrogram-worker.ts's calculateFrequencies:
+      // `Math.floor(endTime * sampleRate)`) must recover the slice's true length exactly.
+      expect(Math.floor(options.endTime * options.sampleRate)).toBe(len)
+    }
   })
 
   it('rejects the in-flight promise on a message deserialization error', async () => {
@@ -233,12 +263,34 @@ describe('WindowedSpectrogramPlugin worker error handling', () => {
     await expect(promise).rejects.toThrow('Spectrogram plugin destroyed')
     expect(internals.workerPromises.size).toBe(0)
   })
+
+  it('does not recreate the worker for a computation that runs after destroy', async () => {
+    // destroy()'s teardown (spectrogram-setup.ts's ctx.scope.add block) disposes the worker
+    // exactly once and relies on that being the plugin's last one - it never runs again. A
+    // worker built by a post-destroy computation would therefore never be terminated: a
+    // permanent live-Worker leak. `buffer` is normally nulled by that same teardown, closing
+    // off the only path that reaches worker construction; poking it back non-null (as this test
+    // does) simulates a caller still holding a stale reference and firing a computation anyway -
+    // the ctx.scope.disposed check is the guard that must catch that instead.
+    const { plugin, internals } = createPlugin()
+    const workerCountBeforeDestroy = mockWorkerInstances.length
+
+    plugin.destroy()
+    internals.buffer = makeBuffer()
+
+    // No worker to respond, so this falls back to (and completes via) the main-thread path -
+    // the point under test is only that it does so WITHOUT building a new worker first.
+    await internals.windowed.calculateFrequencies(0, 0.25)
+
+    expect(mockWorkerInstances.length).toBe(workerCountBeforeDestroy)
+    expect(internals.worker).toBeNull()
+  })
 })
 
 describe('SpectrogramPlugin fallbackToMainThread option', () => {
   function createPlugin(options: Record<string, unknown> = {}) {
     const plugin = Spectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', ...options }) as any
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     return { plugin, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
   }
 
@@ -319,7 +371,7 @@ describe('SpectrogramPlugin fallbackToMainThread option', () => {
 describe('WindowedSpectrogramPlugin fallbackToMainThread option', () => {
   function createPlugin(options: Record<string, unknown> = {}) {
     const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', ...options })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     const internals = plugin.__spectrogramInternalsForTests()
     internals.buffer = makeBuffer()
     return { plugin, internals, worker: mockWorkerInstances[mockWorkerInstances.length - 1] }
@@ -380,7 +432,7 @@ describe('failure-state hygiene (stale cache and construction latch)', () => {
       workerTimeout: 0,
       fallbackToMainThread: false,
     })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     const worker = mockWorkerInstances[mockWorkerInstances.length - 1]
 
     const bufferA = makeBuffer()
@@ -406,7 +458,7 @@ describe('failure-state hygiene (stale cache and construction latch)', () => {
 
   it('clears previously drawn canvases when asked to draw an empty result', () => {
     const plugin: any = Spectrogram.create({ useWebWorker: true, noverlap: 256 })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     const canvas = document.createElement('canvas')
     plugin.__spectrogramInternalsForTests().canvasContainer.appendChild(canvas)
     plugin.__spectrogramInternalsForTests().canvases.push(canvas)
@@ -422,7 +474,7 @@ describe('failure-state hygiene (stale cache and construction latch)', () => {
     [
       'SpectrogramPlugin',
       Spectrogram,
-      (plugin: any) => plugin._init(createFakeWaveSurfer() as any),
+      (plugin: any) => plugin._init(createFakeWaveSurfer()),
       (plugin: any) => plugin.__spectrogramInternalsForTests().getFrequencies(makeBuffer()),
     ],
     [
@@ -432,7 +484,7 @@ describe('failure-state hygiene (stale cache and construction latch)', () => {
       // buffer, so this row needs one; the SpectrogramPlugin row's compute() takes its own
       // buffer argument instead and has no such field to set.
       (plugin: any) => {
-        plugin._init(createFakeWaveSurfer() as any)
+        plugin._init(createFakeWaveSurfer())
         plugin.__spectrogramInternalsForTests().buffer = makeBuffer()
       },
       (plugin: any) => plugin.__spectrogramInternalsForTests().windowed.calculateFrequencies(0, 0.25),
@@ -454,7 +506,7 @@ describe('failure-state hygiene (stale cache and construction latch)', () => {
 describe('worker timeout disposal', () => {
   it('disposes the worker on timeout and re-creates it on the next computation', async () => {
     const plugin: any = Spectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear', workerTimeout: 1 })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     const worker = mockWorkerInstances[mockWorkerInstances.length - 1]
 
     const promise = plugin.__spectrogramInternalsForTests().calculateFrequenciesWithWorker(makeBuffer())
@@ -477,7 +529,7 @@ describe('worker timeout disposal', () => {
     jest.useFakeTimers()
     try {
       const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear' })
-      plugin._init(createFakeWaveSurfer() as any)
+      plugin._init(createFakeWaveSurfer())
       const internals = plugin.__spectrogramInternalsForTests()
       internals.buffer = makeBuffer()
       const worker = mockWorkerInstances[mockWorkerInstances.length - 1]
@@ -505,7 +557,7 @@ describe('worker timeout disposal', () => {
 describe('drawSpectrogram zero-frame channels', () => {
   it('treats all-channels-empty as nothing to draw instead of crashing in resample', () => {
     const plugin: any = Spectrogram.create({ useWebWorker: true, noverlap: 256 })
-    plugin._init(createFakeWaveSurfer() as any)
+    plugin._init(createFakeWaveSurfer())
     // A real width so the pre-fix path reaches the resample crash rather than dying on a
     // missing wrapper (the intended red observable)
     plugin.wavesurfer = {
@@ -520,5 +572,32 @@ describe('drawSpectrogram zero-frame channels', () => {
     expect(() => plugin.__spectrogramInternalsForTests().drawSpectrogram([[]])).not.toThrow()
     expect(plugin.__spectrogramInternalsForTests().canvases).toHaveLength(0)
     expect(plugin.__spectrogramInternalsForTests().canvasContainer.contains(canvas)).toBe(false)
+  })
+})
+
+describe('paintColumnPixels clamps out-of-range bin values', () => {
+  // fillImageDataQuality (full-mode canvas path) and spectrogram-windowing.ts's
+  // renderChannelToCanvas (windowed-mode canvas path) both delegate to this one shared helper,
+  // so exercising it directly here covers both instead of fighting jsdom's lack of a real 2D
+  // canvas context (getContext('2d') returns null without a canvas-mock package, so the
+  // drawSpectrogram -> ... -> fillImageDataQuality DOM path never actually reaches pixel
+  // painting in this test environment).
+  it('does not throw indexing colorMap for a bin value outside [0, 255], and clamps to the nearest valid color', () => {
+    // Every internally-computed segment's bin values come from a Uint8Array (already 0-255),
+    // but loadFrequenciesData's externally-supplied JSON (frequenciesDataUrl) is only assumed,
+    // never runtime-validated, to already be in range - see frequenciesDataUrl's own doc
+    // comment. An out-of-range value must clamp to the nearest valid color instead of indexing
+    // colorMap out of bounds and throwing on `color[0]` off `undefined`.
+    const colorMap: number[][] = Array.from({ length: 256 }, (_, i) => [i / 255, 0, 0, 1])
+    const data = new Uint8ClampedArray(4 * 5) // 1 column, 5 rows, RGBA
+    const column = [300, -5, 128, 0, 255]
+
+    expect(() => paintColumnPixels(data, column, colorMap, 0, 1, 5)).not.toThrow()
+
+    // row 0 (value 300, clamps to 255 -> colorMap[255] = [1, 0, 0, 1]) lands at the BOTTOM
+    // pixel row ((rowCount - row - 1) * columnCount + columnIndex) * 4 = (5-0-1)*1*4 = 16
+    expect(data[16]).toBe(255)
+    // row 1 (value -5, clamps to 0 -> colorMap[0] = [0, 0, 0, 1]) at pixelIndex (5-1-1)*4 = 12
+    expect(data[12]).toBe(0)
   })
 })

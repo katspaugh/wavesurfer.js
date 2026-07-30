@@ -7,26 +7,7 @@ jest.mock('../wavesurfer.js', () => ({
 
 import MinimapPlugin from '../plugins/minimap.js'
 import WaveSurfer from '../wavesurfer.js'
-
-type Listener = (...args: any[]) => void
-
-const createEmitter = () => {
-  const listeners = new Map<string, Set<Listener>>()
-
-  return {
-    on: jest.fn((event: string, listener: Listener) => {
-      if (!listeners.has(event)) {
-        listeners.set(event, new Set())
-      }
-
-      listeners.get(event)!.add(listener)
-      return () => listeners.get(event)?.delete(listener)
-    }),
-    emit: (event: string, ...args: any[]) => {
-      listeners.get(event)?.forEach((listener) => listener(...args))
-    },
-  }
-}
+import { createEmitter } from './helpers/create-emitter.js'
 
 const createMiniWaveSurfer = (duration = 30) => {
   const emitter = createEmitter()

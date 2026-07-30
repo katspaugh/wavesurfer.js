@@ -440,32 +440,6 @@ export function calculateLinePaths({
   })
 }
 
-/**
- * @deprecated Use calculateScrollPercentages from './reactive/scroll-stream.js' instead.
- * This function is maintained for backward compatibility but will be removed in a future version.
- */
-export function calculateScrollPercentages({
-  scrollLeft,
-  clientWidth,
-  scrollWidth,
-}: {
-  scrollLeft: number
-  clientWidth: number
-  scrollWidth: number
-}): { startX: number; endX: number } {
-  if (scrollWidth === 0) {
-    return { startX: 0, endX: 1 }
-  }
-
-  const startX = scrollLeft / scrollWidth
-  const endX = (scrollLeft + clientWidth) / scrollWidth
-
-  return {
-    startX: Math.max(0, Math.min(1, startX)),
-    endX: Math.max(0, Math.min(1, endX)),
-  }
-}
-
 export function roundToHalfAwayFromZero(value: number): number {
   const scaled = value * 2
   const rounded = scaled < 0 ? Math.floor(scaled) : Math.ceil(scaled)

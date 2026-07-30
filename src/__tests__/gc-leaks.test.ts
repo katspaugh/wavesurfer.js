@@ -37,7 +37,7 @@
  * ("collects the decoded buffer once destroyed, even while the plugin instance itself is still
  * referenced") is shaped to catch that specific failure mode - it deliberately keeps the plugin
  * instance alive and checks that ONE field on it still releases its heavyweight value - and it's
- * the only case with a mutation-check (see the Task 4 report) actually proving it does. Each
+ * the only case with a mutation-check actually proving it does. Each
  * "whole graph" case below carries its own inline note to this effect.
  *
  * ## Why every case nulls its own locals inside `make()`
@@ -62,27 +62,16 @@ import { definePlugin } from '../define-plugin.js'
 import WaveSurfer from '../wavesurfer.js'
 import RegionsPlugin from '../plugins/regions.js'
 import SpectrogramPlugin from '../plugins/spectrogram.js'
+import { installMatchMediaStub } from './helpers/match-media.js'
+import { ensureGlobalAudioBufferStub } from './helpers/audio-buffer.js'
 
 // SpectrogramWorker is imported (indirectly, via plugins/spectrogram.ts's
 // `import SpectrogramWorker from 'web-worker:./spectrogram-worker.ts'`) through
 // rollup-plugin-web-worker-loader's virtual module scheme, which only resolves under rollup -
-// under ts-jest it doesn't exist on disk at all. Every existing spectrogram test suite
-// (spectrogram-destroy.test.ts, spectrogram-fft-size.test.ts, ...) mocks it the same way; this
-// harness's SpectrogramPlugin case never sets `useWebWorker: true`, but the module is still
-// imported eagerly by plugins/spectrogram.ts, so it must resolve to *something*.
-jest.mock(
-  'web-worker:./spectrogram-worker.ts',
-  () => ({
-    __esModule: true,
-    default: class MockSpectrogramWorker {
-      onmessage: ((e: { data: unknown }) => void) | null = null
-      onerror: ((e: Event) => void) | null = null
-      postMessage = jest.fn()
-      terminate = jest.fn()
-    },
-  }),
-  { virtual: true },
-)
+// under ts-jest it doesn't exist on disk at all. jest.config.js's moduleNameMapper redirects that
+// exact specifier to helpers/spectrogram-worker-mock.ts for every project (including this file's
+// 'leaks' project); this harness's SpectrogramPlugin case never sets `useWebWorker: true`, but the
+// module is still imported eagerly by plugins/spectrogram.ts, so it must resolve to *something*.
 
 // ---- Suite-start guard: fail loudly (not silently-vacuous) if global.gc isn't callable ----
 // A missing --expose-gc would make every `collected()` call below a silent, permanent `false` -
@@ -99,16 +88,7 @@ beforeAll(() => {
   }
 })
 
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(() => ({
-    matches: false,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-  })),
-})
+installMatchMediaStub()
 
 // jsdom ships no Web Audio API at all (`typeof AudioBuffer === 'undefined'`), but
 // decoder.ts's real (unmocked - this suite deliberately exercises the real decode path, not a
@@ -117,22 +97,16 @@ Object.defineProperty(window, 'matchMedia', {
 // `AudioBuffer.prototype.copyFromChannel`/`copyToChannel` to populate its returned object. A
 // minimal stub is enough: nothing in this file ever calls those two methods, they just need to
 // exist as functions at the point `createBuffer` reads them off the prototype.
-if (typeof (globalThis as { AudioBuffer?: unknown }).AudioBuffer === 'undefined') {
-  class FakeAudioBuffer {
-    copyFromChannel(): void {}
-    copyToChannel(): void {}
-  }
-  ;(globalThis as { AudioBuffer?: unknown }).AudioBuffer = FakeAudioBuffer
-}
+ensureGlobalAudioBufferStub()
 
 /**
- * The Task 4 brief's binding design, with one deliberate, empirically-forced change from the
- * brief's own sketch: `ref.deref()` is called exactly ONCE, after every `gc()`/wait round, not
- * once per round inside the loop.
+ * This helper's WeakRef-polling design deliberately deviates from the naive/literal form in one
+ * respect, forced by empirical testing: `ref.deref()` is called exactly ONCE, after every
+ * `gc()`/wait round, not once per round inside the loop.
  *
  * Why: per spec (`WeakRef.prototype.deref`, 9.10.4 "AddToKeptObjects"), every `deref()` call adds
  * the referent to the current realm's "kept objects" list, which is only cleared between host
- * "jobs". Calling `deref()` on each loop iteration (the brief's literal sketch: `if
+ * "jobs". Calling `deref()` on each loop iteration (the naive form: `if
  * (ref.deref() === undefined) return true` inside the loop) re-adds the target to that list on
  * every single check - which was verified, empirically, to make the target UNCOLLECTIBLE for the
  * lifetime of the loop, regardless of whether anything in the real object graph retains it.
@@ -322,7 +296,7 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
     // WaveSurfer's OWN retention of `decodedData`/Renderer's own `audioData` field (neither of
     // which SpectrogramPlugin controls, and neither of which is nulled by WaveSurfer#destroy() -
     // see wavesurfer.ts/renderer.ts). Routing the buffer through a real WaveSurfer would make
-    // this case's mutation check (see the Task 4 report) meaningless: dropping `ws` at the end
+    // this case's mutation check meaningless: dropping `ws` at the end
     // would drag the buffer down with it regardless of whether SpectrogramPlugin's own `buffer`
     // closure variable was nulled on destroy - the exact bug this case exists to catch. With a
     // fake wavesurfer, the ONLY strong reference to the target buffer, once `make()` returns, is
@@ -366,9 +340,9 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
     // in this file do) would make the mutation check below meaningless: the target buffer would
     // become unreachable once `plugin` itself is collected regardless of whether destroy()'s
     // teardown ever nulled its own `buffer` variable - see this describe block's own doc comment
-    // above `createFakeWaveSurfer` for the longer version of this reasoning, and the Task 4
-    // report for the actual mutation-check run (temporarily deleting spectrogram-setup.ts's
-    // `buffer = null` and confirming exactly this test - and only this test - goes red).
+    // above `createFakeWaveSurfer` for the longer version of this reasoning. The actual
+    // mutation-check was run by temporarily deleting spectrogram-setup.ts's `buffer = null` and
+    // confirming exactly this test - and only this test - goes red.
     it('collects the decoded buffer once destroyed, even while the plugin instance itself is still referenced', async () => {
       let audioBuffer: AudioBuffer | null = makeAudioBuffer()
       let fakeWs: ReturnType<typeof createFakeWaveSurfer> | null = createFakeWaveSurfer(audioBuffer)
@@ -382,8 +356,8 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
       // guard - firing-and-forgetting it and destroying immediately was tried first and let that
       // pending write land AFTER destroy() had already nulled `cachedBuffer`/`buffer`, silently
       // re-populating `cachedBuffer` with the same object post-teardown and making this test
-      // fail even against correct code (a real, if narrow, race worth its own follow-up - see
-      // the Task 4 report). Awaiting here sidesteps it entirely for this test's purposes.
+      // fail even against correct code (a real, if narrow, race worth its own follow-up).
+      // Awaiting here sidesteps it entirely for this test's purposes.
       await plugin.getFrequenciesData()
 
       // Captured BEFORE destroy(), while the plugin's own closure `buffer` variable still points
@@ -421,7 +395,7 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
     // Whole-graph coverage, not field-retention sensitive (see top doc comment): unlike 3a above,
     // this drops `plugin` itself too, so it verifies the plugin instance is collectible when
     // unreferenced - it does NOT isolate the `buffer` field the way 3a does, and stays green even
-    // under 3a's mutation check (see the Task 4 report).
+    // under 3a's mutation check.
     it('collects the SpectrogramPlugin instance itself after a real render, after destroy', async () => {
       const ok = await collected(() => {
         const audioBuffer = makeAudioBuffer()
@@ -470,8 +444,8 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
     // is dropped along with `ws`/`container`, so this proves the plugin instance (and therefore,
     // transitively, its closure-only `payload`) is collectible once unreferenced - NOT that
     // `payload` specifically gets released while the plugin instance survives. No case in this
-    // file mutation-tests scope.ts's `dispose()` directly (see the Task 4 report); the "whole
-    // graph gone" signal here is real but coarser than Case 3a's field-level check.
+    // file mutation-tests scope.ts's `dispose()` directly; the "whole graph gone" signal here is
+    // real but coarser than Case 3a's field-level check.
     it('collects the plugin instance (and its closure-only payload) after destroy', async () => {
       const ok = await collected(() => {
         const container = document.createElement('div')
@@ -491,11 +465,10 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
   })
 })
 
-// ---- Known jsdom retention caveats (documented per the Task 4 brief; no case below is skipped
-// in this file - every one of the four brief cases above proved assertable honestly with a
-// detached container / fake wavesurfer, so there is nothing to `test.skip` here). Kept as a
-// comment (not a skipped test) since it explains a design choice already reflected above, not an
-// unimplemented case:
+// ---- Known jsdom retention caveats. No case in this file is skipped: every case above proved
+// assertable honestly with a detached container / fake wavesurfer, so there is nothing to
+// `test.skip` here. Kept as a comment (not a skipped test) since it explains a design choice
+// already reflected above, not an unimplemented case:
 // - jsdom's `document` retains every node ever appended to it (including document.body) for the
 //   life of the test file's realm - a container appended to document.body would make the
 //   WaveSurfer wrapper/canvas subtree unreachable-but-not-actually-collectible via that path.

@@ -3,19 +3,18 @@
  *
  * @deprecated Use `SpectrogramPlugin.create({ rendering: 'windowed', ... })` instead. This
  * plugin is now a thin, option-name-mapping shim over the merged `spectrogram.ts` plugin's
- * `rendering: 'windowed'` strategy (Phase 4, Task 3 of the spectrogram-unification refactor) -
- * it delegates straight into `spectrogramSetup()`, forcing `rendering: 'windowed'` and mapping
- * this plugin's (identical, historical) option names onto `SpectrogramPluginOptions`. It is
- * kept only so existing `import WindowedSpectrogramPlugin from 'wavesurfer.js/plugins/spectrogram-windowed'`
+ * `rendering: 'windowed'` strategy - it delegates straight into `spectrogramSetup()`, forcing
+ * `rendering: 'windowed'` and mapping this plugin's (identical, historical) option names onto
+ * `SpectrogramPluginOptions`. It is kept only so existing
+ * `import WindowedSpectrogramPlugin from 'wavesurfer.js/plugins/spectrogram-windowed'`
  * call sites keep working; the actual windowed rendering strategy - the segment map, eviction,
  * uncovered-range detection, and progressive loading - lives in exactly one place now:
  * `spectrogram-windowing.ts`, shared by both entry points. See spectrogram.ts's own
- * `spectrogramSetup` doc comment for the delegation, and the Phase 4 Task 3 report for why this
- * "delegate at the setup-function level" form was chosen over either a pure
- * `SpectrogramPlugin.create({...})`-returning factory (can't satisfy this plugin's pre-`_init()`
- * option-validation-throws-synchronously contract on its own - see the validateOptions wrapper
- * below) or a `class WindowedSpectrogramPlugin extends SpectrogramPlugin` (same `_init()` gating
- * problem, plus a second, redundant plugin instance).
+ * `spectrogramSetup` doc comment for the delegation. This "delegate at the setup-function level"
+ * form was chosen over either a pure `SpectrogramPlugin.create({...})`-returning factory (can't
+ * satisfy this plugin's pre-`_init()` option-validation-throws-synchronously contract on its own
+ * - see the validateOptions wrapper below) or a `class WindowedSpectrogramPlugin extends
+ * SpectrogramPlugin` (same `_init()` gating problem, plus a second, redundant plugin instance).
  *
  * Only renders frequency data in a sliding window around the current viewport, keeping memory
  * usage constant regardless of audio length.

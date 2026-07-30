@@ -3,8 +3,8 @@
  */
 
 import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
+import { FrameScheduler } from '../frame-scheduler.js'
 import { Scope } from '../scope.js'
-import Timer from '../timer.js'
 import type { WaveSurferOptions } from '../wavesurfer.js'
 
 export type RecordPluginOptions = {
@@ -61,7 +61,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private dataWindow: Float32Array | null = null
   private isWaveformPaused = false
   private originalOptions?: Partial<WaveSurferOptions>
-  private timer: Timer
+  private frameScheduler: FrameScheduler
   private lastStartTime = 0
   private lastDuration = 0
   private duration = 0
@@ -73,6 +73,15 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   // by the time it runs, super.destroy() may have already cleared listeners via
   // unAll(); this lets the final blob still reach whoever was listening.
   private pendingFinalRecordEndListeners: Set<(...args: unknown[]) => void> | null = null
+
+  // Bound once so it's the same function reference passed to
+  // frameScheduler.start() regardless of which FrameScheduler instance is
+  // currently live (see onInit()).
+  private handleTick = () => {
+    const currentTime = performance.now() - this.lastStartTime
+    this.duration = this.isPaused() ? this.duration : this.lastDuration + currentTime
+    this.emit('record-progress', this.duration)
+  }
 
   /** Create an instance of the Record plugin */
   constructor(options: RecordPluginOptions) {
@@ -86,19 +95,19 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       mediaRecorderTimeslice: options.mediaRecorderTimeslice ?? undefined,
     })
 
-    this.timer = new Timer()
+    // Created against the constructor-time scope so startRecording() works
+    // even if a caller never calls _init() (see record.test.ts). onInit()
+    // below replaces this with a fresh instance on every (re-)init.
+    this.frameScheduler = new FrameScheduler(this.scope)
   }
 
   protected onInit() {
-    // this.scope is disposed and recreated on every destroy() (see below), so
-    // this re-registers cleanly on _init() after a destroy() + re-init cycle.
-    this.scope.add(
-      this.timer.on('tick', () => {
-        const currentTime = performance.now() - this.lastStartTime
-        this.duration = this.isPaused() ? this.duration : this.lastDuration + currentTime
-        this.emit('record-progress', this.duration)
-      }),
-    )
+    // this.scope is disposed and recreated on every destroy() (see below); a
+    // fresh FrameScheduler is needed so a post-destroy startRecording()/
+    // resumeRecording() registers its stop() on the new scope instead of the
+    // dead one (mirrors WaveSurfer.ensureCoreEvents()'s frameScheduler
+    // recreation in wavesurfer.ts).
+    this.frameScheduler = new FrameScheduler(this.scope)
   }
 
   /** Create an instance of the Record plugin */
@@ -357,7 +366,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     this.lastDuration = 0
     this.duration = 0
     this.isWaveformPaused = false
-    this.timer.start()
+    this.frameScheduler.start(this.handleTick)
 
     this.emit('record-start')
   }
@@ -384,7 +393,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   public stopRecording() {
     if (this.isActive()) {
       this.mediaRecorder?.stop()
-      this.timer.stop()
+      this.frameScheduler.stop()
     }
   }
 
@@ -394,7 +403,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       this.isWaveformPaused = true
       this.mediaRecorder?.requestData()
       this.mediaRecorder?.pause()
-      this.timer.stop()
+      this.frameScheduler.stop()
       this.lastDuration = this.duration
     }
   }
@@ -404,7 +413,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     if (this.isPaused()) {
       this.isWaveformPaused = false
       this.mediaRecorder?.resume()
-      this.timer.start()
+      this.frameScheduler.start(this.handleTick)
       this.lastStartTime = performance.now()
       this.emit('record-resume')
     }
@@ -442,16 +451,20 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     // listeners before super.destroy() clears them (unAll).
     this.stopRecording()
     this.stopMic()
-    this.timer.destroy()
+    // Unconditional (stopRecording() above only stops when isActive()):
+    // matches the old Timer.destroy()'s behavior of always stopping the
+    // tick loop regardless of recording state. Idempotent if already
+    // stopped.
+    this.frameScheduler.stop()
     // Revoke blob URL to free memory
     if (this.recordedBlobUrl) {
       URL.revokeObjectURL(this.recordedBlobUrl)
       this.recordedBlobUrl = null
     }
-    // Disposes the timer-tick subscription registered in onInit() and
-    // cascades to any mic child scope still attached (normally none --
-    // stopMic() above already detached and disposed it; this is only a
-    // backstop). Recreated because re-init after destroy() is supported
+    // Disposes the frameScheduler's own stop() disposer (already stopped
+    // above; this is only a backstop) and cascades to any mic child scope
+    // still attached (normally none -- stopMic() above already detached and
+    // disposed it). Recreated because re-init after destroy() is supported
     // (see record.test.ts): a disposed Scope runs late registrations
     // immediately, which would silently break a subsequent onInit().
     this.scope.dispose()
