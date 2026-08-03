@@ -232,3 +232,9 @@ We appreciate your feedback and contributions!
 If you encounter any issues or have suggestions for improvements, please don't hesitate to post in our [forum](https://github.com/wavesurfer-js/wavesurfer.js/discussions/categories/q-a).
 
 We hope you enjoy using wavesurfer.js and look forward to hearing about your experiences with the library!
+
+---
+
+<a href="https://www.digitalocean.com/?utm_medium=opensource&utm_source=wavesurfer.js">
+  <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/PoweredByDO/DO_Powered_by_Badge_blue.svg" width="201px">
+</a>
