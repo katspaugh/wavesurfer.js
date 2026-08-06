@@ -10,3 +10,12 @@ cypress/**/__diff_output__/
 .env
 coverage/
 eslint_report.json
+.env.*
+.stably-agent.env
+/test-results
+/playwright-report
+/blob-report
+.last-run.json
+.stably/*
+!.stably/docs/
+.stably-playwright-wrapper.config.*
