@@ -200,6 +200,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   private _pause() {
+    this.playbackPosition = this.currentTime
     this.paused = true
     // Clear onended before stopping to prevent spurious 'ended' event
     if (this.bufferNode) {
@@ -210,7 +211,6 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
         // Ignore InvalidStateError if node already stopped
       }
     }
-    this.playbackPosition += (this.audioContext.currentTime - this.playStartTime) * this._playbackRate
   }
 
   async play() {

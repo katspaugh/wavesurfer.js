@@ -166,6 +166,23 @@ describe('WebAudioPlayer', () => {
       expect(endedSpy).not.toHaveBeenCalled()
     })
 
+    test('preserves the current playback position before stopping the buffer', () => {
+      const { audioContext, bufferSource } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      ;(player as any).buffer = createMockBuffer(10)
+
+      audioContext.currentTime = 100
+      player.play()
+      audioContext.currentTime = 105
+
+      const currentTimeDuringStop = jest.fn(() => player.currentTime)
+      bufferSource.stop.mockImplementation(currentTimeDuringStop)
+      player.pause()
+
+      expect(currentTimeDuringStop).toHaveReturnedWith(5)
+      expect(player.currentTime).toBe(5)
+    })
+
     test('does not emit ended when stopAt stops before end of audio', () => {
       const { audioContext, triggerOnended } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
