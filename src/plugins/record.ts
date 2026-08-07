@@ -22,7 +22,7 @@ export type RecordPluginOptions = {
   continuousWaveform?: boolean
   /** The duration of the continuous waveform, in seconds */
   continuousWaveformDuration?: number
-  /** The timeslice to use for the media recorder */
+  /** The timeslice to use for the media recorder, defaults to 200ms */
   mediaRecorderTimeslice?: number
 }
 
@@ -92,7 +92,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       scrollingWaveformWindow: options.scrollingWaveformWindow ?? DEFAULT_SCROLLING_WAVEFORM_WINDOW,
       continuousWaveform: options.continuousWaveform ?? false,
       renderRecordedAudio: options.renderRecordedAudio ?? true,
-      mediaRecorderTimeslice: options.mediaRecorderTimeslice ?? undefined,
+      mediaRecorderTimeslice: options.mediaRecorderTimeslice ?? 200,
     })
 
     // Created against the constructor-time scope so startRecording() works
