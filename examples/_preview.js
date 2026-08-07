@@ -1,5 +1,8 @@
 const iframe = document.querySelector('iframe')
 const textarea = document.querySelector('textarea')
+const sameOriginRunnerExamples = new Map([
+  ['pitch-adjuster.js', '/examples/pitch-adjuster.html'],
+])
 
 const loadPreview = (code) => {
   const html = code.replace(/\n/g, '').match(/<html>(.+?)<\/html>/gm) || []
@@ -54,12 +57,19 @@ const loadPreview = (code) => {
 }
 
 const openExample = (url) => {
+  const runnerUrl = sameOriginRunnerExamples.get(url)
+  if (runnerUrl) {
+    iframe.src = runnerUrl
+  }
+
   fetch(`/examples/${url}`, {
     cache: 'no-cache',
   })
     .then((res) => res.text())
     .then((text) => {
-      loadPreview(text)
+      if (!runnerUrl) {
+        loadPreview(text)
+      }
       textarea.value = text
     })
 }
