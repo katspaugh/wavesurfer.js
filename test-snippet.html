@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<body>
+<button id="start">Start</button>
+<button id="stop">Stop</button>
+<script type="module">
+import WaveSurfer from './dist/wavesurfer.esm.js';
+import RecordPlugin from './dist/plugins/record.esm.js';
+
+const wavesurfer = WaveSurfer.create({
+    container: document.body,
+    waveColor: 'violet',
+    progressColor: 'purple'
+});
+
+const record = wavesurfer.registerPlugin(RecordPlugin.create({
+    scrollingWaveform: true,
+    renderRecordedAudio: false
+}));
+
+record.on('record-data-available', (blob) => {
+    console.log('test');
+});
+
+record.on('record-progress', (time) => {
+    // console.log('progress');
+});
+
+document.getElementById('start').onclick = () => {
+    record.startRecording();
+};
+document.getElementById('stop').onclick = () => {
+    record.stopRecording();
+    const blob = new Blob(record.recordedChunks);
+    // wait how do they download?
+};
+</script>
+</body>
+</html>
