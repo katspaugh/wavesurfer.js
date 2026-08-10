@@ -391,7 +391,11 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
       }
       const timeDiff = nextPoint.time - prevPoint.time
       const volumeDiff = nextPoint.volume - prevPoint.volume
-      const newVolume = prevPoint.volume + (time - prevPoint.time) * (volumeDiff / timeDiff)
+      // The synthesized end point above collapses onto the last real point when that point sits
+      // at the very end of the track, making timeDiff 0. Interpolating then yields NaN, which the
+      // clamp below cannot undo, so hold the last point's volume instead of dividing.
+      const newVolume =
+        timeDiff > 0 ? prevPoint.volume + (time - prevPoint.time) * (volumeDiff / timeDiff) : prevPoint.volume
       const clampedVolume = Math.min(1, Math.max(0, newVolume))
       const roundedVolume = Math.round(clampedVolume * 100) / 100
 
