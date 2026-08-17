@@ -196,4 +196,36 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
 
     expect(onEnd).toHaveBeenCalledTimes(1)
   })
+
+  it('does not include paused time in record duration after resuming', async () => {
+    let now = 1_000
+    const nowSpy = jest.spyOn(performance, 'now').mockImplementation(() => now)
+    const plugin = RecordPlugin.create()
+    const onProgress = jest.fn()
+    plugin.on('record-progress', onProgress)
+
+    try {
+      await plugin.startRecording()
+
+      now = 1_500
+      ;(plugin as any).handleTick()
+      expect(plugin.getDuration()).toBe(500)
+
+      plugin.pauseRecording()
+      now = 16_500
+      onProgress.mockClear()
+      plugin.resumeRecording()
+
+      expect(plugin.getDuration()).toBe(500)
+      expect(onProgress).toHaveBeenLastCalledWith(500)
+
+      now = 16_600
+      ;(plugin as any).handleTick()
+      expect(plugin.getDuration()).toBe(600)
+    } finally {
+      plugin.destroy()
+      await flushMicrotasks()
+      nowSpy.mockRestore()
+    }
+  })
 })
