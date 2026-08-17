@@ -413,8 +413,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     if (this.isPaused()) {
       this.isWaveformPaused = false
       this.mediaRecorder?.resume()
-      this.frameScheduler.start(this.handleTick)
       this.lastStartTime = performance.now()
+      this.frameScheduler.start(this.handleTick)
       this.emit('record-resume')
     }
   }
