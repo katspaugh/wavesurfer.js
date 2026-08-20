@@ -12,6 +12,10 @@ class TestPlayer extends Player<Events> {
   public replaceMedia(element: HTMLMediaElement) {
     this.setMediaElement(element)
   }
+
+  public dispose() {
+    this.destroy()
+  }
 }
 
 describe('Player', () => {
@@ -234,6 +238,7 @@ describe('Player', () => {
     media.dispatchEvent(new Event('canplay'))
 
     expect(currentTime).toBe(0)
+    expect(player.getCurrentTime()).toBe(0)
   })
 
   test('clears a pending seek when the media element changes', () => {
@@ -251,6 +256,31 @@ describe('Player', () => {
     replacement.dispatchEvent(new Event('canplay'))
 
     expect(replacement.currentTime).toBe(0)
+    expect(player.getCurrentTime()).toBe(0)
+  })
+
+  test('clears a pending seek when the player is destroyed', () => {
+    const media = createMedia()
+    let currentTime = 0
+    let readyState = 0
+    Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
+    Object.defineProperty(media, 'readyState', { configurable: true, get: () => readyState })
+    Object.defineProperty(media, 'currentTime', {
+      configurable: true,
+      get: () => currentTime,
+      set: (value: number) => {
+        currentTime = value
+      },
+    })
+
+    const player = new TestPlayer({ media })
+    player.setTime(10)
+    player.dispose()
+    readyState = 3
+    media.dispatchEvent(new Event('canplay'))
+
+    expect(currentTime).toBe(0)
+    expect(player.getCurrentTime()).toBe(0)
   })
 
   test('setSinkId uses media method', async () => {
