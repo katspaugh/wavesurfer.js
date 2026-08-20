@@ -62,6 +62,51 @@ describe('Player', () => {
     expect(player.getCurrentTime()).toBe(10)
   })
 
+  test('reapplies a seek made before metadata immediately before playback', async () => {
+    const media = createMedia()
+    let currentTime = 0
+    Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
+    Object.defineProperty(media, 'readyState', { configurable: true, value: 0 })
+    Object.defineProperty(media, 'currentTime', {
+      configurable: true,
+      get: () => currentTime,
+      set: (value: number) => {
+        currentTime = value
+      },
+    })
+    media.play.mockImplementation(async () => {
+      expect(currentTime).toBe(10)
+    })
+
+    const player = new Player<Events>({ media })
+    player.setTime(10)
+    currentTime = 0 // iOS can discard a seek made before the media has metadata
+
+    await player.play()
+    expect(currentTime).toBe(10)
+  })
+
+  test('reapplies a pending seek when metadata becomes available', () => {
+    const media = createMedia()
+    let currentTime = 0
+    Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
+    Object.defineProperty(media, 'readyState', { configurable: true, value: 0 })
+    Object.defineProperty(media, 'currentTime', {
+      configurable: true,
+      get: () => currentTime,
+      set: (value: number) => {
+        currentTime = value
+      },
+    })
+
+    const player = new Player<Events>({ media })
+    player.setTime(10)
+    currentTime = 0
+    media.dispatchEvent(new Event('loadedmetadata'))
+
+    expect(currentTime).toBe(10)
+  })
+
   test('setSinkId uses media method', async () => {
     const media = createMedia()
     const player = new Player<Events>({ media })

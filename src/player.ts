@@ -22,6 +22,8 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   private _muted: WritableSignal<boolean>
   private _playbackRate: WritableSignal<number>
   private _seeking: WritableSignal<boolean>
+  // iOS can discard a media seek made before metadata is available.
+  private pendingTime: number | null = null
   // Note: Player has no separate "root" scope of its own -- mediaScope IS its
   // whole ownership tree. (A wrapper root named `scope`, as a plain mechanical
   // reading of the plan might suggest, would collide with WaveSurfer's own
@@ -167,6 +169,9 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.mediaScope.add(
       this.onMediaEvent('loadedmetadata', () => {
         this._duration.set(this.media.duration || 0)
+        if (this.pendingTime != null) {
+          this.media.currentTime = this.pendingTime
+        }
       }),
     )
 
@@ -234,6 +239,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
     this.revokeSrc()
     const newSrc = blob instanceof Blob && (this.canPlayType(blob.type) || !url) ? URL.createObjectURL(blob) : url
+    this.pendingTime = null
 
     // Track blob URLs we created so we can revoke them on destroy
     if (newSrc !== url) {
@@ -308,7 +314,12 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   /** Start playing the audio */
   public async play(): Promise<void> {
     try {
-      return await this.media.play()
+      if (this.pendingTime != null) {
+        this.media.currentTime = this.pendingTime
+      }
+      const result = await this.media.play()
+      this.pendingTime = null
+      return result
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
         return
@@ -329,7 +340,9 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Jump to a specific time in the audio (in seconds) */
   public setTime(time: number) {
-    this.media.currentTime = Math.max(0, Math.min(time, this.getDuration()))
+    const currentTime = Math.max(0, Math.min(time, this.getDuration()))
+    this.media.currentTime = currentTime
+    this.pendingTime = this.media.readyState < 1 ? currentTime : null
   }
 
   /** Get the duration of the audio in seconds */
