@@ -9,6 +9,8 @@ type PlayerOptions = {
   playbackRate?: number
 }
 
+const HAVE_FUTURE_DATA = 3
+
 class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   protected media: HTMLMediaElement
   private isExternalMedia = false
@@ -22,6 +24,8 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   private _muted: WritableSignal<boolean>
   private _playbackRate: WritableSignal<number>
   private _seeking: WritableSignal<boolean>
+  // WebKit can discard or corrupt a seek made before the media can play.
+  private pendingTime: number | null = null
   // Note: Player has no separate "root" scope of its own -- mediaScope IS its
   // whole ownership tree. (A wrapper root named `scope`, as a plain mechanical
   // reading of the plan might suggest, would collide with WaveSurfer's own
@@ -170,9 +174,14 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
       }),
     )
 
+    this.mediaScope.add(this.onMediaEvent('canplay', () => this.applyPendingTime()))
+
     // Seeking state
     this.mediaScope.add(
       this.onMediaEvent('seeking', () => {
+        if (this.pendingTime != null && Math.abs(this.media.currentTime - this.pendingTime) > 0.01) {
+          this.pendingTime = null
+        }
         this._seeking.set(true)
       }),
     )
@@ -228,12 +237,20 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     return this.media.canPlayType(type) !== ''
   }
 
+  private applyPendingTime(): void {
+    if (this.pendingTime == null) return
+    const time = this.pendingTime
+    this.media.currentTime = time
+    this.pendingTime = null
+  }
+
   protected setSrc(url: string, blob?: Blob) {
     const prevSrc = this.getSrc()
     if (url && prevSrc === url) return // no need to change the source
 
     this.revokeSrc()
     const newSrc = blob instanceof Blob && (this.canPlayType(blob.type) || !url) ? URL.createObjectURL(blob) : url
+    this.pendingTime = null
 
     // Track blob URLs we created so we can revoke them on destroy
     if (newSrc !== url) {
@@ -255,6 +272,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   protected destroy() {
+    this.pendingTime = null
     // Cleanup reactive media event listeners
     this.mediaScope.dispose()
     // Player instances are reused after destroy (see WaveSurfer's loadAudio
@@ -286,6 +304,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   protected setMediaElement(element: HTMLMediaElement) {
+    this.pendingTime = null
     // Cleanup reactive event listeners from old media element
     this.mediaScope.dispose()
     this.mediaScope = new Scope()
@@ -308,7 +327,12 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   /** Start playing the audio */
   public async play(): Promise<void> {
     try {
-      return await this.media.play()
+      if (this.media.readyState >= HAVE_FUTURE_DATA) this.applyPendingTime()
+      const result = await this.media.play()
+      // A resolved play promise means playback is possible. `canplay` normally
+      // applies the seek first; this also supports custom media implementations.
+      this.applyPendingTime()
+      return result
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
         return
@@ -329,7 +353,13 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Jump to a specific time in the audio (in seconds) */
   public setTime(time: number) {
-    this.media.currentTime = Math.max(0, Math.min(time, this.getDuration()))
+    const currentTime = Math.max(0, Math.min(time, this.getDuration()))
+    if (this.media.readyState < HAVE_FUTURE_DATA) {
+      this.pendingTime = currentTime
+      return
+    }
+    this.pendingTime = null
+    this.media.currentTime = currentTime
   }
 
   /** Get the duration of the audio in seconds */
@@ -339,7 +369,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Get the current audio position in seconds */
   public getCurrentTime(): number {
-    return this.media.currentTime
+    return this.pendingTime ?? this.media.currentTime
   }
 
   /** Get the audio volume */
