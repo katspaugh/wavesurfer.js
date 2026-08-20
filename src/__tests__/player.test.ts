@@ -4,6 +4,16 @@ interface Events {
   [key: string]: unknown[]
 }
 
+class TestPlayer extends Player<Events> {
+  public setSource(url: string) {
+    this.setSrc(url)
+  }
+
+  public replaceMedia(element: HTMLMediaElement) {
+    this.setMediaElement(element)
+  }
+}
+
 describe('Player', () => {
   const createMedia = () => {
     const media = document.createElement('audio') as HTMLMediaElement & {
@@ -62,11 +72,89 @@ describe('Player', () => {
     expect(player.getCurrentTime()).toBe(10)
   })
 
-  test('reapplies a seek made before metadata immediately before playback', async () => {
+  test('defers a seek until canplay without assigning currentTime during loadedmetadata', () => {
     const media = createMedia()
     let currentTime = 0
+    let readyState = 0
+    const assignedTimes: number[] = []
     Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
-    Object.defineProperty(media, 'readyState', { configurable: true, value: 0 })
+    Object.defineProperty(media, 'readyState', { configurable: true, get: () => readyState })
+    Object.defineProperty(media, 'currentTime', {
+      configurable: true,
+      get: () => currentTime,
+      set: (value: number) => {
+        assignedTimes.push(value)
+        currentTime = value
+      },
+    })
+
+    const player = new Player<Events>({ media })
+    player.setTime(10)
+    expect(assignedTimes).toEqual([])
+    expect(player.getCurrentTime()).toBe(10)
+
+    media.dispatchEvent(new Event('loadedmetadata'))
+    expect(assignedTimes).toEqual([])
+
+    readyState = 3
+    media.dispatchEvent(new Event('canplay'))
+    expect(assignedTimes).toEqual([10])
+    expect(currentTime).toBe(10)
+  })
+
+  test('applies only the latest seek requested before canplay', () => {
+    const media = createMedia()
+    let currentTime = 0
+    let readyState = 0
+    Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
+    Object.defineProperty(media, 'readyState', { configurable: true, get: () => readyState })
+    Object.defineProperty(media, 'currentTime', {
+      configurable: true,
+      get: () => currentTime,
+      set: (value: number) => {
+        currentTime = value
+      },
+    })
+
+    const player = new Player<Events>({ media })
+    player.setTime(10)
+    player.setTime(20)
+    readyState = 3
+    media.dispatchEvent(new Event('canplay'))
+
+    expect(currentTime).toBe(20)
+  })
+
+  test('does not overwrite an external seek made before canplay', () => {
+    const media = createMedia()
+    let currentTime = 0
+    let readyState = 0
+    Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
+    Object.defineProperty(media, 'readyState', { configurable: true, get: () => readyState })
+    Object.defineProperty(media, 'currentTime', {
+      configurable: true,
+      get: () => currentTime,
+      set: (value: number) => {
+        currentTime = value
+      },
+    })
+
+    const player = new Player<Events>({ media })
+    player.setTime(10)
+    currentTime = 20
+    media.dispatchEvent(new Event('seeking'))
+    readyState = 3
+    media.dispatchEvent(new Event('canplay'))
+
+    expect(currentTime).toBe(20)
+  })
+
+  test('applies a pending seek before play when the media is already playable', async () => {
+    const media = createMedia()
+    let currentTime = 0
+    let readyState = 0
+    Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
+    Object.defineProperty(media, 'readyState', { configurable: true, get: () => readyState })
     Object.defineProperty(media, 'currentTime', {
       configurable: true,
       get: () => currentTime,
@@ -80,17 +168,57 @@ describe('Player', () => {
 
     const player = new Player<Events>({ media })
     player.setTime(10)
-    currentTime = 0 // iOS can discard a seek made before the media has metadata
+    readyState = 3
+
+    await player.play()
+
+    expect(currentTime).toBe(10)
+  })
+
+  test('applies a pending seek when play advances the media to canplay', async () => {
+    const media = createMedia()
+    let currentTime = 0
+    let readyState = 0
+    Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
+    Object.defineProperty(media, 'readyState', { configurable: true, get: () => readyState })
+    Object.defineProperty(media, 'currentTime', {
+      configurable: true,
+      get: () => currentTime,
+      set: (value: number) => {
+        currentTime = value
+      },
+    })
+    media.play.mockImplementation(async () => {
+      readyState = 3
+      media.dispatchEvent(new Event('canplay'))
+      expect(currentTime).toBe(10)
+    })
+
+    const player = new Player<Events>({ media })
+    player.setTime(10)
 
     await player.play()
     expect(currentTime).toBe(10)
   })
 
-  test('reapplies a pending seek when metadata becomes available', () => {
+  test('sets currentTime immediately when the media can play', () => {
+    const media = createMedia()
+    Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
+    Object.defineProperty(media, 'readyState', { configurable: true, value: 3 })
+    Object.defineProperty(media, 'currentTime', { configurable: true, value: 0, writable: true })
+
+    const player = new Player<Events>({ media })
+    player.setTime(10)
+
+    expect(media.currentTime).toBe(10)
+  })
+
+  test('clears a pending seek when the source changes', () => {
     const media = createMedia()
     let currentTime = 0
+    let readyState = 0
     Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
-    Object.defineProperty(media, 'readyState', { configurable: true, value: 0 })
+    Object.defineProperty(media, 'readyState', { configurable: true, get: () => readyState })
     Object.defineProperty(media, 'currentTime', {
       configurable: true,
       get: () => currentTime,
@@ -99,12 +227,30 @@ describe('Player', () => {
       },
     })
 
-    const player = new Player<Events>({ media })
+    const player = new TestPlayer({ media })
     player.setTime(10)
-    currentTime = 0
-    media.dispatchEvent(new Event('loadedmetadata'))
+    player.setSource('https://example.com/replacement.mp3')
+    readyState = 3
+    media.dispatchEvent(new Event('canplay'))
 
-    expect(currentTime).toBe(10)
+    expect(currentTime).toBe(0)
+  })
+
+  test('clears a pending seek when the media element changes', () => {
+    const media = createMedia()
+    Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
+    Object.defineProperty(media, 'readyState', { configurable: true, value: 0 })
+    const replacement = createMedia()
+    Object.defineProperty(replacement, 'duration', { configurable: true, value: 100 })
+    Object.defineProperty(replacement, 'readyState', { configurable: true, value: 3 })
+    Object.defineProperty(replacement, 'currentTime', { configurable: true, value: 0, writable: true })
+
+    const player = new TestPlayer({ media })
+    player.setTime(10)
+    player.replaceMedia(replacement)
+    replacement.dispatchEvent(new Event('canplay'))
+
+    expect(replacement.currentTime).toBe(0)
   })
 
   test('setSinkId uses media method', async () => {
