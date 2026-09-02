@@ -1,9 +1,9 @@
-import EventEmitter, { type GeneralEventTypes } from './event-emitter.js'
 import { signal, type WritableSignal } from './reactive/store.js'
 import { Scope } from './scope.js'
+import type WebAudioPlayer from './webaudio.js'
 
 type PlayerOptions = {
-  media?: HTMLMediaElement
+  media?: HTMLMediaElement | WebAudioPlayer
   mediaControls?: boolean
   autoplay?: boolean
   playbackRate?: number
@@ -11,8 +11,8 @@ type PlayerOptions = {
 
 const HAVE_FUTURE_DATA = 3
 
-class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
-  protected media: HTMLMediaElement
+class Player {
+  private media: HTMLMediaElement
   private isExternalMedia = false
   private _ownBlobUrl: string | null = null
 
@@ -26,17 +26,9 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   private _seeking: WritableSignal<boolean>
   // WebKit can discard or corrupt a seek made before the media can play.
   private pendingTime: number | null = null
-  // Note: Player has no separate "root" scope of its own -- mediaScope IS its
-  // whole ownership tree. (A wrapper root named `scope`, as a plain mechanical
-  // reading of the plan might suggest, would collide with WaveSurfer's own
-  // `scope` field of the same name: TS rejects two classes in an extends
-  // chain declaring a same-named field with different visibility (TS2415),
-  // and even reconciling visibility wouldn't help since it's a single
-  // storage slot per instance -- WaveSurfer's field initializer would run
-  // after Player's and silently stomp the reference Player already captured
-  // for mediaScope's parent. Keeping Player's and WaveSurfer's scopes as two
-  // independent trees also matches their pre-existing independence: neither
-  // class's cleanup array was ever connected to the other's.)
+  // Player has no separate "root" scope of its own -- mediaScope IS its whole
+  // ownership tree: everything Player owns is a media-event bridge that is
+  // torn down (and, on setMediaElement, rebuilt) together.
   private mediaScope = new Scope()
 
   // Expose reactive state as writable signals
@@ -64,10 +56,14 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   constructor(options: PlayerOptions) {
-    super()
-
     if (options.media) {
-      this.media = options.media
+      // The ONE acknowledged duck-typing boundary: WebAudioPlayer implements the
+      // full HTMLMediaElement surface Player touches (add/removeEventListener,
+      // play/pause/load/remove, src/currentSrc, currentTime, duration, volume,
+      // muted, playbackRate, paused, ended, seeking, readyState via undefined
+      // -> treated as 0, canPlayType, removeAttribute). Everywhere else the
+      // types are honest -- do not add further casts between the two.
+      this.media = options.media as HTMLMediaElement
       this.isExternalMedia = true
     } else {
       this.media = document.createElement('audio')
@@ -184,7 +180,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     )
   }
 
-  protected onMediaEvent<K extends keyof HTMLElementEventMap>(
+  /**
+   * Subscribe to an event on the underlying media. Returns an unsubscribe function.
+   * @internal
+   */
+  public onMediaEvent<K extends keyof HTMLElementEventMap>(
     event: K,
     callback: (ev: HTMLElementEventMap[K]) => void,
     options?: boolean | AddEventListenerOptions,
@@ -197,7 +197,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     return () => this.media.removeEventListener(event, callback, options)
   }
 
-  protected getSrc() {
+  /**
+   * Get the current media source URL.
+   * @internal
+   */
+  public getSrc() {
     return this.media.currentSrc || this.media.src || ''
   }
 
@@ -220,7 +224,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.pendingTime = null
   }
 
-  protected setSrc(url: string, blob?: Blob) {
+  /**
+   * Set the media source, preferring a blob URL when the blob is playable.
+   * @internal
+   */
+  public setSrc(url: string, blob?: Blob) {
     const prevSrc = this.getSrc()
     if (url && prevSrc === url) return // no need to change the source
 
@@ -247,16 +255,13 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     }
   }
 
-  protected destroy() {
+  public destroy() {
     // Terminal: the reactive media-event bridge is torn down and not revived.
     this.pendingTime = null
     this.mediaScope.dispose()
 
     // Revoke blob URLs that we created
     this.revokeSrc()
-
-    // Clear all event emitter listeners
-    this.unAll()
 
     if (this.isExternalMedia) return
     this.media.pause()
@@ -267,7 +272,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.media.remove()
   }
 
-  protected setMediaElement(element: HTMLMediaElement) {
+  /**
+   * Swap in a new media element and re-attach the reactive event bridge.
+   * @internal
+   */
+  public setMediaElement(element: HTMLMediaElement) {
     this.pendingTime = null
     // Cleanup reactive event listeners from old media element
     this.mediaScope.dispose()
@@ -367,7 +376,13 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.media.playbackRate = rate
   }
 
-  /** Get the HTML media element */
+  /**
+   * Get the raw media object. Note: under the WebAudio backend this is really
+   * the WebAudioPlayer wearing the HTMLMediaElement surface (see the
+   * constructor); WaveSurfer.getMediaElement() owns the null-for-WebAudio
+   * public contract.
+   * @internal
+   */
   public getMediaElement(): HTMLMediaElement {
     return this.media
   }

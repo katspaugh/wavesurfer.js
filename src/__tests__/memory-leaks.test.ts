@@ -107,7 +107,7 @@ describe('Memory Leak Detection', () => {
       const ws = WaveSurfer.create({ container })
       const state = ws.getState()
 
-      const media = ws.getMediaElement()
+      const media = ws.getMediaElement()!
       Object.defineProperty(media, 'currentTime', { configurable: true, value: 3 })
       media.dispatchEvent(new Event('timeupdate'))
       expect(state.currentTime.value).toBe(3)
@@ -446,7 +446,7 @@ describe('Memory Leak Detection', () => {
       ws.on('timeupdate', onTimeupdate)
       ws.on('play', onPlay)
 
-      const media = ws.getMediaElement()
+      const media = ws.getMediaElement()!
       Object.defineProperty(media, 'currentTime', { configurable: true, value: 7 })
       media.dispatchEvent(new Event('timeupdate'))
       media.dispatchEvent(new Event('play'))

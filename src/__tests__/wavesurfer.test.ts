@@ -84,7 +84,7 @@ describe('WaveSurfer public methods', () => {
     expect(ws.options.height).toBe(200)
     expect(renderer.setOptions).toHaveBeenCalledWith(ws.options)
     expect(ws.getPlaybackRate()).toBe(2)
-    expect(ws.getMediaElement().controls).toBe(true)
+    expect(ws.getMediaElement()!.controls).toBe(true)
   })
 
   test('registerPlugin adds and removes plugin', () => {
@@ -195,7 +195,7 @@ describe('WaveSurfer public methods', () => {
 
   test('getDuration falls back to decoded data', () => {
     const ws = createWs()
-    const media = ws.getMediaElement()
+    const media = ws.getMediaElement()!
     Object.defineProperty(media, 'duration', { configurable: true, value: Infinity })
     ;(ws as any).decodedData = { duration: 2 }
     expect(ws.getDuration()).toBe(2)
@@ -234,7 +234,7 @@ describe('WaveSurfer public methods', () => {
 
   test('pauses and clamps time to the exact stop position when playback overshoots it', async () => {
     const ws = createWs()
-    const media = ws.getMediaElement()
+    const media = ws.getMediaElement()!
     Object.defineProperty(media, 'paused', { configurable: true, value: false })
     await ws.play(1, 2)
 
@@ -251,7 +251,7 @@ describe('WaveSurfer public methods', () => {
 
   test('playPause toggles play and pause', async () => {
     const ws = createWs()
-    const media = ws.getMediaElement()
+    const media = ws.getMediaElement()!
     await ws.playPause()
     expect(media.play).toHaveBeenCalled()
     Object.defineProperty(media, 'paused', { configurable: true, value: false })
@@ -268,7 +268,7 @@ describe('WaveSurfer public methods', () => {
 
   test('skip and empty', () => {
     const ws = createWs()
-    ws.getMediaElement().currentTime = 1
+    ws.getMediaElement()!.currentTime = 1
     const spy = jest.spyOn(ws, 'setTime')
     ws.skip(2)
     expect(spy).toHaveBeenCalledWith(3)
@@ -340,7 +340,7 @@ describe('WaveSurfer public methods', () => {
     const ws = createWs()
     const onPlay = jest.fn()
     ws.on('play', onPlay)
-    ws.getMediaElement().dispatchEvent(new Event('play'))
+    ws.getMediaElement()!.dispatchEvent(new Event('play'))
     expect(onPlay).toHaveBeenCalledTimes(1)
     ws.destroy()
   })
@@ -349,7 +349,7 @@ describe('WaveSurfer public methods', () => {
     const ws = createWs()
     const onPause = jest.fn()
     ws.on('pause', onPause)
-    ws.getMediaElement().dispatchEvent(new Event('pause'))
+    ws.getMediaElement()!.dispatchEvent(new Event('pause'))
     expect(onPause).toHaveBeenCalledTimes(1)
     ws.destroy()
   })
@@ -358,7 +358,7 @@ describe('WaveSurfer public methods', () => {
     const ws = createWs()
     const onSeeking = jest.fn()
     ws.on('seeking', onSeeking)
-    ws.getMediaElement().dispatchEvent(new Event('seeking'))
+    ws.getMediaElement()!.dispatchEvent(new Event('seeking'))
     expect(onSeeking).toHaveBeenCalledTimes(1)
     ws.destroy()
   })
@@ -367,7 +367,7 @@ describe('WaveSurfer public methods', () => {
     const ws = createWs()
     const onFinish = jest.fn()
     ws.on('finish', onFinish)
-    ws.getMediaElement().dispatchEvent(new Event('ended'))
+    ws.getMediaElement()!.dispatchEvent(new Event('ended'))
     expect(onFinish).toHaveBeenCalledTimes(1)
     ws.destroy()
   })
@@ -380,7 +380,7 @@ describe('WaveSurfer public methods', () => {
     const ws = createWs()
     const onTimeupdate = jest.fn()
     ws.on('timeupdate', onTimeupdate)
-    ws.getMediaElement().dispatchEvent(new Event('timeupdate'))
+    ws.getMediaElement()!.dispatchEvent(new Event('timeupdate'))
     expect(onTimeupdate).toHaveBeenCalledTimes(1)
     ws.destroy()
   })
@@ -438,7 +438,7 @@ describe('WaveSurfer public methods', () => {
 
   test('composes mutedSignal into state.muted, parallel to volume', () => {
     const ws = createWs()
-    const media = ws.getMediaElement()
+    const media = ws.getMediaElement()!
     expect(ws.getState().muted.value).toBe(false)
 
     Object.defineProperty(media, 'muted', { configurable: true, value: true, writable: true })
@@ -552,7 +552,7 @@ describe('WaveSurfer public methods', () => {
       ws.load('http://x/b.mp3').catch(() => undefined) // supersedes
       resolveFirst!(blob)
       await new Promise((r) => setTimeout(r, 0))
-      expect((ws as any).getSrc?.() ?? (ws.getMediaElement().src || '')).not.toContain('a.mp3')
+      expect((ws as any).player.getSrc() ?? (ws.getMediaElement()!.src || '')).not.toContain('a.mp3')
       // A superseded load must never surface as a user-visible error -- its
       // rejection (if any) is filtered inside loadAudio via the loadScope.disposed
       // check, so load()'s catch never runs for it.
@@ -784,20 +784,20 @@ describe('WaveSurfer public methods', () => {
   })
 })
 
-describe('WebAudio backend teardown', () => {
-  const makeMockAudioContext = () => {
-    const gainNode = { gain: { value: 1 }, connect: jest.fn(), disconnect: jest.fn() }
-    const close = jest.fn(() => Promise.resolve())
-    class MockAudioContext {
-      destination = {}
-      currentTime = 0
-      createGain = jest.fn(() => gainNode)
-      createBufferSource = jest.fn()
-      close = close
-    }
-    return { MockAudioContext, gainNode, close }
+const makeMockAudioContext = () => {
+  const gainNode = { gain: { value: 1 }, connect: jest.fn(), disconnect: jest.fn() }
+  const close = jest.fn(() => Promise.resolve())
+  class MockAudioContext {
+    destination = {}
+    currentTime = 0
+    createGain = jest.fn(() => gainNode)
+    createBufferSource = jest.fn()
+    close = close
   }
+  return { MockAudioContext, gainNode, close }
+}
 
+describe('WebAudio backend teardown', () => {
   test('destroy() tears down the internally-created WebAudioPlayer (stops audio, closes the AudioContext)', () => {
     const { MockAudioContext, gainNode, close } = makeMockAudioContext()
     const originalAudioContext = (globalThis as any).AudioContext
@@ -824,5 +824,51 @@ describe('WebAudio backend teardown', () => {
     })
     ws.destroy()
     expect(close).not.toHaveBeenCalled()
+  })
+})
+
+describe('WebAudio backend composition', () => {
+  test('getMediaElement() returns null for backend: WebAudio but the element for the media-element backend', () => {
+    const { MockAudioContext } = makeMockAudioContext()
+    const originalAudioContext = (globalThis as any).AudioContext
+    ;(globalThis as any).AudioContext = MockAudioContext
+    try {
+      const webAudioWs = WaveSurfer.create({ container: document.createElement('div'), backend: 'WebAudio' })
+      // v8 breaking change: no HTML media element exists under the WebAudio
+      // backend, so getMediaElement() is honest and returns null
+      expect(webAudioWs.getMediaElement()).toBeNull()
+      // The raw media (the WebAudioPlayer) is still reachable internally
+      expect((webAudioWs as any).player.getMediaElement()).toBe((webAudioWs as any).webAudioPlayer)
+      webAudioWs.destroy()
+
+      const mediaWs = createWs()
+      expect(mediaWs.getMediaElement()).toBeInstanceOf(HTMLAudioElement)
+      mediaWs.destroy()
+    } finally {
+      ;(globalThis as any).AudioContext = originalAudioContext
+    }
+  })
+
+  test('play(10, 15) with the WebAudio backend schedules stopAt(15) on the WebAudioPlayer', async () => {
+    const { MockAudioContext } = makeMockAudioContext()
+    const originalAudioContext = (globalThis as any).AudioContext
+    ;(globalThis as any).AudioContext = MockAudioContext
+    try {
+      const ws = WaveSurfer.create({ container: document.createElement('div'), backend: 'WebAudio' })
+      const webAudioPlayer = (ws as any).webAudioPlayer
+      expect(webAudioPlayer).toBeTruthy()
+      jest.spyOn(webAudioPlayer, 'play').mockResolvedValue(undefined)
+      const stopAtSpy = jest.spyOn(webAudioPlayer, 'stopAt').mockImplementation(() => undefined)
+
+      await ws.play(10, 15)
+
+      expect(stopAtSpy).toHaveBeenCalledWith(15)
+      // The stop is delegated to the WebAudioPlayer, not the rAF-based
+      // stopAtPosition fallback used by the media-element backend
+      expect((ws as any).stopAtPosition).toBeNull()
+      ws.destroy()
+    } finally {
+      ;(globalThis as any).AudioContext = originalAudioContext
+    }
   })
 })
