@@ -418,6 +418,16 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       }
     }
 
+    if (!side) {
+      // Plain drag: the region translates rigidly. Clamp the DELTA (not each
+      // endpoint independently) so hitting either edge stops the region --
+      // per-endpoint clamping would pin one end while the other kept moving,
+      // permanently compressing the region against the edge.
+      const clampedDelta = Math.max(-this.start, Math.min(this.totalDuration - this.end, deltaSeconds))
+      newStart = this.start + clampedDelta
+      newEnd = this.end + clampedDelta
+    }
+
     newStart = Math.max(0, newStart)
     newEnd = Math.min(this.totalDuration, newEnd)
     const length = newEnd - newStart
