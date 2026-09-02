@@ -704,7 +704,8 @@ class Renderer {
     // Lazy rendering
     const initialRange = utils.getLazyRenderRange({
       scrollLeft: this.scrollContainer.scrollLeft,
-      totalWidth,
+      clientWidth,
+      singleCanvasWidth: plan.singleCanvasWidth,
       numCanvases: plan.numCanvases,
     })
     initialRange.forEach((index) => draw(index))
@@ -714,10 +715,17 @@ class Renderer {
     // stays the source of truth for the pixel math, unchanged from before.
     if (plan.numCanvases > 1) {
       const unsubscribe = effect(() => {
-        const { scrollLeft } = this.scrollContainer
+        // Re-read both scroll position and viewport width from the DOM per
+        // pass -- the viewport can resize between scrolls.
+        const { scrollLeft, clientWidth: viewportWidth } = this.scrollContainer
         clearCanvases()
         utils
-          .getLazyRenderRange({ scrollLeft, totalWidth, numCanvases: plan.numCanvases })
+          .getLazyRenderRange({
+            scrollLeft,
+            clientWidth: viewportWidth,
+            singleCanvasWidth: plan.singleCanvasWidth,
+            numCanvases: plan.numCanvases,
+          })
           .forEach((index) => draw(index))
       }, [this.visibleRange])
 
@@ -772,10 +780,15 @@ class Renderer {
     this.canvasWrapper.innerHTML = ''
     this.progressWrapper.innerHTML = ''
 
-    // Width
+    // Width. Always write the style: setOptions merges options, so a width
+    // that was once set persists until the user passes an explicit
+    // `width: undefined`/null -- which must clear the fixed width again and
+    // revert to the default fill behavior.
     if (this.options.width != null) {
       this.scrollContainer.style.width =
         typeof this.options.width === 'number' ? `${this.options.width}px` : this.options.width
+    } else {
+      this.scrollContainer.style.width = ''
     }
 
     // Determine the width of the waveform

@@ -24,9 +24,29 @@ export const MAX_CANVAS_WIDTH = 8000
 export const MAX_NODES = 10
 
 export function clampToUnit(value: number): number {
+  // NaN (e.g. from pointer math over a zero-size, hidden container) must not
+  // escape into seek positions -- treat it as 0.
+  if (Number.isNaN(value)) return 0
   if (value < 0) return 0
   if (value > 1) return 1
   return value
+}
+
+/**
+ * The effective bar width and gap, with defaults applied. This is THE single
+ * definition of the bar grid: the draw site (calculateBarRenderConfig) and
+ * the layout clamp (clampWidthToBarGrid) both resolve through it, so canvas
+ * widths always align with the drawn bar spacing. `pixelRatio` scales the
+ * configured CSS-pixel values into device pixels for drawing; layout code
+ * (which works in CSS pixels) passes 1.
+ */
+export function resolveBarDimensions(
+  options: WaveSurferOptions,
+  pixelRatio: number,
+): { barWidth: number; barGap: number } {
+  const barWidth = options.barWidth ? options.barWidth * pixelRatio : 1
+  const barGap = options.barGap ? options.barGap * pixelRatio : options.barWidth ? barWidth / 2 : 0
+  return { barWidth, barGap }
 }
 
 export function calculateBarRenderConfig({
@@ -43,8 +63,7 @@ export function calculateBarRenderConfig({
   pixelRatio: number
 }) {
   const halfHeight = height / 2
-  const barWidth = options.barWidth ? options.barWidth * pixelRatio : 1
-  const barGap = options.barGap ? options.barGap * pixelRatio : options.barWidth ? barWidth / 2 : 0
+  const { barWidth, barGap } = resolveBarDimensions(options, pixelRatio)
   const barRadius = options.barRadius || 0
   const barMinHeight = options.barMinHeight ? options.barMinHeight * pixelRatio : 0
   const spacing = barWidth + barGap || 1
@@ -182,10 +201,10 @@ export function calculateBarSegments({
 }
 
 export function getRelativePointerPosition(rect: DOMRect, clientX: number, clientY: number): [number, number] {
-  const x = clientX - rect.left
-  const y = clientY - rect.top
-  const relativeX = x / rect.width
-  const relativeY = y / rect.height
+  // A hidden or not-yet-laid-out container has a zero-size rect; dividing by
+  // it would yield NaN relative coordinates (and NaN seeks downstream).
+  const relativeX = rect.width > 0 ? (clientX - rect.left) / rect.width : 0
+  const relativeY = rect.height > 0 ? (clientY - rect.top) / rect.height : 0
   return [relativeX, relativeY]
 }
 
@@ -223,6 +242,12 @@ export function shouldRenderBars(options: WaveSurferOptions): boolean {
   return Boolean(options.barWidth || options.barGap || options.barAlign)
 }
 
+// A single reusable scratch canvas for gradient creation: resolveColorValue
+// runs on every draw (including scroll-time lazy draws), and allocating a
+// throwaway <canvas> per call caused needless GC churn. Lazily created so
+// importing this module never touches the DOM.
+let gradientScratchCanvas: HTMLCanvasElement | null = null
+
 export function resolveColorValue(
   color: WaveSurferOptions['waveColor'],
   devicePixelRatio: number,
@@ -232,10 +257,10 @@ export function resolveColorValue(
   if (color.length === 0) return '#999'
   if (color.length < 2) return color[0] || ''
 
-  const canvasElement = document.createElement('canvas')
-  const ctx = canvasElement.getContext('2d')
+  gradientScratchCanvas ??= document.createElement('canvas')
+  const ctx = gradientScratchCanvas.getContext('2d')
   if (!ctx) return color[0] || ''
-  const gradientHeight = canvasHeight || canvasElement.height * devicePixelRatio
+  const gradientHeight = canvasHeight || gradientScratchCanvas.height * devicePixelRatio
   const gradient = ctx.createLinearGradient(0, 0, 0, gradientHeight)
 
   const colorStopPercentage = 1 / (color.length - 1)
@@ -274,8 +299,10 @@ export function calculateWaveformLayout({
 
 export function clampWidthToBarGrid(width: number, options: WaveSurferOptions): number {
   if (!shouldRenderBars(options)) return width
-  const barWidth = options.barWidth || 0.5
-  const barGap = options.barGap || barWidth / 2
+  // Resolve through the same defaults the bar-drawing site uses (at
+  // pixelRatio 1, since layout works in CSS pixels) -- divergent defaults
+  // here produced a clipped bar / irregular gap at canvas seams at dpr=1.
+  const { barWidth, barGap } = resolveBarDimensions(options, 1)
   const totalBarWidth = barWidth + barGap
   if (totalBarWidth === 0) return width
   return Math.floor(width / totalBarWidth) * totalBarWidth
@@ -349,17 +376,30 @@ export function shouldClearCanvases(currentNodeCount: number): boolean {
 
 export function getLazyRenderRange({
   scrollLeft,
-  totalWidth,
+  clientWidth,
+  singleCanvasWidth,
   numCanvases,
 }: {
   scrollLeft: number
-  totalWidth: number
+  clientWidth: number
+  singleCanvasWidth: number
   numCanvases: number
 }): number[] {
-  if (totalWidth === 0) return [0]
-  const viewPosition = scrollLeft / totalWidth
-  const startCanvas = Math.floor(viewPosition * numCanvases)
-  return [startCanvas - 1, startCanvas, startCanvas + 1]
+  if (singleCanvasWidth <= 0 || numCanvases <= 0) return [0]
+  // Canvas i occupies [i * singleCanvasWidth, (i + 1) * singleCanvasWidth)
+  // (only the tail one may be narrower), so index both viewport edges against
+  // the ACTUAL canvas width. The previous average-width math
+  // (scrollLeft / totalWidth * numCanvases, +/- 1) could miss the canvas at a
+  // viewport edge by up to a bar spacing when singleCanvasWidth was bar-grid
+  // clamped below clientWidth -- an undrawn strip. One extra canvas on each
+  // side is prefetch; draw() ignores out-of-range indexes.
+  const startCanvas = Math.min(numCanvases - 1, Math.floor(scrollLeft / singleCanvasWidth))
+  const endCanvas = Math.min(numCanvases - 1, Math.floor((scrollLeft + clientWidth) / singleCanvasWidth))
+  const range: number[] = []
+  for (let i = startCanvas - 1; i <= endCanvas + 1; i++) {
+    range.push(i)
+  }
+  return range
 }
 
 /**
@@ -458,8 +498,7 @@ export function calculateLinePaths({
   })
 }
 
+/** Round to the nearest integer, with exact halves rounded away from zero. */
 export function roundToHalfAwayFromZero(value: number): number {
-  const scaled = value * 2
-  const rounded = scaled < 0 ? Math.floor(scaled) : Math.ceil(scaled)
-  return rounded / 2
+  return Math.sign(value) * Math.round(Math.abs(value))
 }

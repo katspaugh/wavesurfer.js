@@ -152,6 +152,8 @@ interface PlaybackBackend {
   export surface; it was never a documented entry point).
 - Protected internals (`this.media` etc.) disappear for subclassers — subclassing
   WaveSurfer was never supported; plugins are the extension mechanism.
+- v7's `vertical` option no longer exists in `WaveSurferOptions` — there is no v8
+  replacement; rotate the container via CSS if a vertical waveform is needed.
 
 ---
 

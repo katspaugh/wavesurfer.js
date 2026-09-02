@@ -67,7 +67,13 @@ describe('Renderer', () => {
   })
 
   test('parentFromOptionsContainer accepts an element from another realm (e.g. an iframe)', () => {
-    const foreign = { nodeType: 1, style: {} } as unknown as HTMLElement
+    const foreign = {
+      nodeType: 1,
+      nodeName: 'DIV',
+      namespaceURI: 'http://www.w3.org/1999/xhtml',
+      style: {},
+      appendChild: () => undefined,
+    } as unknown as HTMLElement
     expect((renderer as any).parentFromOptionsContainer(foreign)).toBe(foreign)
   })
 
@@ -253,6 +259,20 @@ describe('Renderer', () => {
   test('zoom updates option', () => {
     renderer.zoom(20)
     expect((renderer as any).options.minPxPerSec).toBe(20)
+  })
+
+  test('setOptions with an explicit undefined width reverts to fill behavior', async () => {
+    const buffer = createAudioBuffer([[0, 0.5, -0.5]])
+    renderer.setOptions({ ...(renderer as any).options, width: 250 })
+    await renderer.render(buffer)
+    const scrollContainer = (renderer as any).scrollContainer as HTMLElement
+    expect(scrollContainer.style.width).toBe('250px')
+
+    // WaveSurfer.setOptions merges, so an absent key keeps the fixed width;
+    // an explicit `width: undefined` reaches the renderer as undefined and
+    // must clear the fixed width again.
+    renderer.setOptions({ ...(renderer as any).options, width: undefined })
+    expect(scrollContainer.style.width).toBe('')
   })
 
   test('scrollIntoView updates scroll', () => {
