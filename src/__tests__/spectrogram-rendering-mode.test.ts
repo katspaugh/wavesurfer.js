@@ -263,6 +263,179 @@ describe('a rejected fire-and-forget render routes to the plugin error event', (
   })
 })
 
+/** A sine-tone AudioBuffer at 8 kHz; `length` varied per buffer so different "files" produce
+ * genuinely different frequency data (frame counts included). */
+function makeToneBuffer(length: number, toneHz = 440): AudioBuffer {
+  const data = new Float32Array(length)
+  for (let i = 0; i < length; i++) {
+    data[i] = Math.sin((2 * Math.PI * toneHz * i) / 8000)
+  }
+  return createFakeAudioBuffer(data)
+}
+
+/** Settle the fire-and-forget render()/getFrequenciesData() promise chains under fake timers
+ * (which stall real setTimeout-based waiting) without advancing any timer. */
+async function flushMicrotasks(rounds = 10): Promise<void> {
+  for (let i = 0; i < rounds; i++) {
+    await Promise.resolve()
+  }
+}
+
+describe('full mode invalidates cached render state when the decoded buffer changes', () => {
+  // These tests drive drawSpectrogram over real canvases; jsdom's own getContext throws a noisy
+  // "not implemented" virtual-console error before returning null, so stub it to return null
+  // directly - the same value the code path handles (drawCanvas bails on a null context).
+  let getContextSpy: jest.SpyInstance
+  beforeEach(() => {
+    getContextSpy = jest
+      .spyOn(window.HTMLCanvasElement.prototype, 'getContext')
+      .mockReturnValue(null as unknown as ReturnType<HTMLCanvasElement['getContext']>)
+  })
+  afterEach(() => {
+    getContextSpy.mockRestore()
+  })
+
+  // Regression: after ws.load(fileB) at an unchanged zoom level, throttledRender saw zoomDiff
+  // === 0 with cachedFrequencies still holding file A's data and took the fastRender() branch,
+  // drawing file A's spectrogram against file B's audio forever (windowed mode already handled
+  // this via startWindowedRender's segmentManager.reset(); full mode did not).
+  it('falls through to a full re-render instead of fast-rendering the previous buffer at unchanged zoom', async () => {
+    jest.useFakeTimers()
+    try {
+      const bufferA = makeToneBuffer(4096)
+      const bufferB = makeToneBuffer(6144)
+      let decoded: AudioBuffer | null = bufferA
+      const fakeWavesurfer = createEmitterWaveSurfer({
+        getDecodedData: () => decoded,
+        options: { minPxPerSec: 100 },
+      })
+
+      const plugin: any = SpectrogramPlugin.create({ noverlap: 256, scale: 'linear' })
+      plugin._init(fakeWavesurfer as any)
+      const internals = plugin.__spectrogramInternalsForTests()
+
+      // Initial render after init: the 0ms init timeout schedules throttledRender, which (no
+      // cached frequencies yet) schedules the full render() another renderThrottleMs (50ms) out.
+      jest.advanceTimersByTime(0)
+      jest.advanceTimersByTime(50)
+      await flushMicrotasks()
+      expect(internals.cachedBuffer).toBe(bufferA)
+
+      // "Load a new file": the decoded buffer changes, minPxPerSec (zoom) does not - so
+      // zoomDiff is 0 and only the buffer-identity check can force the full render.
+      decoded = bufferB
+      ;(fakeWavesurfer as any).emit('redraw')
+      jest.advanceTimersByTime(50)
+      await flushMicrotasks()
+
+      // Pre-fix this stayed bufferA: fastRender() drew file A's cachedFrequencies and never
+      // recomputed for file B.
+      expect(internals.cachedBuffer).toBe(bufferB)
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
+  // Regression for the second leg of the same bug: even when the full render() path DID
+  // recompute frequencies for the new buffer, drawSpectrogram reused cachedResampledData keyed
+  // only on width - same container width, so file A's resampled columns were drawn anyway.
+  it('drops the width-keyed resampled cache when frequencies are recomputed for a new buffer', async () => {
+    const bufferA = makeToneBuffer(4096)
+    const bufferB = makeToneBuffer(6144)
+    let decoded: AudioBuffer | null = bufferA
+    const plugin: any = SpectrogramPlugin.create({ noverlap: 256, scale: 'linear' })
+    plugin._init(createFakeWaveSurfer({ getDecodedData: () => decoded }))
+    const internals = plugin.__spectrogramInternalsForTests()
+
+    const frequenciesA = await plugin.getFrequenciesData()
+    internals.drawSpectrogram(frequenciesA)
+    const staleResampled = internals.cachedResampledData
+    // Sanity: the 600px-wide fake wrapper forces resampling (frame count !== 600), so the
+    // width-keyed cache is actually populated before the buffer swap.
+    expect(staleResampled).not.toBeNull()
+
+    decoded = bufferB
+    const frequenciesB = await plugin.getFrequenciesData()
+    internals.drawSpectrogram(frequenciesB)
+
+    // Pre-fix this was identical (`toBe`): cachedWidth still matched the container width, so
+    // drawSpectrogram drew file A's cached resampled columns instead of resampling file B's
+    // freshly computed frequencies.
+    expect(internals.cachedResampledData).not.toBe(staleResampled)
+    expect(internals.cachedBuffer).toBe(bufferB)
+  })
+})
+
+describe('full mode frequenciesDataUrl rendering defaults frequencyMax to Nyquist', () => {
+  // Regression: frequencyMax starts as `options.frequencyMax || 0` and was only defaulted to
+  // Nyquist inside the audio-computed paths (getFrequencies/startWindowedRender). The
+  // pre-computed data path (loadFrequenciesData -> drawSpectrogram) ran neither, so freqMax
+  // stayed 0, the bitmap crop height rounded to zero, createImageBitmap rejected (silently),
+  // and the spectrogram rendered blank unless the user also set frequencyMax explicitly.
+  it('draws pre-computed data with a non-zero bitmap crop height instead of a blank spectrogram', async () => {
+    const FRAMES = 4
+    const BINS = 8
+    // frequenciesDataUrl JSON: [channel][frame][bin] as plain arrays (JSON can't carry real
+    // Uint8Arrays; drawSpectrogram's consumers only rely on indexing/length - see the
+    // frequenciesDataUrl option's doc comment).
+    const data = [
+      Array.from({ length: FRAMES }, (_, frame) =>
+        Array.from({ length: BINS }, (_, bin) => (frame * BINS + bin) % 256),
+      ),
+    ]
+
+    const originalFetch = global.fetch
+    const originalGetContext = window.HTMLCanvasElement.prototype.getContext
+    const originalImageData = (globalThis as any).ImageData
+    const originalCreateImageBitmap = (globalThis as any).createImageBitmap
+
+    // jsdom has neither a real 2D context nor ImageData/createImageBitmap; stub just enough of
+    // them for drawSpectrogram to reach its createImageBitmap crop call (the observable under
+    // test) instead of bailing on a null context.
+    const createImageBitmapMock = jest.fn(() => Promise.resolve({ close: jest.fn() }))
+    try {
+      global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => data }) as any
+      window.HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
+        fillStyle: '',
+        fillRect: jest.fn(),
+        drawImage: jest.fn(),
+      })) as any
+      ;(globalThis as any).ImageData = class {
+        data: Uint8ClampedArray
+        constructor(
+          public width: number,
+          public height: number,
+        ) {
+          this.data = new Uint8ClampedArray(width * height * 4)
+        }
+      }
+      ;(globalThis as any).createImageBitmap = createImageBitmapMock
+
+      const plugin: any = SpectrogramPlugin.create({
+        frequenciesDataUrl: 'https://example.com/frequencies.json',
+        sampleRate: 8000,
+        scale: 'linear',
+      })
+      plugin._init(createFakeWaveSurfer())
+
+      await plugin.loadFrequenciesData('https://example.com/frequencies.json')
+
+      // createImageBitmap(imageData, sx, sy, sw, sh): with frequencyMax left at 0 the crop
+      // height (sh) was Math.round(bitmapHeight * (0 - 0)) === 0 - a zero-height source rect,
+      // i.e. nothing to draw. Defaulted to Nyquist (options.sampleRate / 2), the crop covers
+      // the full bin range.
+      expect(createImageBitmapMock).toHaveBeenCalled()
+      const cropHeight = (createImageBitmapMock.mock.calls[0] as unknown[])[4]
+      expect(cropHeight).toBe(BINS)
+    } finally {
+      global.fetch = originalFetch
+      window.HTMLCanvasElement.prototype.getContext = originalGetContext
+      ;(globalThis as any).ImageData = originalImageData
+      ;(globalThis as any).createImageBitmap = originalCreateImageBitmap
+    }
+  })
+})
+
 describe('windowed mode splitChannels fallback', () => {
   // Unified with full mode's own `options.splitChannels ?? ctx.wavesurfer.options.splitChannels`
   // form: when the plugin itself doesn't set splitChannels, windowed mode now falls back to the
