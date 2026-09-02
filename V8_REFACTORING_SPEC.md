@@ -494,11 +494,19 @@ sequential commits on `claude/v8-architecture-code-review-lputno` (per-stage, no
 5. **Stage 4 — R4** ✅ (`c776e44`): BasePlugin deprecated; chassis scope disposed in
    destroy() (m9); record re-init moved to onInit. (Record's full definePlugin
    migration remains open.)
-6. **Stage 5 — R2** backend composition (mechanical; behavior-compatible except the
-   documented `getMediaElement()` change).
-7. **Stage 6 — R3** internal events → streams (renderer first, then plugin-facing).
-8. Remaining R6 minors, R5 P1 (API snapshot, type-aware lint, release gate,
-   bundle budget, spectrogram-setup tests), then **v8.0.0-rc**.
+6. **Stage 5 — R2** ✅ (`a0aa1e0`): WaveSurfer owns Player by composition; the
+   `as unknown as HTMLAudioElement` lie and scattered `instanceof` branches are gone;
+   `getMediaElement(): HTMLMediaElement | null` (null under WebAudio).
+7. **Stage 6 — R3** ✅ (`868ab00`, `3bc655d`): Renderer exposes signals instead of an
+   event bus, `initRendererEvents` is the one signals→public-events bridge, public
+   `dist/wavesurfer.d.ts` byte-identical; eslint bans `extends EventEmitter` across
+   `src/**` (allowlist: WaveSurfer, BasePlugin, WebAudioPlayer media boundary, regions'
+   public per-region events); envelope's Polyline converted to injected callbacks —
+   zero internal event buses remain.
+8. Remaining open items for 8.x: R6 minors not yet fixed, R5 P1 (API snapshot,
+   type-aware lint, release-workflow gate, bundle budget, spectrogram-setup direct
+   tests), record's full definePlugin migration, optional plugin migration from public
+   events to `ctx.state` signals, then **v8.0.0-rc**.
 
 Each stage: semantic commits, green on the new CI gauntlet.
 
