@@ -191,3 +191,29 @@ describe('TimelinePlugin', () => {
     expect(wrapper.querySelectorAll('[part^="timeline-notch"]').length).toBe(0)
   })
 })
+
+describe('TimelinePlugin duration option without audio', () => {
+  afterEach(() => {
+    document.body.innerHTML = ''
+    jest.clearAllMocks()
+  })
+
+  test('renders notches from the duration option when no audio is loaded (getDuration() === 0)', () => {
+    const wavesurfer = createWaveSurfer(0, 100)
+    const plugin = TimelinePlugin.create({
+      duration: 1,
+      timeInterval: 0.25,
+      primaryLabelInterval: 10,
+      secondaryLabelInterval: 10,
+    })
+
+    plugin._init(wavesurfer as any)
+
+    // getDuration() returns 0 (a number, not nullish) before any audio
+    // loads; the duration option must take over -- previously the `??`
+    // fallback made it dead code and rendered an empty timeline.
+    const notches = wavesurfer.getWrapper().querySelectorAll<HTMLElement>('[part^="timeline-notch"]')
+    expect(notches.length).toBeGreaterThan(0)
+    plugin.destroy()
+  })
+})
