@@ -162,6 +162,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
   private stopAtPosition: number | null = null
+  // The WebAudioPlayer this instance created for backend: 'WebAudio', if any.
+  // Owned here (not by Player, which sees it as external media) so destroy()
+  // can tear it down -- stopping playback and closing its AudioContext.
+  private internalWebAudioPlayer: WebAudioPlayer | null = null
   protected scope: Scope = new Scope()
   private mediaEventScope = this.scope.child()
   private frameScheduler: FrameScheduler = new FrameScheduler(this.scope)
@@ -209,9 +213,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Create a new WaveSurfer instance */
   constructor(options: WaveSurferOptions) {
-    const media =
-      options.media ||
-      (options.backend === 'WebAudio' ? (new WebAudioPlayer() as unknown as HTMLAudioElement) : undefined)
+    // A WebAudioPlayer created here (backend: 'WebAudio' with no user-supplied
+    // media) is owned by this instance. It is handed to Player as `media`, so
+    // Player classifies it as *external* and skips its teardown in destroy()
+    // -- WaveSurfer must therefore destroy it itself (see destroy() below).
+    const internalWebAudioPlayer = !options.media && options.backend === 'WebAudio' ? new WebAudioPlayer() : null
+    const media = options.media || (internalWebAudioPlayer as unknown as HTMLAudioElement | null) || undefined
 
     super({
       media,
@@ -219,6 +226,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       autoplay: options.autoplay,
       playbackRate: options.audioRate,
     })
+
+    this.internalWebAudioPlayer = internalWebAudioPlayer
 
     this.options = Object.assign({}, defaultOptions, options)
 
@@ -944,6 +953,12 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.frameScheduler = new FrameScheduler(this.scope)
     this.renderer.destroy()
     super.destroy()
+    // Player.destroy() skips media teardown for external media -- which
+    // includes the WebAudioPlayer this instance created itself for
+    // backend: 'WebAudio' (it was passed in via the media option). Without
+    // this, destroy() leaves WebAudio playback running and the AudioContext
+    // open forever. WebAudioPlayer.destroy() is idempotent.
+    this.internalWebAudioPlayer?.destroy()
     // Flip so the next loadAudio() call re-runs ensureCoreEvents() and
     // revives the event bridges just torn down above (this.scope.dispose()
     // and super.destroy()'s mediaScope.dispose()).

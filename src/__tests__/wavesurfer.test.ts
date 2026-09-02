@@ -849,3 +849,46 @@ describe('WaveSurfer public methods', () => {
     })
   })
 })
+
+describe('WebAudio backend teardown', () => {
+  const makeMockAudioContext = () => {
+    const gainNode = { gain: { value: 1 }, connect: jest.fn(), disconnect: jest.fn() }
+    const close = jest.fn(() => Promise.resolve())
+    class MockAudioContext {
+      destination = {}
+      currentTime = 0
+      createGain = jest.fn(() => gainNode)
+      createBufferSource = jest.fn()
+      close = close
+    }
+    return { MockAudioContext, gainNode, close }
+  }
+
+  test('destroy() tears down the internally-created WebAudioPlayer (stops audio, closes the AudioContext)', () => {
+    const { MockAudioContext, gainNode, close } = makeMockAudioContext()
+    const originalAudioContext = (globalThis as any).AudioContext
+    ;(globalThis as any).AudioContext = MockAudioContext
+    try {
+      const ws = WaveSurfer.create({ container: document.createElement('div'), backend: 'WebAudio' })
+      ws.destroy()
+      // Player.destroy() classifies the internally-created WebAudioPlayer as
+      // external media and skips it; WaveSurfer.destroy() must tear it down.
+      expect(gainNode.disconnect).toHaveBeenCalled()
+      expect(close).toHaveBeenCalled()
+    } finally {
+      ;(globalThis as any).AudioContext = originalAudioContext
+    }
+  })
+
+  test('destroy() leaves a user-supplied WebAudioPlayer media untouched', async () => {
+    const { MockAudioContext, close } = makeMockAudioContext()
+    const WebAudioPlayer = (await import('../webaudio.js')).default
+    const userPlayer = new WebAudioPlayer(new (MockAudioContext as any)())
+    const ws = WaveSurfer.create({
+      container: document.createElement('div'),
+      media: userPlayer as unknown as HTMLMediaElement,
+    })
+    ws.destroy()
+    expect(close).not.toHaveBeenCalled()
+  })
+})

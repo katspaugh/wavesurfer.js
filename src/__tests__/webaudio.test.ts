@@ -358,3 +358,20 @@ describe('WebAudioPlayer', () => {
     })
   })
 })
+
+describe('seeking events', () => {
+  test('setting currentTime emits seeking followed by seeked (buffer seeks are instantaneous)', () => {
+    const { audioContext } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+    const events: string[] = []
+    player.on('seeking', () => events.push('seeking'))
+    player.on('seeked', () => events.push('seeked'))
+    player.on('timeupdate', () => events.push('timeupdate'))
+
+    player.currentTime = 3
+
+    // Without 'seeked', Player's seeking-state bridge (set on 'seeking',
+    // cleared only on 'seeked') would stick to true forever.
+    expect(events).toEqual(['seeking', 'seeked', 'timeupdate'])
+  })
+})
