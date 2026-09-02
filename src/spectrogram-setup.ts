@@ -24,6 +24,7 @@ import {
   createWrapperClickHandler,
   AUTO_GAIN_BUFFER_BUDGET_BYTES,
   paintColumnPixels,
+  getCanvasPixelRatio,
 } from './spectrogram-render-utils.js'
 import { computeFrequencies, type FrequencyParams } from './spectrogram-frequencies.js'
 // Windowed rendering strategy: segment map, eviction, uncovered-range
@@ -101,7 +102,11 @@ export type SpectrogramPluginOptions = {
   labelsBackground?: string
   labelsColor?: string
   labelsHzColor?: string
-  /** Size of the overlapping window. Must be < fftSamples. Auto deduced from canvas size by default. */
+  /**
+   * Size of the overlapping window, in samples. Must be < fftSamples; larger values are
+   * clamped to fftSamples - 1 (the hop size always stays >= 1 sample). Auto deduced from
+   * canvas size by default.
+   */
   noverlap?: number
   /** The window function to be used. */
   windowFunc?:
@@ -512,8 +517,15 @@ export function spectrogramSetup(
       },
     }) as HTMLCanvasElement
 
-    canvas.width = Math.round(width)
-    canvas.height = Math.round(height)
+    // HiDPI: scale the backing store by devicePixelRatio (clamped for browser canvas limits)
+    // while the CSS size above stays width x height, so the spectrogram renders as crisp as
+    // its own axis labels (which have always scaled by devicePixelRatio). Drawing code keeps
+    // using CSS coordinates: the context scale below persists for every later getContext('2d')
+    // call on this canvas, since that returns the same context instance.
+    const pixelRatio = getCanvasPixelRatio(width, height)
+    canvas.width = Math.round(width * pixelRatio)
+    canvas.height = Math.round(height * pixelRatio)
+    if (pixelRatio !== 1) canvas.getContext('2d')?.scale(pixelRatio, pixelRatio)
 
     canvasContainer.appendChild(canvas)
     return canvas
@@ -1502,10 +1514,11 @@ export function spectrogramSetup(
 
     for (let c = 0; c < channels; c++) {
       // for each channel
-      // fill background
+      // fill background: one row-height rect per channel. (fillRect's 4th argument is a
+      // HEIGHT, not an end coordinate - the historical `(1 + c) * getMaxY` overdrew every
+      // row below channel c, double-painting a translucent background per extra channel.)
       canvasCtx.fillStyle = bgFill
-      canvasCtx.fillRect(0, c * getMaxY, bgWidth, (1 + c) * getMaxY)
-      canvasCtx.fill()
+      canvasCtx.fillRect(0, c * getMaxY, bgWidth, getMaxY)
 
       // render labels
       for (let i = 0; i <= labelIndex; i++) {

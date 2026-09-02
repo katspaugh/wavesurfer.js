@@ -493,3 +493,105 @@ describe('windowed mode splitChannels fallback', () => {
     expect(frequencies.length).toBe(2)
   })
 })
+
+describe('full mode canvas rendering cosmetics', () => {
+  // jsdom has no real 2D context, ImageData, or createImageBitmap; stub just enough for
+  // drawSpectrogram to create its canvases and reach the label/background fill calls.
+  const originalImageData = (globalThis as any).ImageData
+  const originalCreateImageBitmap = (globalThis as any).createImageBitmap
+  const originalDpr = Object.getOwnPropertyDescriptor(window, 'devicePixelRatio')
+  let getContextSpy: jest.SpyInstance
+  let fillRects: number[][]
+  let fakeCtx: Record<string, unknown>
+
+  beforeEach(() => {
+    fillRects = []
+    fakeCtx = {
+      fillStyle: '',
+      font: '',
+      textAlign: '',
+      textBaseline: '',
+      fillRect: jest.fn((...args: number[]) => fillRects.push(args)),
+      fillText: jest.fn(),
+      fill: jest.fn(),
+      drawImage: jest.fn(),
+      scale: jest.fn(),
+    }
+    getContextSpy = jest
+      .spyOn(window.HTMLCanvasElement.prototype, 'getContext')
+      .mockReturnValue(fakeCtx as unknown as ReturnType<HTMLCanvasElement['getContext']>)
+    ;(globalThis as any).ImageData = class {
+      data: Uint8ClampedArray
+      constructor(
+        public width: number,
+        public height: number,
+      ) {
+        this.data = new Uint8ClampedArray(width * height * 4)
+      }
+    }
+    ;(globalThis as any).createImageBitmap = jest.fn(() => Promise.resolve({ close: jest.fn() }))
+  })
+
+  afterEach(() => {
+    getContextSpy.mockRestore()
+    ;(globalThis as any).ImageData = originalImageData
+    ;(globalThis as any).createImageBitmap = originalCreateImageBitmap
+    if (originalDpr) {
+      Object.defineProperty(window, 'devicePixelRatio', originalDpr)
+    } else {
+      delete (window as any).devicePixelRatio
+    }
+  })
+
+  /** [channel][frame][bin] plain-array frequency data, duck-typed like frequenciesDataUrl JSON. */
+  function makeFrames(channels: number): number[][][] {
+    return Array.from({ length: channels }, () =>
+      Array.from({ length: 4 }, (_, frame) => Array.from({ length: 8 }, (_, bin) => (frame * 8 + bin) % 256)),
+    )
+  }
+
+  it('scales the spectrogram canvas backing store by devicePixelRatio while keeping its CSS size', () => {
+    Object.defineProperty(window, 'devicePixelRatio', { value: 2, configurable: true })
+
+    const plugin: any = SpectrogramPlugin.create({ scale: 'linear' })
+    plugin._init(createFakeWaveSurfer())
+    const internals = plugin.__spectrogramInternalsForTests()
+    internals.buffer = createFakeAudioBuffer(new Float32Array(8000))
+
+    internals.drawSpectrogram(makeFrames(1) as unknown as Uint8Array[][])
+
+    const canvas = internals.canvases[0]
+    // Pre-fix the backing store matched the CSS size (600x200): blurry on HiDPI displays,
+    // in contrast with the axis labels canvas, which already scaled by devicePixelRatio.
+    expect(canvas.width).toBe(1200)
+    expect(canvas.height).toBe(400)
+    expect(canvas.style.width).toBe('600px')
+    expect(canvas.style.height).toBe('200px')
+    // Drawing stays in CSS coordinates via the context transform.
+    expect(fakeCtx.scale).toHaveBeenCalledWith(2, 2)
+  })
+
+  it('fills each frequency-labels channel row with a row-height rect instead of overdrawing rows below', () => {
+    const plugin: any = SpectrogramPlugin.create({
+      labels: true,
+      labelsBackground: 'rgba(0, 0, 0, 0.1)',
+      scale: 'linear',
+      frequencyMax: 4000,
+      splitChannels: true,
+    })
+    plugin._init(createFakeWaveSurfer())
+    const internals = plugin.__spectrogramInternalsForTests()
+    internals.buffer = createFakeAudioBuffer(new Float32Array(8000))
+
+    internals.drawSpectrogram(makeFrames(2) as unknown as Uint8Array[][])
+
+    // The 55px-wide fills are the labels background (one per channel row of height 200).
+    // Pre-fix the height argument was the row's END y ((1 + c) * height), so channel 1's fill
+    // was 400px tall - overdrawing past its own row (double-painting a translucent background).
+    const bgRects = fillRects.filter((args) => args[2] === 55)
+    expect(bgRects).toEqual([
+      [0, 0, 55, 200],
+      [0, 200, 55, 200],
+    ])
+  })
+})

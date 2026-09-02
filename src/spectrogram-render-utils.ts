@@ -30,6 +30,17 @@ export function logToHz(log: number): number {
   return Math.pow(10, log)
 }
 
+/**
+ * The raw Traunmüller-corrected bark value at 0 Hz (~-0.1505): raw bark(0) = -0.53, then the
+ * bark < 2 correction adds 0.15 * (2 + 0.53). Subtracted in hzToBark (and added back in
+ * barkToHz, keeping the pair exact inverses) so hzToBark(0) === 0 - the vertical-mapping code
+ * (renderChannelToCanvas / drawSpectrogramSegment) divides hzToScale values assuming every
+ * scale maps 0 Hz to 0, and the raw bark offset produced a slightly negative rMin and
+ * out-of-range bitmap source rows (~0.6% offset). Written with the exact operations hzToBark
+ * itself performs at 0 Hz so the subtraction cancels to exactly 0 in floating point.
+ */
+const BARK_ZERO_OFFSET = 0.15 * (2 + 0.53) - 0.53
+
 export function hzToBark(hz: number): number {
   // https://www.mathworks.com/help/audio/ref/hz2bark.html#function_hz2bark_sep_mw_06bea6f7-353b-4479-a58d-ccadb90e44de
   let bark = (26.81 * hz) / (1960 + hz) - 0.53
@@ -39,11 +50,14 @@ export function hzToBark(hz: number): number {
   if (bark > 20.1) {
     bark += 0.22 * (bark - 20.1)
   }
-  return bark
+  // Normalize so 0 Hz maps to exactly 0 (see BARK_ZERO_OFFSET above)
+  return bark - BARK_ZERO_OFFSET
 }
 
 export function barkToHz(bark: number): number {
   // https://www.mathworks.com/help/audio/ref/bark2hz.html#function_bark2hz_sep_mw_bee310ea-48ac-4d95-ae3d-80f3e4149555
+  // Undo hzToBark's zero-normalization shift first, so the pair stays exact inverses
+  bark += BARK_ZERO_OFFSET
   if (bark < 2) {
     bark = (bark - 0.3) / 0.85
   }
@@ -617,7 +631,9 @@ export function setupColorMap(colorMap: number[][] | 'gray' | 'igray' | 'roseus'
  * loadFrequenciesData's externally supplied JSON (see SpectrogramPluginOptions.frequenciesDataUrl
  * in spectrogram-setup.ts) is only assumed, never runtime-validated, to already be in range - an
  * out-of-range index would otherwise read `colorMap[colorIndex]` out of bounds and throw on
- * `color[0]` off `undefined` instead of just rendering the nearest valid color.
+ * `color[0]` off `undefined` instead of just rendering the nearest valid color. The clamped value
+ * is also floored, since the same external JSON can carry fractional values, and a fractional
+ * index (`colorMap[12.7]`) is just as much an out-of-bounds read as a negative one.
  *
  * Lives here (not in spectrogram-setup.ts, despite being consumed there too) so
  * spectrogram-windowing.ts - which spectrogram-setup.ts already imports SegmentManager etc. from
@@ -635,7 +651,9 @@ export function paintColumnPixels(
   rowCount: number,
 ): void {
   for (let row = 0; row < rowCount; row++) {
-    const colorIndex = Math.min(255, Math.max(0, column[row]))
+    // Floor AFTER clamping: externally-supplied frequenciesDataUrl JSON can carry fractional
+    // values, and a fractional index (colorMap[12.7] === undefined) would throw mid-draw
+    const colorIndex = Math.floor(Math.min(255, Math.max(0, column[row])))
     const color = colorMap[colorIndex]
     const pixelIndex = ((rowCount - row - 1) * columnCount + columnIndex) * 4
     data[pixelIndex] = color[0] * 255
@@ -643,6 +661,33 @@ export function paintColumnPixels(
     data[pixelIndex + 2] = color[2] * 255
     data[pixelIndex + 3] = color[3] * 255
   }
+}
+
+// Conservative cross-browser per-side canvas limit (Chrome/Firefox cap a side at 32767px).
+const MAX_CANVAS_DIMENSION = 32767
+// Most conservative common backing-store area cap (4096 x 4096, older iOS Safari).
+const MAX_CANVAS_AREA = 16777216
+
+/**
+ * Device pixel ratio to use for a spectrogram canvas backing store of the given CSS size, so
+ * HiDPI displays get a crisp spectrogram (matching the axis-labels canvas, which has always
+ * scaled by devicePixelRatio) while the CSS size stays unchanged. Clamped down (never below 1)
+ * so neither backing dimension exceeds MAX_CANVAS_DIMENSION and the backing area stays within
+ * MAX_CANVAS_AREA - very wide full-mode/windowed canvases would otherwise silently fail to
+ * draw in browsers with per-side or per-area canvas limits, which is worse than a blurry one.
+ */
+export function getCanvasPixelRatio(cssWidth: number, cssHeight: number): number {
+  const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1
+  if (dpr <= 1 || cssWidth <= 0 || cssHeight <= 0) return 1
+  return Math.max(
+    1,
+    Math.min(
+      dpr,
+      MAX_CANVAS_DIMENSION / cssWidth,
+      MAX_CANVAS_DIMENSION / cssHeight,
+      Math.sqrt(MAX_CANVAS_AREA / (cssWidth * cssHeight)),
+    ),
+  )
 }
 
 /**

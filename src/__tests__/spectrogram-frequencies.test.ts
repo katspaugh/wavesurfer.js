@@ -550,3 +550,48 @@ describe('computeFrequencies golden values', () => {
     expect(__getFFTCacheStatsForTests().constructions).toBe(6)
   })
 })
+
+describe('noverlap contract (hop size)', () => {
+  const base = { scale: 'linear' as const, gainDB: 20, rangeDB: 80, sampleRate: SAMPLE_RATE }
+
+  it('honors an explicit noverlap above 50% of fftSamples instead of silently capping it', () => {
+    const signal = makeSine(1280, 1000)
+
+    // hop = 128 - 96 = 32; frames start at 0, 32, ... while sample + 128 < 1280.
+    // The old silent 50% cap forced noverlap down to 64 (hop 64), halving the frame count.
+    const result = computeFrequencies([signal], { ...base, fftSamples: 128, noverlap: 96 })
+
+    const expectedFrames = Math.floor((1280 - 128 - 1) / 32) + 1
+    expect(result[0].length).toBe(expectedFrames)
+  })
+
+  it('clamps noverlap to fftSamples - 1 so the hop stays >= 1 sample (no infinite loop)', () => {
+    const signal = makeSine(64, 1000)
+
+    // noverlap >= fftSamples is mathematically impossible; the only clamp is to
+    // fftSamples - 1, i.e. hop = 1: frames at every sample while sample + 32 < 64.
+    const result = computeFrequencies([signal], { ...base, fftSamples: 32, noverlap: 64 })
+
+    expect(result[0].length).toBe(32)
+  })
+
+  it('keeps the 50% default hop when noverlap is unset', () => {
+    const signal = makeSine(1280, 1000)
+
+    const result = computeFrequencies([signal], { ...base, fftSamples: 128, noverlap: null })
+
+    const expectedFrames = Math.floor((1280 - 128 - 1) / 64) + 1
+    expect(result[0].length).toBe(expectedFrames)
+  })
+
+  it('uses the true fftSamples/2 default hop for small windows (no 64-sample hop floor)', () => {
+    const signal = makeSine(640, 1000)
+
+    // fftSamples 64 -> default noverlap 32 -> hop 32. The old minHopSize floor of 64 samples
+    // silently doubled the hop (zero overlap) for any window of 64 samples or fewer.
+    const result = computeFrequencies([signal], { ...base, fftSamples: 64, noverlap: null })
+
+    const expectedFrames = Math.floor((640 - 64 - 1) / 32) + 1
+    expect(result[0].length).toBe(expectedFrames)
+  })
+})

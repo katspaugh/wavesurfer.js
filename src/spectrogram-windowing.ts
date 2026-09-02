@@ -17,7 +17,7 @@
  * progressive scheduling unit-testable in isolation (see spectrogram-windowing.test.ts).
  */
 
-import { hzToScale, paintColumnPixels } from './spectrogram-render-utils.js'
+import { hzToScale, paintColumnPixels, getCanvasPixelRatio } from './spectrogram-render-utils.js'
 
 /** One lazily-computed slice of the sliding window's frequency data. */
 export interface FrequencySegment {
@@ -61,9 +61,17 @@ export interface SegmentManagerDeps {
 export interface SegmentManagerOptions {
   /** Enable progressive background loading of the whole buffer (default: false). */
   progressiveLoading?: boolean
-  /** Cap on retained segments before farthest-from-view ones are evicted (default: 48). */
-  maxRetainedSegments?: number
+  /**
+   * Byte budget for retained segment canvas backing stores (width * height * 4 per canvas)
+   * before farthest-from-view segments are evicted (default: 256MB). A byte budget, not a
+   * segment count: segment canvas sizes vary hugely with zoom/height/devicePixelRatio, and a
+   * fixed segment count could retain far more canvas memory than mobile Safari's budget allows.
+   */
+  maxRetainedBytes?: number
 }
+
+/** Default eviction budget for retained segment canvases: 256MB, safely under Safari's canvas memory budget. */
+export const DEFAULT_MAX_RETAINED_BYTES = 256 * 1024 * 1024
 
 // Fixed-size progressive-loading segments (seconds); independent of viewport zoom, unlike
 // the pixel-width-driven segments generateSegments creates for on-demand viewport rendering.
@@ -88,7 +96,7 @@ export class SegmentManager {
   readonly segments = new Map<string, FrequencySegment>()
   isProgressiveLoading = false
   nextProgressiveSegmentTime = 0
-  maxRetainedSegments: number
+  maxRetainedBytes: number
   progressiveLoading: boolean
 
   private readonly deps: SegmentManagerDeps
@@ -113,7 +121,7 @@ export class SegmentManager {
 
   constructor(deps: SegmentManagerDeps, options: SegmentManagerOptions = {}) {
     this.deps = deps
-    this.maxRetainedSegments = options.maxRetainedSegments ?? 48
+    this.maxRetainedBytes = options.maxRetainedBytes ?? DEFAULT_MAX_RETAINED_BYTES
     this.progressiveLoading = options.progressiveLoading ?? false
   }
 
@@ -124,12 +132,24 @@ export class SegmentManager {
     this.segments.clear()
   }
 
+  /** Canvas backing-store bytes retained by one segment (width * height * 4; 0 before its canvas exists). */
+  private static segmentCanvasBytes(segment: FrequencySegment): number {
+    return segment.canvas ? segment.canvas.width * segment.canvas.height * 4 : 0
+  }
+
   /**
-   * Evict segments whose midpoint is farthest from currentTime once the retained count
-   * exceeds maxRetainedSegments, so memory usage stays bounded regardless of audio length.
+   * Evict segments whose midpoint is farthest from currentTime once the retained canvas
+   * memory (width * height * 4 per canvas) exceeds maxRetainedBytes, so memory usage stays
+   * bounded regardless of audio length. The nearest segment is never evicted, even when it
+   * alone exceeds the budget - removing what the user is looking at would only force an
+   * immediate recompute of the same segment (thrash), not save memory for long.
    */
   evictDistantSegments(currentTime: number): void {
-    if (this.segments.size <= this.maxRetainedSegments) return
+    let totalBytes = 0
+    for (const segment of this.segments.values()) {
+      totalBytes += SegmentManager.segmentCanvasBytes(segment)
+    }
+    if (totalBytes <= this.maxRetainedBytes) return
 
     const entries = Array.from(this.segments.entries())
     // Farthest-from-currentTime first
@@ -139,9 +159,10 @@ export class SegmentManager {
       return distB - distA
     })
 
-    const numToEvict = this.segments.size - this.maxRetainedSegments
-    for (let i = 0; i < numToEvict; i++) {
+    // Evict farthest-first until back under budget; entries.length - 1 spares the nearest
+    for (let i = 0; i < entries.length - 1 && totalBytes > this.maxRetainedBytes; i++) {
       const [key, segment] = entries[i]
+      totalBytes -= SegmentManager.segmentCanvasBytes(segment)
       segment.canvas?.remove()
       this.segments.delete(key)
     }
@@ -226,6 +247,24 @@ export class SegmentManager {
     const uncoveredRanges = this.findUncoveredTimeRanges(startTime, endTime)
     if (uncoveredRanges.length === 0) return
 
+    // Count the segments this call will walk, with the same loop shape as below so the float
+    // stepping matches exactly. Progressive-load calls keep reporting the loader's whole-buffer
+    // cursor via getLoadingProgress(); viewport-driven calls (the default, non-progressive
+    // loading path, where that cursor never moves and progress used to sit at 0 forever)
+    // report this call's own fraction of segments processed instead, reaching exactly 1 when
+    // the call has covered everything it set out to render.
+    let totalSegments = 0
+    for (const range of uncoveredRanges) {
+      for (let time = range.start; time < range.end; time += segmentDuration) totalSegments++
+    }
+    let processedSegments = 0
+    const emitSegmentProgress = () => {
+      processedSegments++
+      this.deps.emitProgress(
+        isProgressiveLoadCall ? this.getLoadingProgress() / 100 : processedSegments / totalSegments,
+      )
+    }
+
     for (const range of uncoveredRanges) {
       for (let time = range.start; time < range.end; time += segmentDuration) {
         const segmentStart = time
@@ -233,10 +272,23 @@ export class SegmentManager {
         const segmentKey = `${Math.floor(segmentStart * 10)}_${Math.floor(segmentEnd * 10)}`
 
         // Double-check if segment already exists (shouldn't happen but be safe)
-        if (this.segments.has(segmentKey)) continue
+        if (this.segments.has(segmentKey)) {
+          emitSegmentProgress()
+          continue
+        }
 
         const frequencies = await this.deps.computeSegmentFrequencies(segmentStart, segmentEnd)
         if (this.deps.isDisposed()) return
+
+        // Re-check after the await: a concurrent generateSegments() (the progressive loader
+        // races the viewport-driven calls - only renderVisibleWindow has a re-entrancy guard)
+        // may have created and rendered this same segment while we were computing. Overwriting
+        // its map entry here would orphan its canvas: still attached to the DOM, but no longer
+        // reachable through the map, so eviction could never remove it.
+        if (this.segments.has(segmentKey)) {
+          emitSegmentProgress()
+          continue
+        }
 
         if (frequencies && frequencies.length > 0) {
           const segment: FrequencySegment = {
@@ -252,8 +304,15 @@ export class SegmentManager {
           await this.deps.renderSegment(segment)
           if (this.deps.isDisposed()) return
 
-          this.deps.emitProgress(this.getLoadingProgress() / 100)
+          // Re-check identity after the await: the segment may have been evicted (or replaced,
+          // or cleared by a reset for a new buffer) while renderSegment was in flight - the
+          // canvas that render just attached would be orphaned in the DOM, so remove it.
+          if (this.segments.get(segmentKey) !== segment) {
+            segment.canvas?.remove()
+          }
         }
+
+        emitSegmentProgress()
       }
     }
 
@@ -371,6 +430,10 @@ export class SegmentManager {
 
     if (this.nextProgressiveSegmentTime >= totalDuration) {
       this.stopProgressiveLoading()
+      // The whole buffer is covered: report completion. Each tick's own emit (via
+      // generateSegments) reports the cursor position BEFORE that tick's segment loaded, so
+      // without this the last emitted value would forever sit one segment short of 1.
+      this.deps.emitProgress(1)
       return
     }
 
@@ -576,8 +639,12 @@ export async function renderFrequencySegment(segment: FrequencySegment, opts: Se
   const totalHeight = opts.height * segment.frequencies.length
 
   const canvas = document.createElement('canvas')
-  canvas.width = Math.round(segmentWidth)
-  canvas.height = Math.round(totalHeight)
+  // HiDPI: scale the backing store by devicePixelRatio (clamped for browser canvas limits)
+  // while the CSS size stays segmentWidth x totalHeight, so windowed segments render as crisp
+  // as the axis labels; drawing below stays in CSS coordinates via the context scale.
+  const pixelRatio = getCanvasPixelRatio(segmentWidth, totalHeight)
+  canvas.width = Math.round(segmentWidth * pixelRatio)
+  canvas.height = Math.round(totalHeight * pixelRatio)
   canvas.style.position = 'absolute'
   canvas.style.left = `${segment.startPixel}px`
   canvas.style.top = '0'
@@ -586,6 +653,7 @@ export async function renderFrequencySegment(segment: FrequencySegment, opts: Se
 
   const canvasCtx = canvas.getContext('2d')
   if (!canvasCtx) return
+  if (pixelRatio !== 1) canvasCtx.scale(pixelRatio, pixelRatio)
 
   for (let c = 0; c < segment.frequencies.length; c++) {
     await renderChannelToCanvas(segment.frequencies[c], canvasCtx, segmentWidth, opts.height, c * opts.height, opts)
