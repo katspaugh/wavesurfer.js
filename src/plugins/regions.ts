@@ -434,7 +434,11 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
     this.updatingSide = side
     const resizeValid = length >= this.minLength && length <= this.maxLength
-    if (newStart <= newEnd && (resizeValid || isRegionCreating)) {
+    // During drag-creation the region necessarily grows through sub-minLength
+    // sizes, so only maxLength can be enforced mid-drag; minLength is enforced
+    // when the creation drag ends (see enableDragSelection).
+    const creationValid = isRegionCreating && length <= this.maxLength
+    if (newStart <= newEnd && (resizeValid || creationValid)) {
       this.start = newStart
       this.end = newEnd
 
@@ -549,11 +553,28 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     }
 
     if (options.start !== undefined || options.end !== undefined) {
-      const isMarker = this.start === this.end
+      const wasMarker = this.start === this.end
       this.start = this.clampPosition(options.start ?? this.start)
-      this.end = this.clampPosition(options.end ?? (isMarker ? this.start : this.end))
+      this.end = this.clampPosition(options.end ?? (wasMarker ? this.start : this.end))
       this.renderPosition()
       this.setPart()
+
+      // A marker turned into a range (or vice versa) must not keep its stale
+      // styling: swap the background/border and add/remove the resize handles
+      // to match what initElement() would have produced for the new shape.
+      const isMarker = this.start === this.end
+      if (isMarker !== wasMarker) {
+        this.element.style.backgroundColor = isMarker ? '' : this.color
+        this.element.style.borderLeft = isMarker ? '2px solid ' + this.color : 'none'
+        if (this.resize) {
+          if (isMarker) {
+            this.removeResizeHandles(this.element)
+          } else {
+            this.addResizeHandles(this.element)
+          }
+        }
+      }
+
       this.emit('render')
     }
 
@@ -873,7 +894,13 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
     /** Create a region with given parameters */
     function addRegion(options: RegionParams): Region {
       if (!ctx.wavesurfer) {
-        throw Error('WaveSurfer is not initialized')
+        // The api only exists after init, so a missing wavesurfer means
+        // destroy() has run. Post-destroy contract (matches core WaveSurfer):
+        // public mutators silently no-op — return an inert, already-removed
+        // region instead of throwing.
+        const region = new SingleRegion(options, 0, new Scope())
+        region.remove()
+        return region
       }
 
       const duration = ctx.wavesurfer.getDuration()
@@ -970,6 +997,15 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
         } else if (drag.type === 'end') {
           // On drag end
           if (region && regionScope) {
+            // Enforce minLength on the just-created region: mid-drag it
+            // necessarily passes through sub-minLength sizes (see _onUpdate),
+            // so the length contract is applied when the creation finishes.
+            if (region.end - region.start < region.minLength) {
+              const duration = ctx.wavesurfer?.getDuration() ?? 0
+              const end = Math.min(duration, region.start + region.minLength)
+              const start = Math.max(0, end - region.minLength)
+              region.setOptions({ start, end })
+            }
             saveRegion(region, regionScope)
             region.updatingSide = undefined
             region = null

@@ -196,6 +196,146 @@ describe('RegionsPlugin', () => {
   })
 })
 
+describe('Region length constraints during drag-creation', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    installMatchMediaStub()
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    document.body.innerHTML = ''
+    jest.clearAllMocks()
+  })
+
+  test('enforces maxLength while a region is being drag-created', () => {
+    const wavesurfer = createWaveSurfer(10)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const regionsContainer = wavesurfer.getWrapper().querySelector<HTMLElement>('[part="regions-container"]')!
+    mockRect(regionsContainer, { left: 0, top: 0, width: 100, height: 100 })
+
+    const region = plugin.addRegion({ start: 1, end: 1.2, maxLength: 2 })
+    jest.runOnlyPendingTimers()
+    expect(region.element?.parentElement).toBe(regionsContainer)
+
+    // Simulate a creation-drag update (+40px = +4s at width 100 / duration 10).
+    // The creation flow passes a startTime, which used to bypass min/maxLength
+    // entirely and let the region grow to 4.2s despite maxLength: 2.
+    region._onUpdate(40, 'end', 1)
+
+    expect(region.end - region.start).toBeLessThanOrEqual(2)
+  })
+
+  test('enforces minLength when a drag-created region is finalized', () => {
+    const wavesurfer = createWaveSurfer(10)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const wrapper = wavesurfer.getWrapper()
+    mockRect(wrapper, { left: 0, top: 0, width: 100, height: 100 })
+    const regionsContainer = wrapper.querySelector<HTMLElement>('[part="regions-container"]')!
+    mockRect(regionsContainer, { left: 0, top: 0, width: 100, height: 100 })
+
+    const created: Array<{ start: number; end: number }> = []
+    plugin.on('region-created', (region) => created.push(region))
+
+    plugin.enableDragSelection({ minLength: 2 })
+
+    // Drag from x=10 to x=14 (0.4s worth of drag at width 100 / duration 10):
+    // far below minLength: 2.
+    wrapper.dispatchEvent(new MouseEvent('pointerdown', { clientX: 10, clientY: 10, bubbles: true }))
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 14, clientY: 10 }))
+    document.dispatchEvent(new MouseEvent('pointerup', { clientX: 14, clientY: 10 }))
+
+    expect(created).toHaveLength(1)
+    const region = created[0]
+    expect(region.end - region.start).toBeGreaterThanOrEqual(2 - 1e-9)
+  })
+})
+
+describe('Region setOptions shape changes', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    installMatchMediaStub()
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    document.body.innerHTML = ''
+    jest.clearAllMocks()
+  })
+
+  test('re-renders marker/region styling when setOptions changes the shape', () => {
+    const wavesurfer = createWaveSurfer(10)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const color = 'rgba(0, 128, 0, 0.5)'
+    const region = plugin.addRegion({ start: 2, end: 2, color }) // marker
+    const element = region.element!
+
+    expect(element.style.borderLeft).toContain('2px solid')
+    expect(element.querySelectorAll('[part*="region-handle"]').length).toBe(0)
+
+    // Marker -> range: must pick up the region background, drop the marker
+    // border, and gain resize handles.
+    region.setOptions({ start: 2, end: 4 })
+    expect(element.style.backgroundColor).toBe(color)
+    expect(element.style.borderLeft === 'none' || element.style.borderLeft === '').toBe(true)
+    expect(element.querySelectorAll('[part*="region-handle"]').length).toBe(2)
+
+    // Range -> marker: back to marker styling, resize handles removed.
+    region.setOptions({ start: 3, end: 3 })
+    expect(element.style.borderLeft).toContain('2px solid')
+    expect(element.style.backgroundColor).toBe('')
+    expect(element.querySelectorAll('[part*="region-handle"]').length).toBe(0)
+  })
+})
+
+describe('RegionsPlugin post-destroy API', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    installMatchMediaStub()
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    document.body.innerHTML = ''
+    jest.clearAllMocks()
+  })
+
+  // Post-destroy contract (matches core WaveSurfer): public mutators silently
+  // no-op after destroy — addRegion used to throw.
+  test('addRegion after destroy is a silent no-op instead of throwing', () => {
+    const wavesurfer = createWaveSurfer(10)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+    plugin.destroy()
+
+    let region: ReturnType<typeof plugin.addRegion> | undefined
+    expect(() => {
+      region = plugin.addRegion({ start: 1, end: 2 })
+    }).not.toThrow()
+
+    expect(region?.element).toBeNull()
+    expect(plugin.getRegions()).toHaveLength(0)
+    expect(document.querySelector('[part~="region"]')).toBeNull()
+
+    // The rest of the public api already conformed — pin it.
+    expect(() => {
+      const disable = plugin.enableDragSelection({})
+      disable()
+      plugin.clearRegions()
+    }).not.toThrow()
+    expect(plugin.getRegions()).toHaveLength(0)
+  })
+})
+
 describe('Region drag against the waveform edges', () => {
   beforeEach(() => {
     jest.useFakeTimers()

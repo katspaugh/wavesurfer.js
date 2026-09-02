@@ -106,23 +106,27 @@ const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents,
     }
 
     function virtualAppend(start: number, container: HTMLElement, element: HTMLElement) {
-      // Store notch metadata for batch updates
-      notchElements.set(element, {
-        start,
-        width: element.clientWidth,
-        wasVisible: false,
-      })
+      // Append BEFORE measuring: a detached element's clientWidth is always 0,
+      // which would make the culling condition below degenerate (no label was
+      // ever culled for overflowing the visible window). The timeline element
+      // is already attached to the document at this point (see initTimeline).
+      container.appendChild(element)
+      const width = element.clientWidth
 
       // Initial render check
       const scrollLeft = ctx.wavesurfer.getScroll()
       const scrollRight = scrollLeft + ctx.wavesurfer.getWidth()
+      const isVisible = start >= scrollLeft && start + width < scrollRight
 
-      const notchData = notchElements.get(element)!
-      const isVisible = start >= scrollLeft && start + notchData.width < scrollRight
-      notchData.wasVisible = isVisible
+      // Store notch metadata for batch updates
+      notchElements.set(element, {
+        start,
+        width,
+        wasVisible: isVisible,
+      })
 
-      if (isVisible) {
-        container.appendChild(element)
+      if (!isVisible) {
+        element.remove()
       }
     }
 
@@ -185,6 +189,12 @@ const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents,
         Object.assign(timeline.style, opts.style)
       }
 
+      // Attach the (empty) timeline to the document BEFORE building notches so
+      // virtualAppend can measure each notch's real width after insertion.
+      timelineWrapper.innerHTML = ''
+      timelineWrapper.appendChild(timeline)
+      currentTimeline = timeline
+
       const notchEl = createElement('div', {
         style: {
           width: '0',
@@ -225,10 +235,6 @@ const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents,
         notch.style.left = `${offset}px`
         virtualAppend(offset, timeline, notch)
       }
-
-      timelineWrapper.innerHTML = ''
-      timelineWrapper.appendChild(timeline)
-      currentTimeline = timeline
 
       ctx.emit('ready')
     }
