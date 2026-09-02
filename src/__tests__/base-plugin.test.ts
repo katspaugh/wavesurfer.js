@@ -68,3 +68,23 @@ describe('BasePlugin', () => {
     })
   })
 })
+
+describe('BasePlugin chassis scope disposal', () => {
+  it('inherited destroy() disposes the chassis scope, releasing scope-registered resources', () => {
+    // A class-based plugin using the inviting `this.scope.listen(...)` and
+    // relying on the INHERITED destroy() (no override) must not leak.
+    class ScopeUserPlugin extends BasePlugin<{ destroy: [] }, object> {
+      public disposed = jest.fn()
+      public register() {
+        this.scope.add(this.disposed)
+      }
+    }
+    const plugin = new ScopeUserPlugin({})
+    plugin._init({} as never)
+    plugin.register()
+
+    plugin.destroy()
+
+    expect(plugin.disposed).toHaveBeenCalledTimes(1)
+  })
+})

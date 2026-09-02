@@ -102,11 +102,12 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   protected onInit() {
-    // this.scope is disposed and recreated on every destroy() (see below); a
-    // fresh FrameScheduler is needed so a post-destroy startRecording()/
-    // resumeRecording() registers its stop() on the new scope instead of the
-    // dead one (mirrors WaveSurfer.ensureCoreEvents()'s frameScheduler
-    // recreation in wavesurfer.ts).
+    // Plugin re-init after destroy() is supported (destroy() -> _init(), see
+    // record.test.ts): the chassis scope was disposed by destroy(), so
+    // recreate it -- mirroring definePlugin's onInit() -- along with a fresh
+    // FrameScheduler registered on it, so a post-re-init startRecording()/
+    // resumeRecording() registers its stop() on the live scope.
+    this.scope = new Scope()
     this.frameScheduler = new FrameScheduler(this.scope)
   }
 
@@ -499,14 +500,10 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       URL.revokeObjectURL(this.recordedBlobUrl)
       this.recordedBlobUrl = null
     }
-    // Disposes the frameScheduler's own stop() disposer (already stopped
-    // above; this is only a backstop) and cascades to any mic child scope
-    // still attached (normally none -- stopMic() above already detached and
-    // disposed it). Recreated because re-init after destroy() is supported
-    // (see record.test.ts): a disposed Scope runs late registrations
-    // immediately, which would silently break a subsequent onInit().
-    this.scope.dispose()
-    this.scope = new Scope()
+    // super.destroy() disposes this.scope (frameScheduler's stop() disposer
+    // -- already stopped above, only a backstop -- and any mic child scope
+    // still attached; normally none, stopMic() above already disposed it).
+    // Re-init after destroy() recreates the scope in onInit().
     super.destroy()
   }
 
