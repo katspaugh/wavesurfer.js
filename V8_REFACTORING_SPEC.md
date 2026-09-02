@@ -478,21 +478,29 @@ strongest argument for the extraction.
 
 ## Execution plan
 
-Sequencing chosen so each step shrinks the blast radius of the next:
+Sequencing chosen so each step shrinks the blast radius of the next. Delivered as
+sequential commits on `claude/v8-architecture-code-review-lputno` (per-stage, not PRs).
 
-1. **PR 1 — R5 P0** (CI/guardrails first, so every subsequent PR is checked by them),
-   including the API-snapshot (P1 #8) if feasible — it documents R1–R4's breaking
-   changes as diffs.
-2. **PR 2 — R6 severity-critical/major fixes** on the current architecture (small,
-   cherry-pickable to 7.x if needed).
-3. **PR 3 — R1** terminal destroy (deletes revival machinery + test updates).
-4. **PR 4 — R2** backend composition (mechanical; behavior-compatible except the
-   documented `getMediaElement()` change). R1 first makes this smaller.
-5. **PR 5 — R3** internal events → streams (renderer first, then plugin-facing).
-6. **PR 6 — R4** BasePlugin deprecation + docs/migration guide.
-7. **v8.0.0-rc**: beta soak, then final.
+1. **Stage 1 — R5 P0** ✅ (commit `aaa3907`): CI/guardrails first, so every subsequent
+   commit is checked by them.
+2. **Stage 2 — R6 criticals** ✅ (`295e980`, `746dc04`, `9fae3fb`): WebAudio destroy
+   leak (+ stuck isSeeking), renderer visibleRange freeze, record mic leak.
+3. **Stage 2b — R6 majors** ✅ (`4374c14`…`4545b72`, `f4f8564`): background-tab stopAt,
+   timeline duration, regions edge-drag, record restart/options/isActive, spectrogram
+   stale-cache + frequenciesDataUrl.
+4. **Stage 3 — R1** ✅ (`08ec196`): terminal destroy; −336 net lines of revival
+   machinery; reuse-pinning tests rewritten as terminal-destroy contract tests;
+   cypress abort.cy.js updated.
+5. **Stage 4 — R4** ✅ (`c776e44`): BasePlugin deprecated; chassis scope disposed in
+   destroy() (m9); record re-init moved to onInit. (Record's full definePlugin
+   migration remains open.)
+6. **Stage 5 — R2** backend composition (mechanical; behavior-compatible except the
+   documented `getMediaElement()` change).
+7. **Stage 6 — R3** internal events → streams (renderer first, then plugin-facing).
+8. Remaining R6 minors, R5 P1 (API snapshot, type-aware lint, release gate,
+   bundle budget, spectrogram-setup tests), then **v8.0.0-rc**.
 
-Each PR: semantic title, green on the new CI gauntlet, API-snapshot diff reviewed.
+Each stage: semantic commits, green on the new CI gauntlet.
 
 ## Out of scope for v8.0.0
 
