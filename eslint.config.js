@@ -112,9 +112,6 @@ export default compat.config({
         // Regions' SingleRegion: each region object is a public per-region
         // event surface (users call region.on('update', ...)).
         'src/plugins/regions.ts',
-        // Envelope's Polyline emitter predates R3; plugins are out of R3's
-        // scope (they consume/emit public events, not internal core buses).
-        'src/plugins/envelope.ts',
       ],
       rules: {
         'no-restricted-syntax': rawResourceAcquisitionRule,
