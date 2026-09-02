@@ -7,6 +7,7 @@ import Fetcher from './fetcher.js'
 import { FrameScheduler } from './frame-scheduler.js'
 import Player from './player.js'
 import Renderer from './renderer.js'
+import { effect } from './reactive/store.js'
 import { Scope } from './scope.js'
 import WebAudioPlayer from './webaudio.js'
 import { createWaveSurferState, type WaveSurferState, type WaveSurferActions } from './state/wavesurfer-state.js'
@@ -381,65 +382,63 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
     )
   }
 
+  // The ONE bridge from the renderer's internal reactive surface (signals/
+  // streams -- Renderer is not an EventEmitter) to the public
+  // WaveSurferEvents. Every subscription is registered on this.scope, so
+  // destroy() severs the bridge in one dispose.
   private initRendererEvents() {
     // Seek on click
     this.scope.add(
-      this.renderer.on('click', (relativeX, relativeY) => {
+      this.renderer.clickSignal.subscribe((hit) => {
+        if (!hit) return
         if (this.options.interact) {
-          this.seekTo(relativeX)
-          this.emit('interaction', relativeX * this.getDuration())
-          this.emit('click', relativeX, relativeY)
+          this.seekTo(hit.relativeX)
+          this.emit('interaction', hit.relativeX * this.getDuration())
+          this.emit('click', hit.relativeX, hit.relativeY)
         }
       }),
     )
 
     // Double click
     this.scope.add(
-      this.renderer.on('dblclick', (relativeX, relativeY) => {
-        this.emit('dblclick', relativeX, relativeY)
+      this.renderer.dblclickSignal.subscribe((hit) => {
+        if (!hit) return
+        this.emit('dblclick', hit.relativeX, hit.relativeY)
       }),
     )
 
-    // Scroll
-    this.scope.add(
-      this.renderer.on('scroll', (startX, endX, scrollLeft, scrollRight) => {
-        const duration = this.getDuration()
-        this.wavesurferActions.setScrollPosition(scrollLeft)
-        this.emit('scroll', startX * duration, endX * duration, scrollLeft, scrollRight)
-      }),
-    )
+    // Scroll: react to both the percentages and the bounds signals, the same
+    // pairing the renderer's old internal scroll effect used
+    {
+      const { percentages, bounds } = this.renderer.getScrollSignals()
+      this.scope.add(
+        effect(() => {
+          const { startX, endX } = percentages.value
+          const { left: scrollLeft, right: scrollRight } = bounds.value
+          const duration = this.getDuration()
+          this.wavesurferActions.setScrollPosition(scrollLeft)
+          this.emit('scroll', startX * duration, endX * duration, scrollLeft, scrollRight)
+        }, [percentages, bounds]),
+      )
+    }
 
     // Redraw
     this.scope.add(
-      this.renderer.on('render', () => {
+      this.renderer.renderEpoch.subscribe(() => {
         this.emit('redraw')
       }),
     )
 
     // RedrawComplete
     this.scope.add(
-      this.renderer.on('rendered', () => {
+      this.renderer.renderedEpoch.subscribe(() => {
         this.emit('redrawcomplete')
-      }),
-    )
-
-    // DragStart
-    this.scope.add(
-      this.renderer.on('dragstart', (relativeX) => {
-        this.emit('dragstart', relativeX)
-      }),
-    )
-
-    // DragEnd
-    this.scope.add(
-      this.renderer.on('dragend', (relativeX) => {
-        this.emit('dragend', relativeX)
       }),
     )
 
     // Resize
     this.scope.add(
-      this.renderer.on('resize', () => {
+      this.renderer.resizeEpoch.subscribe(() => {
         this.emit('resize')
       }),
     )
@@ -447,7 +446,21 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
     // Drag
     {
       let cancelDebounce: (() => void) | undefined
-      const unsubscribeDrag = this.renderer.on('drag', (relativeX) => {
+      const unsubscribeDrag = this.renderer.dragEventsSignal.subscribe((dragEvent) => {
+        if (!dragEvent) return
+        const { relativeX } = dragEvent
+
+        if (dragEvent.type === 'start') {
+          this.emit('dragstart', relativeX)
+          return
+        }
+
+        if (dragEvent.type === 'end') {
+          this.emit('dragend', relativeX)
+          return
+        }
+
+        // 'move'
         if (!this.options.interact) return
 
         // Update the visual position

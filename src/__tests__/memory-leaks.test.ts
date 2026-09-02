@@ -455,12 +455,14 @@ describe('Memory Leak Detection', () => {
       expect(onPlay).not.toHaveBeenCalled()
     })
 
-    it('renderer events no longer reach the seek bridge after destroy', async () => {
+    it('renderer signals no longer reach the seek bridge after destroy', async () => {
       const ws = await createDestroyedWs()
       const setTimeSpy = jest.spyOn(ws, 'setTime')
 
       const renderer = ws.getRenderer()
-      ;(renderer as any).emit('click', 0.5, 0.5)
+      // Drive the private writable behind the public clickSignal directly --
+      // the bridge subscription was severed by destroy(), so nothing fires.
+      ;(renderer as any)._clickSignal.set({ relativeX: 0.5, relativeY: 0.5 })
 
       expect(setTimeSpy).not.toHaveBeenCalled()
     })

@@ -160,7 +160,7 @@ describe('Renderer', () => {
   test('render processes audio buffer', async () => {
     const buffer = createAudioBuffer([[0, 0.5, -0.5]])
     const spy = jest.fn()
-    renderer.on('render', spy)
+    renderer.renderEpoch.subscribe(spy)
     await renderer.render(buffer)
     expect(spy).toHaveBeenCalled()
   })
@@ -345,7 +345,7 @@ describe('Renderer', () => {
     document.body.appendChild(localContainer)
     const localRenderer = new Renderer({ container: localContainer })
     const clickSpy = jest.fn()
-    localRenderer.on('click', clickSpy)
+    localRenderer.clickSignal.subscribe(clickSpy)
 
     const wrapper = (localRenderer as any).wrapper as HTMLElement
     wrapper.getBoundingClientRect = () =>
@@ -480,7 +480,9 @@ describe('Renderer', () => {
       const wrapper = renderer.getWrapper()
       stubRect(wrapper)
       const dragStartSpy = jest.fn()
-      renderer.on('dragstart', dragStartSpy)
+      renderer.dragEventsSignal.subscribe((e) => {
+        if (e?.type === 'start') dragStartSpy(e.relativeX)
+      })
 
       expect((renderer as any).dragStream).toBeNull()
 
@@ -498,7 +500,9 @@ describe('Renderer', () => {
       expect((renderer as any).dragStream).not.toBeNull()
 
       const dragStartSpy = jest.fn()
-      renderer.on('dragstart', dragStartSpy)
+      renderer.dragEventsSignal.subscribe((e) => {
+        if (e?.type === 'start') dragStartSpy(e.relativeX)
+      })
 
       renderer.setOptions({ ...(renderer as any).options, dragToSeek: false })
       expect((renderer as any).dragStream).toBeNull()

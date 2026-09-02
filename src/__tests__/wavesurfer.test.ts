@@ -1,10 +1,20 @@
 jest.mock('../renderer.js', () => {
+  // Real signals from the reactive store so initRendererEvents() can wire the
+  // bridge against this mock, and tests can drive the signals directly.
+  const { signal } = jest.requireActual('../reactive/store.js')
   let lastInstance: any
   class Renderer {
     options: any
     wrapper = document.createElement('div')
     renderProgress = jest.fn()
-    on = jest.fn(() => () => undefined)
+    clickSignal = signal(null)
+    dblclickSignal = signal(null)
+    dragEventsSignal = signal(null)
+    renderEpoch = signal(0)
+    renderedEpoch = signal(0)
+    resizeEpoch = signal(0)
+    scrollSignals = { percentages: signal({ startX: 0, endX: 0 }), bounds: signal({ left: 0, right: 0 }) }
+    getScrollSignals = jest.fn(() => this.scrollSignals)
     setOptions = jest.fn()
     getWrapper = jest.fn(() => this.wrapper)
     getWidth = jest.fn(() => 100)
@@ -416,18 +426,17 @@ describe('WaveSurfer public methods', () => {
     ws.destroy()
   })
 
-  test('wires the renderer scroll event into state.scrollPosition', () => {
+  test('wires the renderer scroll signals into state.scrollPosition', () => {
     const ws = createWs()
     const renderer = getRenderer()
-    const scrollHandler = renderer.on.mock.calls.find(([event]: [string]) => event === 'scroll')?.[1]
-    expect(scrollHandler).toBeDefined()
 
     jest.spyOn(ws, 'getDuration').mockReturnValue(100)
     const scrollSpy = jest.fn()
     ws.on('scroll', scrollSpy)
 
     expect(ws.getState().scrollPosition.value).toBe(0)
-    scrollHandler(0.2, 0.4, 200, 400)
+    renderer.scrollSignals.percentages.set({ startX: 0.2, endX: 0.4 })
+    renderer.scrollSignals.bounds.set({ left: 200, right: 400 })
 
     expect(ws.getState().scrollPosition.value).toBe(200)
     // The public 'scroll' event still emits time-scaled values, unaffected by

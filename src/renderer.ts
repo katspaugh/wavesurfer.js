@@ -1,31 +1,24 @@
-import EventEmitter from './event-emitter.js'
 import { isHTMLElement } from './dom.js'
 import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
 import { createDragStream, type DragEvent } from './reactive/drag-stream.js'
-import { createScrollStream, type ScrollStream } from './reactive/scroll-stream.js'
+import { createScrollStream, type ScrollPercentages, type ScrollStream } from './reactive/scroll-stream.js'
 import { computed, effect, signal, type ComputedSignal, type Signal } from './reactive/store.js'
 import { Scope } from './scope.js'
 
 type ChannelData = utils.ChannelData
 
-type RendererEvents = {
-  click: [relativeX: number, relativeY: number]
-  dblclick: [relativeX: number, relativeY: number]
-  drag: [relativeX: number]
-  dragstart: [relativeX: number]
-  dragend: [relativeX: number]
-  scroll: [relativeStart: number, relativeEnd: number, scrollLeft: number, scrollRight: number]
-  render: []
-  rendered: []
-  resize: []
-}
+/** A pointer hit on the waveform, in wrapper-relative [0..1] coordinates. */
+export type RendererPointerHit = { relativeX: number; relativeY: number }
+
+/** One step of a drag gesture on the waveform. */
+export type RendererDragEvent = { type: 'start' | 'move' | 'end'; relativeX: number }
 
 const SMOOTH_SCROLL_FPS = 60
 const SMOOTH_SCROLL_MAX_DELTA = 10
 const LOW_ZOOM_PIXELS_PER_SECOND_THRESHOLD = SMOOTH_SCROLL_MAX_DELTA * SMOOTH_SCROLL_FPS
 
-class Renderer extends EventEmitter<RendererEvents> {
+class Renderer {
   private options: WaveSurferOptions
   private parent: HTMLElement
   private container: HTMLElement
@@ -67,9 +60,27 @@ class Renderer extends EventEmitter<RendererEvents> {
   private audioDuration = signal(0)
   private visibleRange: ComputedSignal<{ startTime: number; endTime: number }>
 
-  constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
-    super()
+  // Reactive surface (writables stay private; the public accessors below
+  // expose them read-only). This is Renderer's only outward communication
+  // channel: WaveSurfer's initRendererEvents() is the single bridge that
+  // translates these signals into public WaveSurferEvents. Pointer/drag
+  // signals always set a FRESH object per event, so signal.set()'s Object.is
+  // dedup can never swallow two identical consecutive gestures (e.g. two
+  // clicks at the same spot).
+  private _clickSignal = signal<RendererPointerHit | null>(null)
+  private _dblclickSignal = signal<RendererPointerHit | null>(null)
+  private _dragEventsSignal = signal<RendererDragEvent | null>(null)
+  // Monotonic counters, incremented exactly where the old 'render' /
+  // 'rendered' / 'resize' events were emitted (renderedEpoch keeps the
+  // async Promise.resolve().then timing).
+  private _renderEpoch = signal(0)
+  private _renderedEpoch = signal(0)
+  private _resizeEpoch = signal(0)
+  // Captured from scrollStream at creation so getScrollSignals() stays valid
+  // (the signals simply go quiet) even after destroy() nulls scrollStream.
+  private scrollSignals!: { percentages: Signal<ScrollPercentages>; bounds: Signal<{ left: number; right: number }> }
 
+  constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
     this.options = options
 
     const parent = this.parentFromOptionsContainer(options.container)
@@ -128,13 +139,13 @@ class Renderer extends EventEmitter<RendererEvents> {
   private onClickWrapper = (e: MouseEvent) => {
     const rect = this.wrapper.getBoundingClientRect()
     const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
-    this.emit('click', x, y)
+    this._clickSignal.set({ relativeX: x, relativeY: y })
   }
 
   private onDblClickWrapper = (e: MouseEvent) => {
     const rect = this.wrapper.getBoundingClientRect()
     const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
-    this.emit('dblclick', x, y)
+    this._dblclickSignal.set({ relativeX: x, relativeY: y })
   }
 
   private initEvents() {
@@ -149,14 +160,11 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.initDrag()
     }
 
-    // Add a scroll listener using reactive stream
+    // Add a scroll listener using reactive stream. Consumers (the WaveSurfer
+    // bridge) subscribe to the stream's signals directly via
+    // getScrollSignals() -- no re-emit happens here.
     this.scrollStream = createScrollStream(this.scrollContainer)
-    const unsubscribeScroll = effect(() => {
-      const { startX, endX } = this.scrollStream!.percentages.value
-      const { left, right } = this.scrollStream!.bounds.value
-      this.emit('scroll', startX, endX, left, right)
-    }, [this.scrollStream.percentages, this.scrollStream.bounds])
-    this.scope.add(unsubscribeScroll)
+    this.scrollSignals = { percentages: this.scrollStream.percentages, bounds: this.scrollStream.bounds }
     this.scope.add(() => {
       this.scrollStream?.cleanup()
       this.scrollStream = null
@@ -187,7 +195,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     if (width === this.lastContainerWidth && this.options.height !== 'auto') return
     this.lastContainerWidth = width
     this.reRender()
-    this.emit('resize')
+    this._resizeEpoch.update((n) => n + 1)
   }
 
   private initDrag() {
@@ -212,12 +220,12 @@ class Renderer extends EventEmitter<RendererEvents> {
 
       if (drag.type === 'start') {
         this.isDragging = true
-        this.emit('dragstart', relX)
+        this._dragEventsSignal.set({ type: 'start', relativeX: relX })
       } else if (drag.type === 'move') {
-        this.emit('drag', relX)
+        this._dragEventsSignal.set({ type: 'move', relativeX: relX })
       } else if (drag.type === 'end') {
         this.isDragging = false
-        this.emit('dragend', relX)
+        this._dragEventsSignal.set({ type: 'end', relativeX: relX })
       }
     }, [this.dragStream.signal])
 
@@ -379,6 +387,53 @@ class Renderer extends EventEmitter<RendererEvents> {
    */
   getVisibleRange(): Signal<{ startTime: number; endTime: number }> {
     return this.visibleRange
+  }
+
+  /**
+   * Pointer clicks on the waveform, as a read-only signal. A fresh object is
+   * set per click (initial value null before the first one), so subscribers
+   * see every click even at identical coordinates.
+   */
+  get clickSignal(): Signal<RendererPointerHit | null> {
+    return this._clickSignal
+  }
+
+  /** Double clicks on the waveform; same shape and semantics as clickSignal. */
+  get dblclickSignal(): Signal<RendererPointerHit | null> {
+    return this._dblclickSignal
+  }
+
+  /**
+   * Drag gestures on the waveform ('start' -> 'move'* -> 'end'), a fresh
+   * object per step; null before the first gesture.
+   */
+  get dragEventsSignal(): Signal<RendererDragEvent | null> {
+    return this._dragEventsSignal
+  }
+
+  /** Bumped on every render pass (the public 'redraw' event derives from it). */
+  get renderEpoch(): Signal<number> {
+    return this._renderEpoch
+  }
+
+  /** Bumped (async, microtask) when a render pass has fully drawn ('redrawcomplete'). */
+  get renderedEpoch(): Signal<number> {
+    return this._renderedEpoch
+  }
+
+  /** Bumped when a container resize triggered a re-render ('resize'). */
+  get resizeEpoch(): Signal<number> {
+    return this._resizeEpoch
+  }
+
+  /**
+   * The scroll stream's derived signals: visible range as percentages
+   * [0..1] and scroll bounds in pixels. Created with the renderer (in
+   * initEvents, during construction); after destroy() the signals still
+   * exist but go quiet.
+   */
+  getScrollSignals(): { percentages: Signal<ScrollPercentages>; bounds: Signal<{ left: number; right: number }> } {
+    return this.scrollSignals
   }
 
   destroy() {
@@ -750,7 +805,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.audioData = audioData
     this.audioDuration.set(audioData.duration)
 
-    this.emit('render')
+    this._renderEpoch.update((n) => n + 1)
 
     // Render the waveform
     if (this.options.splitChannels) {
@@ -766,8 +821,9 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.renderChannel(channels, this.options, width, 0)
     }
 
-    // Must be emitted asynchronously for backward compatibility
-    Promise.resolve().then(() => this.emit('rendered'))
+    // Must be bumped asynchronously for backward compatibility (the public
+    // 'redrawcomplete' event derives from this epoch)
+    Promise.resolve().then(() => this._renderedEpoch.update((n) => n + 1))
   }
 
   reRender() {

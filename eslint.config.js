@@ -48,6 +48,16 @@ const rawResourceAcquisitionRule = [
   },
 ]
 
+// Internal modules must not communicate via EventEmitter (R3: events
+// outside, streams inside). Banned by default across src/**; the files that
+// legitimately ARE a public event surface get a per-file override below that
+// keeps the raw-acquisition bans but allows `extends EventEmitter`.
+const internalEventBusBan = {
+  selector: "ClassDeclaration[superClass.name='EventEmitter'], ClassExpression[superClass.name='EventEmitter']",
+  message:
+    'Internal modules must not be event buses: expose signals/streams (src/reactive/) instead. The public event surface lives on WaveSurfer and the plugin chassis only.',
+}
+
 export default compat.config({
   env: { browser: true, es2021: true },
   parser: '@typescript-eslint/parser',
@@ -80,6 +90,32 @@ export default compat.config({
       // doubled-** glob reaches all three uniformly rather than listing them.
       files: ['src/**/*.ts'],
       excludedFiles: ['src/**/__tests__/**/*.ts'],
+      rules: {
+        'no-restricted-syntax': [...rawResourceAcquisitionRule, internalEventBusBan],
+      },
+    },
+    {
+      // Public event surfaces: `extends EventEmitter` is allowed here (the
+      // raw-acquisition bans still apply). Each entry carries its own
+      // justification for why it is a legitimate event surface, not an
+      // internal bus.
+      files: [
+        // WaveSurfer itself: the public WaveSurferEvents surface -- the one
+        // bridge where internal signals become public events.
+        'src/wavesurfer.ts',
+        // The plugin chassis: plugins' public per-plugin events (ctx.emit)
+        // ride on BasePlugin's emitter.
+        'src/base-plugin.ts',
+        // WebAudioPlayer emulates the HTMLMediaElement event surface -- a
+        // media boundary consumed like a media element, not an internal bus.
+        'src/webaudio.ts',
+        // Regions' SingleRegion: each region object is a public per-region
+        // event surface (users call region.on('update', ...)).
+        'src/plugins/regions.ts',
+        // Envelope's Polyline emitter predates R3; plugins are out of R3's
+        // scope (they consume/emit public events, not internal core buses).
+        'src/plugins/envelope.ts',
+      ],
       rules: {
         'no-restricted-syntax': rawResourceAcquisitionRule,
       },
