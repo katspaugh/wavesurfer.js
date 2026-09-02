@@ -439,6 +439,25 @@ describe('WaveSurfer public methods', () => {
     ws.destroy()
   })
 
+  test('enforces the play(start, end) stop position from media timeupdate (rAF suspended in background tabs)', async () => {
+    const ws = createWs()
+    const media = ws.getMediaElement() as HTMLMediaElement & { pause: jest.Mock }
+    // HAVE_FUTURE_DATA so setTime() writes currentTime directly instead of deferring
+    Object.defineProperty(media, 'readyState', { configurable: true, value: 4 })
+    Object.defineProperty(media, 'paused', { configurable: true, value: false })
+
+    await ws.play(10, 15)
+
+    // Simulate playback passing the stop position with no rAF tick in between
+    media.currentTime = 16
+    media.dispatchEvent(new Event('timeupdate'))
+
+    expect(media.pause).toHaveBeenCalled()
+    // Overshoot is clamped back to the requested stop position
+    expect(ws.getCurrentTime()).toBe(15)
+    ws.destroy()
+  })
+
   test('reflects zoom and decoded audio in reactive state', async () => {
     const ws = createWs({
       peaks: [[0, 0.5, 1]],

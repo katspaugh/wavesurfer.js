@@ -345,6 +345,15 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.onMediaEvent('timeupdate', () => {
         const currentTime = this.updateProgress()
         this.emit('timeupdate', currentTime)
+        // onTick (rAF-driven) normally enforces stopAtPosition, but rAF is
+        // suspended in hidden tabs while media 'timeupdate' keeps firing --
+        // without this check, play(start, end) overshoots arbitrarily in a
+        // background tab.
+        if (this.stopAtPosition != null && this.isPlaying() && currentTime >= this.stopAtPosition) {
+          const stopAt = this.stopAtPosition
+          this.pause()
+          this.setTime(stopAt)
+        }
       }),
     )
 
