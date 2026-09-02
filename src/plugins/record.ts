@@ -303,24 +303,51 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     this.unsubscribeRecordEnd?.()
     this.micStream = null
     this.unsubscribeRecordEnd = undefined
+    // renderMicStream() hijacked the host's options (interact, and in
+    // scrolling mode cursorWidth/normalize/maxPeak); restore them when the
+    // mic session ends. The record-end render path also restores (whichever
+    // runs first wins; the other is a no-op) -- but without this, a
+    // preview-only startMic() -> stopMic() or a renderRecordedAudio: false
+    // recording left the waveform permanently non-interactive.
+    this.applyOriginalOptionsIfNeeded()
     if (!this.stream) return
     this.stream.getTracks().forEach((track) => track.stop())
     this.stream = null
     this.mediaRecorder = null
   }
 
-  /** Start recording audio from the microphone */
+  /**
+   * Start recording audio from the microphone.
+   *
+   * Calling this while a recording is already active restarts: the previous
+   * session is discarded (no 'record-end' is emitted for it -- call
+   * stopRecording() first if you want its final blob).
+   */
   public async startRecording(options?: RecordPluginDeviceOptions) {
     const stream = this.stream || (await this.startMic(options))
     this.dataWindow = null
-    const mediaRecorder =
-      this.mediaRecorder ||
-      new MediaRecorder(stream, {
-        mimeType: this.options.mimeType || findSupportedMimeType(),
-        audioBitsPerSecond: this.options.audioBitsPerSecond,
-      })
+
+    // Restarting: neutralize the previous recorder before stopping it.
+    // MediaRecorder.stop() queues 'dataavailable' + 'stop' events that would
+    // otherwise dispatch into the NEW session's handlers assigned below --
+    // a stale foreign chunk corrupting the new blob, and a spurious
+    // 'record-end' right after 'record-start'.
+    const previousRecorder = this.mediaRecorder
+    if (previousRecorder && previousRecorder.state !== 'inactive') {
+      previousRecorder.ondataavailable = null
+      previousRecorder.onpause = null
+      previousRecorder.onstop = null
+      previousRecorder.stop()
+      this.frameScheduler.stop()
+    }
+
+    // A fresh recorder per session: reusing the old instance would keep its
+    // queued events (and any stale handler state) attached to the new session.
+    const mediaRecorder = new MediaRecorder(stream, {
+      mimeType: this.options.mimeType || findSupportedMimeType(),
+      audioBitsPerSecond: this.options.audioBitsPerSecond,
+    })
     this.mediaRecorder = mediaRecorder
-    this.stopRecording()
 
     const recordedChunks: BlobPart[] = []
 
@@ -395,7 +422,9 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   public isActive(): boolean {
-    return this.mediaRecorder?.state !== 'inactive'
+    // Explicit existence check: with no recorder, `undefined !== 'inactive'`
+    // would wrongly report an active recording on a fresh plugin.
+    return !!this.mediaRecorder && this.mediaRecorder.state !== 'inactive'
   }
 
   /** Stop the recording */

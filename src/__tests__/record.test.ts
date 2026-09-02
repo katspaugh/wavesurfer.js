@@ -197,6 +197,57 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
     expect(onEnd).toHaveBeenCalledTimes(1)
   })
 
+  it('restarting while recording discards the old session without a spurious record-end or foreign chunks', async () => {
+    const plugin = RecordPlugin.create()
+    const onEnd = jest.fn()
+    const onStart = jest.fn()
+    plugin.on('record-end', onEnd)
+    plugin.on('record-start', onStart)
+
+    await plugin.startRecording()
+    const firstRecorder = (plugin as unknown as { mediaRecorder: MockMediaRecorder }).mediaRecorder
+    // The first session produces a chunk
+    firstRecorder.ondataavailable?.({ data: new Blob(['old-session-chunk']) })
+
+    // Restart: the old recorder's queued 'stop' must not dispatch into the
+    // new session's handlers (spurious record-end right after record-start)
+    await plugin.startRecording()
+    await flushMicrotasks()
+
+    expect(onStart).toHaveBeenCalledTimes(2)
+    expect(onEnd).not.toHaveBeenCalled()
+    expect((plugin as unknown as { mediaRecorder: MockMediaRecorder }).mediaRecorder).not.toBe(firstRecorder)
+
+    // The new session's final blob must not contain the old session's chunk
+    plugin.stopRecording()
+    await flushMicrotasks()
+    expect(onEnd).toHaveBeenCalledTimes(1)
+    expect((onEnd.mock.calls[0][0] as Blob).size).toBe(0)
+  })
+
+  it('stopMic restores the hijacked wavesurfer options after a preview-only mic session', async () => {
+    const plugin = RecordPlugin.create({ scrollingWaveform: true })
+    const options: Record<string, unknown> = { interact: true, cursorWidth: 2, normalize: false }
+    const wavesurfer = {
+      options,
+      setOptions: jest.fn((opts: Record<string, unknown>): void => {
+        Object.assign(options, opts)
+      }),
+    }
+    plugin._init(wavesurfer as never)
+
+    await plugin.startMic()
+    expect(wavesurfer.options.interact).toBe(false)
+    expect(wavesurfer.options.cursorWidth).toBe(0)
+
+    // A preview-only session: no recording, just stopMic(). Previously the
+    // options were only restored on the record-end render path or destroy.
+    plugin.stopMic()
+    expect(wavesurfer.options.interact).toBe(true)
+    expect(wavesurfer.options.cursorWidth).toBe(2)
+    plugin.destroy()
+  })
+
   it('does not include paused time in record duration after resuming', async () => {
     let now = 1_000
     const nowSpy = jest.spyOn(performance, 'now').mockImplementation(() => now)
