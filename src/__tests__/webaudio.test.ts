@@ -340,6 +340,88 @@ describe('WebAudioPlayer', () => {
       expect(player.error).toBeNull()
     })
 
+    test('changing src aborts the previous in-flight fetch', () => {
+      const { audioContext } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      const signals: AbortSignal[] = []
+      global.fetch = jest.fn().mockImplementation((_url: string, init?: RequestInit) => {
+        signals.push(init?.signal as AbortSignal)
+        return new Promise(() => undefined) // never settles
+      })
+
+      player.src = 'http://x/a.mp3'
+      player.src = 'http://x/b.mp3'
+
+      expect(signals).toHaveLength(2)
+      expect(signals[0].aborted).toBe(true)
+      expect(signals[1].aborted).toBe(false)
+    })
+
+    test('destroy aborts the in-flight src fetch', () => {
+      const { audioContext } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      const signals: AbortSignal[] = []
+      global.fetch = jest.fn().mockImplementation((_url: string, init?: RequestInit) => {
+        signals.push(init?.signal as AbortSignal)
+        return new Promise(() => undefined) // never settles
+      })
+
+      player.src = 'http://x/a.mp3'
+      player.destroy()
+
+      expect(signals[0].aborted).toBe(true)
+    })
+
+    test('a stale fetch does not apply its decoded buffer when the same URL was set again (A -> B -> A)', async () => {
+      const { audioContext } = createMockAudioContext()
+      ;(audioContext.decodeAudioData as jest.Mock).mockResolvedValue(createMockBuffer(1))
+      const player = new WebAudioPlayer(audioContext)
+      const onCanplay = jest.fn()
+      player.on('canplay', onCanplay)
+
+      const resolvers: Array<(response: Response) => void> = []
+      global.fetch = jest.fn().mockImplementation(() => new Promise<Response>((res) => resolvers.push(res)))
+
+      player.src = 'http://x/a.mp3'
+      player.src = 'http://x/b.mp3'
+      player.src = 'http://x/a.mp3' // back to A: fetch #3 owns the src now
+
+      // Fetch #1 (the stale request for A) resolves first. A URL-equality guard
+      // alone would let it through, since currentSrc is A again -- only a
+      // per-assignment generation check rejects it.
+      resolvers[0]({
+        status: 200,
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+      } as unknown as Response)
+      await new Promise((r) => setTimeout(r, 0))
+
+      expect(onCanplay).not.toHaveBeenCalled()
+      expect((player as any).buffer).toBeNull()
+    })
+
+    test('a stale decode does not apply after destroy', async () => {
+      const { audioContext } = createMockAudioContext()
+      ;(audioContext.decodeAudioData as jest.Mock).mockResolvedValue(createMockBuffer(1))
+      const player = new WebAudioPlayer(audioContext)
+      const onCanplay = jest.fn()
+      player.on('canplay', onCanplay)
+
+      let resolveFetch: (response: Response) => void = () => undefined
+      global.fetch = jest.fn().mockImplementation(() => new Promise<Response>((res) => (resolveFetch = res)))
+
+      player.src = 'http://x/a.mp3'
+      player.destroy()
+
+      resolveFetch({
+        status: 200,
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+      } as unknown as Response)
+      await new Promise((r) => setTimeout(r, 0))
+
+      expect(onCanplay).not.toHaveBeenCalled()
+      expect((player as any).buffer).toBeNull()
+    })
+
     test('does not emit error for a fetch that lost the race to a newer src', async () => {
       const { audioContext } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
@@ -356,6 +438,55 @@ describe('WebAudioPlayer', () => {
       await new Promise((r) => setTimeout(r, 0))
       expect(onError).not.toHaveBeenCalled() // stale failure must be silent
     })
+  })
+})
+
+describe('suspended AudioContext', () => {
+  test('play() resumes a suspended AudioContext (autoplay policy would otherwise play silently)', async () => {
+    const { audioContext } = createMockAudioContext()
+    const resume = jest.fn().mockResolvedValue(undefined)
+    Object.assign(audioContext, { state: 'suspended', resume })
+    const player = new WebAudioPlayer(audioContext)
+    ;(player as any).buffer = createMockBuffer(10)
+
+    await player.play()
+
+    expect(resume).toHaveBeenCalled()
+  })
+
+  test('play() does not call resume() on a running AudioContext', async () => {
+    const { audioContext } = createMockAudioContext()
+    const resume = jest.fn().mockResolvedValue(undefined)
+    Object.assign(audioContext, { state: 'running', resume })
+    const player = new WebAudioPlayer(audioContext)
+    ;(player as any).buffer = createMockBuffer(10)
+
+    await player.play()
+
+    expect(resume).not.toHaveBeenCalled()
+  })
+})
+
+describe('stopAt clamping', () => {
+  test('stopAt with a time already in the past clamps the scheduled stop to now (no RangeError)', () => {
+    const { audioContext, bufferSource } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+    ;(player as any).buffer = createMockBuffer(20)
+
+    audioContext.currentTime = 100
+    player.play()
+    audioContext.currentTime = 110 // playback position is now 10
+
+    // AudioScheduledSourceNode.stop() throws a RangeError for a negative
+    // `when`; a real node also rejects times in the past relative to now.
+    bufferSource.stop.mockImplementation((when?: number) => {
+      if (when != null && when < audioContext.currentTime) {
+        throw new RangeError('stop time must not be in the past')
+      }
+    })
+
+    expect(() => player.stopAt(5)).not.toThrow()
+    expect(bufferSource.stop).toHaveBeenCalledWith(110)
   })
 })
 
