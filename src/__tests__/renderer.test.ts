@@ -177,7 +177,7 @@ describe('Renderer', () => {
     const buffer = createAudioBuffer([[0, 0.5, -0.5]], 10)
     renderer.zoom(0) // fillParent, not scrollable
     await renderer.render(buffer)
-    expect((renderer as any).isScrollable).toBe(false)
+    expect((renderer as any).isScrollable.value).toBe(false)
     expect(renderer.getVisibleRange().value).toEqual({ startTime: 0, endTime: 10 })
   })
 
@@ -193,7 +193,36 @@ describe('Renderer', () => {
     Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
     Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 100 })
 
-    expect((renderer as any).isScrollable).toBe(true)
+    expect((renderer as any).isScrollable.value).toBe(true)
+
+    scrollContainer.scrollLeft = 500
+    scrollContainer.dispatchEvent(new Event('scroll'))
+
+    const range = renderer.getVisibleRange().value
+    expect(range.startTime).toBeCloseTo(50)
+    expect(range.endTime).toBeCloseTo(60)
+  })
+
+  it('keeps visibleRange reactive after a not-scrollable -> scrollable transition (zoom in from fit-to-width)', async () => {
+    // Regression test: the first render is NOT scrollable (default
+    // minPxPerSec: 0), so visibleRange's auto-tracked computed takes the
+    // early-return branch and collects no dependency on the scroll stream.
+    // isScrollable must be a tracked signal for the later zoom-in (same
+    // audio, so audioDuration.set is an Object.is no-op, and streamEpoch
+    // doesn't bump) to wake the computed up again -- with a plain field,
+    // visibleRange froze at {0, duration} and scrolling showed blank lazy
+    // canvases.
+    const buffer = createAudioBuffer([[0, 0.5, -0.5]], 100)
+    await renderer.render(buffer)
+    expect((renderer as any).isScrollable.value).toBe(false)
+    expect(renderer.getVisibleRange().value).toEqual({ startTime: 0, endTime: 100 })
+
+    const scrollContainer = (renderer as any).scrollContainer as HTMLElement
+    Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
+    Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 100 })
+
+    renderer.zoom(1000) // same duration, now scrollable
+    expect((renderer as any).isScrollable.value).toBe(true)
 
     scrollContainer.scrollLeft = 500
     scrollContainer.dispatchEvent(new Event('scroll'))
@@ -237,7 +266,7 @@ describe('Renderer', () => {
   test('renderProgress clamps only at low zoom when auto-centering', () => {
     ;(renderer as any).options.autoScroll = true
     ;(renderer as any).options.autoCenter = true
-    ;(renderer as any).isScrollable = true
+    ;(renderer as any).isScrollable.set(true)
 
     const viewportWidth = 100
     const lowZoomDuration = 2
@@ -344,7 +373,7 @@ describe('Renderer', () => {
     Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
     Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 100 })
 
-    expect((renderer as any).isScrollable).toBe(true)
+    expect((renderer as any).isScrollable.value).toBe(true)
 
     scrollContainer.scrollLeft = 500
     scrollContainer.dispatchEvent(new Event('scroll'))
@@ -379,7 +408,7 @@ describe('Renderer', () => {
     Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
     Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 100 })
 
-    expect((renderer as any).isScrollable).toBe(true)
+    expect((renderer as any).isScrollable.value).toBe(true)
 
     scrollContainer.scrollLeft = 500
     scrollContainer.dispatchEvent(new Event('scroll'))
@@ -457,7 +486,7 @@ describe('Renderer', () => {
     const buffer = createAudioBuffer([[0, 0.5, -0.5]], 100)
     await renderer.render(buffer)
 
-    expect((renderer as any).isScrollable).toBe(true)
+    expect((renderer as any).isScrollable.value).toBe(true)
     const range = renderer.getVisibleRange().value
     expect(range.endTime).toBeLessThan(100)
     expect(range.endTime).toBeCloseTo(10) // (0 + 100) / 1000 * 100

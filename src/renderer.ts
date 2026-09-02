@@ -34,7 +34,14 @@ class Renderer extends EventEmitter<RendererEvents> {
   private canvasWrapper: HTMLElement
   private progressWrapper: HTMLElement
   private cursor: HTMLElement
-  private isScrollable = false
+  // A signal (not a plain field) because visibleRange's auto-tracked computed
+  // reads it: a scrollable transition (fit-to-width -> zoomed, or back) must
+  // trigger a recompute even when nothing else changed that render -- e.g.
+  // zoom() on the same audio leaves audioDuration untouched (Object.is no-op)
+  // and streamEpoch only bumps on stream rebuilds, so a plain field here left
+  // visibleRange (and the lazy-render effect subscribed to it) frozen with
+  // the dependency set collected on the non-scrollable early-return branch.
+  private isScrollable = signal(false)
   private audioData: AudioBuffer | null = null
   private lastContainerWidth = 0
   private isDragging = false
@@ -148,7 +155,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       // this.scrollStream; see the comment above.
       void this.streamEpoch.value
       const duration = this.audioDuration.value
-      if (!this.isScrollable || duration === 0 || !this.scrollStream) {
+      if (!this.isScrollable.value || duration === 0 || !this.scrollStream) {
         return { startTime: 0, endTime: duration }
       }
       const { startX, endX } = this.scrollStream.percentages.value
@@ -719,7 +726,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
 
     // Render all canvases if the waveform doesn't scroll
-    if (!this.isScrollable) {
+    if (!this.isScrollable.value) {
       for (let i = 0; i < plan.numCanvases; i++) {
         draw(i)
       }
@@ -809,13 +816,13 @@ class Renderer extends EventEmitter<RendererEvents> {
     })
 
     // Whether the container should scroll
-    this.isScrollable = isScrollable
+    this.isScrollable.set(isScrollable)
 
     // Set the width of the wrapper
     this.wrapper.style.width = useParentWidth ? '100%' : `${scrollWidth}px`
 
     // Set additional styles
-    this.scrollContainer.style.overflowX = this.isScrollable ? 'auto' : 'hidden'
+    this.scrollContainer.style.overflowX = this.isScrollable.value ? 'auto' : 'hidden'
     this.scrollContainer.classList.toggle('noScrollbar', !!this.options.hideScrollbar)
     this.cursor.style.backgroundColor = `${this.options.cursorColor || this.options.progressColor}`
     this.cursor.style.width = `${this.options.cursorWidth}px`
@@ -867,9 +874,9 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.render(this.audioData)
 
     // Adjust the scroll position so that the cursor stays in the same place
-    if (!this.isScrollable && this.scrollContainer.scrollLeft) {
+    if (!this.isScrollable.value && this.scrollContainer.scrollLeft) {
       this.scrollContainer.scrollLeft = 0
-    } else if (this.isScrollable && scrollWidth !== this.scrollContainer.scrollWidth) {
+    } else if (this.isScrollable.value && scrollWidth !== this.scrollContainer.scrollWidth) {
       const { right: after } = this.progressWrapper.getBoundingClientRect()
       const delta = utils.roundToHalfAwayFromZero(after - before)
       this.scrollContainer.scrollLeft += delta
@@ -931,7 +938,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       : ''
 
     // Only scroll if we have valid audio data to prevent race conditions during loading
-    if (this.isScrollable && this.options.autoScroll && this.audioData && this.audioData.duration > 0) {
+    if (this.isScrollable.value && this.options.autoScroll && this.audioData && this.audioData.duration > 0) {
       this.scrollIntoView(progress, isPlaying)
     }
   }
