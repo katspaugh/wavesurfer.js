@@ -58,6 +58,15 @@ Pending: results of a public-code scan for the `destroy()` → `load()` reuse pa
 (grep.app / GitHub search / framework wrappers incl. `@wavesurfer/react`).
 *(section to be completed)*
 
+### The revival contract is already broken anyway
+The renderer review found that destroy→load reuse doesn't actually work in beta.3:
+`Renderer.destroy()` removes `this.container` from the DOM (`renderer.ts:472`) and
+nothing on the revival path re-appends it. After `destroy(); load(url)`, listeners and
+streams are faithfully revived **on a detached DOM tree**: `ready` fires (which is all
+the cypress test checks), rendering happens off-screen, nothing is visible, and the
+revived ResizeObserver observes a detached element. Making destroy terminal legalizes
+reality rather than removing a working feature.
+
 ---
 
 ## R2. Backend composition replaces `WaveSurfer extends Player`
@@ -228,10 +237,153 @@ after (or alongside, they're small).
 
 ## R6. Correctness & leak fixes from the code review
 
-Pending: verified findings from the line-by-line reviews of core, renderer/DOM,
-plugins, and the spectrogram subsystem. Each lands as its own `fix(...)` PR before or
-alongside the refactors above, ordered by severity.
-*(section to be completed)*
+Verified findings from the line-by-line review. Each lands as its own `fix(...)` PR
+before or alongside the refactors above, ordered by severity.
+*(core section pending)*
+
+### R6.0 Renderer & DOM
+
+**Critical**
+- **`visibleRange` doesn't track `isScrollable` transitions — lazy rendering and
+  timeline windowing freeze after zooming in from a fit-to-width view.**
+  `renderer.ts:146-156` — the auto-tracked computed reads `isScrollable` as a plain
+  field, so when the last run took the non-scrollable early-return branch, the
+  dependency on `scrollStream.percentages` is dropped and never re-collected (the only
+  recompute triggers are `audioDuration` — an `Object.is` no-op on re-render of the
+  same file — and `streamEpoch`, bumped only at construction/revival). Load with
+  default `minPxPerSec: 0`, then `zoom(1000)`: scrolling shows **blank canvases**
+  beyond the initial window, and `getVisibleRange()` consumers (timeline) stop
+  re-windowing. Reproduced with a test. Fix: make `isScrollable` a signal (preferred —
+  aligns with R3's "half-adopted reactivity" cleanup) or bump `streamEpoch` in
+  `render()` on transitions. Existing tests only cover first-render-scrollable.
+
+**Major**
+- Destroy→load renders into a detached container (see R1 above — resolved by making
+  destroy terminal rather than by re-appending).
+- **`normalize: true` normalizes each canvas chunk independently** — visible amplitude
+  discontinuities at every canvas seam on long/zoomed files (`renderer.ts:625-630`,
+  `renderer-utils.ts:379-393` operate on per-canvas slices). Fix: compute the global
+  max once per `render()` and thread it through as `maxPeak`.
+
+**Minor**
+- Bar-grid clamp defaults disagree with actual bar spacing (`renderer-utils.ts:275-282`
+  vs `:46-50`) — clipped bar/irregular gap at canvas seams at dpr=1.
+- Lazy render window uses average canvas width — up to `(barWidth+barGap)` px of
+  undrawn strip at a viewport edge (`renderer-utils.ts:350-363`).
+- `roundToHalfAwayFromZero` ceils, doesn't round — outward-biased cursor drift on
+  repeated wheel-zoom (`renderer-utils.ts:443-447`).
+- `destroy()` retains `audioData`/`decodedData` (~40MB per 10min stereo) — with R1
+  terminal destroy, null both.
+- `setOptions` cannot un-set a fixed `width` (`renderer.ts:795-798`).
+- Pointer math divides by `rect.width/height` unguarded; `clampToUnit` passes NaN
+  through → NaN seeks on hidden containers (`renderer-utils.ts:184-190, 26-30`).
+- Per-draw throwaway `<canvas>` in gradient resolution — GC churn during scroll-time
+  lazy draws (`renderer-utils.ts:235-239`).
+- `dom.ts` latent issues: `string | Node` textContent stringifies Nodes; same-tag
+  siblings inexpressible; loose `isHTMLElement`.
+- Migration note: v7's `vertical` option is gone from `WaveSurferOptions` — call out
+  in v8 migration notes.
+
+Architectural note (feeds R3): the renderer's reactivity is half-adopted —
+`isScrollable`, `audioData`, `options` are plain mutable fields feeding an
+auto-tracked computed, which is exactly what produced the critical finding. As part of
+R3, promote layout outputs to signals or use explicit dependencies. Candidate
+decompositions (post-8.0): a canvas-tile pool owning `drawnIndexes`/eviction (making
+MAX_NODES eviction visible-range-aware instead of wipe-everything), and
+cursor/scroll positioning (`renderProgress`/`scrollIntoView`) as its own module.
+
+### R6.1 Plugins
+
+**Critical**
+- **Record: mic stays live forever when destroyed during a pending `getUserMedia`.**
+  `record.ts:268-289` — `startMic()` has no `this.destroyed` guard after the await;
+  `destroy()` replaces the scope with a fresh one, so a late permission grant attaches
+  the stream, AudioContext, and a 100fps interval to a scope nothing ever disposes.
+  Fix: `destroyed` guard after the await + stop tracks when destroyed.
+
+**Major**
+- **Regions: dragging a region against either edge permanently shrinks it.**
+  `regions.ts:404-434` — endpoints clamped independently during drag; reject the move
+  (preserving length) instead of clamping each end.
+- **Record: restarting while recording pollutes the new session and fires a spurious
+  `record-end`.** `record.ts:304-364` — old recorder's queued `dataavailable`/`stop`
+  events dispatch into the new session's handlers (stale foreign chunk → corrupt blob).
+- **Timeline: `duration` option is dead code.** `timeline.ts:147` —
+  `getDuration() ?? opts.duration` never falls through (getDuration returns 0, not
+  nullish), so a timeline can never render before audio loads despite call sites
+  clearly intending it.
+- **Record: hijacked wavesurfer options never restored** on `stopMic()`-without-record
+  or `renderRecordedAudio: false` (`record.ts:133-145, 349-357`) — host waveform left
+  non-interactive with hidden cursor.
+
+**Minor** (fix the cheap ones pre-8, batch the rest)
+- Record `isActive()` returns true before any recorder exists (`record.ts:388-390`).
+- Zoom: wheel-zoom before decode throws (swallowed) and blocks page scroll —
+  needs a `!duration` guard (`zoom.ts:124-169`); stale pointer anchor after scroll at
+  same x (`zoom.ts:150-153`); `iterations: 1` divides by zero; `startZoom` never reset
+  on new audio (`zoom.ts:109-136`).
+- Hover: documented `string` `lineWidth` yields `NaN` positioning (`hover.ts:133-202`).
+- Timeline: notch width measured before DOM insertion → culling condition degenerate
+  (`timeline.ts:110-131`).
+- Envelope: registered after decode never renders its UI — missing "already decoded"
+  init like minimap/timeline have (`envelope.ts:507-515`); `||` option fallbacks make
+  falsy values (`dragPointSize: 0`) unusable (`envelope.ts:350-353`).
+- Regions: min/maxLength bypassed during drag-creation; `setOptions({start,end})`
+  doesn't update marker/region styling (`regions.ts:426-427, 541-548`).
+- **Post-destroy API behavior is inconsistent across plugins** (throw vs silent no-op
+  vs deliberately supported) — unify under R1's "one consistent rule".
+
+Lifecycle note: the six `definePlugin` plugins have verifiably solid scope-owned
+teardown. **Record is the lone class-based holdout and hand-rolls the chassis** — both
+of its unguarded async holes live exactly in that divergence. Migrating record to
+`definePlugin` is therefore part of the R4 story, not just cosmetics. Timeline and
+minimap re-emit `ready` on every rebuild (unlike wavesurfer's per-load semantics) —
+document or unify.
+
+### R6.2 Spectrogram subsystem
+
+**Major**
+- **Full mode renders a stale spectrogram after loading a new audio file.** Cache is
+  never invalidated on buffer change: `throttledRender` fast-path draws
+  `cachedFrequencies` from the previous file (`spectrogram-setup.ts:1116-1169`), and
+  even the full path reuses `cachedResampledData` keyed only on width
+  (`:1289-1297`). Windowed mode handles this correctly (`segmentManager.reset()`);
+  full mode must too. Fix direction: extract the five interacting cache variables
+  behind a cache object with a single invalidation path keyed on buffer identity.
+- **`frequenciesDataUrl` renders a blank spectrogram unless `frequencyMax` is set.**
+  `freqMax` stays 0 on the data-URL path → zero-height `createImageBitmap` rejects,
+  swallowed; `ready` fires, nothing draws (`spectrogram-setup.ts:414, 1010-1038,
+  1205-1241`). Default it to `sampleRate / 2` on that path; add the missing test.
+
+**Minor**
+- Windowed: progressive loader races viewport `generateSegments` → orphaned canvases
+  (re-check `segments.has()` after await; `spectrogram-windowing.ts:236-250, 385`).
+- `lanczoz` window NaN for odd window lengths → fully blank spectrogram, now reachable
+  via the `fftSize` decoupling (`fft.ts:85-89`).
+- `noverlap` silently capped at 50% of `fftSamples`, contradicting the documented
+  contract (`spectrogram-frequencies.ts:190-194`) — fix docs/validation, one way or
+  the other.
+- `paintColumnPixels` clamps but doesn't floor → fractional external JSON values
+  throw mid-draw (`spectrogram-render-utils.ts:637-641`).
+- Bark scale: `hzToScale(0) ≠ 0` breaks the vertical-mapping assumption (~0.6% offset,
+  out-of-range bitmap rows) (`spectrogram-windowing.ts:556-563`).
+- Windowed zoom: quality refresh only sees single-step ratio; segment FFT data never
+  recomputed on zoom (documented "no cache invalidation on zoom").
+- Windowed segment cap counts segments not bytes — worst case ~576MB canvas memory,
+  above Safari's budget (`spectrogram-windowing.ts:76, 116`). Move to a byte cap.
+- Windowed `progress` event always 0 with default (non-progressive) loading.
+- Cosmetic: labels background overdraw; main canvases ignore `devicePixelRatio`
+  (blurry vs their own axis labels on HiDPI).
+
+Worker lifecycle verified healthy (creation fallback, error latching, id-matched
+responses, scope-guarded recreation, full teardown) — preserve its test pinning.
+
+Structural (post-8.0, needs direct tests first — see R5 P1 #12): split
+`spectrogram-setup.ts` along existing seams into `spectrogram-worker-client.ts` (pure
+RPC client, no DOM coupling) and `spectrogram-full-render.ts` (mirroring
+`spectrogram-windowing.ts`), leaving setup at ~600-700 lines of option resolution and
+mode dispatch. Both major bugs above live in the full-render cache tangle — the
+strongest argument for the extraction.
 
 ---
 
