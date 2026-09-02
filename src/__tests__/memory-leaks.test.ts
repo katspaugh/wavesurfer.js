@@ -339,58 +339,49 @@ describe('Memory Leak Detection', () => {
   })
 
   describe('Scope ownership tree', () => {
-    it('root scope is disposed on destroy and a fresh scope replaces it for reuse', () => {
+    it('root scope is disposed on destroy and stays disposed (terminal destroy)', () => {
       const ws = WaveSurfer.create({ container: document.createElement('div') })
-      // Capture the scope reference BEFORE destroy: destroy() must recreate
-      // `this.scope` afterwards so a subsequent load() can still register
-      // cleanups (a disposed Scope runs late registrations immediately, see
-      // issue #3637 / the loadAudio re-entrancy comment).
       const originalScope = (ws as any).scope
 
       ws.destroy()
 
+      // The scope is disposed and NOT replaced: destroy() is terminal, so a
+      // late registration runs (and is released) immediately -- nothing can
+      // leak past destroy.
       expect(originalScope.disposed).toBe(true)
       const late = jest.fn()
       originalScope.add(late)
       expect(late).toHaveBeenCalledTimes(1)
-
-      // A fresh, non-disposed scope must be in place for reuse.
-      const freshScope = (ws as any).scope
-      expect(freshScope).not.toBe(originalScope)
-      expect(freshScope.disposed).toBe(false)
+      expect((ws as any).scope).toBe(originalScope)
     })
 
-    it('media event listeners registered after destroy still fire (issue #3637 reuse)', () => {
+    it('setMediaElement after destroy is a no-op (no listeners attach to the new element)', () => {
       const ws = WaveSurfer.create({ container })
+      const originalMedia = ws.getMediaElement()
       ws.destroy()
 
-      // Reuse the instance: attach a new media element after destroy, as
-      // load() after destroy() is a supported flow.
       const newMedia = document.createElement('audio')
       ws.setMediaElement(newMedia)
 
+      // Terminal destroy: the element is not swapped in and no bridge revives
+      expect(ws.getMediaElement()).toBe(originalMedia)
+
       const timeupdateHandler = jest.fn()
       ws.on('timeupdate', timeupdateHandler)
-
       Object.defineProperty(newMedia, 'currentTime', { value: 5, configurable: true })
       newMedia.dispatchEvent(new Event('timeupdate'))
 
-      expect(timeupdateHandler).toHaveBeenCalledWith(5)
+      expect(timeupdateHandler).not.toHaveBeenCalled()
     })
   })
 
-  // destroy() disposes this.scope/mediaEventScope and Player's mediaScope,
-  // but historically only the constructor ever re-registered the listeners
-  // living on them (initPlayerEvents/initRendererEvents/
-  // Player.setupReactiveMediaEvents) -- so a plain destroy() -> load() reuse
-  // (no explicit setMediaElement() call, unlike the #3637 test above) left
-  // every WaveSurfer/Player event bridge permanently dead: no timeupdate
-  // forwarding, no renderer click-to-seek, no play forwarding, no reactive
-  // state tracking, and no scrollPosition tracking.
-  // ensureCoreEvents() (wavesurfer.ts) + Player.ensureMediaEvents()
-  // (player.ts) fix this by reviving those bridges at the top of
-  // loadAudio(), mirroring Renderer's own ensureInputEvents().
-  describe('destroy -> load() reuse: event bridges revive', () => {
+  // destroy() is terminal (v8): the event bridges are torn down once and
+  // never revived. Post-destroy load() rejects catchably (the v7 record
+  // plugin's async MediaRecorder onstop could reach load() after the app
+  // destroyed the instance -- see issue #3637 -- so this must be a rejection,
+  // not a synchronous throw), and media/renderer events no longer reach
+  // listeners. Reuse means creating a new instance.
+  describe('terminal destroy()', () => {
     const originalGetContext = window.HTMLCanvasElement.prototype.getContext
 
     // jsdom ships no Web Audio API at all (`typeof AudioBuffer === 'undefined'`), but
@@ -430,76 +421,83 @@ describe('Memory Leak Detection', () => {
     // is truthy, so passing neither here means the only loads that happen
     // are the explicit ones below, avoiding a race with that internal
     // Promise.resolve().then(...).
-    const createReusedWs = async () => {
+    const createDestroyedWs = async () => {
       const ws = WaveSurfer.create({ container })
       await ws.load('', [[0, 0.5, 1]], 1)
       ws.destroy()
-      await ws.load('', [[0, 0.5, 1]], 1)
       return ws
     }
 
-    it('timeupdate flows on media event after destroy -> load', async () => {
-      const ws = await createReusedWs()
+    it('load() after destroy rejects catchably and emits error', async () => {
+      const ws = await createDestroyedWs()
+      const onError = jest.fn()
+      ws.on('error', onError)
+
+      await expect(ws.load('', [[0, 0.5, 1]], 1)).rejects.toThrow(/destroyed/)
+      // 'error' listeners registered post-destroy still receive the failure
+      // (destroy's unAll ran before this listener was added)
+      expect(onError).toHaveBeenCalled()
+    })
+
+    it('media events no longer reach listeners after destroy', async () => {
+      const ws = await createDestroyedWs()
       const onTimeupdate = jest.fn()
+      const onPlay = jest.fn()
       ws.on('timeupdate', onTimeupdate)
+      ws.on('play', onPlay)
 
       const media = ws.getMediaElement()
       Object.defineProperty(media, 'currentTime', { configurable: true, value: 7 })
       media.dispatchEvent(new Event('timeupdate'))
+      media.dispatchEvent(new Event('play'))
 
-      expect(onTimeupdate).toHaveBeenCalledWith(7)
-      ws.destroy()
+      expect(onTimeupdate).not.toHaveBeenCalled()
+      expect(onPlay).not.toHaveBeenCalled()
     })
 
-    it('renderer click seeks after destroy -> load', async () => {
-      const ws = await createReusedWs()
+    it('renderer events no longer reach the seek bridge after destroy', async () => {
+      const ws = await createDestroyedWs()
       const setTimeSpy = jest.spyOn(ws, 'setTime')
 
-      // Drive the bridge directly via the Renderer's own event emitter
-      // (real, unmocked, in this file) rather than a raw DOM click -- this
-      // isolates WaveSurfer's own click -> seekTo bridge (initRendererEvents,
-      // registered on this.scope) from Renderer's separate internal
-      // DOM-listener revival (ensureInputEvents, already covered elsewhere).
       const renderer = ws.getRenderer()
       ;(renderer as any).emit('click', 0.5, 0.5)
 
-      expect(setTimeSpy).toHaveBeenCalled()
-      ws.destroy()
+      expect(setTimeSpy).not.toHaveBeenCalled()
     })
 
-    it('play event forwards after destroy -> load', async () => {
-      const ws = await createReusedWs()
-      const onPlay = jest.fn()
-      ws.on('play', onPlay)
-
-      ws.getMediaElement().dispatchEvent(new Event('play'))
-
-      expect(onPlay).toHaveBeenCalledTimes(1)
+    it('destroy() synchronously after create() is not resurrected by the deferred auto-load', async () => {
+      const onReady = jest.fn()
+      const onInit = jest.fn()
+      // peaks + duration would normally trigger the constructor's deferred load
+      const ws = WaveSurfer.create({ container, peaks: [[0, 0.5, 1]], duration: 1 })
+      ws.on('ready', onReady)
+      ws.on('init', onInit)
       ws.destroy()
+
+      // Let the constructor's Promise.resolve().then(...) microtask run
+      await Promise.resolve()
+      await Promise.resolve()
+      await new Promise((r) => setTimeout(r, 0))
+
+      expect(onInit).not.toHaveBeenCalled()
+      expect(onReady).not.toHaveBeenCalled()
     })
 
-    it('reactive state signals track again after destroy -> load', async () => {
-      const ws = await createReusedWs()
-
-      const media = ws.getMediaElement()
-      Object.defineProperty(media, 'currentTime', { configurable: true, value: 9 })
-      media.dispatchEvent(new Event('timeupdate'))
-
-      expect(ws.getState().currentTime.value).toBe(9)
+    it('destroy() is idempotent and emits destroy exactly once', async () => {
+      const ws = WaveSurfer.create({ container })
+      const onDestroy = jest.fn()
+      ws.on('destroy', onDestroy)
       ws.destroy()
+      ws.destroy()
+      expect(onDestroy).toHaveBeenCalledTimes(1)
     })
 
-    it('state.scrollPosition tracks again after destroy -> load', async () => {
-      const ws = await createReusedWs()
-      jest.spyOn(ws, 'getDuration').mockReturnValue(100)
-
-      expect(ws.getState().scrollPosition.value).toBe(0)
-
-      const renderer = ws.getRenderer()
-      ;(renderer as any).emit('scroll', 0.2, 0.4, 200, 400)
-
-      expect(ws.getState().scrollPosition.value).toBe(200)
+    it('destroy() releases the decoded audio buffer', async () => {
+      const ws = WaveSurfer.create({ container })
+      await ws.load('', [[0, 0.5, 1]], 1)
+      expect(ws.getDecodedData()).not.toBeNull()
       ws.destroy()
+      expect(ws.getDecodedData()).toBeNull()
     })
   })
 })

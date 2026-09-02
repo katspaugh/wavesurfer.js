@@ -177,16 +177,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   // destroy-triggered abort or a real failure. WeakSet so a superseded
   // scope isn't kept alive once nothing else references it.
   private supersededLoadScopes = new WeakSet<Scope>()
-  // initPlayerEvents()/initRendererEvents() (plus reviving the Player-level
-  // media-signal bridge) only ever ran once, from the constructor,
-  // historically. But destroy() disposes+recreates this.scope (and
-  // this.mediaEventScope, its child) and tears the DOM/media listeners down,
-  // so a reused instance (destroy() -> load()) needs its event bridges
-  // rebuilt too -- mirroring Renderer's own ensureInputEvents() one layer
-  // down. ensureCoreEvents() makes that idempotent: the constructor and the
-  // top of loadAudio() both call it, and destroy() flips the flag back off
-  // so the next loadAudio() re-runs it and revives everything.
-  private coreEventsInitialized = false
+  // destroy() is terminal: once true, load()/loadBlob() reject and
+  // registerPlugin() throws. Create a new instance instead of reusing a
+  // destroyed one.
+  private isDestroyed = false
 
   // Reactive state
   private wavesurferState: WaveSurferState
@@ -233,7 +227,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     // Initialize reactive state
     // Pass Player signals to compose them into WaveSurferState
-    const { state, actions } = createWaveSurferState({
+    const { state, actions, dispose } = createWaveSurferState({
       isPlaying: this.isPlayingSignal,
       currentTime: this.currentTimeSignal,
       duration: this.durationSignal,
@@ -244,22 +238,15 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     })
     this.wavesurferState = state
     this.wavesurferActions = actions
-    // Intentionally NOT registering the returned `dispose` with `this.scope`:
-    // the state's signal graph (base signals + computeds) is owned by this
-    // WaveSurfer instance for its entire lifetime, not by the per-load Scope.
-    // `destroy()` disposes and recreates `this.scope` to support a supported
-    // destroy -> load() reuse pattern; if the state's computeds were disposed
-    // there too, they'd be permanently frozen after the first destroy since
-    // nothing ever recreates them. The computeds hold no external resources
-    // (DOM listeners, timers, etc.) -- disposing them buys nothing beyond
-    // what letting the instance (and its closures) get garbage-collected
-    // already provides. `dispose` remains part of createWaveSurferState's
-    // public return value for direct/standalone users of the state module.
+    // destroy() is terminal, so the state's computed graph is released with
+    // everything else owned by this.scope.
+    this.scope.add(dispose)
 
     const audioElement = media ? undefined : this.getMediaElement()
     this.renderer = new Renderer(this.options, audioElement)
 
-    this.ensureCoreEvents()
+    this.initPlayerEvents()
+    this.initRendererEvents()
     this.initPlugins()
 
     // Read the initial URL before load has been called
@@ -267,6 +254,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     // Init and load async to allow external events to be registered
     Promise.resolve().then(() => {
+      // destroy() may have been called synchronously after create() -- the
+      // deferred init/load must not resurrect a destroyed instance
+      if (this.isDestroyed) return
+
       this.emit('init')
 
       // Load audio if URL or an external media with an src is passed,
@@ -303,36 +294,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         this.setTime(stopAt)
       }
     }
-  }
-
-  /**
-   * Idempotently (re)establishes every event bridge WaveSurfer owns: the
-   * Player-level reactive media-signal bridge (isPlaying/currentTime/etc,
-   * via Player.ensureMediaEvents()), the media-event -> public-event
-   * forwarding bridge (initPlayerEvents(), which also (re)wires the
-   * FrameScheduler via onTick/frameScheduler.start() -- see initPlayerEvents
-   * below), and the renderer-event -> public-event forwarding bridge
-   * (initRendererEvents(), which includes the state.scrollPosition wiring).
-   * Runs once from the constructor; destroy() flips coreEventsInitialized
-   * back to false so the next loadAudio() call re-runs this and revives the
-   * bridges for a reused instance -- mirroring Renderer's own
-   * ensureInputEvents() one layer down.
-   *
-   * initPlayerEvents() is re-run via unsubscribePlayerEvents() + itself
-   * (rather than a bare call) so this stays safe even when setMediaElement()
-   * already rebuilt the media-event forwarding bridge earlier in the same
-   * destroy() -> setMediaElement() -> load() reuse cycle: unsubscribing
-   * first means a redundant call here just disposes-and-rebuilds an
-   * already-fresh scope instead of registering duplicate listeners on top of
-   * live ones.
-   */
-  private ensureCoreEvents(): void {
-    if (this.coreEventsInitialized) return
-    this.coreEventsInitialized = true
-    this.ensureMediaEvents()
-    this.unsubscribePlayerEvents()
-    this.initPlayerEvents()
-    this.initRendererEvents()
   }
 
   private initPlayerEvents() {
@@ -537,6 +498,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Register a wavesurfer.js plugin */
   public registerPlugin<T extends GenericPlugin>(plugin: T): T {
+    if (this.isDestroyed) {
+      throw new Error('Cannot register a plugin: wavesurfer was destroyed. Create a new instance instead.')
+    }
+
     // Check if the plugin is already registered
     if (this.plugins.includes(plugin)) {
       return plugin
@@ -594,12 +559,14 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
-    // Revive the event bridges if this instance is being reused after a
-    // destroy() (no-op otherwise, see ensureCoreEvents()). Must run before
-    // any of the pipeline below, which relies on those bridges (e.g.
-    // renderer.render() further down emits 'render'/'rendered', and media
-    // events must be wired before playback/seek events matter again).
-    this.ensureCoreEvents()
+    // destroy() is terminal: a post-destroy load must reject (catchably --
+    // this async throw becomes a rejection that load()/loadBlob() classify
+    // and re-emit as 'error') rather than resurrect torn-down bridges.
+    // Notably the v7 record plugin could reach this from its async
+    // MediaRecorder onstop after the app destroyed the instance.
+    if (this.isDestroyed) {
+      throw new Error('Cannot load audio: wavesurfer was destroyed. Create a new instance instead.')
+    }
 
     // Re-entrancy guard: a fresh child scope for this load call.
     // If a newer load starts (or the instance is destroyed) while this one is
@@ -620,13 +587,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.loadScope?.dispose()
     const loadScope = this.scope.child()
     this.loadScope = loadScope
-
-    // Reusing an instance after destroy() is a supported behavior (see issue #3637
-    // and cypress/e2e/abort.cy.js "load url after destroyed should emit ready").
-    // this.scope (and thus loadScope's parent) is recreated fresh by destroy(),
-    // so loadScope above is always a child of the current, live scope -- stale
-    // in-flight loads from before destroy() are still cancelled by the
-    // loadScope.disposed guard below.
 
     // The pipeline below -- starting with the 'load' emit -- can throw or
     // reject when this load is superseded by a newer load() (e.g. an aborted
@@ -771,13 +731,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         // Write the 'error' phase here, not in load()/loadBlob()'s catches,
         // and only when this load is still the current one (this.loadScope
         // === loadScope) or the instance has since been destroyed
-        // (this.loadScope === null, set by destroy()). Without this guard, a
-        // stale load's rejection landing on a later microtask -- e.g.
-        // destroy() then load(B) reusing the instance in the same tick,
-        // where A's late AbortError still isn't classified as "superseded"
-        // because supersession is only marked when a *newer load()* starts,
-        // not by destroy() -- would clobber loadPhase back to 'error' while
-        // B is still fetching/decoding.
+        // (this.loadScope === null, set by destroy()) -- a stale load's
+        // late rejection must not clobber a newer load's in-flight phase.
         if (this.loadScope === loadScope || this.loadScope === null) {
           this.wavesurferActions.setLoadPhase('error')
         }
@@ -911,11 +866,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Empty the waveform */
   public empty() {
-    this.load('', [[0]], 0.001)
+    // Fire-and-forget by design; failures surface via the 'error' event
+    this.load('', [[0]], 0.001).catch(() => undefined)
   }
 
   /** Set HTML media element */
   public setMediaElement(element: HTMLMediaElement) {
+    if (this.isDestroyed) return
     this.unsubscribePlayerEvents()
     super.setMediaElement(element)
     this.initPlayerEvents()
@@ -939,27 +896,26 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.renderer.exportImage(format, quality, type)
   }
 
-  /** Unmount wavesurfer */
+  /**
+   * Unmount wavesurfer. Terminal: the instance is not usable afterwards --
+   * load()/loadBlob() reject, registerPlugin() throws, and everything else
+   * is a safe no-op. Create a new instance instead of reusing a destroyed one.
+   */
   public destroy() {
+    if (this.isDestroyed) return
+    this.isDestroyed = true
     this.emit('destroy')
     this.plugins.forEach((plugin) => plugin.destroy())
     // this.scope.dispose() cascades to loadScope (a child), which aborts any
     // in-flight fetch via its abortSignal() -- no separate abort call needed.
+    // It also releases the reactive state's computed graph (registered in
+    // the constructor).
     this.scope.dispose()
-    // Reusing an instance after destroy() is a supported behavior (see the
-    // loadAudio comment about issue #3637), so fresh scopes must replace the
-    // disposed ones -- a disposed Scope runs late registrations immediately,
-    // which would otherwise break a subsequent load()/setMediaElement() call.
-    this.scope = new Scope()
-    this.mediaEventScope = this.scope.child()
-    // loadScope was a child of the now-disposed old scope; loadAudio always
-    // creates its next loadScope from the current this.scope, so this is
-    // just clearing the stale reference (already disposed via cascade above).
     this.loadScope = null
-    // frameScheduler.stop() already ran via the disposer it registered on the
-    // old (now-disposed) scope; a fresh instance is needed so a post-destroy
-    // load()/play() registers its stop on the new scope instead of the dead one.
-    this.frameScheduler = new FrameScheduler(this.scope)
+    // Release the decoded audio -- a destroyed-but-still-referenced instance
+    // (common with framework refs) must not pin the full AudioBuffer.
+    this.decodedData = null
+    this.wavesurferActions.setAudioBuffer(null)
     this.renderer.destroy()
     super.destroy()
     // Player.destroy() skips media teardown for external media -- which
@@ -968,10 +924,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // this, destroy() leaves WebAudio playback running and the AudioContext
     // open forever. WebAudioPlayer.destroy() is idempotent.
     this.internalWebAudioPlayer?.destroy()
-    // Flip so the next loadAudio() call re-runs ensureCoreEvents() and
-    // revives the event bridges just torn down above (this.scope.dispose()
-    // and super.destroy()'s mediaScope.dispose()).
-    this.coreEventsInitialized = false
   }
 }
 

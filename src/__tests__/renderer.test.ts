@@ -317,121 +317,45 @@ describe('Renderer', () => {
     expect(container.contains(renderer.getWrapper())).toBe(false)
   })
 
-  test('render() after destroy recreates scopes instead of installing pre-disposed ones', async () => {
-    // Renderer is reused after WaveSurfer.destroy(): a subsequent load() call
-    // reaches renderer.render(...), and setOptions() reaches reRender(). If
-    // Renderer's own scope stays disposed forever, `this.scope.child()` hands
-    // back an already-disposed child (per Scope's documented behavior), so
-    // render() would install pre-disposed scrollRenderScope/delayScope and
-    // any lazy-render scroll subscription registered afterward would be torn
-    // down immediately -- long scrollable waveforms would only ever draw
-    // their initial canvas range post destroy->load.
-    const buffer = createAudioBuffer([[0, 0.5, -0.5]])
-
-    renderer.destroy()
+  test('destroy is terminal: scope stays disposed, decoded audio released, visibleRange safe to read', async () => {
+    const buffer = createAudioBuffer([[0, 0.5, -0.5]], 100)
+    renderer.zoom(1000)
     await renderer.render(buffer)
 
-    expect((renderer as any).scope.disposed).toBe(false)
-    expect((renderer as any).scrollRenderScope.disposed).toBe(false)
-    expect((renderer as any).delayScope.disposed).toBe(false)
-
-    // And a fresh scroll subscription registered after the reuse must
-    // actually stick instead of being disposed on arrival.
-    const lateUnsubscribe = jest.fn()
-    ;(renderer as any).scrollRenderScope.add(lateUnsubscribe)
-    expect(lateUnsubscribe).not.toHaveBeenCalled()
-  })
-
-  it('keeps visibleRange live (not disposed) and revives scroll tracking across destroy -> render reuse', async () => {
-    // visibleRange is instance-lifetime state, deliberately never disposed via
-    // this.scope (see the constructor comment). Reading it post-destroy must
-    // not throw despite this.scrollStream being torn down, and a subsequent
-    // render() reuse must both keep the still-live audioDuration signal
-    // driving it AND re-subscribe to the brand new scroll stream that
-    // ensureInputEvents() creates on revival -- not stay pinned to the
-    // disposed pre-destroy percentages signal (see visibleRange's
-    // auto-tracking comment in the constructor).
-    renderer.zoom(1000)
-    await renderer.render(createAudioBuffer([[0, 0.5, -0.5]], 100))
-
     renderer.destroy()
 
-    // Immediately post-destroy: scrollStream is torn down, but reading
-    // visibleRange must not throw.
+    // The scope is disposed and NOT recreated -- a late registration runs
+    // (and is released) immediately, so nothing can leak past destroy.
+    expect((renderer as any).scope.disposed).toBe(true)
+    const late = jest.fn()
+    ;(renderer as any).scope.add(late)
+    expect(late).toHaveBeenCalledTimes(1)
+
+    // The decoded audio reference is released (a destroyed-but-referenced
+    // renderer must not pin a multi-megabyte AudioBuffer).
+    expect((renderer as any).audioData).toBeNull()
+
+    // scrollStream is torn down, but reading visibleRange must not throw.
     expect((renderer as any).scrollStream).toBeNull()
     expect(() => renderer.getVisibleRange().value).not.toThrow()
-
-    await renderer.render(createAudioBuffer([[0, 0.5, -0.5]], 42))
-
-    // render() revives the input pipeline, including a fresh scrollStream.
-    expect((renderer as any).scrollStream).not.toBeNull()
-
-    // jsdom performs no layout (scrollWidth/clientWidth both 0 by default),
-    // as in 'recomputes visibleRange when the underlying scroll position
-    // changes' above -- stub in sizes to exercise a real scroll delta.
-    const scrollContainer = (renderer as any).scrollContainer as HTMLElement
-    Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
-    Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 100 })
-
-    expect((renderer as any).isScrollable.value).toBe(true)
-
-    scrollContainer.scrollLeft = 500
-    scrollContainer.dispatchEvent(new Event('scroll'))
-
-    // visibleRange must react to the NEW scroll stream, proving it
-    // re-subscribed after reuse instead of staying pinned to the old one.
-    expect(renderer.getVisibleRange().value.startTime).toBeGreaterThan(0)
   })
 
-  it('re-tracks visibleRange after destroy -> render reuse with the SAME duration', async () => {
-    // Regression: the 'keeps visibleRange live...' test above reuses with a
-    // DIFFERENT duration (100 -> 42), so audioDuration.set(42) genuinely
-    // changes value and fires -- which is exactly the trigger visibleRange's
-    // auto-tracking recompute needs to re-subscribe to the freshly created
-    // scrollStream.percentages. That masks the far more common reuse case:
-    // reloading the SAME track, where audioDuration.set(duration) is a no-op
-    // via Object.is (same number in, same number out) and never fires at
-    // all. Without a duration change to ride along on, nothing tells
-    // visibleRange's auto-tracked computed to recompute, so it stays
-    // subscribed to the disposed pre-destroy percentages signal forever and
-    // getVisibleRange() is permanently frozen at {startTime: 0, endTime:
-    // duration} for the rest of the instance's life.
-    renderer.zoom(1000)
-    await renderer.render(createAudioBuffer([[0, 0.5, -0.5]], 42))
-
-    renderer.destroy()
-    await renderer.render(createAudioBuffer([[0, 0.5, -0.5]], 42)) // SAME duration
-
-    expect((renderer as any).scrollStream).not.toBeNull()
-
-    const scrollContainer = (renderer as any).scrollContainer as HTMLElement
-    Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
-    Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 100 })
-
-    expect((renderer as any).isScrollable.value).toBe(true)
-
-    scrollContainer.scrollLeft = 500
-    scrollContainer.dispatchEvent(new Event('scroll'))
-
-    // Fails at HEAD: frozen at {startTime: 0, endTime: 42} because
-    // visibleRange never re-subscribed to the new scrollStream.
-    expect(renderer.getVisibleRange().value.startTime).toBeGreaterThan(0)
-  })
-
-  it('revives click and scroll input after destroy -> render reuse', async () => {
+  test('input listeners are dead after destroy', async () => {
     const localContainer = document.createElement('div')
     document.body.appendChild(localContainer)
     const localRenderer = new Renderer({ container: localContainer })
     const clickSpy = jest.fn()
     localRenderer.on('click', clickSpy)
-    localRenderer.destroy()
-    await localRenderer.render(createAudioBuffer([[0, 0.5, -0.5]]))
+
     const wrapper = (localRenderer as any).wrapper as HTMLElement
     wrapper.getBoundingClientRect = () =>
       ({ left: 0, top: 0, width: 100, height: 50, right: 100, bottom: 50 }) as DOMRect
     wrapper.dispatchEvent(new MouseEvent('click', { clientX: 10, clientY: 10 }))
-    expect(clickSpy).toHaveBeenCalled() // dead pre-fix: listener was removed at destroy, never re-added
+    expect(clickSpy).toHaveBeenCalledTimes(1)
+
     localRenderer.destroy()
+    wrapper.dispatchEvent(new MouseEvent('click', { clientX: 10, clientY: 10 }))
+    expect(clickSpy).toHaveBeenCalledTimes(1) // no further delivery post-destroy
     localContainer.remove()
   })
 
