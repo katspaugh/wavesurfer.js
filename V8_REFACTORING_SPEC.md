@@ -1,10 +1,10 @@
 # wavesurfer.js v8.0.0 — Pre-release Refactoring Spec
 
-Status: **draft** — decisions below are final; the "Findings under verification" sections
-are being filled in from the ongoing code review.
+Status: **final** — the output of a full architecture/code review of `8.0.0-beta.3`
+(five parallel line-by-line reviews: core, renderer/DOM, plugins, spectrogram, repo
+infrastructure; plus a public-GitHub usage scan) and maintainer decisions.
 
-This spec defines the architectural refactoring to land before v8.0.0 final. It is the
-output of a full architecture/code review of `8.0.0-beta.3` plus maintainer decisions.
+This spec defines the architectural refactoring to land before v8.0.0 final.
 
 ## Goals
 
@@ -54,9 +54,27 @@ Calling `load()` repeatedly on a **live** instance remains fully supported.
   same cost, one line.
 
 ### Evidence from the wild
-Pending: results of a public-code scan for the `destroy()` → `load()` reuse pattern
-(grep.app / GitHub search / framework wrappers incl. `@wavesurfer/react`).
-*(section to be completed)*
+A public-code scan (GitHub code search co-occurrence of `destroy()` with
+`load`/`loadBlob`, ~30+ candidate projects manually inspected out of ~800 hits, plus
+web/StackOverflow searches) found **zero deliberate destroy→reuse of the same
+instance**. The universal community idiom is destroy → `WaveSurfer.create()` → load;
+several projects explicitly null the reference after destroy to *prevent* post-destroy
+calls. All framework wrappers audited (`@wavesurfer/react` official,
+`ShiiRochi/wavesurfer-react`, `@meersagor/wavesurfer-vue`, `videojs-wavesurfer`,
+Gradio's AudioPlayer) are fully compatible with terminal destroy.
+
+The only in-the-wild post-destroy `load()` calls are **race-initiated**, chiefly the
+v7 record plugin itself: `destroy()` while recording → MediaRecorder's async `onstop`
+fires later → the plugin calls `wavesurfer.load(blobUrl)` on the destroyed instance
+(the actual mechanism behind #3637; v7's shipping record.js still has only a null
+check). Therefore terminal destroy must:
+1. keep the two abort contracts (destroy mid-load → catchable `AbortError` rejection
+   + `error` event, no unhandled DOMException);
+2. make post-destroy `load()` **reject catchably** rather than throw synchronously —
+   apps destroying while recording will hit it;
+3. keep the `!this.destroyed` guard already present in v8's `record.ts` (~:349) so the
+   plugin itself never triggers the rejection.
+With those, affected users' migration cost is one line, and no wrapper changes.
 
 ### The revival contract is already broken anyway
 The renderer review found that destroy→load reuse doesn't actually work in beta.3:
@@ -239,9 +257,80 @@ after (or alongside, they're small).
 
 Verified findings from the line-by-line review. Each lands as its own `fix(...)` PR
 before or alongside the refactors above, ordered by severity.
-*(core section pending)*
 
-### R6.0 Renderer & DOM
+### R6.1 Core (wavesurfer/player/webaudio/decoder/reactive)
+
+**Critical**
+- **`destroy()` on the WebAudio backend never tears down the `WebAudioPlayer` —
+  AudioContext leaked, playback keeps going.** The internally-created WebAudioPlayer is
+  passed as `options.media` (`wavesurfer.ts:212-214`), so Player marks it
+  `isExternalMedia = true` and `destroy()` bails before pause/remove
+  (`player.ts:297-303`); `WebAudioPlayer.destroy()` is dead code for the only player
+  core ever creates. `create({backend:'WebAudio'}); play(); destroy()` → audio plays
+  to the end, AudioContext open forever (browsers cap live contexts), buffer retained.
+  This is the direct runtime cost of the impersonation R2 removes; interim fix if
+  needed pre-R2: track "internally created" separately from "user-supplied".
+
+**Major**
+- **`destroy()` synchronously after `create()` resurrects the instance.** The
+  constructor defers `emit('init')` + `load()` to a microtask with no destroyed guard
+  (`wavesurfer.ts:260-273`); post-destroy, `loadAudio` revives all bridges — full
+  fetch/decode/render into a detached tree, with `autoplay` even ghost audio. R1
+  (terminal destroy) fixes this class of bug wholesale; the deferred callback must
+  check disposal either way.
+- **`state.isSeeking` sticks `true` forever on the WebAudio backend.**
+  `WebAudioPlayer` never emits `'seeked'` (`webaudio.ts:285-294` emits only
+  `'seeking'`); `_seeking` is cleared only on `'seeked'` (`player.ts:180-193`). Any
+  consumer of the v8 reactive state gating on `isSeeking` breaks. Fix: emit `'seeked'`
+  from the currentTime setter (folds into R2's backend interface conformance).
+- **`play(start, end)` overshoots arbitrarily in background tabs** (MediaElement path):
+  `stopAtPosition` is only checked in the rAF-driven `onTick`, and rAF suspends in
+  hidden tabs. One-line fix: also check it in the media `'timeupdate'` handler
+  (`wavesurfer.ts:336-340`).
+
+**Minor**
+- Player's `'canplay'` playbackRate listener never registered for cleanup
+  (`player.ts:110-120`) — survives destroy with external media.
+- `setMediaElement()` during an in-flight load with unknown duration hangs `load()`
+  forever (resolver lives on `mediaEventScope`, disposed without resolving;
+  `wavesurfer.ts:680-697, 900-904`).
+- A throwing `'timeupdate'` listener kills the frame loop permanently (`tick`
+  schedules the next frame *after* the callback; `isRunning` stays true so restart is
+  blocked; `frame-scheduler.ts:25-33`, `event-emitter.ts:65-69`).
+- `Player.setTime()` pre-metadata: standalone NaN → deferred
+  `media.currentTime = NaN` throws inside `canplay`; under WaveSurfer early seeks
+  clamp to 0, defeating the #4353 pending-seek deferral in exactly its window.
+- `decoder.normalize` decides from channel 0 only, scales all channels by channel 0's
+  max, and mutates caller-owned peaks arrays in place (`decoder.ts:15-31`).
+- `createBuffer`'s fake AudioBuffer has `copyFrom/ToChannel` methods that throw
+  "Illegal invocation" (`decoder.ts:71-72`) — implement or drop for v8.
+- `empty()` is fire-and-forget → unhandled rejection path (`wavesurfer.ts:895-897`).
+- **Superseded `load()` resolves as success** — decide consciously for v8: rejecting
+  with a canonical `AbortError` is more conventional than silently fulfilling.
+- `BasePlugin` exposes `scope` but `BasePlugin.destroy()` never disposes it — a
+  third-party class plugin using `this.scope.listen()` with inherited destroy leaks
+  everything (`base-plugin.ts:22, 49-59`). Dispose it in `BasePlugin.destroy()` (safe:
+  chassis re-inits create fresh scopes) as part of R4.
+- WebAudioPlayer: no `audioContext.resume()` in `play()` (suspended-context silent
+  playback); `src` fetch not abortable; `stopAt()` in the past can throw RangeError
+  (`webaudio.ts:138-166, 216-233`).
+- `'error'` event typed `Error` but delivers a force-cast `MediaError`
+  (`wavesurfer.ts:380`) — normalize for v8.
+
+Verified-clean: `scope.ts` semantics, `fetcher.ts` teardown, the load/supersede/destroy
+classification (correct for every constructed interleaving — R1 lets us delete it
+anyway), `drag-stream.ts` bookkeeping, `store.ts` reentrancy/settle logic (document
+LIFO batch-flush ordering if the module goes public).
+
+Core architectural corroboration (feeds R2/R3): the review independently flagged the
+same structural issues — two parallel channels carrying the same facts (events vs
+signals, already disagreeing via the `isSeeking` bug), dual write-ownership of
+composed signals (Player bridge + standalone `WaveSurferActions` setters), three
+disposal conventions (`Scope`, duck-typed `_cleanup`, bespoke closures — collapse to
+`Scope`), destroy→reuse flag choreography across three layers, and the
+`as unknown as HTMLAudioElement` type lie as C1's root cause.
+
+### R6.2 Renderer & DOM
 
 **Critical**
 - **`visibleRange` doesn't track `isScrollable` transitions — lazy rendering and
@@ -292,7 +381,7 @@ decompositions (post-8.0): a canvas-tile pool owning `drawnIndexes`/eviction (ma
 MAX_NODES eviction visible-range-aware instead of wipe-everything), and
 cursor/scroll positioning (`renderProgress`/`scrollIntoView`) as its own module.
 
-### R6.1 Plugins
+### R6.3 Plugins
 
 **Critical**
 - **Record: mic stays live forever when destroyed during a pending `getUserMedia`.**
@@ -340,7 +429,7 @@ of its unguarded async holes live exactly in that divergence. Migrating record t
 minimap re-emit `ready` on every rebuild (unlike wavesurfer's per-load semantics) —
 document or unify.
 
-### R6.2 Spectrogram subsystem
+### R6.4 Spectrogram subsystem
 
 **Major**
 - **Full mode renders a stale spectrogram after loading a new audio file.** Cache is
