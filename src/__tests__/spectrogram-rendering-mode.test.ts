@@ -336,6 +336,43 @@ describe('full mode invalidates cached render state when the decoded buffer chan
     }
   })
 
+  it('re-renders when the buffer changes while a render is already in flight (redraw not dropped)', async () => {
+    jest.useFakeTimers()
+    try {
+      const bufferA = makeToneBuffer(4096)
+      const bufferB = makeToneBuffer(6144)
+      let decoded: AudioBuffer | null = bufferA
+      const fakeWavesurfer = createEmitterWaveSurfer({
+        getDecodedData: () => decoded,
+        options: { minPxPerSec: 100 },
+      })
+
+      const plugin: any = SpectrogramPlugin.create({ noverlap: 256, scale: 'linear' })
+      plugin._init(fakeWavesurfer as any)
+      const internals = plugin.__spectrogramInternalsForTests()
+
+      // Start the initial render but do NOT let its async frequency
+      // computation resolve yet: isRendering is true.
+      jest.advanceTimersByTime(0)
+      jest.advanceTimersByTime(50)
+
+      // File B decodes while file A's render is still in flight. Pre-fix,
+      // throttledRender's isRendering early-return dropped this redraw and
+      // nothing ever re-triggered rendering: the stale spectrogram stayed.
+      decoded = bufferB
+      ;(fakeWavesurfer as any).emit('redraw')
+
+      // Let render A finish; its finally must queue the follow-up render.
+      await flushMicrotasks()
+      jest.advanceTimersByTime(50)
+      await flushMicrotasks()
+
+      expect(internals.cachedBuffer).toBe(bufferB)
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
   // Regression for the second leg of the same bug: even when the full render() path DID
   // recompute frequencies for the new buffer, drawSpectrogram reused cachedResampledData keyed
   // only on width - same container width, so file A's resampled columns were drawn anyway.

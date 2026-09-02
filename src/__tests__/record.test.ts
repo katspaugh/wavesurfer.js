@@ -248,6 +248,55 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
     plugin.destroy()
   })
 
+  it('does not deliver the old session record-end into a re-initialized lifecycle, but still redelivers to snapshotted listeners', async () => {
+    const plugin = RecordPlugin.create()
+    const oldLifecycleEnd = jest.fn()
+    plugin.on('record-end', oldLifecycleEnd)
+
+    await plugin.startRecording()
+    plugin.destroy() // queues the recorder's async onstop; snapshots listeners
+
+    // Re-init BEFORE the queued onstop runs: `destroyed` is false again and
+    // this.scope is a fresh object -- the old closure must not cross over.
+    plugin._init({} as never)
+    const newLifecycleEnd = jest.fn()
+    plugin.on('record-end', newLifecycleEnd)
+
+    await flushMicrotasks()
+
+    // The new lifecycle never sees the old session's event or blob render
+    expect(newLifecycleEnd).not.toHaveBeenCalled()
+    expect(URL.createObjectURL).not.toHaveBeenCalled()
+    // The listeners snapshotted at destroy still receive the final blob
+    expect(oldLifecycleEnd).toHaveBeenCalledTimes(1)
+    plugin.destroy()
+  })
+
+  it('stops the granted tracks when destroy + re-init happens during a pending getUserMedia', async () => {
+    let grantStream!: (stream: MediaStream) => void
+    ;(navigator.mediaDevices.getUserMedia as jest.Mock).mockImplementation(
+      () =>
+        new Promise<MediaStream>((resolve) => {
+          grantStream = resolve
+        }),
+    )
+
+    const plugin = RecordPlugin.create()
+    const renderMicStreamSpy = jest.spyOn(plugin, 'renderMicStream')
+
+    const micPromise = plugin.startMic()
+    plugin.destroy()
+    plugin._init({} as never) // resets `destroyed` -- the captured scope stays disposed
+
+    const trackStop = jest.fn()
+    grantStream({ getTracks: () => [{ stop: trackStop }] } as unknown as MediaStream)
+
+    await expect(micPromise).rejects.toThrow(/destroyed/)
+    expect(trackStop).toHaveBeenCalled()
+    expect(renderMicStreamSpy).not.toHaveBeenCalled()
+    plugin.destroy()
+  })
+
   it('does not include paused time in record duration after resuming', async () => {
     let now = 1_000
     const nowSpy = jest.spyOn(performance, 'now').mockImplementation(() => now)

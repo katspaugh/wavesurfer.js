@@ -881,3 +881,29 @@ describe('WebAudio backend composition', () => {
     }
   })
 })
+
+describe('terminal destroy: mutating APIs are no-ops', () => {
+  test('play() after destroy does not restart external media; other mutators no-op', async () => {
+    const ws = createWs()
+    const media = ws.getMediaElement() as HTMLMediaElement & { play: jest.Mock; pause: jest.Mock }
+    ws.destroy()
+    media.play.mockClear()
+
+    // Player.destroy() deliberately leaves user-supplied media untouched --
+    // so WaveSurfer itself must refuse to drive it after destroy.
+    await ws.play()
+    expect(media.play).not.toHaveBeenCalled()
+
+    ws.setTime(5)
+    expect(ws.getCurrentTime()).toBe(0)
+
+    ws.setVolume(0.5)
+    expect(media.volume).toBe(1)
+
+    ws.setPlaybackRate(2)
+    expect(media.playbackRate).not.toBe(2)
+
+    expect(() => ws.setOptions({ height: 300 })).not.toThrow()
+    expect(ws.options.height).not.toBe(300)
+  })
+})

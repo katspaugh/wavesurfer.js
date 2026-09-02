@@ -408,3 +408,33 @@ describe('Player', () => {
     })
   })
 })
+
+describe('setTime before metadata', () => {
+  test('defers the exact requested time instead of NaN when duration is unknown', () => {
+    const media = document.createElement('audio')
+    // No src: readyState 0, duration NaN -- the pre-metadata state
+    expect(Number.isNaN(media.duration)).toBe(true)
+    const player = new Player({ media })
+
+    player.setTime(10)
+
+    // Clamping against NaN duration used to poison the deferred seek
+    // (Math.min(10, NaN) === NaN), so getCurrentTime() returned NaN and the
+    // canplay handler later assigned media.currentTime = NaN (a TypeError).
+    expect(player.getCurrentTime()).toBe(10)
+
+    player.destroy()
+  })
+
+  test('still clamps against a known finite duration', () => {
+    const media = document.createElement('audio')
+    Object.defineProperty(media, 'duration', { configurable: true, value: 5 })
+    Object.defineProperty(media, 'readyState', { configurable: true, value: 4 })
+    const player = new Player({ media })
+
+    player.setTime(10)
+    expect(player.getCurrentTime()).toBe(5)
+
+    player.destroy()
+  })
+})

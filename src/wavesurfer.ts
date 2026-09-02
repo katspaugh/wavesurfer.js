@@ -508,6 +508,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
 
   /** Set new wavesurfer options and re-render it */
   public setOptions(options: Partial<WaveSurferOptions>) {
+    if (this.isDestroyed) return
     this.options = Object.assign({}, this.options, options)
     if (options.duration && !options.peaks) {
       this.decodedData = Decoder.createBuffer(this.exportPeaks(), options.duration)
@@ -578,6 +579,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
 
   /** Set the current scroll position in pixels */
   public setScroll(pixels: number) {
+    if (this.isDestroyed) return
     return this.renderer.setScroll(pixels)
   }
 
@@ -728,7 +730,13 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
         const arrayBuffer = await blob.arrayBuffer()
         // Guard: bail if a newer load started or the instance was destroyed
         if (loadScope.disposed) return
-        this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
+        // Decode into a local first: assigning `this.decodedData = await ...`
+        // directly would repopulate the field AFTER destroy()'s cleanup ran
+        // (the continuation resumes past it), retaining the large buffer on a
+        // destroyed instance.
+        const decoded = await Decoder.decode(arrayBuffer, this.options.sampleRate)
+        if (loadScope.disposed) return
+        this.decodedData = decoded
       }
 
       // Guard: bail if a newer load started or the instance was destroyed
@@ -849,6 +857,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
 
   /** Jump to a specific time in the audio (in seconds) */
   public setTime(time: number) {
+    if (this.isDestroyed) return
     this.stopAtPosition = null
     this.player.setTime(time)
     this.updateProgress(time)
@@ -863,6 +872,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
 
   /** Pause the audio */
   public pause(): void {
+    if (this.isDestroyed) return
     this.player.pause()
   }
 
@@ -888,6 +898,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
 
   /** Set the audio volume */
   public setVolume(volume: number) {
+    if (this.isDestroyed) return
     this.player.setVolume(volume)
   }
 
@@ -898,6 +909,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
 
   /** Mute or unmute the audio */
   public setMuted(muted: boolean) {
+    if (this.isDestroyed) return
     this.player.setMuted(muted)
   }
 
@@ -908,11 +920,13 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
 
   /** Set the playback speed, pass an optional false to NOT preserve the pitch */
   public setPlaybackRate(rate: number, preservePitch?: boolean) {
+    if (this.isDestroyed) return
     this.player.setPlaybackRate(rate, preservePitch)
   }
 
   /** Set a sink id to change the audio output device */
   public setSinkId(sinkId: string): Promise<void> {
+    if (this.isDestroyed) return Promise.resolve()
     return this.player.setSinkId(sinkId)
   }
 
@@ -933,6 +947,10 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
 
   /** Start playing the audio */
   public async play(start?: number, end?: number): Promise<void> {
+    // Terminal destroy: playing a destroyed instance would restart media
+    // that Player.destroy() deliberately leaves untouched (user-supplied
+    // elements). Resolve as a no-op, consistent with the other mutators.
+    if (this.isDestroyed) return
     if (start != null) {
       this.setTime(start)
     }

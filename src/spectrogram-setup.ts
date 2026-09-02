@@ -437,6 +437,8 @@ export function spectrogramSetup(
   let cachedWidth = 0
   let cancelPendingRender: (() => void) | null = null
   let isRendering = false
+  // Set when a redraw arrives while a render is already in flight
+  let rerenderRequested = false
   let lastZoomLevel = 0
   const renderThrottleMs = 50 // Reduced frequency for better performance
   const zoomThreshold = 0.05 // More sensitive zoom detection
@@ -1115,8 +1117,13 @@ export function spectrogramSetup(
     // Clear any pending render
     cancelPendingRender?.()
 
-    // Skip if already rendering
+    // A redraw arriving mid-render (e.g. a new file decoded while the
+    // previous file's frequencies were still computing) must not be dropped:
+    // nothing else would re-trigger rendering, leaving the stale spectrogram
+    // on screen. Queue one follow-up render for when the active one completes
+    // (see render()/fastRender()'s finally blocks).
     if (isRendering) {
+      rerenderRequested = true
       return
     }
 
@@ -1166,6 +1173,7 @@ export function spectrogramSetup(
       lastZoomLevel = ctx.wavesurfer?.options.minPxPerSec || 0
     } finally {
       isRendering = false
+      runQueuedRerender()
     }
   }
 
@@ -1179,7 +1187,18 @@ export function spectrogramSetup(
       lastZoomLevel = ctx.wavesurfer?.options.minPxPerSec || 0
     } finally {
       isRendering = false
+      runQueuedRerender()
     }
+  }
+
+  // Runs the follow-up render queued by a redraw that arrived while a render
+  // was in flight (see throttledRender). Going back through throttledRender
+  // re-evaluates zoom and buffer identity against the CURRENT state, so a
+  // buffer change during the previous render takes the full-render path.
+  function runQueuedRerender(): void {
+    if (!rerenderRequested || ctx.scope.disposed) return
+    rerenderRequested = false
+    throttledRender()
   }
 
   function drawSpectrogramSegment(

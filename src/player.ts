@@ -318,7 +318,13 @@ class Player {
 
   /** Jump to a specific time in the audio (in seconds) */
   public setTime(time: number) {
-    const currentTime = Math.max(0, Math.min(time, this.getDuration()))
+    // media.duration is NaN before metadata loads and Infinity for streams;
+    // clamping against either would poison the time (Math.min(t, NaN) is
+    // NaN), so only clamp when a finite duration is known. Under the old
+    // inheritance this was masked by virtual dispatch: `this.getDuration()`
+    // resolved to WaveSurfer's override with its decoded-duration fallback.
+    const duration = this.getDuration()
+    const currentTime = Number.isFinite(duration) ? Math.max(0, Math.min(time, duration)) : Math.max(0, time)
     if (this.media.readyState < HAVE_FUTURE_DATA) {
       this.pendingTime = currentTime
       return
