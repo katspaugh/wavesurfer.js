@@ -280,6 +280,15 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       throw new Error('Error accessing the microphone: ' + (err as Error).message)
     }
 
+    // The plugin may have been destroyed while the permission prompt was up.
+    // Without this guard the stream (and the AudioContext + render interval
+    // renderMicStream attaches to the post-destroy fresh scope) would live
+    // forever -- the tab's recording indicator stays on with no way to stop it.
+    if (this.destroyed) {
+      stream.getTracks().forEach((track) => track.stop())
+      throw new Error('The plugin was destroyed while requesting the microphone')
+    }
+
     const micStream = this.renderMicStream(stream)
     this.micStream = micStream
     this.unsubscribeRecordEnd = this.once('record-end', micStream.onEnd)

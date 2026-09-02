@@ -229,3 +229,48 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
     }
   })
 })
+
+describe('RecordPlugin startMic destroyed during pending getUserMedia', () => {
+  const originalMediaDevices = Object.getOwnPropertyDescriptor(navigator, 'mediaDevices')
+
+  afterEach(() => {
+    if (originalMediaDevices) {
+      Object.defineProperty(navigator, 'mediaDevices', originalMediaDevices)
+    } else {
+      delete (navigator as unknown as Record<string, unknown>).mediaDevices
+    }
+  })
+
+  it('stops the granted tracks and rejects instead of leaking a live mic', async () => {
+    // A controllable getUserMedia: resolves only when we say so, simulating
+    // the browser permission prompt being up while the plugin is destroyed.
+    let grantStream!: (stream: MediaStream) => void
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: {
+        getUserMedia: jest.fn(
+          () =>
+            new Promise<MediaStream>((resolve) => {
+              grantStream = resolve
+            }),
+        ),
+      },
+    })
+
+    const plugin = RecordPlugin.create()
+    const renderMicStreamSpy = jest.spyOn(plugin, 'renderMicStream')
+
+    const micPromise = plugin.startMic()
+    plugin.destroy()
+
+    const trackStop = jest.fn()
+    grantStream({ getTracks: () => [{ stop: trackStop }] } as unknown as MediaStream)
+
+    await expect(micPromise).rejects.toThrow(/destroyed/)
+    // The mic must actually be released -- otherwise the tab's recording
+    // indicator stays on forever with nothing left to stop it.
+    expect(trackStop).toHaveBeenCalled()
+    // And nothing may attach the stream to the post-destroy fresh scope.
+    expect(renderMicStreamSpy).not.toHaveBeenCalled()
+  })
+})
