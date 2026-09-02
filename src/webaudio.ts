@@ -7,6 +7,7 @@ type WebAudioPlayerEvents = {
   play: []
   pause: []
   seeking: []
+  seeked: []
   timeupdate: []
   volumechange: []
   emptied: []
@@ -289,7 +290,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.playbackPosition = value
     if (wasPlaying) this._play()
 
+    // Seeks in a buffer player are instantaneous, so 'seeked' follows
+    // 'seeking' immediately. Without it, Player's seeking-state bridge
+    // (set true on 'seeking', cleared only on 'seeked') sticks forever.
     this.emit('seeking')
+    this.emit('seeked')
     this.emit('timeupdate')
   }
 

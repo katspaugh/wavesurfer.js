@@ -1,10 +1,20 @@
 jest.mock('../renderer.js', () => {
+  // Real signals from the reactive store so initRendererEvents() can wire the
+  // bridge against this mock.
+  const { signal } = jest.requireActual('../reactive/store.js')
   let lastInstance: any
   class Renderer {
     options: any
     wrapper = document.createElement('div')
     renderProgress = jest.fn()
-    on = jest.fn(() => () => undefined)
+    clickSignal = signal(null)
+    dblclickSignal = signal(null)
+    dragEventsSignal = signal(null)
+    renderEpoch = signal(0)
+    renderedEpoch = signal(0)
+    resizeEpoch = signal(0)
+    scrollSignals = { percentages: signal({ startX: 0, endX: 0 }), bounds: signal({ left: 0, right: 0 }) }
+    getScrollSignals = jest.fn(() => this.scrollSignals)
     setOptions = jest.fn()
     getWrapper = jest.fn(() => this.wrapper)
     getWidth = jest.fn(() => 100)

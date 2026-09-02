@@ -195,3 +195,64 @@ describe('RegionsPlugin', () => {
     expect(secondRegion.content?.style.marginTop).toBe('0px')
   })
 })
+
+describe('Region drag against the waveform edges', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    installMatchMediaStub()
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    document.body.innerHTML = ''
+    jest.clearAllMocks()
+  })
+
+  test('dragging past the left edge preserves the region length instead of compressing it', () => {
+    const wavesurfer = createWaveSurfer(10)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const regionsContainer = wavesurfer.getWrapper().querySelector<HTMLElement>('[part="regions-container"]')!
+    mockRect(regionsContainer, { left: 0, top: 0, width: 100, height: 100 })
+
+    const region = plugin.addRegion({ start: 1, end: 3, drag: true })
+    jest.runOnlyPendingTimers()
+    expect(region.element?.parentElement).toBe(regionsContainer)
+
+    // Each -20px step is -2s at width 100 / duration 10. The first step pins
+    // start at 0; before the fix, further leftward steps kept shrinking the
+    // region by moving only the end.
+    region._onUpdate(-20)
+    region._onUpdate(-20)
+    region._onUpdate(-20)
+
+    expect(region.start).toBe(0)
+    expect(region.end).toBeCloseTo(2) // length preserved
+
+    // And dragging back to the right restores the original position
+    region._onUpdate(10)
+    expect(region.start).toBeCloseTo(1)
+    expect(region.end).toBeCloseTo(3)
+  })
+
+  test('dragging past the right edge preserves the region length', () => {
+    const wavesurfer = createWaveSurfer(10)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const regionsContainer = wavesurfer.getWrapper().querySelector<HTMLElement>('[part="regions-container"]')!
+    mockRect(regionsContainer, { left: 0, top: 0, width: 100, height: 100 })
+
+    const region = plugin.addRegion({ start: 7, end: 9, drag: true })
+    jest.runOnlyPendingTimers()
+    expect(region.element?.parentElement).toBe(regionsContainer)
+
+    region._onUpdate(20)
+    region._onUpdate(20)
+
+    expect(region.end).toBe(10)
+    expect(region.start).toBeCloseTo(8) // length preserved
+  })
+})

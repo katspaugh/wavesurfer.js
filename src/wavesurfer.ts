@@ -2,10 +2,12 @@ import BasePlugin, { type GenericPlugin } from './base-plugin.js'
 import Decoder from './decoder.js'
 import { definePlugin } from './define-plugin.js'
 import * as dom from './dom.js'
+import EventEmitter from './event-emitter.js'
 import Fetcher from './fetcher.js'
 import { FrameScheduler } from './frame-scheduler.js'
 import Player from './player.js'
 import Renderer from './renderer.js'
+import { effect } from './reactive/store.js'
 import { Scope } from './scope.js'
 import WebAudioPlayer from './webaudio.js'
 import { createWaveSurferState, type WaveSurferState, type WaveSurferActions } from './state/wavesurfer-state.js'
@@ -156,12 +158,25 @@ export type WaveSurferEvents = {
   resize: []
 }
 
-class WaveSurfer extends Player<WaveSurferEvents> {
+class WaveSurfer extends EventEmitter<WaveSurferEvents> {
   public options: WaveSurferOptions & typeof defaultOptions
+  // The playback engine. WaveSurfer owns it by composition (not inheritance)
+  // and delegates the public playback API to it below.
+  private player: Player
   private renderer: Renderer
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
   private stopAtPosition: number | null = null
+  // The WebAudioPlayer this instance created for backend: 'WebAudio', if any.
+  // Owned here (not by Player, which sees it as external media) so destroy()
+  // can tear it down -- stopping playback and closing its AudioContext.
+  private internalWebAudioPlayer: WebAudioPlayer | null = null
+  // The WebAudioPlayer currently acting as the media, if any -- the internal
+  // one, or a user-supplied one. Classified once at construction and updated
+  // in setMediaElement() (the only two instanceof checks); everywhere else
+  // this field replaces what used to be scattered instanceof branches.
+  // Invariant: non-null iff the player's current media IS a WebAudioPlayer.
+  private webAudioPlayer: WebAudioPlayer | null = null
   protected scope: Scope = new Scope()
   private mediaEventScope = this.scope.child()
   private frameScheduler: FrameScheduler = new FrameScheduler(this.scope)
@@ -173,16 +188,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   // destroy-triggered abort or a real failure. WeakSet so a superseded
   // scope isn't kept alive once nothing else references it.
   private supersededLoadScopes = new WeakSet<Scope>()
-  // initPlayerEvents()/initRendererEvents() (plus reviving the Player-level
-  // media-signal bridge) only ever ran once, from the constructor,
-  // historically. But destroy() disposes+recreates this.scope (and
-  // this.mediaEventScope, its child) and tears the DOM/media listeners down,
-  // so a reused instance (destroy() -> load()) needs its event bridges
-  // rebuilt too -- mirroring Renderer's own ensureInputEvents() one layer
-  // down. ensureCoreEvents() makes that idempotent: the constructor and the
-  // top of loadAudio() both call it, and destroy() flips the flag back off
-  // so the next loadAudio() re-runs it and revives everything.
-  private coreEventsInitialized = false
+  // destroy() is terminal: once true, load()/loadBlob() reject and
+  // registerPlugin() throws. Create a new instance instead of reusing a
+  // destroyed one.
+  private isDestroyed = false
 
   // Reactive state
   private wavesurferState: WaveSurferState
@@ -209,55 +218,64 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Create a new WaveSurfer instance */
   constructor(options: WaveSurferOptions) {
-    const media =
-      options.media ||
-      (options.backend === 'WebAudio' ? (new WebAudioPlayer() as unknown as HTMLAudioElement) : undefined)
+    super()
 
-    super({
+    // A WebAudioPlayer created here (backend: 'WebAudio' with no user-supplied
+    // media) is owned by this instance. It is handed to Player as `media`, so
+    // Player classifies it as *external* and skips its teardown in destroy()
+    // -- WaveSurfer must therefore destroy it itself (see destroy() below).
+    const internalWebAudioPlayer = !options.media && options.backend === 'WebAudio' ? new WebAudioPlayer() : null
+    const media = options.media ?? internalWebAudioPlayer ?? undefined
+
+    this.player = new Player({
       media,
       mediaControls: options.mediaControls,
       autoplay: options.autoplay,
       playbackRate: options.audioRate,
     })
 
+    this.internalWebAudioPlayer = internalWebAudioPlayer
+    // The single classification point (with setMediaElement) for the media
+    // being a WebAudioPlayer -- a user may pass their own via options.media.
+    this.webAudioPlayer = internalWebAudioPlayer ?? (options.media instanceof WebAudioPlayer ? options.media : null)
+
     this.options = Object.assign({}, defaultOptions, options)
 
     // Initialize reactive state
     // Pass Player signals to compose them into WaveSurferState
-    const { state, actions } = createWaveSurferState({
-      isPlaying: this.isPlayingSignal,
-      currentTime: this.currentTimeSignal,
-      duration: this.durationSignal,
-      volume: this.volumeSignal,
-      muted: this.mutedSignal,
-      playbackRate: this.playbackRateSignal,
-      isSeeking: this.seekingSignal,
+    const { state, actions, dispose } = createWaveSurferState({
+      isPlaying: this.player.isPlayingSignal,
+      currentTime: this.player.currentTimeSignal,
+      duration: this.player.durationSignal,
+      volume: this.player.volumeSignal,
+      muted: this.player.mutedSignal,
+      playbackRate: this.player.playbackRateSignal,
+      isSeeking: this.player.seekingSignal,
     })
     this.wavesurferState = state
     this.wavesurferActions = actions
-    // Intentionally NOT registering the returned `dispose` with `this.scope`:
-    // the state's signal graph (base signals + computeds) is owned by this
-    // WaveSurfer instance for its entire lifetime, not by the per-load Scope.
-    // `destroy()` disposes and recreates `this.scope` to support a supported
-    // destroy -> load() reuse pattern; if the state's computeds were disposed
-    // there too, they'd be permanently frozen after the first destroy since
-    // nothing ever recreates them. The computeds hold no external resources
-    // (DOM listeners, timers, etc.) -- disposing them buys nothing beyond
-    // what letting the instance (and its closures) get garbage-collected
-    // already provides. `dispose` remains part of createWaveSurferState's
-    // public return value for direct/standalone users of the state module.
+    // destroy() is terminal, so the state's computed graph is released with
+    // everything else owned by this.scope.
+    this.scope.add(dispose)
 
-    const audioElement = media ? undefined : this.getMediaElement()
+    // When no media was supplied, Player created its own <audio> element --
+    // hand that raw element to the renderer so it can be mounted in the DOM.
+    const audioElement = media ? undefined : this.player.getMediaElement()
     this.renderer = new Renderer(this.options, audioElement)
 
-    this.ensureCoreEvents()
+    this.initPlayerEvents()
+    this.initRendererEvents()
     this.initPlugins()
 
     // Read the initial URL before load has been called
-    const initialUrl = this.options.url || this.getSrc() || ''
+    const initialUrl = this.options.url || this.player.getSrc() || ''
 
     // Init and load async to allow external events to be registered
     Promise.resolve().then(() => {
+      // destroy() may have been called synchronously after create() -- the
+      // deferred init/load must not resurrect a destroyed instance
+      if (this.isDestroyed) return
+
       this.emit('init')
 
       // Load audio if URL or an external media with an src is passed,
@@ -296,36 +314,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     }
   }
 
-  /**
-   * Idempotently (re)establishes every event bridge WaveSurfer owns: the
-   * Player-level reactive media-signal bridge (isPlaying/currentTime/etc,
-   * via Player.ensureMediaEvents()), the media-event -> public-event
-   * forwarding bridge (initPlayerEvents(), which also (re)wires the
-   * FrameScheduler via onTick/frameScheduler.start() -- see initPlayerEvents
-   * below), and the renderer-event -> public-event forwarding bridge
-   * (initRendererEvents(), which includes the state.scrollPosition wiring).
-   * Runs once from the constructor; destroy() flips coreEventsInitialized
-   * back to false so the next loadAudio() call re-runs this and revives the
-   * bridges for a reused instance -- mirroring Renderer's own
-   * ensureInputEvents() one layer down.
-   *
-   * initPlayerEvents() is re-run via unsubscribePlayerEvents() + itself
-   * (rather than a bare call) so this stays safe even when setMediaElement()
-   * already rebuilt the media-event forwarding bridge earlier in the same
-   * destroy() -> setMediaElement() -> load() reuse cycle: unsubscribing
-   * first means a redundant call here just disposes-and-rebuilds an
-   * already-fresh scope instead of registering duplicate listeners on top of
-   * live ones.
-   */
-  private ensureCoreEvents(): void {
-    if (this.coreEventsInitialized) return
-    this.coreEventsInitialized = true
-    this.ensureMediaEvents()
-    this.unsubscribePlayerEvents()
-    this.initPlayerEvents()
-    this.initRendererEvents()
-  }
-
   private initPlayerEvents() {
     if (this.isPlaying()) {
       this.emit('play')
@@ -333,21 +321,30 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     }
 
     this.mediaEventScope.add(
-      this.onMediaEvent('timeupdate', () => {
+      this.player.onMediaEvent('timeupdate', () => {
         const currentTime = this.updateProgress()
         this.emit('timeupdate', currentTime)
+        // onTick (rAF-driven) normally enforces stopAtPosition, but rAF is
+        // suspended in hidden tabs while media 'timeupdate' keeps firing --
+        // without this check, play(start, end) overshoots arbitrarily in a
+        // background tab.
+        if (this.stopAtPosition != null && this.isPlaying() && currentTime >= this.stopAtPosition) {
+          const stopAt = this.stopAtPosition
+          this.pause()
+          this.setTime(stopAt)
+        }
       }),
     )
 
     this.mediaEventScope.add(
-      this.onMediaEvent('play', () => {
+      this.player.onMediaEvent('play', () => {
         this.emit('play')
         this.frameScheduler.start(this.onTick)
       }),
     )
 
     this.mediaEventScope.add(
-      this.onMediaEvent('pause', () => {
+      this.player.onMediaEvent('pause', () => {
         this.emit('pause')
         this.frameScheduler.stop()
         this.stopAtPosition = null
@@ -355,14 +352,14 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     )
 
     this.mediaEventScope.add(
-      this.onMediaEvent('emptied', () => {
+      this.player.onMediaEvent('emptied', () => {
         this.frameScheduler.stop()
         this.stopAtPosition = null
       }),
     )
 
     this.mediaEventScope.add(
-      this.onMediaEvent('ended', () => {
+      this.player.onMediaEvent('ended', () => {
         this.emit('timeupdate', this.getDuration())
         this.emit('finish')
         this.stopAtPosition = null
@@ -370,78 +367,78 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     )
 
     this.mediaEventScope.add(
-      this.onMediaEvent('seeking', () => {
+      this.player.onMediaEvent('seeking', () => {
         this.emit('seeking', this.getCurrentTime())
       }),
     )
 
     this.mediaEventScope.add(
-      this.onMediaEvent('error', () => {
-        this.emit('error', (this.getMediaElement().error ?? new Error('Media error')) as Error)
+      this.player.onMediaEvent('error', () => {
+        // Deliberately the raw media (never null): under the WebAudio backend
+        // the error lives on the WebAudioPlayer's media surface.
+        this.emit('error', (this.player.getMediaElement().error ?? new Error('Media error')) as Error)
         this.stopAtPosition = null
       }),
     )
   }
 
+  // The ONE bridge from the renderer's internal reactive surface (signals/
+  // streams -- Renderer is not an EventEmitter) to the public
+  // WaveSurferEvents. Every subscription is registered on this.scope, so
+  // destroy() severs the bridge in one dispose.
   private initRendererEvents() {
     // Seek on click
     this.scope.add(
-      this.renderer.on('click', (relativeX, relativeY) => {
+      this.renderer.clickSignal.subscribe((hit) => {
+        if (!hit) return
         if (this.options.interact) {
-          this.seekTo(relativeX)
-          this.emit('interaction', relativeX * this.getDuration())
-          this.emit('click', relativeX, relativeY)
+          this.seekTo(hit.relativeX)
+          this.emit('interaction', hit.relativeX * this.getDuration())
+          this.emit('click', hit.relativeX, hit.relativeY)
         }
       }),
     )
 
     // Double click
     this.scope.add(
-      this.renderer.on('dblclick', (relativeX, relativeY) => {
-        this.emit('dblclick', relativeX, relativeY)
+      this.renderer.dblclickSignal.subscribe((hit) => {
+        if (!hit) return
+        this.emit('dblclick', hit.relativeX, hit.relativeY)
       }),
     )
 
-    // Scroll
-    this.scope.add(
-      this.renderer.on('scroll', (startX, endX, scrollLeft, scrollRight) => {
-        const duration = this.getDuration()
-        this.wavesurferActions.setScrollPosition(scrollLeft)
-        this.emit('scroll', startX * duration, endX * duration, scrollLeft, scrollRight)
-      }),
-    )
+    // Scroll: react to both the percentages and the bounds signals, the same
+    // pairing the renderer's old internal scroll effect used
+    {
+      const { percentages, bounds } = this.renderer.getScrollSignals()
+      this.scope.add(
+        effect(() => {
+          const { startX, endX } = percentages.value
+          const { left: scrollLeft, right: scrollRight } = bounds.value
+          const duration = this.getDuration()
+          this.wavesurferActions.setScrollPosition(scrollLeft)
+          this.emit('scroll', startX * duration, endX * duration, scrollLeft, scrollRight)
+        }, [percentages, bounds]),
+      )
+    }
 
     // Redraw
     this.scope.add(
-      this.renderer.on('render', () => {
+      this.renderer.renderEpoch.subscribe(() => {
         this.emit('redraw')
       }),
     )
 
     // RedrawComplete
     this.scope.add(
-      this.renderer.on('rendered', () => {
+      this.renderer.renderedEpoch.subscribe(() => {
         this.emit('redrawcomplete')
-      }),
-    )
-
-    // DragStart
-    this.scope.add(
-      this.renderer.on('dragstart', (relativeX) => {
-        this.emit('dragstart', relativeX)
-      }),
-    )
-
-    // DragEnd
-    this.scope.add(
-      this.renderer.on('dragend', (relativeX) => {
-        this.emit('dragend', relativeX)
       }),
     )
 
     // Resize
     this.scope.add(
-      this.renderer.on('resize', () => {
+      this.renderer.resizeEpoch.subscribe(() => {
         this.emit('resize')
       }),
     )
@@ -449,7 +446,21 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     // Drag
     {
       let cancelDebounce: (() => void) | undefined
-      const unsubscribeDrag = this.renderer.on('drag', (relativeX) => {
+      const unsubscribeDrag = this.renderer.dragEventsSignal.subscribe((dragEvent) => {
+        if (!dragEvent) return
+        const { relativeX } = dragEvent
+
+        if (dragEvent.type === 'start') {
+          this.emit('dragstart', relativeX)
+          return
+        }
+
+        if (dragEvent.type === 'end') {
+          this.emit('dragend', relativeX)
+          return
+        }
+
+        // 'move'
         if (!this.options.interact) return
 
         // Update the visual position
@@ -497,6 +508,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Set new wavesurfer options and re-render it */
   public setOptions(options: Partial<WaveSurferOptions>) {
+    if (this.isDestroyed) return
     this.options = Object.assign({}, this.options, options)
     if (options.duration && !options.peaks) {
       this.decodedData = Decoder.createBuffer(this.exportPeaks(), options.duration)
@@ -513,12 +525,18 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.setPlaybackRate(options.audioRate)
     }
     if (options.mediaControls != null) {
-      this.getMediaElement().controls = options.mediaControls
+      // Deliberately the raw media (never null): writing `controls` on a
+      // WebAudioPlayer is a harmless no-op, exactly as before.
+      this.player.getMediaElement().controls = options.mediaControls
     }
   }
 
   /** Register a wavesurfer.js plugin */
   public registerPlugin<T extends GenericPlugin>(plugin: T): T {
+    if (this.isDestroyed) {
+      throw new Error('Cannot register a plugin: wavesurfer was destroyed. Create a new instance instead.')
+    }
+
     // Check if the plugin is already registered
     if (this.plugins.includes(plugin)) {
       return plugin
@@ -561,6 +579,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Set the current scroll position in pixels */
   public setScroll(pixels: number) {
+    if (this.isDestroyed) return
     return this.renderer.setScroll(pixels)
   }
 
@@ -576,12 +595,14 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   }
 
   private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
-    // Revive the event bridges if this instance is being reused after a
-    // destroy() (no-op otherwise, see ensureCoreEvents()). Must run before
-    // any of the pipeline below, which relies on those bridges (e.g.
-    // renderer.render() further down emits 'render'/'rendered', and media
-    // events must be wired before playback/seek events matter again).
-    this.ensureCoreEvents()
+    // destroy() is terminal: a post-destroy load must reject (catchably --
+    // this async throw becomes a rejection that load()/loadBlob() classify
+    // and re-emit as 'error') rather than resurrect torn-down bridges.
+    // Notably the v7 record plugin could reach this from its async
+    // MediaRecorder onstop after the app destroyed the instance.
+    if (this.isDestroyed) {
+      throw new Error('Cannot load audio: wavesurfer was destroyed. Create a new instance instead.')
+    }
 
     // Re-entrancy guard: a fresh child scope for this load call.
     // If a newer load starts (or the instance is destroyed) while this one is
@@ -602,13 +623,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.loadScope?.dispose()
     const loadScope = this.scope.child()
     this.loadScope = loadScope
-
-    // Reusing an instance after destroy() is a supported behavior (see issue #3637
-    // and cypress/e2e/abort.cy.js "load url after destroyed should emit ready").
-    // this.scope (and thus loadScope's parent) is recreated fresh by destroy(),
-    // so loadScope above is always a child of the current, live scope -- stale
-    // in-flight loads from before destroy() are still cancelled by the
-    // loadScope.disposed guard below.
 
     // The pipeline below -- starting with the 'load' emit -- can throw or
     // reject when this load is superseded by a newer load() (e.g. an aborted
@@ -670,7 +684,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       if (loadScope.disposed) return
 
       // Set the mediaelement source
-      this.setSrc(url, blob)
+      this.player.setSrc(url, blob)
 
       // Wait for the audio duration
       const audioDuration = await new Promise<number>((resolve) => {
@@ -679,7 +693,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
           resolve(staticDuration)
         } else {
           this.mediaEventScope.add(
-            this.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }),
+            this.player.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }),
           )
           // Settle if this load is superseded or the instance is destroyed
           // before 'loadedmetadata' ever fires (e.g. never emitted by the
@@ -701,11 +715,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       if (loadScope.disposed) return
 
       // Set the duration if the player is a WebAudioPlayer without a URL
-      if (!url && !blob) {
-        const media = this.getMediaElement()
-        if (media instanceof WebAudioPlayer) {
-          media.duration = audioDuration
-        }
+      if (!url && !blob && this.webAudioPlayer) {
+        this.webAudioPlayer.duration = audioDuration
       }
 
       if (!loadScope.disposed) {
@@ -719,7 +730,13 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         const arrayBuffer = await blob.arrayBuffer()
         // Guard: bail if a newer load started or the instance was destroyed
         if (loadScope.disposed) return
-        this.decodedData = await Decoder.decode(arrayBuffer, this.options.sampleRate)
+        // Decode into a local first: assigning `this.decodedData = await ...`
+        // directly would repopulate the field AFTER destroy()'s cleanup ran
+        // (the continuation resumes past it), retaining the large buffer on a
+        // destroyed instance.
+        const decoded = await Decoder.decode(arrayBuffer, this.options.sampleRate)
+        if (loadScope.disposed) return
+        this.decodedData = decoded
       }
 
       // Guard: bail if a newer load started or the instance was destroyed
@@ -753,13 +770,8 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         // Write the 'error' phase here, not in load()/loadBlob()'s catches,
         // and only when this load is still the current one (this.loadScope
         // === loadScope) or the instance has since been destroyed
-        // (this.loadScope === null, set by destroy()). Without this guard, a
-        // stale load's rejection landing on a later microtask -- e.g.
-        // destroy() then load(B) reusing the instance in the same tick,
-        // where A's late AbortError still isn't classified as "superseded"
-        // because supersession is only marked when a *newer load()* starts,
-        // not by destroy() -- would clobber loadPhase back to 'error' while
-        // B is still fetching/decoding.
+        // (this.loadScope === null, set by destroy()) -- a stale load's
+        // late rejection must not clobber a newer load's in-flight phase.
         if (this.loadScope === loadScope || this.loadScope === null) {
           this.wavesurferActions.setLoadPhase('error')
         }
@@ -830,7 +842,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Get the duration of the audio in seconds */
   public getDuration(): number {
-    let duration = super.getDuration() || 0
+    let duration = this.player.getDuration() || 0
     // Fall back to the decoded data duration if the media duration is incorrect
     if ((duration === 0 || duration === Infinity) && this.decodedData) {
       duration = this.decodedData.duration
@@ -845,8 +857,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Jump to a specific time in the audio (in seconds) */
   public setTime(time: number) {
+    if (this.isDestroyed) return
     this.stopAtPosition = null
-    super.setTime(time)
+    this.player.setTime(time)
     this.updateProgress(time)
     this.emit('timeupdate', time)
   }
@@ -857,16 +870,95 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.setTime(time)
   }
 
+  /** Pause the audio */
+  public pause(): void {
+    if (this.isDestroyed) return
+    this.player.pause()
+  }
+
+  /** Check if the audio is playing */
+  public isPlaying(): boolean {
+    return this.player.isPlaying()
+  }
+
+  /** Check if the audio is seeking */
+  public isSeeking(): boolean {
+    return this.player.isSeeking()
+  }
+
+  /** Get the current audio position in seconds */
+  public getCurrentTime(): number {
+    return this.player.getCurrentTime()
+  }
+
+  /** Get the audio volume */
+  public getVolume(): number {
+    return this.player.getVolume()
+  }
+
+  /** Set the audio volume */
+  public setVolume(volume: number) {
+    if (this.isDestroyed) return
+    this.player.setVolume(volume)
+  }
+
+  /** Get the audio muted state */
+  public getMuted(): boolean {
+    return this.player.getMuted()
+  }
+
+  /** Mute or unmute the audio */
+  public setMuted(muted: boolean) {
+    if (this.isDestroyed) return
+    this.player.setMuted(muted)
+  }
+
+  /** Get the playback speed */
+  public getPlaybackRate(): number {
+    return this.player.getPlaybackRate()
+  }
+
+  /** Set the playback speed, pass an optional false to NOT preserve the pitch */
+  public setPlaybackRate(rate: number, preservePitch?: boolean) {
+    if (this.isDestroyed) return
+    this.player.setPlaybackRate(rate, preservePitch)
+  }
+
+  /** Set a sink id to change the audio output device */
+  public setSinkId(sinkId: string): Promise<void> {
+    if (this.isDestroyed) return Promise.resolve()
+    return this.player.setSinkId(sinkId)
+  }
+
+  /**
+   * Get the HTML media element.
+   *
+   * Returns `null` under the WebAudio backend (i.e. when the current media is
+   * a WebAudioPlayer -- either `backend: 'WebAudio'` or a user-supplied
+   * WebAudioPlayer), which has no HTML media element. Breaking change in v8:
+   * previously the WebAudioPlayer itself was returned, mistyped as an
+   * HTMLMediaElement.
+   */
+  public getMediaElement(): HTMLMediaElement | null {
+    // Invariant (see the webAudioPlayer field): non-null iff it IS the
+    // player's current media.
+    return this.webAudioPlayer ? null : this.player.getMediaElement()
+  }
+
   /** Start playing the audio */
   public async play(start?: number, end?: number): Promise<void> {
+    // Terminal destroy: playing a destroyed instance would restart media
+    // that Player.destroy() deliberately leaves untouched (user-supplied
+    // elements). Resolve as a no-op, consistent with the other mutators.
+    if (this.isDestroyed) return
     if (start != null) {
       this.setTime(start)
     }
 
-    const playResult = await super.play()
+    const playResult = await this.player.play()
     if (end != null) {
-      if (this.media instanceof WebAudioPlayer) {
-        this.media.stopAt(end)
+      if (this.webAudioPlayer) {
+        this.webAudioPlayer.stopAt(end)
       } else {
         this.stopAtPosition = end
       }
@@ -893,13 +985,17 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
   /** Empty the waveform */
   public empty() {
-    this.load('', [[0]], 0.001)
+    // Fire-and-forget by design; failures surface via the 'error' event
+    this.load('', [[0]], 0.001).catch(() => undefined)
   }
 
   /** Set HTML media element */
   public setMediaElement(element: HTMLMediaElement) {
+    if (this.isDestroyed) return
     this.unsubscribePlayerEvents()
-    super.setMediaElement(element)
+    this.player.setMediaElement(element)
+    // Re-classify: the new media may be (or replace) a WebAudioPlayer
+    this.webAudioPlayer = element instanceof WebAudioPlayer ? element : null
     this.initPlayerEvents()
   }
 
@@ -921,33 +1017,37 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     return this.renderer.exportImage(format, quality, type)
   }
 
-  /** Unmount wavesurfer */
+  /**
+   * Unmount wavesurfer. Terminal: the instance is not usable afterwards --
+   * load()/loadBlob() reject, registerPlugin() throws, and everything else
+   * is a safe no-op. Create a new instance instead of reusing a destroyed one.
+   */
   public destroy() {
+    if (this.isDestroyed) return
+    this.isDestroyed = true
     this.emit('destroy')
     this.plugins.forEach((plugin) => plugin.destroy())
     // this.scope.dispose() cascades to loadScope (a child), which aborts any
     // in-flight fetch via its abortSignal() -- no separate abort call needed.
+    // It also releases the reactive state's computed graph (registered in
+    // the constructor).
     this.scope.dispose()
-    // Reusing an instance after destroy() is a supported behavior (see the
-    // loadAudio comment about issue #3637), so fresh scopes must replace the
-    // disposed ones -- a disposed Scope runs late registrations immediately,
-    // which would otherwise break a subsequent load()/setMediaElement() call.
-    this.scope = new Scope()
-    this.mediaEventScope = this.scope.child()
-    // loadScope was a child of the now-disposed old scope; loadAudio always
-    // creates its next loadScope from the current this.scope, so this is
-    // just clearing the stale reference (already disposed via cascade above).
     this.loadScope = null
-    // frameScheduler.stop() already ran via the disposer it registered on the
-    // old (now-disposed) scope; a fresh instance is needed so a post-destroy
-    // load()/play() registers its stop on the new scope instead of the dead one.
-    this.frameScheduler = new FrameScheduler(this.scope)
+    // Release the decoded audio -- a destroyed-but-still-referenced instance
+    // (common with framework refs) must not pin the full AudioBuffer.
+    this.decodedData = null
+    this.wavesurferActions.setAudioBuffer(null)
     this.renderer.destroy()
-    super.destroy()
-    // Flip so the next loadAudio() call re-runs ensureCoreEvents() and
-    // revives the event bridges just torn down above (this.scope.dispose()
-    // and super.destroy()'s mediaScope.dispose()).
-    this.coreEventsInitialized = false
+    this.player.destroy()
+    // Clear all event emitter listeners (previously done inside
+    // Player.destroy() when WaveSurfer and Player shared one emitter)
+    this.unAll()
+    // Player.destroy() skips media teardown for external media -- which
+    // includes the WebAudioPlayer this instance created itself for
+    // backend: 'WebAudio' (it was passed in via the media option). Without
+    // this, destroy() leaves WebAudio playback running and the AudioContext
+    // open forever. WebAudioPlayer.destroy() is idempotent.
+    this.internalWebAudioPlayer?.destroy()
   }
 }
 

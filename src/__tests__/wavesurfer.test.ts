@@ -1,10 +1,20 @@
 jest.mock('../renderer.js', () => {
+  // Real signals from the reactive store so initRendererEvents() can wire the
+  // bridge against this mock, and tests can drive the signals directly.
+  const { signal } = jest.requireActual('../reactive/store.js')
   let lastInstance: any
   class Renderer {
     options: any
     wrapper = document.createElement('div')
     renderProgress = jest.fn()
-    on = jest.fn(() => () => undefined)
+    clickSignal = signal(null)
+    dblclickSignal = signal(null)
+    dragEventsSignal = signal(null)
+    renderEpoch = signal(0)
+    renderedEpoch = signal(0)
+    resizeEpoch = signal(0)
+    scrollSignals = { percentages: signal({ startX: 0, endX: 0 }), bounds: signal({ left: 0, right: 0 }) }
+    getScrollSignals = jest.fn(() => this.scrollSignals)
     setOptions = jest.fn()
     getWrapper = jest.fn(() => this.wrapper)
     getWidth = jest.fn(() => 100)
@@ -84,7 +94,7 @@ describe('WaveSurfer public methods', () => {
     expect(ws.options.height).toBe(200)
     expect(renderer.setOptions).toHaveBeenCalledWith(ws.options)
     expect(ws.getPlaybackRate()).toBe(2)
-    expect(ws.getMediaElement().controls).toBe(true)
+    expect(ws.getMediaElement()!.controls).toBe(true)
   })
 
   test('registerPlugin adds and removes plugin', () => {
@@ -120,24 +130,7 @@ describe('WaveSurfer public methods', () => {
     expect((ws as any).scope.disposers.length).toBe(disposersBefore)
   })
 
-  test('registerPlugin after ws.destroy() succeeds structurally, but stays dormant until the next load() revives the media-event bridge (current behavior)', async () => {
-    // destroy() disposes the old scope and replaces it with a fresh, non-disposed one (see the
-    // "Scope ownership tree" describe block in memory-leaks.test.ts) so a subsequent load() can
-    // still register cleanups. registerPlugin() only ever touches `this.scope` and `this.plugins`
-    // - neither of which destroy() nulls out or leaves disposed - so calling it AFTER destroy()
-    // is not rejected: the plugin registers, appears in getActivePlugins(), and its own destroy()
-    // is tracked normally.
-    //
-    // That is NOT the same as a freshly-constructed instance, though: the media-event ->
-    // public-event forwarding bridge (initPlayerEvents()'s mediaEventScope.add(onMediaEvent(...))
-    // -- what actually delivers 'timeupdate' etc. to WaveSurfer's public events, and from there to
-    // any plugin listening via ctx.wavesurfer.on(...)) is a SEPARATE mechanism gated by
-    // coreEventsInitialized. destroy() flips that flag off but does not immediately revive it --
-    // only the next loadAudio() call does, via ensureCoreEvents() at its top (see that method's
-    // doc comment). So there's a real dormant window: a plugin registered right after destroy(),
-    // before any load() call, structurally exists but receives nothing, because the bridge that
-    // would forward events to it hasn't been rebuilt yet. This test pins both halves of that
-    // boundary as CURRENT, deliberate behavior.
+  test('registerPlugin after ws.destroy() throws (terminal destroy)', () => {
     const ws = createWs()
     class TestPlugin extends BasePlugin<{ destroy: [] }, {}> {}
 
@@ -152,36 +145,11 @@ describe('WaveSurfer public methods', () => {
     // listener and drops it from the plugins array.
     expect(ws.getActivePlugins()).not.toContain(pluginBeforeDestroy)
 
+    // Terminal destroy: registering a plugin on a dead instance would silently
+    // never receive events, so it throws instead.
     const pluginAfterDestroy = new TestPlugin({})
-    expect(() => ws.registerPlugin(pluginAfterDestroy)).not.toThrow()
-    expect(ws.getActivePlugins()).toContain(pluginAfterDestroy)
-
-    // Dormant window: the forwarding bridge isn't rebuilt yet, so a real media event does not
-    // reach WaveSurfer's public 'timeupdate' (and thus never reaches the plugin either).
-    const media = ws.getMediaElement()
-    const dormant = jest.fn()
-    ws.on('timeupdate', dormant)
-    Object.defineProperty(media, 'currentTime', { configurable: true, value: 5, writable: true })
-    media.dispatchEvent(new Event('timeupdate'))
-    expect(dormant).not.toHaveBeenCalled()
-
-    // Revival: load() runs ensureCoreEvents() at its top, rebuilding the bridge. Awaiting it
-    // already waits for the whole pipeline through its own 'ready' emit (no separate
-    // once('ready') wait needed -- that event has already fired by the time this resolves).
-    await ws.load('', [[0, 0.5, 1]], 1)
-
-    const revived = jest.fn()
-    ws.on('timeupdate', revived)
-    Object.defineProperty(media, 'currentTime', { configurable: true, value: 9, writable: true })
-    media.dispatchEvent(new Event('timeupdate'))
-    expect(revived).toHaveBeenCalledWith(9)
-
-    // And the plugin's own lifecycle is fully live on the new scope: destroying it removes it
-    // normally.
-    pluginAfterDestroy.destroy()
+    expect(() => ws.registerPlugin(pluginAfterDestroy)).toThrow(/destroyed/)
     expect(ws.getActivePlugins()).not.toContain(pluginAfterDestroy)
-
-    ws.destroy()
   })
 
   test('wrapper and scroll helpers call renderer', () => {
@@ -237,7 +205,7 @@ describe('WaveSurfer public methods', () => {
 
   test('getDuration falls back to decoded data', () => {
     const ws = createWs()
-    const media = ws.getMediaElement()
+    const media = ws.getMediaElement()!
     Object.defineProperty(media, 'duration', { configurable: true, value: Infinity })
     ;(ws as any).decodedData = { duration: 2 }
     expect(ws.getDuration()).toBe(2)
@@ -276,7 +244,7 @@ describe('WaveSurfer public methods', () => {
 
   test('pauses and clamps time to the exact stop position when playback overshoots it', async () => {
     const ws = createWs()
-    const media = ws.getMediaElement()
+    const media = ws.getMediaElement()!
     Object.defineProperty(media, 'paused', { configurable: true, value: false })
     await ws.play(1, 2)
 
@@ -293,7 +261,7 @@ describe('WaveSurfer public methods', () => {
 
   test('playPause toggles play and pause', async () => {
     const ws = createWs()
-    const media = ws.getMediaElement()
+    const media = ws.getMediaElement()!
     await ws.playPause()
     expect(media.play).toHaveBeenCalled()
     Object.defineProperty(media, 'paused', { configurable: true, value: false })
@@ -310,7 +278,7 @@ describe('WaveSurfer public methods', () => {
 
   test('skip and empty', () => {
     const ws = createWs()
-    ws.getMediaElement().currentTime = 1
+    ws.getMediaElement()!.currentTime = 1
     const spy = jest.spyOn(ws, 'setTime')
     ws.skip(2)
     expect(spy).toHaveBeenCalledWith(3)
@@ -344,26 +312,14 @@ describe('WaveSurfer public methods', () => {
     expect(scheduler.stop).toHaveBeenCalled()
   })
 
-  test('destroy recreates the frame scheduler so a post-destroy play() still ticks', () => {
-    // destroy() disposes and recreates this.scope for the supported
-    // destroy -> load() reuse pattern (see the reuse test below). The
-    // FrameScheduler registers its stop() on the scope it was built with,
-    // so it must be recreated alongside the scope -- otherwise a post-destroy
-    // play() would call start() on a scheduler whose stop is tied to a dead
-    // scope (or was already run), and progress ticking would silently break.
+  test('destroy does not recreate the frame scheduler (terminal destroy)', () => {
     const ws = createWs()
     const schedulerBeforeDestroy = getFrameScheduler()
     ws.destroy()
-    const schedulerAfterDestroy = getFrameScheduler()
-    expect(schedulerAfterDestroy).not.toBe(schedulerBeforeDestroy)
-
-    // Reusing an instance after destroy() is supported (see the reuse test
-    // below); setMediaElement() re-registers the media event listeners
-    // destroy() tore down, same as a real post-destroy reuse would need.
-    const media = createMedia()
-    ws.setMediaElement(media)
-    media.dispatchEvent(new Event('play'))
-    expect(schedulerAfterDestroy.start).toHaveBeenCalled()
+    // Terminal destroy: the scheduler is stopped via scope disposal and NOT
+    // replaced -- nothing can restart ticking on a dead instance.
+    expect(getFrameScheduler()).toBe(schedulerBeforeDestroy)
+    expect(schedulerBeforeDestroy.stop).toHaveBeenCalled()
   })
 
   test('does not emit pause or timeupdate during construction', async () => {
@@ -394,7 +350,7 @@ describe('WaveSurfer public methods', () => {
     const ws = createWs()
     const onPlay = jest.fn()
     ws.on('play', onPlay)
-    ws.getMediaElement().dispatchEvent(new Event('play'))
+    ws.getMediaElement()!.dispatchEvent(new Event('play'))
     expect(onPlay).toHaveBeenCalledTimes(1)
     ws.destroy()
   })
@@ -403,7 +359,7 @@ describe('WaveSurfer public methods', () => {
     const ws = createWs()
     const onPause = jest.fn()
     ws.on('pause', onPause)
-    ws.getMediaElement().dispatchEvent(new Event('pause'))
+    ws.getMediaElement()!.dispatchEvent(new Event('pause'))
     expect(onPause).toHaveBeenCalledTimes(1)
     ws.destroy()
   })
@@ -412,7 +368,7 @@ describe('WaveSurfer public methods', () => {
     const ws = createWs()
     const onSeeking = jest.fn()
     ws.on('seeking', onSeeking)
-    ws.getMediaElement().dispatchEvent(new Event('seeking'))
+    ws.getMediaElement()!.dispatchEvent(new Event('seeking'))
     expect(onSeeking).toHaveBeenCalledTimes(1)
     ws.destroy()
   })
@@ -421,7 +377,7 @@ describe('WaveSurfer public methods', () => {
     const ws = createWs()
     const onFinish = jest.fn()
     ws.on('finish', onFinish)
-    ws.getMediaElement().dispatchEvent(new Event('ended'))
+    ws.getMediaElement()!.dispatchEvent(new Event('ended'))
     expect(onFinish).toHaveBeenCalledTimes(1)
     ws.destroy()
   })
@@ -434,8 +390,27 @@ describe('WaveSurfer public methods', () => {
     const ws = createWs()
     const onTimeupdate = jest.fn()
     ws.on('timeupdate', onTimeupdate)
-    ws.getMediaElement().dispatchEvent(new Event('timeupdate'))
+    ws.getMediaElement()!.dispatchEvent(new Event('timeupdate'))
     expect(onTimeupdate).toHaveBeenCalledTimes(1)
+    ws.destroy()
+  })
+
+  test('enforces the play(start, end) stop position from media timeupdate (rAF suspended in background tabs)', async () => {
+    const ws = createWs()
+    const media = ws.getMediaElement() as HTMLMediaElement & { pause: jest.Mock }
+    // HAVE_FUTURE_DATA so setTime() writes currentTime directly instead of deferring
+    Object.defineProperty(media, 'readyState', { configurable: true, value: 4 })
+    Object.defineProperty(media, 'paused', { configurable: true, value: false })
+
+    await ws.play(10, 15)
+
+    // Simulate playback passing the stop position with no rAF tick in between
+    media.currentTime = 16
+    media.dispatchEvent(new Event('timeupdate'))
+
+    expect(media.pause).toHaveBeenCalled()
+    // Overshoot is clamped back to the requested stop position
+    expect(ws.getCurrentTime()).toBe(15)
     ws.destroy()
   })
 
@@ -451,18 +426,17 @@ describe('WaveSurfer public methods', () => {
     ws.destroy()
   })
 
-  test('wires the renderer scroll event into state.scrollPosition', () => {
+  test('wires the renderer scroll signals into state.scrollPosition', () => {
     const ws = createWs()
     const renderer = getRenderer()
-    const scrollHandler = renderer.on.mock.calls.find(([event]: [string]) => event === 'scroll')?.[1]
-    expect(scrollHandler).toBeDefined()
 
     jest.spyOn(ws, 'getDuration').mockReturnValue(100)
     const scrollSpy = jest.fn()
     ws.on('scroll', scrollSpy)
 
     expect(ws.getState().scrollPosition.value).toBe(0)
-    scrollHandler(0.2, 0.4, 200, 400)
+    renderer.scrollSignals.percentages.set({ startX: 0.2, endX: 0.4 })
+    renderer.scrollSignals.bounds.set({ left: 200, right: 400 })
 
     expect(ws.getState().scrollPosition.value).toBe(200)
     // The public 'scroll' event still emits time-scaled values, unaffected by
@@ -473,7 +447,7 @@ describe('WaveSurfer public methods', () => {
 
   test('composes mutedSignal into state.muted, parallel to volume', () => {
     const ws = createWs()
-    const media = ws.getMediaElement()
+    const media = ws.getMediaElement()!
     expect(ws.getState().muted.value).toBe(false)
 
     Object.defineProperty(media, 'muted', { configurable: true, value: true, writable: true })
@@ -515,36 +489,21 @@ describe('WaveSurfer public methods', () => {
     ws.destroy()
   })
 
-  test('getState() computeds keep reacting to signal writes after destroy -> reuse', async () => {
-    // Regression test: destroy() used to register the wavesurfer-state `dispose`
-    // callback on `this.scope`, so scope.dispose() permanently unsubscribed the
-    // derived computeds (isPaused, canPlay, isReady, progress, progressPercent)
-    // from their base signals. destroy() then recreates `this.scope` for the
-    // (supported) destroy -> load() reuse pattern, but createWaveSurferState()
-    // is only ever called once, in the constructor -- so the computeds were
-    // never recreated and stayed frozen at their pre-destroy values forever.
+  test('getState() computeds are released on destroy (terminal destroy)', async () => {
     const media = createMedia()
     const container = document.createElement('div')
     const ws = WaveSurfer.create({ container, media, peaks: [[0, 0.5, 1]], duration: 1 })
     await new Promise((resolve) => ws.once('ready', resolve))
 
+    const progressBefore = ws.getState().progress.value
     ws.destroy()
 
-    // Reusing an instance after destroy() is supported (see loadAudio's issue
-    // #3637 comment / cypress/e2e/abort.cy.js). setMediaElement() re-registers
-    // the media event listeners the same way a reused instance needs them
-    // re-registered, then a real 'timeupdate' event drives the base
-    // `currentTime` signal exactly as the browser would during playback.
-    ws.setMediaElement(media)
+    // Terminal destroy releases the derived computed graph with the scope:
+    // base-signal writes no longer propagate to computeds, and no media
+    // events reach the base signals anyway (the bridge is torn down).
     Object.defineProperty(media, 'currentTime', { configurable: true, value: 42, writable: true })
     media.dispatchEvent(new Event('timeupdate'))
-
-    // The load-bearing assertion: this base-signal write must still propagate
-    // to the derived `progress` computed. Before the fix this stayed frozen at
-    // the pre-destroy value (0) because the computed had been disposed.
-    expect(ws.getState().progress.value).toBe(42)
-
-    ws.destroy()
+    expect(ws.getState().progress.value).toBe(progressBefore)
   })
 
   describe('per-load Scope', () => {
@@ -602,7 +561,7 @@ describe('WaveSurfer public methods', () => {
       ws.load('http://x/b.mp3').catch(() => undefined) // supersedes
       resolveFirst!(blob)
       await new Promise((r) => setTimeout(r, 0))
-      expect((ws as any).getSrc?.() ?? (ws.getMediaElement().src || '')).not.toContain('a.mp3')
+      expect((ws as any).player.getSrc() ?? (ws.getMediaElement()!.src || '')).not.toContain('a.mp3')
       // A superseded load must never surface as a user-visible error -- its
       // rejection (if any) is filtered inside loadAudio via the loadScope.disposed
       // check, so load()'s catch never runs for it.
@@ -721,16 +680,10 @@ describe('WaveSurfer public methods', () => {
       expect(secondLoadScope.disposed).toBe(true)
       expect((ws as any).loadScope).toBeNull()
 
-      // #3637: reusing an instance after destroy() is supported. A load()
-      // after destroy() must derive its loadScope from the freshly recreated
-      // this.scope, not the disposed one. If child() were called on the old
-      // (still-disposed) scope, Scope.child() returns a pre-disposed child,
-      // so this scope would come back `disposed === true` -- proving the
-      // parentage, not just the null-check above.
-      ws.load('http://x/c.mp3').catch(() => undefined)
-      await Promise.resolve()
-      expect((ws as any).loadScope.disposed).toBe(false)
-      ws.destroy()
+      // Terminal destroy: a post-destroy load() rejects before ever creating
+      // a new loadScope.
+      await expect(ws.load('http://x/c.mp3')).rejects.toThrow(/destroyed/)
+      expect((ws as any).loadScope).toBeNull()
     })
 
     it('fetchParams option is copied per load so a superseded load does not poison the next fetch with an aborted signal', async () => {
@@ -758,19 +711,12 @@ describe('WaveSurfer public methods', () => {
       ws.destroy()
     })
 
-    it('does not let a superseded load-A rejection (arriving via destroy -> load-B reuse) clobber load-Bs in-flight phase', async () => {
-      // Regression test: load(A) in flight, then destroy(), then load(B) in
-      // the same tick (destroy() -> load() reuse is supported, #3637). A's
-      // fetch is still pending and will eventually reject with AbortError
-      // (its signal was aborted by destroy() disposing the old scope). That
-      // rejection reaches loadAudio's catch on a later microtask -- by then
-      // this.loadScope already points at B's loadScope, not A's. Before the
-      // fix, load()'s catch unconditionally wrote setLoadPhase('error'),
-      // regardless of which load it belonged to, so A's late rejection wiped
-      // out B's 'fetching'/'decoding'/'ready' progress. The fix moves the
-      // write into loadAudio's catch, guarded to only fire when the load
-      // that's erroring is still the current one (or the instance has since
-      // been destroyed, nulling loadScope entirely).
+    it('a destroy() mid-load rejects that load with AbortError and leaves loadPhase at error', async () => {
+      // load(A) in flight, then destroy(): A's fetch signal is aborted by the
+      // scope cascade, A's promise rejects (catchably) with AbortError, the
+      // 'error' event fires, and loadPhase lands on 'error' (this.loadScope
+      // is null after destroy, which the phase-write guard treats as "the
+      // instance was destroyed, the write is allowed").
       global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
         const signal = init.signal as AbortSignal
         return new Promise((_resolve, reject) => {
@@ -786,23 +732,20 @@ describe('WaveSurfer public methods', () => {
       const ws = WaveSurfer.create({ container: document.createElement('div') })
 
       const pA = ws.load('http://x/a.mp3')
-      pA.catch(() => undefined)
+      const assertion = expect(pA).rejects.toThrow(/aborted/)
       await Promise.resolve()
 
       ws.destroy() // aborts A's fetch signal
-      ws.load('http://x/b.mp3').catch(() => undefined) // reuse after destroy (#3637), same tick
 
-      // Flush A's now-rejected fetch promise (its abort listener fires
-      // synchronously on dispose, but the .catch chain in loadAudio needs a
-      // couple of microtask turns to run).
-      await Promise.resolve()
-      await Promise.resolve()
-      await Promise.resolve()
+      // destroy()'s unAll cleared pre-destroy listeners; the error event is
+      // observable to listeners registered after destroy (the cypress
+      // abort.cy.js contract)
+      const onError = jest.fn()
+      ws.on('error', onError)
 
-      expect(ws.getState().loadPhase.value).not.toBe('error')
-      expect(ws.getState().loadPhase.value).toBe('fetching')
-
-      ws.destroy()
+      await assertion
+      expect(ws.getState().loadPhase.value).toBe('error')
+      expect(onError).toHaveBeenCalled()
     })
 
     it('settles a superseded load promise even when no loadedmetadata ever arrives', async () => {
@@ -847,5 +790,120 @@ describe('WaveSurfer public methods', () => {
       expect(ws.getState().loadPhase.value).toBe('error')
       ws.destroy()
     })
+  })
+})
+
+const makeMockAudioContext = () => {
+  const gainNode = { gain: { value: 1 }, connect: jest.fn(), disconnect: jest.fn() }
+  const close = jest.fn(() => Promise.resolve())
+  class MockAudioContext {
+    destination = {}
+    currentTime = 0
+    createGain = jest.fn(() => gainNode)
+    createBufferSource = jest.fn()
+    close = close
+  }
+  return { MockAudioContext, gainNode, close }
+}
+
+describe('WebAudio backend teardown', () => {
+  test('destroy() tears down the internally-created WebAudioPlayer (stops audio, closes the AudioContext)', () => {
+    const { MockAudioContext, gainNode, close } = makeMockAudioContext()
+    const originalAudioContext = (globalThis as any).AudioContext
+    ;(globalThis as any).AudioContext = MockAudioContext
+    try {
+      const ws = WaveSurfer.create({ container: document.createElement('div'), backend: 'WebAudio' })
+      ws.destroy()
+      // Player.destroy() classifies the internally-created WebAudioPlayer as
+      // external media and skips it; WaveSurfer.destroy() must tear it down.
+      expect(gainNode.disconnect).toHaveBeenCalled()
+      expect(close).toHaveBeenCalled()
+    } finally {
+      ;(globalThis as any).AudioContext = originalAudioContext
+    }
+  })
+
+  test('destroy() leaves a user-supplied WebAudioPlayer media untouched', async () => {
+    const { MockAudioContext, close } = makeMockAudioContext()
+    const WebAudioPlayer = (await import('../webaudio.js')).default
+    const userPlayer = new WebAudioPlayer(new (MockAudioContext as any)())
+    const ws = WaveSurfer.create({
+      container: document.createElement('div'),
+      media: userPlayer as unknown as HTMLMediaElement,
+    })
+    ws.destroy()
+    expect(close).not.toHaveBeenCalled()
+  })
+})
+
+describe('WebAudio backend composition', () => {
+  test('getMediaElement() returns null for backend: WebAudio but the element for the media-element backend', () => {
+    const { MockAudioContext } = makeMockAudioContext()
+    const originalAudioContext = (globalThis as any).AudioContext
+    ;(globalThis as any).AudioContext = MockAudioContext
+    try {
+      const webAudioWs = WaveSurfer.create({ container: document.createElement('div'), backend: 'WebAudio' })
+      // v8 breaking change: no HTML media element exists under the WebAudio
+      // backend, so getMediaElement() is honest and returns null
+      expect(webAudioWs.getMediaElement()).toBeNull()
+      // The raw media (the WebAudioPlayer) is still reachable internally
+      expect((webAudioWs as any).player.getMediaElement()).toBe((webAudioWs as any).webAudioPlayer)
+      webAudioWs.destroy()
+
+      const mediaWs = createWs()
+      expect(mediaWs.getMediaElement()).toBeInstanceOf(HTMLAudioElement)
+      mediaWs.destroy()
+    } finally {
+      ;(globalThis as any).AudioContext = originalAudioContext
+    }
+  })
+
+  test('play(10, 15) with the WebAudio backend schedules stopAt(15) on the WebAudioPlayer', async () => {
+    const { MockAudioContext } = makeMockAudioContext()
+    const originalAudioContext = (globalThis as any).AudioContext
+    ;(globalThis as any).AudioContext = MockAudioContext
+    try {
+      const ws = WaveSurfer.create({ container: document.createElement('div'), backend: 'WebAudio' })
+      const webAudioPlayer = (ws as any).webAudioPlayer
+      expect(webAudioPlayer).toBeTruthy()
+      jest.spyOn(webAudioPlayer, 'play').mockResolvedValue(undefined)
+      const stopAtSpy = jest.spyOn(webAudioPlayer, 'stopAt').mockImplementation(() => undefined)
+
+      await ws.play(10, 15)
+
+      expect(stopAtSpy).toHaveBeenCalledWith(15)
+      // The stop is delegated to the WebAudioPlayer, not the rAF-based
+      // stopAtPosition fallback used by the media-element backend
+      expect((ws as any).stopAtPosition).toBeNull()
+      ws.destroy()
+    } finally {
+      ;(globalThis as any).AudioContext = originalAudioContext
+    }
+  })
+})
+
+describe('terminal destroy: mutating APIs are no-ops', () => {
+  test('play() after destroy does not restart external media; other mutators no-op', async () => {
+    const ws = createWs()
+    const media = ws.getMediaElement() as HTMLMediaElement & { play: jest.Mock; pause: jest.Mock }
+    ws.destroy()
+    media.play.mockClear()
+
+    // Player.destroy() deliberately leaves user-supplied media untouched --
+    // so WaveSurfer itself must refuse to drive it after destroy.
+    await ws.play()
+    expect(media.play).not.toHaveBeenCalled()
+
+    ws.setTime(5)
+    expect(ws.getCurrentTime()).toBe(0)
+
+    ws.setVolume(0.5)
+    expect(media.volume).toBe(1)
+
+    ws.setPlaybackRate(2)
+    expect(media.playbackRate).not.toBe(2)
+
+    expect(() => ws.setOptions({ height: 300 })).not.toThrow()
+    expect(ws.options.height).not.toBe(300)
   })
 })

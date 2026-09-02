@@ -144,7 +144,11 @@ const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents,
     function initTimeline() {
       notchElements.clear()
 
-      const duration = ctx.wavesurfer.getDuration() ?? opts.duration ?? 0
+      // getDuration() returns a number (0 when nothing is loaded), never
+      // nullish -- `??` would make opts.duration dead code, and the timeline
+      // could never render before audio loads despite the option existing
+      // for exactly that.
+      const duration = ctx.wavesurfer.getDuration() || opts.duration || 0
       const pxPerSec = (ctx.wavesurfer.getWrapper().scrollWidth || timelineWrapper.scrollWidth) / duration
       const timeInterval = opts.timeInterval ?? defaultTimeInterval(pxPerSec)
       const primaryLabelInterval = opts.primaryLabelInterval ?? defaultPrimaryLabelInterval(pxPerSec)

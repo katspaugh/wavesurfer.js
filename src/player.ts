@@ -1,9 +1,9 @@
-import EventEmitter, { type GeneralEventTypes } from './event-emitter.js'
 import { signal, type WritableSignal } from './reactive/store.js'
 import { Scope } from './scope.js'
+import type WebAudioPlayer from './webaudio.js'
 
 type PlayerOptions = {
-  media?: HTMLMediaElement
+  media?: HTMLMediaElement | WebAudioPlayer
   mediaControls?: boolean
   autoplay?: boolean
   playbackRate?: number
@@ -11,8 +11,8 @@ type PlayerOptions = {
 
 const HAVE_FUTURE_DATA = 3
 
-class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
-  protected media: HTMLMediaElement
+class Player {
+  private media: HTMLMediaElement
   private isExternalMedia = false
   private _ownBlobUrl: string | null = null
 
@@ -26,31 +26,10 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   private _seeking: WritableSignal<boolean>
   // WebKit can discard or corrupt a seek made before the media can play.
   private pendingTime: number | null = null
-  // Note: Player has no separate "root" scope of its own -- mediaScope IS its
-  // whole ownership tree. (A wrapper root named `scope`, as a plain mechanical
-  // reading of the plan might suggest, would collide with WaveSurfer's own
-  // `scope` field of the same name: TS rejects two classes in an extends
-  // chain declaring a same-named field with different visibility (TS2415),
-  // and even reconciling visibility wouldn't help since it's a single
-  // storage slot per instance -- WaveSurfer's field initializer would run
-  // after Player's and silently stomp the reference Player already captured
-  // for mediaScope's parent. Keeping Player's and WaveSurfer's scopes as two
-  // independent trees also matches their pre-existing independence: neither
-  // class's cleanup array was ever connected to the other's.)
+  // Player has no separate "root" scope of its own -- mediaScope IS its whole
+  // ownership tree: everything Player owns is a media-event bridge that is
+  // torn down (and, on setMediaElement, rebuilt) together.
   private mediaScope = new Scope()
-  // setupReactiveMediaEvents() only ever ran from the constructor,
-  // historically -- but destroy() disposes+recreates mediaScope (see below),
-  // and WaveSurfer's destroy() -> load() reuse contract means the reactive
-  // media-signal bridge needs reviving too. ensureMediaEvents() makes that
-  // idempotent: the constructor calls it, and WaveSurfer's own
-  // ensureCoreEvents() (called at the top of loadAudio()) calls it again
-  // post-destroy; destroy() flips the flag back off so the next call revives
-  // the bridge. setMediaElement() is a separate, unconditional path (it must
-  // always rebind to the NEW element, flag or no) -- it calls
-  // setupReactiveMediaEvents() directly and marks the flag true afterward so
-  // a later ensureMediaEvents() call (e.g. from a subsequent loadAudio())
-  // doesn't double-register on top of it.
-  private mediaEventsInitialized = false
 
   // Expose reactive state as writable signals
   // These are writable to allow WaveSurfer to compose them into centralized state
@@ -77,10 +56,14 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
   }
 
   constructor(options: PlayerOptions) {
-    super()
-
     if (options.media) {
-      this.media = options.media
+      // The ONE acknowledged duck-typing boundary: WebAudioPlayer implements the
+      // full HTMLMediaElement surface Player touches (add/removeEventListener,
+      // play/pause/load/remove, src/currentSrc, currentTime, duration, volume,
+      // muted, playbackRate, paused, ended, seeking, readyState via undefined
+      // -> treated as 0, canPlayType, removeAttribute). Everywhere else the
+      // types are honest -- do not add further casts between the two.
+      this.media = options.media as HTMLMediaElement
       this.isExternalMedia = true
     } else {
       this.media = document.createElement('audio')
@@ -96,7 +79,7 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this._seeking = signal(false)
 
     // Setup reactive media event handlers
-    this.ensureMediaEvents()
+    this.setupReactiveMediaEvents()
 
     // Controls
     if (options.mediaControls) {
@@ -118,17 +101,6 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
         { once: true },
       )
     }
-  }
-
-  /**
-   * Idempotently (re)establishes the reactive media-event bridge (see
-   * mediaEventsInitialized above). Safe to call any number of times --
-   * a no-op once already initialized until destroy() resets the flag.
-   */
-  protected ensureMediaEvents(): void {
-    if (this.mediaEventsInitialized) return
-    this.mediaEventsInitialized = true
-    this.setupReactiveMediaEvents()
   }
 
   /**
@@ -208,7 +180,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     )
   }
 
-  protected onMediaEvent<K extends keyof HTMLElementEventMap>(
+  /**
+   * Subscribe to an event on the underlying media. Returns an unsubscribe function.
+   * @internal
+   */
+  public onMediaEvent<K extends keyof HTMLElementEventMap>(
     event: K,
     callback: (ev: HTMLElementEventMap[K]) => void,
     options?: boolean | AddEventListenerOptions,
@@ -221,7 +197,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     return () => this.media.removeEventListener(event, callback, options)
   }
 
-  protected getSrc() {
+  /**
+   * Get the current media source URL.
+   * @internal
+   */
+  public getSrc() {
     return this.media.currentSrc || this.media.src || ''
   }
 
@@ -244,7 +224,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.pendingTime = null
   }
 
-  protected setSrc(url: string, blob?: Blob) {
+  /**
+   * Set the media source, preferring a blob URL when the blob is playable.
+   * @internal
+   */
+  public setSrc(url: string, blob?: Blob) {
     const prevSrc = this.getSrc()
     if (url && prevSrc === url) return // no need to change the source
 
@@ -271,28 +255,13 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     }
   }
 
-  protected destroy() {
+  public destroy() {
+    // Terminal: the reactive media-event bridge is torn down and not revived.
     this.pendingTime = null
-    // Cleanup reactive media event listeners
     this.mediaScope.dispose()
-    // Player instances are reused after destroy (see WaveSurfer's loadAudio
-    // comment about issue #3637). setMediaElement() already disposes and
-    // replaces mediaScope unconditionally at its own start, so this isn't
-    // strictly required for that path -- it's here for consistency /
-    // defensiveness, so a destroyed-but-reused Player is never left holding
-    // a disposed scope that would silently no-op (or immediately re-run)
-    // anything registered on it before setMediaElement() is called again.
-    this.mediaScope = new Scope()
-    // Flip so the next ensureMediaEvents() call (constructor never runs
-    // again, but WaveSurfer's ensureCoreEvents() -- called from loadAudio()
-    // -- does) revives the reactive media-signal bridge just torn down above.
-    this.mediaEventsInitialized = false
 
     // Revoke blob URLs that we created
     this.revokeSrc()
-
-    // Clear all event emitter listeners
-    this.unAll()
 
     if (this.isExternalMedia) return
     this.media.pause()
@@ -303,7 +272,11 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.media.remove()
   }
 
-  protected setMediaElement(element: HTMLMediaElement) {
+  /**
+   * Swap in a new media element and re-attach the reactive event bridge.
+   * @internal
+   */
+  public setMediaElement(element: HTMLMediaElement) {
     this.pendingTime = null
     // Cleanup reactive event listeners from old media element
     this.mediaScope.dispose()
@@ -312,16 +285,8 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     // Set new media element
     this.media = element
 
-    // Reinitialize reactive event listeners on new media element. This is
-    // unconditional (bypassing ensureMediaEvents()'s flag guard) because the
-    // element itself changed -- the bridge must always rebind, regardless of
-    // whether it was already "initialized" for the old element. Mark the
-    // flag true afterward so a later ensureMediaEvents() call (e.g. from
-    // WaveSurfer's ensureCoreEvents() at the top of a subsequent loadAudio(),
-    // for a destroy() -> setMediaElement() -> load() sequence) sees the
-    // bridge as already live and doesn't double-register on top of it.
+    // Reinitialize reactive event listeners on the new media element
     this.setupReactiveMediaEvents()
-    this.mediaEventsInitialized = true
   }
 
   /** Start playing the audio */
@@ -353,7 +318,13 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
 
   /** Jump to a specific time in the audio (in seconds) */
   public setTime(time: number) {
-    const currentTime = Math.max(0, Math.min(time, this.getDuration()))
+    // media.duration is NaN before metadata loads and Infinity for streams;
+    // clamping against either would poison the time (Math.min(t, NaN) is
+    // NaN), so only clamp when a finite duration is known. Under the old
+    // inheritance this was masked by virtual dispatch: `this.getDuration()`
+    // resolved to WaveSurfer's override with its decoded-duration fallback.
+    const duration = this.getDuration()
+    const currentTime = Number.isFinite(duration) ? Math.max(0, Math.min(time, duration)) : Math.max(0, time)
     if (this.media.readyState < HAVE_FUTURE_DATA) {
       this.pendingTime = currentTime
       return
@@ -411,7 +382,13 @@ class Player<T extends GeneralEventTypes> extends EventEmitter<T> {
     this.media.playbackRate = rate
   }
 
-  /** Get the HTML media element */
+  /**
+   * Get the raw media object. Note: under the WebAudio backend this is really
+   * the WebAudioPlayer wearing the HTMLMediaElement surface (see the
+   * constructor); WaveSurfer.getMediaElement() owns the null-for-WebAudio
+   * public contract.
+   * @internal
+   */
   public getMediaElement(): HTMLMediaElement {
     return this.media
   }

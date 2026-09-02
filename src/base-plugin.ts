@@ -8,16 +8,25 @@ export type BasePluginEvents = {
 
 export type GenericPlugin = BasePlugin<BasePluginEvents, unknown>
 
-/** Base class for wavesurfer plugins */
+/**
+ * Base class for wavesurfer plugins.
+ *
+ * @deprecated Authoring plugins as `BasePlugin` subclasses is deprecated and
+ * will be removed in v9 -- use `definePlugin` instead (see
+ * `src/define-plugin.ts`, and any of the first-party plugins as a reference).
+ * `BasePlugin` remains the runtime chassis `definePlugin` builds on, so
+ * defined plugins are still `BasePlugin` instances and existing class-based
+ * plugins keep working throughout v8.
+ */
 export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends EventEmitter<EventTypes> {
   protected wavesurfer?: WaveSurfer
   protected subscriptions: (() => void)[] = []
   protected options: Options
   /**
-   * A disposal scope owned by the plugin chassis. `definePlugin` (see
-   * define-plugin.ts) replaces this with a fresh Scope on every (re-)init
-   * and disposes it on destroy. BasePlugin itself does NOT dispose this —
-   * class-based plugins that don't opt in are unaffected.
+   * A disposal scope owned by the plugin chassis, disposed by destroy().
+   * `definePlugin` (see define-plugin.ts) replaces this with a fresh Scope
+   * on every (re-)init; class-based plugins that support destroy() ->
+   * _init() re-init must do the same in onInit().
    */
   protected scope: Scope = new Scope()
   private isDestroyed = false
@@ -55,6 +64,12 @@ export class BasePlugin<EventTypes extends BasePluginEvents, Options> extends Ev
     // Clear listeners registered BY consumers ON this plugin — after the
     // destroy event so those consumers still receive it
     this.unAll()
+    // Dispose the chassis scope: a class-based plugin using the inviting
+    // `this.scope.listen(...)` and relying on inherited destroy() must not
+    // leak every registered resource. Idempotent for definePlugin's subclass
+    // (which disposes it first, before super.destroy()); subclasses that
+    // support re-init recreate the scope in onInit().
+    this.scope.dispose()
     this.wavesurfer = undefined
   }
 }

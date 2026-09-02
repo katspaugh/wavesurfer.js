@@ -1,31 +1,24 @@
-import EventEmitter from './event-emitter.js'
 import { isHTMLElement } from './dom.js'
 import * as utils from './renderer-utils.js'
 import type { WaveSurferOptions } from './wavesurfer.js'
 import { createDragStream, type DragEvent } from './reactive/drag-stream.js'
-import { createScrollStream, type ScrollStream } from './reactive/scroll-stream.js'
+import { createScrollStream, type ScrollPercentages, type ScrollStream } from './reactive/scroll-stream.js'
 import { computed, effect, signal, type ComputedSignal, type Signal } from './reactive/store.js'
 import { Scope } from './scope.js'
 
 type ChannelData = utils.ChannelData
 
-type RendererEvents = {
-  click: [relativeX: number, relativeY: number]
-  dblclick: [relativeX: number, relativeY: number]
-  drag: [relativeX: number]
-  dragstart: [relativeX: number]
-  dragend: [relativeX: number]
-  scroll: [relativeStart: number, relativeEnd: number, scrollLeft: number, scrollRight: number]
-  render: []
-  rendered: []
-  resize: []
-}
+/** A pointer hit on the waveform, in wrapper-relative [0..1] coordinates. */
+export type RendererPointerHit = { relativeX: number; relativeY: number }
+
+/** One step of a drag gesture on the waveform. */
+export type RendererDragEvent = { type: 'start' | 'move' | 'end'; relativeX: number }
 
 const SMOOTH_SCROLL_FPS = 60
 const SMOOTH_SCROLL_MAX_DELTA = 10
 const LOW_ZOOM_PIXELS_PER_SECOND_THRESHOLD = SMOOTH_SCROLL_MAX_DELTA * SMOOTH_SCROLL_FPS
 
-class Renderer extends EventEmitter<RendererEvents> {
+class Renderer {
   private options: WaveSurferOptions
   private parent: HTMLElement
   private container: HTMLElement
@@ -34,7 +27,14 @@ class Renderer extends EventEmitter<RendererEvents> {
   private canvasWrapper: HTMLElement
   private progressWrapper: HTMLElement
   private cursor: HTMLElement
-  private isScrollable = false
+  // A signal (not a plain field) because visibleRange's auto-tracked computed
+  // reads it: a scrollable transition (fit-to-width -> zoomed, or back) must
+  // trigger a recompute even when nothing else changed that render -- e.g.
+  // zoom() on the same audio leaves audioDuration untouched (Object.is
+  // no-op), so a plain field here left visibleRange (and the lazy-render
+  // effect subscribed to it) frozen with the dependency set collected on the
+  // non-scrollable early-return branch.
+  private isScrollable = signal(false)
   private audioData: AudioBuffer | null = null
   private lastContainerWidth = 0
   private isDragging = false
@@ -58,25 +58,29 @@ class Renderer extends EventEmitter<RendererEvents> {
   private scrollStream: ScrollStream | null = null
   private containerInlinePadding = 0
   private audioDuration = signal(0)
-  // Bumped in initEvents() every time a new this.scrollStream is created
-  // (construction, and each destroy() -> render() revival). Read (but
-  // otherwise unused) inside visibleRange's auto-tracked computed body below
-  // purely to force it to be a dependency -- see that computed's comment for
-  // why this is needed on top of this.audioDuration.
-  private streamEpoch = signal(0)
   private visibleRange: ComputedSignal<{ startTime: number; endTime: number }>
-  // initEvents() (click/dblclick listeners, scrollStream, dragStream,
-  // resize observer) only ever ran from the constructor, historically. But
-  // destroy() disposes+recreates this.scope and tears the DOM listeners
-  // down manually, so a reused instance (destroy() -> load() -> render())
-  // needs its input pipeline rebuilt too. ensureInputEvents() makes that
-  // idempotent: the constructor and the top of render() both call it, and
-  // destroy() flips the flag back off so the next render() re-runs it.
-  private inputEventsInitialized = false
+
+  // Reactive surface (writables stay private; the public accessors below
+  // expose them read-only). This is Renderer's only outward communication
+  // channel: WaveSurfer's initRendererEvents() is the single bridge that
+  // translates these signals into public WaveSurferEvents. Pointer/drag
+  // signals always set a FRESH object per event, so signal.set()'s Object.is
+  // dedup can never swallow two identical consecutive gestures (e.g. two
+  // clicks at the same spot).
+  private _clickSignal = signal<RendererPointerHit | null>(null)
+  private _dblclickSignal = signal<RendererPointerHit | null>(null)
+  private _dragEventsSignal = signal<RendererDragEvent | null>(null)
+  // Monotonic counters, incremented exactly where the old 'render' /
+  // 'rendered' / 'resize' events were emitted (renderedEpoch keeps the
+  // async Promise.resolve().then timing).
+  private _renderEpoch = signal(0)
+  private _renderedEpoch = signal(0)
+  private _resizeEpoch = signal(0)
+  // Captured from scrollStream at creation so getScrollSignals() stays valid
+  // (the signals simply go quiet) even after destroy() nulls scrollStream.
+  private scrollSignals!: { percentages: Signal<ScrollPercentages>; bounds: Signal<{ left: number; right: number }> }
 
   constructor(options: WaveSurferOptions, audioElement?: HTMLElement) {
-    super()
-
     this.options = options
 
     const parent = this.parentFromOptionsContainer(options.container)
@@ -96,78 +100,25 @@ class Renderer extends EventEmitter<RendererEvents> {
       shadow.appendChild(audioElement)
     }
 
-    // ensureInputEvents() creates this.scrollStream, so visibleRange must be
-    // built after it.
-    this.ensureInputEvents()
+    // initEvents() creates this.scrollStream, so visibleRange must be built
+    // after it.
+    this.initEvents()
 
-    // visibleRange is instance-lifetime state, deliberately NOT disposed via
-    // this.scope -- mirroring the WaveSurferState computeds precedent (see
-    // wavesurfer.ts's constructor comment near createWaveSurferState). Why:
-    // destroy() disposes and recreates `this.scope` to support the documented
-    // destroy -> load() reuse contract, and ensureInputEvents() rebuilds
-    // this.scrollStream on the next render() after a destroy(). If
-    // visibleRange's dispose were registered on this.scope, it would be
-    // permanently disposed after the FIRST destroy() with nothing left to
-    // recreate it -- breaking getVisibleRange() forever for any reused
-    // instance (and for future consumers like minimap/spectrogram). So
-    // visibleRange itself is never disposed; it depends on this.audioDuration
-    // (owned by this instance, never disposed) and, transitively through the
-    // recompute body below, on this.scrollStream.percentages, which the scope
-    // cleanup in initEvents() DOES dispose at destroy() (and nulls out
-    // this.scrollStream). The recompute body defends against that by falling
-    // back to the non-scrollable {0, duration} shape whenever
-    // this.scrollStream is null, instead of throwing.
-    //
-    // Deliberately built with NO explicit dependency array (auto-tracking):
-    // computed()'s auto mode re-collects dependencies from the signals
-    // actually read on each recompute (see store.ts). An explicit
-    // `[this.audioDuration, this.scrollStream.percentages]` array would pin
-    // the subscription to whichever percentages signal object existed at
-    // construction time; once ensureInputEvents() rebuilds this.scrollStream
-    // on a post-destroy render(), that pinned subscription would keep
-    // pointing at the old, now-orphaned percentages signal forever, and
-    // visibleRange would never react to scroll again after the first
-    // destroy(). Auto-tracking re-subscribes to whatever this.scrollStream
-    // currently is every time the computed reruns.
-    //
-    // But a recompute has to actually FIRE for that re-subscription to
-    // happen, and audioDuration.set(duration) in render() -- the trigger
-    // this used to rely on exclusively -- is a no-op via Object.is whenever
-    // the reused instance loads audio of the SAME duration (the most common
-    // reuse: reloading the same track). With no duration change to ride
-    // along on, nothing would tell visibleRange to recompute, and it would
-    // stay subscribed to the disposed, orphaned pre-destroy percentages
-    // signal forever. this.streamEpoch closes that gap: initEvents() bumps
-    // it every time it builds a new this.scrollStream (construction, and
-    // every destroy() -> render() revival), and reading it here makes it a
-    // tracked dependency, so that bump alone -- independent of whether
-    // audioDuration actually changed -- forces the one recompute needed to
-    // re-collect dependencies against the new stream.
+    // Auto-tracked (no explicit dependency array): the early-return branch
+    // reads only isScrollable + audioDuration, and a later transition to
+    // scrollable re-collects the scrollStream.percentages dependency on the
+    // recompute the isScrollable signal itself triggers. destroy() is
+    // terminal (the instance is not reused), so the computed's disposal is
+    // simply registered on this.scope.
     this.visibleRange = computed(() => {
-      // Tracked only to force a recompute when initEvents() rebuilds
-      // this.scrollStream; see the comment above.
-      void this.streamEpoch.value
       const duration = this.audioDuration.value
-      if (!this.isScrollable || duration === 0 || !this.scrollStream) {
+      if (!this.isScrollable.value || duration === 0 || !this.scrollStream) {
         return { startTime: 0, endTime: duration }
       }
       const { startX, endX } = this.scrollStream.percentages.value
       return { startTime: startX * duration, endTime: endX * duration }
     })
-  }
-
-  /**
-   * Idempotently (re)establishes the input pipeline: click/dblclick DOM
-   * listeners, the scroll stream (and its 'scroll' event bridge), the
-   * optional drag stream, and the resize observer. Runs once from the
-   * constructor; destroy() flips inputEventsInitialized back to false so the
-   * next render() call re-runs initEvents() and revives the pipeline for a
-   * reused instance.
-   */
-  private ensureInputEvents(): void {
-    if (this.inputEventsInitialized) return
-    this.inputEventsInitialized = true
-    this.initEvents()
+    this.scope.add(() => this.visibleRange.dispose())
   }
 
   private parentFromOptionsContainer(container: WaveSurferOptions['container']) {
@@ -188,13 +139,13 @@ class Renderer extends EventEmitter<RendererEvents> {
   private onClickWrapper = (e: MouseEvent) => {
     const rect = this.wrapper.getBoundingClientRect()
     const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
-    this.emit('click', x, y)
+    this._clickSignal.set({ relativeX: x, relativeY: y })
   }
 
   private onDblClickWrapper = (e: MouseEvent) => {
     const rect = this.wrapper.getBoundingClientRect()
     const [x, y] = utils.getRelativePointerPosition(rect, e.clientX, e.clientY)
-    this.emit('dblclick', x, y)
+    this._dblclickSignal.set({ relativeX: x, relativeY: y })
   }
 
   private initEvents() {
@@ -209,20 +160,11 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.initDrag()
     }
 
-    // Add a scroll listener using reactive stream
+    // Add a scroll listener using reactive stream. Consumers (the WaveSurfer
+    // bridge) subscribe to the stream's signals directly via
+    // getScrollSignals() -- no re-emit happens here.
     this.scrollStream = createScrollStream(this.scrollContainer)
-    // Force visibleRange's auto-tracked computed to recompute and
-    // re-subscribe to THIS scrollStream's percentages, even when nothing
-    // else about to run this render cycle (e.g. audioDuration.set()) will
-    // actually change value and fire on its own -- see visibleRange's
-    // constructor comment.
-    this.streamEpoch.update((n) => n + 1)
-    const unsubscribeScroll = effect(() => {
-      const { startX, endX } = this.scrollStream!.percentages.value
-      const { left, right } = this.scrollStream!.bounds.value
-      this.emit('scroll', startX, endX, left, right)
-    }, [this.scrollStream.percentages, this.scrollStream.bounds])
-    this.scope.add(unsubscribeScroll)
+    this.scrollSignals = { percentages: this.scrollStream.percentages, bounds: this.scrollStream.bounds }
     this.scope.add(() => {
       this.scrollStream?.cleanup()
       this.scrollStream = null
@@ -253,7 +195,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     if (width === this.lastContainerWidth && this.options.height !== 'auto') return
     this.lastContainerWidth = width
     this.reRender()
-    this.emit('resize')
+    this._resizeEpoch.update((n) => n + 1)
   }
 
   private initDrag() {
@@ -278,12 +220,12 @@ class Renderer extends EventEmitter<RendererEvents> {
 
       if (drag.type === 'start') {
         this.isDragging = true
-        this.emit('dragstart', relX)
+        this._dragEventsSignal.set({ type: 'start', relativeX: relX })
       } else if (drag.type === 'move') {
-        this.emit('drag', relX)
+        this._dragEventsSignal.set({ type: 'move', relativeX: relX })
       } else if (drag.type === 'end') {
         this.isDragging = false
-        this.emit('dragend', relX)
+        this._dragEventsSignal.set({ type: 'end', relativeX: relX })
       }
     }, [this.dragStream.signal])
 
@@ -447,28 +389,61 @@ class Renderer extends EventEmitter<RendererEvents> {
     return this.visibleRange
   }
 
+  /**
+   * Pointer clicks on the waveform, as a read-only signal. A fresh object is
+   * set per click (initial value null before the first one), so subscribers
+   * see every click even at identical coordinates.
+   */
+  get clickSignal(): Signal<RendererPointerHit | null> {
+    return this._clickSignal
+  }
+
+  /** Double clicks on the waveform; same shape and semantics as clickSignal. */
+  get dblclickSignal(): Signal<RendererPointerHit | null> {
+    return this._dblclickSignal
+  }
+
+  /**
+   * Drag gestures on the waveform ('start' -> 'move'* -> 'end'), a fresh
+   * object per step; null before the first gesture.
+   */
+  get dragEventsSignal(): Signal<RendererDragEvent | null> {
+    return this._dragEventsSignal
+  }
+
+  /** Bumped on every render pass (the public 'redraw' event derives from it). */
+  get renderEpoch(): Signal<number> {
+    return this._renderEpoch
+  }
+
+  /** Bumped (async, microtask) when a render pass has fully drawn ('redrawcomplete'). */
+  get renderedEpoch(): Signal<number> {
+    return this._renderedEpoch
+  }
+
+  /** Bumped when a container resize triggered a re-render ('resize'). */
+  get resizeEpoch(): Signal<number> {
+    return this._resizeEpoch
+  }
+
+  /**
+   * The scroll stream's derived signals: visible range as percentages
+   * [0..1] and scroll bounds in pixels. Created with the renderer (in
+   * initEvents, during construction); after destroy() the signals still
+   * exist but go quiet.
+   */
+  getScrollSignals(): { percentages: Signal<ScrollPercentages>; bounds: Signal<{ left: number; right: number }> } {
+    return this.scrollSignals
+  }
+
   destroy() {
-    // Removes the click/dblclick DOM listeners and disconnects the resize
-    // observer (both registered on this.scope in initEvents()/
-    // ensureInputEvents() above), plus the scroll/drag streams.
+    // Terminal: disposes the click/dblclick DOM listeners, the resize
+    // observer, the scroll/drag streams, and visibleRange (all registered on
+    // this.scope), removes the container, and releases the decoded audio
+    // reference. The instance is not usable afterwards -- create a new
+    // WaveSurfer instead of reusing a destroyed one.
     this.scope.dispose()
-    // A Renderer instance IS reused after WaveSurfer.destroy(): a subsequent
-    // load() reaches render(), and setOptions() reaches reRender(). A
-    // disposed Scope hands back pre-disposed children from child(), so
-    // without recreating here, render()/reRender()'s own scope resets would
-    // install permanently-disposed scrollRenderScope/delayScope and any
-    // lazy-render scroll subscription registered afterward would be torn
-    // down the instant it's added (see renderMultiCanvas()). Recreate fresh
-    // scopes exactly as Player/WaveSurfer do.
-    this.scope = new Scope()
-    this.scrollRenderScope = this.scope.child()
-    this.delayScope = this.scope.child()
-
-    // Flip so the next render() re-runs initEvents() via ensureInputEvents(),
-    // reviving the click/dblclick listeners, scroll/drag streams, and resize
-    // observer just disposed via the (now-replaced) this.scope above.
-    this.inputEventsInitialized = false
-
+    this.audioData = null
     this.container.remove()
   }
 
@@ -719,7 +694,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     }
 
     // Render all canvases if the waveform doesn't scroll
-    if (!this.isScrollable) {
+    if (!this.isScrollable.value) {
       for (let i = 0; i < plan.numCanvases; i++) {
         draw(i)
       }
@@ -770,15 +745,21 @@ class Renderer extends EventEmitter<RendererEvents> {
     const progressContainer = canvasContainer.cloneNode() as HTMLElement
     this.progressWrapper.appendChild(progressContainer)
 
+    // Normalize against the WHOLE waveform once, not per canvas slice:
+    // renderMultiCanvas hands each canvas a slice of the data, and computing
+    // the peak from a slice would scale a quiet chunk to full height --
+    // visible amplitude jumps at every canvas seam. The global peak also
+    // spans all drawn channels (not just channel 0), so a hotter second
+    // channel can no longer overflow its half of the canvas.
+    if (options.normalize && options.maxPeak == null) {
+      options = { ...options, maxPeak: utils.calculateGlobalPeak(channelData) }
+    }
+
     // Render the waveform
     this.renderMultiCanvas(channelData, options, width, height, canvasContainer, progressContainer)
   }
 
   async render(audioData: AudioBuffer) {
-    // Revive the input pipeline if this instance is being reused after a
-    // destroy() (no-op otherwise, see ensureInputEvents()).
-    this.ensureInputEvents()
-
     // Clear previous timeouts
     this.delayScope.dispose()
     this.delayScope = this.scope.child()
@@ -809,13 +790,13 @@ class Renderer extends EventEmitter<RendererEvents> {
     })
 
     // Whether the container should scroll
-    this.isScrollable = isScrollable
+    this.isScrollable.set(isScrollable)
 
     // Set the width of the wrapper
     this.wrapper.style.width = useParentWidth ? '100%' : `${scrollWidth}px`
 
     // Set additional styles
-    this.scrollContainer.style.overflowX = this.isScrollable ? 'auto' : 'hidden'
+    this.scrollContainer.style.overflowX = this.isScrollable.value ? 'auto' : 'hidden'
     this.scrollContainer.classList.toggle('noScrollbar', !!this.options.hideScrollbar)
     this.cursor.style.backgroundColor = `${this.options.cursorColor || this.options.progressColor}`
     this.cursor.style.width = `${this.options.cursorWidth}px`
@@ -832,7 +813,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.audioData = audioData
     this.audioDuration.set(audioData.duration)
 
-    this.emit('render')
+    this._renderEpoch.update((n) => n + 1)
 
     // Render the waveform
     if (this.options.splitChannels) {
@@ -848,8 +829,9 @@ class Renderer extends EventEmitter<RendererEvents> {
       this.renderChannel(channels, this.options, width, 0)
     }
 
-    // Must be emitted asynchronously for backward compatibility
-    Promise.resolve().then(() => this.emit('rendered'))
+    // Must be bumped asynchronously for backward compatibility (the public
+    // 'redrawcomplete' event derives from this epoch)
+    Promise.resolve().then(() => this._renderedEpoch.update((n) => n + 1))
   }
 
   reRender() {
@@ -867,9 +849,9 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.render(this.audioData)
 
     // Adjust the scroll position so that the cursor stays in the same place
-    if (!this.isScrollable && this.scrollContainer.scrollLeft) {
+    if (!this.isScrollable.value && this.scrollContainer.scrollLeft) {
       this.scrollContainer.scrollLeft = 0
-    } else if (this.isScrollable && scrollWidth !== this.scrollContainer.scrollWidth) {
+    } else if (this.isScrollable.value && scrollWidth !== this.scrollContainer.scrollWidth) {
       const { right: after } = this.progressWrapper.getBoundingClientRect()
       const delta = utils.roundToHalfAwayFromZero(after - before)
       this.scrollContainer.scrollLeft += delta
@@ -931,7 +913,7 @@ class Renderer extends EventEmitter<RendererEvents> {
       : ''
 
     // Only scroll if we have valid audio data to prevent race conditions during loading
-    if (this.isScrollable && this.options.autoScroll && this.audioData && this.audioData.duration > 0) {
+    if (this.isScrollable.value && this.options.autoScroll && this.audioData && this.audioData.duration > 0) {
       this.scrollIntoView(progress, isPlaying)
     }
   }

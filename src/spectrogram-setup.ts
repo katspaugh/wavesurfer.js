@@ -258,6 +258,7 @@ type TestInternals = {
   readonly worker: Worker | null
   readonly workerPromises: Map<string, WorkerRequest>
   readonly cachedFrequencies: Uint8Array[][] | null
+  readonly cachedResampledData: Uint8Array[][] | null
   readonly cachedBuffer: AudioBuffer | null
   readonly canvasContainer: HTMLElement
   readonly canvases: HTMLCanvasElement[]
@@ -436,6 +437,8 @@ export function spectrogramSetup(
   let cachedWidth = 0
   let cancelPendingRender: (() => void) | null = null
   let isRendering = false
+  // Set when a redraw arrives while a render is already in flight
+  let rerenderRequested = false
   let lastZoomLevel = 0
   const renderThrottleMs = 50 // Reduced frequency for better performance
   const zoomThreshold = 0.05 // More sensitive zoom detection
@@ -1070,6 +1073,12 @@ export function spectrogramSetup(
       const frequencies = await getFrequencies(decodedData)
       if (ctx.scope.disposed) return null
       if (frequencies.length > 0) {
+        // Freshly computed frequency data invalidates the resampled-columns cache too:
+        // drawSpectrogram keys that cache on width alone, so after a buffer change at an
+        // unchanged container width (cachedWidth === totalWidth) it would otherwise redraw the
+        // previous buffer's resampled columns instead of resampling these new frequencies.
+        cachedResampledData = null
+        cachedWidth = 0
         cachedFrequencies = frequencies
         cachedBuffer = decodedData
       } else if (cachedBuffer && cachedBuffer !== decodedData) {
@@ -1108,8 +1117,13 @@ export function spectrogramSetup(
     // Clear any pending render
     cancelPendingRender?.()
 
-    // Skip if already rendering
+    // A redraw arriving mid-render (e.g. a new file decoded while the
+    // previous file's frequencies were still computing) must not be dropped:
+    // nothing else would re-trigger rendering, leaving the stale spectrogram
+    // on screen. Queue one follow-up render for when the active one completes
+    // (see render()/fastRender()'s finally blocks).
     if (isRendering) {
+      rerenderRequested = true
       return
     }
 
@@ -1117,7 +1131,14 @@ export function spectrogramSetup(
     const currentZoom = ctx.wavesurfer?.options.minPxPerSec || 0
     const zoomDiff = Math.abs(currentZoom - lastZoomLevel) / Math.max(currentZoom, lastZoomLevel, 1)
 
-    if (zoomDiff < zoomThreshold && cachedFrequencies) {
+    // cachedFrequencies is only valid for the buffer it was computed from: after a new file is
+    // decoded (ws.load(...)) at an unchanged zoom, zoomDiff is 0 but fast-rendering the cache
+    // would draw the PREVIOUS file's spectrogram. Windowed mode gets this for free via
+    // startWindowedRender()'s segmentManager.reset(); this is full mode's equivalent guard.
+    // (The frequenciesDataUrl path never populates cachedFrequencies, so it is unaffected.)
+    const sameBuffer = (ctx.wavesurfer?.getDecodedData() ?? null) === cachedBuffer
+
+    if (zoomDiff < zoomThreshold && cachedFrequencies && sameBuffer) {
       // Small zoom change - just re-render with cached data
       cancelPendingRender = ctx.scope.timeout(() => {
         cancelPendingRender = null
@@ -1152,6 +1173,7 @@ export function spectrogramSetup(
       lastZoomLevel = ctx.wavesurfer?.options.minPxPerSec || 0
     } finally {
       isRendering = false
+      runQueuedRerender()
     }
   }
 
@@ -1165,7 +1187,18 @@ export function spectrogramSetup(
       lastZoomLevel = ctx.wavesurfer?.options.minPxPerSec || 0
     } finally {
       isRendering = false
+      runQueuedRerender()
     }
+  }
+
+  // Runs the follow-up render queued by a redraw that arrived while a render
+  // was in flight (see throttledRender). Going back through throttledRender
+  // re-evaluates zoom and buffer identity against the CURRENT state, so a
+  // buffer change during the previous render takes the full-render path.
+  function runQueuedRerender(): void {
+    if (!rerenderRequested || ctx.scope.disposed) return
+    rerenderRequested = false
+    throttledRender()
   }
 
   function drawSpectrogramSegment(
@@ -1299,6 +1332,15 @@ export function spectrogramSetup(
     // Maximum frequency represented in `frequenciesData`
     // Use buffer.sampleRate if available (from getFrequencies), otherwise use the provided sampleRate
     const freqFrom = buffer?.sampleRate ? buffer.sampleRate / 2 : (options.sampleRate || 0) / 2
+
+    // Default the max drawn frequency to Nyquist, mirroring what getFrequencies()/
+    // startWindowedRender() do on the audio-computed paths. The pre-computed frequenciesDataUrl
+    // path (render() -> loadFrequenciesData() -> here) never runs either of those, so without
+    // this frequencyMax would stay 0, the bitmap's source height would round to zero, and
+    // createImageBitmap would reject (silently - see drawSpectrogramSegment's catch), leaving
+    // the spectrogram blank. validateOptions guarantees options.sampleRate is set whenever
+    // frequenciesDataUrl is, so freqFrom is a real Nyquist value on that path.
+    frequencyMax = frequencyMax || freqFrom
 
     // Minimum and maximum frequency we want to draw
     const freqMin = frequencyMin
@@ -1684,6 +1726,9 @@ export function spectrogramSetup(
     },
     get cachedFrequencies() {
       return cachedFrequencies
+    },
+    get cachedResampledData() {
+      return cachedResampledData
     },
     get cachedBuffer() {
       return cachedBuffer

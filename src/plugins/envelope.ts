@@ -4,7 +4,6 @@
 
 import { type BasePluginEvents } from '../base-plugin.js'
 import { definePlugin } from '../define-plugin.js'
-import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
 import { createDragStream } from '../reactive/drag-stream.js'
 import { effect } from '../reactive/store.js'
@@ -43,12 +42,17 @@ export type EnvelopePluginEvents = BasePluginEvents & {
   'volume-change': [volume: number]
 }
 
-class Polyline extends EventEmitter<{
-  'point-move': [point: EnvelopePoint, relativeX: number, relativeY: number]
-  'point-dragout': [point: EnvelopePoint]
-  'point-create': [relativeX: number, relativeY: number]
-  'line-move': [relativeY: number]
-}> {
+// Polyline's outward channel: plain constructor-injected callbacks, not an
+// event bus -- it is a private class with exactly one consumer (the setup
+// function below). See the eslint 'extends EventEmitter' ban (R3).
+type PolylineCallbacks = {
+  onPointMove: (point: EnvelopePoint, relativeX: number, relativeY: number) => void
+  onPointDragout: (point: EnvelopePoint) => void
+  onPointCreate: (relativeX: number, relativeY: number) => void
+  onLineMove: (relativeY: number) => void
+}
+
+class Polyline {
   private svg: SVGSVGElement
   private options: Options
   private polyPoints: Map<
@@ -67,9 +71,11 @@ class Polyline extends EventEmitter<{
   private scope = new Scope()
   private cancelPressTimer?: () => void
 
-  constructor(options: Options, wrapper: HTMLElement) {
-    super()
-
+  constructor(
+    options: Options,
+    wrapper: HTMLElement,
+    private callbacks: PolylineCallbacks,
+  ) {
     this.options = options
     this.polyPoints = new Map()
 
@@ -138,7 +144,7 @@ class Polyline extends EventEmitter<{
           circle.setAttribute('cy', newY.toString())
         })
 
-        this.emit('line-move', deltaY / height)
+        this.callbacks.onLineMove(deltaY / height)
       }, [dragStream.signal])
 
       this.scope.add(() => {
@@ -152,7 +158,7 @@ class Polyline extends EventEmitter<{
       const rect = svg.getBoundingClientRect()
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
-      this.emit('point-create', x / rect.width, y / rect.height)
+      this.callbacks.onPointCreate(x / rect.width, y / rect.height)
     }
     this.scope.listen(svg, 'dblclick', dblClickListener as EventListener)
 
@@ -170,7 +176,7 @@ class Polyline extends EventEmitter<{
           const rect = svg.getBoundingClientRect()
           const x = e.touches[0].clientX - rect.left
           const y = e.touches[0].clientY - rect.top
-          this.emit('point-create', x / rect.width, y / rect.height)
+          this.callbacks.onPointCreate(x / rect.width, y / rect.height)
         }, 500)
       } else {
         clearTimer()
@@ -269,7 +275,7 @@ class Polyline extends EventEmitter<{
 
       // Remove the point if it's dragged out of the SVG
       if (newX < -threshold || newY < -threshold || newX > width + threshold || newY > height + threshold) {
-        this.emit('point-dragout', refPoint)
+        this.callbacks.onPointDragout(refPoint)
         return
       }
 
@@ -287,7 +293,7 @@ class Polyline extends EventEmitter<{
       circle.setAttribute('cy', newY.toString())
 
       // Emit the event passing the point and new relative coordinates
-      this.emit('point-move', refPoint, newX / width, newY / height)
+      this.callbacks.onPointMove(refPoint, newX / width, newY / height)
     })
 
     this.pointCleanups.set(refPoint, cleanup)
@@ -325,7 +331,6 @@ class Polyline extends EventEmitter<{
 
     this.polyPoints.clear()
     this.svg.remove()
-    this.unAll()
   }
 }
 
@@ -416,35 +421,27 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
       if (!ctx.wavesurfer) return
 
       const wrapper = ctx.wavesurfer.getWrapper()
-      polyline = new Polyline(opts, wrapper)
-
-      polylineScope.add(
-        polyline.on('point-move', (point, relativeX, relativeY) => {
+      polyline = new Polyline(opts, wrapper, {
+        onPointMove: (point, relativeX, relativeY) => {
           const duration = ctx.wavesurfer?.getDuration() || 0
           point.time = relativeX * duration
           point.volume = 1 - relativeY
 
           emitPoints()
-        }),
-      )
+        },
 
-      polylineScope.add(
-        polyline.on('point-dragout', (point) => {
+        onPointDragout: (point) => {
           removePoint(point)
-        }),
-      )
+        },
 
-      polylineScope.add(
-        polyline.on('point-create', (relativeX, relativeY) => {
+        onPointCreate: (relativeX, relativeY) => {
           addPoint({
             time: relativeX * (ctx.wavesurfer?.getDuration() || 0),
             volume: 1 - relativeY,
           })
-        }),
-      )
+        },
 
-      polylineScope.add(
-        polyline.on('line-move', (relativeY) => {
+        onLineMove: (relativeY) => {
           points.forEach((point) => {
             point.volume = Math.min(1, Math.max(0, point.volume - relativeY))
           })
@@ -452,8 +449,8 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
           emitPoints()
 
           onTimeUpdate(ctx.wavesurfer?.getCurrentTime() || 0)
-        }),
-      )
+        },
+      })
     }
 
     function addPoint(point: EnvelopePoint) {

@@ -2,6 +2,13 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "types": ["jest", "node"],
-    "module": "ESNext"
-  }
+    "module": "ESNext",
+    "noEmit": true
+  },
+  // Override the base config's exclusion of src/**/__tests__ so that
+  // `tsc -p tsconfig.test.json --noEmit` (run by `yarn typecheck`) actually
+  // type-checks the test files as a project. Without this override the test
+  // files are only ever checked per-file by ts-jest at run time.
+  "include": ["src"],
+  "exclude": ["node_modules", "cypress", "dist"]
 }

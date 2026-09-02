@@ -102,11 +102,12 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   protected onInit() {
-    // this.scope is disposed and recreated on every destroy() (see below); a
-    // fresh FrameScheduler is needed so a post-destroy startRecording()/
-    // resumeRecording() registers its stop() on the new scope instead of the
-    // dead one (mirrors WaveSurfer.ensureCoreEvents()'s frameScheduler
-    // recreation in wavesurfer.ts).
+    // Plugin re-init after destroy() is supported (destroy() -> _init(), see
+    // record.test.ts): the chassis scope was disposed by destroy(), so
+    // recreate it -- mirroring definePlugin's onInit() -- along with a fresh
+    // FrameScheduler registered on it, so a post-re-init startRecording()/
+    // resumeRecording() registers its stop() on the live scope.
+    this.scope = new Scope()
     this.frameScheduler = new FrameScheduler(this.scope)
   }
 
@@ -271,6 +272,13 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       this.stopMic()
     }
 
+    // Capture the lifecycle generation BEFORE awaiting: destroy() disposes
+    // this.scope, and a subsequent _init() re-init both resets `destroyed`
+    // and replaces the scope -- so `this.destroyed` alone cannot detect a
+    // destroy that happened while the permission prompt was up if a re-init
+    // followed it. The captured scope is disposed in either case.
+    const requestScope = this.scope
+
     let stream: MediaStream
     try {
       stream = await navigator.mediaDevices.getUserMedia({
@@ -278,6 +286,16 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       })
     } catch (err) {
       throw new Error('Error accessing the microphone: ' + (err as Error).message)
+    }
+
+    // The plugin may have been destroyed (and possibly re-initialized) while
+    // the permission prompt was up. Without this guard the stream (and the
+    // AudioContext + render interval renderMicStream would attach to the
+    // current scope) would leak into the wrong lifecycle -- the tab's
+    // recording indicator stays on with no way to stop it.
+    if (this.destroyed || requestScope.disposed) {
+      stream.getTracks().forEach((track) => track.stop())
+      throw new Error('The plugin was destroyed while requesting the microphone')
     }
 
     const micStream = this.renderMicStream(stream)
@@ -294,24 +312,59 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     this.unsubscribeRecordEnd?.()
     this.micStream = null
     this.unsubscribeRecordEnd = undefined
+    // renderMicStream() hijacked the host's options (interact, and in
+    // scrolling mode cursorWidth/normalize/maxPeak); restore them when the
+    // mic session ends. The record-end render path also restores (whichever
+    // runs first wins; the other is a no-op) -- but without this, a
+    // preview-only startMic() -> stopMic() or a renderRecordedAudio: false
+    // recording left the waveform permanently non-interactive.
+    this.applyOriginalOptionsIfNeeded()
     if (!this.stream) return
     this.stream.getTracks().forEach((track) => track.stop())
     this.stream = null
     this.mediaRecorder = null
   }
 
-  /** Start recording audio from the microphone */
+  /**
+   * Start recording audio from the microphone.
+   *
+   * Calling this while a recording is already active restarts: the previous
+   * session is discarded (no 'record-end' is emitted for it -- call
+   * stopRecording() first if you want its final blob).
+   */
   public async startRecording(options?: RecordPluginDeviceOptions) {
     const stream = this.stream || (await this.startMic(options))
     this.dataWindow = null
-    const mediaRecorder =
-      this.mediaRecorder ||
-      new MediaRecorder(stream, {
-        mimeType: this.options.mimeType || findSupportedMimeType(),
-        audioBitsPerSecond: this.options.audioBitsPerSecond,
-      })
+
+    // Restarting: neutralize the previous recorder before stopping it.
+    // MediaRecorder.stop() queues 'dataavailable' + 'stop' events that would
+    // otherwise dispatch into the NEW session's handlers assigned below --
+    // a stale foreign chunk corrupting the new blob, and a spurious
+    // 'record-end' right after 'record-start'.
+    const previousRecorder = this.mediaRecorder
+    if (previousRecorder && previousRecorder.state !== 'inactive') {
+      previousRecorder.ondataavailable = null
+      previousRecorder.onpause = null
+      previousRecorder.onstop = null
+      previousRecorder.stop()
+      this.frameScheduler.stop()
+    }
+
+    // A fresh recorder per session: reusing the old instance would keep its
+    // queued events (and any stale handler state) attached to the new session.
+    const mediaRecorder = new MediaRecorder(stream, {
+      mimeType: this.options.mimeType || findSupportedMimeType(),
+      audioBitsPerSecond: this.options.audioBitsPerSecond,
+    })
     this.mediaRecorder = mediaRecorder
-    this.stopRecording()
+
+    // The lifecycle generation this recording session belongs to. destroy()
+    // -> _init() replaces this.scope, so emitWithBlob (which can run from a
+    // MediaRecorder event queued BEFORE destroy but delivered after a
+    // re-init, when `destroyed` is false again) compares against this to
+    // avoid emitting the old session's record-end -- or loading its blob --
+    // into the new lifecycle.
+    const sessionScope = this.scope
 
     const recordedChunks: BlobPart[] = []
 
@@ -324,14 +377,22 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
     const emitWithBlob = (ev: 'record-pause' | 'record-end') => {
       const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType })
-      this.emit(ev, blob)
+      // True when destroy() -> _init() re-initialized the plugin after this
+      // session's recorder events were queued: the new lifecycle must not
+      // receive the old session's events or blob.
+      const staleLifecycle = this.scope !== sessionScope
+      if (!staleLifecycle) {
+        this.emit(ev, blob)
+      }
       if (ev === 'record-end' && this.pendingFinalRecordEndListeners) {
         const snapshot = this.pendingFinalRecordEndListeners
         this.pendingFinalRecordEndListeners = null
-        // Only redeliver here if the plugin has already fully torn down (unAll ran) —
-        // otherwise this.emit(ev, blob) above already reached these listeners live,
-        // and redelivering would double-fire them.
-        if (this.destroyed) {
+        // Redeliver when the live emit above could not reach these listeners:
+        // the plugin fully tore down (unAll ran), or it was re-initialized
+        // into a new lifecycle (stale-lifecycle emit suppressed). Otherwise
+        // this.emit(ev, blob) already reached them live, and redelivering
+        // would double-fire.
+        if (this.destroyed || staleLifecycle) {
           snapshot.forEach((listener) => {
             try {
               listener(blob)
@@ -346,7 +407,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       // Without this, a post-destroy onstop would create a fresh blob URL via
       // createObjectURL() that nothing ever revokes, since destroy() has already
       // done its own revocation pass and this code path runs after that.
-      if (this.options.renderRecordedAudio && !this.destroyed) {
+      if (this.options.renderRecordedAudio && !this.destroyed && !staleLifecycle) {
         this.applyOriginalOptionsIfNeeded()
         // Revoke previous blob URL before creating a new one
         if (this.recordedBlobUrl) {
@@ -386,7 +447,9 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   }
 
   public isActive(): boolean {
-    return this.mediaRecorder?.state !== 'inactive'
+    // Explicit existence check: with no recorder, `undefined !== 'inactive'`
+    // would wrongly report an active recording on a fresh plugin.
+    return !!this.mediaRecorder && this.mediaRecorder.state !== 'inactive'
   }
 
   /** Stop the recording */
@@ -461,14 +524,10 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       URL.revokeObjectURL(this.recordedBlobUrl)
       this.recordedBlobUrl = null
     }
-    // Disposes the frameScheduler's own stop() disposer (already stopped
-    // above; this is only a backstop) and cascades to any mic child scope
-    // still attached (normally none -- stopMic() above already detached and
-    // disposed it). Recreated because re-init after destroy() is supported
-    // (see record.test.ts): a disposed Scope runs late registrations
-    // immediately, which would silently break a subsequent onInit().
-    this.scope.dispose()
-    this.scope = new Scope()
+    // super.destroy() disposes this.scope (frameScheduler's stop() disposer
+    // -- already stopped above, only a backstop -- and any mic child scope
+    // still attached; normally none, stopMic() above already disposed it).
+    // Re-init after destroy() recreates the scope in onInit().
     super.destroy()
   }
 

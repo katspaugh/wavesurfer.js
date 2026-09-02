@@ -5,10 +5,12 @@ describe('WaveSurfer abort handling tests', () => {
     cy.window().its('WaveSurfer').should('exist')
   })
 
-  // https://github.com/katspaugh/wavesurfer.js/issues/3637
-  it('load url after destroyed should emit ready', () => {
+  // destroy() is terminal (v8): a post-destroy load() must reject catchably
+  // (the v7 record plugin's async onstop could reach this path -- see
+  // issue #3637) and emit 'error', never resurrect the instance.
+  it('load url after destroyed should reject and emit error', () => {
     cy.window().then((win) => {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         win.wavesurfer = win.WaveSurfer.create({
           container: '#waveform',
           height: 200,
@@ -18,9 +20,15 @@ describe('WaveSurfer abort handling tests', () => {
 
         win.wavesurfer.destroy()
 
-        win.wavesurfer.load('../../examples/audio/demo.wav')
+        win.wavesurfer.on('ready', () => reject(new Error('ready must not fire on a destroyed instance')))
 
-        win.wavesurfer.on('ready', resolve)
+        win.wavesurfer.load('../../examples/audio/demo.wav').then(
+          () => reject(new Error('load() after destroy must reject')),
+          (e) => {
+            expect(e.message).to.match(/destroyed/)
+            resolve()
+          },
+        )
       })
     })
   })
