@@ -745,13 +745,21 @@ class Renderer {
     const progressContainer = canvasContainer.cloneNode() as HTMLElement
     this.progressWrapper.appendChild(progressContainer)
 
+    // Normalize against the WHOLE waveform once, not per canvas slice:
+    // renderMultiCanvas hands each canvas a slice of the data, and computing
+    // the peak from a slice would scale a quiet chunk to full height --
+    // visible amplitude jumps at every canvas seam. The global peak also
+    // spans all drawn channels (not just channel 0), so a hotter second
+    // channel can no longer overflow its half of the canvas.
+    if (options.normalize && options.maxPeak == null) {
+      options = { ...options, maxPeak: utils.calculateGlobalPeak(channelData) }
+    }
+
     // Render the waveform
     this.renderMultiCanvas(channelData, options, width, height, canvasContainer, progressContainer)
   }
 
   async render(audioData: AudioBuffer) {
-    // Revive the input pipeline if this instance is being reused after a
-
     // Clear previous timeouts
     this.delayScope.dispose()
     this.delayScope = this.scope.child()

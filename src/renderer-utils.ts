@@ -362,6 +362,24 @@ export function getLazyRenderRange({
   return [startCanvas - 1, startCanvas, startCanvas + 1]
 }
 
+/**
+ * The maximum absolute sample value across ALL channels of the full channel
+ * data. Computed once per render and threaded into calculateVerticalScale as
+ * `maxPeak` so that every canvas slice normalizes against the same global
+ * peak -- per-slice normalization would scale a quiet chunk to full height
+ * and produce amplitude discontinuities at canvas seams.
+ */
+export function calculateGlobalPeak(channelData: ChannelData): number {
+  let max = 0
+  for (const channel of channelData) {
+    for (let i = 0; i < channel.length; i++) {
+      const magnitude = Math.abs(channel[i] ?? 0)
+      if (magnitude > max) max = magnitude
+    }
+  }
+  return max
+}
+
 export function calculateVerticalScale({
   channelData,
   barHeight,

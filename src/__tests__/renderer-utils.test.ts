@@ -2,6 +2,7 @@ import {
   MAX_CANVAS_WIDTH,
   MAX_NODES,
   calculateBarHeights,
+  calculateGlobalPeak,
   calculateBarRenderConfig,
   calculateBarSegments,
   calculateLinePaths,
@@ -486,5 +487,18 @@ describe('renderer-utils', () => {
       const plan = computeCanvasPlan({ totalWidth: 1001, clientWidth: 500, options: barOptions })
       plan.slots.forEach((s) => expect(s.width).toBeGreaterThan(0))
     })
+  })
+})
+
+describe('calculateGlobalPeak', () => {
+  it('returns the max absolute sample across ALL channels', () => {
+    expect(calculateGlobalPeak([Float32Array.from([0.1, -0.4, 0.2]), Float32Array.from([0.3, 0.8, -0.5])])).toBeCloseTo(
+      0.8,
+    )
+  })
+
+  it('returns 0 for silent or empty data', () => {
+    expect(calculateGlobalPeak([Float32Array.from([0, 0])])).toBe(0)
+    expect(calculateGlobalPeak([])).toBe(0)
   })
 })
