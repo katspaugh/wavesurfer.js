@@ -52,6 +52,17 @@ const leaksProject = {
 export default {
   collectCoverage: true,
   collectCoverageFrom: ['src/**/*.ts'],
+  // Ratchet, set just below the current global numbers: raise as coverage
+  // improves, never lower. Global (not per-file) on purpose — moving code
+  // between files shouldn't trip it.
+  coverageThreshold: {
+    global: {
+      statements: 72,
+      branches: 58,
+      functions: 73,
+      lines: 74,
+    },
+  },
   projects: [
     {
       ...sharedProjectConfig,

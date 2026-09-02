@@ -9,3 +9,8 @@ jobs:
       - uses: ./.github/workflows/yarn
       - name: Run unit tests
         run: yarn test:unit
+      # The GC-leak harness (gc-leaks.test.ts) asserts real garbage collection
+      # of destroyed instances — the regressions it catches are exactly the
+      # ones introduced by "simplifying" Scope/teardown code.
+      - name: Run GC leak tests
+        run: yarn test:leaks

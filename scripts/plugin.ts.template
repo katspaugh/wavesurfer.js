@@ -2,41 +2,42 @@
  * The Template plugin
  */
 
-import BasePlugin, { type BasePluginEvents } from '../base-plugin.js'
+import { type BasePluginEvents } from '../base-plugin.js'
+import { definePlugin } from '../define-plugin.js'
 
 export type TemplatePluginOptions = {
+  // Add plugin options here
 }
 
 const defaultOptions = {
+  // Add default option values here
 }
 
 export type TemplatePluginEvents = BasePluginEvents & {
+  // Add public events here, e.g.: 'some-event': [payload: string]
 }
 
-export class TemplatePlugin extends BasePlugin<TemplatePluginEvents, TemplatePluginOptions> {
-  protected options: TemplatePluginOptions & typeof defaultOptions
+/** The plugin's public API, returned from the setup function below */
+export type TemplatePluginApi = {
+  // Add public methods here
+}
 
-  constructor(options?: TemplatePluginOptions) {
-    super(options || {})
+const TemplatePlugin = definePlugin<TemplatePluginOptions, TemplatePluginEvents, TemplatePluginApi>(
+  'TemplatePlugin',
+  (ctx, options) => {
+    const opts: TemplatePluginOptions & typeof defaultOptions = Object.assign({}, defaultOptions, options)
+    void opts
 
-    this.options = Object.assign({}, defaultOptions, options)
-  }
+    // ctx.wavesurfer — the WaveSurfer instance
+    // ctx.state — reactive state signals (wavesurfer.getState())
+    // ctx.scope — register all listeners/timers/DOM here; disposed on destroy,
+    //   e.g. ctx.scope.listen(el, 'click', handler) or ctx.scope.add(() => el.remove())
+    // ctx.emit — emit the plugin's public events
 
-  public static create(options?: TemplatePluginOptions) {
-    return new TemplatePlugin(options)
-  }
-
-  /** Called by wavesurfer, don't call manually */
-  onInit() {
-    if (!this.wavesurfer) {
-      throw Error('WaveSurfer is not initialized')
+    return {
+      // Public API methods
     }
-  }
-
-  /** Unmount */
-  public destroy() {
-    super.destroy()
-  }
-}
+  },
+)
 
 export default TemplatePlugin

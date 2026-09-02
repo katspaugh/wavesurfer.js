@@ -9,11 +9,21 @@ jobs:
 
       - uses: ./.github/workflows/yarn
 
+      # Blocking: a lint error fails the job (and thus the PR check).
       - name: Run lint
+        run: yarn lint
+
+      - name: Run typecheck
+        run: yarn typecheck
+
+      # Advisory annotations on the diff, in addition to the blocking step above.
+      - name: Generate lint report for annotations
+        if: always()
         run: npm run lint:report
         continue-on-error: true
 
       - name: Annotate code with linting results
+        if: always()
         uses: ataylorme/eslint-annotate-action@v3
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

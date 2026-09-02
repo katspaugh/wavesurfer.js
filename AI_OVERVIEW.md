@@ -20,7 +20,8 @@ This document gives a condensed view of the project structure and build process 
 - **Install dependencies**: `yarn`
 - **Run the dev server**: `yarn start` (compiles TypeScript in watch mode and serves examples on <http://localhost:9090>)
 - **Build for production**: `yarn build`
-- **Run lint checks**: `yarn lint`
+- **Run lint checks**: `yarn lint` (check-only; `yarn lint:fix` to auto-fix)
+- **Run typechecks**: `yarn typecheck` (library + test files)
 - **Run unit tests**: `yarn test:unit` (Jest; `jest.config.js` defines two projects — `default`, everything except the GC-leaks suite, and `leaks`, `src/__tests__/gc-leaks.test.ts` only, run separately via `yarn test:leaks` with `--expose-gc` since it asserts real garbage collection)
 - **Run Cypress tests**: `yarn cypress`
 
