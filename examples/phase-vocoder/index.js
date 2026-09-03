@@ -1,19 +1,24 @@
 // WebAudio speed control with pitch preservation
 
 import WaveSurfer from 'wavesurfer.js'
+import WebAudioPlayer from 'wavesurfer.js/dist/webaudio.js'
+
+// Create a WebAudio player explicitly and pass it as `media`
+// so we keep a reference to it -- in v8, `getMediaElement()`
+// returns null when the WebAudio backend is used
+const webAudioPlayer = new WebAudioPlayer()
 
 // Init wavesurfer
 const wavesurfer = WaveSurfer.create({
-  backend: 'WebAudio',
   container: document.body,
   waveColor: 'violet',
   progressColor: 'purple',
+  media: webAudioPlayer,
   url: '/examples/audio/librivox.mp3',
 })
 
 // Wait for the audio to be ready
 wavesurfer.on('ready', async () => {
-  const webAudioPlayer = wavesurfer.getMediaElement()
   const gainNode = webAudioPlayer.getGainNode()
   const audioContext = gainNode.context
 
